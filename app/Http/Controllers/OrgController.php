@@ -9,6 +9,71 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class OrgController extends Controller
 {
+    public function index()
+    {
+        $orgs = DB::table('cmis.orgs')
+            ->select('org_id', 'name', 'default_locale', 'currency', 'created_at')
+            ->orderBy('name')
+            ->get();
+
+        return view('orgs.index', compact('orgs'));
+    }
+
+    public function show($id)
+    {
+        $org = $this->resolveOrg($id);
+
+        return view('orgs.show', compact('org'));
+    }
+
+    public function campaigns($id)
+    {
+        $org = $this->resolveOrg($id);
+
+        $campaigns = DB::table('cmis.campaigns')
+            ->where('org_id', $id)
+            ->orderByDesc('created_at')
+            ->get();
+
+        return view('orgs.campaigns', [
+            'id' => $id,
+            'org' => $org,
+            'campaigns' => $campaigns,
+        ]);
+    }
+
+    public function services($id)
+    {
+        $org = $this->resolveOrg($id);
+
+        $services = DB::table('cmis.offerings')
+            ->select('name', DB::raw("type as kind"))
+            ->where('org_id', $id)
+            ->where('type', 'service')
+            ->get();
+
+        return view('orgs.services', [
+            'org' => $org,
+            'services' => $services,
+        ]);
+    }
+
+    public function products($id)
+    {
+        $org = $this->resolveOrg($id);
+
+        $products = DB::table('cmis.offerings')
+            ->select('name', DB::raw("type as kind"))
+            ->where('org_id', $id)
+            ->where('type', 'product')
+            ->get();
+
+        return view('orgs.products', [
+            'org' => $org,
+            'products' => $products,
+        ]);
+    }
+
     // ... الدوال السابقة تبقى كما هي ...
 
     public function compareCampaigns(Request $request, $id)
@@ -82,5 +147,14 @@ class OrgController extends Controller
                 return $rows;
             }
         }, 'campaign_comparison.xlsx');
+    }
+
+    protected function resolveOrg($id)
+    {
+        $org = DB::table('cmis.orgs')->where('org_id', $id)->first();
+
+        abort_if(!$org, 404, 'المؤسسة غير موجودة');
+
+        return $org;
     }
 }
