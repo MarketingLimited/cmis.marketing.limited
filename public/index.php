@@ -11,29 +11,7 @@ if (file_exists($maintenance = __DIR__.'/../storage/framework/maintenance.php'))
 }
 
 // Register the Composer autoloader...
-$autoloadPaths = [
-    __DIR__ . '/../vendor/autoload.php',
-    __DIR__ . '/../../vendor/autoload.php',
-];
-
-$autoloadRegistered = false;
-
-foreach ($autoloadPaths as $autoloadPath) {
-    if (file_exists($autoloadPath)) {
-        require $autoloadPath;
-        $autoloadRegistered = true;
-
-        break;
-    }
-}
-
-if (! $autoloadRegistered) {
-    http_response_code(500);
-
-    echo 'Composer autoloader not found. Please run "composer install".';
-
-    exit(1);
-}
+require __DIR__.'/../vendor/autoload.php';
 
 // Bootstrap Laravel and handle the request...
 /** @var Application $app */
