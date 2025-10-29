@@ -7,6 +7,16 @@ use Illuminate\Support\Facades\DB;
 
 class CampaignController extends Controller
 {
+    public function index()
+    {
+        $campaigns = DB::table('cmis.campaigns')
+            ->select('campaign_id', 'name', 'status', 'budget', 'start_date', 'end_date', 'updated_at')
+            ->orderByDesc('updated_at')
+            ->get();
+
+        return view('campaigns', compact('campaigns'));
+    }
+
     public function show($campaign_id)
     {
         $campaign = DB::selectOne("SELECT * FROM cmis.campaigns WHERE campaign_id = ?", [$campaign_id]);
