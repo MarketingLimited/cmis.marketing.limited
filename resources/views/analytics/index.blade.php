@@ -1,95 +1,108 @@
 @extends('layouts.app')
 
 @section('content')
-<h2>📈 لوحة التحليلات (Analytics)</h2>
-<p>تعرض هذه الصفحة مؤشرات الأداء والبيانات الإحصائية المسجلة في النظام.</p>
+<div class="space-y-6">
+    <div>
+        <h2 class="text-3xl font-bold text-gray-800">📈 لوحة التحليلات (Analytics)</h2>
+        <p class="text-gray-600">بيانات محدثة حول مؤشرات الأداء والقياسات المسجلة للحملات.</p>
+    </div>
 
-<!-- الشريط الفرعي -->
-<div style="margin:15px 0; padding:10px; background:#8b5cf610; border:1px solid #8b5cf6; border-radius:8px;">
-  <a href="/kpis" style="margin:0 10px; color:#8b5cf6; font-weight:bold; text-decoration:none;">🎯 مؤشرات الأداء</a>
-  <a href="/reports" style="margin:0 10px; color:#8b5cf6; font-weight:bold; text-decoration:none;">📊 التقارير</a>
-  <a href="/metrics" style="margin:0 10px; color:#8b5cf6; font-weight:bold; text-decoration:none;">📈 المقاييس</a>
+    <div class="flex flex-wrap gap-4">
+        <a href="/kpis" class="inline-flex items-center gap-2 bg-violet-100 text-violet-700 px-4 py-2 rounded-lg font-semibold hover:bg-violet-200 transition">🎯 مؤشرات الأداء</a>
+        <a href="/reports" class="inline-flex items-center gap-2 bg-violet-100 text-violet-700 px-4 py-2 rounded-lg font-semibold hover:bg-violet-200 transition">📊 التقارير</a>
+        <a href="/metrics" class="inline-flex items-center gap-2 bg-violet-100 text-violet-700 px-4 py-2 rounded-lg font-semibold hover:bg-violet-200 transition">📈 المقاييس</a>
+    </div>
+
+    <div class="bg-white shadow rounded-2xl p-6">
+        <h3 class="text-xl font-semibold text-violet-700 mb-4">المؤشرات العامة</h3>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="border border-violet-200 rounded-xl p-4 text-center bg-violet-50">
+                <p class="text-violet-600 font-semibold">مؤشرات الأداء (KPIs)</p>
+                <p class="text-2xl font-bold">{{ $stats['kpis'] }}</p>
+            </div>
+            <div class="border border-violet-200 rounded-xl p-4 text-center bg-violet-50">
+                <p class="text-violet-600 font-semibold">القياسات المسجلة</p>
+                <p class="text-2xl font-bold">{{ $stats['metrics'] }}</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-white shadow rounded-2xl p-6">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+                <h3 class="text-xl font-semibold text-gray-800">بحث فوري في مؤشرات الأداء</h3>
+                <p class="text-gray-500 text-sm">اكتب اسم المؤشر أو جزءًا منه للعثور عليه.</p>
+            </div>
+            <input type="text" id="searchBox" placeholder="🔍 ابحث عن مؤشر أو تقرير..." class="w-full sm:w-80 border border-violet-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-violet-400">
+        </div>
+        <div id="searchResults" class="mt-6 divide-y divide-gray-100"></div>
+    </div>
+
+    <div class="bg-white shadow rounded-2xl p-6">
+        <h3 class="text-xl font-semibold text-gray-800 mb-4">أحدث القياسات المسجلة</h3>
+        <div class="overflow-x-auto">
+            <table class="min-w-full text-sm divide-y divide-gray-200">
+                <thead class="bg-gray-50 text-gray-700">
+                    <tr>
+                        <th class="px-4 py-3 text-right">المؤشر</th>
+                        <th class="px-4 py-3 text-right">القيمة المرصودة</th>
+                        <th class="px-4 py-3 text-right">المستهدف</th>
+                        <th class="px-4 py-3 text-right">الأساس</th>
+                        <th class="px-4 py-3 text-right">وقت الرصد</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    @forelse ($latestMetrics as $metric)
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-4 py-2 font-medium text-violet-700">{{ $metric->kpi }}</td>
+                            <td class="px-4 py-2">{{ number_format($metric->observed, 2) }}</td>
+                            <td class="px-4 py-2">{{ number_format($metric->target ?? 0, 2) }}</td>
+                            <td class="px-4 py-2">{{ number_format($metric->baseline ?? 0, 2) }}</td>
+                            <td class="px-4 py-2">{{ optional($metric->observed_at)->format('Y-m-d H:i') ?? '—' }}</td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="5" class="px-4 py-4 text-center text-gray-500">لا توجد قياسات حديثة.</td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    </div>
 </div>
-
-<hr>
-
-<!-- حقل البحث الفوري -->
-<div style="margin:15px 0;">
-  <input type="text" id="searchBox" placeholder="🔍 ابحث عن مؤشر أو تقرير..." style="width:100%; max-width:400px; padding:10px; border:1px solid #8b5cf6; border-radius:6px;">
-</div>
-
-<div id="analyticsStats" style="display:flex; gap:20px; flex-wrap:wrap; margin-top:20px;"></div>
-<div id="searchResults" style="margin-top:30px;"></div>
 
 <script>
-let allAnalytics = [];
+    const searchableItems = @json($kpis->map(fn($kpi) => [
+        'name' => $kpi->kpi,
+        'description' => $kpi->description,
+    ]));
 
-async function loadAnalyticsStats() {
-  try {
-    const res = await fetch('/dashboard/data');
-    const data = await res.json();
-    const stats = data.analytics;
+    const resultsBox = document.getElementById('searchResults');
 
-    const container = document.getElementById('analyticsStats');
-    container.innerHTML = '';
+    function renderResults(items) {
+        resultsBox.innerHTML = '';
 
-    const color = '#8b5cf6';
+        if (!items.length) {
+            resultsBox.innerHTML = '<p class="py-4 text-gray-500">لم يتم العثور على نتائج.</p>';
+            return;
+        }
 
-    const cards = [
-      { label: 'مؤشرات الأداء (KPIs)', value: stats.kpis },
-      { label: 'القياسات المسجلة (Metrics)', value: stats.metrics }
-    ];
+        items.forEach(item => {
+            const row = document.createElement('div');
+            row.className = 'py-3';
+            row.innerHTML = `<p class="font-medium text-gray-800">${item.name}</p><p class="text-sm text-gray-500">${item.description ?? ''}</p>`;
+            resultsBox.appendChild(row);
+        });
+    }
 
-    cards.forEach(c => {
-      const card = document.createElement('div');
-      card.style.cssText = `background:${color}20; border:1px solid ${color}; border-radius:10px; width:250px; text-align:center; padding:15px; box-shadow:0 2px 6px rgba(0,0,0,0.1);`;
-      card.innerHTML = `<h3 style='color:${color}; margin:0;'>${c.label}</h3><p style='font-size:22px; font-weight:bold;'>${c.value}</p>`;
-      container.appendChild(card);
+    renderResults(searchableItems.slice(0, 10));
+
+    document.getElementById('searchBox').addEventListener('input', (event) => {
+        const query = event.target.value.trim().toLowerCase();
+        const filtered = searchableItems.filter(item =>
+            item.name.toLowerCase().includes(query) || (item.description ?? '').toLowerCase().includes(query)
+        );
+        renderResults(filtered.slice(0, 25));
     });
-
-    // بيانات تجريبية للبحث
-    allAnalytics = [
-      { name: 'مؤشر رضا العملاء', type: 'KPI' },
-      { name: 'تقرير المبيعات الشهري', type: 'Report' },
-      { name: 'قياس التفاعل على وسائل التواصل', type: 'Metric' },
-      { name: 'مؤشر النمو السنوي', type: 'KPI' }
-    ];
-
-    renderResults(allAnalytics);
-  } catch (err) {
-    console.error('فشل تحميل بيانات التحليلات', err);
-  }
-}
-
-function renderResults(results) {
-  const box = document.getElementById('searchResults');
-  box.innerHTML = '';
-
-  if (results.length === 0) {
-    box.innerHTML = '<p style="color:#555;">لم يتم العثور على نتائج.</p>';
-    return;
-  }
-
-  results.forEach(item => {
-    const div = document.createElement('div');
-    div.style.cssText = 'padding:10px; border-bottom:1px solid #ddd;';
-    div.innerHTML = `<strong>${item.name}</strong> <span style='color:#8b5cf6;'>(${item.type})</span>`;
-    box.appendChild(div);
-  });
-}
-
-document.getElementById('searchBox').addEventListener('input', (e) => {
-  const query = e.target.value.toLowerCase();
-  const filtered = allAnalytics.filter(o => o.name.toLowerCase().includes(query));
-  renderResults(filtered);
-});
-
-loadAnalyticsStats();
-setInterval(loadAnalyticsStats, 30000);
 </script>
-
-<hr>
-
-<h3>📊 التحليل المفصل</h3>
-<p>قريبًا سيتم إضافة رسوم بيانية ديناميكية لمؤشرات الأداء.</p>
 @endsection

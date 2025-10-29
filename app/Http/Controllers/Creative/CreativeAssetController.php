@@ -3,19 +3,28 @@
 namespace App\Http\Controllers\Creative;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
+use App\Models\CreativeAsset;
 
-/**
- * Class CreativeAssetController
- * مسؤول عن إدارة الأصول الإبداعية مثل الصور والفيديوهات والرسومات.
- */
 class CreativeAssetController extends Controller
 {
-    /**
-     * عرض قائمة الأصول الإبداعية.
-     */
     public function index()
     {
-        return view('creative.assets.index');
+        $assets = CreativeAsset::query()
+            ->with(['org:org_id,name', 'campaign:campaign_id,name'])
+            ->orderByDesc('created_at')
+            ->limit(100)
+            ->get();
+
+        $searchable = $assets->map(fn ($asset) => [
+            'name' => $asset->variation_tag ?? 'أصل بدون وسم',
+            'status' => $asset->status ?? 'غير محدد',
+            'created_at' => optional($asset->created_at)->format('Y-m-d'),
+            'type' => data_get($asset->used_fields, 'asset_type'),
+        ]);
+
+        return view('creative-assets.index', [
+            'assets' => $assets,
+            'searchableAssets' => $searchable,
+        ]);
     }
 }

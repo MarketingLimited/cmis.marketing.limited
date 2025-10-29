@@ -1,7 +1,16 @@
 <?php
 
+use App\Http\Controllers\AI\AIDashboardController;
+use App\Http\Controllers\Analytics\OverviewController as AnalyticsOverviewController;
 use App\Http\Controllers\CampaignController;
+use App\Http\Controllers\Channels\ChannelController;
+use App\Http\Controllers\Creative\CreativeAssetController;
+use App\Http\Controllers\Creative\OverviewController as CreativeOverviewController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\Offerings\BundleController;
+use App\Http\Controllers\Offerings\OverviewController as OfferingsOverviewController;
+use App\Http\Controllers\Offerings\ProductController;
+use App\Http\Controllers\Offerings\ServiceController;
 use App\Http\Controllers\OrgController;
 use Illuminate\Support\Facades\Route;
 
@@ -47,21 +56,21 @@ Route::prefix('orgs')->name('orgs.')->group(function () {
         ->name('products');
 });
 
-Route::view('/offerings', 'offerings.index')->name('offerings.index');
-Route::view('/analytics', 'analytics.index')->name('analytics.index');
-Route::view('/creative', 'creative.index')->name('creative.index');
-Route::view('/creative-assets', 'creative-assets.index')->name('creative-assets.index');
-Route::view('/channels', 'channels.index')->name('channels.index');
-Route::view('/ai', 'ai.index')->name('ai.index');
+Route::get('/offerings', [OfferingsOverviewController::class, 'index'])->name('offerings.index');
+Route::get('/analytics', [AnalyticsOverviewController::class, 'index'])->name('analytics.index');
+Route::get('/creative', [CreativeOverviewController::class, 'index'])->name('creative.index');
+Route::get('/creative-assets', [CreativeAssetController::class, 'index'])->name('creative-assets.index');
+Route::get('/channels', [ChannelController::class, 'index'])->name('channels.index');
+Route::get('/ai', [AIDashboardController::class, 'index'])->name('ai.index');
 
-Route::view('/kpis', 'analytics.index')->name('analytics.kpis');
-Route::view('/reports', 'analytics.index')->name('analytics.reports');
-Route::view('/metrics', 'analytics.index')->name('analytics.metrics');
-Route::view('/products', 'offerings.index')->name('offerings.products');
-Route::view('/services', 'offerings.index')->name('offerings.services');
-Route::view('/bundles', 'offerings.index')->name('offerings.bundles');
-Route::view('/ads', 'creative.index')->name('creative.ads');
-Route::view('/templates', 'creative.index')->name('creative.templates');
-Route::view('/ai/campaigns', 'ai.index')->name('ai.campaigns');
-Route::view('/ai/recommendations', 'ai.index')->name('ai.recommendations');
-Route::view('/ai/models', 'ai.index')->name('ai.models');
+Route::get('/kpis', [AnalyticsOverviewController::class, 'index'])->name('analytics.kpis');
+Route::get('/reports', [AnalyticsOverviewController::class, 'index'])->name('analytics.reports');
+Route::get('/metrics', [AnalyticsOverviewController::class, 'index'])->name('analytics.metrics');
+Route::get('/products', [ProductController::class, 'index'])->name('offerings.products');
+Route::get('/services', [ServiceController::class, 'index'])->name('offerings.services');
+Route::get('/bundles', [BundleController::class, 'index'])->name('offerings.bundles');
+Route::get('/ads', [CreativeOverviewController::class, 'index'])->name('creative.ads');
+Route::get('/templates', [CreativeOverviewController::class, 'index'])->name('creative.templates');
+Route::get('/ai/campaigns', [AIDashboardController::class, 'index'])->name('ai.campaigns');
+Route::get('/ai/recommendations', [AIDashboardController::class, 'index'])->name('ai.recommendations');
+Route::get('/ai/models', [AIDashboardController::class, 'index'])->name('ai.models');
