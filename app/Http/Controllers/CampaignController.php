@@ -2,16 +2,18 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Models\Campaign;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
 class CampaignController extends Controller
 {
     public function index()
     {
-        $campaigns = DB::table('cmis.campaigns')
-            ->select('campaign_id', 'name', 'status', 'budget', 'start_date', 'end_date', 'updated_at')
+        $campaigns = Campaign::query()
+            ->select(['campaign_id', 'name', 'status', 'budget', 'start_date', 'end_date', 'updated_at'])
             ->orderByDesc('updated_at')
+            ->with('org:org_id,name')
             ->get();
 
         return view('campaigns', compact('campaigns'));
@@ -19,34 +21,57 @@ class CampaignController extends Controller
 
     public function show($campaign_id)
     {
-        $campaign = DB::selectOne("SELECT * FROM cmis.campaigns WHERE campaign_id = ?", [$campaign_id]);
-        $offerings = DB::select("SELECT o.name, o.kind FROM cmis.campaign_offerings co JOIN cmis.offerings o ON o.offering_id = co.offering_id WHERE co.campaign_id = ?", [$campaign_id]);
-        $performance = DB::select("SELECT k.kpi_name, p.value FROM cmis.campaign_performance_dashboard p JOIN cmis.kpis k ON k.kpi_id = p.kpi_id WHERE p.campaign_id = ?", [$campaign_id]);
+        $campaign = Campaign::query()
+            ->with([
+                'org:org_id,name',
+                'offerings:offering_id,name,kind',
+                'performanceMetrics' => fn ($query) => $query
+                    ->orderByDesc('collected_at')
+                    ->limit(20)
+                    ->select('dashboard_id', 'campaign_id', 'metric_name', 'metric_value', 'metric_target', 'variance', 'confidence_level', 'collected_at', 'insights'),
+            ])
+            ->findOrFail($campaign_id);
 
-        return view('campaigns.show', compact('campaign', 'offerings', 'performance'));
+        $performance = $campaign->performanceMetrics->map(fn ($metric) => [
+            'metric_name' => $metric->metric_name,
+            'metric_value' => $metric->metric_value,
+            'metric_target' => $metric->metric_target,
+            'variance' => $metric->variance,
+            'confidence_level' => $metric->confidence_level,
+            'collected_at' => $metric->collected_at,
+            'insights' => $metric->insights,
+        ]);
+
+        return view('campaigns.show', [
+            'campaign' => $campaign,
+            'offerings' => $campaign->offerings,
+            'performance' => $performance,
+        ]);
     }
 
     public function performanceByRange($campaign_id, $range)
     {
-        $interval = match ($range) {
-            'daily' => '1 day',
-            'weekly' => '7 days',
-            'monthly' => '30 days',
-            'yearly' => '365 days',
-            default => '30 days'
+        $campaign = Campaign::findOrFail($campaign_id);
+
+        $cutoff = match ($range) {
+            'daily' => Carbon::now()->subDay(),
+            'weekly' => Carbon::now()->subDays(7),
+            'monthly' => Carbon::now()->subDays(30),
+            'yearly' => Carbon::now()->subDays(365),
+            default => Carbon::now()->subDays(30),
         };
 
-        $query = "
-            SELECT k.kpi_name, AVG(p.value) AS value
-            FROM cmis.campaign_performance_dashboard p
-            JOIN cmis.kpis k ON k.kpi_id = p.kpi_id
-            WHERE p.campaign_id = ?
-              AND p.date >= NOW() - INTERVAL '$interval'
-            GROUP BY k.kpi_name
-        ";
+        $metrics = $campaign->performanceMetrics()
+            ->select('metric_name', DB::raw('AVG(metric_value) as value'))
+            ->when($cutoff, fn ($query) => $query->where('collected_at', '>=', $cutoff))
+            ->groupBy('metric_name')
+            ->orderBy('metric_name')
+            ->get()
+            ->map(fn ($metric) => [
+                'metric_name' => $metric->metric_name,
+                'value' => (float) $metric->value,
+            ]);
 
-        $data = DB::select($query, [$campaign_id]);
-
-        return response()->json($data);
+        return response()->json($metrics);
     }
 }

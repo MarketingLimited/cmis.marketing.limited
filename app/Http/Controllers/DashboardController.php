@@ -2,9 +2,18 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Support\Facades\DB;
+use App\Models\AiGeneratedCampaign;
+use App\Models\AiModel;
+use App\Models\AiRecommendation;
+use App\Models\Campaign;
+use App\Models\CreativeAsset;
+use App\Models\Offering;
+use App\Models\Org;
+use App\Models\PerformanceMetric;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Class DashboardController
@@ -14,91 +23,14 @@ class DashboardController extends Controller
 {
     public function index()
     {
-        $stats = [
-            'orgs' => DB::table('cmis.orgs')->count(),
-            'campaigns' => DB::table('cmis.campaigns')->count(),
-            'offerings' => DB::table('cmis.offerings')->count(),
-            'kpis' => DB::table('cmis.kpis')->count(),
-            'creative_assets' => DB::table('cmis.creative_assets')->count(),
-        ];
+        $data = $this->resolveDashboardMetrics();
 
-        $campaignStatus = DB::table('cmis.campaigns')
-            ->select('status', DB::raw('COUNT(*) as count'))
-            ->groupBy('status')
-            ->pluck('count', 'status');
-
-        $campaignsByOrg = DB::table('cmis.campaigns')
-            ->join('cmis.orgs', 'cmis.campaigns.org_id', '=', 'cmis.orgs.org_id')
-            ->select('cmis.orgs.name as org_name', DB::raw('COUNT(cmis.campaigns.campaign_id) as total'))
-            ->groupBy('cmis.orgs.name')
-            ->get();
-
-        return view('dashboard', [
-            'stats' => $stats,
-            'campaignStatus' => $campaignStatus,
-            'campaignsByOrg' => $campaignsByOrg
-        ]);
+        return view('dashboard', $data);
     }
 
     public function data()
     {
-        // البيانات العامة
-        $stats = [
-            'orgs' => DB::table('cmis.orgs')->count(),
-            'campaigns' => DB::table('cmis.campaigns')->count(),
-            'offerings' => DB::table('cmis.offerings')->count(),
-            'kpis' => DB::table('cmis.kpis')->count(),
-            'creative_assets' => DB::table('cmis.creative_assets')->count(),
-        ];
-
-        // الحملات حسب الحالة والمؤسسة
-        $campaignStatus = DB::table('cmis.campaigns')
-            ->select('status', DB::raw('COUNT(*) as count'))
-            ->groupBy('status')
-            ->pluck('count', 'status');
-
-        $campaignsByOrg = DB::table('cmis.campaigns')
-            ->join('cmis.orgs', 'cmis.campaigns.org_id', '=', 'cmis.orgs.org_id')
-            ->select('cmis.orgs.name as org_name', DB::raw('COUNT(cmis.campaigns.campaign_id) as total'))
-            ->groupBy('cmis.orgs.name')
-            ->get();
-
-        // مؤشرات العروض (Offerings)
-        $offerings = [
-            'products' => DB::table('cmis.offerings')->where('type', 'product')->count(),
-            'services' => DB::table('cmis.offerings')->where('type', 'service')->count(),
-            'bundles' => DB::table('cmis.offerings')->where('type', 'bundle')->count(),
-        ];
-
-        // مؤشرات التحليلات (Analytics)
-        $analytics = [
-            'kpis' => DB::table('cmis.kpis')->count(),
-            'metrics' => DB::table('cmis.performance_metrics')->count(),
-        ];
-
-        // مؤشرات الإبداع (Creative)
-        $creative = [
-            'assets' => DB::table('cmis.creative_assets')->count(),
-            'images' => DB::table('cmis.creative_assets')->where('type', 'image')->count(),
-            'videos' => DB::table('cmis.creative_assets')->where('type', 'video')->count(),
-        ];
-
-        // مؤشرات الذكاء الاصطناعي (AI)
-        $ai = [
-            'ai_campaigns' => DB::table('cmis.campaigns')->where('is_ai_generated', true)->count(),
-            'recommendations' => DB::table('cmis.ai_recommendations')->count() ?? 0,
-            'models' => DB::table('cmis.ai_models')->count() ?? 0,
-        ];
-
-        return response()->json([
-            'stats' => $stats,
-            'campaignStatus' => $campaignStatus,
-            'campaignsByOrg' => $campaignsByOrg,
-            'offerings' => $offerings,
-            'analytics' => $analytics,
-            'creative' => $creative,
-            'ai' => $ai,
-        ]);
+        return response()->json($this->resolveDashboardMetrics());
     }
 
     public function latest()
@@ -111,5 +43,59 @@ class DashboardController extends Controller
         ];
 
         return response()->json($notifications);
+    }
+
+    protected function resolveDashboardMetrics(): array
+    {
+        return Cache::remember('dashboard.metrics', now()->addMinutes(5), function () {
+            $stats = [
+                'orgs' => Org::count(),
+                'campaigns' => Campaign::count(),
+                'offerings' => Offering::count(),
+                'kpis' => DB::table('cmis.kpis')->count(),
+                'creative_assets' => CreativeAsset::count(),
+            ];
+
+            $campaignStatus = Campaign::query()
+                ->select('status', DB::raw('COUNT(*) as count'))
+                ->groupBy('status')
+                ->pluck('count', 'status');
+
+            $campaignsByOrg = Campaign::query()
+                ->join('cmis.orgs as o', 'cmis.campaigns.org_id', '=', 'o.org_id')
+                ->select('o.name as org_name', DB::raw('COUNT(cmis.campaigns.campaign_id) as total'))
+                ->groupBy('o.name')
+                ->orderBy('o.name')
+                ->get();
+
+            $offerings = [
+                'products' => Offering::where('kind', 'product')->count(),
+                'services' => Offering::where('kind', 'service')->count(),
+                'bundles' => Offering::where('kind', 'bundle')->count(),
+            ];
+
+            $analytics = [
+                'kpis' => DB::table('cmis.kpis')->count(),
+                'metrics' => PerformanceMetric::count(),
+            ];
+
+            $creative = [
+                'assets' => CreativeAsset::count(),
+                'images' => CreativeAsset::whereNotNull('used_fields')
+                    ->whereJsonContains('used_fields->asset_type', 'image')
+                    ->count(),
+                'videos' => CreativeAsset::whereNotNull('used_fields')
+                    ->whereJsonContains('used_fields->asset_type', 'video')
+                    ->count(),
+            ];
+
+            $ai = [
+                'ai_campaigns' => AiGeneratedCampaign::count(),
+                'recommendations' => AiRecommendation::count(),
+                'models' => AiModel::count(),
+            ];
+
+            return compact('stats', 'campaignStatus', 'campaignsByOrg', 'offerings', 'analytics', 'creative', 'ai');
+        });
     }
 }
