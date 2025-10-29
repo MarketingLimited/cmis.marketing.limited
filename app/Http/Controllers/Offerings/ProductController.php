@@ -3,19 +3,22 @@
 namespace App\Http\Controllers\Offerings;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
+use App\Models\Offering;
 
-/**
- * Class ProductController
- * مسؤول عن إدارة المنتجات في النظام (إضافة، تعديل، حذف، عرض التفاصيل)
- */
 class ProductController extends Controller
 {
-    /**
-     * عرض قائمة المنتجات.
-     */
     public function index()
     {
-        return view('offerings.products.index');
+        $offerings = Offering::query()
+            ->with('org:org_id,name')
+            ->where('kind', 'product')
+            ->orderBy('name')
+            ->get();
+
+        return view('offerings.list', [
+            'title' => '📦 المنتجات',
+            'description' => 'جميع المنتجات المسجلة ضمن المؤسسات المختلفة داخل منصة CMIS.',
+            'offerings' => $offerings,
+        ]);
     }
 }

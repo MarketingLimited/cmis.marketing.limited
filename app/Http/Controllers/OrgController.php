@@ -2,16 +2,21 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Campaign;
+use App\Models\CampaignPerformanceMetric;
+use App\Models\Org;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
-use PDF;
+use Illuminate\Support\Str;
 use Maatwebsite\Excel\Facades\Excel;
+use PDF;
 
 class OrgController extends Controller
 {
     public function index()
     {
-        $orgs = DB::table('cmis.orgs')
+        $orgs = Org::query()
             ->select('org_id', 'name', 'default_locale', 'currency', 'created_at')
             ->orderBy('name')
             ->get();
@@ -30,8 +35,8 @@ class OrgController extends Controller
     {
         $org = $this->resolveOrg($id);
 
-        $campaigns = DB::table('cmis.campaigns')
-            ->where('org_id', $id)
+        $campaigns = $org->campaigns()
+            ->select('campaign_id', 'name', 'objective', 'status', 'start_date', 'end_date', 'budget', 'currency')
             ->orderByDesc('created_at')
             ->get();
 
@@ -46,10 +51,10 @@ class OrgController extends Controller
     {
         $org = $this->resolveOrg($id);
 
-        $services = DB::table('cmis.offerings')
-            ->select('name', DB::raw("type as kind"))
-            ->where('org_id', $id)
-            ->where('type', 'service')
+        $services = $org->offerings()
+            ->select('offering_id', 'name', 'kind')
+            ->where('kind', 'service')
+            ->orderBy('name')
             ->get();
 
         return view('orgs.services', [
@@ -62,10 +67,10 @@ class OrgController extends Controller
     {
         $org = $this->resolveOrg($id);
 
-        $products = DB::table('cmis.offerings')
-            ->select('name', DB::raw("type as kind"))
-            ->where('org_id', $id)
-            ->where('type', 'product')
+        $products = $org->offerings()
+            ->select('offering_id', 'name', 'kind')
+            ->where('kind', 'product')
+            ->orderBy('name')
             ->get();
 
         return view('orgs.products', [
@@ -74,87 +79,104 @@ class OrgController extends Controller
         ]);
     }
 
-    // ... الدوال السابقة تبقى كما هي ...
-
     public function compareCampaigns(Request $request, $id)
     {
-        $campaignIds = $request->input('campaign_ids', []);
-        if (count($campaignIds) < 2) {
+        $org = $this->resolveOrg($id);
+
+        $campaignIds = collect($request->input('campaign_ids', []))
+            ->filter(fn ($value) => Str::isUuid($value))
+            ->values();
+
+        if ($campaignIds->count() < 2) {
             return redirect()->back()->with('error', 'يجب اختيار حملتين على الأقل للمقارنة.');
         }
 
-        $campaigns = DB::select('SELECT campaign_id, name FROM cmis.campaigns WHERE campaign_id IN (' . implode(',', array_fill(0, count($campaignIds), '?')) . ')', $campaignIds);
+        $campaigns = Campaign::query()
+            ->where('org_id', $org->org_id)
+            ->whereIn('campaign_id', $campaignIds)
+            ->select('campaign_id', 'name')
+            ->orderBy('name')
+            ->get();
 
-        $data = DB::select('SELECT p.campaign_id, k.kpi_name, AVG(p.value) AS value
-                            FROM cmis.campaign_performance_dashboard p
-                            JOIN cmis.kpis k ON k.kpi_id = p.kpi_id
-                            WHERE p.campaign_id IN (' . implode(',', array_fill(0, count($campaignIds), '?')) . ')
-                            GROUP BY p.campaign_id, k.kpi_name', $campaignIds);
-
-        $kpiLabels = collect($data)->pluck('kpi_name')->unique()->values();
-        $datasets = [];
-
-        foreach ($campaigns as $c) {
-            $values = [];
-            foreach ($kpiLabels as $kpi) {
-                $metric = collect($data)->first(fn($d) => $d->campaign_id == $c->campaign_id && $d->kpi_name == $kpi);
-                $values[] = $metric->value ?? 0;
-            }
-            $datasets[] = [
-                'label' => $c->name,
-                'data' => $values,
-                'borderWidth' => 1,
-                'backgroundColor' => sprintf('rgba(%d,%d,%d,0.5)', rand(0,255), rand(0,255), rand(0,255)),
-                'borderColor' => 'rgba(0,0,0,0.7)'
-            ];
+        if ($campaigns->isEmpty()) {
+            return redirect()->back()->with('error', 'لم يتم العثور على الحملات المحددة.');
         }
 
+        $metrics = CampaignPerformanceMetric::query()
+            ->whereIn('campaign_id', $campaigns->pluck('campaign_id'))
+            ->select('campaign_id', 'metric_name', DB::raw('AVG(metric_value) as value'))
+            ->groupBy('campaign_id', 'metric_name')
+            ->get();
+
+        $kpiLabels = $metrics->pluck('metric_name')->unique()->values();
+
+        $datasets = $campaigns->map(function ($campaign) use ($metrics, $kpiLabels) {
+            $values = $kpiLabels->map(fn ($name) => (float) optional(
+                $metrics->first(fn ($metric) => $metric->campaign_id === $campaign->campaign_id && $metric->metric_name === $name)
+            )->value)->all();
+
+            return [
+                'label' => $campaign->name,
+                'data' => $values,
+                'borderWidth' => 1,
+                'backgroundColor' => sprintf('rgba(%d,%d,%d,0.5)', rand(0, 255), rand(0, 255), rand(0, 255)),
+                'borderColor' => 'rgba(0,0,0,0.7)',
+            ];
+        });
+
         return view('orgs.campaigns_compare', [
-            'org_id' => $id,
+            'org_id' => $org->org_id,
             'campaigns' => $campaigns,
             'kpiLabels' => $kpiLabels,
-            'datasets' => $datasets
+            'datasets' => $datasets,
         ]);
     }
 
     public function exportComparePdf(Request $request, $id)
     {
-        $campaigns = json_decode($request->input('campaigns'));
-        $kpiLabels = json_decode($request->input('kpiLabels'));
-        $datasets = json_decode($request->input('datasets'));
+        $org = $this->resolveOrg($id);
 
-        $pdf = PDF::loadView('exports.compare_pdf', compact('campaigns', 'kpiLabels', 'datasets'));
+        $campaigns = collect(json_decode($request->input('campaigns'), true));
+        $kpiLabels = collect(json_decode($request->input('kpiLabels'), true));
+        $datasets = collect(json_decode($request->input('datasets'), true));
+
+        $pdf = PDF::loadView('exports.compare_pdf', compact('campaigns', 'kpiLabels', 'datasets', 'org'));
         return $pdf->download('campaign_comparison.pdf');
     }
 
     public function exportCompareExcel(Request $request, $id)
     {
-        $campaigns = json_decode($request->input('campaigns'));
-        $kpiLabels = json_decode($request->input('kpiLabels'));
-        $datasets = json_decode($request->input('datasets'));
+        $org = $this->resolveOrg($id);
 
-        return Excel::download(new class($campaigns, $kpiLabels, $datasets) implements \Maatwebsite\Excel\Concerns\FromArray {
-            private $campaigns, $kpiLabels, $datasets;
-            public function __construct($c, $k, $d){ $this->campaigns=$c; $this->kpiLabels=$k; $this->datasets=$d; }
-            public function array(): array {
+        $campaigns = collect(json_decode($request->input('campaigns'), true));
+        $kpiLabels = collect(json_decode($request->input('kpiLabels'), true));
+        $datasets = collect(json_decode($request->input('datasets'), true));
+
+        return Excel::download(new class($campaigns, $kpiLabels, $datasets, $org) implements \Maatwebsite\Excel\Concerns\FromArray {
+            public function __construct(private Collection $campaigns, private Collection $kpiLabels, private Collection $datasets, private Org $org)
+            {
+            }
+
+            public function array(): array
+            {
                 $rows = [];
-                $rows[] = array_merge(['KPI'], array_map(fn($c)=>$c->label, $this->datasets));
-                foreach($this->kpiLabels as $i => $kpi){
-                    $row = [$kpi];
-                    foreach($this->datasets as $d){ $row[] = $d->data[$i] ?? 0; }
+                $rows[] = array_merge(['KPI'], $this->datasets->pluck('label')->all());
+
+                foreach ($this->kpiLabels as $index => $label) {
+                    $row = [$label];
+                    foreach ($this->datasets as $dataset) {
+                        $row[] = $dataset['data'][$index] ?? 0;
+                    }
                     $rows[] = $row;
                 }
+
                 return $rows;
             }
         }, 'campaign_comparison.xlsx');
     }
 
-    protected function resolveOrg($id)
+    protected function resolveOrg($id): Org
     {
-        $org = DB::table('cmis.orgs')->where('org_id', $id)->first();
-
-        abort_if(!$org, 404, 'المؤسسة غير موجودة');
-
-        return $org;
+        return Org::findOrFail($id);
     }
 }

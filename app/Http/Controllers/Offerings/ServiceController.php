@@ -3,19 +3,22 @@
 namespace App\Http\Controllers\Offerings;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
+use App\Models\Offering;
 
-/**
- * Class ServiceController
- * مسؤول عن إدارة الخدمات داخل النظام (إضافة، تعديل، حذف، عرض التفاصيل)
- */
 class ServiceController extends Controller
 {
-    /**
-     * عرض قائمة الخدمات.
-     */
     public function index()
     {
-        return view('offerings.services.index');
+        $offerings = Offering::query()
+            ->with('org:org_id,name')
+            ->where('kind', 'service')
+            ->orderBy('name')
+            ->get();
+
+        return view('offerings.list', [
+            'title' => '🧰 الخدمات',
+            'description' => 'الخدمات داخل النظام مع تفاصيل المؤسسات المالكة.',
+            'offerings' => $offerings,
+        ]);
     }
 }
