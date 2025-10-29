@@ -1,67 +1,92 @@
 @extends('layouts.app')
 
 @section('content')
-<h2>🖼️ إدارة الأصول الإبداعية (Creative Assets)</h2>
-<p>هنا يمكنك استعراض جميع الأصول الإبداعية، البحث عنها، وإدارتها مباشرة.</p>
+<div class="space-y-6">
+    <div>
+        <h2 class="text-3xl font-bold text-gray-800">🖼️ إدارة الأصول الإبداعية (Creative Assets)</h2>
+        <p class="text-gray-600">استعرض آخر الأصول الإبداعية وتعرّف على حالتها ومصدرها.</p>
+    </div>
 
-<!-- الشريط الفرعي -->
-<div style="margin:15px 0; padding:10px; background:#f9731610; border:1px solid #f97316; border-radius:8px;">
-  <a href="/creative" style="margin:0 10px; color:#f97316; font-weight:bold; text-decoration:none;">🎨 العودة للوحة الإبداع</a>
-  <a href="/creative-assets/create" style="margin:0 10px; color:#f97316; font-weight:bold; text-decoration:none;">➕ إضافة أصل جديد</a>
+    <div class="flex flex-wrap gap-4">
+        <a href="/creative" class="inline-flex items-center gap-2 bg-orange-100 text-orange-700 px-4 py-2 rounded-lg font-semibold hover:bg-orange-200 transition">🎨 العودة للوحة الإبداع</a>
+        <a href="/creative-assets/create" class="inline-flex items-center gap-2 bg-orange-100 text-orange-700 px-4 py-2 rounded-lg font-semibold hover:bg-orange-200 transition">➕ إضافة أصل جديد</a>
+    </div>
+
+    <div class="bg-white shadow rounded-2xl p-6">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+                <h3 class="text-xl font-semibold text-gray-800">بحث فوري في الأصول</h3>
+                <p class="text-gray-500 text-sm">ابحث بالوسم أو حالة الاعتماد أو نوع الأصل.</p>
+            </div>
+            <input type="text" id="searchBox" placeholder="🔍 ابحث عن أصل بالاسم أو النوع..." class="w-full sm:w-80 border border-orange-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-orange-400">
+        </div>
+        <div id="searchResults" class="mt-6 divide-y divide-gray-100"></div>
+    </div>
+
+    <div class="bg-white shadow rounded-2xl p-6">
+        <h3 class="text-xl font-semibold text-gray-800 mb-4">قائمة الأصول</h3>
+        <div class="overflow-x-auto">
+            <table class="min-w-full text-sm divide-y divide-gray-200">
+                <thead class="bg-gray-50 text-gray-700">
+                    <tr>
+                        <th class="px-4 py-3 text-right">الوسم</th>
+                        <th class="px-4 py-3 text-right">الحالة</th>
+                        <th class="px-4 py-3 text-right">الحملة</th>
+                        <th class="px-4 py-3 text-right">المؤسسة</th>
+                        <th class="px-4 py-3 text-right">تاريخ الإنشاء</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    @forelse ($assets as $asset)
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-4 py-2 font-medium text-orange-700">{{ $asset->variation_tag ?? 'أصل بدون وسم' }}</td>
+                            <td class="px-4 py-2">{{ $asset->status ?? 'غير محدد' }}</td>
+                            <td class="px-4 py-2">{{ optional($asset->campaign)->name ?? 'غير مرتبط' }}</td>
+                            <td class="px-4 py-2">{{ optional($asset->org)->name ?? 'غير محدد' }}</td>
+                            <td class="px-4 py-2">{{ optional($asset->created_at)->format('Y-m-d H:i') ?? '—' }}</td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="5" class="px-4 py-4 text-center text-gray-500">لا توجد أصول مسجلة.</td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    </div>
 </div>
-
-<hr>
-
-<!-- حقل البحث الفوري -->
-<div style="margin:15px 0;">
-  <input type="text" id="searchBox" placeholder="🔍 ابحث عن أصل بالاسم أو النوع..." style="width:100%; max-width:400px; padding:10px; border:1px solid #f97316; border-radius:6px;">
-</div>
-
-<div id="searchResults" style="margin-top:20px;"></div>
 
 <script>
-let allAssets = [];
+    const searchableAssets = @json($searchableAssets);
+    const resultsBox = document.getElementById('searchResults');
 
-async function loadAssets() {
-  try {
-    // في المرحلة الحالية نستخدم بيانات تجريبية (سيتم استبدالها لاحقاً ببيانات فعلية من قاعدة البيانات)
-    allAssets = [
-      { name: 'تصميم شعار CMIS', type: 'صورة', date: '2025-10-01' },
-      { name: 'فيديو إعلان حملة الشتاء', type: 'فيديو', date: '2025-09-15' },
-      { name: 'قالب منشور إنستغرام', type: 'قالب', date: '2025-10-10' },
-      { name: 'مخطط عرض تقديمي', type: 'قالب', date: '2025-09-28' },
-      { name: 'صورة ترويجية - منتج جديد', type: 'صورة', date: '2025-10-20' }
-    ];
+    function renderResults(items) {
+        resultsBox.innerHTML = '';
 
-    renderResults(allAssets);
-  } catch (err) {
-    console.error('فشل تحميل بيانات الأصول', err);
-  }
-}
+        if (!items.length) {
+            resultsBox.innerHTML = '<p class="py-4 text-gray-500">لم يتم العثور على نتائج.</p>';
+            return;
+        }
 
-function renderResults(results) {
-  const box = document.getElementById('searchResults');
-  box.innerHTML = '';
+        items.forEach(item => {
+            const row = document.createElement('div');
+            row.className = 'py-3 flex justify-between items-center';
+            const typeLabel = item.type ? `<span class="text-xs text-orange-500 mr-2">${item.type}</span>` : '';
+            row.innerHTML = `<span class="font-medium text-gray-800">${item.name}</span><span class="text-sm text-orange-600">${item.status}${typeLabel ? ' — ' + typeLabel : ''}</span>`;
+            resultsBox.appendChild(row);
+        });
+    }
 
-  if (results.length === 0) {
-    box.innerHTML = '<p style="color:#555;">لم يتم العثور على نتائج.</p>';
-    return;
-  }
+    renderResults(searchableAssets.slice(0, 15));
 
-  results.forEach(item => {
-    const div = document.createElement('div');
-    div.style.cssText = 'padding:12px; border-bottom:1px solid #ddd; background:#fff; border-radius:6px; margin-bottom:6px;';
-    div.innerHTML = `<strong>${item.name}</strong> <span style='color:#f97316;'>(${item.type})</span><br><small style='color:#777;'>${item.date}</small>`;
-    box.appendChild(div);
-  });
-}
-
-document.getElementById('searchBox').addEventListener('input', (e) => {
-  const query = e.target.value.toLowerCase();
-  const filtered = allAssets.filter(o => o.name.toLowerCase().includes(query) || o.type.toLowerCase().includes(query));
-  renderResults(filtered);
-});
-
-loadAssets();
+    document.getElementById('searchBox').addEventListener('input', (event) => {
+        const query = event.target.value.trim().toLowerCase();
+        const filtered = searchableAssets.filter(item =>
+            item.name.toLowerCase().includes(query) ||
+            item.status.toLowerCase().includes(query) ||
+            (item.type ?? '').toLowerCase().includes(query)
+        );
+        renderResults(filtered.slice(0, 30));
+    });
 </script>
 @endsection

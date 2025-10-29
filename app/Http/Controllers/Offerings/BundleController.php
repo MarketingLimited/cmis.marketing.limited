@@ -3,19 +3,22 @@
 namespace App\Http\Controllers\Offerings;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
+use App\Models\Offering;
 
-/**
- * Class BundleController
- * يدير العروض المجمعة (Bundles) التي تحتوي على منتجات وخدمات معًا.
- */
 class BundleController extends Controller
 {
-    /**
-     * عرض قائمة العروض المجمعة.
-     */
     public function index()
     {
-        return view('offerings.bundles.index');
+        $offerings = Offering::query()
+            ->with('org:org_id,name')
+            ->where('kind', 'bundle')
+            ->orderBy('name')
+            ->get();
+
+        return view('offerings.list', [
+            'title' => '🎁 الباقات',
+            'description' => 'الباقات التي تجمع بين المنتجات والخدمات لتسهيل عرض القيمة.',
+            'offerings' => $offerings,
+        ]);
     }
 }

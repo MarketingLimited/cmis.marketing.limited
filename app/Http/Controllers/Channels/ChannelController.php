@@ -3,19 +3,29 @@
 namespace App\Http\Controllers\Channels;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
+use App\Models\Channel;
+use Illuminate\Support\Facades\Cache;
 
-/**
- * Class ChannelController
- * مسؤول عن إدارة القنوات والمنصات التسويقية المختلفة داخل النظام.
- */
 class ChannelController extends Controller
 {
-    /**
-     * عرض قائمة القنوات والمنصات.
-     */
     public function index()
     {
-        return view('channels.index');
+        $channels = Cache::remember('channels.index', now()->addMinutes(5), function () {
+            return Channel::query()
+                ->with('formats:format_id,channel_id,code,ratio,length_hint')
+                ->orderBy('name')
+                ->get(['channel_id', 'name', 'code', 'constraints']);
+        });
+
+        $searchable = $channels->map(fn ($channel) => [
+            'name' => $channel->name,
+            'code' => $channel->code,
+            'status' => $channel->constraints['status'] ?? 'غير محدد',
+        ]);
+
+        return view('channels.index', [
+            'channels' => $channels,
+            'searchableChannels' => $searchable,
+        ]);
     }
 }
