@@ -44,6 +44,30 @@ We would like to extend our thanks to the following sponsors for funding Laravel
 - **[Redberry](https://redberry.international/laravel-development)**
 - **[Active Logic](https://activelogic.com)**
 
+## Git automation with environment variables
+
+This project includes a helper script that allows command-line tools (including AI agents) to interact with GitHub using credentials stored in the local `.env` file. Create or update `.env` with the following keys:
+
+```env
+GIT_USERNAME=your-github-username
+GIT_EMAIL=your-email@example.com
+GIT_TOKEN=github-personal-access-token
+GIT_REPOSITORY=https://github.com/MarketingLimited/cmis.marketing.limited.git
+```
+
+> **Note:** Keep `.env` out of version control. The file is already ignored via `.gitignore`.
+
+Run Git commands through the helper script so the credentials are automatically configured and the remote URL is authenticated:
+
+```bash
+scripts/git-ai.sh status        # default command when none is provided
+scripts/git-ai.sh pull          # pulls latest changes
+scripts/git-ai.sh commit -am "Your message"
+scripts/git-ai.sh push          # pushes using the configured token
+```
+
+Use `scripts/git-ai.sh --help` for additional details, or pass `--env-file path/to/file` to load credentials from a different environment file. The script configures `user.name`, `user.email`, and the `origin` remote before executing the requested Git command.
+
 ## Contributing
 
 Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
