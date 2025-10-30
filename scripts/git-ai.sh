@@ -46,7 +46,7 @@ Examples:
 USAGE
 }
 
-ENV_FILE=".env"
+ENV_FILE="/httpdocs/.env"
 COMMAND=""
 ARGS=()
 
