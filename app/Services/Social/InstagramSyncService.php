@@ -70,6 +70,38 @@ class InstagramSyncService
     }
 
     /**
+     * Fetch raw profile data for a specific integration.
+     */
+    public function getAccountProfileData(Integration $integration): array
+    {
+        return $this->fetchAccountProfile($integration);
+    }
+
+    /**
+     * Fetch raw account insights for a specific integration.
+     */
+    public function getAccountInsightsData(Integration $integration): array
+    {
+        return $this->fetchAccountInsights($integration);
+    }
+
+    /**
+     * Fetch raw media data for a specific integration.
+     */
+    public function getAccountMediaData(Integration $integration): array
+    {
+        return $this->fetchAccountMedia($integration);
+    }
+
+    /**
+     * Fetch raw insight data for a given media item.
+     */
+    public function getMediaInsightsData(Integration $integration, string $mediaId): array
+    {
+        return $this->fetchMediaInsights($integration, $mediaId);
+    }
+
+    /**
      * Fetch Instagram account profile information.
      */
     protected function fetchAccountProfile(Integration $integration): array
