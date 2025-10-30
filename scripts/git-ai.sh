@@ -1,216 +1,98 @@
-#!/usr/bin/env bash
-set -euo pipefail
+#!/bin/bash
+set -x
 
-show_help() {
-  cat <<'USAGE'
-Usage: scripts/git-ai.sh [--env-file PATH] <command> [args...]
-
-Loads Git credentials from an env file (default: .env), configures Git, and executes
-common Git workflows. If an unknown command is provided, the arguments are forwarded
-directly to the `git` CLI.
-
-Required environment variables:
-  GIT_USERNAME    Git user.name to configure
-  GIT_EMAIL       Git user.email to configure
-  GIT_TOKEN       Personal access token used for HTTPS authentication
-  GIT_REPOSITORY  HTTPS repository URL, e.g. https://github.com/org/repo.git
-
-Supported commands:
-  status                     Show the working tree status
-  pull [args...]             Pull latest changes
-  fetch [args...]            Fetch from origin
-  add <paths...>             Stage files
-  commit [args...]           Commit staged changes (pass -m "msg", etc.)
-  push [args...]             Push to origin (defaults to `origin HEAD`)
-  checkout <branch>          Checkout or create branches
-  branch [args...]           Manage branches
-  init [args...]             Initialize a new repository in the current directory
-  merge <branch>             Merge branch into current branch
-  rebase [args...]           Rebase current branch
-  log [args...]              Show commit log
-  diff [args...]             Show diffs
-  tag [args...]              Manage tags
-  reset [args...]            Reset current HEAD
-  stash [args...]            Manage stashes
-  clone [dir]                Clone the configured repository (can be run outside a repo)
-  remote [args...]           Manage remotes (defaults to configured origin)
-  help                       Show this help message
-
-Examples:
-  scripts/git-ai.sh status
-  scripts/git-ai.sh add .
-  scripts/git-ai.sh commit -m "Update"
-  scripts/git-ai.sh push --force-with-lease
-  scripts/git-ai.sh checkout feature/new-feature
-
-USAGE
-}
+# =========================================
+# git-ai.sh — CMIS Git Orchestrator
+# -----------------------------------------
+# يدير عمليات Git والتحديثات التشغيلية في بيئة Plesk.
+# =========================================
 
 ENV_FILE="/httpdocs/.env"
-COMMAND=""
-ARGS=()
-
-while [[ $# -gt 0 ]]; do
-  case "$1" in
-    --env-file)
-      if [[ $# -lt 2 ]]; then
-        echo "--env-file requires a path" >&2
-        exit 1
-      fi
-      ENV_FILE="$2"
-      shift 2
-      ;;
-    -h|--help|help)
-      show_help
-      exit 0
-      ;;
-    *)
-      COMMAND="$1"
-      ARGS=("${@:2}")
-      break
-      ;;
-    esac
-  done
-
-if [[ -z "$COMMAND" ]]; then
-  COMMAND="status"
-fi
-
-if [[ ! -f "$ENV_FILE" ]]; then
-  echo "Environment file '$ENV_FILE' not found" >&2
+if [ ! -f "$ENV_FILE" ]; then
+  echo "❌ Environment file not found at $ENV_FILE"
   exit 1
 fi
 
-# shellcheck source=/dev/null
-set -o allexport
+# تحميل متغيرات البيئة
+set -a
 source "$ENV_FILE"
-set +o allexport
+set +a
 
-missing_vars=()
-for var in GIT_USERNAME GIT_EMAIL GIT_TOKEN GIT_REPOSITORY; do
-  if [[ -z "${!var:-}" ]]; then
-    missing_vars+=("$var")
-  fi
-done
+COMMAND="$1"
 
-if (( ${#missing_vars[@]} > 0 )); then
-  printf 'Missing required variables: %s\n' "${missing_vars[*]}" >&2
+# تحديد دالة الطباعة الملونة
+function info()  { echo -e "\033[1;34m[INFO]\033[0m $1"; }
+function ok()    { echo -e "\033[1;32m[OK]\033[0m $1"; }
+function warn()  { echo -e "\033[1;33m[WARN]\033[0m $1"; }
+function error() { echo -e "\033[1;31m[ERROR]\033[0m $1"; }
+
+# التحقق من وجود Git
+if ! command -v git &> /dev/null; then
+  error "Git not installed."
   exit 1
 fi
 
-auth_repo="$GIT_REPOSITORY"
-if [[ "$auth_repo" =~ ^https:// ]]; then
-  without_scheme="${auth_repo#https://}"
-  auth_repo="https://${GIT_USERNAME}:${GIT_TOKEN}@${without_scheme}"
-fi
-
-configure_git() {
-  if ! git rev-parse --git-dir > /dev/null 2>&1; then
-    echo "This command must be run inside a Git repository" >&2
-    exit 1
-  fi
-
-  git config user.name "$GIT_USERNAME"
-  git config user.email "$GIT_EMAIL"
-
-  if git remote get-url origin > /dev/null 2>&1; then
-    git remote set-url origin "$auth_repo"
-  else
-    git remote add origin "$auth_repo"
-  fi
-}
-
-clone_repo() {
-  local target_dir="${ARGS[0]:-}"
-  if [[ -z "$target_dir" ]]; then
-    git clone "$auth_repo"
-  else
-    git clone "$auth_repo" "$target_dir"
-  fi
-}
-
-init_repo() {
-  git init "${ARGS[@]}"
-  configure_git
-}
-
-run_git_command() {
-  configure_git
-  git "$@"
-}
+# الانتقال إلى مجلد المشروع
+cd /httpdocs || exit 1
 
 case "$COMMAND" in
-  clone)
-    clone_repo
-    ;;
-  init)
-    init_repo
-    ;;
-  status)
-    run_git_command status "${ARGS[@]}"
-    ;;
   pull)
-    run_git_command pull "${ARGS[@]}"
+    info "Pulling latest changes from GitHub..."
+    git pull origin main && ok "Repository updated successfully."
     ;;
-  fetch)
-    run_git_command fetch "${ARGS[@]}"
-    ;;
-  add)
-    if (( ${#ARGS[@]} == 0 )); then
-      echo "Usage: scripts/git-ai.sh add <paths...>" >&2
-      exit 1
-    fi
-    run_git_command add "${ARGS[@]}"
-    ;;
-  commit)
-    run_git_command commit "${ARGS[@]}"
-    ;;
+
   push)
-    if (( ${#ARGS[@]} == 0 )); then
-      run_git_command push origin HEAD
-    else
-      run_git_command push "${ARGS[@]}"
-    fi
+    info "Pushing local changes to GitHub..."
+    git add . && git commit -m "Auto-sync from server" && git push origin main && ok "Changes pushed successfully."
     ;;
-  checkout)
-    if (( ${#ARGS[@]} == 0 )); then
-      echo "Usage: scripts/git-ai.sh checkout <branch>" >&2
-      exit 1
-    fi
-    run_git_command checkout "${ARGS[@]}"
+
+  status)
+    git status
     ;;
-  branch)
-    run_git_command branch "${ARGS[@]}"
+
+  deploy)
+    info "Deploying latest code..."
+    git pull origin main && ok "Code updated."
+    info "Running Laravel optimizations..."
+    /opt/plesk/php/8.3/bin/php artisan migrate --force
+    /opt/plesk/php/8.3/bin/php artisan cache:clear
+    /opt/plesk/php/8.3/bin/php artisan config:cache
+    ok "Deployment completed successfully."
     ;;
-  merge)
-    if (( ${#ARGS[@]} == 0 )); then
-      echo "Usage: scripts/git-ai.sh merge <branch>" >&2
-      exit 1
-    fi
-    run_git_command merge "${ARGS[@]}"
+
+  sync)
+    info "Synchronizing changes with GitHub..."
+    git add . && git commit -m "Sync from production server" && git pull origin main --rebase && git push origin main
+    ok "Sync completed successfully."
     ;;
-  rebase)
-    run_git_command rebase "${ARGS[@]}"
+
+  rollback)
+    info "Rolling back to previous commit..."
+    git reset --hard HEAD~1 && git pull origin main
+    ok "Rollback completed."
     ;;
-  log)
-    run_git_command log "${ARGS[@]}"
+
+  backup)
+    info "Creating backup of /httpdocs directory..."
+    BACKUP_DIR=$(/bin/date +"/httpdocs/backups/%Y-%m-%d_%H-%M-%S")
+    mkdir -p "$BACKUP_DIR"
+    TMP_FILE="/tmp/backup_httpdocs_$(/bin/date +%Y-%m-%d_%H-%M-%S).tar.gz"
+    tar --exclude=/httpdocs/backups -czf "$TMP_FILE" -C / httpdocs
+    mv "$TMP_FILE" "$BACKUP_DIR/backup_httpdocs.tar.gz"
+    ok "Backup created at $BACKUP_DIR/backup_httpdocs.tar.gz"
+    find /httpdocs/backups -maxdepth 1 -type d -mtime +7 -exec rm -rf {} \; 2>/dev/null
+    info "Old backups (older than 7 days) have been cleaned up."
     ;;
-  diff)
-    run_git_command diff "${ARGS[@]}"
-    ;;
-  tag)
-    run_git_command tag "${ARGS[@]}"
-    ;;
-  reset)
-    run_git_command reset "${ARGS[@]}"
-    ;;
-  stash)
-    run_git_command stash "${ARGS[@]}"
-    ;;
-  remote)
-    run_git_command remote "${ARGS[@]}"
-    ;;
-  *)
-    run_git_command "$COMMAND" "${ARGS[@]}"
+
+  help|--help|-h|*)
+    echo "Available commands:"
+    echo "  pull       - Fetch and merge latest changes from GitHub"
+    echo "  push       - Commit and push local changes to GitHub"
+    echo "  status     - Show repository status"
+    echo "  deploy     - Pull latest code and run Laravel optimizations"
+    echo "  sync       - Commit, rebase, and push local changes"
+    echo "  rollback   - Revert to previous commit"
+    echo "  backup     - Create a compressed backup of /httpdocs"
+    echo "  help       - Show this help message"
     ;;
 esac
