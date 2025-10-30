@@ -15,11 +15,7 @@ return [
     |
     */
 
-<<<<<<< HEAD
     'default' => env('CACHE_STORE', 'database'),
-=======
-    'default' => env('CACHE_STORE', 'file'),
->>>>>>> إصلاح مشاكل cache و ai_models تلقائيًا عبر CMIS Assistant
 
     /*
     |--------------------------------------------------------------------------
