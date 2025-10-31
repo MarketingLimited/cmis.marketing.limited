@@ -1,6 +1,22 @@
 [
     {
         "type": "commit",
+        "id": "b52d8ae",
+        "branch": "main",
+        "user": "MarketingLimited",
+        "datetime": "2025-10-31 23:38:27 +0300",
+        "files": [
+            "app\/Console\/Commands\/SyncInstagramData.php",
+            "app\/Services\/Social\/InstagramSyncService.php",
+            "backups\/changelog_backup_2025-10-31.json",
+            "backups\/changelog_backup_2025-10-31.md",
+            "docs\/changelog.json",
+            "docs\/changelog.md"
+        ],
+        "message": "ربط InstagramSyncService بعملية مزامنة فعلية وتخزين الأداء"
+    },
+    {
+        "type": "commit",
         "id": "210ee54",
         "branch": "main",
         "user": "MarketingLimited",

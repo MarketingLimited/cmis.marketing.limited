@@ -1,3 +1,17 @@
+### 📝 [2025-10-31 23:38:27 +0300] Commit Log
+**Commit ID:** b52d8ae
+**Branch:** main
+**Committed by:** MarketingLimited
+**Modified Files:**
+- app/Console/Commands/SyncInstagramData.php
+- app/Services/Social/InstagramSyncService.php
+- backups/changelog_backup_2025-10-31.json
+- backups/changelog_backup_2025-10-31.md
+- docs/changelog.json
+- docs/changelog.md
+**Message:** ربط InstagramSyncService بعملية مزامنة فعلية وتخزين الأداء
+---
+
 ### 📝 [2025-10-31 21:57:02 +0300] Commit Log
 **Commit ID:** 210ee54
 **Branch:** main
