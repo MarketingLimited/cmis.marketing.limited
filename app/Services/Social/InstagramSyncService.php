@@ -159,6 +159,7 @@ class InstagramSyncService
                     'integration_id' => $integration->integration_id
                 ],
                 [
+                    'org_id' => $integration->org_id,
                     'caption' => $media['caption'] ?? null,
                     'media_type' => $media['media_type'] ?? null,
                     'media_url' => $media['media_url'] ?? null,

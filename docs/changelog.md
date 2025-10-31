@@ -1,3 +1,18 @@
+### 📝 [2025-10-31 21:06:51 +0300] Commit Log
+**Commit ID:** d7fe521
+**Branch:** main
+**Committed by:** MarketingLimited
+**Modified Files:**
+- app/Console/Kernel.php
+- app/Services/Social/InstagramSyncService.php
+- app/docs/git/git-ai-instructions.md
+- backups/changelog_backup_2025-10-31.json
+- backups/changelog_backup_2025-10-31.md
+- docs/changelog.json
+- docs/changelog.md
+**Message:** رفع التعديلات المرفقة عبر CMIS Assistant
+---
+
 ### 📝 [2025-10-31 16:40:23 +0300] Commit Log
 **Commit ID:** 64a2c17
 **Branch:** main
