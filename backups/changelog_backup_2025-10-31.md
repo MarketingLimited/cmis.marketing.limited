@@ -1,3 +1,16 @@
+### 📝 [2025-10-31 21:57:02 +0300] Commit Log
+**Commit ID:** 210ee54
+**Branch:** main
+**Committed by:** MarketingLimited
+**Modified Files:**
+- app/Services/Social/InstagramSyncService.php
+- backups/changelog_backup_2025-10-31.json
+- backups/changelog_backup_2025-10-31.md
+- docs/changelog.json
+- docs/changelog.md
+**Message:** تعديل InstagramSyncService لإضافة org_id عند حفظ المنشورات
+---
+
 ### 📝 [2025-10-31 21:06:51 +0300] Commit Log
 **Commit ID:** d7fe521
 **Branch:** main
