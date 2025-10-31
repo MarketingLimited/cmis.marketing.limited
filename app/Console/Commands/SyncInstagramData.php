@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use App\Models\Integration;
+use App\Services\Social\InstagramSyncService;
 use Illuminate\Support\Str;
 
 class SyncInstagramData extends Command
@@ -16,6 +17,8 @@ class SyncInstagramData extends Command
     {
         $account = $this->argument('account');
         $by = $this->option('by');
+
+        $service = new InstagramSyncService();
 
         if ($account) {
             $integration = Integration::where('platform', 'instagram')
@@ -35,21 +38,14 @@ class SyncInstagramData extends Command
             }
 
             $this->info("Syncing Instagram account: {$integration->account_id}");
-            // Place logic here to perform actual sync (API call or data fetch)
+            $service->syncIntegrationByAccountId($integration);
             $this->info('Single account synced successfully.');
             return 0;
         }
 
         $this->info('Syncing all Instagram integrations...');
 
-        $integrations = Integration::where('platform', 'instagram')
-            ->where('is_active', true)
-            ->get();
-
-        foreach ($integrations as $integration) {
-            $this->info("Syncing account: {$integration->account_id}");
-            // Place logic here for syncing each account
-        }
+        $service->syncAllActive();
 
         $this->info('All active Instagram accounts synced successfully.');
         return 0;
