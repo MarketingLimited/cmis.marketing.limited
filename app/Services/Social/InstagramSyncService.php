@@ -3,45 +3,54 @@
 namespace App\Services\Social;
 
 use App\Models\Integration;
-use App\Models\SocialAccount;
-use App\Models\SocialAccountMetric;
 use App\Models\SocialPost;
 use App\Models\SocialPostMetric;
 use Carbon\Carbon;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Client\Response;
 use Throwable;
 
 class InstagramSyncService
 {
-    /**
-     * Synchronize all active Instagram integrations.
-     */
     public function syncAllActive(): int
     {
         $integrations = Integration::query()
-            ->platform('instagram')
-            ->active()
+            ->where('platform', 'instagram')
+            ->where('is_active', true)
             ->get();
+
+        if ($integrations->isEmpty()) {
+            Log::warning('No active Instagram integrations found for sync.');
+            return 0;
+        }
 
         $processed = 0;
 
         foreach ($integrations as $integration) {
             try {
+                if (!empty($integration->org_id)) {
+                    DB::statement("SELECT set_config('app.current_org_id', '{$integration->org_id}', true);");
+                }
+
                 if (empty($integration->access_token) || empty($integration->account_id)) {
                     Log::warning('Instagram integration missing credentials.', [
-                        'integration_id' => $integration->integration_id,
+                        'integration_id' => $integration->integration_id ?? null,
+                        'org_id' => $integration->org_id ?? null,
+                        'account_id' => $integration->account_id ?? null,
                     ]);
                     continue;
                 }
 
-                $this->syncIntegration($integration);
+                $this->syncIntegrationByAccountId($integration);
                 $processed++;
+
             } catch (Throwable $exception) {
                 Log::error('Failed to sync Instagram integration.', [
-                    'integration_id' => $integration->integration_id,
+                    'integration_id' => $integration->integration_id ?? null,
+                    'org_id' => $integration->org_id ?? null,
                     'error' => $exception->getMessage(),
                 ]);
             }
@@ -50,362 +59,144 @@ class InstagramSyncService
         return $processed;
     }
 
-    /**
-     * Synchronize a specific Instagram integration.
-     */
-    public function syncIntegration(Integration $integration): void
+    protected function syncIntegrationByAccountId(Integration $integration): void
     {
-        $accountProfile = $this->fetchAccountProfile($integration);
-        $this->storeAccount($integration, $accountProfile);
+        $accountId = $integration->account_id;
+        if (!$accountId) {
+            throw new \RuntimeException('Missing account_id for integration.');
+        }
 
-        $accountInsights = $this->fetchAccountInsights($integration);
-        $this->storeAccountMetrics($integration, $accountProfile, $accountInsights);
+        Log::info('Starting sync via account_id', [
+            'org_id' => $integration->org_id,
+            'account_id' => $accountId,
+        ]);
 
         $mediaItems = $this->fetchAccountMedia($integration);
 
         foreach ($mediaItems as $media) {
-            $postInsights = $this->fetchMediaInsights($integration, $media['id']);
+            $postInsights = $this->fetchMediaInsights($integration, $media['id'], $media['media_type'] ?? null);
             $this->storePost($integration, $media, $postInsights);
         }
-    }
 
-    /**
-     * Fetch raw profile data for a specific integration.
-     */
-    public function getAccountProfileData(Integration $integration): array
-    {
-        return $this->fetchAccountProfile($integration);
-    }
-
-    /**
-     * Fetch raw account insights for a specific integration.
-     */
-    public function getAccountInsightsData(Integration $integration): array
-    {
-        return $this->fetchAccountInsights($integration);
-    }
-
-    /**
-     * Fetch raw media data for a specific integration.
-     */
-    public function getAccountMediaData(Integration $integration): array
-    {
-        return $this->fetchAccountMedia($integration);
-    }
-
-    /**
-     * Fetch raw insight data for a given media item.
-     */
-    public function getMediaInsightsData(Integration $integration, string $mediaId): array
-    {
-        return $this->fetchMediaInsights($integration, $mediaId);
-    }
-
-    /**
-     * Fetch Instagram account profile information.
-     */
-    protected function fetchAccountProfile(Integration $integration): array
-    {
-        $fields = config('services.instagram.account_fields', [
-            'id',
-            'username',
-            'name',
-            'profile_picture_url',
-            'biography',
-            'website',
-            'followers_count',
-            'follows_count',
-            'media_count',
-            'category_name',
-            'is_verified',
+        Log::info('Completed sync for account_id', [
+            'account_id' => $accountId,
+            'media_count' => count($mediaItems),
         ]);
-
-        $response = $this->get($integration, sprintf('%s', $integration->account_id), [
-            'fields' => implode(',', $fields),
-        ]);
-
-        $this->throwIfFailed($response, 'Unable to fetch Instagram account profile.');
-
-        return $response->json();
     }
 
-    /**
-     * Fetch Instagram account insights.
-     */
-    protected function fetchAccountInsights(Integration $integration): array
-    {
-        $metrics = config('services.instagram.account_metrics', ['impressions', 'reach', 'profile_views']);
-
-        if (empty($metrics)) {
-            return [];
-        }
-
-        $response = $this->get($integration, sprintf('%s/insights', $integration->account_id), [
-            'metric' => implode(',', $metrics),
-            'period' => 'day',
-        ]);
-
-        if ($response->failed()) {
-            Log::warning('Unable to fetch Instagram account insights.', [
-                'integration_id' => $integration->integration_id,
-                'body' => $response->body(),
-            ]);
-
-            return [];
-        }
-
-        $insights = [];
-
-        foreach ($response->json('data', []) as $metric) {
-            $name = $metric['name'] ?? null;
-
-            if (! $name) {
-                continue;
-            }
-
-            $values = $metric['values'] ?? [];
-            $latest = Arr::last($values);
-
-            if (is_array($latest)) {
-                if (isset($latest['end_time'])) {
-                    $insights['_metric_date'] = Carbon::parse($latest['end_time'])->toDateString();
-                }
-
-                $insights[$name] = $latest['value'] ?? null;
-            } else {
-                $insights[$name] = $latest;
-            }
-        }
-
-        return $insights;
-    }
-
-    /**
-     * Fetch account media items with pagination support.
-     */
     protected function fetchAccountMedia(Integration $integration): array
     {
-        $fields = config('services.instagram.media_fields', [
-            'id',
-            'caption',
-            'media_type',
-            'media_url',
-            'permalink',
-            'thumbnail_url',
-            'timestamp',
-            'like_count',
-            'comments_count',
-        ]);
-
-        $limit = (int) config('services.instagram.media_page_size', 50);
-        $maxPages = (int) config('services.instagram.media_max_pages', 5);
-
-        $media = [];
-        $endpoint = sprintf('%s/media', $integration->account_id);
-        $params = [
-            'fields' => implode(',', $fields),
-            'limit' => $limit,
+        $fields = [
+            'id','caption','media_type','media_url','thumbnail_url','permalink','timestamp','like_count','comments_count'
         ];
-        $page = 0;
 
-        while ($endpoint && $page < $maxPages) {
-            $response = $this->get($integration, $endpoint, $params);
-            $this->throwIfFailed($response, 'Unable to fetch Instagram media.');
+        $limit = 100;
+        $endpoint = sprintf('%s/media', $integration->account_id);
+        $params = ['fields' => implode(',', $fields), 'limit' => $limit];
 
-            $payload = $response->json();
-            $media = array_merge($media, $payload['data'] ?? []);
+        $response = $this->get($integration, $endpoint, $params);
+        $this->throwIfFailed($response, 'Unable to fetch Instagram media.');
 
-            $endpoint = Arr::get($payload, 'paging.next');
-            $params = [];
-            $page++;
+        $media = $response->json('data', []);
+
+        foreach ($media as &$item) {
+            if (($item['media_type'] ?? '') === 'CAROUSEL_ALBUM') {
+                $children = $this->get($integration, sprintf('%s/children', $item['id']), [
+                    'fields' => 'id,media_type,media_url,thumbnail_url'
+                ])->json('data', []);
+                $item['children_media'] = $children;
+            }
+
+            if (($item['media_type'] ?? '') === 'VIDEO' || ($item['media_type'] ?? '') === 'REEL') {
+                $item['video_url'] = $item['media_url'] ?? null;
+            }
         }
 
         return $media;
     }
 
-    /**
-     * Fetch insights for a specific media item.
-     */
-    protected function fetchMediaInsights(Integration $integration, string $mediaId): array
+    protected function fetchMediaInsights(Integration $integration, string $mediaId, ?string $mediaType = null): array
     {
-        $metrics = config('services.instagram.post_insight_metrics', ['impressions', 'reach', 'saved']);
-
-        if (empty($metrics)) {
-            return [];
+        if ($mediaType === 'REEL') {
+            $metrics = [
+                'reach', 'likes', 'comments', 'saved', 'shares',
+                'ig_reels_avg_watch_time', 'ig_reels_video_view_total_time'
+            ];
+        } else {
+            $metrics = ['reach', 'likes', 'comments', 'saved', 'shares', 'total_interactions'];
         }
 
         $response = $this->get($integration, sprintf('%s/insights', $mediaId), [
-            'metric' => implode(',', $metrics),
+            'metric' => implode(',', $metrics)
         ]);
 
         if ($response->failed()) {
             Log::warning('Unable to fetch Instagram media insights.', [
-                'integration_id' => $integration->integration_id,
                 'media_id' => $mediaId,
                 'body' => $response->body(),
             ]);
-
             return [];
         }
 
         $insights = [];
-
         foreach ($response->json('data', []) as $metric) {
             $name = $metric['name'] ?? null;
-
-            if (! $name) {
-                continue;
-            }
-
+            if (!$name) continue;
             $values = $metric['values'] ?? [];
             $latest = Arr::last($values);
-
-            if (is_array($latest)) {
-                if (isset($latest['end_time'])) {
-                    $insights['_metric_date'] = Carbon::parse($latest['end_time'])->toDateString();
-                }
-
-                $insights[$name] = $latest['value'] ?? null;
-            } else {
-                $insights[$name] = $latest;
-            }
+            $insights[$name] = is_array($latest) ? ($latest['value'] ?? null) : $latest;
         }
 
         return $insights;
     }
 
-    /**
-     * Persist the social account data.
-     */
-    protected function storeAccount(Integration $integration, array $profile): SocialAccount
-    {
-        return SocialAccount::query()->updateOrCreate(
-            [
-                'integration_id' => $integration->integration_id,
-            ],
-            [
-                'org_id' => $integration->org_id,
-                'account_external_id' => $profile['id'] ?? $integration->account_id,
-                'username' => $profile['username'] ?? null,
-                'display_name' => $profile['name'] ?? ($profile['username'] ?? null),
-                'profile_picture_url' => $profile['profile_picture_url'] ?? null,
-                'biography' => $profile['biography'] ?? null,
-                'followers_count' => $profile['followers_count'] ?? null,
-                'follows_count' => $profile['follows_count'] ?? null,
-                'media_count' => $profile['media_count'] ?? null,
-                'website' => $profile['website'] ?? null,
-                'category' => $profile['category_name'] ?? null,
-                'is_verified' => (bool) ($profile['is_verified'] ?? false),
-                'fetched_at' => Carbon::now('UTC'),
-            ]
-        );
-    }
-
-    /**
-     * Persist the account level metrics.
-     */
-    protected function storeAccountMetrics(Integration $integration, array $profile, array $insights): void
-    {
-        $metricDate = $insights['_metric_date'] ?? Carbon::now('UTC')->toDateString();
-        unset($insights['_metric_date']);
-
-        SocialAccountMetric::query()->updateOrCreate(
-            [
-                'integration_id' => $integration->integration_id,
-                'period_start' => $metricDate,
-                'period_end' => $metricDate,
-            ],
-            [
-                'followers' => $profile['followers_count'] ?? null,
-                'reach' => $insights['reach'] ?? null,
-                'impressions' => $insights['impressions'] ?? null,
-                'profile_views' => $insights['profile_views'] ?? null,
-            ]
-        );
-    }
-
-    /**
-     * Persist media posts and metrics.
-     */
     protected function storePost(Integration $integration, array $media, array $insights): void
     {
-        $postedAt = isset($media['timestamp']) ? Carbon::parse($media['timestamp']) : null;
-
-        $post = SocialPost::query()->updateOrCreate(
-            [
-                'integration_id' => $integration->integration_id,
-                'post_external_id' => $media['id'],
-            ],
-            [
-                'org_id' => $integration->org_id,
-                'caption' => $media['caption'] ?? null,
-                'media_url' => $media['media_url'] ?? ($media['thumbnail_url'] ?? null),
-                'permalink' => $media['permalink'] ?? null,
-                'media_type' => $media['media_type'] ?? null,
-                'posted_at' => $postedAt,
-                'metrics' => [
+        try {
+            SocialPost::updateOrCreate(
+                [
+                    'post_external_id' => $media['id'],
+                    'integration_id' => $integration->integration_id
+                ],
+                [
+                    'caption' => $media['caption'] ?? null,
+                    'media_type' => $media['media_type'] ?? null,
+                    'media_url' => $media['media_url'] ?? null,
+                    'video_url' => $media['video_url'] ?? null,
+                    'thumbnail_url' => $media['thumbnail_url'] ?? null,
+                    'children_media' => $media['children_media'] ?? null,
+                    'permalink' => $media['permalink'] ?? null,
+                    'posted_at' => isset($media['timestamp']) ? Carbon::parse($media['timestamp']) : null,
                     'like_count' => $media['like_count'] ?? null,
                     'comments_count' => $media['comments_count'] ?? null,
-                ],
-                'fetched_at' => Carbon::now('UTC'),
-            ]
-        );
-
-        $metricDate = $insights['_metric_date'] ?? Carbon::now('UTC')->toDateString();
-        unset($insights['_metric_date']);
-
-        SocialPostMetric::query()->updateOrCreate(
-            [
-                'integration_id' => $integration->integration_id,
-                'post_external_id' => $media['id'],
-                'metric_date' => $metricDate,
-            ],
-            [
-                'social_post_id' => $post->getKey(),
-                'impressions' => $insights['impressions'] ?? null,
-                'reach' => $insights['reach'] ?? null,
-                'likes' => $media['like_count'] ?? ($insights['likes'] ?? null),
-                'comments' => $media['comments_count'] ?? ($insights['comments'] ?? null),
-                'saves' => $insights['saved'] ?? ($insights['saves'] ?? null),
-                'shares' => $insights['shares'] ?? null,
-            ]
-        );
+                    'metrics' => $insights,
+                ]
+            );
+        } catch (Throwable $e) {
+            Log::error('Failed to store Instagram post', [
+                'error' => $e->getMessage(),
+                'media_id' => $media['id'] ?? null,
+            ]);
+        }
     }
 
-    /**
-     * Perform a GET request against the Instagram Graph API.
-     */
     protected function get(Integration $integration, string $endpoint, array $params = []): Response
     {
         $url = $this->buildUrl($endpoint);
-
         return Http::withToken($integration->access_token)
             ->acceptJson()
-            ->timeout((int) config('services.instagram.timeout', 30))
-            ->retry(
-                (int) config('services.instagram.retry_times', 3),
-                (int) config('services.instagram.retry_sleep', 500)
-            )
+            ->timeout(60)
+            ->retry(3, 500)
             ->get($url, $params);
     }
 
-    /**
-     * Build a fully qualified URL for the Instagram API.
-     */
     protected function buildUrl(string $endpoint): string
     {
-        if (str_starts_with($endpoint, 'http')) {
-            return $endpoint;
-        }
-
-        $base = rtrim((string) config('services.instagram.base_url', 'https://graph.facebook.com/v21.0/'), '/');
-
+        if (str_starts_with($endpoint, 'http')) return $endpoint;
+        $base = rtrim((string) config('services.instagram.base_url', 'https://graph.facebook.com/v24.0/'), '/');
         return $base.'/'.ltrim($endpoint, '/');
     }
 
-    /**
-     * Throw a runtime exception if the response failed.
-     */
     protected function throwIfFailed(Response $response, string $message): void
     {
         if ($response->failed()) {
