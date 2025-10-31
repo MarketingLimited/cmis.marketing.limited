@@ -71,23 +71,18 @@ class InstagramApiCommand extends Command
         $service = new InstagramService();
 
         if ($account) {
-            $integration = Integration::where('platform', 'instagram')
-                ->where(function ($q) use ($account, $by) {
-                    if ($by === 'id') {
-                        $q->where('integration_id', $account);
-                    } elseif ($by === 'username') {
-                        $q->where('username', $account);
-                    } else {
-                        $q->where('account_id', $account)
-                          ->orWhere('integration_id', $account);
-                    }
-                })
-                ->first();
-
-            if (!$integration) {
-                $this->error('No matching Instagram integration found.');
-                return 1;
-            }
+if ($this->option('by') === 'id') {
+    $integration = Integration::where('platform', 'instagram')
+        ->where('account_id', $account)
+        ->firstOrFail();
+} else {
+    $integration = Integration::where('platform', 'instagram')
+        ->where(function ($q) use ($account) {
+            $q->where('integration_id', $account)
+              ->orWhere('username', $account);
+        })
+        ->firstOrFail();
+}
 
             $this->info("Executing for account: {$integration->username}");
 
