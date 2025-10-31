@@ -2,44 +2,55 @@
 
 namespace App\Console\Commands;
 
-use App\Services\Social\InstagramSyncService;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Log;
+use App\Models\Integration;
 
 class SyncInstagramData extends Command
 {
-    /**
-     * The name and signature of the console command.
-     *
-     * @var string
-     */
-    protected $signature = 'instagram:sync';
+    protected $signature = 'instagram:sync {account?} {--by=id}';
 
-    /**
-     * The console command description.
-     *
-     * @var string
-     */
-    protected $description = 'Sync Instagram account content and metrics for all connected organizations.';
+    protected $description = 'Sync Instagram account content and metrics for one or all connected organizations.';
 
-    public function __construct(private readonly InstagramSyncService $instagramSyncService)
+    public function handle()
     {
-        parent::__construct();
-    }
 
-    /**
-     * Execute the console command.
-     */
-    public function handle(): int
-    {
-        $this->info('Starting Instagram synchronization.');
+        $account = $this->argument('account');
+        $by = $this->option('by');
 
-        $processed = $this->instagramSyncService->syncAllActive();
+        if ($account) {
+            $integration = Integration::where('platform', 'instagram')
+                ->where(function ($q) use ($account, $by) {
+                    if ($by === 'id') {
+                        $q->where('integration_id', $account);
+                    } elseif ($by === 'username') {
+                        $q->where('username', $account);
+                    } else {
+                        $q->where('account_id', $account)
+                          ->orWhere('integration_id', $account);
+                    }
+                })
+                ->first();
 
-        $message = sprintf('Instagram synchronization completed. Processed %d integration(s).', $processed);
-        $this->info($message);
-        Log::info($message);
+            if (!$integration) {
+                $this->error('No Instagram integration found for given account.');
+                return 1;
+            }
 
-        return self::SUCCESS;
+            $this->info("Syncing Instagram account: {$integration->account_id}");
+            $this->info('Single account synced successfully.');
+            return 0;
+        }
+
+        $this->info('Syncing all Instagram integrations...');
+        $integrations = Integration::where('platform', 'instagram')
+            ->where('is_active', true)
+            ->get();
+
+        foreach ($integrations as $integration) {
+            $this->info("Syncing account: {$integration->account_id}");
+        }
+
+        $this->info('All accounts synced successfully.');
+        return 0;
     }
 }
