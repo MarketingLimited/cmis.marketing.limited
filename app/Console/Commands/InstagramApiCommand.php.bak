@@ -6,7 +6,6 @@ use Illuminate\Console\Command;
 use App\Models\Integration;
 use App\Services\InstagramService;
 use Carbon\Carbon;
-use Illuminate\Support\Str;
 
 class InstagramApiCommand extends Command
 {
@@ -16,6 +15,7 @@ class InstagramApiCommand extends Command
 
     public function handle()
     {
+        // Help handler: php artisan instagram:api help
         if ($this->argument('account') === 'help') {
             $helpFile = base_path('docs/instagram/help_en.md');
             if (file_exists($helpFile)) {
@@ -23,6 +23,7 @@ class InstagramApiCommand extends Command
                 $this->newLine();
                 $this->info('📘 Instagram API Command Help');
                 $this->line(str_repeat('─', 60));
+
                 foreach ($content as $line) {
                     $trimmed = trim($line);
                     if (str_starts_with($trimmed, '##')) {
@@ -36,14 +37,24 @@ class InstagramApiCommand extends Command
                         $this->line('   ' . $trimmed);
                     }
                 }
+
                 $this->newLine();
                 $this->line(str_repeat('─', 60));
                 $this->info('✅ End of Help');
-                return 0;
+
+                $this->line(str_repeat("─", 60));
+                $this->comment("🔹 Sync Command");
+                $this->line("   Usage: php artisan instagram:sync [--debug] [--from=<YYYY-MM-DD>] [--to=<YYYY-MM-DD>]");
+                $this->line("   Description: Synchronizes Instagram data between Graph API and CMIS database.");
+                $this->line("   Examples:");
+                $this->line("      php artisan instagram:sync");
+                $this->line("      php artisan instagram:sync --from=2024-01-01 --to=2024-12-31 --debug");
+                $this->line(str_repeat("─", 60));
+                $this->newLine();
             } else {
                 $this->error('Help file not found: ' . $helpFile);
-                return 1;
             }
+            return 0;
         }
 
         $account = $this->argument('account');
@@ -60,22 +71,18 @@ class InstagramApiCommand extends Command
         $service = new InstagramService();
 
         if ($account) {
-            if ($this->option('by') === 'id') {
-                $integration = Integration::where('platform', 'instagram')
-                    ->where('account_id', $account)
-                    ->firstOrFail();
-            } else {
-                $integration = Integration::where('platform', 'instagram')
-                    ->where(function ($q) use ($account) {
-                        if (Str::isUuid($account)) {
-                            $q->where('integration_id', $account);
-                        } else {
-                            $q->where('username', $account)
-                              ->orWhere('account_id', $account);
-                        }
-                    })
-                    ->firstOrFail();
-            }
+if ($this->option('by') === 'id') {
+    $integration = Integration::where('platform', 'instagram')
+        ->where('account_id', $account)
+        ->firstOrFail();
+} else {
+    $integration = Integration::where('platform', 'instagram')
+        ->where(function ($q) use ($account) {
+            $q->where('integration_id', $account)
+              ->orWhere('username', $account);
+        })
+        ->firstOrFail();
+}
 
             $this->info("Executing for account: {$integration->username}");
 

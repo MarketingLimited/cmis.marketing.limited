@@ -1,3 +1,57 @@
+### 📝 [2025-10-31 15:23:31 +0300] Commit Log
+**Commit ID:** 2f93e9c
+**Branch:** main
+**Committed by:** MarketingLimited
+**Modified Files:**
+- docs/instagram/02_artisan_commands.md
+**Message:** docs: update Instagram artisan command docs to include --by=id and account_id usage
+---
+
+### 📝 [2025-10-31 15:13:16 +0300] Commit Log
+**Commit ID:** 91d2455
+**Branch:** main
+**Committed by:** MarketingLimited
+**Modified Files:**
+- app/Console/Commands/InstagramApiCommand.php
+**Message:** fix: allow instagram:api command to fetch via account_id when using --by=id
+---
+
+### 📝 [2025-10-31 13:18:18 +0300] Commit Log
+**Commit ID:** 0d3e47f
+**Branch:** main
+**Committed by:** MarketingLimited
+**Modified Files:**
+- app/Console/Commands/FacebookApiCommand.php
+- app/Console/Commands/InstagramApiCommand.php
+- app/Console/Commands/LinkedinApiCommand.php
+- app/Console/Commands/SyncInstagramData.php
+- app/Console/Commands/TiktokApiCommand.php
+- app/Models/Integration.php
+- app/Services/InstagramService.php
+- backups/2025-10-30_22-28-16/backup_httpdocs.tar.gz
+- backups/2025-10-30_22-34-59/backup_httpdocs.tar.gz
+- backups/2025-10-30_22-37-47/backup_httpdocs.tar.gz
+- database/schema.sql
+- docs/changelog.md
+- docs/database-setup.md
+- docs/instagram/01_overview.md
+- docs/instagram/02_artisan_commands.md
+- docs/instagram/03_ai_integration.md
+- docs/instagram/04_debugging_and_logs.md
+- docs/instagram/05_examples.md
+- docs/instagram/help_en.md
+- docs/social/facebook/help_ar.md
+- docs/social/facebook/help_en.md
+- docs/social/instagram/help_en.md
+- docs/social/linkedin/help_ar.md
+- docs/social/linkedin/help_en.md
+- docs/social/tiktok/help_ar.md
+- docs/social/tiktok/help_en.md
+- scripts/fix_lang_insertion_safe.php
+- scripts/git-changelog-helper.php
+**Message:** Auto-sync from server
+---
+
 # 🧾 CMIS Social Commands Changelog
 
 ## [2025-10-31] Multi-language Integration & Stability Fixes
