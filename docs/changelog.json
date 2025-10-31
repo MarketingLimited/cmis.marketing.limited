@@ -1,6 +1,23 @@
 [
     {
         "type": "commit",
+        "id": "d7fe521",
+        "branch": "main",
+        "user": "MarketingLimited",
+        "datetime": "2025-10-31 21:06:51 +0300",
+        "files": [
+            "app\/Console\/Kernel.php",
+            "app\/Services\/Social\/InstagramSyncService.php",
+            "app\/docs\/git\/git-ai-instructions.md",
+            "backups\/changelog_backup_2025-10-31.json",
+            "backups\/changelog_backup_2025-10-31.md",
+            "docs\/changelog.json",
+            "docs\/changelog.md"
+        ],
+        "message": "رفع التعديلات المرفقة عبر CMIS Assistant"
+    },
+    {
+        "type": "commit",
         "id": "64a2c17",
         "branch": "main",
         "user": "MarketingLimited",
