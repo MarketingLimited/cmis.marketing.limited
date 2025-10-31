@@ -1785,6 +1785,28 @@ CREATE VIEW cmis.integrations AS
 ALTER VIEW cmis.integrations OWNER TO begin;
 
 --
+-- Name: integrations_view; Type: VIEW; Schema: cmis; Owner: begin
+--
+
+CREATE VIEW cmis.integrations_view AS
+ SELECT integrations.account_id,
+    integrations.username,
+    integrations.platform,
+    integrations.org_id,
+    integrations.is_active
+   FROM cmis.integrations;
+
+
+ALTER VIEW cmis.integrations_view OWNER TO begin;
+
+--
+-- Name: VIEW integrations_view; Type: COMMENT; Schema: cmis; Owner: begin
+--
+
+COMMENT ON VIEW cmis.integrations_view IS 'View to allow lookup by username or account_id for Instagram integrations';
+
+
+--
 -- Name: kpis; Type: TABLE; Schema: public; Owner: gpts_data_user
 --
 
@@ -2454,16 +2476,15 @@ ALTER TABLE cmis.social_accounts OWNER TO begin;
 --
 
 CREATE TABLE cmis.social_post_metrics (
+    id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    org_id uuid NOT NULL,
     integration_id uuid NOT NULL,
     post_external_id text NOT NULL,
-    metric_date date NOT NULL,
     social_post_id uuid NOT NULL,
-    impressions bigint,
-    reach bigint,
-    likes bigint,
-    comments bigint,
-    saves bigint,
-    shares bigint
+    metric text NOT NULL,
+    value numeric(20,4),
+    fetched_at timestamp with time zone DEFAULT now(),
+    created_at timestamp with time zone DEFAULT now()
 );
 
 
@@ -2485,7 +2506,10 @@ CREATE TABLE cmis.social_posts (
     posted_at timestamp without time zone,
     metrics jsonb DEFAULT '{}'::jsonb,
     fetched_at timestamp without time zone DEFAULT now(),
-    created_at timestamp without time zone DEFAULT now()
+    created_at timestamp without time zone DEFAULT now(),
+    video_url text,
+    thumbnail_url text,
+    children_media jsonb
 );
 
 
@@ -4202,7 +4226,7 @@ ALTER TABLE ONLY cmis.social_accounts
 --
 
 ALTER TABLE ONLY cmis.social_post_metrics
-    ADD CONSTRAINT social_post_metrics_pkey PRIMARY KEY (integration_id, post_external_id, metric_date);
+    ADD CONSTRAINT social_post_metrics_pkey PRIMARY KEY (id);
 
 
 --
@@ -4857,27 +4881,6 @@ CREATE INDEX idx_field_values_json ON cmis.field_values USING gin (value jsonb_p
 --
 
 CREATE INDEX idx_orgs_id ON cmis.orgs USING btree (org_id);
-
-
---
--- Name: idx_social_post_metrics_integration_date; Type: INDEX; Schema: cmis; Owner: begin
---
-
-CREATE INDEX idx_social_post_metrics_integration_date ON cmis.social_post_metrics USING btree (integration_id, metric_date);
-
-
---
--- Name: idx_social_post_metrics_metric_date; Type: INDEX; Schema: cmis; Owner: begin
---
-
-CREATE INDEX idx_social_post_metrics_metric_date ON cmis.social_post_metrics USING btree (metric_date);
-
-
---
--- Name: idx_social_post_metrics_post_date; Type: INDEX; Schema: cmis; Owner: begin
---
-
-CREATE INDEX idx_social_post_metrics_post_date ON cmis.social_post_metrics USING btree (post_external_id, metric_date);
 
 
 --
@@ -5605,22 +5608,6 @@ ALTER TABLE ONLY cmis.social_accounts
 
 ALTER TABLE ONLY cmis.social_accounts
     ADD CONSTRAINT social_accounts_account_org_id_fkey FOREIGN KEY (org_id) REFERENCES cmis.orgs(org_id) ON DELETE CASCADE;
-
-
---
--- Name: social_post_metrics social_post_metrics_integration_id_fkey; Type: FK CONSTRAINT; Schema: cmis; Owner: begin
---
-
-ALTER TABLE ONLY cmis.social_post_metrics
-    ADD CONSTRAINT social_post_metrics_integration_id_fkey FOREIGN KEY (integration_id) REFERENCES cmis_refactored.integrations(integration_id) ON DELETE SET NULL;
-
-
---
--- Name: social_post_metrics social_post_metrics_social_post_id_fkey; Type: FK CONSTRAINT; Schema: cmis; Owner: begin
---
-
-ALTER TABLE ONLY cmis.social_post_metrics
-    ADD CONSTRAINT social_post_metrics_social_post_id_fkey FOREIGN KEY (social_post_id) REFERENCES cmis.social_posts(id) ON DELETE CASCADE;
 
 
 --
