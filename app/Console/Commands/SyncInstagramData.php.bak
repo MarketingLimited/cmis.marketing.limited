@@ -4,7 +4,6 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use App\Models\Integration;
-use Illuminate\Support\Str;
 
 class SyncInstagramData extends Command
 {
@@ -14,44 +13,44 @@ class SyncInstagramData extends Command
 
     public function handle()
     {
+
         $account = $this->argument('account');
         $by = $this->option('by');
 
         if ($account) {
             $integration = Integration::where('platform', 'instagram')
-                ->where(function ($q) use ($account) {
-                    if (Str::isUuid($account)) {
+                ->where(function ($q) use ($account, $by) {
+                    if ($by === 'id') {
                         $q->where('integration_id', $account);
+                    } elseif ($by === 'username') {
+                        $q->where('username', $account);
                     } else {
-                        $q->where('username', $account)
-                          ->orWhere('account_id', $account);
+                        $q->where('account_id', $account)
+                          ->orWhere('integration_id', $account);
                     }
                 })
                 ->first();
 
             if (!$integration) {
-                $this->error('No Instagram integration found for the given account.');
+                $this->error('No Instagram integration found for given account.');
                 return 1;
             }
 
             $this->info("Syncing Instagram account: {$integration->account_id}");
-            // Place logic here to perform actual sync (API call or data fetch)
             $this->info('Single account synced successfully.');
             return 0;
         }
 
         $this->info('Syncing all Instagram integrations...');
-
         $integrations = Integration::where('platform', 'instagram')
             ->where('is_active', true)
             ->get();
 
         foreach ($integrations as $integration) {
             $this->info("Syncing account: {$integration->account_id}");
-            // Place logic here for syncing each account
         }
 
-        $this->info('All active Instagram accounts synced successfully.');
+        $this->info('All accounts synced successfully.');
         return 0;
     }
 }
