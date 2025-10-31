@@ -2,185 +2,166 @@
 
 namespace App\Console\Commands;
 
-use App\Models\Integration;
-use App\Models\SocialAccount;
-use App\Services\Social\InstagramSyncService;
 use Illuminate\Console\Command;
-use Illuminate\Database\Eloquent\Builder;
-use Throwable;
+use App\Models\Integration;
+use App\Services\InstagramService;
+use Carbon\Carbon;
 
 class InstagramApiCommand extends Command
 {
-    /**
-     * The name and signature of the console command.
-     *
-     * @var string
-     */
-    protected $signature = 'instagram:api
-        {account : Instagram account identifier (ID, username, or integration id)}
-        {operation : Operation to perform (profile|insights|media|media-insights|sync|all)}
-        {--by=id : Identifier type: id, username, or integration}
-        {--media_id= : Instagram media id (required for media-insights operation)}';
+    protected $signature = 'instagram:api {account?} {operation?} {--by=id} {--limit=10} {--from=} {--to=} {--metric=} {--sort=desc} {--debug} {--debug-full}';
 
-    /**
-     * The console command description.
-     *
-     * @var string
-     */
-    protected $description = 'Execute Instagram Graph API operations for a specific account using stored credentials.';
+    protected $description = 'Execute Instagram operations via Artisan (fetching posts, insights, analytics).';
 
-    public function __construct(private readonly InstagramSyncService $instagramSyncService)
+    public function handle()
     {
-        parent::__construct();
-    }
+        // Help handler: php artisan instagram:api help
+        if ($this->argument('account') === 'help') {
+            $helpFile = base_path('docs/instagram/help_en.md');
+            if (file_exists($helpFile)) {
+                $content = file($helpFile);
+                $this->newLine();
+                $this->info('📘 Instagram API Command Help');
+                $this->line(str_repeat('─', 60));
 
-    public function handle(): int
-    {
-        $accountIdentifier = (string) $this->argument('account');
-        $operation = strtolower((string) $this->argument('operation'));
-        $identifierType = strtolower((string) $this->option('by'));
+                foreach ($content as $line) {
+                    $trimmed = trim($line);
+                    if (str_starts_with($trimmed, '##')) {
+                        $this->newLine();
+                        $this->comment('🔹 ' . str_replace('#', '', $trimmed));
+                    } elseif (str_starts_with($trimmed, '###')) {
+                        $this->info('📖 ' . str_replace('#', '', $trimmed));
+                    } elseif (str_starts_with($trimmed, '```')) {
+                        $this->line('');
+                    } else {
+                        $this->line('   ' . $trimmed);
+                    }
+                }
 
-        $integration = $this->resolveIntegration($accountIdentifier, $identifierType);
+                $this->newLine();
+                $this->line(str_repeat('─', 60));
+                $this->info('✅ End of Help');
 
-        if (! $integration) {
-            $this->error(sprintf('Unable to locate Instagram integration for "%s" using "%s" lookup.', $accountIdentifier, $identifierType));
-
-            return self::FAILURE;
+                $this->line(str_repeat("─", 60));
+                $this->comment("🔹 Sync Command");
+                $this->line("   Usage: php artisan instagram:sync [--debug] [--from=<YYYY-MM-DD>] [--to=<YYYY-MM-DD>]");
+                $this->line("   Description: Synchronizes Instagram data between Graph API and CMIS database.");
+                $this->line("   Examples:");
+                $this->line("      php artisan instagram:sync");
+                $this->line("      php artisan instagram:sync --from=2024-01-01 --to=2024-12-31 --debug");
+                $this->line(str_repeat("─", 60));
+                $this->newLine();
+            } else {
+                $this->error('Help file not found: ' . $helpFile);
+            }
+            return 0;
         }
 
-        if (empty($integration->access_token)) {
-            $this->error('Integration does not contain an access token.');
+        $account = $this->argument('account');
+        $operation = $this->argument('operation') ?? 'media';
+        $by = $this->option('by');
+        $limit = (int) $this->option('limit');
+        $from = $this->option('from');
+        $to = $this->option('to');
+        $metric = $this->option('metric');
+        $sort = $this->option('sort');
+        $debug = $this->option('debug');
+        $debugFull = $this->option('debug-full');
 
-            return self::FAILURE;
+        $service = new InstagramService();
+
+        if ($account) {
+            $integration = Integration::where('platform', 'instagram')
+                ->where(function ($q) use ($account, $by) {
+                    if ($by === 'id') {
+                        $q->where('integration_id', $account);
+                    } elseif ($by === 'username') {
+                        $q->where('username', $account);
+                    } else {
+                        $q->where('account_id', $account)
+                          ->orWhere('integration_id', $account);
+                    }
+                })
+                ->first();
+
+            if (!$integration) {
+                $this->error('No matching Instagram integration found.');
+                return 1;
+            }
+
+            $this->info("Executing for account: {$integration->username}");
+
+            $results = $service->fetchMedia($integration, [
+                'limit' => $limit,
+                'from' => $from,
+                'to' => $to,
+                'metric' => $metric,
+                'sort' => $sort,
+                'debug' => $debug,
+                'debug_full' => $debugFull,
+            ]);
+
+            foreach ($results as $post) {
+                $this->line(str_repeat('─', 50));
+                $this->info('📅 ' . Carbon::parse($post['timestamp'])->toDateTimeString());
+                $this->line('🆔 ' . $post['id']);
+                $this->line('🎞️ Type: ' . ($post['media_type'] ?? 'Unknown'));
+                $this->line('🔗 Link: ' . ($post['permalink'] ?? 'N/A'));
+
+                if (!empty($post['caption'])) {
+                    $this->line("📜 Caption:\n" . $post['caption']);
+                }
+
+                if (!empty($post['media_url'])) {
+                    $this->line("🖼️ Media:\n- {$post['media_url']}");
+                }
+
+                if (!empty($post['children'])) {
+                    $this->line('🎞️ Carousel items:');
+                    foreach ($post['children'] as $child) {
+                        $this->line('- ' . $child['media_url']);
+                    }
+                }
+
+                $stats = ['reach','likes','comments','saved','shares','plays','total_interactions','ig_reels_avg_watch_time','ig_reels_video_view_total_time'];
+                $statsOutput = [];
+                foreach ($stats as $s) {
+                    if (isset($post[$s])) {
+                        $statsOutput[] = ucfirst(str_replace('_', ' ', $s)) . ': ' . $post[$s];
+                    }
+                }
+                if (!empty($statsOutput)) {
+                    $this->line('📊 Stats:');
+                    $this->line('   ' . implode(' | ', $statsOutput));
+                }
+
+                $this->line(str_repeat('─', 50));
+            }
+
+            $this->info('✅ Operation completed successfully.');
+            return 0;
         }
 
-        try {
-            return $this->performOperation($operation, $integration);
-        } catch (Throwable $exception) {
-            $this->error(sprintf('Instagram API operation failed: %s', $exception->getMessage()));
+        $this->info('No specific account provided. Processing all active Instagram accounts...');
 
-            return self::FAILURE;
-        }
-    }
+        $integrations = Integration::where('platform', 'instagram')
+            ->where('is_active', true)
+            ->get();
 
-    protected function resolveIntegration(string $identifier, string $type): ?Integration
-    {
-        return match ($type) {
-            'username' => $this->findIntegrationByUsername($identifier),
-            'integration' => $this->findIntegrationByIntegrationId($identifier),
-            default => $this->findIntegrationByAccountId($identifier),
-        };
-    }
-
-    protected function findIntegrationByUsername(string $username): ?Integration
-    {
-        $socialAccount = SocialAccount::query()
-            ->whereRaw('LOWER(username) = ?', [mb_strtolower($username)])
-            ->orderByDesc('fetched_at')
-            ->first();
-
-        if (! $socialAccount) {
-            return null;
+        foreach ($integrations as $integration) {
+            $this->info("Processing account: {$integration->username}");
+            $service->fetchMedia($integration, [
+                'limit' => $limit,
+                'from' => $from,
+                'to' => $to,
+                'metric' => $metric,
+                'sort' => $sort,
+                'debug' => $debug,
+                'debug_full' => $debugFull,
+            ]);
         }
 
-        return Integration::query()
-            ->platform('instagram')
-            ->where('integration_id', $socialAccount->integration_id)
-            ->first();
-    }
-
-    protected function findIntegrationByIntegrationId(string $integrationId): ?Integration
-    {
-        return Integration::query()
-            ->platform('instagram')
-            ->where('integration_id', $integrationId)
-            ->first();
-    }
-
-    protected function findIntegrationByAccountId(string $accountId): ?Integration
-    {
-        return Integration::query()
-            ->platform('instagram')
-            ->where(function (Builder $query) use ($accountId) {
-                $query
-                    ->where('account_id', $accountId)
-                    ->orWhere('integration_id', $accountId);
-            })
-            ->first();
-    }
-
-    protected function performOperation(string $operation, Integration $integration): int
-    {
-        return match ($operation) {
-            'profile' => $this->displayJson(
-                $this->instagramSyncService->getAccountProfileData($integration)
-            ),
-            'insights' => $this->displayJson(
-                $this->instagramSyncService->getAccountInsightsData($integration)
-            ),
-            'media' => $this->displayJson(
-                $this->instagramSyncService->getAccountMediaData($integration)
-            ),
-            'media-insights' => $this->runMediaInsights($integration),
-            'sync' => $this->runSync($integration),
-            'all' => $this->runAll($integration),
-            default => $this->unknownOperation($operation),
-        };
-    }
-
-    protected function runMediaInsights(Integration $integration): int
-    {
-        $mediaId = (string) $this->option('media_id');
-
-        if ($mediaId === '') {
-            $this->error('The --media_id option is required for the media-insights operation.');
-
-            return self::FAILURE;
-        }
-
-        return $this->displayJson(
-            $this->instagramSyncService->getMediaInsightsData($integration, $mediaId)
-        );
-    }
-
-    protected function runSync(Integration $integration): int
-    {
-        $this->instagramSyncService->syncIntegration($integration);
-        $this->info(sprintf('Integration %s synced successfully.', $integration->integration_id));
-
-        return self::SUCCESS;
-    }
-
-    protected function runAll(Integration $integration): int
-    {
-        $results = [
-            'profile' => $this->instagramSyncService->getAccountProfileData($integration),
-            'insights' => $this->instagramSyncService->getAccountInsightsData($integration),
-            'media' => $this->instagramSyncService->getAccountMediaData($integration),
-        ];
-
-        $this->displayJson($results);
-
-        return self::SUCCESS;
-    }
-
-    protected function unknownOperation(string $operation): int
-    {
-        $this->error(sprintf('Unknown operation "%s". Use one of: profile, insights, media, media-insights, sync, all.', $operation));
-
-        return self::FAILURE;
-    }
-
-    protected function displayJson(array $payload): int
-    {
-        if (empty($payload)) {
-            $this->info('No data returned from Instagram API.');
-
-            return self::SUCCESS;
-        }
-
-        $this->line(json_encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
-
-        return self::SUCCESS;
+        $this->info('✅ All operations completed successfully.');
+        return 0;
     }
 }

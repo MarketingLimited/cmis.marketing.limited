@@ -1758,7 +1758,8 @@ CREATE TABLE cmis_refactored.integrations (
     access_token text,
     is_active boolean DEFAULT true,
     created_at timestamp with time zone DEFAULT now(),
-    business_id text
+    business_id text,
+    username text
 );
 
 
@@ -1773,9 +1774,11 @@ CREATE VIEW cmis.integrations AS
     integrations.org_id,
     integrations.platform,
     integrations.account_id,
+    integrations.username,
     integrations.access_token,
     integrations.is_active,
-    integrations.created_at
+    integrations.created_at,
+    integrations.business_id
    FROM cmis_refactored.integrations;
 
 
@@ -1969,6 +1972,41 @@ ALTER SEQUENCE cmis.meta_function_descriptions_id_seq OWNER TO begin;
 --
 
 ALTER SEQUENCE cmis.meta_function_descriptions_id_seq OWNED BY cmis.meta_function_descriptions.id;
+
+
+--
+-- Name: migrations; Type: TABLE; Schema: cmis; Owner: begin
+--
+
+CREATE TABLE cmis.migrations (
+    id integer NOT NULL,
+    migration character varying(255) NOT NULL,
+    batch integer NOT NULL
+);
+
+
+ALTER TABLE cmis.migrations OWNER TO begin;
+
+--
+-- Name: migrations_id_seq; Type: SEQUENCE; Schema: cmis; Owner: begin
+--
+
+CREATE SEQUENCE cmis.migrations_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE cmis.migrations_id_seq OWNER TO begin;
+
+--
+-- Name: migrations_id_seq; Type: SEQUENCE OWNED BY; Schema: cmis; Owner: begin
+--
+
+ALTER SEQUENCE cmis.migrations_id_seq OWNED BY cmis.migrations.id;
 
 
 --
@@ -2893,7 +2931,11 @@ CREATE TABLE cmis_refactored.ai_models (
     engine text,
     version text,
     description text,
-    created_at timestamp with time zone DEFAULT now()
+    created_at timestamp with time zone DEFAULT now(),
+    model_name character varying(255),
+    model_family character varying(255),
+    status character varying(50),
+    trained_at timestamp without time zone
 );
 
 
@@ -3017,6 +3059,36 @@ CREATE TABLE lab.test_matrix (
 
 
 ALTER TABLE lab.test_matrix OWNER TO begin;
+
+--
+-- Name: backup_integrations_cmis; Type: TABLE; Schema: public; Owner: begin
+--
+
+CREATE TABLE public.backup_integrations_cmis (
+    integration_id uuid,
+    org_id uuid,
+    platform text,
+    account_id text,
+    access_token text,
+    is_active boolean,
+    created_at timestamp with time zone
+);
+
+
+ALTER TABLE public.backup_integrations_cmis OWNER TO begin;
+
+--
+-- Name: cache; Type: TABLE; Schema: public; Owner: begin
+--
+
+CREATE TABLE public.cache (
+    key character varying(255) NOT NULL,
+    value jsonb NOT NULL,
+    expiration integer
+);
+
+
+ALTER TABLE public.cache OWNER TO begin;
 
 --
 -- Name: channel_formats_format_id_seq; Type: SEQUENCE; Schema: public; Owner: gpts_data_user
@@ -3375,6 +3447,13 @@ ALTER TABLE ONLY cmis.meta_field_dictionary ALTER COLUMN id SET DEFAULT nextval(
 --
 
 ALTER TABLE ONLY cmis.meta_function_descriptions ALTER COLUMN id SET DEFAULT nextval('cmis.meta_function_descriptions_id_seq'::regclass);
+
+
+--
+-- Name: migrations id; Type: DEFAULT; Schema: cmis; Owner: begin
+--
+
+ALTER TABLE ONLY cmis.migrations ALTER COLUMN id SET DEFAULT nextval('cmis.migrations_id_seq'::regclass);
 
 
 --
@@ -3895,6 +3974,14 @@ ALTER TABLE ONLY cmis.meta_function_descriptions
 
 
 --
+-- Name: migrations migrations_pkey; Type: CONSTRAINT; Schema: cmis; Owner: begin
+--
+
+ALTER TABLE ONLY cmis.migrations
+    ADD CONSTRAINT migrations_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: modules modules_code_key; Type: CONSTRAINT; Schema: cmis; Owner: begin
 --
 
@@ -4372,6 +4459,14 @@ ALTER TABLE ONLY lab.test_matrix
 
 ALTER TABLE ONLY public.awareness_stages
     ADD CONSTRAINT awareness_stages_pkey PRIMARY KEY (stage);
+
+
+--
+-- Name: cache cache_pkey; Type: CONSTRAINT; Schema: public; Owner: begin
+--
+
+ALTER TABLE ONLY public.cache
+    ADD CONSTRAINT cache_pkey PRIMARY KEY (key);
 
 
 --
