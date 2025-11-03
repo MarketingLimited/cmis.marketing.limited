@@ -11,12 +11,10 @@ use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Mail;
 
 class Kernel extends ConsoleKernel
 {
     protected $commands = [
-        \App\Console\Commands\DbExecuteSql::class,
         SyncInstagramData::class,
         InstagramApiCommand::class,
         CognitiveVitalityLog::class,
@@ -100,36 +98,6 @@ class Kernel extends ConsoleKernel
         ->withoutOverlapping()
         ->onFailure(function () {
             Log::warning('⚠️ فشل توليد التقرير الإدراكي الدوري في ' . now());
-        });
-
-        // 📬 إرسال التقرير الإدراكي الصباحي إلى الإدارة كل يوم الساعة 08:00
-        $schedule->call(function () {
-            $report = DB::table('cmis_system_health.cognitive_reports')
-                ->orderByDesc('created_at')
-                ->limit(1)
-                ->first();
-
-            if ($report) {
-                $toAddress = config('mail.from.address', 'info@marketing.limited');
-
-                Mail::raw($report->report_text, function ($message) use ($toAddress) {
-                    $message->to($toAddress)
-                        ->subject('🧠 التقرير الإدراكي الصباحي | CMIS Cognitive Health');
-                });
-
-                DB::table('cmis_audit.logs')->insert([
-                    'event_type' => 'cognitive_notification',
-                    'event_source' => 'CognitiveHealthMailer',
-                    'description' => '📤 تم إرسال التقرير الإدراكي إلى الإدارة صباحًا.',
-                    'created_at' => now(),
-                ]);
-            }
-        })
-        ->dailyAt('08:00')
-        ->onOneServer()
-        ->withoutOverlapping()
-        ->onFailure(function () {
-            Log::warning('⚠️ فشل إرسال التقرير الإدراكي الصباحي في ' . now());
         });
     }
 

@@ -1,0 +1,4 @@
+VACUUM ANALYZE cmis_knowledge.embeddings_cache;
+VACUUM ANALYZE cmis_knowledge.semantic_search_results_cache;
+VACUUM ANALYZE cmis_knowledge.embedding_update_queue;
+VACUUM ANALYZE cmis_knowledge.semantic_search_logs;

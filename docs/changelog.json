@@ -1,6 +1,23 @@
 [
     {
         "type": "commit",
+        "id": "d5451ca",
+        "branch": "main",
+        "user": "MarketingLimited",
+        "datetime": "2025-11-01 00:12:23 +0300",
+        "files": [
+            "app\/Services\/Social\/InstagramAccountSyncService.php",
+            "app\/Services\/Social\/InstagramSyncService.php",
+            "backups\/changelog_backup_2025-10-31.json",
+            "backups\/changelog_backup_2025-10-31.md",
+            "database\/schema.sql",
+            "docs\/changelog.json",
+            "docs\/changelog.md"
+        ],
+        "message": "إصلاح مزامنة حسابات Instagram وحذف الحقول غير المدعومة"
+    },
+    {
+        "type": "commit",
         "id": "b52d8ae",
         "branch": "main",
         "user": "MarketingLimited",

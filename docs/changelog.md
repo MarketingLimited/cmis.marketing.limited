@@ -1,3 +1,18 @@
+### 📝 [2025-11-01 00:12:23 +0300] Commit Log
+**Commit ID:** d5451ca
+**Branch:** main
+**Committed by:** MarketingLimited
+**Modified Files:**
+- app/Services/Social/InstagramAccountSyncService.php
+- app/Services/Social/InstagramSyncService.php
+- backups/changelog_backup_2025-10-31.json
+- backups/changelog_backup_2025-10-31.md
+- database/schema.sql
+- docs/changelog.json
+- docs/changelog.md
+**Message:** إصلاح مزامنة حسابات Instagram وحذف الحقول غير المدعومة
+---
+
 ### 📝 [2025-10-31 23:38:27 +0300] Commit Log
 **Commit ID:** b52d8ae
 **Branch:** main

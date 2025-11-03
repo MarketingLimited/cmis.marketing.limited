@@ -68,7 +68,7 @@ class InstagramSyncService
         (new \App\Services\Social\InstagramAccountSyncService())->sync($integration);
         $endpoint = sprintf('%s/media', $integration->account_id);
         $fields = [
-            'id','caption','media_type','media_product_type','media_url','thumbnail_url','permalink','timestamp','like_count','comments_count'
+            'id','caption','media_type','media_url','thumbnail_url','permalink','timestamp','like_count','comments_count'
         ];
         $params = ['fields' => implode(',', $fields), 'limit' => 100];
 
@@ -78,7 +78,7 @@ class InstagramSyncService
         $mediaItems = $response->json('data', []);
 
         foreach ($mediaItems as $media) {
-            $insights = $this->fetchMediaInsights($integration, $media['id'], $media['media_product_type'] ?? null);
+            $insights = $this->fetchMediaInsights($integration, $media['id'], $media['media_type'] ?? null);
             $this->storePost($integration, $media, $insights);
         }
     }
@@ -144,14 +144,13 @@ class InstagramSyncService
         }
     }
 
-    protected function fetchMediaInsights(Integration $integration, string $mediaId, ?string $productType = null): array
+    protected function fetchMediaInsights(Integration $integration, string $mediaId, ?string $mediaType = null): array
     {
-        $productType = strtoupper($productType);
-        $metrics = match ($productType) {
-            'REELS' => [ 'likes', 'comments', 'shares', 'saved', 'reach', 'total_interactions', 'ig_reels_avg_watch_time', 'ig_reels_video_view_total_time'],
-            'STORY' => ['reach'],
-            default => ['likes', 'comments', 'saved', 'shares', 'reach', 'total_interactions']
-        };
+        $metrics = ['reach', 'likes', 'comments', 'saved', 'shares', 'total_interactions'];
+        if ($mediaType === 'REEL') {
+            $metrics[] = 'ig_reels_avg_watch_time';
+            $metrics[] = 'ig_reels_video_view_total_time';
+        }
 
         $response = $this->get($integration, sprintf('%s/insights', $mediaId), [
             'metric' => implode(',', $metrics)
