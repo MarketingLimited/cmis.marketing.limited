@@ -1,0 +1,1 @@
+SELECT cmis_knowledge.generate_system_report();

@@ -1,0 +1,1 @@
+SELECT cmis_knowledge.batch_update_embeddings();

@@ -1,0 +1,1 @@
+SELECT cmis_knowledge.verify_installation();

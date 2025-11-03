@@ -4,21 +4,28 @@ namespace App\Console;
 
 use App\Console\Commands\InstagramApiCommand;
 use App\Console\Commands\SyncInstagramData;
+use App\Console\Commands\CognitiveVitalityLog;
+use App\Console\Commands\CognitiveVitalityWatch;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 
 class Kernel extends ConsoleKernel
 {
     protected $commands = [
+        \App\Console\Commands\DbExecuteSql::class,
         SyncInstagramData::class,
         InstagramApiCommand::class,
+        CognitiveVitalityLog::class,
+        CognitiveVitalityWatch::class,
     ];
 
     protected function schedule(Schedule $schedule): void
     {
+        // 🔁 المهمة الأساسية لمزامنة إنستغرام اليومية
         $schedule->command('instagram:api marketing.limited media --limit=100 --sort=desc')
             ->dailyAt('01:00')
             ->withoutOverlapping()
@@ -53,6 +60,77 @@ class Kernel extends ConsoleKernel
                     ]);
                 }
             });
+
+        // 🧠 تسجيل الحيوية الإدراكية كل ساعة
+        $schedule->command('cognitive:vitality-hourly')
+            ->hourly()
+            ->onOneServer()
+            ->withoutOverlapping()
+            ->onSuccess(function () {
+                Log::info('🧠 تم تسجيل قراءة جديدة للحيوية الإدراكية بنجاح في ' . now());
+            })
+            ->onFailure(function () {
+                Log::warning('⚠️ فشل تسجيل الحيوية الإدراكية في ' . now());
+            });
+
+        // 🔍 مراقبة نبض الوعي الإدراكي كل ساعتين
+        $schedule->command('cognitive:vitality-watch')
+            ->everyTwoHours()
+            ->withoutOverlapping()
+            ->onSuccess(function () {
+                Log::info('🔍 فحص الوعي الإدراكي تم بنجاح في ' . now());
+            })
+            ->onFailure(function () {
+                Log::warning('⚠️ فشل فحص الوعي الإدراكي في ' . now());
+            });
+
+        // 📄 إنشاء التقرير الإدراكي الذاتي كل 24 ساعة
+        $schedule->call(function () {
+            DB::statement('SELECT generate_cognitive_health_report();');
+            Log::info('🧠 تم توليد التقرير الإدراكي الدوري بنجاح في ' . now());
+            DB::table('cmis_audit.logs')->insert([
+                'event_type' => 'cognitive_report',
+                'event_source' => 'CognitiveHealthReport',
+                'description' => '📄 تم توليد التقرير الإدراكي الدوري تلقائيًا.',
+                'created_at' => now(),
+            ]);
+        })
+        ->dailyAt('02:00')
+        ->onOneServer()
+        ->withoutOverlapping()
+        ->onFailure(function () {
+            Log::warning('⚠️ فشل توليد التقرير الإدراكي الدوري في ' . now());
+        });
+
+        // 📬 إرسال التقرير الإدراكي الصباحي إلى الإدارة كل يوم الساعة 08:00
+        $schedule->call(function () {
+            $report = DB::table('cmis_system_health.cognitive_reports')
+                ->orderByDesc('created_at')
+                ->limit(1)
+                ->first();
+
+            if ($report) {
+                $toAddress = config('mail.from.address', 'info@marketing.limited');
+
+                Mail::raw($report->report_text, function ($message) use ($toAddress) {
+                    $message->to($toAddress)
+                        ->subject('🧠 التقرير الإدراكي الصباحي | CMIS Cognitive Health');
+                });
+
+                DB::table('cmis_audit.logs')->insert([
+                    'event_type' => 'cognitive_notification',
+                    'event_source' => 'CognitiveHealthMailer',
+                    'description' => '📤 تم إرسال التقرير الإدراكي إلى الإدارة صباحًا.',
+                    'created_at' => now(),
+                ]);
+            }
+        })
+        ->dailyAt('08:00')
+        ->onOneServer()
+        ->withoutOverlapping()
+        ->onFailure(function () {
+            Log::warning('⚠️ فشل إرسال التقرير الإدراكي الصباحي في ' . now());
+        });
     }
 
     protected function commands(): void

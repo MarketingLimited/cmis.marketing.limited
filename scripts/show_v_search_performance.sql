@@ -1,0 +1,1 @@
+SELECT * FROM cmis_knowledge.v_search_performance;

@@ -1,0 +1,1232 @@
+{
+  "api_name": "Instagram Graph API",
+  "api_version": "v24.0",
+  "description": "Complete API reference for Instagram Platform operations including media management, insights, comments, publishing, and more",
+  "base_urls": {
+    "facebook_login": "https://graph.facebook.com",
+    "instagram_login": "https://graph.instagram.com",
+    "video_upload": "https://rupload.facebook.com"
+  },
+  
+  "authentication": {
+    "access_tokens": {
+      "types": ["User Access Token", "Page Access Token", "App Access Token"],
+      "exchange_short_to_long": {
+        "endpoint": "/access_token",
+        "method": "GET",
+        "parameters": {
+          "grant_type": "ig_exchange_token",
+          "client_secret": "string (required)",
+          "access_token": "string (required - short-lived token)"
+        },
+        "response": {
+          "access_token": "string",
+          "token_type": "bearer",
+          "expires_in": "integer (seconds)"
+        }
+      },
+      "refresh_long_lived": {
+        "endpoint": "/refresh_access_token",
+        "method": "GET",
+        "parameters": {
+          "grant_type": "ig_refresh_token",
+          "access_token": "string (required - long-lived token)"
+        },
+        "expiration": "60 days",
+        "refresh_window": "After 24 hours but before expiration"
+      }
+    },
+    "permissions": {
+      "instagram_basic": "Basic read access",
+      "instagram_content_publish": "Publish content",
+      "instagram_manage_comments": "Manage comments",
+      "instagram_manage_insights": "Access insights",
+      "instagram_shopping_tag_products": "Tag products",
+      "pages_read_engagement": "Read page engagement",
+      "catalog_management": "Manage product catalogs",
+      "ads_management": "Manage ads",
+      "ads_read": "Read ads data"
+    }
+  },
+
+  "endpoints": {
+    "user": {
+      "get_user": {
+        "endpoint": "/{ig-user-id}",
+        "method": "GET",
+        "description": "Get Instagram user information",
+        "parameters": {
+          "fields": "comma-separated list of fields"
+        },
+        "fields": {
+          "id": "string - User ID",
+          "username": "string - Username",
+          "name": "string - Profile name",
+          "biography": "string - Bio text",
+          "profile_picture_url": "string - Profile picture URL",
+          "followers_count": "integer - Follower count",
+          "follows_count": "integer - Following count",
+          "media_count": "integer - Total media count",
+          "website": "string - Website URL",
+          "has_profile_pic": "boolean - Has profile picture",
+          "is_published": "boolean - Account is published",
+          "shopping_product_tag_eligibility": "boolean - Eligible for product tagging"
+        },
+        "edges": {
+          "media": "Collection of media objects",
+          "stories": "Collection of story media",
+          "insights": "Account insights",
+          "tags": "Media where user is tagged",
+          "business_discovery": "Discover other business accounts",
+          "available_catalogs": "Product catalogs",
+          "live_media": "Live video media",
+          "recently_searched_hashtags": "Recently searched hashtags"
+        }
+      }
+    },
+
+    "media": {
+      "create_container": {
+        "endpoint": "/{ig-user-id}/media",
+        "method": "POST",
+        "description": "Create media container for publishing",
+        "container_types": {
+          "image": {
+            "parameters": {
+              "image_url": "string (required) - Public URL to image",
+              "caption": "string - Caption text (max 2200 chars, 30 hashtags, 20 @mentions)",
+              "alt_text": "string - Alternative text for accessibility (max 1000 chars)",
+              "location_id": "string - Facebook Page ID for location",
+              "user_tags": "array - Users to tag [{username, x, y}]",
+              "product_tags": "array - Products to tag [{product_id, x, y}]",
+              "is_carousel_item": "boolean - Part of carousel"
+            },
+            "specifications": {
+              "format": "JPEG",
+              "max_size": "8 MB",
+              "aspect_ratio": "4:5 to 1.91:1",
+              "min_width": 320,
+              "max_width": 1440,
+              "color_space": "sRGB"
+            }
+          },
+          "video": {
+            "parameters": {
+              "video_url": "string (required) - Public URL to video",
+              "caption": "string - Caption text",
+              "thumb_offset": "integer - Thumbnail frame position in milliseconds",
+              "location_id": "string - Location Page ID",
+              "user_tags": "array - Users to tag",
+              "is_carousel_item": "boolean - Part of carousel"
+            }
+          },
+          "reel": {
+            "parameters": {
+              "media_type": "string (required) - Set to 'REELS'",
+              "video_url": "string - Public URL (standard upload)",
+              "upload_type": "string - Set to 'resumable' for large files",
+              "caption": "string - Caption text",
+              "cover_url": "string - Cover image URL",
+              "audio_name": "string - Audio name",
+              "share_to_feed": "boolean - Share to feed and reels",
+              "collaborators": "array - List of up to 3 usernames",
+              "location_id": "string - Location Page ID",
+              "thumb_offset": "integer - Thumbnail position",
+              "user_tags": "array - Users to tag"
+            },
+            "specifications": {
+              "container": "MOV or MP4",
+              "audio_codec": "AAC, 48khz max",
+              "video_codec": "HEVC or H264",
+              "frame_rate": "23-60 FPS",
+              "max_width": 1920,
+              "aspect_ratio": "0.01:1 to 10:1 (recommended 9:16)",
+              "video_bitrate": "25Mbps max",
+              "audio_bitrate": "128kbps",
+              "duration": "3s min, 15 mins max",
+              "max_size": "300MB"
+            }
+          },
+          "carousel": {
+            "parameters": {
+              "media_type": "string (required) - Set to 'CAROUSEL'",
+              "children": "array (required) - Container IDs (max 10)",
+              "caption": "string - Caption text",
+              "location_id": "string - Location Page ID",
+              "product_tags": "array - Products to tag",
+              "collaborators": "array - Up to 3 usernames",
+              "share_to_feed": "boolean"
+            },
+            "limitations": {
+              "max_items": 10,
+              "supported_types": "Images and videos (no reels)",
+              "cropping": "Based on first image (default 1:1)"
+            }
+          },
+          "story": {
+            "image": {
+              "parameters": {
+                "image_url": "string (required)",
+                "media_type": "string (required) - Set to 'STORIES'",
+                "user_tags": "array - Users to mention"
+              },
+              "specifications": {
+                "format": "JPEG",
+                "max_size": "8 MB",
+                "aspect_ratio": "9:16 recommended",
+                "color_space": "sRGB"
+              }
+            },
+            "video": {
+              "parameters": {
+                "video_url": "string (required)",
+                "media_type": "string (required) - Set to 'STORIES'",
+                "upload_type": "string - 'resumable' for large files",
+                "user_tags": "array - Users to mention"
+              },
+              "specifications": {
+                "container": "MOV or MP4",
+                "audio_codec": "AAC, 48khz max",
+                "video_codec": "HEVC or H264",
+                "frame_rate": "23-60 FPS",
+                "max_width": 1920,
+                "aspect_ratio": "0.1:1 to 10:1 (recommended 9:16)",
+                "duration": "3s min, 60s max",
+                "max_size": "100MB"
+              }
+            }
+          }
+        },
+        "response": {
+          "id": "string - Container ID",
+          "uri": "string - Upload URI (for resumable uploads)"
+        }
+      },
+
+      "publish_container": {
+        "endpoint": "/{ig-user-id}/media_publish",
+        "method": "POST",
+        "description": "Publish media container",
+        "parameters": {
+          "creation_id": "string (required) - Container ID from creation step"
+        },
+        "rate_limit": "100 posts per 24 hours (carousels count as 1)",
+        "response": {
+          "id": "string - Published media ID"
+        }
+      },
+
+      "get_media": {
+        "endpoint": "/{ig-media-id}",
+        "method": "GET",
+        "description": "Get media object details",
+        "parameters": {
+          "fields": "comma-separated list of fields"
+        },
+        "fields": {
+          "id": "string - Media ID",
+          "media_type": "string - IMAGE, VIDEO, CAROUSEL_ALBUM",
+          "media_product_type": "string - AD, FEED, STORY, REELS",
+          "media_url": "string - Media URL",
+          "permalink": "string - Permanent URL",
+          "thumbnail_url": "string - Thumbnail URL (videos only)",
+          "caption": "string - Caption text",
+          "timestamp": "string - ISO 8601 creation date",
+          "username": "string - Creator username",
+          "owner": "object - Owner ID",
+          "comments_count": "integer - Comment count",
+          "like_count": "integer - Like count",
+          "is_comment_enabled": "boolean - Comments enabled",
+          "is_shared_to_feed": "boolean - Shared to feed (reels)",
+          "shortcode": "string - Shortcode",
+          "alt_text": "string - Alternative text",
+          "view_count": "integer - View count (reels)",
+          "legacy_instagram_media_id": "string - Legacy media ID"
+        },
+        "edges": {
+          "children": "Child media in carousel",
+          "comments": "Comments on media",
+          "insights": "Media insights",
+          "product_tags": "Product tags",
+          "collaborators": "Collaborators list"
+        }
+      },
+
+      "list_user_media": {
+        "endpoint": "/{ig-user-id}/media",
+        "method": "GET",
+        "description": "Get all media on user",
+        "parameters": {
+          "fields": "comma-separated list of fields",
+          "since": "unix timestamp - Start of time range",
+          "until": "unix timestamp - End of time range"
+        },
+        "limitations": {
+          "max_results": "10,000 most recent",
+          "excludes": "Stories (use /stories endpoint)"
+        }
+      },
+
+      "update_media": {
+        "endpoint": "/{ig-media-id}",
+        "method": "POST",
+        "description": "Enable/disable comments",
+        "parameters": {
+          "comment_enabled": "boolean (required)"
+        },
+        "response": {
+          "success": "boolean"
+        }
+      },
+
+      "check_container_status": {
+        "endpoint": "/{ig-container-id}",
+        "method": "GET",
+        "description": "Check container publishing status",
+        "parameters": {
+          "fields": "status_code"
+        },
+        "status_codes": {
+          "EXPIRED": "Container expired (24 hours)",
+          "ERROR": "Publishing failed",
+          "FINISHED": "Ready to publish",
+          "IN_PROGRESS": "Still processing",
+          "PUBLISHED": "Successfully published"
+        }
+      }
+    },
+
+    "comments": {
+      "get_media_comments": {
+        "endpoint": "/{ig-media-id}/comments",
+        "method": "GET",
+        "description": "Get comments on media",
+        "parameters": {
+          "fields": "comma-separated list of fields"
+        },
+        "fields": {
+          "id": "string - Comment ID",
+          "text": "string - Comment text",
+          "timestamp": "string - ISO 8601 timestamp",
+          "username": "string - Commenter username",
+          "from": "object - Commenter info {id, username}",
+          "like_count": "integer - Like count",
+          "hidden": "boolean - Is hidden",
+          "parent_id": "string - Parent comment ID (if reply)",
+          "media": "object - Media info {id, media_product_type}",
+          "legacy_instagram_comment_id": "string - Legacy comment ID"
+        },
+        "edges": {
+          "replies": "Replies to comment"
+        }
+      },
+
+      "create_comment": {
+        "endpoint": "/{ig-media-id}/comments",
+        "method": "POST",
+        "description": "Create comment on media",
+        "parameters": {
+          "message": "string (required) - Comment text"
+        },
+        "response": {
+          "id": "string - Comment ID"
+        }
+      },
+
+      "reply_to_comment": {
+        "endpoint": "/{ig-comment-id}/replies",
+        "method": "POST",
+        "description": "Reply to comment",
+        "parameters": {
+          "message": "string (required) - Reply text"
+        },
+        "response": {
+          "id": "string - Reply comment ID"
+        }
+      },
+
+      "get_comment": {
+        "endpoint": "/{ig-comment-id}",
+        "method": "GET",
+        "description": "Get comment details",
+        "parameters": {
+          "fields": "comma-separated list of fields"
+        }
+      },
+
+      "hide_unhide_comment": {
+        "endpoint": "/{ig-comment-id}",
+        "method": "POST",
+        "description": "Hide or unhide comment",
+        "parameters": {
+          "hide": "boolean (required) - true to hide, false to unhide"
+        },
+        "response": {
+          "success": "boolean"
+        }
+      },
+
+      "delete_comment": {
+        "endpoint": "/{ig-comment-id}",
+        "method": "DELETE",
+        "description": "Delete comment",
+        "response": {
+          "success": "boolean"
+        }
+      },
+
+      "private_reply": {
+        "endpoint": "/{ig-user-id}/messages",
+        "method": "POST",
+        "description": "Send private reply to commenter",
+        "parameters": {
+          "recipient": "object (required) - {comment_id}",
+          "message": "object (required) - {text}"
+        },
+        "limitations": {
+          "time_window": "7 days from comment creation",
+          "live_video": "Only during broadcast",
+          "one_message": "Only one initial message allowed"
+        },
+        "response": {
+          "recipient_id": "string - Instagram-scoped ID",
+          "message_id": "string - Message ID"
+        }
+      }
+    },
+
+    "insights": {
+      "media_insights": {
+        "endpoint": "/{ig-media-id}/insights",
+        "method": "GET",
+        "description": "Get media insights",
+        "parameters": {
+          "metric": "comma-separated list of metrics",
+          "breakdown": "breakdown dimension (optional)"
+        },
+        "metrics": {
+          "engagement": {
+            "description": "Total likes and comments",
+            "period": "lifetime"
+          },
+          "impressions": {
+            "description": "Total views (deprecated for post-July 2024 media)",
+            "period": "lifetime"
+          },
+          "reach": {
+            "description": "Unique accounts reached",
+            "period": "lifetime"
+          },
+          "saved": {
+            "description": "Number of saves",
+            "period": "lifetime",
+            "supported_types": ["FEED", "REELS"]
+          },
+          "shares": {
+            "description": "Number of shares",
+            "period": "lifetime",
+            "supported_types": ["FEED", "REELS", "STORY"]
+          },
+          "likes": {
+            "description": "Number of likes",
+            "period": "lifetime",
+            "supported_types": ["FEED", "REELS"]
+          },
+          "comments": {
+            "description": "Number of comments",
+            "period": "day",
+            "breakdown": "media_product_type"
+          },
+          "views": {
+            "description": "Total views",
+            "period": "lifetime",
+            "supported_types": ["FEED", "REELS", "STORY"]
+          },
+          "plays": {
+            "description": "Number of plays (deprecated)",
+            "period": "lifetime",
+            "supported_types": ["REELS"]
+          },
+          "total_interactions": {
+            "description": "Total interactions",
+            "period": "lifetime",
+            "breakdown": "media_product_type"
+          },
+          "profile_activity": {
+            "description": "Profile actions after viewing",
+            "period": "lifetime",
+            "breakdown": "action_type",
+            "supported_types": ["FEED", "STORY"]
+          },
+          "profile_visits": {
+            "description": "Profile visits",
+            "period": "lifetime",
+            "supported_types": ["FEED", "STORY"]
+          },
+          "ig_reels_avg_watch_time": {
+            "description": "Average watch time",
+            "period": "lifetime",
+            "supported_types": ["REELS"]
+          },
+          "ig_reels_video_view_total_time": {
+            "description": "Total watch time",
+            "period": "lifetime",
+            "supported_types": ["REELS"]
+          },
+          "replies": {
+            "description": "Story replies",
+            "period": "lifetime",
+            "supported_types": ["STORY"]
+          },
+          "navigation": {
+            "description": "Navigation actions",
+            "period": "lifetime",
+            "breakdown": "story_navigation_action_type",
+            "supported_types": ["STORY"]
+          }
+        },
+        "breakdowns": {
+          "action_type": {
+            "values": ["BIO_LINK_CLICKED", "CALL", "DIRECTION", "EMAIL", "TEXT", "OTHER"],
+            "compatible_metrics": ["profile_activity"]
+          },
+          "story_navigation_action_type": {
+            "values": ["TAP_FORWARD", "TAP_BACK", "TAP_EXIT", "SWIPE_FORWARD"],
+            "compatible_metrics": ["navigation"]
+          }
+        }
+      },
+
+      "account_insights": {
+        "endpoint": "/{ig-user-id}/insights",
+        "method": "GET",
+        "description": "Get account insights",
+        "parameters": {
+          "metric": "comma-separated list (required)",
+          "period": "string (required) - day, week, days_28, month, lifetime",
+          "since": "unix timestamp - Start time",
+          "until": "unix timestamp - End time",
+          "breakdown": "breakdown dimension",
+          "metric_type": "time_series or total_value",
+          "timeframe": "timeframe for demographics"
+        },
+        "metrics": {
+          "impressions": {
+            "description": "Total impressions (deprecated)",
+            "period": "day",
+            "metric_type": ["time_series", "total_value"]
+          },
+          "reach": {
+            "description": "Unique accounts reached",
+            "period": "day",
+            "breakdown": ["media_product_type", "follow_type"],
+            "metric_type": ["time_series", "total_value"]
+          },
+          "accounts_engaged": {
+            "description": "Accounts that interacted",
+            "period": "day",
+            "metric_type": "total_value"
+          },
+          "total_interactions": {
+            "description": "Total interactions",
+            "period": "day",
+            "breakdown": "media_product_type",
+            "metric_type": "total_value"
+          },
+          "likes": {
+            "description": "Total likes",
+            "period": "day",
+            "breakdown": "media_product_type",
+            "metric_type": "total_value"
+          },
+          "comments": {
+            "description": "Total comments",
+            "period": "day",
+            "breakdown": "media_product_type",
+            "metric_type": "total_value"
+          },
+          "shares": {
+            "description": "Total shares",
+            "period": "day",
+            "breakdown": "media_product_type",
+            "metric_type": "total_value"
+          },
+          "saved": {
+            "description": "Total saves",
+            "period": "day",
+            "breakdown": "media_product_type",
+            "metric_type": "total_value"
+          },
+          "replies": {
+            "description": "Story replies",
+            "period": "day",
+            "metric_type": "total_value"
+          },
+          "profile_links_taps": {
+            "description": "Profile link taps",
+            "period": "day",
+            "breakdown": "contact_button_type",
+            "metric_type": "total_value"
+          },
+          "follows_and_unfollows": {
+            "description": "Follows and unfollows",
+            "period": "day",
+            "breakdown": "follow_type",
+            "metric_type": "total_value"
+          },
+          "follower_demographics": {
+            "description": "Follower demographics",
+            "period": "lifetime",
+            "timeframe": ["last_14_days", "last_30_days", "last_90_days", "this_week", "this_month"],
+            "breakdown": ["age", "city", "country", "gender"],
+            "metric_type": "total_value"
+          },
+          "engaged_audience_demographics": {
+            "description": "Engaged audience demographics",
+            "period": "lifetime",
+            "timeframe": ["last_14_days", "last_30_days", "last_90_days", "this_week", "this_month"],
+            "breakdown": ["age", "city", "country", "gender"],
+            "metric_type": "total_value"
+          },
+          "views": {
+            "description": "Total views",
+            "period": "day",
+            "breakdown": ["follower_type", "media_product_type"],
+            "metric_type": "total_value"
+          }
+        }
+      }
+    },
+
+    "hashtags": {
+      "search_hashtag": {
+        "endpoint": "/ig_hashtag_search",
+        "method": "GET",
+        "description": "Search for hashtag ID",
+        "parameters": {
+          "user_id": "string (required) - IG User ID",
+          "q": "string (required) - Hashtag name (without #)"
+        },
+        "limitations": {
+          "max_unique_hashtags": "30 per 7 days",
+          "no_emojis": true,
+          "no_sensitive_hashtags": true
+        },
+        "response": {
+          "id": "string - Hashtag ID"
+        }
+      },
+
+      "get_hashtag": {
+        "endpoint": "/{ig-hashtag-id}",
+        "method": "GET",
+        "description": "Get hashtag information",
+        "parameters": {
+          "fields": "comma-separated list"
+        },
+        "fields": {
+          "id": "string - Hashtag ID",
+          "name": "string - Hashtag name (without #)"
+        },
+        "edges": {
+          "recent_media": "Recently tagged media",
+          "top_media": "Top tagged media"
+        }
+      },
+
+      "get_recent_media": {
+        "endpoint": "/{ig-hashtag-id}/recent_media",
+        "method": "GET",
+        "description": "Get recent media with hashtag",
+        "parameters": {
+          "user_id": "string (required) - IG User ID",
+          "fields": "comma-separated list"
+        },
+        "limitations": {
+          "time_range": "Last 24 hours only",
+          "public_only": true,
+          "no_ads": true,
+          "max_per_page": 50
+        },
+        "returnable_fields": [
+          "id", "caption", "children", "comments_count", "like_count",
+          "media_type", "media_url", "permalink", "timestamp"
+        ]
+      },
+
+      "get_top_media": {
+        "endpoint": "/{ig-hashtag-id}/top_media",
+        "method": "GET",
+        "description": "Get top media with hashtag",
+        "parameters": {
+          "user_id": "string (required) - IG User ID",
+          "fields": "comma-separated list"
+        },
+        "limitations": {
+          "public_only": true,
+          "no_ads": true,
+          "max_per_page": 50
+        }
+      },
+
+      "recently_searched": {
+        "endpoint": "/{ig-user-id}/recently_searched_hashtags",
+        "method": "GET",
+        "description": "Get recently searched hashtags",
+        "parameters": {
+          "limit": "integer - Max 30"
+        }
+      }
+    },
+
+    "mentions": {
+      "get_mentioned_comment": {
+        "endpoint": "/{ig-user-id}",
+        "method": "GET",
+        "description": "Get comment where user was mentioned",
+        "parameters": {
+          "fields": "mentioned_comment.comment_id({comment-id}){fields}"
+        },
+        "fields": {
+          "id": "string - Comment ID",
+          "text": "string - Comment text",
+          "timestamp": "string - Timestamp",
+          "like_count": "integer - Like count",
+          "media": "object - Media info"
+        }
+      },
+
+      "get_mentioned_media": {
+        "endpoint": "/{ig-user-id}",
+        "method": "GET",
+        "description": "Get media where user was mentioned in caption",
+        "parameters": {
+          "fields": "mentioned_media.media_id({media-id}){fields}"
+        },
+        "fields": {
+          "id": "string - Media ID",
+          "caption": "string - Caption text",
+          "comments_count": "integer - Comment count",
+          "like_count": "integer - Like count",
+          "media_type": "string - Media type",
+          "media_url": "string - Media URL",
+          "timestamp": "string - Timestamp",
+          "username": "string - Creator username"
+        }
+      },
+
+      "reply_to_mention": {
+        "endpoint": "/{ig-user-id}/mentions",
+        "method": "POST",
+        "description": "Reply to comment or caption mention",
+        "parameters": {
+          "comment_id": "string - Comment ID (for comment replies)",
+          "media_id": "string (required) - Media ID",
+          "message": "string (required) - Reply text"
+        },
+        "response": {
+          "id": "string - Comment ID"
+        }
+      },
+
+      "get_tags": {
+        "endpoint": "/{ig-user-id}/tags",
+        "method": "GET",
+        "description": "Get media where user is tagged",
+        "parameters": {
+          "fields": "comma-separated list"
+        },
+        "limitations": {
+          "private_media_excluded": true
+        }
+      }
+    },
+
+    "business_discovery": {
+      "discover_account": {
+        "endpoint": "/{ig-user-id}",
+        "method": "GET",
+        "description": "Get data about other business accounts",
+        "parameters": {
+          "fields": "business_discovery.username({username}){fields}"
+        },
+        "available_fields": {
+          "id": "string - User ID",
+          "username": "string - Username",
+          "name": "string - Name",
+          "biography": "string - Bio",
+          "website": "string - Website",
+          "followers_count": "integer - Follower count",
+          "media_count": "integer - Media count",
+          "profile_picture_url": "string - Profile picture URL"
+        },
+        "available_edges": {
+          "media": "User's media with public fields"
+        },
+        "limitations": {
+          "no_age_gated_accounts": true,
+          "public_fields_only": true
+        }
+      }
+    },
+
+    "product_tagging": {
+      "check_eligibility": {
+        "endpoint": "/{ig-user-id}",
+        "method": "GET",
+        "description": "Check product tagging eligibility",
+        "parameters": {
+          "fields": "shopping_product_tag_eligibility"
+        },
+        "response": {
+          "shopping_product_tag_eligibility": "boolean"
+        }
+      },
+
+      "get_catalogs": {
+        "endpoint": "/{ig-user-id}/available_catalogs",
+        "method": "GET",
+        "description": "Get available product catalogs",
+        "response_fields": {
+          "catalog_id": "string - Catalog ID",
+          "catalog_name": "string - Catalog name",
+          "shop_name": "string - Shop name",
+          "product_count": "integer - Total products"
+        }
+      },
+
+      "search_products": {
+        "endpoint": "/{ig-user-id}/catalog_product_search",
+        "method": "GET",
+        "description": "Search products in catalog",
+        "parameters": {
+          "catalog_id": "string (required) - Catalog ID",
+          "q": "string - Search query"
+        },
+        "response_fields": {
+          "product_id": "string - Product ID",
+          "merchant_id": "string - Merchant ID",
+          "product_name": "string - Product name",
+          "image_url": "string - Product image URL",
+          "retailer_id": "string - Retailer ID",
+          "review_status": "string - approved/pending/rejected/outdated",
+          "is_checkout_flow": "boolean - In-app checkout available",
+          "product_variants": "array - Product variants"
+        }
+      },
+
+      "create_tagged_container": {
+        "endpoint": "/{ig-user-id}/media",
+        "method": "POST",
+        "description": "Create container with product tags",
+        "parameters": {
+          "image_url": "string - Image URL (for images)",
+          "video_url": "string - Video URL (for videos)",
+          "product_tags": "array (required) - [{product_id, x, y}]"
+        },
+        "limitations": {
+          "max_tags_per_item": 5,
+          "max_tags_carousel": 20,
+          "no_stories": true,
+          "no_creator_accounts": true
+        }
+      },
+
+      "get_product_tags": {
+        "endpoint": "/{ig-media-id}/product_tags",
+        "method": "GET",
+        "description": "Get product tags on media",
+        "response_fields": {
+          "product_id": "integer - Product ID",
+          "merchant_id": "integer - Merchant ID",
+          "name": "string - Product name",
+          "price_string": "string - Price",
+          "image_url": "string - Product image",
+          "review_status": "string - Review status",
+          "is_checkout": "boolean - In-app checkout",
+          "x": "float - X coordinate (0.0-1.0)",
+          "y": "float - Y coordinate (0.0-1.0)"
+        }
+      },
+
+      "update_product_tags": {
+        "endpoint": "/{ig-media-id}/product_tags",
+        "method": "POST",
+        "description": "Create or update product tags",
+        "parameters": {
+          "updated_tags": "array (required) - [{product_id, x, y}]"
+        },
+        "response": {
+          "success": "boolean"
+        }
+      },
+
+      "appeal_rejection": {
+        "endpoint": "/{ig-user-id}/product_appeal",
+        "method": "POST",
+        "description": "Appeal rejected product",
+        "parameters": {
+          "product_id": "string (required) - Product ID",
+          "appeal_reason": "string (required) - Appeal reason"
+        },
+        "response": {
+          "success": "boolean"
+        }
+      },
+
+      "get_appeal_status": {
+        "endpoint": "/{ig-user-id}/product_appeal",
+        "method": "GET",
+        "description": "Get product appeal status",
+        "parameters": {
+          "product_id": "string (required) - Product ID"
+        },
+        "response_fields": {
+          "product_id": "integer - Product ID",
+          "review_status": "string - Review status",
+          "eligible_for_appeal": "boolean - Can appeal"
+        }
+      }
+    },
+
+    "stories": {
+      "get_stories": {
+        "endpoint": "/{ig-user-id}/stories",
+        "method": "GET",
+        "description": "Get user's stories",
+        "parameters": {
+          "fields": "comma-separated list"
+        },
+        "limitations": {
+          "available_duration": "24 hours",
+          "no_live_videos": true,
+          "single_caption_only": true
+        }
+      }
+    },
+
+    "live_media": {
+      "get_live_media": {
+        "endpoint": "/{ig-user-id}/live_media",
+        "method": "GET",
+        "description": "Get live video media",
+        "parameters": {
+          "fields": "comma-separated list",
+          "since": "unix timestamp",
+          "until": "unix timestamp"
+        },
+        "limitations": {
+          "only_broadcasting": "Only returns currently broadcasting videos"
+        }
+      }
+    },
+
+    "content_publishing_limit": {
+      "check_limit": {
+        "endpoint": "/{ig-user-id}/content_publishing_limit",
+        "method": "GET",
+        "description": "Check publishing rate limit",
+        "parameters": {
+          "fields": "quota_usage,config",
+          "since": "unix timestamp (optional)"
+        },
+        "response": {
+          "quota_usage": "integer - Number of publishes",
+          "config": {
+            "quota_total": "integer - Max allowed (50)",
+            "quota_duration": "integer - Time period in seconds (86400)"
+          }
+        }
+      }
+    },
+
+    "oembed": {
+      "get_embed": {
+        "endpoint": "/instagram_oembed",
+        "method": "GET",
+        "description": "Get Instagram post embed HTML",
+        "parameters": {
+          "url": "string (required) - Instagram post URL",
+          "maxwidth": "integer - Max width in pixels",
+          "fields": "comma-separated list",
+          "omitscript": "boolean - Omit embed.js script"
+        },
+        "supported_urls": [
+          "https://www.instagram.com/p/{media-shortcode}/",
+          "https://www.instagram.com/tv/{media-shortcode}/",
+          "https://www.instagram.com/{username}/guide/{slug}/{guide_id}"
+        ],
+        "response_fields": {
+          "html": "string - Embed HTML",
+          "version": "string - oEmbed version",
+          "provider_name": "string - Instagram",
+          "provider_url": "string - Instagram URL",
+          "type": "string - Type (rich)",
+          "width": "integer - Width in pixels"
+        },
+        "limitations": {
+          "no_private_accounts": true,
+          "no_stories": true,
+          "no_disabled_embeds": true
+        }
+      }
+    },
+
+    "copyright_detection": {
+      "check_container": {
+        "endpoint": "/{ig-container-id}",
+        "method": "GET",
+        "description": "Check copyright before publishing",
+        "parameters": {
+          "fields": "copyright_check_status"
+        },
+        "response": {
+          "copyright_check_status": {
+            "status": "completed/error/in_progress/not_started",
+            "matches_found": "boolean"
+          }
+        }
+      },
+
+      "check_published": {
+        "endpoint": "/{ig-media-id}",
+        "method": "GET",
+        "description": "Check copyright on published media",
+        "parameters": {
+          "fields": "copyright_check_information"
+        },
+        "response": {
+          "copyright_check_information": {
+            "status": {
+              "status": "string - Status",
+              "matches_found": "boolean"
+            },
+            "copyright_matches": {
+              "author": "string - Copyright owner",
+              "content_title": "string - Content title",
+              "matched_segments": "array - Violation segments",
+              "owner_copyright_policy": "object - Policy details"
+            }
+          }
+        }
+      }
+    },
+
+    "upcoming_events": {
+      "create_event": {
+        "endpoint": "/{ig-user-id}/upcoming_events",
+        "method": "POST",
+        "description": "Create upcoming event",
+        "parameters": {
+          "title": "string (required) - Event title",
+          "start_time": "string (required) - ISO 8601 timestamp",
+          "end_time": "string - ISO 8601 timestamp",
+          "notification_subtypes": "array - Notification times",
+          "notification_target_time": "string - EVENT_START or EVENT_END"
+        },
+        "notification_options": {
+          "for_event_start": [
+            "BEFORE_EVENT_15MIN", "BEFORE_EVENT_1DAY", "EVENT_START",
+            "AFTER_EVENT_1DAY", "AFTER_EVENT_2DAY", "AFTER_EVENT_3DAY",
+            "AFTER_EVENT_4DAY", "AFTER_EVENT_5DAY", "AFTER_EVENT_6DAY",
+            "AFTER_EVENT_7DAY"
+          ],
+          "for_event_end": [
+            "BEFORE_EVENT_2DAY", "BEFORE_EVENT_1DAY", "BEFORE_EVENT_1HOUR"
+          ]
+        },
+        "response": {
+          "id": "string - Event ID"
+        }
+      },
+
+      "get_event": {
+        "endpoint": "/{event-id}",
+        "method": "GET",
+        "description": "Get event details",
+        "response": {
+          "id": "string - Event ID",
+          "title": "string - Event title",
+          "start_time": "string - ISO 8601 timestamp"
+        }
+      },
+
+      "update_event": {
+        "endpoint": "/{event-id}",
+        "method": "POST",
+        "description": "Update event",
+        "parameters": {
+          "title": "string - Event title",
+          "start_time": "string - ISO 8601 timestamp",
+          "end_time": "string - ISO 8601 timestamp",
+          "notification_subtypes": "array - Notification times"
+        }
+      },
+
+      "list_events": {
+        "endpoint": "/{ig-user-id}/upcoming_events",
+        "method": "GET",
+        "description": "List all upcoming events",
+        "response": {
+          "data": "array - Array of events"
+        }
+      }
+    },
+
+    "threads": {
+      "get_connected_threads": {
+        "endpoint": "/{ig-user-id}/connected_threads_user",
+        "method": "GET",
+        "description": "Get connected Threads account",
+        "parameters": {
+          "fields": "threads_user_id"
+        },
+        "response": {
+          "threads_user_id": "string - Threads user ID"
+        }
+      },
+
+      "create_instagram_backed_threads": {
+        "endpoint": "/{ig-user-id}/instagram_backed_threads_user",
+        "method": "POST",
+        "description": "Create Instagram-backed Threads account",
+        "response": {
+          "threads_user_id": "string - Threads user ID"
+        }
+      },
+
+      "get_instagram_backed_threads": {
+        "endpoint": "/{ig-user-id}/instagram_backed_threads_user",
+        "method": "GET",
+        "description": "Get Instagram-backed Threads account",
+        "parameters": {
+          "fields": "threads_user_id"
+        }
+      }
+    }
+  },
+
+  "webhooks": {
+    "description": "Real-time notifications for Instagram events",
+    "available_fields": {
+      "comments": "New comments on media",
+      "live_comments": "Comments during live broadcasts",
+      "mentions": "User mentions in captions/comments",
+      "story_insights": "Story insights (Facebook Login only)"
+    },
+    "comment_payload": {
+      "object": "instagram",
+      "entry": [{
+        "id": "string - Instagram account ID",
+        "time": "integer - Timestamp",
+        "changes": [{
+          "field": "string - Event type",
+          "value": {
+            "from": {
+              "id": "string - Commenter ID",
+              "username": "string - Username"
+            },
+            "comment_id": "string - Comment ID",
+            "parent_id": "string - Parent comment ID (if reply)",
+            "text": "string - Comment text",
+            "media": {
+              "id": "string - Media ID",
+              "media_product_type": "string - Product type"
+            }
+          }
+        }]
+      }]
+    }
+  },
+
+  "rate_limits": {
+    "account_level": {
+      "description": "Per Instagram account",
+      "limit": "Varies by endpoint"
+    },
+    "app_level": {
+      "description": "Per application",
+      "formula": "200 * Number of Active Users per hour"
+    },
+    "publishing": {
+      "posts": "100 per 24 hours",
+      "carousels": "Counted as 1 post",
+      "containers": "400 per 24 hours"
+    },
+    "hashtag_search": {
+      "unique_hashtags": "30 per 7 days per account"
+    }
+  },
+
+  "error_codes": {
+    "10": {
+      "message": "Permission Denied",
+      "solutions": ["Check app permissions", "Verify user authorization"]
+    },
+    "24": {
+      "message": "Media not found",
+      "solutions": ["Verify media ID", "Check permissions", "Generate new container"]
+    },
+    "100": {
+      "message": "Invalid parameter",
+      "solutions": ["Check parameter format", "Verify required fields"]
+    },
+    "36000": {
+      "code": "2207004",
+      "message": "Image size too large",
+      "solution": "Image must be less than 8MB"
+    },
+    "36001": {
+      "code": "2207005",
+      "message": "Image format not supported",
+      "solution": "Use JPEG, PNG, or GIF format"
+    },
+    "36003": {
+      "code": "2207009",
+      "message": "Invalid aspect ratio",
+      "solution": "Use aspect ratio between 4:5 and 1.91:1"
+    },
+    "36004": {
+      "code": "2207010",
+      "message": "Caption too long",
+      "solution": "Max 2200 characters, 30 hashtags, 20 @tags"
+    }
+  },
+
+  "best_practices": {
+    "authentication": [
+      "Use long-lived tokens (60 days)",
+      "Refresh tokens before expiration",
+      "Store tokens securely",
+      "Never expose app secret in client code"
+    ],
+    "publishing": [
+      "Check container status before publishing",
+      "Verify video upload completion",
+      "Monitor rate limits",
+      "Handle errors gracefully",
+      "Use approved products for tagging"
+    ],
+    "media": [
+      "Host media on public servers",
+      "Follow format specifications",
+      "Compress videos appropriately",
+      "Use correct aspect ratios",
+      "Test copyright before publishing"
+    ],
+    "insights": [
+      "Allow 48 hours for data processing",
+      "Store historical data (2 year retention)",
+      "Handle empty result sets",
+      "Use appropriate time ranges",
+      "Request only needed metrics"
+    ],
+    "webhooks": [
+      "Use webhooks over polling",
+      "Store webhook data immediately",
+      "Handle duplicate notifications",
+      "Implement retry logic",
+      "Verify webhook signatures"
+    ]
+  }
+}
