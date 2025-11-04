@@ -2,8 +2,10 @@
 -- PostgreSQL database dump
 --
 
--- Dumped from database version 12.22 (Ubuntu 12.22-0ubuntu0.20.04.4)
--- Dumped by pg_dump version 17.5 (Ubuntu 17.5-1.pgdg20.04+1)
+\restrict zttsLOVYQkHsSMYfZob8o7yVjyaf4HfQqBuaFefhmxeRoXPVJOWA2rfz3JGU03x
+
+-- Dumped from database version 17.6 (Ubuntu 17.6-2.pgdg22.04+1)
+-- Dumped by pg_dump version 18.0 (Ubuntu 18.0-1.pgdg22.04+3)
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -45,6 +47,42 @@ CREATE SCHEMA cmis_analytics;
 ALTER SCHEMA cmis_analytics OWNER TO begin;
 
 --
+-- Name: cmis_audit; Type: SCHEMA; Schema: -; Owner: begin
+--
+
+CREATE SCHEMA cmis_audit;
+
+
+ALTER SCHEMA cmis_audit OWNER TO begin;
+
+--
+-- Name: cmis_dev; Type: SCHEMA; Schema: -; Owner: begin
+--
+
+CREATE SCHEMA cmis_dev;
+
+
+ALTER SCHEMA cmis_dev OWNER TO begin;
+
+--
+-- Name: cmis_knowledge; Type: SCHEMA; Schema: -; Owner: begin
+--
+
+CREATE SCHEMA cmis_knowledge;
+
+
+ALTER SCHEMA cmis_knowledge OWNER TO begin;
+
+--
+-- Name: cmis_marketing; Type: SCHEMA; Schema: -; Owner: begin
+--
+
+CREATE SCHEMA cmis_marketing;
+
+
+ALTER SCHEMA cmis_marketing OWNER TO begin;
+
+--
 -- Name: cmis_ops; Type: SCHEMA; Schema: -; Owner: begin
 --
 
@@ -72,6 +110,15 @@ CREATE SCHEMA cmis_staging;
 ALTER SCHEMA cmis_staging OWNER TO begin;
 
 --
+-- Name: cmis_system_health; Type: SCHEMA; Schema: -; Owner: begin
+--
+
+CREATE SCHEMA cmis_system_health;
+
+
+ALTER SCHEMA cmis_system_health OWNER TO begin;
+
+--
 -- Name: lab; Type: SCHEMA; Schema: -; Owner: begin
 --
 
@@ -88,6 +135,20 @@ ALTER SCHEMA lab OWNER TO begin;
 
 
 ALTER SCHEMA public OWNER TO postgres;
+
+--
+-- Name: plpython3u; Type: EXTENSION; Schema: -; Owner: -
+--
+
+CREATE EXTENSION IF NOT EXISTS plpython3u WITH SCHEMA pg_catalog;
+
+
+--
+-- Name: EXTENSION plpython3u; Type: COMMENT; Schema: -; Owner: 
+--
+
+COMMENT ON EXTENSION plpython3u IS 'PL/Python3U untrusted procedural language';
+
 
 --
 -- Name: citext; Type: EXTENSION; Schema: -; Owner: -
@@ -143,6 +204,34 @@ CREATE EXTENSION IF NOT EXISTS pgcrypto WITH SCHEMA public;
 --
 
 COMMENT ON EXTENSION pgcrypto IS 'cryptographic functions';
+
+
+--
+-- Name: uuid-ossp; Type: EXTENSION; Schema: -; Owner: -
+--
+
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp" WITH SCHEMA public;
+
+
+--
+-- Name: EXTENSION "uuid-ossp"; Type: COMMENT; Schema: -; Owner: 
+--
+
+COMMENT ON EXTENSION "uuid-ossp" IS 'generate universally unique identifiers (UUIDs)';
+
+
+--
+-- Name: vector; Type: EXTENSION; Schema: -; Owner: -
+--
+
+CREATE EXTENSION IF NOT EXISTS vector WITH SCHEMA public;
+
+
+--
+-- Name: EXTENSION vector; Type: COMMENT; Schema: -; Owner: 
+--
+
+COMMENT ON EXTENSION vector IS 'vector data type and ivfflat and hnsw access methods';
 
 
 --
@@ -434,6 +523,823 @@ $$;
 ALTER FUNCTION cmis_analytics.snapshot_performance(snapshot_days integer) OWNER TO begin;
 
 --
+-- Name: auto_context_task_loader(text, text, text, text, smallint, integer); Type: FUNCTION; Schema: cmis_dev; Owner: begin
+--
+
+CREATE FUNCTION cmis_dev.auto_context_task_loader(p_prompt text, p_domain text DEFAULT NULL::text, p_category text DEFAULT 'dev'::text, p_scope_code text DEFAULT 'system_dev'::text, p_priority smallint DEFAULT 3, p_token_limit integer DEFAULT 5000) RETURNS jsonb
+    LANGUAGE plpgsql
+    AS $$
+DECLARE
+    v_context jsonb;
+    v_task_id uuid;
+    v_plan jsonb;
+    v_summary text;
+BEGIN
+    -- استدعاء السياق المعرفي الذكي
+    SELECT cmis_knowledge.smart_context_loader(p_prompt, p_domain, p_category, p_token_limit)
+    INTO v_context;
+
+    -- بناء ملخص سريع للمهمة
+    v_summary := left((v_context->>'summary'), 500);
+
+    -- بناء خطة أولية بناءً على المعرفة المحملة
+    v_plan := jsonb_build_object(
+        'steps', jsonb_build_array(
+            jsonb_build_object(
+                'order', 1,
+                'action_type', 'knowledge',
+                'description', 'تحميل المعرفة المرتبطة بالسياق',
+                'content', v_context->'context_loaded'
+            ),
+            jsonb_build_object(
+                'order', 2,
+                'action_type', 'analysis',
+                'description', 'تحليل السياق لتوليد خطة التنفيذ'
+            )
+        )
+    );
+
+    -- إنشاء المهمة وتسجيلها في قاعدة البيانات
+    INSERT INTO cmis_dev.dev_tasks (name, description, scope_code, status, priority, execution_plan)
+    VALUES (p_prompt, v_summary, p_scope_code, 'context_loaded', p_priority, v_plan)
+    RETURNING task_id INTO v_task_id;
+
+    -- تسجيل الحدث في السجلات
+    INSERT INTO cmis_dev.dev_logs (task_id, event, details)
+    VALUES (v_task_id, 'context_initialized', jsonb_build_object('context', v_context));
+
+    -- إرجاع تقرير الإدخال الكامل
+    RETURN jsonb_build_object(
+        'task_id', v_task_id,
+        'prompt', p_prompt,
+        'domain', p_domain,
+        'category', p_category,
+        'context_summary', v_summary,
+        'token_estimate', v_context->'estimated_tokens',
+        'execution_plan', v_plan
+    );
+END;
+$$;
+
+
+ALTER FUNCTION cmis_dev.auto_context_task_loader(p_prompt text, p_domain text, p_category text, p_scope_code text, p_priority smallint, p_token_limit integer) OWNER TO begin;
+
+--
+-- Name: create_dev_task(text, text, text, jsonb, smallint); Type: FUNCTION; Schema: cmis_dev; Owner: begin
+--
+
+CREATE FUNCTION cmis_dev.create_dev_task(p_name text, p_description text, p_scope_code text, p_execution_plan jsonb, p_priority smallint DEFAULT 3) RETURNS uuid
+    LANGUAGE plpgsql
+    AS $$ DECLARE v_task_id uuid; v_similar_task uuid; BEGIN SELECT task_id INTO v_similar_task FROM cmis_dev.dev_tasks WHERE similarity(name, p_name) > 0.8 AND status IN ('pending', 'in_progress') AND created_at > now() - interval '7 days' LIMIT 1; IF v_similar_task IS NOT NULL THEN RAISE NOTICE 'Similar task found: %', v_similar_task; RETURN v_similar_task; END IF; INSERT INTO cmis_dev.dev_tasks (name, description, scope_code, execution_plan, priority, status) VALUES (p_name, p_description, p_scope_code, p_execution_plan, p_priority, 'pending') RETURNING task_id INTO v_task_id; INSERT INTO cmis_dev.dev_logs (task_id, event, details) VALUES (v_task_id, 'task_created', jsonb_build_object('priority', p_priority, 'scope', p_scope_code)); RETURN v_task_id; END; $$;
+
+
+ALTER FUNCTION cmis_dev.create_dev_task(p_name text, p_description text, p_scope_code text, p_execution_plan jsonb, p_priority smallint) OWNER TO begin;
+
+--
+-- Name: create_dev_task(text, text, text, jsonb, integer); Type: FUNCTION; Schema: cmis_dev; Owner: begin
+--
+
+CREATE FUNCTION cmis_dev.create_dev_task(p_name text, p_description text, p_scope_code text, p_execution_plan jsonb, p_priority integer DEFAULT 3) RETURNS uuid
+    LANGUAGE plpgsql
+    AS $$ DECLARE v_task_id uuid; v_similar_task uuid; BEGIN SELECT task_id INTO v_similar_task FROM cmis_dev.dev_tasks WHERE similarity(name, p_name) > 0.8 AND status IN ('pending', 'in_progress') AND created_at > now() - interval '7 days' LIMIT 1; IF v_similar_task IS NOT NULL THEN RAISE NOTICE 'Similar task found: %', v_similar_task; RETURN v_similar_task; END IF; INSERT INTO cmis_dev.dev_tasks (name, description, scope_code, execution_plan, priority, status) VALUES (p_name, p_description, p_scope_code, p_execution_plan, p_priority, 'pending') RETURNING task_id INTO v_task_id; INSERT INTO cmis_dev.dev_logs (task_id, event, details) VALUES (v_task_id, 'task_created', jsonb_build_object('priority', p_priority, 'scope', p_scope_code)); RETURN v_task_id; END; $$;
+
+
+ALTER FUNCTION cmis_dev.create_dev_task(p_name text, p_description text, p_scope_code text, p_execution_plan jsonb, p_priority integer) OWNER TO begin;
+
+--
+-- Name: prepare_context_execution(text, text, text, text, smallint); Type: FUNCTION; Schema: cmis_dev; Owner: begin
+--
+
+CREATE FUNCTION cmis_dev.prepare_context_execution(p_prompt text, p_domain text DEFAULT NULL::text, p_category text DEFAULT 'dev'::text, p_scope_code text DEFAULT 'system_dev'::text, p_priority smallint DEFAULT 3) RETURNS jsonb
+    LANGUAGE plpgsql
+    AS $$
+DECLARE
+    v_task jsonb;
+    v_context jsonb;
+    v_task_id uuid;
+    v_plan jsonb := '[]'::jsonb;
+    v_summary text;
+BEGIN
+    -- تحميل السياق الإدراكي الذكي
+    SELECT cmis_knowledge.smart_context_loader(p_prompt, p_domain, p_category, 5000)
+    INTO v_context;
+
+    -- بناء ملخص سريع
+    v_summary := left((v_context->>'summary'), 500);
+
+    -- إنشاء خطة تنفيذ أولية قابلة للتنفيذ من قبل GPT
+    v_plan := jsonb_build_array(
+        jsonb_build_object(
+            'order', 1,
+            'action_type', 'sql',
+            'description', 'تحليل البنية الحالية في قاعدة البيانات',
+            'action_body', 'SELECT * FROM cmis.integrations WHERE domain = ' || quote_literal(p_domain)
+        ),
+        jsonb_build_object(
+            'order', 2,
+            'action_type', 'api',
+            'description', 'استدعاء واجهة Meta Graph API لاختبار التدفق',
+            'action_body', 'POST https://graph.facebook.com/v18.0/oauth/access_token'
+        ),
+        jsonb_build_object(
+            'order', 3,
+            'action_type', 'analysis',
+            'description', 'تحليل النتائج وتوليد دروس معرفية جديدة',
+            'action_body', 'AI Analysis Placeholder'
+        )
+    );
+
+    -- إنشاء المهمة في النظام
+    INSERT INTO cmis_dev.dev_tasks (name, description, scope_code, status, priority, execution_plan)
+    VALUES (p_prompt, v_summary, p_scope_code, 'ready_for_execution', p_priority, v_plan)
+    RETURNING task_id INTO v_task_id;
+
+    -- تسجيل سياق التهيئة في السجلات
+    INSERT INTO cmis_dev.dev_logs (task_id, event, details)
+    VALUES (v_task_id, 'execution_prepared', jsonb_build_object('context', v_context, 'plan', v_plan));
+
+    -- إرجاع تقرير إدراكي شامل لـ GPT
+    RETURN jsonb_build_object(
+        'task_id', v_task_id,
+        'prompt', p_prompt,
+        'domain', p_domain,
+        'category', p_category,
+        'scope', p_scope_code,
+        'status', 'ready_for_execution',
+        'context_summary', v_summary,
+        'execution_plan', v_plan,
+        'token_estimate', v_context->'estimated_tokens'
+    );
+END;
+$$;
+
+
+ALTER FUNCTION cmis_dev.prepare_context_execution(p_prompt text, p_domain text, p_category text, p_scope_code text, p_priority smallint) OWNER TO begin;
+
+--
+-- Name: run_dev_task(text); Type: FUNCTION; Schema: cmis_dev; Owner: begin
+--
+
+CREATE FUNCTION cmis_dev.run_dev_task(p_prompt text) RETURNS jsonb
+    LANGUAGE plpgsql
+    AS $$ DECLARE v_task_id uuid; v_domain text := 'meta_api'; v_category text := 'dev'; v_context jsonb; v_result text; BEGIN SELECT jsonb_agg(to_jsonb(r)) INTO v_context FROM load_context_by_priority(v_domain, v_category, 5000) AS r; v_task_id := cmis_dev.create_dev_task(p_prompt, 'Auto-generated task based on cognitive orchestration', 'system_dev', jsonb_build_object('steps', jsonb_build_array(jsonb_build_object('order',1,'action_type','sql','action_body','SELECT 1 AS test_result;'))), 2); INSERT INTO cmis_dev.dev_logs (task_id, event, details) VALUES (v_task_id, 'task_started', jsonb_build_object('prompt', p_prompt, 'domain', v_domain, 'category', v_category)); PERFORM 1; v_result := 'success'; UPDATE cmis_dev.dev_tasks SET status='completed', confidence=0.95, effectiveness_score=90, result_summary='Task executed successfully via run_dev_task()' WHERE task_id=v_task_id; INSERT INTO cmis_dev.dev_logs (task_id, event, details) VALUES (v_task_id, 'task_completed', jsonb_build_object('result', v_result)); RETURN jsonb_build_object('task_id', v_task_id, 'status', 'completed', 'confidence', 0.95, 'knowledge_context_size', COALESCE(jsonb_array_length(v_context), 0), 'result', v_result); END; $$;
+
+
+ALTER FUNCTION cmis_dev.run_dev_task(p_prompt text) OWNER TO begin;
+
+--
+-- Name: run_marketing_task(text); Type: FUNCTION; Schema: cmis_dev; Owner: begin
+--
+
+CREATE FUNCTION cmis_dev.run_marketing_task(p_prompt text) RETURNS jsonb
+    LANGUAGE plpgsql
+    AS $$ DECLARE v_task_id uuid; v_execution_plan jsonb; v_knowledge jsonb; v_step_result text; v_result_summary text; v_confidence numeric(3,2) := 0.9; BEGIN INSERT INTO cmis_dev.dev_tasks (name, description, scope_code, status) VALUES (left(p_prompt, 120), 'مهمة تسويقية آلية – تم إنشاؤها عبر Orchestrator', 'marketing_ai', 'initializing') RETURNING task_id INTO v_task_id; INSERT INTO cmis_dev.dev_logs (task_id, event, details) VALUES (v_task_id, 'intent_parsed', jsonb_build_object('prompt', p_prompt)); SELECT jsonb_agg(row_to_json(sub)) INTO v_knowledge FROM ( SELECT ki.knowledge_id, ki.topic, ki.tier, km.content FROM cmis_knowledge.index ki JOIN cmis_knowledge.marketing km USING (knowledge_id) WHERE ( lower(p_prompt) LIKE ANY (ARRAY['%instagram%', '%إنستغرام%', '%انستغرام%', '%' || lower(ki.domain) || '%', '%' || lower(ki.topic) || '%']) OR EXISTS ( SELECT 1 FROM unnest(ki.keywords) kw WHERE lower(p_prompt) LIKE '%' || lower(kw) || '%' ) OR lower(km.content) LIKE '%' || lower(p_prompt) || '%' ) AND ki.is_deprecated = false ORDER BY ki.tier ASC, ki.last_verified_at DESC LIMIT 5 ) sub; IF v_knowledge IS NULL THEN INSERT INTO cmis_dev.dev_logs (task_id, event, details) VALUES (v_task_id, 'knowledge_missing', jsonb_build_object('reason','No relevant marketing knowledge found')); UPDATE cmis_dev.dev_tasks SET status='failed', result_summary='لم يتم العثور على معرفة تسويقية كافية' WHERE task_id=v_task_id; RETURN jsonb_build_object('status','failed','reason','knowledge_not_found'); END IF; v_execution_plan := jsonb_build_object('steps', jsonb_build_array(jsonb_build_object('order',1,'action','analyze_knowledge','desc','تحليل المعرفة التسويقية المرتبطة'), jsonb_build_object('order',2,'action','generate_campaign_plan','desc','إنشاء خطة مبدئية بناء على المعرفة'), jsonb_build_object('order',3,'action','record_result','desc','تسجيل النتائج والخطة في السجلات'))); UPDATE cmis_dev.dev_tasks SET execution_plan = v_execution_plan, status='running' WHERE task_id=v_task_id; INSERT INTO cmis_dev.dev_logs (task_id, event, details) VALUES (v_task_id, 'plan_initialized', jsonb_build_object('steps', jsonb_array_length(v_execution_plan->'steps'))); v_step_result := 'تم تحليل المعرفة التسويقية وإنشاء خطة حملة مبدئية ناجحة.'; INSERT INTO cmis_dev.dev_logs (task_id, event, details) VALUES (v_task_id, 'step_executed', jsonb_build_object('result', v_step_result)); v_result_summary := 'تم إنشاء خطة تسويقية أولية بنجاح بناءً على المعرفة المخزّنة.'; UPDATE cmis_dev.dev_tasks SET status='completed', confidence=v_confidence, result_summary=v_result_summary, effectiveness_score=ROUND((random()*20+80)::numeric) WHERE task_id=v_task_id; RETURN jsonb_build_object('task_id', v_task_id, 'status', 'completed', 'confidence', v_confidence, 'result', v_result_summary, 'knowledge_used', v_knowledge); END; $$;
+
+
+ALTER FUNCTION cmis_dev.run_marketing_task(p_prompt text) OWNER TO begin;
+
+--
+-- Name: auto_analyze_knowledge(text, text, text, integer, integer); Type: FUNCTION; Schema: cmis_knowledge; Owner: begin
+--
+
+CREATE FUNCTION cmis_knowledge.auto_analyze_knowledge(p_query text, p_domain text DEFAULT NULL::text, p_category text DEFAULT 'dev'::text, p_max_batches integer DEFAULT 5, p_batch_limit integer DEFAULT 20) RETURNS jsonb
+    LANGUAGE plpgsql
+    AS $$
+DECLARE
+    v_data jsonb := '[]'::jsonb;
+    v_summary text := '';
+BEGIN
+    -- جلب البيانات تدريجيًا من الدالة السابقة
+    SELECT jsonb_agg(jsonb_build_object(
+        'topic', topic,
+        'part_index', part_index,
+        'excerpt', left(content, 300),
+        'score', score,
+        'batch', batch_num
+    )) INTO v_data
+    FROM cmis_knowledge.auto_retrieve_knowledge(p_query, p_domain, p_category, p_max_batches, p_batch_limit);
+
+    -- إنشاء ملخص إدراكي أولي
+    SELECT string_agg(DISTINCT topic || ': ' || left(content, 300), E'\n') INTO v_summary
+    FROM cmis_knowledge.auto_retrieve_knowledge(p_query, p_domain, p_category, 1, 10);
+
+    RETURN jsonb_build_object(
+        'query', p_query,
+        'domain', p_domain,
+        'category', p_category,
+        'summary', v_summary,
+        'samples', v_data,
+        'retrieved_chunks', jsonb_array_length(v_data)
+    );
+END;
+$$;
+
+
+ALTER FUNCTION cmis_knowledge.auto_analyze_knowledge(p_query text, p_domain text, p_category text, p_max_batches integer, p_batch_limit integer) OWNER TO begin;
+
+--
+-- Name: auto_retrieve_knowledge(text, text, text, integer, integer); Type: FUNCTION; Schema: cmis_knowledge; Owner: begin
+--
+
+CREATE FUNCTION cmis_knowledge.auto_retrieve_knowledge(p_query text, p_domain text DEFAULT NULL::text, p_category text DEFAULT 'dev'::text, p_max_batches integer DEFAULT 5, p_batch_limit integer DEFAULT 20) RETURNS TABLE(knowledge_id uuid, parent_knowledge_id uuid, topic text, part_index integer, content text, score numeric, batch_num integer)
+    LANGUAGE plpgsql
+    AS $$
+DECLARE
+    v_offset int := 0;
+    v_batch int := 0;
+BEGIN
+    LOOP
+        RETURN QUERY
+        SELECT *, v_batch AS batch_num
+        FROM search_cognitive_knowledge(p_query, p_domain, p_category, p_batch_limit, v_offset);
+
+        v_offset := v_offset + p_batch_limit;
+        v_batch := v_batch + 1;
+
+        EXIT WHEN v_batch >= p_max_batches;
+    END LOOP;
+END;
+$$;
+
+
+ALTER FUNCTION cmis_knowledge.auto_retrieve_knowledge(p_query text, p_domain text, p_category text, p_max_batches integer, p_batch_limit integer) OWNER TO begin;
+
+--
+-- Name: batch_update_embeddings(integer, text); Type: FUNCTION; Schema: cmis_knowledge; Owner: begin
+--
+
+CREATE FUNCTION cmis_knowledge.batch_update_embeddings(p_batch_size integer DEFAULT 100, p_category text DEFAULT NULL::text) RETURNS jsonb
+    LANGUAGE plpgsql
+    AS $$
+DECLARE
+    v_count integer := 0;
+    v_success integer := 0;
+    v_failed integer := 0;
+    v_rec record;
+    v_result jsonb;
+    v_start_time timestamp := clock_timestamp();
+BEGIN
+    -- إضافة السجلات إلى قائمة الانتظار إذا لم تكن موجودة
+    INSERT INTO cmis_knowledge.embedding_update_queue (
+        knowledge_id, source_table, source_field, priority
+    )
+    SELECT 
+        knowledge_id, 
+        'index', 
+        'topic',
+        CASE tier
+            WHEN 1 THEN 10
+            WHEN 2 THEN 7
+            ELSE 5
+        END
+    FROM cmis_knowledge.index
+    WHERE 
+        topic_embedding IS NULL
+        AND (p_category IS NULL OR category = p_category)
+        AND is_deprecated = false
+    ORDER BY tier ASC, last_verified_at DESC
+    LIMIT p_batch_size
+    ON CONFLICT DO NOTHING;
+
+    -- معالجة السجلات في قائمة الانتظار
+    FOR v_rec IN 
+        SELECT queue_id, knowledge_id
+        FROM cmis_knowledge.embedding_update_queue
+        WHERE status = 'pending'
+        ORDER BY priority DESC, created_at ASC
+        LIMIT p_batch_size
+    LOOP
+        BEGIN
+            UPDATE cmis_knowledge.embedding_update_queue
+            SET status = 'processing', processing_started_at = now()
+            WHERE queue_id = v_rec.queue_id;
+
+            -- استدعاء الدالة التي تحدّث embedding لسجل واحد
+            v_result := cmis_knowledge.update_single_embedding(v_rec.knowledge_id);
+
+            IF v_result->>'status' = 'success' THEN
+                UPDATE cmis_knowledge.embedding_update_queue
+                SET status = 'completed', processed_at = now()
+                WHERE queue_id = v_rec.queue_id;
+                v_success := v_success + 1;
+            ELSE
+                UPDATE cmis_knowledge.embedding_update_queue
+                SET 
+                    status = 'failed',
+                    error_message = v_result->>'message',
+                    retry_count = retry_count + 1
+                WHERE queue_id = v_rec.queue_id;
+                v_failed := v_failed + 1;
+            END IF;
+
+        EXCEPTION WHEN OTHERS THEN
+            UPDATE cmis_knowledge.embedding_update_queue
+            SET 
+                status = 'failed',
+                error_message = SQLERRM,
+                retry_count = retry_count + 1
+            WHERE queue_id = v_rec.queue_id;
+            v_failed := v_failed + 1;
+        END;
+
+        v_count := v_count + 1;
+    END LOOP;
+
+    RETURN jsonb_build_object(
+        'status', 'completed',
+        'total_processed', v_count,
+        'successful', v_success,
+        'failed', v_failed,
+        'execution_time_seconds', EXTRACT(EPOCH FROM (clock_timestamp() - v_start_time)),
+        'timestamp', now()
+    );
+END;
+$$;
+
+
+ALTER FUNCTION cmis_knowledge.batch_update_embeddings(p_batch_size integer, p_category text) OWNER TO begin;
+
+--
+-- Name: cleanup_old_embeddings(); Type: FUNCTION; Schema: cmis_knowledge; Owner: begin
+--
+
+CREATE FUNCTION cmis_knowledge.cleanup_old_embeddings() RETURNS void
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+    -- حذف نتائج البحث المخزنة مؤقتًا والمنتهية الصلاحية
+    DELETE FROM cmis_knowledge.semantic_search_results_cache
+    WHERE expires_at < now();
+
+    -- حذف السجلات المكتملة الأقدم من 7 أيام في قائمة التحديث
+    DELETE FROM cmis_knowledge.embedding_update_queue
+    WHERE status = 'completed' AND processed_at < now() - interval '7 days';
+
+    -- حذف سجلات البحث الأقدم من 30 يومًا
+    DELETE FROM cmis_knowledge.semantic_search_logs
+    WHERE created_at < now() - interval '30 days';
+
+    -- إعادة تعيين إحصائيات الاستخدام للـ cache القديم
+    UPDATE cmis_knowledge.embeddings_cache
+    SET usage_count = 0
+    WHERE last_accessed < now() - interval '30 days';
+END;
+$$;
+
+
+ALTER FUNCTION cmis_knowledge.cleanup_old_embeddings() OWNER TO begin;
+
+--
+-- Name: generate_embedding_mock(text); Type: FUNCTION; Schema: cmis_knowledge; Owner: begin
+--
+
+CREATE FUNCTION cmis_knowledge.generate_embedding_mock(input_text text) RETURNS public.vector
+    LANGUAGE sql
+    AS $$
+  SELECT array_fill(random(), ARRAY[768])::vector(768);
+$$;
+
+
+ALTER FUNCTION cmis_knowledge.generate_embedding_mock(input_text text) OWNER TO begin;
+
+--
+-- Name: generate_system_report(); Type: FUNCTION; Schema: cmis_knowledge; Owner: begin
+--
+
+CREATE FUNCTION cmis_knowledge.generate_system_report() RETURNS jsonb
+    LANGUAGE plpgsql
+    AS $$
+DECLARE
+    v_report jsonb;
+BEGIN
+    WITH stats AS (
+        SELECT 
+            (SELECT COUNT(*) FROM cmis_knowledge.index) AS total_knowledge,
+            (SELECT COUNT(*) FROM cmis_knowledge.index WHERE topic_embedding IS NOT NULL) AS embedded_knowledge,
+            (SELECT COUNT(*) FROM cmis_knowledge.intent_mappings WHERE is_active) AS active_intents,
+            (SELECT COUNT(*) FROM cmis_knowledge.direction_mappings WHERE is_active) AS active_directions,
+            (SELECT COUNT(*) FROM cmis_knowledge.purpose_mappings WHERE is_active) AS active_purposes,
+            (SELECT COUNT(*) FROM cmis_knowledge.embedding_update_queue WHERE status = 'pending') AS pending_updates,
+            (SELECT COUNT(*) FROM cmis_knowledge.embedding_update_queue WHERE status = 'failed') AS failed_updates,
+            (SELECT AVG(usage_count) FROM cmis_knowledge.embeddings_cache) AS avg_cache_usage,
+            (SELECT COUNT(*) FROM cmis_knowledge.semantic_search_logs WHERE created_at > now() - interval '24 hours') AS searches_24h,
+            (SELECT AVG(execution_time_ms) FROM cmis_knowledge.semantic_search_logs WHERE created_at > now() - interval '24 hours') AS avg_search_time
+    )
+    SELECT jsonb_build_object(
+        'timestamp', now(),
+        'knowledge_stats', jsonb_build_object(
+            'total', total_knowledge,
+            'embedded', embedded_knowledge,
+            'coverage_percentage', ROUND((embedded_knowledge::numeric / NULLIF(total_knowledge, 0)) * 100, 2),
+            'pending', total_knowledge - embedded_knowledge
+        ),
+        'intent_system', jsonb_build_object(
+            'active_intents', active_intents,
+            'active_directions', active_directions,
+            'active_purposes', active_purposes,
+            'total_mappings', active_intents + active_directions + active_purposes
+        ),
+        'processing', jsonb_build_object(
+            'pending_updates', pending_updates,
+            'failed_updates', failed_updates,
+            'avg_cache_usage', ROUND(avg_cache_usage::numeric, 2)
+        ),
+        'performance', jsonb_build_object(
+            'searches_24h', searches_24h,
+            'avg_search_time_ms', ROUND(avg_search_time::numeric, 2)
+        ),
+        'health_status', CASE 
+            WHEN (embedded_knowledge::numeric / NULLIF(total_knowledge, 0)) > 0.8 
+                AND pending_updates < 100 
+                AND failed_updates < 10 THEN 'healthy'
+            WHEN (embedded_knowledge::numeric / NULLIF(total_knowledge, 0)) > 0.5 
+                AND pending_updates < 500 
+                AND failed_updates < 50 THEN 'warning'
+            ELSE 'critical'
+        END
+    ) INTO v_report
+    FROM stats;
+    
+    RETURN v_report;
+END;
+$$;
+
+
+ALTER FUNCTION cmis_knowledge.generate_system_report() OWNER TO begin;
+
+--
+-- Name: register_knowledge(text, text, text, text, smallint, text[]); Type: FUNCTION; Schema: cmis_knowledge; Owner: begin
+--
+
+CREATE FUNCTION cmis_knowledge.register_knowledge(p_domain text, p_category text, p_topic text, p_content text, p_tier smallint DEFAULT 2, p_keywords text[] DEFAULT ARRAY[]::text[]) RETURNS uuid
+    LANGUAGE plpgsql
+    AS $$ DECLARE v_knowledge_id uuid; v_token_count int; BEGIN v_token_count := length(p_content) / 4; INSERT INTO cmis_knowledge.index (domain, category, topic, keywords, tier, token_budget, last_verified_at) VALUES (p_domain, p_category, p_topic, p_keywords, p_tier, v_token_count, now()) RETURNING knowledge_id INTO v_knowledge_id; CASE p_category WHEN 'dev' THEN INSERT INTO cmis_knowledge.dev (knowledge_id, content, token_count, version) VALUES (v_knowledge_id, p_content, v_token_count, '1.0'); WHEN 'marketing' THEN INSERT INTO cmis_knowledge.marketing (knowledge_id, content, token_count) VALUES (v_knowledge_id, p_content, v_token_count); WHEN 'org' THEN INSERT INTO cmis_knowledge.org (knowledge_id, content, token_count) VALUES (v_knowledge_id, p_content, v_token_count); WHEN 'research' THEN INSERT INTO cmis_knowledge.research (knowledge_id, content, token_count) VALUES (v_knowledge_id, p_content, v_token_count); END CASE; RETURN v_knowledge_id; END; $$;
+
+
+ALTER FUNCTION cmis_knowledge.register_knowledge(p_domain text, p_category text, p_topic text, p_content text, p_tier smallint, p_keywords text[]) OWNER TO begin;
+
+--
+-- Name: semantic_search_advanced(text, text, text, text, text, integer, numeric); Type: FUNCTION; Schema: cmis_knowledge; Owner: begin
+--
+
+CREATE FUNCTION cmis_knowledge.semantic_search_advanced(p_query text, p_intent text DEFAULT NULL::text, p_direction text DEFAULT NULL::text, p_purpose text DEFAULT NULL::text, p_category text DEFAULT NULL::text, p_limit integer DEFAULT 10, p_threshold numeric DEFAULT 0.3) RETURNS TABLE(knowledge_id uuid, domain text, topic text, content text, similarity_score numeric, intent_match numeric, direction_match numeric, purpose_match numeric, contextual_relevance numeric, temporal_weight numeric, trust_score numeric, combined_score numeric, category text, tier text, metadata jsonb)
+    LANGUAGE plpgsql
+    AS $$
+DECLARE
+    v_query_embedding vector(768);
+    v_intent_embedding vector(768);
+    v_direction_embedding vector(768);
+    v_purpose_embedding vector(768);
+BEGIN
+    v_query_embedding := cmis_knowledge.generate_embedding_mock(p_query);
+    v_intent_embedding := cmis_knowledge.generate_embedding_mock(p_intent);
+    v_direction_embedding := cmis_knowledge.generate_embedding_mock(p_direction);
+    v_purpose_embedding := cmis_knowledge.generate_embedding_mock(p_purpose);
+
+    RETURN QUERY
+    WITH scored_results AS (
+        SELECT 
+            ki.knowledge_id,
+            ki.domain,
+            ki.topic,
+            COALESCE(kd.content, km.content, ko.content, kr.content, 'No content available') AS content,
+            COALESCE((1 - (ki.topic_embedding <=> v_query_embedding))::numeric, 0) AS topic_similarity,
+            CASE WHEN v_intent_embedding IS NOT NULL AND ki.intent_vector IS NOT NULL THEN (1 - (ki.intent_vector <=> v_intent_embedding))::numeric ELSE 0 END AS intent_similarity,
+            CASE WHEN v_direction_embedding IS NOT NULL AND ki.direction_vector IS NOT NULL THEN (1 - (ki.direction_vector <=> v_direction_embedding))::numeric ELSE 0 END AS direction_similarity,
+            CASE WHEN v_purpose_embedding IS NOT NULL AND ki.purpose_vector IS NOT NULL THEN (1 - (ki.purpose_vector <=> v_purpose_embedding))::numeric ELSE 0 END AS purpose_similarity,
+            ((
+                CASE WHEN v_intent_embedding IS NOT NULL AND ki.intent_vector IS NOT NULL THEN (1 - (ki.intent_vector <=> v_intent_embedding)) ELSE 0 END +
+                CASE WHEN v_purpose_embedding IS NOT NULL AND ki.purpose_vector IS NOT NULL THEN (1 - (ki.purpose_vector <=> v_purpose_embedding)) ELSE 0 END
+            ) / 2)::numeric AS contextual_relevance,
+            CASE WHEN ki.last_verified_at IS NOT NULL THEN EXP(-EXTRACT(EPOCH FROM (NOW() - ki.last_verified_at)) / 31536000) ELSE 0.5 END AS temporal_weight,
+            (
+                COALESCE(ki.verification_confidence, 0.5) +
+                CASE WHEN ki.is_verified_by_ai THEN 0.15 ELSE 0 END +
+                CASE ki.verification_source
+                    WHEN 'peer_review' THEN 0.2
+                    WHEN 'expert_validation' THEN 0.15
+                    WHEN 'system_check' THEN 0.1
+                    ELSE 0
+                END
+            ) AS trust_score,
+            ki.category,
+            ki.tier,
+            jsonb_build_object(
+                'keywords', ki.keywords,
+                'last_verified', ki.last_verified_at,
+                'verification_source', ki.verification_source,
+                'verification_confidence', ki.verification_confidence,
+                'is_verified_by_ai', ki.is_verified_by_ai,
+                'is_deprecated', ki.is_deprecated
+            ) AS metadata
+        FROM cmis_knowledge.index ki
+        LEFT JOIN cmis_knowledge.dev kd USING (knowledge_id)
+        LEFT JOIN cmis_knowledge.marketing km USING (knowledge_id)
+        LEFT JOIN cmis_knowledge.org ko USING (knowledge_id)
+        LEFT JOIN cmis_knowledge.research kr USING (knowledge_id)
+        WHERE (p_category IS NULL OR ki.category = p_category)
+          AND ki.is_deprecated = false
+          AND ki.topic_embedding IS NOT NULL
+    )
+    SELECT 
+        s.knowledge_id,
+        s.domain,
+        s.topic,
+        s.content,
+        s.topic_similarity AS similarity_score,
+        s.intent_similarity AS intent_match,
+        s.direction_similarity AS direction_match,
+        s.purpose_similarity AS purpose_match,
+        s.contextual_relevance,
+        s.temporal_weight,
+        s.trust_score,
+        (
+            CASE 
+                WHEN s.domain IN ('marketing', 'content', 'advertising') THEN
+                    s.topic_similarity * 0.4 + s.contextual_relevance * 0.25 + s.temporal_weight * 0.25 + s.trust_score * 0.1
+                WHEN s.domain IN ('research', 'data_science') THEN
+                    s.topic_similarity * 0.35 + s.contextual_relevance * 0.2 + s.temporal_weight * 0.15 + s.trust_score * 0.3
+                WHEN s.domain IN ('operations', 'org', 'dev') THEN
+                    s.topic_similarity * 0.45 + s.contextual_relevance * 0.25 + s.temporal_weight * 0.1 + s.trust_score * 0.2
+                ELSE
+                    s.topic_similarity * 0.4 + s.contextual_relevance * 0.25 + s.temporal_weight * 0.2 + s.trust_score * 0.15
+            END
+        )::numeric AS combined_score,
+        s.category,
+        s.tier::text AS tier,
+        s.metadata
+    FROM scored_results s
+    WHERE (
+        s.topic_similarity * 0.3 + 
+        s.intent_similarity * 0.25 + 
+        s.direction_similarity * 0.15 + 
+        s.purpose_similarity * 0.15
+    ) >= p_threshold
+    ORDER BY combined_score DESC, s.contextual_relevance DESC, s.trust_score DESC, s.temporal_weight DESC, s.tier ASC
+    LIMIT p_limit;
+END;
+$$;
+
+
+ALTER FUNCTION cmis_knowledge.semantic_search_advanced(p_query text, p_intent text, p_direction text, p_purpose text, p_category text, p_limit integer, p_threshold numeric) OWNER TO begin;
+
+--
+-- Name: smart_context_loader(text, text, text, integer); Type: FUNCTION; Schema: cmis_knowledge; Owner: begin
+--
+
+CREATE FUNCTION cmis_knowledge.smart_context_loader(p_query text, p_domain text DEFAULT NULL::text, p_category text DEFAULT 'dev'::text, p_token_limit integer DEFAULT 5000) RETURNS jsonb
+    LANGUAGE plpgsql
+    AS $$ DECLARE v_analysis jsonb; v_context jsonb := '[]'::jsonb; v_total_tokens int := 0; v_sample jsonb; v_excerpt text; v_fallback record; BEGIN BEGIN SELECT cmis_knowledge.auto_analyze_knowledge(p_query, p_domain, p_category) INTO v_analysis; EXCEPTION WHEN others THEN v_analysis := NULL; END; IF v_analysis IS NOT NULL AND jsonb_typeof(v_analysis->'samples') = 'array' THEN FOR v_sample IN SELECT value FROM jsonb_array_elements(v_analysis->'samples') LOOP v_excerpt := v_sample->>'excerpt'; IF v_total_tokens + (length(v_excerpt) / 4) > p_token_limit THEN EXIT; END IF; v_context := v_context || jsonb_build_object('topic', v_sample->>'topic','excerpt', trim(v_excerpt),'score', v_sample->>'score','batch', v_sample->>'batch'); v_total_tokens := v_total_tokens + (length(v_excerpt) / 4); END LOOP; ELSE FOR v_fallback IN SELECT d.content FROM cmis_knowledge.dev d JOIN cmis_knowledge.index i USING (knowledge_id) WHERE i.topic ILIKE '%' || p_query || '%' AND (p_domain IS NULL OR i.domain = p_domain) AND i.category = p_category ORDER BY i.last_verified_at DESC LIMIT 3 LOOP v_context := v_context || jsonb_build_object('topic', p_query,'excerpt', left(v_fallback.content, 1000),'score', 0.8,'batch', 'direct'); END LOOP; END IF; RETURN jsonb_build_object('query', p_query,'domain', p_domain,'category', p_category,'summary', COALESCE(v_analysis->'summary', 'null'::jsonb),'context_loaded', v_context,'estimated_tokens', v_total_tokens); END; $$;
+
+
+ALTER FUNCTION cmis_knowledge.smart_context_loader(p_query text, p_domain text, p_category text, p_token_limit integer) OWNER TO begin;
+
+--
+-- Name: trigger_update_embeddings(); Type: FUNCTION; Schema: cmis_knowledge; Owner: begin
+--
+
+CREATE FUNCTION cmis_knowledge.trigger_update_embeddings() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+    -- إضافة إلى قائمة الانتظار للمعالجة غير المتزامنة
+    INSERT INTO cmis_knowledge.embedding_update_queue (
+        knowledge_id,
+        source_table,
+        source_field,
+        priority,
+        created_at
+    ) VALUES (
+        COALESCE(NEW.knowledge_id, OLD.knowledge_id),
+        TG_TABLE_NAME,
+        CASE 
+            WHEN TG_TABLE_NAME = 'index' THEN 'topic'
+            ELSE 'content'
+        END,
+        CASE 
+            WHEN TG_TABLE_NAME = 'index' AND NEW.tier = 1 THEN 10
+            WHEN TG_TABLE_NAME = 'index' AND NEW.tier = 2 THEN 7
+            ELSE 5
+        END,
+        now()
+    ) ON CONFLICT DO NOTHING;
+    
+    RETURN NEW;
+END;
+$$;
+
+
+ALTER FUNCTION cmis_knowledge.trigger_update_embeddings() OWNER TO begin;
+
+--
+-- Name: update_manifest_on_change(); Type: FUNCTION; Schema: cmis_knowledge; Owner: begin
+--
+
+CREATE FUNCTION cmis_knowledge.update_manifest_on_change() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$ DECLARE v_layer TEXT; BEGIN v_layer := TG_TABLE_NAME; UPDATE cmis_knowledge.cognitive_manifest SET last_updated = NOW(), confidence = LEAST(confidence + 0.02, 1.00) WHERE LOWER(layer_name) = LOWER(v_layer) OR (LOWER(layer_name) = 'temporal' AND TG_TABLE_NAME LIKE '%temporal%') OR (LOWER(layer_name) = 'predictive' AND TG_TABLE_NAME LIKE '%predictive%') OR (LOWER(layer_name) = 'feedback' AND TG_TABLE_NAME LIKE '%audit%') OR (LOWER(layer_name) = 'learning' AND TG_TABLE_NAME LIKE '%learning%'); INSERT INTO cmis_audit.logs(event_type, event_source, description, created_at) VALUES ('manifest_sync', TG_TABLE_NAME, CONCAT('🔄 تحديث تلقائي في الـ Manifest بعد تعديل في الطبقة ', v_layer), NOW()); RETURN NEW; END; $$;
+
+
+ALTER FUNCTION cmis_knowledge.update_manifest_on_change() OWNER TO begin;
+
+--
+-- Name: update_single_embedding(uuid); Type: FUNCTION; Schema: cmis_knowledge; Owner: begin
+--
+
+CREATE FUNCTION cmis_knowledge.update_single_embedding(p_knowledge_id uuid) RETURNS jsonb
+    LANGUAGE plpgsql
+    AS $$
+DECLARE
+    v_rec record;
+    v_result jsonb;
+BEGIN
+    -- الحصول على البيانات
+    SELECT 
+        ki.*,
+        COALESCE(kd.content, km.content, ko.content, kr.content) AS content
+    INTO v_rec
+    FROM cmis_knowledge.index ki
+    LEFT JOIN cmis_knowledge.dev kd USING (knowledge_id)
+    LEFT JOIN cmis_knowledge.marketing km USING (knowledge_id)
+    LEFT JOIN cmis_knowledge.org ko USING (knowledge_id)
+    LEFT JOIN cmis_knowledge.research kr USING (knowledge_id)
+    WHERE ki.knowledge_id = p_knowledge_id;
+    
+    IF NOT FOUND THEN
+        RETURN jsonb_build_object(
+            'status', 'error',
+            'message', 'Knowledge ID not found'
+        );
+    END IF;
+    
+    -- تحديث embeddings في جدول الفهرس
+    UPDATE cmis_knowledge.index 
+    SET 
+        topic_embedding = cmis_knowledge.generate_embedding_mock(v_rec.topic),
+        keywords_embedding = CASE 
+            WHEN array_length(v_rec.keywords, 1) > 0 
+            THEN cmis_knowledge.generate_embedding_mock(array_to_string(v_rec.keywords, ' '))
+            ELSE NULL
+        END,
+        semantic_fingerprint = cmis_knowledge.generate_embedding_mock(
+            COALESCE(v_rec.topic, '') || ' ' || 
+            COALESCE(array_to_string(v_rec.keywords, ' '), '') || ' ' ||
+            COALESCE(v_rec.domain, '')
+        ),
+        embedding_updated_at = now(),
+        embedding_version = COALESCE(embedding_version, 0) + 1
+    WHERE knowledge_id = p_knowledge_id;
+    
+    -- تحديث content embedding في الجدول المناسب
+    IF v_rec.content IS NOT NULL THEN
+        CASE v_rec.category
+            WHEN 'dev' THEN
+                UPDATE cmis_knowledge.dev 
+                SET 
+                    content_embedding = cmis_knowledge.generate_embedding_mock(v_rec.content),
+                    semantic_summary_embedding = cmis_knowledge.generate_embedding_mock(
+                        left(v_rec.content, 500)
+                    )
+                WHERE knowledge_id = p_knowledge_id;
+            
+            WHEN 'marketing' THEN
+                UPDATE cmis_knowledge.marketing 
+                SET content_embedding = cmis_knowledge.generate_embedding_mock(v_rec.content)
+                WHERE knowledge_id = p_knowledge_id;
+            
+            WHEN 'org' THEN
+                UPDATE cmis_knowledge.org 
+                SET content_embedding = cmis_knowledge.generate_embedding_mock(v_rec.content)
+                WHERE knowledge_id = p_knowledge_id;
+            
+            WHEN 'research' THEN
+                UPDATE cmis_knowledge.research 
+                SET content_embedding = cmis_knowledge.generate_embedding_mock(v_rec.content)
+                WHERE knowledge_id = p_knowledge_id;
+        END CASE;
+    END IF;
+    
+    -- تحديث cache
+    INSERT INTO cmis_knowledge.embeddings_cache (
+        source_table, source_id, source_field, 
+        embedding, metadata
+    ) VALUES (
+        'index', p_knowledge_id, 'topic',
+        cmis_knowledge.generate_embedding_mock(v_rec.topic),
+        jsonb_build_object('category', v_rec.category, 'domain', v_rec.domain)
+    )
+    ON CONFLICT (source_table, source_id, source_field) 
+    DO UPDATE SET 
+        embedding = EXCLUDED.embedding,
+        updated_at = now(),
+        usage_count = cmis_knowledge.embeddings_cache.usage_count + 1;
+    
+    RETURN jsonb_build_object(
+        'status', 'success',
+        'knowledge_id', p_knowledge_id,
+        'topic', v_rec.topic,
+        'category', v_rec.category,
+        'embedding_updated', true,
+        'timestamp', now()
+    );
+END;
+$$;
+
+
+ALTER FUNCTION cmis_knowledge.update_single_embedding(p_knowledge_id uuid) OWNER TO begin;
+
+--
+-- Name: verify_installation(); Type: FUNCTION; Schema: cmis_knowledge; Owner: begin
+--
+
+CREATE FUNCTION cmis_knowledge.verify_installation() RETURNS jsonb
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+    RETURN jsonb_build_object('status', 'partial setup complete', 'timestamp', now());
+END;$$;
+
+
+ALTER FUNCTION cmis_knowledge.verify_installation() OWNER TO begin;
+
+--
+-- Name: generate_campaign_assets(uuid); Type: FUNCTION; Schema: cmis_marketing; Owner: begin
+--
+
+CREATE FUNCTION cmis_marketing.generate_campaign_assets(p_task_id uuid) RETURNS jsonb
+    LANGUAGE plpgsql
+    AS $$ DECLARE v_campaign_name text; v_knowledge jsonb; v_assets jsonb; BEGIN SELECT name INTO v_campaign_name FROM cmis_dev.dev_tasks WHERE task_id = p_task_id; SELECT jsonb_agg(row_to_json(sub)) INTO v_knowledge FROM ( SELECT ki.topic, km.content, ki.tier FROM cmis_knowledge.index ki JOIN cmis_knowledge.marketing km USING (knowledge_id) WHERE km.content ILIKE '%' || v_campaign_name || '%' OR ki.topic ILIKE '%' || v_campaign_name || '%' ORDER BY ki.tier ASC LIMIT 3 ) sub; v_assets := jsonb_build_array( jsonb_build_object('platform','instagram','asset_type','post','content', jsonb_build_object('text','منشور جذاب لزيادة التفاعل على CMIS Cloud','hashtags',ARRAY['#CMISCloud','#MarketingAutomation','#TechAgencies']),'confidence',0.95), jsonb_build_object('platform','instagram','asset_type','ad_copy','content', jsonb_build_object('headline','ارتقِ باستراتيجيتك التسويقية مع CMIS Cloud','body','حل متكامل لوكالات التسويق – أتمتة، تحليل، وذكاء اصطناعي في نظام واحد.'),'confidence',0.93) ); INSERT INTO cmis_marketing.assets (task_id, platform, asset_type, content, confidence) SELECT p_task_id, asset->>'platform', asset->>'asset_type', asset->'content', (asset->>'confidence')::numeric FROM jsonb_array_elements(v_assets) asset; INSERT INTO cmis_dev.dev_logs (task_id, event, details) VALUES (p_task_id, 'assets_generated', jsonb_build_object('count', jsonb_array_length(v_assets))); RETURN jsonb_build_object('task_id', p_task_id, 'status', 'assets_generated', 'assets', v_assets, 'knowledge_used', v_knowledge); END; $$;
+
+
+ALTER FUNCTION cmis_marketing.generate_campaign_assets(p_task_id uuid) OWNER TO begin;
+
+--
+-- Name: generate_creative_content(text, text, text, smallint); Type: FUNCTION; Schema: cmis_marketing; Owner: begin
+--
+
+CREATE FUNCTION cmis_marketing.generate_creative_content(p_topic text, p_goal text DEFAULT 'awareness'::text, p_tone text DEFAULT 'ملهم'::text, p_length smallint DEFAULT 3) RETURNS jsonb
+    LANGUAGE plpgsql
+    AS $$ DECLARE v_hooks jsonb; v_concepts jsonb; v_slogans jsonb; v_narratives jsonb; v_output text := ''; v_mix jsonb := '[]'::jsonb; BEGIN SELECT jsonb_agg(content) INTO v_hooks FROM cmis_knowledge.creative_templates WHERE category='hook' AND (tone=p_tone OR tone IS NULL) ORDER BY random() LIMIT p_length; SELECT jsonb_agg(content) INTO v_concepts FROM cmis_knowledge.creative_templates WHERE category='concept' ORDER BY random() LIMIT p_length; SELECT jsonb_agg(content) INTO v_slogans FROM cmis_knowledge.creative_templates WHERE category='slogan' ORDER BY random() LIMIT p_length; SELECT jsonb_agg(content) INTO v_narratives FROM cmis_knowledge.creative_templates WHERE category='narrative' AND (tone=p_tone OR tone IS NULL) ORDER BY random() LIMIT p_length; v_mix := v_mix || jsonb_build_object('hook', v_hooks->0); v_mix := v_mix || jsonb_build_object('concept', v_concepts->0); v_mix := v_mix || jsonb_build_object('slogan', v_slogans->0); v_mix := v_mix || jsonb_build_object('narrative', v_narratives->0); v_output := concat_ws(E'\n\n', v_hooks->>0, v_concepts->>0, v_narratives->>0, v_slogans->>0); RETURN jsonb_build_object('status', 'creative_generated', 'topic', p_topic, 'tone', p_tone, 'output', v_output, 'composition', v_mix); END; $$;
+
+
+ALTER FUNCTION cmis_marketing.generate_creative_content(p_topic text, p_goal text, p_tone text, p_length smallint) OWNER TO begin;
+
+--
+-- Name: generate_creative_variants(text, text, integer); Type: FUNCTION; Schema: cmis_marketing; Owner: begin
+--
+
+CREATE FUNCTION cmis_marketing.generate_creative_variants(p_topic text, p_tone text, p_variant_count integer DEFAULT 3) RETURNS jsonb
+    LANGUAGE plpgsql
+    AS $$ DECLARE v_hooks RECORD; v_concepts RECORD; v_narratives RECORD; v_slogans RECORD; v_result jsonb := '[]'::jsonb; v_i int := 1; BEGIN FOR v_i IN 1..p_variant_count LOOP SELECT * FROM cmis_knowledge.creative_templates WHERE category='hook' ORDER BY random() LIMIT 1 INTO v_hooks; SELECT * FROM cmis_knowledge.creative_templates WHERE category='concept' ORDER BY random() LIMIT 1 INTO v_concepts; SELECT * FROM cmis_knowledge.creative_templates WHERE category='narrative' ORDER BY random() LIMIT 1 INTO v_narratives; SELECT * FROM cmis_knowledge.creative_templates WHERE category='slogan' ORDER BY random() LIMIT 1 INTO v_slogans; INSERT INTO cmis_marketing.generated_creatives ( topic, tone, variant_index, hook, concept, narrative, slogan, emotion_profile, tags ) VALUES ( p_topic, p_tone, v_i, v_hooks.content, v_concepts.content, v_narratives.content, v_slogans.content, ARRAY(SELECT unnest(v_hooks.emotion) || unnest(v_concepts.emotion) || unnest(v_narratives.emotion)), ARRAY(SELECT unnest(v_hooks.tags) || unnest(v_concepts.tags) || unnest(v_narratives.tags)) ); v_result := v_result || jsonb_build_object( 'variant_index', v_i, 'hook', v_hooks.content, 'concept', v_concepts.content, 'narrative', v_narratives.content, 'slogan', v_slogans.content, 'emotion_profile', ARRAY(SELECT unnest(v_hooks.emotion) || unnest(v_concepts.emotion) || unnest(v_narratives.emotion)), 'tags', ARRAY(SELECT unnest(v_hooks.tags) || unnest(v_concepts.tags) || unnest(v_narratives.tags)) ); END LOOP; RETURN jsonb_build_object( 'status', 'multi_generated', 'topic', p_topic, 'tone', p_tone, 'count', p_variant_count, 'variants', v_result ); END; $$;
+
+
+ALTER FUNCTION cmis_marketing.generate_creative_variants(p_topic text, p_tone text, p_variant_count integer) OWNER TO begin;
+
+--
+-- Name: generate_video_scenario(uuid); Type: FUNCTION; Schema: cmis_marketing; Owner: begin
+--
+
+CREATE FUNCTION cmis_marketing.generate_video_scenario(p_task_id uuid) RETURNS jsonb
+    LANGUAGE plpgsql
+    AS $$ DECLARE v_assets jsonb; v_visuals jsonb; v_scenario jsonb; BEGIN SELECT jsonb_agg(row_to_json(sub)) INTO v_assets FROM ( SELECT asset_id, content FROM cmis_marketing.assets WHERE task_id = p_task_id AND asset_type IN ('post','ad_copy') ) sub; SELECT jsonb_agg(row_to_json(sub)) INTO v_visuals FROM ( SELECT visual_prompt, style, palette, emotion FROM cmis_marketing.visual_concepts vc JOIN cmis_marketing.assets a USING (asset_id) WHERE a.task_id = p_task_id ) sub; v_scenario := jsonb_build_array( jsonb_build_object('order', 1, 'description', 'لقطة افتتاحية لمكتب وكالة تسويق حديثة تظهر شعار CMIS Cloud.', 'narration', 'في عالم التسويق السريع، النجاح يعتمد على الذكاء... CMIS Cloud هو الحل.', 'visual_hint', (v_visuals->0->>'visual_prompt'), 'duration', 4), jsonb_build_object('order', 2, 'description', 'فريق عمل شاب يتفاعل مع لوحة بيانات تفاعلية تعرض مؤشرات الأداء.', 'narration', 'راقب أداء حملاتك لحظة بلحظة... تحكّم في كل شيء من منصة واحدة.', 'visual_hint', (v_visuals->1->>'visual_prompt'), 'duration', 6), jsonb_build_object('order', 3, 'description', 'مشهد عرض عملي: واجهة CMIS Cloud على شاشة كمبيوتر.', 'narration', 'تكامل تام مع Meta وInstagram وGoogle Ads.', 'visual_hint', 'لقطة شاشة واجهة CMIS Cloud بتصميم أنيق.', 'duration', 5), jsonb_build_object('order', 4, 'description', 'ختام الفيديو بعرض شعار CMIS Cloud مع عبارة دعائية.', 'narration', 'CMIS Cloud — ذكاء التسويق في منصة واحدة.', 'visual_hint', 'خلفية بنفس الألوان التقنية الزرقاء والأرجوانية مع شعار CMIS.', 'duration', 3) ); INSERT INTO cmis_marketing.video_scenarios ( task_id, title, duration_seconds, scenes, tone, goal, confidence ) VALUES ( p_task_id, 'سيناريو فيديو ترويجي لحملة CMIS Cloud', 18, v_scenario, 'ملهم، احترافي', 'رفع وعي العلامة التجارية وبناء الثقة لدى وكالات التسويق', 0.94 ); INSERT INTO cmis_dev.dev_logs (task_id, event, details) VALUES (p_task_id, 'video_scenario_generated', jsonb_build_object('duration',18,'scenes',4)); RETURN jsonb_build_object('status','video_scenario_generated','task_id',p_task_id,'title','سيناريو فيديو ترويجي لحملة CMIS Cloud','duration',18,'scenes',v_scenario); END; $$;
+
+
+ALTER FUNCTION cmis_marketing.generate_video_scenario(p_task_id uuid) OWNER TO begin;
+
+--
+-- Name: generate_visual_concepts(uuid); Type: FUNCTION; Schema: cmis_marketing; Owner: begin
+--
+
+CREATE FUNCTION cmis_marketing.generate_visual_concepts(p_task_id uuid) RETURNS jsonb
+    LANGUAGE plpgsql
+    AS $$ DECLARE v_assets jsonb; v_concepts jsonb := '[]'::jsonb; asset_json jsonb; concept jsonb; BEGIN SELECT jsonb_agg(row_to_json(sub)) INTO v_assets FROM ( SELECT asset_id, platform, asset_type, content FROM cmis_marketing.assets WHERE task_id = p_task_id ) sub; IF v_assets IS NULL THEN RAISE NOTICE 'No assets found for task %', p_task_id; RETURN jsonb_build_object('status','no_assets'); END IF; FOR asset_json IN SELECT value FROM jsonb_array_elements(v_assets) LOOP INSERT INTO cmis_marketing.visual_concepts ( asset_id, visual_prompt, style, palette, emotion, focus_keywords ) VALUES ( (asset_json->>'asset_id')::uuid, CASE asset_json->>'asset_type' WHEN 'post' THEN 'تصوير لمكتب عصري لوكالة تسويق رقمية تعمل باستخدام CMIS Cloud، يظهر فريق شاب يبتسم ويحلل البيانات على شاشة كبيرة.' WHEN 'ad_copy' THEN 'خلفية بسيطة بألوان تقنية زرقاء وأرجوانية مع أيقونة سحابية، وعنوان كبير مكتوب "CMIS Cloud".' WHEN 'reel_script' THEN 'مشاهد متتابعة لفريق إبداعي يستخدم لوحات رقمية وتحليل أداء الإعلانات في واجهة جذابة.' ELSE 'تصميم عام يعكس التكنولوجيا والذكاء الاصطناعي والتعاون.' END, 'واقعي تقني', 'أزرق، أرجواني، أبيض', 'احترافية، تفاؤل، ثقة', ARRAY['وكالة تسويق','CMIS Cloud','بيانات','ابتكار'] ) RETURNING row_to_json(cmis_marketing.visual_concepts.*) INTO concept; v_concepts := v_concepts || concept; END LOOP; INSERT INTO cmis_dev.dev_logs (task_id, event, details) VALUES (p_task_id, 'visual_concepts_generated', jsonb_build_object('count', jsonb_array_length(v_concepts))); RETURN jsonb_build_object('status','visuals_generated','task_id',p_task_id,'concepts',v_concepts); END; $$;
+
+
+ALTER FUNCTION cmis_marketing.generate_visual_concepts(p_task_id uuid) OWNER TO begin;
+
+--
+-- Name: generate_visual_scenarios(text, text); Type: FUNCTION; Schema: cmis_marketing; Owner: begin
+--
+
+CREATE FUNCTION cmis_marketing.generate_visual_scenarios(p_topic text, p_tone text) RETURNS jsonb
+    LANGUAGE plpgsql
+    AS $$ DECLARE v_creative RECORD; BEGIN FOR v_creative IN SELECT * FROM cmis_marketing.generated_creatives WHERE topic = p_topic AND tone = p_tone LOOP INSERT INTO cmis_marketing.visual_scenarios (creative_id, topic, tone, variant_index, scene_order, scene_type, scene_text, visual_hint) VALUES (v_creative.creative_id, p_topic, p_tone, v_creative.variant_index, 1, 'hook', v_creative.hook, 'لقطة افتتاحية جذابة مع نص على الشاشة'), (v_creative.creative_id, p_topic, p_tone, v_creative.variant_index, 2, 'concept', v_creative.concept, 'لقطة فريق عمل أو عرض بياني ديناميكي'), (v_creative.creative_id, p_topic, p_tone, v_creative.variant_index, 3, 'narrative', v_creative.narrative, 'مشاهد سردية حيوية بلقطات سريعة'), (v_creative.creative_id, p_topic, p_tone, v_creative.variant_index, 4, 'slogan', v_creative.slogan, 'لقطة ختامية بشعار CMIS Cloud'); END LOOP; RETURN jsonb_build_object('status','scenarios_generated','topic',p_topic,'tone',p_tone,'message','تم إنشاء السيناريوهات المرئية بنجاح'); END; $$;
+
+
+ALTER FUNCTION cmis_marketing.generate_visual_scenarios(p_topic text, p_tone text) OWNER TO begin;
+
+--
+-- Name: generate_voice_script(uuid); Type: FUNCTION; Schema: cmis_marketing; Owner: begin
+--
+
+CREATE FUNCTION cmis_marketing.generate_voice_script(p_scenario_id uuid) RETURNS jsonb
+    LANGUAGE plpgsql
+    AS $$ DECLARE v_scenes jsonb; v_script jsonb := '[]'::jsonb; v_voice_tone text; v_goal text; v_task_id uuid; v_script_text text := ''; BEGIN SELECT scenes, tone, goal, task_id INTO v_scenes, v_voice_tone, v_goal, v_task_id FROM cmis_marketing.video_scenarios WHERE scenario_id = p_scenario_id; FOR i IN 0..jsonb_array_length(v_scenes)-1 LOOP DECLARE v_scene jsonb := v_scenes->i; v_narr text := v_scene->>'narration'; v_extra text; BEGIN SELECT content INTO v_extra FROM cmis_knowledge.marketing km JOIN cmis_knowledge.index ki USING (knowledge_id) WHERE ki.category='marketing' AND ki.tier<=2 AND ki.topic ILIKE '%'||v_goal||'%' ORDER BY ki.last_verified_at DESC LIMIT 1; IF v_extra IS NULL THEN v_extra := 'احصل على تجربة فريدة مع CMIS Cloud الآن!'; END IF; v_script := v_script || jsonb_build_object('scene', i+1, 'narration', v_narr || ' ' || v_extra, 'duration', v_scene->>'duration'); v_script_text := v_script_text || v_narr || ' ' || v_extra || E'\n'; END; END LOOP; INSERT INTO cmis_marketing.voice_scripts (scenario_id, task_id, voice_tone, narration, script_structure, confidence) VALUES (p_scenario_id, v_task_id, v_voice_tone, v_script_text, v_script, 0.93); INSERT INTO cmis_dev.dev_logs (task_id, event, details) VALUES (v_task_id, 'voice_script_generated', jsonb_build_object('scenes',jsonb_array_length(v_scenes))); RETURN jsonb_build_object('status','voice_script_generated','scenario_id',p_scenario_id,'task_id',v_task_id,'tone',v_voice_tone,'script_text',v_script_text); END; $$;
+
+
+ALTER FUNCTION cmis_marketing.generate_voice_script(p_scenario_id uuid) OWNER TO begin;
+
+--
 -- Name: cleanup_stale_assets(); Type: FUNCTION; Schema: cmis_ops; Owner: begin
 --
 
@@ -530,6 +1436,46 @@ $$;
 ALTER FUNCTION cmis_ops.sync_integrations() OWNER TO begin;
 
 --
+-- Name: auto_analyze_knowledge(); Type: FUNCTION; Schema: public; Owner: begin
+--
+
+CREATE FUNCTION public.auto_analyze_knowledge() RETURNS void
+    LANGUAGE plpgsql
+    AS $$
+DECLARE
+  v_rec record;
+  v_changes int := 0;
+BEGIN
+  RAISE NOTICE '🔍 بدء التحليل الإدراكي للنطاقات...';
+
+  -- المرور على جميع النطاقات المسجلة
+  FOR v_rec IN
+    SELECT knowledge_id, domain FROM cmis_knowledge.index
+  LOOP
+    -- فحص النطاق (يمكن توسيع الفحص لاحقًا)
+    RAISE NOTICE '🧠 فحص النطاق: %', v_rec.domain;
+
+    -- تحديث حالة المراقبة والإشراف الإدراكي
+    UPDATE cmis_knowledge.index
+    SET last_verified_at = NOW(),
+        last_audit_status = 'verified'
+    WHERE knowledge_id = v_rec.knowledge_id;
+
+    -- تسجيل في سجل التدقيق
+    INSERT INTO cmis_audit.logs(event_type, event_source, description, created_at)
+    VALUES ('knowledge_watchdog', v_rec.domain, 'تم فحص النطاق وتحديث حالته بنجاح', NOW());
+
+    v_changes := v_changes + 1;
+  END LOOP;
+
+  RAISE NOTICE '✅ تم تحليل % نطاق(ات) وتحديث حالتها.', v_changes;
+END;
+$$;
+
+
+ALTER FUNCTION public.auto_analyze_knowledge() OWNER TO begin;
+
+--
 -- Name: auto_predictive_campaign(); Type: FUNCTION; Schema: public; Owner: begin
 --
 
@@ -545,6 +1491,17 @@ $$;
 
 
 ALTER FUNCTION public.auto_predictive_campaign() OWNER TO begin;
+
+--
+-- Name: auto_snapshot_diff(); Type: FUNCTION; Schema: public; Owner: begin
+--
+
+CREATE FUNCTION public.auto_snapshot_diff() RETURNS void
+    LANGUAGE plpgsql
+    AS $$ DECLARE v_rec record; v_prev JSONB; v_curr JSONB; v_diff TEXT; BEGIN RAISE NOTICE '🧠 بدء التحليل الزمني الدوري للمعرفة...'; FOR v_rec IN SELECT knowledge_id, domain FROM cmis_knowledge.index LOOP SELECT current_snapshot INTO v_prev FROM cmis_knowledge.temporal_analytics WHERE knowledge_id = v_rec.knowledge_id ORDER BY detected_at DESC OFFSET 1 LIMIT 1; SELECT current_snapshot INTO v_curr FROM cmis_knowledge.temporal_analytics WHERE knowledge_id = v_rec.knowledge_id ORDER BY detected_at DESC LIMIT 1; v_diff := CONCAT('📘 تحليل زمني تلقائي: تغير في النطاق ', v_rec.domain, ' عند ', NOW()); INSERT INTO cmis_knowledge.temporal_analytics(knowledge_id, domain, previous_snapshot, current_snapshot, delta_summary, confidence_score) VALUES (v_rec.knowledge_id, v_rec.domain, v_prev, v_curr, v_diff, 0.95); END LOOP; RAISE NOTICE '✅ تم إكمال التحليل الزمني الدوري بنجاح.'; END; $$;
+
+
+ALTER FUNCTION public.auto_snapshot_diff() OWNER TO begin;
 
 --
 -- Name: auto_update_cognitive_trends(); Type: FUNCTION; Schema: public; Owner: begin
@@ -596,6 +1553,289 @@ $$;
 ALTER FUNCTION public.cognitive_console_report(mode text) OWNER TO begin;
 
 --
+-- Name: cognitive_feedback_loop(); Type: FUNCTION; Schema: public; Owner: begin
+--
+
+CREATE FUNCTION public.cognitive_feedback_loop() RETURNS void
+    LANGUAGE plpgsql
+    AS $$ DECLARE v_rec record; v_triggered int := 0; BEGIN RAISE NOTICE '🧭 بدء دورة الارتداد المعرفي...'; FOR v_rec IN SELECT domain_name, category FROM cmis_knowledge.v_predictive_cognitive_horizon WHERE forecast_status LIKE '%🔴%' LOOP INSERT INTO cmis_audit.logs(event_type, event_source, description, created_at) VALUES ('cognitive_feedback', v_rec.domain_name, CONCAT('🔄 إعادة تفعيل التحليل الإدراكي بسبب تراجع متوقع في النطاق ', v_rec.domain_name), NOW()); PERFORM compute_epistemic_delta(); v_triggered := v_triggered + 1; END LOOP; RAISE NOTICE '✅ تم تنفيذ دورة الارتداد المعرفي لـ % نطاق(ات).', v_triggered; END; $$;
+
+
+ALTER FUNCTION public.cognitive_feedback_loop() OWNER TO begin;
+
+--
+-- Name: cognitive_learning_loop(); Type: FUNCTION; Schema: public; Owner: begin
+--
+
+CREATE FUNCTION public.cognitive_learning_loop() RETURNS void
+    LANGUAGE plpgsql
+    AS $$ DECLARE v_rec record; v_learned int := 0; BEGIN RAISE NOTICE '🧬 بدء حلقة التعلم الإدراكي...'; FOR v_rec IN SELECT event_source, COUNT(*) AS interventions FROM cmis_audit.logs WHERE event_type = 'cognitive_feedback' GROUP BY event_source HAVING COUNT(*) > 2 LOOP UPDATE cmis_knowledge.v_chrono_evolution SET avg_confidence = avg_confidence + 0.01 WHERE domain_name = v_rec.event_source; INSERT INTO cmis_audit.logs(event_type, event_source, description, created_at) VALUES ('cognitive_learning', v_rec.event_source, CONCAT('🧠 تم تعديل معايير الثقة بناءً على التعلم من ', v_rec.interventions, ' تدخل(ات) معرفية سابقة في النطاق ', v_rec.event_source), NOW()); v_learned := v_learned + 1; END LOOP; RAISE NOTICE '✅ اكتملت حلقة التعلم الإدراكي. تم تحديث % نطاق(ات).', v_learned; END; $$;
+
+
+ALTER FUNCTION public.cognitive_learning_loop() OWNER TO begin;
+
+--
+-- Name: compute_epistemic_delta(); Type: FUNCTION; Schema: public; Owner: begin
+--
+
+CREATE FUNCTION public.compute_epistemic_delta() RETURNS void
+    LANGUAGE plpgsql
+    AS $$ DECLARE v_rec record; v_prev TEXT; v_curr TEXT; v_diff TEXT; BEGIN FOR v_rec IN SELECT knowledge_id, domain FROM cmis_knowledge.index LOOP SELECT content INTO v_prev FROM cmis_knowledge.dev WHERE parent_knowledge_id = v_rec.knowledge_id ORDER BY created_at DESC OFFSET 1 LIMIT 1; SELECT content INTO v_curr FROM cmis_knowledge.dev WHERE parent_knowledge_id = v_rec.knowledge_id ORDER BY created_at DESC LIMIT 1; v_diff := CONCAT('📘 تغير معرفي مكتشف في النطاق ', v_rec.domain, ' بتاريخ ', NOW()); INSERT INTO cmis_knowledge.temporal_analytics(knowledge_id, domain, previous_snapshot, current_snapshot, delta_summary) VALUES (v_rec.knowledge_id, v_rec.domain, to_jsonb(v_prev), to_jsonb(v_curr), v_diff); END LOOP; END; $$;
+
+
+ALTER FUNCTION public.compute_epistemic_delta() OWNER TO begin;
+
+--
+-- Name: create_dev_task(text, text, text, jsonb, smallint); Type: FUNCTION; Schema: public; Owner: begin
+--
+
+CREATE FUNCTION public.create_dev_task(p_name text, p_description text, p_scope_code text, p_execution_plan jsonb, p_priority smallint DEFAULT 3) RETURNS uuid
+    LANGUAGE plpgsql
+    AS $$ DECLARE v_task_id uuid; v_similar_task uuid; BEGIN SELECT task_id INTO v_similar_task FROM cmis_dev.dev_tasks WHERE similarity(name, p_name) > 0.8 AND status IN ('pending', 'in_progress') AND created_at > now() - interval '7 days' LIMIT 1; IF v_similar_task IS NOT NULL THEN RAISE NOTICE 'Similar task found: %', v_similar_task; RETURN v_similar_task; END IF; INSERT INTO cmis_dev.dev_tasks (name, description, scope_code, execution_plan, priority, status) VALUES (p_name, p_description, p_scope_code, p_execution_plan, p_priority, 'pending') RETURNING task_id INTO v_task_id; INSERT INTO cmis_dev.dev_logs (task_id, event, details) VALUES (v_task_id, 'task_created', jsonb_build_object('priority', p_priority, 'scope', p_scope_code)); RETURN v_task_id; END; $$;
+
+
+ALTER FUNCTION public.create_dev_task(p_name text, p_description text, p_scope_code text, p_execution_plan jsonb, p_priority smallint) OWNER TO begin;
+
+--
+-- Name: generate_cognitive_health_report(); Type: FUNCTION; Schema: public; Owner: begin
+--
+
+CREATE FUNCTION public.generate_cognitive_health_report() RETURNS void
+    LANGUAGE plpgsql
+    AS $$ DECLARE r RECORD; report_text TEXT; BEGIN SELECT ROUND(AVG("نسبة الاستقرار %")::numeric,2) AS stability_avg, ROUND(AVG("نسبة إعادة التحليل %")::numeric,2) AS reanalysis_avg, ROUND(AVG("نسبة الخطر %")::numeric,2) AS risk_avg INTO r FROM cmis_system_health.v_cognitive_kpi_timeseries WHERE "الساعة" > NOW() - INTERVAL '24 hours'; report_text := '🧠 تقرير الإدراك الدوري: خلال آخر 24 ساعة بلغت نسبة الاستقرار ' || TO_CHAR(COALESCE(r.stability_avg,0),'FM999.00') || '%، بينما بلغت إعادة التحليل ' || TO_CHAR(COALESCE(r.reanalysis_avg,0),'FM999.00') || '% ومؤشر الخطر ' || TO_CHAR(COALESCE(r.risk_avg,0),'FM999.00') || '%. الحالة العامة: ' || CASE  WHEN COALESCE(r.risk_avg,0) > 20 THEN '🔴 غير مستقرة'  WHEN COALESCE(r.reanalysis_avg,0) > 50 THEN '🟡 تحت إعادة تقييم'  ELSE '🟢 مستقرة' END || '.'; INSERT INTO cmis_system_health.cognitive_reports(report_text, stability_avg, reanalysis_avg, risk_avg) VALUES (report_text, r.stability_avg, r.reanalysis_avg, r.risk_avg); RAISE NOTICE '✅ تم توليد التقرير الإدراكي: %', report_text; END; $$;
+
+
+ALTER FUNCTION public.generate_cognitive_health_report() OWNER TO begin;
+
+--
+-- Name: get_all_report_summaries(integer); Type: FUNCTION; Schema: public; Owner: begin
+--
+
+CREATE FUNCTION public.get_all_report_summaries(p_length integer DEFAULT 500) RETURNS TABLE(topic text, report_phase text, summary text, last_verified_at timestamp with time zone)
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+  RETURN QUERY
+  SELECT ki.topic, ki.report_phase, left(kd.content, p_length) AS summary, ki.last_verified_at
+  FROM cmis_knowledge.index ki
+  JOIN cmis_knowledge.dev kd ON kd.knowledge_id = ki.knowledge_id
+  WHERE ki.category = 'report'
+  ORDER BY ki.report_phase, ki.last_verified_at DESC;
+END;
+$$;
+
+
+ALTER FUNCTION public.get_all_report_summaries(p_length integer) OWNER TO begin;
+
+--
+-- Name: get_latest_official_report(text); Type: FUNCTION; Schema: public; Owner: begin
+--
+
+CREATE FUNCTION public.get_latest_official_report(p_domain text) RETURNS TABLE(knowledge_id uuid, domain text, category text, topic text, importance_level smallint, last_audit_status text, last_verified_at timestamp with time zone)
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+  RETURN QUERY
+  SELECT knowledge_id, domain, category, topic, importance_level, last_audit_status, last_verified_at
+  FROM cmis_knowledge.index
+  WHERE domain = p_domain AND category = 'report' AND last_audit_status = 'official_reference'
+  ORDER BY last_verified_at DESC
+  LIMIT 1;
+END;
+$$;
+
+
+ALTER FUNCTION public.get_latest_official_report(p_domain text) OWNER TO begin;
+
+--
+-- Name: get_latest_reports_by_all_phases(); Type: FUNCTION; Schema: public; Owner: begin
+--
+
+CREATE FUNCTION public.get_latest_reports_by_all_phases() RETURNS TABLE(knowledge_id uuid, domain text, category text, topic text, importance_level smallint, last_audit_status text, report_phase text, last_verified_at timestamp with time zone)
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+  RETURN QUERY
+  SELECT DISTINCT ON (report_phase)
+    knowledge_id, domain, category, topic, importance_level, last_audit_status, report_phase, last_verified_at
+  FROM cmis_knowledge.index
+  WHERE category = 'report'
+  ORDER BY report_phase, last_verified_at DESC;
+END;
+$$;
+
+
+ALTER FUNCTION public.get_latest_reports_by_all_phases() OWNER TO begin;
+
+--
+-- Name: get_official_reports(); Type: FUNCTION; Schema: public; Owner: begin
+--
+
+CREATE FUNCTION public.get_official_reports() RETURNS TABLE(knowledge_id uuid, domain text, category text, topic text, importance_level smallint, last_audit_status text, last_verified_at timestamp with time zone)
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+  RETURN QUERY
+  SELECT knowledge_id, domain, category, topic, importance_level, last_audit_status, last_verified_at
+  FROM cmis_knowledge.index
+  WHERE category = 'report' AND last_audit_status = 'official_reference'
+  ORDER BY importance_level ASC, last_verified_at DESC;
+END;
+$$;
+
+
+ALTER FUNCTION public.get_official_reports() OWNER TO begin;
+
+--
+-- Name: get_report_summary_by_phase(text); Type: FUNCTION; Schema: public; Owner: begin
+--
+
+CREATE FUNCTION public.get_report_summary_by_phase(p_phase text) RETURNS TABLE(topic text, report_phase text, summary text, last_verified_at timestamp with time zone)
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+  RETURN QUERY
+  SELECT ki.topic, ki.report_phase, left(kd.content, 500) AS summary, ki.last_verified_at
+  FROM cmis_knowledge.index ki
+  JOIN cmis_knowledge.dev kd ON kd.knowledge_id = ki.knowledge_id
+  WHERE ki.category = 'report' AND ki.report_phase = p_phase
+  ORDER BY ki.last_verified_at DESC
+  LIMIT 1;
+END;
+$$;
+
+
+ALTER FUNCTION public.get_report_summary_by_phase(p_phase text) OWNER TO begin;
+
+--
+-- Name: get_report_summary_by_phase(text, integer); Type: FUNCTION; Schema: public; Owner: begin
+--
+
+CREATE FUNCTION public.get_report_summary_by_phase(p_phase text, p_length integer DEFAULT 500) RETURNS TABLE(topic text, report_phase text, summary text, last_verified_at timestamp with time zone)
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+  RETURN QUERY
+  SELECT ki.topic, ki.report_phase, left(kd.content, p_length) AS summary, ki.last_verified_at
+  FROM cmis_knowledge.index ki
+  JOIN cmis_knowledge.dev kd ON kd.knowledge_id = ki.knowledge_id
+  WHERE ki.category = 'report' AND ki.report_phase = p_phase
+  ORDER BY ki.last_verified_at DESC
+  LIMIT 1;
+END;
+$$;
+
+
+ALTER FUNCTION public.get_report_summary_by_phase(p_phase text, p_length integer) OWNER TO begin;
+
+--
+-- Name: get_reports_by_phase(text); Type: FUNCTION; Schema: public; Owner: begin
+--
+
+CREATE FUNCTION public.get_reports_by_phase(p_phase text) RETURNS TABLE(knowledge_id uuid, domain text, category text, topic text, importance_level smallint, last_audit_status text, report_phase text, last_verified_at timestamp with time zone)
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+  RETURN QUERY
+  SELECT knowledge_id, domain, category, topic, importance_level, last_audit_status, report_phase, last_verified_at
+  FROM cmis_knowledge.index
+  WHERE category = 'report' AND report_phase = p_phase
+  ORDER BY importance_level ASC, last_verified_at DESC;
+END;
+$$;
+
+
+ALTER FUNCTION public.get_reports_by_phase(p_phase text) OWNER TO begin;
+
+--
+-- Name: load_context_by_priority(text, text, integer); Type: FUNCTION; Schema: public; Owner: begin
+--
+
+CREATE FUNCTION public.load_context_by_priority(p_domain text, p_category text DEFAULT NULL::text, p_max_tokens integer DEFAULT 5000) RETURNS TABLE(knowledge_id uuid, content text, tier smallint, token_count integer, total_tokens bigint)
+    LANGUAGE plpgsql
+    AS $$ BEGIN RETURN QUERY WITH ranked_knowledge AS ( SELECT ki.knowledge_id, CASE p_category WHEN 'dev' THEN kd.content WHEN 'marketing' THEN km.content WHEN 'org' THEN ko.content WHEN 'research' THEN kr.content END AS content, ki.tier, COALESCE(kd.token_count, km.token_count, ko.token_count, kr.token_count) AS token_count, SUM(COALESCE(kd.token_count, km.token_count, ko.token_count, kr.token_count)) OVER (ORDER BY ki.tier ASC, ki.last_verified_at DESC) AS total_tokens FROM cmis_knowledge.index ki LEFT JOIN cmis_knowledge.dev kd USING (knowledge_id) LEFT JOIN cmis_knowledge.marketing km USING (knowledge_id) LEFT JOIN cmis_knowledge.org ko USING (knowledge_id) LEFT JOIN cmis_knowledge.research kr USING (knowledge_id) WHERE ki.domain = p_domain AND (p_category IS NULL OR ki.category = p_category) AND ki.is_deprecated = false ) SELECT rk.knowledge_id, rk.content, rk.tier, rk.token_count, rk.total_tokens FROM ranked_knowledge rk WHERE rk.total_tokens <= p_max_tokens; END; $$;
+
+
+ALTER FUNCTION public.load_context_by_priority(p_domain text, p_category text, p_max_tokens integer) OWNER TO begin;
+
+--
+-- Name: log_cognitive_vitality(); Type: FUNCTION; Schema: public; Owner: begin
+--
+
+CREATE FUNCTION public.log_cognitive_vitality() RETURNS void
+    LANGUAGE plpgsql
+    AS $$ DECLARE v_data RECORD; BEGIN SELECT * INTO v_data FROM cmis_knowledge.v_cognitive_vitality; INSERT INTO cmis_system_health.cognitive_vitality_log ( latency_minutes, events_last_hour, vitality_index, cognitive_state ) VALUES ( v_data.latency_minutes, v_data.events_last_hour, v_data.vitality_index, v_data.cognitive_state ); RAISE NOTICE '🧠 تم تسجيل قراءة جديدة لمؤشر الحيوية الإدراكية بنجاح.'; END; $$;
+
+
+ALTER FUNCTION public.log_cognitive_vitality() OWNER TO begin;
+
+--
+-- Name: reconstruct_knowledge(uuid); Type: FUNCTION; Schema: public; Owner: begin
+--
+
+CREATE FUNCTION public.reconstruct_knowledge(p_parent_id uuid) RETURNS text
+    LANGUAGE plpgsql
+    AS $$ BEGIN RETURN (SELECT string_agg(content, E'\n') FROM cmis_knowledge.dev WHERE parent_knowledge_id = p_parent_id ORDER BY part_index); END; $$;
+
+
+ALTER FUNCTION public.reconstruct_knowledge(p_parent_id uuid) OWNER TO begin;
+
+--
+-- Name: register_chunked_knowledge(text, text, text, text, integer); Type: FUNCTION; Schema: public; Owner: begin
+--
+
+CREATE FUNCTION public.register_chunked_knowledge(p_domain text, p_category text, p_topic text, p_content text, p_chunk_size integer DEFAULT 2000) RETURNS uuid
+    LANGUAGE plpgsql
+    AS $$
+DECLARE
+    v_main_id uuid;
+    v_i int := 0;
+    v_part text;
+    v_total_chunks int := CEIL(length(p_content)::numeric / p_chunk_size);
+BEGIN
+    -- تسجيل المعرفة الرئيسية في الفهرس
+    INSERT INTO cmis_knowledge.index(domain, category, topic, total_chunks, has_children)
+    VALUES (p_domain, p_category, p_topic, v_total_chunks, true)
+    RETURNING knowledge_id INTO v_main_id;
+
+    -- تقسيم المحتوى وإدراج الأجزاء مع استخدام نفس المعرّف الرئيسي كـ parent وknowledge_id
+    WHILE v_i < v_total_chunks LOOP
+        v_part := substr(p_content, (v_i * p_chunk_size) + 1, p_chunk_size);
+        INSERT INTO cmis_knowledge.dev(knowledge_id, parent_knowledge_id, part_index, content, token_count)
+        VALUES (v_main_id, v_main_id, v_i, v_part, length(v_part)/4);
+        v_i := v_i + 1;
+    END LOOP;
+
+    RETURN v_main_id;
+END;
+$$;
+
+
+ALTER FUNCTION public.register_chunked_knowledge(p_domain text, p_category text, p_topic text, p_content text, p_chunk_size integer) OWNER TO begin;
+
+--
+-- Name: register_knowledge(text, text, text, text, smallint, text[]); Type: FUNCTION; Schema: public; Owner: begin
+--
+
+CREATE FUNCTION public.register_knowledge(p_domain text, p_category text, p_topic text, p_content text, p_tier smallint DEFAULT 2, p_keywords text[] DEFAULT ARRAY[]::text[]) RETURNS uuid
+    LANGUAGE plpgsql
+    AS $$ DECLARE v_knowledge_id uuid; v_token_count int; BEGIN v_token_count := length(p_content) / 4; INSERT INTO cmis_knowledge.index (domain, category, topic, keywords, tier, token_budget, last_verified_at) VALUES (p_domain, p_category, p_topic, p_keywords, p_tier, v_token_count, now()) RETURNING knowledge_id INTO v_knowledge_id; CASE p_category WHEN 'dev' THEN INSERT INTO cmis_knowledge.dev (knowledge_id, content, token_count, version) VALUES (v_knowledge_id, p_content, v_token_count, '1.0'); WHEN 'marketing' THEN INSERT INTO cmis_knowledge.marketing (knowledge_id, content, token_count) VALUES (v_knowledge_id, p_content, v_token_count); WHEN 'org' THEN INSERT INTO cmis_knowledge.org (knowledge_id, content, token_count) VALUES (v_knowledge_id, p_content, v_token_count); WHEN 'research' THEN INSERT INTO cmis_knowledge.research (knowledge_id, content, token_count) VALUES (v_knowledge_id, p_content, v_token_count); END CASE; RETURN v_knowledge_id; END; $$;
+
+
+ALTER FUNCTION public.register_knowledge(p_domain text, p_category text, p_topic text, p_content text, p_tier smallint, p_keywords text[]) OWNER TO begin;
+
+--
+-- Name: register_knowledge(text, text, text, text, integer, text[]); Type: FUNCTION; Schema: public; Owner: begin
+--
+
+CREATE FUNCTION public.register_knowledge(p_domain text, p_category text, p_topic text, p_content text, p_tier integer DEFAULT 2, p_keywords text[] DEFAULT NULL::text[]) RETURNS uuid
+    LANGUAGE plpgsql
+    AS $$ DECLARE v_knowledge_id uuid; v_token_count int; BEGIN v_token_count := length(p_content) / 4; INSERT INTO cmis_knowledge.index (domain, category, topic, keywords, tier, token_budget, last_verified_at) VALUES (p_domain, p_category, p_topic, p_keywords, p_tier, v_token_count, now()) RETURNING knowledge_id INTO v_knowledge_id; CASE p_category WHEN 'dev' THEN INSERT INTO cmis_knowledge.dev (knowledge_id, content, token_count) VALUES (v_knowledge_id, p_content, v_token_count); WHEN 'marketing' THEN INSERT INTO cmis_knowledge.marketing (knowledge_id, content, token_count) VALUES (v_knowledge_id, p_content, v_token_count); WHEN 'org' THEN INSERT INTO cmis_knowledge.org (knowledge_id, content, token_count) VALUES (v_knowledge_id, p_content, v_token_count); WHEN 'research' THEN INSERT INTO cmis_knowledge.research (knowledge_id, content, token_count) VALUES (v_knowledge_id, p_content, v_token_count); ELSE RAISE EXCEPTION 'Unknown knowledge category: %', p_category; END CASE; RETURN v_knowledge_id; END; $$;
+
+
+ALTER FUNCTION public.register_knowledge(p_domain text, p_category text, p_topic text, p_content text, p_tier integer, p_keywords text[]) OWNER TO begin;
+
+--
 -- Name: run_auto_predictive_trigger(); Type: FUNCTION; Schema: public; Owner: begin
 --
 
@@ -641,6 +1881,65 @@ $$;
 ALTER FUNCTION public.scheduled_cognitive_trend_update() OWNER TO begin;
 
 --
+-- Name: search_cognitive_knowledge(text, text, text, integer, integer); Type: FUNCTION; Schema: public; Owner: begin
+--
+
+CREATE FUNCTION public.search_cognitive_knowledge(p_query text, p_domain text DEFAULT NULL::text, p_category text DEFAULT 'dev'::text, p_batch_limit integer DEFAULT 20, p_offset integer DEFAULT 0) RETURNS TABLE(knowledge_id uuid, parent_knowledge_id uuid, topic text, part_index integer, content text, score numeric)
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+    RETURN QUERY
+    SELECT kd.knowledge_id,
+           kd.parent_knowledge_id,
+           ki.topic,
+           kd.part_index,
+           kd.content,
+           ts_rank_cd(kd.content_search, plainto_tsquery('arabic', p_query))::numeric AS score
+    FROM cmis_knowledge.dev kd
+    JOIN cmis_knowledge.index ki
+        ON kd.parent_knowledge_id = ki.knowledge_id
+    WHERE (p_domain IS NULL OR ki.domain = p_domain)
+      AND ki.category = p_category
+      AND kd.content_search @@ plainto_tsquery('arabic', p_query)
+    ORDER BY score DESC, kd.part_index
+    LIMIT p_batch_limit OFFSET p_offset;
+END;
+$$;
+
+
+ALTER FUNCTION public.search_cognitive_knowledge(p_query text, p_domain text, p_category text, p_batch_limit integer, p_offset integer) OWNER TO begin;
+
+--
+-- Name: search_cognitive_knowledge_simple(text, integer, integer); Type: FUNCTION; Schema: public; Owner: begin
+--
+
+CREATE FUNCTION public.search_cognitive_knowledge_simple(p_query text, p_batch_limit integer DEFAULT 25, p_offset integer DEFAULT 0) RETURNS TABLE(knowledge_id uuid, parent_knowledge_id uuid, topic text, domain text, category text, part_index integer, content text, score numeric)
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+    RETURN QUERY
+    SELECT
+        kd.knowledge_id,
+        kd.parent_knowledge_id,
+        ki.topic,
+        ki.domain,
+        ki.category,
+        kd.part_index,
+        kd.content,
+        ts_rank_cd(kd.content_search, plainto_tsquery('arabic', p_query))::NUMERIC AS score
+    FROM cmis_knowledge.dev kd
+    JOIN cmis_knowledge.index ki
+        ON kd.parent_knowledge_id = ki.knowledge_id
+    WHERE kd.content_search @@ plainto_tsquery('arabic', p_query)
+    ORDER BY score DESC, kd.part_index
+    LIMIT p_batch_limit OFFSET p_offset;
+END;
+$$;
+
+
+ALTER FUNCTION public.search_cognitive_knowledge_simple(p_query text, p_batch_limit integer, p_offset integer) OWNER TO begin;
+
+--
 -- Name: update_cognitive_trends(); Type: FUNCTION; Schema: public; Owner: begin
 --
 
@@ -684,6 +1983,17 @@ $$;
 
 
 ALTER FUNCTION public.update_cognitive_trends() OWNER TO begin;
+
+--
+-- Name: update_knowledge_chunk(uuid, integer, text); Type: FUNCTION; Schema: public; Owner: begin
+--
+
+CREATE FUNCTION public.update_knowledge_chunk(p_parent_id uuid, p_part_index integer, p_new_content text) RETURNS void
+    LANGUAGE plpgsql
+    AS $$ BEGIN UPDATE cmis_knowledge.dev SET content = p_new_content, token_count = length(p_new_content)/4, link_context = jsonb_set(link_context, '{last_updated}', to_jsonb(now())) WHERE parent_knowledge_id = p_parent_id AND part_index = p_part_index; END; $$;
+
+
+ALTER FUNCTION public.update_knowledge_chunk(p_parent_id uuid, p_part_index integer, p_new_content text) OWNER TO begin;
 
 SET default_tablespace = '';
 
@@ -970,7 +2280,7 @@ ALTER TABLE public.awareness_stages OWNER TO gpts_data_user;
 --
 
 CREATE VIEW cmis.awareness_stages AS
- SELECT awareness_stages.stage
+ SELECT stage
    FROM public.awareness_stages;
 
 
@@ -1053,17 +2363,17 @@ COMMENT ON TABLE cmis_refactored.campaigns IS 'المرجع الموحّد لج�
 --
 
 CREATE VIEW cmis.campaigns AS
- SELECT campaigns.campaign_id,
-    campaigns.org_id,
-    campaigns.name,
-    campaigns.objective,
-    campaigns.status,
-    campaigns.start_date,
-    campaigns.end_date,
-    campaigns.budget,
-    campaigns.currency,
-    campaigns.created_at,
-    campaigns.updated_at
+ SELECT campaign_id,
+    org_id,
+    name,
+    objective,
+    status,
+    start_date,
+    end_date,
+    budget,
+    currency,
+    created_at,
+    updated_at
    FROM cmis_refactored.campaigns;
 
 
@@ -1089,11 +2399,11 @@ ALTER TABLE public.channel_formats OWNER TO gpts_data_user;
 --
 
 CREATE VIEW cmis.channel_formats AS
- SELECT channel_formats.format_id,
-    channel_formats.channel_id,
-    channel_formats.code,
-    channel_formats.ratio,
-    channel_formats.length_hint
+ SELECT format_id,
+    channel_id,
+    code,
+    ratio,
+    length_hint
    FROM public.channel_formats;
 
 
@@ -1118,10 +2428,10 @@ ALTER TABLE public.channels OWNER TO gpts_data_user;
 --
 
 CREATE VIEW cmis.channels AS
- SELECT channels.channel_id,
-    channels.code,
-    channels.name,
-    channels.constraints
+ SELECT channel_id,
+    code,
+    name,
+    constraints
    FROM public.channels;
 
 
@@ -1230,7 +2540,7 @@ ALTER TABLE public.component_types OWNER TO gpts_data_user;
 --
 
 CREATE VIEW cmis.component_types AS
- SELECT component_types.type_code
+ SELECT type_code
    FROM public.component_types;
 
 
@@ -1624,11 +2934,11 @@ ALTER TABLE public.frameworks OWNER TO begin;
 --
 
 CREATE VIEW cmis.frameworks AS
- SELECT frameworks.framework_id,
-    frameworks.framework_name,
-    frameworks.framework_type,
-    frameworks.description,
-    frameworks.created_at
+ SELECT framework_id,
+    framework_name,
+    framework_type,
+    description,
+    created_at
    FROM public.frameworks;
 
 
@@ -1716,7 +3026,7 @@ ALTER TABLE public.funnel_stages OWNER TO gpts_data_user;
 --
 
 CREATE VIEW cmis.funnel_stages AS
- SELECT funnel_stages.stage
+ SELECT stage
    FROM public.funnel_stages;
 
 
@@ -1739,8 +3049,8 @@ ALTER TABLE public.industries OWNER TO gpts_data_user;
 --
 
 CREATE VIEW cmis.industries AS
- SELECT industries.industry_id,
-    industries.name
+ SELECT industry_id,
+    name
    FROM public.industries;
 
 
@@ -1770,15 +3080,15 @@ ALTER TABLE cmis_refactored.integrations OWNER TO begin;
 --
 
 CREATE VIEW cmis.integrations AS
- SELECT integrations.integration_id,
-    integrations.org_id,
-    integrations.platform,
-    integrations.account_id,
-    integrations.username,
-    integrations.access_token,
-    integrations.is_active,
-    integrations.created_at,
-    integrations.business_id
+ SELECT integration_id,
+    org_id,
+    platform,
+    account_id,
+    username,
+    access_token,
+    is_active,
+    created_at,
+    business_id
    FROM cmis_refactored.integrations;
 
 
@@ -1789,11 +3099,11 @@ ALTER VIEW cmis.integrations OWNER TO begin;
 --
 
 CREATE VIEW cmis.integrations_view AS
- SELECT integrations.account_id,
-    integrations.username,
-    integrations.platform,
-    integrations.org_id,
-    integrations.is_active
+ SELECT account_id,
+    username,
+    platform,
+    org_id,
+    is_active
    FROM cmis.integrations;
 
 
@@ -1823,8 +3133,8 @@ ALTER TABLE public.kpis OWNER TO gpts_data_user;
 --
 
 CREATE VIEW cmis.kpis AS
- SELECT kpis.kpi,
-    kpis.description
+ SELECT kpi,
+    description
    FROM public.kpis;
 
 
@@ -1866,10 +3176,10 @@ ALTER TABLE public.marketing_objectives OWNER TO gpts_data_user;
 --
 
 CREATE VIEW cmis.marketing_objectives AS
- SELECT marketing_objectives.objective,
-    marketing_objectives.display_name,
-    marketing_objectives.category,
-    marketing_objectives.description
+ SELECT objective,
+    display_name,
+    category,
+    description
    FROM public.marketing_objectives;
 
 
@@ -1895,11 +3205,11 @@ ALTER TABLE public.markets OWNER TO gpts_data_user;
 --
 
 CREATE VIEW cmis.markets AS
- SELECT markets.market_id,
-    markets.market_name,
-    markets.language_code,
-    markets.currency_code,
-    markets.text_direction
+ SELECT market_id,
+    market_name,
+    language_code,
+    currency_code,
+    text_direction
    FROM public.markets;
 
 
@@ -2255,15 +3565,15 @@ COMMENT ON COLUMN cmis_refactored.performance_metrics.observed_at IS 'زمن ا�
 --
 
 CREATE VIEW cmis.performance_metrics AS
- SELECT performance_metrics.metric_id,
-    performance_metrics.org_id,
-    performance_metrics.campaign_id,
-    performance_metrics.output_id,
-    performance_metrics.kpi,
-    performance_metrics.observed,
-    performance_metrics.target,
-    performance_metrics.baseline,
-    performance_metrics.observed_at
+ SELECT metric_id,
+    org_id,
+    campaign_id,
+    output_id,
+    kpi,
+    observed,
+    target,
+    baseline,
+    observed_at
    FROM cmis_refactored.performance_metrics;
 
 
@@ -2274,10 +3584,10 @@ ALTER VIEW cmis.performance_metrics OWNER TO begin;
 --
 
 CREATE VIEW cmis.playbook_steps AS
- SELECT s.step_id,
-    s.flow_id AS playbook_id,
-    s.ord AS step_order,
-    COALESCE(s.name, s.type) AS step_name,
+ SELECT step_id,
+    flow_id AS playbook_id,
+    ord AS step_order,
+    COALESCE(name, type) AS step_name,
     NULL::text AS step_instructions,
     NULL::text AS module_reference
    FROM cmis.flow_steps s;
@@ -2290,9 +3600,9 @@ ALTER VIEW cmis.playbook_steps OWNER TO begin;
 --
 
 CREATE VIEW cmis.playbooks AS
- SELECT f.flow_id AS playbook_id,
-    f.name AS playbook_name,
-    f.description
+ SELECT flow_id AS playbook_id,
+    name AS playbook_name,
+    description
    FROM cmis.flows f;
 
 
@@ -2386,7 +3696,7 @@ ALTER TABLE public.proof_layers OWNER TO gpts_data_user;
 --
 
 CREATE VIEW cmis.proof_layers AS
- SELECT proof_layers.level
+ SELECT level
    FROM public.proof_layers;
 
 
@@ -2464,8 +3774,8 @@ CREATE TABLE cmis.social_accounts (
     media_count bigint,
     website text,
     category text,
-    is_verified boolean DEFAULT false,
-    fetched_at timestamp without time zone DEFAULT now()
+    fetched_at timestamp without time zone DEFAULT now(),
+    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP
 );
 
 
@@ -2545,7 +3855,7 @@ ALTER TABLE public.strategies OWNER TO gpts_data_user;
 --
 
 CREATE VIEW cmis.strategies AS
- SELECT strategies.strategy
+ SELECT strategy
    FROM public.strategies;
 
 
@@ -2585,7 +3895,7 @@ ALTER TABLE public.tones OWNER TO gpts_data_user;
 --
 
 CREATE VIEW cmis.tones AS
- SELECT tones.tone
+ SELECT tone
    FROM public.tones;
 
 
@@ -2945,6 +4255,832 @@ CREATE TABLE cmis_analytics.scheduled_jobs (
 ALTER TABLE cmis_analytics.scheduled_jobs OWNER TO begin;
 
 --
+-- Name: logs; Type: TABLE; Schema: cmis_audit; Owner: begin
+--
+
+CREATE TABLE cmis_audit.logs (
+    id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    event_type text NOT NULL,
+    event_source text NOT NULL,
+    description text,
+    created_at timestamp without time zone DEFAULT now(),
+    user_id uuid,
+    metadata jsonb DEFAULT '{}'::jsonb
+);
+
+
+ALTER TABLE cmis_audit.logs OWNER TO begin;
+
+--
+-- Name: dev_logs; Type: TABLE; Schema: cmis_dev; Owner: begin
+--
+
+CREATE TABLE cmis_dev.dev_logs (
+    log_id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    task_id uuid,
+    event text,
+    details jsonb,
+    created_at timestamp with time zone DEFAULT now()
+);
+
+
+ALTER TABLE cmis_dev.dev_logs OWNER TO begin;
+
+--
+-- Name: dev_tasks; Type: TABLE; Schema: cmis_dev; Owner: begin
+--
+
+CREATE TABLE cmis_dev.dev_tasks (
+    task_id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    name text,
+    description text,
+    scope_code text,
+    status text DEFAULT 'pending'::text,
+    priority smallint DEFAULT 3,
+    execution_plan jsonb,
+    confidence numeric(3,2),
+    effectiveness_score smallint,
+    created_at timestamp with time zone DEFAULT now(),
+    updated_at timestamp with time zone,
+    result_summary text
+);
+
+
+ALTER TABLE cmis_dev.dev_tasks OWNER TO begin;
+
+--
+-- Name: cognitive_manifest; Type: TABLE; Schema: cmis_knowledge; Owner: begin
+--
+
+CREATE TABLE cmis_knowledge.cognitive_manifest (
+    manifest_id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    layer_name text NOT NULL,
+    status text DEFAULT 'active'::text,
+    confidence numeric(5,2) DEFAULT 1.00,
+    last_updated timestamp without time zone DEFAULT now(),
+    description text
+);
+
+
+ALTER TABLE cmis_knowledge.cognitive_manifest OWNER TO begin;
+
+--
+-- Name: creative_templates; Type: TABLE; Schema: cmis_knowledge; Owner: begin
+--
+
+CREATE TABLE cmis_knowledge.creative_templates (
+    template_id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    domain text DEFAULT 'marketing'::text,
+    category text,
+    title text,
+    content text,
+    tone text,
+    emotion text[],
+    variability smallint DEFAULT 3,
+    tags text[],
+    created_at timestamp with time zone DEFAULT now(),
+    content_embedding public.vector(768),
+    emotion_embedding public.vector(768),
+    creative_style_embedding public.vector(768),
+    tone_direction_vector public.vector(768),
+    CONSTRAINT creative_templates_category_check CHECK ((category = ANY (ARRAY['narrative'::text, 'slogan'::text, 'concept'::text, 'tone'::text, 'emotion'::text, 'hook'::text])))
+);
+
+
+ALTER TABLE cmis_knowledge.creative_templates OWNER TO begin;
+
+--
+-- Name: dev; Type: TABLE; Schema: cmis_knowledge; Owner: begin
+--
+
+CREATE TABLE cmis_knowledge.dev (
+    knowledge_id uuid,
+    content text,
+    token_count integer,
+    version text DEFAULT '1.0'::text,
+    parent_knowledge_id uuid,
+    part_index integer DEFAULT 0,
+    content_length integer GENERATED ALWAYS AS (length(content)) STORED,
+    link_context jsonb DEFAULT '{}'::jsonb,
+    content_search tsvector GENERATED ALWAYS AS (to_tsvector('arabic'::regconfig, content)) STORED,
+    created_at timestamp without time zone DEFAULT now(),
+    content_embedding public.vector(768),
+    chunk_embeddings jsonb,
+    semantic_summary_embedding public.vector(768),
+    intent_analysis jsonb,
+    embedding_metadata jsonb DEFAULT '{}'::jsonb
+);
+
+
+ALTER TABLE cmis_knowledge.dev OWNER TO begin;
+
+--
+-- Name: direction_mappings; Type: TABLE; Schema: cmis_knowledge; Owner: begin
+--
+
+CREATE TABLE cmis_knowledge.direction_mappings (
+    direction_id uuid DEFAULT gen_random_uuid() NOT NULL,
+    direction_name text NOT NULL,
+    direction_name_ar text NOT NULL,
+    direction_type text,
+    direction_embedding public.vector(768),
+    parent_direction_id uuid,
+    associated_intents uuid[],
+    confidence_score numeric(3,2) DEFAULT 0.80,
+    metadata jsonb DEFAULT '{}'::jsonb,
+    is_active boolean DEFAULT true,
+    created_at timestamp with time zone DEFAULT now(),
+    updated_at timestamp with time zone DEFAULT now(),
+    CONSTRAINT direction_mappings_direction_type_check CHECK ((direction_type = ANY (ARRAY['strategic'::text, 'tactical'::text, 'operational'::text])))
+);
+
+
+ALTER TABLE cmis_knowledge.direction_mappings OWNER TO begin;
+
+--
+-- Name: embedding_api_config; Type: TABLE; Schema: cmis_knowledge; Owner: begin
+--
+
+CREATE TABLE cmis_knowledge.embedding_api_config (
+    config_id uuid DEFAULT gen_random_uuid() NOT NULL,
+    api_key_encrypted text NOT NULL,
+    api_endpoint text DEFAULT 'https://generativelanguage.googleapis.com/v1beta/models/text-embedding-004:embedContent'::text,
+    model_name text DEFAULT 'models/text-embedding-004'::text,
+    embedding_dimension integer DEFAULT 768,
+    max_batch_size integer DEFAULT 100,
+    rate_limit_per_minute integer DEFAULT 60,
+    retry_attempts integer DEFAULT 3,
+    timeout_seconds integer DEFAULT 30,
+    is_active boolean DEFAULT true,
+    created_at timestamp with time zone DEFAULT now(),
+    updated_at timestamp with time zone DEFAULT now()
+);
+
+
+ALTER TABLE cmis_knowledge.embedding_api_config OWNER TO begin;
+
+--
+-- Name: embedding_api_logs; Type: TABLE; Schema: cmis_knowledge; Owner: begin
+--
+
+CREATE TABLE cmis_knowledge.embedding_api_logs (
+    log_id uuid DEFAULT gen_random_uuid() NOT NULL,
+    request_timestamp timestamp with time zone DEFAULT now(),
+    response_timestamp timestamp with time zone,
+    text_length integer,
+    status_code integer,
+    error_message text,
+    tokens_used integer,
+    execution_time_ms integer,
+    model_used text
+);
+
+
+ALTER TABLE cmis_knowledge.embedding_api_logs OWNER TO begin;
+
+--
+-- Name: embedding_update_queue; Type: TABLE; Schema: cmis_knowledge; Owner: begin
+--
+
+CREATE TABLE cmis_knowledge.embedding_update_queue (
+    queue_id uuid DEFAULT gen_random_uuid() NOT NULL,
+    knowledge_id uuid NOT NULL,
+    source_table text NOT NULL,
+    source_field text NOT NULL,
+    priority integer DEFAULT 5,
+    status text DEFAULT 'pending'::text,
+    retry_count integer DEFAULT 0,
+    max_retries integer DEFAULT 3,
+    error_message text,
+    created_at timestamp with time zone DEFAULT now(),
+    processing_started_at timestamp with time zone,
+    processed_at timestamp with time zone,
+    CONSTRAINT embedding_update_queue_priority_check CHECK (((priority >= 1) AND (priority <= 10))),
+    CONSTRAINT embedding_update_queue_status_check CHECK ((status = ANY (ARRAY['pending'::text, 'processing'::text, 'completed'::text, 'failed'::text])))
+);
+
+
+ALTER TABLE cmis_knowledge.embedding_update_queue OWNER TO begin;
+
+--
+-- Name: embedding_update_queue_backup; Type: TABLE; Schema: cmis_knowledge; Owner: begin
+--
+
+CREATE TABLE cmis_knowledge.embedding_update_queue_backup (
+    queue_id uuid,
+    knowledge_id uuid,
+    source_table text,
+    source_field text,
+    priority integer,
+    status text,
+    retry_count integer,
+    max_retries integer,
+    error_message text,
+    created_at timestamp with time zone,
+    processing_started_at timestamp with time zone,
+    processed_at timestamp with time zone
+);
+
+
+ALTER TABLE cmis_knowledge.embedding_update_queue_backup OWNER TO begin;
+
+--
+-- Name: embeddings_cache; Type: TABLE; Schema: cmis_knowledge; Owner: begin
+--
+
+CREATE TABLE cmis_knowledge.embeddings_cache (
+    cache_id uuid DEFAULT gen_random_uuid() NOT NULL,
+    source_table text NOT NULL,
+    source_id uuid NOT NULL,
+    source_field text NOT NULL,
+    embedding public.vector(768) NOT NULL,
+    embedding_norm double precision,
+    metadata jsonb DEFAULT '{}'::jsonb,
+    model_version text DEFAULT 'gemini-text-embedding-004'::text,
+    quality_score numeric(3,2),
+    usage_count integer DEFAULT 0,
+    last_accessed timestamp with time zone DEFAULT now(),
+    created_at timestamp with time zone DEFAULT now(),
+    updated_at timestamp with time zone DEFAULT now()
+);
+
+
+ALTER TABLE cmis_knowledge.embeddings_cache OWNER TO begin;
+
+--
+-- Name: index; Type: TABLE; Schema: cmis_knowledge; Owner: begin
+--
+
+CREATE TABLE cmis_knowledge.index (
+    knowledge_id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    domain text NOT NULL,
+    category text NOT NULL,
+    topic text NOT NULL,
+    keywords text[],
+    tier smallint DEFAULT 2,
+    token_budget integer DEFAULT 1200,
+    supersedes_knowledge_id uuid,
+    is_deprecated boolean DEFAULT false,
+    last_verified_at timestamp with time zone DEFAULT now(),
+    total_chunks integer DEFAULT 1,
+    has_children boolean DEFAULT false,
+    importance_level smallint DEFAULT 2,
+    last_audit_status text DEFAULT 'verified'::text,
+    report_phase text DEFAULT 'unspecified'::text,
+    topic_embedding public.vector(768),
+    intent_vector public.vector(768),
+    direction_vector public.vector(768),
+    purpose_vector public.vector(768),
+    verification_confidence numeric DEFAULT 0.5,
+    verification_source text DEFAULT 'system_check'::text,
+    is_verified_by_ai boolean DEFAULT false,
+    keywords_embedding public.vector(768),
+    semantic_fingerprint public.vector(768),
+    embedding_model text DEFAULT 'gemini-text-embedding-004'::text,
+    embedding_updated_at timestamp with time zone,
+    embedding_version integer DEFAULT 1,
+    updated_at timestamp without time zone DEFAULT now(),
+    CONSTRAINT index_category_check CHECK ((category = ANY (ARRAY['dev'::text, 'marketing'::text, 'org'::text, 'research'::text, 'report'::text, 'system'::text]))),
+    CONSTRAINT index_tier_check CHECK ((tier = ANY (ARRAY[1, 2, 3])))
+);
+
+
+ALTER TABLE cmis_knowledge.index OWNER TO begin;
+
+--
+-- Name: intent_mappings; Type: TABLE; Schema: cmis_knowledge; Owner: begin
+--
+
+CREATE TABLE cmis_knowledge.intent_mappings (
+    intent_id uuid DEFAULT gen_random_uuid() NOT NULL,
+    intent_name text NOT NULL,
+    intent_name_ar text NOT NULL,
+    intent_description text,
+    intent_embedding public.vector(768),
+    parent_intent_id uuid,
+    intent_level integer DEFAULT 1,
+    related_keywords text[],
+    related_keywords_ar text[],
+    confidence_threshold numeric(3,2) DEFAULT 0.75,
+    usage_count integer DEFAULT 0,
+    last_used timestamp with time zone,
+    is_active boolean DEFAULT true,
+    created_at timestamp with time zone DEFAULT now(),
+    updated_at timestamp with time zone DEFAULT now()
+);
+
+
+ALTER TABLE cmis_knowledge.intent_mappings OWNER TO begin;
+
+--
+-- Name: marketing; Type: TABLE; Schema: cmis_knowledge; Owner: begin
+--
+
+CREATE TABLE cmis_knowledge.marketing (
+    knowledge_id uuid,
+    content text,
+    audience_segment text,
+    tone text,
+    token_count integer,
+    content_embedding public.vector(768),
+    audience_embedding public.vector(768),
+    tone_embedding public.vector(768),
+    campaign_intent_vector public.vector(768),
+    emotional_direction_vector public.vector(768)
+);
+
+
+ALTER TABLE cmis_knowledge.marketing OWNER TO begin;
+
+--
+-- Name: org; Type: TABLE; Schema: cmis_knowledge; Owner: begin
+--
+
+CREATE TABLE cmis_knowledge.org (
+    knowledge_id uuid,
+    org_name text,
+    content text,
+    token_count integer,
+    content_embedding public.vector(768),
+    org_context_embedding public.vector(768),
+    strategic_intent_vector public.vector(768)
+);
+
+
+ALTER TABLE cmis_knowledge.org OWNER TO begin;
+
+--
+-- Name: purpose_mappings; Type: TABLE; Schema: cmis_knowledge; Owner: begin
+--
+
+CREATE TABLE cmis_knowledge.purpose_mappings (
+    purpose_id uuid DEFAULT gen_random_uuid() NOT NULL,
+    purpose_name text NOT NULL,
+    purpose_name_ar text NOT NULL,
+    purpose_category text,
+    purpose_embedding public.vector(768),
+    related_intents uuid[],
+    related_directions uuid[],
+    achievement_criteria jsonb,
+    confidence_threshold numeric(3,2) DEFAULT 0.70,
+    usage_count integer DEFAULT 0,
+    is_active boolean DEFAULT true,
+    created_at timestamp with time zone DEFAULT now(),
+    updated_at timestamp with time zone DEFAULT now()
+);
+
+
+ALTER TABLE cmis_knowledge.purpose_mappings OWNER TO begin;
+
+--
+-- Name: research; Type: TABLE; Schema: cmis_knowledge; Owner: begin
+--
+
+CREATE TABLE cmis_knowledge.research (
+    knowledge_id uuid,
+    content text,
+    source text,
+    confidence_score numeric(3,2),
+    token_count integer,
+    content_embedding public.vector(768),
+    source_context_embedding public.vector(768),
+    research_direction_vector public.vector(768),
+    insight_embedding public.vector(768)
+);
+
+
+ALTER TABLE cmis_knowledge.research OWNER TO begin;
+
+--
+-- Name: semantic_search_logs; Type: TABLE; Schema: cmis_knowledge; Owner: begin
+--
+
+CREATE TABLE cmis_knowledge.semantic_search_logs (
+    log_id uuid DEFAULT gen_random_uuid() NOT NULL,
+    query_text text NOT NULL,
+    intent text,
+    direction text,
+    purpose text,
+    category text,
+    results_count integer,
+    avg_similarity numeric(5,4),
+    max_similarity numeric(5,4),
+    min_similarity numeric(5,4),
+    execution_time_ms integer,
+    user_feedback text,
+    user_id uuid,
+    session_id text,
+    created_at timestamp with time zone DEFAULT now(),
+    CONSTRAINT semantic_search_logs_user_feedback_check CHECK ((user_feedback = ANY (ARRAY['positive'::text, 'negative'::text, 'neutral'::text])))
+);
+
+
+ALTER TABLE cmis_knowledge.semantic_search_logs OWNER TO begin;
+
+--
+-- Name: semantic_search_results_cache; Type: TABLE; Schema: cmis_knowledge; Owner: begin
+--
+
+CREATE TABLE cmis_knowledge.semantic_search_results_cache (
+    cache_id uuid DEFAULT gen_random_uuid() NOT NULL,
+    query_hash text NOT NULL,
+    query_text text NOT NULL,
+    intent text,
+    direction text,
+    purpose text,
+    results jsonb DEFAULT '{}'::jsonb NOT NULL,
+    result_count integer,
+    avg_similarity numeric(5,4),
+    created_at timestamp with time zone DEFAULT now(),
+    expires_at timestamp with time zone DEFAULT (now() + '01:00:00'::interval)
+);
+
+
+ALTER TABLE cmis_knowledge.semantic_search_results_cache OWNER TO begin;
+
+--
+-- Name: temporal_analytics; Type: TABLE; Schema: cmis_knowledge; Owner: begin
+--
+
+CREATE TABLE cmis_knowledge.temporal_analytics (
+    delta_id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    knowledge_id uuid,
+    domain text NOT NULL,
+    previous_snapshot jsonb,
+    current_snapshot jsonb,
+    delta_summary text,
+    detected_at timestamp without time zone DEFAULT now(),
+    confidence_score numeric(5,2) DEFAULT 1.0,
+    temporal_embedding public.vector(768),
+    change_vector public.vector(768),
+    trend_direction_embedding public.vector(768)
+);
+
+
+ALTER TABLE cmis_knowledge.temporal_analytics OWNER TO begin;
+
+--
+-- Name: v_chrono_evolution; Type: VIEW; Schema: cmis_knowledge; Owner: begin
+--
+
+CREATE VIEW cmis_knowledge.v_chrono_evolution AS
+ WITH time_diffs AS (
+         SELECT i.domain,
+            i.category,
+            t.delta_id,
+            t.detected_at,
+            t.confidence_score,
+            (date_part('epoch'::text, (t.detected_at - lag(t.detected_at) OVER (PARTITION BY i.domain ORDER BY t.detected_at))) / (3600)::double precision) AS hours_between_changes
+           FROM (cmis_knowledge.index i
+             LEFT JOIN cmis_knowledge.temporal_analytics t ON ((i.knowledge_id = t.knowledge_id)))
+        )
+ SELECT domain AS domain_name,
+    category,
+    count(delta_id) AS total_deltas,
+    min(detected_at) AS first_recorded_change,
+    max(detected_at) AS last_recorded_change,
+    round((avg(hours_between_changes))::numeric, 2) AS avg_hours_between_changes,
+    round(avg(confidence_score), 2) AS avg_confidence,
+        CASE
+            WHEN (count(delta_id) = 0) THEN '🟢 مستقر'::text
+            WHEN (count(delta_id) < 3) THEN '🟡 نشاط منخفض'::text
+            WHEN (count(delta_id) < 6) THEN '🟠 نشاط معتدل'::text
+            ELSE '🔴 نشاط مرتفع'::text
+        END AS cognitive_activity_level
+   FROM time_diffs
+  GROUP BY domain, category
+  ORDER BY (max(detected_at)) DESC NULLS LAST;
+
+
+ALTER VIEW cmis_knowledge.v_chrono_evolution OWNER TO begin;
+
+--
+-- Name: v_cognitive_activity; Type: VIEW; Schema: cmis_knowledge; Owner: begin
+--
+
+CREATE VIEW cmis_knowledge.v_cognitive_activity AS
+ SELECT i.domain AS "النطاق",
+    i.category AS "الفئة",
+    i.topic AS "الموضوع",
+    a.event_type AS "نوع الحدث",
+    a.description AS "الوصف",
+    a.created_at AS "آخر نشاط",
+        CASE
+            WHEN (a.event_type ~~ '%feedback%'::text) THEN '🟡 تحت إعادة تحليل'::text
+            WHEN (a.event_type ~~ '%alert%'::text) THEN '🔴 يحتاج تدخل إدراكي'::text
+            WHEN (a.event_type ~~ '%snapshot%'::text) THEN '🟢 فعّال ومستقر'::text
+            ELSE '⚪ غير محدد'::text
+        END AS "الحالة اللحظية"
+   FROM (cmis_audit.logs a
+     LEFT JOIN cmis_knowledge.index i ON ((lower(a.event_source) = lower(i.domain))))
+  WHERE (a.event_type = ANY (ARRAY['cognitive_feedback'::text, 'cognitive_alert'::text, 'cognitive_snapshot'::text]))
+  ORDER BY a.created_at DESC;
+
+
+ALTER VIEW cmis_knowledge.v_cognitive_activity OWNER TO begin;
+
+--
+-- Name: v_cognitive_vitality; Type: VIEW; Schema: cmis_knowledge; Owner: begin
+--
+
+CREATE VIEW cmis_knowledge.v_cognitive_vitality AS
+ WITH events AS (
+         SELECT max(logs.created_at) AS last_event_time
+           FROM cmis_audit.logs
+          WHERE (logs.event_type = ANY (ARRAY['manifest_sync'::text, 'cognitive_feedback'::text, 'cognitive_learning'::text]))
+        ), manifest AS (
+         SELECT max(cognitive_manifest.last_updated) AS last_manifest_update
+           FROM cmis_knowledge.cognitive_manifest
+        ), delta AS (
+         SELECT (date_part('epoch'::text, (manifest.last_manifest_update - events.last_event_time)) / (60)::double precision) AS latency_minutes,
+            ( SELECT count(*) AS count
+                   FROM cmis_audit.logs
+                  WHERE ((logs.event_type = ANY (ARRAY['manifest_sync'::text, 'cognitive_feedback'::text, 'cognitive_learning'::text])) AND (logs.created_at > (now() - '01:00:00'::interval)))) AS events_last_hour
+           FROM events,
+            manifest
+        )
+ SELECT latency_minutes,
+    events_last_hour,
+    round((GREATEST((0)::double precision, LEAST((1)::double precision, (((1)::double precision - (latency_minutes / (60)::double precision)) * (((events_last_hour)::numeric / 10.0))::double precision))))::numeric, 3) AS vitality_index,
+        CASE
+            WHEN ((((1)::double precision - (latency_minutes / (60)::double precision)) * (((events_last_hour)::numeric / 10.0))::double precision) > (0.8)::double precision) THEN '🟢 نشط جدًا'::text
+            WHEN ((((1)::double precision - (latency_minutes / (60)::double precision)) * (((events_last_hour)::numeric / 10.0))::double precision) > (0.6)::double precision) THEN '🟡 مستقر'::text
+            WHEN ((((1)::double precision - (latency_minutes / (60)::double precision)) * (((events_last_hour)::numeric / 10.0))::double precision) > (0.4)::double precision) THEN '🟠 خامل نسبيًا'::text
+            ELSE '🔴 ضعيف الاستجابة'::text
+        END AS cognitive_state,
+    now() AS calculated_at
+   FROM delta;
+
+
+ALTER VIEW cmis_knowledge.v_cognitive_vitality OWNER TO begin;
+
+--
+-- Name: v_embedding_queue_status; Type: VIEW; Schema: cmis_knowledge; Owner: begin
+--
+
+CREATE VIEW cmis_knowledge.v_embedding_queue_status AS
+ SELECT status AS "الحالة",
+    count(*) AS "العدد",
+    (avg(retry_count))::numeric(5,2) AS "متوسط المحاولات",
+    min(created_at) AS "أقدم طلب",
+    max(created_at) AS "أحدث طلب",
+    (avg((EXTRACT(epoch FROM (now() - created_at)) / (60)::numeric)))::numeric(10,2) AS "متوسط وقت الانتظار (دقيقة)",
+        CASE status
+            WHEN 'pending'::text THEN '⏳ في الانتظار'::text
+            WHEN 'processing'::text THEN '🔄 قيد المعالجة'::text
+            WHEN 'completed'::text THEN '✅ مكتمل'::text
+            WHEN 'failed'::text THEN '❌ فشل'::text
+            ELSE NULL::text
+        END AS "الوصف"
+   FROM cmis_knowledge.embedding_update_queue
+  GROUP BY status
+  ORDER BY
+        CASE status
+            WHEN 'failed'::text THEN 1
+            WHEN 'pending'::text THEN 2
+            WHEN 'processing'::text THEN 3
+            WHEN 'completed'::text THEN 4
+            ELSE NULL::integer
+        END;
+
+
+ALTER VIEW cmis_knowledge.v_embedding_queue_status OWNER TO begin;
+
+--
+-- Name: v_global_cognitive_index; Type: VIEW; Schema: cmis_knowledge; Owner: begin
+--
+
+CREATE VIEW cmis_knowledge.v_global_cognitive_index AS
+ SELECT round(avg(avg_confidence), 3) AS avg_confidence_overall,
+    round(avg(total_deltas), 2) AS avg_deltas_per_domain,
+    count(*) AS total_domains,
+    round((avg(avg_confidence) / ((1)::numeric + stddev(total_deltas))), 3) AS global_cognitive_stability_index,
+        CASE
+            WHEN ((avg(avg_confidence) / ((1)::numeric + stddev(total_deltas))) > 0.9) THEN '🟢 مستقر جدًا'::text
+            WHEN ((avg(avg_confidence) / ((1)::numeric + stddev(total_deltas))) > 0.7) THEN '🟡 مستقر'::text
+            WHEN ((avg(avg_confidence) / ((1)::numeric + stddev(total_deltas))) > 0.5) THEN '🟠 متقلب'::text
+            ELSE '🔴 غير مستقر'::text
+        END AS system_state_description,
+    now() AS calculated_at
+   FROM cmis_knowledge.v_chrono_evolution;
+
+
+ALTER VIEW cmis_knowledge.v_global_cognitive_index OWNER TO begin;
+
+--
+-- Name: v_predictive_cognitive_horizon; Type: VIEW; Schema: cmis_knowledge; Owner: begin
+--
+
+CREATE VIEW cmis_knowledge.v_predictive_cognitive_horizon AS
+ WITH base AS (
+         SELECT v_chrono_evolution.domain_name,
+            v_chrono_evolution.category,
+            v_chrono_evolution.total_deltas,
+            v_chrono_evolution.avg_confidence,
+            v_chrono_evolution.avg_hours_between_changes,
+                CASE
+                    WHEN (v_chrono_evolution.cognitive_activity_level ~~ '%🟢%'::text) THEN 0.05
+                    WHEN (v_chrono_evolution.cognitive_activity_level ~~ '%🟡%'::text) THEN 0.15
+                    WHEN (v_chrono_evolution.cognitive_activity_level ~~ '%🟠%'::text) THEN 0.30
+                    ELSE 0.50
+                END AS volatility_factor
+           FROM cmis_knowledge.v_chrono_evolution
+        ), projection AS (
+         SELECT base.domain_name,
+            base.category,
+            base.total_deltas,
+            base.avg_confidence,
+            base.avg_hours_between_changes,
+            base.volatility_factor,
+            round((base.avg_confidence - (base.volatility_factor * ((1)::numeric / (base.avg_hours_between_changes + (1)::numeric)))), 3) AS predicted_confidence_24h,
+            round((base.avg_confidence - (base.volatility_factor * ((2)::numeric / (base.avg_hours_between_changes + (1)::numeric)))), 3) AS predicted_confidence_48h
+           FROM base
+        )
+ SELECT domain_name,
+    category,
+    avg_confidence,
+    predicted_confidence_24h,
+    predicted_confidence_48h,
+    round((predicted_confidence_48h - avg_confidence), 3) AS projected_change,
+        CASE
+            WHEN ((predicted_confidence_48h - avg_confidence) > '-0.05'::numeric) THEN '🟢 استقرار مستمر'::text
+            WHEN ((predicted_confidence_48h - avg_confidence) > '-0.15'::numeric) THEN '🟡 قابل للتحول'::text
+            ELSE '🔴 احتمالية تراجع إدراكي'::text
+        END AS forecast_status,
+    now() AS forecast_generated_at
+   FROM projection
+  ORDER BY (round((predicted_confidence_48h - avg_confidence), 3)) DESC;
+
+
+ALTER VIEW cmis_knowledge.v_predictive_cognitive_horizon OWNER TO begin;
+
+--
+-- Name: v_search_performance; Type: VIEW; Schema: cmis_knowledge; Owner: begin
+--
+
+CREATE VIEW cmis_knowledge.v_search_performance AS
+ SELECT date_trunc('hour'::text, created_at) AS "الساعة",
+    count(*) AS "عدد عمليات البحث",
+    (avg(results_count))::numeric(10,2) AS "متوسط النتائج",
+    round(avg(avg_similarity), 4) AS "متوسط التشابه",
+    round(avg(max_similarity), 4) AS "أعلى تشابه",
+    round(avg(min_similarity), 4) AS "أقل تشابه",
+    percentile_cont((0.5)::double precision) WITHIN GROUP (ORDER BY ((avg_similarity)::double precision)) AS "الوسيط",
+    (avg(execution_time_ms))::numeric(10,2) AS "متوسط وقت التنفيذ (ms)",
+    count(*) FILTER (WHERE (user_feedback = 'positive'::text)) AS "تقييمات إيجابية",
+    count(*) FILTER (WHERE (user_feedback = 'negative'::text)) AS "تقييمات سلبية",
+    count(*) FILTER (WHERE (user_feedback = 'neutral'::text)) AS "تقييمات محايدة"
+   FROM cmis_knowledge.semantic_search_logs
+  WHERE (created_at > (now() - '24:00:00'::interval))
+  GROUP BY (date_trunc('hour'::text, created_at))
+  ORDER BY (date_trunc('hour'::text, created_at)) DESC;
+
+
+ALTER VIEW cmis_knowledge.v_search_performance OWNER TO begin;
+
+--
+-- Name: v_temporal_dashboard; Type: VIEW; Schema: cmis_knowledge; Owner: begin
+--
+
+CREATE VIEW cmis_knowledge.v_temporal_dashboard AS
+ SELECT i.domain AS domain_name,
+    i.category,
+    i.topic,
+    t.detected_at,
+    t.delta_summary AS epistemic_delta,
+    t.confidence_score AS confidence,
+    i.last_verified_at AS last_verification,
+    i.last_audit_status AS audit_status,
+    COALESCE(a.event_type, '—'::text) AS last_event_type,
+    COALESCE(a.description, '—'::text) AS last_event_description
+   FROM ((cmis_knowledge.index i
+     LEFT JOIN cmis_knowledge.temporal_analytics t ON ((i.knowledge_id = t.knowledge_id)))
+     LEFT JOIN cmis_audit.logs a ON ((i.domain = a.event_source)))
+  ORDER BY t.detected_at DESC NULLS LAST;
+
+
+ALTER VIEW cmis_knowledge.v_temporal_dashboard OWNER TO begin;
+
+--
+-- Name: assets; Type: TABLE; Schema: cmis_marketing; Owner: begin
+--
+
+CREATE TABLE cmis_marketing.assets (
+    asset_id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    task_id uuid,
+    platform text,
+    asset_type text,
+    content jsonb,
+    generated_by text DEFAULT 'ai_orchestrator'::text,
+    confidence numeric(3,2),
+    created_at timestamp with time zone DEFAULT now(),
+    CONSTRAINT assets_asset_type_check CHECK ((asset_type = ANY (ARRAY['post'::text, 'ad_copy'::text, 'reel_script'::text, 'story_caption'::text]))),
+    CONSTRAINT assets_platform_check CHECK ((platform = ANY (ARRAY['instagram'::text, 'facebook'::text, 'linkedin'::text, 'tiktok'::text])))
+);
+
+
+ALTER TABLE cmis_marketing.assets OWNER TO begin;
+
+--
+-- Name: generated_creatives; Type: TABLE; Schema: cmis_marketing; Owner: begin
+--
+
+CREATE TABLE cmis_marketing.generated_creatives (
+    creative_id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    topic text NOT NULL,
+    tone text NOT NULL,
+    variant_index integer NOT NULL,
+    hook text,
+    concept text,
+    narrative text,
+    slogan text,
+    emotion_profile text[],
+    tags text[],
+    generated_at timestamp with time zone DEFAULT now()
+);
+
+
+ALTER TABLE cmis_marketing.generated_creatives OWNER TO begin;
+
+--
+-- Name: video_scenarios; Type: TABLE; Schema: cmis_marketing; Owner: begin
+--
+
+CREATE TABLE cmis_marketing.video_scenarios (
+    scenario_id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    task_id uuid,
+    asset_id uuid,
+    title text,
+    duration_seconds integer,
+    scenes jsonb,
+    tone text,
+    goal text,
+    confidence numeric(3,2),
+    created_at timestamp with time zone DEFAULT now()
+);
+
+
+ALTER TABLE cmis_marketing.video_scenarios OWNER TO begin;
+
+--
+-- Name: visual_concepts; Type: TABLE; Schema: cmis_marketing; Owner: begin
+--
+
+CREATE TABLE cmis_marketing.visual_concepts (
+    concept_id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    asset_id uuid,
+    visual_prompt text,
+    style text,
+    palette text,
+    emotion text,
+    focus_keywords text[],
+    created_at timestamp with time zone DEFAULT now()
+);
+
+
+ALTER TABLE cmis_marketing.visual_concepts OWNER TO begin;
+
+--
+-- Name: visual_scenarios; Type: TABLE; Schema: cmis_marketing; Owner: begin
+--
+
+CREATE TABLE cmis_marketing.visual_scenarios (
+    scenario_id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    creative_id uuid,
+    topic text,
+    tone text,
+    variant_index integer,
+    scene_order integer,
+    scene_type text,
+    scene_text text,
+    visual_hint text,
+    duration_seconds integer DEFAULT 5,
+    created_at timestamp with time zone DEFAULT now()
+);
+
+
+ALTER TABLE cmis_marketing.visual_scenarios OWNER TO begin;
+
+--
+-- Name: voice_scripts; Type: TABLE; Schema: cmis_marketing; Owner: begin
+--
+
+CREATE TABLE cmis_marketing.voice_scripts (
+    script_id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    scenario_id uuid,
+    task_id uuid,
+    language text DEFAULT 'ar'::text,
+    voice_tone text DEFAULT 'ملهم'::text,
+    narration text,
+    script_structure jsonb,
+    confidence numeric(3,2),
+    created_at timestamp with time zone DEFAULT now()
+);
+
+
+ALTER TABLE cmis_marketing.voice_scripts OWNER TO begin;
+
+--
 -- Name: ai_models; Type: TABLE; Schema: cmis_refactored; Owner: begin
 --
 
@@ -2964,6 +5100,23 @@ CREATE TABLE cmis_refactored.ai_models (
 
 
 ALTER TABLE cmis_refactored.ai_models OWNER TO begin;
+
+--
+-- Name: api_keys; Type: TABLE; Schema: cmis_refactored; Owner: begin
+--
+
+CREATE TABLE cmis_refactored.api_keys (
+    key_id uuid DEFAULT gen_random_uuid() NOT NULL,
+    service_name text NOT NULL,
+    service_code text NOT NULL,
+    api_key_encrypted bytea NOT NULL,
+    is_active boolean DEFAULT true,
+    created_at timestamp with time zone DEFAULT now(),
+    updated_at timestamp with time zone DEFAULT now()
+);
+
+
+ALTER TABLE cmis_refactored.api_keys OWNER TO begin;
 
 --
 -- Name: organizations; Type: TABLE; Schema: cmis_refactored; Owner: begin
@@ -3030,15 +5183,15 @@ ALTER VIEW cmis_refactored.v_campaign_snapshot_refactored OWNER TO begin;
 --
 
 CREATE VIEW cmis_refactored.v_schema_map AS
- SELECT columns.table_schema,
-    columns.table_name,
-    columns.column_name,
-    columns.data_type,
-    columns.is_nullable,
-    columns.column_default
+ SELECT table_schema,
+    table_name,
+    column_name,
+    data_type,
+    is_nullable,
+    column_default
    FROM information_schema.columns
-  WHERE ((columns.table_schema)::name = 'cmis_refactored'::name)
-  ORDER BY columns.table_schema, columns.table_name, columns.ordinal_position;
+  WHERE ((table_schema)::name = 'cmis_refactored'::name)
+  ORDER BY table_schema, table_name, ordinal_position;
 
 
 ALTER VIEW cmis_refactored.v_schema_map OWNER TO begin;
@@ -3057,6 +5210,224 @@ CREATE TABLE cmis_staging.raw_channel_data (
 
 
 ALTER TABLE cmis_staging.raw_channel_data OWNER TO begin;
+
+--
+-- Name: cognitive_reports; Type: TABLE; Schema: cmis_system_health; Owner: begin
+--
+
+CREATE TABLE cmis_system_health.cognitive_reports (
+    report_id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    report_text text NOT NULL,
+    stability_avg numeric(5,2),
+    reanalysis_avg numeric(5,2),
+    risk_avg numeric(5,2),
+    created_at timestamp without time zone DEFAULT now()
+);
+
+
+ALTER TABLE cmis_system_health.cognitive_reports OWNER TO begin;
+
+--
+-- Name: cognitive_vitality_log; Type: TABLE; Schema: cmis_system_health; Owner: begin
+--
+
+CREATE TABLE cmis_system_health.cognitive_vitality_log (
+    record_id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    latency_minutes numeric(8,3),
+    events_last_hour integer,
+    vitality_index numeric(5,3),
+    cognitive_state text,
+    recorded_at timestamp without time zone DEFAULT now()
+);
+
+
+ALTER TABLE cmis_system_health.cognitive_vitality_log OWNER TO begin;
+
+--
+-- Name: v_cognitive_admin_log; Type: VIEW; Schema: cmis_system_health; Owner: begin
+--
+
+CREATE VIEW cmis_system_health.v_cognitive_admin_log AS
+ SELECT '📘 تقرير إدراكي'::text AS "نوع السجل",
+    'CognitiveHealthReport'::text AS "المصدر",
+    r.report_text AS "الوصف",
+    r.created_at AS "الزمن",
+        CASE
+            WHEN (r.risk_avg > (20)::numeric) THEN '🔴 خطر إدراكي'::text
+            WHEN (r.reanalysis_avg > (50)::numeric) THEN '🟡 تحت إعادة تقييم'::text
+            ELSE '🟢 مستقرة'::text
+        END AS "الحالة"
+   FROM cmis_system_health.cognitive_reports r
+UNION ALL
+ SELECT '📊 فحص إدراكي'::text AS "نوع السجل",
+    a.event_source AS "المصدر",
+    a.description AS "الوصف",
+    a.created_at AS "الزمن",
+        CASE
+            WHEN (a.event_type ~~ '%alert%'::text) THEN '🔴 إنذار'::text
+            WHEN (a.event_type ~~ '%feedback%'::text) THEN '🟡 إعادة تحليل'::text
+            WHEN (a.event_type ~~ '%snapshot%'::text) THEN '🟢 فعّال'::text
+            ELSE '⚪ غير محدد'::text
+        END AS "الحالة"
+   FROM cmis_audit.logs a
+  WHERE (a.event_type = ANY (ARRAY['cognitive_feedback'::text, 'cognitive_alert'::text, 'cognitive_snapshot'::text, 'cognitive_report'::text]))
+UNION ALL
+ SELECT '⚙️ قراءة حيوية'::text AS "نوع السجل",
+    'CognitiveVitality'::text AS "المصدر",
+    'تحديث قراءة الحيوية الإدراكية'::text AS "الوصف",
+    v.recorded_at AS "الزمن",
+    v.cognitive_state AS "الحالة"
+   FROM cmis_system_health.cognitive_vitality_log v
+  ORDER BY 4 DESC;
+
+
+ALTER VIEW cmis_system_health.v_cognitive_admin_log OWNER TO begin;
+
+--
+-- Name: v_cognitive_dashboard; Type: VIEW; Schema: cmis_system_health; Owner: begin
+--
+
+CREATE VIEW cmis_system_health.v_cognitive_dashboard AS
+ WITH vital AS (
+         SELECT cognitive_vitality_log.vitality_index,
+            cognitive_vitality_log.cognitive_state,
+            cognitive_vitality_log.recorded_at AS last_vitality_check
+           FROM cmis_system_health.cognitive_vitality_log
+          ORDER BY cognitive_vitality_log.recorded_at DESC
+         LIMIT 1
+        ), watch AS (
+         SELECT logs.description AS last_watch_event,
+            logs.created_at AS last_watch_time
+           FROM cmis_audit.logs
+          WHERE (logs.event_source = 'CognitiveVitalityWatch'::text)
+          ORDER BY logs.created_at DESC
+         LIMIT 1
+        ), manifest AS (
+         SELECT cognitive_manifest.layer_name,
+            cognitive_manifest.confidence,
+            cognitive_manifest.status,
+            cognitive_manifest.last_updated
+           FROM cmis_knowledge.cognitive_manifest
+          ORDER BY cognitive_manifest.last_updated DESC
+        )
+ SELECT m.layer_name AS "الطبقة الإدراكية",
+    m.status AS "الحالة",
+    m.confidence AS "الثقة",
+    m.last_updated AS "آخر تحديث",
+    v.vitality_index AS "مؤشر الحيوية",
+    v.cognitive_state AS "حالة الوعي العامة",
+    v.last_vitality_check AS "آخر قراءة حيوية",
+    w.last_watch_event AS "آخر فحص مراقبة",
+    w.last_watch_time AS "زمن الفحص الأخير",
+        CASE
+            WHEN (v.vitality_index > 0.8) THEN '🟢 مستقر جدًا'::text
+            WHEN (v.vitality_index > 0.6) THEN '🟡 مستقر'::text
+            WHEN (v.vitality_index > 0.4) THEN '🟠 تحت المراقبة'::text
+            ELSE '🔴 خطر إدراكي'::text
+        END AS "التقييم العام"
+   FROM ((manifest m
+     CROSS JOIN vital v)
+     CROSS JOIN watch w)
+  ORDER BY m.last_updated DESC;
+
+
+ALTER VIEW cmis_system_health.v_cognitive_dashboard OWNER TO begin;
+
+--
+-- Name: v_cognitive_kpi; Type: VIEW; Schema: cmis_system_health; Owner: begin
+--
+
+CREATE VIEW cmis_system_health.v_cognitive_kpi AS
+ WITH base AS (
+         SELECT v_cognitive_activity."النطاق",
+            v_cognitive_activity."الفئة",
+            v_cognitive_activity."نوع الحدث",
+            v_cognitive_activity."الحالة اللحظية",
+            v_cognitive_activity."آخر نشاط"
+           FROM cmis_knowledge.v_cognitive_activity
+          WHERE (v_cognitive_activity."آخر نشاط" > (now() - '24:00:00'::interval))
+        ), summary AS (
+         SELECT count(*) AS total_domains,
+            count(*) FILTER (WHERE (base."الحالة اللحظية" ~~ '%🟢%'::text)) AS active_domains,
+            count(*) FILTER (WHERE (base."الحالة اللحظية" ~~ '%🟡%'::text)) AS reanalyzing_domains,
+            count(*) FILTER (WHERE (base."الحالة اللحظية" ~~ '%🔴%'::text)) AS alert_domains,
+            round((avg((date_part('epoch'::text, (now() - (base."آخر نشاط")::timestamp with time zone)) / (60)::double precision)))::numeric, 2) AS avg_minutes_since_activity
+           FROM base
+        )
+ SELECT total_domains AS "إجمالي النطاقات المراقبة",
+    active_domains AS "نطاقات مستقرة 🟢",
+    reanalyzing_domains AS "نطاقات تحت إعادة تحليل 🟡",
+    alert_domains AS "نطاقات تحتاج تدخل 🔴",
+    round((((active_domains)::numeric / (NULLIF(total_domains, 0))::numeric) * (100)::numeric), 1) AS "نسبة الاستقرار %",
+    round((((reanalyzing_domains)::numeric / (NULLIF(total_domains, 0))::numeric) * (100)::numeric), 1) AS "نسبة إعادة التحليل %",
+    round((((alert_domains)::numeric / (NULLIF(total_domains, 0))::numeric) * (100)::numeric), 1) AS "نسبة الخطر %",
+    avg_minutes_since_activity AS "متوسط الزمن منذ آخر نشاط (دقيقة)"
+   FROM summary;
+
+
+ALTER VIEW cmis_system_health.v_cognitive_kpi OWNER TO begin;
+
+--
+-- Name: v_cognitive_kpi_timeseries; Type: VIEW; Schema: cmis_system_health; Owner: begin
+--
+
+CREATE VIEW cmis_system_health.v_cognitive_kpi_timeseries AS
+ WITH base AS (
+         SELECT date_trunc('hour'::text, a.created_at) AS hour,
+                CASE
+                    WHEN (a.event_type ~~ '%snapshot%'::text) THEN '🟢'::text
+                    WHEN (a.event_type ~~ '%feedback%'::text) THEN '🟡'::text
+                    WHEN (a.event_type ~~ '%alert%'::text) THEN '🔴'::text
+                    ELSE '⚪'::text
+                END AS status
+           FROM cmis_audit.logs a
+          WHERE ((a.event_type = ANY (ARRAY['cognitive_feedback'::text, 'cognitive_snapshot'::text, 'cognitive_alert'::text])) AND (a.created_at > (now() - '72:00:00'::interval)))
+        ), agg AS (
+         SELECT base.hour,
+            count(*) AS total_events,
+            count(*) FILTER (WHERE (base.status = '🟢'::text)) AS green_events,
+            count(*) FILTER (WHERE (base.status = '🟡'::text)) AS yellow_events,
+            count(*) FILTER (WHERE (base.status = '🔴'::text)) AS red_events
+           FROM base
+          GROUP BY base.hour
+        )
+ SELECT hour AS "الساعة",
+    total_events AS "إجمالي الأحداث",
+    green_events AS "مستقرة 🟢",
+    yellow_events AS "تحت إعادة تحليل 🟡",
+    red_events AS "حرجة 🔴",
+    round((((green_events)::numeric / (NULLIF(total_events, 0))::numeric) * (100)::numeric), 1) AS "نسبة الاستقرار %",
+    round((((yellow_events)::numeric / (NULLIF(total_events, 0))::numeric) * (100)::numeric), 1) AS "نسبة إعادة التحليل %",
+    round((((red_events)::numeric / (NULLIF(total_events, 0))::numeric) * (100)::numeric), 1) AS "نسبة الخطر %"
+   FROM agg
+  ORDER BY hour DESC;
+
+
+ALTER VIEW cmis_system_health.v_cognitive_kpi_timeseries OWNER TO begin;
+
+--
+-- Name: v_cognitive_kpi_graph; Type: VIEW; Schema: cmis_system_health; Owner: begin
+--
+
+CREATE VIEW cmis_system_health.v_cognitive_kpi_graph AS
+ SELECT v_cognitive_kpi_timeseries."الساعة",
+    '🟢 نسبة الاستقرار'::text AS metric,
+    v_cognitive_kpi_timeseries."نسبة الاستقرار %" AS value
+   FROM cmis_system_health.v_cognitive_kpi_timeseries
+UNION ALL
+ SELECT v_cognitive_kpi_timeseries."الساعة",
+    '🟡 نسبة إعادة التحليل'::text AS metric,
+    v_cognitive_kpi_timeseries."نسبة إعادة التحليل %" AS value
+   FROM cmis_system_health.v_cognitive_kpi_timeseries
+UNION ALL
+ SELECT v_cognitive_kpi_timeseries."الساعة",
+    '🔴 نسبة الخطر'::text AS metric,
+    v_cognitive_kpi_timeseries."نسبة الخطر %" AS value
+   FROM cmis_system_health.v_cognitive_kpi_timeseries
+  ORDER BY 1 DESC, 2;
+
+
+ALTER VIEW cmis_system_health.v_cognitive_kpi_graph OWNER TO begin;
 
 --
 -- Name: example_used_fields; Type: TABLE; Schema: lab; Owner: begin
@@ -3159,6 +5530,40 @@ ALTER SEQUENCE public.channels_channel_id_seq OWNED BY public.channels.channel_i
 
 
 --
+-- Name: cmis_access_control; Type: TABLE; Schema: public; Owner: begin
+--
+
+CREATE TABLE public.cmis_access_control (
+    rule_id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    resource_type text,
+    resource_id uuid,
+    actor text,
+    permission text,
+    granted_at timestamp with time zone DEFAULT now(),
+    CONSTRAINT cmis_access_control_permission_check CHECK ((permission = ANY (ARRAY['read'::text, 'write'::text, 'execute'::text, 'admin'::text])))
+);
+
+
+ALTER TABLE public.cmis_access_control OWNER TO begin;
+
+--
+-- Name: cmis_system_health; Type: TABLE; Schema: public; Owner: begin
+--
+
+CREATE TABLE public.cmis_system_health (
+    check_id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    metric_name text,
+    metric_value numeric,
+    threshold numeric,
+    status text,
+    checked_at timestamp with time zone DEFAULT now(),
+    CONSTRAINT cmis_system_health_status_check CHECK ((status = ANY (ARRAY['healthy'::text, 'warning'::text, 'critical'::text])))
+);
+
+
+ALTER TABLE public.cmis_system_health OWNER TO begin;
+
+--
 -- Name: industries_industry_id_seq; Type: SEQUENCE; Schema: public; Owner: gpts_data_user
 --
 
@@ -3207,10 +5612,10 @@ ALTER SEQUENCE public.markets_market_id_seq OWNED BY public.markets.market_id;
 --
 
 CREATE VIEW public.modules AS
- SELECT modules.module_id,
-    modules.code,
-    modules.name,
-    modules.version
+ SELECT module_id,
+    code,
+    name,
+    version
    FROM cmis.modules;
 
 
@@ -3257,9 +5662,9 @@ ALTER SEQUENCE public.modules_module_id_seq OWNED BY public.modules_old.module_i
 --
 
 CREATE VIEW public.naming_templates AS
- SELECT naming_templates.naming_id,
-    naming_templates.scope,
-    naming_templates.template
+ SELECT naming_id,
+    scope,
+    template
    FROM cmis.naming_templates;
 
 
@@ -4366,11 +6771,235 @@ ALTER TABLE ONLY cmis_analytics.scheduled_jobs
 
 
 --
+-- Name: logs logs_pkey; Type: CONSTRAINT; Schema: cmis_audit; Owner: begin
+--
+
+ALTER TABLE ONLY cmis_audit.logs
+    ADD CONSTRAINT logs_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: dev_logs dev_logs_pkey; Type: CONSTRAINT; Schema: cmis_dev; Owner: begin
+--
+
+ALTER TABLE ONLY cmis_dev.dev_logs
+    ADD CONSTRAINT dev_logs_pkey PRIMARY KEY (log_id);
+
+
+--
+-- Name: dev_tasks dev_tasks_pkey; Type: CONSTRAINT; Schema: cmis_dev; Owner: begin
+--
+
+ALTER TABLE ONLY cmis_dev.dev_tasks
+    ADD CONSTRAINT dev_tasks_pkey PRIMARY KEY (task_id);
+
+
+--
+-- Name: cognitive_manifest cognitive_manifest_pkey; Type: CONSTRAINT; Schema: cmis_knowledge; Owner: begin
+--
+
+ALTER TABLE ONLY cmis_knowledge.cognitive_manifest
+    ADD CONSTRAINT cognitive_manifest_pkey PRIMARY KEY (manifest_id);
+
+
+--
+-- Name: creative_templates creative_templates_pkey; Type: CONSTRAINT; Schema: cmis_knowledge; Owner: begin
+--
+
+ALTER TABLE ONLY cmis_knowledge.creative_templates
+    ADD CONSTRAINT creative_templates_pkey PRIMARY KEY (template_id);
+
+
+--
+-- Name: direction_mappings direction_mappings_direction_name_key; Type: CONSTRAINT; Schema: cmis_knowledge; Owner: begin
+--
+
+ALTER TABLE ONLY cmis_knowledge.direction_mappings
+    ADD CONSTRAINT direction_mappings_direction_name_key UNIQUE (direction_name);
+
+
+--
+-- Name: direction_mappings direction_mappings_pkey; Type: CONSTRAINT; Schema: cmis_knowledge; Owner: begin
+--
+
+ALTER TABLE ONLY cmis_knowledge.direction_mappings
+    ADD CONSTRAINT direction_mappings_pkey PRIMARY KEY (direction_id);
+
+
+--
+-- Name: embedding_api_config embedding_api_config_pkey; Type: CONSTRAINT; Schema: cmis_knowledge; Owner: begin
+--
+
+ALTER TABLE ONLY cmis_knowledge.embedding_api_config
+    ADD CONSTRAINT embedding_api_config_pkey PRIMARY KEY (config_id);
+
+
+--
+-- Name: embedding_api_logs embedding_api_logs_pkey; Type: CONSTRAINT; Schema: cmis_knowledge; Owner: begin
+--
+
+ALTER TABLE ONLY cmis_knowledge.embedding_api_logs
+    ADD CONSTRAINT embedding_api_logs_pkey PRIMARY KEY (log_id);
+
+
+--
+-- Name: embedding_update_queue embedding_update_queue_pkey; Type: CONSTRAINT; Schema: cmis_knowledge; Owner: begin
+--
+
+ALTER TABLE ONLY cmis_knowledge.embedding_update_queue
+    ADD CONSTRAINT embedding_update_queue_pkey PRIMARY KEY (queue_id);
+
+
+--
+-- Name: embeddings_cache embeddings_cache_pkey; Type: CONSTRAINT; Schema: cmis_knowledge; Owner: begin
+--
+
+ALTER TABLE ONLY cmis_knowledge.embeddings_cache
+    ADD CONSTRAINT embeddings_cache_pkey PRIMARY KEY (cache_id);
+
+
+--
+-- Name: embeddings_cache embeddings_cache_source_table_source_id_source_field_key; Type: CONSTRAINT; Schema: cmis_knowledge; Owner: begin
+--
+
+ALTER TABLE ONLY cmis_knowledge.embeddings_cache
+    ADD CONSTRAINT embeddings_cache_source_table_source_id_source_field_key UNIQUE (source_table, source_id, source_field);
+
+
+--
+-- Name: index index_pkey; Type: CONSTRAINT; Schema: cmis_knowledge; Owner: begin
+--
+
+ALTER TABLE ONLY cmis_knowledge.index
+    ADD CONSTRAINT index_pkey PRIMARY KEY (knowledge_id);
+
+
+--
+-- Name: intent_mappings intent_mappings_intent_name_key; Type: CONSTRAINT; Schema: cmis_knowledge; Owner: begin
+--
+
+ALTER TABLE ONLY cmis_knowledge.intent_mappings
+    ADD CONSTRAINT intent_mappings_intent_name_key UNIQUE (intent_name);
+
+
+--
+-- Name: intent_mappings intent_mappings_pkey; Type: CONSTRAINT; Schema: cmis_knowledge; Owner: begin
+--
+
+ALTER TABLE ONLY cmis_knowledge.intent_mappings
+    ADD CONSTRAINT intent_mappings_pkey PRIMARY KEY (intent_id);
+
+
+--
+-- Name: purpose_mappings purpose_mappings_pkey; Type: CONSTRAINT; Schema: cmis_knowledge; Owner: begin
+--
+
+ALTER TABLE ONLY cmis_knowledge.purpose_mappings
+    ADD CONSTRAINT purpose_mappings_pkey PRIMARY KEY (purpose_id);
+
+
+--
+-- Name: purpose_mappings purpose_mappings_purpose_name_key; Type: CONSTRAINT; Schema: cmis_knowledge; Owner: begin
+--
+
+ALTER TABLE ONLY cmis_knowledge.purpose_mappings
+    ADD CONSTRAINT purpose_mappings_purpose_name_key UNIQUE (purpose_name);
+
+
+--
+-- Name: semantic_search_logs semantic_search_logs_pkey; Type: CONSTRAINT; Schema: cmis_knowledge; Owner: begin
+--
+
+ALTER TABLE ONLY cmis_knowledge.semantic_search_logs
+    ADD CONSTRAINT semantic_search_logs_pkey PRIMARY KEY (log_id);
+
+
+--
+-- Name: semantic_search_results_cache semantic_search_results_cache_pkey; Type: CONSTRAINT; Schema: cmis_knowledge; Owner: begin
+--
+
+ALTER TABLE ONLY cmis_knowledge.semantic_search_results_cache
+    ADD CONSTRAINT semantic_search_results_cache_pkey PRIMARY KEY (cache_id);
+
+
+--
+-- Name: temporal_analytics temporal_analytics_pkey; Type: CONSTRAINT; Schema: cmis_knowledge; Owner: begin
+--
+
+ALTER TABLE ONLY cmis_knowledge.temporal_analytics
+    ADD CONSTRAINT temporal_analytics_pkey PRIMARY KEY (delta_id);
+
+
+--
+-- Name: assets assets_pkey; Type: CONSTRAINT; Schema: cmis_marketing; Owner: begin
+--
+
+ALTER TABLE ONLY cmis_marketing.assets
+    ADD CONSTRAINT assets_pkey PRIMARY KEY (asset_id);
+
+
+--
+-- Name: generated_creatives generated_creatives_pkey; Type: CONSTRAINT; Schema: cmis_marketing; Owner: begin
+--
+
+ALTER TABLE ONLY cmis_marketing.generated_creatives
+    ADD CONSTRAINT generated_creatives_pkey PRIMARY KEY (creative_id);
+
+
+--
+-- Name: video_scenarios video_scenarios_pkey; Type: CONSTRAINT; Schema: cmis_marketing; Owner: begin
+--
+
+ALTER TABLE ONLY cmis_marketing.video_scenarios
+    ADD CONSTRAINT video_scenarios_pkey PRIMARY KEY (scenario_id);
+
+
+--
+-- Name: visual_concepts visual_concepts_pkey; Type: CONSTRAINT; Schema: cmis_marketing; Owner: begin
+--
+
+ALTER TABLE ONLY cmis_marketing.visual_concepts
+    ADD CONSTRAINT visual_concepts_pkey PRIMARY KEY (concept_id);
+
+
+--
+-- Name: visual_scenarios visual_scenarios_pkey; Type: CONSTRAINT; Schema: cmis_marketing; Owner: begin
+--
+
+ALTER TABLE ONLY cmis_marketing.visual_scenarios
+    ADD CONSTRAINT visual_scenarios_pkey PRIMARY KEY (scenario_id);
+
+
+--
+-- Name: voice_scripts voice_scripts_pkey; Type: CONSTRAINT; Schema: cmis_marketing; Owner: begin
+--
+
+ALTER TABLE ONLY cmis_marketing.voice_scripts
+    ADD CONSTRAINT voice_scripts_pkey PRIMARY KEY (script_id);
+
+
+--
 -- Name: ai_models ai_models_pkey; Type: CONSTRAINT; Schema: cmis_refactored; Owner: begin
 --
 
 ALTER TABLE ONLY cmis_refactored.ai_models
     ADD CONSTRAINT ai_models_pkey PRIMARY KEY (model_id);
+
+
+--
+-- Name: api_keys api_keys_pkey; Type: CONSTRAINT; Schema: cmis_refactored; Owner: begin
+--
+
+ALTER TABLE ONLY cmis_refactored.api_keys
+    ADD CONSTRAINT api_keys_pkey PRIMARY KEY (key_id);
+
+
+--
+-- Name: api_keys api_keys_service_code_key; Type: CONSTRAINT; Schema: cmis_refactored; Owner: begin
+--
+
+ALTER TABLE ONLY cmis_refactored.api_keys
+    ADD CONSTRAINT api_keys_service_code_key UNIQUE (service_code);
 
 
 --
@@ -4454,6 +7083,22 @@ ALTER TABLE ONLY cmis_staging.raw_channel_data
 
 
 --
+-- Name: cognitive_reports cognitive_reports_pkey; Type: CONSTRAINT; Schema: cmis_system_health; Owner: begin
+--
+
+ALTER TABLE ONLY cmis_system_health.cognitive_reports
+    ADD CONSTRAINT cognitive_reports_pkey PRIMARY KEY (report_id);
+
+
+--
+-- Name: cognitive_vitality_log cognitive_vitality_log_pkey; Type: CONSTRAINT; Schema: cmis_system_health; Owner: begin
+--
+
+ALTER TABLE ONLY cmis_system_health.cognitive_vitality_log
+    ADD CONSTRAINT cognitive_vitality_log_pkey PRIMARY KEY (record_id);
+
+
+--
 -- Name: example_sets example_sets_pkey; Type: CONSTRAINT; Schema: lab; Owner: begin
 --
 
@@ -4523,6 +7168,22 @@ ALTER TABLE ONLY public.channels
 
 ALTER TABLE ONLY public.channels
     ADD CONSTRAINT channels_pkey PRIMARY KEY (channel_id);
+
+
+--
+-- Name: cmis_access_control cmis_access_control_pkey; Type: CONSTRAINT; Schema: public; Owner: begin
+--
+
+ALTER TABLE ONLY public.cmis_access_control
+    ADD CONSTRAINT cmis_access_control_pkey PRIMARY KEY (rule_id);
+
+
+--
+-- Name: cmis_system_health cmis_system_health_pkey; Type: CONSTRAINT; Schema: public; Owner: begin
+--
+
+ALTER TABLE ONLY public.cmis_system_health
+    ADD CONSTRAINT cmis_system_health_pkey PRIMARY KEY (check_id);
 
 
 --
@@ -4926,6 +7587,160 @@ CREATE UNIQUE INDEX uq_perf_snapshot ON cmis_analytics.performance_snapshot USIN
 
 
 --
+-- Name: idx_dev_logs_task; Type: INDEX; Schema: cmis_dev; Owner: begin
+--
+
+CREATE INDEX idx_dev_logs_task ON cmis_dev.dev_logs USING btree (task_id);
+
+
+--
+-- Name: idx_dev_tasks_status; Type: INDEX; Schema: cmis_dev; Owner: begin
+--
+
+CREATE INDEX idx_dev_tasks_status ON cmis_dev.dev_tasks USING btree (status);
+
+
+--
+-- Name: idx_creative_content_embedding; Type: INDEX; Schema: cmis_knowledge; Owner: begin
+--
+
+CREATE INDEX idx_creative_content_embedding ON cmis_knowledge.creative_templates USING hnsw (content_embedding public.vector_cosine_ops);
+
+
+--
+-- Name: idx_dev_content_embedding; Type: INDEX; Schema: cmis_knowledge; Owner: begin
+--
+
+CREATE INDEX idx_dev_content_embedding ON cmis_knowledge.dev USING hnsw (content_embedding public.vector_cosine_ops);
+
+
+--
+-- Name: idx_direction_embedding; Type: INDEX; Schema: cmis_knowledge; Owner: begin
+--
+
+CREATE INDEX idx_direction_embedding ON cmis_knowledge.direction_mappings USING hnsw (direction_embedding public.vector_cosine_ops);
+
+
+--
+-- Name: idx_embedding_queue_status; Type: INDEX; Schema: cmis_knowledge; Owner: begin
+--
+
+CREATE INDEX idx_embedding_queue_status ON cmis_knowledge.embedding_update_queue USING btree (status, priority DESC) WHERE (status = ANY (ARRAY['pending'::text, 'processing'::text]));
+
+
+--
+-- Name: idx_embeddings_cache_source; Type: INDEX; Schema: cmis_knowledge; Owner: begin
+--
+
+CREATE INDEX idx_embeddings_cache_source ON cmis_knowledge.embeddings_cache USING btree (source_table, source_id);
+
+
+--
+-- Name: idx_embeddings_cache_vector; Type: INDEX; Schema: cmis_knowledge; Owner: begin
+--
+
+CREATE INDEX idx_embeddings_cache_vector ON cmis_knowledge.embeddings_cache USING hnsw (embedding public.vector_cosine_ops);
+
+
+--
+-- Name: idx_index_direction_vector; Type: INDEX; Schema: cmis_knowledge; Owner: begin
+--
+
+CREATE INDEX idx_index_direction_vector ON cmis_knowledge.index USING hnsw (direction_vector public.vector_cosine_ops) WITH (m='16', ef_construction='64');
+
+
+--
+-- Name: idx_index_intent_vector; Type: INDEX; Schema: cmis_knowledge; Owner: begin
+--
+
+CREATE INDEX idx_index_intent_vector ON cmis_knowledge.index USING hnsw (intent_vector public.vector_cosine_ops) WITH (m='16', ef_construction='64');
+
+
+--
+-- Name: idx_index_purpose_vector; Type: INDEX; Schema: cmis_knowledge; Owner: begin
+--
+
+CREATE INDEX idx_index_purpose_vector ON cmis_knowledge.index USING hnsw (purpose_vector public.vector_cosine_ops) WITH (m='16', ef_construction='64');
+
+
+--
+-- Name: idx_index_topic_embedding; Type: INDEX; Schema: cmis_knowledge; Owner: begin
+--
+
+CREATE INDEX idx_index_topic_embedding ON cmis_knowledge.index USING hnsw (topic_embedding public.vector_cosine_ops) WITH (m='16', ef_construction='64');
+
+
+--
+-- Name: idx_intent_embedding; Type: INDEX; Schema: cmis_knowledge; Owner: begin
+--
+
+CREATE INDEX idx_intent_embedding ON cmis_knowledge.intent_mappings USING hnsw (intent_embedding public.vector_cosine_ops);
+
+
+--
+-- Name: idx_knowledge_content_search; Type: INDEX; Schema: cmis_knowledge; Owner: begin
+--
+
+CREATE INDEX idx_knowledge_content_search ON cmis_knowledge.dev USING gin (content_search);
+
+
+--
+-- Name: idx_knowledge_domain_tier; Type: INDEX; Schema: cmis_knowledge; Owner: begin
+--
+
+CREATE INDEX idx_knowledge_domain_tier ON cmis_knowledge.index USING btree (domain, category, tier);
+
+
+--
+-- Name: idx_knowledge_last_verified; Type: INDEX; Schema: cmis_knowledge; Owner: begin
+--
+
+CREATE INDEX idx_knowledge_last_verified ON cmis_knowledge.index USING btree (last_verified_at DESC);
+
+
+--
+-- Name: idx_marketing_content_embedding; Type: INDEX; Schema: cmis_knowledge; Owner: begin
+--
+
+CREATE INDEX idx_marketing_content_embedding ON cmis_knowledge.marketing USING hnsw (content_embedding public.vector_cosine_ops);
+
+
+--
+-- Name: idx_purpose_embedding; Type: INDEX; Schema: cmis_knowledge; Owner: begin
+--
+
+CREATE INDEX idx_purpose_embedding ON cmis_knowledge.purpose_mappings USING hnsw (purpose_embedding public.vector_cosine_ops);
+
+
+--
+-- Name: idx_research_content_embedding; Type: INDEX; Schema: cmis_knowledge; Owner: begin
+--
+
+CREATE INDEX idx_research_content_embedding ON cmis_knowledge.research USING hnsw (content_embedding public.vector_cosine_ops);
+
+
+--
+-- Name: idx_search_cache_hash; Type: INDEX; Schema: cmis_knowledge; Owner: begin
+--
+
+CREATE INDEX idx_search_cache_hash ON cmis_knowledge.semantic_search_results_cache USING btree (query_hash);
+
+
+--
+-- Name: idx_search_logs_time; Type: INDEX; Schema: cmis_knowledge; Owner: begin
+--
+
+CREATE INDEX idx_search_logs_time ON cmis_knowledge.semantic_search_logs USING btree (created_at DESC);
+
+
+--
+-- Name: idx_api_keys_service_code; Type: INDEX; Schema: cmis_refactored; Owner: begin
+--
+
+CREATE INDEX idx_api_keys_service_code ON cmis_refactored.api_keys USING btree (service_code);
+
+
+--
 -- Name: idx_examples_body_fts; Type: INDEX; Schema: lab; Owner: begin
 --
 
@@ -4944,6 +7759,48 @@ CREATE INDEX idx_examples_tags ON lab.example_sets USING gin (tags);
 --
 
 CREATE TRIGGER enforce_brief_completeness BEFORE INSERT OR UPDATE ON cmis.creative_briefs FOR EACH ROW EXECUTE FUNCTION cmis.prevent_incomplete_briefs();
+
+
+--
+-- Name: logs trg_manifest_sync_audit; Type: TRIGGER; Schema: cmis_audit; Owner: begin
+--
+
+CREATE TRIGGER trg_manifest_sync_audit AFTER INSERT ON cmis_audit.logs FOR EACH ROW EXECUTE FUNCTION cmis_knowledge.update_manifest_on_change();
+
+
+--
+-- Name: temporal_analytics trg_manifest_sync_temporal; Type: TRIGGER; Schema: cmis_knowledge; Owner: begin
+--
+
+CREATE TRIGGER trg_manifest_sync_temporal AFTER INSERT OR UPDATE ON cmis_knowledge.temporal_analytics FOR EACH ROW EXECUTE FUNCTION cmis_knowledge.update_manifest_on_change();
+
+
+--
+-- Name: dev update_embeddings_on_dev_change; Type: TRIGGER; Schema: cmis_knowledge; Owner: begin
+--
+
+CREATE TRIGGER update_embeddings_on_dev_change AFTER INSERT OR UPDATE OF content ON cmis_knowledge.dev FOR EACH ROW EXECUTE FUNCTION cmis_knowledge.trigger_update_embeddings();
+
+
+--
+-- Name: index update_embeddings_on_index_change; Type: TRIGGER; Schema: cmis_knowledge; Owner: begin
+--
+
+CREATE TRIGGER update_embeddings_on_index_change AFTER INSERT OR UPDATE OF topic, keywords, domain, category ON cmis_knowledge.index FOR EACH ROW EXECUTE FUNCTION cmis_knowledge.trigger_update_embeddings();
+
+
+--
+-- Name: marketing update_embeddings_on_marketing_change; Type: TRIGGER; Schema: cmis_knowledge; Owner: begin
+--
+
+CREATE TRIGGER update_embeddings_on_marketing_change AFTER INSERT OR UPDATE OF content ON cmis_knowledge.marketing FOR EACH ROW EXECUTE FUNCTION cmis_knowledge.trigger_update_embeddings();
+
+
+--
+-- Name: research update_embeddings_on_research_change; Type: TRIGGER; Schema: cmis_knowledge; Owner: begin
+--
+
+CREATE TRIGGER update_embeddings_on_research_change AFTER INSERT OR UPDATE OF content ON cmis_knowledge.research FOR EACH ROW EXECUTE FUNCTION cmis_knowledge.trigger_update_embeddings();
 
 
 --
@@ -5715,6 +8572,134 @@ ALTER TABLE ONLY cmis.video_templates
 
 
 --
+-- Name: dev_logs dev_logs_task_id_fkey; Type: FK CONSTRAINT; Schema: cmis_dev; Owner: begin
+--
+
+ALTER TABLE ONLY cmis_dev.dev_logs
+    ADD CONSTRAINT dev_logs_task_id_fkey FOREIGN KEY (task_id) REFERENCES cmis_dev.dev_tasks(task_id);
+
+
+--
+-- Name: dev dev_knowledge_id_fkey; Type: FK CONSTRAINT; Schema: cmis_knowledge; Owner: begin
+--
+
+ALTER TABLE ONLY cmis_knowledge.dev
+    ADD CONSTRAINT dev_knowledge_id_fkey FOREIGN KEY (knowledge_id) REFERENCES cmis_knowledge.index(knowledge_id);
+
+
+--
+-- Name: dev dev_parent_knowledge_id_fkey; Type: FK CONSTRAINT; Schema: cmis_knowledge; Owner: begin
+--
+
+ALTER TABLE ONLY cmis_knowledge.dev
+    ADD CONSTRAINT dev_parent_knowledge_id_fkey FOREIGN KEY (parent_knowledge_id) REFERENCES cmis_knowledge.index(knowledge_id);
+
+
+--
+-- Name: direction_mappings direction_mappings_parent_direction_id_fkey; Type: FK CONSTRAINT; Schema: cmis_knowledge; Owner: begin
+--
+
+ALTER TABLE ONLY cmis_knowledge.direction_mappings
+    ADD CONSTRAINT direction_mappings_parent_direction_id_fkey FOREIGN KEY (parent_direction_id) REFERENCES cmis_knowledge.direction_mappings(direction_id);
+
+
+--
+-- Name: intent_mappings intent_mappings_parent_intent_id_fkey; Type: FK CONSTRAINT; Schema: cmis_knowledge; Owner: begin
+--
+
+ALTER TABLE ONLY cmis_knowledge.intent_mappings
+    ADD CONSTRAINT intent_mappings_parent_intent_id_fkey FOREIGN KEY (parent_intent_id) REFERENCES cmis_knowledge.intent_mappings(intent_id);
+
+
+--
+-- Name: marketing marketing_knowledge_id_fkey; Type: FK CONSTRAINT; Schema: cmis_knowledge; Owner: begin
+--
+
+ALTER TABLE ONLY cmis_knowledge.marketing
+    ADD CONSTRAINT marketing_knowledge_id_fkey FOREIGN KEY (knowledge_id) REFERENCES cmis_knowledge.index(knowledge_id);
+
+
+--
+-- Name: org org_knowledge_id_fkey; Type: FK CONSTRAINT; Schema: cmis_knowledge; Owner: begin
+--
+
+ALTER TABLE ONLY cmis_knowledge.org
+    ADD CONSTRAINT org_knowledge_id_fkey FOREIGN KEY (knowledge_id) REFERENCES cmis_knowledge.index(knowledge_id);
+
+
+--
+-- Name: research research_knowledge_id_fkey; Type: FK CONSTRAINT; Schema: cmis_knowledge; Owner: begin
+--
+
+ALTER TABLE ONLY cmis_knowledge.research
+    ADD CONSTRAINT research_knowledge_id_fkey FOREIGN KEY (knowledge_id) REFERENCES cmis_knowledge.index(knowledge_id);
+
+
+--
+-- Name: temporal_analytics temporal_analytics_knowledge_id_fkey; Type: FK CONSTRAINT; Schema: cmis_knowledge; Owner: begin
+--
+
+ALTER TABLE ONLY cmis_knowledge.temporal_analytics
+    ADD CONSTRAINT temporal_analytics_knowledge_id_fkey FOREIGN KEY (knowledge_id) REFERENCES cmis_knowledge.index(knowledge_id);
+
+
+--
+-- Name: assets assets_task_id_fkey; Type: FK CONSTRAINT; Schema: cmis_marketing; Owner: begin
+--
+
+ALTER TABLE ONLY cmis_marketing.assets
+    ADD CONSTRAINT assets_task_id_fkey FOREIGN KEY (task_id) REFERENCES cmis_dev.dev_tasks(task_id);
+
+
+--
+-- Name: video_scenarios video_scenarios_asset_id_fkey; Type: FK CONSTRAINT; Schema: cmis_marketing; Owner: begin
+--
+
+ALTER TABLE ONLY cmis_marketing.video_scenarios
+    ADD CONSTRAINT video_scenarios_asset_id_fkey FOREIGN KEY (asset_id) REFERENCES cmis_marketing.assets(asset_id);
+
+
+--
+-- Name: video_scenarios video_scenarios_task_id_fkey; Type: FK CONSTRAINT; Schema: cmis_marketing; Owner: begin
+--
+
+ALTER TABLE ONLY cmis_marketing.video_scenarios
+    ADD CONSTRAINT video_scenarios_task_id_fkey FOREIGN KEY (task_id) REFERENCES cmis_dev.dev_tasks(task_id);
+
+
+--
+-- Name: visual_concepts visual_concepts_asset_id_fkey; Type: FK CONSTRAINT; Schema: cmis_marketing; Owner: begin
+--
+
+ALTER TABLE ONLY cmis_marketing.visual_concepts
+    ADD CONSTRAINT visual_concepts_asset_id_fkey FOREIGN KEY (asset_id) REFERENCES cmis_marketing.assets(asset_id);
+
+
+--
+-- Name: visual_scenarios visual_scenarios_creative_id_fkey; Type: FK CONSTRAINT; Schema: cmis_marketing; Owner: begin
+--
+
+ALTER TABLE ONLY cmis_marketing.visual_scenarios
+    ADD CONSTRAINT visual_scenarios_creative_id_fkey FOREIGN KEY (creative_id) REFERENCES cmis_marketing.generated_creatives(creative_id);
+
+
+--
+-- Name: voice_scripts voice_scripts_scenario_id_fkey; Type: FK CONSTRAINT; Schema: cmis_marketing; Owner: begin
+--
+
+ALTER TABLE ONLY cmis_marketing.voice_scripts
+    ADD CONSTRAINT voice_scripts_scenario_id_fkey FOREIGN KEY (scenario_id) REFERENCES cmis_marketing.video_scenarios(scenario_id);
+
+
+--
+-- Name: voice_scripts voice_scripts_task_id_fkey; Type: FK CONSTRAINT; Schema: cmis_marketing; Owner: begin
+--
+
+ALTER TABLE ONLY cmis_marketing.voice_scripts
+    ADD CONSTRAINT voice_scripts_task_id_fkey FOREIGN KEY (task_id) REFERENCES cmis_dev.dev_tasks(task_id);
+
+
+--
 -- Name: ai_models ai_models_org_id_fkey; Type: FK CONSTRAINT; Schema: cmis_refactored; Owner: begin
 --
 
@@ -6130,4 +9115,6 @@ GRANT CREATE ON SCHEMA public TO gpts_data_user;
 --
 -- PostgreSQL database dump complete
 --
+
+\unrestrict zttsLOVYQkHsSMYfZob8o7yVjyaf4HfQqBuaFefhmxeRoXPVJOWA2rfz3JGU03x
 

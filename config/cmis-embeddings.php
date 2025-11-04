@@ -8,7 +8,7 @@ return [
     
     'gemini' => [
         'api_key' => env('GEMINI_API_KEY'),
-        'model_name' => env('GEMINI_MODEL', 'models/text-embedding-004'),
+        'model_name' => env('GEMINI_MODEL', 'models/gemini-embedding-001'),
         'embedding_dimension' => 768,
         'max_batch_size' => 100,
         'rate_limit_per_minute' => 60,
