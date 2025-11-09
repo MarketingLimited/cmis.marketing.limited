@@ -7,7 +7,7 @@ set -x
 # يدير عمليات Git والتحديثات التشغيلية في بيئة Plesk.
 # =========================================
 
-ENV_FILE="/var/www/vhosts/cmis.marketing.limited/httpdocs/.env"
+ENV_FILE="/httpdocs/.env"
 if [ ! -f "$ENV_FILE" ]; then
   echo "❌ Environment file not found at $ENV_FILE"
   exit 1
@@ -33,7 +33,7 @@ if ! command -v git &> /dev/null; then
 fi
 
 # الانتقال إلى مجلد المشروع
-cd /var/www/vhosts/cmis.marketing.limited/httpdocs/ || exit 1
+cd /httpdocs || exit 1
 
 case "$COMMAND" in
   pull)
@@ -74,9 +74,9 @@ case "$COMMAND" in
 
   backup)
     info "Creating backup of /httpdocs directory..."
-    BACKUP_DIR=$(/bin/date +"/var/www/vhosts/cmis.marketing.limited/httpdocs/backups/%Y-%m-%d_%H-%M-%S")
+    BACKUP_DIR=$(/bin/date +"/httpdocs/backups/%Y-%m-%d_%H-%M-%S")
     mkdir -p "$BACKUP_DIR"
-    TMP_FILE="/var/www/vhosts/cmis.marketing.limited/tmp/backup_httpdocs_$(/bin/date +%Y-%m-%d_%H-%M-%S).tar.gz"
+    TMP_FILE="/tmp/backup_httpdocs_$(/bin/date +%Y-%m-%d_%H-%M-%S).tar.gz"
     tar --exclude=/httpdocs/backups -czf "$TMP_FILE" -C / httpdocs
     mv "$TMP_FILE" "$BACKUP_DIR/backup_httpdocs.tar.gz"
     ok "Backup created at $BACKUP_DIR/backup_httpdocs.tar.gz"
