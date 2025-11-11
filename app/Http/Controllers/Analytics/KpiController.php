@@ -3,19 +3,55 @@
 namespace App\Http\Controllers\Analytics;
 
 use App\Http\Controllers\Controller;
+use App\Models\Kpi;
 use Illuminate\Http\Request;
 
-/**
- * Class KpiController
- * مسؤول عن إدارة مؤشرات الأداء الرئيسية (KPIs) وتحليلها.
- */
 class KpiController extends Controller
 {
-    /**
-     * عرض قائمة مؤشرات الأداء الرئيسية.
-     */
-    public function index()
+    public function index(Request $request, string $orgId)
     {
-        return view('analytics.kpis.index');
+        try {
+            $kpis = Kpi::where('org_id', $orgId)
+                ->orderBy('created_at', 'desc')
+                ->paginate(50);
+
+            return response()->json($kpis);
+
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to fetch KPIs'], 500);
+        }
+    }
+
+    public function summary(Request $request, string $orgId)
+    {
+        try {
+            $summary = [
+                'total_campaigns' => \App\Models\Campaign::where('org_id', $orgId)->count(),
+                'active_campaigns' => \App\Models\Campaign::where('org_id', $orgId)->where('status', 'active')->count(),
+                'total_assets' => \App\Models\CreativeAsset::where('org_id', $orgId)->count(),
+                'total_channels' => \App\Models\Channel::where('org_id', $orgId)->count(),
+            ];
+
+            return response()->json($summary);
+
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to fetch summary'], 500);
+        }
+    }
+
+    public function trends(Request $request, string $orgId)
+    {
+        try {
+            // Placeholder for trends analysis
+            $trends = [
+                'message' => 'Trends endpoint - to be implemented',
+                'org_id' => $orgId
+            ];
+
+            return response()->json($trends);
+
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to fetch trends'], 500);
+        }
     }
 }

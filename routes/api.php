@@ -2,6 +2,11 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\Core\{OrgController, UserController};
+use App\Http\Controllers\Campaigns\CampaignController;
+use App\Http\Controllers\Creative\CreativeAssetController;
+use App\Http\Controllers\Channels\ChannelController;
+use App\Http\Controllers\Analytics\KpiController;
 use App\Http\Controllers\API\CMISEmbeddingController;
 use App\Http\Controllers\API\SemanticSearchController;
 
@@ -47,14 +52,10 @@ Route::prefix('auth')->group(function () {
 */
 Route::middleware('auth:sanctum')->group(function () {
     // قائمة الشركات للمستخدم
-    Route::get('/user/orgs', function(\Illuminate\Http\Request $request) {
-        return response()->json([
-            'orgs' => $request->user()->orgs
-        ]);
-    })->name('user.orgs');
+    Route::get('/user/orgs', [OrgController::class, 'listUserOrgs'])->name('user.orgs');
 
-    // إنشاء شركة جديدة (سيتم إضافة Controller لاحقاً)
-    // Route::post('/orgs', [OrgController::class, 'store'])->name('orgs.store');
+    // إنشاء شركة جديدة
+    Route::post('/orgs', [OrgController::class, 'store'])->name('orgs.store');
 });
 
 /*
@@ -74,14 +75,27 @@ Route::middleware(['auth:sanctum', 'validate.org.access', 'set.db.context'])
 
     /*
     |----------------------------------------------------------------------
-    | الشركة (Organization Info)
+    | الشركة (Organization Management)
     |----------------------------------------------------------------------
     */
-    Route::get('/', function($orgId) {
-        return response()->json([
-            'org' => \App\Models\Org::find($orgId)
-        ]);
-    })->name('show');
+    Route::get('/', [OrgController::class, 'show'])->name('show');
+    Route::put('/', [OrgController::class, 'update'])->name('update');
+    Route::delete('/', [OrgController::class, 'destroy'])->name('destroy');
+    Route::get('/statistics', [OrgController::class, 'statistics'])->name('statistics');
+
+    /*
+    |----------------------------------------------------------------------
+    | إدارة المستخدمين (User Management)
+    |----------------------------------------------------------------------
+    */
+    Route::prefix('users')->name('users.')->group(function () {
+        Route::get('/', [UserController::class, 'index'])->name('index');
+        Route::post('/invite', [UserController::class, 'inviteUser'])->name('invite');
+        Route::get('/{user_id}', [UserController::class, 'show'])->name('show');
+        Route::put('/{user_id}/role', [UserController::class, 'updateRole'])->name('updateRole');
+        Route::post('/{user_id}/deactivate', [UserController::class, 'deactivate'])->name('deactivate');
+        Route::delete('/{user_id}', [UserController::class, 'remove'])->name('remove');
+    });
 
     /*
     |----------------------------------------------------------------------
@@ -100,24 +114,43 @@ Route::middleware(['auth:sanctum', 'validate.org.access', 'set.db.context'])
 
     /*
     |----------------------------------------------------------------------
-    | المسارات الجديدة (سيتم إضافتها تدريجياً)
+    | الحملات (Campaigns)
     |----------------------------------------------------------------------
     */
+    Route::apiResource('campaigns', CampaignController::class)->parameters([
+        'campaigns' => 'campaign_id'
+    ]);
 
-    // الحملات (Campaigns)
-    // Route::apiResource('campaigns', CampaignController::class);
+    /*
+    |----------------------------------------------------------------------
+    | المحتوى الإبداعي (Creative Assets)
+    |----------------------------------------------------------------------
+    */
+    Route::prefix('creative')->name('creative.')->group(function () {
+        Route::apiResource('assets', CreativeAssetController::class)->parameters([
+            'assets' => 'asset_id'
+        ]);
+    });
 
-    // المحتوى الإبداعي (Creative Assets)
-    // Route::apiResource('creative/assets', CreativeAssetController::class);
+    /*
+    |----------------------------------------------------------------------
+    | القنوات (Social Channels)
+    |----------------------------------------------------------------------
+    */
+    Route::apiResource('channels', ChannelController::class)->parameters([
+        'channels' => 'channel_id'
+    ]);
 
-    // القنوات (Social Channels)
-    // Route::apiResource('channels', ChannelController::class);
-
-    // التحليلات (Analytics)
-    // Route::prefix('analytics')->group(function () {
-    //     Route::get('/kpis', [KpiController::class, 'index']);
-    //     Route::get('/overview', [AnalyticsController::class, 'overview']);
-    // });
+    /*
+    |----------------------------------------------------------------------
+    | التحليلات (Analytics)
+    |----------------------------------------------------------------------
+    */
+    Route::prefix('analytics')->name('analytics.')->group(function () {
+        Route::get('/kpis', [KpiController::class, 'index'])->name('kpis');
+        Route::get('/summary', [KpiController::class, 'summary'])->name('summary');
+        Route::get('/trends', [KpiController::class, 'trends'])->name('trends');
+    });
 });
 
 /*
