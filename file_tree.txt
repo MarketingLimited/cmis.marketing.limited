@@ -1,0 +1,288 @@
+.
+├── .config
+│   ├── composer
+│   │   └── .htaccess
+│   └── pulse
+│       ├── cookie
+│       ├── ff73e7e652f342c884c529823564aa2e-card-database.tdb
+│       ├── ff73e7e652f342c884c529823564aa2e-default-sink
+│       ├── ff73e7e652f342c884c529823564aa2e-default-source
+│       ├── ff73e7e652f342c884c529823564aa2e-device-volumes.tdb
+│       └── ff73e7e652f342c884c529823564aa2e-stream-volumes.tdb
+├── .editorconfig
+├── .env
+├── .env.example
+├── .gitattributes
+├── .gitignore
+├── .local
+│   └── share
+│       └── composer
+│           └── .htaccess
+├── .node-version
+├── README.md
+├── app
+│   ├── Console
+│   │   ├── Commands
+│   │   │   ├── AutoLearnCommand.php
+│   │   │   ├── CognitiveStateNow.php
+│   │   │   ├── CognitiveVitalityLog.php
+│   │   │   ├── CognitiveVitalityLog.php.bak
+│   │   │   ├── CognitiveVitalityWatch.php
+│   │   │   ├── DbExecuteSql.php
+│   │   │   ├── FacebookApiCommand.php
+│   │   │   ├── GenerateGeminiEmbeddings.php
+│   │   │   ├── InstagramApiCommand.php
+│   │   │   ├── InstagramApiCommand.php.bak
+│   │   │   ├── LinkedinApiCommand.php
+│   │   │   ├── ProcessEmbeddings.php
+│   │   │   ├── SearchKnowledge.php
+│   │   │   ├── SyncInstagramData.php
+│   │   │   ├── SyncInstagramData.php.bak
+│   │   │   └── TiktokApiCommand.php
+│   │   └── Kernel.php
+│   ├── Http
+│   │   └── Controllers
+│   │       ├── AI
+│   │       │   ├── AIDashboardController.php
+│   │       │   ├── AIGeneratedCampaignController.php
+│   │       │   ├── AIInsightsController.php
+│   │       │   └── PromptTemplateController.php
+│   │       ├── API
+│   │       │   ├── CMISEmbeddingController.php
+│   │       │   └── SemanticSearchController.php
+│   │       ├── Admin
+│   │       │   └── MetricsController.php
+│   │       ├── Analytics
+│   │       │   ├── ExportController.php
+│   │       │   ├── KpiController.php
+│   │       │   ├── OverviewController.php
+│   │       │   └── SocialAnalyticsController.php
+│   │       ├── CampaignController.php
+│   │       ├── Campaigns
+│   │       │   ├── AdController.php
+│   │       │   ├── CampaignController.php
+│   │       │   ├── PerformanceController.php
+│   │       │   └── StrategyController.php
+│   │       ├── Channels
+│   │       │   ├── ChannelController.php
+│   │       │   ├── PostController.php
+│   │       │   └── SocialAccountController.php
+│   │       ├── Controller.php
+│   │       ├── Core
+│   │       │   ├── IntegrationController.php
+│   │       │   ├── MarketController.php
+│   │       │   ├── OrgController.php
+│   │       │   └── UserController.php
+│   │       ├── Creative
+│   │       │   ├── ContentController.php
+│   │       │   ├── CopyController.php
+│   │       │   ├── CreativeAssetController.php
+│   │       │   ├── OverviewController.php
+│   │       │   └── VideoController.php
+│   │       ├── CreativeController.php
+│   │       ├── DashboardController.php
+│   │       ├── Offerings
+│   │       │   ├── BundleController.php
+│   │       │   ├── OverviewController.php
+│   │       │   ├── ProductController.php
+│   │       │   └── ServiceController.php
+│   │       └── OrgController.php
+│   ├── Jobs
+│   │   ├── Job.php
+│   │   └── KnowledgeAutoLearnJob.php
+│   ├── Models
+│   │   ├── AiGeneratedCampaign.php
+│   │   ├── AiModel.php
+│   │   ├── AiRecommendation.php
+│   │   ├── CMIS
+│   │   │   └── KnowledgeItem.php
+│   │   ├── Campaign.php
+│   │   ├── CampaignPerformanceMetric.php
+│   │   ├── Channel.php
+│   │   ├── ChannelFormat.php
+│   │   ├── CreativeAsset.php
+│   │   ├── Integration.php
+│   │   ├── Kpi.php
+│   │   ├── Offering.php
+│   │   ├── Org.php
+│   │   ├── PerformanceMetric.php
+│   │   ├── SocialAccount.php
+│   │   ├── SocialAccountMetric.php
+│   │   ├── SocialPost.php
+│   │   ├── SocialPostMetric.php
+│   │   └── User.php
+│   ├── Providers
+│   │   ├── AppServiceProvider.php
+│   │   └── CMISEmbeddingServiceProvider.php
+│   ├── Services
+│   │   ├── CMIS
+│   │   │   ├── GeminiEmbeddingService.php
+│   │   │   ├── KnowledgeEmbeddingProcessor.php
+│   │   │   ├── KnowledgeEmbeddingProcessor.php.bak
+│   │   │   ├── KnowledgeFeedbackService.php
+│   │   │   └── SemanticSearchService.php
+│   │   ├── Gemini
+│   │   │   └── EmbeddingService.php
+│   │   ├── InstagramService.php
+│   │   └── Social
+│   │       ├── InstagramAccountSyncService.php
+│   │       ├── InstagramSyncService.backup.php
+│   │       └── InstagramSyncService.php
+│   └── docs
+│       └── git
+│           └── git-ai-instructions.md
+├── artisan
+├── bootstrap
+│   ├── app.php
+│   ├── cache
+│   │   ├── .gitignore
+│   │   ├── packages.php
+│   │   └── services.php
+│   └── providers.php
+├── composer.json
+├── composer.lock
+├── config
+│   ├── app.php
+│   ├── auth.php
+│   ├── cache.php
+│   ├── cmis-embeddings.php
+│   ├── database.php
+│   ├── filesystems.php
+│   ├── integrations
+│   │   ├── ftp.yaml
+│   │   └── meta.yaml
+│   ├── logging.php
+│   ├── mail.php
+│   ├── queue.php
+│   ├── services.php
+│   └── session.php
+├── database
+│   ├── .gitignore
+│   ├── factories
+│   │   └── UserFactory.php
+│   ├── migrations
+│   │   ├── 0001_01_01_000000_create_users_table.php
+│   │   ├── 0001_01_01_000001_create_cache_table.php
+│   │   └── 0001_01_01_000002_create_jobs_table.php
+│   ├── schema.sql
+│   └── seeders
+│       └── DatabaseSeeder.php
+├── docs
+│   ├── ai_integration_layer.md
+│   ├── changelog.json
+│   ├── changelog.md
+│   ├── cmis_knowledge_indexing_report.md
+│   ├── database-setup.md
+│   ├── devops_maintenance_checklist.md
+│   ├── index.php
+│   ├── instagram
+│   │   ├── 01_overview.md
+│   │   ├── 02_artisan_commands.md
+│   │   ├── 03_ai_integration.md
+│   │   ├── 04_debugging_and_logs.md
+│   │   ├── 05_examples.md
+│   │   └── help_en.md
+│   ├── instagram_api_Instructions.json
+│   ├── knowledge_layer_optimization.md
+│   ├── laravel_embedding_guidelines.md
+│   ├── semantic_coverage_report.md
+│   ├── semantic_search_api.md
+│   ├── social
+│   │   ├── facebook
+│   │   │   ├── help_ar.md
+│   │   │   └── help_en.md
+│   │   ├── instagram
+│   │   │   └── help_en.md
+│   │   ├── linkedin
+│   │   │   ├── help_ar.md
+│   │   │   └── help_en.md
+│   │   └── tiktok
+│   │       ├── help_ar.md
+│   │       └── help_en.md
+│   └── system_recovery_plan.md
+├── exports
+│   └── campaigns_report.csv
+├── file_tree.txt
+├── index.html
+├── package.json
+├── phpunit.xml
+├── resources
+│   ├── css
+│   │   └── app.css
+│   ├── js
+│   │   ├── app.js
+│   │   └── bootstrap.js
+│   └── views
+│       ├── admin
+│       │   └── metrics.blade.php
+│       ├── ai
+│       │   └── index.blade.php
+│       ├── analytics
+│       │   └── index.blade.php
+│       ├── campaigns
+│       │   ├── index.blade.php
+│       │   └── show.blade.php
+│       ├── campaigns.blade.php
+│       ├── channels
+│       │   └── index.blade.php
+│       ├── core
+│       │   ├── index.blade.php
+│       │   └── orgs
+│       │       └── index.blade.php
+│       ├── creative
+│       │   └── index.blade.php
+│       ├── creative-assets
+│       │   └── index.blade.php
+│       ├── creatives
+│       │   └── show.blade.php
+│       ├── dashboard.blade.php
+│       ├── exports
+│       │   └── compare_pdf.blade.php
+│       ├── integrations
+│       │   ├── index.blade.php
+│       │   └── show.blade.php
+│       ├── layouts
+│       │   └── app.blade.php
+│       ├── offerings
+│       │   ├── index.blade.php
+│       │   └── list.blade.php
+│       ├── orgs
+│       │   ├── campaigns.blade.php
+│       │   ├── campaigns_compare.blade.php
+│       │   ├── index.blade.php
+│       │   ├── products.blade.php
+│       │   ├── services.blade.php
+│       │   └── show.blade.php
+│       └── welcome.blade.php
+├── routes
+│   ├── api.php
+│   ├── console.php
+│   └── web.php
+├── scripts
+│   ├── git-ai.sh
+│   └── git-changelog-helper.php
+├── system
+│   ├── gpt_runtime_audit.md
+│   ├── gpt_runtime_bootstrap.sql
+│   ├── gpt_runtime_dashboard.md
+│   ├── gpt_runtime_errors.md
+│   ├── gpt_runtime_examples.md
+│   ├── gpt_runtime_flow.md
+│   ├── gpt_runtime_map.md
+│   ├── gpt_runtime_optimize.sql
+│   ├── gpt_runtime_performance_tracker.sql
+│   ├── gpt_runtime_readme.md
+│   ├── gpt_runtime_repair.sql
+│   ├── gpt_runtime_repair_silent.sql
+│   ├── gpt_runtime_security.md
+│   ├── install_artisan_cron.sh
+│   └── optimize_embeddings_tables.sql
+├── tests
+│   ├── Feature
+│   │   └── ExampleTest.php
+│   ├── TestCase.php
+│   └── Unit
+│       └── ExampleTest.php
+└── vite.config.js
+
+72 directories, 214 files
