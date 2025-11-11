@@ -1,2 +1,0 @@
-ALTER TABLE cmis_knowledge.embeddings_cache ALTER COLUMN embedding_norm DROP EXPRESSION;
-ALTER TABLE cmis_knowledge.embeddings_cache ALTER COLUMN embedding_norm ADD GENERATED ALWAYS AS (sqrt((embedding <=> embedding)::float)) STORED;

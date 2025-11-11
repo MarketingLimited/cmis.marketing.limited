@@ -1,1 +1,0 @@
-SELECT cmis_knowledge.cleanup_old_embeddings();
