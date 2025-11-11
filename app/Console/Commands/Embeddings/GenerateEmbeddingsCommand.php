@@ -4,6 +4,7 @@ namespace App\Console\Commands\Embeddings;
 
 use Illuminate\Console\Command;
 use App\Console\Traits\HandlesOrgContext;
+use App\Jobs\GenerateEmbeddingsJob;
 
 class GenerateEmbeddingsCommand extends Command
 {
@@ -11,9 +12,9 @@ class GenerateEmbeddingsCommand extends Command
 
     protected $signature = 'embeddings:generate
                             {--org=* : Specific org IDs}
-                            {--type= : Type (campaign|asset|context|knowledge)}
-                            {--batch=50 : Batch size}
-                            {--force : Regenerate existing}';
+                            {--type= : Content type filter}
+                            {--limit=100 : Limit per org}
+                            {--queue : Dispatch as queue job}';
 
     protected $description = 'Generate vector embeddings using Gemini API';
 
@@ -24,17 +25,25 @@ class GenerateEmbeddingsCommand extends Command
 
         $orgIds = $this->option('org') ?: null;
         $type = $this->option('type');
-        $batchSize = $this->option('batch');
-        $force = $this->option('force');
+        $limit = $this->option('limit');
 
-        $this->executePerOrg(function ($org) use ($type, $batchSize, $force) {
-            $this->info("  🔍 Processing {$type} embeddings...");
+        $this->executePerOrg(function ($org) use ($type, $limit) {
+            $this->info("  🔍 Processing embeddings for org {$org->org_name}...");
 
-            // TODO: Implement actual embedding generation
-            // $items = $this->getItemsNeedingEmbeddings($org->org_id, $type, $force);
-            // $service->generateBatchEmbeddings($items, $type);
-
-            $this->info("  ✓ Embeddings generated (placeholder)");
+            try {
+                if ($this->option('queue')) {
+                    // Dispatch job to queue
+                    GenerateEmbeddingsJob::dispatch($org->org_id, $limit, $type);
+                    $this->info("  ✓ Job dispatched to queue");
+                } else {
+                    // Run synchronously
+                    $job = new GenerateEmbeddingsJob($org->org_id, $limit, $type);
+                    $job->handle(app(\App\Services\CMIS\GeminiEmbeddingService::class));
+                    $this->info("  ✓ Embeddings generated");
+                }
+            } catch (\Exception $e) {
+                $this->error("  ✗ Error: " . $e->getMessage());
+            }
 
         }, $orgIds);
 
