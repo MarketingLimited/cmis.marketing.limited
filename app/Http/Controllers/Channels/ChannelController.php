@@ -4,28 +4,68 @@ namespace App\Http\Controllers\Channels;
 
 use App\Http\Controllers\Controller;
 use App\Models\Channel;
-use Illuminate\Support\Facades\Cache;
+use Illuminate\Http\Request;
 
 class ChannelController extends Controller
 {
-    public function index()
+    public function index(Request $request, string $orgId)
     {
-        $channels = Cache::remember('channels.index', now()->addMinutes(5), function () {
-            return Channel::query()
-                ->with('formats:format_id,channel_id,code,ratio,length_hint')
-                ->orderBy('name')
-                ->get(['channel_id', 'name', 'code', 'constraints']);
-        });
+        try {
+            $channels = Channel::where('org_id', $orgId)
+                ->orderBy('created_at', 'desc')
+                ->paginate(20);
 
-        $searchable = $channels->map(fn ($channel) => [
-            'name' => $channel->name,
-            'code' => $channel->code,
-            'status' => $channel->constraints['status'] ?? 'غير محدد',
-        ]);
+            return response()->json($channels);
 
-        return view('channels.index', [
-            'channels' => $channels,
-            'searchableChannels' => $searchable,
-        ]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to fetch channels'], 500);
+        }
+    }
+
+    public function store(Request $request, string $orgId)
+    {
+        try {
+            $channel = Channel::create(array_merge(
+                $request->all(),
+                ['org_id' => $orgId]
+            ));
+
+            return response()->json(['message' => 'Channel created', 'channel' => $channel], 201);
+
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to create channel'], 500);
+        }
+    }
+
+    public function show(Request $request, string $orgId, string $channelId)
+    {
+        try {
+            $channel = Channel::where('org_id', $orgId)->findOrFail($channelId);
+            return response()->json(['channel' => $channel]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Channel not found'], 404);
+        }
+    }
+
+    public function update(Request $request, string $orgId, string $channelId)
+    {
+        try {
+            $channel = Channel::where('org_id', $orgId)->findOrFail($channelId);
+            $channel->update($request->all());
+            return response()->json(['message' => 'Channel updated', 'channel' => $channel]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to update'], 500);
+        }
+    }
+
+    public function destroy(Request $request, string $orgId, string $channelId)
+    {
+        try {
+            $channel = Channel::where('org_id', $orgId)->findOrFail($channelId);
+            $channel->delete();
+            return response()->json(['message' => 'Channel deleted']);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to delete'], 500);
+        }
     }
 }
