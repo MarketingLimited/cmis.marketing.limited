@@ -94,12 +94,19 @@ return [
             'charset' => env('DB_CHARSET', 'utf8'),
             'prefix' => '',
             'prefix_indexes' => true,
-            'search_path' => env('DB_SCHEMA_SEARCH_PATH', 'cmis,cmis_refactored,cmis_analytics,cmis_ai_analytics,cmis_ops,public'),
+            'search_path' => env('DB_SCHEMA_SEARCH_PATH', 'cmis,cmis_knowledge,cmis_analytics,cmis_ai_analytics,cmis_marketing,cmis_ops,public'),
             'sslmode' => env('DB_SSLMODE', 'prefer'),
-            'application_name' => env('DB_APPLICATION_NAME', 'cmis-marketing'),
+            'application_name' => env('DB_APPLICATION_NAME', 'cmis-laravel-backend'),
             'options' => extension_loaded('pdo_pgsql') ? array_filter([
                 PDO::ATTR_TIMEOUT => env('DB_CONNECT_TIMEOUT', 5),
+                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                PDO::ATTR_EMULATE_PREPARES => false,
+                PDO::ATTR_STRINGIFY_FETCHES => false,
             ]) : [],
+            // دعم pgvector للـ embeddings
+            'with_pgvector' => env('DB_WITH_PGVECTOR', true),
+            // تمكين query logging في التطوير
+            'log_queries' => env('DB_LOG_QUERIES', false),
         ],
 
         'sqlsrv' => [
