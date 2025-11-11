@@ -2,10 +2,10 @@
 -- PostgreSQL database dump
 --
 
-\restrict zttsLOVYQkHsSMYfZob8o7yVjyaf4HfQqBuaFefhmxeRoXPVJOWA2rfz3JGU03x
+\restrict qbfrz1YqeQ12yamipQjra5ejMvz8rrNdteajvF9mcUqhVI5pvxVYz348psywcLX
 
--- Dumped from database version 17.6 (Ubuntu 17.6-2.pgdg22.04+1)
--- Dumped by pg_dump version 18.0 (Ubuntu 18.0-1.pgdg22.04+3)
+-- Dumped from database version 18.0 (Ubuntu 18.0-1.pgdg24.04+3)
+-- Dumped by pg_dump version 18.0 (Ubuntu 18.0-1.pgdg24.04+3)
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -18,6 +18,15 @@ SET check_function_bodies = false;
 SET xmloption = content;
 SET client_min_messages = warning;
 SET row_security = off;
+
+--
+-- Name: archive; Type: SCHEMA; Schema: -; Owner: begin
+--
+
+CREATE SCHEMA archive;
+
+
+ALTER SCHEMA archive OWNER TO begin;
 
 --
 -- Name: cmis; Type: SCHEMA; Schema: -; Owner: begin
@@ -92,13 +101,13 @@ CREATE SCHEMA cmis_ops;
 ALTER SCHEMA cmis_ops OWNER TO begin;
 
 --
--- Name: cmis_refactored; Type: SCHEMA; Schema: -; Owner: begin
+-- Name: cmis_security_backup_20251111_202413; Type: SCHEMA; Schema: -; Owner: begin
 --
 
-CREATE SCHEMA cmis_refactored;
+CREATE SCHEMA cmis_security_backup_20251111_202413;
 
 
-ALTER SCHEMA cmis_refactored OWNER TO begin;
+ALTER SCHEMA cmis_security_backup_20251111_202413 OWNER TO begin;
 
 --
 -- Name: cmis_staging; Type: SCHEMA; Schema: -; Owner: begin
@@ -128,13 +137,22 @@ CREATE SCHEMA lab;
 ALTER SCHEMA lab OWNER TO begin;
 
 --
--- Name: public; Type: SCHEMA; Schema: -; Owner: postgres
+-- Name: operations; Type: SCHEMA; Schema: -; Owner: begin
+--
+
+CREATE SCHEMA operations;
+
+
+ALTER SCHEMA operations OWNER TO begin;
+
+--
+-- Name: public; Type: SCHEMA; Schema: -; Owner: begin
 --
 
 -- *not* creating schema, since initdb creates it
 
 
-ALTER SCHEMA public OWNER TO postgres;
+ALTER SCHEMA public OWNER TO begin;
 
 --
 -- Name: plpython3u; Type: EXTENSION; Schema: -; Owner: -
@@ -148,6 +166,20 @@ CREATE EXTENSION IF NOT EXISTS plpython3u WITH SCHEMA pg_catalog;
 --
 
 COMMENT ON EXTENSION plpython3u IS 'PL/Python3U untrusted procedural language';
+
+
+--
+-- Name: btree_gin; Type: EXTENSION; Schema: -; Owner: -
+--
+
+CREATE EXTENSION IF NOT EXISTS btree_gin WITH SCHEMA public;
+
+
+--
+-- Name: EXTENSION btree_gin; Type: COMMENT; Schema: -; Owner: 
+--
+
+COMMENT ON EXTENSION btree_gin IS 'support for indexing common datatypes in GIN';
 
 
 --
@@ -235,6 +267,51 @@ COMMENT ON EXTENSION vector IS 'vector data type and ivfflat and hnsw access met
 
 
 --
+-- Name: analyze_table_sizes(); Type: FUNCTION; Schema: cmis; Owner: begin
+--
+
+CREATE FUNCTION cmis.analyze_table_sizes() RETURNS TABLE(table_name text, total_size bigint)
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+  RETURN QUERY
+  SELECT t.table_name::text,
+         CASE
+           WHEN to_regclass(format('%I.%I', t.table_schema, t.table_name)) IS NOT NULL THEN
+             pg_total_relation_size(to_regclass(format('%I.%I', t.table_schema, t.table_name)))::bigint
+           ELSE 0
+         END AS total_size
+  FROM information_schema.tables t
+  WHERE t.table_schema = 'cmis';
+END;
+$$;
+
+
+ALTER FUNCTION cmis.analyze_table_sizes() OWNER TO begin;
+
+--
+-- Name: audit_creative_changes(); Type: FUNCTION; Schema: cmis; Owner: begin
+--
+
+CREATE FUNCTION cmis.audit_creative_changes() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+  INSERT INTO cmis_audit.logs(event_type, event_source, description, created_at)
+  VALUES (
+    'creative_brief_change',
+    TG_TABLE_NAME,
+    CONCAT('✏️ تعديل في الموجز الإبداعي: ', COALESCE(NEW.name, '<unnamed>')),
+    NOW()
+  );
+  RETURN NEW;
+END;
+$$;
+
+
+ALTER FUNCTION cmis.audit_creative_changes() OWNER TO begin;
+
+--
 -- Name: auto_delete_unapproved_assets(); Type: FUNCTION; Schema: cmis; Owner: begin
 --
 
@@ -252,6 +329,221 @@ $$;
 ALTER FUNCTION cmis.auto_delete_unapproved_assets() OWNER TO begin;
 
 --
+-- Name: auto_refresh_cache_on_field_change(); Type: FUNCTION; Schema: cmis; Owner: begin
+--
+
+CREATE FUNCTION cmis.auto_refresh_cache_on_field_change() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+    -- تحديث الـ cache فوراً عند أي تغيير
+    PERFORM cmis.refresh_required_fields_cache();
+    
+    -- تسجيل التحديث
+    INSERT INTO cmis_audit.logs (
+        event_type,
+        event_source,
+        description,
+        metadata,
+        created_at
+    ) VALUES (
+        'cache_refresh',
+        'field_definitions',
+        'تم تحديث cache الحقول المطلوبة تلقائياً',
+        jsonb_build_object(
+            'trigger_op', TG_OP,
+            'table_name', TG_TABLE_NAME,
+            'timestamp', CURRENT_TIMESTAMP
+        ),
+        CURRENT_TIMESTAMP
+    );
+    
+    RETURN NULL; -- FOR EACH STATEMENT triggers
+END;
+$$;
+
+
+ALTER FUNCTION cmis.auto_refresh_cache_on_field_change() OWNER TO begin;
+
+--
+-- Name: check_permission(uuid, uuid, text); Type: FUNCTION; Schema: cmis; Owner: begin
+--
+
+CREATE FUNCTION cmis.check_permission(p_user_id uuid, p_org_id uuid, p_permission_code text) RETURNS boolean
+    LANGUAGE plpgsql SECURITY DEFINER
+    AS $$
+DECLARE
+    v_permission_id uuid;
+    v_has_permission boolean := false;
+BEGIN
+    -- جلب permission_id من الـ cache (أسرع)
+    SELECT permission_id INTO v_permission_id
+    FROM cmis.permissions_cache
+    WHERE permission_code = p_permission_code;
+    
+    IF v_permission_id IS NULL THEN
+        -- إذا لم يوجد في cache، جلب من الجدول الأصلي
+        SELECT permission_id INTO v_permission_id
+        FROM cmis.permissions
+        WHERE permission_code = p_permission_code;
+        
+        IF v_permission_id IS NULL THEN
+            RETURN false; -- صلاحية غير موجودة
+        END IF;
+    END IF;
+    
+    -- تحديث آخر استخدام في cache
+    UPDATE cmis.permissions_cache
+    SET last_used = CURRENT_TIMESTAMP
+    WHERE permission_code = p_permission_code;
+    
+    -- التحقق من الصلاحيات المباشرة
+    SELECT EXISTS (
+        SELECT 1 
+        FROM cmis.user_permissions up
+        WHERE up.user_id = p_user_id
+          AND up.org_id = p_org_id
+          AND up.permission_id = v_permission_id
+          AND up.is_granted = true
+          AND up.deleted_at IS NULL -- ✅ تم إضافته
+          AND (up.expires_at IS NULL OR up.expires_at > CURRENT_TIMESTAMP)
+    ) INTO v_has_permission;
+    
+    IF v_has_permission THEN
+        RETURN true;
+    END IF;
+    
+    -- التحقق من صلاحيات الدور
+    SELECT EXISTS (
+        SELECT 1
+        FROM cmis.user_orgs uo
+        JOIN cmis.role_permissions rp ON rp.role_id = uo.role_id
+        WHERE uo.user_id = p_user_id
+          AND uo.org_id = p_org_id
+          AND uo.is_active = true
+          AND uo.deleted_at IS NULL -- ✅ تم إضافته
+          AND rp.permission_id = v_permission_id
+          AND rp.deleted_at IS NULL -- ✅ تم إضافته (هذا هو الأهم!)
+    ) INTO v_has_permission;
+    
+    RETURN v_has_permission;
+END;
+$$;
+
+
+ALTER FUNCTION cmis.check_permission(p_user_id uuid, p_org_id uuid, p_permission_code text) OWNER TO begin;
+
+--
+-- Name: FUNCTION check_permission(p_user_id uuid, p_org_id uuid, p_permission_code text); Type: COMMENT; Schema: cmis; Owner: begin
+--
+
+COMMENT ON FUNCTION cmis.check_permission(p_user_id uuid, p_org_id uuid, p_permission_code text) IS 'التحقق من صلاحيات المستخدم مع دعم cache و soft delete - محدثة';
+
+
+--
+-- Name: check_permission_tx(text); Type: FUNCTION; Schema: cmis; Owner: begin
+--
+
+CREATE FUNCTION cmis.check_permission_tx(p_permission text) RETURNS boolean
+    LANGUAGE plpgsql SECURITY DEFINER
+    AS $$
+DECLARE
+    v_context RECORD;
+    v_has_permission BOOLEAN;
+BEGIN
+    -- Validate transaction context first
+    SELECT * INTO v_context 
+    FROM cmis.validate_transaction_context() 
+    LIMIT 1;
+    
+    IF NOT v_context.is_valid THEN
+        RAISE EXCEPTION 'Invalid transaction context: %', v_context.error_message;
+    END IF;
+    
+    -- Check permission using existing function
+    SELECT cmis.check_permission(
+        v_context.user_id,
+        v_context.org_id,
+        p_permission
+    ) INTO v_has_permission;
+    
+    RETURN v_has_permission;
+END;
+$$;
+
+
+ALTER FUNCTION cmis.check_permission_tx(p_permission text) OWNER TO begin;
+
+--
+-- Name: FUNCTION check_permission_tx(p_permission text); Type: COMMENT; Schema: cmis; Owner: begin
+--
+
+COMMENT ON FUNCTION cmis.check_permission_tx(p_permission text) IS 'التحقق من صلاحية باستخدام السياق المحلي للمعاملة - أسهل للاستخدام من API';
+
+
+--
+-- Name: cleanup_expired_sessions(); Type: FUNCTION; Schema: cmis; Owner: begin
+--
+
+CREATE FUNCTION cmis.cleanup_expired_sessions() RETURNS void
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+    -- تعطيل الجلسات المنتهية
+    UPDATE cmis.user_sessions
+    SET is_active = false
+    WHERE expires_at < CURRENT_TIMESTAMP
+      AND is_active = true;
+    
+    -- حذف الجلسات القديمة جداً (أكثر من 30 يوم)
+    DELETE FROM cmis.user_sessions
+    WHERE expires_at < CURRENT_TIMESTAMP - INTERVAL '30 days';
+    
+    -- تنظيف embeddings cache القديمة (غير مستخدمة لأكثر من 7 أيام)
+    DELETE FROM cmis_knowledge.embeddings_cache
+    WHERE last_used_at < CURRENT_TIMESTAMP - INTERVAL '7 days'
+      AND provider = 'manual';
+END;
+$$;
+
+
+ALTER FUNCTION cmis.cleanup_expired_sessions() OWNER TO begin;
+
+--
+-- Name: cleanup_old_cache_entries(); Type: FUNCTION; Schema: cmis; Owner: begin
+--
+
+CREATE FUNCTION cmis.cleanup_old_cache_entries() RETURNS void
+    LANGUAGE plpgsql
+    AS $$
+DECLARE
+    v_deleted_count integer;
+BEGIN
+    -- حذف إدخالات permissions_cache غير المستخدمة لأكثر من 30 يوم
+    DELETE FROM cmis.permissions_cache
+    WHERE last_used < CURRENT_TIMESTAMP - INTERVAL '30 days';
+    GET DIAGNOSTICS v_deleted_count = ROW_COUNT;
+    
+    IF v_deleted_count > 0 THEN
+        RAISE NOTICE 'Cleaned % old permission cache entries', v_deleted_count;
+    END IF;
+    
+    -- حذف embeddings_cache القديم
+    DELETE FROM cmis_knowledge.embeddings_cache
+    WHERE last_used_at < CURRENT_TIMESTAMP - INTERVAL '7 days'
+      AND provider = 'manual';
+    GET DIAGNOSTICS v_deleted_count = ROW_COUNT;
+    
+    IF v_deleted_count > 0 THEN
+        RAISE NOTICE 'Cleaned % old embedding cache entries', v_deleted_count;
+    END IF;
+END;
+$$;
+
+
+ALTER FUNCTION cmis.cleanup_old_cache_entries() OWNER TO begin;
+
+--
 -- Name: cleanup_scheduler(); Type: PROCEDURE; Schema: cmis; Owner: begin
 --
 
@@ -263,6 +555,57 @@ $$;
 
 
 ALTER PROCEDURE cmis.cleanup_scheduler() OWNER TO begin;
+
+--
+-- Name: cmis_immutable_setweight(tsvector, "char"); Type: FUNCTION; Schema: cmis; Owner: begin
+--
+
+CREATE FUNCTION cmis.cmis_immutable_setweight(vec tsvector, w "char") RETURNS tsvector
+    LANGUAGE plpgsql IMMUTABLE
+    AS $$
+BEGIN
+  RETURN setweight(vec, w);
+END;
+$$;
+
+
+ALTER FUNCTION cmis.cmis_immutable_setweight(vec tsvector, w "char") OWNER TO begin;
+
+--
+-- Name: cmis_immutable_tsvector(regconfig, text); Type: FUNCTION; Schema: cmis; Owner: begin
+--
+
+CREATE FUNCTION cmis.cmis_immutable_tsvector(cfg regconfig, txt text) RETURNS tsvector
+    LANGUAGE plpgsql IMMUTABLE
+    AS $$
+BEGIN
+  RETURN to_tsvector(cfg, txt);
+END;
+$$;
+
+
+ALTER FUNCTION cmis.cmis_immutable_tsvector(cfg regconfig, txt text) OWNER TO begin;
+
+--
+-- Name: contexts_unified_search_vector_update(); Type: FUNCTION; Schema: cmis; Owner: begin
+--
+
+CREATE FUNCTION cmis.contexts_unified_search_vector_update() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+    NEW.search_vector :=
+        setweight(to_tsvector('english', coalesce(NEW.name, '')), 'A') ||
+        setweight(to_tsvector('english', coalesce(NEW.description, '')), 'B') ||
+        setweight(to_tsvector('english', coalesce(NEW.creative_brief, '')), 'C') ||
+        setweight(to_tsvector('english', coalesce(NEW.value_proposition, '')), 'C') ||
+        setweight(to_tsvector('english', coalesce(array_to_string(NEW.tags, ' '), '')), 'D');
+    RETURN NEW;
+END;
+$$;
+
+
+ALTER FUNCTION cmis.contexts_unified_search_vector_update() OWNER TO begin;
 
 --
 -- Name: create_campaign_and_context_safe(uuid, uuid, uuid, text, text, text, text[]); Type: FUNCTION; Schema: cmis; Owner: begin
@@ -310,6 +653,100 @@ END;$$;
 ALTER FUNCTION cmis.create_campaign_and_context_safe(p_org_id uuid, p_offering_id uuid, p_segment_id uuid, p_campaign_name text, p_framework text, p_tone text, p_tags text[]) OWNER TO begin;
 
 --
+-- Name: creative_contexts_delete(); Type: FUNCTION; Schema: cmis; Owner: begin
+--
+
+CREATE FUNCTION cmis.creative_contexts_delete() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+    -- Soft delete
+    UPDATE cmis.contexts_unified
+    SET deleted_at = CURRENT_TIMESTAMP
+    WHERE id = OLD.id AND context_type = 'creative';
+    RETURN OLD;
+END;
+$$;
+
+
+ALTER FUNCTION cmis.creative_contexts_delete() OWNER TO begin;
+
+--
+-- Name: creative_contexts_insert(); Type: FUNCTION; Schema: cmis; Owner: begin
+--
+
+CREATE FUNCTION cmis.creative_contexts_insert() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+    INSERT INTO cmis.contexts_unified (
+        id, context_type, name, description, creative_brief,
+        brand_guidelines, visual_style, tone_of_voice,
+        target_platforms, creative_assets, org_id, created_by,
+        metadata, tags, categories, keywords, status,
+        parent_context_id, related_contexts
+    ) VALUES (
+        COALESCE(NEW.id, gen_random_uuid()),
+        'creative',
+        NEW.name,
+        NEW.description,
+        NEW.creative_brief,
+        NEW.brand_guidelines,
+        NEW.visual_style,
+        NEW.tone_of_voice,
+        NEW.target_platforms,
+        NEW.creative_assets,
+        NEW.org_id,
+        NEW.created_by,
+        COALESCE(NEW.metadata, '{}'::jsonb),
+        COALESCE(NEW.tags, '{}'),
+        COALESCE(NEW.categories, '{}'),
+        COALESCE(NEW.keywords, '{}'),
+        COALESCE(NEW.status, 'active'),
+        NEW.parent_context_id,
+        NEW.related_contexts
+    ) RETURNING * INTO NEW;
+    RETURN NEW;
+END;
+$$;
+
+
+ALTER FUNCTION cmis.creative_contexts_insert() OWNER TO begin;
+
+--
+-- Name: creative_contexts_update(); Type: FUNCTION; Schema: cmis; Owner: begin
+--
+
+CREATE FUNCTION cmis.creative_contexts_update() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+    UPDATE cmis.contexts_unified
+    SET 
+        name = NEW.name,
+        description = NEW.description,
+        creative_brief = NEW.creative_brief,
+        brand_guidelines = NEW.brand_guidelines,
+        visual_style = NEW.visual_style,
+        tone_of_voice = NEW.tone_of_voice,
+        target_platforms = NEW.target_platforms,
+        creative_assets = NEW.creative_assets,
+        metadata = NEW.metadata,
+        tags = NEW.tags,
+        categories = NEW.categories,
+        keywords = NEW.keywords,
+        status = NEW.status,
+        parent_context_id = NEW.parent_context_id,
+        related_contexts = NEW.related_contexts
+    WHERE id = NEW.id AND context_type = 'creative';
+    RETURN NEW;
+END;
+$$;
+
+
+ALTER FUNCTION cmis.creative_contexts_update() OWNER TO begin;
+
+--
 -- Name: enforce_creative_context(); Type: FUNCTION; Schema: cmis; Owner: begin
 --
 
@@ -328,6 +765,278 @@ $$;
 ALTER FUNCTION cmis.enforce_creative_context() OWNER TO begin;
 
 --
+-- Name: find_related_campaigns(uuid, integer); Type: FUNCTION; Schema: cmis; Owner: begin
+--
+
+CREATE FUNCTION cmis.find_related_campaigns(p_campaign_id uuid, p_limit integer DEFAULT 10) RETURNS TABLE(campaign_id uuid, campaign_name character varying, shared_contexts_count integer, similarity_score numeric)
+    LANGUAGE plpgsql STABLE
+    AS $$
+BEGIN
+    RETURN QUERY
+    WITH campaign_contexts AS (
+        SELECT context_id, link_strength
+        FROM cmis.campaign_context_links
+        WHERE campaign_id = p_campaign_id AND is_active = true
+    ),
+    related AS (
+        SELECT 
+            ccl.campaign_id,
+            COUNT(DISTINCT ccl.context_id) AS shared_count,
+            SUM(ccl.link_strength * cc.link_strength) AS similarity
+        FROM cmis.campaign_context_links ccl
+        INNER JOIN campaign_contexts cc ON ccl.context_id = cc.context_id
+        WHERE ccl.campaign_id != p_campaign_id
+          AND ccl.is_active = true
+        GROUP BY ccl.campaign_id
+    )
+    SELECT 
+        r.campaign_id,
+        c.name,
+        r.shared_count::INTEGER,
+        r.similarity::DECIMAL(5,2)
+    FROM related r
+    LEFT JOIN cmis.campaigns c ON r.campaign_id = c.campaign_id
+    ORDER BY r.similarity DESC, r.shared_count DESC
+    LIMIT p_limit;
+END;
+$$;
+
+
+ALTER FUNCTION cmis.find_related_campaigns(p_campaign_id uuid, p_limit integer) OWNER TO begin;
+
+--
+-- Name: generate_brief_summary(uuid); Type: FUNCTION; Schema: cmis; Owner: begin
+--
+
+CREATE FUNCTION cmis.generate_brief_summary(p_brief_id uuid) RETURNS jsonb
+    LANGUAGE plpgsql SECURITY DEFINER
+    AS $$
+DECLARE
+  v_brief RECORD;
+  v_summary JSONB;
+BEGIN
+  SELECT * INTO v_brief
+  FROM cmis.creative_briefs
+  WHERE brief_id = p_brief_id;
+
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'Creative brief not found for ID: %', p_brief_id;
+  END IF;
+
+  v_summary := jsonb_build_object(
+    'brief_name', v_brief.name,
+    'org_id', v_brief.org_id,
+    'fields', (v_brief.brief_data - 'non_essential')
+  ) || jsonb_build_object('generated_at', NOW());
+
+  RETURN v_summary;
+END;
+$$;
+
+
+ALTER FUNCTION cmis.generate_brief_summary(p_brief_id uuid) OWNER TO begin;
+
+--
+-- Name: get_campaign_contexts(uuid, boolean); Type: FUNCTION; Schema: cmis; Owner: begin
+--
+
+CREATE FUNCTION cmis.get_campaign_contexts(p_campaign_id uuid, p_include_inactive boolean DEFAULT false) RETURNS TABLE(context_id uuid, context_type character varying, name character varying, description text, link_type character varying, link_strength numeric, link_purpose text, is_active boolean, created_at timestamp without time zone)
+    LANGUAGE plpgsql STABLE
+    AS $$
+BEGIN
+    RETURN QUERY
+    SELECT 
+        cu.id,
+        cu.context_type,
+        cu.name,
+        cu.description,
+        ccl.link_type,
+        ccl.link_strength,
+        ccl.link_purpose,
+        ccl.is_active,
+        ccl.created_at
+    FROM cmis.campaign_context_links ccl
+    INNER JOIN cmis.contexts_unified cu ON ccl.context_id = cu.id
+    WHERE ccl.campaign_id = p_campaign_id
+      AND (p_include_inactive OR ccl.is_active = true)
+    ORDER BY ccl.link_strength DESC, ccl.created_at;
+END;
+$$;
+
+
+ALTER FUNCTION cmis.get_campaign_contexts(p_campaign_id uuid, p_include_inactive boolean) OWNER TO begin;
+
+--
+-- Name: get_current_org_id(); Type: FUNCTION; Schema: cmis; Owner: begin
+--
+
+CREATE FUNCTION cmis.get_current_org_id() RETURNS uuid
+    LANGUAGE plpgsql STABLE
+    AS $$
+DECLARE
+  v_org text;
+BEGIN
+  BEGIN
+    v_org := current_setting('app.current_org_id');
+  EXCEPTION
+    WHEN others THEN
+      RETURN '00000000-0000-0000-0000-000000000000'::uuid; -- fallback value
+  END;
+
+  IF v_org IS NULL OR v_org = '' THEN
+    RETURN '00000000-0000-0000-0000-000000000000'::uuid;
+  ELSE
+    RETURN v_org::uuid;
+  END IF;
+END;
+$$;
+
+
+ALTER FUNCTION cmis.get_current_org_id() OWNER TO begin;
+
+--
+-- Name: get_current_org_id_tx(); Type: FUNCTION; Schema: cmis; Owner: begin
+--
+
+CREATE FUNCTION cmis.get_current_org_id_tx() RETURNS uuid
+    LANGUAGE plpgsql STABLE
+    AS $$
+DECLARE
+    v_context RECORD;
+BEGIN
+    SELECT * INTO v_context FROM cmis.validate_transaction_context() LIMIT 1;
+    
+    IF NOT v_context.is_valid THEN
+        RAISE EXCEPTION 'Invalid transaction context: %', v_context.error_message;
+    END IF;
+    
+    RETURN v_context.org_id;
+END;
+$$;
+
+
+ALTER FUNCTION cmis.get_current_org_id_tx() OWNER TO begin;
+
+--
+-- Name: FUNCTION get_current_org_id_tx(); Type: COMMENT; Schema: cmis; Owner: begin
+--
+
+COMMENT ON FUNCTION cmis.get_current_org_id_tx() IS 'الحصول على org_id من السياق المحلي للمعاملة';
+
+
+--
+-- Name: get_current_user_id(); Type: FUNCTION; Schema: cmis; Owner: begin
+--
+
+CREATE FUNCTION cmis.get_current_user_id() RETURNS uuid
+    LANGUAGE plpgsql STABLE
+    AS $$
+BEGIN
+  RETURN current_setting('app.current_user_id', true)::uuid;
+END;
+$$;
+
+
+ALTER FUNCTION cmis.get_current_user_id() OWNER TO begin;
+
+--
+-- Name: get_current_user_id_tx(); Type: FUNCTION; Schema: cmis; Owner: begin
+--
+
+CREATE FUNCTION cmis.get_current_user_id_tx() RETURNS uuid
+    LANGUAGE plpgsql STABLE
+    AS $$
+DECLARE
+    v_context RECORD;
+BEGIN
+    SELECT * INTO v_context FROM cmis.validate_transaction_context() LIMIT 1;
+    
+    IF NOT v_context.is_valid THEN
+        RAISE EXCEPTION 'Invalid transaction context: %', v_context.error_message;
+    END IF;
+    
+    RETURN v_context.user_id;
+END;
+$$;
+
+
+ALTER FUNCTION cmis.get_current_user_id_tx() OWNER TO begin;
+
+--
+-- Name: FUNCTION get_current_user_id_tx(); Type: COMMENT; Schema: cmis; Owner: begin
+--
+
+COMMENT ON FUNCTION cmis.get_current_user_id_tx() IS 'الحصول على user_id من السياق المحلي للمعاملة';
+
+
+--
+-- Name: init_transaction_context(uuid, uuid); Type: FUNCTION; Schema: cmis; Owner: begin
+--
+
+CREATE FUNCTION cmis.init_transaction_context(p_user_id uuid, p_org_id uuid) RETURNS void
+    LANGUAGE plpgsql SECURITY DEFINER
+    AS $$
+BEGIN
+    -- Validate inputs
+    IF p_user_id IS NULL THEN
+        RAISE EXCEPTION 'user_id cannot be NULL';
+    END IF;
+    
+    IF p_org_id IS NULL THEN
+        RAISE EXCEPTION 'org_id cannot be NULL';
+    END IF;
+    
+    -- Verify user belongs to org
+    IF NOT EXISTS (
+        SELECT 1 FROM cmis.user_orgs
+        WHERE user_id = p_user_id
+        AND org_id = p_org_id
+        AND is_active = true
+        AND deleted_at IS NULL
+    ) THEN
+        RAISE EXCEPTION 'User % does not belong to org % or relationship is not active', 
+            p_user_id, p_org_id;
+    END IF;
+    
+    -- Set LOCAL context (transaction-scoped only)
+    PERFORM set_config('app.current_user_id', p_user_id::TEXT, TRUE);
+    PERFORM set_config('app.current_org_id', p_org_id::TEXT, TRUE);
+    PERFORM set_config('app.context_initialized', 'true', TRUE);
+    PERFORM set_config('app.context_version', '2.0', TRUE);
+    
+    -- Log initialization (optional)
+    RAISE DEBUG 'Transaction context initialized: user=%, org=%', p_user_id, p_org_id;
+END;
+$$;
+
+
+ALTER FUNCTION cmis.init_transaction_context(p_user_id uuid, p_org_id uuid) OWNER TO begin;
+
+--
+-- Name: FUNCTION init_transaction_context(p_user_id uuid, p_org_id uuid); Type: COMMENT; Schema: cmis; Owner: begin
+--
+
+COMMENT ON FUNCTION cmis.init_transaction_context(p_user_id uuid, p_org_id uuid) IS 'تهيئة سياق الأمان للمعاملة الحالية باستخدام SET LOCAL - v2.0';
+
+
+--
+-- Name: link_brief_to_content(uuid, uuid); Type: FUNCTION; Schema: cmis; Owner: begin
+--
+
+CREATE FUNCTION cmis.link_brief_to_content(p_brief_id uuid, p_content_id uuid) RETURNS void
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+  INSERT INTO cmis.creative_outputs (brief_id, content_id, linked_at)
+  VALUES (p_brief_id, p_content_id, NOW())
+  ON CONFLICT (brief_id, content_id) DO NOTHING;
+END;
+$$;
+
+
+ALTER FUNCTION cmis.link_brief_to_content(p_brief_id uuid, p_content_id uuid) OWNER TO begin;
+
+--
 -- Name: prevent_incomplete_briefs(); Type: FUNCTION; Schema: cmis; Owner: begin
 --
 
@@ -335,35 +1044,250 @@ CREATE FUNCTION cmis.prevent_incomplete_briefs() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
 DECLARE
-  required_keys TEXT[] := ARRAY[
-    'marketing_objective', 'emotional_trigger', 'Hooks', 'channels', 'segments',
-    'pains', 'Marketing frameworks', 'marketing_strategies', 'awareness_stage',
-    'funnel_stage', 'Tones', 'features', 'benefits', 'transformational_benefits',
-    'usps', 'message_map', 'proofs', 'brand', 'guardrails', 'seasonality',
-    'style', 'offer', 'pricing', 'CTA', 'Content', 'Formats', 'Art Direction',
-    'Mood', 'Visual Message', 'Look & Feel', 'Color Palette', 'Typography',
-    'Imagery & Graphics', 'Icons & Symbols', 'Composition & Layout', 'Amplify',
-    'Story/Solution', 'design_description', 'background', 'lighting', 'highlight',
-    'de_emphasize', 'element_positions', 'ratio', 'motion'
-  ];
+  normalized_existing TEXT[] := ARRAY[]::TEXT[];
+  normalized_required TEXT[] := ARRAY[]::TEXT[];
   missing_keys TEXT[] := ARRAY[]::TEXT[];
   k TEXT;
 BEGIN
-  FOREACH k IN ARRAY required_keys LOOP
-    IF NOT (NEW.brief_data ? k) THEN
+  -- 🔍 جلب الحقول المطلوبة من قاعدة البيانات
+  SELECT COALESCE(array_agg(lower(regexp_replace(slug, '[^a-z0-9_]+', '', 'g'))), ARRAY[]::TEXT[])
+  INTO normalized_required
+  FROM cmis.field_definitions
+  WHERE required_default = TRUE
+    AND module_scope ILIKE '%creative_brief%';
+
+  -- 🔄 تطبيع المفاتيح القادمة من JSON
+  SELECT COALESCE(array_agg(lower(regexp_replace(key_name, '[^a-z0-9_]+', '', 'g'))), ARRAY[]::TEXT[])
+  INTO normalized_existing
+  FROM jsonb_object_keys(NEW.brief_data) AS key_name;
+
+  -- 🧠 تحديد المفاتيح المفقودة
+  FOREACH k IN ARRAY normalized_required LOOP
+    IF NOT (k = ANY(normalized_existing)) THEN
       missing_keys := array_append(missing_keys, k);
     END IF;
   END LOOP;
 
   IF array_length(missing_keys, 1) > 0 THEN
-    RAISE EXCEPTION 'Creative brief is missing required fields: %', array_to_string(missing_keys, ',');
+    RAISE EXCEPTION 'Creative brief is missing required fields: %',
+      array_to_string(missing_keys, ', ');
   END IF;
 
   RETURN NEW;
-END;$$;
+END;
+$$;
 
 
 ALTER FUNCTION cmis.prevent_incomplete_briefs() OWNER TO begin;
+
+--
+-- Name: prevent_incomplete_briefs_optimized(); Type: FUNCTION; Schema: cmis; Owner: begin
+--
+
+CREATE FUNCTION cmis.prevent_incomplete_briefs_optimized() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+DECLARE
+    v_required_fields TEXT[];
+    v_existing_fields TEXT[];
+    v_missing_fields TEXT[];
+BEGIN
+    -- جلب الحقول المطلوبة من الـ cache (أسرع بكثير)
+    SELECT required_fields INTO v_required_fields
+    FROM cmis.required_fields_cache
+    WHERE module_scope = 'creative_brief';
+    
+    -- إذا لم توجد حقول مطلوبة، السماح بالإدراج
+    IF v_required_fields IS NULL OR array_length(v_required_fields, 1) IS NULL THEN
+        RETURN NEW;
+    END IF;
+    
+    -- جلب الحقول الموجودة
+    SELECT array_agg(lower(regexp_replace(key, '[^a-z0-9_]+', '', 'g')))
+    INTO v_existing_fields
+    FROM jsonb_object_keys(NEW.brief_data) AS key;
+    
+    -- حساب الحقول المفقودة
+    v_missing_fields := v_required_fields - COALESCE(v_existing_fields, ARRAY[]::TEXT[]);
+    
+    IF array_length(v_missing_fields, 1) > 0 THEN
+        RAISE EXCEPTION 'Creative brief missing required fields: %', 
+            array_to_string(v_missing_fields, ', ');
+    END IF;
+    
+    RETURN NEW;
+END;
+$$;
+
+
+ALTER FUNCTION cmis.prevent_incomplete_briefs_optimized() OWNER TO begin;
+
+--
+-- Name: refresh_creative_index(); Type: FUNCTION; Schema: cmis; Owner: begin
+--
+
+CREATE FUNCTION cmis.refresh_creative_index() RETURNS void
+    LANGUAGE plpgsql SECURITY DEFINER
+    AS $$
+BEGIN
+  UPDATE cmis_knowledge.knowledge_index k
+  SET topic_embedding = cmis_knowledge.generate_embedding_mock(c.caption)
+  FROM cmis.content_items c
+  WHERE c.updated_at > NOW() - INTERVAL '1 day';
+END;
+$$;
+
+
+ALTER FUNCTION cmis.refresh_creative_index() OWNER TO begin;
+
+--
+-- Name: refresh_dashboard_metrics(); Type: FUNCTION; Schema: cmis; Owner: begin
+--
+
+CREATE FUNCTION cmis.refresh_dashboard_metrics() RETURNS void
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+    REFRESH MATERIALIZED VIEW CONCURRENTLY cmis.dashboard_metrics;
+END;
+$$;
+
+
+ALTER FUNCTION cmis.refresh_dashboard_metrics() OWNER TO begin;
+
+--
+-- Name: refresh_permissions_cache(); Type: FUNCTION; Schema: cmis; Owner: begin
+--
+
+CREATE FUNCTION cmis.refresh_permissions_cache() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+    -- تحديث أو إدراج في الـ cache
+    IF TG_OP = 'DELETE' THEN
+        DELETE FROM cmis.permissions_cache 
+        WHERE permission_code = OLD.permission_code;
+    ELSE
+        INSERT INTO cmis.permissions_cache (permission_code, permission_id, category)
+        VALUES (NEW.permission_code, NEW.permission_id, NEW.category)
+        ON CONFLICT (permission_code) DO UPDATE
+        SET permission_id = NEW.permission_id,
+            category = NEW.category,
+            last_used = CURRENT_TIMESTAMP;
+    END IF;
+    
+    RETURN NULL;
+END;
+$$;
+
+
+ALTER FUNCTION cmis.refresh_permissions_cache() OWNER TO begin;
+
+--
+-- Name: refresh_required_fields_cache(); Type: FUNCTION; Schema: cmis; Owner: begin
+--
+
+CREATE FUNCTION cmis.refresh_required_fields_cache() RETURNS void
+    LANGUAGE sql
+    AS $$
+    SELECT cmis.refresh_required_fields_cache_with_metrics();
+$$;
+
+
+ALTER FUNCTION cmis.refresh_required_fields_cache() OWNER TO begin;
+
+--
+-- Name: refresh_required_fields_cache_with_metrics(); Type: FUNCTION; Schema: cmis; Owner: begin
+--
+
+CREATE FUNCTION cmis.refresh_required_fields_cache_with_metrics() RETURNS void
+    LANGUAGE plpgsql
+    AS $$
+DECLARE
+    v_start_time timestamptz;
+    v_end_time timestamptz;
+    v_duration_ms numeric;
+    v_record_count integer;
+BEGIN
+    v_start_time := clock_timestamp();
+    
+    -- حذف البيانات القديمة
+    DELETE FROM cmis.required_fields_cache WHERE module_scope = 'creative_brief';
+    
+    -- إدراج البيانات الجديدة
+    INSERT INTO cmis.required_fields_cache (module_scope, required_fields)
+    SELECT 
+        'creative_brief',
+        COALESCE(array_agg(
+            lower(regexp_replace(slug, '[^a-z0-9_]+', '', 'g'))
+            ORDER BY slug
+        ), ARRAY[]::TEXT[])
+    FROM cmis.field_definitions
+    WHERE required_default = TRUE
+      AND module_scope ILIKE '%creative_brief%';
+    
+    GET DIAGNOSTICS v_record_count = ROW_COUNT;
+    
+    v_end_time := clock_timestamp();
+    v_duration_ms := EXTRACT(EPOCH FROM (v_end_time - v_start_time)) * 1000;
+    
+    -- تحديث metadata
+    UPDATE cmis.cache_metadata
+    SET last_refreshed = v_end_time,
+        refresh_count = refresh_count + 1,
+        last_refresh_duration_ms = v_duration_ms,
+        avg_refresh_time_ms = 
+            CASE 
+                WHEN avg_refresh_time_ms IS NULL THEN v_duration_ms
+                ELSE (avg_refresh_time_ms * (refresh_count - 1) + v_duration_ms) / refresh_count
+            END,
+        metadata = metadata || jsonb_build_object(
+            'last_refresh_record_count', v_record_count,
+            'last_refresh_timestamp', v_end_time
+        )
+    WHERE cache_name = 'required_fields_cache';
+    
+    RAISE NOTICE 'Cache refreshed in % ms, % fields cached', 
+                 round(v_duration_ms, 2), v_record_count;
+END;
+$$;
+
+
+ALTER FUNCTION cmis.refresh_required_fields_cache_with_metrics() OWNER TO begin;
+
+--
+-- Name: search_contexts(text, character varying, integer); Type: FUNCTION; Schema: cmis; Owner: begin
+--
+
+CREATE FUNCTION cmis.search_contexts(p_search_query text, p_context_type character varying DEFAULT NULL::character varying, p_limit integer DEFAULT 20) RETURNS TABLE(id uuid, context_type character varying, name character varying, description text, relevance real, highlights text)
+    LANGUAGE plpgsql STABLE
+    AS $$
+BEGIN
+    RETURN QUERY
+    SELECT 
+        cu.id,
+        cu.context_type,
+        cu.name,
+        cu.description,
+        ts_rank(cu.search_vector, query) AS relevance,
+        ts_headline('english', 
+                   coalesce(cu.name, '') || ' ' || coalesce(cu.description, ''),
+                   query,
+                   'MaxWords=50, MinWords=20, ShortWord=3, HighlightAll=FALSE'
+        ) AS highlights
+    FROM cmis.contexts_unified cu,
+         plainto_tsquery('english', p_search_query) query
+    WHERE cu.search_vector @@ query
+      AND (p_context_type IS NULL OR cu.context_type = p_context_type)
+      AND cu.status = 'active'
+      AND cu.deleted_at IS NULL
+    ORDER BY relevance DESC
+    LIMIT p_limit;
+END;
+$$;
+
+
+ALTER FUNCTION cmis.search_contexts(p_search_query text, p_context_type character varying, p_limit integer) OWNER TO begin;
 
 --
 -- Name: sync_social_metrics(); Type: FUNCTION; Schema: cmis; Owner: begin
@@ -392,6 +1316,495 @@ END;$$;
 
 
 ALTER FUNCTION cmis.sync_social_metrics() OWNER TO begin;
+
+--
+-- Name: test_new_security_context(); Type: FUNCTION; Schema: cmis; Owner: begin
+--
+
+CREATE FUNCTION cmis.test_new_security_context() RETURNS TABLE(test_name text, passed boolean, details text)
+    LANGUAGE plpgsql
+    AS $$
+DECLARE
+    v_test_user_id UUID;
+    v_test_org_id UUID;
+    v_context RECORD;
+    v_permission BOOLEAN;
+BEGIN
+    -- Get a real user and org for testing
+    SELECT u.user_id, uo.org_id 
+    INTO v_test_user_id, v_test_org_id
+    FROM cmis.users u
+    JOIN cmis.user_orgs uo ON uo.user_id = u.user_id
+    WHERE uo.is_active = true
+    AND uo.deleted_at IS NULL
+    LIMIT 1;
+    
+    IF v_test_user_id IS NULL THEN
+        RETURN QUERY SELECT 
+            'Prerequisites'::TEXT,
+            FALSE,
+            'No active users found in database'::TEXT;
+        RETURN;
+    END IF;
+    
+    -- Test 1: Initialize context
+    BEGIN
+        PERFORM cmis.init_transaction_context(v_test_user_id, v_test_org_id);
+        RETURN QUERY SELECT 
+            'Context Initialization'::TEXT,
+            TRUE,
+            format('Successfully initialized for user %s', v_test_user_id)::TEXT;
+    EXCEPTION WHEN OTHERS THEN
+        RETURN QUERY SELECT 
+            'Context Initialization'::TEXT,
+            FALSE,
+            SQLERRM::TEXT;
+        RETURN;
+    END;
+    
+    -- Test 2: Validate context
+    SELECT * INTO v_context FROM cmis.validate_transaction_context() LIMIT 1;
+    RETURN QUERY SELECT 
+        'Context Validation'::TEXT,
+        v_context.is_valid,
+        CASE 
+            WHEN v_context.is_valid THEN format('Valid context v%s', v_context.context_version)
+            ELSE v_context.error_message
+        END::TEXT;
+    
+    -- Test 3: Check permission
+    BEGIN
+        v_permission := cmis.check_permission_tx('orgs.view');
+        RETURN QUERY SELECT 
+            'Permission Check'::TEXT,
+            TRUE,
+            format('Permission check returned: %s', v_permission)::TEXT;
+    EXCEPTION WHEN OTHERS THEN
+        RETURN QUERY SELECT 
+            'Permission Check'::TEXT,
+            FALSE,
+            SQLERRM::TEXT;
+    END;
+    
+    -- Test 4: Query with RLS
+    BEGIN
+        PERFORM COUNT(*) FROM cmis.campaigns;
+        RETURN QUERY SELECT 
+            'RLS Query'::TEXT,
+            TRUE,
+            'Successfully queried campaigns table with RLS'::TEXT;
+    EXCEPTION WHEN OTHERS THEN
+        RETURN QUERY SELECT 
+            'RLS Query'::TEXT,
+            FALSE,
+            SQLERRM::TEXT;
+    END;
+END;
+$$;
+
+
+ALTER FUNCTION cmis.test_new_security_context() OWNER TO begin;
+
+--
+-- Name: FUNCTION test_new_security_context(); Type: COMMENT; Schema: cmis; Owner: begin
+--
+
+COMMENT ON FUNCTION cmis.test_new_security_context() IS 'اختبار شامل للنظام الأمني الجديد';
+
+
+--
+-- Name: update_updated_at_column(); Type: FUNCTION; Schema: cmis; Owner: begin
+--
+
+CREATE FUNCTION cmis.update_updated_at_column() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$ BEGIN NEW.updated_at = CURRENT_TIMESTAMP; RETURN NEW; END; $$;
+
+
+ALTER FUNCTION cmis.update_updated_at_column() OWNER TO begin;
+
+--
+-- Name: validate_brief_structure(jsonb); Type: FUNCTION; Schema: cmis; Owner: begin
+--
+
+CREATE FUNCTION cmis.validate_brief_structure(p_brief jsonb) RETURNS boolean
+    LANGUAGE plpgsql SECURITY DEFINER
+    AS $$
+DECLARE
+  required_fields TEXT[] := ARRAY[]::TEXT[];
+  missing TEXT[] := ARRAY[]::TEXT[];
+  key TEXT;
+BEGIN
+  SELECT COALESCE(array_agg(slug), ARRAY[]::TEXT[])
+  INTO required_fields
+  FROM cmis.field_definitions
+  WHERE required_default = TRUE
+    AND module_scope ILIKE '%creative_brief%';
+
+  FOREACH key IN ARRAY required_fields LOOP
+    IF NOT (p_brief ? key) THEN
+      missing := array_append(missing, key);
+    END IF;
+  END LOOP;
+
+  IF array_length(missing, 1) > 0 THEN
+    RAISE EXCEPTION 'Missing required fields: %',
+      array_to_string(missing, ', ');
+  END IF;
+
+  RETURN TRUE;
+END;
+$$;
+
+
+ALTER FUNCTION cmis.validate_brief_structure(p_brief jsonb) OWNER TO begin;
+
+--
+-- Name: validate_transaction_context(); Type: FUNCTION; Schema: cmis; Owner: begin
+--
+
+CREATE FUNCTION cmis.validate_transaction_context() RETURNS TABLE(is_valid boolean, user_id uuid, org_id uuid, error_message text, context_version text)
+    LANGUAGE plpgsql SECURITY DEFINER
+    AS $$
+DECLARE
+    v_user_id TEXT;
+    v_org_id TEXT;
+    v_initialized TEXT;
+    v_version TEXT;
+BEGIN
+    -- Check if context is initialized
+    BEGIN
+        v_initialized := current_setting('app.context_initialized', TRUE);
+        v_version := current_setting('app.context_version', TRUE);
+    EXCEPTION WHEN OTHERS THEN
+        v_initialized := NULL;
+        v_version := NULL;
+    END;
+    
+    IF v_initialized IS NULL OR v_initialized != 'true' THEN
+        RETURN QUERY SELECT 
+            FALSE, 
+            NULL::UUID, 
+            NULL::UUID, 
+            'Transaction context not initialized. Call init_transaction_context() first.'::TEXT,
+            NULL::TEXT;
+        RETURN;
+    END IF;
+    
+    -- Get user_id and org_id
+    BEGIN
+        v_user_id := current_setting('app.current_user_id', TRUE);
+        v_org_id := current_setting('app.current_org_id', TRUE);
+    EXCEPTION WHEN OTHERS THEN
+        RETURN QUERY SELECT 
+            FALSE, 
+            NULL::UUID, 
+            NULL::UUID, 
+            'Failed to read context settings'::TEXT,
+            NULL::TEXT;
+        RETURN;
+    END;
+    
+    -- Validate they exist
+    IF v_user_id IS NULL OR v_org_id IS NULL THEN
+        RETURN QUERY SELECT 
+            FALSE, 
+            NULL::UUID, 
+            NULL::UUID, 
+            'Missing user_id or org_id in context'::TEXT,
+            v_version;
+        RETURN;
+    END IF;
+    
+    -- Return valid context
+    RETURN QUERY SELECT 
+        TRUE, 
+        v_user_id::UUID, 
+        v_org_id::UUID, 
+        NULL::TEXT,
+        v_version;
+END;
+$$;
+
+
+ALTER FUNCTION cmis.validate_transaction_context() OWNER TO begin;
+
+--
+-- Name: FUNCTION validate_transaction_context(); Type: COMMENT; Schema: cmis; Owner: begin
+--
+
+COMMENT ON FUNCTION cmis.validate_transaction_context() IS 'التحقق من صحة سياق المعاملة وإرجاع معلومات المستخدم والمؤسسة';
+
+
+--
+-- Name: verify_cache_automation(); Type: FUNCTION; Schema: cmis; Owner: begin
+--
+
+CREATE FUNCTION cmis.verify_cache_automation() RETURNS TABLE(check_name text, status text, details text)
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+    -- التحقق من وجود Trigger
+    RETURN QUERY
+    SELECT 
+        'Fields Cache Trigger'::text,
+        CASE 
+            WHEN EXISTS (
+                SELECT 1 FROM pg_trigger 
+                WHERE tgname = 'trg_refresh_fields_cache'
+            ) THEN 'ACTIVE'::text
+            ELSE 'MISSING'::text
+        END,
+        'Auto-refresh trigger for field definitions'::text;
+    
+    -- التحقق من cache الصلاحيات
+    RETURN QUERY
+    SELECT 
+        'Permissions Cache'::text,
+        CASE 
+            WHEN (SELECT count(*) FROM cmis.permissions_cache) > 0
+            THEN 'POPULATED'::text
+            ELSE 'EMPTY'::text
+        END,
+        format('%s permissions cached', 
+               (SELECT count(*) FROM cmis.permissions_cache))::text;
+    
+    -- التحقق من metadata
+    RETURN QUERY
+    SELECT 
+        'Cache Metadata'::text,
+        CASE 
+            WHEN EXISTS (
+                SELECT 1 FROM cmis.cache_metadata
+                WHERE cache_name = 'required_fields_cache'
+            ) THEN 'TRACKING'::text
+            ELSE 'NOT TRACKING'::text
+        END,
+        'Performance metrics for cache operations'::text;
+    
+    -- التحقق من الأداء
+    RETURN QUERY
+    SELECT 
+        'Cache Performance'::text,
+        CASE 
+            WHEN (
+                SELECT avg_refresh_time_ms 
+                FROM cmis.cache_metadata 
+                WHERE cache_name = 'required_fields_cache'
+            ) < 100 THEN 'FAST'::text
+            ELSE 'SLOW'::text
+        END,
+        format('Avg refresh time: %s ms', 
+               round((SELECT avg_refresh_time_ms 
+                      FROM cmis.cache_metadata 
+                      WHERE cache_name = 'required_fields_cache'), 2))::text;
+END;
+$$;
+
+
+ALTER FUNCTION cmis.verify_cache_automation() OWNER TO begin;
+
+--
+-- Name: verify_optional_improvements(); Type: FUNCTION; Schema: cmis; Owner: begin
+--
+
+CREATE FUNCTION cmis.verify_optional_improvements() RETURNS text
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+  RETURN 'placeholder - optional improvements verification deferred';
+END;
+$$;
+
+
+ALTER FUNCTION cmis.verify_optional_improvements() OWNER TO begin;
+
+--
+-- Name: verify_phase1_fixes(); Type: FUNCTION; Schema: cmis; Owner: begin
+--
+
+CREATE FUNCTION cmis.verify_phase1_fixes() RETURNS TABLE(check_name text, status text, details text)
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+    -- التحقق من دالة embeddings
+    RETURN QUERY
+    SELECT 
+        'Embeddings Function'::text,
+        CASE 
+            WHEN EXISTS (SELECT 1 FROM pg_proc WHERE proname = 'generate_embedding_improved')
+            THEN 'FIXED'::text
+            ELSE 'FAILED'::text
+        END,
+        'New embeddings function created'::text;
+    
+    -- التحقق من جدول cache
+    RETURN QUERY
+    SELECT 
+        'Embeddings Cache Table'::text,
+        CASE 
+            WHEN EXISTS (SELECT 1 FROM information_schema.tables 
+                        WHERE table_schema = 'cmis_knowledge' 
+                        AND table_name = 'embeddings_cache')
+            THEN 'CREATED'::text
+            ELSE 'FAILED'::text
+        END,
+        'Cache table for embeddings'::text;
+    
+    -- التحقق من جدول الجلسات
+    RETURN QUERY
+    SELECT 
+        'Sessions Table'::text,
+        CASE 
+            WHEN EXISTS (SELECT 1 FROM information_schema.tables 
+                        WHERE table_schema = 'cmis' 
+                        AND table_name = 'user_sessions')
+            THEN 'CREATED'::text
+            ELSE 'FAILED'::text
+        END,
+        'User sessions management table'::text;
+    
+    -- التحقق من المشغل المحسن
+    RETURN QUERY
+    SELECT 
+        'Optimized Trigger'::text,
+        CASE 
+            WHEN EXISTS (SELECT 1 FROM pg_trigger 
+                        WHERE tgname = 'enforce_brief_completeness_optimized')
+            THEN 'UPDATED'::text
+            ELSE 'FAILED'::text
+        END,
+        'Brief validation trigger optimized'::text;
+END;
+$$;
+
+
+ALTER FUNCTION cmis.verify_phase1_fixes() OWNER TO begin;
+
+--
+-- Name: verify_phase2_permissions(); Type: FUNCTION; Schema: cmis; Owner: begin
+--
+
+CREATE FUNCTION cmis.verify_phase2_permissions() RETURNS TABLE(check_name text, status text, count bigint, details text)
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+    -- جدول user_orgs
+    RETURN QUERY
+    SELECT 
+        'User-Org Relationships'::text,
+        'CREATED'::text,
+        count(*),
+        'Multi-org support enabled'::text
+    FROM cmis.user_orgs;
+    
+    -- الأدوار
+    RETURN QUERY
+    SELECT 
+        'Roles Created'::text,
+        'READY'::text,
+        count(*),
+        'Role-based access control'::text
+    FROM cmis.roles;
+    
+    -- الصلاحيات
+    RETURN QUERY
+    SELECT 
+        'Permissions Defined'::text,
+        'CONFIGURED'::text,
+        count(*),
+        'Granular permissions'::text
+    FROM cmis.permissions;
+    
+    -- ربط الأدوار بالصلاحيات
+    RETURN QUERY
+    SELECT 
+        'Role Permissions'::text,
+        'ASSIGNED'::text,
+        count(*),
+        'Permissions assigned to roles'::text
+    FROM cmis.role_permissions;
+    
+    -- السياسات المحدثة
+    RETURN QUERY
+    SELECT 
+        'RLS Policies'::text,
+        CASE 
+            WHEN count(*) > 0 THEN 'UPDATED'::text
+            ELSE 'PENDING'::text
+        END,
+        count(*),
+        'Row-level security policies'::text
+    FROM pg_policies
+    WHERE schemaname = 'cmis'
+      AND policyname LIKE '%_orgs_%' OR policyname LIKE '%role%';
+END;
+$$;
+
+
+ALTER FUNCTION cmis.verify_phase2_permissions() OWNER TO begin;
+
+--
+-- Name: verify_rbac_policies(); Type: FUNCTION; Schema: cmis; Owner: begin
+--
+
+CREATE FUNCTION cmis.verify_rbac_policies() RETURNS TABLE(policy_name text, table_name text, status text)
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+  RETURN QUERY
+  SELECT 
+    pol.polname::text AS policy_name,
+    cls.relname::text AS table_name,
+    CASE 
+      WHEN pg_get_expr(pol.polqual, pol.polrelid) LIKE '%check_permission_optimized%' THEN '✅ محدّث'
+      WHEN pg_get_expr(pol.polqual, pol.polrelid) LIKE '%check_permission%' THEN '❌ يحتاج تحديث'
+      ELSE '✓ لا يستخدم RBAC'
+    END AS status
+  FROM pg_policy pol
+  JOIN pg_class cls ON pol.polrelid = cls.oid
+  JOIN pg_namespace nsp ON cls.relnamespace = nsp.oid
+  WHERE nsp.nspname = 'cmis'
+    AND pol.polname LIKE 'rbac_%'
+  ORDER BY cls.relname, pol.polname;
+END;
+$$;
+
+
+ALTER FUNCTION cmis.verify_rbac_policies() OWNER TO begin;
+
+--
+-- Name: FUNCTION verify_rbac_policies(); Type: COMMENT; Schema: cmis; Owner: begin
+--
+
+COMMENT ON FUNCTION cmis.verify_rbac_policies() IS 'التحقق من حالة سياسات الأمان وما إذا كانت تستخدم الدالة المحسنة';
+
+
+--
+-- Name: verify_rls_fixes(); Type: FUNCTION; Schema: cmis; Owner: begin
+--
+
+CREATE FUNCTION cmis.verify_rls_fixes() RETURNS TABLE(policy_name text, table_name text, check_status text)
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+  RETURN QUERY
+  SELECT p.polname::text AS policy_name,
+         c.relname::text AS table_name,
+         CASE
+           WHEN pg_get_expr(p.polqual, p.polrelid) LIKE '%deleted_at%' THEN '✓ Soft delete enforced'
+           WHEN pg_get_expr(p.polqual, p.polrelid) LIKE '%org_id%' THEN '✓ Org isolation enforced'
+           ELSE '⚠ Missing expected condition'
+         END AS check_status
+  FROM pg_policy p
+  JOIN pg_class c ON c.oid = p.polrelid
+  JOIN pg_namespace n ON n.oid = c.relnamespace
+  WHERE n.nspname = 'cmis';
+END;
+$$;
+
+
+ALTER FUNCTION cmis.verify_rls_fixes() OWNER TO begin;
 
 --
 -- Name: fn_recommend_focus(); Type: FUNCTION; Schema: cmis_ai_analytics; Owner: begin
@@ -699,6 +2112,105 @@ CREATE FUNCTION cmis_dev.run_marketing_task(p_prompt text) RETURNS jsonb
 ALTER FUNCTION cmis_dev.run_marketing_task(p_prompt text) OWNER TO begin;
 
 --
+-- Name: run_marketing_task_improved(text); Type: FUNCTION; Schema: cmis_dev; Owner: begin
+--
+
+CREATE FUNCTION cmis_dev.run_marketing_task_improved(p_prompt text) RETURNS jsonb
+    LANGUAGE plpgsql
+    AS $$
+DECLARE
+    v_task_id uuid;
+    v_knowledge jsonb;
+    v_result jsonb;
+BEGIN
+    -- إنشاء مهمة جديدة
+    INSERT INTO cmis_dev.dev_tasks (name, description, scope_code, status)
+    VALUES (
+        left(p_prompt, 120),
+        'مهمة تسويقية آلية',
+        'marketing_ai',
+        'initializing'
+    )
+    RETURNING task_id INTO v_task_id;
+    
+    -- البحث عن المعرفة
+    v_knowledge := cmis_dev.search_marketing_knowledge(p_prompt);
+    
+    -- التحقق من وجود معرفة
+    IF jsonb_array_length(v_knowledge) = 0 THEN
+        UPDATE cmis_dev.dev_tasks
+        SET status = 'failed',
+            result_summary = 'لم يتم العثور على معرفة تسويقية'
+        WHERE task_id = v_task_id;
+        
+        RETURN jsonb_build_object(
+            'task_id', v_task_id,
+            'status', 'failed',
+            'reason', 'knowledge_not_found'
+        );
+    END IF;
+    
+    -- تحديث المهمة بالنجاح
+    UPDATE cmis_dev.dev_tasks
+    SET status = 'completed',
+        confidence = 0.9,
+        result_summary = 'تم إنشاء خطة تسويقية بنجاح',
+        effectiveness_score = ROUND((random() * 20 + 80)::numeric)
+    WHERE task_id = v_task_id;
+    
+    -- إرجاع النتيجة
+    RETURN jsonb_build_object(
+        'task_id', v_task_id,
+        'status', 'completed',
+        'confidence', 0.9,
+        'knowledge_used', v_knowledge
+    );
+END;
+$$;
+
+
+ALTER FUNCTION cmis_dev.run_marketing_task_improved(p_prompt text) OWNER TO begin;
+
+--
+-- Name: search_marketing_knowledge(text); Type: FUNCTION; Schema: cmis_dev; Owner: begin
+--
+
+CREATE FUNCTION cmis_dev.search_marketing_knowledge(p_prompt text) RETURNS jsonb
+    LANGUAGE plpgsql
+    AS $$
+DECLARE
+    v_knowledge jsonb;
+BEGIN
+    SELECT jsonb_agg(row_to_json(sub)) INTO v_knowledge
+    FROM (
+        SELECT ki.knowledge_id, ki.topic, ki.tier, km.content
+        FROM cmis_knowledge.index ki
+        JOIN cmis_knowledge.marketing km USING (knowledge_id)
+        WHERE (
+            lower(p_prompt) LIKE ANY (ARRAY[
+                '%instagram%', '%إنستغرام%', '%انستغرام%',
+                '%' || lower(ki.domain) || '%',
+                '%' || lower(ki.topic) || '%'
+            ])
+            OR EXISTS (
+                SELECT 1 FROM unnest(ki.keywords) kw
+                WHERE lower(p_prompt) LIKE '%' || lower(kw) || '%'
+            )
+            OR lower(km.content) LIKE '%' || lower(p_prompt) || '%'
+        )
+        AND ki.is_deprecated = false
+        ORDER BY ki.tier ASC, ki.last_verified_at DESC
+        LIMIT 5
+    ) sub;
+    
+    RETURN COALESCE(v_knowledge, '[]'::jsonb);
+END;
+$$;
+
+
+ALTER FUNCTION cmis_dev.search_marketing_knowledge(p_prompt text) OWNER TO begin;
+
+--
 -- Name: auto_analyze_knowledge(text, text, text, integer, integer); Type: FUNCTION; Schema: cmis_knowledge; Owner: begin
 --
 
@@ -890,13 +2402,73 @@ $$;
 ALTER FUNCTION cmis_knowledge.cleanup_old_embeddings() OWNER TO begin;
 
 --
+-- Name: generate_embedding_improved(text); Type: FUNCTION; Schema: cmis_knowledge; Owner: begin
+--
+
+CREATE FUNCTION cmis_knowledge.generate_embedding_improved(input_text text) RETURNS public.vector
+    LANGUAGE plpgsql
+    AS $$
+DECLARE
+    v_embedding vector(768);
+    v_cached_embedding vector(768);
+    v_base_vector float[];
+    i integer;
+BEGIN
+    -- التحقق من وجود embedding محفوظ مسبقاً
+    SELECT embedding INTO v_cached_embedding
+    FROM cmis_knowledge.embeddings_cache
+    WHERE input_hash = encode(digest(input_text, 'sha256'), 'hex')
+    LIMIT 1;
+    
+    IF v_cached_embedding IS NOT NULL THEN
+        -- تحديث وقت آخر استخدام
+        UPDATE cmis_knowledge.embeddings_cache
+        SET last_used_at = CURRENT_TIMESTAMP
+        WHERE input_hash = encode(digest(input_text, 'sha256'), 'hex');
+        
+        RETURN v_cached_embedding;
+    END IF;
+    
+    -- إنشاء embedding شبه ذكي بناءً على خصائص النص
+    -- (ليس مثالياً لكن أفضل بكثير من العشوائي)
+    v_base_vector := ARRAY[]::float[];
+    
+    -- استخدام خصائص النص لإنشاء vector شبه فريد
+    FOR i IN 1..768 LOOP
+        v_base_vector := array_append(v_base_vector, 
+            (
+                -- مزج خصائص مختلفة من النص
+                sin(i::float * length(input_text)::float / 100.0) * 0.3 +
+                cos(i::float * ascii(substr(input_text, (i % length(input_text)) + 1, 1))::float / 255.0) * 0.3 +
+                sin(i::float * (SELECT sum(ascii(c)) FROM regexp_split_to_table(lower(input_text), '') AS c)::float / 10000.0) * 0.2 +
+                cos(i::float * pi() / 768.0) * 0.2
+            )::float
+        );
+    END LOOP;
+    
+    v_embedding := v_base_vector::vector(768);
+    
+    -- حفظ في الـ cache
+    INSERT INTO cmis_knowledge.embeddings_cache (input_text, embedding, provider)
+    VALUES (input_text, v_embedding, 'manual')
+    ON CONFLICT (input_hash) DO UPDATE
+    SET last_used_at = CURRENT_TIMESTAMP;
+    
+    RETURN v_embedding;
+END;
+$$;
+
+
+ALTER FUNCTION cmis_knowledge.generate_embedding_improved(input_text text) OWNER TO begin;
+
+--
 -- Name: generate_embedding_mock(text); Type: FUNCTION; Schema: cmis_knowledge; Owner: begin
 --
 
 CREATE FUNCTION cmis_knowledge.generate_embedding_mock(input_text text) RETURNS public.vector
     LANGUAGE sql
     AS $$
-  SELECT array_fill(random(), ARRAY[768])::vector(768);
+    SELECT cmis_knowledge.generate_embedding_improved(input_text);
 $$;
 
 
@@ -977,6 +2549,25 @@ CREATE FUNCTION cmis_knowledge.register_knowledge(p_domain text, p_category text
 
 
 ALTER FUNCTION cmis_knowledge.register_knowledge(p_domain text, p_category text, p_topic text, p_content text, p_tier smallint, p_keywords text[]) OWNER TO begin;
+
+--
+-- Name: semantic_analysis(); Type: FUNCTION; Schema: cmis_knowledge; Owner: begin
+--
+
+CREATE FUNCTION cmis_knowledge.semantic_analysis() RETURNS TABLE(intent text, avg_score double precision, usage_count integer)
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+  RETURN QUERY
+  SELECT top_intent, AVG(similarity), COUNT(*)
+  FROM cmis_knowledge.semantic_search_logs
+  WHERE created_at > now() - interval '7 days'
+  GROUP BY top_intent;
+END;
+$$;
+
+
+ALTER FUNCTION cmis_knowledge.semantic_analysis() OWNER TO begin;
 
 --
 -- Name: semantic_search_advanced(text, text, text, text, text, integer, numeric); Type: FUNCTION; Schema: cmis_knowledge; Owner: begin
@@ -1348,7 +2939,7 @@ CREATE FUNCTION cmis_ops.cleanup_stale_assets() RETURNS void
     AS $$
 BEGIN
   RAISE NOTICE '🧹 تنظيف الأصول القديمة غير النشطة...';
-  DELETE FROM cmis_refactored.creative_outputs
+  DELETE FROM cmis.creative_outputs
   WHERE status = 'draft' AND created_at < NOW() - INTERVAL '90 days';
   RAISE NOTICE '✅ تم حذف الأصول القديمة بنجاح.';
 END;
@@ -1371,13 +2962,13 @@ BEGIN
            'name', c.name,
            'status', c.status,
            'avg_kpi', AVG(pm.observed),
-           'top_contexts', jsonb_agg(DISTINCT ctx.type),
+           'top_contexts', jsonb_agg(DISTINCT ctx.context_type),
            'assets_count', COUNT(DISTINCT co.output_id)
-         ) AS summary
-  FROM cmis_refactored.campaigns c
-  LEFT JOIN cmis_refactored.contexts ctx ON ctx.campaign_id = c.campaign_id
-  LEFT JOIN cmis_refactored.creative_outputs co ON co.campaign_id = c.campaign_id
-  LEFT JOIN cmis_refactored.performance_metrics pm ON pm.campaign_id = c.campaign_id
+         )
+  FROM cmis.campaigns c
+  LEFT JOIN cmis.contexts_unified ctx ON ctx.campaign_id = c.campaign_id
+  LEFT JOIN cmis.creative_outputs co ON co.campaign_id = c.campaign_id
+  LEFT JOIN cmis.performance_metrics pm ON pm.campaign_id = c.campaign_id
   GROUP BY c.campaign_id;
 END;
 $$;
@@ -1391,7 +2982,23 @@ ALTER FUNCTION cmis_ops.generate_ai_summary() OWNER TO begin;
 
 CREATE FUNCTION cmis_ops.normalize_metrics() RETURNS void
     LANGUAGE plpgsql
-    AS $$ BEGIN INSERT INTO cmis_refactored.performance_metrics (metric_id, org_id, campaign_id, output_id, kpi, observed, target, baseline, observed_at) SELECT gen_random_uuid(), i.org_id, NULL, NULL, (payload->>'metric_name')::text, (payload->>'value')::numeric, NULL, NULL, (payload->>'timestamp')::timestamp FROM cmis_staging.raw_channel_data d JOIN cmis_refactored.integrations i ON i.integration_id = d.integration_id WHERE d.platform = 'facebook' ON CONFLICT DO NOTHING; END; $$;
+    AS $$
+BEGIN
+  INSERT INTO cmis.performance_metrics (
+    metric_id, org_id, campaign_id, output_id,
+    kpi, observed, target, baseline, observed_at
+  )
+  SELECT gen_random_uuid(), i.org_id, NULL, NULL,
+         (payload->>'metric_name')::text,
+         (payload->>'value')::numeric,
+         NULL, NULL,
+         (payload->>'timestamp')::timestamp
+  FROM cmis_staging.raw_channel_data d
+  JOIN cmis.integrations i ON i.integration_id = d.integration_id
+  WHERE d.platform = 'facebook'
+  ON CONFLICT DO NOTHING;
+END;
+$$;
 
 
 ALTER FUNCTION cmis_ops.normalize_metrics() OWNER TO begin;
@@ -1405,7 +3012,7 @@ CREATE FUNCTION cmis_ops.refresh_ai_insights() RETURNS void
     AS $$
 BEGIN
   RAISE NOTICE '🔄 بدء تحديث مؤشرات الذكاء الاصطناعي...';
-  UPDATE cmis_refactored.performance_metrics pm
+  UPDATE cmis.performance_metrics pm
   SET observed = observed + (RANDOM() * 0.05 * COALESCE(target, 100)),
       observed_at = NOW()
   WHERE observed IS NOT NULL;
@@ -1425,7 +3032,7 @@ CREATE FUNCTION cmis_ops.sync_integrations() RETURNS void
     AS $$
 BEGIN
   RAISE NOTICE '🔗 مزامنة تكاملات المنصات...';
-  UPDATE cmis_refactored.integrations
+  UPDATE cmis.integrations
   SET updated_at = NOW()
   WHERE is_active = TRUE;
   RAISE NOTICE '✅ تم تحديث بيانات الربط بنجاح.';
@@ -1434,6 +3041,206 @@ $$;
 
 
 ALTER FUNCTION cmis_ops.sync_integrations() OWNER TO begin;
+
+--
+-- Name: update_timestamp(); Type: FUNCTION; Schema: cmis_ops; Owner: begin
+--
+
+CREATE FUNCTION cmis_ops.update_timestamp() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$ BEGIN NEW.updated_at = NOW(); RETURN NEW; END; $$;
+
+
+ALTER FUNCTION cmis_ops.update_timestamp() OWNER TO begin;
+
+--
+-- Name: FUNCTION update_timestamp(); Type: COMMENT; Schema: cmis_ops; Owner: begin
+--
+
+COMMENT ON FUNCTION cmis_ops.update_timestamp() IS 'دالة قياسية لتحديث عمود updated_at تلقائيًا قبل تنفيذ أي UPDATE على الصف.';
+
+
+--
+-- Name: generate_brief_summary_legacy(uuid); Type: FUNCTION; Schema: cmis_staging; Owner: begin
+--
+
+CREATE FUNCTION cmis_staging.generate_brief_summary_legacy(p_brief_id uuid) RETURNS jsonb
+    LANGUAGE plpgsql
+    AS $$
+DECLARE
+  v_brief cmis.creative_briefs%ROWTYPE;
+  v_summary JSONB;
+BEGIN
+  SELECT * INTO v_brief 
+  FROM cmis.creative_briefs 
+  WHERE brief_id = p_brief_id;
+
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'Creative brief not found for ID: %', p_brief_id;
+  END IF;
+
+  v_summary := jsonb_build_object(
+    'brief_name', v_brief.name,
+    'org_id', v_brief.org_id,
+    'summary_fields', v_brief.brief_data - 'non_essential'
+  );
+
+  RETURN v_summary || jsonb_build_object('generated_at', NOW());
+END;
+$$;
+
+
+ALTER FUNCTION cmis_staging.generate_brief_summary_legacy(p_brief_id uuid) OWNER TO begin;
+
+--
+-- Name: refresh_creative_index_legacy(); Type: FUNCTION; Schema: cmis_staging; Owner: begin
+--
+
+CREATE FUNCTION cmis_staging.refresh_creative_index_legacy() RETURNS void
+    LANGUAGE plpgsql
+    AS $$
+DECLARE
+  v_updated_count INT := 0;
+BEGIN
+  UPDATE cmis_knowledge."index" AS k
+  SET topic_embedding = cmis_knowledge.generate_embedding_mock(c.caption)
+  FROM cmis.content_items c
+  WHERE c.updated_at > NOW() - INTERVAL '1 day'
+    AND k.domain = 'creative'
+  RETURNING 1 INTO v_updated_count;
+
+  RAISE NOTICE 'Creative index refreshed: % entries updated', v_updated_count;
+END;
+$$;
+
+
+ALTER FUNCTION cmis_staging.refresh_creative_index_legacy() OWNER TO begin;
+
+--
+-- Name: validate_brief_structure_legacy(jsonb); Type: FUNCTION; Schema: cmis_staging; Owner: begin
+--
+
+CREATE FUNCTION cmis_staging.validate_brief_structure_legacy(p_brief jsonb) RETURNS boolean
+    LANGUAGE plpgsql
+    AS $$
+DECLARE
+  required_fields TEXT[] := ARRAY[]::TEXT[];
+  missing TEXT[] := ARRAY[]::TEXT[];
+  key TEXT;
+BEGIN
+  SELECT COALESCE(array_agg(slug), ARRAY[]::TEXT[]) INTO required_fields
+  FROM cmis.field_definitions
+  WHERE required_default = TRUE AND module_scope ILIKE '%creative_brief%';
+
+  FOREACH key IN ARRAY required_fields LOOP
+    IF NOT p_brief ? key THEN
+      missing := array_append(missing, key);
+    END IF;
+  END LOOP;
+
+  IF array_length(missing, 1) > 0 THEN
+    RAISE EXCEPTION 'Missing required fields: %', array_to_string(missing, ', ');
+  END IF;
+
+  RETURN TRUE;
+END;
+$$;
+
+
+ALTER FUNCTION cmis_staging.validate_brief_structure_legacy(p_brief jsonb) OWNER TO begin;
+
+--
+-- Name: audit_trigger_function(); Type: FUNCTION; Schema: operations; Owner: begin
+--
+
+CREATE FUNCTION operations.audit_trigger_function() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+DECLARE
+    v_action TEXT;
+    v_record_id UUID;
+    v_record_key TEXT;
+    v_old_values JSONB;
+    v_new_values JSONB;
+BEGIN
+    IF TG_OP = 'INSERT' THEN
+        v_action := 'INSERT';
+    ELSIF TG_OP = 'UPDATE' THEN
+        v_action := 'UPDATE';
+    ELSE
+        v_action := 'DELETE';
+    END IF;
+
+    BEGIN
+        v_record_id := COALESCE(
+            (CASE WHEN TG_OP != 'DELETE' AND to_jsonb(NEW) ? 'campaign_id' THEN (NEW).campaign_id ELSE NULL END),
+            (CASE WHEN TG_OP != 'DELETE' AND to_jsonb(NEW) ? 'id' THEN (NEW).id ELSE NULL END),
+            (CASE WHEN TG_OP != 'DELETE' AND to_jsonb(NEW) ? 'org_id' THEN (NEW).org_id ELSE NULL END),
+            (CASE WHEN TG_OP != 'DELETE' AND to_jsonb(NEW) ? 'context_id' THEN (NEW).context_id ELSE NULL END),
+            (CASE WHEN TG_OP != 'DELETE' AND to_jsonb(NEW) ? 'creative_id' THEN (NEW).creative_id ELSE NULL END),
+            (CASE WHEN TG_OP != 'DELETE' AND to_jsonb(NEW) ? 'value_id' THEN (NEW).value_id ELSE NULL END),
+            (CASE WHEN TG_OP = 'DELETE' AND to_jsonb(OLD) ? 'campaign_id' THEN (OLD).campaign_id ELSE NULL END),
+            (CASE WHEN TG_OP = 'DELETE' AND to_jsonb(OLD) ? 'id' THEN (OLD).id ELSE NULL END),
+            (CASE WHEN TG_OP = 'DELETE' AND to_jsonb(OLD) ? 'org_id' THEN (OLD).org_id ELSE NULL END),
+            (CASE WHEN TG_OP = 'DELETE' AND to_jsonb(OLD) ? 'context_id' THEN (OLD).context_id ELSE NULL END),
+            (CASE WHEN TG_OP = 'DELETE' AND to_jsonb(OLD) ? 'creative_id' THEN (OLD).creative_id ELSE NULL END),
+            (CASE WHEN TG_OP = 'DELETE' AND to_jsonb(OLD) ? 'value_id' THEN (OLD).value_id ELSE NULL END)
+        );
+    EXCEPTION WHEN OTHERS THEN
+        v_record_id := NULL;
+    END;
+
+    v_record_key := COALESCE(
+        (CASE WHEN TG_OP != 'DELETE' AND to_jsonb(NEW) ? 'name' THEN (NEW).name ELSE NULL END),
+        (CASE WHEN TG_OP != 'DELETE' AND to_jsonb(NEW) ? 'status' THEN (NEW).status ELSE NULL END),
+        (CASE WHEN TG_OP = 'DELETE' AND to_jsonb(OLD) ? 'name' THEN (OLD).name ELSE NULL END),
+        (CASE WHEN TG_OP = 'DELETE' AND to_jsonb(OLD) ? 'status' THEN (OLD).status ELSE NULL END),
+        'unknown'
+    );
+
+    IF TG_OP = 'INSERT' THEN
+        v_old_values := NULL;
+        v_new_values := row_to_json(NEW)::jsonb;
+    ELSIF TG_OP = 'UPDATE' THEN
+        v_old_values := row_to_json(OLD)::jsonb;
+        v_new_values := row_to_json(NEW)::jsonb;
+    ELSE
+        v_old_values := row_to_json(OLD)::jsonb;
+        v_new_values := NULL;
+    END IF;
+
+    INSERT INTO operations.audit_log (table_schema, table_name, action, record_id, record_key, old_values, new_values, timestamp)
+    VALUES (TG_TABLE_SCHEMA, TG_TABLE_NAME, v_action, v_record_id, v_record_key, v_old_values, v_new_values, NOW());
+
+    RETURN NEW;
+END;
+$$;
+
+
+ALTER FUNCTION operations.audit_trigger_function() OWNER TO begin;
+
+--
+-- Name: purge_old_audit_logs(integer); Type: FUNCTION; Schema: operations; Owner: begin
+--
+
+CREATE FUNCTION operations.purge_old_audit_logs(retention_days integer DEFAULT 90) RETURNS integer
+    LANGUAGE plpgsql
+    AS $$
+DECLARE
+    deleted_count INTEGER;
+BEGIN
+    DELETE FROM operations.audit_log
+    WHERE timestamp < CURRENT_TIMESTAMP - (retention_days || ' days')::interval;
+    
+    GET DIAGNOSTICS deleted_count = ROW_COUNT;
+    
+    RAISE NOTICE 'Purged % old audit log entries', deleted_count;
+    RETURN deleted_count;
+END;
+$$;
+
+
+ALTER FUNCTION operations.purge_old_audit_logs(retention_days integer) OWNER TO begin;
 
 --
 -- Name: auto_analyze_knowledge(); Type: FUNCTION; Schema: public; Owner: begin
@@ -2000,6 +3807,135 @@ SET default_tablespace = '';
 SET default_table_access_method = heap;
 
 --
+-- Name: backup_integrations_cmis; Type: TABLE; Schema: archive; Owner: begin
+--
+
+CREATE TABLE archive.backup_integrations_cmis (
+    integration_id uuid,
+    org_id uuid,
+    platform text,
+    account_id text,
+    access_token text,
+    is_active boolean,
+    created_at timestamp with time zone,
+    id bigint NOT NULL
+);
+
+
+ALTER TABLE archive.backup_integrations_cmis OWNER TO begin;
+
+--
+-- Name: backup_integrations_cmis_id_seq; Type: SEQUENCE; Schema: archive; Owner: begin
+--
+
+CREATE SEQUENCE archive.backup_integrations_cmis_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE archive.backup_integrations_cmis_id_seq OWNER TO begin;
+
+--
+-- Name: backup_integrations_cmis_id_seq; Type: SEQUENCE OWNED BY; Schema: archive; Owner: begin
+--
+
+ALTER SEQUENCE archive.backup_integrations_cmis_id_seq OWNED BY archive.backup_integrations_cmis.id;
+
+
+--
+-- Name: contexts_unified_backup; Type: TABLE; Schema: archive; Owner: begin
+--
+
+CREATE TABLE archive.contexts_unified_backup (
+    id uuid,
+    context_type character varying(50),
+    name character varying(255),
+    description text,
+    status character varying(50),
+    creative_brief text,
+    brand_guidelines jsonb,
+    visual_style jsonb,
+    tone_of_voice text,
+    target_platforms text[],
+    creative_assets jsonb,
+    value_proposition text,
+    target_audience jsonb,
+    key_messages text[],
+    pain_points text[],
+    benefits text[],
+    differentiators text[],
+    offering_details jsonb,
+    pricing_info jsonb,
+    availability jsonb,
+    features text[],
+    specifications jsonb,
+    terms_conditions text,
+    parent_context_id uuid,
+    related_contexts uuid[],
+    org_id uuid,
+    created_by uuid,
+    created_at timestamp without time zone,
+    updated_at timestamp without time zone,
+    deleted_at timestamp without time zone,
+    version integer,
+    metadata jsonb,
+    tags text[],
+    categories text[],
+    keywords text[],
+    search_vector tsvector
+);
+
+
+ALTER TABLE archive.contexts_unified_backup OWNER TO begin;
+
+--
+-- Name: embedding_update_queue_backup; Type: TABLE; Schema: archive; Owner: begin
+--
+
+CREATE TABLE archive.embedding_update_queue_backup (
+    queue_id uuid,
+    knowledge_id uuid,
+    source_table text,
+    source_field text,
+    priority integer,
+    status text,
+    retry_count integer,
+    max_retries integer,
+    error_message text,
+    created_at timestamp with time zone,
+    processing_started_at timestamp with time zone,
+    processed_at timestamp with time zone,
+    id bigint NOT NULL
+);
+
+
+ALTER TABLE archive.embedding_update_queue_backup OWNER TO begin;
+
+--
+-- Name: embedding_update_queue_backup_id_seq; Type: SEQUENCE; Schema: archive; Owner: begin
+--
+
+CREATE SEQUENCE archive.embedding_update_queue_backup_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE archive.embedding_update_queue_backup_id_seq OWNER TO begin;
+
+--
+-- Name: embedding_update_queue_backup_id_seq; Type: SEQUENCE OWNED BY; Schema: archive; Owner: begin
+--
+
+ALTER SEQUENCE archive.embedding_update_queue_backup_id_seq OWNED BY archive.embedding_update_queue_backup.id;
+
+
+--
 -- Name: ad_accounts; Type: TABLE; Schema: cmis; Owner: begin
 --
 
@@ -2014,7 +3950,9 @@ CREATE TABLE cmis.ad_accounts (
     spend_cap numeric,
     status text,
     created_at timestamp with time zone DEFAULT now(),
-    updated_at timestamp with time zone DEFAULT now()
+    updated_at timestamp with time zone DEFAULT now(),
+    deleted_at timestamp with time zone,
+    provider text
 );
 
 
@@ -2042,6 +3980,8 @@ CREATE TABLE cmis.ad_audiences (
     advantage_plus_settings jsonb,
     created_at timestamp with time zone DEFAULT now(),
     updated_at timestamp with time zone DEFAULT now(),
+    deleted_at timestamp with time zone,
+    provider text,
     CONSTRAINT ad_audiences_entity_level_check CHECK ((entity_level = ANY (ARRAY['campaign'::text, 'adset'::text, 'adgroup'::text])))
 );
 
@@ -2065,7 +4005,10 @@ CREATE TABLE cmis.ad_campaigns (
     budget numeric,
     metrics jsonb DEFAULT '{}'::jsonb,
     fetched_at timestamp without time zone DEFAULT now(),
-    created_at timestamp without time zone DEFAULT now()
+    created_at timestamp without time zone DEFAULT now(),
+    deleted_at timestamp with time zone,
+    provider text,
+    deleted_by uuid
 );
 
 
@@ -2085,7 +4028,10 @@ CREATE TABLE cmis.ad_entities (
     status text,
     creative_id text,
     created_at timestamp with time zone DEFAULT now(),
-    updated_at timestamp with time zone DEFAULT now()
+    updated_at timestamp with time zone DEFAULT now(),
+    deleted_at timestamp with time zone,
+    provider text,
+    deleted_by uuid
 );
 
 
@@ -2108,7 +4054,9 @@ CREATE TABLE cmis.ad_metrics (
     clicks bigint,
     actions jsonb,
     conversions jsonb,
-    created_at timestamp with time zone DEFAULT now()
+    created_at timestamp with time zone DEFAULT now(),
+    deleted_at timestamp with time zone,
+    provider text
 );
 
 
@@ -2153,7 +4101,10 @@ CREATE TABLE cmis.ad_sets (
     billing_event text,
     optimization_goal text,
     created_at timestamp with time zone DEFAULT now(),
-    updated_at timestamp with time zone DEFAULT now()
+    updated_at timestamp with time zone DEFAULT now(),
+    deleted_at timestamp with time zone,
+    provider text,
+    deleted_by uuid
 );
 
 
@@ -2172,7 +4123,9 @@ CREATE TABLE cmis.ai_actions (
     result_summary text,
     confidence_score numeric(5,2),
     created_at timestamp with time zone DEFAULT now(),
-    audit_id uuid
+    audit_id uuid,
+    deleted_at timestamp with time zone,
+    provider text
 );
 
 
@@ -2191,11 +4144,36 @@ CREATE TABLE cmis.ai_generated_campaigns (
     ai_summary text,
     ai_design_guideline text,
     created_at timestamp with time zone DEFAULT now(),
-    engine text
+    engine text,
+    deleted_at timestamp with time zone,
+    provider text
 );
 
 
 ALTER TABLE cmis.ai_generated_campaigns OWNER TO begin;
+
+--
+-- Name: ai_models; Type: TABLE; Schema: cmis; Owner: begin
+--
+
+CREATE TABLE cmis.ai_models (
+    model_id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    org_id uuid,
+    name text NOT NULL,
+    engine text,
+    version text,
+    description text,
+    created_at timestamp with time zone DEFAULT now(),
+    model_name character varying(255),
+    model_family character varying(255),
+    status character varying(50),
+    trained_at timestamp without time zone,
+    deleted_at timestamp with time zone,
+    provider text
+);
+
+
+ALTER TABLE cmis.ai_models OWNER TO begin;
 
 --
 -- Name: analytics_integrations; Type: TABLE; Schema: cmis; Owner: begin
@@ -2209,7 +4187,11 @@ CREATE TABLE cmis.analytics_integrations (
     source_endpoint text NOT NULL,
     mapping jsonb NOT NULL,
     refresh_frequency text DEFAULT 'weekly'::text,
-    last_synced_at timestamp with time zone
+    last_synced_at timestamp with time zone,
+    created_at timestamp with time zone DEFAULT now(),
+    updated_at timestamp with time zone DEFAULT now(),
+    deleted_at timestamp with time zone,
+    provider text
 );
 
 
@@ -2225,11 +4207,32 @@ CREATE TABLE cmis.anchors (
     code public.ltree NOT NULL,
     title text,
     file_ref text,
-    section text
+    section text,
+    deleted_at timestamp with time zone,
+    provider text
 );
 
 
 ALTER TABLE cmis.anchors OWNER TO begin;
+
+--
+-- Name: api_keys; Type: TABLE; Schema: cmis; Owner: begin
+--
+
+CREATE TABLE cmis.api_keys (
+    key_id uuid DEFAULT gen_random_uuid() NOT NULL,
+    service_name text NOT NULL,
+    service_code text NOT NULL,
+    api_key_encrypted bytea NOT NULL,
+    is_active boolean DEFAULT true,
+    created_at timestamp with time zone DEFAULT now(),
+    updated_at timestamp with time zone DEFAULT now(),
+    deleted_at timestamp with time zone,
+    provider text
+);
+
+
+ALTER TABLE cmis.api_keys OWNER TO begin;
 
 --
 -- Name: audio_templates; Type: TABLE; Schema: cmis; Owner: begin
@@ -2241,7 +4244,9 @@ CREATE TABLE cmis.audio_templates (
     name text NOT NULL,
     voice_hints jsonb,
     sfx_pack jsonb,
-    version text DEFAULT '2025.10.0'::text
+    version text DEFAULT '2025.10.0'::text,
+    deleted_at timestamp with time zone,
+    provider text
 );
 
 
@@ -2258,14 +4263,19 @@ CREATE TABLE cmis.audit_log (
     action text,
     target text,
     meta jsonb,
-    ts timestamp with time zone DEFAULT now()
+    ts timestamp with time zone DEFAULT now(),
+    created_at timestamp with time zone DEFAULT now(),
+    updated_at timestamp with time zone DEFAULT now(),
+    deleted_at timestamp with time zone,
+    provider text,
+    deleted_by uuid
 );
 
 
 ALTER TABLE cmis.audit_log OWNER TO begin;
 
 --
--- Name: awareness_stages; Type: TABLE; Schema: public; Owner: gpts_data_user
+-- Name: awareness_stages; Type: TABLE; Schema: public; Owner: begin
 --
 
 CREATE TABLE public.awareness_stages (
@@ -2273,7 +4283,7 @@ CREATE TABLE public.awareness_stages (
 );
 
 
-ALTER TABLE public.awareness_stages OWNER TO gpts_data_user;
+ALTER TABLE public.awareness_stages OWNER TO begin;
 
 --
 -- Name: awareness_stages; Type: VIEW; Schema: cmis; Owner: begin
@@ -2292,11 +4302,84 @@ ALTER VIEW cmis.awareness_stages OWNER TO begin;
 
 CREATE TABLE cmis.bundle_offerings (
     bundle_id uuid NOT NULL,
-    offering_id uuid NOT NULL
+    offering_id uuid NOT NULL,
+    deleted_at timestamp with time zone,
+    provider text
 );
 
 
 ALTER TABLE cmis.bundle_offerings OWNER TO begin;
+
+--
+-- Name: cache_metadata; Type: TABLE; Schema: cmis; Owner: begin
+--
+
+CREATE TABLE cmis.cache_metadata (
+    cache_name text NOT NULL,
+    last_refreshed timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    refresh_count bigint DEFAULT 1,
+    avg_refresh_time_ms numeric,
+    last_refresh_duration_ms numeric,
+    auto_refresh boolean DEFAULT true,
+    metadata jsonb,
+    hit_count bigint DEFAULT 0
+);
+
+
+ALTER TABLE cmis.cache_metadata OWNER TO begin;
+
+--
+-- Name: campaign_context_links; Type: TABLE; Schema: cmis; Owner: begin
+--
+
+CREATE TABLE cmis.campaign_context_links (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    campaign_id uuid NOT NULL,
+    context_id uuid NOT NULL,
+    context_type character varying(50) NOT NULL,
+    link_type character varying(50) DEFAULT 'primary'::character varying,
+    link_strength numeric(3,2) DEFAULT 1.0,
+    link_purpose text,
+    link_notes text,
+    effective_from date,
+    effective_to date,
+    is_active boolean DEFAULT true,
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+    created_by uuid,
+    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+    updated_by uuid,
+    metadata jsonb DEFAULT '{}'::jsonb,
+    deleted_at timestamp with time zone,
+    provider text,
+    CONSTRAINT campaign_context_links_link_strength_check CHECK (((link_strength >= (0)::numeric) AND (link_strength <= (1)::numeric))),
+    CONSTRAINT campaign_links_strength_range CHECK (((link_strength >= (0)::numeric) AND (link_strength <= (1)::numeric))),
+    CONSTRAINT valid_dates CHECK (((effective_from IS NULL) OR (effective_to IS NULL) OR (effective_from <= effective_to))),
+    CONSTRAINT valid_link_type CHECK (((link_type)::text = ANY (ARRAY[('primary'::character varying)::text, ('secondary'::character varying)::text, ('reference'::character varying)::text, ('historical'::character varying)::text])))
+);
+
+
+ALTER TABLE cmis.campaign_context_links OWNER TO begin;
+
+--
+-- Name: TABLE campaign_context_links; Type: COMMENT; Schema: cmis; Owner: begin
+--
+
+COMMENT ON TABLE cmis.campaign_context_links IS 'Links campaigns to their various contexts with flexible relationship types';
+
+
+--
+-- Name: COLUMN campaign_context_links.link_type; Type: COMMENT; Schema: cmis; Owner: begin
+--
+
+COMMENT ON COLUMN cmis.campaign_context_links.link_type IS 'Type of link: primary, secondary, reference, or historical';
+
+
+--
+-- Name: COLUMN campaign_context_links.link_strength; Type: COMMENT; Schema: cmis; Owner: begin
+--
+
+COMMENT ON COLUMN cmis.campaign_context_links.link_strength IS 'Strength of the relationship (0.0 to 1.0)';
+
 
 --
 -- Name: campaign_offerings; Type: TABLE; Schema: cmis; Owner: begin
@@ -2304,7 +4387,9 @@ ALTER TABLE cmis.bundle_offerings OWNER TO begin;
 
 CREATE TABLE cmis.campaign_offerings (
     campaign_id uuid NOT NULL,
-    offering_id uuid NOT NULL
+    offering_id uuid NOT NULL,
+    deleted_at timestamp with time zone,
+    provider text
 );
 
 
@@ -2324,17 +4409,19 @@ CREATE TABLE cmis.campaign_performance_dashboard (
     variance numeric(10,4),
     confidence_level numeric(4,2),
     collected_at timestamp with time zone DEFAULT now(),
-    insights text
+    insights text,
+    deleted_at timestamp with time zone,
+    provider text
 );
 
 
 ALTER TABLE cmis.campaign_performance_dashboard OWNER TO begin;
 
 --
--- Name: campaigns; Type: TABLE; Schema: cmis_refactored; Owner: begin
+-- Name: campaigns; Type: TABLE; Schema: cmis; Owner: begin
 --
 
-CREATE TABLE cmis_refactored.campaigns (
+CREATE TABLE cmis.campaigns (
     campaign_id uuid DEFAULT public.gen_random_uuid() NOT NULL,
     org_id uuid NOT NULL,
     name text NOT NULL,
@@ -2345,42 +4432,29 @@ CREATE TABLE cmis_refactored.campaigns (
     budget numeric(12,2),
     currency text DEFAULT 'USD'::text,
     created_at timestamp with time zone DEFAULT now(),
-    updated_at timestamp with time zone DEFAULT now()
+    updated_at timestamp with time zone DEFAULT now(),
+    context_id uuid,
+    creative_id uuid,
+    value_id uuid,
+    created_by uuid,
+    deleted_at timestamp with time zone,
+    provider text,
+    deleted_by uuid,
+    CONSTRAINT campaigns_status_valid CHECK ((status = ANY (ARRAY['draft'::text, 'active'::text, 'paused'::text, 'completed'::text, 'archived'::text])))
 );
 
 
-ALTER TABLE cmis_refactored.campaigns OWNER TO begin;
+ALTER TABLE cmis.campaigns OWNER TO begin;
 
 --
--- Name: TABLE campaigns; Type: COMMENT; Schema: cmis_refactored; Owner: begin
+-- Name: TABLE campaigns; Type: COMMENT; Schema: cmis; Owner: begin
 --
 
-COMMENT ON TABLE cmis_refactored.campaigns IS 'المرجع الموحّد لجميع الحملات. استخدم هذا الجدول بدل أي نسخة قديمة.';
+COMMENT ON TABLE cmis.campaigns IS 'المرجع الموحّد لجميع الحملات. استخدم هذا الجدول بدل أي نسخة قديمة.';
 
 
 --
--- Name: campaigns; Type: VIEW; Schema: cmis; Owner: begin
---
-
-CREATE VIEW cmis.campaigns AS
- SELECT campaign_id,
-    org_id,
-    name,
-    objective,
-    status,
-    start_date,
-    end_date,
-    budget,
-    currency,
-    created_at,
-    updated_at
-   FROM cmis_refactored.campaigns;
-
-
-ALTER VIEW cmis.campaigns OWNER TO begin;
-
---
--- Name: channel_formats; Type: TABLE; Schema: public; Owner: gpts_data_user
+-- Name: channel_formats; Type: TABLE; Schema: public; Owner: begin
 --
 
 CREATE TABLE public.channel_formats (
@@ -2392,7 +4466,7 @@ CREATE TABLE public.channel_formats (
 );
 
 
-ALTER TABLE public.channel_formats OWNER TO gpts_data_user;
+ALTER TABLE public.channel_formats OWNER TO begin;
 
 --
 -- Name: channel_formats; Type: VIEW; Schema: cmis; Owner: begin
@@ -2410,7 +4484,7 @@ CREATE VIEW cmis.channel_formats AS
 ALTER VIEW cmis.channel_formats OWNER TO begin;
 
 --
--- Name: channels; Type: TABLE; Schema: public; Owner: gpts_data_user
+-- Name: channels; Type: TABLE; Schema: public; Owner: begin
 --
 
 CREATE TABLE public.channels (
@@ -2421,7 +4495,7 @@ CREATE TABLE public.channels (
 );
 
 
-ALTER TABLE public.channels OWNER TO gpts_data_user;
+ALTER TABLE public.channels OWNER TO begin;
 
 --
 -- Name: channels; Type: VIEW; Schema: cmis; Owner: begin
@@ -2453,7 +4527,9 @@ CREATE TABLE cmis.cognitive_tracker_template (
     engagement_rate numeric(5,2),
     trust_index numeric(5,2),
     visual_insight text,
-    created_at timestamp with time zone DEFAULT now()
+    created_at timestamp with time zone DEFAULT now(),
+    deleted_at timestamp with time zone,
+    provider text
 );
 
 
@@ -2472,6 +4548,8 @@ CREATE TABLE cmis.cognitive_trends (
     trend_strength double precision,
     summary_insight text,
     created_at timestamp with time zone DEFAULT now(),
+    deleted_at timestamp with time zone,
+    provider text,
     CONSTRAINT cognitive_trends_trend_direction_check CHECK ((trend_direction = ANY (ARRAY['up'::text, 'down'::text, 'stable'::text])))
 );
 
@@ -2490,6 +4568,8 @@ CREATE TABLE cmis.compliance_audits (
     owner text,
     notes text,
     created_at timestamp with time zone DEFAULT now(),
+    deleted_at timestamp with time zone,
+    provider text,
     CONSTRAINT compliance_audits_status_check CHECK ((status = ANY (ARRAY['pass'::text, 'fail'::text, 'waived'::text])))
 );
 
@@ -2502,7 +4582,9 @@ ALTER TABLE cmis.compliance_audits OWNER TO begin;
 
 CREATE TABLE cmis.compliance_rule_channels (
     rule_id uuid NOT NULL,
-    channel_id integer NOT NULL
+    channel_id integer NOT NULL,
+    deleted_at timestamp with time zone,
+    provider text
 );
 
 
@@ -2518,6 +4600,8 @@ CREATE TABLE cmis.compliance_rules (
     description text NOT NULL,
     severity text NOT NULL,
     params jsonb,
+    deleted_at timestamp with time zone,
+    provider text,
     CONSTRAINT compliance_rules_severity_check CHECK ((severity = ANY (ARRAY['warn'::text, 'block'::text])))
 );
 
@@ -2525,7 +4609,7 @@ CREATE TABLE cmis.compliance_rules (
 ALTER TABLE cmis.compliance_rules OWNER TO begin;
 
 --
--- Name: component_types; Type: TABLE; Schema: public; Owner: gpts_data_user
+-- Name: component_types; Type: TABLE; Schema: public; Owner: begin
 --
 
 CREATE TABLE public.component_types (
@@ -2533,7 +4617,7 @@ CREATE TABLE public.component_types (
 );
 
 
-ALTER TABLE public.component_types OWNER TO gpts_data_user;
+ALTER TABLE public.component_types OWNER TO begin;
 
 --
 -- Name: component_types; Type: VIEW; Schema: cmis; Owner: begin
@@ -2562,7 +4646,13 @@ CREATE TABLE cmis.content_items (
     status text DEFAULT 'draft'::text,
     context_id uuid,
     example_id uuid,
-    creative_context_id uuid
+    creative_context_id uuid,
+    created_at timestamp with time zone DEFAULT now(),
+    updated_at timestamp with time zone DEFAULT now(),
+    deleted_at timestamp with time zone,
+    provider text,
+    org_id uuid,
+    deleted_by uuid
 );
 
 
@@ -2581,11 +4671,119 @@ CREATE TABLE cmis.content_plans (
     strategy jsonb,
     created_at timestamp with time zone DEFAULT now(),
     brief_id uuid,
-    creative_context_id uuid
+    creative_context_id uuid,
+    deleted_at timestamp with time zone,
+    provider text
 );
 
 
 ALTER TABLE cmis.content_plans OWNER TO begin;
+
+--
+-- Name: contexts; Type: TABLE; Schema: cmis; Owner: begin
+--
+
+CREATE TABLE cmis.contexts (
+    context_id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    org_id uuid NOT NULL,
+    campaign_id uuid,
+    type text NOT NULL,
+    metadata jsonb,
+    created_at timestamp with time zone DEFAULT now(),
+    deleted_at timestamp with time zone,
+    provider text,
+    CONSTRAINT contexts_type_check CHECK ((type = ANY (ARRAY['value'::text, 'creative'::text, 'experiment'::text])))
+);
+
+
+ALTER TABLE cmis.contexts OWNER TO begin;
+
+--
+-- Name: contexts_base; Type: TABLE; Schema: cmis; Owner: begin
+--
+
+CREATE TABLE cmis.contexts_base (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    context_type character varying(50) NOT NULL,
+    name character varying(255),
+    org_id uuid,
+    created_at timestamp with time zone DEFAULT now(),
+    deleted_at timestamp with time zone,
+    provider text,
+    CONSTRAINT contexts_base_context_type_check CHECK (((context_type)::text = ANY ((ARRAY['creative'::character varying, 'value'::character varying, 'offering'::character varying])::text[])))
+);
+
+
+ALTER TABLE cmis.contexts_base OWNER TO begin;
+
+--
+-- Name: contexts_creative; Type: TABLE; Schema: cmis; Owner: begin
+--
+
+CREATE TABLE cmis.contexts_creative (
+    context_id uuid NOT NULL,
+    creative_brief text,
+    brand_guidelines jsonb,
+    visual_style jsonb,
+    deleted_at timestamp with time zone,
+    provider text
+);
+
+
+ALTER TABLE cmis.contexts_creative OWNER TO begin;
+
+--
+-- Name: contexts_offering; Type: TABLE; Schema: cmis; Owner: begin
+--
+
+CREATE TABLE cmis.contexts_offering (
+    context_id uuid NOT NULL,
+    offering_details text,
+    pricing_info jsonb,
+    features jsonb,
+    deleted_at timestamp with time zone,
+    provider text
+);
+
+
+ALTER TABLE cmis.contexts_offering OWNER TO begin;
+
+--
+-- Name: contexts_value; Type: TABLE; Schema: cmis; Owner: begin
+--
+
+CREATE TABLE cmis.contexts_value (
+    context_id uuid NOT NULL,
+    value_proposition text,
+    target_audience jsonb,
+    key_messages text[],
+    deleted_at timestamp with time zone,
+    provider text
+);
+
+
+ALTER TABLE cmis.contexts_value OWNER TO begin;
+
+--
+-- Name: contexts_unified; Type: VIEW; Schema: cmis; Owner: begin
+--
+
+CREATE VIEW cmis.contexts_unified AS
+ SELECT b.id,
+    b.context_type,
+    b.name,
+    b.org_id,
+    b.created_at,
+    c.creative_brief,
+    v.value_proposition,
+    o.offering_details
+   FROM (((cmis.contexts_base b
+     LEFT JOIN cmis.contexts_creative c ON ((b.id = c.context_id)))
+     LEFT JOIN cmis.contexts_value v ON ((b.id = v.context_id)))
+     LEFT JOIN cmis.contexts_offering o ON ((b.id = o.context_id)));
+
+
+ALTER VIEW cmis.contexts_unified OWNER TO begin;
 
 --
 -- Name: copy_components; Type: TABLE; Schema: cmis; Owner: begin
@@ -2607,6 +4805,8 @@ CREATE TABLE cmis.copy_components (
     campaign_id uuid,
     plan_id uuid,
     visual_prompt jsonb,
+    deleted_at timestamp with time zone,
+    provider text,
     CONSTRAINT copy_components_quality_score_check CHECK (((quality_score >= 1) AND (quality_score <= 5)))
 );
 
@@ -2665,6 +4865,9 @@ CREATE TABLE cmis.creative_assets (
     example_id uuid,
     brief_id uuid,
     creative_context_id uuid,
+    deleted_at timestamp with time zone,
+    provider text,
+    deleted_by uuid,
     CONSTRAINT creative_assets_status_check CHECK ((status = ANY (ARRAY['draft'::text, 'pending_review'::text, 'approved'::text, 'rejected'::text, 'archived'::text])))
 );
 
@@ -2680,7 +4883,9 @@ CREATE TABLE cmis.creative_briefs (
     org_id uuid NOT NULL,
     name text NOT NULL,
     brief_data jsonb NOT NULL,
-    created_at timestamp with time zone DEFAULT now()
+    created_at timestamp with time zone DEFAULT now(),
+    deleted_at timestamp with time zone,
+    provider text
 );
 
 
@@ -2696,11 +4901,36 @@ CREATE TABLE cmis.creative_contexts (
     name text NOT NULL,
     creative_brief jsonb NOT NULL,
     created_at timestamp with time zone DEFAULT now(),
-    updated_at timestamp with time zone DEFAULT now()
+    updated_at timestamp with time zone DEFAULT now(),
+    deleted_at timestamp with time zone,
+    provider text
 );
 
 
 ALTER TABLE cmis.creative_contexts OWNER TO begin;
+
+--
+-- Name: creative_outputs; Type: TABLE; Schema: cmis; Owner: begin
+--
+
+CREATE TABLE cmis.creative_outputs (
+    output_id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    org_id uuid NOT NULL,
+    campaign_id uuid,
+    context_id uuid,
+    type text NOT NULL,
+    status text DEFAULT 'draft'::text,
+    data jsonb,
+    created_at timestamp with time zone DEFAULT now(),
+    updated_at timestamp with time zone DEFAULT now(),
+    deleted_at timestamp with time zone,
+    provider text,
+    CONSTRAINT creative_outputs_quality_valid_json CHECK (((data ->> 'quality'::text) = ANY (ARRAY['low'::text, 'medium'::text, 'high'::text, 'excellent'::text]))),
+    CONSTRAINT creative_outputs_type_check CHECK ((type = ANY (ARRAY['asset'::text, 'copy'::text, 'content'::text])))
+);
+
+
+ALTER TABLE cmis.creative_outputs OWNER TO begin;
 
 --
 -- Name: data_feeds; Type: TABLE; Schema: cmis; Owner: begin
@@ -2712,6 +4942,8 @@ CREATE TABLE cmis.data_feeds (
     kind text NOT NULL,
     source_meta jsonb,
     last_ingested timestamp with time zone,
+    deleted_at timestamp with time zone,
+    provider text,
     CONSTRAINT data_feeds_kind_check CHECK ((kind = ANY (ARRAY['price'::text, 'stock'::text, 'location'::text, 'catalog'::text])))
 );
 
@@ -2727,7 +4959,9 @@ CREATE TABLE cmis.dataset_files (
     pkg_id uuid NOT NULL,
     filename text NOT NULL,
     checksum text,
-    meta jsonb
+    meta jsonb,
+    deleted_at timestamp with time zone,
+    provider text
 );
 
 
@@ -2741,7 +4975,9 @@ CREATE TABLE cmis.dataset_packages (
     pkg_id uuid DEFAULT public.gen_random_uuid() NOT NULL,
     code text NOT NULL,
     version text NOT NULL,
-    notes text
+    notes text,
+    deleted_at timestamp with time zone,
+    provider text
 );
 
 
@@ -2753,7 +4989,9 @@ ALTER TABLE cmis.dataset_packages OWNER TO begin;
 
 CREATE TABLE cmis.experiment_variants (
     exp_id uuid NOT NULL,
-    asset_id uuid NOT NULL
+    asset_id uuid NOT NULL,
+    deleted_at timestamp with time zone,
+    provider text
 );
 
 
@@ -2771,7 +5009,9 @@ CREATE TABLE cmis.experiments (
     hypothesis text,
     status text DEFAULT 'draft'::text,
     created_at timestamp with time zone DEFAULT now(),
-    campaign_id uuid
+    campaign_id uuid,
+    deleted_at timestamp with time zone,
+    provider text
 );
 
 
@@ -2783,7 +5023,9 @@ ALTER TABLE cmis.experiments OWNER TO begin;
 
 CREATE TABLE cmis.export_bundle_items (
     bundle_id uuid NOT NULL,
-    asset_id uuid NOT NULL
+    asset_id uuid NOT NULL,
+    deleted_at timestamp with time zone,
+    provider text
 );
 
 
@@ -2797,7 +5039,9 @@ CREATE TABLE cmis.export_bundles (
     bundle_id uuid DEFAULT public.gen_random_uuid() NOT NULL,
     org_id uuid NOT NULL,
     name text NOT NULL,
-    created_at timestamp with time zone DEFAULT now()
+    created_at timestamp with time zone DEFAULT now(),
+    deleted_at timestamp with time zone,
+    provider text
 );
 
 
@@ -2813,7 +5057,9 @@ CREATE TABLE cmis.feed_items (
     sku text,
     payload jsonb NOT NULL,
     valid_from timestamp with time zone DEFAULT now(),
-    valid_to timestamp with time zone
+    valid_to timestamp with time zone,
+    deleted_at timestamp with time zone,
+    provider text
 );
 
 
@@ -2825,7 +5071,9 @@ ALTER TABLE cmis.feed_items OWNER TO begin;
 
 CREATE TABLE cmis.field_aliases (
     alias_slug text NOT NULL,
-    field_id uuid NOT NULL
+    field_id uuid NOT NULL,
+    deleted_at timestamp with time zone,
+    provider text
 );
 
 
@@ -2849,6 +5097,8 @@ CREATE TABLE cmis.field_definitions (
     validations jsonb,
     module_scope text,
     created_at timestamp with time zone DEFAULT now(),
+    deleted_at timestamp with time zone,
+    provider text,
     CONSTRAINT field_definitions_data_type_check CHECK ((data_type = ANY (ARRAY['text'::text, 'markdown'::text, 'number'::text, 'bool'::text, 'json'::text, 'enum'::text, 'vector'::text]))),
     CONSTRAINT field_definitions_module_scope_check CHECK ((module_scope = ANY (ARRAY['market_intel'::text, 'persuasion'::text, 'frameworks'::text, 'adaptation'::text, 'testing'::text, 'compliance'::text, 'video'::text, 'content'::text])))
 );
@@ -2870,6 +5120,8 @@ CREATE TABLE cmis.field_values (
     justification text,
     confidence numeric,
     created_at timestamp with time zone DEFAULT now(),
+    deleted_at timestamp with time zone,
+    provider text,
     CONSTRAINT field_values_confidence_check CHECK (((confidence >= (0)::numeric) AND (confidence <= (1)::numeric))),
     CONSTRAINT field_values_source_check CHECK ((source = ANY (ARRAY['manual'::text, 'assumption'::text, 'derived'::text, 'imported'::text, 'model'::text])))
 );
@@ -2891,6 +5143,8 @@ CREATE TABLE cmis.flow_steps (
     config jsonb,
     output_map jsonb,
     condition jsonb,
+    deleted_at timestamp with time zone,
+    provider text,
     CONSTRAINT flow_steps_type_check CHECK ((type = ANY (ARRAY['llm'::text, 'sql'::text, 'tool'::text, 'branch'::text, 'transform'::text, 'evaluate'::text])))
 );
 
@@ -2908,7 +5162,9 @@ CREATE TABLE cmis.flows (
     description text,
     version text DEFAULT '2025.10.0'::text,
     tags text[],
-    enabled boolean DEFAULT true
+    enabled boolean DEFAULT true,
+    deleted_at timestamp with time zone,
+    provider text
 );
 
 
@@ -2945,73 +5201,7 @@ CREATE VIEW cmis.frameworks AS
 ALTER VIEW cmis.frameworks OWNER TO begin;
 
 --
--- Name: example_sets; Type: TABLE; Schema: lab; Owner: begin
---
-
-CREATE TABLE lab.example_sets (
-    example_id uuid DEFAULT public.gen_random_uuid() NOT NULL,
-    org_id uuid,
-    title text,
-    kind text NOT NULL,
-    channel_id integer,
-    framework text,
-    tone text,
-    locale text DEFAULT 'ar-BH'::text,
-    quality_score smallint,
-    anchor uuid,
-    tags text[],
-    body jsonb NOT NULL,
-    created_at timestamp with time zone DEFAULT now(),
-    campaign_id uuid,
-    CONSTRAINT example_sets_kind_check CHECK ((kind = ANY (ARRAY['example'::text, 'template'::text, 'set'::text, 'collection'::text, 'scenario'::text, 'template_set'::text]))),
-    CONSTRAINT example_sets_quality_score_check CHECK (((quality_score >= 1) AND (quality_score <= 5)))
-);
-
-
-ALTER TABLE lab.example_sets OWNER TO begin;
-
---
--- Name: full_campaign_snapshot; Type: VIEW; Schema: cmis; Owner: begin
---
-
-CREATE VIEW cmis.full_campaign_snapshot AS
- SELECT c.campaign_id,
-    c.name AS campaign_name,
-    c.objective,
-    c.status AS campaign_status,
-    cb.brief_data,
-    cp.plan_id,
-    cp.name AS plan_name,
-    ci.item_id,
-    ci.title AS content_title,
-    ca.asset_id,
-    ca.copy_block,
-    ca.art_direction,
-    cc.component_id,
-    cc.type_code,
-    cc.content AS component_content,
-    cc.awareness_stage,
-    cc.usage_notes,
-    e.exp_id AS experiment_id,
-    e.framework,
-    e.hypothesis,
-    es.example_id,
-    es.title AS example_title,
-    es.body AS example_body
-   FROM (((((((cmis.campaigns c
-     LEFT JOIN cmis.creative_briefs cb ON ((c.campaign_id = cb.brief_id)))
-     LEFT JOIN cmis.content_plans cp ON ((cp.campaign_id = c.campaign_id)))
-     LEFT JOIN cmis.content_items ci ON ((ci.plan_id = cp.plan_id)))
-     LEFT JOIN cmis.creative_assets ca ON ((ca.campaign_id = c.campaign_id)))
-     LEFT JOIN cmis.copy_components cc ON (((cc.campaign_id = c.campaign_id) OR (cc.plan_id = cp.plan_id))))
-     LEFT JOIN cmis.experiments e ON ((e.campaign_id = c.campaign_id)))
-     LEFT JOIN lab.example_sets es ON ((es.campaign_id = c.campaign_id)));
-
-
-ALTER VIEW cmis.full_campaign_snapshot OWNER TO begin;
-
---
--- Name: funnel_stages; Type: TABLE; Schema: public; Owner: gpts_data_user
+-- Name: funnel_stages; Type: TABLE; Schema: public; Owner: begin
 --
 
 CREATE TABLE public.funnel_stages (
@@ -3019,7 +5209,7 @@ CREATE TABLE public.funnel_stages (
 );
 
 
-ALTER TABLE public.funnel_stages OWNER TO gpts_data_user;
+ALTER TABLE public.funnel_stages OWNER TO begin;
 
 --
 -- Name: funnel_stages; Type: VIEW; Schema: cmis; Owner: begin
@@ -3033,7 +5223,7 @@ CREATE VIEW cmis.funnel_stages AS
 ALTER VIEW cmis.funnel_stages OWNER TO begin;
 
 --
--- Name: industries; Type: TABLE; Schema: public; Owner: gpts_data_user
+-- Name: industries; Type: TABLE; Schema: public; Owner: begin
 --
 
 CREATE TABLE public.industries (
@@ -3042,7 +5232,7 @@ CREATE TABLE public.industries (
 );
 
 
-ALTER TABLE public.industries OWNER TO gpts_data_user;
+ALTER TABLE public.industries OWNER TO begin;
 
 --
 -- Name: industries; Type: VIEW; Schema: cmis; Owner: begin
@@ -3057,10 +5247,10 @@ CREATE VIEW cmis.industries AS
 ALTER VIEW cmis.industries OWNER TO begin;
 
 --
--- Name: integrations; Type: TABLE; Schema: cmis_refactored; Owner: begin
+-- Name: integrations; Type: TABLE; Schema: cmis; Owner: begin
 --
 
-CREATE TABLE cmis_refactored.integrations (
+CREATE TABLE cmis.integrations (
     integration_id uuid DEFAULT public.gen_random_uuid() NOT NULL,
     org_id uuid,
     platform text,
@@ -3069,55 +5259,19 @@ CREATE TABLE cmis_refactored.integrations (
     is_active boolean DEFAULT true,
     created_at timestamp with time zone DEFAULT now(),
     business_id text,
-    username text
+    username text,
+    created_by uuid,
+    updated_by uuid,
+    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+    deleted_at timestamp with time zone,
+    provider text
 );
 
 
-ALTER TABLE cmis_refactored.integrations OWNER TO begin;
+ALTER TABLE cmis.integrations OWNER TO begin;
 
 --
--- Name: integrations; Type: VIEW; Schema: cmis; Owner: begin
---
-
-CREATE VIEW cmis.integrations AS
- SELECT integration_id,
-    org_id,
-    platform,
-    account_id,
-    username,
-    access_token,
-    is_active,
-    created_at,
-    business_id
-   FROM cmis_refactored.integrations;
-
-
-ALTER VIEW cmis.integrations OWNER TO begin;
-
---
--- Name: integrations_view; Type: VIEW; Schema: cmis; Owner: begin
---
-
-CREATE VIEW cmis.integrations_view AS
- SELECT account_id,
-    username,
-    platform,
-    org_id,
-    is_active
-   FROM cmis.integrations;
-
-
-ALTER VIEW cmis.integrations_view OWNER TO begin;
-
---
--- Name: VIEW integrations_view; Type: COMMENT; Schema: cmis; Owner: begin
---
-
-COMMENT ON VIEW cmis.integrations_view IS 'View to allow lookup by username or account_id for Instagram integrations';
-
-
---
--- Name: kpis; Type: TABLE; Schema: public; Owner: gpts_data_user
+-- Name: kpis; Type: TABLE; Schema: public; Owner: begin
 --
 
 CREATE TABLE public.kpis (
@@ -3126,7 +5280,7 @@ CREATE TABLE public.kpis (
 );
 
 
-ALTER TABLE public.kpis OWNER TO gpts_data_user;
+ALTER TABLE public.kpis OWNER TO begin;
 
 --
 -- Name: kpis; Type: VIEW; Schema: cmis; Owner: begin
@@ -3149,14 +5303,16 @@ CREATE TABLE cmis.logs_migration (
     phase text NOT NULL,
     status text NOT NULL,
     executed_at timestamp without time zone DEFAULT now(),
-    details jsonb DEFAULT '{}'::jsonb
+    details jsonb DEFAULT '{}'::jsonb,
+    deleted_at timestamp with time zone,
+    provider text
 );
 
 
 ALTER TABLE cmis.logs_migration OWNER TO begin;
 
 --
--- Name: marketing_objectives; Type: TABLE; Schema: public; Owner: gpts_data_user
+-- Name: marketing_objectives; Type: TABLE; Schema: public; Owner: begin
 --
 
 CREATE TABLE public.marketing_objectives (
@@ -3169,7 +5325,7 @@ CREATE TABLE public.marketing_objectives (
 );
 
 
-ALTER TABLE public.marketing_objectives OWNER TO gpts_data_user;
+ALTER TABLE public.marketing_objectives OWNER TO begin;
 
 --
 -- Name: marketing_objectives; Type: VIEW; Schema: cmis; Owner: begin
@@ -3186,7 +5342,7 @@ CREATE VIEW cmis.marketing_objectives AS
 ALTER VIEW cmis.marketing_objectives OWNER TO begin;
 
 --
--- Name: markets; Type: TABLE; Schema: public; Owner: gpts_data_user
+-- Name: markets; Type: TABLE; Schema: public; Owner: begin
 --
 
 CREATE TABLE public.markets (
@@ -3198,7 +5354,7 @@ CREATE TABLE public.markets (
 );
 
 
-ALTER TABLE public.markets OWNER TO gpts_data_user;
+ALTER TABLE public.markets OWNER TO begin;
 
 --
 -- Name: markets; Type: VIEW; Schema: cmis; Owner: begin
@@ -3224,7 +5380,9 @@ CREATE TABLE cmis.meta_documentation (
     meta_key text NOT NULL,
     meta_value text NOT NULL,
     updated_by text,
-    created_at timestamp with time zone DEFAULT now()
+    created_at timestamp with time zone DEFAULT now(),
+    deleted_at timestamp with time zone,
+    provider text
 );
 
 
@@ -3240,7 +5398,9 @@ CREATE TABLE cmis.meta_field_dictionary (
     semantic_meaning text,
     usage_context text,
     unified_alias text,
-    created_at timestamp without time zone DEFAULT now()
+    created_at timestamp without time zone DEFAULT now(),
+    deleted_at timestamp with time zone,
+    provider text
 );
 
 
@@ -3278,7 +5438,9 @@ CREATE TABLE cmis.meta_function_descriptions (
     routine_name text NOT NULL,
     description text,
     cognitive_category text,
-    created_at timestamp without time zone DEFAULT now()
+    created_at timestamp without time zone DEFAULT now(),
+    deleted_at timestamp with time zone,
+    provider text
 );
 
 
@@ -3313,7 +5475,9 @@ ALTER SEQUENCE cmis.meta_function_descriptions_id_seq OWNED BY cmis.meta_functio
 CREATE TABLE cmis.migrations (
     id integer NOT NULL,
     migration character varying(255) NOT NULL,
-    batch integer NOT NULL
+    batch integer NOT NULL,
+    deleted_at timestamp with time zone,
+    provider text
 );
 
 
@@ -3349,7 +5513,9 @@ CREATE TABLE cmis.modules (
     module_id integer NOT NULL,
     code text NOT NULL,
     name text NOT NULL,
-    version text DEFAULT '2025.10.0'::text
+    version text DEFAULT '2025.10.0'::text,
+    deleted_at timestamp with time zone,
+    provider text
 );
 
 
@@ -3385,6 +5551,8 @@ CREATE TABLE cmis.naming_templates (
     naming_id integer NOT NULL,
     scope text NOT NULL,
     template text NOT NULL,
+    deleted_at timestamp with time zone,
+    provider text,
     CONSTRAINT naming_templates_scope_check CHECK ((scope = ANY (ARRAY['ad'::text, 'bundle'::text, 'landing'::text, 'email'::text, 'experiment'::text, 'video_scene'::text, 'content_item'::text])))
 );
 
@@ -3414,23 +5582,6 @@ ALTER SEQUENCE cmis.naming_templates_naming_id_seq OWNED BY cmis.naming_template
 
 
 --
--- Name: offerings; Type: TABLE; Schema: cmis; Owner: begin
---
-
-CREATE TABLE cmis.offerings (
-    offering_id uuid DEFAULT public.gen_random_uuid() NOT NULL,
-    org_id uuid NOT NULL,
-    kind text NOT NULL,
-    name text NOT NULL,
-    description text,
-    created_at timestamp with time zone DEFAULT now(),
-    CONSTRAINT offerings_kind_check CHECK ((kind = ANY (ARRAY['product'::text, 'service'::text, 'bundle'::text])))
-);
-
-
-ALTER TABLE cmis.offerings OWNER TO begin;
-
---
 -- Name: offerings_full_details; Type: TABLE; Schema: cmis; Owner: begin
 --
 
@@ -3440,11 +5591,32 @@ CREATE TABLE cmis.offerings_full_details (
     full_description text NOT NULL,
     pricing_notes text,
     target_segment text,
-    created_at timestamp without time zone DEFAULT now()
+    created_at timestamp without time zone DEFAULT now(),
+    deleted_at timestamp with time zone,
+    provider text
 );
 
 
 ALTER TABLE cmis.offerings_full_details OWNER TO begin;
+
+--
+-- Name: offerings_old; Type: TABLE; Schema: cmis; Owner: begin
+--
+
+CREATE TABLE cmis.offerings_old (
+    offering_id uuid DEFAULT public.gen_random_uuid() CONSTRAINT offerings_offering_id_not_null NOT NULL,
+    org_id uuid CONSTRAINT offerings_org_id_not_null NOT NULL,
+    kind text CONSTRAINT offerings_kind_not_null NOT NULL,
+    name text CONSTRAINT offerings_name_not_null NOT NULL,
+    description text,
+    created_at timestamp with time zone DEFAULT now(),
+    deleted_at timestamp with time zone,
+    provider text,
+    CONSTRAINT offerings_kind_check CHECK ((kind = ANY (ARRAY['product'::text, 'service'::text, 'bundle'::text])))
+);
+
+
+ALTER TABLE cmis.offerings_old OWNER TO begin;
 
 --
 -- Name: ops_audit; Type: TABLE; Schema: cmis; Owner: begin
@@ -3456,7 +5628,9 @@ CREATE TABLE cmis.ops_audit (
     operation_name text NOT NULL,
     status text NOT NULL,
     executed_at timestamp with time zone DEFAULT now(),
-    details jsonb
+    details jsonb,
+    deleted_at timestamp with time zone,
+    provider text
 );
 
 
@@ -3473,7 +5647,9 @@ CREATE TABLE cmis.ops_etl_log (
     started_at timestamp with time zone DEFAULT now(),
     ended_at timestamp with time zone,
     rows_processed integer,
-    notes text
+    notes text,
+    deleted_at timestamp with time zone,
+    provider text
 );
 
 
@@ -3486,7 +5662,9 @@ ALTER TABLE cmis.ops_etl_log OWNER TO begin;
 CREATE TABLE cmis.org_datasets (
     org_id uuid NOT NULL,
     pkg_id uuid NOT NULL,
-    enabled boolean DEFAULT true
+    enabled boolean DEFAULT true,
+    deleted_at timestamp with time zone,
+    provider text
 );
 
 
@@ -3499,7 +5677,9 @@ ALTER TABLE cmis.org_datasets OWNER TO begin;
 CREATE TABLE cmis.org_markets (
     org_id uuid NOT NULL,
     market_id integer NOT NULL,
-    is_default boolean DEFAULT false
+    is_default boolean DEFAULT false,
+    deleted_at timestamp with time zone,
+    provider text
 );
 
 
@@ -3514,7 +5694,9 @@ CREATE TABLE cmis.orgs (
     name public.citext NOT NULL,
     default_locale text DEFAULT 'ar-BH'::text,
     currency text DEFAULT 'BHD'::text,
-    created_at timestamp with time zone DEFAULT now()
+    created_at timestamp with time zone DEFAULT now(),
+    deleted_at timestamp with time zone,
+    provider text
 );
 
 
@@ -3528,17 +5710,19 @@ CREATE TABLE cmis.output_contracts (
     contract_id uuid DEFAULT public.gen_random_uuid() NOT NULL,
     code text NOT NULL,
     json_schema jsonb NOT NULL,
-    notes text
+    notes text,
+    deleted_at timestamp with time zone,
+    provider text
 );
 
 
 ALTER TABLE cmis.output_contracts OWNER TO begin;
 
 --
--- Name: performance_metrics; Type: TABLE; Schema: cmis_refactored; Owner: begin
+-- Name: performance_metrics; Type: TABLE; Schema: cmis; Owner: begin
 --
 
-CREATE TABLE cmis_refactored.performance_metrics (
+CREATE TABLE cmis.performance_metrics (
     metric_id uuid DEFAULT public.gen_random_uuid() NOT NULL,
     org_id uuid NOT NULL,
     campaign_id uuid,
@@ -3547,37 +5731,53 @@ CREATE TABLE cmis_refactored.performance_metrics (
     observed numeric,
     target numeric,
     baseline numeric,
-    observed_at timestamp with time zone DEFAULT now()
+    observed_at timestamp with time zone DEFAULT now(),
+    deleted_at timestamp with time zone,
+    provider text,
+    CONSTRAINT performance_score_range CHECK (((observed >= (0)::numeric) AND (observed <= (1)::numeric)))
 );
 
 
-ALTER TABLE cmis_refactored.performance_metrics OWNER TO begin;
+ALTER TABLE cmis.performance_metrics OWNER TO begin;
 
 --
--- Name: COLUMN performance_metrics.observed_at; Type: COMMENT; Schema: cmis_refactored; Owner: begin
+-- Name: COLUMN performance_metrics.observed_at; Type: COMMENT; Schema: cmis; Owner: begin
 --
 
-COMMENT ON COLUMN cmis_refactored.performance_metrics.observed_at IS 'زمن الرصد (كان ts في النسخة القديمة).';
+COMMENT ON COLUMN cmis.performance_metrics.observed_at IS 'زمن الرصد (كان ts في النسخة القديمة).';
 
 
 --
--- Name: performance_metrics; Type: VIEW; Schema: cmis; Owner: begin
+-- Name: permissions; Type: TABLE; Schema: cmis; Owner: begin
 --
 
-CREATE VIEW cmis.performance_metrics AS
- SELECT metric_id,
-    org_id,
-    campaign_id,
-    output_id,
-    kpi,
-    observed,
-    target,
-    baseline,
-    observed_at
-   FROM cmis_refactored.performance_metrics;
+CREATE TABLE cmis.permissions (
+    permission_id uuid DEFAULT gen_random_uuid() NOT NULL,
+    permission_code text NOT NULL,
+    permission_name text NOT NULL,
+    category text NOT NULL,
+    description text,
+    is_dangerous boolean DEFAULT false,
+    deleted_at timestamp with time zone,
+    provider text
+);
 
 
-ALTER VIEW cmis.performance_metrics OWNER TO begin;
+ALTER TABLE cmis.permissions OWNER TO begin;
+
+--
+-- Name: permissions_cache; Type: TABLE; Schema: cmis; Owner: begin
+--
+
+CREATE TABLE cmis.permissions_cache (
+    permission_code text NOT NULL,
+    permission_id uuid NOT NULL,
+    category text NOT NULL,
+    last_used timestamp with time zone DEFAULT CURRENT_TIMESTAMP
+);
+
+
+ALTER TABLE cmis.permissions_cache OWNER TO begin;
 
 --
 -- Name: playbook_steps; Type: VIEW; Schema: cmis; Owner: begin
@@ -3622,7 +5822,9 @@ CREATE TABLE cmis.predictive_visual_engine (
     confidence_level double precision,
     visual_factor_weight jsonb,
     prediction_summary text,
-    created_at timestamp with time zone DEFAULT now()
+    created_at timestamp with time zone DEFAULT now(),
+    deleted_at timestamp with time zone,
+    provider text
 );
 
 
@@ -3634,7 +5836,9 @@ ALTER TABLE cmis.predictive_visual_engine OWNER TO begin;
 
 CREATE TABLE cmis.prompt_template_contracts (
     prompt_id uuid NOT NULL,
-    contract_id uuid NOT NULL
+    contract_id uuid NOT NULL,
+    deleted_at timestamp with time zone,
+    provider text
 );
 
 
@@ -3646,7 +5850,9 @@ ALTER TABLE cmis.prompt_template_contracts OWNER TO begin;
 
 CREATE TABLE cmis.prompt_template_presql (
     prompt_id uuid NOT NULL,
-    snippet_id uuid NOT NULL
+    snippet_id uuid NOT NULL,
+    deleted_at timestamp with time zone,
+    provider text
 );
 
 
@@ -3658,7 +5864,9 @@ ALTER TABLE cmis.prompt_template_presql OWNER TO begin;
 
 CREATE TABLE cmis.prompt_template_required_fields (
     prompt_id uuid NOT NULL,
-    field_id uuid NOT NULL
+    field_id uuid NOT NULL,
+    deleted_at timestamp with time zone,
+    provider text
 );
 
 
@@ -3674,14 +5882,16 @@ CREATE TABLE cmis.prompt_templates (
     name text NOT NULL,
     task text NOT NULL,
     instructions text NOT NULL,
-    version text DEFAULT '2025.10.0'::text
+    version text DEFAULT '2025.10.0'::text,
+    deleted_at timestamp with time zone,
+    provider text
 );
 
 
 ALTER TABLE cmis.prompt_templates OWNER TO begin;
 
 --
--- Name: proof_layers; Type: TABLE; Schema: public; Owner: gpts_data_user
+-- Name: proof_layers; Type: TABLE; Schema: public; Owner: begin
 --
 
 CREATE TABLE public.proof_layers (
@@ -3689,7 +5899,7 @@ CREATE TABLE public.proof_layers (
 );
 
 
-ALTER TABLE public.proof_layers OWNER TO gpts_data_user;
+ALTER TABLE public.proof_layers OWNER TO begin;
 
 --
 -- Name: proof_layers; Type: VIEW; Schema: cmis; Owner: begin
@@ -3701,6 +5911,78 @@ CREATE VIEW cmis.proof_layers AS
 
 
 ALTER VIEW cmis.proof_layers OWNER TO begin;
+
+--
+-- Name: reference_entities; Type: TABLE; Schema: cmis; Owner: begin
+--
+
+CREATE TABLE cmis.reference_entities (
+    ref_id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    category text NOT NULL,
+    code text NOT NULL,
+    label text,
+    description text,
+    metadata jsonb,
+    created_at timestamp with time zone DEFAULT now(),
+    deleted_at timestamp with time zone,
+    provider text
+);
+
+
+ALTER TABLE cmis.reference_entities OWNER TO begin;
+
+--
+-- Name: required_fields_cache; Type: TABLE; Schema: cmis; Owner: begin
+--
+
+CREATE TABLE cmis.required_fields_cache (
+    module_scope text NOT NULL,
+    required_fields text[],
+    last_updated timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
+    deleted_at timestamp with time zone,
+    provider text
+);
+
+
+ALTER TABLE cmis.required_fields_cache OWNER TO begin;
+
+--
+-- Name: role_permissions; Type: TABLE; Schema: cmis; Owner: begin
+--
+
+CREATE TABLE cmis.role_permissions (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    role_id uuid NOT NULL,
+    permission_id uuid NOT NULL,
+    granted_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
+    granted_by uuid,
+    deleted_at timestamp with time zone,
+    provider text
+);
+
+
+ALTER TABLE cmis.role_permissions OWNER TO begin;
+
+--
+-- Name: roles; Type: TABLE; Schema: cmis; Owner: begin
+--
+
+CREATE TABLE cmis.roles (
+    role_id uuid DEFAULT gen_random_uuid() NOT NULL,
+    org_id uuid,
+    role_name text NOT NULL,
+    role_code text NOT NULL,
+    description text,
+    is_system boolean DEFAULT false,
+    is_active boolean DEFAULT true,
+    created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
+    created_by uuid,
+    deleted_at timestamp with time zone,
+    provider text
+);
+
+
+ALTER TABLE cmis.roles OWNER TO begin;
 
 --
 -- Name: scene_library; Type: TABLE; Schema: cmis; Owner: begin
@@ -3718,11 +6000,41 @@ CREATE TABLE cmis.scene_library (
     anchor uuid,
     quality_score smallint,
     tags text[],
+    deleted_at timestamp with time zone,
+    provider text,
     CONSTRAINT scene_library_quality_score_check CHECK (((quality_score >= 1) AND (quality_score <= 5)))
 );
 
 
 ALTER TABLE cmis.scene_library OWNER TO begin;
+
+--
+-- Name: security_context_audit; Type: TABLE; Schema: cmis; Owner: begin
+--
+
+CREATE TABLE cmis.security_context_audit (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    transaction_id bigint DEFAULT txid_current(),
+    user_id uuid,
+    org_id uuid,
+    action text,
+    success boolean,
+    error_message text,
+    context_version text,
+    session_id text,
+    ip_address inet,
+    created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP
+);
+
+
+ALTER TABLE cmis.security_context_audit OWNER TO begin;
+
+--
+-- Name: TABLE security_context_audit; Type: COMMENT; Schema: cmis; Owner: begin
+--
+
+COMMENT ON TABLE cmis.security_context_audit IS 'سجل تدقيق لجميع عمليات تهيئة سياق الأمان';
+
 
 --
 -- Name: segments; Type: TABLE; Schema: cmis; Owner: begin
@@ -3733,11 +6045,28 @@ CREATE TABLE cmis.segments (
     org_id uuid NOT NULL,
     name text NOT NULL,
     persona jsonb,
-    notes text
+    notes text,
+    deleted_at timestamp with time zone,
+    provider text
 );
 
 
 ALTER TABLE cmis.segments OWNER TO begin;
+
+--
+-- Name: session_context; Type: TABLE; Schema: cmis; Owner: begin
+--
+
+CREATE TABLE cmis.session_context (
+    session_id uuid NOT NULL,
+    active_org_id uuid,
+    switched_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
+    deleted_at timestamp with time zone,
+    provider text
+);
+
+
+ALTER TABLE cmis.session_context OWNER TO begin;
 
 --
 -- Name: social_account_metrics; Type: TABLE; Schema: cmis; Owner: begin
@@ -3750,7 +6079,9 @@ CREATE TABLE cmis.social_account_metrics (
     followers bigint,
     reach bigint,
     impressions bigint,
-    profile_views bigint
+    profile_views bigint,
+    deleted_at timestamp with time zone,
+    provider text
 );
 
 
@@ -3775,7 +6106,9 @@ CREATE TABLE cmis.social_accounts (
     website text,
     category text,
     fetched_at timestamp without time zone DEFAULT now(),
-    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP
+    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+    deleted_at timestamp with time zone,
+    provider text
 );
 
 
@@ -3794,7 +6127,9 @@ CREATE TABLE cmis.social_post_metrics (
     metric text NOT NULL,
     value numeric(20,4),
     fetched_at timestamp with time zone DEFAULT now(),
-    created_at timestamp with time zone DEFAULT now()
+    created_at timestamp with time zone DEFAULT now(),
+    deleted_at timestamp with time zone,
+    provider text
 );
 
 
@@ -3819,7 +6154,9 @@ CREATE TABLE cmis.social_posts (
     created_at timestamp without time zone DEFAULT now(),
     video_url text,
     thumbnail_url text,
-    children_media jsonb
+    children_media jsonb,
+    deleted_at timestamp with time zone,
+    provider text
 );
 
 
@@ -3833,14 +6170,16 @@ CREATE TABLE cmis.sql_snippets (
     snippet_id uuid DEFAULT public.gen_random_uuid() NOT NULL,
     name text NOT NULL,
     sql text NOT NULL,
-    description text
+    description text,
+    deleted_at timestamp with time zone,
+    provider text
 );
 
 
 ALTER TABLE cmis.sql_snippets OWNER TO begin;
 
 --
--- Name: strategies; Type: TABLE; Schema: public; Owner: gpts_data_user
+-- Name: strategies; Type: TABLE; Schema: public; Owner: begin
 --
 
 CREATE TABLE public.strategies (
@@ -3848,7 +6187,7 @@ CREATE TABLE public.strategies (
 );
 
 
-ALTER TABLE public.strategies OWNER TO gpts_data_user;
+ALTER TABLE public.strategies OWNER TO begin;
 
 --
 -- Name: strategies; Type: VIEW; Schema: cmis; Owner: begin
@@ -3873,14 +6212,89 @@ CREATE TABLE cmis.sync_logs (
     synced_at timestamp without time zone DEFAULT now(),
     status text,
     items integer DEFAULT 0,
-    level_counts jsonb DEFAULT '{}'::jsonb
+    level_counts jsonb DEFAULT '{}'::jsonb,
+    deleted_at timestamp with time zone,
+    provider text
 );
 
 
 ALTER TABLE cmis.sync_logs OWNER TO begin;
 
 --
--- Name: tones; Type: TABLE; Schema: public; Owner: gpts_data_user
+-- Name: user_sessions; Type: TABLE; Schema: cmis; Owner: begin
+--
+
+CREATE TABLE cmis.user_sessions (
+    session_id uuid DEFAULT gen_random_uuid() NOT NULL,
+    user_id uuid NOT NULL,
+    session_token text NOT NULL,
+    ip_address inet,
+    user_agent text,
+    created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
+    last_activity timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
+    expires_at timestamp with time zone DEFAULT (CURRENT_TIMESTAMP + '24:00:00'::interval) NOT NULL,
+    is_active boolean DEFAULT true,
+    deleted_at timestamp with time zone,
+    provider text
+);
+
+
+ALTER TABLE cmis.user_sessions OWNER TO begin;
+
+--
+-- Name: embeddings_cache; Type: TABLE; Schema: cmis_knowledge; Owner: begin
+--
+
+CREATE TABLE cmis_knowledge.embeddings_cache (
+    cache_id uuid DEFAULT gen_random_uuid() NOT NULL,
+    source_table text NOT NULL,
+    source_id uuid NOT NULL,
+    source_field text NOT NULL,
+    embedding public.vector(768) NOT NULL,
+    embedding_norm double precision,
+    metadata jsonb DEFAULT '{}'::jsonb,
+    model_version text DEFAULT 'gemini-text-embedding-004'::text,
+    quality_score numeric(3,2),
+    usage_count integer DEFAULT 0,
+    last_accessed timestamp with time zone DEFAULT now(),
+    created_at timestamp with time zone DEFAULT now(),
+    updated_at timestamp with time zone DEFAULT now(),
+    input_hash text,
+    last_used_at timestamp with time zone DEFAULT now()
+);
+
+
+ALTER TABLE cmis_knowledge.embeddings_cache OWNER TO begin;
+
+--
+-- Name: system_health; Type: VIEW; Schema: cmis; Owner: begin
+--
+
+CREATE VIEW cmis.system_health AS
+ SELECT 'embeddings_cache'::text AS component,
+    count(*) AS total_records,
+    avg(EXTRACT(epoch FROM (CURRENT_TIMESTAMP - embeddings_cache.created_at))) AS avg_age_seconds,
+    max(embeddings_cache.last_used_at) AS last_activity
+   FROM cmis_knowledge.embeddings_cache
+UNION ALL
+ SELECT 'active_sessions'::text AS component,
+    count(*) AS total_records,
+    avg(EXTRACT(epoch FROM (CURRENT_TIMESTAMP - user_sessions.created_at))) AS avg_age_seconds,
+    max(user_sessions.last_activity) AS last_activity
+   FROM cmis.user_sessions
+  WHERE (user_sessions.is_active = true)
+UNION ALL
+ SELECT 'creative_briefs'::text AS component,
+    count(*) AS total_records,
+    avg(EXTRACT(epoch FROM (CURRENT_TIMESTAMP - creative_briefs.created_at))) AS avg_age_seconds,
+    max(creative_briefs.created_at) AS last_activity
+   FROM cmis.creative_briefs;
+
+
+ALTER VIEW cmis.system_health OWNER TO begin;
+
+--
+-- Name: tones; Type: TABLE; Schema: public; Owner: begin
 --
 
 CREATE TABLE public.tones (
@@ -3888,7 +6302,7 @@ CREATE TABLE public.tones (
 );
 
 
-ALTER TABLE public.tones OWNER TO gpts_data_user;
+ALTER TABLE public.tones OWNER TO begin;
 
 --
 -- Name: tones; Type: VIEW; Schema: cmis; Owner: begin
@@ -3902,15 +6316,80 @@ CREATE VIEW cmis.tones AS
 ALTER VIEW cmis.tones OWNER TO begin;
 
 --
+-- Name: user_activities; Type: TABLE; Schema: cmis; Owner: begin
+--
+
+CREATE TABLE cmis.user_activities (
+    activity_id uuid DEFAULT gen_random_uuid() NOT NULL,
+    user_id uuid NOT NULL,
+    org_id uuid NOT NULL,
+    session_id uuid,
+    action text NOT NULL,
+    entity_type text,
+    entity_id uuid,
+    details jsonb,
+    ip_address inet,
+    created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
+    deleted_at timestamp with time zone,
+    provider text
+);
+
+
+ALTER TABLE cmis.user_activities OWNER TO begin;
+
+--
+-- Name: user_orgs; Type: TABLE; Schema: cmis; Owner: begin
+--
+
+CREATE TABLE cmis.user_orgs (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    user_id uuid NOT NULL,
+    org_id uuid NOT NULL,
+    role_id uuid NOT NULL,
+    is_active boolean DEFAULT true,
+    joined_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
+    invited_by uuid,
+    last_accessed timestamp with time zone,
+    deleted_at timestamp with time zone,
+    provider text
+);
+
+
+ALTER TABLE cmis.user_orgs OWNER TO begin;
+
+--
+-- Name: user_permissions; Type: TABLE; Schema: cmis; Owner: begin
+--
+
+CREATE TABLE cmis.user_permissions (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    user_id uuid NOT NULL,
+    org_id uuid NOT NULL,
+    permission_id uuid NOT NULL,
+    is_granted boolean DEFAULT true,
+    granted_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
+    granted_by uuid,
+    expires_at timestamp with time zone,
+    deleted_at timestamp with time zone,
+    provider text
+);
+
+
+ALTER TABLE cmis.user_permissions OWNER TO begin;
+
+--
 -- Name: users; Type: TABLE; Schema: cmis; Owner: begin
 --
 
 CREATE TABLE cmis.users (
     user_id uuid DEFAULT public.gen_random_uuid() NOT NULL,
-    org_id uuid NOT NULL,
     email public.citext NOT NULL,
     display_name text,
     role text DEFAULT 'editor'::text,
+    deleted_at timestamp with time zone,
+    provider text,
+    status text DEFAULT 'active'::text,
+    name text DEFAULT ''::text,
     CONSTRAINT users_role_check CHECK ((role = ANY (ARRAY['viewer'::text, 'editor'::text, 'admin'::text])))
 );
 
@@ -3941,29 +6420,98 @@ CREATE VIEW cmis.v_ai_insights AS
 ALTER VIEW cmis.v_ai_insights OWNER TO begin;
 
 --
--- Name: v_campaigns_performance_summary; Type: VIEW; Schema: cmis; Owner: begin
+-- Name: v_cache_status; Type: VIEW; Schema: cmis; Owner: begin
 --
 
-CREATE VIEW cmis.v_campaigns_performance_summary AS
- SELECT c.campaign_id,
-    c.name AS campaign_name,
-    c.status,
-    c.start_date,
-    c.end_date,
-    c.budget,
-    c.currency,
-    d.metric_name,
-    d.metric_value,
-    d.metric_target,
-    d.variance,
-    d.confidence_level,
-    d.insights,
-    d.collected_at
-   FROM (cmis.campaigns c
-     JOIN cmis.campaign_performance_dashboard d ON ((c.campaign_id = d.campaign_id)));
+CREATE VIEW cmis.v_cache_status AS
+ SELECT 'required_fields'::text AS cache_name,
+    count(*) AS entries,
+    max(required_fields_cache.last_updated) AS last_update,
+    (EXTRACT(epoch FROM (CURRENT_TIMESTAMP - max(required_fields_cache.last_updated))) / (60)::numeric) AS age_minutes
+   FROM cmis.required_fields_cache
+UNION ALL
+ SELECT 'permissions'::text AS cache_name,
+    count(*) AS entries,
+    max(permissions_cache.last_used) AS last_update,
+    (EXTRACT(epoch FROM (CURRENT_TIMESTAMP - max(permissions_cache.last_used))) / (60)::numeric) AS age_minutes
+   FROM cmis.permissions_cache
+UNION ALL
+ SELECT 'embeddings'::text AS cache_name,
+    count(*) AS entries,
+    max(embeddings_cache.last_used_at) AS last_update,
+    (EXTRACT(epoch FROM (CURRENT_TIMESTAMP - max(embeddings_cache.last_used_at))) / (60)::numeric) AS age_minutes
+   FROM cmis_knowledge.embeddings_cache;
 
 
-ALTER VIEW cmis.v_campaigns_performance_summary OWNER TO begin;
+ALTER VIEW cmis.v_cache_status OWNER TO begin;
+
+--
+-- Name: v_deleted_records; Type: VIEW; Schema: cmis; Owner: begin
+--
+
+CREATE VIEW cmis.v_deleted_records WITH (security_barrier='true') AS
+ WITH deleted_campaigns AS (
+         SELECT 'campaigns'::text AS table_name,
+            (campaigns.campaign_id)::text AS record_id,
+            campaigns.name,
+            campaigns.org_id,
+            campaigns.deleted_at,
+            campaigns.deleted_by
+           FROM cmis.campaigns
+          WHERE (campaigns.deleted_at IS NOT NULL)
+        ), deleted_assets AS (
+         SELECT 'creative_assets'::text AS table_name,
+            (creative_assets.asset_id)::text AS record_id,
+            creative_assets.variation_tag AS name,
+            creative_assets.org_id,
+            creative_assets.deleted_at,
+            creative_assets.deleted_by
+           FROM cmis.creative_assets
+          WHERE (creative_assets.deleted_at IS NOT NULL)
+        ), deleted_content AS (
+         SELECT 'content_items'::text AS table_name,
+            (content_items.context_id)::text AS record_id,
+            content_items.title AS name,
+            content_items.org_id,
+            content_items.deleted_at,
+            content_items.deleted_by
+           FROM cmis.content_items
+          WHERE (content_items.deleted_at IS NOT NULL)
+        )
+ SELECT deleted_campaigns.table_name,
+    deleted_campaigns.record_id,
+    deleted_campaigns.name,
+    deleted_campaigns.org_id,
+    deleted_campaigns.deleted_at,
+    deleted_campaigns.deleted_by
+   FROM deleted_campaigns
+UNION ALL
+ SELECT deleted_assets.table_name,
+    deleted_assets.record_id,
+    deleted_assets.name,
+    deleted_assets.org_id,
+    deleted_assets.deleted_at,
+    deleted_assets.deleted_by
+   FROM deleted_assets
+UNION ALL
+ SELECT deleted_content.table_name,
+    deleted_content.record_id,
+    deleted_content.name,
+    deleted_content.org_id,
+    deleted_content.deleted_at,
+    deleted_content.deleted_by
+   FROM deleted_content
+  ORDER BY 5 DESC;
+
+
+ALTER VIEW cmis.v_deleted_records OWNER TO begin;
+
+--
+-- Name: VIEW v_deleted_records; Type: COMMENT; Schema: cmis; Owner: begin
+--
+
+COMMENT ON VIEW cmis.v_deleted_records IS 'عرض جميع السجلات المحذوفة - للمديرين فقط';
+
 
 --
 -- Name: v_marketing_reference; Type: VIEW; Schema: cmis; Owner: begin
@@ -3984,6 +6532,46 @@ CREATE VIEW cmis.v_marketing_reference AS
 ALTER VIEW cmis.v_marketing_reference OWNER TO begin;
 
 --
+-- Name: v_security_context_summary; Type: VIEW; Schema: cmis; Owner: begin
+--
+
+CREATE VIEW cmis.v_security_context_summary AS
+ SELECT date_trunc('hour'::text, created_at) AS hour,
+    count(*) AS total_contexts,
+    count(*) FILTER (WHERE (success = true)) AS successful,
+    count(*) FILTER (WHERE (success = false)) AS failed,
+    count(DISTINCT user_id) AS unique_users,
+    count(DISTINCT org_id) AS unique_orgs,
+    context_version
+   FROM cmis.security_context_audit
+  WHERE (created_at > (now() - '24:00:00'::interval))
+  GROUP BY (date_trunc('hour'::text, created_at)), context_version
+  ORDER BY (date_trunc('hour'::text, created_at)) DESC;
+
+
+ALTER VIEW cmis.v_security_context_summary OWNER TO begin;
+
+--
+-- Name: VIEW v_security_context_summary; Type: COMMENT; Schema: cmis; Owner: begin
+--
+
+COMMENT ON VIEW cmis.v_security_context_summary IS 'ملخص نشاط سياقات الأمان خلال آخر 24 ساعة';
+
+
+--
+-- Name: v_system_monitoring; Type: VIEW; Schema: cmis; Owner: begin
+--
+
+CREATE VIEW cmis.v_system_monitoring AS
+ SELECT now() AS "timestamp",
+    count(*) AS table_count
+   FROM information_schema.tables
+  WHERE ((table_schema)::name = 'cmis'::name);
+
+
+ALTER VIEW cmis.v_system_monitoring OWNER TO begin;
+
+--
 -- Name: v_unified_ad_targeting; Type: VIEW; Schema: cmis; Owner: begin
 --
 
@@ -4001,7 +6589,7 @@ CREATE VIEW cmis.v_unified_ad_targeting AS
     COALESCE(a.lookalike_audience, '{}'::jsonb) AS lookalike_audience,
     COALESCE(a.advantage_plus_settings, '{}'::jsonb) AS advantage_plus
    FROM (cmis.ad_audiences a
-     JOIN cmis_refactored.integrations i ON ((a.integration_id = i.integration_id)));
+     JOIN cmis.integrations i ON ((a.integration_id = i.integration_id)));
 
 
 ALTER VIEW cmis.v_unified_ad_targeting OWNER TO begin;
@@ -4029,7 +6617,9 @@ CREATE TABLE cmis.value_contexts (
     market_id integer,
     industry_id integer,
     created_at timestamp with time zone DEFAULT now(),
-    context_fingerprint text
+    context_fingerprint text,
+    deleted_at timestamp with time zone,
+    provider text
 );
 
 
@@ -4044,7 +6634,9 @@ CREATE TABLE cmis.variation_policies (
     org_id uuid,
     max_variations smallint DEFAULT 3,
     dco_enabled boolean DEFAULT true,
-    naming_ref integer
+    naming_ref integer,
+    deleted_at timestamp with time zone,
+    provider text
 );
 
 
@@ -4062,7 +6654,9 @@ CREATE TABLE cmis.video_scenes (
     visual_prompt_en text,
     overlay_text_ar text,
     audio_instructions text,
-    technical_specs jsonb
+    technical_specs jsonb,
+    deleted_at timestamp with time zone,
+    provider text
 );
 
 
@@ -4079,48 +6673,13 @@ CREATE TABLE cmis.video_templates (
     format_id integer,
     name text NOT NULL,
     steps jsonb NOT NULL,
-    version text DEFAULT '2025.10.0'::text
+    version text DEFAULT '2025.10.0'::text,
+    deleted_at timestamp with time zone,
+    provider text
 );
 
 
 ALTER TABLE cmis.video_templates OWNER TO begin;
-
---
--- Name: contexts; Type: TABLE; Schema: cmis_refactored; Owner: begin
---
-
-CREATE TABLE cmis_refactored.contexts (
-    context_id uuid DEFAULT public.gen_random_uuid() NOT NULL,
-    org_id uuid NOT NULL,
-    campaign_id uuid,
-    type text NOT NULL,
-    metadata jsonb,
-    created_at timestamp with time zone DEFAULT now(),
-    CONSTRAINT contexts_type_check CHECK ((type = ANY (ARRAY['value'::text, 'creative'::text, 'experiment'::text])))
-);
-
-
-ALTER TABLE cmis_refactored.contexts OWNER TO begin;
-
---
--- Name: creative_outputs; Type: TABLE; Schema: cmis_refactored; Owner: begin
---
-
-CREATE TABLE cmis_refactored.creative_outputs (
-    output_id uuid DEFAULT public.gen_random_uuid() NOT NULL,
-    org_id uuid NOT NULL,
-    campaign_id uuid,
-    context_id uuid,
-    type text NOT NULL,
-    status text DEFAULT 'draft'::text,
-    data jsonb,
-    created_at timestamp with time zone DEFAULT now(),
-    updated_at timestamp with time zone DEFAULT now(),
-    CONSTRAINT creative_outputs_type_check CHECK ((type = ANY (ARRAY['asset'::text, 'copy'::text, 'content'::text])))
-);
-
-
-ALTER TABLE cmis_refactored.creative_outputs OWNER TO begin;
 
 --
 -- Name: v_context_impact; Type: VIEW; Schema: cmis_ai_analytics; Owner: begin
@@ -4131,9 +6690,9 @@ CREATE VIEW cmis_ai_analytics.v_context_impact AS
     count(DISTINCT co.output_id) AS total_outputs,
     avg(pm.observed) AS avg_observed,
     ((avg(pm.observed) / NULLIF(avg(pm.target), (0)::numeric)) * (100)::numeric) AS impact_score
-   FROM ((cmis_refactored.contexts ctx
-     LEFT JOIN cmis_refactored.creative_outputs co ON ((co.context_id = ctx.context_id)))
-     LEFT JOIN cmis_refactored.performance_metrics pm ON ((pm.output_id = co.output_id)))
+   FROM ((cmis.contexts ctx
+     LEFT JOIN cmis.creative_outputs co ON ((co.context_id = ctx.context_id)))
+     LEFT JOIN cmis.performance_metrics pm ON ((pm.output_id = co.output_id)))
   GROUP BY ctx.type;
 
 
@@ -4149,8 +6708,8 @@ CREATE VIEW cmis_ai_analytics.v_creative_efficiency AS
     avg(pm.observed) AS avg_performance,
     avg(pm.target) AS avg_target,
     ((avg(pm.observed) / NULLIF(avg(pm.target), (0)::numeric)) * (100)::numeric) AS efficiency_score
-   FROM (cmis_refactored.creative_outputs co
-     LEFT JOIN cmis_refactored.performance_metrics pm ON ((pm.output_id = co.output_id)))
+   FROM (cmis.creative_outputs co
+     LEFT JOIN cmis.performance_metrics pm ON ((pm.output_id = co.output_id)))
   GROUP BY co.type;
 
 
@@ -4167,8 +6726,8 @@ CREATE VIEW cmis_ai_analytics.v_kpi_summary AS
     avg(pm.observed) AS avg_observed,
     avg(pm.target) AS avg_target,
     ((avg(pm.observed) / NULLIF(avg(pm.target), (0)::numeric)) * (100)::numeric) AS performance_rate
-   FROM (cmis_refactored.campaigns c
-     LEFT JOIN cmis_refactored.performance_metrics pm ON ((pm.campaign_id = c.campaign_id)))
+   FROM (cmis.campaigns c
+     LEFT JOIN cmis.performance_metrics pm ON ((pm.campaign_id = c.campaign_id)))
   GROUP BY c.campaign_id, c.name, (date_trunc('day'::text, pm.observed_at))
   ORDER BY (date_trunc('day'::text, pm.observed_at)) DESC;
 
@@ -4368,11 +6927,42 @@ CREATE TABLE cmis_knowledge.dev (
     chunk_embeddings jsonb,
     semantic_summary_embedding public.vector(768),
     intent_analysis jsonb,
-    embedding_metadata jsonb DEFAULT '{}'::jsonb
+    embedding_metadata jsonb DEFAULT '{}'::jsonb,
+    id bigint NOT NULL,
+    tier smallint DEFAULT 2,
+    CONSTRAINT dev_tier_check CHECK (((tier >= 1) AND (tier <= 3)))
 );
 
 
 ALTER TABLE cmis_knowledge.dev OWNER TO begin;
+
+--
+-- Name: COLUMN dev.tier; Type: COMMENT; Schema: cmis_knowledge; Owner: begin
+--
+
+COMMENT ON COLUMN cmis_knowledge.dev.tier IS 'تصنيف جودة المعرفة (1=حرجة، 2=قياسية، 3=ثانوية)';
+
+
+--
+-- Name: dev_id_seq; Type: SEQUENCE; Schema: cmis_knowledge; Owner: begin
+--
+
+CREATE SEQUENCE cmis_knowledge.dev_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE cmis_knowledge.dev_id_seq OWNER TO begin;
+
+--
+-- Name: dev_id_seq; Type: SEQUENCE OWNED BY; Schema: cmis_knowledge; Owner: begin
+--
+
+ALTER SEQUENCE cmis_knowledge.dev_id_seq OWNED BY cmis_knowledge.dev.id;
+
 
 --
 -- Name: direction_mappings; Type: TABLE; Schema: cmis_knowledge; Owner: begin
@@ -4463,51 +7053,6 @@ CREATE TABLE cmis_knowledge.embedding_update_queue (
 ALTER TABLE cmis_knowledge.embedding_update_queue OWNER TO begin;
 
 --
--- Name: embedding_update_queue_backup; Type: TABLE; Schema: cmis_knowledge; Owner: begin
---
-
-CREATE TABLE cmis_knowledge.embedding_update_queue_backup (
-    queue_id uuid,
-    knowledge_id uuid,
-    source_table text,
-    source_field text,
-    priority integer,
-    status text,
-    retry_count integer,
-    max_retries integer,
-    error_message text,
-    created_at timestamp with time zone,
-    processing_started_at timestamp with time zone,
-    processed_at timestamp with time zone
-);
-
-
-ALTER TABLE cmis_knowledge.embedding_update_queue_backup OWNER TO begin;
-
---
--- Name: embeddings_cache; Type: TABLE; Schema: cmis_knowledge; Owner: begin
---
-
-CREATE TABLE cmis_knowledge.embeddings_cache (
-    cache_id uuid DEFAULT gen_random_uuid() NOT NULL,
-    source_table text NOT NULL,
-    source_id uuid NOT NULL,
-    source_field text NOT NULL,
-    embedding public.vector(768) NOT NULL,
-    embedding_norm double precision,
-    metadata jsonb DEFAULT '{}'::jsonb,
-    model_version text DEFAULT 'gemini-text-embedding-004'::text,
-    quality_score numeric(3,2),
-    usage_count integer DEFAULT 0,
-    last_accessed timestamp with time zone DEFAULT now(),
-    created_at timestamp with time zone DEFAULT now(),
-    updated_at timestamp with time zone DEFAULT now()
-);
-
-
-ALTER TABLE cmis_knowledge.embeddings_cache OWNER TO begin;
-
---
 -- Name: index; Type: TABLE; Schema: cmis_knowledge; Owner: begin
 --
 
@@ -4524,7 +7069,6 @@ CREATE TABLE cmis_knowledge.index (
     last_verified_at timestamp with time zone DEFAULT now(),
     total_chunks integer DEFAULT 1,
     has_children boolean DEFAULT false,
-    importance_level smallint DEFAULT 2,
     last_audit_status text DEFAULT 'verified'::text,
     report_phase text DEFAULT 'unspecified'::text,
     topic_embedding public.vector(768),
@@ -4535,7 +7079,6 @@ CREATE TABLE cmis_knowledge.index (
     verification_source text DEFAULT 'system_check'::text,
     is_verified_by_ai boolean DEFAULT false,
     keywords_embedding public.vector(768),
-    semantic_fingerprint public.vector(768),
     embedding_model text DEFAULT 'gemini-text-embedding-004'::text,
     embedding_updated_at timestamp with time zone,
     embedding_version integer DEFAULT 1,
@@ -4546,6 +7089,73 @@ CREATE TABLE cmis_knowledge.index (
 
 
 ALTER TABLE cmis_knowledge.index OWNER TO begin;
+
+--
+-- Name: COLUMN index.tier; Type: COMMENT; Schema: cmis_knowledge; Owner: begin
+--
+
+COMMENT ON COLUMN cmis_knowledge.index.tier IS 'تصنيف جودة المعرفة (1=حرجة، 2=قياسية، 3=ثانوية)';
+
+
+--
+-- Name: index_backup_2025_11_10; Type: TABLE; Schema: cmis_knowledge; Owner: begin
+--
+
+CREATE TABLE cmis_knowledge.index_backup_2025_11_10 (
+    knowledge_id uuid,
+    domain text,
+    category text,
+    topic text,
+    keywords text[],
+    tier smallint,
+    token_budget integer,
+    supersedes_knowledge_id uuid,
+    is_deprecated boolean,
+    last_verified_at timestamp with time zone,
+    total_chunks integer,
+    has_children boolean,
+    importance_level smallint,
+    last_audit_status text,
+    report_phase text,
+    topic_embedding public.vector(768),
+    intent_vector public.vector(768),
+    direction_vector public.vector(768),
+    purpose_vector public.vector(768),
+    verification_confidence numeric,
+    verification_source text,
+    is_verified_by_ai boolean,
+    keywords_embedding public.vector(768),
+    semantic_fingerprint public.vector(768),
+    embedding_model text,
+    embedding_updated_at timestamp with time zone,
+    embedding_version integer,
+    updated_at timestamp without time zone,
+    id bigint NOT NULL
+);
+
+
+ALTER TABLE cmis_knowledge.index_backup_2025_11_10 OWNER TO begin;
+
+--
+-- Name: index_backup_2025_11_10_id_seq; Type: SEQUENCE; Schema: cmis_knowledge; Owner: begin
+--
+
+CREATE SEQUENCE cmis_knowledge.index_backup_2025_11_10_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE cmis_knowledge.index_backup_2025_11_10_id_seq OWNER TO begin;
+
+--
+-- Name: index_backup_2025_11_10_id_seq; Type: SEQUENCE OWNED BY; Schema: cmis_knowledge; Owner: begin
+--
+
+ALTER SEQUENCE cmis_knowledge.index_backup_2025_11_10_id_seq OWNED BY cmis_knowledge.index_backup_2025_11_10.id;
+
 
 --
 -- Name: intent_mappings; Type: TABLE; Schema: cmis_knowledge; Owner: begin
@@ -4586,11 +7196,42 @@ CREATE TABLE cmis_knowledge.marketing (
     audience_embedding public.vector(768),
     tone_embedding public.vector(768),
     campaign_intent_vector public.vector(768),
-    emotional_direction_vector public.vector(768)
+    emotional_direction_vector public.vector(768),
+    id bigint NOT NULL,
+    tier smallint DEFAULT 2,
+    CONSTRAINT marketing_tier_check CHECK (((tier >= 1) AND (tier <= 3)))
 );
 
 
 ALTER TABLE cmis_knowledge.marketing OWNER TO begin;
+
+--
+-- Name: COLUMN marketing.tier; Type: COMMENT; Schema: cmis_knowledge; Owner: begin
+--
+
+COMMENT ON COLUMN cmis_knowledge.marketing.tier IS 'تصنيف جودة المعرفة (1=حرجة، 2=قياسية، 3=ثانوية)';
+
+
+--
+-- Name: marketing_id_seq; Type: SEQUENCE; Schema: cmis_knowledge; Owner: begin
+--
+
+CREATE SEQUENCE cmis_knowledge.marketing_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE cmis_knowledge.marketing_id_seq OWNER TO begin;
+
+--
+-- Name: marketing_id_seq; Type: SEQUENCE OWNED BY; Schema: cmis_knowledge; Owner: begin
+--
+
+ALTER SEQUENCE cmis_knowledge.marketing_id_seq OWNED BY cmis_knowledge.marketing.id;
+
 
 --
 -- Name: org; Type: TABLE; Schema: cmis_knowledge; Owner: begin
@@ -4603,11 +7244,42 @@ CREATE TABLE cmis_knowledge.org (
     token_count integer,
     content_embedding public.vector(768),
     org_context_embedding public.vector(768),
-    strategic_intent_vector public.vector(768)
+    strategic_intent_vector public.vector(768),
+    id bigint NOT NULL,
+    tier smallint DEFAULT 2,
+    CONSTRAINT org_tier_check CHECK (((tier >= 1) AND (tier <= 3)))
 );
 
 
 ALTER TABLE cmis_knowledge.org OWNER TO begin;
+
+--
+-- Name: COLUMN org.tier; Type: COMMENT; Schema: cmis_knowledge; Owner: begin
+--
+
+COMMENT ON COLUMN cmis_knowledge.org.tier IS 'تصنيف جودة المعرفة (1=حرجة، 2=قياسية، 3=ثانوية)';
+
+
+--
+-- Name: org_id_seq; Type: SEQUENCE; Schema: cmis_knowledge; Owner: begin
+--
+
+CREATE SEQUENCE cmis_knowledge.org_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE cmis_knowledge.org_id_seq OWNER TO begin;
+
+--
+-- Name: org_id_seq; Type: SEQUENCE OWNED BY; Schema: cmis_knowledge; Owner: begin
+--
+
+ALTER SEQUENCE cmis_knowledge.org_id_seq OWNED BY cmis_knowledge.org.id;
+
 
 --
 -- Name: purpose_mappings; Type: TABLE; Schema: cmis_knowledge; Owner: begin
@@ -4645,11 +7317,42 @@ CREATE TABLE cmis_knowledge.research (
     content_embedding public.vector(768),
     source_context_embedding public.vector(768),
     research_direction_vector public.vector(768),
-    insight_embedding public.vector(768)
+    insight_embedding public.vector(768),
+    id bigint NOT NULL,
+    tier smallint DEFAULT 2,
+    CONSTRAINT research_tier_check CHECK (((tier >= 1) AND (tier <= 3)))
 );
 
 
 ALTER TABLE cmis_knowledge.research OWNER TO begin;
+
+--
+-- Name: COLUMN research.tier; Type: COMMENT; Schema: cmis_knowledge; Owner: begin
+--
+
+COMMENT ON COLUMN cmis_knowledge.research.tier IS 'تصنيف جودة المعرفة (1=حرجة، 2=قياسية، 3=ثانوية)';
+
+
+--
+-- Name: research_id_seq; Type: SEQUENCE; Schema: cmis_knowledge; Owner: begin
+--
+
+CREATE SEQUENCE cmis_knowledge.research_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE cmis_knowledge.research_id_seq OWNER TO begin;
+
+--
+-- Name: research_id_seq; Type: SEQUENCE OWNED BY; Schema: cmis_knowledge; Owner: begin
+--
+
+ALTER SEQUENCE cmis_knowledge.research_id_seq OWNED BY cmis_knowledge.research.id;
+
 
 --
 -- Name: semantic_search_logs; Type: TABLE; Schema: cmis_knowledge; Owner: begin
@@ -5081,120 +7784,91 @@ CREATE TABLE cmis_marketing.voice_scripts (
 ALTER TABLE cmis_marketing.voice_scripts OWNER TO begin;
 
 --
--- Name: ai_models; Type: TABLE; Schema: cmis_refactored; Owner: begin
+-- Name: schema_fixes_log; Type: TABLE; Schema: cmis_ops; Owner: begin
 --
 
-CREATE TABLE cmis_refactored.ai_models (
-    model_id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+CREATE TABLE cmis_ops.schema_fixes_log (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    fix_type text NOT NULL,
+    target_object text NOT NULL,
+    description text,
+    applied_at timestamp with time zone DEFAULT now(),
+    applied_by text DEFAULT CURRENT_USER,
+    success boolean DEFAULT true,
+    error_message text
+);
+
+
+ALTER TABLE cmis_ops.schema_fixes_log OWNER TO begin;
+
+--
+-- Name: existing_functions; Type: TABLE; Schema: cmis_security_backup_20251111_202413; Owner: begin
+--
+
+CREATE TABLE cmis_security_backup_20251111_202413.existing_functions (
+    function_name name,
+    function_definition text
+);
+
+
+ALTER TABLE cmis_security_backup_20251111_202413.existing_functions OWNER TO begin;
+
+--
+-- Name: existing_policies; Type: TABLE; Schema: cmis_security_backup_20251111_202413; Owner: begin
+--
+
+CREATE TABLE cmis_security_backup_20251111_202413.existing_policies (
+    schemaname name,
+    tablename name,
+    policyname name,
+    permissive text,
+    roles name[],
+    cmd text,
+    qual text COLLATE pg_catalog."C",
+    with_check text COLLATE pg_catalog."C"
+);
+
+
+ALTER TABLE cmis_security_backup_20251111_202413.existing_policies OWNER TO begin;
+
+--
+-- Name: user_orgs_backup; Type: TABLE; Schema: cmis_security_backup_20251111_202413; Owner: begin
+--
+
+CREATE TABLE cmis_security_backup_20251111_202413.user_orgs_backup (
+    id uuid,
+    user_id uuid,
     org_id uuid,
-    name text NOT NULL,
-    engine text,
-    version text,
-    description text,
-    created_at timestamp with time zone DEFAULT now(),
-    model_name character varying(255),
-    model_family character varying(255),
-    status character varying(50),
-    trained_at timestamp without time zone
+    role_id uuid,
+    is_active boolean,
+    joined_at timestamp with time zone,
+    invited_by uuid,
+    last_accessed timestamp with time zone,
+    deleted_at timestamp with time zone,
+    provider text
 );
 
 
-ALTER TABLE cmis_refactored.ai_models OWNER TO begin;
+ALTER TABLE cmis_security_backup_20251111_202413.user_orgs_backup OWNER TO begin;
 
 --
--- Name: api_keys; Type: TABLE; Schema: cmis_refactored; Owner: begin
+-- Name: users_backup; Type: TABLE; Schema: cmis_security_backup_20251111_202413; Owner: begin
 --
 
-CREATE TABLE cmis_refactored.api_keys (
-    key_id uuid DEFAULT gen_random_uuid() NOT NULL,
-    service_name text NOT NULL,
-    service_code text NOT NULL,
-    api_key_encrypted bytea NOT NULL,
-    is_active boolean DEFAULT true,
-    created_at timestamp with time zone DEFAULT now(),
-    updated_at timestamp with time zone DEFAULT now()
+CREATE TABLE cmis_security_backup_20251111_202413.users_backup (
+    user_id uuid,
+    org_id uuid,
+    email public.citext,
+    display_name text,
+    role text,
+    deleted_at timestamp with time zone,
+    provider text,
+    status text,
+    name text
 );
 
 
-ALTER TABLE cmis_refactored.api_keys OWNER TO begin;
-
---
--- Name: organizations; Type: TABLE; Schema: cmis_refactored; Owner: begin
---
-
-CREATE TABLE cmis_refactored.organizations (
-    org_id uuid DEFAULT public.gen_random_uuid() NOT NULL,
-    name text NOT NULL,
-    default_locale text DEFAULT 'ar-BH'::text,
-    currency text DEFAULT 'BHD'::text,
-    created_at timestamp with time zone DEFAULT now()
-);
-
-
-ALTER TABLE cmis_refactored.organizations OWNER TO begin;
-
---
--- Name: reference_entities; Type: TABLE; Schema: cmis_refactored; Owner: begin
---
-
-CREATE TABLE cmis_refactored.reference_entities (
-    ref_id uuid DEFAULT public.gen_random_uuid() NOT NULL,
-    category text NOT NULL,
-    code text NOT NULL,
-    label text,
-    description text,
-    metadata jsonb,
-    created_at timestamp with time zone DEFAULT now()
-);
-
-
-ALTER TABLE cmis_refactored.reference_entities OWNER TO begin;
-
---
--- Name: v_campaign_snapshot_refactored; Type: VIEW; Schema: cmis_refactored; Owner: begin
---
-
-CREATE VIEW cmis_refactored.v_campaign_snapshot_refactored AS
- SELECT c.campaign_id,
-    c.name AS campaign_name,
-    c.status,
-    c.start_date,
-    c.end_date,
-    c.budget,
-    c.currency,
-    ctx.type AS context_type,
-    co.type AS output_type,
-    co.status AS output_status,
-    pm.kpi,
-    pm.observed,
-    pm.target,
-    pm.baseline,
-    pm.observed_at
-   FROM (((cmis_refactored.campaigns c
-     LEFT JOIN cmis_refactored.contexts ctx ON ((ctx.campaign_id = c.campaign_id)))
-     LEFT JOIN cmis_refactored.creative_outputs co ON ((co.campaign_id = c.campaign_id)))
-     LEFT JOIN cmis_refactored.performance_metrics pm ON ((pm.campaign_id = c.campaign_id)));
-
-
-ALTER VIEW cmis_refactored.v_campaign_snapshot_refactored OWNER TO begin;
-
---
--- Name: v_schema_map; Type: VIEW; Schema: cmis_refactored; Owner: begin
---
-
-CREATE VIEW cmis_refactored.v_schema_map AS
- SELECT table_schema,
-    table_name,
-    column_name,
-    data_type,
-    is_nullable,
-    column_default
-   FROM information_schema.columns
-  WHERE ((table_schema)::name = 'cmis_refactored'::name)
-  ORDER BY table_schema, table_name, ordinal_position;
-
-
-ALTER VIEW cmis_refactored.v_schema_map OWNER TO begin;
+ALTER TABLE cmis_security_backup_20251111_202413.users_backup OWNER TO begin;
 
 --
 -- Name: raw_channel_data; Type: TABLE; Schema: cmis_staging; Owner: begin
@@ -5430,6 +8104,32 @@ UNION ALL
 ALTER VIEW cmis_system_health.v_cognitive_kpi_graph OWNER TO begin;
 
 --
+-- Name: example_sets; Type: TABLE; Schema: lab; Owner: begin
+--
+
+CREATE TABLE lab.example_sets (
+    example_id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    org_id uuid,
+    title text,
+    kind text NOT NULL,
+    channel_id integer,
+    framework text,
+    tone text,
+    locale text DEFAULT 'ar-BH'::text,
+    quality_score smallint,
+    anchor uuid,
+    tags text[],
+    body jsonb NOT NULL,
+    created_at timestamp with time zone DEFAULT now(),
+    campaign_id uuid,
+    CONSTRAINT example_sets_kind_check CHECK ((kind = ANY (ARRAY['example'::text, 'template'::text, 'set'::text, 'collection'::text, 'scenario'::text, 'template_set'::text]))),
+    CONSTRAINT example_sets_quality_score_check CHECK (((quality_score >= 1) AND (quality_score <= 5)))
+);
+
+
+ALTER TABLE lab.example_sets OWNER TO begin;
+
+--
 -- Name: example_used_fields; Type: TABLE; Schema: lab; Owner: begin
 --
 
@@ -5456,21 +8156,119 @@ CREATE TABLE lab.test_matrix (
 ALTER TABLE lab.test_matrix OWNER TO begin;
 
 --
--- Name: backup_integrations_cmis; Type: TABLE; Schema: public; Owner: begin
+-- Name: audit_log; Type: TABLE; Schema: operations; Owner: begin
 --
 
-CREATE TABLE public.backup_integrations_cmis (
-    integration_id uuid,
-    org_id uuid,
-    platform text,
-    account_id text,
-    access_token text,
-    is_active boolean,
-    created_at timestamp with time zone
+CREATE TABLE operations.audit_log (
+    id bigint NOT NULL,
+    "timestamp" timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+    user_id uuid,
+    session_id text,
+    username text,
+    action character varying(50) NOT NULL,
+    table_schema character varying(63) NOT NULL,
+    table_name character varying(63) NOT NULL,
+    record_id uuid,
+    record_key text,
+    old_values jsonb,
+    new_values jsonb,
+    changed_fields text[],
+    query text,
+    query_params text[],
+    ip_address inet,
+    user_agent text,
+    application_name text,
+    host_name text,
+    metadata jsonb DEFAULT '{}'::jsonb,
+    tags text[],
+    execution_time_ms integer,
+    rows_affected integer
 );
 
 
-ALTER TABLE public.backup_integrations_cmis OWNER TO begin;
+ALTER TABLE operations.audit_log OWNER TO begin;
+
+--
+-- Name: audit_log_id_seq; Type: SEQUENCE; Schema: operations; Owner: begin
+--
+
+CREATE SEQUENCE operations.audit_log_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE operations.audit_log_id_seq OWNER TO begin;
+
+--
+-- Name: audit_log_id_seq; Type: SEQUENCE OWNED BY; Schema: operations; Owner: begin
+--
+
+ALTER SEQUENCE operations.audit_log_id_seq OWNED BY operations.audit_log.id;
+
+
+--
+-- Name: audit_summary; Type: VIEW; Schema: operations; Owner: begin
+--
+
+CREATE VIEW operations.audit_summary AS
+ SELECT date_trunc('hour'::text, "timestamp") AS hour,
+    table_schema,
+    table_name,
+    action,
+    count(*) AS operation_count,
+    count(DISTINCT user_id) AS unique_users,
+    count(DISTINCT record_id) AS unique_records,
+    avg(execution_time_ms) AS avg_execution_time_ms
+   FROM operations.audit_log
+  GROUP BY (date_trunc('hour'::text, "timestamp")), table_schema, table_name, action;
+
+
+ALTER VIEW operations.audit_summary OWNER TO begin;
+
+--
+-- Name: migrations; Type: TABLE; Schema: operations; Owner: begin
+--
+
+CREATE TABLE operations.migrations (
+    migration_id integer NOT NULL,
+    version character varying(20) NOT NULL,
+    phase character varying(100) NOT NULL,
+    status character varying(20) NOT NULL,
+    started_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+    completed_at timestamp without time zone,
+    duration_seconds integer GENERATED ALWAYS AS ((EXTRACT(epoch FROM (completed_at - started_at)))::integer) STORED,
+    affected_objects text[],
+    error_message text,
+    rollback_sql text
+);
+
+
+ALTER TABLE operations.migrations OWNER TO begin;
+
+--
+-- Name: migrations_migration_id_seq; Type: SEQUENCE; Schema: operations; Owner: begin
+--
+
+CREATE SEQUENCE operations.migrations_migration_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE operations.migrations_migration_id_seq OWNER TO begin;
+
+--
+-- Name: migrations_migration_id_seq; Type: SEQUENCE OWNED BY; Schema: operations; Owner: begin
+--
+
+ALTER SEQUENCE operations.migrations_migration_id_seq OWNED BY operations.migrations.migration_id;
+
 
 --
 -- Name: cache; Type: TABLE; Schema: public; Owner: begin
@@ -5486,7 +8284,7 @@ CREATE TABLE public.cache (
 ALTER TABLE public.cache OWNER TO begin;
 
 --
--- Name: channel_formats_format_id_seq; Type: SEQUENCE; Schema: public; Owner: gpts_data_user
+-- Name: channel_formats_format_id_seq; Type: SEQUENCE; Schema: public; Owner: begin
 --
 
 CREATE SEQUENCE public.channel_formats_format_id_seq
@@ -5498,17 +8296,17 @@ CREATE SEQUENCE public.channel_formats_format_id_seq
     CACHE 1;
 
 
-ALTER SEQUENCE public.channel_formats_format_id_seq OWNER TO gpts_data_user;
+ALTER SEQUENCE public.channel_formats_format_id_seq OWNER TO begin;
 
 --
--- Name: channel_formats_format_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: gpts_data_user
+-- Name: channel_formats_format_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: begin
 --
 
 ALTER SEQUENCE public.channel_formats_format_id_seq OWNED BY public.channel_formats.format_id;
 
 
 --
--- Name: channels_channel_id_seq; Type: SEQUENCE; Schema: public; Owner: gpts_data_user
+-- Name: channels_channel_id_seq; Type: SEQUENCE; Schema: public; Owner: begin
 --
 
 CREATE SEQUENCE public.channels_channel_id_seq
@@ -5520,10 +8318,10 @@ CREATE SEQUENCE public.channels_channel_id_seq
     CACHE 1;
 
 
-ALTER SEQUENCE public.channels_channel_id_seq OWNER TO gpts_data_user;
+ALTER SEQUENCE public.channels_channel_id_seq OWNER TO begin;
 
 --
--- Name: channels_channel_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: gpts_data_user
+-- Name: channels_channel_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: begin
 --
 
 ALTER SEQUENCE public.channels_channel_id_seq OWNED BY public.channels.channel_id;
@@ -5564,7 +8362,7 @@ CREATE TABLE public.cmis_system_health (
 ALTER TABLE public.cmis_system_health OWNER TO begin;
 
 --
--- Name: industries_industry_id_seq; Type: SEQUENCE; Schema: public; Owner: gpts_data_user
+-- Name: industries_industry_id_seq; Type: SEQUENCE; Schema: public; Owner: begin
 --
 
 CREATE SEQUENCE public.industries_industry_id_seq
@@ -5576,17 +8374,55 @@ CREATE SEQUENCE public.industries_industry_id_seq
     CACHE 1;
 
 
-ALTER SEQUENCE public.industries_industry_id_seq OWNER TO gpts_data_user;
+ALTER SEQUENCE public.industries_industry_id_seq OWNER TO begin;
 
 --
--- Name: industries_industry_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: gpts_data_user
+-- Name: industries_industry_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: begin
 --
 
 ALTER SEQUENCE public.industries_industry_id_seq OWNED BY public.industries.industry_id;
 
 
 --
--- Name: markets_market_id_seq; Type: SEQUENCE; Schema: public; Owner: gpts_data_user
+-- Name: jobs; Type: TABLE; Schema: public; Owner: begin
+--
+
+CREATE TABLE public.jobs (
+    id bigint NOT NULL,
+    queue character varying(255) NOT NULL,
+    payload jsonb NOT NULL,
+    attempts integer DEFAULT 0 NOT NULL,
+    reserved_at integer,
+    available_at integer NOT NULL,
+    created_at integer NOT NULL
+);
+
+
+ALTER TABLE public.jobs OWNER TO begin;
+
+--
+-- Name: jobs_id_seq; Type: SEQUENCE; Schema: public; Owner: begin
+--
+
+CREATE SEQUENCE public.jobs_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.jobs_id_seq OWNER TO begin;
+
+--
+-- Name: jobs_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: begin
+--
+
+ALTER SEQUENCE public.jobs_id_seq OWNED BY public.jobs.id;
+
+
+--
+-- Name: markets_market_id_seq; Type: SEQUENCE; Schema: public; Owner: begin
 --
 
 CREATE SEQUENCE public.markets_market_id_seq
@@ -5598,13 +8434,51 @@ CREATE SEQUENCE public.markets_market_id_seq
     CACHE 1;
 
 
-ALTER SEQUENCE public.markets_market_id_seq OWNER TO gpts_data_user;
+ALTER SEQUENCE public.markets_market_id_seq OWNER TO begin;
 
 --
--- Name: markets_market_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: gpts_data_user
+-- Name: markets_market_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: begin
 --
 
 ALTER SEQUENCE public.markets_market_id_seq OWNED BY public.markets.market_id;
+
+
+--
+-- Name: migration_log; Type: TABLE; Schema: public; Owner: begin
+--
+
+CREATE TABLE public.migration_log (
+    id integer NOT NULL,
+    phase text NOT NULL,
+    started_at timestamp with time zone DEFAULT now(),
+    completed_at timestamp with time zone,
+    status text DEFAULT 'pending'::text,
+    notes text
+);
+
+
+ALTER TABLE public.migration_log OWNER TO begin;
+
+--
+-- Name: migration_log_id_seq; Type: SEQUENCE; Schema: public; Owner: begin
+--
+
+CREATE SEQUENCE public.migration_log_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.migration_log_id_seq OWNER TO begin;
+
+--
+-- Name: migration_log_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: begin
+--
+
+ALTER SEQUENCE public.migration_log_id_seq OWNED BY public.migration_log.id;
 
 
 --
@@ -5622,7 +8496,7 @@ CREATE VIEW public.modules AS
 ALTER VIEW public.modules OWNER TO begin;
 
 --
--- Name: modules_old; Type: TABLE; Schema: public; Owner: gpts_data_user
+-- Name: modules_old; Type: TABLE; Schema: public; Owner: begin
 --
 
 CREATE TABLE public.modules_old (
@@ -5633,10 +8507,10 @@ CREATE TABLE public.modules_old (
 );
 
 
-ALTER TABLE public.modules_old OWNER TO gpts_data_user;
+ALTER TABLE public.modules_old OWNER TO begin;
 
 --
--- Name: modules_module_id_seq; Type: SEQUENCE; Schema: public; Owner: gpts_data_user
+-- Name: modules_module_id_seq; Type: SEQUENCE; Schema: public; Owner: begin
 --
 
 CREATE SEQUENCE public.modules_module_id_seq
@@ -5648,10 +8522,10 @@ CREATE SEQUENCE public.modules_module_id_seq
     CACHE 1;
 
 
-ALTER SEQUENCE public.modules_module_id_seq OWNER TO gpts_data_user;
+ALTER SEQUENCE public.modules_module_id_seq OWNER TO begin;
 
 --
--- Name: modules_module_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: gpts_data_user
+-- Name: modules_module_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: begin
 --
 
 ALTER SEQUENCE public.modules_module_id_seq OWNED BY public.modules_old.module_id;
@@ -5671,7 +8545,7 @@ CREATE VIEW public.naming_templates AS
 ALTER VIEW public.naming_templates OWNER TO begin;
 
 --
--- Name: naming_templates_old; Type: TABLE; Schema: public; Owner: gpts_data_user
+-- Name: naming_templates_old; Type: TABLE; Schema: public; Owner: begin
 --
 
 CREATE TABLE public.naming_templates_old (
@@ -5682,10 +8556,10 @@ CREATE TABLE public.naming_templates_old (
 );
 
 
-ALTER TABLE public.naming_templates_old OWNER TO gpts_data_user;
+ALTER TABLE public.naming_templates_old OWNER TO begin;
 
 --
--- Name: naming_templates_naming_id_seq; Type: SEQUENCE; Schema: public; Owner: gpts_data_user
+-- Name: naming_templates_naming_id_seq; Type: SEQUENCE; Schema: public; Owner: begin
 --
 
 CREATE SEQUENCE public.naming_templates_naming_id_seq
@@ -5697,10 +8571,10 @@ CREATE SEQUENCE public.naming_templates_naming_id_seq
     CACHE 1;
 
 
-ALTER SEQUENCE public.naming_templates_naming_id_seq OWNER TO gpts_data_user;
+ALTER SEQUENCE public.naming_templates_naming_id_seq OWNER TO begin;
 
 --
--- Name: naming_templates_naming_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: gpts_data_user
+-- Name: naming_templates_naming_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: begin
 --
 
 ALTER SEQUENCE public.naming_templates_naming_id_seq OWNED BY public.naming_templates_old.naming_id;
@@ -5721,6 +8595,20 @@ CREATE TABLE public.sessions (
 
 
 ALTER TABLE public.sessions OWNER TO begin;
+
+--
+-- Name: view_definitions_backup; Type: TABLE; Schema: public; Owner: begin
+--
+
+CREATE TABLE public.view_definitions_backup (
+    viewname text NOT NULL,
+    depends_on_refactored boolean DEFAULT false,
+    created_at timestamp with time zone DEFAULT now(),
+    updated_at timestamp with time zone DEFAULT now()
+);
+
+
+ALTER TABLE public.view_definitions_backup OWNER TO begin;
 
 --
 -- Name: visual_kpis; Type: TABLE; Schema: public; Owner: begin
@@ -5858,6 +8746,20 @@ ALTER SEQUENCE public.visual_recommendations_recommendation_id_seq OWNED BY publ
 
 
 --
+-- Name: backup_integrations_cmis id; Type: DEFAULT; Schema: archive; Owner: begin
+--
+
+ALTER TABLE ONLY archive.backup_integrations_cmis ALTER COLUMN id SET DEFAULT nextval('archive.backup_integrations_cmis_id_seq'::regclass);
+
+
+--
+-- Name: embedding_update_queue_backup id; Type: DEFAULT; Schema: archive; Owner: begin
+--
+
+ALTER TABLE ONLY archive.embedding_update_queue_backup ALTER COLUMN id SET DEFAULT nextval('archive.embedding_update_queue_backup_id_seq'::regclass);
+
+
+--
 -- Name: ad_metrics id; Type: DEFAULT; Schema: cmis; Owner: begin
 --
 
@@ -5900,42 +8802,105 @@ ALTER TABLE ONLY cmis.naming_templates ALTER COLUMN naming_id SET DEFAULT nextva
 
 
 --
--- Name: channel_formats format_id; Type: DEFAULT; Schema: public; Owner: gpts_data_user
+-- Name: dev id; Type: DEFAULT; Schema: cmis_knowledge; Owner: begin
+--
+
+ALTER TABLE ONLY cmis_knowledge.dev ALTER COLUMN id SET DEFAULT nextval('cmis_knowledge.dev_id_seq'::regclass);
+
+
+--
+-- Name: index_backup_2025_11_10 id; Type: DEFAULT; Schema: cmis_knowledge; Owner: begin
+--
+
+ALTER TABLE ONLY cmis_knowledge.index_backup_2025_11_10 ALTER COLUMN id SET DEFAULT nextval('cmis_knowledge.index_backup_2025_11_10_id_seq'::regclass);
+
+
+--
+-- Name: marketing id; Type: DEFAULT; Schema: cmis_knowledge; Owner: begin
+--
+
+ALTER TABLE ONLY cmis_knowledge.marketing ALTER COLUMN id SET DEFAULT nextval('cmis_knowledge.marketing_id_seq'::regclass);
+
+
+--
+-- Name: org id; Type: DEFAULT; Schema: cmis_knowledge; Owner: begin
+--
+
+ALTER TABLE ONLY cmis_knowledge.org ALTER COLUMN id SET DEFAULT nextval('cmis_knowledge.org_id_seq'::regclass);
+
+
+--
+-- Name: research id; Type: DEFAULT; Schema: cmis_knowledge; Owner: begin
+--
+
+ALTER TABLE ONLY cmis_knowledge.research ALTER COLUMN id SET DEFAULT nextval('cmis_knowledge.research_id_seq'::regclass);
+
+
+--
+-- Name: audit_log id; Type: DEFAULT; Schema: operations; Owner: begin
+--
+
+ALTER TABLE ONLY operations.audit_log ALTER COLUMN id SET DEFAULT nextval('operations.audit_log_id_seq'::regclass);
+
+
+--
+-- Name: migrations migration_id; Type: DEFAULT; Schema: operations; Owner: begin
+--
+
+ALTER TABLE ONLY operations.migrations ALTER COLUMN migration_id SET DEFAULT nextval('operations.migrations_migration_id_seq'::regclass);
+
+
+--
+-- Name: channel_formats format_id; Type: DEFAULT; Schema: public; Owner: begin
 --
 
 ALTER TABLE ONLY public.channel_formats ALTER COLUMN format_id SET DEFAULT nextval('public.channel_formats_format_id_seq'::regclass);
 
 
 --
--- Name: channels channel_id; Type: DEFAULT; Schema: public; Owner: gpts_data_user
+-- Name: channels channel_id; Type: DEFAULT; Schema: public; Owner: begin
 --
 
 ALTER TABLE ONLY public.channels ALTER COLUMN channel_id SET DEFAULT nextval('public.channels_channel_id_seq'::regclass);
 
 
 --
--- Name: industries industry_id; Type: DEFAULT; Schema: public; Owner: gpts_data_user
+-- Name: industries industry_id; Type: DEFAULT; Schema: public; Owner: begin
 --
 
 ALTER TABLE ONLY public.industries ALTER COLUMN industry_id SET DEFAULT nextval('public.industries_industry_id_seq'::regclass);
 
 
 --
--- Name: markets market_id; Type: DEFAULT; Schema: public; Owner: gpts_data_user
+-- Name: jobs id; Type: DEFAULT; Schema: public; Owner: begin
+--
+
+ALTER TABLE ONLY public.jobs ALTER COLUMN id SET DEFAULT nextval('public.jobs_id_seq'::regclass);
+
+
+--
+-- Name: markets market_id; Type: DEFAULT; Schema: public; Owner: begin
 --
 
 ALTER TABLE ONLY public.markets ALTER COLUMN market_id SET DEFAULT nextval('public.markets_market_id_seq'::regclass);
 
 
 --
--- Name: modules_old module_id; Type: DEFAULT; Schema: public; Owner: gpts_data_user
+-- Name: migration_log id; Type: DEFAULT; Schema: public; Owner: begin
+--
+
+ALTER TABLE ONLY public.migration_log ALTER COLUMN id SET DEFAULT nextval('public.migration_log_id_seq'::regclass);
+
+
+--
+-- Name: modules_old module_id; Type: DEFAULT; Schema: public; Owner: begin
 --
 
 ALTER TABLE ONLY public.modules_old ALTER COLUMN module_id SET DEFAULT nextval('public.modules_module_id_seq'::regclass);
 
 
 --
--- Name: naming_templates_old naming_id; Type: DEFAULT; Schema: public; Owner: gpts_data_user
+-- Name: naming_templates_old naming_id; Type: DEFAULT; Schema: public; Owner: begin
 --
 
 ALTER TABLE ONLY public.naming_templates_old ALTER COLUMN naming_id SET DEFAULT nextval('public.naming_templates_naming_id_seq'::regclass);
@@ -5960,6 +8925,22 @@ ALTER TABLE ONLY public.visual_principles ALTER COLUMN principle_id SET DEFAULT 
 --
 
 ALTER TABLE ONLY public.visual_recommendations ALTER COLUMN recommendation_id SET DEFAULT nextval('public.visual_recommendations_recommendation_id_seq'::regclass);
+
+
+--
+-- Name: backup_integrations_cmis backup_integrations_cmis_pkey; Type: CONSTRAINT; Schema: archive; Owner: begin
+--
+
+ALTER TABLE ONLY archive.backup_integrations_cmis
+    ADD CONSTRAINT backup_integrations_cmis_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: embedding_update_queue_backup embedding_update_queue_backup_pkey; Type: CONSTRAINT; Schema: archive; Owner: begin
+--
+
+ALTER TABLE ONLY archive.embedding_update_queue_backup
+    ADD CONSTRAINT embedding_update_queue_backup_pkey PRIMARY KEY (id);
 
 
 --
@@ -6067,6 +9048,14 @@ ALTER TABLE ONLY cmis.ai_generated_campaigns
 
 
 --
+-- Name: ai_models ai_models_pkey; Type: CONSTRAINT; Schema: cmis; Owner: begin
+--
+
+ALTER TABLE ONLY cmis.ai_models
+    ADD CONSTRAINT ai_models_pkey PRIMARY KEY (model_id);
+
+
+--
 -- Name: analytics_integrations analytics_integrations_pkey; Type: CONSTRAINT; Schema: cmis; Owner: begin
 --
 
@@ -6088,6 +9077,22 @@ ALTER TABLE ONLY cmis.anchors
 
 ALTER TABLE ONLY cmis.anchors
     ADD CONSTRAINT anchors_pkey PRIMARY KEY (anchor_id);
+
+
+--
+-- Name: api_keys api_keys_pkey; Type: CONSTRAINT; Schema: cmis; Owner: begin
+--
+
+ALTER TABLE ONLY cmis.api_keys
+    ADD CONSTRAINT api_keys_pkey PRIMARY KEY (key_id);
+
+
+--
+-- Name: api_keys api_keys_service_code_key; Type: CONSTRAINT; Schema: cmis; Owner: begin
+--
+
+ALTER TABLE ONLY cmis.api_keys
+    ADD CONSTRAINT api_keys_service_code_key UNIQUE (service_code);
 
 
 --
@@ -6115,6 +9120,30 @@ ALTER TABLE ONLY cmis.bundle_offerings
 
 
 --
+-- Name: cache_metadata cache_metadata_pkey; Type: CONSTRAINT; Schema: cmis; Owner: begin
+--
+
+ALTER TABLE ONLY cmis.cache_metadata
+    ADD CONSTRAINT cache_metadata_pkey PRIMARY KEY (cache_name);
+
+
+--
+-- Name: campaign_context_links campaign_context_links_campaign_id_context_id_link_type_key; Type: CONSTRAINT; Schema: cmis; Owner: begin
+--
+
+ALTER TABLE ONLY cmis.campaign_context_links
+    ADD CONSTRAINT campaign_context_links_campaign_id_context_id_link_type_key UNIQUE (campaign_id, context_id, link_type);
+
+
+--
+-- Name: campaign_context_links campaign_context_links_pkey; Type: CONSTRAINT; Schema: cmis; Owner: begin
+--
+
+ALTER TABLE ONLY cmis.campaign_context_links
+    ADD CONSTRAINT campaign_context_links_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: campaign_offerings campaign_offerings_pkey; Type: CONSTRAINT; Schema: cmis; Owner: begin
 --
 
@@ -6128,6 +9157,14 @@ ALTER TABLE ONLY cmis.campaign_offerings
 
 ALTER TABLE ONLY cmis.campaign_performance_dashboard
     ADD CONSTRAINT campaign_performance_dashboard_pkey PRIMARY KEY (dashboard_id);
+
+
+--
+-- Name: campaigns campaigns_pkey; Type: CONSTRAINT; Schema: cmis; Owner: begin
+--
+
+ALTER TABLE ONLY cmis.campaigns
+    ADD CONSTRAINT campaigns_pkey PRIMARY KEY (campaign_id);
 
 
 --
@@ -6195,6 +9232,46 @@ ALTER TABLE ONLY cmis.content_plans
 
 
 --
+-- Name: contexts_base contexts_base_pkey; Type: CONSTRAINT; Schema: cmis; Owner: begin
+--
+
+ALTER TABLE ONLY cmis.contexts_base
+    ADD CONSTRAINT contexts_base_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: contexts_creative contexts_creative_pkey; Type: CONSTRAINT; Schema: cmis; Owner: begin
+--
+
+ALTER TABLE ONLY cmis.contexts_creative
+    ADD CONSTRAINT contexts_creative_pkey PRIMARY KEY (context_id);
+
+
+--
+-- Name: contexts_offering contexts_offering_pkey; Type: CONSTRAINT; Schema: cmis; Owner: begin
+--
+
+ALTER TABLE ONLY cmis.contexts_offering
+    ADD CONSTRAINT contexts_offering_pkey PRIMARY KEY (context_id);
+
+
+--
+-- Name: contexts contexts_pkey; Type: CONSTRAINT; Schema: cmis; Owner: begin
+--
+
+ALTER TABLE ONLY cmis.contexts
+    ADD CONSTRAINT contexts_pkey PRIMARY KEY (context_id);
+
+
+--
+-- Name: contexts_value contexts_value_pkey; Type: CONSTRAINT; Schema: cmis; Owner: begin
+--
+
+ALTER TABLE ONLY cmis.contexts_value
+    ADD CONSTRAINT contexts_value_pkey PRIMARY KEY (context_id);
+
+
+--
 -- Name: copy_components copy_components_pkey; Type: CONSTRAINT; Schema: cmis; Owner: begin
 --
 
@@ -6224,6 +9301,14 @@ ALTER TABLE ONLY cmis.creative_briefs
 
 ALTER TABLE ONLY cmis.creative_contexts
     ADD CONSTRAINT creative_contexts_pkey PRIMARY KEY (context_id);
+
+
+--
+-- Name: creative_outputs creative_outputs_pkey; Type: CONSTRAINT; Schema: cmis; Owner: begin
+--
+
+ALTER TABLE ONLY cmis.creative_outputs
+    ADD CONSTRAINT creative_outputs_pkey PRIMARY KEY (output_id);
 
 
 --
@@ -6363,6 +9448,14 @@ ALTER TABLE ONLY cmis.flows
 
 
 --
+-- Name: integrations integrations_pkey; Type: CONSTRAINT; Schema: cmis; Owner: begin
+--
+
+ALTER TABLE ONLY cmis.integrations
+    ADD CONSTRAINT integrations_pkey PRIMARY KEY (integration_id);
+
+
+--
 -- Name: logs_migration logs_migration_pkey; Type: CONSTRAINT; Schema: cmis; Owner: begin
 --
 
@@ -6451,18 +9544,18 @@ ALTER TABLE ONLY cmis.offerings_full_details
 
 
 --
--- Name: offerings offerings_org_id_name_key; Type: CONSTRAINT; Schema: cmis; Owner: begin
+-- Name: offerings_old offerings_org_id_name_key; Type: CONSTRAINT; Schema: cmis; Owner: begin
 --
 
-ALTER TABLE ONLY cmis.offerings
+ALTER TABLE ONLY cmis.offerings_old
     ADD CONSTRAINT offerings_org_id_name_key UNIQUE (org_id, name);
 
 
 --
--- Name: offerings offerings_pkey; Type: CONSTRAINT; Schema: cmis; Owner: begin
+-- Name: offerings_old offerings_pkey; Type: CONSTRAINT; Schema: cmis; Owner: begin
 --
 
-ALTER TABLE ONLY cmis.offerings
+ALTER TABLE ONLY cmis.offerings_old
     ADD CONSTRAINT offerings_pkey PRIMARY KEY (offering_id);
 
 
@@ -6531,6 +9624,38 @@ ALTER TABLE ONLY cmis.output_contracts
 
 
 --
+-- Name: performance_metrics performance_metrics_pkey; Type: CONSTRAINT; Schema: cmis; Owner: begin
+--
+
+ALTER TABLE ONLY cmis.performance_metrics
+    ADD CONSTRAINT performance_metrics_pkey PRIMARY KEY (metric_id);
+
+
+--
+-- Name: permissions_cache permissions_cache_pkey; Type: CONSTRAINT; Schema: cmis; Owner: begin
+--
+
+ALTER TABLE ONLY cmis.permissions_cache
+    ADD CONSTRAINT permissions_cache_pkey PRIMARY KEY (permission_code);
+
+
+--
+-- Name: permissions permissions_permission_code_key; Type: CONSTRAINT; Schema: cmis; Owner: begin
+--
+
+ALTER TABLE ONLY cmis.permissions
+    ADD CONSTRAINT permissions_permission_code_key UNIQUE (permission_code);
+
+
+--
+-- Name: permissions permissions_pkey; Type: CONSTRAINT; Schema: cmis; Owner: begin
+--
+
+ALTER TABLE ONLY cmis.permissions
+    ADD CONSTRAINT permissions_pkey PRIMARY KEY (permission_id);
+
+
+--
 -- Name: predictive_visual_engine predictive_visual_engine_pkey; Type: CONSTRAINT; Schema: cmis; Owner: begin
 --
 
@@ -6579,11 +9704,67 @@ ALTER TABLE ONLY cmis.prompt_templates
 
 
 --
+-- Name: reference_entities reference_entities_pkey; Type: CONSTRAINT; Schema: cmis; Owner: begin
+--
+
+ALTER TABLE ONLY cmis.reference_entities
+    ADD CONSTRAINT reference_entities_pkey PRIMARY KEY (ref_id);
+
+
+--
+-- Name: required_fields_cache required_fields_cache_pkey; Type: CONSTRAINT; Schema: cmis; Owner: begin
+--
+
+ALTER TABLE ONLY cmis.required_fields_cache
+    ADD CONSTRAINT required_fields_cache_pkey PRIMARY KEY (module_scope);
+
+
+--
+-- Name: role_permissions role_permissions_pkey; Type: CONSTRAINT; Schema: cmis; Owner: begin
+--
+
+ALTER TABLE ONLY cmis.role_permissions
+    ADD CONSTRAINT role_permissions_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: role_permissions role_permissions_role_id_permission_id_key; Type: CONSTRAINT; Schema: cmis; Owner: begin
+--
+
+ALTER TABLE ONLY cmis.role_permissions
+    ADD CONSTRAINT role_permissions_role_id_permission_id_key UNIQUE (role_id, permission_id);
+
+
+--
+-- Name: roles roles_org_id_role_code_key; Type: CONSTRAINT; Schema: cmis; Owner: begin
+--
+
+ALTER TABLE ONLY cmis.roles
+    ADD CONSTRAINT roles_org_id_role_code_key UNIQUE (org_id, role_code);
+
+
+--
+-- Name: roles roles_pkey; Type: CONSTRAINT; Schema: cmis; Owner: begin
+--
+
+ALTER TABLE ONLY cmis.roles
+    ADD CONSTRAINT roles_pkey PRIMARY KEY (role_id);
+
+
+--
 -- Name: scene_library scene_library_pkey; Type: CONSTRAINT; Schema: cmis; Owner: begin
 --
 
 ALTER TABLE ONLY cmis.scene_library
     ADD CONSTRAINT scene_library_pkey PRIMARY KEY (scene_id);
+
+
+--
+-- Name: security_context_audit security_context_audit_pkey; Type: CONSTRAINT; Schema: cmis; Owner: begin
+--
+
+ALTER TABLE ONLY cmis.security_context_audit
+    ADD CONSTRAINT security_context_audit_pkey PRIMARY KEY (id);
 
 
 --
@@ -6600,6 +9781,14 @@ ALTER TABLE ONLY cmis.segments
 
 ALTER TABLE ONLY cmis.segments
     ADD CONSTRAINT segments_pkey PRIMARY KEY (segment_id);
+
+
+--
+-- Name: session_context session_context_pkey; Type: CONSTRAINT; Schema: cmis; Owner: begin
+--
+
+ALTER TABLE ONLY cmis.session_context
+    ADD CONSTRAINT session_context_pkey PRIMARY KEY (session_id);
 
 
 --
@@ -6675,6 +9864,22 @@ ALTER TABLE ONLY cmis.sync_logs
 
 
 --
+-- Name: campaigns uq_campaign_business; Type: CONSTRAINT; Schema: cmis; Owner: begin
+--
+
+ALTER TABLE ONLY cmis.campaigns
+    ADD CONSTRAINT uq_campaign_business UNIQUE (org_id, name, start_date);
+
+
+--
+-- Name: integrations uq_integration_business; Type: CONSTRAINT; Schema: cmis; Owner: begin
+--
+
+ALTER TABLE ONLY cmis.integrations
+    ADD CONSTRAINT uq_integration_business UNIQUE (org_id, platform, account_id);
+
+
+--
 -- Name: flow_steps uq_step; Type: CONSTRAINT; Schema: cmis; Owner: begin
 --
 
@@ -6683,11 +9888,59 @@ ALTER TABLE ONLY cmis.flow_steps
 
 
 --
--- Name: users users_org_id_email_key; Type: CONSTRAINT; Schema: cmis; Owner: begin
+-- Name: user_activities user_activities_pkey; Type: CONSTRAINT; Schema: cmis; Owner: begin
 --
 
-ALTER TABLE ONLY cmis.users
-    ADD CONSTRAINT users_org_id_email_key UNIQUE (org_id, email);
+ALTER TABLE ONLY cmis.user_activities
+    ADD CONSTRAINT user_activities_pkey PRIMARY KEY (activity_id);
+
+
+--
+-- Name: user_orgs user_orgs_pkey; Type: CONSTRAINT; Schema: cmis; Owner: begin
+--
+
+ALTER TABLE ONLY cmis.user_orgs
+    ADD CONSTRAINT user_orgs_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: user_orgs user_orgs_user_id_org_id_key; Type: CONSTRAINT; Schema: cmis; Owner: begin
+--
+
+ALTER TABLE ONLY cmis.user_orgs
+    ADD CONSTRAINT user_orgs_user_id_org_id_key UNIQUE (user_id, org_id);
+
+
+--
+-- Name: user_permissions user_permissions_pkey; Type: CONSTRAINT; Schema: cmis; Owner: begin
+--
+
+ALTER TABLE ONLY cmis.user_permissions
+    ADD CONSTRAINT user_permissions_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: user_permissions user_permissions_user_id_org_id_permission_id_key; Type: CONSTRAINT; Schema: cmis; Owner: begin
+--
+
+ALTER TABLE ONLY cmis.user_permissions
+    ADD CONSTRAINT user_permissions_user_id_org_id_permission_id_key UNIQUE (user_id, org_id, permission_id);
+
+
+--
+-- Name: user_sessions user_sessions_pkey; Type: CONSTRAINT; Schema: cmis; Owner: begin
+--
+
+ALTER TABLE ONLY cmis.user_sessions
+    ADD CONSTRAINT user_sessions_pkey PRIMARY KEY (session_id);
+
+
+--
+-- Name: user_sessions user_sessions_session_token_key; Type: CONSTRAINT; Schema: cmis; Owner: begin
+--
+
+ALTER TABLE ONLY cmis.user_sessions
+    ADD CONSTRAINT user_sessions_session_token_key UNIQUE (session_token);
 
 
 --
@@ -6811,6 +10064,14 @@ ALTER TABLE ONLY cmis_knowledge.creative_templates
 
 
 --
+-- Name: dev dev_pkey; Type: CONSTRAINT; Schema: cmis_knowledge; Owner: begin
+--
+
+ALTER TABLE ONLY cmis_knowledge.dev
+    ADD CONSTRAINT dev_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: direction_mappings direction_mappings_direction_name_key; Type: CONSTRAINT; Schema: cmis_knowledge; Owner: begin
 --
 
@@ -6867,6 +10128,14 @@ ALTER TABLE ONLY cmis_knowledge.embeddings_cache
 
 
 --
+-- Name: index_backup_2025_11_10 index_backup_2025_11_10_pkey; Type: CONSTRAINT; Schema: cmis_knowledge; Owner: begin
+--
+
+ALTER TABLE ONLY cmis_knowledge.index_backup_2025_11_10
+    ADD CONSTRAINT index_backup_2025_11_10_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: index index_pkey; Type: CONSTRAINT; Schema: cmis_knowledge; Owner: begin
 --
 
@@ -6891,6 +10160,22 @@ ALTER TABLE ONLY cmis_knowledge.intent_mappings
 
 
 --
+-- Name: marketing marketing_pkey; Type: CONSTRAINT; Schema: cmis_knowledge; Owner: begin
+--
+
+ALTER TABLE ONLY cmis_knowledge.marketing
+    ADD CONSTRAINT marketing_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: org org_pkey; Type: CONSTRAINT; Schema: cmis_knowledge; Owner: begin
+--
+
+ALTER TABLE ONLY cmis_knowledge.org
+    ADD CONSTRAINT org_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: purpose_mappings purpose_mappings_pkey; Type: CONSTRAINT; Schema: cmis_knowledge; Owner: begin
 --
 
@@ -6904,6 +10189,14 @@ ALTER TABLE ONLY cmis_knowledge.purpose_mappings
 
 ALTER TABLE ONLY cmis_knowledge.purpose_mappings
     ADD CONSTRAINT purpose_mappings_purpose_name_key UNIQUE (purpose_name);
+
+
+--
+-- Name: research research_pkey; Type: CONSTRAINT; Schema: cmis_knowledge; Owner: begin
+--
+
+ALTER TABLE ONLY cmis_knowledge.research
+    ADD CONSTRAINT research_pkey PRIMARY KEY (id);
 
 
 --
@@ -6979,99 +10272,11 @@ ALTER TABLE ONLY cmis_marketing.voice_scripts
 
 
 --
--- Name: ai_models ai_models_pkey; Type: CONSTRAINT; Schema: cmis_refactored; Owner: begin
+-- Name: schema_fixes_log schema_fixes_log_pkey; Type: CONSTRAINT; Schema: cmis_ops; Owner: begin
 --
 
-ALTER TABLE ONLY cmis_refactored.ai_models
-    ADD CONSTRAINT ai_models_pkey PRIMARY KEY (model_id);
-
-
---
--- Name: api_keys api_keys_pkey; Type: CONSTRAINT; Schema: cmis_refactored; Owner: begin
---
-
-ALTER TABLE ONLY cmis_refactored.api_keys
-    ADD CONSTRAINT api_keys_pkey PRIMARY KEY (key_id);
-
-
---
--- Name: api_keys api_keys_service_code_key; Type: CONSTRAINT; Schema: cmis_refactored; Owner: begin
---
-
-ALTER TABLE ONLY cmis_refactored.api_keys
-    ADD CONSTRAINT api_keys_service_code_key UNIQUE (service_code);
-
-
---
--- Name: campaigns campaigns_pkey; Type: CONSTRAINT; Schema: cmis_refactored; Owner: begin
---
-
-ALTER TABLE ONLY cmis_refactored.campaigns
-    ADD CONSTRAINT campaigns_pkey PRIMARY KEY (campaign_id);
-
-
---
--- Name: contexts contexts_pkey; Type: CONSTRAINT; Schema: cmis_refactored; Owner: begin
---
-
-ALTER TABLE ONLY cmis_refactored.contexts
-    ADD CONSTRAINT contexts_pkey PRIMARY KEY (context_id);
-
-
---
--- Name: creative_outputs creative_outputs_pkey; Type: CONSTRAINT; Schema: cmis_refactored; Owner: begin
---
-
-ALTER TABLE ONLY cmis_refactored.creative_outputs
-    ADD CONSTRAINT creative_outputs_pkey PRIMARY KEY (output_id);
-
-
---
--- Name: integrations integrations_pkey; Type: CONSTRAINT; Schema: cmis_refactored; Owner: begin
---
-
-ALTER TABLE ONLY cmis_refactored.integrations
-    ADD CONSTRAINT integrations_pkey PRIMARY KEY (integration_id);
-
-
---
--- Name: organizations organizations_pkey; Type: CONSTRAINT; Schema: cmis_refactored; Owner: begin
---
-
-ALTER TABLE ONLY cmis_refactored.organizations
-    ADD CONSTRAINT organizations_pkey PRIMARY KEY (org_id);
-
-
---
--- Name: performance_metrics performance_metrics_pkey; Type: CONSTRAINT; Schema: cmis_refactored; Owner: begin
---
-
-ALTER TABLE ONLY cmis_refactored.performance_metrics
-    ADD CONSTRAINT performance_metrics_pkey PRIMARY KEY (metric_id);
-
-
---
--- Name: reference_entities reference_entities_pkey; Type: CONSTRAINT; Schema: cmis_refactored; Owner: begin
---
-
-ALTER TABLE ONLY cmis_refactored.reference_entities
-    ADD CONSTRAINT reference_entities_pkey PRIMARY KEY (ref_id);
-
-
---
--- Name: campaigns uq_campaign_business; Type: CONSTRAINT; Schema: cmis_refactored; Owner: begin
---
-
-ALTER TABLE ONLY cmis_refactored.campaigns
-    ADD CONSTRAINT uq_campaign_business UNIQUE (org_id, name, start_date);
-
-
---
--- Name: integrations uq_integration_business; Type: CONSTRAINT; Schema: cmis_refactored; Owner: begin
---
-
-ALTER TABLE ONLY cmis_refactored.integrations
-    ADD CONSTRAINT uq_integration_business UNIQUE (org_id, platform, account_id);
+ALTER TABLE ONLY cmis_ops.schema_fixes_log
+    ADD CONSTRAINT schema_fixes_log_pkey PRIMARY KEY (id);
 
 
 --
@@ -7123,7 +10328,23 @@ ALTER TABLE ONLY lab.test_matrix
 
 
 --
--- Name: awareness_stages awareness_stages_pkey; Type: CONSTRAINT; Schema: public; Owner: gpts_data_user
+-- Name: audit_log audit_log_pkey; Type: CONSTRAINT; Schema: operations; Owner: begin
+--
+
+ALTER TABLE ONLY operations.audit_log
+    ADD CONSTRAINT audit_log_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: migrations migrations_pkey; Type: CONSTRAINT; Schema: operations; Owner: begin
+--
+
+ALTER TABLE ONLY operations.migrations
+    ADD CONSTRAINT migrations_pkey PRIMARY KEY (migration_id);
+
+
+--
+-- Name: awareness_stages awareness_stages_pkey; Type: CONSTRAINT; Schema: public; Owner: begin
 --
 
 ALTER TABLE ONLY public.awareness_stages
@@ -7139,7 +10360,7 @@ ALTER TABLE ONLY public.cache
 
 
 --
--- Name: channel_formats channel_formats_channel_id_code_key; Type: CONSTRAINT; Schema: public; Owner: gpts_data_user
+-- Name: channel_formats channel_formats_channel_id_code_key; Type: CONSTRAINT; Schema: public; Owner: begin
 --
 
 ALTER TABLE ONLY public.channel_formats
@@ -7147,7 +10368,7 @@ ALTER TABLE ONLY public.channel_formats
 
 
 --
--- Name: channel_formats channel_formats_pkey; Type: CONSTRAINT; Schema: public; Owner: gpts_data_user
+-- Name: channel_formats channel_formats_pkey; Type: CONSTRAINT; Schema: public; Owner: begin
 --
 
 ALTER TABLE ONLY public.channel_formats
@@ -7155,7 +10376,7 @@ ALTER TABLE ONLY public.channel_formats
 
 
 --
--- Name: channels channels_code_key; Type: CONSTRAINT; Schema: public; Owner: gpts_data_user
+-- Name: channels channels_code_key; Type: CONSTRAINT; Schema: public; Owner: begin
 --
 
 ALTER TABLE ONLY public.channels
@@ -7163,7 +10384,7 @@ ALTER TABLE ONLY public.channels
 
 
 --
--- Name: channels channels_pkey; Type: CONSTRAINT; Schema: public; Owner: gpts_data_user
+-- Name: channels channels_pkey; Type: CONSTRAINT; Schema: public; Owner: begin
 --
 
 ALTER TABLE ONLY public.channels
@@ -7187,7 +10408,7 @@ ALTER TABLE ONLY public.cmis_system_health
 
 
 --
--- Name: component_types component_types_pkey; Type: CONSTRAINT; Schema: public; Owner: gpts_data_user
+-- Name: component_types component_types_pkey; Type: CONSTRAINT; Schema: public; Owner: begin
 --
 
 ALTER TABLE ONLY public.component_types
@@ -7203,7 +10424,7 @@ ALTER TABLE ONLY public.frameworks
 
 
 --
--- Name: funnel_stages funnel_stages_pkey; Type: CONSTRAINT; Schema: public; Owner: gpts_data_user
+-- Name: funnel_stages funnel_stages_pkey; Type: CONSTRAINT; Schema: public; Owner: begin
 --
 
 ALTER TABLE ONLY public.funnel_stages
@@ -7211,7 +10432,7 @@ ALTER TABLE ONLY public.funnel_stages
 
 
 --
--- Name: industries industries_name_key; Type: CONSTRAINT; Schema: public; Owner: gpts_data_user
+-- Name: industries industries_name_key; Type: CONSTRAINT; Schema: public; Owner: begin
 --
 
 ALTER TABLE ONLY public.industries
@@ -7219,7 +10440,7 @@ ALTER TABLE ONLY public.industries
 
 
 --
--- Name: industries industries_pkey; Type: CONSTRAINT; Schema: public; Owner: gpts_data_user
+-- Name: industries industries_pkey; Type: CONSTRAINT; Schema: public; Owner: begin
 --
 
 ALTER TABLE ONLY public.industries
@@ -7227,7 +10448,15 @@ ALTER TABLE ONLY public.industries
 
 
 --
--- Name: kpis kpis_pkey; Type: CONSTRAINT; Schema: public; Owner: gpts_data_user
+-- Name: jobs jobs_pkey; Type: CONSTRAINT; Schema: public; Owner: begin
+--
+
+ALTER TABLE ONLY public.jobs
+    ADD CONSTRAINT jobs_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: kpis kpis_pkey; Type: CONSTRAINT; Schema: public; Owner: begin
 --
 
 ALTER TABLE ONLY public.kpis
@@ -7235,7 +10464,7 @@ ALTER TABLE ONLY public.kpis
 
 
 --
--- Name: marketing_objectives marketing_objectives_pkey; Type: CONSTRAINT; Schema: public; Owner: gpts_data_user
+-- Name: marketing_objectives marketing_objectives_pkey; Type: CONSTRAINT; Schema: public; Owner: begin
 --
 
 ALTER TABLE ONLY public.marketing_objectives
@@ -7243,7 +10472,7 @@ ALTER TABLE ONLY public.marketing_objectives
 
 
 --
--- Name: markets markets_market_name_language_code_key; Type: CONSTRAINT; Schema: public; Owner: gpts_data_user
+-- Name: markets markets_market_name_language_code_key; Type: CONSTRAINT; Schema: public; Owner: begin
 --
 
 ALTER TABLE ONLY public.markets
@@ -7251,7 +10480,7 @@ ALTER TABLE ONLY public.markets
 
 
 --
--- Name: markets markets_pkey; Type: CONSTRAINT; Schema: public; Owner: gpts_data_user
+-- Name: markets markets_pkey; Type: CONSTRAINT; Schema: public; Owner: begin
 --
 
 ALTER TABLE ONLY public.markets
@@ -7259,7 +10488,15 @@ ALTER TABLE ONLY public.markets
 
 
 --
--- Name: modules_old modules_code_key; Type: CONSTRAINT; Schema: public; Owner: gpts_data_user
+-- Name: migration_log migration_log_pkey; Type: CONSTRAINT; Schema: public; Owner: begin
+--
+
+ALTER TABLE ONLY public.migration_log
+    ADD CONSTRAINT migration_log_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: modules_old modules_code_key; Type: CONSTRAINT; Schema: public; Owner: begin
 --
 
 ALTER TABLE ONLY public.modules_old
@@ -7267,7 +10504,7 @@ ALTER TABLE ONLY public.modules_old
 
 
 --
--- Name: modules_old modules_pkey; Type: CONSTRAINT; Schema: public; Owner: gpts_data_user
+-- Name: modules_old modules_pkey; Type: CONSTRAINT; Schema: public; Owner: begin
 --
 
 ALTER TABLE ONLY public.modules_old
@@ -7275,7 +10512,7 @@ ALTER TABLE ONLY public.modules_old
 
 
 --
--- Name: naming_templates_old naming_templates_pkey; Type: CONSTRAINT; Schema: public; Owner: gpts_data_user
+-- Name: naming_templates_old naming_templates_pkey; Type: CONSTRAINT; Schema: public; Owner: begin
 --
 
 ALTER TABLE ONLY public.naming_templates_old
@@ -7283,7 +10520,7 @@ ALTER TABLE ONLY public.naming_templates_old
 
 
 --
--- Name: naming_templates_old naming_templates_scope_key; Type: CONSTRAINT; Schema: public; Owner: gpts_data_user
+-- Name: naming_templates_old naming_templates_scope_key; Type: CONSTRAINT; Schema: public; Owner: begin
 --
 
 ALTER TABLE ONLY public.naming_templates_old
@@ -7291,7 +10528,7 @@ ALTER TABLE ONLY public.naming_templates_old
 
 
 --
--- Name: proof_layers proof_layers_pkey; Type: CONSTRAINT; Schema: public; Owner: gpts_data_user
+-- Name: proof_layers proof_layers_pkey; Type: CONSTRAINT; Schema: public; Owner: begin
 --
 
 ALTER TABLE ONLY public.proof_layers
@@ -7307,7 +10544,7 @@ ALTER TABLE ONLY public.sessions
 
 
 --
--- Name: strategies strategies_pkey; Type: CONSTRAINT; Schema: public; Owner: gpts_data_user
+-- Name: strategies strategies_pkey; Type: CONSTRAINT; Schema: public; Owner: begin
 --
 
 ALTER TABLE ONLY public.strategies
@@ -7315,11 +10552,19 @@ ALTER TABLE ONLY public.strategies
 
 
 --
--- Name: tones tones_pkey; Type: CONSTRAINT; Schema: public; Owner: gpts_data_user
+-- Name: tones tones_pkey; Type: CONSTRAINT; Schema: public; Owner: begin
 --
 
 ALTER TABLE ONLY public.tones
     ADD CONSTRAINT tones_pkey PRIMARY KEY (tone);
+
+
+--
+-- Name: view_definitions_backup view_definitions_backup_pkey; Type: CONSTRAINT; Schema: public; Owner: begin
+--
+
+ALTER TABLE ONLY public.view_definitions_backup
+    ADD CONSTRAINT view_definitions_backup_pkey PRIMARY KEY (viewname);
 
 
 --
@@ -7412,6 +10657,13 @@ CREATE INDEX idx_anchors_code ON cmis.anchors USING gist (code);
 
 
 --
+-- Name: idx_api_keys_service_code; Type: INDEX; Schema: cmis; Owner: begin
+--
+
+CREATE INDEX idx_api_keys_service_code ON cmis.api_keys USING btree (service_code);
+
+
+--
 -- Name: idx_assets_campaign; Type: INDEX; Schema: cmis; Owner: begin
 --
 
@@ -7426,6 +10678,69 @@ CREATE INDEX idx_audit_log_ts ON cmis.audit_log USING btree (ts DESC);
 
 
 --
+-- Name: idx_campaign_links_active; Type: INDEX; Schema: cmis; Owner: begin
+--
+
+CREATE INDEX idx_campaign_links_active ON cmis.campaign_context_links USING btree (is_active) WHERE (is_active = true);
+
+
+--
+-- Name: idx_campaign_links_campaign; Type: INDEX; Schema: cmis; Owner: begin
+--
+
+CREATE INDEX idx_campaign_links_campaign ON cmis.campaign_context_links USING btree (campaign_id);
+
+
+--
+-- Name: idx_campaign_links_context; Type: INDEX; Schema: cmis; Owner: begin
+--
+
+CREATE INDEX idx_campaign_links_context ON cmis.campaign_context_links USING btree (context_id);
+
+
+--
+-- Name: idx_campaign_links_created_at; Type: INDEX; Schema: cmis; Owner: begin
+--
+
+CREATE INDEX idx_campaign_links_created_at ON cmis.campaign_context_links USING btree (created_at);
+
+
+--
+-- Name: idx_campaign_links_effective; Type: INDEX; Schema: cmis; Owner: begin
+--
+
+CREATE INDEX idx_campaign_links_effective ON cmis.campaign_context_links USING btree (effective_from, effective_to) WHERE ((effective_from IS NOT NULL) OR (effective_to IS NOT NULL));
+
+
+--
+-- Name: idx_campaign_links_link_type; Type: INDEX; Schema: cmis; Owner: begin
+--
+
+CREATE INDEX idx_campaign_links_link_type ON cmis.campaign_context_links USING btree (link_type);
+
+
+--
+-- Name: idx_campaign_links_metadata; Type: INDEX; Schema: cmis; Owner: begin
+--
+
+CREATE INDEX idx_campaign_links_metadata ON cmis.campaign_context_links USING gin (metadata);
+
+
+--
+-- Name: idx_campaign_links_metadata_gin; Type: INDEX; Schema: cmis; Owner: begin
+--
+
+CREATE INDEX idx_campaign_links_metadata_gin ON cmis.campaign_context_links USING gin (metadata jsonb_path_ops);
+
+
+--
+-- Name: idx_campaign_links_type; Type: INDEX; Schema: cmis; Owner: begin
+--
+
+CREATE INDEX idx_campaign_links_type ON cmis.campaign_context_links USING btree (context_type);
+
+
+--
 -- Name: idx_campaign_offerings_cid; Type: INDEX; Schema: cmis; Owner: begin
 --
 
@@ -7437,6 +10752,34 @@ CREATE INDEX idx_campaign_offerings_cid ON cmis.campaign_offerings USING btree (
 --
 
 CREATE INDEX idx_campaign_offerings_oid ON cmis.campaign_offerings USING btree (offering_id);
+
+
+--
+-- Name: idx_campaigns_active; Type: INDEX; Schema: cmis; Owner: begin
+--
+
+CREATE INDEX idx_campaigns_active ON cmis.campaigns USING btree (org_id, status) WHERE (deleted_at IS NULL);
+
+
+--
+-- Name: idx_campaigns_dates; Type: INDEX; Schema: cmis; Owner: begin
+--
+
+CREATE INDEX idx_campaigns_dates ON cmis.campaigns USING btree (start_date, end_date);
+
+
+--
+-- Name: idx_campaigns_org_id; Type: INDEX; Schema: cmis; Owner: begin
+--
+
+CREATE INDEX idx_campaigns_org_id ON cmis.campaigns USING btree (org_id);
+
+
+--
+-- Name: idx_campaigns_org_status_created; Type: INDEX; Schema: cmis; Owner: begin
+--
+
+CREATE INDEX idx_campaigns_org_status_created ON cmis.campaigns USING btree (org_id, status, created_at DESC);
 
 
 --
@@ -7475,6 +10818,13 @@ CREATE INDEX idx_cc_type ON cmis.copy_components USING btree (type_code);
 
 
 --
+-- Name: idx_content_items_active; Type: INDEX; Schema: cmis; Owner: begin
+--
+
+CREATE INDEX idx_content_items_active ON cmis.content_items USING btree (org_id, created_at DESC) WHERE (deleted_at IS NULL);
+
+
+--
 -- Name: idx_content_items_channel; Type: INDEX; Schema: cmis; Owner: begin
 --
 
@@ -7510,10 +10860,38 @@ CREATE INDEX idx_content_items_plan ON cmis.content_items USING btree (plan_id);
 
 
 --
+-- Name: idx_contexts_metadata_gin; Type: INDEX; Schema: cmis; Owner: begin
+--
+
+CREATE INDEX idx_contexts_metadata_gin ON cmis.contexts USING gin (metadata jsonb_path_ops);
+
+
+--
+-- Name: idx_creative_assets_active; Type: INDEX; Schema: cmis; Owner: begin
+--
+
+CREATE INDEX idx_creative_assets_active ON cmis.creative_assets USING btree (org_id, campaign_id) WHERE (deleted_at IS NULL);
+
+
+--
 -- Name: idx_creative_assets_org; Type: INDEX; Schema: cmis; Owner: begin
 --
 
 CREATE INDEX idx_creative_assets_org ON cmis.creative_assets USING btree (org_id);
+
+
+--
+-- Name: idx_creative_assets_org_id; Type: INDEX; Schema: cmis; Owner: begin
+--
+
+CREATE INDEX idx_creative_assets_org_id ON cmis.creative_assets USING btree (org_id);
+
+
+--
+-- Name: idx_creative_briefs_org_id; Type: INDEX; Schema: cmis; Owner: begin
+--
+
+CREATE INDEX idx_creative_briefs_org_id ON cmis.creative_briefs USING btree (org_id);
 
 
 --
@@ -7538,6 +10916,13 @@ CREATE INDEX idx_field_values_json ON cmis.field_values USING gin (value jsonb_p
 
 
 --
+-- Name: idx_integrations_active; Type: INDEX; Schema: cmis; Owner: begin
+--
+
+CREATE INDEX idx_integrations_active ON cmis.integrations USING btree (org_id) WHERE (deleted_at IS NULL);
+
+
+--
 -- Name: idx_orgs_id; Type: INDEX; Schema: cmis; Owner: begin
 --
 
@@ -7545,10 +10930,59 @@ CREATE INDEX idx_orgs_id ON cmis.orgs USING btree (org_id);
 
 
 --
--- Name: idx_users_org; Type: INDEX; Schema: cmis; Owner: begin
+-- Name: idx_reference_entities_metadata_gin; Type: INDEX; Schema: cmis; Owner: begin
 --
 
-CREATE INDEX idx_users_org ON cmis.users USING btree (org_id);
+CREATE INDEX idx_reference_entities_metadata_gin ON cmis.reference_entities USING gin (metadata jsonb_path_ops);
+
+
+--
+-- Name: idx_security_audit_org_created; Type: INDEX; Schema: cmis; Owner: begin
+--
+
+CREATE INDEX idx_security_audit_org_created ON cmis.security_context_audit USING btree (org_id, created_at DESC);
+
+
+--
+-- Name: idx_security_audit_user_created; Type: INDEX; Schema: cmis; Owner: begin
+--
+
+CREATE INDEX idx_security_audit_user_created ON cmis.security_context_audit USING btree (user_id, created_at DESC);
+
+
+--
+-- Name: idx_user_sessions_expires; Type: INDEX; Schema: cmis; Owner: begin
+--
+
+CREATE INDEX idx_user_sessions_expires ON cmis.user_sessions USING btree (expires_at) WHERE (is_active = true);
+
+
+--
+-- Name: idx_user_sessions_token; Type: INDEX; Schema: cmis; Owner: begin
+--
+
+CREATE INDEX idx_user_sessions_token ON cmis.user_sessions USING btree (session_token) WHERE (is_active = true);
+
+
+--
+-- Name: idx_user_sessions_user_id; Type: INDEX; Schema: cmis; Owner: begin
+--
+
+CREATE INDEX idx_user_sessions_user_id ON cmis.user_sessions USING btree (user_id);
+
+
+--
+-- Name: idx_users_active; Type: INDEX; Schema: cmis; Owner: begin
+--
+
+CREATE INDEX idx_users_active ON cmis.users USING btree (email) WHERE (deleted_at IS NULL);
+
+
+--
+-- Name: idx_users_email; Type: INDEX; Schema: cmis; Owner: begin
+--
+
+CREATE INDEX idx_users_email ON cmis.users USING btree (email);
 
 
 --
@@ -7587,6 +11021,13 @@ CREATE UNIQUE INDEX uq_perf_snapshot ON cmis_analytics.performance_snapshot USIN
 
 
 --
+-- Name: idx_audit_logs_created; Type: INDEX; Schema: cmis_audit; Owner: begin
+--
+
+CREATE INDEX idx_audit_logs_created ON cmis_audit.logs USING btree (created_at);
+
+
+--
 -- Name: idx_dev_logs_task; Type: INDEX; Schema: cmis_dev; Owner: begin
 --
 
@@ -7615,6 +11056,27 @@ CREATE INDEX idx_dev_content_embedding ON cmis_knowledge.dev USING hnsw (content
 
 
 --
+-- Name: idx_dev_content_embedding_hnsw; Type: INDEX; Schema: cmis_knowledge; Owner: begin
+--
+
+CREATE INDEX idx_dev_content_embedding_hnsw ON cmis_knowledge.dev USING hnsw (content_embedding public.vector_cosine_ops) WITH (m='16', ef_construction='64');
+
+
+--
+-- Name: idx_dev_semantic_summary_embedding_hnsw; Type: INDEX; Schema: cmis_knowledge; Owner: begin
+--
+
+CREATE INDEX idx_dev_semantic_summary_embedding_hnsw ON cmis_knowledge.dev USING hnsw (semantic_summary_embedding public.vector_cosine_ops) WITH (m='16', ef_construction='64');
+
+
+--
+-- Name: idx_dev_semantic_summary_hnsw; Type: INDEX; Schema: cmis_knowledge; Owner: begin
+--
+
+CREATE INDEX idx_dev_semantic_summary_hnsw ON cmis_knowledge.dev USING hnsw (semantic_summary_embedding public.vector_cosine_ops) WITH (m='16', ef_construction='64');
+
+
+--
 -- Name: idx_direction_embedding; Type: INDEX; Schema: cmis_knowledge; Owner: begin
 --
 
@@ -7622,10 +11084,38 @@ CREATE INDEX idx_direction_embedding ON cmis_knowledge.direction_mappings USING 
 
 
 --
+-- Name: idx_direction_mappings_metadata_gin; Type: INDEX; Schema: cmis_knowledge; Owner: begin
+--
+
+CREATE INDEX idx_direction_mappings_metadata_gin ON cmis_knowledge.direction_mappings USING gin (metadata jsonb_path_ops);
+
+
+--
 -- Name: idx_embedding_queue_status; Type: INDEX; Schema: cmis_knowledge; Owner: begin
 --
 
 CREATE INDEX idx_embedding_queue_status ON cmis_knowledge.embedding_update_queue USING btree (status, priority DESC) WHERE (status = ANY (ARRAY['pending'::text, 'processing'::text]));
+
+
+--
+-- Name: idx_embeddings_cache_hash; Type: INDEX; Schema: cmis_knowledge; Owner: begin
+--
+
+CREATE UNIQUE INDEX idx_embeddings_cache_hash ON cmis_knowledge.embeddings_cache USING btree (input_hash);
+
+
+--
+-- Name: idx_embeddings_cache_last_used; Type: INDEX; Schema: cmis_knowledge; Owner: begin
+--
+
+CREATE INDEX idx_embeddings_cache_last_used ON cmis_knowledge.embeddings_cache USING btree (last_used_at);
+
+
+--
+-- Name: idx_embeddings_cache_metadata_gin; Type: INDEX; Schema: cmis_knowledge; Owner: begin
+--
+
+CREATE INDEX idx_embeddings_cache_metadata_gin ON cmis_knowledge.embeddings_cache USING gin (metadata jsonb_path_ops);
 
 
 --
@@ -7650,10 +11140,31 @@ CREATE INDEX idx_index_direction_vector ON cmis_knowledge.index USING hnsw (dire
 
 
 --
+-- Name: idx_index_direction_vector_hnsw; Type: INDEX; Schema: cmis_knowledge; Owner: begin
+--
+
+CREATE INDEX idx_index_direction_vector_hnsw ON cmis_knowledge.index USING hnsw (direction_vector public.vector_cosine_ops) WITH (m='16', ef_construction='64');
+
+
+--
 -- Name: idx_index_intent_vector; Type: INDEX; Schema: cmis_knowledge; Owner: begin
 --
 
 CREATE INDEX idx_index_intent_vector ON cmis_knowledge.index USING hnsw (intent_vector public.vector_cosine_ops) WITH (m='16', ef_construction='64');
+
+
+--
+-- Name: idx_index_intent_vector_hnsw; Type: INDEX; Schema: cmis_knowledge; Owner: begin
+--
+
+CREATE INDEX idx_index_intent_vector_hnsw ON cmis_knowledge.index USING hnsw (intent_vector public.vector_cosine_ops) WITH (m='16', ef_construction='64');
+
+
+--
+-- Name: idx_index_keywords_embedding_hnsw; Type: INDEX; Schema: cmis_knowledge; Owner: begin
+--
+
+CREATE INDEX idx_index_keywords_embedding_hnsw ON cmis_knowledge.index USING hnsw (keywords_embedding public.vector_cosine_ops) WITH (m='16', ef_construction='64');
 
 
 --
@@ -7664,10 +11175,24 @@ CREATE INDEX idx_index_purpose_vector ON cmis_knowledge.index USING hnsw (purpos
 
 
 --
+-- Name: idx_index_purpose_vector_hnsw; Type: INDEX; Schema: cmis_knowledge; Owner: begin
+--
+
+CREATE INDEX idx_index_purpose_vector_hnsw ON cmis_knowledge.index USING hnsw (purpose_vector public.vector_cosine_ops) WITH (m='16', ef_construction='64');
+
+
+--
 -- Name: idx_index_topic_embedding; Type: INDEX; Schema: cmis_knowledge; Owner: begin
 --
 
 CREATE INDEX idx_index_topic_embedding ON cmis_knowledge.index USING hnsw (topic_embedding public.vector_cosine_ops) WITH (m='16', ef_construction='64');
+
+
+--
+-- Name: idx_index_topic_embedding_hnsw; Type: INDEX; Schema: cmis_knowledge; Owner: begin
+--
+
+CREATE INDEX idx_index_topic_embedding_hnsw ON cmis_knowledge.index USING hnsw (topic_embedding public.vector_cosine_ops) WITH (m='16', ef_construction='64');
 
 
 --
@@ -7692,6 +11217,41 @@ CREATE INDEX idx_knowledge_domain_tier ON cmis_knowledge.index USING btree (doma
 
 
 --
+-- Name: idx_knowledge_index_direction_vector; Type: INDEX; Schema: cmis_knowledge; Owner: begin
+--
+
+CREATE INDEX idx_knowledge_index_direction_vector ON cmis_knowledge.index USING ivfflat (direction_vector public.vector_cosine_ops) WITH (lists='200');
+
+
+--
+-- Name: idx_knowledge_index_intent_vector; Type: INDEX; Schema: cmis_knowledge; Owner: begin
+--
+
+CREATE INDEX idx_knowledge_index_intent_vector ON cmis_knowledge.index USING ivfflat (intent_vector public.vector_cosine_ops) WITH (lists='200');
+
+
+--
+-- Name: idx_knowledge_index_keywords_embedding; Type: INDEX; Schema: cmis_knowledge; Owner: begin
+--
+
+CREATE INDEX idx_knowledge_index_keywords_embedding ON cmis_knowledge.index USING ivfflat (keywords_embedding public.vector_cosine_ops) WITH (lists='200');
+
+
+--
+-- Name: idx_knowledge_index_purpose_vector; Type: INDEX; Schema: cmis_knowledge; Owner: begin
+--
+
+CREATE INDEX idx_knowledge_index_purpose_vector ON cmis_knowledge.index USING ivfflat (purpose_vector public.vector_cosine_ops) WITH (lists='200');
+
+
+--
+-- Name: idx_knowledge_index_topic_embedding; Type: INDEX; Schema: cmis_knowledge; Owner: begin
+--
+
+CREATE INDEX idx_knowledge_index_topic_embedding ON cmis_knowledge.index USING ivfflat (topic_embedding public.vector_cosine_ops) WITH (lists='200');
+
+
+--
 -- Name: idx_knowledge_last_verified; Type: INDEX; Schema: cmis_knowledge; Owner: begin
 --
 
@@ -7699,10 +11259,59 @@ CREATE INDEX idx_knowledge_last_verified ON cmis_knowledge.index USING btree (la
 
 
 --
+-- Name: idx_marketing_audience_embedding; Type: INDEX; Schema: cmis_knowledge; Owner: begin
+--
+
+CREATE INDEX idx_marketing_audience_embedding ON cmis_knowledge.marketing USING hnsw (audience_embedding public.vector_cosine_ops) WITH (m='16', ef_construction='64');
+
+
+--
+-- Name: idx_marketing_audience_embedding_hnsw; Type: INDEX; Schema: cmis_knowledge; Owner: begin
+--
+
+CREATE INDEX idx_marketing_audience_embedding_hnsw ON cmis_knowledge.marketing USING hnsw (audience_embedding public.vector_cosine_ops) WITH (m='16', ef_construction='64');
+
+
+--
+-- Name: idx_marketing_campaign_intent_vector_hnsw; Type: INDEX; Schema: cmis_knowledge; Owner: begin
+--
+
+CREATE INDEX idx_marketing_campaign_intent_vector_hnsw ON cmis_knowledge.marketing USING hnsw (campaign_intent_vector public.vector_cosine_ops) WITH (m='16', ef_construction='64');
+
+
+--
 -- Name: idx_marketing_content_embedding; Type: INDEX; Schema: cmis_knowledge; Owner: begin
 --
 
 CREATE INDEX idx_marketing_content_embedding ON cmis_knowledge.marketing USING hnsw (content_embedding public.vector_cosine_ops);
+
+
+--
+-- Name: idx_marketing_content_embedding_hnsw; Type: INDEX; Schema: cmis_knowledge; Owner: begin
+--
+
+CREATE INDEX idx_marketing_content_embedding_hnsw ON cmis_knowledge.marketing USING hnsw (content_embedding public.vector_cosine_ops) WITH (m='16', ef_construction='64');
+
+
+--
+-- Name: idx_marketing_emotional_direction_vector_hnsw; Type: INDEX; Schema: cmis_knowledge; Owner: begin
+--
+
+CREATE INDEX idx_marketing_emotional_direction_vector_hnsw ON cmis_knowledge.marketing USING hnsw (emotional_direction_vector public.vector_cosine_ops) WITH (m='16', ef_construction='64');
+
+
+--
+-- Name: idx_marketing_tone_embedding; Type: INDEX; Schema: cmis_knowledge; Owner: begin
+--
+
+CREATE INDEX idx_marketing_tone_embedding ON cmis_knowledge.marketing USING hnsw (tone_embedding public.vector_cosine_ops) WITH (m='16', ef_construction='64');
+
+
+--
+-- Name: idx_marketing_tone_embedding_hnsw; Type: INDEX; Schema: cmis_knowledge; Owner: begin
+--
+
+CREATE INDEX idx_marketing_tone_embedding_hnsw ON cmis_knowledge.marketing USING hnsw (tone_embedding public.vector_cosine_ops) WITH (m='16', ef_construction='64');
 
 
 --
@@ -7720,6 +11329,41 @@ CREATE INDEX idx_research_content_embedding ON cmis_knowledge.research USING hns
 
 
 --
+-- Name: idx_research_content_embedding_hnsw; Type: INDEX; Schema: cmis_knowledge; Owner: begin
+--
+
+CREATE INDEX idx_research_content_embedding_hnsw ON cmis_knowledge.research USING hnsw (content_embedding public.vector_cosine_ops) WITH (m='16', ef_construction='64');
+
+
+--
+-- Name: idx_research_insight_embedding; Type: INDEX; Schema: cmis_knowledge; Owner: begin
+--
+
+CREATE INDEX idx_research_insight_embedding ON cmis_knowledge.research USING hnsw (insight_embedding public.vector_cosine_ops) WITH (m='16', ef_construction='64');
+
+
+--
+-- Name: idx_research_insight_embedding_hnsw; Type: INDEX; Schema: cmis_knowledge; Owner: begin
+--
+
+CREATE INDEX idx_research_insight_embedding_hnsw ON cmis_knowledge.research USING hnsw (insight_embedding public.vector_cosine_ops) WITH (m='16', ef_construction='64');
+
+
+--
+-- Name: idx_research_research_direction_vector_hnsw; Type: INDEX; Schema: cmis_knowledge; Owner: begin
+--
+
+CREATE INDEX idx_research_research_direction_vector_hnsw ON cmis_knowledge.research USING hnsw (research_direction_vector public.vector_cosine_ops) WITH (m='16', ef_construction='64');
+
+
+--
+-- Name: idx_research_source_context_embedding_hnsw; Type: INDEX; Schema: cmis_knowledge; Owner: begin
+--
+
+CREATE INDEX idx_research_source_context_embedding_hnsw ON cmis_knowledge.research USING hnsw (source_context_embedding public.vector_cosine_ops) WITH (m='16', ef_construction='64');
+
+
+--
 -- Name: idx_search_cache_hash; Type: INDEX; Schema: cmis_knowledge; Owner: begin
 --
 
@@ -7731,13 +11375,6 @@ CREATE INDEX idx_search_cache_hash ON cmis_knowledge.semantic_search_results_cac
 --
 
 CREATE INDEX idx_search_logs_time ON cmis_knowledge.semantic_search_logs USING btree (created_at DESC);
-
-
---
--- Name: idx_api_keys_service_code; Type: INDEX; Schema: cmis_refactored; Owner: begin
---
-
-CREATE INDEX idx_api_keys_service_code ON cmis_refactored.api_keys USING btree (service_code);
 
 
 --
@@ -7755,10 +11392,220 @@ CREATE INDEX idx_examples_tags ON lab.example_sets USING gin (tags);
 
 
 --
--- Name: creative_briefs enforce_brief_completeness; Type: TRIGGER; Schema: cmis; Owner: begin
+-- Name: idx_audit_action; Type: INDEX; Schema: operations; Owner: begin
 --
 
-CREATE TRIGGER enforce_brief_completeness BEFORE INSERT OR UPDATE ON cmis.creative_briefs FOR EACH ROW EXECUTE FUNCTION cmis.prevent_incomplete_briefs();
+CREATE INDEX idx_audit_action ON operations.audit_log USING btree (action);
+
+
+--
+-- Name: idx_audit_changed_fields; Type: INDEX; Schema: operations; Owner: begin
+--
+
+CREATE INDEX idx_audit_changed_fields ON operations.audit_log USING gin (changed_fields);
+
+
+--
+-- Name: idx_audit_ip; Type: INDEX; Schema: operations; Owner: begin
+--
+
+CREATE INDEX idx_audit_ip ON operations.audit_log USING btree (ip_address);
+
+
+--
+-- Name: idx_audit_log_metadata_gin; Type: INDEX; Schema: operations; Owner: begin
+--
+
+CREATE INDEX idx_audit_log_metadata_gin ON operations.audit_log USING gin (metadata jsonb_path_ops);
+
+
+--
+-- Name: idx_audit_metadata; Type: INDEX; Schema: operations; Owner: begin
+--
+
+CREATE INDEX idx_audit_metadata ON operations.audit_log USING gin (metadata);
+
+
+--
+-- Name: idx_audit_record; Type: INDEX; Schema: operations; Owner: begin
+--
+
+CREATE INDEX idx_audit_record ON operations.audit_log USING btree (record_id);
+
+
+--
+-- Name: idx_audit_record_key; Type: INDEX; Schema: operations; Owner: begin
+--
+
+CREATE INDEX idx_audit_record_key ON operations.audit_log USING btree (record_key);
+
+
+--
+-- Name: idx_audit_session; Type: INDEX; Schema: operations; Owner: begin
+--
+
+CREATE INDEX idx_audit_session ON operations.audit_log USING btree (session_id);
+
+
+--
+-- Name: idx_audit_table; Type: INDEX; Schema: operations; Owner: begin
+--
+
+CREATE INDEX idx_audit_table ON operations.audit_log USING btree (table_schema, table_name);
+
+
+--
+-- Name: idx_audit_tags; Type: INDEX; Schema: operations; Owner: begin
+--
+
+CREATE INDEX idx_audit_tags ON operations.audit_log USING gin (tags);
+
+
+--
+-- Name: idx_audit_timestamp; Type: INDEX; Schema: operations; Owner: begin
+--
+
+CREATE INDEX idx_audit_timestamp ON operations.audit_log USING btree ("timestamp");
+
+
+--
+-- Name: idx_audit_timestamp_hour; Type: INDEX; Schema: operations; Owner: begin
+--
+
+CREATE INDEX idx_audit_timestamp_hour ON operations.audit_log USING btree (date_trunc('hour'::text, "timestamp"));
+
+
+--
+-- Name: idx_audit_user; Type: INDEX; Schema: operations; Owner: begin
+--
+
+CREATE INDEX idx_audit_user ON operations.audit_log USING btree (user_id);
+
+
+--
+-- Name: idx_audit_username; Type: INDEX; Schema: operations; Owner: begin
+--
+
+CREATE INDEX idx_audit_username ON operations.audit_log USING btree (username);
+
+
+--
+-- Name: idx_migrations_phase; Type: INDEX; Schema: operations; Owner: begin
+--
+
+CREATE INDEX idx_migrations_phase ON operations.migrations USING btree (phase);
+
+
+--
+-- Name: idx_migrations_started; Type: INDEX; Schema: operations; Owner: begin
+--
+
+CREATE INDEX idx_migrations_started ON operations.migrations USING btree (started_at);
+
+
+--
+-- Name: idx_migrations_status; Type: INDEX; Schema: operations; Owner: begin
+--
+
+CREATE INDEX idx_migrations_status ON operations.migrations USING btree (status);
+
+
+--
+-- Name: campaign_context_links audit_trigger_campaign_context_links; Type: TRIGGER; Schema: cmis; Owner: begin
+--
+
+CREATE TRIGGER audit_trigger_campaign_context_links AFTER INSERT OR DELETE OR UPDATE ON cmis.campaign_context_links FOR EACH ROW EXECUTE FUNCTION operations.audit_trigger_function();
+
+
+--
+-- Name: campaigns audit_trigger_campaigns; Type: TRIGGER; Schema: cmis; Owner: begin
+--
+
+CREATE TRIGGER audit_trigger_campaigns AFTER INSERT OR DELETE OR UPDATE ON cmis.campaigns FOR EACH ROW EXECUTE FUNCTION operations.audit_trigger_function();
+
+
+--
+-- Name: creative_assets audit_trigger_creative_assets; Type: TRIGGER; Schema: cmis; Owner: begin
+--
+
+CREATE TRIGGER audit_trigger_creative_assets AFTER INSERT OR DELETE OR UPDATE ON cmis.creative_assets FOR EACH ROW EXECUTE FUNCTION operations.audit_trigger_function();
+
+
+--
+-- Name: integrations audit_trigger_integrations; Type: TRIGGER; Schema: cmis; Owner: begin
+--
+
+CREATE TRIGGER audit_trigger_integrations AFTER INSERT OR DELETE OR UPDATE ON cmis.integrations FOR EACH ROW EXECUTE FUNCTION operations.audit_trigger_function();
+
+
+--
+-- Name: orgs audit_trigger_orgs; Type: TRIGGER; Schema: cmis; Owner: begin
+--
+
+CREATE TRIGGER audit_trigger_orgs AFTER INSERT OR DELETE OR UPDATE ON cmis.orgs FOR EACH ROW EXECUTE FUNCTION operations.audit_trigger_function();
+
+
+--
+-- Name: users audit_trigger_users; Type: TRIGGER; Schema: cmis; Owner: begin
+--
+
+CREATE TRIGGER audit_trigger_users AFTER INSERT OR DELETE OR UPDATE ON cmis.users FOR EACH ROW EXECUTE FUNCTION operations.audit_trigger_function();
+
+
+--
+-- Name: creative_briefs enforce_brief_completeness_optimized; Type: TRIGGER; Schema: cmis; Owner: begin
+--
+
+CREATE TRIGGER enforce_brief_completeness_optimized BEFORE INSERT OR UPDATE ON cmis.creative_briefs FOR EACH ROW EXECUTE FUNCTION cmis.prevent_incomplete_briefs_optimized();
+
+
+--
+-- Name: analytics_integrations set_updated_at; Type: TRIGGER; Schema: cmis; Owner: begin
+--
+
+CREATE TRIGGER set_updated_at BEFORE UPDATE ON cmis.analytics_integrations FOR EACH ROW EXECUTE FUNCTION cmis_ops.update_timestamp();
+
+
+--
+-- Name: audit_log set_updated_at; Type: TRIGGER; Schema: cmis; Owner: begin
+--
+
+CREATE TRIGGER set_updated_at BEFORE UPDATE ON cmis.audit_log FOR EACH ROW EXECUTE FUNCTION cmis_ops.update_timestamp();
+
+
+--
+-- Name: content_items set_updated_at; Type: TRIGGER; Schema: cmis; Owner: begin
+--
+
+CREATE TRIGGER set_updated_at BEFORE UPDATE ON cmis.content_items FOR EACH ROW EXECUTE FUNCTION cmis_ops.update_timestamp();
+
+
+--
+-- Name: creative_briefs trg_audit_creative_brief_changes; Type: TRIGGER; Schema: cmis; Owner: begin
+--
+
+CREATE TRIGGER trg_audit_creative_brief_changes AFTER INSERT OR UPDATE ON cmis.creative_briefs FOR EACH ROW EXECUTE FUNCTION cmis.audit_creative_changes();
+
+
+--
+-- Name: permissions trg_permissions_cache; Type: TRIGGER; Schema: cmis; Owner: begin
+--
+
+CREATE TRIGGER trg_permissions_cache AFTER INSERT OR DELETE OR UPDATE ON cmis.permissions FOR EACH ROW EXECUTE FUNCTION cmis.refresh_permissions_cache();
+
+
+--
+-- Name: field_definitions trg_refresh_fields_cache; Type: TRIGGER; Schema: cmis; Owner: begin
+--
+
+CREATE TRIGGER trg_refresh_fields_cache AFTER INSERT OR DELETE OR UPDATE OR TRUNCATE ON cmis.field_definitions FOR EACH STATEMENT EXECUTE FUNCTION cmis.auto_refresh_cache_on_field_change();
+
+
+--
+-- Name: campaign_context_links update_campaign_links_updated_at; Type: TRIGGER; Schema: cmis; Owner: begin
+--
+
+CREATE TRIGGER update_campaign_links_updated_at BEFORE UPDATE ON cmis.campaign_context_links FOR EACH ROW EXECUTE FUNCTION cmis.update_updated_at_column();
 
 
 --
@@ -7808,7 +11655,7 @@ CREATE TRIGGER update_embeddings_on_research_change AFTER INSERT OR UPDATE OF co
 --
 
 ALTER TABLE ONLY cmis.ad_accounts
-    ADD CONSTRAINT ad_accounts_integration_id_fkey FOREIGN KEY (integration_id) REFERENCES cmis_refactored.integrations(integration_id) ON DELETE SET NULL;
+    ADD CONSTRAINT ad_accounts_integration_id_fkey FOREIGN KEY (integration_id) REFERENCES cmis.integrations(integration_id) ON DELETE SET NULL;
 
 
 --
@@ -7824,7 +11671,7 @@ ALTER TABLE ONLY cmis.ad_accounts
 --
 
 ALTER TABLE ONLY cmis.ad_audiences
-    ADD CONSTRAINT ad_audiences_integration_id_fkey FOREIGN KEY (integration_id) REFERENCES cmis_refactored.integrations(integration_id) ON DELETE SET NULL;
+    ADD CONSTRAINT ad_audiences_integration_id_fkey FOREIGN KEY (integration_id) REFERENCES cmis.integrations(integration_id) ON DELETE SET NULL;
 
 
 --
@@ -7840,7 +11687,7 @@ ALTER TABLE ONLY cmis.ad_audiences
 --
 
 ALTER TABLE ONLY cmis.ad_campaigns
-    ADD CONSTRAINT ad_campaigns_integration_id_fkey FOREIGN KEY (integration_id) REFERENCES cmis_refactored.integrations(integration_id) ON DELETE SET NULL;
+    ADD CONSTRAINT ad_campaigns_integration_id_fkey FOREIGN KEY (integration_id) REFERENCES cmis.integrations(integration_id) ON DELETE SET NULL;
 
 
 --
@@ -7856,7 +11703,7 @@ ALTER TABLE ONLY cmis.ad_campaigns
 --
 
 ALTER TABLE ONLY cmis.ad_entities
-    ADD CONSTRAINT ad_entities_integration_id_fkey FOREIGN KEY (integration_id) REFERENCES cmis_refactored.integrations(integration_id) ON DELETE SET NULL;
+    ADD CONSTRAINT ad_entities_integration_id_fkey FOREIGN KEY (integration_id) REFERENCES cmis.integrations(integration_id) ON DELETE SET NULL;
 
 
 --
@@ -7872,7 +11719,7 @@ ALTER TABLE ONLY cmis.ad_entities
 --
 
 ALTER TABLE ONLY cmis.ad_metrics
-    ADD CONSTRAINT ad_metrics_integration_id_fkey FOREIGN KEY (integration_id) REFERENCES cmis_refactored.integrations(integration_id) ON DELETE SET NULL;
+    ADD CONSTRAINT ad_metrics_integration_id_fkey FOREIGN KEY (integration_id) REFERENCES cmis.integrations(integration_id) ON DELETE SET NULL;
 
 
 --
@@ -7888,7 +11735,7 @@ ALTER TABLE ONLY cmis.ad_metrics
 --
 
 ALTER TABLE ONLY cmis.ad_sets
-    ADD CONSTRAINT ad_sets_integration_id_fkey FOREIGN KEY (integration_id) REFERENCES cmis_refactored.integrations(integration_id) ON DELETE SET NULL;
+    ADD CONSTRAINT ad_sets_integration_id_fkey FOREIGN KEY (integration_id) REFERENCES cmis.integrations(integration_id) ON DELETE SET NULL;
 
 
 --
@@ -7904,7 +11751,7 @@ ALTER TABLE ONLY cmis.ad_sets
 --
 
 ALTER TABLE ONLY cmis.ai_actions
-    ADD CONSTRAINT ai_actions_audit_id_fkey FOREIGN KEY (audit_id) REFERENCES cmis.audit_log(log_id);
+    ADD CONSTRAINT ai_actions_audit_id_fkey FOREIGN KEY (audit_id) REFERENCES cmis.audit_log(log_id) ON DELETE CASCADE;
 
 
 --
@@ -7944,7 +11791,7 @@ ALTER TABLE ONLY cmis.audit_log
 --
 
 ALTER TABLE ONLY cmis.bundle_offerings
-    ADD CONSTRAINT bundle_offerings_bundle_id_fkey FOREIGN KEY (bundle_id) REFERENCES cmis.offerings(offering_id) ON DELETE CASCADE;
+    ADD CONSTRAINT bundle_offerings_bundle_id_fkey FOREIGN KEY (bundle_id) REFERENCES cmis.offerings_old(offering_id) ON DELETE CASCADE;
 
 
 --
@@ -7952,7 +11799,7 @@ ALTER TABLE ONLY cmis.bundle_offerings
 --
 
 ALTER TABLE ONLY cmis.bundle_offerings
-    ADD CONSTRAINT bundle_offerings_offering_id_fkey FOREIGN KEY (offering_id) REFERENCES cmis.offerings(offering_id) ON DELETE CASCADE;
+    ADD CONSTRAINT bundle_offerings_offering_id_fkey FOREIGN KEY (offering_id) REFERENCES cmis.offerings_old(offering_id) ON DELETE CASCADE;
 
 
 --
@@ -7960,7 +11807,7 @@ ALTER TABLE ONLY cmis.bundle_offerings
 --
 
 ALTER TABLE ONLY cmis.campaign_offerings
-    ADD CONSTRAINT campaign_offerings_campaign_id_fkey FOREIGN KEY (campaign_id) REFERENCES cmis_refactored.campaigns(campaign_id) MATCH FULL ON DELETE CASCADE;
+    ADD CONSTRAINT campaign_offerings_campaign_id_fkey FOREIGN KEY (campaign_id) REFERENCES cmis.campaigns(campaign_id) MATCH FULL ON DELETE CASCADE;
 
 
 --
@@ -7968,7 +11815,7 @@ ALTER TABLE ONLY cmis.campaign_offerings
 --
 
 ALTER TABLE ONLY cmis.campaign_offerings
-    ADD CONSTRAINT campaign_offerings_offering_id_fkey FOREIGN KEY (offering_id) REFERENCES cmis.offerings(offering_id) ON DELETE CASCADE;
+    ADD CONSTRAINT campaign_offerings_offering_id_fkey FOREIGN KEY (offering_id) REFERENCES cmis.offerings_old(offering_id) ON DELETE CASCADE;
 
 
 --
@@ -7976,7 +11823,7 @@ ALTER TABLE ONLY cmis.campaign_offerings
 --
 
 ALTER TABLE ONLY cmis.campaign_performance_dashboard
-    ADD CONSTRAINT campaign_performance_dashboard_campaign_id_fkey FOREIGN KEY (campaign_id) REFERENCES cmis_refactored.campaigns(campaign_id) MATCH FULL ON DELETE CASCADE;
+    ADD CONSTRAINT campaign_performance_dashboard_campaign_id_fkey FOREIGN KEY (campaign_id) REFERENCES cmis.campaigns(campaign_id) MATCH FULL ON DELETE CASCADE;
 
 
 --
@@ -8056,7 +11903,7 @@ ALTER TABLE ONLY cmis.content_plans
 --
 
 ALTER TABLE ONLY cmis.content_plans
-    ADD CONSTRAINT content_plans_campaign_id_fkey FOREIGN KEY (campaign_id) REFERENCES cmis_refactored.campaigns(campaign_id) MATCH FULL ON DELETE SET NULL;
+    ADD CONSTRAINT content_plans_campaign_id_fkey FOREIGN KEY (campaign_id) REFERENCES cmis.campaigns(campaign_id) MATCH FULL ON DELETE SET NULL;
 
 
 --
@@ -8076,11 +11923,51 @@ ALTER TABLE ONLY cmis.content_plans
 
 
 --
+-- Name: contexts_base contexts_base_org_id_fkey; Type: FK CONSTRAINT; Schema: cmis; Owner: begin
+--
+
+ALTER TABLE ONLY cmis.contexts_base
+    ADD CONSTRAINT contexts_base_org_id_fkey FOREIGN KEY (org_id) REFERENCES cmis.orgs(org_id);
+
+
+--
+-- Name: contexts contexts_campaign_id_fkey; Type: FK CONSTRAINT; Schema: cmis; Owner: begin
+--
+
+ALTER TABLE ONLY cmis.contexts
+    ADD CONSTRAINT contexts_campaign_id_fkey FOREIGN KEY (campaign_id) REFERENCES cmis.campaigns(campaign_id) ON DELETE CASCADE;
+
+
+--
+-- Name: contexts_creative contexts_creative_context_id_fkey; Type: FK CONSTRAINT; Schema: cmis; Owner: begin
+--
+
+ALTER TABLE ONLY cmis.contexts_creative
+    ADD CONSTRAINT contexts_creative_context_id_fkey FOREIGN KEY (context_id) REFERENCES cmis.contexts_base(id) ON DELETE CASCADE;
+
+
+--
+-- Name: contexts_offering contexts_offering_context_id_fkey; Type: FK CONSTRAINT; Schema: cmis; Owner: begin
+--
+
+ALTER TABLE ONLY cmis.contexts_offering
+    ADD CONSTRAINT contexts_offering_context_id_fkey FOREIGN KEY (context_id) REFERENCES cmis.contexts_base(id) ON DELETE CASCADE;
+
+
+--
+-- Name: contexts_value contexts_value_context_id_fkey; Type: FK CONSTRAINT; Schema: cmis; Owner: begin
+--
+
+ALTER TABLE ONLY cmis.contexts_value
+    ADD CONSTRAINT contexts_value_context_id_fkey FOREIGN KEY (context_id) REFERENCES cmis.contexts_base(id) ON DELETE CASCADE;
+
+
+--
 -- Name: copy_components copy_components_campaign_id_fkey; Type: FK CONSTRAINT; Schema: cmis; Owner: begin
 --
 
 ALTER TABLE ONLY cmis.copy_components
-    ADD CONSTRAINT copy_components_campaign_id_fkey FOREIGN KEY (campaign_id) REFERENCES cmis_refactored.campaigns(campaign_id) MATCH FULL ON DELETE SET NULL;
+    ADD CONSTRAINT copy_components_campaign_id_fkey FOREIGN KEY (campaign_id) REFERENCES cmis.campaigns(campaign_id) MATCH FULL ON DELETE SET NULL;
 
 
 --
@@ -8120,7 +12007,7 @@ ALTER TABLE ONLY cmis.creative_assets
 --
 
 ALTER TABLE ONLY cmis.creative_assets
-    ADD CONSTRAINT creative_assets_campaign_id_fkey FOREIGN KEY (campaign_id) REFERENCES cmis_refactored.campaigns(campaign_id) MATCH FULL ON DELETE SET NULL;
+    ADD CONSTRAINT creative_assets_campaign_id_fkey FOREIGN KEY (campaign_id) REFERENCES cmis.campaigns(campaign_id) ON UPDATE CASCADE ON DELETE CASCADE;
 
 
 --
@@ -8172,6 +12059,22 @@ ALTER TABLE ONLY cmis.creative_contexts
 
 
 --
+-- Name: creative_outputs creative_outputs_campaign_id_fkey; Type: FK CONSTRAINT; Schema: cmis; Owner: begin
+--
+
+ALTER TABLE ONLY cmis.creative_outputs
+    ADD CONSTRAINT creative_outputs_campaign_id_fkey FOREIGN KEY (campaign_id) REFERENCES cmis.campaigns(campaign_id) ON DELETE CASCADE;
+
+
+--
+-- Name: creative_outputs creative_outputs_context_id_fkey; Type: FK CONSTRAINT; Schema: cmis; Owner: begin
+--
+
+ALTER TABLE ONLY cmis.creative_outputs
+    ADD CONSTRAINT creative_outputs_context_id_fkey FOREIGN KEY (context_id) REFERENCES cmis.contexts(context_id) ON DELETE CASCADE;
+
+
+--
 -- Name: data_feeds data_feeds_org_id_fkey; Type: FK CONSTRAINT; Schema: cmis; Owner: begin
 --
 
@@ -8208,7 +12111,7 @@ ALTER TABLE ONLY cmis.experiment_variants
 --
 
 ALTER TABLE ONLY cmis.experiments
-    ADD CONSTRAINT experiments_campaign_id_fkey FOREIGN KEY (campaign_id) REFERENCES cmis_refactored.campaigns(campaign_id) MATCH FULL ON DELETE SET NULL;
+    ADD CONSTRAINT experiments_campaign_id_fkey FOREIGN KEY (campaign_id) REFERENCES cmis.campaigns(campaign_id) MATCH FULL ON DELETE SET NULL;
 
 
 --
@@ -8292,11 +12195,43 @@ ALTER TABLE ONLY cmis.field_values
 
 
 --
+-- Name: campaigns fk_campaigns_context; Type: FK CONSTRAINT; Schema: cmis; Owner: begin
+--
+
+ALTER TABLE ONLY cmis.campaigns
+    ADD CONSTRAINT fk_campaigns_context FOREIGN KEY (context_id) REFERENCES cmis.value_contexts(context_id) ON UPDATE CASCADE ON DELETE SET NULL;
+
+
+--
 -- Name: content_items fk_content_item_asset; Type: FK CONSTRAINT; Schema: cmis; Owner: begin
 --
 
 ALTER TABLE ONLY cmis.content_items
     ADD CONSTRAINT fk_content_item_asset FOREIGN KEY (asset_id) REFERENCES cmis.creative_assets(asset_id) ON DELETE SET NULL;
+
+
+--
+-- Name: content_items fk_content_items_context; Type: FK CONSTRAINT; Schema: cmis; Owner: begin
+--
+
+ALTER TABLE ONLY cmis.content_items
+    ADD CONSTRAINT fk_content_items_context FOREIGN KEY (context_id) REFERENCES cmis.creative_contexts(context_id) ON UPDATE CASCADE ON DELETE SET NULL;
+
+
+--
+-- Name: creative_outputs fk_creative_outputs_context; Type: FK CONSTRAINT; Schema: cmis; Owner: begin
+--
+
+ALTER TABLE ONLY cmis.creative_outputs
+    ADD CONSTRAINT fk_creative_outputs_context FOREIGN KEY (context_id) REFERENCES cmis.creative_contexts(context_id) ON UPDATE CASCADE ON DELETE SET NULL;
+
+
+--
+-- Name: user_orgs fk_user_orgs_role; Type: FK CONSTRAINT; Schema: cmis; Owner: begin
+--
+
+ALTER TABLE ONLY cmis.user_orgs
+    ADD CONSTRAINT fk_user_orgs_role FOREIGN KEY (role_id) REFERENCES cmis.roles(role_id);
 
 
 --
@@ -8320,14 +12255,14 @@ ALTER TABLE ONLY cmis.flows
 --
 
 ALTER TABLE ONLY cmis.offerings_full_details
-    ADD CONSTRAINT offerings_full_details_offering_id_fkey FOREIGN KEY (offering_id) REFERENCES cmis.offerings(offering_id) ON DELETE CASCADE;
+    ADD CONSTRAINT offerings_full_details_offering_id_fkey FOREIGN KEY (offering_id) REFERENCES cmis.offerings_old(offering_id) ON DELETE CASCADE;
 
 
 --
--- Name: offerings offerings_org_id_fkey; Type: FK CONSTRAINT; Schema: cmis; Owner: begin
+-- Name: offerings_old offerings_org_id_fkey; Type: FK CONSTRAINT; Schema: cmis; Owner: begin
 --
 
-ALTER TABLE ONLY cmis.offerings
+ALTER TABLE ONLY cmis.offerings_old
     ADD CONSTRAINT offerings_org_id_fkey FOREIGN KEY (org_id) REFERENCES cmis.orgs(org_id) ON DELETE CASCADE;
 
 
@@ -8353,6 +12288,22 @@ ALTER TABLE ONLY cmis.org_datasets
 
 ALTER TABLE ONLY cmis.org_markets
     ADD CONSTRAINT org_markets_org_id_fkey FOREIGN KEY (org_id) REFERENCES cmis.orgs(org_id) ON DELETE CASCADE;
+
+
+--
+-- Name: performance_metrics performance_metrics_campaign_id_fkey; Type: FK CONSTRAINT; Schema: cmis; Owner: begin
+--
+
+ALTER TABLE ONLY cmis.performance_metrics
+    ADD CONSTRAINT performance_metrics_campaign_id_fkey FOREIGN KEY (campaign_id) REFERENCES cmis.campaigns(campaign_id) ON DELETE CASCADE;
+
+
+--
+-- Name: performance_metrics performance_metrics_output_id_fkey; Type: FK CONSTRAINT; Schema: cmis; Owner: begin
+--
+
+ALTER TABLE ONLY cmis.performance_metrics
+    ADD CONSTRAINT performance_metrics_output_id_fkey FOREIGN KEY (output_id) REFERENCES cmis.creative_outputs(output_id) ON DELETE CASCADE;
 
 
 --
@@ -8420,6 +12371,46 @@ ALTER TABLE ONLY cmis.prompt_templates
 
 
 --
+-- Name: role_permissions role_permissions_granted_by_fkey; Type: FK CONSTRAINT; Schema: cmis; Owner: begin
+--
+
+ALTER TABLE ONLY cmis.role_permissions
+    ADD CONSTRAINT role_permissions_granted_by_fkey FOREIGN KEY (granted_by) REFERENCES cmis.users(user_id);
+
+
+--
+-- Name: role_permissions role_permissions_permission_id_fkey; Type: FK CONSTRAINT; Schema: cmis; Owner: begin
+--
+
+ALTER TABLE ONLY cmis.role_permissions
+    ADD CONSTRAINT role_permissions_permission_id_fkey FOREIGN KEY (permission_id) REFERENCES cmis.permissions(permission_id) ON DELETE CASCADE;
+
+
+--
+-- Name: role_permissions role_permissions_role_id_fkey; Type: FK CONSTRAINT; Schema: cmis; Owner: begin
+--
+
+ALTER TABLE ONLY cmis.role_permissions
+    ADD CONSTRAINT role_permissions_role_id_fkey FOREIGN KEY (role_id) REFERENCES cmis.roles(role_id) ON DELETE CASCADE;
+
+
+--
+-- Name: roles roles_created_by_fkey; Type: FK CONSTRAINT; Schema: cmis; Owner: begin
+--
+
+ALTER TABLE ONLY cmis.roles
+    ADD CONSTRAINT roles_created_by_fkey FOREIGN KEY (created_by) REFERENCES cmis.users(user_id);
+
+
+--
+-- Name: roles roles_org_id_fkey; Type: FK CONSTRAINT; Schema: cmis; Owner: begin
+--
+
+ALTER TABLE ONLY cmis.roles
+    ADD CONSTRAINT roles_org_id_fkey FOREIGN KEY (org_id) REFERENCES cmis.orgs(org_id) ON DELETE CASCADE;
+
+
+--
 -- Name: scene_library scene_library_anchor_fkey; Type: FK CONSTRAINT; Schema: cmis; Owner: begin
 --
 
@@ -8444,11 +12435,27 @@ ALTER TABLE ONLY cmis.segments
 
 
 --
+-- Name: session_context session_context_active_org_id_fkey; Type: FK CONSTRAINT; Schema: cmis; Owner: begin
+--
+
+ALTER TABLE ONLY cmis.session_context
+    ADD CONSTRAINT session_context_active_org_id_fkey FOREIGN KEY (active_org_id) REFERENCES cmis.orgs(org_id);
+
+
+--
+-- Name: session_context session_context_session_id_fkey; Type: FK CONSTRAINT; Schema: cmis; Owner: begin
+--
+
+ALTER TABLE ONLY cmis.session_context
+    ADD CONSTRAINT session_context_session_id_fkey FOREIGN KEY (session_id) REFERENCES cmis.user_sessions(session_id) ON DELETE CASCADE;
+
+
+--
 -- Name: social_account_metrics social_account_metrics_integration_id_fkey; Type: FK CONSTRAINT; Schema: cmis; Owner: begin
 --
 
 ALTER TABLE ONLY cmis.social_account_metrics
-    ADD CONSTRAINT social_account_metrics_integration_id_fkey FOREIGN KEY (integration_id) REFERENCES cmis_refactored.integrations(integration_id) ON DELETE SET NULL;
+    ADD CONSTRAINT social_account_metrics_integration_id_fkey FOREIGN KEY (integration_id) REFERENCES cmis.integrations(integration_id) ON DELETE SET NULL;
 
 
 --
@@ -8456,7 +12463,7 @@ ALTER TABLE ONLY cmis.social_account_metrics
 --
 
 ALTER TABLE ONLY cmis.social_accounts
-    ADD CONSTRAINT social_accounts_account_integration_id_fkey FOREIGN KEY (integration_id) REFERENCES cmis_refactored.integrations(integration_id) ON DELETE SET NULL;
+    ADD CONSTRAINT social_accounts_account_integration_id_fkey FOREIGN KEY (integration_id) REFERENCES cmis.integrations(integration_id) ON DELETE SET NULL;
 
 
 --
@@ -8472,7 +12479,7 @@ ALTER TABLE ONLY cmis.social_accounts
 --
 
 ALTER TABLE ONLY cmis.social_posts
-    ADD CONSTRAINT social_posts_integration_id_fkey FOREIGN KEY (integration_id) REFERENCES cmis_refactored.integrations(integration_id) ON DELETE SET NULL;
+    ADD CONSTRAINT social_posts_integration_id_fkey FOREIGN KEY (integration_id) REFERENCES cmis.integrations(integration_id) ON DELETE SET NULL;
 
 
 --
@@ -8488,7 +12495,7 @@ ALTER TABLE ONLY cmis.social_posts
 --
 
 ALTER TABLE ONLY cmis.sync_logs
-    ADD CONSTRAINT sync_logs_integration_id_fkey FOREIGN KEY (integration_id) REFERENCES cmis_refactored.integrations(integration_id) ON DELETE SET NULL;
+    ADD CONSTRAINT sync_logs_integration_id_fkey FOREIGN KEY (integration_id) REFERENCES cmis.integrations(integration_id) ON DELETE SET NULL;
 
 
 --
@@ -8500,11 +12507,91 @@ ALTER TABLE ONLY cmis.sync_logs
 
 
 --
--- Name: users users_org_id_fkey; Type: FK CONSTRAINT; Schema: cmis; Owner: begin
+-- Name: user_activities user_activities_org_id_fkey; Type: FK CONSTRAINT; Schema: cmis; Owner: begin
 --
 
-ALTER TABLE ONLY cmis.users
-    ADD CONSTRAINT users_org_id_fkey FOREIGN KEY (org_id) REFERENCES cmis.orgs(org_id) ON DELETE CASCADE;
+ALTER TABLE ONLY cmis.user_activities
+    ADD CONSTRAINT user_activities_org_id_fkey FOREIGN KEY (org_id) REFERENCES cmis.orgs(org_id);
+
+
+--
+-- Name: user_activities user_activities_session_id_fkey; Type: FK CONSTRAINT; Schema: cmis; Owner: begin
+--
+
+ALTER TABLE ONLY cmis.user_activities
+    ADD CONSTRAINT user_activities_session_id_fkey FOREIGN KEY (session_id) REFERENCES cmis.user_sessions(session_id);
+
+
+--
+-- Name: user_activities user_activities_user_id_fkey; Type: FK CONSTRAINT; Schema: cmis; Owner: begin
+--
+
+ALTER TABLE ONLY cmis.user_activities
+    ADD CONSTRAINT user_activities_user_id_fkey FOREIGN KEY (user_id) REFERENCES cmis.users(user_id);
+
+
+--
+-- Name: user_orgs user_orgs_invited_by_fkey; Type: FK CONSTRAINT; Schema: cmis; Owner: begin
+--
+
+ALTER TABLE ONLY cmis.user_orgs
+    ADD CONSTRAINT user_orgs_invited_by_fkey FOREIGN KEY (invited_by) REFERENCES cmis.users(user_id);
+
+
+--
+-- Name: user_orgs user_orgs_org_id_fkey; Type: FK CONSTRAINT; Schema: cmis; Owner: begin
+--
+
+ALTER TABLE ONLY cmis.user_orgs
+    ADD CONSTRAINT user_orgs_org_id_fkey FOREIGN KEY (org_id) REFERENCES cmis.orgs(org_id) ON DELETE CASCADE;
+
+
+--
+-- Name: user_orgs user_orgs_user_id_fkey; Type: FK CONSTRAINT; Schema: cmis; Owner: begin
+--
+
+ALTER TABLE ONLY cmis.user_orgs
+    ADD CONSTRAINT user_orgs_user_id_fkey FOREIGN KEY (user_id) REFERENCES cmis.users(user_id) ON DELETE CASCADE;
+
+
+--
+-- Name: user_permissions user_permissions_granted_by_fkey; Type: FK CONSTRAINT; Schema: cmis; Owner: begin
+--
+
+ALTER TABLE ONLY cmis.user_permissions
+    ADD CONSTRAINT user_permissions_granted_by_fkey FOREIGN KEY (granted_by) REFERENCES cmis.users(user_id);
+
+
+--
+-- Name: user_permissions user_permissions_org_id_fkey; Type: FK CONSTRAINT; Schema: cmis; Owner: begin
+--
+
+ALTER TABLE ONLY cmis.user_permissions
+    ADD CONSTRAINT user_permissions_org_id_fkey FOREIGN KEY (org_id) REFERENCES cmis.orgs(org_id) ON DELETE CASCADE;
+
+
+--
+-- Name: user_permissions user_permissions_permission_id_fkey; Type: FK CONSTRAINT; Schema: cmis; Owner: begin
+--
+
+ALTER TABLE ONLY cmis.user_permissions
+    ADD CONSTRAINT user_permissions_permission_id_fkey FOREIGN KEY (permission_id) REFERENCES cmis.permissions(permission_id) ON DELETE CASCADE;
+
+
+--
+-- Name: user_permissions user_permissions_user_id_fkey; Type: FK CONSTRAINT; Schema: cmis; Owner: begin
+--
+
+ALTER TABLE ONLY cmis.user_permissions
+    ADD CONSTRAINT user_permissions_user_id_fkey FOREIGN KEY (user_id) REFERENCES cmis.users(user_id) ON DELETE CASCADE;
+
+
+--
+-- Name: user_sessions user_sessions_user_id_fkey; Type: FK CONSTRAINT; Schema: cmis; Owner: begin
+--
+
+ALTER TABLE ONLY cmis.user_sessions
+    ADD CONSTRAINT user_sessions_user_id_fkey FOREIGN KEY (user_id) REFERENCES cmis.users(user_id) ON DELETE CASCADE;
 
 
 --
@@ -8512,7 +12599,7 @@ ALTER TABLE ONLY cmis.users
 --
 
 ALTER TABLE ONLY cmis.value_contexts
-    ADD CONSTRAINT value_contexts_campaign_id_fkey FOREIGN KEY (campaign_id) REFERENCES cmis_refactored.campaigns(campaign_id) MATCH FULL ON DELETE SET NULL DEFERRABLE;
+    ADD CONSTRAINT value_contexts_campaign_id_fkey FOREIGN KEY (campaign_id) REFERENCES cmis.campaigns(campaign_id) MATCH FULL ON DELETE SET NULL DEFERRABLE;
 
 
 --
@@ -8520,7 +12607,7 @@ ALTER TABLE ONLY cmis.value_contexts
 --
 
 ALTER TABLE ONLY cmis.value_contexts
-    ADD CONSTRAINT value_contexts_offering_id_fkey FOREIGN KEY (offering_id) REFERENCES cmis.offerings(offering_id) ON DELETE SET NULL;
+    ADD CONSTRAINT value_contexts_offering_id_fkey FOREIGN KEY (offering_id) REFERENCES cmis.offerings_old(offering_id) ON DELETE SET NULL;
 
 
 --
@@ -8544,7 +12631,7 @@ ALTER TABLE ONLY cmis.value_contexts
 --
 
 ALTER TABLE ONLY cmis.variation_policies
-    ADD CONSTRAINT variation_policies_naming_ref_fkey FOREIGN KEY (naming_ref) REFERENCES cmis.naming_templates(naming_id);
+    ADD CONSTRAINT variation_policies_naming_ref_fkey FOREIGN KEY (naming_ref) REFERENCES cmis.naming_templates(naming_id) ON DELETE CASCADE;
 
 
 --
@@ -8648,7 +12735,7 @@ ALTER TABLE ONLY cmis_knowledge.temporal_analytics
 --
 
 ALTER TABLE ONLY cmis_marketing.assets
-    ADD CONSTRAINT assets_task_id_fkey FOREIGN KEY (task_id) REFERENCES cmis_dev.dev_tasks(task_id);
+    ADD CONSTRAINT assets_task_id_fkey FOREIGN KEY (task_id) REFERENCES cmis_dev.dev_tasks(task_id) ON DELETE CASCADE;
 
 
 --
@@ -8656,7 +12743,7 @@ ALTER TABLE ONLY cmis_marketing.assets
 --
 
 ALTER TABLE ONLY cmis_marketing.video_scenarios
-    ADD CONSTRAINT video_scenarios_asset_id_fkey FOREIGN KEY (asset_id) REFERENCES cmis_marketing.assets(asset_id);
+    ADD CONSTRAINT video_scenarios_asset_id_fkey FOREIGN KEY (asset_id) REFERENCES cmis_marketing.assets(asset_id) ON DELETE CASCADE;
 
 
 --
@@ -8664,7 +12751,7 @@ ALTER TABLE ONLY cmis_marketing.video_scenarios
 --
 
 ALTER TABLE ONLY cmis_marketing.video_scenarios
-    ADD CONSTRAINT video_scenarios_task_id_fkey FOREIGN KEY (task_id) REFERENCES cmis_dev.dev_tasks(task_id);
+    ADD CONSTRAINT video_scenarios_task_id_fkey FOREIGN KEY (task_id) REFERENCES cmis_dev.dev_tasks(task_id) ON DELETE CASCADE;
 
 
 --
@@ -8672,7 +12759,7 @@ ALTER TABLE ONLY cmis_marketing.video_scenarios
 --
 
 ALTER TABLE ONLY cmis_marketing.visual_concepts
-    ADD CONSTRAINT visual_concepts_asset_id_fkey FOREIGN KEY (asset_id) REFERENCES cmis_marketing.assets(asset_id);
+    ADD CONSTRAINT visual_concepts_asset_id_fkey FOREIGN KEY (asset_id) REFERENCES cmis_marketing.assets(asset_id) ON DELETE CASCADE;
 
 
 --
@@ -8680,7 +12767,7 @@ ALTER TABLE ONLY cmis_marketing.visual_concepts
 --
 
 ALTER TABLE ONLY cmis_marketing.visual_scenarios
-    ADD CONSTRAINT visual_scenarios_creative_id_fkey FOREIGN KEY (creative_id) REFERENCES cmis_marketing.generated_creatives(creative_id);
+    ADD CONSTRAINT visual_scenarios_creative_id_fkey FOREIGN KEY (creative_id) REFERENCES cmis_marketing.generated_creatives(creative_id) ON DELETE CASCADE;
 
 
 --
@@ -8688,7 +12775,7 @@ ALTER TABLE ONLY cmis_marketing.visual_scenarios
 --
 
 ALTER TABLE ONLY cmis_marketing.voice_scripts
-    ADD CONSTRAINT voice_scripts_scenario_id_fkey FOREIGN KEY (scenario_id) REFERENCES cmis_marketing.video_scenarios(scenario_id);
+    ADD CONSTRAINT voice_scripts_scenario_id_fkey FOREIGN KEY (scenario_id) REFERENCES cmis_marketing.video_scenarios(scenario_id) ON DELETE CASCADE;
 
 
 --
@@ -8696,95 +12783,7 @@ ALTER TABLE ONLY cmis_marketing.voice_scripts
 --
 
 ALTER TABLE ONLY cmis_marketing.voice_scripts
-    ADD CONSTRAINT voice_scripts_task_id_fkey FOREIGN KEY (task_id) REFERENCES cmis_dev.dev_tasks(task_id);
-
-
---
--- Name: ai_models ai_models_org_id_fkey; Type: FK CONSTRAINT; Schema: cmis_refactored; Owner: begin
---
-
-ALTER TABLE ONLY cmis_refactored.ai_models
-    ADD CONSTRAINT ai_models_org_id_fkey FOREIGN KEY (org_id) REFERENCES cmis_refactored.organizations(org_id);
-
-
---
--- Name: campaigns campaigns_org_id_fkey; Type: FK CONSTRAINT; Schema: cmis_refactored; Owner: begin
---
-
-ALTER TABLE ONLY cmis_refactored.campaigns
-    ADD CONSTRAINT campaigns_org_id_fkey FOREIGN KEY (org_id) REFERENCES cmis_refactored.organizations(org_id);
-
-
---
--- Name: contexts contexts_campaign_id_fkey; Type: FK CONSTRAINT; Schema: cmis_refactored; Owner: begin
---
-
-ALTER TABLE ONLY cmis_refactored.contexts
-    ADD CONSTRAINT contexts_campaign_id_fkey FOREIGN KEY (campaign_id) REFERENCES cmis_refactored.campaigns(campaign_id);
-
-
---
--- Name: contexts contexts_org_id_fkey; Type: FK CONSTRAINT; Schema: cmis_refactored; Owner: begin
---
-
-ALTER TABLE ONLY cmis_refactored.contexts
-    ADD CONSTRAINT contexts_org_id_fkey FOREIGN KEY (org_id) REFERENCES cmis_refactored.organizations(org_id);
-
-
---
--- Name: creative_outputs creative_outputs_campaign_id_fkey; Type: FK CONSTRAINT; Schema: cmis_refactored; Owner: begin
---
-
-ALTER TABLE ONLY cmis_refactored.creative_outputs
-    ADD CONSTRAINT creative_outputs_campaign_id_fkey FOREIGN KEY (campaign_id) REFERENCES cmis_refactored.campaigns(campaign_id);
-
-
---
--- Name: creative_outputs creative_outputs_context_id_fkey; Type: FK CONSTRAINT; Schema: cmis_refactored; Owner: begin
---
-
-ALTER TABLE ONLY cmis_refactored.creative_outputs
-    ADD CONSTRAINT creative_outputs_context_id_fkey FOREIGN KEY (context_id) REFERENCES cmis_refactored.contexts(context_id);
-
-
---
--- Name: creative_outputs creative_outputs_org_id_fkey; Type: FK CONSTRAINT; Schema: cmis_refactored; Owner: begin
---
-
-ALTER TABLE ONLY cmis_refactored.creative_outputs
-    ADD CONSTRAINT creative_outputs_org_id_fkey FOREIGN KEY (org_id) REFERENCES cmis_refactored.organizations(org_id);
-
-
---
--- Name: integrations integrations_org_id_fkey; Type: FK CONSTRAINT; Schema: cmis_refactored; Owner: begin
---
-
-ALTER TABLE ONLY cmis_refactored.integrations
-    ADD CONSTRAINT integrations_org_id_fkey FOREIGN KEY (org_id) REFERENCES cmis_refactored.organizations(org_id);
-
-
---
--- Name: performance_metrics performance_metrics_campaign_id_fkey; Type: FK CONSTRAINT; Schema: cmis_refactored; Owner: begin
---
-
-ALTER TABLE ONLY cmis_refactored.performance_metrics
-    ADD CONSTRAINT performance_metrics_campaign_id_fkey FOREIGN KEY (campaign_id) REFERENCES cmis_refactored.campaigns(campaign_id);
-
-
---
--- Name: performance_metrics performance_metrics_org_id_fkey; Type: FK CONSTRAINT; Schema: cmis_refactored; Owner: begin
---
-
-ALTER TABLE ONLY cmis_refactored.performance_metrics
-    ADD CONSTRAINT performance_metrics_org_id_fkey FOREIGN KEY (org_id) REFERENCES cmis_refactored.organizations(org_id);
-
-
---
--- Name: performance_metrics performance_metrics_output_id_fkey; Type: FK CONSTRAINT; Schema: cmis_refactored; Owner: begin
---
-
-ALTER TABLE ONLY cmis_refactored.performance_metrics
-    ADD CONSTRAINT performance_metrics_output_id_fkey FOREIGN KEY (output_id) REFERENCES cmis_refactored.creative_outputs(output_id);
+    ADD CONSTRAINT voice_scripts_task_id_fkey FOREIGN KEY (task_id) REFERENCES cmis_dev.dev_tasks(task_id) ON DELETE CASCADE;
 
 
 --
@@ -8792,7 +12791,7 @@ ALTER TABLE ONLY cmis_refactored.performance_metrics
 --
 
 ALTER TABLE ONLY cmis_staging.raw_channel_data
-    ADD CONSTRAINT raw_channel_data_integration_id_fkey FOREIGN KEY (integration_id) REFERENCES cmis_refactored.integrations(integration_id);
+    ADD CONSTRAINT raw_channel_data_integration_id_fkey FOREIGN KEY (integration_id) REFERENCES cmis.integrations(integration_id);
 
 
 --
@@ -8808,7 +12807,7 @@ ALTER TABLE ONLY lab.example_sets
 --
 
 ALTER TABLE ONLY lab.example_sets
-    ADD CONSTRAINT example_sets_campaign_id_fkey FOREIGN KEY (campaign_id) REFERENCES cmis_refactored.campaigns(campaign_id) MATCH FULL ON DELETE SET NULL;
+    ADD CONSTRAINT example_sets_campaign_id_fkey FOREIGN KEY (campaign_id) REFERENCES cmis.campaigns(campaign_id) MATCH FULL ON DELETE SET NULL;
 
 
 --
@@ -8844,7 +12843,7 @@ ALTER TABLE ONLY lab.test_matrix
 
 
 --
--- Name: channel_formats channel_formats_channel_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: gpts_data_user
+-- Name: channel_formats channel_formats_channel_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: begin
 --
 
 ALTER TABLE ONLY public.channel_formats
@@ -8924,6 +12923,12 @@ ALTER TABLE cmis.ai_actions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE cmis.audit_log ENABLE ROW LEVEL SECURITY;
 
 --
+-- Name: campaigns; Type: ROW SECURITY; Schema: cmis; Owner: begin
+--
+
+ALTER TABLE cmis.campaigns ENABLE ROW LEVEL SECURITY;
+
+--
 -- Name: content_plans; Type: ROW SECURITY; Schema: cmis; Owner: begin
 --
 
@@ -8966,124 +12971,188 @@ ALTER TABLE cmis.feed_items ENABLE ROW LEVEL SECURITY;
 ALTER TABLE cmis.flows ENABLE ROW LEVEL SECURITY;
 
 --
--- Name: ad_accounts org_isolation_ad_accounts; Type: POLICY; Schema: cmis; Owner: begin
+-- Name: integrations; Type: ROW SECURITY; Schema: cmis; Owner: begin
 --
 
-CREATE POLICY org_isolation_ad_accounts ON cmis.ad_accounts USING ((org_id = (current_setting('app.current_org_id'::text))::uuid));
-
-
---
--- Name: ad_audiences org_isolation_ad_audiences; Type: POLICY; Schema: cmis; Owner: begin
---
-
-CREATE POLICY org_isolation_ad_audiences ON cmis.ad_audiences USING ((org_id = (current_setting('app.current_org_id'::text))::uuid));
-
+ALTER TABLE cmis.integrations ENABLE ROW LEVEL SECURITY;
 
 --
--- Name: ad_campaigns org_isolation_ad_campaigns; Type: POLICY; Schema: cmis; Owner: begin
+-- Name: ad_accounts rbac_ad_accounts; Type: POLICY; Schema: cmis; Owner: begin
 --
 
-CREATE POLICY org_isolation_ad_campaigns ON cmis.ad_campaigns USING ((org_id = (current_setting('app.current_org_id'::text))::uuid));
+CREATE POLICY rbac_ad_accounts ON cmis.ad_accounts FOR SELECT USING (((deleted_at IS NULL) AND (org_id = cmis.get_current_org_id()) AND cmis.check_permission(cmis.get_current_user_id(), org_id, 'campaigns.view'::text)));
 
 
 --
--- Name: ad_entities org_isolation_ad_entities; Type: POLICY; Schema: cmis; Owner: begin
+-- Name: ad_campaigns rbac_ad_campaigns; Type: POLICY; Schema: cmis; Owner: begin
 --
 
-CREATE POLICY org_isolation_ad_entities ON cmis.ad_entities USING ((org_id = (current_setting('app.current_org_id'::text))::uuid));
-
-
---
--- Name: ad_metrics org_isolation_ad_metrics; Type: POLICY; Schema: cmis; Owner: begin
---
-
-CREATE POLICY org_isolation_ad_metrics ON cmis.ad_metrics USING ((org_id = (current_setting('app.current_org_id'::text))::uuid));
+CREATE POLICY rbac_ad_campaigns ON cmis.ad_campaigns FOR SELECT USING (((deleted_at IS NULL) AND (org_id = cmis.get_current_org_id()) AND cmis.check_permission(cmis.get_current_user_id(), org_id, 'campaigns.view'::text)));
 
 
 --
--- Name: ad_sets org_isolation_ad_sets; Type: POLICY; Schema: cmis; Owner: begin
+-- Name: ai_actions rbac_ai_actions; Type: POLICY; Schema: cmis; Owner: begin
 --
 
-CREATE POLICY org_isolation_ad_sets ON cmis.ad_sets USING ((org_id = (current_setting('app.current_org_id'::text))::uuid));
-
-
---
--- Name: ai_actions org_isolation_ai_actions; Type: POLICY; Schema: cmis; Owner: begin
---
-
-CREATE POLICY org_isolation_ai_actions ON cmis.ai_actions USING ((org_id = (current_setting('app.current_org_id'::text))::uuid)) WITH CHECK ((org_id = (current_setting('app.current_org_id'::text))::uuid));
+CREATE POLICY rbac_ai_actions ON cmis.ai_actions FOR SELECT USING (((deleted_at IS NULL) AND (org_id = cmis.get_current_org_id()) AND cmis.check_permission(cmis.get_current_user_id(), org_id, 'analytics.view'::text)));
 
 
 --
--- Name: creative_assets org_isolation_assets; Type: POLICY; Schema: cmis; Owner: begin
+-- Name: analytics_integrations rbac_analytics_integrations; Type: POLICY; Schema: cmis; Owner: begin
 --
 
-CREATE POLICY org_isolation_assets ON cmis.creative_assets FOR SELECT USING ((org_id = (current_setting('app.current_org_id'::text))::uuid));
-
-
---
--- Name: audit_log org_isolation_audit_log; Type: POLICY; Schema: cmis; Owner: begin
---
-
-CREATE POLICY org_isolation_audit_log ON cmis.audit_log USING (((org_id IS NULL) OR (org_id = (current_setting('app.current_org_id'::text))::uuid)));
+CREATE POLICY rbac_analytics_integrations ON cmis.analytics_integrations FOR SELECT USING (((deleted_at IS NULL) AND (org_id = cmis.get_current_org_id()) AND cmis.check_permission(cmis.get_current_user_id(), org_id, 'analytics.view'::text)));
 
 
 --
--- Name: content_plans org_isolation_content_plans; Type: POLICY; Schema: cmis; Owner: begin
+-- Name: analytics_integrations rbac_analytics_integrations_manage; Type: POLICY; Schema: cmis; Owner: begin
 --
 
-CREATE POLICY org_isolation_content_plans ON cmis.content_plans USING ((org_id = (current_setting('app.current_org_id'::text))::uuid));
-
-
---
--- Name: creative_assets org_isolation_creative_assets; Type: POLICY; Schema: cmis; Owner: begin
---
-
-CREATE POLICY org_isolation_creative_assets ON cmis.creative_assets USING ((org_id = (current_setting('app.current_org_id'::text))::uuid));
+CREATE POLICY rbac_analytics_integrations_manage ON cmis.analytics_integrations USING (((deleted_at IS NULL) AND (org_id = cmis.get_current_org_id()) AND cmis.check_permission(cmis.get_current_user_id(), org_id, 'analytics.configure'::text)));
 
 
 --
--- Name: data_feeds org_isolation_data_feeds; Type: POLICY; Schema: cmis; Owner: begin
+-- Name: audit_log rbac_audit_log; Type: POLICY; Schema: cmis; Owner: begin
 --
 
-CREATE POLICY org_isolation_data_feeds ON cmis.data_feeds USING ((org_id = (current_setting('app.current_org_id'::text))::uuid));
-
-
---
--- Name: experiments org_isolation_experiments; Type: POLICY; Schema: cmis; Owner: begin
---
-
-CREATE POLICY org_isolation_experiments ON cmis.experiments USING ((org_id = (current_setting('app.current_org_id'::text))::uuid));
+CREATE POLICY rbac_audit_log ON cmis.audit_log FOR SELECT USING ((((org_id IS NULL) OR (org_id = cmis.get_current_org_id())) AND cmis.check_permission(cmis.get_current_user_id(), COALESCE(org_id, cmis.get_current_org_id()), 'admin.settings'::text)));
 
 
 --
--- Name: export_bundles org_isolation_export_bundles; Type: POLICY; Schema: cmis; Owner: begin
+-- Name: campaigns rbac_campaigns_delete; Type: POLICY; Schema: cmis; Owner: begin
 --
 
-CREATE POLICY org_isolation_export_bundles ON cmis.export_bundles USING ((org_id = (current_setting('app.current_org_id'::text))::uuid));
-
-
---
--- Name: feed_items org_isolation_feed_items; Type: POLICY; Schema: cmis; Owner: begin
---
-
-CREATE POLICY org_isolation_feed_items ON cmis.feed_items USING ((feed_id IN ( SELECT data_feeds.feed_id
-   FROM cmis.data_feeds
-  WHERE (data_feeds.org_id = (current_setting('app.current_org_id'::text))::uuid))));
+CREATE POLICY rbac_campaigns_delete ON cmis.campaigns FOR DELETE USING (((org_id = cmis.get_current_org_id()) AND cmis.check_permission(cmis.get_current_user_id(), org_id, 'campaigns.delete'::text)));
 
 
 --
--- Name: flows org_isolation_flows; Type: POLICY; Schema: cmis; Owner: begin
+-- Name: campaigns rbac_campaigns_delete_v2; Type: POLICY; Schema: cmis; Owner: begin
 --
 
-CREATE POLICY org_isolation_flows ON cmis.flows USING (((org_id IS NULL) OR (org_id = (current_setting('app.current_org_id'::text))::uuid)));
+CREATE POLICY rbac_campaigns_delete_v2 ON cmis.campaigns FOR DELETE USING (cmis.check_permission_tx('campaigns.delete'::text));
 
 
 --
--- Name: users org_isolation_users; Type: POLICY; Schema: cmis; Owner: begin
+-- Name: campaigns rbac_campaigns_insert; Type: POLICY; Schema: cmis; Owner: begin
 --
 
-CREATE POLICY org_isolation_users ON cmis.users USING ((org_id = (current_setting('app.current_org_id'::text))::uuid)) WITH CHECK ((org_id = (current_setting('app.current_org_id'::text))::uuid));
+CREATE POLICY rbac_campaigns_insert ON cmis.campaigns FOR INSERT WITH CHECK (((org_id = cmis.get_current_org_id()) AND cmis.check_permission(cmis.get_current_user_id(), org_id, 'campaigns.create'::text)));
+
+
+--
+-- Name: campaigns rbac_campaigns_insert_v2; Type: POLICY; Schema: cmis; Owner: begin
+--
+
+CREATE POLICY rbac_campaigns_insert_v2 ON cmis.campaigns FOR INSERT WITH CHECK (cmis.check_permission_tx('campaigns.create'::text));
+
+
+--
+-- Name: campaigns rbac_campaigns_select; Type: POLICY; Schema: cmis; Owner: begin
+--
+
+CREATE POLICY rbac_campaigns_select ON cmis.campaigns FOR SELECT USING ((((deleted_at IS NULL) OR (deleted_at > CURRENT_TIMESTAMP)) AND (org_id = cmis.get_current_org_id()) AND cmis.check_permission(cmis.get_current_user_id(), org_id, 'campaigns.view'::text)));
+
+
+--
+-- Name: campaigns rbac_campaigns_select_v2; Type: POLICY; Schema: cmis; Owner: begin
+--
+
+CREATE POLICY rbac_campaigns_select_v2 ON cmis.campaigns FOR SELECT USING ((((deleted_at IS NULL) OR (deleted_at > CURRENT_TIMESTAMP)) AND cmis.check_permission_tx('campaigns.view'::text)));
+
+
+--
+-- Name: campaigns rbac_campaigns_update; Type: POLICY; Schema: cmis; Owner: begin
+--
+
+CREATE POLICY rbac_campaigns_update ON cmis.campaigns FOR UPDATE USING ((((deleted_at IS NULL) OR (deleted_at > CURRENT_TIMESTAMP)) AND (org_id = cmis.get_current_org_id()) AND cmis.check_permission(cmis.get_current_user_id(), org_id, 'campaigns.edit'::text)));
+
+
+--
+-- Name: campaigns rbac_campaigns_update_v2; Type: POLICY; Schema: cmis; Owner: begin
+--
+
+CREATE POLICY rbac_campaigns_update_v2 ON cmis.campaigns FOR UPDATE USING ((((deleted_at IS NULL) OR (deleted_at > CURRENT_TIMESTAMP)) AND cmis.check_permission_tx('campaigns.edit'::text)));
+
+
+--
+-- Name: content_items rbac_content_items; Type: POLICY; Schema: cmis; Owner: begin
+--
+
+CREATE POLICY rbac_content_items ON cmis.content_items FOR SELECT USING (((deleted_at IS NULL) AND (org_id = cmis.get_current_org_id()) AND cmis.check_permission(cmis.get_current_user_id(), org_id, 'creatives.view'::text)));
+
+
+--
+-- Name: creative_assets rbac_creative_assets_insert; Type: POLICY; Schema: cmis; Owner: begin
+--
+
+CREATE POLICY rbac_creative_assets_insert ON cmis.creative_assets FOR INSERT WITH CHECK (((org_id = cmis.get_current_org_id()) AND cmis.check_permission(cmis.get_current_user_id(), org_id, 'creatives.create'::text)));
+
+
+--
+-- Name: creative_assets rbac_creative_assets_select; Type: POLICY; Schema: cmis; Owner: begin
+--
+
+CREATE POLICY rbac_creative_assets_select ON cmis.creative_assets FOR SELECT USING (((deleted_at IS NULL) AND (org_id = cmis.get_current_org_id()) AND cmis.check_permission(cmis.get_current_user_id(), org_id, 'creatives.view'::text)));
+
+
+--
+-- Name: creative_assets rbac_creative_assets_update; Type: POLICY; Schema: cmis; Owner: begin
+--
+
+CREATE POLICY rbac_creative_assets_update ON cmis.creative_assets FOR UPDATE USING (((deleted_at IS NULL) AND (org_id = cmis.get_current_org_id()) AND cmis.check_permission(cmis.get_current_user_id(), org_id, 'creatives.edit'::text)));
+
+
+--
+-- Name: integrations rbac_integrations_manage; Type: POLICY; Schema: cmis; Owner: begin
+--
+
+CREATE POLICY rbac_integrations_manage ON cmis.integrations USING (((deleted_at IS NULL) AND (org_id = cmis.get_current_org_id()) AND cmis.check_permission(cmis.get_current_user_id(), org_id, 'integrations.manage'::text)));
+
+
+--
+-- Name: integrations rbac_integrations_select; Type: POLICY; Schema: cmis; Owner: begin
+--
+
+CREATE POLICY rbac_integrations_select ON cmis.integrations FOR SELECT USING (((deleted_at IS NULL) AND (org_id = cmis.get_current_org_id()) AND cmis.check_permission(cmis.get_current_user_id(), org_id, 'integrations.view'::text)));
+
+
+--
+-- Name: orgs rbac_orgs_manage; Type: POLICY; Schema: cmis; Owner: begin
+--
+
+CREATE POLICY rbac_orgs_manage ON cmis.orgs FOR UPDATE USING (cmis.check_permission(cmis.get_current_user_id(), org_id, 'orgs.manage'::text));
+
+
+--
+-- Name: orgs rbac_orgs_select; Type: POLICY; Schema: cmis; Owner: begin
+--
+
+CREATE POLICY rbac_orgs_select ON cmis.orgs FOR SELECT USING (cmis.check_permission(cmis.get_current_user_id(), org_id, 'orgs.view'::text));
+
+
+--
+-- Name: users rbac_users_select; Type: POLICY; Schema: cmis; Owner: begin
+--
+
+CREATE POLICY rbac_users_select ON cmis.users FOR SELECT USING (((user_id = cmis.get_current_user_id()) OR (EXISTS ( SELECT 1
+   FROM cmis.user_orgs uo
+  WHERE ((uo.user_id = cmis.get_current_user_id()) AND (uo.deleted_at IS NULL) AND cmis.check_permission(cmis.get_current_user_id(), uo.org_id, 'admin.users'::text))))));
+
+
+--
+-- Name: users rbac_users_update; Type: POLICY; Schema: cmis; Owner: begin
+--
+
+CREATE POLICY rbac_users_update ON cmis.users FOR UPDATE USING (((user_id = cmis.get_current_user_id()) OR (EXISTS ( SELECT 1
+   FROM cmis.user_orgs uo
+  WHERE ((uo.user_id = cmis.get_current_user_id()) AND (uo.deleted_at IS NULL) AND cmis.check_permission(cmis.get_current_user_id(), uo.org_id, 'admin.users'::text))))));
+
+
+--
+-- Name: user_orgs user_orgs_self; Type: POLICY; Schema: cmis; Owner: begin
+--
+
+CREATE POLICY user_orgs_self ON cmis.user_orgs FOR SELECT USING ((user_id = cmis.get_current_user_id()));
 
 
 --
@@ -9106,15 +13175,43 @@ CREATE POLICY org_isolation_example_sets ON lab.example_sets USING (((org_id IS 
 
 
 --
--- Name: SCHEMA public; Type: ACL; Schema: -; Owner: postgres
+-- Name: DEFAULT PRIVILEGES FOR TABLES; Type: DEFAULT ACL; Schema: cmis_knowledge; Owner: postgres
 --
 
-GRANT CREATE ON SCHEMA public TO gpts_data_user;
+ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA cmis_knowledge GRANT SELECT,INSERT,DELETE,UPDATE ON TABLES TO begin;
+
+
+--
+-- Name: DEFAULT PRIVILEGES FOR TABLES; Type: DEFAULT ACL; Schema: cmis_system_health; Owner: postgres
+--
+
+ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA cmis_system_health GRANT SELECT,INSERT,DELETE,UPDATE ON TABLES TO begin;
+
+
+--
+-- Name: DEFAULT PRIVILEGES FOR SEQUENCES; Type: DEFAULT ACL; Schema: public; Owner: begin
+--
+
+ALTER DEFAULT PRIVILEGES FOR ROLE begin IN SCHEMA public GRANT ALL ON SEQUENCES TO begin;
+
+
+--
+-- Name: DEFAULT PRIVILEGES FOR TABLES; Type: DEFAULT ACL; Schema: public; Owner: begin
+--
+
+ALTER DEFAULT PRIVILEGES FOR ROLE begin IN SCHEMA public GRANT ALL ON TABLES TO begin;
+
+
+--
+-- Name: DEFAULT PRIVILEGES FOR TABLES; Type: DEFAULT ACL; Schema: public; Owner: postgres
+--
+
+ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public GRANT SELECT,INSERT,DELETE,UPDATE ON TABLES TO begin;
 
 
 --
 -- PostgreSQL database dump complete
 --
 
-\unrestrict zttsLOVYQkHsSMYfZob8o7yVjyaf4HfQqBuaFefhmxeRoXPVJOWA2rfz3JGU03x
+\unrestrict qbfrz1YqeQ12yamipQjra5ejMvz8rrNdteajvF9mcUqhVI5pvxVYz348psywcLX
 

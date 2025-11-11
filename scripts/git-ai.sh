@@ -8,7 +8,7 @@ set -x
 # =========================================
 
 # السماح بتمرير مسار مخصص لملف البيئة كوسيط أول
-ENV_FILE=${2:-"/httpdocs/.env"}
+ENV_FILE=${2:-"/home/cmis/public_html/.env"}
 if [ ! -f "$ENV_FILE" ]; then
   echo "❌ Environment file not found at $ENV_FILE"
   exit 1
@@ -34,7 +34,7 @@ if ! command -v git &> /dev/null; then
 fi
 
 # الانتقال إلى مجلد المشروع الصحيح
-cd ~/public_html || exit 1
+cd /home/cmis/public_html || exit 1
 
 case "$COMMAND" in
   pull)
@@ -57,9 +57,9 @@ case "$COMMAND" in
     info "Deploying latest code..."
     git pull origin main && ok "Code updated."
     info "Running Laravel optimizations..."
-    /opt/plesk/php/8.3/bin/php artisan migrate --force
-    /opt/plesk/php/8.3/bin/php artisan cache:clear
-    /opt/plesk/php/8.3/bin/php artisan config:cache
+  	php artisan migrate --force
+    php artisan cache:clear
+   php artisan config:cache
     ok "Deployment completed successfully."
     ;;
 
@@ -78,14 +78,14 @@ case "$COMMAND" in
     ;;
 
   backup)
-    info "Creating backup of /httpdocs directory..."
-    BACKUP_DIR=$( /bin/date +"/httpdocs/backups/%Y-%m-%d_%H-%M-%S" )
+    info "Creating backup of /home/cmis/public_html directory..."
+    BACKUP_DIR=$( /bin/date +"/home/cmis/public_html/backups/%Y-%m-%d_%H-%M-%S" )
     mkdir -p "$BACKUP_DIR"
-    TMP_FILE="/tmp/backup_httpdocs_$( /bin/date +%Y-%m-%d_%H-%M-%S ).tar.gz"
-    tar --exclude=/httpdocs/backups -czf "$TMP_FILE" -C / httpdocs
+    TMP_FILE="/home/cmis/tmp/backup_httpdocs_$( /bin/date +%Y-%m-%d_%H-%M-%S ).tar.gz"
+    tar --exclude=/home/cmis/public_html/backups -czf "$TMP_FILE" -C / public_html
     mv "$TMP_FILE" "$BACKUP_DIR/backup_httpdocs.tar.gz"
     ok "Backup created at $BACKUP_DIR/backup_httpdocs.tar.gz"
-    find /httpdocs/backups -maxdepth 1 -type d -mtime +7 -exec rm -rf {} \; 2>/dev/null
+    find /home/cmis/public_html/backups -maxdepth 1 -type d -mtime +7 -exec rm -rf {} \; 2>/dev/null
     info "Old backups (older than 7 days) have been cleaned up."
     ;;
 
