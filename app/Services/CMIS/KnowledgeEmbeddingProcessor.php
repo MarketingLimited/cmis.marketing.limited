@@ -49,7 +49,7 @@ class KnowledgeEmbeddingProcessor
     /**
      * Get pending items for processing
      */
-    private function getPendingItems(int $limit): \Illuminate\Database\Eloquent\Collection
+    public function getPendingItems(int $limit): \Illuminate\Database\Eloquent\Collection
     {
         return KnowledgeItem::pendingEmbeddings()
             ->limit($limit)

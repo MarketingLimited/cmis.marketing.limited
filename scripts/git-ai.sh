@@ -7,7 +7,8 @@ set -x
 # يدير عمليات Git والتحديثات التشغيلية في بيئة Plesk.
 # =========================================
 
-ENV_FILE="/httpdocs/.env"
+# السماح بتمرير مسار مخصص لملف البيئة كوسيط أول
+ENV_FILE=${2:-"/httpdocs/.env"}
 if [ ! -f "$ENV_FILE" ]; then
   echo "❌ Environment file not found at $ENV_FILE"
   exit 1
@@ -32,8 +33,8 @@ if ! command -v git &> /dev/null; then
   exit 1
 fi
 
-# الانتقال إلى مجلد المشروع
-cd /httpdocs || exit 1
+# الانتقال إلى مجلد المشروع الصحيح
+cd ~/public_html || exit 1
 
 case "$COMMAND" in
   pull)
@@ -43,6 +44,8 @@ case "$COMMAND" in
 
   push)
     info "Pushing local changes to GitHub..."
+    git config user.name "$GIT_USERNAME"
+    git config user.email "$GIT_EMAIL"
     git add . && git commit -m "Auto-sync from server" && git push origin main && ok "Changes pushed successfully."
     ;;
 
@@ -62,6 +65,8 @@ case "$COMMAND" in
 
   sync)
     info "Synchronizing changes with GitHub..."
+    git config user.name "$GIT_USERNAME"
+    git config user.email "$GIT_EMAIL"
     git add . && git commit -m "Sync from production server" && git pull origin main --rebase && git push origin main
     ok "Sync completed successfully."
     ;;
@@ -74,9 +79,9 @@ case "$COMMAND" in
 
   backup)
     info "Creating backup of /httpdocs directory..."
-    BACKUP_DIR=$(/bin/date +"/httpdocs/backups/%Y-%m-%d_%H-%M-%S")
+    BACKUP_DIR=$( /bin/date +"/httpdocs/backups/%Y-%m-%d_%H-%M-%S" )
     mkdir -p "$BACKUP_DIR"
-    TMP_FILE="/tmp/backup_httpdocs_$(/bin/date +%Y-%m-%d_%H-%M-%S).tar.gz"
+    TMP_FILE="/tmp/backup_httpdocs_$( /bin/date +%Y-%m-%d_%H-%M-%S ).tar.gz"
     tar --exclude=/httpdocs/backups -czf "$TMP_FILE" -C / httpdocs
     mv "$TMP_FILE" "$BACKUP_DIR/backup_httpdocs.tar.gz"
     ok "Backup created at $BACKUP_DIR/backup_httpdocs.tar.gz"

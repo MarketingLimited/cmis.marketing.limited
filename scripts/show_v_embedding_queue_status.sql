@@ -1,1 +1,0 @@
-SELECT * FROM cmis_knowledge.v_embedding_queue_status;
