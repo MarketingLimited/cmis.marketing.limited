@@ -5,6 +5,7 @@ namespace App\Console\Commands\Sync;
 use Illuminate\Console\Command;
 use App\Console\Traits\HandlesOrgContext;
 use App\Models\Integration;
+use App\Jobs\SyncInstagramDataJob;
 use Carbon\Carbon;
 
 class SyncInstagramCommand extends Command
@@ -15,7 +16,8 @@ class SyncInstagramCommand extends Command
                             {--org=* : Specific org IDs}
                             {--from= : Start date (YYYY-MM-DD)}
                             {--to= : End date (YYYY-MM-DD)}
-                            {--limit=25 : Posts limit}';
+                            {--limit=25 : Posts limit}
+                            {--queue : Dispatch as queue job}';
 
     protected $description = 'Sync Instagram data (accounts, posts, metrics)';
 
@@ -44,15 +46,19 @@ class SyncInstagramCommand extends Command
                 $this->info("  📱 Account: {$integration->account_username}");
 
                 try {
-                    // Placeholder for actual sync logic
                     $this->line("     → Syncing posts from {$from->toDateString()} to {$to->toDateString()}");
                     $this->line("     → Limit: {$limit} posts");
 
-                    // TODO: Implement actual Instagram API sync
-                    // $service->syncAccount($integration);
-                    // $service->syncPosts($integration, $from, $to, $limit);
-
-                    $this->info("     ✓ Sync completed (placeholder)");
+                    if ($this->option('queue')) {
+                        // Dispatch job to queue
+                        SyncInstagramDataJob::dispatch($integration, $from, $to, $limit);
+                        $this->info("     ✓ Job dispatched to queue");
+                    } else {
+                        // Run synchronously
+                        $job = new SyncInstagramDataJob($integration, $from, $to, $limit);
+                        $job->handle(app(\App\Services\Social\InstagramSyncService::class));
+                        $this->info("     ✓ Sync completed");
+                    }
 
                 } catch (\Exception $e) {
                     $this->error("     ✗ Error: " . $e->getMessage());

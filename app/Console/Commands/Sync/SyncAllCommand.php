@@ -8,7 +8,8 @@ class SyncAllCommand extends Command
 {
     protected $signature = 'sync:all
                             {--org=* : Specific org IDs}
-                            {--platforms=* : Specific platforms}';
+                            {--platforms=* : Specific platforms}
+                            {--queue : Dispatch as queue jobs}';
 
     protected $description = 'Sync all platforms for all organizations';
 
@@ -39,6 +40,12 @@ class SyncAllCommand extends Command
             $this->info("🔄 Syncing {$platform}...");
 
             $options = $orgIds ? ['--org' => $orgIds] : [];
+
+            // Pass queue flag to sub-commands
+            if ($this->option('queue')) {
+                $options['--queue'] = true;
+            }
+
             $this->call($commands[$platform], $options);
 
             $this->newLine();
