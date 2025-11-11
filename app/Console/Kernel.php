@@ -25,6 +25,36 @@ class Kernel extends ConsoleKernel
 
     protected function schedule(Schedule $schedule): void
     {
+        // ==========================================
+        // 🔄 NEW: Multi-Platform Sync Commands
+        // ==========================================
+
+        // Auto-sync all platforms hourly
+        $schedule->command('sync:all')
+            ->hourly()
+            ->withoutOverlapping()
+            ->runInBackground();
+
+        // Daily embeddings generation at 2 AM
+        $schedule->command('embeddings:generate')
+            ->dailyAt('02:00')
+            ->withoutOverlapping();
+
+        // Weekly database cleanup on Sundays at 3 AM
+        $schedule->command('database:cleanup')
+            ->weekly()
+            ->sundays()
+            ->at('03:00');
+
+        // Daily system health check
+        $schedule->command('system:health')
+            ->daily()
+            ->appendOutputTo(storage_path('logs/health-check.log'));
+
+        // ==========================================
+        // 🧠 Original Cognitive Vitality Monitoring
+        // ==========================================
+
         // 🔁 المهمة الأساسية لمزامنة إنستغرام اليومية
         $schedule->command('instagram:api marketing.limited media --limit=100 --sort=desc')
             ->dailyAt('01:00')
