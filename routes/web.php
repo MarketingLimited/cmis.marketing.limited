@@ -154,7 +154,21 @@ Route::middleware(['auth'])->group(function () {
     // ==================== User Management ====================
     Route::prefix('users')->name('users.')->group(function () {
         Route::get('/', function () { return view('users.index'); })->name('index');
+        Route::get('/create', function () { return view('users.create'); })->name('create');
         Route::get('/{userId}', function ($userId) { return view('users.show', ['userId' => $userId]); })->name('show');
+        Route::get('/{userId}/edit', function ($userId) { return view('users.edit', ['userId' => $userId]); })->name('edit');
     });
+
+    // ==================== Settings ====================
+    Route::prefix('settings')->name('settings.')->group(function () {
+        Route::get('/', [App\Http\Controllers\Settings\SettingsController::class, 'index'])->name('index');
+        Route::get('/profile', [App\Http\Controllers\Settings\SettingsController::class, 'profile'])->name('profile');
+        Route::get('/notifications', [App\Http\Controllers\Settings\SettingsController::class, 'notifications'])->name('notifications');
+        Route::get('/security', [App\Http\Controllers\Settings\SettingsController::class, 'security'])->name('security');
+        Route::get('/integrations', [App\Http\Controllers\Settings\SettingsController::class, 'integrations'])->name('integrations');
+    });
+
+    // ==================== Profile ====================
+    Route::get('/profile', [App\Http\Controllers\ProfileController::class, 'show'])->name('profile');
 
 }); // End of Auth Middleware Group
