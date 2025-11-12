@@ -35,39 +35,119 @@ return [
         ],
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Social Media & Marketing Platforms
+    |--------------------------------------------------------------------------
+    */
+
+    // Meta (Facebook & Instagram)
+    'meta' => [
+        'client_id' => env('META_CLIENT_ID'),
+        'client_secret' => env('META_CLIENT_SECRET'),
+        'redirect_uri' => env('META_REDIRECT_URI'),
+        'api_version' => env('META_API_VERSION', 'v19.0'),
+        'rate_limit' => env('META_RATE_LIMIT', 200),
+    ],
+
+    'facebook' => [
+        'client_id' => env('FACEBOOK_APP_ID'),
+        'client_secret' => env('FACEBOOK_APP_SECRET'),
+        'api_version' => env('FACEBOOK_API_VERSION', 'v19.0'),
+        'rate_limit' => env('FACEBOOK_RATE_LIMIT', 200),
+    ],
+
     'instagram' => [
+        'client_id' => env('INSTAGRAM_APP_ID'),
+        'client_secret' => env('INSTAGRAM_APP_SECRET'),
+        'api_version' => env('INSTAGRAM_API_VERSION', 'v19.0'),
+        'rate_limit' => env('INSTAGRAM_RATE_LIMIT', 200),
         'base_url' => env('INSTAGRAM_GRAPH_BASE_URL', 'https://graph.facebook.com/v21.0/'),
         'timeout' => env('INSTAGRAM_TIMEOUT', 30),
-        'retry_times' => env('INSTAGRAM_RETRY_TIMES', 3),
-        'retry_sleep' => env('INSTAGRAM_RETRY_SLEEP', 500),
-        'account_fields' => [
-            'id',
-            'username',
-            'name',
-            'profile_picture_url',
-            'biography',
-            'website',
-            'followers_count',
-            'follows_count',
-            'media_count',
-            'category_name',
-            'is_verified',
-        ],
-        'account_metrics' => ['impressions', 'reach', 'profile_views'],
-        'media_fields' => [
-            'id',
-            'caption',
-            'media_type',
-            'media_url',
-            'permalink',
-            'thumbnail_url',
-            'timestamp',
-            'like_count',
-            'comments_count',
-        ],
-        'post_insight_metrics' => ['impressions', 'reach', 'saved'],
+        'account_fields' => ['id', 'username', 'name', 'profile_picture_url', 'biography', 'followers_count'],
         'media_page_size' => env('INSTAGRAM_MEDIA_PAGE_SIZE', 50),
-        'media_max_pages' => env('INSTAGRAM_MEDIA_MAX_PAGES', 5),
+    ],
+
+    // Google Services
+    'google' => [
+        'client_id' => env('GOOGLE_CLIENT_ID'),
+        'client_secret' => env('GOOGLE_CLIENT_SECRET'),
+        'redirect_uri' => env('GOOGLE_REDIRECT_URI'),
+    ],
+
+    'google_ads' => [
+        'client_id' => env('GOOGLE_ADS_CLIENT_ID'),
+        'client_secret' => env('GOOGLE_ADS_CLIENT_SECRET'),
+        'developer_token' => env('GOOGLE_ADS_DEVELOPER_TOKEN'),
+        'redirect_uri' => env('GOOGLE_ADS_REDIRECT_URI'),
+    ],
+
+    'youtube' => [
+        'api_key' => env('YOUTUBE_API_KEY'),
+        'client_id' => env('YOUTUBE_CLIENT_ID'),
+        'client_secret' => env('YOUTUBE_CLIENT_SECRET'),
+        'redirect_uri' => env('YOUTUBE_REDIRECT_URI'),
+    ],
+
+    // TikTok
+    'tiktok' => [
+        'client_key' => env('TIKTOK_CLIENT_KEY'),
+        'client_secret' => env('TIKTOK_CLIENT_SECRET'),
+        'redirect_uri' => env('TIKTOK_REDIRECT_URI'),
+        'api_version' => env('TIKTOK_API_VERSION', 'v1.3'),
+        'rate_limit' => env('TIKTOK_RATE_LIMIT', 100),
+    ],
+
+    // Snapchat
+    'snapchat' => [
+        'client_id' => env('SNAPCHAT_CLIENT_ID'),
+        'client_secret' => env('SNAPCHAT_CLIENT_SECRET'),
+        'redirect_uri' => env('SNAPCHAT_REDIRECT_URI'),
+        'rate_limit' => env('SNAPCHAT_RATE_LIMIT', 100),
+    ],
+
+    // Twitter/X
+    'twitter' => [
+        'api_key' => env('TWITTER_API_KEY'),
+        'api_secret' => env('TWITTER_API_SECRET'),
+        'bearer_token' => env('TWITTER_BEARER_TOKEN'),
+        'client_id' => env('TWITTER_CLIENT_ID'),
+        'client_secret' => env('TWITTER_CLIENT_SECRET'),
+        'redirect_uri' => env('TWITTER_REDIRECT_URI'),
+        'api_version' => env('TWITTER_API_VERSION', '2'),
+        'rate_limit' => env('TWITTER_RATE_LIMIT', 300),
+    ],
+
+    // LinkedIn
+    'linkedin' => [
+        'client_id' => env('LINKEDIN_CLIENT_ID'),
+        'client_secret' => env('LINKEDIN_CLIENT_SECRET'),
+        'redirect_uri' => env('LINKEDIN_REDIRECT_URI'),
+        'api_version' => env('LINKEDIN_API_VERSION', '202401'),
+        'rate_limit' => env('LINKEDIN_RATE_LIMIT', 100),
+    ],
+
+    // WhatsApp Business
+    'whatsapp' => [
+        'phone_number_id' => env('WHATSAPP_PHONE_NUMBER_ID'),
+        'business_account_id' => env('WHATSAPP_BUSINESS_ACCOUNT_ID'),
+        'access_token' => env('WHATSAPP_ACCESS_TOKEN'),
+        'webhook_verify_token' => env('WHATSAPP_WEBHOOK_VERIFY_TOKEN'),
+    ],
+
+    // WooCommerce
+    'woocommerce' => [
+        'url' => env('WOOCOMMERCE_URL'),
+        'consumer_key' => env('WOOCOMMERCE_CONSUMER_KEY'),
+        'consumer_secret' => env('WOOCOMMERCE_CONSUMER_SECRET'),
+        'api_version' => env('WOOCOMMERCE_API_VERSION', 'wc/v3'),
+        'rate_limit' => env('WOOCOMMERCE_RATE_LIMIT', 50),
+    ],
+
+    // Microsoft Clarity
+    'clarity' => [
+        'project_id' => env('MICROSOFT_CLARITY_PROJECT_ID'),
+        'api_key' => env('MICROSOFT_CLARITY_API_KEY'),
     ],
 
 ];
