@@ -7,6 +7,7 @@ use App\Http\Controllers\Campaigns\CampaignController;
 use App\Http\Controllers\Creative\CreativeAssetController;
 use App\Http\Controllers\Channels\ChannelController;
 use App\Http\Controllers\Social\SocialSchedulerController;
+use App\Http\Controllers\Integration\IntegrationController;
 use App\Http\Controllers\Analytics\KpiController;
 use App\Http\Controllers\API\CMISEmbeddingController;
 use App\Http\Controllers\API\SemanticSearchController;
@@ -172,6 +173,32 @@ Route::middleware(['auth:sanctum', 'validate.org.access', 'set.db.context'])
 
     /*
     |----------------------------------------------------------------------
+    | التكاملات (Platform Integrations)
+    |----------------------------------------------------------------------
+    */
+    Route::prefix('integrations')->name('integrations.')->group(function () {
+        // List all integrations
+        Route::get('/', [IntegrationController::class, 'index'])->name('index');
+
+        // OAuth connection flow
+        Route::post('/{platform}/connect', [IntegrationController::class, 'connect'])->name('connect');
+        Route::delete('/{integration_id}/disconnect', [IntegrationController::class, 'disconnect'])->name('disconnect');
+
+        // Sync operations
+        Route::post('/{integration_id}/sync', [IntegrationController::class, 'sync'])->name('sync');
+        Route::get('/{integration_id}/sync-history', [IntegrationController::class, 'syncHistory'])->name('sync.history');
+
+        // Settings
+        Route::get('/{integration_id}/settings', [IntegrationController::class, 'getSettings'])->name('settings.get');
+        Route::put('/{integration_id}/settings', [IntegrationController::class, 'updateSettings'])->name('settings.update');
+
+        // Testing & Activity
+        Route::post('/{integration_id}/test', [IntegrationController::class, 'test'])->name('test');
+        Route::get('/activity', [IntegrationController::class, 'activity'])->name('activity');
+    });
+
+    /*
+    |----------------------------------------------------------------------
     | التحليلات (Analytics)
     |----------------------------------------------------------------------
     */
@@ -181,6 +208,14 @@ Route::middleware(['auth:sanctum', 'validate.org.access', 'set.db.context'])
         Route::get('/trends', [KpiController::class, 'trends'])->name('trends');
     });
 });
+
+/*
+|--------------------------------------------------------------------------
+| OAuth Callbacks (Public - No Authentication Required)
+|--------------------------------------------------------------------------
+*/
+Route::get('/integrations/{platform}/callback', [IntegrationController::class, 'callback'])
+    ->name('integrations.callback');
 
 /*
 |--------------------------------------------------------------------------
