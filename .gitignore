@@ -1,4 +1,7 @@
 *.log
+*.bak
+*.backup
+*.backup.php
 .DS_Store
 .env
 .env.backup
