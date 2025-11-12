@@ -74,3 +74,14 @@ Route::get('/templates', [CreativeOverviewController::class, 'index'])->name('cr
 Route::get('/ai/campaigns', [AIDashboardController::class, 'index'])->name('ai.campaigns');
 Route::get('/ai/recommendations', [AIDashboardController::class, 'index'])->name('ai.recommendations');
 Route::get('/ai/models', [AIDashboardController::class, 'index'])->name('ai.models');
+
+// User Management Routes
+Route::prefix('users')->name('users.')->middleware('auth')->group(function () {
+    Route::get('/', function () {
+        return view('users.index');
+    })->name('index');
+
+    Route::get('/{userId}', function ($userId) {
+        return view('users.show', ['userId' => $userId]);
+    })->name('show');
+});

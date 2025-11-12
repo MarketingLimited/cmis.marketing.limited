@@ -32,6 +32,11 @@
                 <a href="#" class="flex items-center px-6 py-3 text-gray-400 hover:bg-gray-800 hover:text-gray-100">
                     <i class="fas fa-chart-line w-5"></i><span class="mx-3">Analytics</span>
                 </a>
+                @can('viewAny', App\Models\User::class)
+                <a href="{{ route('users.index') }}" class="flex items-center px-6 py-3 text-gray-400 hover:bg-gray-800 hover:text-gray-100 {{ request()->routeIs('users.*') ? 'bg-gray-800 text-gray-100' : '' }}">
+                    <i class="fas fa-users w-5"></i><span class="mx-3">Users</span>
+                </a>
+                @endcan
                 <a href="#" class="flex items-center px-6 py-3 text-gray-400 hover:bg-gray-800 hover:text-gray-100">
                     <i class="fas fa-cog w-5"></i><span class="mx-3">Settings</span>
                 </a>
