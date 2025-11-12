@@ -3,7 +3,7 @@
 @section('title', 'الحملات التسويقية')
 
 @section('content')
-<div x-data="campaignsManager()" x-init="init()">
+<div x-data="campaignsManager(@json($campaigns))" x-init="init()">
 
     <!-- Page Header -->
     <div class="flex items-center justify-between mb-6">
@@ -271,8 +271,9 @@
 
 @push('scripts')
 <script>
-function campaignsManager() {
+function campaignsManager(serverCampaigns) {
     return {
+        allCampaigns: [],
         campaigns: [],
         stats: { total: 0, active: 0, scheduled: 0, completed: 0 },
         searchQuery: '',
@@ -280,66 +281,108 @@ function campaignsManager() {
         filterOrg: '',
         sortBy: 'created_at',
 
-        async init() {
-            await this.fetchCampaigns();
+        init() {
+            // Initialize with server data
+            this.processServerData(serverCampaigns || []);
+            this.calculateStats();
+            this.campaigns = [...this.allCampaigns];
         },
 
-        async fetchCampaigns() {
-            try {
-                // Simulated data
-                this.campaigns = [
-                    {
-                        campaign_id: '1',
-                        name: 'حملة الصيف 2025',
-                        objective: 'زيادة المبيعات',
-                        organization: 'شركة التسويق الرقمي',
-                        status: 'active',
-                        status_label: 'نشطة',
-                        budget: 50000,
-                        spent: 32000,
-                        performance: 85,
-                        start_date: '2025-06-01'
-                    },
-                    {
-                        campaign_id: '2',
-                        name: 'إطلاق المنتج الجديد',
-                        objective: 'الوعي بالعلامة التجارية',
-                        organization: 'الإبداع التقني',
-                        status: 'scheduled',
-                        status_label: 'مجدولة',
-                        budget: 75000,
-                        spent: 0,
-                        performance: 0,
-                        start_date: '2025-07-15'
-                    },
-                    {
-                        campaign_id: '3',
-                        name: 'عروض رمضان',
-                        objective: 'التحويلات',
-                        organization: 'المستقبل الذكي',
-                        status: 'completed',
-                        status_label: 'مكتملة',
-                        budget: 100000,
-                        spent: 95000,
-                        performance: 92,
-                        start_date: '2025-03-01'
-                    }
-                ];
+        processServerData(data) {
+            // Transform server data to include display-friendly fields
+            this.allCampaigns = data.map(campaign => ({
+                campaign_id: campaign.campaign_id,
+                name: campaign.name,
+                objective: campaign.objective || 'غير محدد',
+                organization: campaign.org ? campaign.org.name : 'غير محدد',
+                org_id: campaign.org ? campaign.org.org_id : null,
+                status: campaign.status || 'draft',
+                status_label: this.getStatusLabel(campaign.status),
+                budget: parseFloat(campaign.budget) || 0,
+                spent: parseFloat(campaign.spent) || 0,
+                performance: this.calculatePerformance(campaign),
+                start_date: this.formatDate(campaign.start_date),
+                end_date: this.formatDate(campaign.end_date),
+                updated_at: campaign.updated_at
+            }));
+        },
 
-                this.stats = {
-                    total: this.campaigns.length,
-                    active: this.campaigns.filter(c => c.status === 'active').length,
-                    scheduled: this.campaigns.filter(c => c.status === 'scheduled').length,
-                    completed: this.campaigns.filter(c => c.status === 'completed').length
-                };
-            } catch (error) {
-                console.error('Error fetching campaigns:', error);
-                window.notify('فشل تحميل الحملات', 'error');
+        calculateStats() {
+            this.stats = {
+                total: this.allCampaigns.length,
+                active: this.allCampaigns.filter(c => c.status === 'active').length,
+                scheduled: this.allCampaigns.filter(c => c.status === 'scheduled').length,
+                completed: this.allCampaigns.filter(c => c.status === 'completed').length
+            };
+        },
+
+        getStatusLabel(status) {
+            const labels = {
+                'draft': 'مسودة',
+                'scheduled': 'مجدولة',
+                'active': 'نشطة',
+                'paused': 'متوقفة مؤقتاً',
+                'completed': 'مكتملة'
+            };
+            return labels[status] || status;
+        },
+
+        calculatePerformance(campaign) {
+            // TODO: Fetch actual performance metrics from API
+            // For now, return a simulated performance score
+            if (campaign.status === 'scheduled' || campaign.status === 'draft') {
+                return 0;
             }
+            // Simulated performance calculation
+            return Math.floor(Math.random() * 40) + 60; // Random 60-100
+        },
+
+        formatDate(dateString) {
+            if (!dateString) return 'غير محدد';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('ar-SA', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit'
+            });
         },
 
         searchCampaigns() {
-            console.log('Searching...', this.searchQuery, this.filterStatus, this.filterOrg, this.sortBy);
+            let filtered = [...this.allCampaigns];
+
+            // Apply search filter
+            if (this.searchQuery) {
+                const query = this.searchQuery.toLowerCase();
+                filtered = filtered.filter(campaign =>
+                    campaign.name.toLowerCase().includes(query) ||
+                    campaign.organization.toLowerCase().includes(query) ||
+                    campaign.objective.toLowerCase().includes(query)
+                );
+            }
+
+            // Apply status filter
+            if (this.filterStatus) {
+                filtered = filtered.filter(campaign => campaign.status === this.filterStatus);
+            }
+
+            // Apply organization filter
+            if (this.filterOrg) {
+                filtered = filtered.filter(campaign => campaign.org_id === this.filterOrg);
+            }
+
+            // Apply sorting
+            filtered.sort((a, b) => {
+                if (this.sortBy === 'created_at' || this.sortBy === 'start_date') {
+                    return new Date(b.updated_at) - new Date(a.updated_at);
+                } else if (this.sortBy === 'budget') {
+                    return b.budget - a.budget;
+                } else if (this.sortBy === 'performance') {
+                    return b.performance - a.performance;
+                }
+                return 0;
+            });
+
+            this.campaigns = filtered;
         },
 
         viewCampaign(id) {
@@ -347,20 +390,41 @@ function campaignsManager() {
         },
 
         editCampaign(campaign) {
+            // TODO: Implement edit functionality with API call
+            // This would populate a modal with campaign data for editing
             console.log('Editing campaign:', campaign);
-            window.notify('جاري تحميل بيانات الحملة...', 'info');
+            window.notify('تعديل الحملة: ' + campaign.name, 'info');
         },
 
         duplicateCampaign(id) {
+            // TODO: Implement duplicate functionality with API call
+            // POST /api/campaigns/{id}/duplicate
             console.log('Duplicating campaign:', id);
             window.notify('جاري نسخ الحملة...', 'info');
         },
 
         async deleteCampaign(id) {
-            if (!confirm('هل أنت متأكد من حذف هذه الحملة؟')) return;
+            if (!confirm('هل أنت متأكد من حذف هذه الحملة؟ سيتم حذف جميع البيانات المرتبطة بها.')) return;
 
             try {
-                this.campaigns = this.campaigns.filter(c => c.campaign_id !== id);
+                // TODO: Implement actual API call with CSRF token
+                // const response = await fetch(`/api/campaigns/${id}`, {
+                //     method: 'DELETE',
+                //     headers: {
+                //         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                //         'Accept': 'application/json'
+                //     }
+                // });
+                //
+                // if (!response.ok) throw new Error('Failed to delete');
+
+                window.notify('جاري حذف الحملة...', 'info');
+
+                // Remove from local array for now
+                this.allCampaigns = this.allCampaigns.filter(c => c.campaign_id !== id);
+                this.searchCampaigns();
+                this.calculateStats();
+
                 window.notify('تم حذف الحملة بنجاح', 'success');
             } catch (error) {
                 console.error('Error deleting campaign:', error);
@@ -384,13 +448,39 @@ function campaignForm() {
 
         async submitCampaign() {
             try {
+                // Validate required fields
+                if (!this.formData.name || !this.formData.objective || !this.formData.budget) {
+                    window.notify('الرجاء ملء جميع الحقول المطلوبة', 'warning');
+                    return;
+                }
+
+                window.notify('جاري إنشاء الحملة...', 'info');
+
+                // TODO: Implement actual API call with CSRF token
+                // const response = await fetch('/api/campaigns', {
+                //     method: 'POST',
+                //     headers: {
+                //         'Content-Type': 'application/json',
+                //         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                //         'Accept': 'application/json'
+                //     },
+                //     body: JSON.stringify(this.formData)
+                // });
+                //
+                // if (!response.ok) {
+                //     const error = await response.json();
+                //     throw new Error(error.message || 'Failed to create campaign');
+                // }
+
                 console.log('Submitting campaign:', this.formData);
                 window.notify('تم إنشاء الحملة بنجاح', 'success');
                 closeModal('create-campaign-modal');
-                location.reload();
+
+                // Refresh the page to show new campaign
+                setTimeout(() => location.reload(), 1000);
             } catch (error) {
                 console.error('Error creating campaign:', error);
-                window.notify('فشل إنشاء الحملة', 'error');
+                window.notify(error.message || 'فشل إنشاء الحملة', 'error');
             }
         }
     };
