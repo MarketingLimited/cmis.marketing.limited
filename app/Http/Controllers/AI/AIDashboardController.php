@@ -7,11 +7,14 @@ use App\Models\AiGeneratedCampaign;
 use App\Models\AiModel;
 use App\Models\AiRecommendation;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Gate;
 
 class AIDashboardController extends Controller
 {
     public function index()
     {
+        Gate::authorize('viewInsights', auth()->user());
+
         $stats = Cache::remember('ai.stats', now()->addMinutes(5), function () {
             return [
                 'campaigns' => AiGeneratedCampaign::count(),
