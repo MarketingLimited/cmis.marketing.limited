@@ -3,6 +3,7 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Models\Security\Permission;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -124,5 +125,71 @@ class User extends Authenticatable
     public function belongsToOrg(string $orgId): bool
     {
         return $this->orgs()->where('cmis.orgs.org_id', $orgId)->exists();
+    }
+
+    /**
+     * Get the user's direct permissions.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
+     */
+    public function permissions(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            Permission::class,
+            'cmis.user_permissions',
+            'user_id',
+            'permission_id'
+        )
+            ->withPivot('is_granted', 'expires_at', 'granted_by')
+            ->withTimestamps();
+    }
+
+    /**
+     * Check if user has a specific permission using DB function.
+     *
+     * @param string $permissionCode
+     * @return bool
+     */
+    public function hasPermission(string $permissionCode): bool
+    {
+        $orgId = session('current_org_id');
+        if (!$orgId) {
+            return false;
+        }
+
+        try {
+            $result = \DB::selectOne(
+                'SELECT cmis.check_permission(?, ?, ?) as has_permission',
+                [$this->user_id, $orgId, $permissionCode]
+            );
+
+            return (bool) $result->has_permission;
+        } catch (\Exception $e) {
+            \Log::error('Permission check failed', [
+                'user_id' => $this->user_id,
+                'org_id' => $orgId,
+                'permission' => $permissionCode,
+                'error' => $e->getMessage()
+            ]);
+            return false;
+        }
+    }
+
+    /**
+     * Check if user can perform an action (integrate with Laravel's Gate).
+     *
+     * @param string $ability
+     * @param mixed $arguments
+     * @return bool
+     */
+    public function can($ability, $arguments = [])
+    {
+        // If it's a CMIS permission, use the DB function
+        if (str_starts_with($ability, 'cmis.')) {
+            return $this->hasPermission($ability);
+        }
+
+        // Otherwise, use Laravel's default authorization
+        return parent::can($ability, $arguments);
     }
 }

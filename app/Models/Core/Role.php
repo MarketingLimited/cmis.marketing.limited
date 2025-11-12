@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Role extends Model
 {
@@ -78,10 +79,27 @@ class Role extends Model
     /**
      * Get all permissions for this role.
      *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
+     */
+    public function permissions(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            \App\Models\Permission::class,
+            'cmis.role_permissions',
+            'role_id',
+            'permission_id'
+        )
+            ->withPivot('granted_by')
+            ->withTimestamps();
+    }
+
+    /**
+     * Get all role-permission pivot records.
+     *
      * @return \Illuminate\Database\Eloquent\Relations\HasMany
      */
-    public function permissions(): HasMany
+    public function rolePermissions(): HasMany
     {
-        return $this->hasMany(\App\Models\Core\RolePermission::class, 'role_id', 'role_id');
+        return $this->hasMany(\App\Models\RolePermission::class, 'role_id', 'role_id');
     }
 }

@@ -23,6 +23,9 @@ class DashboardController extends Controller
 {
     public function index()
     {
+        // Anyone authenticated can view dashboard
+        $this->authorize('viewAny', Campaign::class);
+
         $data = $this->resolveDashboardMetrics();
 
         return view('dashboard', $data);
@@ -30,11 +33,14 @@ class DashboardController extends Controller
 
     public function data()
     {
+        $this->authorize('viewAny', Campaign::class);
+
         return response()->json($this->resolveDashboardMetrics());
     }
 
     public function latest()
     {
+        $this->authorize('viewAny', Campaign::class);
         $notifications = [
             [ 'message' => 'تم إنشاء حملة جديدة 🎯', 'time' => Carbon::now()->subMinutes(5)->diffForHumans() ],
             [ 'message' => 'انخفاض في أداء إحدى الحملات 📉', 'time' => Carbon::now()->subMinutes(30)->diffForHumans() ],

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Analytics;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 
 /**
  * Class SocialAnalyticsController
@@ -16,6 +17,8 @@ class SocialAnalyticsController extends Controller
      */
     public function index()
     {
+        Gate::authorize('viewPerformance', auth()->user());
+
         return view('analytics.social.index');
     }
 }

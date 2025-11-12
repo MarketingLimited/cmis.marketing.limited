@@ -1,128 +1,183 @@
 @extends('layouts.app')
 
+@section('title', 'Campaign Details')
+
 @section('content')
-
-<div class="space-y-6">
-    <div>
-        <h2 class="text-3xl font-bold text-gray-800">تفاصيل الحملة</h2>
-        <p class="text-gray-600">عرض شامل للحملة المختارة بما في ذلك العروض المرتبطة وأداء المؤشرات.</p>
-    </div>
-
-    <div class="bg-white shadow rounded-2xl p-6">
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm text-gray-700">
-            <div><span class="font-semibold">اسم الحملة:</span> {{ $campaign->name }}</div>
-            <div><span class="font-semibold">الهدف:</span> {{ $campaign->objective ?? 'غير محدد' }}</div>
-            <div><span class="font-semibold">الحالة:</span> {{ $campaign->status ?? 'غير معروفة' }}</div>
-            <div><span class="font-semibold">الميزانية:</span> {{ $campaign->budget ? number_format($campaign->budget, 2) : 'غير محدد' }} {{ $campaign->currency ?? '' }}</div>
-            <div><span class="font-semibold">تاريخ البدء:</span> {{ optional($campaign->start_date)->format('Y-m-d') ?? '—' }}</div>
-            <div><span class="font-semibold">تاريخ الانتهاء:</span> {{ optional($campaign->end_date)->format('Y-m-d') ?? '—' }}</div>
-            <div><span class="font-semibold">تاريخ الإنشاء:</span> {{ optional($campaign->created_at)->format('Y-m-d H:i') ?? '—' }}</div>
-            <div><span class="font-semibold">آخر تحديث:</span> {{ optional($campaign->updated_at)->diffForHumans() ?? '—' }}</div>
+<div class="max-w-7xl mx-auto">
+    <div class="mb-6 flex justify-between items-center">
+        <a href="{{  route('campaigns.index')  }}" class="text-indigo-600 hover:text-indigo-800 inline-flex items-center">
+            <i class="fas fa-arrow-left mr-2"></i>
+            Back to Campaigns
+        </a>
+        <div class="flex space-x-3">
+            <a href="{{  route('campaigns.edit', $campaign->campaign_id ?? $campaign->id)  }}"
+               class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-md">
+                <i class="fas fa-edit mr-2"></i>
+                Edit Campaign
+            </a>
         </div>
     </div>
 
-    <div class="bg-white shadow rounded-2xl p-6">
-        <h3 class="text-xl font-semibold text-indigo-700 mb-4">🎯 العروض المرتبطة</h3>
-        @if($offerings->isNotEmpty())
-            <ul class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                @foreach($offerings as $offering)
-                    <li class="border border-indigo-100 rounded-lg px-4 py-3 text-sm text-gray-700">
-                        <span class="font-semibold text-indigo-700">{{ $offering->name }}</span>
-                        <span class="text-gray-500">({{ $offering->kind }})</span>
-                    </li>
-                @endforeach
-            </ul>
-        @else
-            <p class="text-gray-500">لا توجد منتجات أو خدمات مرتبطة بهذه الحملة.</p>
-        @endif
+    @if(session('success'))
+        <div class="mb-6 bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-md">
+            {{  session('success')  }}
+        </div>
+    @endif
+
+    <!-- Campaign Header -->
+    <div class="bg-white rounded-lg shadow p-6 mb-6">
+        <div class="flex justify-between items-start">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-900 mb-2">{{  $campaign->name  }}</h1>
+                <p class="text-gray-600">{{  $campaign->description ?? 'No description provided.'  }}</p>
+            </div>
+            <span class="px-3 py-1 text-sm font-semibold rounded-full
+                @if($campaign->status === 'active') bg-green-100 text-green-800
+                @elseif($campaign->status === 'paused') bg-yellow-100 text-yellow-800
+                @elseif($campaign->status === 'draft') bg-gray-100 text-gray-800
+                @else bg-blue-100 text-blue-800
+                @endif">
+                {{  ucfirst($campaign->status ?? 'draft')  }}
+            </span>
+        </div>
     </div>
 
-    <div class="bg-white shadow rounded-2xl p-6 space-y-4">
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <h3 class="text-xl font-semibold text-gray-800">📈 مؤشرات الأداء</h3>
-            <label class="text-sm text-gray-600">عرض الأداء حسب
-                <select id="timeRange" class="ml-2 border border-indigo-200 rounded px-2 py-1 text-sm">
-                    <option value="daily">يومي</option>
-                    <option value="weekly">أسبوعي</option>
-                    <option value="monthly" selected>شهري</option>
-                    <option value="yearly">سنوي</option>
-                </select>
-            </label>
+    <!-- Campaign Stats -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center">
+                <div class="flex-shrink-0">
+                    <i class="fas fa-dollar-sign text-3xl text-green-600"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm text-gray-500">Budget</p>
+                    <p class="text-2xl font-bold text-gray-900">${{  number_format($campaign->budget ?? 0, 2)  }}</p>
+                </div>
+            </div>
         </div>
-        <canvas id="performanceChart" height="320"></canvas>
-        <div class="overflow-x-auto">
-            <table class="min-w-full text-sm divide-y divide-gray-200">
-                <thead class="bg-gray-50 text-gray-700">
-                    <tr>
-                        <th class="px-4 py-3 text-right">المؤشر</th>
-                        <th class="px-4 py-3 text-right">القيمة الحالية</th>
-                        <th class="px-4 py-3 text-right">المستهدف</th>
-                        <th class="px-4 py-3 text-right">الانحراف</th>
-                        <th class="px-4 py-3 text-right">الثقة</th>
-                        <th class="px-4 py-3 text-right">آخر تحديث</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-100">
-                    @forelse ($performance as $metric)
-                        <tr>
-                            <td class="px-4 py-2 font-medium text-indigo-700">{{ $metric['metric_name'] }}</td>
-                            <td class="px-4 py-2">{{ number_format($metric['metric_value'] ?? 0, 2) }}</td>
-                            <td class="px-4 py-2">{{ number_format($metric['metric_target'] ?? 0, 2) }}</td>
-                            <td class="px-4 py-2">{{ number_format($metric['variance'] ?? 0, 2) }}</td>
-                            <td class="px-4 py-2">{{ number_format($metric['confidence_level'] ?? 0, 2) }}</td>
-                            <td class="px-4 py-2">{{ optional($metric['collected_at'])->format('Y-m-d H:i') ?? '—' }}</td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="6" class="px-4 py-4 text-center text-gray-500">لا توجد بيانات أداء حديثة.</td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
+
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center">
+                <div class="flex-shrink-0">
+                    <i class="fas fa-chart-line text-3xl text-blue-600"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm text-gray-500">Spent</p>
+                    <p class="text-2xl font-bold text-gray-900">${{  number_format($campaign->spend ?? 0, 2)  }}</p>
+                </div>
+            </div>
         </div>
+
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center">
+                <div class="flex-shrink-0">
+                    <i class="fas fa-eye text-3xl text-purple-600"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm text-gray-500">Impressions</p>
+                    <p class="text-2xl font-bold text-gray-900">{{  number_format($campaign->impressions ?? 0)  }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center">
+                <div class="flex-shrink-0">
+                    <i class="fas fa-mouse-pointer text-3xl text-indigo-600"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm text-gray-500">Clicks</p>
+                    <p class="text-2xl font-bold text-gray-900">{{  number_format($campaign->clicks ?? 0)  }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Campaign Details & Performance -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Campaign Info -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <h2 class="text-xl font-semibold text-gray-900 mb-4">Campaign Information</h2>
+            <dl class="space-y-3">
+                <div>
+                    <dt class="text-sm font-medium text-gray-500">Campaign Type</dt>
+                    <dd class="mt-1 text-sm text-gray-900">{{  ucfirst($campaign->campaign_type ?? 'N/A')  }}</dd>
+                </div>
+                <div>
+                    <dt class="text-sm font-medium text-gray-500">Objective</dt>
+                    <dd class="mt-1 text-sm text-gray-900">{{  $campaign->objective ?? 'N/A'  }}</dd>
+                </div>
+                <div>
+                    <dt class="text-sm font-medium text-gray-500">Start Date</dt>
+                    <dd class="mt-1 text-sm text-gray-900">{{  $campaign->start_date?->format('M d, Y') ?? 'N/A'  }}</dd>
+                </div>
+                <div>
+                    <dt class="text-sm font-medium text-gray-500">End Date</dt>
+                    <dd class="mt-1 text-sm text-gray-900">{{  $campaign->end_date?->format('M d, Y') ?? 'Ongoing'  }}</dd>
+                </div>
+                <div>
+                    <dt class="text-sm font-medium text-gray-500">Target Audience</dt>
+                    <dd class="mt-1 text-sm text-gray-900">{{  $campaign->target_audience ?? 'N/A'  }}</dd>
+                </div>
+                <div>
+                    <dt class="text-sm font-medium text-gray-500">Created</dt>
+                    <dd class="mt-1 text-sm text-gray-900">{{  $campaign->created_at?->format('M d, Y h:i A') ?? 'N/A'  }}</dd>
+                </div>
+                <div>
+                    <dt class="text-sm font-medium text-gray-500">Last Updated</dt>
+                    <dd class="mt-1 text-sm text-gray-900">{{  $campaign->updated_at?->format('M d, Y h:i A') ?? 'N/A'  }}</dd>
+                </div>
+            </dl>
+        </div>
+
+        <!-- Performance Metrics -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <h2 class="text-xl font-semibold text-gray-900 mb-4">Performance Metrics</h2>
+            <div class="space-y-4">
+                <div>
+                    <div class="flex justify-between mb-1">
+                        <span class="text-sm font-medium text-gray-700">Budget Utilization</span>
+                        <span class="text-sm font-medium text-gray-700">
+                            {{  $campaign->budget > 0 ? number_format(($campaign->spend / $campaign->budget) * 100, 1) : '0'  }}%
+                        </span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2">
+                        <div class="bg-indigo-600 h-2 rounded-full" style="width: {{  $campaign->budget > 0 ? min((($campaign->spend / $campaign->budget) * 100), 100) : 0  }}%"></div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4 pt-4">
+                    <div class="text-center p-4 bg-gray-50 rounded-lg">
+                        <p class="text-sm text-gray-500 mb-1">CTR</p>
+                        <p class="text-xl font-bold text-gray-900">
+                            {{  $campaign->impressions > 0 ? number_format(($campaign->clicks / $campaign->impressions) * 100, 2) : '0.00'  }}%
+                        </p>
+                    </div>
+                    <div class="text-center p-4 bg-gray-50 rounded-lg">
+                        <p class="text-sm text-gray-500 mb-1">CPC</p>
+                        <p class="text-xl font-bold text-gray-900">
+                            ${{  $campaign->clicks > 0 ? number_format($campaign->spend / $campaign->clicks, 2) : '0.00'  }}
+                        </p>
+                    </div>
+                    <div class="text-center p-4 bg-gray-50 rounded-lg">
+                        <p class="text-sm text-gray-500 mb-1">Conversions</p>
+                        <p class="text-xl font-bold text-gray-900">{{  number_format($campaign->conversions ?? 0)  }}</p>
+                    </div>
+                    <div class="text-center p-4 bg-gray-50 rounded-lg">
+                        <p class="text-sm text-gray-500 mb-1">Conv. Rate</p>
+                        <p class="text-xl font-bold text-gray-900">
+                            {{  $campaign->clicks > 0 ? number_format((($campaign->conversions ?? 0) / $campaign->clicks) * 100, 2) : '0.00'  }}%
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activity / Content -->
+    <div class="mt-6 bg-white rounded-lg shadow p-6">
+        <h2 class="text-xl font-semibold text-gray-900 mb-4">Campaign Assets</h2>
+        <p class="text-gray-600">No assets uploaded yet. Create content items to start managing campaign creative.</p>
     </div>
 </div>
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-    const ctx = document.getElementById('performanceChart').getContext('2d');
-    let chart;
-
-    function renderChart(labels, values) {
-        if (chart) chart.destroy();
-        chart = new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels,
-                datasets: [{
-                    label: 'متوسط القيمة خلال المدة',
-                    data: values,
-                    backgroundColor: 'rgba(99, 102, 241, 0.4)',
-                    borderColor: 'rgba(99, 102, 241, 1)',
-                    borderWidth: 1,
-                }]
-            },
-            options: {
-                responsive: true,
-                scales: {
-                    y: { beginAtZero: true }
-                }
-            }
-        });
-    }
-
-    async function fetchPerformance(range = 'monthly') {
-        const response = await fetch(`/campaigns/{{ $campaign->campaign_id }}/performance/${range}`);
-        const data = await response.json();
-        const labels = data.map(item => item.metric_name);
-        const values = data.map(item => item.value);
-        renderChart(labels, values);
-    }
-
-    document.getElementById('timeRange').addEventListener('change', (event) => {
-        fetchPerformance(event.target.value);
-    });
-
-    fetchPerformance('monthly');
-</script>
 @endsection

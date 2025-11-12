@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Services\CMIS\SemanticSearchService;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Gate;
 
 class SemanticSearchController extends Controller
 {
@@ -14,6 +15,8 @@ class SemanticSearchController extends Controller
      */
     public function search(Request $request, SemanticSearchService $service)
     {
+        Gate::authorize('useSemanticSearch', auth()->user());
+
         $query = $request->input('q');
 
         if (!$query) {

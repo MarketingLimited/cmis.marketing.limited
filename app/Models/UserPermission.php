@@ -1,0 +1,97 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+class UserPermission extends Model
+{
+    use HasFactory;
+
+    protected $table = 'cmis.user_permissions';
+    protected $primaryKey = 'id';
+    protected $connection = 'pgsql';
+    public $incrementing = false;
+    protected $keyType = 'string';
+
+    protected $fillable = [
+        'user_id',
+        'permission_id',
+        'is_granted',
+        'expires_at',
+        'granted_by',
+        'provider',
+    ];
+
+    protected $casts = [
+        'id' => 'string',
+        'user_id' => 'string',
+        'permission_id' => 'string',
+        'is_granted' => 'boolean',
+        'expires_at' => 'datetime',
+        'granted_by' => 'string',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+    ];
+
+    /**
+     * Get the user
+     */
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id', 'user_id');
+    }
+
+    /**
+     * Get the permission
+     */
+    public function permission()
+    {
+        return $this->belongsTo(Permission::class, 'permission_id', 'permission_id');
+    }
+
+    /**
+     * Get the user who granted this permission
+     */
+    public function grantedBy()
+    {
+        return $this->belongsTo(User::class, 'granted_by', 'user_id');
+    }
+
+    /**
+     * Scope to get active permissions
+     */
+    public function scopeActive($query)
+    {
+        return $query->where('is_granted', true)
+            ->where(function ($q) {
+                $q->whereNull('expires_at')
+                    ->orWhere('expires_at', '>', now());
+            });
+    }
+
+    /**
+     * Scope to get expired permissions
+     */
+    public function scopeExpired($query)
+    {
+        return $query->where('expires_at', '<=', now());
+    }
+
+    /**
+     * Check if permission is active
+     */
+    public function isActive(): bool
+    {
+        if (!$this->is_granted) {
+            return false;
+        }
+
+        if ($this->expires_at && $this->expires_at->isPast()) {
+            return false;
+        }
+
+        return true;
+    }
+}

@@ -5,11 +5,14 @@ namespace App\Http\Controllers\Analytics;
 use App\Http\Controllers\Controller;
 use App\Models\Kpi;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 
 class KpiController extends Controller
 {
     public function index(Request $request, string $orgId)
     {
+        Gate::authorize('viewReports', auth()->user());
+
         try {
             $kpis = Kpi::where('org_id', $orgId)
                 ->orderBy('created_at', 'desc')
@@ -24,6 +27,8 @@ class KpiController extends Controller
 
     public function summary(Request $request, string $orgId)
     {
+        Gate::authorize('viewPerformance', auth()->user());
+
         try {
             $summary = [
                 'total_campaigns' => \App\Models\Campaign::where('org_id', $orgId)->count(),
@@ -41,6 +46,8 @@ class KpiController extends Controller
 
     public function trends(Request $request, string $orgId)
     {
+        Gate::authorize('viewInsights', auth()->user());
+
         try {
             // Placeholder for trends analysis
             $trends = [

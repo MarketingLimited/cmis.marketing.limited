@@ -4,6 +4,7 @@ namespace App\Http\Controllers\AI;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 
 /**
  * Class AIGeneratedCampaignController
@@ -16,6 +17,8 @@ class AIGeneratedCampaignController extends Controller
      */
     public function index()
     {
+        Gate::authorize('generateCampaign', auth()->user());
+
         return view('ai.generated_campaigns.index');
     }
 }
