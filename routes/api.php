@@ -15,6 +15,12 @@ use App\Http\Controllers\API\SemanticSearchController;
 use App\Http\Controllers\UnifiedInboxController;
 use App\Http\Controllers\AdCampaignController;
 use App\Http\Controllers\UnifiedCommentsController;
+use App\Http\Controllers\API\PlatformIntegrationController;
+use App\Http\Controllers\API\SyncController;
+use App\Http\Controllers\API\ContentPublishingController;
+use App\Http\Controllers\API\WebhookController;
+use App\Http\Controllers\API\AnalyticsController;
+use App\Http\Controllers\API\AdCampaignController as APIAdCampaignController;
 
 /*
 |--------------------------------------------------------------------------
@@ -28,6 +34,18 @@ use App\Http\Controllers\UnifiedCommentsController;
 | - Sanctum Authentication
 |
 */
+
+/*
+|--------------------------------------------------------------------------
+| Webhooks (Public - لاستقبال التحديثات من المنصات)
+|--------------------------------------------------------------------------
+*/
+Route::prefix('webhooks')->name('webhooks.')->group(function () {
+    Route::match(['get', 'post'], '/meta', [WebhookController::class, 'handleMetaWebhook'])->name('meta');
+    Route::match(['get', 'post'], '/whatsapp', [WebhookController::class, 'handleWhatsAppWebhook'])->name('whatsapp');
+    Route::post('/tiktok', [WebhookController::class, 'handleTikTokWebhook'])->name('tiktok');
+    Route::post('/twitter', [WebhookController::class, 'handleTwitterWebhook'])->name('twitter');
+});
 
 /*
 |--------------------------------------------------------------------------
@@ -227,48 +245,88 @@ Route::middleware(['auth:sanctum', 'validate.org.access', 'set.db.context'])
 
     /*
     |----------------------------------------------------------------------
-    | إدارة الحملات الإعلانية (Ad Campaign Management)
+    | نشر المحتوى (Content Publishing & Scheduling)
     |----------------------------------------------------------------------
     */
-    Route::prefix('ad-campaigns')->name('ad-campaigns.')->group(function () {
-        // List Campaigns
-        Route::get('/', [AdCampaignController::class, 'index'])->name('index');
+    Route::prefix('publishing')->name('publishing.')->group(function () {
+        // Publish Now
+        Route::post('/publish-now', [ContentPublishingController::class, 'publishNow'])->name('now');
 
-        // Create Campaigns by Platform
-        Route::post('/meta', [AdCampaignController::class, 'createMetaCampaign'])->name('create.meta');
-        Route::post('/google', [AdCampaignController::class, 'createGoogleAdsCampaign'])->name('create.google');
-        Route::post('/tiktok', [AdCampaignController::class, 'createTikTokAdsCampaign'])->name('create.tiktok');
-        Route::post('/snapchat', [AdCampaignController::class, 'createSnapchatAdsCampaign'])->name('create.snapchat');
+        // Schedule Posts
+        Route::post('/schedule', [ContentPublishingController::class, 'schedulePost'])->name('schedule');
+        Route::get('/scheduled', [ContentPublishingController::class, 'getScheduledPosts'])->name('scheduled');
+        Route::put('/scheduled/{schedule_id}', [ContentPublishingController::class, 'updateScheduledPost'])->name('scheduled.update');
+        Route::delete('/scheduled/{schedule_id}', [ContentPublishingController::class, 'cancelScheduledPost'])->name('scheduled.cancel');
 
-        // Campaign Actions
-        Route::put('/{campaign_id}/status', [AdCampaignController::class, 'updateStatus'])->name('update-status');
-        Route::get('/{campaign_id}/metrics', [AdCampaignController::class, 'metrics'])->name('metrics');
+        // Publishing History
+        Route::get('/history', [ContentPublishingController::class, 'getPublishingHistory'])->name('history');
     });
 
     /*
     |----------------------------------------------------------------------
-    | التكاملات (Platform Integrations)
+    | إدارة الحملات الإعلانية (Ad Campaign Management) - COMPLETE
+    |----------------------------------------------------------------------
+    */
+    Route::prefix('campaigns')->name('campaigns.')->group(function () {
+        // Campaign CRUD
+        Route::get('/', [APIAdCampaignController::class, 'getCampaigns'])->name('index');
+        Route::post('/', [APIAdCampaignController::class, 'createCampaign'])->name('create');
+        Route::get('/{campaign_id}', [APIAdCampaignController::class, 'getCampaign'])->name('show');
+        Route::put('/{campaign_id}', [APIAdCampaignController::class, 'updateCampaign'])->name('update');
+        Route::delete('/{campaign_id}', [APIAdCampaignController::class, 'deleteCampaign'])->name('delete');
+
+        // Campaign Status Management
+        Route::post('/{campaign_id}/pause', [APIAdCampaignController::class, 'pauseCampaign'])->name('pause');
+        Route::post('/{campaign_id}/activate', [APIAdCampaignController::class, 'activateCampaign'])->name('activate');
+
+        // Campaign Metrics & Performance
+        Route::get('/{campaign_id}/metrics', [APIAdCampaignController::class, 'getCampaignMetrics'])->name('metrics');
+
+        // Platform Objectives
+        Route::get('/objectives/{platform}', [APIAdCampaignController::class, 'getCampaignObjectives'])->name('objectives');
+    });
+
+    /*
+    |----------------------------------------------------------------------
+    | التكاملات (Platform Integrations) - COMPLETE
     |----------------------------------------------------------------------
     */
     Route::prefix('integrations')->name('integrations.')->group(function () {
-        // List all integrations
-        Route::get('/', [IntegrationController::class, 'index'])->name('index');
+        // Platform Management
+        Route::get('/platforms', [PlatformIntegrationController::class, 'getAvailablePlatforms'])->name('platforms');
+        Route::get('/', [PlatformIntegrationController::class, 'getConnectedPlatforms'])->name('index');
+        Route::get('/{integration_id}', [PlatformIntegrationController::class, 'getIntegration'])->name('show');
 
-        // OAuth connection flow
-        Route::post('/{platform}/connect', [IntegrationController::class, 'connect'])->name('connect');
-        Route::delete('/{integration_id}/disconnect', [IntegrationController::class, 'disconnect'])->name('disconnect');
+        // OAuth Connection Flow (Meta, Google, TikTok, etc.)
+        Route::get('/{platform}/auth-url', [PlatformIntegrationController::class, 'getAuthUrl'])->name('auth-url');
+        Route::post('/{platform}/callback', [PlatformIntegrationController::class, 'handleCallback'])->name('callback');
 
-        // Sync operations
-        Route::post('/{integration_id}/sync', [IntegrationController::class, 'sync'])->name('sync');
-        Route::get('/{integration_id}/sync-history', [IntegrationController::class, 'syncHistory'])->name('sync.history');
+        // Direct Connect (WooCommerce, WordPress, WhatsApp - no OAuth)
+        Route::post('/{platform}/connect', [PlatformIntegrationController::class, 'connect'])->name('connect');
 
-        // Settings
-        Route::get('/{integration_id}/settings', [IntegrationController::class, 'getSettings'])->name('settings.get');
-        Route::put('/{integration_id}/settings', [IntegrationController::class, 'updateSettings'])->name('settings.update');
+        // Disconnect & Token Management
+        Route::delete('/{integration_id}', [PlatformIntegrationController::class, 'disconnect'])->name('disconnect');
+        Route::post('/{integration_id}/refresh-token', [PlatformIntegrationController::class, 'refreshToken'])->name('refresh-token');
+        Route::post('/{integration_id}/test', [PlatformIntegrationController::class, 'testConnection'])->name('test');
+    });
 
-        // Testing & Activity
-        Route::post('/{integration_id}/test', [IntegrationController::class, 'test'])->name('test');
-        Route::get('/activity', [IntegrationController::class, 'activity'])->name('activity');
+    /*
+    |----------------------------------------------------------------------
+    | المزامنة (Data Sync)
+    |----------------------------------------------------------------------
+    */
+    Route::prefix('sync')->name('sync.')->group(function () {
+        // Trigger Manual Sync
+        Route::post('/all', [SyncController::class, 'syncAll'])->name('all');
+        Route::post('/{integration_id}', [SyncController::class, 'syncIntegration'])->name('integration');
+        Route::post('/{integration_id}/posts', [SyncController::class, 'syncPosts'])->name('posts');
+        Route::post('/{integration_id}/comments', [SyncController::class, 'syncComments'])->name('comments');
+        Route::post('/{integration_id}/messages', [SyncController::class, 'syncMessages'])->name('messages');
+        Route::post('/{integration_id}/campaigns', [SyncController::class, 'syncCampaigns'])->name('campaigns');
+
+        // Sync Status & History
+        Route::get('/{integration_id}/status', [SyncController::class, 'getSyncStatus'])->name('status');
+        Route::get('/history', [SyncController::class, 'getSyncHistory'])->name('history');
     });
 
     /*
@@ -297,10 +355,29 @@ Route::middleware(['auth:sanctum', 'validate.org.access', 'set.db.context'])
 
     /*
     |----------------------------------------------------------------------
-    | التحليلات (Analytics)
+    | التحليلات (Analytics & Reporting) - COMPLETE
     |----------------------------------------------------------------------
     */
     Route::prefix('analytics')->name('analytics.')->group(function () {
+        // Overview & Summary
+        Route::get('/overview', [AnalyticsController::class, 'getOverview'])->name('overview');
+
+        // Platform Analytics
+        Route::get('/platform/{integration_id}', [AnalyticsController::class, 'getPlatformAnalytics'])->name('platform');
+
+        // Post & Content Performance
+        Route::get('/posts', [AnalyticsController::class, 'getPostPerformance'])->name('posts');
+
+        // Campaign Performance
+        Route::get('/campaigns', [AnalyticsController::class, 'getCampaignPerformance'])->name('campaigns');
+
+        // Engagement Analytics
+        Route::get('/engagement', [AnalyticsController::class, 'getEngagementAnalytics'])->name('engagement');
+
+        // Export Reports
+        Route::post('/export', [AnalyticsController::class, 'exportReport'])->name('export');
+
+        // Legacy KPI Routes (backward compatible)
         Route::get('/kpis', [KpiController::class, 'index'])->name('kpis');
         Route::get('/summary', [KpiController::class, 'summary'])->name('summary');
         Route::get('/trends', [KpiController::class, 'trends'])->name('trends');
