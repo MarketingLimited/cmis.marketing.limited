@@ -4,67 +4,61 @@ namespace App\Policies;
 
 use App\Models\CreativeAsset;
 use App\Models\User;
+use App\Services\PermissionService;
 
-class CreativeAssetPolicy extends BasePolicy
+class CreativeAssetPolicy
 {
-    /**
-     * Determine whether the user can view any creative assets.
-     */
+    protected PermissionService $permissionService;
+
+    public function __construct(PermissionService $permissionService)
+    {
+        $this->permissionService = $permissionService;
+    }
+
     public function viewAny(User $user): bool
     {
-        return $this->checkPermission('creatives.view');
+        return $this->permissionService->check($user, 'cmis.creative_assets.view');
     }
 
-    /**
-     * Determine whether the user can view the creative asset.
-     */
-    public function view(User $user, CreativeAsset $creativeAsset): bool
+    public function view(User $user, CreativeAsset $asset): bool
     {
-        return $this->resourceBelongsToOrg($creativeAsset)
-            && $this->checkPermission('creatives.view');
+        if (!$this->permissionService->check($user, 'cmis.creative_assets.view')) {
+            return false;
+        }
+        return $asset->org_id === session('current_org_id');
     }
 
-    /**
-     * Determine whether the user can create creative assets.
-     */
     public function create(User $user): bool
     {
-        return $this->checkPermission('creatives.create');
+        return $this->permissionService->check($user, 'cmis.creative_assets.create');
     }
 
-    /**
-     * Determine whether the user can update the creative asset.
-     */
-    public function update(User $user, CreativeAsset $creativeAsset): bool
+    public function update(User $user, CreativeAsset $asset): bool
     {
-        return $this->resourceBelongsToOrg($creativeAsset)
-            && $this->checkPermission('creatives.edit');
+        if (!$this->permissionService->check($user, 'cmis.creative_assets.update')) {
+            return false;
+        }
+        return $asset->org_id === session('current_org_id');
     }
 
-    /**
-     * Determine whether the user can delete the creative asset.
-     */
-    public function delete(User $user, CreativeAsset $creativeAsset): bool
+    public function delete(User $user, CreativeAsset $asset): bool
     {
-        return $this->resourceBelongsToOrg($creativeAsset)
-            && $this->checkPermission('creatives.delete');
+        if (!$this->permissionService->check($user, 'cmis.creative_assets.delete')) {
+            return false;
+        }
+        return $asset->org_id === session('current_org_id');
     }
 
-    /**
-     * Determine whether the user can restore the creative asset.
-     */
-    public function restore(User $user, CreativeAsset $creativeAsset): bool
+    public function download(User $user, CreativeAsset $asset): bool
     {
-        return $this->resourceBelongsToOrg($creativeAsset)
-            && $this->checkPermission('creatives.delete');
+        if (!$this->permissionService->check($user, 'cmis.creative_assets.download')) {
+            return false;
+        }
+        return $asset->org_id === session('current_org_id');
     }
 
-    /**
-     * Determine whether the user can permanently delete the creative asset.
-     */
-    public function forceDelete(User $user, CreativeAsset $creativeAsset): bool
+    public function approve(User $user, CreativeAsset $asset): bool
     {
-        return $this->isOwnerOrAdmin($user, $creativeAsset->org_id)
-            && $this->checkPermission('creatives.delete');
+        return $this->permissionService->check($user, 'cmis.creative_assets.approve');
     }
 }

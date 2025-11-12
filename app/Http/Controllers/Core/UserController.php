@@ -16,6 +16,8 @@ class UserController extends Controller
      */
     public function index(Request $request, string $orgId)
     {
+        $this->authorize('viewAny', User::class);
+
         try {
             $perPage = $request->input('per_page', 20);
             $search = $request->input('search');
@@ -73,6 +75,8 @@ class UserController extends Controller
                 ->whereNull('deleted_at')
                 ->firstOrFail();
 
+            $this->authorize('view', $userOrg->user);
+
             return response()->json([
                 'user' => $userOrg->user,
                 'role' => $userOrg->role,
@@ -98,6 +102,8 @@ class UserController extends Controller
      */
     public function inviteUser(Request $request, string $orgId)
     {
+        $this->authorize('invite', User::class);
+
         $validator = Validator::make($request->all(), [
             'email' => 'required|email',
             'role_id' => 'required|uuid|exists:cmis.roles,role_id',
@@ -182,6 +188,9 @@ class UserController extends Controller
      */
     public function updateRole(Request $request, string $orgId, string $userId)
     {
+        $targetUser = User::findOrFail($userId);
+        $this->authorize('assignRole', $targetUser);
+
         $validator = Validator::make($request->all(), [
             'role_id' => 'required|uuid|exists:cmis.roles,role_id',
         ]);
@@ -194,15 +203,6 @@ class UserController extends Controller
         }
 
         try {
-            // التحقق من الصلاحيات
-            if (!$request->user()->hasRoleInOrg($orgId, 'owner') &&
-                !$request->user()->hasRoleInOrg($orgId, 'admin')) {
-                return response()->json([
-                    'error' => 'Forbidden',
-                    'message' => 'You do not have permission to update user roles'
-                ], 403);
-            }
-
             $userOrg = UserOrg::where('org_id', $orgId)
                 ->where('user_id', $userId)
                 ->where('is_active', true)
@@ -230,16 +230,10 @@ class UserController extends Controller
      */
     public function deactivate(Request $request, string $orgId, string $userId)
     {
-        try {
-            // التحقق من الصلاحيات
-            if (!$request->user()->hasRoleInOrg($orgId, 'owner') &&
-                !$request->user()->hasRoleInOrg($orgId, 'admin')) {
-                return response()->json([
-                    'error' => 'Forbidden',
-                    'message' => 'You do not have permission to deactivate users'
-                ], 403);
-            }
+        $targetUser = User::findOrFail($userId);
+        $this->authorize('delete', $targetUser);
 
+        try {
             // منع تعطيل النفس
             if ($userId === $request->user()->user_id) {
                 return response()->json([
@@ -273,15 +267,10 @@ class UserController extends Controller
      */
     public function remove(Request $request, string $orgId, string $userId)
     {
-        try {
-            // التحقق من الصلاحيات
-            if (!$request->user()->hasRoleInOrg($orgId, 'owner')) {
-                return response()->json([
-                    'error' => 'Forbidden',
-                    'message' => 'Only organization owners can remove users'
-                ], 403);
-            }
+        $targetUser = User::findOrFail($userId);
+        $this->authorize('delete', $targetUser);
 
+        try {
             // منع حذف النفس
             if ($userId === $request->user()->user_id) {
                 return response()->json([

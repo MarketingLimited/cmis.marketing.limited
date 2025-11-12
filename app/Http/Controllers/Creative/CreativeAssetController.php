@@ -11,6 +11,8 @@ class CreativeAssetController extends Controller
 {
     public function index(Request $request, string $orgId)
     {
+        $this->authorize('viewAny', CreativeAsset::class);
+
         try {
             $perPage = $request->input('per_page', 20);
             $status = $request->input('status');
@@ -37,6 +39,8 @@ class CreativeAssetController extends Controller
 
     public function store(Request $request, string $orgId)
     {
+        $this->authorize('create', CreativeAsset::class);
+
         $validator = Validator::make($request->all(), [
             'campaign_id' => 'nullable|uuid|exists:cmis.campaigns,campaign_id',
             'channel_id' => 'required|integer',
@@ -76,6 +80,7 @@ class CreativeAssetController extends Controller
     {
         try {
             $asset = CreativeAsset::where('org_id', $orgId)->findOrFail($assetId);
+            $this->authorize('view', $asset);
             return response()->json(['asset' => $asset]);
         } catch (\Exception $e) {
             return response()->json(['error' => 'Asset not found'], 404);
@@ -84,6 +89,9 @@ class CreativeAssetController extends Controller
 
     public function update(Request $request, string $orgId, string $assetId)
     {
+        $asset = CreativeAsset::where('org_id', $orgId)->findOrFail($assetId);
+        $this->authorize('update', $asset);
+
         $validator = Validator::make($request->all(), [
             'campaign_id' => 'sometimes|uuid|exists:cmis.campaigns,campaign_id',
             'channel_id' => 'sometimes|integer',
@@ -101,7 +109,6 @@ class CreativeAssetController extends Controller
         }
 
         try {
-            $asset = CreativeAsset::where('org_id', $orgId)->findOrFail($assetId);
             $asset->update($request->only([
                 'campaign_id', 'channel_id', 'format_id', 'variation_tag',
                 'copy_block', 'strategy', 'art_direction', 'final_copy', 'status'
@@ -118,6 +125,7 @@ class CreativeAssetController extends Controller
     {
         try {
             $asset = CreativeAsset::where('org_id', $orgId)->findOrFail($assetId);
+            $this->authorize('delete', $asset);
             $asset->delete();
             return response()->json(['message' => 'Asset deleted']);
         } catch (\Exception $e) {

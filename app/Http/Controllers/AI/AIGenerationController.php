@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
 
 class AIGenerationController extends Controller
@@ -53,6 +54,8 @@ class AIGenerationController extends Controller
      */
     public function dashboard(Request $request, string $orgId)
     {
+        Gate::authorize('ai.view_insights');
+
         try {
             $stats = Cache::remember("ai.dashboard.{$orgId}", now()->addMinutes(5), function () use ($orgId) {
                 return [
@@ -107,6 +110,8 @@ class AIGenerationController extends Controller
      */
     public function generate(Request $request, string $orgId)
     {
+        Gate::authorize('ai.generate_content');
+
         $validator = Validator::make($request->all(), [
             'content_type' => 'required|in:campaign,ad_copy,social_post,strategy,headline',
             'topic' => 'required|string|max:500',
@@ -178,6 +183,8 @@ class AIGenerationController extends Controller
      */
     public function semanticSearch(Request $request, string $orgId, SemanticSearchService $searchService)
     {
+        Gate::authorize('ai.semantic_search');
+
         $validator = Validator::make($request->all(), [
             'query' => 'required|string|max:500',
             'sources' => 'nullable|array',
@@ -234,6 +241,8 @@ class AIGenerationController extends Controller
      */
     public function recommendations(Request $request, string $orgId)
     {
+        Gate::authorize('ai.view_recommendations');
+
         try {
             $type = $request->input('type', 'all'); // all, campaign, content, optimization
 
@@ -276,6 +285,8 @@ class AIGenerationController extends Controller
      */
     public function knowledge(Request $request, string $orgId)
     {
+        Gate::authorize('ai.manage_knowledge');
+
         try {
             $category = $request->input('category'); // dev, marketing, org, research
             $domain = $request->input('domain');
@@ -324,6 +335,8 @@ class AIGenerationController extends Controller
      */
     public function processKnowledge(Request $request, string $orgId)
     {
+        Gate::authorize('ai.manage_knowledge');
+
         $validator = Validator::make($request->all(), [
             'knowledge_id' => 'required|string',
         ]);
@@ -368,6 +381,8 @@ class AIGenerationController extends Controller
      */
     public function history(Request $request, string $orgId)
     {
+        Gate::authorize('ai.view_insights');
+
         try {
             $perPage = $request->input('per_page', 20);
 

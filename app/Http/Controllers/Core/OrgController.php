@@ -53,6 +53,8 @@ class OrgController extends Controller
      */
     public function store(Request $request)
     {
+        $this->authorize('create', Org::class);
+
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'default_locale' => 'nullable|string|max:10',
@@ -122,6 +124,9 @@ class OrgController extends Controller
      */
     public function show(Request $request, string $orgId)
     {
+        $org = Org::findOrFail($orgId);
+        $this->authorize('view', $org);
+
         try {
             $org = Org::with([
                 'users' => function($query) {
@@ -153,6 +158,9 @@ class OrgController extends Controller
      */
     public function update(Request $request, string $orgId)
     {
+        $org = Org::findOrFail($orgId);
+        $this->authorize('update', $org);
+
         $validator = Validator::make($request->all(), [
             'name' => 'sometimes|string|max:255',
             'default_locale' => 'sometimes|string|max:10',
@@ -167,17 +175,6 @@ class OrgController extends Controller
         }
 
         try {
-            $org = Org::findOrFail($orgId);
-
-            // التحقق من الصلاحيات
-            if (!$request->user()->hasRoleInOrg($orgId, 'owner') &&
-                !$request->user()->hasRoleInOrg($orgId, 'admin')) {
-                return response()->json([
-                    'error' => 'Forbidden',
-                    'message' => 'You do not have permission to update this organization'
-                ], 403);
-            }
-
             $org->update($request->only(['name', 'default_locale', 'currency']));
 
             return response()->json([
@@ -202,13 +199,7 @@ class OrgController extends Controller
     {
         try {
             $org = Org::findOrFail($orgId);
-
-            if (!$request->user()->hasRoleInOrg($orgId, 'owner')) {
-                return response()->json([
-                    'error' => 'Forbidden',
-                    'message' => 'Only organization owners can delete organizations'
-                ], 403);
-            }
+            $this->authorize('delete', $org);
 
             $org->delete();
 
@@ -231,6 +222,7 @@ class OrgController extends Controller
     {
         try {
             $org = Org::findOrFail($orgId);
+            $this->authorize('view', $org);
 
             $stats = [
                 'users_count' => $org->users()->count(),

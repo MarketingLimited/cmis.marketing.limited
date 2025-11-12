@@ -3,103 +3,71 @@
 namespace App\Policies;
 
 use App\Models\User;
+use App\Services\PermissionService;
 
-class UserPolicy extends BasePolicy
+class UserPolicy
 {
-    /**
-     * Determine whether the user can view any users.
-     */
+    protected PermissionService $permissionService;
+
+    public function __construct(PermissionService $permissionService)
+    {
+        $this->permissionService = $permissionService;
+    }
+
     public function viewAny(User $user): bool
     {
-        return $this->checkPermission('users.view');
+        return $this->permissionService->check($user, 'cmis.users.view');
     }
 
-    /**
-     * Determine whether the user can view the model.
-     */
-    public function view(User $user, User $model): bool
+    public function view(User $user, User $targetUser): bool
     {
-        // Users can view themselves OR if they have permission
-        return $user->user_id === $model->user_id
-            || $this->checkPermission('users.view');
+        if ($user->user_id === $targetUser->user_id) {
+            return true; // Can always view own profile
+        }
+        return $this->permissionService->check($user, 'cmis.users.view');
     }
 
-    /**
-     * Determine whether the user can create users (invite).
-     */
     public function create(User $user): bool
     {
-        return $this->checkPermission('users.manage');
+        return $this->permissionService->check($user, 'cmis.users.create');
     }
 
-    /**
-     * Determine whether the user can update the model.
-     */
-    public function update(User $user, User $model): bool
+    public function update(User $user, User $targetUser): bool
     {
-        // Users can update themselves OR if they have permission
-        return $user->user_id === $model->user_id
-            || $this->checkPermission('users.manage');
-    }
-
-    /**
-     * Determine whether the user can delete the model.
-     */
-    public function delete(User $user, User $model): bool
-    {
-        // Users cannot delete themselves
-        if ($user->user_id === $model->user_id) {
-            return false;
+        if ($user->user_id === $targetUser->user_id) {
+            return true; // Can always update own profile
         }
-
-        return $this->checkPermission('users.manage');
+        return $this->permissionService->check($user, 'cmis.users.update');
     }
 
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, User $model): bool
+    public function delete(User $user, User $targetUser): bool
     {
-        return $this->checkPermission('users.manage');
-    }
-
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, User $model): bool
-    {
-        // Only org owners can force delete users
-        if ($user->user_id === $model->user_id) {
-            return false;
+        if ($user->user_id === $targetUser->user_id) {
+            return false; // Cannot delete own account
         }
-
-        return $this->isOwnerOrAdmin($user);
+        return $this->permissionService->check($user, 'cmis.users.delete');
     }
 
-    /**
-     * Determine whether the user can update roles.
-     */
-    public function updateRole(User $user, User $model): bool
+    public function invite(User $user): bool
     {
-        // Users cannot change their own role
-        if ($user->user_id === $model->user_id) {
-            return false;
-        }
-
-        return $this->isOwnerOrAdmin($user)
-            && $this->checkPermission('users.manage');
+        return $this->permissionService->check($user, 'cmis.users.invite');
     }
 
-    /**
-     * Determine whether the user can deactivate the model.
-     */
-    public function deactivate(User $user, User $model): bool
+    public function assignRole(User $user, User $targetUser): bool
     {
-        // Users cannot deactivate themselves
-        if ($user->user_id === $model->user_id) {
-            return false;
+        if ($user->user_id === $targetUser->user_id) {
+            return false; // Cannot change own role
         }
+        return $this->permissionService->check($user, 'cmis.users.assign_role');
+    }
 
-        return $this->checkPermission('users.manage');
+    public function grantPermission(User $user, User $targetUser): bool
+    {
+        return $this->permissionService->check($user, 'cmis.users.grant_permission');
+    }
+
+    public function viewActivity(User $user, User $targetUser): bool
+    {
+        return $this->permissionService->check($user, 'cmis.users.view_activity');
     }
 }

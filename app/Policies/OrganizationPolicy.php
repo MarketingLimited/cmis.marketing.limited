@@ -4,77 +4,58 @@ namespace App\Policies;
 
 use App\Models\Core\Org;
 use App\Models\User;
+use App\Services\PermissionService;
 
-class OrganizationPolicy extends BasePolicy
+class OrganizationPolicy
 {
-    /**
-     * Determine whether the user can view any organizations.
-     */
+    protected PermissionService $permissionService;
+
+    public function __construct(PermissionService $permissionService)
+    {
+        $this->permissionService = $permissionService;
+    }
+
     public function viewAny(User $user): bool
     {
-        // Users can see their own organizations
-        return true;
+        return true; // Users can see organizations they belong to
     }
 
-    /**
-     * Determine whether the user can view the organization.
-     */
     public function view(User $user, Org $org): bool
     {
-        // Users can only view organizations they belong to
-        return $user->belongsToOrg($org->org_id);
+        return $user->orgs()->where('cmis.orgs.org_id', $org->org_id)->exists();
     }
 
-    /**
-     * Determine whether the user can create organizations.
-     */
     public function create(User $user): bool
     {
-        // Any authenticated user can create an organization
-        return true;
+        return $this->permissionService->check($user, 'cmis.orgs.create');
     }
 
-    /**
-     * Determine whether the user can update the organization.
-     */
     public function update(User $user, Org $org): bool
     {
-        return $this->isOwnerOrAdmin($user, $org->org_id)
-            && $this->checkPermission('orgs.manage');
+        if (!$this->permissionService->check($user, 'cmis.orgs.update')) {
+            return false;
+        }
+        return $org->org_id === session('current_org_id');
     }
 
-    /**
-     * Determine whether the user can delete the organization.
-     */
     public function delete(User $user, Org $org): bool
     {
-        // Only owners can delete organizations
-        return $user->hasRoleInOrg($org->org_id, 'owner');
+        return $this->permissionService->check($user, 'cmis.orgs.delete');
     }
 
-    /**
-     * Determine whether the user can restore the organization.
-     */
-    public function restore(User $user, Org $org): bool
+    public function manageUsers(User $user, Org $org): bool
     {
-        return $user->hasRoleInOrg($org->org_id, 'owner');
+        if (!$this->permissionService->check($user, 'cmis.orgs.manage_users')) {
+            return false;
+        }
+        return $org->org_id === session('current_org_id');
     }
 
-    /**
-     * Determine whether the user can view organization statistics.
-     */
-    public function viewStatistics(User $user, Org $org): bool
+    public function manageSettings(User $user, Org $org): bool
     {
-        return $user->belongsToOrg($org->org_id)
-            && $this->checkPermission('orgs.view');
-    }
-
-    /**
-     * Determine whether the user can manage organization members.
-     */
-    public function manageMembers(User $user, Org $org): bool
-    {
-        return $this->isOwnerOrAdmin($user, $org->org_id)
-            && $this->checkPermission('users.manage');
+        if (!$this->permissionService->check($user, 'cmis.orgs.manage_settings')) {
+            return false;
+        }
+        return $org->org_id === session('current_org_id');
     }
 }
