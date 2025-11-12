@@ -7,12 +7,13 @@ use Illuminate\Http\Request;
 use App\Services\CMIS\KnowledgeEmbeddingProcessor;
 use App\Services\CMIS\SemanticSearchService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Gate;
 
 class CMISEmbeddingController extends Controller
 {
     private KnowledgeEmbeddingProcessor $processor;
     private SemanticSearchService $searchService;
-    
+
     public function __construct(
         KnowledgeEmbeddingProcessor $processor,
         SemanticSearchService $searchService
@@ -20,12 +21,13 @@ class CMISEmbeddingController extends Controller
         $this->processor = $processor;
         $this->searchService = $searchService;
     }
-    
+
     /**
      * Search knowledge base
      */
     public function search(Request $request): JsonResponse
     {
+        Gate::authorize('useSemanticSearch', auth()->user());
         $validated = $request->validate([
             'query' => 'required|string|max:1000',
             'intent' => 'nullable|string|max:500',
@@ -64,6 +66,8 @@ class CMISEmbeddingController extends Controller
      */
     public function processKnowledge(Request $request, string $knowledgeId): JsonResponse
     {
+        Gate::authorize('manageKnowledge', auth()->user());
+
         try {
             $success = $this->processor->processSpecificKnowledge($knowledgeId);
             
@@ -87,6 +91,8 @@ class CMISEmbeddingController extends Controller
      */
     public function findSimilar(Request $request, string $knowledgeId): JsonResponse
     {
+        Gate::authorize('useSemanticSearch', auth()->user());
+
         $limit = $request->input('limit', 5);
         
         try {
