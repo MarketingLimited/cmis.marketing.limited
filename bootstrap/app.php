@@ -16,6 +16,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'set.db.context' => \App\Http\Middleware\SetDatabaseContext::class,
             'validate.org.access' => \App\Http\Middleware\ValidateOrgAccess::class,
+            'permission' => \App\Http\Middleware\CheckPermission::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
