@@ -455,7 +455,19 @@ function aiCenterManager() {
 
         async fetchData() {
             try {
-                // API Integration Point: GET /api/ai/dashboard
+                // TODO: Backend Controller Needed - AIGenerationController
+                // This page requires a new controller for AI content generation and semantic search
+                // Required API endpoints:
+                // - GET /api/ai/dashboard - Get AI stats and service status
+                // - POST /api/ai/generate - Generate content using AI (Gemini/GPT-4)
+                // - POST /api/ai/semantic-search - Perform semantic search with pgvector
+                // - GET /api/ai/recommendations - Get AI-powered recommendations
+                // - GET /api/ai/models - Get AI model performance data
+                // - GET /api/ai/knowledge - Get knowledge base documents
+                // - POST /api/ai/knowledge/process - Process and vectorize documents
+                // - GET /api/ai/content/history - Get recently generated content
+
+                // Simulated data until backend is implemented
                 this.stats = {
                     generatedContent: 1247,
                     contentChange: 28.5,
@@ -523,8 +535,34 @@ function aiCenterManager() {
             }
 
             try {
-                // API Integration Point: POST /api/ai/generate
                 window.notify('جاري توليد المحتوى...', 'info');
+
+                // TODO: Implement actual AI content generation API call
+                // const response = await fetch('/api/ai/generate', {
+                //     method: 'POST',
+                //     headers: {
+                //         'Content-Type': 'application/json',
+                //         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                //         'Accept': 'application/json'
+                //     },
+                //     body: JSON.stringify({
+                //         content_type: this.generateForm.contentType,
+                //         topic: this.generateForm.topic,
+                //         objective: this.generateForm.objective,
+                //         language: this.generateForm.language,
+                //         tone: this.generateForm.tone,
+                //         model: 'gemini-pro' // or 'gpt-4'
+                //     })
+                // });
+                //
+                // if (!response.ok) {
+                //     const error = await response.json();
+                //     throw new Error(error.message || 'Failed to generate content');
+                // }
+                //
+                // const result = await response.json();
+                // // Display generated content to user
+                // // result.content, result.model_used, result.tokens_used
 
                 // Simulate API delay
                 await new Promise(resolve => setTimeout(resolve, 2000));
@@ -540,7 +578,8 @@ function aiCenterManager() {
                 };
                 await this.fetchData();
             } catch (error) {
-                window.notify('فشل توليد المحتوى', 'error');
+                console.error('Error generating content:', error);
+                window.notify(error.message || 'فشل توليد المحتوى', 'error');
             }
         },
 
@@ -551,8 +590,31 @@ function aiCenterManager() {
             }
 
             try {
-                // API Integration Point: POST /api/ai/semantic-search
                 window.notify('جاري البحث...', 'info');
+
+                // TODO: Implement actual semantic search API call using pgvector
+                // const response = await fetch('/api/ai/semantic-search', {
+                //     method: 'POST',
+                //     headers: {
+                //         'Content-Type': 'application/json',
+                //         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                //         'Accept': 'application/json'
+                //     },
+                //     body: JSON.stringify({
+                //         query: this.searchForm.query,
+                //         sources: this.searchForm.sources,
+                //         limit: 10,
+                //         threshold: 0.7 // similarity threshold
+                //     })
+                // });
+                //
+                // if (!response.ok) {
+                //     const error = await response.json();
+                //     throw new Error(error.message || 'Failed to perform search');
+                // }
+                //
+                // const results = await response.json();
+                // this.semanticResults = results.items; // Array of similar documents/campaigns
 
                 // Simulate API delay
                 await new Promise(resolve => setTimeout(resolve, 1500));
