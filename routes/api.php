@@ -12,6 +12,9 @@ use App\Http\Controllers\AI\AIGenerationController;
 use App\Http\Controllers\Analytics\KpiController;
 use App\Http\Controllers\API\CMISEmbeddingController;
 use App\Http\Controllers\API\SemanticSearchController;
+use App\Http\Controllers\UnifiedInboxController;
+use App\Http\Controllers\AdCampaignController;
+use App\Http\Controllers\UnifiedCommentsController;
 
 /*
 |--------------------------------------------------------------------------
@@ -170,6 +173,76 @@ Route::middleware(['auth:sanctum', 'validate.org.access', 'set.db.context'])
             Route::post('/{post_id}/publish-now', [SocialSchedulerController::class, 'publishNow'])->name('publish-now');
             Route::post('/{post_id}/reschedule', [SocialSchedulerController::class, 'reschedule'])->name('reschedule');
         });
+    });
+
+    /*
+    |----------------------------------------------------------------------
+    | صندوق الوارد الموحد (Unified Inbox)
+    |----------------------------------------------------------------------
+    */
+    Route::prefix('inbox')->name('inbox.')->group(function () {
+        // Messages List
+        Route::get('/', [UnifiedInboxController::class, 'index'])->name('index');
+
+        // Conversation Thread
+        Route::get('/conversation/{conversation_id}', [UnifiedInboxController::class, 'conversation'])->name('conversation');
+
+        // Reply to Message
+        Route::post('/{message_id}/reply', [UnifiedInboxController::class, 'reply'])->name('reply');
+
+        // Message Actions
+        Route::post('/mark-as-read', [UnifiedInboxController::class, 'markAsRead'])->name('mark-as-read');
+        Route::post('/{message_id}/assign', [UnifiedInboxController::class, 'assign'])->name('assign');
+        Route::post('/{message_id}/note', [UnifiedInboxController::class, 'addNote'])->name('add-note');
+
+        // Saved Replies
+        Route::get('/saved-replies', [UnifiedInboxController::class, 'savedReplies'])->name('saved-replies');
+        Route::post('/saved-replies', [UnifiedInboxController::class, 'createSavedReply'])->name('saved-replies.create');
+
+        // Statistics
+        Route::get('/statistics', [UnifiedInboxController::class, 'statistics'])->name('statistics');
+    });
+
+    /*
+    |----------------------------------------------------------------------
+    | إدارة التعليقات الموحدة (Unified Comments)
+    |----------------------------------------------------------------------
+    */
+    Route::prefix('comments')->name('comments.')->group(function () {
+        // Comments List
+        Route::get('/', [UnifiedCommentsController::class, 'index'])->name('index');
+
+        // Comment Actions
+        Route::post('/{comment_id}/reply', [UnifiedCommentsController::class, 'reply'])->name('reply');
+        Route::post('/{comment_id}/hide', [UnifiedCommentsController::class, 'hide'])->name('hide');
+        Route::delete('/{comment_id}', [UnifiedCommentsController::class, 'delete'])->name('delete');
+        Route::post('/{comment_id}/like', [UnifiedCommentsController::class, 'like'])->name('like');
+
+        // Bulk Actions
+        Route::post('/bulk-action', [UnifiedCommentsController::class, 'bulkAction'])->name('bulk-action');
+
+        // Statistics
+        Route::get('/statistics', [UnifiedCommentsController::class, 'statistics'])->name('statistics');
+    });
+
+    /*
+    |----------------------------------------------------------------------
+    | إدارة الحملات الإعلانية (Ad Campaign Management)
+    |----------------------------------------------------------------------
+    */
+    Route::prefix('ad-campaigns')->name('ad-campaigns.')->group(function () {
+        // List Campaigns
+        Route::get('/', [AdCampaignController::class, 'index'])->name('index');
+
+        // Create Campaigns by Platform
+        Route::post('/meta', [AdCampaignController::class, 'createMetaCampaign'])->name('create.meta');
+        Route::post('/google', [AdCampaignController::class, 'createGoogleAdsCampaign'])->name('create.google');
+        Route::post('/tiktok', [AdCampaignController::class, 'createTikTokAdsCampaign'])->name('create.tiktok');
+        Route::post('/snapchat', [AdCampaignController::class, 'createSnapchatAdsCampaign'])->name('create.snapchat');
+
+        // Campaign Actions
+        Route::put('/{campaign_id}/status', [AdCampaignController::class, 'updateStatus'])->name('update-status');
+        Route::get('/{campaign_id}/metrics', [AdCampaignController::class, 'metrics'])->name('metrics');
     });
 
     /*
