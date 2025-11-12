@@ -10,7 +10,10 @@ class CampaignController extends Controller
 {
     public function index()
     {
+        $this->authorize('viewAny', Campaign::class);
+
         $campaigns = Campaign::query()
+            ->where('org_id', session('current_org_id'))
             ->select(['campaign_id', 'name', 'status', 'budget', 'start_date', 'end_date', 'updated_at'])
             ->orderByDesc('updated_at')
             ->with('org:org_id,name')
@@ -22,6 +25,7 @@ class CampaignController extends Controller
     public function show($campaign_id)
     {
         $campaign = Campaign::query()
+            ->where('org_id', session('current_org_id'))
             ->with([
                 'org:org_id,name',
                 'offerings:offering_id,name,kind',
@@ -31,6 +35,8 @@ class CampaignController extends Controller
                     ->select('dashboard_id', 'campaign_id', 'metric_name', 'metric_value', 'metric_target', 'variance', 'confidence_level', 'collected_at', 'insights'),
             ])
             ->findOrFail($campaign_id);
+
+        $this->authorize('view', $campaign);
 
         $performance = $campaign->performanceMetrics->map(fn ($metric) => [
             'metric_name' => $metric->metric_name,
@@ -51,7 +57,10 @@ class CampaignController extends Controller
 
     public function performanceByRange($campaign_id, $range)
     {
-        $campaign = Campaign::findOrFail($campaign_id);
+        $campaign = Campaign::where('org_id', session('current_org_id'))
+            ->findOrFail($campaign_id);
+
+        $this->authorize('view', $campaign);
 
         $cutoff = match ($range) {
             'daily' => Carbon::now()->subDay(),

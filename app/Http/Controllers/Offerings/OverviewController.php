@@ -10,6 +10,8 @@ class OverviewController extends Controller
 {
     public function index()
     {
+        $this->authorize('viewAny', Offering::class);
+
         $stats = Cache::remember('offerings.stats', now()->addMinutes(5), function () {
             return [
                 'products' => Offering::where('kind', 'product')->count(),

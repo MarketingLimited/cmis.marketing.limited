@@ -6,11 +6,14 @@ use App\Http\Controllers\Controller;
 use App\Models\Kpi;
 use App\Models\PerformanceMetric;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Gate;
 
 class OverviewController extends Controller
 {
     public function index()
     {
+        Gate::authorize('viewDashboard', auth()->user());
+
         $stats = Cache::remember('analytics.stats', now()->addMinutes(5), function () {
             return [
                 'kpis' => Kpi::count(),

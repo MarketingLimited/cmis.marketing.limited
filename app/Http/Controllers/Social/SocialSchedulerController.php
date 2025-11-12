@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Social;
 use App\Http\Controllers\Controller;
 use App\Models\ScheduledSocialPost;
 use App\Models\SocialAccount;
+use App\Models\Channel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
@@ -17,6 +18,7 @@ class SocialSchedulerController extends Controller
      */
     public function dashboard(Request $request, string $orgId)
     {
+        $this->authorize('viewAnalytics', Channel::class);
         try {
             $stats = [
                 'scheduled' => ScheduledSocialPost::forOrg($orgId)
@@ -57,6 +59,7 @@ class SocialSchedulerController extends Controller
      */
     public function scheduled(Request $request, string $orgId)
     {
+        $this->authorize('viewAny', Channel::class);
         try {
             $perPage = $request->input('per_page', 20);
 
@@ -81,6 +84,7 @@ class SocialSchedulerController extends Controller
      */
     public function published(Request $request, string $orgId)
     {
+        $this->authorize('viewAny', Channel::class);
         try {
             $perPage = $request->input('per_page', 20);
             $platform = $request->input('platform');
@@ -111,6 +115,7 @@ class SocialSchedulerController extends Controller
      */
     public function drafts(Request $request, string $orgId)
     {
+        $this->authorize('viewAny', Channel::class);
         try {
             $posts = ScheduledSocialPost::forOrg($orgId)
                 ->drafts()
@@ -133,6 +138,7 @@ class SocialSchedulerController extends Controller
      */
     public function schedule(Request $request, string $orgId)
     {
+        $this->authorize('schedule', Channel::class);
         $validator = Validator::make($request->all(), [
             'platforms' => 'required|array|min:1',
             'platforms.*' => 'required|string|in:facebook,instagram,twitter,linkedin,tiktok',
@@ -198,6 +204,7 @@ class SocialSchedulerController extends Controller
      */
     public function update(Request $request, string $orgId, string $postId)
     {
+        $this->authorize('update', Channel::class);
         $validator = Validator::make($request->all(), [
             'platforms' => 'sometimes|array|min:1',
             'platforms.*' => 'sometimes|string|in:facebook,instagram,twitter,linkedin,tiktok',
@@ -259,6 +266,7 @@ class SocialSchedulerController extends Controller
      */
     public function destroy(Request $request, string $orgId, string $postId)
     {
+        $this->authorize('delete', Channel::class);
         try {
             $post = ScheduledSocialPost::forOrg($orgId)->findOrFail($postId);
 
@@ -295,6 +303,7 @@ class SocialSchedulerController extends Controller
      */
     public function publishNow(Request $request, string $orgId, string $postId)
     {
+        $this->authorize('publish', Channel::class);
         try {
             $post = ScheduledSocialPost::forOrg($orgId)->findOrFail($postId);
 
@@ -342,6 +351,7 @@ class SocialSchedulerController extends Controller
      */
     public function reschedule(Request $request, string $orgId, string $postId)
     {
+        $this->authorize('schedule', Channel::class);
         $validator = Validator::make($request->all(), [
             'scheduled_date' => 'required|date|after:now',
             'scheduled_time' => 'required|date_format:H:i',
@@ -395,6 +405,7 @@ class SocialSchedulerController extends Controller
      */
     public function show(Request $request, string $orgId, string $postId)
     {
+        $this->authorize('view', Channel::class);
         try {
             $post = ScheduledSocialPost::forOrg($orgId)
                 ->with(['user:id,name', 'campaign:campaign_id,name'])

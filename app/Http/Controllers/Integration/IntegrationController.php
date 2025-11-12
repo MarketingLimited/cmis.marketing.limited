@@ -66,6 +66,8 @@ class IntegrationController extends Controller
      */
     public function index(Request $request, string $orgId)
     {
+        $this->authorize('viewAny', Integration::class);
+
         try {
             $integrations = Integration::where('org_id', $orgId)
                 ->with(['creator:id,name'])
@@ -114,6 +116,8 @@ class IntegrationController extends Controller
      */
     public function connect(Request $request, string $orgId, string $platform)
     {
+        $this->authorize('create', Integration::class);
+
         try {
             if (!isset(self::PLATFORMS[$platform])) {
                 return response()->json(['error' => 'Unsupported platform'], 400);
@@ -294,6 +298,8 @@ class IntegrationController extends Controller
                 ->where('integration_id', $integrationId)
                 ->firstOrFail();
 
+            $this->authorize('delete', $integration);
+
             // TODO: Revoke token with platform API if possible
 
             // Deactivate integration
@@ -329,6 +335,8 @@ class IntegrationController extends Controller
             $integration = Integration::where('org_id', $orgId)
                 ->where('integration_id', $integrationId)
                 ->firstOrFail();
+
+            $this->authorize('sync', $integration);
 
             if (!$integration->is_active) {
                 return response()->json([
@@ -389,6 +397,8 @@ class IntegrationController extends Controller
                 ->where('integration_id', $integrationId)
                 ->firstOrFail();
 
+            $this->authorize('view', $integration);
+
             // TODO: Implement sync history tracking
             // This would query a sync_logs table or similar
 
@@ -433,6 +443,8 @@ class IntegrationController extends Controller
                 ->where('integration_id', $integrationId)
                 ->firstOrFail();
 
+            $this->authorize('view', $integration);
+
             // TODO: Implement settings storage (separate table or JSON column)
             $settings = [
                 'auto_sync' => true,
@@ -467,6 +479,8 @@ class IntegrationController extends Controller
                 ->where('integration_id', $integrationId)
                 ->firstOrFail();
 
+            $this->authorize('update', $integration);
+
             // TODO: Validate and store settings
             $settings = $request->all();
 
@@ -490,6 +504,8 @@ class IntegrationController extends Controller
      */
     public function activity(Request $request, string $orgId)
     {
+        $this->authorize('viewAny', Integration::class);
+
         try {
             // TODO: Implement activity tracking
             // This would query activity logs for all integrations in the org
@@ -532,6 +548,8 @@ class IntegrationController extends Controller
             $integration = Integration::where('org_id', $orgId)
                 ->where('integration_id', $integrationId)
                 ->firstOrFail();
+
+            $this->authorize('view', $integration);
 
             if (!$integration->is_active) {
                 return response()->json([

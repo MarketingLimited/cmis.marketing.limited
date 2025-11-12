@@ -21,35 +21,67 @@ class Kernel extends ConsoleKernel
         InstagramApiCommand::class,
         CognitiveVitalityLog::class,
         CognitiveVitalityWatch::class,
+        \App\Console\Commands\ProcessEmbeddingsCommand::class,
+        \App\Console\Commands\PublishScheduledPostsCommand::class,
+        \App\Console\Commands\SyncPlatformsCommand::class,
+        \App\Console\Commands\CleanupCacheCommand::class,
     ];
 
     protected function schedule(Schedule $schedule): void
     {
         // ==========================================
-        // 🔄 NEW: Multi-Platform Sync Commands
+        // 🔄 CMIS Platform Sync & Processing
         // ==========================================
 
-        // Auto-sync all platforms hourly
-        $schedule->command('sync:all')
+        // Publish scheduled posts every 5 minutes
+        $schedule->command('cmis:publish-scheduled')
+            ->everyFiveMinutes()
+            ->withoutOverlapping()
+            ->runInBackground()
+            ->onSuccess(function () {
+                Log::info('✅ Scheduled posts published successfully');
+            })
+            ->onFailure(function () {
+                Log::error('❌ Failed to publish scheduled posts');
+            });
+
+        // Process embedding queue every 15 minutes
+        $schedule->command('cmis:process-embeddings --batch=20')
+            ->everyFifteenMinutes()
+            ->withoutOverlapping()
+            ->runInBackground()
+            ->onSuccess(function () {
+                Log::info('✅ Embeddings processed successfully');
+            });
+
+        // Sync platforms hourly
+        $schedule->command('cmis:sync-platforms --type=metrics')
             ->hourly()
             ->withoutOverlapping()
-            ->runInBackground();
+            ->runInBackground()
+            ->onSuccess(function () {
+                Log::info('✅ Platform metrics synced successfully');
+            })
+            ->onFailure(function () {
+                Log::error('❌ Platform sync failed');
+            });
 
-        // Daily embeddings generation at 2 AM
-        $schedule->command('embeddings:generate')
-            ->dailyAt('02:00')
-            ->withoutOverlapping();
+        // Full platform sync daily at 3 AM
+        $schedule->command('cmis:sync-platforms --type=full')
+            ->dailyAt('03:00')
+            ->withoutOverlapping()
+            ->onSuccess(function () {
+                Log::info('✅ Full platform sync completed');
+            });
 
-        // Weekly database cleanup on Sundays at 3 AM
-        $schedule->command('database:cleanup')
+        // Clean up stale cache weekly on Sundays at 4 AM
+        $schedule->command('cmis:cleanup-cache --days=30')
             ->weekly()
             ->sundays()
-            ->at('03:00');
-
-        // Daily system health check
-        $schedule->command('system:health')
-            ->daily()
-            ->appendOutputTo(storage_path('logs/health-check.log'));
+            ->at('04:00')
+            ->onSuccess(function () {
+                Log::info('✅ Cache cleanup completed');
+            });
 
         // ==========================================
         // 🧠 Original Cognitive Vitality Monitoring

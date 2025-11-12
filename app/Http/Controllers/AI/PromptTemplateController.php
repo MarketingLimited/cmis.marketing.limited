@@ -4,6 +4,7 @@ namespace App\Http\Controllers\AI;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 
 /**
  * Class PromptTemplateController
@@ -16,6 +17,8 @@ class PromptTemplateController extends Controller
      */
     public function index()
     {
+        Gate::authorize('managePrompts', auth()->user());
+
         return view('ai.prompts.index');
     }
 }

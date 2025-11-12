@@ -10,6 +10,8 @@ class ChannelController extends Controller
 {
     public function index(Request $request, string $orgId)
     {
+        $this->authorize('viewAny', Channel::class);
+
         try {
             $channels = Channel::where('org_id', $orgId)
                 ->orderBy('created_at', 'desc')
@@ -24,6 +26,8 @@ class ChannelController extends Controller
 
     public function store(Request $request, string $orgId)
     {
+        $this->authorize('create', Channel::class);
+
         try {
             $channel = Channel::create(array_merge(
                 $request->all(),
@@ -41,6 +45,7 @@ class ChannelController extends Controller
     {
         try {
             $channel = Channel::where('org_id', $orgId)->findOrFail($channelId);
+            $this->authorize('view', $channel);
             return response()->json(['channel' => $channel]);
         } catch (\Exception $e) {
             return response()->json(['error' => 'Channel not found'], 404);
@@ -51,6 +56,7 @@ class ChannelController extends Controller
     {
         try {
             $channel = Channel::where('org_id', $orgId)->findOrFail($channelId);
+            $this->authorize('update', $channel);
             $channel->update($request->all());
             return response()->json(['message' => 'Channel updated', 'channel' => $channel]);
         } catch (\Exception $e) {
@@ -62,6 +68,7 @@ class ChannelController extends Controller
     {
         try {
             $channel = Channel::where('org_id', $orgId)->findOrFail($channelId);
+            $this->authorize('delete', $channel);
             $channel->delete();
             return response()->json(['message' => 'Channel deleted']);
         } catch (\Exception $e) {

@@ -1,0 +1,107 @@
+<?php
+
+namespace App\Models\Compliance;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+class ComplianceAudit extends Model
+{
+    use HasFactory;
+
+    protected $table = 'cmis.compliance_audits';
+    protected $primaryKey = 'audit_id';
+    protected $connection = 'pgsql';
+    public $incrementing = false;
+    protected $keyType = 'string';
+
+    protected $fillable = [
+        'org_id',
+        'rule_id',
+        'asset_id',
+        'content_id',
+        'audit_result',
+        'violations',
+        'recommendations',
+        'auto_fixed',
+        'reviewed_by',
+        'reviewed_at',
+        'status',
+        'metadata',
+        'created_by',
+        'provider',
+    ];
+
+    protected $casts = [
+        'audit_id' => 'string',
+        'org_id' => 'string',
+        'rule_id' => 'string',
+        'asset_id' => 'string',
+        'content_id' => 'string',
+        'reviewed_by' => 'string',
+        'created_by' => 'string',
+        'violations' => 'array',
+        'recommendations' => 'array',
+        'auto_fixed' => 'boolean',
+        'metadata' => 'array',
+        'reviewed_at' => 'datetime',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+    ];
+
+    /**
+     * Get the organization
+     */
+    public function org()
+    {
+        return $this->belongsTo(\App\Models\Core\Org::class, 'org_id', 'org_id');
+    }
+
+    /**
+     * Get the compliance rule
+     */
+    public function rule()
+    {
+        return $this->belongsTo(ComplianceRule::class, 'rule_id', 'rule_id');
+    }
+
+    /**
+     * Get the creative asset
+     */
+    public function asset()
+    {
+        return $this->belongsTo(\App\Models\CreativeAsset::class, 'asset_id', 'asset_id');
+    }
+
+    /**
+     * Get the reviewer
+     */
+    public function reviewer()
+    {
+        return $this->belongsTo(\App\Models\User::class, 'reviewed_by', 'user_id');
+    }
+
+    /**
+     * Scope passed audits
+     */
+    public function scopePassed($query)
+    {
+        return $query->where('audit_result', 'pass');
+    }
+
+    /**
+     * Scope failed audits
+     */
+    public function scopeFailed($query)
+    {
+        return $query->where('audit_result', 'fail');
+    }
+
+    /**
+     * Scope pending review
+     */
+    public function scopePendingReview($query)
+    {
+        return $query->where('status', 'pending')->whereNull('reviewed_at');
+    }
+}
