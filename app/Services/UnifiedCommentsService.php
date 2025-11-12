@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use App\Services\Connectors\ConnectorFactory;
+use App\Models\Core\Integration;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;

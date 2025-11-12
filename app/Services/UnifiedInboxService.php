@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use App\Services\Connectors\ConnectorFactory;
+use App\Models\Core\Integration;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
@@ -145,103 +147,33 @@ class UnifiedInboxService
     }
 
     /**
-     * Send reply to platform-specific API
+     * Send reply to platform-specific API using Connectors
      */
     protected function sendPlatformReply($message, string $replyText, $integration): array
     {
-        switch ($message->platform) {
-            case 'facebook':
-            case 'meta':
-                return $this->sendFacebookReply($message, $replyText, $integration);
-
-            case 'instagram':
-                return $this->sendInstagramReply($message, $replyText, $integration);
-
-            case 'twitter':
-            case 'x':
-                return $this->sendTwitterReply($message, $replyText, $integration);
-
-            case 'linkedin':
-                return $this->sendLinkedInReply($message, $replyText, $integration);
-
-            default:
-                return ['success' => false, 'error' => 'Platform not supported'];
-        }
-    }
-
-    /**
-     * Send Facebook Messenger reply
-     */
-    protected function sendFacebookReply($message, string $replyText, $integration): array
-    {
         try {
-            $response = \Http::post("https://graph.facebook.com/v19.0/me/messages", [
-                'recipient' => ['id' => $message->sender_id],
-                'message' => ['text' => $replyText],
-                'access_token' => $integration->access_token,
-            ]);
+            // Get Integration model
+            $integrationModel = Integration::find($integration->integration_id);
 
-            if ($response->successful()) {
-                return [
-                    'success' => true,
-                    'platform_message_id' => $response->json()['message_id'] ?? null,
-                ];
+            if (!$integrationModel) {
+                return ['success' => false, 'error' => 'Integration not found'];
             }
 
-            return ['success' => false, 'error' => $response->body()];
+            // Use ConnectorFactory to get the appropriate connector
+            $connector = ConnectorFactory::make($message->platform);
+
+            // Send message using connector
+            $result = $connector->sendMessage(
+                $integrationModel,
+                $message->conversation_id ?? $message->sender_id,
+                $replyText
+            );
+
+            return $result;
         } catch (\Exception $e) {
-            Log::error('Failed to send Facebook reply: ' . $e->getMessage());
+            Log::error("Failed to send reply via {$message->platform}: " . $e->getMessage());
             return ['success' => false, 'error' => $e->getMessage()];
         }
-    }
-
-    /**
-     * Send Instagram DM reply
-     */
-    protected function sendInstagramReply($message, string $replyText, $integration): array
-    {
-        try {
-            $igAccountId = $integration->settings['instagram_account_id'] ?? null;
-            if (!$igAccountId) {
-                return ['success' => false, 'error' => 'Instagram account not configured'];
-            }
-
-            $response = \Http::post("https://graph.facebook.com/v19.0/{$igAccountId}/messages", [
-                'recipient' => ['id' => $message->sender_id],
-                'message' => ['text' => $replyText],
-                'access_token' => $integration->access_token,
-            ]);
-
-            if ($response->successful()) {
-                return [
-                    'success' => true,
-                    'platform_message_id' => $response->json()['message_id'] ?? null,
-                ];
-            }
-
-            return ['success' => false, 'error' => $response->body()];
-        } catch (\Exception $e) {
-            Log::error('Failed to send Instagram reply: ' . $e->getMessage());
-            return ['success' => false, 'error' => $e->getMessage()];
-        }
-    }
-
-    /**
-     * Send Twitter/X reply
-     */
-    protected function sendTwitterReply($message, string $replyText, $integration): array
-    {
-        // Implementation for Twitter API v2
-        return ['success' => false, 'error' => 'Not implemented yet'];
-    }
-
-    /**
-     * Send LinkedIn reply
-     */
-    protected function sendLinkedInReply($message, string $replyText, $integration): array
-    {
-        // Implementation for LinkedIn API
-        return ['success' => false, 'error' => 'Not implemented yet'];
     }
 
     /**
