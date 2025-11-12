@@ -13,12 +13,17 @@ class CreativeAssetController extends Controller
     {
         try {
             $perPage = $request->input('per_page', 20);
-            $type = $request->input('type');
+            $status = $request->input('status');
+            $campaignId = $request->input('campaign_id');
 
             $query = CreativeAsset::where('org_id', $orgId);
 
-            if ($type) {
-                $query->where('asset_type', $type);
+            if ($status) {
+                $query->where('status', $status);
+            }
+
+            if ($campaignId) {
+                $query->where('campaign_id', $campaignId);
             }
 
             $assets = $query->orderBy('created_at', 'desc')->paginate($perPage);
@@ -33,12 +38,14 @@ class CreativeAssetController extends Controller
     public function store(Request $request, string $orgId)
     {
         $validator = Validator::make($request->all(), [
-            'asset_type' => 'required|string',
-            'format' => 'required|string',
-            'width_px' => 'nullable|integer',
-            'height_px' => 'nullable|integer',
-            'url' => 'nullable|url',
-            'local_path' => 'nullable|string',
+            'campaign_id' => 'nullable|uuid|exists:cmis.campaigns,campaign_id',
+            'channel_id' => 'required|integer',
+            'format_id' => 'nullable|integer',
+            'variation_tag' => 'nullable|string',
+            'copy_block' => 'nullable|string',
+            'strategy' => 'nullable|array',
+            'art_direction' => 'nullable|array',
+            'status' => 'nullable|in:draft,pending_review,approved,rejected,archived',
         ]);
 
         if ($validator->fails()) {
@@ -46,12 +53,19 @@ class CreativeAssetController extends Controller
         }
 
         try {
-            $asset = CreativeAsset::create(array_merge(
-                $request->all(),
-                ['org_id' => $orgId]
-            ));
+            $asset = CreativeAsset::create([
+                'org_id' => $orgId,
+                'campaign_id' => $request->campaign_id,
+                'channel_id' => $request->channel_id,
+                'format_id' => $request->format_id,
+                'variation_tag' => $request->variation_tag,
+                'copy_block' => $request->copy_block,
+                'strategy' => $request->strategy,
+                'art_direction' => $request->art_direction,
+                'status' => $request->status ?? 'draft',
+            ]);
 
-            return response()->json(['message' => 'Asset created', 'asset' => $asset], 201);
+            return response()->json(['message' => 'Asset created', 'asset' => $asset->fresh()], 201);
 
         } catch (\Exception $e) {
             return response()->json(['error' => 'Failed to create asset', 'message' => $e->getMessage()], 500);
@@ -70,12 +84,33 @@ class CreativeAssetController extends Controller
 
     public function update(Request $request, string $orgId, string $assetId)
     {
+        $validator = Validator::make($request->all(), [
+            'campaign_id' => 'sometimes|uuid|exists:cmis.campaigns,campaign_id',
+            'channel_id' => 'sometimes|integer',
+            'format_id' => 'sometimes|integer',
+            'variation_tag' => 'sometimes|string',
+            'copy_block' => 'sometimes|string',
+            'strategy' => 'sometimes|array',
+            'art_direction' => 'sometimes|array',
+            'final_copy' => 'sometimes|array',
+            'status' => 'sometimes|in:draft,pending_review,approved,rejected,archived',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['error' => 'Validation Error', 'errors' => $validator->errors()], 422);
+        }
+
         try {
             $asset = CreativeAsset::where('org_id', $orgId)->findOrFail($assetId);
-            $asset->update($request->all());
-            return response()->json(['message' => 'Asset updated', 'asset' => $asset]);
+            $asset->update($request->only([
+                'campaign_id', 'channel_id', 'format_id', 'variation_tag',
+                'copy_block', 'strategy', 'art_direction', 'final_copy', 'status'
+            ]));
+            return response()->json(['message' => 'Asset updated', 'asset' => $asset->fresh()]);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json(['error' => 'Asset not found'], 404);
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Failed to update'], 500);
+            return response()->json(['error' => 'Failed to update', 'message' => $e->getMessage()], 500);
         }
     }
 
