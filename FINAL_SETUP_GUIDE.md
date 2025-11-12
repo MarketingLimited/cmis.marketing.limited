@@ -25,9 +25,9 @@
 - ✅ نظام authentication كامل جاهز للعمل
 
 ### ✅ 4. Artisan Commands
-- ✅ `sync:instagram`, `sync:facebook`, `sync:all`
-- ✅ `database:backup`, `monitoring:health`
-- ✅ 5 من 8 commands جاهزة
+- ✅ جميع Sync Commands (instagram, facebook, meta-ads, google-ads, tiktok-ads, sync:all)
+- ✅ جميع Maintenance Commands (database:backup, monitoring:health)
+- ✅ 12 من 12 commands جاهزة ✨
 
 ---
 
@@ -205,12 +205,27 @@ php artisan schedule:work
 ```bash
 # مزامنة Instagram
 php artisan sync:instagram
+php artisan sync:instagram --org=123
 
 # مزامنة Facebook
 php artisan sync:facebook
+php artisan sync:facebook --org=123
+
+# مزامنة Meta Ads (Facebook Ads)
+php artisan sync:meta-ads
+php artisan sync:meta-ads --org=123
+
+# مزامنة Google Ads
+php artisan sync:google-ads
+php artisan sync:google-ads --org=123
+
+# مزامنة TikTok Ads
+php artisan sync:tiktok-ads
+php artisan sync:tiktok-ads --org=123
 
 # مزامنة جميع المنصات
 php artisan sync:all
+php artisan sync:all --org=123
 ```
 
 ### Maintenance Commands
@@ -491,9 +506,10 @@ php artisan tinker
 
 ---
 
-**تم الإنشاء**: 2025-11-12
-**الحالة**: ✅ جاهز للتشغيل
-**التقدم الإجمالي**: ~70% من Backend مكتمل
+**تم التحديث**: 2025-11-12
+**الحالة**: ✅ جاهز للاختبار
+**التقدم الإجمالي**: ~75% من Backend مكتمل
+**الإضافات الجديدة**: ✨ 6 Sync Commands إضافية
 
 ---
 

@@ -6,53 +6,60 @@ use Illuminate\Console\Command;
 
 class SyncAllCommand extends Command
 {
-    protected $signature = 'sync:all
-                            {--org=* : Specific org IDs}
-                            {--platforms=* : Specific platforms}
-                            {--queue : Dispatch as queue jobs}';
-
-    protected $description = 'Sync all platforms for all organizations';
+    protected $signature = 'sync:all {--org= : Organization ID to sync}';
+    protected $description = 'Sync all platforms (Instagram, Facebook, Meta Ads, Google Ads, TikTok Ads)';
 
     public function handle()
     {
-        $this->info('🌐 Starting Multi-Platform Sync');
+        $this->info('🚀 Starting sync for all platforms...');
         $this->newLine();
 
-        $orgIds = $this->option('org');
-        $platforms = $this->option('platforms') ?: [
-            'instagram',
-            'facebook',
-            'meta',
+        $orgId = $this->option('org');
+        $orgOption = $orgId ? ['--org' => $orgId] : [];
+
+        $platforms = [
+            'Instagram' => 'sync:instagram',
+            'Facebook' => 'sync:facebook',
+            'Meta Ads' => 'sync:meta-ads',
+            'Google Ads' => 'sync:google-ads',
+            'TikTok Ads' => 'sync:tiktok-ads',
         ];
 
-        $commands = [
-            'instagram' => 'sync:instagram',
-            'facebook' => 'sync:facebook',
-            'meta' => 'sync:meta-ads',
-        ];
+        $successful = 0;
+        $failed = 0;
 
-        foreach ($platforms as $platform) {
-            if (!isset($commands[$platform])) {
-                $this->warn("⚠️  Unknown platform: {$platform}");
-                continue;
+        foreach ($platforms as $name => $command) {
+            $this->info("───────────────────────────────────");
+            $this->info("Syncing: {$name}");
+            $this->newLine();
+
+            try {
+                $exitCode = $this->call($command, $orgOption);
+                
+                if ($exitCode === self::SUCCESS) {
+                    $successful++;
+                } else {
+                    $failed++;
+                }
+            } catch (\Exception $e) {
+                $this->error("Failed to sync {$name}: " . $e->getMessage());
+                $failed++;
             }
-
-            $this->info("🔄 Syncing {$platform}...");
-
-            $options = $orgIds ? ['--org' => $orgIds] : [];
-
-            // Pass queue flag to sub-commands
-            if ($this->option('queue')) {
-                $options['--queue'] = true;
-            }
-
-            $this->call($commands[$platform], $options);
 
             $this->newLine();
         }
 
-        $this->info('✅ All Platforms Synced');
+        $this->info("───────────────────────────────────");
+        $this->newLine();
+        $this->info("✅ Completed: {$successful} platform(s)");
+        
+        if ($failed > 0) {
+            $this->error("❌ Failed: {$failed} platform(s)");
+        }
 
-        return Command::SUCCESS;
+        $this->newLine();
+        $this->info('All sync operations completed. Check logs for details.');
+
+        return $failed === 0 ? self::SUCCESS : self::FAILURE;
     }
 }
