@@ -19,15 +19,44 @@ class ConnectorFactory
      * @var array<string, string>
      */
     protected static $connectorMap = [
+        // Meta (Facebook & Instagram)
         'meta' => MetaConnector::class,
         'facebook' => MetaConnector::class,
         'instagram' => MetaConnector::class,
+
+        // Google
         'google' => GoogleConnector::class,
         'google_ads' => GoogleConnector::class,
         'google_analytics' => GoogleConnector::class,
-        // Add other connectors here as they are implemented
-        // 'tiktok' => \App\Services\Connectors\Providers\TikTokConnector::class,
-        // 'linkedin' => \App\Services\Connectors\Providers\LinkedInConnector::class,
+
+        // TikTok
+        'tiktok' => \App\Services\Connectors\Providers\TikTokConnector::class,
+
+        // Snapchat
+        'snapchat' => \App\Services\Connectors\Providers\SnapchatConnector::class,
+
+        // Twitter/X
+        'twitter' => \App\Services\Connectors\Providers\TwitterConnector::class,
+        'x' => \App\Services\Connectors\Providers\TwitterConnector::class,
+
+        // LinkedIn
+        'linkedin' => \App\Services\Connectors\Providers\LinkedInConnector::class,
+
+        // YouTube
+        'youtube' => \App\Services\Connectors\Providers\YouTubeConnector::class,
+
+        // WooCommerce
+        'woocommerce' => \App\Services\Connectors\Providers\WooCommerceConnector::class,
+
+        // Microsoft Clarity
+        'clarity' => \App\Services\Connectors\Providers\ClarityConnector::class,
+        'microsoft_clarity' => \App\Services\Connectors\Providers\ClarityConnector::class,
+
+        // Google Merchant Center
+        'google_merchant' => \App\Services\Connectors\Providers\GoogleMerchantConnector::class,
+
+        // Google Business
+        'google_business' => \App\Services\Connectors\Providers\GoogleBusinessConnector::class,
     ];
 
     /**

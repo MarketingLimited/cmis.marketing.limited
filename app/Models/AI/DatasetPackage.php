@@ -1,0 +1,87 @@
+<?php
+
+namespace App\Models\AI;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+
+class DatasetPackage extends Model
+{
+    use HasFactory, HasUuids, SoftDeletes;
+
+    protected $table = 'cmis.dataset_packages';
+    protected $primaryKey = 'package_id';
+    public $incrementing = false;
+    protected $keyType = 'string';
+
+    protected $fillable = [
+        'name',
+        'description',
+        'package_type',
+        'version',
+        'total_files',
+        'total_size_bytes',
+        'format',
+        'schema',
+        'tags',
+        'is_public',
+        'download_count',
+        'metadata',
+    ];
+
+    protected $casts = [
+        'total_files' => 'integer',
+        'total_size_bytes' => 'integer',
+        'schema' => 'array',
+        'tags' => 'array',
+        'metadata' => 'array',
+        'is_public' => 'boolean',
+        'download_count' => 'integer',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+        'deleted_at' => 'datetime',
+    ];
+
+    // Relationships
+    public function files()
+    {
+        return $this->hasMany(DatasetFile::class, 'package_id', 'package_id');
+    }
+
+    // Scopes
+    public function scopePublic($query)
+    {
+        return $query->where('is_public', true);
+    }
+
+    public function scopeByType($query, $type)
+    {
+        return $query->where('package_type', $type);
+    }
+
+    public function scopePopular($query, $minDownloads = 10)
+    {
+        return $query->where('download_count', '>=', $minDownloads)
+            ->orderByDesc('download_count');
+    }
+
+    // Helpers
+    public function incrementDownloads()
+    {
+        $this->increment('download_count');
+    }
+
+    public function getSizeFormatted()
+    {
+        $bytes = $this->total_size_bytes;
+        $units = ['B', 'KB', 'MB', 'GB', 'TB'];
+
+        for ($i = 0; $bytes > 1024; $i++) {
+            $bytes /= 1024;
+        }
+
+        return round($bytes, 2) . ' ' . $units[$i];
+    }
+}
