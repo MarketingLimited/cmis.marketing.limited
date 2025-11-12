@@ -4,13 +4,14 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Campaign extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     protected $connection = 'pgsql';
 
@@ -31,21 +32,38 @@ class Campaign extends Model
         'end_date',
         'budget',
         'currency',
+        'context_id',
+        'creative_id',
+        'value_id',
+        'created_by',
+        'deleted_by',
+        'provider',
     ];
 
     protected $casts = [
         'campaign_id' => 'string',
         'org_id' => 'string',
+        'context_id' => 'string',
+        'creative_id' => 'string',
+        'value_id' => 'string',
+        'created_by' => 'string',
+        'deleted_by' => 'string',
         'start_date' => 'date',
         'end_date' => 'date',
         'budget' => 'decimal:2',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
+        'deleted_at' => 'datetime',
     ];
 
     public function org(): BelongsTo
     {
-        return $this->belongsTo(Org::class, 'org_id', 'org_id');
+        return $this->belongsTo(\App\Models\Core\Org::class, 'org_id', 'org_id');
+    }
+
+    public function creator(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'created_by', 'user_id');
     }
 
     public function offerings(): BelongsToMany
