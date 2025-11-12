@@ -43,10 +43,10 @@ class CampaignController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
-            'objective' => 'required|string',
-            'start_date' => 'required|date',
+            'objective' => 'nullable|string',
+            'start_date' => 'nullable|date',
             'end_date' => 'nullable|date|after:start_date',
-            'total_budget' => 'nullable|numeric|min:0',
+            'budget' => 'nullable|numeric|min:0',
             'currency' => 'nullable|string|size:3',
         ]);
 
@@ -64,14 +64,14 @@ class CampaignController extends Controller
                 'status' => 'draft',
                 'start_date' => $request->start_date,
                 'end_date' => $request->end_date,
-                'total_budget' => $request->total_budget,
-                'spent_budget' => 0,
+                'budget' => $request->budget,
                 'currency' => $request->currency ?? 'BHD',
+                'created_by' => $request->user()->user_id,
             ]);
 
             DB::commit();
 
-            return response()->json(['message' => 'Campaign created', 'campaign' => $campaign], 201);
+            return response()->json(['message' => 'Campaign created', 'campaign' => $campaign->fresh()], 201);
 
         } catch (\Exception $e) {
             DB::rollBack();
@@ -91,12 +91,28 @@ class CampaignController extends Controller
 
     public function update(Request $request, string $orgId, string $campaignId)
     {
+        $validator = Validator::make($request->all(), [
+            'name' => 'sometimes|string|max:255',
+            'objective' => 'sometimes|string',
+            'status' => 'sometimes|in:draft,active,paused,completed,archived',
+            'start_date' => 'sometimes|date',
+            'end_date' => 'sometimes|date|after:start_date',
+            'budget' => 'sometimes|numeric|min:0',
+            'currency' => 'sometimes|string|size:3',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['error' => 'Validation Error', 'errors' => $validator->errors()], 422);
+        }
+
         try {
             $campaign = Campaign::where('org_id', $orgId)->findOrFail($campaignId);
-            $campaign->update($request->only(['name', 'objective', 'status', 'start_date', 'end_date', 'total_budget']));
-            return response()->json(['message' => 'Campaign updated', 'campaign' => $campaign]);
+            $campaign->update($request->only(['name', 'objective', 'status', 'start_date', 'end_date', 'budget', 'currency']));
+            return response()->json(['message' => 'Campaign updated', 'campaign' => $campaign->fresh()]);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json(['error' => 'Campaign not found'], 404);
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Failed to update'], 500);
+            return response()->json(['error' => 'Failed to update', 'message' => $e->getMessage()], 500);
         }
     }
 

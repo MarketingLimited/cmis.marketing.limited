@@ -80,4 +80,14 @@ class Org extends Model
     {
         return $this->hasMany(\App\Models\CreativeAsset::class, 'org_id', 'org_id');
     }
+
+    /**
+     * Get all integrations for this organization.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function integrations(): HasMany
+    {
+        return $this->hasMany(Integration::class, 'org_id', 'org_id');
+    }
 }
