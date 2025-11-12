@@ -6,6 +6,9 @@ use App\Http\Controllers\Core\{OrgController, UserController};
 use App\Http\Controllers\Campaigns\CampaignController;
 use App\Http\Controllers\Creative\CreativeAssetController;
 use App\Http\Controllers\Channels\ChannelController;
+use App\Http\Controllers\Social\SocialSchedulerController;
+use App\Http\Controllers\Integration\IntegrationController;
+use App\Http\Controllers\AI\AIGenerationController;
 use App\Http\Controllers\Analytics\KpiController;
 use App\Http\Controllers\API\CMISEmbeddingController;
 use App\Http\Controllers\API\SemanticSearchController;
@@ -143,6 +146,84 @@ Route::middleware(['auth:sanctum', 'validate.org.access', 'set.db.context'])
 
     /*
     |----------------------------------------------------------------------
+    | جدولة المنشورات الاجتماعية (Social Scheduler)
+    |----------------------------------------------------------------------
+    */
+    Route::prefix('social')->name('social.')->group(function () {
+        // Dashboard & Overview
+        Route::get('/dashboard', [SocialSchedulerController::class, 'dashboard'])->name('dashboard');
+
+        // Posts Management
+        Route::prefix('posts')->name('posts.')->group(function () {
+            // List posts by status
+            Route::get('/scheduled', [SocialSchedulerController::class, 'scheduled'])->name('scheduled');
+            Route::get('/published', [SocialSchedulerController::class, 'published'])->name('published');
+            Route::get('/drafts', [SocialSchedulerController::class, 'drafts'])->name('drafts');
+
+            // CRUD operations
+            Route::post('/schedule', [SocialSchedulerController::class, 'schedule'])->name('schedule');
+            Route::get('/{post_id}', [SocialSchedulerController::class, 'show'])->name('show');
+            Route::put('/{post_id}', [SocialSchedulerController::class, 'update'])->name('update');
+            Route::delete('/{post_id}', [SocialSchedulerController::class, 'destroy'])->name('destroy');
+
+            // Actions
+            Route::post('/{post_id}/publish-now', [SocialSchedulerController::class, 'publishNow'])->name('publish-now');
+            Route::post('/{post_id}/reschedule', [SocialSchedulerController::class, 'reschedule'])->name('reschedule');
+        });
+    });
+
+    /*
+    |----------------------------------------------------------------------
+    | التكاملات (Platform Integrations)
+    |----------------------------------------------------------------------
+    */
+    Route::prefix('integrations')->name('integrations.')->group(function () {
+        // List all integrations
+        Route::get('/', [IntegrationController::class, 'index'])->name('index');
+
+        // OAuth connection flow
+        Route::post('/{platform}/connect', [IntegrationController::class, 'connect'])->name('connect');
+        Route::delete('/{integration_id}/disconnect', [IntegrationController::class, 'disconnect'])->name('disconnect');
+
+        // Sync operations
+        Route::post('/{integration_id}/sync', [IntegrationController::class, 'sync'])->name('sync');
+        Route::get('/{integration_id}/sync-history', [IntegrationController::class, 'syncHistory'])->name('sync.history');
+
+        // Settings
+        Route::get('/{integration_id}/settings', [IntegrationController::class, 'getSettings'])->name('settings.get');
+        Route::put('/{integration_id}/settings', [IntegrationController::class, 'updateSettings'])->name('settings.update');
+
+        // Testing & Activity
+        Route::post('/{integration_id}/test', [IntegrationController::class, 'test'])->name('test');
+        Route::get('/activity', [IntegrationController::class, 'activity'])->name('activity');
+    });
+
+    /*
+    |----------------------------------------------------------------------
+    | الذكاء الاصطناعي (AI & Content Generation)
+    |----------------------------------------------------------------------
+    */
+    Route::prefix('ai')->name('ai.')->group(function () {
+        // Dashboard & Stats
+        Route::get('/dashboard', [AIGenerationController::class, 'dashboard'])->name('dashboard');
+
+        // Content Generation
+        Route::post('/generate', [AIGenerationController::class, 'generate'])->name('generate');
+        Route::get('/history', [AIGenerationController::class, 'history'])->name('history');
+
+        // Semantic Search (pgvector)
+        Route::post('/semantic-search', [AIGenerationController::class, 'semanticSearch'])->name('semantic-search');
+
+        // Recommendations
+        Route::get('/recommendations', [AIGenerationController::class, 'recommendations'])->name('recommendations');
+
+        // Knowledge Base
+        Route::get('/knowledge', [AIGenerationController::class, 'knowledge'])->name('knowledge');
+        Route::post('/knowledge/process', [AIGenerationController::class, 'processKnowledge'])->name('knowledge.process');
+    });
+
+    /*
+    |----------------------------------------------------------------------
     | التحليلات (Analytics)
     |----------------------------------------------------------------------
     */
@@ -152,6 +233,14 @@ Route::middleware(['auth:sanctum', 'validate.org.access', 'set.db.context'])
         Route::get('/trends', [KpiController::class, 'trends'])->name('trends');
     });
 });
+
+/*
+|--------------------------------------------------------------------------
+| OAuth Callbacks (Public - No Authentication Required)
+|--------------------------------------------------------------------------
+*/
+Route::get('/integrations/{platform}/callback', [IntegrationController::class, 'callback'])
+    ->name('integrations.callback');
 
 /*
 |--------------------------------------------------------------------------
