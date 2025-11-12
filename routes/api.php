@@ -6,6 +6,7 @@ use App\Http\Controllers\Core\{OrgController, UserController};
 use App\Http\Controllers\Campaigns\CampaignController;
 use App\Http\Controllers\Creative\CreativeAssetController;
 use App\Http\Controllers\Channels\ChannelController;
+use App\Http\Controllers\Social\SocialSchedulerController;
 use App\Http\Controllers\Analytics\KpiController;
 use App\Http\Controllers\API\CMISEmbeddingController;
 use App\Http\Controllers\API\SemanticSearchController;
@@ -140,6 +141,34 @@ Route::middleware(['auth:sanctum', 'validate.org.access', 'set.db.context'])
     Route::apiResource('channels', ChannelController::class)->parameters([
         'channels' => 'channel_id'
     ]);
+
+    /*
+    |----------------------------------------------------------------------
+    | جدولة المنشورات الاجتماعية (Social Scheduler)
+    |----------------------------------------------------------------------
+    */
+    Route::prefix('social')->name('social.')->group(function () {
+        // Dashboard & Overview
+        Route::get('/dashboard', [SocialSchedulerController::class, 'dashboard'])->name('dashboard');
+
+        // Posts Management
+        Route::prefix('posts')->name('posts.')->group(function () {
+            // List posts by status
+            Route::get('/scheduled', [SocialSchedulerController::class, 'scheduled'])->name('scheduled');
+            Route::get('/published', [SocialSchedulerController::class, 'published'])->name('published');
+            Route::get('/drafts', [SocialSchedulerController::class, 'drafts'])->name('drafts');
+
+            // CRUD operations
+            Route::post('/schedule', [SocialSchedulerController::class, 'schedule'])->name('schedule');
+            Route::get('/{post_id}', [SocialSchedulerController::class, 'show'])->name('show');
+            Route::put('/{post_id}', [SocialSchedulerController::class, 'update'])->name('update');
+            Route::delete('/{post_id}', [SocialSchedulerController::class, 'destroy'])->name('destroy');
+
+            // Actions
+            Route::post('/{post_id}/publish-now', [SocialSchedulerController::class, 'publishNow'])->name('publish-now');
+            Route::post('/{post_id}/reschedule', [SocialSchedulerController::class, 'reschedule'])->name('reschedule');
+        });
+    });
 
     /*
     |----------------------------------------------------------------------
