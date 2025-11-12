@@ -1,0 +1,46 @@
+<?php
+
+namespace App\Models\Context;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
+
+class ContextsValue extends Model
+{
+    use HasFactory, SoftDeletes;
+
+    protected $connection = 'pgsql';
+
+    protected $table = 'cmis.contexts_value';
+
+    protected $primaryKey = 'context_id';
+
+    public $incrementing = false;
+
+    protected $keyType = 'string';
+
+    public $timestamps = false;
+
+    protected $fillable = [
+        'context_id',
+        'value_proposition',
+        'target_audience',
+        'key_messages',
+    ];
+
+    protected $casts = [
+        'context_id' => 'string',
+        'target_audience' => 'array',
+        'key_messages' => 'array',
+        'deleted_at' => 'datetime',
+    ];
+
+    /**
+     * Get the base context
+     */
+    public function contextBase()
+    {
+        return $this->belongsTo(ContextBase::class, 'context_id', 'id');
+    }
+}
