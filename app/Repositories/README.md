@@ -29,9 +29,9 @@ This repository layer provides a clean, type-safe interface to **100+ PostgreSQL
 
 ### Statistics
 
-- **16 Repository Classes**
-- **100+ PostgreSQL Functions**
-- **8 Schema Namespaces**
+- **18 Repository Classes**
+- **119 PostgreSQL Functions (100% Coverage)**
+- **10 Schema Namespaces**
 - **0 SQL Injection Vulnerabilities**
 
 ---
@@ -76,7 +76,9 @@ app/Repositories/
 │   ├── ContextRepository.php          # Context operations
 │   ├── CreativeRepository.php         # Creative content
 │   ├── CacheRepository.php            # Cache & cleanup
-│   └── VerificationRepository.php     # System verification
+│   ├── VerificationRepository.php     # System verification
+│   ├── TriggerRepository.php          # Trigger functions (10)
+│   └── UtilityRepository.php          # Utility functions (2)
 │
 ├── Analytics/                         # Analytics & reporting
 │   ├── AnalyticsRepository.php        # Data analytics
@@ -352,6 +354,30 @@ $cacheRepo->syncSocialMetrics();
 | `verifyRlsFixes()` | Verify RLS | `Collection` |
 | `analyzeTableSizes()` | Analyze table sizes | `Collection` |
 
+#### TriggerRepository
+**Namespace**: `App\Repositories\CMIS`
+
+| Method | Description | Returns |
+|--------|-------------|---------|
+| `auditCreativeChanges()` | Audit creative changes (trigger) | `bool` |
+| `autoRefreshCacheOnFieldChange()` | Auto refresh cache (trigger) | `bool` |
+| `contextsUnifiedSearchVectorUpdate()` | Update search vectors (trigger) | `bool` |
+| `creativeContextsDelete()` | Creative contexts delete (trigger) | `bool` |
+| `creativeContextsInsert()` | Creative contexts insert (trigger) | `bool` |
+| `creativeContextsUpdate()` | Creative contexts update (trigger) | `bool` |
+| `enforceCreativeContext()` | Enforce creative context (trigger) | `bool` |
+| `preventIncompleteBriefs()` | Prevent incomplete briefs (trigger) | `bool` |
+| `preventIncompleteBriefsOptimized()` | Optimized validation (trigger) | `bool` |
+| `updateUpdatedAtColumn()` | Update timestamps (trigger) | `bool` |
+
+#### UtilityRepository
+**Namespace**: `App\Repositories\CMIS`
+
+| Method | Description | Returns |
+|--------|-------------|---------|
+| `immutableSetweight()` | Set tsvector weight (immutable) | `string` |
+| `immutableTsvector()` | Create tsvector (immutable) | `string` |
+
 ### Analytics Repositories
 
 #### AnalyticsRepository
@@ -440,6 +466,7 @@ $cacheRepo->syncSocialMetrics();
 | `normalizeMetrics()` | Normalize metrics | `bool` |
 | `refreshAiInsights()` | Refresh insights | `bool` |
 | `syncIntegrations()` | Sync integrations | `bool` |
+| `updateTimestamp()` | Update timestamp (trigger) | `bool` |
 
 #### AuditRepository
 **Namespace**: `App\Repositories\Operations`
@@ -447,6 +474,7 @@ $cacheRepo->syncSocialMetrics();
 | Method | Description | Returns |
 |--------|-------------|---------|
 | `purgeOldAuditLogs()` | Purge old logs | `int` |
+| `auditTriggerFunction()` | Audit trigger (trigger) | `bool` |
 
 ---
 
@@ -530,6 +558,6 @@ This code is part of the CMIS Marketing Limited project.
 ---
 
 **Last Updated**: 2025-01-12
-**Version**: 1.0.0
-**Functions Covered**: 100+
-**Repository Classes**: 16
+**Version**: 2.0.0
+**Functions Covered**: 119 (100% Coverage)
+**Repository Classes**: 18

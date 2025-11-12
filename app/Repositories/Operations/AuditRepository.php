@@ -26,4 +26,18 @@ class AuditRepository
 
         return $result[0]->deleted_count ?? 0;
     }
+
+    /**
+     * Audit trigger function (normally called by database triggers)
+     * Corresponds to: operations.audit_trigger_function()
+     *
+     * Note: This function is automatically called by triggers on audited tables
+     * Manual invocation is typically not needed but available for testing
+     *
+     * @return bool Success status
+     */
+    public function auditTriggerFunction(): bool
+    {
+        return DB::statement('SELECT operations.audit_trigger_function()');
+    }
 }

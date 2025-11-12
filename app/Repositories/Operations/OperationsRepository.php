@@ -67,4 +67,18 @@ class OperationsRepository
     {
         return DB::statement('SELECT cmis_ops.sync_integrations()');
     }
+
+    /**
+     * Update timestamp trigger function (normally called by trigger)
+     * Corresponds to: cmis_ops.update_timestamp()
+     *
+     * Note: Automatically updates the updated_at timestamp
+     * Can be called manually for timestamp maintenance
+     *
+     * @return bool Success status
+     */
+    public function updateTimestamp(): bool
+    {
+        return DB::statement('SELECT cmis_ops.update_timestamp()');
+    }
 }
