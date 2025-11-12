@@ -66,6 +66,21 @@ Route::prefix('auth')->group(function () {
         Route::put('/profile', [AuthController::class, 'updateProfile'])->name('auth.profile.update');
         Route::post('/logout', [AuthController::class, 'logout'])->name('auth.logout');
         Route::post('/logout-all', [AuthController::class, 'logoutAll'])->name('auth.logout.all');
+
+        // Profile & Avatar
+        Route::put('/profile/avatar', [App\Http\Controllers\ProfileController::class, 'avatar'])->name('auth.profile.avatar');
+        Route::get('/activity', [AuthController::class, 'activity'])->name('auth.activity');
+
+        // Settings
+        Route::get('/settings', [App\Http\Controllers\Settings\SettingsController::class, 'index'])->name('auth.settings');
+        Route::put('/settings', [App\Http\Controllers\Settings\SettingsController::class, 'updateProfile'])->name('auth.settings.update');
+        Route::put('/password', [App\Http\Controllers\Settings\SettingsController::class, 'updatePassword'])->name('auth.password.update');
+
+        // Notifications
+        Route::get('/notifications', [App\Http\Controllers\NotificationController::class, 'index'])->name('auth.notifications');
+        Route::post('/notifications/{id}/read', [App\Http\Controllers\NotificationController::class, 'markAsRead'])->name('auth.notifications.read');
+        Route::post('/notifications/read-all', [App\Http\Controllers\NotificationController::class, 'markAllAsRead'])->name('auth.notifications.read-all');
+        Route::delete('/notifications/{id}', [App\Http\Controllers\NotificationController::class, 'destroy'])->name('auth.notifications.delete');
     });
 });
 

@@ -3,72 +3,73 @@
 namespace App\Console\Commands\Sync;
 
 use Illuminate\Console\Command;
-use App\Console\Traits\HandlesOrgContext;
 use App\Models\Integration;
-use App\Jobs\SyncFacebookDataJob;
-use Carbon\Carbon;
+use App\Jobs\SyncPlatformDataJob;
+use Illuminate\Support\Facades\Log;
 
 class SyncFacebookCommand extends Command
 {
-    use HandlesOrgContext;
-
-    protected $signature = 'sync:facebook
-                            {--org=* : Specific org IDs}
-                            {--from= : Start date (YYYY-MM-DD)}
-                            {--to= : End date (YYYY-MM-DD)}
-                            {--limit=25 : Posts limit}
-                            {--queue : Dispatch as queue job}';
-
-    protected $description = 'Sync Facebook data';
+    protected $signature = 'sync:facebook {--org= : Organization ID to sync}';
+    protected $description = 'Sync Facebook data (posts, pages, insights)';
 
     public function handle()
     {
-        $this->info('🚀 Starting Facebook Sync');
+        $this->info('🔄 Starting Facebook sync...');
         $this->newLine();
 
-        $orgIds = $this->option('org') ?: null;
-        $from = $this->option('from') ? Carbon::parse($this->option('from')) : Carbon::now()->subDays(30);
-        $to = $this->option('to') ? Carbon::parse($this->option('to')) : Carbon::now();
-        $limit = $this->option('limit');
+        $orgId = $this->option('org');
 
-        $this->executePerOrg(function ($org) use ($from, $to, $limit) {
-            $integrations = Integration::where('org_id', $org->org_id)
-                ->where('platform', 'facebook')
-                ->where('status', 'active')
-                ->get();
+        $query = Integration::where('platform', 'facebook')
+            ->where('status', 'active');
 
-            if ($integrations->isEmpty()) {
-                $this->warn("  ⚠️  No active Facebook integrations");
-                return;
-            }
+        if ($orgId) {
+            $query->where('org_id', $orgId);
+            $this->info("Syncing for organization: {$orgId}");
+        } else {
+            $this->info('Syncing for all organizations');
+        }
 
-            foreach ($integrations as $integration) {
-                $this->info("  📘 Account: {$integration->account_username}");
+        $integrations = $query->get();
 
-                try {
-                    $this->line("     → Syncing posts from {$from->toDateString()} to {$to->toDateString()}");
-                    $this->line("     → Limit: {$limit} posts");
+        if ($integrations->isEmpty()) {
+            $this->warn('⚠️  No active Facebook integrations found');
+            return self::SUCCESS;
+        }
 
-                    if ($this->option('queue')) {
-                        // Dispatch job to queue
-                        SyncFacebookDataJob::dispatch($integration, $from, $to, $limit);
-                        $this->info("     ✓ Job dispatched to queue");
-                    } else {
-                        // Run synchronously
-                        $job = new SyncFacebookDataJob($integration, $from, $to, $limit);
-                        $job->handle();
-                        $this->info("     ✓ Sync completed");
-                    }
-
-                } catch (\Exception $e) {
-                    $this->error("     ✗ Error: " . $e->getMessage());
-                }
-            }
-        }, $orgIds);
-
+        $this->info("Found {$integrations->count()} Facebook integration(s)");
         $this->newLine();
-        $this->info('✅ Facebook Sync Completed');
 
-        return Command::SUCCESS;
+        $bar = $this->output->createProgressBar($integrations->count());
+        $bar->start();
+
+        $synced = 0;
+        $failed = 0;
+
+        foreach ($integrations as $integration) {
+            try {
+                SyncPlatformDataJob::dispatch($integration->integration_id, 'facebook');
+                $synced++;
+                $bar->advance();
+            } catch (\Exception $e) {
+                $failed++;
+                Log::error('Facebook sync failed', [
+                    'integration_id' => $integration->integration_id,
+                    'error' => $e->getMessage()
+                ]);
+                $bar->advance();
+            }
+        }
+
+        $bar->finish();
+        $this->newLine(2);
+
+        $this->info("✅ Sync jobs queued: {$synced}");
+        if ($failed > 0) {
+            $this->error("❌ Failed: {$failed}");
+        }
+
+        $this->info('Facebook sync completed. Jobs are being processed in the background.');
+
+        return self::SUCCESS;
     }
 }

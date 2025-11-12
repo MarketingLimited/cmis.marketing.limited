@@ -3,23 +3,23 @@
 namespace App\Console\Commands\Sync;
 
 use Illuminate\Console\Command;
-use App\Models\Integration;
+use App\Models\AdPlatformIntegration;
 use App\Jobs\SyncPlatformDataJob;
 use Illuminate\Support\Facades\Log;
 
-class SyncInstagramCommand extends Command
+class SyncTikTokAdsCommand extends Command
 {
-    protected $signature = 'sync:instagram {--org= : Organization ID to sync}';
-    protected $description = 'Sync Instagram data (posts, stories, insights)';
+    protected $signature = 'sync:tiktok-ads {--org= : Organization ID to sync}';
+    protected $description = 'Sync TikTok Ads data (campaigns, ad groups, ads, analytics)';
 
     public function handle()
     {
-        $this->info('🔄 Starting Instagram sync...');
+        $this->info('🔄 Starting TikTok Ads sync...');
         $this->newLine();
 
         $orgId = $this->option('org');
 
-        $query = Integration::where('platform', 'instagram')
+        $query = AdPlatformIntegration::where('platform', 'tiktok')
             ->where('status', 'active');
 
         if ($orgId) {
@@ -32,11 +32,11 @@ class SyncInstagramCommand extends Command
         $integrations = $query->get();
 
         if ($integrations->isEmpty()) {
-            $this->warn('⚠️  No active Instagram integrations found');
+            $this->warn('⚠️  No active TikTok Ads integrations found');
             return self::SUCCESS;
         }
 
-        $this->info("Found {$integrations->count()} Instagram integration(s)");
+        $this->info("Found {$integrations->count()} TikTok Ads integration(s)");
         $this->newLine();
 
         $bar = $this->output->createProgressBar($integrations->count());
@@ -47,13 +47,13 @@ class SyncInstagramCommand extends Command
 
         foreach ($integrations as $integration) {
             try {
-                SyncPlatformDataJob::dispatch($integration->integration_id, 'instagram');
+                SyncPlatformDataJob::dispatch($integration->ad_platform_integration_id, 'tiktok');
                 $synced++;
                 $bar->advance();
             } catch (\Exception $e) {
                 $failed++;
-                Log::error('Instagram sync failed', [
-                    'integration_id' => $integration->integration_id,
+                Log::error('TikTok Ads sync failed', [
+                    'integration_id' => $integration->ad_platform_integration_id,
                     'error' => $e->getMessage()
                 ]);
                 $bar->advance();
@@ -68,7 +68,7 @@ class SyncInstagramCommand extends Command
             $this->error("❌ Failed: {$failed}");
         }
 
-        $this->info('Instagram sync completed. Jobs are being processed in the background.');
+        $this->info('TikTok Ads sync completed. Jobs are being processed in the background.');
 
         return self::SUCCESS;
     }
