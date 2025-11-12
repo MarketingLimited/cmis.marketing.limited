@@ -2,78 +2,65 @@
 
 namespace App\Policies;
 
-use App\Models\Core\Integration;
+use App\Models\Integration;
 use App\Models\User;
+use App\Services\PermissionService;
 
-class IntegrationPolicy extends BasePolicy
+class IntegrationPolicy
 {
-    /**
-     * Determine whether the user can view any integrations.
-     */
+    protected PermissionService $permissionService;
+
+    public function __construct(PermissionService $permissionService)
+    {
+        $this->permissionService = $permissionService;
+    }
+
     public function viewAny(User $user): bool
     {
-        return $this->checkPermission('integrations.view');
+        return $this->permissionService->check($user, 'cmis.integrations.view');
     }
 
-    /**
-     * Determine whether the user can view the integration.
-     */
     public function view(User $user, Integration $integration): bool
     {
-        return $this->resourceBelongsToOrg($integration)
-            && $this->checkPermission('integrations.view');
+        if (!$this->permissionService->check($user, 'cmis.integrations.view')) {
+            return false;
+        }
+        return $integration->org_id === session('current_org_id');
     }
 
-    /**
-     * Determine whether the user can create integrations.
-     */
     public function create(User $user): bool
     {
-        return $this->checkPermission('integrations.manage');
+        return $this->permissionService->check($user, 'cmis.integrations.create');
     }
 
-    /**
-     * Determine whether the user can update the integration.
-     */
     public function update(User $user, Integration $integration): bool
     {
-        return $this->resourceBelongsToOrg($integration)
-            && $this->checkPermission('integrations.manage');
+        if (!$this->permissionService->check($user, 'cmis.integrations.update')) {
+            return false;
+        }
+        return $integration->org_id === session('current_org_id');
     }
 
-    /**
-     * Determine whether the user can delete the integration.
-     */
     public function delete(User $user, Integration $integration): bool
     {
-        return $this->resourceBelongsToOrg($integration)
-            && $this->checkPermission('integrations.manage');
+        if (!$this->permissionService->check($user, 'cmis.integrations.delete')) {
+            return false;
+        }
+        return $integration->org_id === session('current_org_id');
     }
 
-    /**
-     * Determine whether the user can restore the integration.
-     */
-    public function restore(User $user, Integration $integration): bool
+    public function connect(User $user): bool
     {
-        return $this->resourceBelongsToOrg($integration)
-            && $this->checkPermission('integrations.manage');
+        return $this->permissionService->check($user, 'cmis.integrations.connect');
     }
 
-    /**
-     * Determine whether the user can sync the integration.
-     */
+    public function disconnect(User $user, Integration $integration): bool
+    {
+        return $this->permissionService->check($user, 'cmis.integrations.disconnect');
+    }
+
     public function sync(User $user, Integration $integration): bool
     {
-        return $this->resourceBelongsToOrg($integration)
-            && $this->checkPermission('integrations.manage');
-    }
-
-    /**
-     * Determine whether the user can test the integration connection.
-     */
-    public function test(User $user, Integration $integration): bool
-    {
-        return $this->resourceBelongsToOrg($integration)
-            && $this->checkPermission('integrations.view');
+        return $this->permissionService->check($user, 'cmis.integrations.sync');
     }
 }

@@ -12,6 +12,8 @@ class CampaignController extends Controller
 {
     public function index(Request $request, string $orgId)
     {
+        $this->authorize('viewAny', Campaign::class);
+
         try {
             $perPage = $request->input('per_page', 20);
             $status = $request->input('status');
@@ -41,6 +43,8 @@ class CampaignController extends Controller
 
     public function store(Request $request, string $orgId)
     {
+        $this->authorize('create', Campaign::class);
+
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'objective' => 'nullable|string',
@@ -83,6 +87,7 @@ class CampaignController extends Controller
     {
         try {
             $campaign = Campaign::where('org_id', $orgId)->findOrFail($campaignId);
+            $this->authorize('view', $campaign);
             return response()->json(['campaign' => $campaign]);
         } catch (\Exception $e) {
             return response()->json(['error' => 'Campaign not found'], 404);
@@ -91,6 +96,9 @@ class CampaignController extends Controller
 
     public function update(Request $request, string $orgId, string $campaignId)
     {
+        $campaign = Campaign::where('org_id', $orgId)->findOrFail($campaignId);
+        $this->authorize('update', $campaign);
+
         $validator = Validator::make($request->all(), [
             'name' => 'sometimes|string|max:255',
             'objective' => 'sometimes|string',
@@ -106,7 +114,6 @@ class CampaignController extends Controller
         }
 
         try {
-            $campaign = Campaign::where('org_id', $orgId)->findOrFail($campaignId);
             $campaign->update($request->only(['name', 'objective', 'status', 'start_date', 'end_date', 'budget', 'currency']));
             return response()->json(['message' => 'Campaign updated', 'campaign' => $campaign->fresh()]);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
@@ -120,6 +127,7 @@ class CampaignController extends Controller
     {
         try {
             $campaign = Campaign::where('org_id', $orgId)->findOrFail($campaignId);
+            $this->authorize('delete', $campaign);
             $campaign->delete();
             return response()->json(['message' => 'Campaign deleted']);
         } catch (\Exception $e) {

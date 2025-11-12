@@ -22,105 +22,58 @@ class CheckPermission
      *
      * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
      * @param  string  $permission
-     * @return \Symfony\Component\HttpFoundation\Response
+     * @param  bool  $requireAll  If multiple permissions, require all (default) or any
      */
-    public function handle(Request $request, Closure $next, string $permission): Response
+    public function handle(Request $request, Closure $next, string $permission, bool $requireAll = true): Response
     {
-        // Check authentication
-        if (!auth()->check()) {
-            Log::warning('Permission check failed: User not authenticated', [
+        $user = $request->user();
+
+        if (!$user) {
+            Log::warning('Permission check without authenticated user', [
                 'permission' => $permission,
-                'route' => $request->path()
+                'route' => $request->route()?->getName()
             ]);
 
-            if ($request->expectsJson()) {
-                return response()->json([
-                    'error' => 'Unauthenticated',
-                    'message' => 'Authentication required'
-                ], 401);
-            }
-
-            return redirect()->route('login')->with('error', 'Please log in to continue');
+            return $this->unauthorized($request);
         }
 
-        // Check organization context
-        if (!session()->has('current_org_id')) {
-            Log::warning('Permission check failed: No org context', [
-                'user_id' => auth()->id(),
-                'permission' => $permission,
-                'route' => $request->path()
-            ]);
+        // Check if multiple permissions (separated by |)
+        $permissions = explode('|', $permission);
 
-            if ($request->expectsJson()) {
-                return response()->json([
-                    'error' => 'Organization context not set',
-                    'message' => 'Please select an organization'
-                ], 400);
-            }
-
-            return redirect()->route('orgs.index')->with('error', 'Please select an organization');
+        if (count($permissions) > 1) {
+            $hasPermission = $requireAll
+                ? $this->permissionService->hasAll($user, $permissions)
+                : $this->permissionService->hasAny($user, $permissions);
+        } else {
+            $hasPermission = $this->permissionService->check($user, $permission);
         }
 
-        // Check permission using transaction context
-        try {
-            $hasPermission = $this->permissionService->checkTx($permission);
-        } catch (\Exception $e) {
-            Log::error('Permission check error', [
-                'user_id' => auth()->id(),
-                'org_id' => session('current_org_id'),
-                'permission' => $permission,
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-
-            // Fallback to direct check
-            try {
-                $hasPermission = $this->permissionService->check(auth()->user(), $permission);
-            } catch (\Exception $fallbackError) {
-                Log::error('Fallback permission check also failed', [
-                    'error' => $fallbackError->getMessage()
-                ]);
-
-                if ($request->expectsJson()) {
-                    return response()->json([
-                        'error' => 'Permission check failed',
-                        'message' => 'An error occurred while checking permissions'
-                    ], 500);
-                }
-
-                abort(500, 'Permission check failed');
-            }
-        }
-
-        // Check result
         if (!$hasPermission) {
             Log::warning('Permission denied', [
-                'user_id' => auth()->id(),
-                'org_id' => session('current_org_id'),
+                'user_id' => $user->user_id,
                 'permission' => $permission,
-                'route' => $request->path(),
-                'ip' => $request->ip()
+                'route' => $request->route()?->getName(),
+                'org_id' => session('current_org_id')
             ]);
 
-            if ($request->expectsJson()) {
-                return response()->json([
-                    'error' => 'Insufficient permissions',
-                    'message' => 'You do not have permission to perform this action',
-                    'required_permission' => $permission
-                ], 403);
-            }
-
-            abort(403, 'You do not have permission to perform this action');
+            return $this->unauthorized($request);
         }
 
-        // Permission granted, continue
-        Log::debug('Permission granted', [
-            'user_id' => auth()->id(),
-            'org_id' => session('current_org_id'),
-            'permission' => $permission,
-            'route' => $request->path()
-        ]);
-
         return $next($request);
+    }
+
+    /**
+     * Handle unauthorized access
+     */
+    protected function unauthorized(Request $request): Response
+    {
+        if ($request->expectsJson()) {
+            return response()->json([
+                'message' => 'You do not have permission to perform this action.',
+                'error' => 'Unauthorized'
+            ], 403);
+        }
+
+        abort(403, 'You do not have permission to perform this action.');
     }
 }

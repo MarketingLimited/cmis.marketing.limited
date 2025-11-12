@@ -4,67 +4,74 @@ namespace App\Policies;
 
 use App\Models\Campaign;
 use App\Models\User;
+use App\Services\PermissionService;
 
-class CampaignPolicy extends BasePolicy
+class CampaignPolicy
 {
-    /**
-     * Determine whether the user can view any campaigns.
-     */
+    protected PermissionService $permissionService;
+
+    public function __construct(PermissionService $permissionService)
+    {
+        $this->permissionService = $permissionService;
+    }
+
     public function viewAny(User $user): bool
     {
-        return $this->checkPermission('campaigns.view');
+        return $this->permissionService->check($user, 'cmis.campaigns.view');
     }
 
-    /**
-     * Determine whether the user can view the campaign.
-     */
     public function view(User $user, Campaign $campaign): bool
     {
-        return $this->resourceBelongsToOrg($campaign)
-            && $this->checkPermission('campaigns.view');
+        if (!$this->permissionService->check($user, 'cmis.campaigns.view')) {
+            return false;
+        }
+        return $campaign->org_id === session('current_org_id');
     }
 
-    /**
-     * Determine whether the user can create campaigns.
-     */
     public function create(User $user): bool
     {
-        return $this->checkPermission('campaigns.create');
+        return $this->permissionService->check($user, 'cmis.campaigns.create');
     }
 
-    /**
-     * Determine whether the user can update the campaign.
-     */
     public function update(User $user, Campaign $campaign): bool
     {
-        return $this->resourceBelongsToOrg($campaign)
-            && $this->checkPermission('campaigns.edit');
+        if (!$this->permissionService->check($user, 'cmis.campaigns.update')) {
+            return false;
+        }
+        return $campaign->org_id === session('current_org_id');
     }
 
-    /**
-     * Determine whether the user can delete the campaign.
-     */
     public function delete(User $user, Campaign $campaign): bool
     {
-        return $this->resourceBelongsToOrg($campaign)
-            && $this->checkPermission('campaigns.delete');
+        if (!$this->permissionService->check($user, 'cmis.campaigns.delete')) {
+            return false;
+        }
+        return $campaign->org_id === session('current_org_id');
     }
 
-    /**
-     * Determine whether the user can restore the campaign.
-     */
     public function restore(User $user, Campaign $campaign): bool
     {
-        return $this->resourceBelongsToOrg($campaign)
-            && $this->checkPermission('campaigns.delete');
+        return $this->permissionService->check($user, 'cmis.campaigns.restore');
     }
 
-    /**
-     * Determine whether the user can permanently delete the campaign.
-     */
     public function forceDelete(User $user, Campaign $campaign): bool
     {
-        return $this->isOwnerOrAdmin($user, $campaign->org_id)
-            && $this->checkPermission('campaigns.delete');
+        return $this->permissionService->check($user, 'cmis.campaigns.force_delete');
+    }
+
+    public function publish(User $user, Campaign $campaign): bool
+    {
+        if (!$this->permissionService->check($user, 'cmis.campaigns.publish')) {
+            return false;
+        }
+        return $campaign->org_id === session('current_org_id');
+    }
+
+    public function viewAnalytics(User $user, Campaign $campaign): bool
+    {
+        if (!$this->permissionService->check($user, 'cmis.campaigns.view_analytics')) {
+            return false;
+        }
+        return $campaign->org_id === session('current_org_id');
     }
 }
