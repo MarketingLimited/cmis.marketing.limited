@@ -189,28 +189,21 @@ function dashboardData() {
 
         async fetchDashboardData() {
             try {
-                // Simulated data - replace with actual API call
-                this.stats = {
-                    orgs: 12,
-                    campaigns: 45,
-                    creative_assets: 234,
-                    kpis: 18
-                };
+                // Fetch real data from Laravel backend
+                const response = await fetch('/dashboard/data');
 
-                this.campaignStatus = {
-                    'نشط': 25,
-                    'مجدول': 12,
-                    'مكتمل': 8,
-                    'متوقف': 5
-                };
+                if (!response.ok) {
+                    throw new Error('Failed to fetch dashboard data');
+                }
 
-                this.campaignsByOrg = [
-                    { org_name: 'شركة التسويق', total: 15 },
-                    { org_name: 'الإبداع الرقمي', total: 12 },
-                    { org_name: 'التقنية المتقدمة', total: 10 },
-                    { org_name: 'الحلول الذكية', total: 8 }
-                ];
+                const data = await response.json();
 
+                // Set stats from API
+                this.stats = data.stats;
+                this.campaignStatus = data.campaignStatus;
+                this.campaignsByOrg = data.campaignsByOrg;
+
+                // Generate weekly metrics (can be enhanced with real API data)
                 this.weeklyMetrics = [
                     { label: 'الإنفاق الإعلاني', value: '45,234 ر.س', percentage: 75 },
                     { label: 'مرات الظهور', value: '1.2M', percentage: 85 },
@@ -218,29 +211,49 @@ function dashboardData() {
                     { label: 'التحويلات', value: '2,134', percentage: 90 }
                 ];
 
+                // Top campaigns (simulated - can be added to backend later)
                 this.topCampaigns = [
                     { id: 1, name: 'حملة الصيف 2025', organization: 'شركة التسويق', performance: 92 },
                     { id: 2, name: 'إطلاق المنتج الجديد', organization: 'الإبداع الرقمي', performance: 88 },
                     { id: 3, name: 'عروض رمضان', organization: 'التقنية المتقدمة', performance: 85 }
                 ];
 
-                this.recentActivity = [
-                    { id: 1, type: 'campaign', icon: 'fas fa-bullhorn', message: 'تم إطلاق حملة جديدة', time: 'منذ 5 دقائق' },
-                    { id: 2, type: 'integration', icon: 'fas fa-plug', message: 'تم ربط حساب Meta الإعلاني', time: 'منذ 15 دقيقة' },
-                    { id: 3, type: 'creative', icon: 'fas fa-palette', message: 'تم إضافة محتوى إبداعي جديد', time: 'منذ ساعة' },
-                    { id: 4, type: 'analytics', icon: 'fas fa-chart-line', message: 'تقرير الأداء الأسبوعي جاهز', time: 'منذ ساعتين' }
-                ];
+                // Fetch recent activity/notifications
+                const notifResponse = await fetch('/notifications/latest');
+                if (notifResponse.ok) {
+                    const notifications = await notifResponse.json();
+                    this.recentActivity = notifications.map((notif, index) => ({
+                        id: index + 1,
+                        type: this.detectActivityType(notif.message),
+                        icon: this.getActivityIcon(notif.message),
+                        message: notif.message,
+                        time: notif.time
+                    }));
+                }
 
-                // Replace with actual API call
-                // const response = await fetch('/api/dashboard/data');
-                // const data = await response.json();
-                // this.stats = data.stats;
-                // etc...
+                // Re-render charts with new data
+                this.renderCharts();
 
             } catch (error) {
                 console.error('Error fetching dashboard data:', error);
                 window.notify('فشل تحميل بيانات لوحة التحكم', 'error');
             }
+        },
+
+        detectActivityType(message) {
+            if (message.includes('حملة')) return 'campaign';
+            if (message.includes('تكامل') || message.includes('منصة')) return 'integration';
+            if (message.includes('إبداعي') || message.includes('أصل')) return 'creative';
+            if (message.includes('أداء') || message.includes('تقرير')) return 'analytics';
+            return 'campaign';
+        },
+
+        getActivityIcon(message) {
+            if (message.includes('حملة')) return 'fas fa-bullhorn';
+            if (message.includes('تكامل') || message.includes('منصة')) return 'fas fa-plug';
+            if (message.includes('إبداعي') || message.includes('أصل')) return 'fas fa-palette';
+            if (message.includes('أداء') || message.includes('تقرير')) return 'fas fa-chart-line';
+            return 'fas fa-info-circle';
         },
 
         renderCharts() {
