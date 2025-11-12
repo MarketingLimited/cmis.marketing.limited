@@ -85,3 +85,74 @@ Route::prefix('users')->name('users.')->middleware('auth')->group(function () {
         return view('users.show', ['userId' => $userId]);
     })->name('show');
 });
+
+// Knowledge Base Routes
+Route::prefix('knowledge')->name('knowledge.')->middleware('auth')->group(function () {
+    Route::get('/', [App\Http\Controllers\KnowledgeController::class, 'index'])->name('index');
+    Route::post('/search', [App\Http\Controllers\KnowledgeController::class, 'search'])->name('search');
+    Route::post('/', [App\Http\Controllers\KnowledgeController::class, 'store'])->name('store');
+    Route::get('/domains', [App\Http\Controllers\KnowledgeController::class, 'domains'])->name('domains');
+    Route::get('/domains/{domain}/categories', [App\Http\Controllers\KnowledgeController::class, 'categories'])->name('categories');
+});
+
+// Workflow Routes
+Route::prefix('workflows')->name('workflows.')->middleware('auth')->group(function () {
+    Route::get('/', [App\Http\Controllers\WorkflowController::class, 'index'])->name('index');
+    Route::get('/{flowId}', [App\Http\Controllers\WorkflowController::class, 'show'])->name('show');
+    Route::post('/initialize-campaign', [App\Http\Controllers\WorkflowController::class, 'initializeCampaign'])->name('initialize-campaign');
+    Route::post('/{flowId}/steps/{stepNumber}/complete', [App\Http\Controllers\WorkflowController::class, 'completeStep'])->name('complete-step');
+    Route::post('/{flowId}/steps/{stepNumber}/assign', [App\Http\Controllers\WorkflowController::class, 'assignStep'])->name('assign-step');
+    Route::post('/{flowId}/steps/{stepNumber}/comment', [App\Http\Controllers\WorkflowController::class, 'addComment'])->name('add-comment');
+});
+
+// Creative Brief Routes
+Route::prefix('briefs')->name('briefs.')->middleware('auth')->group(function () {
+    Route::get('/', [App\Http\Controllers\CreativeBriefController::class, 'index'])->name('index');
+    Route::get('/create', [App\Http\Controllers\CreativeBriefController::class, 'create'])->name('create');
+    Route::post('/', [App\Http\Controllers\CreativeBriefController::class, 'store'])->name('store');
+    Route::get('/{briefId}', [App\Http\Controllers\CreativeBriefController::class, 'show'])->name('show');
+    Route::post('/{briefId}/approve', [App\Http\Controllers\CreativeBriefController::class, 'approve'])->name('approve');
+});
+
+// Social Media Management Routes
+Route::prefix('social')->name('social.')->middleware('auth')->group(function () {
+    Route::get('/', function () {
+        return view('social.index');
+    })->name('index');
+    Route::get('/posts', function () {
+        return view('social.index');
+    })->name('posts');
+});
+
+// Organization Management Extended Routes
+Route::prefix('orgs')->name('orgs.')->middleware('auth')->group(function () {
+    Route::get('/create', function () {
+        return view('orgs.create');
+    })->name('create');
+    Route::post('/', [OrgController::class, 'store'])->name('store');
+    Route::get('/{org}/edit', [OrgController::class, 'edit'])->name('edit');
+    Route::put('/{org}', [OrgController::class, 'update'])->name('update');
+});
+
+// Product & Service Detail Routes
+Route::prefix('products')->name('products.')->middleware('auth')->group(function () {
+    Route::get('/', [ProductController::class, 'index'])->name('index');
+    Route::get('/{productId}', function ($productId) {
+        $product = \DB::table('cmis.offerings_full_details')
+            ->where('offering_id', $productId)
+            ->where('type', 'product')
+            ->first();
+        return view('products.show', ['product' => $product]);
+    })->name('show');
+});
+
+Route::prefix('services')->name('services.')->middleware('auth')->group(function () {
+    Route::get('/', [ServiceController::class, 'index'])->name('index');
+    Route::get('/{serviceId}', function ($serviceId) {
+        $service = \DB::table('cmis.offerings_full_details')
+            ->where('offering_id', $serviceId)
+            ->where('type', 'service')
+            ->first();
+        return view('services.show', ['service' => $service]);
+    })->name('show');
+});
