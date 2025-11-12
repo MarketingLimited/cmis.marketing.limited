@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Campaigns;
 
 use App\Http\Controllers\Controller;
+use App\Models\Campaign;
 use Illuminate\Http\Request;
 
 /**
@@ -16,6 +17,8 @@ class AdController extends Controller
      */
     public function index()
     {
+        $this->authorize('viewAny', Campaign::class);
+
         return view('campaigns.ads.index');
     }
 }

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Campaigns;
 
 use App\Http\Controllers\Controller;
+use App\Models\Campaign;
 use Illuminate\Http\Request;
 
 /**
@@ -16,6 +17,8 @@ class PerformanceController extends Controller
      */
     public function index()
     {
+        $this->authorize('viewAnalytics', Campaign::class);
+
         return view('campaigns.performance.index');
     }
 }

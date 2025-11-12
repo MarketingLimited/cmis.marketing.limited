@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Creative;
 
 use App\Http\Controllers\Controller;
+use App\Models\Creative\ContentItem;
 use Illuminate\Http\Request;
 
 /**
@@ -16,6 +17,8 @@ class ContentController extends Controller
      */
     public function index()
     {
+        $this->authorize('viewAny', ContentItem::class);
+
         return view('creative.content.index');
     }
 }

@@ -10,6 +10,8 @@ class OverviewController extends Controller
 {
     public function index()
     {
+        $this->authorize('viewAny', CreativeAsset::class);
+
         $stats = Cache::remember('creative.stats', now()->addMinutes(5), function () {
             return [
                 'assets' => CreativeAsset::count(),
