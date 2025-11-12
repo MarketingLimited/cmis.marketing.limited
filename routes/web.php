@@ -12,6 +12,8 @@ use App\Http\Controllers\Offerings\ProductController;
 use App\Http\Controllers\Offerings\ServiceController;
 use App\Http\Controllers\OrgController;
 use App\Http\Controllers\Web\ChannelController as WebChannelController;
+use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Auth\RegisterController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -19,6 +21,18 @@ use Illuminate\Support\Facades\Route;
 | Web Routes
 |--------------------------------------------------------------------------
 */
+
+// ==================== Guest Routes (Authentication) ====================
+Route::middleware('guest')->group(function () {
+    Route::get('/login', [LoginController::class, 'create'])->name('login');
+    Route::post('/login', [LoginController::class, 'store']);
+    Route::get('/register', [RegisterController::class, 'create'])->name('register');
+    Route::post('/register', [RegisterController::class, 'store']);
+});
+
+Route::post('/logout', [LoginController::class, 'destroy'])
+    ->middleware('auth')
+    ->name('logout');
 
 // Public Routes (will redirect to login if not authenticated)
 Route::redirect('/', '/dashboard');
