@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Core;
 
 use App\Http\Controllers\Controller;
-use App\Models\Core\{User, UserOrg, Role};
-use App\Models\Org;
+use App\Models\User;
+use App\Models\Core\{Org, UserOrg, Role};
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;

@@ -3,12 +3,14 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
+use App\Console\Traits\HandlesOrgContext;
 use App\Services\Connectors\ConnectorFactory;
 use App\Models\Core\Integration;
 use Illuminate\Support\Facades\Log;
 
 class SyncPlatform extends Command
 {
+    use HandlesOrgContext;
     /**
      * The name and signature of the console command.
      *
@@ -63,9 +65,8 @@ class SyncPlatform extends Command
             $this->line("Processing integration for Org ID: {$integration->org_id}");
 
             try {
-                // Here you would use a more sophisticated context handler like the
-                // HandlesOrgContext trait planned in the main backend implementation
-                // For now, this is a simplified direct call.
+                // Set database context for this organization
+                $this->setOrgContext($integration->org_id);
 
                 if ($syncType === 'all' || $syncType === 'campaigns') {
                     $this->info("   -> Syncing campaigns...");

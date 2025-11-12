@@ -2,8 +2,8 @@
 
 namespace App\Console\Traits;
 
-use App\Models\Core\User;
-use App\Models\Org;
+use App\Models\User;
+use App\Models\Core\Org;
 use Illuminate\Support\Facades\DB;
 
 trait HandlesOrgContext
