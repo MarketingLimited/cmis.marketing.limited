@@ -9,6 +9,8 @@ class ServiceController extends Controller
 {
     public function index()
     {
+        $this->authorize('viewAny', Offering::class);
+
         $offerings = Offering::query()
             ->with('org:org_id,name')
             ->where('kind', 'service')
