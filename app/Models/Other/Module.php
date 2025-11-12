@@ -1,0 +1,46 @@
+<?php
+
+namespace App\Models\Other;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
+
+class Module extends Model
+{
+    use HasFactory, SoftDeletes;
+
+    protected $connection = 'pgsql';
+
+    protected $table = 'cmis.modules';
+
+    protected $primaryKey = 'module_id';
+
+    public $timestamps = false;
+
+    protected $fillable = [
+        'code',
+        'name',
+        'version',
+    ];
+
+    protected $casts = [
+        'deleted_at' => 'datetime',
+    ];
+
+    /**
+     * Get the anchors
+     */
+    public function anchors()
+    {
+        return $this->hasMany(Anchor::class, 'module_id', 'module_id');
+    }
+
+    /**
+     * Scope to find by code
+     */
+    public function scopeByCode($query, string $code)
+    {
+        return $query->where('code', $code);
+    }
+}
