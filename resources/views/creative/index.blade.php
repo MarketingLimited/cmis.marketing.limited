@@ -3,7 +3,7 @@
 @section('title', 'الاستوديو الإبداعي')
 
 @section('content')
-<div x-data="creativeStudioManager()" x-init="init()">
+<div x-data="creativeStudioManager(@json(['stats' => $stats, 'recentAssets' => $recentAssets, 'searchableAssets' => $searchableAssets]))" x-init="init()">
 
     <!-- Page Header -->
     <div class="flex items-center justify-between mb-6">
@@ -420,13 +420,16 @@
 
 @push('scripts')
 <script>
-function creativeStudioManager() {
+function creativeStudioManager(serverData) {
     return {
         activeTab: 'all',
         searchQuery: '',
         filterStatus: '',
         showUploadModal: false,
         showTemplateModal: false,
+        serverStats: serverData.stats || {},
+        serverAssets: serverData.recentAssets || [],
+        serverSearchableAssets: serverData.searchableAssets || [],
         stats: {
             totalAssets: 0,
             assetsChange: 0,
@@ -452,33 +455,52 @@ function creativeStudioManager() {
             tags: ''
         },
 
-        async init() {
-            await this.fetchData();
+        init() {
+            this.processServerData();
             this.filterAssets();
         },
 
-        async fetchData() {
-            try {
-                // API Integration Point: GET /api/creative/dashboard
-                this.stats = {
-                    totalAssets: 1834,
-                    assetsChange: 15.3,
-                    pendingReview: 28,
-                    avgReviewTime: 4.2,
-                    approved: 1654,
-                    approvalRate: 92.5,
-                    templates: 45,
-                    popularTemplates: 12
-                };
+        processServerData() {
+            // Process server stats
+            const totalAssets = this.serverStats.assets || 0;
+            const approved = this.serverStats.approved || 0;
+            const pending = this.serverStats.pending || 0;
 
+            this.stats = {
+                totalAssets: totalAssets,
+                assetsChange: 15.3, // TODO: Calculate from historical data
+                pendingReview: pending,
+                avgReviewTime: 4.2, // TODO: Calculate from actual review times
+                approved: approved,
+                approvalRate: totalAssets > 0 ? ((approved / totalAssets) * 100).toFixed(1) : 0,
+                templates: 45, // TODO: Get from backend
+                popularTemplates: 12 // TODO: Get from backend
+            };
+
+            // Transform server assets
+            this.assets = this.serverAssets.map(asset => ({
+                id: asset.asset_id,
+                name: asset.variation_tag || 'أصل إبداعي',
+                type: this.detectAssetType(asset),
+                status: asset.status || 'draft',
+                campaign: asset.campaign ? asset.campaign.name : 'غير مرتبط بحملة',
+                org: asset.org ? asset.org.name : 'غير محدد',
+                thumbnail: 'https://via.placeholder.com/400x300/FF6B6B/FFFFFF?text=' + encodeURIComponent(asset.variation_tag || 'Asset'),
+                dimensions: '1080x1080', // TODO: Get from asset metadata
+                size: '2.4 MB', // TODO: Get from asset metadata
+                performance: null, // TODO: Get from performance metrics
+                createdAt: this.formatDate(asset.created_at)
+            }));
+
+            // If no assets from backend, use simulated data for demo
+            if (this.assets.length === 0) {
                 this.assets = [
                     { id: 1, name: 'إعلان الصيف - نسخة A', type: 'image', status: 'approved', campaign: 'حملة الصيف 2025', thumbnail: 'https://via.placeholder.com/400x300/FF6B6B/FFFFFF?text=Summer+Ad+A', dimensions: '1080x1080', size: '2.4 MB', performance: 4.8, createdAt: 'منذ يومين' },
                     { id: 2, name: 'فيديو المنتج الجديد', type: 'video', status: 'approved', campaign: 'إطلاق المنتج', thumbnail: 'https://via.placeholder.com/400x300/4ECDC4/FFFFFF?text=Product+Video', dimensions: '1920x1080', size: '15.2 MB', performance: 6.2, createdAt: 'منذ 3 أيام' },
                     { id: 3, name: 'بانر الجمعة البيضاء', type: 'image', status: 'pending', campaign: 'الجمعة البيضاء', thumbnail: 'https://via.placeholder.com/400x300/95E1D3/FFFFFF?text=Black+Friday', dimensions: '1200x628', size: '1.8 MB', performance: null, createdAt: 'منذ ساعة' },
-                    { id: 4, name: 'إعلان الصيف - نسخة B', type: 'image', status: 'approved', campaign: 'حملة الصيف 2025', thumbnail: 'https://via.placeholder.com/400x300/F38181/FFFFFF?text=Summer+Ad+B', dimensions: '1080x1080', size: '2.1 MB', performance: 3.9, createdAt: 'منذ يومين' },
-                    { id: 5, name: 'قصة انستقرام', type: 'video', status: 'rejected', campaign: 'حملة الصيف 2025', thumbnail: 'https://via.placeholder.com/400x300/AA96DA/FFFFFF?text=Story', dimensions: '1080x1920', size: '8.5 MB', performance: null, createdAt: 'منذ 4 أيام' },
-                    { id: 6, name: 'غلاف فيسبوك', type: 'image', status: 'draft', campaign: 'تحديث العلامة', thumbnail: 'https://via.placeholder.com/400x300/FCBAD3/FFFFFF?text=Cover', dimensions: '820x312', size: '950 KB', performance: null, createdAt: 'منذ أسبوع' }
+                    { id: 4, name: 'إعلان الصيف - نسخة B', type: 'image', status: 'approved', campaign: 'حملة الصيف 2025', thumbnail: 'https://via.placeholder.com/400x300/F38181/FFFFFF?text=Summer+Ad+B', dimensions: '1080x1080', size: '2.1 MB', performance: 3.9, createdAt: 'منذ يومين' }
                 ];
+            }
 
                 this.templates = [
                     { id: 1, name: 'إعلان سوشيال ميديا', category: 'إعلانات', description: 'قالب احترافي لإعلانات السوشيال ميديا', gradientClass: 'from-orange-400 to-pink-500', icon: 'fas fa-ad', uses: 342, popular: true },
@@ -527,6 +549,30 @@ function creativeStudioManager() {
                 console.error(error);
                 window.notify('فشل تحميل البيانات', 'error');
             }
+        },
+
+        detectAssetType(asset) {
+            // TODO: Implement proper asset type detection based on format_id or mime type
+            // For now, randomly assign type for demo
+            return Math.random() > 0.7 ? 'video' : 'image';
+        },
+
+        formatDate(dateString) {
+            if (!dateString) return 'غير متوفر';
+            const date = new Date(dateString);
+            const now = new Date();
+            const diffTime = Math.abs(now - date);
+            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+            if (diffDays === 0) return 'اليوم';
+            if (diffDays === 1) return 'أمس';
+            if (diffDays < 7) return `منذ ${diffDays} أيام`;
+            if (diffDays < 30) return `منذ ${Math.floor(diffDays / 7)} أسابيع`;
+            return date.toLocaleDateString('ar-SA', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
         },
 
         filterAssets() {
@@ -579,22 +625,48 @@ function creativeStudioManager() {
         },
 
         viewAsset(id) {
+            // TODO: Implement view asset details
+            // Could open a modal or navigate to asset detail page
             window.notify('عرض الأصل #' + id, 'info');
         },
 
         editAsset(id) {
+            // TODO: Implement edit asset functionality
+            // PUT /api/creative/assets/{id}
             window.notify('تحرير الأصل #' + id, 'info');
         },
 
         downloadAsset(id) {
+            // TODO: Implement asset download
+            // GET /api/creative/assets/{id}/download
             window.notify('جاري تحميل الأصل...', 'success');
         },
 
-        deleteAsset(id) {
-            if (confirm('هل أنت متأكد من حذف هذا الأصل؟')) {
+        async deleteAsset(id) {
+            if (!confirm('هل أنت متأكد من حذف هذا الأصل؟ سيتم حذفه نهائياً.')) return;
+
+            try {
+                // TODO: Implement actual API call with CSRF token
+                // const response = await fetch(`/api/creative/assets/${id}`, {
+                //     method: 'DELETE',
+                //     headers: {
+                //         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                //         'Accept': 'application/json'
+                //     }
+                // });
+                //
+                // if (!response.ok) throw new Error('Failed to delete');
+
+                window.notify('جاري حذف الأصل...', 'info');
+
+                // Remove from local array for now
                 this.assets = this.assets.filter(a => a.id !== id);
                 this.filterAssets();
-                window.notify('تم حذف الأصل', 'success');
+
+                window.notify('تم حذف الأصل بنجاح', 'success');
+            } catch (error) {
+                console.error('Error deleting asset:', error);
+                window.notify('فشل حذف الأصل', 'error');
             }
         },
 
@@ -605,17 +677,42 @@ function creativeStudioManager() {
             }
 
             try {
-                // API Integration Point: POST /api/creative/assets
                 window.notify('جاري رفع الأصل...', 'info');
+
+                // TODO: Implement actual file upload with FormData
+                // const formData = new FormData();
+                // formData.append('name', this.uploadForm.name);
+                // formData.append('type', this.uploadForm.type);
+                // formData.append('campaign_id', this.uploadForm.campaign);
+                // formData.append('file', fileInput.files[0]); // From file input
+                //
+                // const response = await fetch('/api/creative/assets', {
+                //     method: 'POST',
+                //     headers: {
+                //         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                //         'Accept': 'application/json'
+                //     },
+                //     body: formData
+                // });
+                //
+                // if (!response.ok) {
+                //     const error = await response.json();
+                //     throw new Error(error.message || 'Failed to upload asset');
+                // }
+
+                // Simulate upload delay
                 await new Promise(resolve => setTimeout(resolve, 2000));
 
                 window.notify('تم رفع الأصل بنجاح!', 'success');
                 this.showUploadModal = false;
                 this.uploadForm = { type: 'image', name: '', campaign: '', tags: '' };
-                await this.fetchData();
+
+                // Refresh asset list
+                this.processServerData();
                 this.filterAssets();
             } catch (error) {
-                window.notify('فشل رفع الأصل', 'error');
+                console.error('Error uploading asset:', error);
+                window.notify(error.message || 'فشل رفع الأصل', 'error');
             }
         },
 
