@@ -232,6 +232,148 @@ Route::middleware(['auth:sanctum', 'validate.org.access', 'set.db.context'])
         Route::get('/summary', [KpiController::class, 'summary'])->name('summary');
         Route::get('/trends', [KpiController::class, 'trends'])->name('trends');
     });
+
+    /*
+    |----------------------------------------------------------------------
+    | قاعدة المعرفة (Knowledge Base)
+    |----------------------------------------------------------------------
+    */
+    Route::prefix('knowledge')->name('knowledge.')->group(function () {
+        // List & Search
+        Route::get('/', [App\Http\Controllers\KnowledgeController::class, 'index'])->name('index');
+        Route::post('/search', [App\Http\Controllers\KnowledgeController::class, 'search'])->name('search');
+
+        // CRUD Operations
+        Route::post('/', [App\Http\Controllers\KnowledgeController::class, 'store'])->name('store');
+        Route::get('/{knowledge_id}', [App\Http\Controllers\KnowledgeController::class, 'show'])->name('show');
+        Route::put('/{knowledge_id}', [App\Http\Controllers\KnowledgeController::class, 'update'])->name('update');
+        Route::delete('/{knowledge_id}', [App\Http\Controllers\KnowledgeController::class, 'destroy'])->name('destroy');
+
+        // Categories & Domains
+        Route::get('/domains', [App\Http\Controllers\KnowledgeController::class, 'domains'])->name('domains');
+        Route::get('/domains/{domain}/categories', [App\Http\Controllers\KnowledgeController::class, 'categories'])->name('categories');
+
+        // Semantic Search Advanced
+        Route::post('/semantic-search', [App\Http\Controllers\KnowledgeController::class, 'semanticSearch'])->name('semantic-search');
+    });
+
+    /*
+    |----------------------------------------------------------------------
+    | سير العمل (Workflows)
+    |----------------------------------------------------------------------
+    */
+    Route::prefix('workflows')->name('workflows.')->group(function () {
+        // List & Overview
+        Route::get('/', [App\Http\Controllers\WorkflowController::class, 'index'])->name('index');
+        Route::get('/{flow_id}', [App\Http\Controllers\WorkflowController::class, 'show'])->name('show');
+
+        // Initialize & Manage
+        Route::post('/initialize-campaign', [App\Http\Controllers\WorkflowController::class, 'initializeCampaignWorkflow'])->name('initialize.campaign');
+        Route::post('/', [App\Http\Controllers\WorkflowController::class, 'store'])->name('store');
+        Route::delete('/{flow_id}', [App\Http\Controllers\WorkflowController::class, 'destroy'])->name('destroy');
+
+        // Steps Management
+        Route::get('/{flow_id}/steps', [App\Http\Controllers\WorkflowController::class, 'steps'])->name('steps');
+        Route::post('/{flow_id}/steps/{step_number}/start', [App\Http\Controllers\WorkflowController::class, 'startStep'])->name('steps.start');
+        Route::post('/{flow_id}/steps/{step_number}/complete', [App\Http\Controllers\WorkflowController::class, 'completeStep'])->name('steps.complete');
+        Route::post('/{flow_id}/steps/{step_number}/skip', [App\Http\Controllers\WorkflowController::class, 'skipStep'])->name('steps.skip');
+
+        // Actions
+        Route::post('/{flow_id}/cancel', [App\Http\Controllers\WorkflowController::class, 'cancel'])->name('cancel');
+        Route::get('/{flow_id}/progress', [App\Http\Controllers\WorkflowController::class, 'progress'])->name('progress');
+    });
+
+    /*
+    |----------------------------------------------------------------------
+    | البريفات الإبداعية (Creative Briefs)
+    |----------------------------------------------------------------------
+    */
+    Route::prefix('briefs')->name('briefs.')->group(function () {
+        // List & Search
+        Route::get('/', [App\Http\Controllers\CreativeBriefController::class, 'index'])->name('index');
+        Route::get('/{brief_id}', [App\Http\Controllers\CreativeBriefController::class, 'show'])->name('show');
+
+        // CRUD Operations
+        Route::post('/', [App\Http\Controllers\CreativeBriefController::class, 'store'])->name('store');
+        Route::put('/{brief_id}', [App\Http\Controllers\CreativeBriefController::class, 'update'])->name('update');
+        Route::delete('/{brief_id}', [App\Http\Controllers\CreativeBriefController::class, 'destroy'])->name('destroy');
+
+        // Brief Actions
+        Route::post('/{brief_id}/approve', [App\Http\Controllers\CreativeBriefController::class, 'approve'])->name('approve');
+        Route::post('/{brief_id}/reject', [App\Http\Controllers\CreativeBriefController::class, 'reject'])->name('reject');
+        Route::post('/{brief_id}/generate-summary', [App\Http\Controllers\CreativeBriefController::class, 'generateSummary'])->name('generate-summary');
+
+        // Validation
+        Route::post('/validate', [App\Http\Controllers\CreativeBriefController::class, 'validateStructure'])->name('validate');
+    });
+
+    /*
+    |----------------------------------------------------------------------
+    | المحتوى (Content Management)
+    |----------------------------------------------------------------------
+    */
+    Route::prefix('content')->name('content.')->group(function () {
+        // List & Search
+        Route::get('/', [App\Http\Controllers\Content\ContentController::class, 'index'])->name('index');
+        Route::get('/{content_id}', [App\Http\Controllers\Content\ContentController::class, 'show'])->name('show');
+
+        // CRUD Operations
+        Route::post('/', [App\Http\Controllers\Content\ContentController::class, 'store'])->name('store');
+        Route::put('/{content_id}', [App\Http\Controllers\Content\ContentController::class, 'update'])->name('update');
+        Route::delete('/{content_id}', [App\Http\Controllers\Content\ContentController::class, 'destroy'])->name('destroy');
+
+        // Content Actions
+        Route::post('/{content_id}/publish', [App\Http\Controllers\Content\ContentController::class, 'publish'])->name('publish');
+        Route::post('/{content_id}/unpublish', [App\Http\Controllers\Content\ContentController::class, 'unpublish'])->name('unpublish');
+        Route::get('/{content_id}/versions', [App\Http\Controllers\Content\ContentController::class, 'versions'])->name('versions');
+    });
+
+    /*
+    |----------------------------------------------------------------------
+    | المنتجات والخدمات (Products & Services)
+    |----------------------------------------------------------------------
+    */
+    Route::prefix('offerings')->name('offerings.')->group(function () {
+        // Products
+        Route::prefix('products')->name('products.')->group(function () {
+            Route::get('/', [App\Http\Controllers\Product\ProductController::class, 'index'])->name('index');
+            Route::post('/', [App\Http\Controllers\Product\ProductController::class, 'store'])->name('store');
+            Route::get('/{offering_id}', [App\Http\Controllers\Product\ProductController::class, 'show'])->name('show');
+            Route::put('/{offering_id}', [App\Http\Controllers\Product\ProductController::class, 'update'])->name('update');
+            Route::delete('/{offering_id}', [App\Http\Controllers\Product\ProductController::class, 'destroy'])->name('destroy');
+        });
+
+        // Services
+        Route::prefix('services')->name('services.')->group(function () {
+            Route::get('/', [App\Http\Controllers\Service\ServiceController::class, 'index'])->name('index');
+            Route::post('/', [App\Http\Controllers\Service\ServiceController::class, 'store'])->name('store');
+            Route::get('/{offering_id}', [App\Http\Controllers\Service\ServiceController::class, 'show'])->name('show');
+            Route::put('/{offering_id}', [App\Http\Controllers\Service\ServiceController::class, 'update'])->name('update');
+            Route::delete('/{offering_id}', [App\Http\Controllers\Service\ServiceController::class, 'destroy'])->name('destroy');
+        });
+
+        // Bundles
+        Route::prefix('bundles')->name('bundles.')->group(function () {
+            Route::get('/', [App\Http\Controllers\Bundle\BundleController::class, 'index'])->name('index');
+            Route::post('/', [App\Http\Controllers\Bundle\BundleController::class, 'store'])->name('store');
+            Route::get('/{bundle_id}', [App\Http\Controllers\Bundle\BundleController::class, 'show'])->name('show');
+            Route::put('/{bundle_id}', [App\Http\Controllers\Bundle\BundleController::class, 'update'])->name('update');
+            Route::delete('/{bundle_id}', [App\Http\Controllers\Bundle\BundleController::class, 'destroy'])->name('destroy');
+        });
+    });
+
+    /*
+    |----------------------------------------------------------------------
+    | لوحة التحكم (Dashboard)
+    |----------------------------------------------------------------------
+    */
+    Route::prefix('dashboard')->name('dashboard.')->group(function () {
+        Route::get('/overview', [App\Http\Controllers\DashboardController::class, 'overview'])->name('overview');
+        Route::get('/stats', [App\Http\Controllers\DashboardController::class, 'stats'])->name('stats');
+        Route::get('/recent-activity', [App\Http\Controllers\DashboardController::class, 'recentActivity'])->name('recent-activity');
+        Route::get('/charts/campaigns-performance', [App\Http\Controllers\DashboardController::class, 'campaignsPerformance'])->name('charts.campaigns');
+        Route::get('/charts/engagement', [App\Http\Controllers\DashboardController::class, 'engagement'])->name('charts.engagement');
+    });
 });
 
 /*
