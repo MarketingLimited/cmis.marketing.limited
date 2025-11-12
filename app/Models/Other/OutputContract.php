@@ -1,0 +1,57 @@
+<?php
+
+namespace App\Models\Other;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
+
+class OutputContract extends Model
+{
+    use HasFactory, SoftDeletes;
+
+    protected $connection = 'pgsql';
+
+    protected $table = 'cmis.output_contracts';
+
+    protected $primaryKey = 'contract_id';
+
+    public $incrementing = false;
+
+    protected $keyType = 'string';
+
+    public $timestamps = false;
+
+    protected $fillable = [
+        'code',
+        'json_schema',
+        'notes',
+    ];
+
+    protected $casts = [
+        'contract_id' => 'string',
+        'json_schema' => 'array',
+        'deleted_at' => 'datetime',
+    ];
+
+    /**
+     * Get prompt templates using this contract
+     */
+    public function promptTemplates()
+    {
+        return $this->belongsToMany(
+            PromptTemplate::class,
+            'cmis.prompt_template_contracts',
+            'contract_id',
+            'prompt_id'
+        );
+    }
+
+    /**
+     * Scope to find by code
+     */
+    public function scopeByCode($query, string $code)
+    {
+        return $query->where('code', $code);
+    }
+}
