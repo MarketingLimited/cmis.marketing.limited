@@ -3,7 +3,7 @@
 @section('title', 'التحليلات')
 
 @section('content')
-<div x-data="analyticsManager()" x-init="init()">
+<div x-data="analyticsManager(@json(['stats' => $stats, 'latestMetrics' => $latestMetrics, 'kpis' => $kpis]))" x-init="init()">
 
     <!-- Page Header -->
     <div class="flex items-center justify-between mb-6">
@@ -202,11 +202,14 @@
 
 @push('scripts')
 <script>
-function analyticsManager() {
+function analyticsManager(serverData) {
     return {
         dateRange: { start: '', end: '' },
         selectedOrg: '',
         selectedPlatform: '',
+        serverStats: serverData.stats || {},
+        latestMetrics: serverData.latestMetrics || [],
+        allKpis: serverData.kpis || [],
         kpis: {
             totalSpend: 0,
             spendChange: 0,
@@ -223,42 +226,99 @@ function analyticsManager() {
         platformPerformance: [],
         charts: { spendTime: null, platform: null },
 
-        async init() {
+        init() {
+            // Initialize date range
             const end = new Date();
             const start = new Date();
             start.setDate(start.getDate() - 30);
             this.dateRange.start = start.toISOString().split('T')[0];
             this.dateRange.end = end.toISOString().split('T')[0];
-            await this.fetchAnalytics();
+
+            // Process server data
+            this.processServerData();
+            this.renderCharts();
+        },
+
+        processServerData() {
+            // Process latest metrics from server
+            const metrics = this.latestMetrics || [];
+
+            // Calculate KPIs from server metrics
+            // TODO: Implement actual KPI calculations from real metrics data
+            // For now, we'll use aggregated values
+
+            // Extract spend, impressions, clicks, conversions from metrics
+            let totalSpend = 0;
+            let totalImpressions = 0;
+            let totalClicks = 0;
+            let totalConversions = 0;
+
+            metrics.forEach(metric => {
+                const kpiName = metric.kpi ? metric.kpi.toLowerCase() : '';
+                const value = parseFloat(metric.observed) || 0;
+
+                if (kpiName.includes('spend') || kpiName.includes('cost')) {
+                    totalSpend += value;
+                } else if (kpiName.includes('impression')) {
+                    totalImpressions += value;
+                } else if (kpiName.includes('click')) {
+                    totalClicks += value;
+                } else if (kpiName.includes('conversion')) {
+                    totalConversions += value;
+                }
+            });
+
+            // Calculate derived metrics
+            const ctr = totalImpressions > 0 ? ((totalClicks / totalImpressions) * 100).toFixed(2) : 0;
+            const cpc = totalClicks > 0 ? (totalSpend / totalClicks).toFixed(2) : 0;
+            const roas = totalSpend > 0 ? (totalConversions * 100 / totalSpend).toFixed(1) : 0; // Simplified ROAS
+
+            this.kpis = {
+                totalSpend: totalSpend || 245000, // Fallback to simulated if no data
+                spendChange: 12.5, // TODO: Calculate from historical data
+                impressions: totalImpressions || 3200000,
+                impressionsChange: 18.3,
+                clicks: totalClicks || 128000,
+                clicksChange: 15.7,
+                conversions: totalConversions || 5400,
+                conversionsChange: 22.1,
+                ctr: parseFloat(ctr) || 4.0,
+                cpc: cpc ? cpc + ' ر.س' : '1.91 ر.س',
+                roas: parseFloat(roas) || 4.2
+            };
+
+            // Simulate platform performance
+            // TODO: Get actual platform performance from backend API
+            this.platformPerformance = [
+                { name: 'Meta', icon: 'fab fa-meta', spend: 120000, clicks: 72000, ctr: 4.0, roas: 4.5 },
+                { name: 'Google', icon: 'fab fa-google', spend: 80000, clicks: 40000, ctr: 4.0, roas: 4.0 },
+                { name: 'TikTok', icon: 'fab fa-tiktok', spend: 30000, clicks: 10000, ctr: 4.0, roas: 3.5 },
+                { name: 'LinkedIn', icon: 'fab fa-linkedin', spend: 10000, clicks: 4000, ctr: 4.0, roas: 3.0 },
+                { name: 'X', icon: 'fab fa-x-twitter', spend: 5000, clicks: 2000, ctr: 4.0, roas: 2.5 }
+            ];
         },
 
         async fetchAnalytics() {
+            // TODO: Implement API call to fetch analytics data based on filters
+            // This would call endpoints like:
+            // - GET /api/analytics/summary?start={start}&end={end}&org={org}&platform={platform}
+            // - GET /api/analytics/metrics?start={start}&end={end}
+            // - GET /api/analytics/platforms?start={start}&end={end}
+
             try {
-                this.kpis = {
-                    totalSpend: 245000,
-                    spendChange: 12.5,
-                    impressions: 3200000,
-                    impressionsChange: 18.3,
-                    clicks: 128000,
-                    clicksChange: 15.7,
-                    conversions: 5400,
-                    conversionsChange: 22.1,
-                    ctr: 4.0,
-                    cpc: '1.91 ر.س',
-                    roas: 4.2
-                };
+                window.notify('جاري تحديث البيانات...', 'info');
 
-                this.platformPerformance = [
-                    { name: 'Meta', icon: 'fab fa-meta', spend: 120000, clicks: 72000, ctr: 4.0, roas: 4.5 },
-                    { name: 'Google', icon: 'fab fa-google', spend: 80000, clicks: 40000, ctr: 4.0, roas: 4.0 },
-                    { name: 'TikTok', icon: 'fab fa-tiktok', spend: 30000, clicks: 10000, ctr: 4.0, roas: 3.5 },
-                    { name: 'LinkedIn', icon: 'fab fa-linkedin', spend: 10000, clicks: 4000, ctr: 4.0, roas: 3.0 },
-                    { name: 'X', icon: 'fab fa-x-twitter', spend: 5000, clicks: 2000, ctr: 4.0, roas: 2.5 }
-                ];
-
+                // For now, just reprocess with current data
+                this.processServerData();
                 this.renderCharts();
+
+                console.log('Filters:', {
+                    dateRange: this.dateRange,
+                    org: this.selectedOrg,
+                    platform: this.selectedPlatform
+                });
             } catch (error) {
-                console.error(error);
+                console.error('Error fetching analytics:', error);
                 window.notify('فشل تحميل البيانات', 'error');
             }
         },
@@ -320,11 +380,43 @@ function analyticsManager() {
         },
 
         exportToPDF() {
+            // TODO: Implement PDF export with API call
+            // POST /api/analytics/export/pdf with filters
+            // const response = await fetch('/api/analytics/export/pdf', {
+            //     method: 'POST',
+            //     headers: {
+            //         'Content-Type': 'application/json',
+            //         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            //     },
+            //     body: JSON.stringify({
+            //         dateRange: this.dateRange,
+            //         org: this.selectedOrg,
+            //         platform: this.selectedPlatform
+            //     })
+            // });
+            // Then download the PDF file
             window.notify('جاري تصدير التقرير إلى PDF...', 'info');
+            console.log('PDF Export filters:', this.dateRange, this.selectedOrg, this.selectedPlatform);
         },
 
         exportToExcel() {
+            // TODO: Implement Excel export with API call
+            // POST /api/analytics/export/excel with filters
+            // const response = await fetch('/api/analytics/export/excel', {
+            //     method: 'POST',
+            //     headers: {
+            //         'Content-Type': 'application/json',
+            //         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            //     },
+            //     body: JSON.stringify({
+            //         dateRange: this.dateRange,
+            //         org: this.selectedOrg,
+            //         platform: this.selectedPlatform
+            //     })
+            // });
+            // Then download the Excel file
             window.notify('جاري تصدير البيانات إلى Excel...', 'info');
+            console.log('Excel Export filters:', this.dateRange, this.selectedOrg, this.selectedPlatform);
         }
     };
 }
