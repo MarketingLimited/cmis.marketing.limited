@@ -456,7 +456,19 @@ function socialSchedulerManager() {
 
         async fetchData() {
             try {
-                // API Integration Point: GET /api/social/dashboard
+                // TODO: Backend Controller Needed - SocialSchedulerController
+                // This page requires a new controller to be created for social post scheduling
+                // Required API endpoints:
+                // - GET /api/social/dashboard - Get stats and scheduled posts overview
+                // - GET /api/social/posts/scheduled - Get all scheduled posts
+                // - GET /api/social/posts/published - Get published posts with engagement
+                // - GET /api/social/posts/drafts - Get draft posts
+                // - POST /api/social/posts/schedule - Schedule a new post
+                // - PUT /api/social/posts/{id} - Update scheduled/draft post
+                // - DELETE /api/social/posts/{id} - Delete post
+                // - POST /api/social/posts/{id}/publish-now - Publish immediately
+
+                // Simulated data until backend is implemented
                 this.stats = {
                     scheduled: 47,
                     nextPost: 'بعد ساعتين',
@@ -586,32 +598,76 @@ function socialSchedulerManager() {
         },
 
         editPost(id) {
+            // TODO: Implement edit functionality
+            // Fetch post data: GET /api/social/posts/{id}
+            // Open composer modal with loaded data
+            // Update: PUT /api/social/posts/{id}
             window.notify('تحرير المنشور #' + id, 'info');
         },
 
         reschedulePost(id) {
+            // TODO: Implement reschedule functionality
+            // PUT /api/social/posts/{id}/reschedule
+            // Update scheduled_date and scheduled_time
             window.notify('إعادة جدولة المنشور #' + id, 'info');
         },
 
-        deletePost(id) {
-            if (confirm('هل أنت متأكد من حذف هذا المنشور؟')) {
+        async deletePost(id) {
+            if (!confirm('هل أنت متأكد من حذف هذا المنشور؟')) return;
+
+            try {
+                // TODO: Implement actual API call
+                // DELETE /api/social/posts/{id}
+                // const response = await fetch(`/api/social/posts/${id}`, {
+                //     method: 'DELETE',
+                //     headers: {
+                //         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                //         'Accept': 'application/json'
+                //     }
+                // });
+                //
+                // if (!response.ok) throw new Error('Failed to delete');
+
+                window.notify('جاري حذف المنشور...', 'info');
+
+                // Remove from local array for now
                 this.scheduledPosts = this.scheduledPosts.filter(p => p.id !== id);
+
                 window.notify('تم حذف المنشور', 'success');
+            } catch (error) {
+                console.error('Error deleting post:', error);
+                window.notify('فشل حذف المنشور', 'error');
             }
         },
 
         editDraft(id) {
+            // TODO: Load draft data and populate composer
+            // GET /api/social/posts/drafts/{id}
             window.notify('تحرير المسودة #' + id, 'info');
         },
 
-        deleteDraft(id) {
-            if (confirm('هل أنت متأكد من حذف هذه المسودة؟')) {
+        async deleteDraft(id) {
+            if (!confirm('هل أنت متأكد من حذف هذه المسودة؟')) return;
+
+            try {
+                // TODO: Implement actual API call
+                // DELETE /api/social/posts/drafts/{id}
+
+                window.notify('جاري حذف المسودة...', 'info');
+
+                // Remove from local array for now
                 this.drafts = this.drafts.filter(d => d.id !== id);
+
                 window.notify('تم حذف المسودة', 'success');
+            } catch (error) {
+                console.error('Error deleting draft:', error);
+                window.notify('فشل حذف المسودة', 'error');
             }
         },
 
         viewAnalytics(id) {
+            // TODO: Navigate to analytics page or open modal
+            // GET /api/social/posts/{id}/analytics
             window.notify('عرض إحصائيات المنشور #' + id, 'info');
         },
 
@@ -644,8 +700,31 @@ function socialSchedulerManager() {
             }
 
             try {
-                // API Integration Point: POST /api/social/posts/schedule
                 window.notify('جاري جدولة المنشور...', 'info');
+
+                // TODO: Implement actual API call with CSRF token
+                // const response = await fetch('/api/social/posts/schedule', {
+                //     method: 'POST',
+                //     headers: {
+                //         'Content-Type': 'application/json',
+                //         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                //         'Accept': 'application/json'
+                //     },
+                //     body: JSON.stringify({
+                //         platforms: this.composerForm.platforms,
+                //         content: this.composerForm.content,
+                //         scheduled_date: this.composerForm.scheduleDate,
+                //         scheduled_time: this.composerForm.scheduleTime,
+                //         media: [] // Add media attachments if available
+                //     })
+                // });
+                //
+                // if (!response.ok) {
+                //     const error = await response.json();
+                //     throw new Error(error.message || 'Failed to schedule post');
+                // }
+
+                // Simulate API delay
                 await new Promise(resolve => setTimeout(resolve, 1500));
 
                 window.notify('تم جدولة المنشور بنجاح!', 'success');
@@ -653,17 +732,26 @@ function socialSchedulerManager() {
                 this.composerForm = { platforms: [], content: '', charCount: 0, scheduleDate: '', scheduleTime: '' };
                 await this.fetchData();
             } catch (error) {
-                window.notify('فشل جدولة المنشور', 'error');
+                console.error('Error scheduling post:', error);
+                window.notify(error.message || 'فشل جدولة المنشور', 'error');
             }
         },
 
         async saveDraft() {
             try {
                 window.notify('جاري حفظ المسودة...', 'info');
+
+                // TODO: Implement actual API call
+                // POST /api/social/posts/drafts with same data structure as schedule
+                // but without scheduled_date and scheduled_time
+
+                // Simulate API delay
                 await new Promise(resolve => setTimeout(resolve, 1000));
+
                 window.notify('تم حفظ المسودة', 'success');
                 this.showComposerModal = false;
             } catch (error) {
+                console.error('Error saving draft:', error);
                 window.notify('فشل حفظ المسودة', 'error');
             }
         },
