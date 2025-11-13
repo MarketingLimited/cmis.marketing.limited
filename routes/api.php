@@ -585,6 +585,28 @@ Route::middleware(['auth:sanctum', 'validate.org.access', 'set.db.context'])
 
     /*
     |----------------------------------------------------------------------
+    | الأتمتة الذكية (AI-Powered Automation) - Sprint 6.2
+    |----------------------------------------------------------------------
+    */
+    Route::prefix('ai')->name('ai.')->group(function () {
+        // Optimal Posting Times
+        Route::get('/optimal-times/{account_id}', [App\Http\Controllers\AIAutomationController::class, 'getOptimalPostingTimes'])->name('optimal-times');
+        Route::post('/auto-schedule/{account_id}', [App\Http\Controllers\AIAutomationController::class, 'autoSchedulePost'])->name('auto-schedule');
+
+        // Content Generation
+        Route::post('/hashtags', [App\Http\Controllers\AIAutomationController::class, 'generateHashtags'])->name('hashtags');
+        Route::post('/captions', [App\Http\Controllers\AIAutomationController::class, 'generateCaptions'])->name('captions');
+
+        // Budget Optimization
+        Route::post('/optimize-budget/{ad_account_id}', [App\Http\Controllers\AIAutomationController::class, 'optimizeBudget'])->name('optimize-budget');
+
+        // Automation Rules
+        Route::get('/automation-rules', [App\Http\Controllers\AIAutomationController::class, 'getAutomationRules'])->name('automation-rules.index');
+        Route::post('/automation-rules', [App\Http\Controllers\AIAutomationController::class, 'createAutomationRule'])->name('automation-rules.create');
+    });
+
+    /*
+    |----------------------------------------------------------------------
     | صندوق الوارد الموحد (Unified Inbox)
     |----------------------------------------------------------------------
     */
