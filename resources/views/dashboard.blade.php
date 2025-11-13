@@ -3,7 +3,7 @@
 @section('title', 'لوحة التحكم')
 
 @section('content')
-<div x-data="dashboardData()" x-init="init()">
+<div x-data="dashboardData(@json($stats ?? []), @json($campaignStatus ?? []), @json($campaignsByOrg ?? []))" x-init="init()">
 
     <!-- Page Header -->
     <div class="mb-6">
@@ -14,39 +14,57 @@
     <!-- Stats Cards -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
 
-        <template x-if="stats">
-            <!-- Organizations -->
-            <x-ui.stat-card
-                title="المؤسسات"
-                :value="stats.orgs || 0"
-                icon="fas fa-building"
-                color="blue"
-                :trend="5.2" />
+        <!-- Organizations -->
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-600 dark:text-gray-400">المؤسسات</p>
+                    <p class="text-3xl font-bold text-gray-900 dark:text-white mt-2" x-text="stats ? (stats.orgs || 0) : 0"></p>
+                </div>
+                <div class="p-3 rounded-full bg-blue-100 dark:bg-blue-900">
+                    <i class="fas fa-building text-blue-600 dark:text-blue-300 text-2xl"></i>
+                </div>
+            </div>
+        </div>
 
-            <!-- Campaigns -->
-            <x-ui.stat-card
-                title="الحملات النشطة"
-                :value="stats.campaigns || 0"
-                icon="fas fa-bullhorn"
-                color="green"
-                :trend="12.5" />
+        <!-- Campaigns -->
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-600 dark:text-gray-400">الحملات النشطة</p>
+                    <p class="text-3xl font-bold text-gray-900 dark:text-white mt-2" x-text="stats ? (stats.campaigns || 0) : 0"></p>
+                </div>
+                <div class="p-3 rounded-full bg-green-100 dark:bg-green-900">
+                    <i class="fas fa-bullhorn text-green-600 dark:text-green-300 text-2xl"></i>
+                </div>
+            </div>
+        </div>
 
-            <!-- Creative Assets -->
-            <x-ui.stat-card
-                title="الأصول الإبداعية"
-                :value="stats.creative_assets || 0"
-                icon="fas fa-palette"
-                color="purple"
-                :trend="-2.4" />
+        <!-- Creative Assets -->
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-600 dark:text-gray-400">الأصول الإبداعية</p>
+                    <p class="text-3xl font-bold text-gray-900 dark:text-white mt-2" x-text="stats ? (stats.creative_assets || 0) : 0"></p>
+                </div>
+                <div class="p-3 rounded-full bg-purple-100 dark:bg-purple-900">
+                    <i class="fas fa-palette text-purple-600 dark:text-purple-300 text-2xl"></i>
+                </div>
+            </div>
+        </div>
 
-            <!-- KPIs -->
-            <x-ui.stat-card
-                title="مؤشرات الأداء"
-                :value="stats.kpis || 0"
-                icon="fas fa-chart-line"
-                color="yellow"
-                :trend="8.1" />
-        </template>
+        <!-- KPIs -->
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-600 dark:text-gray-400">مؤشرات الأداء</p>
+                    <p class="text-3xl font-bold text-gray-900 dark:text-white mt-2" x-text="stats ? (stats.kpis || 0) : 0"></p>
+                </div>
+                <div class="p-3 rounded-full bg-yellow-100 dark:bg-yellow-900">
+                    <i class="fas fa-chart-line text-yellow-600 dark:text-yellow-300 text-2xl"></i>
+                </div>
+            </div>
+        </div>
 
     </div>
 
@@ -134,27 +152,27 @@
     <!-- Quick Actions -->
     <x-ui.card title="إجراءات سريعة">
         <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
-            <a href="{{ route('campaigns.index') }}" class="flex flex-col items-center p-4 bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-lg hover:shadow-lg transition">
+            <a href="#" class="flex flex-col items-center p-4 bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-lg hover:shadow-lg transition" onclick="alert('قريباً'); return false;">
                 <i class="fas fa-plus-circle text-3xl mb-2"></i>
                 <span class="text-sm font-semibold">حملة جديدة</span>
             </a>
-            <a href="{{ route('orgs.index') }}" class="flex flex-col items-center p-4 bg-gradient-to-br from-green-500 to-green-600 text-white rounded-lg hover:shadow-lg transition">
+            <a href="#" class="flex flex-col items-center p-4 bg-gradient-to-br from-green-500 to-green-600 text-white rounded-lg hover:shadow-lg transition" onclick="alert('قريباً'); return false;">
                 <i class="fas fa-building text-3xl mb-2"></i>
                 <span class="text-sm font-semibold">مؤسسة جديدة</span>
             </a>
-            <a href="{{ route('creative.index') }}" class="flex flex-col items-center p-4 bg-gradient-to-br from-purple-500 to-purple-600 text-white rounded-lg hover:shadow-lg transition">
+            <a href="#" class="flex flex-col items-center p-4 bg-gradient-to-br from-purple-500 to-purple-600 text-white rounded-lg hover:shadow-lg transition" onclick="alert('قريباً'); return false;">
                 <i class="fas fa-palette text-3xl mb-2"></i>
                 <span class="text-sm font-semibold">محتوى إبداعي</span>
             </a>
-            <a href="{{ route('analytics.index') }}" class="flex flex-col items-center p-4 bg-gradient-to-br from-yellow-500 to-yellow-600 text-white rounded-lg hover:shadow-lg transition">
+            <a href="#" class="flex flex-col items-center p-4 bg-gradient-to-br from-yellow-500 to-yellow-600 text-white rounded-lg hover:shadow-lg transition" onclick="alert('قريباً'); return false;">
                 <i class="fas fa-chart-line text-3xl mb-2"></i>
                 <span class="text-sm font-semibold">التحليلات</span>
             </a>
-            <a href="{{ route('integrations.index') }}" class="flex flex-col items-center p-4 bg-gradient-to-br from-red-500 to-red-600 text-white rounded-lg hover:shadow-lg transition">
+            <a href="#" class="flex flex-col items-center p-4 bg-gradient-to-br from-red-500 to-red-600 text-white rounded-lg hover:shadow-lg transition" onclick="alert('قريباً'); return false;">
                 <i class="fas fa-plug text-3xl mb-2"></i>
                 <span class="text-sm font-semibold">التكاملات</span>
             </a>
-            <a href="{{ route('ai.index') }}" class="flex flex-col items-center p-4 bg-gradient-to-br from-indigo-500 to-indigo-600 text-white rounded-lg hover:shadow-lg transition">
+            <a href="#" class="flex flex-col items-center p-4 bg-gradient-to-br from-indigo-500 to-indigo-600 text-white rounded-lg hover:shadow-lg transition" onclick="alert('قريباً'); return false;">
                 <i class="fas fa-robot text-3xl mb-2"></i>
                 <span class="text-sm font-semibold">الذكاء الاصطناعي</span>
             </a>
@@ -166,11 +184,11 @@
 
 @push('scripts')
 <script>
-function dashboardData() {
+function dashboardData(initialStats = null, initialCampaignStatus = null, initialCampaignsByOrg = null) {
     return {
-        stats: null,
-        campaignStatus: null,
-        campaignsByOrg: null,
+        stats: initialStats,
+        campaignStatus: initialCampaignStatus,
+        campaignsByOrg: initialCampaignsByOrg,
         weeklyMetrics: [],
         topCampaigns: [],
         recentActivity: [],
@@ -178,8 +196,13 @@ function dashboardData() {
         orgChart: null,
 
         async init() {
+            // If we have initial data, render charts immediately
+            if (this.stats && this.campaignStatus) {
+                this.renderCharts();
+            }
+
+            // Fetch fresh data from API
             await this.fetchDashboardData();
-            this.renderCharts();
 
             // Auto-refresh every 30 seconds
             setInterval(() => {
@@ -259,7 +282,7 @@ function dashboardData() {
         renderCharts() {
             // Status Pie Chart
             const statusCtx = document.getElementById('statusChart');
-            if (statusCtx) {
+            if (statusCtx && this.campaignStatus) {
                 if (this.statusChart) this.statusChart.destroy();
 
                 this.statusChart = new Chart(statusCtx, {
@@ -292,7 +315,7 @@ function dashboardData() {
 
             // Organizations Bar Chart
             const orgCtx = document.getElementById('orgChart');
-            if (orgCtx) {
+            if (orgCtx && this.campaignsByOrg && this.campaignsByOrg.length > 0) {
                 if (this.orgChart) this.orgChart.destroy();
 
                 this.orgChart = new Chart(orgCtx, {
