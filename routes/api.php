@@ -418,6 +418,27 @@ Route::middleware(['auth:sanctum', 'validate.org.access', 'set.db.context'])
 
     /*
     |----------------------------------------------------------------------
+    | الاستهداف والجماهير (Targeting & Audiences) - Sprint 4.3
+    |----------------------------------------------------------------------
+    */
+    Route::prefix('audiences')->name('audiences.')->group(function () {
+        // Audience CRUD
+        Route::get('/', [App\Http\Controllers\AudienceController::class, 'index'])->name('index');
+        Route::post('/', [App\Http\Controllers\AudienceController::class, 'create'])->name('create');
+        Route::get('/{audience_id}', [App\Http\Controllers\AudienceController::class, 'show'])->name('show');
+        Route::put('/{audience_id}', [App\Http\Controllers\AudienceController::class, 'update'])->name('update');
+        Route::delete('/{audience_id}', [App\Http\Controllers\AudienceController::class, 'destroy'])->name('destroy');
+
+        // Lookalike Audiences
+        Route::post('/{source_audience_id}/lookalike', [App\Http\Controllers\AudienceController::class, 'createLookalike'])->name('lookalike');
+
+        // Targeting Tools
+        Route::post('/estimate-size', [App\Http\Controllers\AudienceController::class, 'estimateSize'])->name('estimate-size');
+        Route::get('/targeting-suggestions', [App\Http\Controllers\AudienceController::class, 'targetingSuggestions'])->name('targeting-suggestions');
+    });
+
+    /*
+    |----------------------------------------------------------------------
     | صندوق الوارد الموحد (Unified Inbox)
     |----------------------------------------------------------------------
     */
