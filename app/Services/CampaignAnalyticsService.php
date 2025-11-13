@@ -588,12 +588,12 @@ class CampaignAnalyticsService
             $breakdown = [];
 
             foreach ($adSets as $adSet) {
-                $metrics = $this->getCampaignMetrics($adSet->ad_set_id, $startDate, $endDate);
+                $metrics = $this->getCampaignMetrics($adSet->id, $startDate, $endDate);
 
                 $breakdown[] = [
-                    'ad_set_id' => $adSet->ad_set_id,
-                    'ad_set_name' => $adSet->ad_set_name,
-                    'status' => $adSet->ad_set_status,
+                    'ad_set_id' => $adSet->id,
+                    'ad_set_name' => $adSet->name,
+                    'status' => $adSet->status,
                     'metrics' => $metrics
                 ];
             }
@@ -641,7 +641,7 @@ class CampaignAnalyticsService
             $endDate = $options['end_date'] ?? Carbon::now()->toDateString();
 
             // Get all ad entities (creatives) for campaign ad sets
-            $adSets = AdSet::where('ad_campaign_id', $campaignId)->pluck('ad_set_id');
+            $adSets = AdSet::where('ad_campaign_id', $campaignId)->pluck('adset_external_id');
 
             $creatives = AdEntity::whereIn('ad_set_id', $adSets)->get();
 

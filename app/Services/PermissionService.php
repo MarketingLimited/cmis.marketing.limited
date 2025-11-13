@@ -40,7 +40,11 @@ class PermissionService
             try {
                 $hasPermission = $this->permissionRepo->canAccessCampaign($user->user_id, $orgId);
 
-                PermissionsCache::getOrCreate($user->user_id, $orgId, $permissionCode, $hasPermission);
+                // Update permission cache metadata if it exists
+                $permissionCache = PermissionsCache::getByCode($permissionCode);
+                if ($permissionCache) {
+                    $permissionCache->touch();
+                }
 
                 return $hasPermission;
             } catch (\Exception $e) {
@@ -221,12 +225,13 @@ class PermissionService
     {
         if ($orgId) {
             Cache::forget("user_permissions:{$user->user_id}:{$orgId}");
-            PermissionsCache::clearForUser($user->user_id, $orgId);
+            // Clear all permission caches for this user/org combination
+            Cache::forget("permission:{$user->user_id}:{$orgId}:*");
         } else {
             $user->orgs->each(function ($org) use ($user) {
                 Cache::forget("user_permissions:{$user->user_id}:{$org->org_id}");
+                Cache::forget("permission:{$user->user_id}:{$org->org_id}:*");
             });
-            PermissionsCache::clearForUser($user->user_id);
         }
 
         Cache::tags("user_permissions:{$user->user_id}")->flush();
@@ -243,7 +248,7 @@ class PermissionService
 
         foreach ($userOrgs as $userOrg) {
             Cache::forget("user_permissions:{$userOrg->user_id}:{$userOrg->org_id}");
-            PermissionsCache::clearForUser($userOrg->user_id, $userOrg->org_id);
+            Cache::forget("permission:{$userOrg->user_id}:{$userOrg->org_id}:*");
         }
     }
 
