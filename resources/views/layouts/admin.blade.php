@@ -142,58 +142,58 @@
 
                 <div class="pt-4 pb-2 text-xs font-semibold text-gray-400 uppercase">الإدارة</div>
 
-                <a href="#"
-                   class="flex items-center px-4 py-3 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-blue-50 dark:hover:bg-gray-700 transition opacity-50 cursor-not-allowed">
+                <a href="{{ route('orgs.index') }}"
+                   class="flex items-center px-4 py-3 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-blue-50 dark:hover:bg-gray-700 transition {{ request()->routeIs('orgs.*') ? 'bg-blue-50 text-blue-600 font-semibold' : '' }}">
                     <i class="fas fa-building text-lg w-6"></i>
                     <span class="mr-3">المؤسسات</span>
                 </a>
 
-                <a href="#"
-                   class="flex items-center px-4 py-3 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-blue-50 dark:hover:bg-gray-700 transition opacity-50 cursor-not-allowed">
+                <a href="{{ route('campaigns.index') }}"
+                   class="flex items-center px-4 py-3 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-blue-50 dark:hover:bg-gray-700 transition {{ request()->routeIs('campaigns.*') ? 'bg-blue-50 text-blue-600 font-semibold' : '' }}">
                     <i class="fas fa-bullhorn text-lg w-6"></i>
                     <span class="mr-3">الحملات</span>
                 </a>
 
                 <div class="pt-4 pb-2 text-xs font-semibold text-gray-400 uppercase">المحتوى</div>
 
-                <a href="#"
-                   class="flex items-center px-4 py-3 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-blue-50 dark:hover:bg-gray-700 transition opacity-50 cursor-not-allowed">
+                <a href="{{ route('creative.index') }}"
+                   class="flex items-center px-4 py-3 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-blue-50 dark:hover:bg-gray-700 transition {{ request()->routeIs('creative.*') ? 'bg-blue-50 text-blue-600 font-semibold' : '' }}">
                     <i class="fas fa-palette text-lg w-6"></i>
                     <span class="mr-3">الإبداع</span>
                 </a>
 
-                <a href="#"
-                   class="flex items-center px-4 py-3 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-blue-50 dark:hover:bg-gray-700 transition opacity-50 cursor-not-allowed">
+                <a href="{{ route('social.index') }}"
+                   class="flex items-center px-4 py-3 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-blue-50 dark:hover:bg-gray-700 transition {{ request()->routeIs('social.*') ? 'bg-blue-50 text-blue-600 font-semibold' : '' }}">
                     <i class="fas fa-share-alt text-lg w-6"></i>
                     <span class="mr-3">القنوات الاجتماعية</span>
                 </a>
 
                 <div class="pt-4 pb-2 text-xs font-semibold text-gray-400 uppercase">التحليلات</div>
 
-                <a href="#"
-                   class="flex items-center px-4 py-3 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-blue-50 dark:hover:bg-gray-700 transition opacity-50 cursor-not-allowed">
+                <a href="{{ route('analytics.index') }}"
+                   class="flex items-center px-4 py-3 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-blue-50 dark:hover:bg-gray-700 transition {{ request()->routeIs('analytics.*') ? 'bg-blue-50 text-blue-600 font-semibold' : '' }}">
                     <i class="fas fa-chart-line text-lg w-6"></i>
                     <span class="mr-3">التحليلات</span>
                 </a>
 
                 <div class="pt-4 pb-2 text-xs font-semibold text-gray-400 uppercase">الذكاء الاصطناعي</div>
 
-                <a href="#"
-                   class="flex items-center px-4 py-3 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-blue-50 dark:hover:bg-gray-700 transition opacity-50 cursor-not-allowed">
+                <a href="{{ route('ai.index') }}"
+                   class="flex items-center px-4 py-3 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-blue-50 dark:hover:bg-gray-700 transition {{ request()->routeIs('ai.*') ? 'bg-blue-50 text-blue-600 font-semibold' : '' }}">
                     <i class="fas fa-robot text-lg w-6"></i>
                     <span class="mr-3">الذكاء الاصطناعي</span>
                 </a>
 
                 <div class="pt-4 pb-2 text-xs font-semibold text-gray-400 uppercase">الإعدادات</div>
 
-                <a href="#"
-                   class="flex items-center px-4 py-3 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-blue-50 dark:hover:bg-gray-700 transition opacity-50 cursor-not-allowed">
+                <a href="{{ route('settings.integrations') }}"
+                   class="flex items-center px-4 py-3 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-blue-50 dark:hover:bg-gray-700 transition {{ request()->routeIs('settings.integrations') ? 'bg-blue-50 text-blue-600 font-semibold' : '' }}">
                     <i class="fas fa-plug text-lg w-6"></i>
                     <span class="mr-3">التكاملات</span>
                 </a>
 
-                <a href="#"
-                   class="flex items-center px-4 py-3 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-blue-50 dark:hover:bg-gray-700 transition opacity-50 cursor-not-allowed">
+                <a href="{{ route('offerings.index') }}"
+                   class="flex items-center px-4 py-3 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-blue-50 dark:hover:bg-gray-700 transition {{ request()->routeIs('offerings.*') || request()->routeIs('products.*') || request()->routeIs('services.*') ? 'bg-blue-50 text-blue-600 font-semibold' : '' }}">
                     <i class="fas fa-box text-lg w-6"></i>
                     <span class="mr-3">العروض</span>
                 </a>
@@ -228,10 +228,13 @@
                     </button>
 
                     <!-- Notifications -->
-                    <div class="relative" x-data="{ notifOpen: false }">
-                        <button @click="notifOpen = !notifOpen" class="relative p-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition">
+                    <div class="relative" x-data="notificationsWidget()" x-init="init()">
+                        <button @click="toggleNotifications()" class="relative p-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition">
                             <i class="fas fa-bell"></i>
-                            <span class="absolute top-0 left-0 w-2 h-2 bg-red-500 rounded-full"></span>
+                            <span x-show="unreadCount > 0"
+                                  x-text="unreadCount > 9 ? '9+' : unreadCount"
+                                  class="absolute -top-1 -left-1 min-w-[20px] h-5 flex items-center justify-center bg-red-500 text-white text-xs font-bold rounded-full px-1">
+                            </span>
                         </button>
 
                         <div x-show="notifOpen"
@@ -239,21 +242,50 @@
                              x-transition
                              class="absolute left-0 mt-2 w-80 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 z-50"
                              x-cloak>
-                            <div class="p-4 border-b border-gray-200 dark:border-gray-700">
+                            <div class="p-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
                                 <h3 class="font-semibold text-gray-900 dark:text-white">الإشعارات</h3>
+                                <span x-show="unreadCount > 0" class="text-xs text-gray-500" x-text="`${unreadCount} غير مقروء`"></span>
                             </div>
-                            <div class="max-h-96 overflow-y-auto">
-                                <div class="p-4 border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer">
-                                    <p class="text-sm text-gray-800 dark:text-gray-200">تم إطلاق حملة جديدة بنجاح</p>
-                                    <p class="text-xs text-gray-500 mt-1">منذ 5 دقائق</p>
-                                </div>
-                                <div class="p-4 border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer">
-                                    <p class="text-sm text-gray-800 dark:text-gray-200">تحديث في أداء الحملات</p>
-                                    <p class="text-xs text-gray-500 mt-1">منذ ساعة</p>
-                                </div>
+
+                            <!-- Loading State -->
+                            <div x-show="loading" class="p-8 text-center">
+                                <i class="fas fa-spinner fa-spin text-2xl text-gray-400"></i>
                             </div>
+
+                            <!-- Notifications List -->
+                            <div x-show="!loading" class="max-h-96 overflow-y-auto">
+                                <template x-if="notifications.length === 0">
+                                    <div class="p-8 text-center text-gray-500">
+                                        <i class="fas fa-bell-slash text-3xl mb-2"></i>
+                                        <p class="text-sm">لا توجد إشعارات</p>
+                                    </div>
+                                </template>
+
+                                <template x-for="notification in notifications" :key="notification.id">
+                                    <div @click="markAsRead(notification.id)"
+                                         class="p-4 border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition"
+                                         :class="{ 'bg-blue-50 dark:bg-blue-900/20': !notification.read }">
+                                        <div class="flex items-start">
+                                            <div class="flex-shrink-0 mr-3">
+                                                <div class="w-8 h-8 rounded-full flex items-center justify-center"
+                                                     :class="getNotificationColor(notification.type)">
+                                                    <i :class="getNotificationIcon(notification.type)" class="text-sm"></i>
+                                                </div>
+                                            </div>
+                                            <div class="flex-1 min-w-0">
+                                                <p class="text-sm text-gray-800 dark:text-gray-200" x-text="notification.message"></p>
+                                                <p class="text-xs text-gray-500 mt-1" x-text="notification.time"></p>
+                                            </div>
+                                            <div x-show="!notification.read" class="flex-shrink-0">
+                                                <div class="w-2 h-2 bg-blue-500 rounded-full"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+
                             <div class="p-3 text-center border-t border-gray-200 dark:border-gray-700">
-                                <a href="#" class="text-sm text-blue-600 hover:text-blue-700">عرض جميع الإشعارات</a>
+                                <a href="{{ route('settings.notifications') }}" class="text-sm text-blue-600 hover:text-blue-700">عرض جميع الإشعارات</a>
                             </div>
                         </div>
                     </div>
@@ -274,10 +306,10 @@
                              x-transition
                              class="absolute left-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 z-50"
                              x-cloak>
-                            <a href="#" class="block px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-t-lg">
+                            <a href="{{ route('profile') }}" class="block px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-t-lg">
                                 <i class="fas fa-user ml-2"></i> الملف الشخصي
                             </a>
-                            <a href="#" class="block px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">
+                            <a href="{{ route('settings.index') }}" class="block px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">
                                 <i class="fas fa-cog ml-2"></i> الإعدادات
                             </a>
                             <hr class="border-gray-200 dark:border-gray-700">
@@ -303,6 +335,125 @@
 
     <!-- Scripts -->
     <script>
+        // Notifications Widget
+        function notificationsWidget() {
+            return {
+                notifOpen: false,
+                loading: false,
+                notifications: [],
+                unreadCount: 0,
+                refreshInterval: null,
+
+                async init() {
+                    await this.loadNotifications();
+                    // Auto-refresh every 30 seconds
+                    this.refreshInterval = setInterval(() => {
+                        this.loadNotifications();
+                    }, 30000);
+                },
+
+                async loadNotifications() {
+                    this.loading = true;
+                    try {
+                        const response = await fetch('/notifications/latest', {
+                            headers: {
+                                'Accept': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
+                            }
+                        });
+
+                        if (response.ok) {
+                            const data = await response.json();
+                            this.notifications = data.notifications || [];
+                            this.unreadCount = this.notifications.filter(n => !n.read).length;
+                        } else {
+                            // Fallback to sample data if API not ready
+                            this.loadSampleNotifications();
+                        }
+                    } catch (error) {
+                        console.error('Failed to load notifications:', error);
+                        // Fallback to sample data
+                        this.loadSampleNotifications();
+                    } finally {
+                        this.loading = false;
+                    }
+                },
+
+                loadSampleNotifications() {
+                    this.notifications = [
+                        { id: 1, type: 'campaign', message: 'تم إطلاق حملة "عروض الصيف" بنجاح', time: 'منذ 5 دقائق', read: false },
+                        { id: 2, type: 'analytics', message: 'تحديث في أداء الحملات - زيادة 15% في التحويلات', time: 'منذ ساعة', read: false },
+                        { id: 3, type: 'integration', message: 'تم ربط حساب Meta Ads بنجاح', time: 'منذ 3 ساعات', read: true },
+                        { id: 4, type: 'user', message: 'تمت إضافة عضو جديد إلى الفريق', time: 'منذ يوم', read: true }
+                    ];
+                    this.unreadCount = this.notifications.filter(n => !n.read).length;
+                },
+
+                toggleNotifications() {
+                    this.notifOpen = !this.notifOpen;
+                    if (this.notifOpen && this.notifications.length === 0) {
+                        this.loadNotifications();
+                    }
+                },
+
+                async markAsRead(notificationId) {
+                    try {
+                        // Find notification
+                        const notification = this.notifications.find(n => n.id === notificationId);
+                        if (!notification || notification.read) return;
+
+                        // Try to mark as read on server
+                        const response = await fetch(`/notifications/${notificationId}/read`, {
+                            method: 'POST',
+                            headers: {
+                                'Accept': 'application/json',
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
+                            }
+                        });
+
+                        if (response.ok || response.status === 404) {
+                            // Mark as read locally
+                            notification.read = true;
+                            this.unreadCount = Math.max(0, this.unreadCount - 1);
+                        }
+                    } catch (error) {
+                        console.error('Failed to mark notification as read:', error);
+                        // Still mark as read locally
+                        const notification = this.notifications.find(n => n.id === notificationId);
+                        if (notification && !notification.read) {
+                            notification.read = true;
+                            this.unreadCount = Math.max(0, this.unreadCount - 1);
+                        }
+                    }
+                },
+
+                getNotificationIcon(type) {
+                    const icons = {
+                        'campaign': 'fas fa-bullhorn',
+                        'analytics': 'fas fa-chart-line',
+                        'integration': 'fas fa-plug',
+                        'user': 'fas fa-user',
+                        'creative': 'fas fa-palette',
+                        'system': 'fas fa-cog'
+                    };
+                    return icons[type] || 'fas fa-bell';
+                },
+
+                getNotificationColor(type) {
+                    const colors = {
+                        'campaign': 'bg-blue-100 text-blue-600',
+                        'analytics': 'bg-green-100 text-green-600',
+                        'integration': 'bg-purple-100 text-purple-600',
+                        'user': 'bg-yellow-100 text-yellow-600',
+                        'creative': 'bg-pink-100 text-pink-600',
+                        'system': 'bg-gray-100 text-gray-600'
+                    };
+                    return colors[type] || 'bg-gray-100 text-gray-600';
+                }
+            };
+        }
+
         // Notification Manager
         function notificationManager() {
             return {

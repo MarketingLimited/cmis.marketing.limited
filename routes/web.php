@@ -44,6 +44,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard.index');
     Route::get('/dashboard/data', [DashboardController::class, 'data'])->name('dashboard.data');
     Route::get('/notifications/latest', [DashboardController::class, 'latest'])->name('notifications.latest');
+    Route::post('/notifications/{notificationId}/read', [DashboardController::class, 'markAsRead'])->name('notifications.markAsRead');
 
     // ==================== Campaigns ====================
     Route::prefix('campaigns')->name('campaigns.')->group(function () {
