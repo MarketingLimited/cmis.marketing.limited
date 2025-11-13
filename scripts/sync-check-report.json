@@ -1,0 +1,119 @@
+{
+    "timestamp": "2025-11-13 17:18:23",
+    "models_checked": 158,
+    "files_checked": 160,
+    "routes_found": 405,
+    "model_issues": [
+        {
+            "model": "App\\Models\\VPredictiveCognitiveHorizon",
+            "issue": "No $fillable defined - potential mass assignment risk"
+        },
+        {
+            "model": "App\\Models\\VCreativeEfficiency",
+            "issue": "No $fillable defined - potential mass assignment risk"
+        },
+        {
+            "model": "App\\Models\\ContextsUnified",
+            "issue": "No $fillable defined - potential mass assignment risk"
+        },
+        {
+            "model": "App\\Models\\VSecurityContextSummary",
+            "issue": "No $fillable defined - potential mass assignment risk"
+        },
+        {
+            "model": "App\\Models\\VUnifiedAdTargeting",
+            "issue": "No $fillable defined - potential mass assignment risk"
+        },
+        {
+            "model": "App\\Models\\VCacheStatus",
+            "issue": "No $fillable defined - potential mass assignment risk"
+        },
+        {
+            "model": "App\\Models\\VEmbeddingQueueStatus",
+            "issue": "No $fillable defined - potential mass assignment risk"
+        },
+        {
+            "model": "App\\Models\\AuditSummary",
+            "issue": "No $fillable defined - potential mass assignment risk"
+        },
+        {
+            "model": "App\\Models\\VGlobalCognitiveIndex",
+            "issue": "No $fillable defined - potential mass assignment risk"
+        },
+        {
+            "model": "App\\Models\\VKpiSummary",
+            "issue": "No $fillable defined - potential mass assignment risk"
+        },
+        {
+            "model": "App\\Models\\VContextImpact",
+            "issue": "No $fillable defined - potential mass assignment risk"
+        },
+        {
+            "model": "App\\Models\\VCognitiveKpiTimeseries",
+            "issue": "No $fillable defined - potential mass assignment risk"
+        },
+        {
+            "model": "App\\Models\\VTemporalDashboard",
+            "issue": "No $fillable defined - potential mass assignment risk"
+        },
+        {
+            "model": "App\\Models\\VSearchPerformance",
+            "issue": "No $fillable defined - potential mass assignment risk"
+        },
+        {
+            "model": "App\\Models\\VCognitiveDashboard",
+            "issue": "No $fillable defined - potential mass assignment risk"
+        },
+        {
+            "model": "App\\Models\\VChronoEvolution",
+            "issue": "No $fillable defined - potential mass assignment risk"
+        },
+        {
+            "model": "App\\Models\\VisualDashboardView",
+            "issue": "No $fillable defined - potential mass assignment risk"
+        },
+        {
+            "model": "App\\Models\\MarketingObjectives",
+            "issue": "No $fillable defined - potential mass assignment risk"
+        },
+        {
+            "model": "App\\Models\\VDeletedRecords",
+            "issue": "No $fillable defined - potential mass assignment risk"
+        },
+        {
+            "model": "App\\Models\\VCognitiveActivity",
+            "issue": "No $fillable defined - potential mass assignment risk"
+        },
+        {
+            "model": "App\\Models\\VSystemMonitoring",
+            "issue": "No $fillable defined - potential mass assignment risk"
+        },
+        {
+            "model": "App\\Models\\VCognitiveKpiGraph",
+            "issue": "No $fillable defined - potential mass assignment risk"
+        },
+        {
+            "model": "App\\Models\\VMarketingReference",
+            "issue": "No $fillable defined - potential mass assignment risk"
+        },
+        {
+            "model": "App\\Models\\VCognitiveKpi",
+            "issue": "No $fillable defined - potential mass assignment risk"
+        },
+        {
+            "model": "App\\Models\\VAiInsights",
+            "issue": "No $fillable defined - potential mass assignment risk"
+        },
+        {
+            "model": "App\\Models\\VCognitiveAdminLog",
+            "issue": "No $fillable defined - potential mass assignment risk"
+        },
+        {
+            "model": "App\\Models\\VCognitiveVitality",
+            "issue": "No $fillable defined - potential mass assignment risk"
+        }
+    ],
+    "syntax_errors": [],
+    "total_issues": 27,
+    "status": "FAIL"
+}

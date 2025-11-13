@@ -7,6 +7,13 @@ use Illuminate\Database\Eloquent\Model;
 class Channels extends Model
 {
     protected $table = 'cmis.channels';
+
+    protected $fillable = [
+        'channel_id',
+        'code',
+        'name',
+        'constraints',
+    ];
     protected $casts = [
         'constraints' => 'array',
     ];
