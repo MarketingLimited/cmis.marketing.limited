@@ -357,6 +357,27 @@ Route::middleware(['auth:sanctum', 'validate.org.access', 'set.db.context'])
 
     /*
     |----------------------------------------------------------------------
+    | تقارير PDF (PDF Reports) - Sprint 3.4
+    |----------------------------------------------------------------------
+    */
+    Route::prefix('reports')->name('reports.')->group(function () {
+        // Report Types
+        Route::get('/types', [App\Http\Controllers\ReportsController::class, 'getReportTypes'])->name('types');
+
+        // Generate Reports
+        Route::post('/performance', [App\Http\Controllers\ReportsController::class, 'generatePerformanceReport'])->name('performance');
+        Route::post('/ai-insights', [App\Http\Controllers\ReportsController::class, 'generateAIInsightsReport'])->name('ai-insights');
+        Route::post('/organization', [App\Http\Controllers\ReportsController::class, 'generateOrgReport'])->name('organization');
+        Route::post('/content-analysis', [App\Http\Controllers\ReportsController::class, 'generateContentAnalysisReport'])->name('content-analysis');
+
+        // Scheduled Reports
+        Route::post('/schedule', [App\Http\Controllers\ReportsController::class, 'scheduleReport'])->name('schedule');
+        Route::get('/schedules', [App\Http\Controllers\ReportsController::class, 'getScheduledReports'])->name('schedules');
+        Route::delete('/schedule/{schedule_id}', [App\Http\Controllers\ReportsController::class, 'cancelScheduledReport'])->name('schedule.cancel');
+    });
+
+    /*
+    |----------------------------------------------------------------------
     | صندوق الوارد الموحد (Unified Inbox)
     |----------------------------------------------------------------------
     */
