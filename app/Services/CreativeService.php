@@ -4,12 +4,19 @@ namespace App\Services;
 
 use App\Models\CreativeAsset;
 use App\Models\CreativeBrief;
+use App\Repositories\Contracts\CreativeRepositoryInterface;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
 class CreativeService
 {
+    protected CreativeRepositoryInterface $creativeRepo;
+
+    public function __construct(CreativeRepositoryInterface $creativeRepo)
+    {
+        $this->creativeRepo = $creativeRepo;
+    }
     /**
      * Upload and process creative asset
      */

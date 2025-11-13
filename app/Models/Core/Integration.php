@@ -13,7 +13,7 @@ class Integration extends Model
 
     protected $connection = 'pgsql';
 
-    protected $table = 'cmis.integrations';
+    protected $table = 'cmis_integrations.integrations';
 
     protected $primaryKey = 'integration_id';
 
@@ -69,5 +69,15 @@ class Integration extends Model
     public function creator(): BelongsTo
     {
         return $this->belongsTo(\App\Models\User::class, 'created_by', 'user_id');
+    }
+
+    /**
+     * Get ad campaigns associated with this integration
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function adCampaigns()
+    {
+        return $this->hasMany(\App\Models\AdPlatform\AdCampaign::class, 'ad_account_id', 'account_id');
     }
 }

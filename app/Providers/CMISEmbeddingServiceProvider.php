@@ -43,7 +43,7 @@ class CMISEmbeddingServiceProvider extends ServiceProvider
     {
         // Publish config
         $this->publishes([
-            __DIR__.'/../config/cmis-embeddings.php' => config_path('cmis-embeddings.php'),
+            base_path('config/cmis-embeddings.php') => config_path('cmis-embeddings.php'),
         ], 'cmis-config');
 
         // Register commands

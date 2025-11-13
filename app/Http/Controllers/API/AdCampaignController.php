@@ -4,10 +4,10 @@ namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
 use App\Models\Core\Integration;
-use App\Services\Connectors\ConnectorFactory;
+use App\Models\AdPlatform\AdCampaign;
+use App\Services\AdCampaigns\AdCampaignManagerService;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -16,6 +16,13 @@ use Illuminate\Support\Facades\Log;
  */
 class AdCampaignController extends Controller
 {
+    protected AdCampaignManagerService $adCampaignService;
+
+    public function __construct(AdCampaignManagerService $adCampaignService)
+    {
+        $this->adCampaignService = $adCampaignService;
+    }
+
     /**
      * Create a new ad campaign
      *
@@ -35,6 +42,8 @@ class AdCampaignController extends Controller
                 'start_date' => 'nullable|date',
                 'end_date' => 'nullable|date|after:start_date',
                 'targeting' => 'nullable|array',
+                'placements' => 'nullable|array',
+                'optimization_goal' => 'nullable|string',
             ]);
 
             $orgId = $request->user()->org_id;
@@ -44,45 +53,27 @@ class AdCampaignController extends Controller
                 ->where('is_active', true)
                 ->firstOrFail();
 
-            // Create campaign via connector
-            $connector = ConnectorFactory::make($integration->platform);
-            $result = $connector->createAdCampaign($integration, $validated);
+            // Create campaign via service
+            $result = $this->adCampaignService->createCampaign($integration, $validated);
 
             if (!$result['success']) {
-                throw new \Exception($result['error'] ?? 'Failed to create campaign');
+                return response()->json([
+                    'success' => false,
+                    'error' => $result['error'],
+                ], 400);
             }
-
-            // Store in database
-            $campaignId = \Illuminate\Support\Str::uuid();
-            DB::table('cmis_ads.ad_campaigns')->insert([
-                'campaign_id' => $campaignId,
-                'org_id' => $orgId,
-                'integration_id' => $validated['integration_id'],
-                'platform' => $integration->platform,
-                'platform_campaign_id' => $result['campaign_id'],
-                'campaign_name' => $validated['campaign_name'],
-                'objective' => $validated['objective'],
-                'status' => $validated['status'] ?? 'PAUSED',
-                'daily_budget' => $validated['daily_budget'] ?? null,
-                'lifetime_budget' => $validated['lifetime_budget'] ?? null,
-                'start_date' => $validated['start_date'] ?? null,
-                'end_date' => $validated['end_date'] ?? null,
-                'targeting' => json_encode($validated['targeting'] ?? []),
-                'created_by' => $request->user()->user_id,
-                'created_at' => now(),
-            ]);
 
             return response()->json([
                 'success' => true,
-                'campaign_id' => $campaignId,
-                'platform_campaign_id' => $result['campaign_id'],
-                'message' => 'Campaign created successfully',
+                'campaign' => $result['campaign'],
+                'platform_campaign_id' => $result['external_id'],
+                'message' => 'تم إنشاء الحملة الإعلانية بنجاح',
             ]);
         } catch (\Exception $e) {
             Log::error("Failed to create campaign: {$e->getMessage()}");
             return response()->json([
                 'success' => false,
-                'error' => $e->getMessage(),
+                'error' => 'فشل إنشاء الحملة الإعلانية: ' . $e->getMessage(),
             ], 500);
         }
     }
@@ -109,53 +100,35 @@ class AdCampaignController extends Controller
 
             $orgId = $request->user()->org_id;
 
-            $campaign = DB::table('cmis_ads.ad_campaigns')
-                ->where('campaign_id', $campaignId)
-                ->where('org_id', $orgId)
-                ->first();
-
-            if (!$campaign) {
-                return response()->json([
-                    'success' => false,
-                    'error' => 'Campaign not found',
-                ], 404);
-            }
-
-            $integration = Integration::where('integration_id', $campaign->integration_id)
+            $campaign = AdCampaign::where('ad_campaign_id', $campaignId)
+                ->whereHas('campaign', function ($query) use ($orgId) {
+                    $query->where('org_id', $orgId);
+                })
                 ->firstOrFail();
 
-            // Update via connector
-            $connector = ConnectorFactory::make($integration->platform);
-            $result = $connector->updateAdCampaign($integration, $campaign->platform_campaign_id, $validated);
+            $integration = Integration::where('integration_id', $campaign->ad_account_id)
+                ->firstOrFail();
+
+            // Update via service
+            $result = $this->adCampaignService->updateCampaign($campaign, $integration, $validated);
 
             if (!$result['success']) {
-                throw new \Exception($result['error'] ?? 'Failed to update campaign');
+                return response()->json([
+                    'success' => false,
+                    'error' => $result['error'],
+                ], 400);
             }
-
-            // Update in database
-            $updates = ['updated_at' => now()];
-            foreach (['campaign_name', 'status', 'daily_budget', 'lifetime_budget', 'start_date', 'end_date'] as $field) {
-                if (isset($validated[$field])) {
-                    $updates[$field] = $validated[$field];
-                }
-            }
-            if (isset($validated['targeting'])) {
-                $updates['targeting'] = json_encode($validated['targeting']);
-            }
-
-            DB::table('cmis_ads.ad_campaigns')
-                ->where('campaign_id', $campaignId)
-                ->update($updates);
 
             return response()->json([
                 'success' => true,
-                'message' => 'Campaign updated successfully',
+                'campaign' => $result['campaign'],
+                'message' => 'تم تحديث الحملة الإعلانية بنجاح',
             ]);
         } catch (\Exception $e) {
             Log::error("Failed to update campaign: {$e->getMessage()}");
             return response()->json([
                 'success' => false,
-                'error' => $e->getMessage(),
+                'error' => 'فشل تحديث الحملة: ' . $e->getMessage(),
             ], 500);
         }
     }
@@ -173,24 +146,21 @@ class AdCampaignController extends Controller
             $platform = $request->input('platform');
             $status = $request->input('status');
 
-            $query = DB::table('cmis_ads.ad_campaigns as c')
-                ->join('cmis_integrations.integrations as i', 'c.integration_id', '=', 'i.integration_id')
-                ->where('c.org_id', $orgId)
-                ->select(
-                    'c.*',
-                    'i.external_account_name',
-                    'i.external_account_id'
-                );
+            $query = AdCampaign::query()
+                ->with(['campaign', 'adAccount'])
+                ->whereHas('campaign', function ($q) use ($orgId) {
+                    $q->where('org_id', $orgId);
+                });
 
             if ($platform) {
-                $query->where('c.platform', $platform);
+                $query->where('platform', $platform);
             }
 
             if ($status) {
-                $query->where('c.status', $status);
+                $query->where('campaign_status', $status);
             }
 
-            $campaigns = $query->orderBy('c.created_at', 'desc')->get();
+            $campaigns = $query->orderBy('created_at', 'desc')->get();
 
             return response()->json([
                 'success' => true,
@@ -201,7 +171,7 @@ class AdCampaignController extends Controller
             Log::error("Failed to get campaigns: {$e->getMessage()}");
             return response()->json([
                 'success' => false,
-                'error' => $e->getMessage(),
+                'error' => 'فشل جلب الحملات: ' . $e->getMessage(),
             ], 500);
         }
     }
@@ -218,19 +188,12 @@ class AdCampaignController extends Controller
         try {
             $orgId = $request->user()->org_id;
 
-            $campaign = DB::table('cmis_ads.ad_campaigns as c')
-                ->join('cmis_integrations.integrations as i', 'c.integration_id', '=', 'i.integration_id')
-                ->where('c.campaign_id', $campaignId)
-                ->where('c.org_id', $orgId)
-                ->select('c.*', 'i.external_account_name', 'i.external_account_id')
-                ->first();
-
-            if (!$campaign) {
-                return response()->json([
-                    'success' => false,
-                    'error' => 'Campaign not found',
-                ], 404);
-            }
+            $campaign = AdCampaign::with(['campaign', 'adAccount', 'adSets', 'metrics'])
+                ->where('ad_campaign_id', $campaignId)
+                ->whereHas('campaign', function ($query) use ($orgId) {
+                    $query->where('org_id', $orgId);
+                })
+                ->firstOrFail();
 
             return response()->json([
                 'success' => true,
@@ -240,8 +203,8 @@ class AdCampaignController extends Controller
             Log::error("Failed to get campaign: {$e->getMessage()}");
             return response()->json([
                 'success' => false,
-                'error' => $e->getMessage(),
-            ], 500);
+                'error' => 'لم يتم العثور على الحملة',
+            ], 404);
         }
     }
 
@@ -257,32 +220,25 @@ class AdCampaignController extends Controller
         try {
             $orgId = $request->user()->org_id;
 
-            $campaign = DB::table('cmis_ads.ad_campaigns')
-                ->where('campaign_id', $campaignId)
-                ->where('org_id', $orgId)
-                ->first();
-
-            if (!$campaign) {
-                return response()->json([
-                    'success' => false,
-                    'error' => 'Campaign not found',
-                ], 404);
-            }
-
-            $integration = Integration::where('integration_id', $campaign->integration_id)
+            $campaign = AdCampaign::where('ad_campaign_id', $campaignId)
+                ->whereHas('campaign', function ($query) use ($orgId) {
+                    $query->where('org_id', $orgId);
+                })
                 ->firstOrFail();
 
-            // Get metrics from platform
-            $connector = ConnectorFactory::make($integration->platform);
-            $metrics = $connector->getAdCampaignMetrics(
+            $integration = Integration::where('account_id', $campaign->ad_account_id)
+                ->where('platform', $campaign->platform)
+                ->firstOrFail();
+
+            // Get metrics from platform via service
+            $liveMetrics = $this->adCampaignService->getCampaignMetrics(
+                $campaign,
                 $integration,
-                $campaign->platform_campaign_id,
                 $request->all()
             );
 
-            // Also get stored metrics
-            $storedMetrics = DB::table('cmis_ads.ad_metrics')
-                ->where('campaign_id', $campaignId)
+            // Get stored metrics
+            $storedMetrics = $campaign->metrics()
                 ->orderBy('date', 'desc')
                 ->limit(30)
                 ->get();
@@ -291,14 +247,52 @@ class AdCampaignController extends Controller
                 'success' => true,
                 'campaign_id' => $campaignId,
                 'platform' => $campaign->platform,
-                'live_metrics' => $metrics,
+                'live_metrics' => $liveMetrics,
                 'stored_metrics' => $storedMetrics,
             ]);
         } catch (\Exception $e) {
             Log::error("Failed to get campaign metrics: {$e->getMessage()}");
             return response()->json([
                 'success' => false,
-                'error' => $e->getMessage(),
+                'error' => 'فشل جلب مقاييس الحملة: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Sync campaigns from platform
+     *
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function syncCampaigns(Request $request): JsonResponse
+    {
+        try {
+            $validated = $request->validate([
+                'integration_id' => 'required|string|exists:cmis_integrations.integrations,integration_id',
+            ]);
+
+            $orgId = $request->user()->org_id;
+
+            $integration = Integration::where('integration_id', $validated['integration_id'])
+                ->where('org_id', $orgId)
+                ->where('is_active', true)
+                ->firstOrFail();
+
+            $result = $this->adCampaignService->syncCampaigns($integration);
+
+            return response()->json([
+                'success' => $result['success'],
+                'synced_count' => $result['synced_count'] ?? 0,
+                'message' => $result['success']
+                    ? 'تمت مزامنة الحملات بنجاح'
+                    : 'فشلت مزامنة الحملات',
+            ]);
+        } catch (\Exception $e) {
+            Log::error("Failed to sync campaigns: {$e->getMessage()}");
+            return response()->json([
+                'success' => false,
+                'error' => 'فشلت مزامنة الحملات: ' . $e->getMessage(),
             ], 500);
         }
     }
@@ -352,48 +346,44 @@ class AdCampaignController extends Controller
         try {
             $orgId = $request->user()->org_id;
 
-            $campaign = DB::table('cmis_ads.ad_campaigns')
-                ->where('campaign_id', $campaignId)
-                ->where('org_id', $orgId)
-                ->first();
-
-            if (!$campaign) {
-                return response()->json([
-                    'success' => false,
-                    'error' => 'Campaign not found',
-                ], 404);
-            }
-
-            $integration = Integration::where('integration_id', $campaign->integration_id)
+            $campaign = AdCampaign::where('ad_campaign_id', $campaignId)
+                ->whereHas('campaign', function ($query) use ($orgId) {
+                    $query->where('org_id', $orgId);
+                })
                 ->firstOrFail();
 
-            // Update via connector
-            $connector = ConnectorFactory::make($integration->platform);
-            $result = $connector->updateAdCampaign($integration, $campaign->platform_campaign_id, [
-                'status' => $status,
+            $integration = Integration::where('account_id', $campaign->ad_account_id)
+                ->where('platform', $campaign->platform)
+                ->firstOrFail();
+
+            // Update via service
+            $result = $this->adCampaignService->updateCampaign($campaign, $integration, [
+                'campaign_status' => $status,
             ]);
 
             if (!$result['success']) {
-                throw new \Exception($result['error'] ?? 'Failed to update campaign status');
+                return response()->json([
+                    'success' => false,
+                    'error' => $result['error'],
+                ], 400);
             }
 
-            // Update in database
-            DB::table('cmis_ads.ad_campaigns')
-                ->where('campaign_id', $campaignId)
-                ->update([
-                    'status' => $status,
-                    'updated_at' => now(),
-                ]);
+            $statusMessages = [
+                'ACTIVE' => 'تم تفعيل الحملة بنجاح',
+                'PAUSED' => 'تم إيقاف الحملة مؤقتاً بنجاح',
+                'DELETED' => 'تم حذف الحملة بنجاح',
+            ];
 
             return response()->json([
                 'success' => true,
-                'message' => "Campaign {$status} successfully",
+                'campaign' => $result['campaign'],
+                'message' => $statusMessages[$status] ?? 'تم تحديث الحملة بنجاح',
             ]);
         } catch (\Exception $e) {
             Log::error("Failed to update campaign status: {$e->getMessage()}");
             return response()->json([
                 'success' => false,
-                'error' => $e->getMessage(),
+                'error' => 'فشل تحديث حالة الحملة: ' . $e->getMessage(),
             ], 500);
         }
     }
@@ -408,52 +398,52 @@ class AdCampaignController extends Controller
     {
         $objectives = [
             'meta' => [
-                'OUTCOME_AWARENESS' => 'Brand Awareness',
-                'OUTCOME_ENGAGEMENT' => 'Engagement',
-                'OUTCOME_LEADS' => 'Lead Generation',
-                'OUTCOME_SALES' => 'Sales & Conversions',
-                'OUTCOME_TRAFFIC' => 'Website Traffic',
-                'OUTCOME_APP_PROMOTION' => 'App Promotion',
+                'OUTCOME_AWARENESS' => 'الوعي بالعلامة التجارية',
+                'OUTCOME_ENGAGEMENT' => 'التفاعل',
+                'OUTCOME_LEADS' => 'جذب العملاء المحتملين',
+                'OUTCOME_SALES' => 'المبيعات والتحويلات',
+                'OUTCOME_TRAFFIC' => 'زيارات الموقع',
+                'OUTCOME_APP_PROMOTION' => 'الترويج للتطبيق',
             ],
             'google' => [
-                'SEARCH' => 'Search Campaign',
-                'DISPLAY' => 'Display Campaign',
-                'SHOPPING' => 'Shopping Campaign',
-                'VIDEO' => 'Video Campaign',
-                'SMART' => 'Smart Campaign',
-                'PERFORMANCE_MAX' => 'Performance Max',
+                'SEARCH' => 'حملة البحث',
+                'DISPLAY' => 'الحملة الإعلانية المرئية',
+                'SHOPPING' => 'حملة التسوق',
+                'VIDEO' => 'حملة الفيديو',
+                'SMART' => 'الحملة الذكية',
+                'PERFORMANCE_MAX' => 'الأداء الأقصى',
             ],
             'tiktok' => [
-                'REACH' => 'Reach',
-                'TRAFFIC' => 'Traffic',
-                'VIDEO_VIEWS' => 'Video Views',
-                'LEAD_GENERATION' => 'Lead Generation',
-                'APP_PROMOTION' => 'App Promotion',
-                'CONVERSIONS' => 'Conversions',
+                'REACH' => 'الوصول',
+                'TRAFFIC' => 'الزيارات',
+                'VIDEO_VIEWS' => 'مشاهدات الفيديو',
+                'LEAD_GENERATION' => 'جذب العملاء المحتملين',
+                'APP_PROMOTION' => 'الترويج للتطبيق',
+                'CONVERSIONS' => 'التحويلات',
             ],
             'linkedin' => [
-                'BRAND_AWARENESS' => 'Brand Awareness',
-                'WEBSITE_VISITS' => 'Website Visits',
-                'ENGAGEMENT' => 'Engagement',
-                'VIDEO_VIEWS' => 'Video Views',
-                'LEAD_GENERATION' => 'Lead Generation',
-                'WEBSITE_CONVERSIONS' => 'Website Conversions',
+                'BRAND_AWARENESS' => 'الوعي بالعلامة التجارية',
+                'WEBSITE_VISITS' => 'زيارات الموقع',
+                'ENGAGEMENT' => 'التفاعل',
+                'VIDEO_VIEWS' => 'مشاهدات الفيديو',
+                'LEAD_GENERATION' => 'جذب العملاء المحتملين',
+                'WEBSITE_CONVERSIONS' => 'تحويلات الموقع',
             ],
             'twitter' => [
-                'REACH' => 'Reach',
-                'VIDEO_VIEWS' => 'Video Views',
-                'WEBSITE_CLICKS' => 'Website Clicks',
-                'FOLLOWERS' => 'Followers',
-                'ENGAGEMENTS' => 'Engagements',
-                'APP_INSTALLS' => 'App Installs',
+                'REACH' => 'الوصول',
+                'VIDEO_VIEWS' => 'مشاهدات الفيديو',
+                'WEBSITE_CLICKS' => 'نقرات الموقع',
+                'FOLLOWERS' => 'المتابعون',
+                'ENGAGEMENTS' => 'التفاعلات',
+                'APP_INSTALLS' => 'تثبيتات التطبيق',
             ],
             'snapchat' => [
-                'AWARENESS' => 'Awareness',
-                'APP_INSTALLS' => 'App Installs',
-                'DRIVE_TRAFFIC' => 'Drive Traffic to Website',
-                'ENGAGEMENT' => 'Engagement',
-                'VIDEO_VIEWS' => 'Video Views',
-                'CONVERSIONS' => 'Conversions',
+                'AWARENESS' => 'الوعي',
+                'APP_INSTALLS' => 'تثبيتات التطبيق',
+                'DRIVE_TRAFFIC' => 'زيادة الزيارات للموقع',
+                'ENGAGEMENT' => 'التفاعل',
+                'VIDEO_VIEWS' => 'مشاهدات الفيديو',
+                'CONVERSIONS' => 'التحويلات',
             ],
         ];
 

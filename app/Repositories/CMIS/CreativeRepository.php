@@ -2,6 +2,7 @@
 
 namespace App\Repositories\CMIS;
 
+use App\Repositories\Contracts\CreativeRepositoryInterface;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Collection;
 
@@ -9,7 +10,7 @@ use Illuminate\Support\Collection;
  * Repository for CMIS Creative Functions
  * Encapsulates PostgreSQL functions related to creative briefs and assets
  */
-class CreativeRepository
+class CreativeRepository implements CreativeRepositoryInterface
 {
     /**
      * Generate a brief summary
@@ -81,5 +82,54 @@ class CreativeRepository
     public function autoDeleteUnapprovedAssets(): bool
     {
         return DB::statement('SELECT cmis.auto_delete_unapproved_assets()');
+    }
+
+    /**
+     * Index creative assets for an organization
+     *
+     * @param string $orgId Organization UUID
+     * @return Collection Collection of indexed creative assets
+     */
+    public function indexCreativeAssets(string $orgId): Collection
+    {
+        $results = DB::select(
+            'SELECT * FROM cmis.index_creative_assets(?)',
+            [$orgId]
+        );
+
+        return collect($results);
+    }
+
+    /**
+     * Get asset recommendations for a campaign
+     *
+     * @param string $campaignId Campaign UUID
+     * @param int $limit Maximum number of recommendations
+     * @return Collection Collection of recommended assets
+     */
+    public function getAssetRecommendations(string $campaignId, int $limit = 5): Collection
+    {
+        $results = DB::select(
+            'SELECT * FROM cmis.get_asset_recommendations(?, ?)',
+            [$campaignId, $limit]
+        );
+
+        return collect($results);
+    }
+
+    /**
+     * Analyze creative asset performance
+     *
+     * @param string $assetId Asset UUID
+     * @return object|null Performance analysis object
+     */
+    public function analyzeCreativePerformance(string $assetId): ?object
+    {
+        $results = DB::select(
+            'SELECT * FROM cmis.analyze_creative_performance(?)',
+            [$assetId]
+        );
+
+        return $results[0] ?? null;
     }
 }
