@@ -133,6 +133,10 @@ Route::middleware(['auth:sanctum', 'validate.org.access', 'set.db.context'])
         Route::put('/{user_id}/role', [UserController::class, 'updateRole'])->name('updateRole');
         Route::post('/{user_id}/deactivate', [UserController::class, 'deactivate'])->name('deactivate');
         Route::delete('/{user_id}', [UserController::class, 'remove'])->name('remove');
+
+        // User Activities & Permissions
+        Route::get('/{user_id}/activities', [UserController::class, 'activities'])->name('activities');
+        Route::get('/{user_id}/permissions', [UserController::class, 'permissions'])->name('permissions');
     });
 
     /*

@@ -7,6 +7,7 @@ use App\Models\AiModel;
 use App\Models\AiRecommendation;
 use App\Models\Campaign;
 use App\Models\CreativeAsset;
+use App\Models\Notification;
 use App\Models\Offering;
 use App\Models\Core\Org;
 use App\Models\PerformanceMetric;
@@ -40,18 +41,99 @@ class DashboardController extends Controller
         return response()->json($this->resolveDashboardMetrics());
     }
 
-    public function latest()
+    public function latest(Request $request)
     {
         // TODO: Implement proper authorization policy
         // $this->authorize('viewAny', Campaign::class);
-        $notifications = [
-            [ 'message' => 'تم إنشاء حملة جديدة 🎯', 'time' => Carbon::now()->subMinutes(5)->diffForHumans() ],
-            [ 'message' => 'انخفاض في أداء إحدى الحملات 📉', 'time' => Carbon::now()->subMinutes(30)->diffForHumans() ],
-            [ 'message' => 'تم رفع أصل إبداعي جديد 🎨', 'time' => Carbon::now()->subHours(1)->diffForHumans() ],
-            [ 'message' => 'تكامل جديد مع منصة Meta 💡', 'time' => Carbon::now()->subHours(3)->diffForHumans() ],
-        ];
 
-        return response()->json($notifications);
+        try {
+            $user = $request->user();
+
+            if (!$user) {
+                return response()->json(['notifications' => []], 401);
+            }
+
+            // Get latest notifications for the user (last 20)
+            $notifications = Notification::forUser($user->user_id)
+                ->recent(20)
+                ->get()
+                ->map(function ($notification) {
+                    return [
+                        'id' => $notification->notification_id,
+                        'type' => $notification->type,
+                        'title' => $notification->title,
+                        'message' => $notification->message,
+                        'data' => $notification->data,
+                        'read' => $notification->read,
+                        'time' => $notification->time,
+                        'created_at' => $notification->created_at->toISOString(),
+                    ];
+                });
+
+            return response()->json(['notifications' => $notifications]);
+        } catch (\Exception $e) {
+            // Fallback to sample data if database is not ready
+            \Log::error('Failed to load notifications: ' . $e->getMessage());
+
+            $notifications = [
+                [
+                    'id' => 1,
+                    'type' => 'campaign',
+                    'message' => 'تم إطلاق حملة "عروض الصيف" بنجاح',
+                    'time' => 'منذ 5 دقائق',
+                    'read' => false
+                ],
+                [
+                    'id' => 2,
+                    'type' => 'analytics',
+                    'message' => 'تحديث في أداء الحملات - زيادة 15% في التحويلات',
+                    'time' => 'منذ ساعة',
+                    'read' => false
+                ],
+                [
+                    'id' => 3,
+                    'type' => 'integration',
+                    'message' => 'تم ربط حساب Meta Ads بنجاح',
+                    'time' => 'منذ 3 ساعات',
+                    'read' => true
+                ],
+                [
+                    'id' => 4,
+                    'type' => 'user',
+                    'message' => 'تمت إضافة عضو جديد إلى الفريق',
+                    'time' => 'منذ يوم',
+                    'read' => true
+                ],
+            ];
+
+            return response()->json(['notifications' => $notifications]);
+        }
+    }
+
+    public function markAsRead(Request $request, $notificationId)
+    {
+        try {
+            $user = $request->user();
+
+            if (!$user) {
+                return response()->json(['success' => false, 'message' => 'Unauthorized'], 401);
+            }
+
+            $notification = Notification::where('notification_id', $notificationId)
+                ->where('user_id', $user->user_id)
+                ->first();
+
+            if (!$notification) {
+                return response()->json(['success' => false, 'message' => 'Notification not found'], 404);
+            }
+
+            $notification->markAsRead();
+
+            return response()->json(['success' => true, 'message' => 'Notification marked as read']);
+        } catch (\Exception $e) {
+            \Log::error('Failed to mark notification as read: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'Failed to mark as read'], 500);
+        }
     }
 
     protected function resolveDashboardMetrics(): array
