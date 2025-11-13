@@ -68,6 +68,9 @@ class CampaignController extends Controller
                 $validated['sort_direction'] ?? 'desc'
             );
 
+            // Eager load relationships to prevent N+1
+            $query->with(['org', 'creator']);
+
             // Pagination
             $campaigns = $query->paginate($validated['per_page'] ?? 20);
 
