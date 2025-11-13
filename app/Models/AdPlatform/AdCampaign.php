@@ -72,6 +72,15 @@ class AdCampaign extends Model
     }
 
     /**
+     * Get the integration (platform connection)
+     */
+    public function integration()
+    {
+        return $this->belongsTo(\App\Models\Core\Integration::class, 'ad_account_id', 'account_id')
+            ->where('platform', $this->platform);
+    }
+
+    /**
      * Get ad sets
      */
     public function adSets()

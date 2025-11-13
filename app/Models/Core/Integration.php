@@ -70,4 +70,14 @@ class Integration extends Model
     {
         return $this->belongsTo(\App\Models\User::class, 'created_by', 'user_id');
     }
+
+    /**
+     * Get ad campaigns associated with this integration
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function adCampaigns()
+    {
+        return $this->hasMany(\App\Models\AdPlatform\AdCampaign::class, 'ad_account_id', 'account_id');
+    }
 }
