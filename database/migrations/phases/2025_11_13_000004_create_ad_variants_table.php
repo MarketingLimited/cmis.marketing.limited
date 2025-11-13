@@ -45,7 +45,7 @@ return new class extends Migration
             $table->timestamp('updated_at')->useCurrent();
 
             // Foreign keys
-            $table->foreign('campaign_id')->references('campaign_id')->on('cmis.ad_campaigns')->onDelete('cascade');
+            $table->foreign('campaign_id')->references('id')->on('cmis.ad_campaigns')->onDelete('cascade');
 
             // Indexes
             $table->index(['campaign_id', 'is_active'], 'ad_variants_campaign_active_idx');

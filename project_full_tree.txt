@@ -1,0 +1,757 @@
+.
+├── API_DOCUMENTATION.md
+├── AUDIT_REPORT.md
+├── CMIS_GAP_ANALYSIS.md
+├── COMPLETED_SYNC_COMMANDS.md
+├── COMPLETE_IMPLEMENTATION_REPORT.md
+├── COMPLETION_PLAN.md
+├── CORE_FEATURES_ROADMAP.md
+├── FINAL_COMPLETION_REPORT.md
+├── FINAL_IMPLEMENTATION_SUMMARY.md
+├── FINAL_SETUP_GUIDE.md
+├── IMPLEMENTATION_PLAN.md
+├── IMPLEMENTATION_STATUS.md
+├── IMPLEMENTATION_SUMMARY.md
+├── NEXT_STEPS.md
+├── PROGRESS.md
+├── PROGRESS_TRACKING_REPORT.md
+├── README.md
+├── SESSION_PROGRESS_REPORT.md
+├── TECHNICAL_AUDIT_REPORT.md
+├── UPDATE_DOCS.md
+├── app
+│   ├── Casts
+│   │   └── VectorCast.php
+│   ├── Console
+│   │   ├── Commands
+│   │   │   ├── AuditModelGaps.php
+│   │   │   ├── AutoLearnCommand.php
+│   │   │   ├── CleanupCacheCommand.php
+│   │   │   ├── CleanupSystemData.php
+│   │   │   ├── CognitiveStateNow.php
+│   │   │   ├── CognitiveVitalityLog.php
+│   │   │   ├── CognitiveVitalityWatch.php
+│   │   │   ├── DbExecuteSql.php
+│   │   │   ├── Embeddings
+│   │   │   ├── FacebookApiCommand.php
+│   │   │   ├── GenerateGeminiEmbeddings.php
+│   │   │   ├── GeneratePerformanceReport.php
+│   │   │   ├── InstagramApiCommand.php
+│   │   │   ├── LinkedinApiCommand.php
+│   │   │   ├── Maintenance
+│   │   │   ├── ProcessEmbeddings.php
+│   │   │   ├── ProcessEmbeddingsCommand.php
+│   │   │   ├── PublishScheduledPostsCommand.php
+│   │   │   ├── RefreshKnowledgeEmbeddings.php
+│   │   │   ├── SearchKnowledge.php
+│   │   │   ├── Sync
+│   │   │   ├── SyncAnalyticsMetrics.php
+│   │   │   ├── SyncInstagramData.php
+│   │   │   ├── SyncPlatform.php
+│   │   │   ├── SyncPlatformsCommand.php
+│   │   │   └── TiktokApiCommand.php
+│   │   ├── Kernel.php
+│   │   └── Traits
+│   │       └── HandlesOrgContext.php
+│   ├── Http
+│   │   ├── Controllers
+│   │   │   ├── AI
+│   │   │   ├── API
+│   │   │   ├── AdCampaignController.php
+│   │   │   ├── AdPlatform
+│   │   │   ├── Admin
+│   │   │   ├── Analytics
+│   │   │   ├── Asset
+│   │   │   ├── Auth
+│   │   │   ├── Bundle
+│   │   │   ├── CampaignController.php
+│   │   │   ├── Campaigns
+│   │   │   ├── Channels
+│   │   │   ├── ComplianceController.php
+│   │   │   ├── Content
+│   │   │   ├── Controller.php
+│   │   │   ├── Core
+│   │   │   ├── Creative
+│   │   │   ├── CreativeBriefController.php
+│   │   │   ├── CreativeController.php
+│   │   │   ├── DashboardController.php
+│   │   │   ├── Experiment
+│   │   │   ├── Integration
+│   │   │   ├── KnowledgeController.php
+│   │   │   ├── NotificationController.php
+│   │   │   ├── OfferingController.php
+│   │   │   ├── Offerings
+│   │   │   ├── OrgController.php
+│   │   │   ├── Product
+│   │   │   ├── ProfileController.php
+│   │   │   ├── ReportController.php
+│   │   │   ├── Service
+│   │   │   ├── Settings
+│   │   │   ├── SettingsController.php
+│   │   │   ├── Social
+│   │   │   ├── UnifiedCommentsController.php
+│   │   │   ├── UnifiedInboxController.php
+│   │   │   ├── Web
+│   │   │   └── WorkflowController.php
+│   │   ├── Middleware
+│   │   │   ├── CheckPermission.php
+│   │   │   ├── SetDatabaseContext.php
+│   │   │   └── ValidateOrgAccess.php
+│   │   ├── Requests
+│   │   │   ├── InitializeWorkflowRequest.php
+│   │   │   ├── StoreCampaignRequest.php
+│   │   │   ├── StoreContentItemRequest.php
+│   │   │   ├── StoreCreativeAssetRequest.php
+│   │   │   ├── StoreCreativeBriefRequest.php
+│   │   │   ├── StoreIntegrationRequest.php
+│   │   │   ├── StoreKnowledgeRequest.php
+│   │   │   ├── StorePostRequest.php
+│   │   │   ├── UpdateCampaignRequest.php
+│   │   │   ├── UpdateContentItemRequest.php
+│   │   │   ├── UpdateCreativeAssetRequest.php
+│   │   │   ├── UpdateIntegrationRequest.php
+│   │   │   └── UpdatePostRequest.php
+│   │   └── Resources
+│   │       ├── BundleResource.php
+│   │       ├── CampaignCollection.php
+│   │       ├── CampaignResource.php
+│   │       ├── ChannelResource.php
+│   │       ├── ContentItemResource.php
+│   │       ├── CreativeAssetResource.php
+│   │       ├── IntegrationResource.php
+│   │       ├── OfferingResource.php
+│   │       ├── OrgResource.php
+│   │       ├── PostResource.php
+│   │       ├── SocialPostResource.php
+│   │       └── UserResource.php
+│   ├── Jobs
+│   │   ├── GenerateEmbeddingsJob.php
+│   │   ├── Job.php
+│   │   ├── KnowledgeAutoLearnJob.php
+│   │   ├── ProcessEmbeddingJob.php
+│   │   ├── PublishScheduledPost.php
+│   │   ├── PublishScheduledPostJob.php
+│   │   ├── SyncFacebookDataJob.php
+│   │   ├── SyncInstagramDataJob.php
+│   │   ├── SyncMetaAdsJob.php
+│   │   ├── SyncPlatformCampaigns.php
+│   │   ├── SyncPlatformComments.php
+│   │   ├── SyncPlatformDataJob.php
+│   │   ├── SyncPlatformMessages.php
+│   │   └── SyncPlatformPosts.php
+│   ├── Models
+│   │   ├── AI
+│   │   │   ├── AiAction.php
+│   │   │   ├── AiModel.php
+│   │   │   ├── AiQuery.php
+│   │   │   ├── CognitiveTrackerTemplate.php
+│   │   │   ├── CognitiveTrend.php
+│   │   │   ├── DatasetFile.php
+│   │   │   ├── DatasetPackage.php
+│   │   │   ├── ExampleSet.php
+│   │   │   ├── PredictiveVisualEngine.php
+│   │   │   └── SceneLibrary.php
+│   │   ├── AdPlatform
+│   │   │   ├── AdAccount.php
+│   │   │   ├── AdAudience.php
+│   │   │   ├── AdCampaign.php
+│   │   │   ├── AdEntity.php
+│   │   │   ├── AdMetric.php
+│   │   │   ├── AdSet.php
+│   │   │   ├── MetaDocumentation.php
+│   │   │   ├── MetaFieldDictionary.php
+│   │   │   └── MetaFunctionDescription.php
+│   │   ├── AiGeneratedCampaign.php
+│   │   ├── AiModel.php
+│   │   ├── AiRecommendation.php
+│   │   ├── Analytics
+│   │   │   ├── AnalyticsIntegration.php
+│   │   │   ├── CampaignAnalytics.php
+│   │   │   ├── KpiTarget.php
+│   │   │   └── PerformanceSnapshot.php
+│   │   ├── Asset
+│   │   │   ├── ImageAsset.php
+│   │   │   └── VideoAsset.php
+│   │   ├── AuditSummary.php
+│   │   ├── AwarenessStages.php
+│   │   ├── CMIS
+│   │   │   └── KnowledgeItem.php
+│   │   ├── Cache
+│   │   │   └── RequiredFieldsCache.php
+│   │   ├── Campaign
+│   │   │   └── CampaignOffering.php
+│   │   ├── Campaign.php
+│   │   ├── CampaignPerformanceMetric.php
+│   │   ├── Channel
+│   │   │   └── ChannelMetric.php
+│   │   ├── Channel.php
+│   │   ├── ChannelFormat.php
+│   │   ├── ChannelFormats.php
+│   │   ├── Channels.php
+│   │   ├── Compliance
+│   │   │   ├── ComplianceAudit.php
+│   │   │   ├── ComplianceRule.php
+│   │   │   └── ComplianceRuleChannel.php
+│   │   ├── ComponentTypes.php
+│   │   ├── Context
+│   │   │   ├── CampaignContextLink.php
+│   │   │   ├── Context.php
+│   │   │   ├── ContextBase.php
+│   │   │   ├── ContextsCreative.php
+│   │   │   ├── ContextsValue.php
+│   │   │   ├── CreativeContext.php
+│   │   │   ├── FieldAlias.php
+│   │   │   ├── FieldDefinition.php
+│   │   │   ├── FieldValue.php
+│   │   │   ├── OfferingContext.php
+│   │   │   └── ValueContext.php
+│   │   ├── ContextsUnified.php
+│   │   ├── Core
+│   │   │   ├── Integration.php
+│   │   │   ├── Org.php
+│   │   │   ├── OrgDataset.php
+│   │   │   ├── Role.php
+│   │   │   └── UserOrg.php
+│   │   ├── Creative
+│   │   │   ├── AudioTemplate.php
+│   │   │   ├── ContentItem.php
+│   │   │   ├── ContentPlan.php
+│   │   │   ├── CopyComponent.php
+│   │   │   ├── CreativeBrief.php
+│   │   │   ├── CreativeOutput.php
+│   │   │   ├── VariationPolicy.php
+│   │   │   ├── VideoScene.php
+│   │   │   └── VideoTemplate.php
+│   │   ├── CreativeAsset.php
+│   │   ├── Experiment
+│   │   │   ├── Experiment.php
+│   │   │   └── ExperimentVariant.php
+│   │   ├── Frameworks.php
+│   │   ├── FunnelStages.php
+│   │   ├── Industries.php
+│   │   ├── Knowledge
+│   │   │   ├── CognitiveManifest.php
+│   │   │   ├── CreativeTemplate.php
+│   │   │   ├── DevKnowledge.php
+│   │   │   ├── DirectionMapping.php
+│   │   │   ├── EmbeddingApiConfig.php
+│   │   │   ├── EmbeddingApiLog.php
+│   │   │   ├── EmbeddingUpdateQueue.php
+│   │   │   ├── EmbeddingsCache.php
+│   │   │   ├── IntentMapping.php
+│   │   │   ├── KnowledgeIndex.php
+│   │   │   ├── MarketingKnowledge.php
+│   │   │   ├── OrgKnowledge.php
+│   │   │   ├── PurposeMapping.php
+│   │   │   ├── ResearchKnowledge.php
+│   │   │   ├── SemanticSearchLog.php
+│   │   │   ├── SemanticSearchResultCache.php
+│   │   │   └── TemporalAnalytics.php
+│   │   ├── Kpi.php
+│   │   ├── Kpis.php
+│   │   ├── Market
+│   │   │   ├── Market.php
+│   │   │   └── OrgMarket.php
+│   │   ├── Marketing
+│   │   │   ├── GeneratedCreative.php
+│   │   │   ├── MarketingAsset.php
+│   │   │   ├── VideoScenario.php
+│   │   │   ├── VisualConcept.php
+│   │   │   ├── VisualScenario.php
+│   │   │   └── VoiceScript.php
+│   │   ├── MarketingObjectives.php
+│   │   ├── Markets.php
+│   │   ├── Modules.php
+│   │   ├── NamingTemplates.php
+│   │   ├── Notification
+│   │   │   └── Notification.php
+│   │   ├── Offering
+│   │   │   ├── BundleOffering.php
+│   │   │   └── OfferingFullDetail.php
+│   │   ├── Offering.php
+│   │   ├── Operations
+│   │   │   ├── AuditLog.php
+│   │   │   ├── LogsMigration.php
+│   │   │   ├── OpsAudit.php
+│   │   │   ├── OpsEtlLog.php
+│   │   │   ├── SyncLog.php
+│   │   │   └── UserActivity.php
+│   │   ├── Other
+│   │   │   ├── Anchor.php
+│   │   │   ├── ApiKey.php
+│   │   │   ├── CacheMetadata.php
+│   │   │   ├── DataFeed.php
+│   │   │   ├── ExportBundle.php
+│   │   │   ├── ExportBundleItem.php
+│   │   │   ├── FeedItem.php
+│   │   │   ├── Flow.php
+│   │   │   ├── FlowStep.php
+│   │   │   ├── Migration.php
+│   │   │   ├── Module.php
+│   │   │   ├── NamingTemplate.php
+│   │   │   ├── OfferingsFullDetail.php
+│   │   │   ├── OfferingsOld.php
+│   │   │   ├── OutputContract.php
+│   │   │   ├── PromptTemplate.php
+│   │   │   ├── PromptTemplateContract.php
+│   │   │   ├── PromptTemplatePresql.php
+│   │   │   ├── PromptTemplateRequiredField.php
+│   │   │   ├── ReferenceEntity.php
+│   │   │   ├── Segment.php
+│   │   │   └── SqlSnippet.php
+│   │   ├── PerformanceMetric.php
+│   │   ├── Permission.php
+│   │   ├── PermissionsCache.php
+│   │   ├── PlaybookSteps.php
+│   │   ├── Playbooks.php
+│   │   ├── ProofLayers.php
+│   │   ├── RolePermission.php
+│   │   ├── ScheduledSocialPost.php
+│   │   ├── Security
+│   │   │   ├── AuditLog.php
+│   │   │   ├── Permission.php
+│   │   │   ├── PermissionsCache.php
+│   │   │   ├── RolePermission.php
+│   │   │   ├── SecurityContextAudit.php
+│   │   │   ├── SessionContext.php
+│   │   │   └── UserPermission.php
+│   │   ├── Session
+│   │   │   ├── SessionContext.php
+│   │   │   └── UserSession.php
+│   │   ├── SocialAccount.php
+│   │   ├── SocialAccountMetric.php
+│   │   ├── SocialPost.php
+│   │   ├── SocialPostMetric.php
+│   │   ├── Strategies.php
+│   │   ├── SystemHealth.php
+│   │   ├── Tones.php
+│   │   ├── User
+│   │   │   └── UserProfile.php
+│   │   ├── User.php
+│   │   ├── UserPermission.php
+│   │   ├── VAiInsights.php
+│   │   ├── VCacheStatus.php
+│   │   ├── VChronoEvolution.php
+│   │   ├── VCognitiveActivity.php
+│   │   ├── VCognitiveAdminLog.php
+│   │   ├── VCognitiveDashboard.php
+│   │   ├── VCognitiveKpi.php
+│   │   ├── VCognitiveKpiGraph.php
+│   │   ├── VCognitiveKpiTimeseries.php
+│   │   ├── VCognitiveVitality.php
+│   │   ├── VContextImpact.php
+│   │   ├── VCreativeEfficiency.php
+│   │   ├── VDeletedRecords.php
+│   │   ├── VEmbeddingQueueStatus.php
+│   │   ├── VGlobalCognitiveIndex.php
+│   │   ├── VKpiSummary.php
+│   │   ├── VMarketingReference.php
+│   │   ├── VPredictiveCognitiveHorizon.php
+│   │   ├── VSearchPerformance.php
+│   │   ├── VSecurityContextSummary.php
+│   │   ├── VSystemMonitoring.php
+│   │   ├── VTemporalDashboard.php
+│   │   ├── VUnifiedAdTargeting.php
+│   │   └── VisualDashboardView.php
+│   ├── Policies
+│   │   ├── AIPolicy.php
+│   │   ├── AnalyticsPolicy.php
+│   │   ├── BasePolicy.php
+│   │   ├── CampaignPolicy.php
+│   │   ├── ChannelPolicy.php
+│   │   ├── ContentPolicy.php
+│   │   ├── CreativeAssetPolicy.php
+│   │   ├── IntegrationPolicy.php
+│   │   ├── OfferingPolicy.php
+│   │   ├── OrganizationPolicy.php
+│   │   └── UserPolicy.php
+│   ├── Providers
+│   │   ├── AppServiceProvider.php
+│   │   ├── AuthServiceProvider.php
+│   │   └── CMISEmbeddingServiceProvider.php
+│   ├── Repositories
+│   │   ├── AI_AGENT_GUIDE.md
+│   │   ├── Analytics
+│   │   │   ├── AIAnalyticsRepository.php
+│   │   │   └── AnalyticsRepository.php
+│   │   ├── CMIS
+│   │   │   ├── CacheRepository.php
+│   │   │   ├── CampaignRepository.php
+│   │   │   ├── ContextRepository.php
+│   │   │   ├── CreativeRepository.php
+│   │   │   ├── PermissionRepository.php
+│   │   │   ├── TriggerRepository.php
+│   │   │   ├── UtilityRepository.php
+│   │   │   └── VerificationRepository.php
+│   │   ├── Dev
+│   │   │   └── DevTaskRepository.php
+│   │   ├── Knowledge
+│   │   │   ├── EmbeddingRepository.php
+│   │   │   └── KnowledgeRepository.php
+│   │   ├── Marketing
+│   │   │   └── MarketingRepository.php
+│   │   ├── Operations
+│   │   │   ├── AuditRepository.php
+│   │   │   └── OperationsRepository.php
+│   │   ├── PublicUtilityRepository.php
+│   │   ├── QUICK_REFERENCE.md
+│   │   ├── README.md
+│   │   └── Staging
+│   │       └── StagingRepository.php
+│   ├── Services
+│   │   ├── AIService.php
+│   │   ├── AdCampaignService.php
+│   │   ├── Ads
+│   │   │   └── MetaAdsService.php
+│   │   ├── CMIS
+│   │   │   ├── GeminiEmbeddingService.php
+│   │   │   ├── KnowledgeEmbeddingProcessor.php
+│   │   │   ├── KnowledgeFeedbackService.php
+│   │   │   └── SemanticSearchService.php
+│   │   ├── CampaignService.php
+│   │   ├── ComplianceService.php
+│   │   ├── Connectors
+│   │   │   ├── AbstractConnector.php
+│   │   │   ├── ConnectorFactory.php
+│   │   │   ├── Contracts
+│   │   │   └── Providers
+│   │   ├── ContextService.php
+│   │   ├── CreativeService.php
+│   │   ├── EmbeddingService.php
+│   │   ├── Gemini
+│   │   │   └── EmbeddingService.php
+│   │   ├── InstagramService.php
+│   │   ├── PermissionService.php
+│   │   ├── PublishingService.php
+│   │   ├── ReportService.php
+│   │   ├── Social
+│   │   │   ├── AbstractSocialService.php
+│   │   │   ├── FacebookSyncService.php
+│   │   │   ├── InstagramAccountSyncService.php
+│   │   │   └── InstagramSyncService.php
+│   │   ├── Sync
+│   │   │   ├── BasePlatformSyncService.php
+│   │   │   └── MetaSyncService.php
+│   │   ├── UnifiedCommentsService.php
+│   │   ├── UnifiedInboxService.php
+│   │   └── WorkflowService.php
+│   └── docs
+│       └── git
+│           └── git-ai-instructions.md
+├── artisan
+├── backups
+│   ├── 2025-11-04
+│   │   ├── RecoverFailedEmbeddings_blockmode_bak.php
+│   │   ├── RecoverFailedEmbeddings_multiline_bak.php
+│   │   └── RecoverFailedEmbeddings_v3.1_bak.php
+│   ├── cmis_full_backup_20251110_092644.sql.gz
+│   ├── cmis_knowledge_dev_20251110_092729.sql.gz
+│   ├── cmis_knowledge_embedding_update_queue_backup_20251110_092729.sql.gz
+│   ├── cmis_knowledge_marketing_20251110_092729.sql.gz
+│   ├── cmis_knowledge_org_20251110_092729.sql.gz
+│   ├── cmis_knowledge_research_20251110_092729.sql.gz
+│   ├── pre_upgrade_2025-11-11_1049.dump
+│   └── public_backup_integrations_cmis_20251110_092729.sql.gz
+├── composer.json
+├── composer.lock
+├── config
+│   ├── app.php
+│   ├── auth.php
+│   ├── cache.php
+│   ├── cmis-embeddings.php
+│   ├── cmis.php
+│   ├── database.php
+│   ├── filesystems.php
+│   ├── integrations
+│   │   ├── ftp.yaml
+│   │   └── meta.yaml
+│   ├── logging.php
+│   ├── mail.php
+│   ├── queue.php
+│   ├── sanctum.php
+│   ├── services.php
+│   └── session.php
+├── database
+│   ├── factories
+│   │   ├── CampaignFactory.php
+│   │   ├── Core
+│   │   │   ├── OrgFactory.php
+│   │   │   ├── RoleFactory.php
+│   │   │   ├── UserFactory.php
+│   │   │   └── UserOrgFactory.php
+│   │   ├── IntegrationFactory.php
+│   │   └── UserFactory.php
+│   ├── migrations
+│   │   ├── 0001_01_01_000000_create_users_table.php
+│   │   ├── 0001_01_01_000001_create_cache_table.php
+│   │   ├── 0001_01_01_000002_create_jobs_table.php
+│   │   └── 2025_11_12_000001_create_scheduled_social_posts_table.php
+│   ├── schema.sql
+│   └── seeders
+│       └── DatabaseSeeder.php
+├── docs
+│   ├── API_INTEGRATION_PLAN.md
+│   ├── FRONTEND_IMPLEMENTATION_SUMMARY.md
+│   ├── IMPLEMENTATION_COMPLETE.md
+│   ├── PHASE_1_COMPLETION_REPORT.md
+│   ├── PHASE_2_COMPLETE.md
+│   ├── PHASE_2_PROGRESS.md
+│   ├── PHASE_3_COMPLETE.md
+│   ├── PHASE_4A_COMPLETE.md
+│   ├── PHASE_4_COMPLETE.md
+│   ├── PHASE_5_COMPLETE.md
+│   ├── SECURITY_IMPLEMENTATION_GUIDE.md
+│   ├── ai_integration_layer.md
+│   ├── changelog.json
+│   ├── changelog.md
+│   ├── cmis_knowledge_indexing_report.md
+│   ├── database-setup.md
+│   ├── devops_maintenance_checklist.md
+│   ├── index.php
+│   ├── instagram
+│   │   ├── 01_overview.md
+│   │   ├── 02_artisan_commands.md
+│   │   ├── 03_ai_integration.md
+│   │   ├── 04_debugging_and_logs.md
+│   │   ├── 05_examples.md
+│   │   └── help_en.md
+│   ├── instagram_api_Instructions.json
+│   ├── knowledge_layer_optimization.md
+│   ├── laravel_embedding_guidelines.md
+│   ├── project-status-and-plan.md
+│   ├── semantic_coverage_report.md
+│   ├── semantic_search_api.md
+│   ├── social
+│   │   ├── facebook
+│   │   │   ├── help_ar.md
+│   │   │   └── help_en.md
+│   │   ├── instagram
+│   │   │   └── help_en.md
+│   │   ├── linkedin
+│   │   │   ├── help_ar.md
+│   │   │   └── help_en.md
+│   │   └── tiktok
+│   │       ├── help_ar.md
+│   │       └── help_en.md
+│   └── system_recovery_plan.md
+├── exports
+│   └── campaigns_report.csv
+├── file_tree.txt
+├── index.html
+├── package.json
+├── phpunit.xml
+├── postcss.config.js
+├── project_full_tree.txt
+├── public
+│   ├── favicon.ico
+│   ├── images
+│   │   └── marketing-logo.jpg
+│   ├── index.php
+│   ├── robots.txt
+│   └── usr
+│       ├── bin
+│       │   └── php -> /opt/plesk/php/8.3/bin/php
+│       └── local
+│           └── bin
+├── reports
+│   ├── PROJECT_REALITY_CHECK.md
+│   └── REAL_MODEL_GAPS_AUDIT.md
+├── resources
+│   ├── css
+│   │   └── app.css
+│   ├── js
+│   │   ├── app.js
+│   │   └── bootstrap.js
+│   └── views
+│       ├── admin
+│       │   └── metrics.blade.php
+│       ├── ai
+│       │   ├── campaigns.blade.php
+│       │   ├── index.blade.php
+│       │   ├── models.blade.php
+│       │   └── recommendations.blade.php
+│       ├── analytics
+│       │   ├── dashboard.blade.php
+│       │   ├── export.blade.php
+│       │   ├── index.blade.php
+│       │   ├── insights.blade.php
+│       │   ├── kpis.blade.php
+│       │   ├── metrics.blade.php
+│       │   ├── reports-detail.blade.php
+│       │   └── reports.blade.php
+│       ├── assets
+│       │   ├── edit.blade.php
+│       │   ├── index.blade.php
+│       │   ├── show.blade.php
+│       │   └── upload.blade.php
+│       ├── auth
+│       │   ├── forgot-password.blade.php
+│       │   ├── login.blade.php
+│       │   ├── register.blade.php
+│       │   ├── reset-password.blade.php
+│       │   └── verify-email.blade.php
+│       ├── briefs
+│       │   ├── create.blade.php
+│       │   ├── edit.blade.php
+│       │   ├── index.blade.php
+│       │   └── show.blade.php
+│       ├── bundles
+│       │   ├── create.blade.php
+│       │   ├── edit.blade.php
+│       │   ├── index.blade.php
+│       │   └── show.blade.php
+│       ├── campaigns
+│       │   ├── create.blade.php
+│       │   ├── edit.blade.php
+│       │   ├── index.blade.php
+│       │   └── show.blade.php
+│       ├── campaigns.blade.php
+│       ├── channels
+│       │   ├── create.blade.php
+│       │   ├── index.blade.php
+│       │   └── show.blade.php
+│       ├── components
+│       │   ├── alert.blade.php
+│       │   ├── badge.blade.php
+│       │   ├── breadcrumb.blade.php
+│       │   ├── button.blade.php
+│       │   ├── card.blade.php
+│       │   ├── dropdown.blade.php
+│       │   ├── empty-state.blade.php
+│       │   ├── file-upload.blade.php
+│       │   ├── forms
+│       │   ├── loading.blade.php
+│       │   ├── modal.blade.php
+│       │   ├── pagination.blade.php
+│       │   ├── progress-bar.blade.php
+│       │   ├── stats-card.blade.php
+│       │   ├── table.blade.php
+│       │   ├── tabs.blade.php
+│       │   ├── tooltip.blade.php
+│       │   └── ui
+│       ├── content
+│       │   ├── create.blade.php
+│       │   ├── edit.blade.php
+│       │   ├── index.blade.php
+│       │   └── show.blade.php
+│       ├── core
+│       │   ├── index.blade.php
+│       │   └── orgs
+│       ├── creative
+│       │   ├── ads.blade.php
+│       │   ├── index.blade.php
+│       │   └── templates.blade.php
+│       ├── creative-assets
+│       │   └── index.blade.php
+│       ├── creatives
+│       │   └── show.blade.php
+│       ├── dashboard.blade.php
+│       ├── errors
+│       │   ├── 403.blade.php
+│       │   ├── 404.blade.php
+│       │   ├── 500.blade.php
+│       │   └── 503.blade.php
+│       ├── exports
+│       │   └── compare_pdf.blade.php
+│       ├── integrations
+│       │   ├── index.blade.php
+│       │   └── show.blade.php
+│       ├── knowledge
+│       │   ├── create.blade.php
+│       │   ├── edit.blade.php
+│       │   ├── index.blade.php
+│       │   └── show.blade.php
+│       ├── layouts
+│       │   ├── admin.blade.php
+│       │   └── app.blade.php
+│       ├── offerings
+│       │   ├── index.blade.php
+│       │   └── list.blade.php
+│       ├── orgs
+│       │   ├── campaigns.blade.php
+│       │   ├── campaigns_compare.blade.php
+│       │   ├── create.blade.php
+│       │   ├── index.blade.php
+│       │   ├── products.blade.php
+│       │   ├── services.blade.php
+│       │   └── show.blade.php
+│       ├── products
+│       │   ├── create.blade.php
+│       │   ├── edit.blade.php
+│       │   ├── index.blade.php
+│       │   └── show.blade.php
+│       ├── services
+│       │   ├── create.blade.php
+│       │   ├── edit.blade.php
+│       │   ├── index.blade.php
+│       │   └── show.blade.php
+│       ├── settings
+│       │   ├── index.blade.php
+│       │   ├── integrations.blade.php
+│       │   ├── notifications.blade.php
+│       │   ├── profile.blade.php
+│       │   └── security.blade.php
+│       ├── social
+│       │   ├── inbox.blade.php
+│       │   ├── index.blade.php
+│       │   ├── posts.blade.php
+│       │   └── scheduler.blade.php
+│       ├── users
+│       │   ├── create.blade.php
+│       │   ├── edit.blade.php
+│       │   ├── index.blade.php
+│       │   ├── profile.blade.php
+│       │   └── show.blade.php
+│       ├── welcome.blade.php
+│       └── workflows
+│           ├── create.blade.php
+│           ├── edit.blade.php
+│           ├── index.blade.php
+│           └── show.blade.php
+├── routes
+│   ├── api.php
+│   ├── console.php
+│   └── web.php
+├── scripts
+│   ├── audit-model-gaps.php
+│   ├── git-ai.sh
+│   └── git-changelog-helper.php
+├── system
+│   ├── gpt_runtime_audit.md
+│   ├── gpt_runtime_bootstrap.sql
+│   ├── gpt_runtime_dashboard.md
+│   ├── gpt_runtime_errors.md
+│   ├── gpt_runtime_examples.md
+│   ├── gpt_runtime_flow.md
+│   ├── gpt_runtime_map.md
+│   ├── gpt_runtime_optimize.sql
+│   ├── gpt_runtime_performance_tracker.sql
+│   ├── gpt_runtime_readme.md
+│   ├── gpt_runtime_repair.sql
+│   ├── gpt_runtime_repair_silent.sql
+│   ├── gpt_runtime_security.md
+│   ├── install_artisan_cron.sh
+│   └── optimize_embeddings_tables.sql
+├── tailwind.config.js
+├── tests
+│   ├── Feature
+│   │   ├── Auth
+│   │   │   └── AuthenticationTest.php
+│   │   ├── Campaigns
+│   │   │   └── CampaignManagementTest.php
+│   │   ├── Commands
+│   │   │   └── SyncCommandsTest.php
+│   │   ├── ExampleTest.php
+│   │   └── Orgs
+│   │       └── OrgManagementTest.php
+│   ├── TestCase.php
+│   └── Unit
+│       ├── ExampleTest.php
+│       ├── Jobs
+│       │   └── SyncFacebookDataJobTest.php
+│       └── Services
+│           ├── Ads
+│           └── Social
+└── vite.config.js
+
+154 directories, 601 files

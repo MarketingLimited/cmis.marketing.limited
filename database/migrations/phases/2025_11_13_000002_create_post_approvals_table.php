@@ -33,7 +33,7 @@ return new class extends Migration
             $table->timestamp('updated_at')->useCurrent();
 
             // Foreign keys
-            $table->foreign('post_id')->references('post_id')->on('cmis.social_posts')->onDelete('cascade');
+            $table->foreign('post_id')->references('id')->on('cmis.social_posts')->onDelete('cascade');
             $table->foreign('requested_by')->references('user_id')->on('cmis.users')->onDelete('cascade');
             $table->foreign('assigned_to')->references('user_id')->on('cmis.users')->onDelete('set null');
 
