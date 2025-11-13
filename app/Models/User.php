@@ -9,12 +9,27 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Str;
 use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable, SoftDeletes, HasApiTokens;
+
+    /**
+     * Boot function from Laravel.
+     */
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($model) {
+            if (empty($model->{$model->getKeyName()})) {
+                $model->{$model->getKeyName()} = (string) Str::uuid();
+            }
+        });
+    }
 
     /**
      * The table associated with the model.
@@ -28,21 +43,21 @@ class User extends Authenticatable
      *
      * @var string
      */
-    protected $primaryKey = 'id';
+    protected $primaryKey = 'user_id';
 
     /**
      * Indicates if the model's ID is auto-incrementing.
      *
      * @var bool
      */
-    public $incrementing = true;
+    public $incrementing = false;
 
     /**
      * The data type of the primary key.
      *
      * @var string
      */
-    protected $keyType = 'int';
+    protected $keyType = 'string';
 
     /**
      * The attributes that are mass assignable.

@@ -2,6 +2,7 @@
 
 namespace App\Repositories\CMIS;
 
+use App\Repositories\Contracts\CampaignRepositoryInterface;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Collection;
 
@@ -9,7 +10,7 @@ use Illuminate\Support\Collection;
  * Repository for CMIS Campaign Functions
  * Encapsulates PostgreSQL functions related to campaigns and their management
  */
-class CampaignRepository
+class CampaignRepository implements CampaignRepositoryInterface
 {
     /**
      * Create a campaign with associated contexts safely
@@ -72,6 +73,59 @@ class CampaignRepository
         $results = DB::select(
             'SELECT * FROM cmis.get_campaign_contexts(?, ?)',
             [$campaignId, $includeInactive]
+        );
+
+        return collect($results);
+    }
+
+    /**
+     * Analyze campaign performance
+     * Corresponds to: cmis.analyze_campaign_performance()
+     *
+     * @param string $campaignId Campaign UUID
+     * @return object|null Performance analysis result
+     */
+    public function analyzeCampaignPerformance(string $campaignId): ?object
+    {
+        $result = DB::selectOne(
+            'SELECT * FROM cmis.analyze_campaign_performance(?)',
+            [$campaignId]
+        );
+
+        return $result;
+    }
+
+    /**
+     * Get campaign insights
+     * Corresponds to: cmis.get_campaign_insights()
+     *
+     * @param string $campaignId Campaign UUID
+     * @param string|null $focusArea Optional focus area filter
+     * @return object|null Campaign insights
+     */
+    public function getCampaignInsights(string $campaignId, ?string $focusArea = null): ?object
+    {
+        $result = DB::selectOne(
+            'SELECT * FROM cmis.get_campaign_insights(?, ?)',
+            [$campaignId, $focusArea]
+        );
+
+        return $result;
+    }
+
+    /**
+     * Match campaigns to offerings
+     * Corresponds to: cmis.match_campaigns_to_offerings()
+     *
+     * @param string $orgId Organization UUID
+     * @param int $limit Maximum number of matches
+     * @return Collection Collection of campaign-offering matches
+     */
+    public function matchCampaignsToOfferings(string $orgId, int $limit = 10): Collection
+    {
+        $results = DB::select(
+            'SELECT * FROM cmis.match_campaigns_to_offerings(?, ?)',
+            [$orgId, $limit]
         );
 
         return collect($results);

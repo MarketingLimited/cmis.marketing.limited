@@ -2,7 +2,7 @@
 
 namespace App\Jobs;
 
-use App\Models\Integration;
+use App\Models\Core\Integration;
 use App\Services\Ads\MetaAdsService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;

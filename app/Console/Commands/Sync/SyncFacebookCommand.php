@@ -3,7 +3,7 @@
 namespace App\Console\Commands\Sync;
 
 use Illuminate\Console\Command;
-use App\Models\Integration;
+use App\Models\Core\Integration;
 use App\Jobs\SyncPlatformDataJob;
 use Illuminate\Support\Facades\Log;
 

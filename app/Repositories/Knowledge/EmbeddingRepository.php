@@ -2,13 +2,14 @@
 
 namespace App\Repositories\Knowledge;
 
+use App\Repositories\Contracts\EmbeddingRepositoryInterface;
 use Illuminate\Support\Facades\DB;
 
 /**
  * Repository for CMIS Knowledge Embedding Functions
  * Encapsulates PostgreSQL functions related to vector embeddings
  */
-class EmbeddingRepository
+class EmbeddingRepository implements EmbeddingRepositoryInterface
 {
     /**
      * Generate embedding for text (improved version)

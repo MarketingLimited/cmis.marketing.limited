@@ -44,7 +44,7 @@
 
             <!-- Navigation -->
             <nav class="mt-6 px-4 space-y-2">
-                <a href="{{ route('dashboard') }}" class="sidebar-item flex items-center gap-3 px-4 py-3 rounded-xl {{ request()->routeIs('dashboard') ? 'bg-white/20 text-white shadow-lg' : 'text-white/80 hover:bg-white/10' }}">
+                <a href="{{ route('dashboard.index') }}" class="sidebar-item flex items-center gap-3 px-4 py-3 rounded-xl {{ request()->routeIs('dashboard.*') ? 'bg-white/20 text-white shadow-lg' : 'text-white/80 hover:bg-white/10' }}">
                     <i class="fas fa-home text-lg w-6"></i>
                     <span class="font-medium">الرئيسية</span>
                 </a>
@@ -54,18 +54,19 @@
                     <span class="font-medium">الحملات</span>
                 </a>
 
-                <a href="{{ route('content.index') }}" class="sidebar-item flex items-center gap-3 px-4 py-3 rounded-xl {{ request()->routeIs('content.*') ? 'bg-white/20 text-white shadow-lg' : 'text-white/80 hover:bg-white/10' }}">
+                {{-- TODO: Implement content.index route --}}
+                {{-- <a href="{{ route('content.index') }}" class="sidebar-item flex items-center gap-3 px-4 py-3 rounded-xl {{ request()->routeIs('content.*') ? 'bg-white/20 text-white shadow-lg' : 'text-white/80 hover:bg-white/10' }}">
                     <i class="fas fa-file-alt text-lg w-6"></i>
                     <span class="font-medium">المحتوى</span>
-                </a>
+                </a> --}}
 
-                <a href="{{ route('assets.index') }}" class="sidebar-item flex items-center gap-3 px-4 py-3 rounded-xl {{ request()->routeIs('assets.*') ? 'bg-white/20 text-white shadow-lg' : 'text-white/80 hover:bg-white/10' }}">
+                <a href="{{ route('creative-assets.index') }}" class="sidebar-item flex items-center gap-3 px-4 py-3 rounded-xl {{ request()->routeIs('creative-assets.*') ? 'bg-white/20 text-white shadow-lg' : 'text-white/80 hover:bg-white/10' }}">
                     <i class="fas fa-images text-lg w-6"></i>
                     <span class="font-medium">الملفات الإبداعية</span>
                 </a>
 
                 @can('viewAny', App\Models\User::class)
-                <a href="{{ route('analytics.dashboard') }}" class="sidebar-item flex items-center gap-3 px-4 py-3 rounded-xl {{ request()->routeIs('analytics.*') ? 'bg-white/20 text-white shadow-lg' : 'text-white/80 hover:bg-white/10' }}">
+                <a href="{{ route('analytics.index') }}" class="sidebar-item flex items-center gap-3 px-4 py-3 rounded-xl {{ request()->routeIs('analytics.*') ? 'bg-white/20 text-white shadow-lg' : 'text-white/80 hover:bg-white/10' }}">
                     <i class="fas fa-chart-line text-lg w-6"></i>
                     <span class="font-medium">التحليلات</span>
                 </a>
