@@ -134,66 +134,66 @@
             <!-- Navigation -->
             <nav class="px-4 py-6 space-y-2 overflow-y-auto h-[calc(100vh-4rem)]">
 
-                <a href="{{ route('dashboard') }}"
-                   class="flex items-center px-4 py-3 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-blue-50 dark:hover:bg-gray-700 transition {{ request()->routeIs('dashboard') ? 'bg-blue-50 text-blue-600 font-semibold' : '' }}">
+                <a href="{{ route('dashboard.index') }}"
+                   class="flex items-center px-4 py-3 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-blue-50 dark:hover:bg-gray-700 transition {{ request()->routeIs('dashboard.*') ? 'bg-blue-50 text-blue-600 font-semibold' : '' }}">
                     <i class="fas fa-home text-lg w-6"></i>
                     <span class="mr-3">الرئيسية</span>
                 </a>
 
                 <div class="pt-4 pb-2 text-xs font-semibold text-gray-400 uppercase">الإدارة</div>
 
-                <a href="{{ route('orgs.index') }}"
-                   class="flex items-center px-4 py-3 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-blue-50 dark:hover:bg-gray-700 transition {{ request()->routeIs('orgs.*') ? 'bg-blue-50 text-blue-600 font-semibold' : '' }}">
+                <a href="#"
+                   class="flex items-center px-4 py-3 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-blue-50 dark:hover:bg-gray-700 transition opacity-50 cursor-not-allowed">
                     <i class="fas fa-building text-lg w-6"></i>
                     <span class="mr-3">المؤسسات</span>
                 </a>
 
-                <a href="{{ route('campaigns.index') }}"
-                   class="flex items-center px-4 py-3 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-blue-50 dark:hover:bg-gray-700 transition {{ request()->routeIs('campaigns.*') ? 'bg-blue-50 text-blue-600 font-semibold' : '' }}">
+                <a href="#"
+                   class="flex items-center px-4 py-3 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-blue-50 dark:hover:bg-gray-700 transition opacity-50 cursor-not-allowed">
                     <i class="fas fa-bullhorn text-lg w-6"></i>
                     <span class="mr-3">الحملات</span>
                 </a>
 
                 <div class="pt-4 pb-2 text-xs font-semibold text-gray-400 uppercase">المحتوى</div>
 
-                <a href="{{ route('creative.index') }}"
-                   class="flex items-center px-4 py-3 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-blue-50 dark:hover:bg-gray-700 transition {{ request()->routeIs('creative.*') ? 'bg-blue-50 text-blue-600 font-semibold' : '' }}">
+                <a href="#"
+                   class="flex items-center px-4 py-3 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-blue-50 dark:hover:bg-gray-700 transition opacity-50 cursor-not-allowed">
                     <i class="fas fa-palette text-lg w-6"></i>
                     <span class="mr-3">الإبداع</span>
                 </a>
 
-                <a href="{{ route('channels.index') }}"
-                   class="flex items-center px-4 py-3 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-blue-50 dark:hover:bg-gray-700 transition {{ request()->routeIs('channels.*') ? 'bg-blue-50 text-blue-600 font-semibold' : '' }}">
+                <a href="#"
+                   class="flex items-center px-4 py-3 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-blue-50 dark:hover:bg-gray-700 transition opacity-50 cursor-not-allowed">
                     <i class="fas fa-share-alt text-lg w-6"></i>
                     <span class="mr-3">القنوات الاجتماعية</span>
                 </a>
 
                 <div class="pt-4 pb-2 text-xs font-semibold text-gray-400 uppercase">التحليلات</div>
 
-                <a href="{{ route('analytics.index') }}"
-                   class="flex items-center px-4 py-3 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-blue-50 dark:hover:bg-gray-700 transition {{ request()->routeIs('analytics.*') ? 'bg-blue-50 text-blue-600 font-semibold' : '' }}">
+                <a href="#"
+                   class="flex items-center px-4 py-3 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-blue-50 dark:hover:bg-gray-700 transition opacity-50 cursor-not-allowed">
                     <i class="fas fa-chart-line text-lg w-6"></i>
                     <span class="mr-3">التحليلات</span>
                 </a>
 
                 <div class="pt-4 pb-2 text-xs font-semibold text-gray-400 uppercase">الذكاء الاصطناعي</div>
 
-                <a href="{{ route('ai.index') }}"
-                   class="flex items-center px-4 py-3 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-blue-50 dark:hover:bg-gray-700 transition {{ request()->routeIs('ai.*') ? 'bg-blue-50 text-blue-600 font-semibold' : '' }}">
+                <a href="#"
+                   class="flex items-center px-4 py-3 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-blue-50 dark:hover:bg-gray-700 transition opacity-50 cursor-not-allowed">
                     <i class="fas fa-robot text-lg w-6"></i>
                     <span class="mr-3">الذكاء الاصطناعي</span>
                 </a>
 
                 <div class="pt-4 pb-2 text-xs font-semibold text-gray-400 uppercase">الإعدادات</div>
 
-                <a href="{{ route('integrations.index') }}"
-                   class="flex items-center px-4 py-3 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-blue-50 dark:hover:bg-gray-700 transition {{ request()->routeIs('integrations.*') ? 'bg-blue-50 text-blue-600 font-semibold' : '' }}">
+                <a href="#"
+                   class="flex items-center px-4 py-3 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-blue-50 dark:hover:bg-gray-700 transition opacity-50 cursor-not-allowed">
                     <i class="fas fa-plug text-lg w-6"></i>
                     <span class="mr-3">التكاملات</span>
                 </a>
 
-                <a href="{{ route('offerings.index') }}"
-                   class="flex items-center px-4 py-3 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-blue-50 dark:hover:bg-gray-700 transition {{ request()->routeIs('offerings.*') ? 'bg-blue-50 text-blue-600 font-semibold' : '' }}">
+                <a href="#"
+                   class="flex items-center px-4 py-3 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-blue-50 dark:hover:bg-gray-700 transition opacity-50 cursor-not-allowed">
                     <i class="fas fa-box text-lg w-6"></i>
                     <span class="mr-3">العروض</span>
                 </a>

@@ -3,7 +3,6 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Core\{OrgController, UserController};
-use App\Http\Controllers\Campaigns\CampaignController;
 use App\Http\Controllers\Creative\CreativeAssetController;
 use App\Http\Controllers\Channels\ChannelController;
 use App\Http\Controllers\Social\SocialSchedulerController;
@@ -153,12 +152,10 @@ Route::middleware(['auth:sanctum', 'validate.org.access', 'set.db.context'])
 
     /*
     |----------------------------------------------------------------------
-    | الحملات (Campaigns)
+    | الحملات (Campaigns) - See full definition below in Ad Campaign Management section
     |----------------------------------------------------------------------
     */
-    Route::apiResource('campaigns', CampaignController::class)->parameters([
-        'campaigns' => 'campaign_id'
-    ]);
+    // Route moved to line 734 for better organization with ad campaigns
 
     /*
     |----------------------------------------------------------------------
