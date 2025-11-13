@@ -9,11 +9,18 @@ use App\Models\Context\OfferingContext;
 use App\Models\Context\CampaignContextLink;
 use App\Models\Context\FieldDefinition;
 use App\Models\Context\FieldValue;
+use App\Repositories\Contracts\ContextRepositoryInterface;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class ContextService
 {
+    protected ContextRepositoryInterface $contextRepo;
+
+    public function __construct(ContextRepositoryInterface $contextRepo)
+    {
+        $this->contextRepo = $contextRepo;
+    }
     /**
      * Create context base
      */
