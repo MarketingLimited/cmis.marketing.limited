@@ -607,6 +607,29 @@ Route::middleware(['auth:sanctum', 'validate.org.access', 'set.db.context'])
 
     /*
     |----------------------------------------------------------------------
+    | الجدولة المتقدمة (Advanced Scheduling) - Sprint 6.3
+    |----------------------------------------------------------------------
+    */
+    Route::prefix('scheduling')->name('scheduling.')->group(function () {
+        // Recurring Templates
+        Route::post('/recurring-templates', [App\Http\Controllers\AdvancedSchedulingController::class, 'createRecurringTemplate'])->name('recurring-templates.create');
+        Route::post('/recurring-templates/{template_id}/generate', [App\Http\Controllers\AdvancedSchedulingController::class, 'generateRecurringPosts'])->name('recurring-templates.generate');
+
+        // Queue Management
+        Route::get('/queue/{account_id}', [App\Http\Controllers\AdvancedSchedulingController::class, 'getSchedulingQueue'])->name('queue');
+
+        // Post Recycling
+        Route::post('/recycle/{post_id}', [App\Http\Controllers\AdvancedSchedulingController::class, 'recyclePost'])->name('recycle');
+
+        // Conflict Resolution
+        Route::post('/resolve-conflicts/{account_id}', [App\Http\Controllers\AdvancedSchedulingController::class, 'resolveConflicts'])->name('resolve-conflicts');
+
+        // Bulk Operations
+        Route::post('/bulk-reschedule', [App\Http\Controllers\AdvancedSchedulingController::class, 'bulkReschedule'])->name('bulk-reschedule');
+    });
+
+    /*
+    |----------------------------------------------------------------------
     | صندوق الوارد الموحد (Unified Inbox)
     |----------------------------------------------------------------------
     */
