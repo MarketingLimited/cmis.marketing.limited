@@ -402,6 +402,22 @@ Route::middleware(['auth:sanctum', 'validate.org.access', 'set.db.context'])
 
     /*
     |----------------------------------------------------------------------
+    | منشئ الإعلانات الإبداعية (Ad Creative Builder) - Sprint 4.2
+    |----------------------------------------------------------------------
+    */
+    Route::prefix('ad-creatives')->name('ad-creatives.')->group(function () {
+        Route::get('/', [App\Http\Controllers\AdCreativeController::class, 'index'])->name('index');
+        Route::post('/', [App\Http\Controllers\AdCreativeController::class, 'create'])->name('create');
+        Route::get('/templates', [App\Http\Controllers\AdCreativeController::class, 'templates'])->name('templates');
+        Route::post('/ai-generate', [App\Http\Controllers\AdCreativeController::class, 'generateAI'])->name('ai-generate');
+        Route::get('/{creative_id}', [App\Http\Controllers\AdCreativeController::class, 'show'])->name('show');
+        Route::put('/{creative_id}', [App\Http\Controllers\AdCreativeController::class, 'update'])->name('update');
+        Route::delete('/{creative_id}', [App\Http\Controllers\AdCreativeController::class, 'destroy'])->name('destroy');
+        Route::post('/{creative_id}/variations', [App\Http\Controllers\AdCreativeController::class, 'createVariations'])->name('variations');
+    });
+
+    /*
+    |----------------------------------------------------------------------
     | صندوق الوارد الموحد (Unified Inbox)
     |----------------------------------------------------------------------
     */
