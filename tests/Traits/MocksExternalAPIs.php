@@ -202,6 +202,137 @@ trait MocksExternalAPIs
     }
 
     /**
+     * Mock WhatsApp Business API responses.
+     *
+     * @param string $type
+     * @param array $customResponse
+     * @return void
+     */
+    protected function mockWhatsAppAPI(string $type = 'success', array $customResponse = []): void
+    {
+        $responses = [
+            'success' => [
+                'messaging_product' => 'whatsapp',
+                'contacts' => [
+                    ['wa_id' => '966501234567'],
+                ],
+                'messages' => [
+                    ['id' => 'wamid.test_message_123'],
+                ],
+            ],
+            'error' => [
+                'error' => [
+                    'message' => 'Invalid access token',
+                    'type' => 'OAuthException',
+                    'code' => 190,
+                ],
+            ],
+        ];
+
+        $response = $customResponse ?: ($responses[$type] ?? $responses['success']);
+
+        Http::fake([
+            'graph.facebook.com/*/messages' => Http::response($response, $type === 'error' ? 400 : 200),
+        ]);
+    }
+
+    /**
+     * Mock Twitter (X) API responses.
+     *
+     * @param string $type
+     * @param array $customResponse
+     * @return void
+     */
+    protected function mockTwitterAPI(string $type = 'success', array $customResponse = []): void
+    {
+        $responses = [
+            'success' => [
+                'data' => [
+                    'id' => '1234567890',
+                    'text' => 'Test tweet',
+                    'created_at' => '2024-01-01T00:00:00.000Z',
+                ],
+            ],
+            'error' => [
+                'errors' => [
+                    [
+                        'message' => 'Invalid or expired token',
+                        'code' => 89,
+                    ],
+                ],
+            ],
+        ];
+
+        $response = $customResponse ?: ($responses[$type] ?? $responses['success']);
+
+        Http::fake([
+            'api.twitter.com/*' => Http::response($response, $type === 'error' ? 401 : 200),
+        ]);
+    }
+
+    /**
+     * Mock LinkedIn API responses.
+     *
+     * @param string $type
+     * @param array $customResponse
+     * @return void
+     */
+    protected function mockLinkedInAPI(string $type = 'success', array $customResponse = []): void
+    {
+        $responses = [
+            'success' => [
+                'id' => 'urn:li:share:123456789',
+                'activity' => 'urn:li:activity:123456789',
+            ],
+            'error' => [
+                'status' => 401,
+                'message' => 'Unauthorized',
+            ],
+        ];
+
+        $response = $customResponse ?: ($responses[$type] ?? $responses['success']);
+
+        Http::fake([
+            'api.linkedin.com/*' => Http::response($response, $type === 'error' ? 401 : 200),
+        ]);
+    }
+
+    /**
+     * Mock Snapchat API responses.
+     *
+     * @param string $type
+     * @param array $customResponse
+     * @return void
+     */
+    protected function mockSnapchatAPI(string $type = 'success', array $customResponse = []): void
+    {
+        $responses = [
+            'success' => [
+                'request_status' => 'SUCCESS',
+                'request_id' => 'snap_req_123',
+                'snap' => [
+                    'id' => 'snap_123456',
+                    'status' => 'PUBLISHED',
+                ],
+            ],
+            'error' => [
+                'request_status' => 'ERROR',
+                'request_id' => 'snap_req_456',
+                'error' => [
+                    'message' => 'Invalid credentials',
+                    'code' => 'UNAUTHORIZED',
+                ],
+            ],
+        ];
+
+        $response = $customResponse ?: ($responses[$type] ?? $responses['success']);
+
+        Http::fake([
+            'adsapi.snapchat.com/*' => Http::response($response, $type === 'error' ? 401 : 200),
+        ]);
+    }
+
+    /**
      * Mock all external APIs with success responses.
      *
      * @return void
@@ -212,5 +343,9 @@ trait MocksExternalAPIs
         $this->mockGoogleAdsAPI('success');
         $this->mockTikTokAPI('success');
         $this->mockGeminiAPI('success');
+        $this->mockWhatsAppAPI('success');
+        $this->mockTwitterAPI('success');
+        $this->mockLinkedInAPI('success');
+        $this->mockSnapchatAPI('success');
     }
 }
