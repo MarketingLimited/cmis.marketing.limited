@@ -35,19 +35,10 @@ class AdAudience extends Model
         'provider',
     ];
 
-    protected $casts = ['ad_audience_id' => 'string',
-        'ad_account_id' => 'string',
-        'audience_size' => 'integer',
-        'targeting_spec' => 'array',
-        'exclusions' => 'array',
-        'lookalike_ratio' => 'float',
-        'custom_audience_source' => 'array',
-        'retention_days' => 'integer',
-        'metadata' => 'array',
-        'last_synced_at' => 'datetime',
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime',
-        'deleted_at' => 'datetime',
+    protected $casts = [
+        'id' => 'string',
+        'org_id' => 'string',
+        'integration_id' => 'string',
         'demographics' => 'array',
         'interests' => 'array',
         'behaviors' => 'array',
@@ -56,14 +47,25 @@ class AdAudience extends Model
         'custom_audience' => 'array',
         'lookalike_audience' => 'array',
         'advantage_plus_settings' => 'array',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+        'deleted_at' => 'datetime',
     ];
 
     /**
-     * Get the ad account
+     * Get the organization
      */
-    public function adAccount()
+    public function org()
     {
-        return $this->belongsTo(AdAccount::class, 'ad_account_id', 'ad_account_id');
+        return $this->belongsTo(\App\Models\Core\Org::class, 'org_id', 'org_id');
+    }
+
+    /**
+     * Get the integration
+     */
+    public function integration()
+    {
+        return $this->belongsTo(\App\Models\Core\Integration::class, 'integration_id', 'integration_id');
     }
 
     /**
@@ -83,22 +85,6 @@ class AdAudience extends Model
     }
 
     /**
-     * Scope by status
-     */
-    public function scopeByStatus($query, string $status)
-    {
-        return $query->where('status', $status);
-    }
-
-    /**
-     * Scope active audiences
-     */
-    public function scopeActive($query)
-    {
-        return $query->where('status', 'active');
-    }
-
-    /**
      * Scope custom audiences
      */
     public function scopeCustom($query)
@@ -115,30 +101,10 @@ class AdAudience extends Model
     }
 
     /**
-     * Scope by minimum size
+     * Scope by entity level
      */
-    public function scopeMinimumSize($query, int $size)
+    public function scopeByEntityLevel($query, string $level)
     {
-        return $query->where('audience_size', '>=', $size);
-    }
-
-    /**
-     * Check if audience is ready
-     */
-    public function isReady(): bool
-    {
-        return $this->status === 'active' && $this->audience_size > 0;
-    }
-
-    /**
-     * Check if audience needs refresh
-     */
-    public function needsRefresh(int $hours = 24): bool
-    {
-        if (!$this->last_synced_at) {
-            return true;
-        }
-
-        return $this->last_synced_at->diffInHours(now()) >= $hours;
+        return $query->where('entity_level', $level);
     }
 }

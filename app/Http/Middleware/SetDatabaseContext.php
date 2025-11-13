@@ -26,7 +26,7 @@ class SetDatabaseContext
             return $next($request);
         }
 
-        $userId = $user->user_id ?? $user->id;
+        $userId = $user->id;
         $orgId = $request->route('org_id');
 
         if ($orgId) {
