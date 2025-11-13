@@ -37,4 +37,45 @@ interface SocialMediaRepositoryInterface
         string $accountId,
         string $period = 'weekly'
     ): Collection;
+
+    /**
+     * Get publishing queue configuration
+     */
+    public function getPublishingQueue(string $socialAccountId): ?object;
+
+    /**
+     * Create or update publishing queue
+     */
+    public function upsertPublishingQueue(
+        string $orgId,
+        string $socialAccountId,
+        array $config
+    ): object;
+
+    /**
+     * Get next available time slot
+     */
+    public function getNextAvailableSlot(
+        string $socialAccountId,
+        ?\DateTime $afterTime = null
+    ): ?\DateTime;
+
+    /**
+     * Get queued posts for account
+     */
+    public function getQueuedPosts(string $socialAccountId): Collection;
+
+    /**
+     * Schedule post to queue
+     */
+    public function schedulePostToQueue(
+        string $postId,
+        string $socialAccountId,
+        \DateTime $scheduledFor
+    ): bool;
+
+    /**
+     * Remove post from queue
+     */
+    public function removeFromQueue(string $postId): bool;
 }
