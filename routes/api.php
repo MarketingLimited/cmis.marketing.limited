@@ -439,6 +439,25 @@ Route::middleware(['auth:sanctum', 'validate.org.access', 'set.db.context'])
 
     /*
     |----------------------------------------------------------------------
+    | إدارة الميزانية والمزايدة (Budget & Bidding) - Sprint 4.4
+    |----------------------------------------------------------------------
+    */
+    Route::prefix('budget')->name('budget.')->group(function () {
+        // Campaign Budget Management
+        Route::put('/campaign/{campaign_id}', [App\Http\Controllers\BudgetController::class, 'updateCampaignBudget'])->name('campaign.update');
+        Route::put('/campaign/{campaign_id}/bid-strategy', [App\Http\Controllers\BudgetController::class, 'updateBidStrategy'])->name('bid-strategy');
+
+        // Tracking & ROI
+        Route::get('/campaign/{campaign_id}/tracking', [App\Http\Controllers\BudgetController::class, 'getSpendTracking'])->name('tracking');
+        Route::get('/campaign/{campaign_id}/roi', [App\Http\Controllers\BudgetController::class, 'calculateROI'])->name('roi');
+        Route::get('/campaign/{campaign_id}/recommendations', [App\Http\Controllers\BudgetController::class, 'getBudgetRecommendations'])->name('recommendations');
+
+        // Optimization
+        Route::post('/optimize', [App\Http\Controllers\BudgetController::class, 'optimizeBudgetAllocation'])->name('optimize');
+    });
+
+    /*
+    |----------------------------------------------------------------------
     | صندوق الوارد الموحد (Unified Inbox)
     |----------------------------------------------------------------------
     */
