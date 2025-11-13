@@ -6,14 +6,21 @@ use App\Models\Core\Role;
 use App\Models\Security\Permission;
 use App\Models\Security\PermissionsCache;
 use App\Models\User;
+use App\Repositories\Contracts\PermissionRepositoryInterface;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class PermissionService
 {
+    protected PermissionRepositoryInterface $permissionRepo;
+
+    public function __construct(PermissionRepositoryInterface $permissionRepo)
+    {
+        $this->permissionRepo = $permissionRepo;
+    }
     /**
-     * Check if user has permission using database function
+     * Check if user has permission using repository
      */
     public function check(User $user, string $permissionCode, ?string $orgId = null): bool
     {
@@ -31,12 +38,8 @@ class PermissionService
         $cacheKey = "permission:{$user->user_id}:{$orgId}:{$permissionCode}";
         $cached = Cache::remember($cacheKey, now()->addMinutes(10), function () use ($user, $orgId, $permissionCode) {
             try {
-                $result = DB::selectOne(
-                    'SELECT cmis.check_permission(?, ?, ?) as has_permission',
-                    [$user->user_id, $orgId, $permissionCode]
-                );
+                $hasPermission = $this->permissionRepo->canAccessCampaign($user->user_id, $orgId);
 
-                $hasPermission = (bool) ($result->has_permission ?? false);
                 PermissionsCache::getOrCreate($user->user_id, $orgId, $permissionCode, $hasPermission);
 
                 return $hasPermission;
