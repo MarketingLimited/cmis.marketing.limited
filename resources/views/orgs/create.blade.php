@@ -5,6 +5,20 @@
 
 @section('content')
 <div class="max-w-4xl mx-auto">
+    @if(session('success'))
+        <div class="mb-6 bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-lg">
+            <i class="fas fa-check-circle ml-2"></i>
+            {{ session('success') }}
+        </div>
+    @endif
+
+    @if(session('error'))
+        <div class="mb-6 bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg">
+            <i class="fas fa-exclamation-circle ml-2"></i>
+            {{ session('error') }}
+        </div>
+    @endif
+
     <form method="POST" action="{{ route('orgs.store') }}" class="bg-white rounded-xl shadow-sm p-8">
         @csrf
 
@@ -14,72 +28,54 @@
                 <h3 class="text-lg font-bold text-gray-900 mb-4">المعلومات الأساسية</h3>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
+                    <div class="md:col-span-2">
                         <label class="block text-sm font-medium text-gray-700 mb-2">اسم المؤسسة *</label>
-                        <input type="text" name="org_name" value="{{ old('org_name') }}" required
-                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
-                        @error('org_name')
+                        <input type="text" name="name" value="{{ old('name') }}" required
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 @error('name') border-red-500 @enderror">
+                        @error('name')
+                            <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                        @enderror
+                        <p class="text-gray-500 text-xs mt-1">اسم فريد للمؤسسة</p>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">اللغة الافتراضية</label>
+                        <select name="default_locale"
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 @error('default_locale') border-red-500 @enderror">
+                            <option value="ar-BH" {{ old('default_locale') == 'ar-BH' ? 'selected' : '' }}>العربية (البحرين)</option>
+                            <option value="en-US" {{ old('default_locale') == 'en-US' ? 'selected' : '' }}>English (US)</option>
+                            <option value="ar-SA" {{ old('default_locale') == 'ar-SA' ? 'selected' : '' }}>العربية (السعودية)</option>
+                            <option value="ar-AE" {{ old('default_locale') == 'ar-AE' ? 'selected' : '' }}>العربية (الإمارات)</option>
+                        </select>
+                        @error('default_locale')
                             <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
                         @enderror
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">الصناعة *</label>
-                        <select name="industry" required
-                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
-                            <option value="">اختر الصناعة</option>
-                            <option value="تقنية">تقنية</option>
-                            <option value="تجارة إلكترونية">تجارة إلكترونية</option>
-                            <option value="تعليم">تعليم</option>
-                            <option value="صحة">صحة</option>
-                            <option value="عقارات">عقارات</option>
-                            <option value="أخرى">أخرى</option>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">العملة</label>
+                        <select name="currency"
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 @error('currency') border-red-500 @enderror">
+                            <option value="BHD" {{ old('currency') == 'BHD' ? 'selected' : '' }}>دينار بحريني (BHD)</option>
+                            <option value="SAR" {{ old('currency') == 'SAR' ? 'selected' : '' }}>ريال سعودي (SAR)</option>
+                            <option value="AED" {{ old('currency') == 'AED' ? 'selected' : '' }}>درهم إماراتي (AED)</option>
+                            <option value="USD" {{ old('currency') == 'USD' ? 'selected' : '' }}>دولار أمريكي (USD)</option>
                         </select>
-                    </div>
-                </div>
-
-                <div class="mt-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">الوصف</label>
-                    <textarea name="description" rows="3"
-                              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">{{ old('description') }}</textarea>
-                </div>
-            </div>
-
-            <!-- Contact Information -->
-            <div class="pt-6 border-t">
-                <h3 class="text-lg font-bold text-gray-900 mb-4">معلومات الاتصال</h3>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">البريد الإلكتروني</label>
-                        <input type="email" name="contact_email" value="{{ old('contact_email') }}"
-                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
+                        @error('currency')
+                            <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                        @enderror
                     </div>
 
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">رقم الهاتف</label>
-                        <input type="text" name="contact_phone" value="{{ old('contact_phone') }}"
-                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">المزود (اختياري)</label>
+                        <input type="text" name="provider" value="{{ old('provider') }}"
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 @error('provider') border-red-500 @enderror"
+                               placeholder="مثال: manual، api، integration">
+                        @error('provider')
+                            <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                        @enderror
+                        <p class="text-gray-500 text-xs mt-1">مصدر إنشاء المؤسسة (اختياري)</p>
                     </div>
-                </div>
-
-                <div class="mt-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">الموقع الإلكتروني</label>
-                    <input type="url" name="website" value="{{ old('website') }}"
-                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
-                </div>
-            </div>
-
-            <!-- Settings -->
-            <div class="pt-6 border-t">
-                <h3 class="text-lg font-bold text-gray-900 mb-4">الإعدادات</h3>
-
-                <div class="space-y-4">
-                    <label class="flex items-center">
-                        <input type="checkbox" name="is_active" value="1" checked
-                               class="w-5 h-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
-                        <span class="mr-2 text-sm text-gray-700">المؤسسة نشطة</span>
-                    </label>
                 </div>
             </div>
 

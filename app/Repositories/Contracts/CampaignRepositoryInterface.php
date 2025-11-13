@@ -11,10 +11,13 @@ interface CampaignRepositoryInterface
      */
     public function createCampaignWithContext(
         string $orgId,
-        string $name,
-        ?string $objective,
-        ?string $contextId
-    ): ?object;
+        string $offeringId,
+        string $segmentId,
+        string $campaignName,
+        string $framework,
+        string $tone,
+        array $tags
+    ): Collection;
 
     /**
      * Find related campaigns

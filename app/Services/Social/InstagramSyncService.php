@@ -2,7 +2,7 @@
 
 namespace App\Services\Social;
 
-use App\Models\Integration;
+use App\Models\Core\Integration;
 use App\Models\SocialPost;
 use Carbon\Carbon;
 use Illuminate\Support\Arr;

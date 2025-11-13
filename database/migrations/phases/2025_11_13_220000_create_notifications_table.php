@@ -5,9 +5,6 @@ use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         DB::statement('
@@ -35,41 +32,23 @@ return new class extends Migration
             );
         ');
 
-        // Create indexes for better performance
         DB::statement('CREATE INDEX IF NOT EXISTS idx_notifications_user_id ON cmis.notifications(user_id);');
         DB::statement('CREATE INDEX IF NOT EXISTS idx_notifications_org_id ON cmis.notifications(org_id);');
         DB::statement('CREATE INDEX IF NOT EXISTS idx_notifications_read ON cmis.notifications(read);');
         DB::statement('CREATE INDEX IF NOT EXISTS idx_notifications_created_at ON cmis.notifications(created_at DESC);');
         DB::statement('CREATE INDEX IF NOT EXISTS idx_notifications_user_unread ON cmis.notifications(user_id, read) WHERE read = false;');
 
-        // Enable RLS
         DB::statement('ALTER TABLE cmis.notifications ENABLE ROW LEVEL SECURITY;');
 
-        // RLS Policy: Users can only see their own notifications
-        DB::statement('
-            DROP POLICY IF EXISTS notifications_select_policy ON cmis.notifications;
-            CREATE POLICY notifications_select_policy ON cmis.notifications
-            FOR SELECT
-            USING (user_id = cmis.get_current_user_id());
-        ');
+        DB::statement('DROP POLICY IF EXISTS notifications_select_policy ON cmis.notifications;');
+        DB::statement('CREATE POLICY notifications_select_policy ON cmis.notifications FOR SELECT USING (user_id = cmis.get_current_user_id());');
 
-        // RLS Policy: Users can only update their own notifications
-        DB::statement('
-            DROP POLICY IF EXISTS notifications_update_policy ON cmis.notifications;
-            CREATE POLICY notifications_update_policy ON cmis.notifications
-            FOR UPDATE
-            USING (user_id = cmis.get_current_user_id());
-        ');
+        DB::statement('DROP POLICY IF EXISTS notifications_update_policy ON cmis.notifications;');
+        DB::statement('CREATE POLICY notifications_update_policy ON cmis.notifications FOR UPDATE USING (user_id = cmis.get_current_user_id());');
 
-        // RLS Policy: System can insert notifications
-        DB::statement('
-            DROP POLICY IF EXISTS notifications_insert_policy ON cmis.notifications;
-            CREATE POLICY notifications_insert_policy ON cmis.notifications
-            FOR INSERT
-            WITH CHECK (true);
-        ');
+        DB::statement('DROP POLICY IF EXISTS notifications_insert_policy ON cmis.notifications;');
+        DB::statement('CREATE POLICY notifications_insert_policy ON cmis.notifications FOR INSERT WITH CHECK (true);');
 
-        // Create function to automatically update updated_at
         DB::statement('
             CREATE OR REPLACE FUNCTION cmis.update_notifications_updated_at()
             RETURNS TRIGGER AS $$
@@ -80,16 +59,15 @@ return new class extends Migration
             $$ LANGUAGE plpgsql;
         ');
 
-        // Create trigger for updated_at
+        DB::statement('DROP TRIGGER IF EXISTS trigger_update_notifications_updated_at ON cmis.notifications');
+
         DB::statement('
-            DROP TRIGGER IF EXISTS trigger_update_notifications_updated_at ON cmis.notifications;
             CREATE TRIGGER trigger_update_notifications_updated_at
             BEFORE UPDATE ON cmis.notifications
             FOR EACH ROW
-            EXECUTE FUNCTION cmis.update_notifications_updated_at();
+            EXECUTE FUNCTION cmis.update_notifications_updated_at()
         ');
 
-        // Create function to mark notification as read
         DB::statement('
             CREATE OR REPLACE FUNCTION cmis.mark_notification_as_read(p_notification_id UUID)
             RETURNS BOOLEAN AS $$
@@ -105,7 +83,6 @@ return new class extends Migration
             $$ LANGUAGE plpgsql SECURITY DEFINER;
         ');
 
-        // Create function to get unread notifications count
         DB::statement('
             CREATE OR REPLACE FUNCTION cmis.get_unread_notifications_count(p_user_id UUID DEFAULT NULL)
             RETURNS INTEGER AS $$
@@ -124,7 +101,6 @@ return new class extends Migration
             $$ LANGUAGE plpgsql SECURITY DEFINER;
         ');
 
-        // Create function to create notification
         DB::statement('
             CREATE OR REPLACE FUNCTION cmis.create_notification(
                 p_user_id UUID,
@@ -147,36 +123,11 @@ return new class extends Migration
             $$ LANGUAGE plpgsql SECURITY DEFINER;
         ');
 
-        // Add comments
         DB::statement('COMMENT ON TABLE cmis.notifications IS \'نظام الإشعارات للمستخدمين في النظام\';');
         DB::statement('COMMENT ON COLUMN cmis.notifications.type IS \'نوع الإشعار: campaign, analytics, integration, user, creative, system, workflow, report\';');
         DB::statement('COMMENT ON COLUMN cmis.notifications.data IS \'بيانات إضافية عن الإشعار بصيغة JSON\';');
-
-        // Insert sample notifications for testing
-        DB::statement("
-            INSERT INTO cmis.notifications (user_id, org_id, type, title, message, read)
-            SELECT
-                u.user_id,
-                uo.org_id,
-                CASE WHEN random() < 0.25 THEN 'campaign'
-                     WHEN random() < 0.50 THEN 'analytics'
-                     WHEN random() < 0.75 THEN 'integration'
-                     ELSE 'system'
-                END,
-                CASE WHEN random() < 0.5 THEN 'تحديث مهم' ELSE NULL END,
-                'إشعار تجريبي للاختبار',
-                random() < 0.5
-            FROM cmis.users u
-            JOIN cmis.user_orgs uo ON u.user_id::text = uo.user_id::text
-            WHERE u.status = 'active'
-            LIMIT 20
-            ON CONFLICT DO NOTHING;
-        ");
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         DB::statement('DROP FUNCTION IF EXISTS cmis.create_notification(UUID, UUID, VARCHAR, VARCHAR, TEXT, JSONB);');
