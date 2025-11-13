@@ -39,6 +39,7 @@ class Campaign extends Model
         'created_by',
         'provider',
         'deleted_by',
+        'description',
     ];
 
     protected $casts = [
@@ -64,7 +65,7 @@ class Campaign extends Model
 
     public function creator(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'created_by', 'user_id');
+        return $this->belongsTo(User::class, 'created_by', 'id');
     }
 
     public function offerings(): BelongsToMany
