@@ -2,7 +2,7 @@
 
 use App\Http\Controllers\AI\AIDashboardController;
 use App\Http\Controllers\Analytics\OverviewController as AnalyticsOverviewController;
-use App\Http\Controllers\CampaignController;
+use App\Http\Controllers\Campaigns\CampaignController;
 use App\Http\Controllers\Creative\CreativeAssetController;
 use App\Http\Controllers\Creative\OverviewController as CreativeOverviewController;
 use App\Http\Controllers\DashboardController;
@@ -49,11 +49,13 @@ Route::middleware(['auth'])->group(function () {
     // ==================== Campaigns ====================
     Route::prefix('campaigns')->name('campaigns.')->group(function () {
         Route::get('/', [CampaignController::class, 'index'])->name('index');
-        Route::get('{campaign}', [CampaignController::class, 'show'])
-            ->whereNumber('campaign')
-            ->name('show');
+        Route::get('create', [CampaignController::class, 'create'])->name('create');
+        Route::post('/', [CampaignController::class, 'store'])->name('store');
+        Route::get('{campaign}', [CampaignController::class, 'show'])->name('show');
+        Route::get('{campaign}/edit', [CampaignController::class, 'edit'])->name('edit');
+        Route::put('{campaign}', [CampaignController::class, 'update'])->name('update');
+        Route::delete('{campaign}', [CampaignController::class, 'destroy'])->name('destroy');
         Route::get('{campaign}/performance/{range}', [CampaignController::class, 'performanceByRange'])
-            ->whereNumber('campaign')
             ->whereIn('range', ['daily', 'weekly', 'monthly', 'yearly'])
             ->name('performance');
     });

@@ -2,7 +2,7 @@
 
 namespace App\Services\Social;
 
-use App\Models\Integration;
+use App\Models\Core\Integration;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;

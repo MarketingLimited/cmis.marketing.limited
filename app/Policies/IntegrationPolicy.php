@@ -2,7 +2,7 @@
 
 namespace App\Policies;
 
-use App\Models\Integration;
+use App\Models\Core\Integration;
 use App\Models\User;
 use App\Services\PermissionService;
 

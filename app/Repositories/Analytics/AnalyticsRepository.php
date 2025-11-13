@@ -2,6 +2,7 @@
 
 namespace App\Repositories\Analytics;
 
+use App\Repositories\Contracts\AnalyticsRepositoryInterface;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Collection;
 
@@ -9,7 +10,7 @@ use Illuminate\Support\Collection;
  * Repository for CMIS Analytics Functions
  * Encapsulates PostgreSQL functions related to analytics and reporting
  */
-class AnalyticsRepository
+class AnalyticsRepository implements AnalyticsRepositoryInterface
 {
     /**
      * Get migration reports
