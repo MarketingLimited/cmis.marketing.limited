@@ -207,10 +207,48 @@ function workflowManager() {
         },
 
         async deleteWorkflow(flowId) {
-            if (!confirm('هل أنت متأكد من حذف سير العمل؟')) return;
+            if (!confirm('هل أنت متأكد من حذف سير العمل؟ لا يمكن التراجع عن هذا الإجراء.')) return;
 
-            // Delete logic here
-            alert('سيتم إضافة وظيفة الحذف قريباً');
+            try {
+                const response = await fetch(`/api/workflows/${flowId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': 'Bearer ' + localStorage.getItem('auth_token'),
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    // Remove workflow from the list
+                    this.workflows = this.workflows.filter(w => w.flow_id !== flowId);
+
+                    // Show success notification
+                    if (window.notify) {
+                        window.notify('تم حذف سير العمل بنجاح', 'success');
+                    } else {
+                        alert('تم حذف سير العمل بنجاح');
+                    }
+                } else {
+                    const error = await response.json();
+                    const errorMsg = error.message || 'فشل حذف سير العمل';
+
+                    if (window.notify) {
+                        window.notify(errorMsg, 'error');
+                    } else {
+                        alert(errorMsg);
+                    }
+                }
+            } catch (error) {
+                console.error('Error deleting workflow:', error);
+                const errorMsg = 'حدث خطأ أثناء حذف سير العمل';
+
+                if (window.notify) {
+                    window.notify(errorMsg, 'error');
+                } else {
+                    alert(errorMsg);
+                }
+            }
         }
     };
 }
