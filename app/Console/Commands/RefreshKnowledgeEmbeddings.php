@@ -2,12 +2,17 @@
 
 namespace App\Console\Commands;
 
+use App\Repositories\Knowledge\EmbeddingRepository;
+use App\Repositories\Knowledge\KnowledgeRepository;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class RefreshKnowledgeEmbeddings extends Command
 {
+    protected EmbeddingRepository $embeddingRepo;
+    protected KnowledgeRepository $knowledgeRepo;
+
     /**
      * The name and signature of the console command.
      *
@@ -16,7 +21,7 @@ class RefreshKnowledgeEmbeddings extends Command
     protected $signature = 'cmis:refresh-embeddings
                             {--domain= : Specific domain to refresh}
                             {--category= : Specific category to refresh}
-                            {--limit= : Limit number of items to process}
+                            {--batch-size=100 : Number of items to process in batch}
                             {--force : Force refresh even if embeddings exist}';
 
     /**
@@ -24,89 +29,57 @@ class RefreshKnowledgeEmbeddings extends Command
      *
      * @var string
      */
-    protected $description = 'Refresh vector embeddings for knowledge base items using database functions';
+    protected $description = 'تحديث التضمينات المتجهة لعناصر قاعدة المعرفة';
+
+    public function __construct(EmbeddingRepository $embeddingRepo, KnowledgeRepository $knowledgeRepo)
+    {
+        parent::__construct();
+        $this->embeddingRepo = $embeddingRepo;
+        $this->knowledgeRepo = $knowledgeRepo;
+    }
 
     /**
      * Execute the console command.
      */
     public function handle(): int
     {
-        $this->info('🔄 Starting knowledge embeddings refresh...');
+        $this->info('🔄 بدء تحديث التضمينات المتجهة...');
 
-        $domain = $this->option('domain');
         $category = $this->option('category');
-        $limit = $this->option('limit') ?? 100;
-        $force = $this->option('force');
+        $batchSize = (int) $this->option('batch-size');
 
         try {
-            // Build query to get knowledge items needing refresh
-            $query = DB::table('cmis_knowledge.knowledge_base')
-                ->select('knowledge_id', 'domain', 'category', 'topic', 'content');
-
-            if ($domain) {
-                $query->where('domain', $domain);
-                $this->info("📂 Filtering by domain: {$domain}");
-            }
+            // Use batch update from repository
+            $this->info("📦 معالجة دفعة من {$batchSize} عنصر...");
 
             if ($category) {
-                $query->where('category', $category);
-                $this->info("🏷️  Filtering by category: {$category}");
+                $this->info("🏷️  فلترة حسب الفئة: {$category}");
             }
 
-            if (!$force) {
-                $query->whereNull('embedding');
-                $this->info('⚡ Only processing items without embeddings');
-            }
+            $result = $this->embeddingRepo->batchUpdateEmbeddings($batchSize, $category);
 
-            $items = $query->limit($limit)->get();
+            if ($result && isset($result->processed_count)) {
+                $this->newLine();
+                $this->info("✅ تمت معالجة: {$result->processed_count} عنصر بنجاح");
 
-            $this->info("📊 Found {$items->count()} items to process");
-
-            if ($items->isEmpty()) {
-                $this->warn('⚠️  No items found to process');
-                return Command::SUCCESS;
-            }
-
-            $bar = $this->output->createProgressBar($items->count());
-            $bar->start();
-
-            $successCount = 0;
-            $failCount = 0;
-
-            foreach ($items as $item) {
-                try {
-                    // Use database function to refresh embedding
-                    $result = DB::select("
-                        SELECT cmis_knowledge.refresh_knowledge_embedding(?) as success
-                    ", [$item->knowledge_id]);
-
-                    if ($result[0]->success ?? false) {
-                        $successCount++;
-                    } else {
-                        $failCount++;
-                        Log::warning("Failed to refresh embedding for knowledge_id: {$item->knowledge_id}");
-                    }
-                } catch (\Exception $e) {
-                    $failCount++;
-                    Log::error("Error refreshing embedding for knowledge_id {$item->knowledge_id}: " . $e->getMessage());
+                if (isset($result->updated_count)) {
+                    $this->info("✓ تم تحديث: {$result->updated_count} تضمين");
                 }
 
-                $bar->advance();
+                if (isset($result->failed_count) && $result->failed_count > 0) {
+                    $this->warn("⚠️  فشل: {$result->failed_count} عنصر");
+                }
+            } else {
+                $this->warn('⚠️  لم يتم العثور على عناصر للمعالجة');
             }
 
-            $bar->finish();
-            $this->newLine(2);
-
-            $this->info("✅ Successfully refreshed: {$successCount}");
-            if ($failCount > 0) {
-                $this->error("❌ Failed to refresh: {$failCount}");
-            }
-
-            $this->info('✨ Embeddings refresh completed!');
+            $this->newLine();
+            $this->info('✨ اكتمل تحديث التضمينات!');
 
             return Command::SUCCESS;
+
         } catch (\Exception $e) {
-            $this->error('❌ Error during embeddings refresh: ' . $e->getMessage());
+            $this->error('❌ خطأ أثناء تحديث التضمينات: ' . $e->getMessage());
             Log::error('Embeddings refresh failed: ' . $e->getMessage());
             return Command::FAILURE;
         }

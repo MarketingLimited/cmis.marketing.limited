@@ -4,11 +4,20 @@ namespace App\Http\Controllers\Analytics;
 
 use App\Http\Controllers\Controller;
 use App\Models\Kpi;
+use App\Repositories\Analytics\AnalyticsRepository;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Log;
 
 class KpiController extends Controller
 {
+    protected AnalyticsRepository $analyticsRepo;
+
+    public function __construct(AnalyticsRepository $analyticsRepo)
+    {
+        $this->analyticsRepo = $analyticsRepo;
+    }
+
     public function index(Request $request, string $orgId)
     {
         Gate::authorize('viewReports', auth()->user());
@@ -21,7 +30,8 @@ class KpiController extends Controller
             return response()->json($kpis);
 
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Failed to fetch KPIs'], 500);
+            Log::error('فشل جلب مؤشرات الأداء: ' . $e->getMessage());
+            return response()->json(['error' => 'فشل جلب مؤشرات الأداء'], 500);
         }
     }
 
@@ -30,17 +40,22 @@ class KpiController extends Controller
         Gate::authorize('viewPerformance', auth()->user());
 
         try {
+            // Get performance snapshot from analytics repository
+            $performanceData = $this->analyticsRepo->snapshotPerformance();
+
             $summary = [
                 'total_campaigns' => \App\Models\Campaign::where('org_id', $orgId)->count(),
                 'active_campaigns' => \App\Models\Campaign::where('org_id', $orgId)->where('status', 'active')->count(),
                 'total_assets' => \App\Models\CreativeAsset::where('org_id', $orgId)->count(),
                 'total_channels' => \App\Models\Channel::where('org_id', $orgId)->count(),
+                'performance_metrics' => $performanceData,
             ];
 
             return response()->json($summary);
 
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Failed to fetch summary'], 500);
+            Log::error('فشل جلب الملخص: ' . $e->getMessage());
+            return response()->json(['error' => 'فشل جلب الملخص'], 500);
         }
     }
 
@@ -49,16 +64,71 @@ class KpiController extends Controller
         Gate::authorize('viewInsights', auth()->user());
 
         try {
-            // Placeholder for trends analysis
-            $trends = [
-                'message' => 'Trends endpoint - to be implemented',
-                'org_id' => $orgId
-            ];
+            $validated = $request->validate([
+                'days' => 'nullable|integer|min:1|max:365',
+            ]);
 
-            return response()->json($trends);
+            $days = $validated['days'] ?? 30;
+
+            // Get performance trends from analytics repository
+            $trendsData = $this->analyticsRepo->snapshotPerformanceForDays($days);
+
+            return response()->json([
+                'success' => true,
+                'org_id' => $orgId,
+                'period_days' => $days,
+                'trends' => $trendsData,
+            ]);
 
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Failed to fetch trends'], 500);
+            Log::error('فشل جلب الاتجاهات: ' . $e->getMessage());
+            return response()->json(['error' => 'فشل جلب الاتجاهات'], 500);
+        }
+    }
+
+    /**
+     * Get migration reports
+     */
+    public function migrations(Request $request)
+    {
+        Gate::authorize('viewReports', auth()->user());
+
+        try {
+            $migrations = $this->analyticsRepo->reportMigrations();
+
+            return response()->json([
+                'success' => true,
+                'migrations' => $migrations,
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('فشل جلب تقارير الهجرة: ' . $e->getMessage());
+            return response()->json(['error' => 'فشل جلب تقارير الهجرة'], 500);
+        }
+    }
+
+    /**
+     * Run AI query on analytics data
+     */
+    public function aiQuery(Request $request, string $orgId)
+    {
+        Gate::authorize('viewInsights', auth()->user());
+
+        try {
+            $validated = $request->validate([
+                'prompt' => 'required|string|max:1000',
+            ]);
+
+            $success = $this->analyticsRepo->runAiQuery($orgId, $validated['prompt']);
+
+            return response()->json([
+                'success' => $success,
+                'message' => $success ? 'تم تنفيذ الاستعلام بنجاح' : 'فشل تنفيذ الاستعلام',
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('فشل تنفيذ استعلام الذكاء الاصطناعي: ' . $e->getMessage());
+            return response()->json(['error' => 'فشل تنفيذ استعلام الذكاء الاصطناعي'], 500);
         }
     }
 }

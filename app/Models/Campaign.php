@@ -80,4 +80,14 @@ class Campaign extends Model
     {
         return $this->hasMany(CampaignPerformanceMetric::class, 'campaign_id', 'campaign_id');
     }
+
+    /**
+     * Get ad campaigns associated with this campaign
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function adCampaigns(): HasMany
+    {
+        return $this->hasMany(\App\Models\AdPlatform\AdCampaign::class, 'campaign_id', 'campaign_id');
+    }
 }
