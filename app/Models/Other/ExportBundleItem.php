@@ -13,6 +13,7 @@ class ExportBundleItem extends Model
     protected $connection = 'pgsql';
 
     protected $table = 'cmis.export_bundle_items';
+    protected $primaryKey = 'bundle_id';
 
     public $timestamps = false;
 
@@ -21,6 +22,7 @@ class ExportBundleItem extends Model
     protected $fillable = [
         'bundle_id',
         'asset_id',
+        'provider',
     ];
 
     protected $casts = [

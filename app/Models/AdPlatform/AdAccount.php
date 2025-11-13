@@ -11,27 +11,21 @@ class AdAccount extends Model
     use HasFactory, SoftDeletes;
 
     protected $table = 'cmis.ad_accounts';
-    protected $primaryKey = 'ad_account_id';
+    protected $primaryKey = 'id';
     protected $connection = 'pgsql';
     public $incrementing = false;
     protected $keyType = 'string';
 
     protected $fillable = [
+        'id',
         'org_id',
         'integration_id',
-        'platform',
-        'account_name',
         'account_external_id',
-        'account_status',
+        'name',
         'currency',
         'timezone',
-        'billing_info',
-        'spend_limit',
-        'capabilities',
-        'metadata',
-        'last_synced_at',
-        'sync_status',
-        'is_active',
+        'spend_cap',
+        'status',
         'provider',
     ];
 

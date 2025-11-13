@@ -40,30 +40,25 @@ class AdCreativeService
             $creativeId = \Illuminate\Support\Str::uuid()->toString();
 
             // Validate ad set exists
+            $adsetExternalId = null;
             if (isset($data['ad_set_id'])) {
-                $adSet = AdSet::where('ad_set_id', $data['ad_set_id'])->first();
+                $adSet = AdSet::find($data['ad_set_id']);
                 if (!$adSet) {
                     throw new \Exception('Ad set not found');
                 }
+                $adsetExternalId = $adSet->adset_external_id;
             }
 
-            // Create ad entity (creative)
+            // Create ad entity (creative) - mapped to actual schema
             $creative = AdEntity::create([
-                'ad_entity_id' => $creativeId,
-                'ad_set_id' => $data['ad_set_id'] ?? null,
-                'asset_id' => $data['asset_id'] ?? null,
-                'platform' => $data['platform'],
-                'ad_name' => $data['ad_name'],
-                'ad_status' => $data['ad_status'] ?? 'draft',
-                'ad_type' => $data['ad_type'] ?? 'single_image',
-                'creative_data' => $this->prepareCreativeData($data),
-                'headline' => $data['headline'] ?? null,
-                'description' => $data['description'] ?? null,
-                'call_to_action' => $data['call_to_action'] ?? 'learn_more',
-                'destination_url' => $data['destination_url'] ?? null,
-                'display_url' => $data['display_url'] ?? null,
-                'tracking_params' => $data['tracking_params'] ?? [],
-                'metadata' => $data['metadata'] ?? [],
+                'id' => $creativeId,
+                'org_id' => $data['org_id'] ?? auth()->user()->org_id ?? null,
+                'integration_id' => $data['integration_id'] ?? null,
+                'adset_external_id' => $adsetExternalId ?? $data['adset_external_id'],
+                'ad_external_id' => $data['ad_external_id'] ?? 'ad_' . substr($creativeId, 0, 8),
+                'name' => $data['ad_name'] ?? $data['name'] ?? 'Untitled Ad',
+                'status' => $data['ad_status'] ?? $data['status'] ?? 'draft',
+                'creative_id' => $data['asset_id'] ?? $data['creative_id'] ?? null,
                 'provider' => 'cmis'
             ]);
 
@@ -76,8 +71,8 @@ class AdCreativeService
 
             Log::info('Ad creative created', [
                 'creative_id' => $creativeId,
-                'ad_type' => $creative->ad_type,
-                'platform' => $creative->platform
+                'ad_type' => 'unknown', // $creative->ad_type - field removed
+                'platform' => $creative->provider ?? 'cmis'
             ]);
 
             return [
@@ -111,16 +106,16 @@ class AdCreativeService
         try {
             DB::beginTransaction();
 
-            $creative = AdEntity::where('ad_entity_id', $creativeId)->first();
+            $creative = AdEntity::where('id', $creativeId)->first();
             if (!$creative) {
                 throw new \Exception('Creative not found');
             }
 
             // Update creative fields
             $creative->update(array_filter([
-                'ad_name' => $data['ad_name'] ?? $creative->ad_name,
-                'ad_status' => $data['ad_status'] ?? $creative->ad_status,
-                'ad_type' => $data['ad_type'] ?? $creative->ad_type,
+                'name' => $data['ad_name'] ?? $creative->name,
+                'status' => $data['ad_status'] ?? $creative->status,
+                // 'ad_type' => $data['ad_type'] - field removed from schema ?? 'unknown' // $creative->ad_type - field removed,
                 'creative_data' => isset($data['creative_data'])
                     ? $this->prepareCreativeData($data)
                     : $creative->creative_data,
@@ -165,7 +160,7 @@ class AdCreativeService
     public function getCreative(string $creativeId): array
     {
         try {
-            $creative = AdEntity::where('ad_entity_id', $creativeId)
+            $creative = AdEntity::where('id', $creativeId)
                 ->with(['asset', 'adSet'])
                 ->first();
 
@@ -210,7 +205,7 @@ class AdCreativeService
 
             // Apply filters
             if (isset($filters['ad_set_id'])) {
-                $query->where('ad_set_id', $filters['ad_set_id']);
+                $query->where('adset_external_id', $filters['ad_set_id']);
             }
 
             if (isset($filters['platform'])) {
@@ -218,15 +213,16 @@ class AdCreativeService
             }
 
             if (isset($filters['ad_status'])) {
-                $query->where('ad_status', $filters['ad_status']);
+                $query->where('status', $filters['ad_status']);
             }
 
-            if (isset($filters['ad_type'])) {
-                $query->where('ad_type', $filters['ad_type']);
-            }
+            // ad_type filter removed - field doesn't exist in schema
+            // if (isset($filters['ad_type'])) {
+            //     $query->where('ad_type', $filters['ad_type']);
+            // }
 
             if (isset($filters['search'])) {
-                $query->where('ad_name', 'ILIKE', '%' . $filters['search'] . '%');
+                $query->where('name', 'ILIKE', '%' . $filters['search'] . '%');
             }
 
             // Sorting
@@ -271,7 +267,7 @@ class AdCreativeService
     public function createVariations(string $creativeId, array $variations): array
     {
         try {
-            $originalCreative = AdEntity::where('ad_entity_id', $creativeId)->first();
+            $originalCreative = AdEntity::where('id', $creativeId)->first();
             if (!$originalCreative) {
                 throw new \Exception('Original creative not found');
             }
@@ -284,8 +280,8 @@ class AdCreativeService
                 $variationId = \Illuminate\Support\Str::uuid()->toString();
 
                 $variationData = [
-                    'ad_entity_id' => $variationId,
-                    'ad_set_id' => $originalCreative->ad_set_id,
+                    'id' => $variationId,
+                    'ad_set_id' => $originalCreative->adset_external_id,
                     'asset_id' => $variationConfig['asset_id'] ?? $originalCreative->asset_id,
                     'platform' => $originalCreative->platform,
                     'ad_name' => $variationConfig['ad_name'] ?? ($originalCreative->ad_name . ' - Variation'),
@@ -415,7 +411,7 @@ class AdCreativeService
     public function deleteCreative(string $creativeId, bool $permanent = false): bool
     {
         try {
-            $creative = AdEntity::where('ad_entity_id', $creativeId)->first();
+            $creative = AdEntity::where('id', $creativeId)->first();
             if (!$creative) {
                 throw new \Exception('Creative not found');
             }

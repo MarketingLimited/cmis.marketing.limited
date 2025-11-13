@@ -25,6 +25,7 @@ class AnalyticsIntegration extends Model
     public $timestamps = true;
 
     protected $fillable = [
+        'integration_id',
         'org_id',
         'campaign_id',
         'platform',

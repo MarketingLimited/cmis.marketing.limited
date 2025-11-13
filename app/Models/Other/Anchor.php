@@ -23,11 +23,13 @@ class Anchor extends Model
     public $timestamps = false;
 
     protected $fillable = [
+        'anchor_id',
         'module_id',
         'code',
         'title',
         'file_ref',
         'section',
+        'provider',
     ];
 
     protected $casts = [

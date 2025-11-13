@@ -25,6 +25,7 @@ class Org extends Model
     public $timestamps = true;
 
     protected $fillable = [
+        'org_id',
         'name',
         'default_locale',
         'currency',

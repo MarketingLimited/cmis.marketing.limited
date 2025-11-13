@@ -14,6 +14,7 @@ class PromptTemplateRequiredField extends Model
     protected $connection = 'pgsql';
 
     protected $table = 'cmis.prompt_template_required_fields';
+    protected $primaryKey = 'prompt_id';
 
     public $timestamps = false;
 
@@ -22,6 +23,7 @@ class PromptTemplateRequiredField extends Model
     protected $fillable = [
         'prompt_id',
         'field_id',
+        'provider',
     ];
 
     protected $casts = [

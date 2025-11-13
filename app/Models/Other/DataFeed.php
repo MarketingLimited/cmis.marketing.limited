@@ -24,10 +24,12 @@ class DataFeed extends Model
     public $timestamps = false;
 
     protected $fillable = [
+        'feed_id',
         'org_id',
         'kind',
         'source_meta',
         'last_ingested',
+        'provider',
     ];
 
     protected $casts = [

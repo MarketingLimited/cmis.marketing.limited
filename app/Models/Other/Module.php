@@ -19,6 +19,7 @@ class Module extends Model
     public $timestamps = false;
 
     protected $fillable = [
+        'module_id',
         'code',
         'name',
         'version',

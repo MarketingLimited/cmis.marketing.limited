@@ -8,5 +8,10 @@ class Strategies extends Model
 {
     protected $table = 'cmis.strategies';
 
+    protected $fillable = [
+        'strategy',
+    ];
+    public $incrementing = false;
+
     public $timestamps = false;
 }

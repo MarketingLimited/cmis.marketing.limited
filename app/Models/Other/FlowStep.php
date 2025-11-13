@@ -23,6 +23,7 @@ class FlowStep extends Model
     public $timestamps = false;
 
     protected $fillable = [
+        'step_id',
         'flow_id',
         'ord',
         'type',
@@ -31,6 +32,7 @@ class FlowStep extends Model
         'config',
         'output_map',
         'condition',
+        'provider',
     ];
 
     protected $casts = [

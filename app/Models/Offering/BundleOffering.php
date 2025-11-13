@@ -17,21 +17,8 @@ class BundleOffering extends Model
     protected $keyType = 'string';
 
     protected $fillable = [
-        'org_id',
-        'bundle_name',
-        'bundle_description',
-        'bundle_type',
-        'included_offerings',
-        'bundle_price',
-        'individual_price_sum',
-        'discount_amount',
-        'discount_percentage',
-        'min_commitment_period',
-        'terms_conditions',
-        'valid_from',
-        'valid_to',
-        'is_active',
-        'metadata',
+        'bundle_id',
+        'offering_id',
         'provider',
     ];
 

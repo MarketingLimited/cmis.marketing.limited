@@ -9,6 +9,7 @@ class SocialAccountMetric extends Model
     protected $connection = 'pgsql';
 
     protected $table = 'cmis.social_account_metrics';
+    protected $primaryKey = 'integration_id';
 
     public $incrementing = false;
 
@@ -22,6 +23,7 @@ class SocialAccountMetric extends Model
         'reach',
         'impressions',
         'profile_views',
+        'provider',
     ];
 
     protected $casts = [

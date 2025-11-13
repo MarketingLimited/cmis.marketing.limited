@@ -16,36 +16,15 @@ class Market extends Model
     protected $keyType = 'string';
 
     protected $fillable = [
-        'market_code',
+        'market_id',
         'market_name',
-        'country_code',
-        'region',
-        'language',
-        'currency',
-        'timezone',
-        'market_size',
-        'demographics',
-        'economic_indicators',
-        'cultural_notes',
-        'regulatory_requirements',
-        'competitive_landscape',
-        'metadata',
-        'is_active',
-        'provider',
+        'language_code',
+        'currency_code',
+        'text_direction',
     ];
 
     protected $casts = [
         'market_id' => 'string',
-        'market_size' => 'integer',
-        'demographics' => 'array',
-        'economic_indicators' => 'array',
-        'cultural_notes' => 'array',
-        'regulatory_requirements' => 'array',
-        'competitive_landscape' => 'array',
-        'metadata' => 'array',
-        'is_active' => 'boolean',
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime',
     ];
 
     /**
@@ -77,58 +56,26 @@ class Market extends Model
     }
 
     /**
-     * Scope active markets
-     */
-    public function scopeActive($query)
-    {
-        return $query->where('is_active', true);
-    }
-
-    /**
-     * Scope by region
-     */
-    public function scopeByRegion($query, string $region)
-    {
-        return $query->where('region', $region);
-    }
-
-    /**
-     * Scope by country
-     */
-    public function scopeByCountry($query, string $countryCode)
-    {
-        return $query->where('country_code', $countryCode);
-    }
-
-    /**
      * Scope by language
      */
-    public function scopeByLanguage($query, string $language)
+    public function scopeByLanguage($query, string $languageCode)
     {
-        return $query->where('language', $language);
+        return $query->where('language_code', $languageCode);
     }
 
     /**
-     * Find by market code
+     * Scope by currency
      */
-    public static function findByCode(string $code)
+    public function scopeByCurrency($query, string $currencyCode)
     {
-        return self::where('market_code', $code)->first();
+        return $query->where('currency_code', $currencyCode);
     }
 
     /**
-     * Get demographic segment
+     * Find by market ID
      */
-    public function getDemographic(string $segment)
+    public static function findByMarketId(string $marketId)
     {
-        return $this->demographics[$segment] ?? null;
-    }
-
-    /**
-     * Get economic indicator
-     */
-    public function getEconomicIndicator(string $indicator)
-    {
-        return $this->economic_indicators[$indicator] ?? null;
+        return self::where('market_id', $marketId)->first();
     }
 }

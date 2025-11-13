@@ -17,26 +17,17 @@ class CreativeOutput extends Model
     protected $keyType = 'string';
 
     protected $fillable = [
+        'output_id',
         'org_id',
         'campaign_id',
-        'asset_id',
         'context_id',
-        'output_type',
-        'content',
-        'metadata',
-        'generated_by',
-        'ai_model_id',
-        'quality_score',
+        'type',
         'status',
-        'published_at',
-        'performance_data',
-        'tags',
-        'created_by',
+        'data',
         'provider',
     ];
 
-    protected $casts = [
-        'output_id' => 'string',
+    protected $casts = ['output_id' => 'string',
         'org_id' => 'string',
         'campaign_id' => 'string',
         'asset_id' => 'string',
@@ -52,6 +43,7 @@ class CreativeOutput extends Model
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
         'deleted_at' => 'datetime',
+        'data' => 'array',
     ];
 
     /**

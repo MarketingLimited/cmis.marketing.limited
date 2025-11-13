@@ -21,7 +21,7 @@ class SyncLog extends Model
      *
      * @var string
      */
-    protected $primaryKey = 'sync_log_id';
+    protected $primaryKey = 'id';
 
     /**
      * Indicates if the model's ID is auto-incrementing.
@@ -43,18 +43,19 @@ class SyncLog extends Model
      * @var array<string>
      */
     protected $fillable = [
+        'id',
         'org_id',
         'integration_id',
-        'sync_type',
+        'platform',
+        'synced_at',
         'status',
-        'started_at',
-        'completed_at',
-        'records_fetched',
-        'records_created',
-        'records_updated',
-        'records_failed',
-        'error_message',
-        'metadata',
+        'items',
+        'level_counts',
+        'provider',
+    ];
+
+    protected $casts = [
+        'level_counts' => 'array',
     ];
 
     /**

@@ -24,10 +24,12 @@ class Segment extends Model
     public $timestamps = false;
 
     protected $fillable = [
+        'segment_id',
         'org_id',
         'name',
         'persona',
         'notes',
+        'provider',
     ];
 
     protected $casts = [

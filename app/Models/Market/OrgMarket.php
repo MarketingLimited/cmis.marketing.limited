@@ -10,29 +10,18 @@ class OrgMarket extends Model
     use HasFactory;
 
     protected $table = 'cmis.org_markets';
+    protected $primaryKey = 'market_id';
     protected $connection = 'pgsql';
     public $incrementing = false;
 
     protected $fillable = [
         'org_id',
         'market_id',
-        'entry_date',
-        'market_share',
-        'priority_level',
-        'investment_budget',
-        'target_audience',
-        'positioning_strategy',
-        'competitive_advantages',
-        'challenges',
-        'opportunities',
-        'is_primary_market',
-        'status',
-        'metadata',
+        'is_default',
         'provider',
     ];
 
-    protected $casts = [
-        'org_id' => 'string',
+    protected $casts = ['org_id' => 'string',
         'market_id' => 'string',
         'entry_date' => 'date',
         'market_share' => 'float',
@@ -47,6 +36,7 @@ class OrgMarket extends Model
         'metadata' => 'array',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
+        'is_default' => 'boolean',
     ];
 
     /**

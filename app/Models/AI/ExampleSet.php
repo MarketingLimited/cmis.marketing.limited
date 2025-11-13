@@ -16,28 +16,29 @@ class ExampleSet extends Model
     protected $keyType = 'string';
 
     protected $fillable = [
-        'name',
-        'description',
-        'category',
-        'prompt_template',
-        'expected_output',
-        'actual_output',
-        'input_data',
-        'output_data',
-        'test_status',
-        'accuracy_score',
+        'example_id',
+        'org_id',
+        'title',
+        'kind',
+        'channel_id',
+        'framework',
+        'tone',
+        'locale',
+        'quality_score',
+        'anchor',
         'tags',
-        'metadata',
+        'body',
+        'campaign_id',
     ];
 
-    protected $casts = [
-        'input_data' => 'array',
+    protected $casts = ['input_data' => 'array',
         'output_data' => 'array',
         'tags' => 'array',
         'metadata' => 'array',
         'accuracy_score' => 'float',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
+        'body' => 'array',
     ];
 
     // Scopes

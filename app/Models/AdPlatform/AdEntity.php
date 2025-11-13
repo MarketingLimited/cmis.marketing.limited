@@ -11,29 +11,22 @@ class AdEntity extends Model
     use HasFactory, SoftDeletes;
 
     protected $table = 'cmis.ad_entities';
-    protected $primaryKey = 'ad_entity_id';
+    protected $primaryKey = 'id';
     protected $connection = 'pgsql';
     public $incrementing = false;
     protected $keyType = 'string';
 
     protected $fillable = [
-        'ad_set_id',
-        'asset_id',
-        'platform',
-        'ad_name',
+        'id',
+        'org_id',
+        'integration_id',
+        'adset_external_id',
         'ad_external_id',
-        'ad_status',
-        'ad_type',
-        'creative_data',
-        'headline',
-        'description',
-        'call_to_action',
-        'destination_url',
-        'display_url',
-        'tracking_params',
-        'metadata',
-        'last_synced_at',
+        'name',
+        'status',
+        'creative_id',
         'provider',
+        'deleted_by',
     ];
 
     protected $casts = [

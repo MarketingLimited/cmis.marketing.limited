@@ -13,6 +13,7 @@ class PromptTemplatePresql extends Model
     protected $connection = 'pgsql';
 
     protected $table = 'cmis.prompt_template_presql';
+    protected $primaryKey = 'prompt_id';
 
     public $timestamps = false;
 
@@ -21,6 +22,7 @@ class PromptTemplatePresql extends Model
     protected $fillable = [
         'prompt_id',
         'snippet_id',
+        'provider',
     ];
 
     protected $casts = [

@@ -16,27 +16,24 @@ class CopyComponent extends Model
     protected $keyType = 'string';
 
     protected $fillable = [
-        'org_id',
-        'context_id',
-        'campaign_id',
+        'component_id',
         'type_code',
         'content',
-        'channel_id',
-        'market_id',
         'industry_id',
-        'tone',
-        'length',
-        'performance_score',
-        'usage_count',
-        'tags',
-        'metadata',
+        'market_id',
+        'awareness_stage',
+        'channel_id',
+        'usage_notes',
+        'quality_score',
+        'context_id',
         'example_id',
-        'created_by',
+        'campaign_id',
+        'plan_id',
+        'visual_prompt',
         'provider',
     ];
 
-    protected $casts = [
-        'component_id' => 'string',
+    protected $casts = ['component_id' => 'string',
         'org_id' => 'string',
         'context_id' => 'string',
         'campaign_id' => 'string',
@@ -52,6 +49,7 @@ class CopyComponent extends Model
         'metadata' => 'array',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
+        'visual_prompt' => 'array',
     ];
 
     /**

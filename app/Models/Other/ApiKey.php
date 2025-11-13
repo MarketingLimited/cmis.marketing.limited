@@ -23,10 +23,12 @@ class ApiKey extends Model
     public $timestamps = true;
 
     protected $fillable = [
+        'key_id',
         'service_name',
         'service_code',
         'api_key_encrypted',
         'is_active',
+        'provider',
     ];
 
     protected $casts = [
