@@ -249,6 +249,18 @@ Route::middleware(['auth:sanctum', 'validate.org.access', 'set.db.context'])
 
     /*
     |----------------------------------------------------------------------
+    | تحليل أفضل أوقات النشر (Best Time Analyzer) - Sprint 2.3
+    |----------------------------------------------------------------------
+    */
+    Route::prefix('best-times')->name('best-times.')->group(function () {
+        Route::get('/{social_account_id}', [App\Http\Controllers\BestTimeController::class, 'analyze'])->name('analyze');
+        Route::get('/{social_account_id}/recommendations', [App\Http\Controllers\BestTimeController::class, 'recommendations'])->name('recommendations');
+        Route::get('/{social_account_id}/compare', [App\Http\Controllers\BestTimeController::class, 'compare'])->name('compare');
+        Route::get('/{social_account_id}/audience-activity', [App\Http\Controllers\BestTimeController::class, 'audienceActivity'])->name('audience-activity');
+    });
+
+    /*
+    |----------------------------------------------------------------------
     | صندوق الوارد الموحد (Unified Inbox)
     |----------------------------------------------------------------------
     */
