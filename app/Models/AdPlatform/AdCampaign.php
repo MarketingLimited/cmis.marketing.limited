@@ -10,7 +10,7 @@ class AdCampaign extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected $table = 'cmis.ad_campaigns';
+    protected $table = 'cmis_ads.ad_campaigns';
     protected $primaryKey = 'ad_campaign_id';
     protected $connection = 'pgsql';
     public $incrementing = false;
