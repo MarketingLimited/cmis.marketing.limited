@@ -32,7 +32,7 @@ return new class extends Migration
 
             // Foreign keys
             $table->foreign('org_id')->references('org_id')->on('cmis.orgs')->onDelete('cascade');
-            $table->foreign('user_id')->references('id')->on('users')->onDelete('set null');
+            $table->foreign('user_id')->references('user_id')->on('users')->onDelete('set null');
             $table->foreign('campaign_id')->references('campaign_id')->on('cmis.campaigns')->onDelete('set null');
 
             // Indexes

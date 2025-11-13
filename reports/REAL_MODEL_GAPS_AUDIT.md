@@ -1,6 +1,6 @@
 # CMIS Model Gap Analysis Report
 
-**Generated:** 2025-11-12 22:15:53
+**Generated:** 2025-11-12 22:28:18
 **Schema File:** `database/schema.sql`
 **Models Directory:** `app/Models/`
 
@@ -118,9 +118,9 @@ The following database tables **lack corresponding Laravel models**:
 | 40 | `performance_metrics` | `PerformanceMetric` | `app/Models/PerformanceMetric.php` |
 | 41 | `permissions` | `Permission` | `app/Models/Permission.php` |
 | 42 | `permissions_cache` | `PermissionsCache` | `app/Models/Security/PermissionsCache.php` |
-| 43 | `predictive_visual_engine` | `AiRecommendation` | `app/Models/AiRecommendation.php` |
+| 43 | `predictive_visual_engine` | `PredictiveVisualEngine` | `app/Models/AI/PredictiveVisualEngine.php` |
 | 44 | `required_fields_cache` | `RequiredFieldsCache` | `app/Models/Cache/RequiredFieldsCache.php` |
-| 45 | `role_permissions` | `RolePermission` | `app/Models/Security/RolePermission.php` |
+| 45 | `role_permissions` | `RolePermission` | `app/Models/RolePermission.php` |
 | 46 | `roles` | `Role` | `app/Models/Core/Role.php` |
 | 47 | `scene_library` | `SceneLibrary` | `app/Models/AI/SceneLibrary.php` |
 | 48 | `session_context` | `SessionContext` | `app/Models/Session/SessionContext.php` |
@@ -131,7 +131,7 @@ The following database tables **lack corresponding Laravel models**:
 | 53 | `sync_logs` | `SyncLog` | `app/Models/Operations/SyncLog.php` |
 | 54 | `user_activities` | `UserActivity` | `app/Models/Operations/UserActivity.php` |
 | 55 | `user_orgs` | `UserOrg` | `app/Models/Core/UserOrg.php` |
-| 56 | `user_permissions` | `UserPermission` | `app/Models/Security/UserPermission.php` |
+| 56 | `user_permissions` | `UserPermission` | `app/Models/UserPermission.php` |
 | 57 | `user_sessions` | `UserSession` | `app/Models/Session/UserSession.php` |
 | 58 | `users` | `User` | `app/Models/User.php` |
 | 59 | `value_contexts` | `ValueContext` | `app/Models/Context/ValueContext.php` |

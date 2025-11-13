@@ -12,7 +12,7 @@ return new class extends Migration
     {
         // Create ab_tests table
         DB::statement("
-            CREATE TABLE IF NOT EXISTS cmis_ads.ab_tests (
+            CREATE TABLE IF NOT EXISTS cmis.ab_tests (
                 ab_test_id UUID PRIMARY KEY,
                 ad_account_id UUID NOT NULL,
                 entity_type VARCHAR(20), -- ad, ad_set, campaign
@@ -35,31 +35,31 @@ return new class extends Migration
                 created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
 
-                FOREIGN KEY (ad_account_id) REFERENCES cmis_ads.ad_accounts(ad_account_id) ON DELETE CASCADE
+                FOREIGN KEY (ad_account_id) REFERENCES cmis.ad_accounts(id) ON DELETE CASCADE
             )
         ");
 
         // Create index on ad_account_id for faster lookups
         DB::statement("
             CREATE INDEX IF NOT EXISTS idx_ab_tests_ad_account
-            ON cmis_ads.ab_tests(ad_account_id)
+            ON cmis.ab_tests(ad_account_id)
         ");
 
         // Create index on test_status for filtering
         DB::statement("
             CREATE INDEX IF NOT EXISTS idx_ab_tests_status
-            ON cmis_ads.ab_tests(test_status)
+            ON cmis.ab_tests(test_status)
         ");
 
         // Create index on entity_id for entity-based queries
         DB::statement("
             CREATE INDEX IF NOT EXISTS idx_ab_tests_entity
-            ON cmis_ads.ab_tests(entity_type, entity_id)
+            ON cmis.ab_tests(entity_type, entity_id)
         ");
 
         // Create ab_test_variations table
         DB::statement("
-            CREATE TABLE IF NOT EXISTS cmis_ads.ab_test_variations (
+            CREATE TABLE IF NOT EXISTS cmis.ab_test_variations (
                 variation_id UUID PRIMARY KEY,
                 ab_test_id UUID NOT NULL,
                 variation_name VARCHAR(255) NOT NULL,
@@ -70,29 +70,29 @@ return new class extends Migration
                 created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
 
-                FOREIGN KEY (ab_test_id) REFERENCES cmis_ads.ab_tests(ab_test_id) ON DELETE CASCADE
+                FOREIGN KEY (ab_test_id) REFERENCES cmis.ab_tests(ab_test_id) ON DELETE CASCADE
             )
         ");
 
         // Create index on ab_test_id for variation lookups
         DB::statement("
             CREATE INDEX IF NOT EXISTS idx_ab_test_variations_test
-            ON cmis_ads.ab_test_variations(ab_test_id)
+            ON cmis.ab_test_variations(ab_test_id)
         ");
 
         // Create index on entity_id for linking to ads
         DB::statement("
             CREATE INDEX IF NOT EXISTS idx_ab_test_variations_entity
-            ON cmis_ads.ab_test_variations(entity_id)
+            ON cmis.ab_test_variations(entity_id)
         ");
 
         // Add comment to tables
         DB::statement("
-            COMMENT ON TABLE cmis_ads.ab_tests IS 'A/B testing experiments for ad campaigns - Sprint 4.6'
+            COMMENT ON TABLE cmis.ab_tests IS 'A/B testing experiments for ad campaigns - Sprint 4.6'
         ");
 
         DB::statement("
-            COMMENT ON TABLE cmis_ads.ab_test_variations IS 'Variations within an A/B test - Sprint 4.6'
+            COMMENT ON TABLE cmis.ab_test_variations IS 'Variations within an A/B test - Sprint 4.6'
         ");
     }
 
@@ -101,7 +101,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        DB::statement("DROP TABLE IF EXISTS cmis_ads.ab_test_variations CASCADE");
-        DB::statement("DROP TABLE IF EXISTS cmis_ads.ab_tests CASCADE");
+        DB::statement("DROP TABLE IF EXISTS cmis.ab_test_variations CASCADE");
+        DB::statement("DROP TABLE IF EXISTS cmis.ab_tests CASCADE");
     }
 };

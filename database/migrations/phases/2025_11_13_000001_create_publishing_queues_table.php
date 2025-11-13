@@ -34,7 +34,7 @@ return new class extends Migration
 
             // Foreign keys
             $table->foreign('org_id')->references('org_id')->on('cmis.orgs')->onDelete('cascade');
-            $table->foreign('social_account_id')->references('account_id')->on('cmis.social_accounts')->onDelete('cascade');
+            $table->foreign('social_account_id')->references('id')->on('cmis.social_accounts')->onDelete('cascade');
 
             // Indexes
             $table->unique(['social_account_id'], 'publishing_queues_account_unique');
