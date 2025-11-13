@@ -4,12 +4,19 @@ namespace App\Http\Controllers\Campaigns;
 
 use App\Http\Controllers\Controller;
 use App\Models\Campaign;
+use App\Services\CampaignService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
 class CampaignController extends Controller
 {
+    protected CampaignService $campaignService;
+
+    public function __construct(CampaignService $campaignService)
+    {
+        $this->campaignService = $campaignService;
+    }
+
     public function index(Request $request, string $orgId)
     {
         $this->authorize('viewAny', Campaign::class);
@@ -35,7 +42,7 @@ class CampaignController extends Controller
 
         } catch (\Exception $e) {
             return response()->json([
-                'error' => 'Failed to fetch campaigns',
+                'error' => 'فشل جلب الحملات',
                 'message' => $e->getMessage()
             ], 500);
         }
@@ -55,13 +62,14 @@ class CampaignController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['error' => 'Validation Error', 'errors' => $validator->errors()], 422);
+            return response()->json([
+                'error' => 'خطأ في التحقق من البيانات',
+                'errors' => $validator->errors()
+            ], 422);
         }
 
         try {
-            DB::beginTransaction();
-
-            $campaign = Campaign::create([
+            $campaign = $this->campaignService->create([
                 'org_id' => $orgId,
                 'name' => $request->name,
                 'objective' => $request->objective,
@@ -73,13 +81,16 @@ class CampaignController extends Controller
                 'created_by' => $request->user()->user_id,
             ]);
 
-            DB::commit();
-
-            return response()->json(['message' => 'Campaign created', 'campaign' => $campaign->fresh()], 201);
+            return response()->json([
+                'message' => 'تم إنشاء الحملة بنجاح',
+                'campaign' => $campaign
+            ], 201);
 
         } catch (\Exception $e) {
-            DB::rollBack();
-            return response()->json(['error' => 'Failed to create campaign', 'message' => $e->getMessage()], 500);
+            return response()->json([
+                'error' => 'فشل إنشاء الحملة',
+                'message' => $e->getMessage()
+            ], 500);
         }
     }
 
@@ -88,9 +99,16 @@ class CampaignController extends Controller
         try {
             $campaign = Campaign::where('org_id', $orgId)->findOrFail($campaignId);
             $this->authorize('view', $campaign);
-            return response()->json(['campaign' => $campaign]);
+
+            // Get related campaigns using service
+            $relatedCampaigns = $this->campaignService->findRelatedCampaigns($campaignId, 5);
+
+            return response()->json([
+                'campaign' => $campaign,
+                'related_campaigns' => $relatedCampaigns
+            ]);
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Campaign not found'], 404);
+            return response()->json(['error' => 'لم يتم العثور على الحملة'], 404);
         }
     }
 
@@ -110,16 +128,29 @@ class CampaignController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['error' => 'Validation Error', 'errors' => $validator->errors()], 422);
+            return response()->json([
+                'error' => 'خطأ في التحقق من البيانات',
+                'errors' => $validator->errors()
+            ], 422);
         }
 
         try {
-            $campaign->update($request->only(['name', 'objective', 'status', 'start_date', 'end_date', 'budget', 'currency']));
-            return response()->json(['message' => 'Campaign updated', 'campaign' => $campaign->fresh()]);
+            $updatedCampaign = $this->campaignService->update(
+                $campaign,
+                $request->only(['name', 'objective', 'status', 'start_date', 'end_date', 'budget', 'currency'])
+            );
+
+            return response()->json([
+                'message' => 'تم تحديث الحملة بنجاح',
+                'campaign' => $updatedCampaign
+            ]);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            return response()->json(['error' => 'Campaign not found'], 404);
+            return response()->json(['error' => 'لم يتم العثور على الحملة'], 404);
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Failed to update', 'message' => $e->getMessage()], 500);
+            return response()->json([
+                'error' => 'فشل التحديث',
+                'message' => $e->getMessage()
+            ], 500);
         }
     }
 
@@ -128,10 +159,12 @@ class CampaignController extends Controller
         try {
             $campaign = Campaign::where('org_id', $orgId)->findOrFail($campaignId);
             $this->authorize('delete', $campaign);
-            $campaign->delete();
-            return response()->json(['message' => 'Campaign deleted']);
+
+            $this->campaignService->delete($campaign);
+
+            return response()->json(['message' => 'تم حذف الحملة بنجاح']);
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Failed to delete'], 500);
+            return response()->json(['error' => 'فشل الحذف'], 500);
         }
     }
 }
