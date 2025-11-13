@@ -7,44 +7,34 @@ use Illuminate\Database\Eloquent\Model;
 class AdMetric extends Model
 {
     protected $table = 'cmis.ad_metrics';
-    protected $primaryKey = 'metric_id';
+    protected $primaryKey = 'id';
     protected $connection = 'pgsql';
     public $incrementing = false;
     protected $keyType = 'string';
     public $timestamps = false;
 
     protected $fillable = [
-        'entity_type',
-        'entity_id',
-        'platform',
-        'metric_date',
+        'id',
+        'org_id',
+        'integration_id',
+        'entity_level',
+        'entity_external_id',
+        'date_start',
+        'date_stop',
+        'spend',
         'impressions',
         'clicks',
+        'actions',
         'conversions',
-        'spend',
-        'revenue',
-        'ctr',
-        'cpc',
-        'cpm',
-        'cpa',
-        'roas',
-        'video_views',
-        'video_completions',
-        'engagement_rate',
-        'reach',
-        'frequency',
-        'custom_metrics',
-        'metadata',
         'provider',
     ];
 
-    protected $casts = [
-        'metric_id' => 'string',
+    protected $casts = ['metric_id' => 'string',
         'entity_id' => 'string',
         'metric_date' => 'date',
         'impressions' => 'integer',
         'clicks' => 'integer',
-        'conversions' => 'integer',
+        'conversions' => 'array',
         'spend' => 'decimal:2',
         'revenue' => 'decimal:2',
         'ctr' => 'float',
@@ -59,6 +49,7 @@ class AdMetric extends Model
         'frequency' => 'float',
         'custom_metrics' => 'array',
         'metadata' => 'array',
+        'actions' => 'array',
     ];
 
     /**

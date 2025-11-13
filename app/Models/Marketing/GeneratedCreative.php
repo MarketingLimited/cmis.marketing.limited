@@ -17,20 +17,17 @@ class GeneratedCreative extends Model
     protected $keyType = 'string';
 
     protected $fillable = [
-        'org_id',
-        'campaign_id',
-        'creative_type',
-        'prompt',
-        'generated_content',
-        'model_used',
-        'tokens_used',
-        'generation_time_ms',
-        'quality_score',
-        'is_approved',
-        'approved_by',
-        'approved_at',
+        'creative_id',
+        'topic',
+        'tone',
+        'variant_index',
+        'hook',
+        'concept',
+        'narrative',
+        'slogan',
+        'emotion_profile',
         'tags',
-        'metadata',
+        'generated_at',
     ];
 
     protected $casts = [

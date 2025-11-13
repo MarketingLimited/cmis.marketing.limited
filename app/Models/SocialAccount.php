@@ -24,6 +24,7 @@ class SocialAccount extends Model
     public $timestamps = true;
 
     protected $fillable = [
+        'id',
         'org_id',
         'integration_id',
         'account_external_id',

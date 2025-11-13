@@ -24,6 +24,7 @@ class Campaign extends Model
     protected $keyType = 'string';
 
     protected $fillable = [
+        'campaign_id',
         'org_id',
         'name',
         'objective',
@@ -36,8 +37,8 @@ class Campaign extends Model
         'creative_id',
         'value_id',
         'created_by',
-        'deleted_by',
         'provider',
+        'deleted_by',
     ];
 
     protected $casts = [

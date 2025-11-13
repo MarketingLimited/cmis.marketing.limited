@@ -24,6 +24,7 @@ class UserOrg extends Model
     public $timestamps = true;
 
     protected $fillable = [
+        'id',
         'user_id',
         'org_id',
         'role_id',

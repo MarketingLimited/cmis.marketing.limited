@@ -17,18 +17,15 @@ class VideoScenario extends Model
     protected $keyType = 'string';
 
     protected $fillable = [
-        'org_id',
-        'campaign_id',
-        'scenario_name',
-        'description',
-        'scenes',
-        'transitions',
-        'audio_track',
-        'narration_script',
+        'scenario_id',
+        'task_id',
+        'asset_id',
+        'title',
         'duration_seconds',
-        'status',
-        'tags',
-        'metadata',
+        'scenes',
+        'tone',
+        'goal',
+        'confidence',
     ];
 
     protected $casts = [

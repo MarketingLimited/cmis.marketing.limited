@@ -17,19 +17,16 @@ class VisualScenario extends Model
     protected $keyType = 'string';
 
     protected $fillable = [
-        'org_id',
-        'campaign_id',
-        'scenario_name',
-        'description',
-        'concept_id',
-        'scenes',
-        'storyboard',
-        'shot_list',
-        'location_notes',
-        'props_needed',
-        'status',
-        'tags',
-        'metadata',
+        'scenario_id',
+        'creative_id',
+        'topic',
+        'tone',
+        'variant_index',
+        'scene_order',
+        'scene_type',
+        'scene_text',
+        'visual_hint',
+        'duration_seconds',
     ];
 
     protected $casts = [

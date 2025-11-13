@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class ComplianceRuleChannel extends Model
 {
     protected $table = 'cmis.compliance_rule_channels';
+    protected $primaryKey = 'rule_id';
     protected $connection = 'pgsql';
     public $incrementing = false;
     public $timestamps = false;
@@ -14,7 +15,6 @@ class ComplianceRuleChannel extends Model
     protected $fillable = [
         'rule_id',
         'channel_id',
-        'is_required',
         'provider',
     ];
 

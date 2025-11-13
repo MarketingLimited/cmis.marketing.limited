@@ -12,23 +12,16 @@ class DatasetPackage extends Model
     use HasFactory, HasUuids, SoftDeletes;
 
     protected $table = 'cmis.dataset_packages';
-    protected $primaryKey = 'package_id';
+    protected $primaryKey = 'pkg_id';
     public $incrementing = false;
     protected $keyType = 'string';
 
     protected $fillable = [
-        'name',
-        'description',
-        'package_type',
+        'pkg_id',
+        'code',
         'version',
-        'total_files',
-        'total_size_bytes',
-        'format',
-        'schema',
-        'tags',
-        'is_public',
-        'download_count',
-        'metadata',
+        'notes',
+        'provider',
     ];
 
     protected $casts = [

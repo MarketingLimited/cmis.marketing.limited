@@ -2,6 +2,7 @@
 
 namespace App\Repositories\CMIS;
 
+use App\Repositories\Contracts\PermissionRepositoryInterface;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Collection;
 
@@ -9,7 +10,7 @@ use Illuminate\Support\Collection;
  * Repository for CMIS Permission and Security Functions
  * Encapsulates PostgreSQL functions related to permissions, security, and access control
  */
-class PermissionRepository
+class PermissionRepository implements PermissionRepositoryInterface
 {
     /**
      * Check if a user has a specific permission in an organization
@@ -151,5 +152,63 @@ class PermissionRepository
         $results = DB::select('SELECT * FROM cmis.test_new_security_context()');
 
         return collect($results);
+    }
+
+    /**
+     * Check if user can access campaign
+     * Required by PermissionRepositoryInterface
+     *
+     * @param string $userId UUID of the user
+     * @param string $campaignId UUID of the campaign
+     * @return bool True if user can access the campaign
+     */
+    public function canAccessCampaign(string $userId, string $campaignId): bool
+    {
+        // Use the check_permission function with campaign access permission
+        $result = DB::select(
+            "SELECT EXISTS(
+                SELECT 1 FROM cmis.campaigns c
+                INNER JOIN cmis.user_orgs uo ON uo.org_id = c.org_id
+                WHERE c.campaign_id = ? AND uo.user_id = ?
+            ) as can_access",
+            [$campaignId, $userId]
+        );
+
+        return $result[0]->can_access ?? false;
+    }
+
+    /**
+     * Check if user can manage org
+     * Required by PermissionRepositoryInterface
+     *
+     * @param string $userId UUID of the user
+     * @param string $orgId UUID of the organization
+     * @return bool True if user can manage the organization
+     */
+    public function canManageOrg(string $userId, string $orgId): bool
+    {
+        return $this->checkPermission($userId, $orgId, 'manage_org');
+    }
+
+    /**
+     * Get user permissions for org
+     * Required by PermissionRepositoryInterface
+     *
+     * @param string $userId UUID of the user
+     * @param string $orgId UUID of the organization
+     * @return array Array of permission codes
+     */
+    public function getUserOrgPermissions(string $userId, string $orgId): array
+    {
+        $results = DB::select(
+            "SELECT DISTINCT p.permission_code
+            FROM cmis.permissions p
+            INNER JOIN cmis.role_permissions rp ON rp.permission_id = p.permission_id
+            INNER JOIN cmis.user_roles ur ON ur.role_id = rp.role_id
+            WHERE ur.user_id = ? AND ur.org_id = ?",
+            [$userId, $orgId]
+        );
+
+        return array_column($results, 'permission_code');
     }
 }

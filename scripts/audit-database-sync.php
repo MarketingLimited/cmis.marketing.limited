@@ -177,11 +177,12 @@ class DatabaseSyncAuditor
         $guarded = $model->getGuarded();
         $columns = collect(Schema::getColumnListing($table));
 
-        // تحذير: $guarded فارغة = خطر أمني
-        if (empty($guarded) || $guarded === ['*']) {
+        // تحذير: لا توجد حماية mass assignment
+        // الخطر: عندما لا يكون هناك $fillable محدد و $guarded فارغة أو ['*']
+        if (empty($fillable) && (empty($guarded) || $guarded === ['*'])) {
             $this->report['security_risks'][] = [
                 'model' => $modelClass,
-                'issue' => "Mass Assignment غير محمي - \$guarded فارغة",
+                'issue' => "Mass Assignment غير محمي - لا توجد $fillable محددة",
                 'severity' => 'CRITICAL',
                 'fix' => "حدد protected \$fillable = [...] صراحةً",
             ];

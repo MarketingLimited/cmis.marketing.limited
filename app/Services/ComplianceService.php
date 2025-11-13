@@ -220,7 +220,7 @@ class ComplianceService
     /**
      * Get compliance summary for organization
      */
-    public function getOrgCompliance Summary(string $orgId): array
+    public function getOrgComplianceSummary(string $orgId): array
     {
         try {
             $audits = ComplianceAudit::where('org_id', $orgId)

@@ -19,14 +19,10 @@ class ContextBase extends Model
     protected $keyType = 'string';
 
     protected $fillable = [
-        'org_id',
-        'name',
-        'description',
+        'id',
         'context_type',
-        'metadata',
-        'tags',
-        'is_active',
-        'created_by',
+        'name',
+        'org_id',
         'provider',
     ];
 

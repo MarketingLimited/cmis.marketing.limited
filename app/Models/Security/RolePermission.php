@@ -18,10 +18,12 @@ class RolePermission extends Model
     protected $keyType = 'string';
 
     protected $fillable = [
+        'id',
         'role_id',
         'permission_id',
-        'granted_by',
         'granted_at',
+        'granted_by',
+        'provider',
     ];
 
     protected $casts = [

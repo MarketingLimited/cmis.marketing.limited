@@ -19,14 +19,15 @@ class AiGeneratedCampaign extends Model
     public $timestamps = false;
 
     protected $fillable = [
+        'campaign_id',
         'org_id',
         'objective_code',
         'recommended_principle',
         'linked_kpi',
         'ai_summary',
         'ai_design_guideline',
-        'created_at',
         'engine',
+        'provider',
     ];
 
     protected $casts = [

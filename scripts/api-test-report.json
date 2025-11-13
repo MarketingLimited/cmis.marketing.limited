@@ -1,0 +1,22 @@
+{
+    "timestamp": "2025-11-13 17:24:08",
+    "database": "\u2705 CONNECTED",
+    "total_routes": 405,
+    "api_routes": 330,
+    "model_results": {
+        "Users": "\u2705 0 records",
+        "Orgs": "\u274c SQLSTATE[42P01]: Undefined table: 7 ERROR:  relation \"cmis.orgs\" does not exist\nLINE 1: select count(*) as aggregate from \"cmis\".\"orgs\" where \"cmis\"...\n                                          ^ (Connection: pgsql, SQL: select count(*) as aggregate from \"cmis\".\"orgs\" where \"cmis\".\"orgs\".\"deleted_at\" is null)",
+        "Campaigns": "\u274c SQLSTATE[42P01]: Undefined table: 7 ERROR:  relation \"cmis.campaigns\" does not exist\nLINE 1: select count(*) as aggregate from \"cmis\".\"campaigns\" where \"...\n                                          ^ (Connection: pgsql, SQL: select count(*) as aggregate from \"cmis\".\"campaigns\" where \"cmis\".\"campaigns\".\"deleted_at\" is null)",
+        "Permissions": "\u274c SQLSTATE[42P01]: Undefined table: 7 ERROR:  relation \"cmis.permissions\" does not exist\nLINE 1: select count(*) as aggregate from \"cmis\".\"permissions\" where...\n                                          ^ (Connection: pgsql, SQL: select count(*) as aggregate from \"cmis\".\"permissions\" where \"cmis\".\"permissions\".\"deleted_at\" is null)",
+        "Roles": "\u274c SQLSTATE[42P01]: Undefined table: 7 ERROR:  relation \"cmis.roles\" does not exist\nLINE 1: select count(*) as aggregate from \"cmis\".\"roles\" where \"cmis...\n                                          ^ (Connection: pgsql, SQL: select count(*) as aggregate from \"cmis\".\"roles\" where \"cmis\".\"roles\".\"deleted_at\" is null)"
+    },
+    "service_results": {
+        "PermissionService": "\u2705 Instantiated via container",
+        "CampaignAnalyticsService": "\u2705 Instantiated via container",
+        "AdCreativeService": "\u2705 Instantiated via container",
+        "ComplianceService": "\u2705 Instantiated via container"
+    },
+    "tests_passed": 8,
+    "tests_total": 12,
+    "status": "PARTIAL"
+}

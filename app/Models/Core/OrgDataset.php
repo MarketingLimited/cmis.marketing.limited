@@ -14,6 +14,7 @@ class OrgDataset extends Model
     protected $connection = 'pgsql';
 
     protected $table = 'cmis.org_datasets';
+    protected $primaryKey = 'pkg_id';
 
     public $timestamps = false;
 
@@ -23,6 +24,7 @@ class OrgDataset extends Model
         'org_id',
         'pkg_id',
         'enabled',
+        'provider',
     ];
 
     protected $casts = [

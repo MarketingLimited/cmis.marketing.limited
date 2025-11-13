@@ -15,26 +15,40 @@ class KnowledgeItem extends Model
     protected $fillable = [
         'knowledge_id',
         'domain',
-        'topic',
         'category',
-        'tier',
+        'topic',
         'keywords',
+        'tier',
+        'token_budget',
+        'supersedes_knowledge_id',
+        'is_deprecated',
+        'last_verified_at',
+        'total_chunks',
+        'has_children',
+        'last_audit_status',
+        'report_phase',
         'topic_embedding',
+        'intent_vector',
+        'direction_vector',
+        'purpose_vector',
+        'verification_confidence',
+        'verification_source',
+        'is_verified_by_ai',
         'keywords_embedding',
-        'semantic_fingerprint',
-        'embedding_version',
+        'embedding_model',
         'embedding_updated_at',
-        'is_deprecated'
+        'embedding_version',
     ];
     
-    protected $casts = [
-        'keywords' => 'array',
+    protected $casts = ['keywords' => 'array',
         'topic_embedding' => 'array',
         'keywords_embedding' => 'array',
         'semantic_fingerprint' => 'array',
         'is_deprecated' => 'boolean',
         'embedding_updated_at' => 'datetime',
-        'last_verified_at' => 'datetime'
+        'last_verified_at' => 'datetime',
+        'has_children' => 'boolean',
+        'is_verified_by_ai' => 'boolean',
     ];
     
     /**

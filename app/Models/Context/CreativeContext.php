@@ -17,28 +17,14 @@ class CreativeContext extends Model
     protected $keyType = 'string';
 
     protected $fillable = [
+        'context_id',
         'org_id',
         'name',
-        'description',
-        'brand_voice',
-        'visual_guidelines',
-        'messaging_framework',
-        'content_pillars',
-        'keywords',
-        'tone',
-        'style_guide',
-        'do_not_use',
-        'target_emotions',
-        'call_to_action',
-        'metadata',
-        'tags',
-        'is_active',
-        'created_by',
+        'creative_brief',
         'provider',
     ];
 
-    protected $casts = [
-        'context_id' => 'string',
+    protected $casts = ['context_id' => 'string',
         'org_id' => 'string',
         'created_by' => 'string',
         'brand_voice' => 'array',
@@ -56,6 +42,7 @@ class CreativeContext extends Model
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
         'deleted_at' => 'datetime',
+        'creative_brief' => 'array',
     ];
 
     /**

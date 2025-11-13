@@ -16,25 +16,22 @@ class FieldDefinition extends Model
     protected $keyType = 'string';
 
     protected $fillable = [
+        'field_id',
         'module_id',
-        'field_name',
-        'field_type',
-        'is_required',
-        'default_value',
-        'validation_rules',
+        'name',
+        'slug',
+        'data_type',
+        'is_list',
         'description',
-        'help_text',
-        'placeholder',
-        'options',
-        'display_order',
-        'is_active',
+        'enum_options',
+        'required_default',
         'guidance_anchor',
-        'metadata',
+        'validations',
+        'module_scope',
         'provider',
     ];
 
-    protected $casts = [
-        'field_id' => 'string',
+    protected $casts = ['field_id' => 'string',
         'module_id' => 'string',
         'guidance_anchor' => 'string',
         'is_required' => 'boolean',
@@ -45,6 +42,9 @@ class FieldDefinition extends Model
         'metadata' => 'array',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
+        'is_list' => 'boolean',
+        'required_default' => 'boolean',
+        'validations' => 'array',
     ];
 
     /**

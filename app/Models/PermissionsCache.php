@@ -7,15 +7,15 @@ use Illuminate\Database\Eloquent\Model;
 class PermissionsCache extends Model
 {
     protected $table = 'cmis.permissions_cache';
+    protected $primaryKey = 'permission_id';
     protected $connection = 'pgsql';
     public $timestamps = false;
     public $incrementing = false;
 
     protected $fillable = [
-        'user_id',
-        'org_id',
         'permission_code',
-        'has_permission',
+        'permission_id',
+        'category',
         'last_used',
     ];
 

@@ -11,30 +11,26 @@ class AdSet extends Model
     use HasFactory, SoftDeletes;
 
     protected $table = 'cmis.ad_sets';
-    protected $primaryKey = 'ad_set_id';
+    protected $primaryKey = 'id';
     protected $connection = 'pgsql';
     public $incrementing = false;
     protected $keyType = 'string';
 
     protected $fillable = [
-        'ad_campaign_id',
-        'platform',
-        'ad_set_name',
-        'ad_set_external_id',
-        'ad_set_status',
-        'targeting',
+        'id',
+        'org_id',
+        'integration_id',
+        'campaign_external_id',
+        'adset_external_id',
+        'name',
+        'status',
         'daily_budget',
-        'lifetime_budget',
-        'bid_amount',
-        'bid_strategy',
+        'start_date',
+        'end_date',
+        'billing_event',
         'optimization_goal',
-        'start_time',
-        'end_time',
-        'placements',
-        'schedule',
-        'metadata',
-        'last_synced_at',
         'provider',
+        'deleted_by',
     ];
 
     protected $casts = [

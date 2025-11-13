@@ -24,6 +24,7 @@ class SocialPost extends Model
     public $timestamps = true;
 
     protected $fillable = [
+        'id',
         'org_id',
         'integration_id',
         'post_external_id',

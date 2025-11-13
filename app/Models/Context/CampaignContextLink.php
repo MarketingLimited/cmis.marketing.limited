@@ -11,23 +11,26 @@ class CampaignContextLink extends Model
     use HasFactory;
 
     protected $table = 'cmis.campaign_context_links';
-    protected $primaryKey = 'link_id';
+    protected $primaryKey = 'id';
     protected $connection = 'pgsql';
     public $incrementing = false;
     protected $keyType = 'string';
 
     protected $fillable = [
+        'id',
         'campaign_id',
         'context_id',
         'context_type',
         'link_type',
         'link_strength',
         'link_purpose',
-        'is_active',
+        'link_notes',
         'effective_from',
         'effective_to',
-        'metadata',
+        'is_active',
         'created_by',
+        'updated_by',
+        'metadata',
         'provider',
     ];
 

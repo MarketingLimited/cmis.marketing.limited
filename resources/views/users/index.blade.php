@@ -44,7 +44,7 @@
                 </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
-                <template x-for="user in users" :key="user.user_id">
+                <template x-for="user in users" :key="user.id || user.user_id">
                     <tr class="hover:bg-gray-50">
                         <td class="px-6 py-4 whitespace-nowrap">
                             <div class="flex items-center">
@@ -78,7 +78,7 @@
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="formatDate(user.joined_at)"></td>
                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                            <button @click="viewUser(user.user_id)" class="text-blue-600 hover:text-blue-900 mr-3">
+                            <button @click="viewUser(user.id || user.user_id)" class="text-blue-600 hover:text-blue-900 mr-3">
                                 <i class="fas fa-eye"></i>
                             </button>
                             @can('assignRole', App\Models\User::class)

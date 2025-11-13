@@ -17,24 +17,21 @@ class SceneLibrary extends Model
     protected $keyType = 'string';
 
     protected $fillable = [
+        'scene_id',
         'org_id',
         'name',
-        'description',
-        'category',
-        'scene_type',
-        'duration_seconds',
-        'visual_elements',
-        'audio_elements',
-        'transitions',
+        'goal',
+        'duration_sec',
+        'visual_spec',
+        'audio_spec',
+        'overlay_rules',
+        'anchor',
+        'quality_score',
         'tags',
-        'thumbnail_url',
-        'is_template',
-        'usage_count',
-        'metadata',
+        'provider',
     ];
 
-    protected $casts = [
-        'duration_seconds' => 'integer',
+    protected $casts = ['duration_seconds' => 'integer',
         'visual_elements' => 'array',
         'audio_elements' => 'array',
         'transitions' => 'array',
@@ -45,6 +42,9 @@ class SceneLibrary extends Model
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
         'deleted_at' => 'datetime',
+        'visual_spec' => 'array',
+        'audio_spec' => 'array',
+        'overlay_rules' => 'array',
     ];
 
     // Relationships

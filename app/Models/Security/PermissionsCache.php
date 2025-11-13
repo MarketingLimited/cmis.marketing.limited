@@ -2,83 +2,53 @@
 
 namespace App\Models\Security;
 
-use App\Models\Core\Org;
-use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * PermissionsCache - Permission code lookup table
+ *
+ * This table serves as a reference/dictionary for permission codes,
+ * mapping permission_code to permission_id and category.
+ * It is NOT a user-specific cache.
+ */
 class PermissionsCache extends Model
 {
     use HasFactory;
 
     protected $table = 'cmis.permissions_cache';
+    protected $primaryKey = 'permission_id';
     protected $connection = 'pgsql';
     public $timestamps = false;
     public $incrementing = false;
+    protected $keyType = 'string';
 
     protected $fillable = [
-        'user_id',
-        'org_id',
         'permission_code',
-        'has_permission',
+        'permission_id',
+        'category',
         'last_used',
-        'cache_metadata',
     ];
 
     protected $casts = [
-        'user_id' => 'string',
-        'org_id' => 'string',
-        'has_permission' => 'boolean',
+        'permission_id' => 'string',
         'last_used' => 'datetime',
-        'cache_metadata' => 'array',
     ];
 
     /**
-     * Get the user
+     * Get permission by code
      */
-    public function user()
+    public static function getByCode(string $permissionCode): ?self
     {
-        return $this->belongsTo(User::class, 'user_id', 'user_id');
+        return static::where('permission_code', $permissionCode)->first();
     }
 
     /**
-     * Get the organization
+     * Get permission by category
      */
-    public function org()
+    public function scopeByCategory($query, string $category)
     {
-        return $this->belongsTo(Org::class, 'org_id', 'org_id');
-    }
-
-    /**
-     * Scope to get permissions for a specific user
-     */
-    public function scopeForUser($query, string $userId)
-    {
-        return $query->where('user_id', $userId);
-    }
-
-    /**
-     * Scope to get permissions for a specific org
-     */
-    public function scopeForOrg($query, string $orgId)
-    {
-        return $query->where('org_id', $orgId);
-    }
-
-    /**
-     * Scope to get granted permissions
-     */
-    public function scopeGranted($query)
-    {
-        return $query->where('has_permission', true);
-    }
-
-    /**
-     * Scope to get denied permissions
-     */
-    public function scopeDenied($query)
-    {
-        return $query->where('has_permission', false);
+        return $query->where('category', $category);
     }
 
     /**
@@ -100,49 +70,28 @@ class PermissionsCache extends Model
     /**
      * Update last used timestamp
      */
-    public function touch(): void
+    public function touch($attribute = null)
     {
-        $this->update(['last_used' => now()]);
+        if ($attribute === null) {
+            return $this->update(['last_used' => now()]);
+        }
+
+        return parent::touch($attribute);
     }
 
     /**
-     * Get or create cache entry
+     * Update or create permission cache entry
      */
-    public static function getOrCreate(string $userId, string $orgId, string $permissionCode, bool $hasPermission): self
+    public static function updateOrCreateEntry(string $permissionCode, string $permissionId, string $category): self
     {
         return static::updateOrCreate(
+            ['permission_code' => $permissionCode],
             [
-                'user_id' => $userId,
-                'org_id' => $orgId,
-                'permission_code' => $permissionCode,
-            ],
-            [
-                'has_permission' => $hasPermission,
+                'permission_id' => $permissionId,
+                'category' => $category,
                 'last_used' => now(),
             ]
         );
-    }
-
-    /**
-     * Clear cache for user in org
-     */
-    public static function clearForUser(string $userId, ?string $orgId = null): int
-    {
-        $query = static::where('user_id', $userId);
-
-        if ($orgId) {
-            $query->where('org_id', $orgId);
-        }
-
-        return $query->delete();
-    }
-
-    /**
-     * Clear cache for all users in org
-     */
-    public static function clearForOrg(string $orgId): int
-    {
-        return static::where('org_id', $orgId)->delete();
     }
 
     /**

@@ -1,0 +1,15 @@
+{
+    "timestamp": "2025-11-13 17:36:41",
+    "total_issues": 6,
+    "blade_issues": 2,
+    "controller_issues": 0,
+    "service_issues": 1,
+    "issues": [
+        "resources\/views\/analytics\/dashboard.blade.php: Uses 'campaign.id' (should be 'campaign.campaign_id')",
+        "resources\/views\/users\/index.blade.php: Uses 'user.id' (should be 'user.user_id')",
+        "app\/Services\/Ads\/MetaAdsService.php: Uses '$campaign->id' (should be '$campaign->campaign_id')",
+        "app\/Http\/Resources\/UserResource.php: UserResource may use 'id' (should be 'user_id')",
+        "app\/Http\/Resources\/OrgResource.php: OrgResource may use 'id' (should be 'org_id')",
+        "app\/Http\/Resources\/CampaignResource.php: CampaignResource may use 'id' (should be 'campaign_id')"
+    ]
+}

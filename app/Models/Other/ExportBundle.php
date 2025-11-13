@@ -26,8 +26,10 @@ class ExportBundle extends Model
     const UPDATED_AT = null;
 
     protected $fillable = [
+        'bundle_id',
         'org_id',
         'name',
+        'provider',
     ];
 
     protected $casts = [

@@ -24,6 +24,7 @@ class CreativeAsset extends Model
     public $timestamps = true;
 
     protected $fillable = [
+        'asset_id',
         'org_id',
         'campaign_id',
         'strategy',
@@ -41,8 +42,8 @@ class CreativeAsset extends Model
         'example_id',
         'brief_id',
         'creative_context_id',
-        'deleted_by',
         'provider',
+        'deleted_by',
     ];
 
     protected $casts = [

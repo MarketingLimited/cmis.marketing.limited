@@ -16,16 +16,14 @@ class CognitiveTrend extends Model
     protected $keyType = 'string';
 
     protected $fillable = [
-        'domain',
-        'category',
-        'topic',
-        'trend_score',
-        'frequency',
-        'last_seen',
-        'first_seen',
-        'peak_score',
-        'related_topics',
-        'metadata',
+        'trend_id',
+        'org_id',
+        'factor_name',
+        'trend_direction',
+        'growth_rate',
+        'trend_strength',
+        'summary_insight',
+        'provider',
     ];
 
     protected $casts = [

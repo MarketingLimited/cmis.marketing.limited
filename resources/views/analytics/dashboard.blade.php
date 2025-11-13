@@ -187,7 +187,7 @@
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
-                        <template x-for="campaign in recentCampaigns" :key="campaign.id">
+                        <template x-for="campaign in recentCampaigns" :key="campaign.campaign_id || campaign.id">
                             <tr>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="text-sm font-medium text-gray-900" x-text="campaign.name"></div>
@@ -207,7 +207,7 @@
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900" x-text="(campaign.engagement || 0) + '%'"></td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="campaign.created_at"></td>
                                 <td class="px-6 py-4 whitespace-nowrap text-left text-sm font-medium">
-                                    <a :href="'/campaigns/' + campaign.id" class="text-indigo-600 hover:text-indigo-900">عرض</a>
+                                    <a :href="'/campaigns/' + (campaign.campaign_id || campaign.id)" class="text-indigo-600 hover:text-indigo-900">عرض</a>
                                 </td>
                             </tr>
                         </template>
