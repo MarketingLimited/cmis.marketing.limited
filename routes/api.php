@@ -281,6 +281,25 @@ Route::middleware(['auth:sanctum', 'validate.org.access', 'set.db.context'])
 
     /*
     |----------------------------------------------------------------------
+    | لوحة التحليلات (Analytics Dashboard) - Sprint 3.1
+    |----------------------------------------------------------------------
+    */
+    Route::prefix('analytics/dashboard')->name('analytics.dashboard.')->group(function () {
+        // Organization Overview
+        Route::get('/overview', [App\Http\Controllers\AnalyticsDashboardController::class, 'orgOverview'])->name('overview');
+        Route::get('/snapshot', [App\Http\Controllers\AnalyticsDashboardController::class, 'snapshot'])->name('snapshot');
+
+        // Account Analytics
+        Route::get('/account/{social_account_id}', [App\Http\Controllers\AnalyticsDashboardController::class, 'accountDashboard'])->name('account');
+        Route::get('/account/{social_account_id}/content', [App\Http\Controllers\AnalyticsDashboardController::class, 'contentPerformance'])->name('account.content');
+        Route::get('/account/{social_account_id}/trends', [App\Http\Controllers\AnalyticsDashboardController::class, 'trends'])->name('account.trends');
+
+        // Platform Comparison
+        Route::get('/platforms', [App\Http\Controllers\AnalyticsDashboardController::class, 'platformComparison'])->name('platforms');
+    });
+
+    /*
+    |----------------------------------------------------------------------
     | صندوق الوارد الموحد (Unified Inbox)
     |----------------------------------------------------------------------
     */
