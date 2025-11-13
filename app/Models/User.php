@@ -28,21 +28,21 @@ class User extends Authenticatable
      *
      * @var string
      */
-    protected $primaryKey = 'user_id';
+    protected $primaryKey = 'id';
 
     /**
      * Indicates if the model's ID is auto-incrementing.
      *
      * @var bool
      */
-    public $incrementing = false;
+    public $incrementing = true;
 
     /**
      * The data type of the primary key.
      *
      * @var string
      */
-    protected $keyType = 'string';
+    protected $keyType = 'int';
 
     /**
      * The attributes that are mass assignable.
@@ -50,14 +50,11 @@ class User extends Authenticatable
      * @var list<string>
      */
     protected $fillable = [
-        'user_id',
-        'email',
-        'display_name',
-        'role',
-        'provider',
-        'status',
         'name',
+        'email',
         'password',
+        'email_verified_at',
+        'remember_token',
     ];
 
     /**
@@ -162,13 +159,13 @@ class User extends Authenticatable
         try {
             $result = \DB::selectOne(
                 'SELECT cmis.check_permission(?, ?, ?) as has_permission',
-                [$this->user_id, $orgId, $permissionCode]
+                [$this->id, $orgId, $permissionCode]
             );
 
             return (bool) $result->has_permission;
         } catch (\Exception $e) {
             \Log::error('Permission check failed', [
-                'user_id' => $this->user_id,
+                'user_id' => $this->id,
                 'org_id' => $orgId,
                 'permission' => $permissionCode,
                 'error' => $e->getMessage()
