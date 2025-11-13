@@ -27,6 +27,9 @@ class AppServiceProvider extends ServiceProvider
     {
         // Repository Bindings
         $this->registerRepositories();
+
+        // Embedding Services
+        $this->registerEmbeddingServices();
     }
 
     /**
@@ -122,6 +125,29 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(
             \App\Repositories\Contracts\TriggerRepositoryInterface::class,
             \App\Repositories\CMIS\TriggerRepository::class
+        );
+    }
+
+    /**
+     * Register Embedding services
+     */
+    protected function registerEmbeddingServices(): void
+    {
+        // Embedding Provider (Gemini as default)
+        $this->app->bind(
+            \App\Services\Embedding\EmbeddingProviderInterface::class,
+            \App\Services\Embedding\Providers\GeminiProvider::class
+        );
+
+        // Embedding Orchestrator (main service)
+        $this->app->singleton(
+            \App\Services\Embedding\EmbeddingOrchestrator::class,
+            function ($app) {
+                return new \App\Services\Embedding\EmbeddingOrchestrator(
+                    $app->make(\App\Services\Embedding\EmbeddingProviderInterface::class),
+                    $app->make(\App\Repositories\Contracts\EmbeddingRepositoryInterface::class)
+                );
+            }
         );
     }
 
