@@ -16,23 +16,19 @@ class PredictiveVisualEngine extends Model
     protected $keyType = 'string';
 
     protected $fillable = [
+        'prediction_id',
         'org_id',
         'campaign_id',
-        'visual_concept',
-        'predicted_performance',
-        'confidence_score',
-        'recommendation',
-        'visual_elements',
-        'color_palette',
-        'composition_score',
-        'emotion_score',
-        'attention_score',
-        'model_version',
-        'metadata',
+        'predicted_ctr',
+        'predicted_engagement',
+        'predicted_trust_index',
+        'confidence_level',
+        'visual_factor_weight',
+        'prediction_summary',
+        'provider',
     ];
 
-    protected $casts = [
-        'predicted_performance' => 'float',
+    protected $casts = ['predicted_performance' => 'float',
         'confidence_score' => 'float',
         'visual_elements' => 'array',
         'color_palette' => 'array',
@@ -42,6 +38,7 @@ class PredictiveVisualEngine extends Model
         'metadata' => 'array',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
+        'visual_factor_weight' => 'array',
     ];
 
     // Relationships

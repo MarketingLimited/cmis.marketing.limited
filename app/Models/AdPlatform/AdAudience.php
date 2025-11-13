@@ -11,32 +11,31 @@ class AdAudience extends Model
     use HasFactory, SoftDeletes;
 
     protected $table = 'cmis.ad_audiences';
-    protected $primaryKey = 'ad_audience_id';
+    protected $primaryKey = 'id';
     protected $connection = 'pgsql';
     public $incrementing = false;
     protected $keyType = 'string';
 
     protected $fillable = [
-        'ad_account_id',
-        'platform',
-        'audience_name',
-        'audience_external_id',
+        'id',
+        'org_id',
+        'integration_id',
+        'entity_level',
+        'entity_external_id',
         'audience_type',
-        'audience_size',
-        'targeting_spec',
-        'exclusions',
-        'lookalike_source',
-        'lookalike_ratio',
-        'custom_audience_source',
-        'retention_days',
-        'status',
-        'metadata',
-        'last_synced_at',
+        'platform',
+        'demographics',
+        'interests',
+        'behaviors',
+        'location',
+        'keywords',
+        'custom_audience',
+        'lookalike_audience',
+        'advantage_plus_settings',
         'provider',
     ];
 
-    protected $casts = [
-        'ad_audience_id' => 'string',
+    protected $casts = ['ad_audience_id' => 'string',
         'ad_account_id' => 'string',
         'audience_size' => 'integer',
         'targeting_spec' => 'array',
@@ -49,6 +48,14 @@ class AdAudience extends Model
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
         'deleted_at' => 'datetime',
+        'demographics' => 'array',
+        'interests' => 'array',
+        'behaviors' => 'array',
+        'location' => 'array',
+        'keywords' => 'array',
+        'custom_audience' => 'array',
+        'lookalike_audience' => 'array',
+        'advantage_plus_settings' => 'array',
     ];
 
     /**

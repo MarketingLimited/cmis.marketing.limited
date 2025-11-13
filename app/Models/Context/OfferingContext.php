@@ -17,29 +17,14 @@ class OfferingContext extends Model
     protected $keyType = 'string';
 
     protected $fillable = [
-        'org_id',
-        'offering_id',
-        'name',
-        'description',
-        'product_features',
-        'service_details',
-        'pricing_information',
-        'delivery_method',
-        'target_market',
-        'use_cases',
-        'technical_specifications',
-        'warranty_support',
-        'integrations',
-        'certifications',
-        'metadata',
-        'tags',
-        'is_active',
-        'created_by',
+        'context_id',
+        'offering_details',
+        'pricing_info',
+        'features',
         'provider',
     ];
 
-    protected $casts = [
-        'context_id' => 'string',
+    protected $casts = ['context_id' => 'string',
         'org_id' => 'string',
         'offering_id' => 'string',
         'created_by' => 'string',
@@ -58,6 +43,8 @@ class OfferingContext extends Model
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
         'deleted_at' => 'datetime',
+        'pricing_info' => 'array',
+        'features' => 'array',
     ];
 
     /**

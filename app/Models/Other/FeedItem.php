@@ -23,11 +23,13 @@ class FeedItem extends Model
     public $timestamps = false;
 
     protected $fillable = [
+        'item_id',
         'feed_id',
         'sku',
         'payload',
         'valid_from',
         'valid_to',
+        'provider',
     ];
 
     protected $casts = [

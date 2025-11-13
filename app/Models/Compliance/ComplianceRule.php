@@ -16,25 +16,15 @@ class ComplianceRule extends Model
     protected $keyType = 'string';
 
     protected $fillable = [
-        'org_id',
-        'rule_name',
-        'rule_type',
+        'rule_id',
+        'code',
         'description',
-        'criteria',
         'severity',
-        'required_fields',
-        'prohibited_content',
-        'required_disclaimers',
-        'approval_required',
-        'auto_fix',
-        'is_active',
-        'metadata',
-        'created_by',
+        'params',
         'provider',
     ];
 
-    protected $casts = [
-        'rule_id' => 'string',
+    protected $casts = ['rule_id' => 'string',
         'org_id' => 'string',
         'created_by' => 'string',
         'criteria' => 'array',
@@ -47,6 +37,7 @@ class ComplianceRule extends Model
         'metadata' => 'array',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
+        'params' => 'array',
     ];
 
     /**

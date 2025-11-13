@@ -17,24 +17,18 @@ class ContentPlan extends Model
     protected $keyType = 'string';
 
     protected $fillable = [
+        'plan_id',
         'org_id',
         'campaign_id',
-        'plan_name',
-        'description',
-        'start_date',
-        'end_date',
-        'frequency',
-        'channels',
-        'themes',
-        'objectives',
-        'status',
-        'metadata',
-        'created_by',
+        'name',
+        'timeframe_daterange',
+        'strategy',
+        'brief_id',
+        'creative_context_id',
         'provider',
     ];
 
-    protected $casts = [
-        'plan_id' => 'string',
+    protected $casts = ['plan_id' => 'string',
         'org_id' => 'string',
         'campaign_id' => 'string',
         'created_by' => 'string',
@@ -47,6 +41,7 @@ class ContentPlan extends Model
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
         'deleted_at' => 'datetime',
+        'strategy' => 'array',
     ];
 
     /**

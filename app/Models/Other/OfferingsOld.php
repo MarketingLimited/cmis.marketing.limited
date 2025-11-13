@@ -26,10 +26,12 @@ class OfferingsOld extends Model
     const UPDATED_AT = null;
 
     protected $fillable = [
+        'offering_id',
         'org_id',
         'kind',
         'name',
         'description',
+        'provider',
     ];
 
     protected $casts = [

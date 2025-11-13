@@ -17,19 +17,15 @@ class AiAction extends Model
     protected $keyType = 'string';
 
     protected $fillable = [
+        'action_id',
         'org_id',
-        'user_id',
-        'action_type',
-        'action_name',
-        'input_data',
-        'output_data',
-        'model_used',
-        'tokens_used',
-        'cost',
-        'execution_time_ms',
-        'status',
-        'error_message',
-        'metadata',
+        'campaign_id',
+        'prompt_used',
+        'sql_executed',
+        'result_summary',
+        'confidence_score',
+        'audit_id',
+        'provider',
     ];
 
     protected $casts = [

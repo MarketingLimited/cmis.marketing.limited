@@ -7,17 +7,17 @@ use Illuminate\Database\Eloquent\Model;
 class RequiredFieldsCache extends Model
 {
     protected $table = 'cmis.required_fields_cache';
+    protected $primaryKey = 'module_scope';
     protected $connection = 'pgsql';
     public $incrementing = false;
+    protected $keyType = 'string';
     public $timestamps = false;
 
     protected $fillable = [
-        'module_id',
-        'field_name',
-        'is_required',
-        'field_type',
-        'validation_rules',
-        'cached_at',
+        'module_scope',
+        'required_fields',
+        'last_updated',
+        'provider',
     ];
 
     protected $casts = [

@@ -16,23 +16,15 @@ class VariationPolicy extends Model
     protected $keyType = 'string';
 
     protected $fillable = [
+        'policy_id',
         'org_id',
-        'policy_name',
-        'description',
-        'variation_rules',
-        'test_percentage',
-        'max_variants',
-        'optimization_goal',
-        'auto_promote_winner',
-        'confidence_threshold',
-        'metadata',
-        'is_active',
-        'created_by',
+        'max_variations',
+        'dco_enabled',
+        'naming_ref',
         'provider',
     ];
 
-    protected $casts = [
-        'policy_id' => 'string',
+    protected $casts = ['policy_id' => 'string',
         'org_id' => 'string',
         'created_by' => 'string',
         'variation_rules' => 'array',
@@ -44,6 +36,7 @@ class VariationPolicy extends Model
         'is_active' => 'boolean',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
+        'dco_enabled' => 'boolean',
     ];
 
     /**

@@ -17,27 +17,24 @@ class ContentItem extends Model
     protected $keyType = 'string';
 
     protected $fillable = [
-        'org_id',
-        'context_id',
+        'item_id',
         'plan_id',
-        'asset_id',
-        'item_type',
-        'title',
-        'body',
         'channel_id',
         'format_id',
-        'scheduled_for',
-        'published_at',
+        'scheduled_at',
+        'title',
+        'brief',
+        'asset_id',
         'status',
-        'metadata',
-        'tags',
+        'context_id',
         'example_id',
-        'created_by',
+        'creative_context_id',
         'provider',
+        'org_id',
+        'deleted_by',
     ];
 
-    protected $casts = [
-        'item_id' => 'string',
+    protected $casts = ['item_id' => 'string',
         'org_id' => 'string',
         'context_id' => 'string',
         'plan_id' => 'string',
@@ -53,6 +50,7 @@ class ContentItem extends Model
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
         'deleted_at' => 'datetime',
+        'brief' => 'array',
     ];
 
     /**

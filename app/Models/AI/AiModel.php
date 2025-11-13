@@ -26,6 +26,7 @@ class AiModel extends Model
     const UPDATED_AT = null;
 
     protected $fillable = [
+        'model_id',
         'org_id',
         'name',
         'engine',

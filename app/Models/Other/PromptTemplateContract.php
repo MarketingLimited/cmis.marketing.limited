@@ -13,6 +13,7 @@ class PromptTemplateContract extends Model
     protected $connection = 'pgsql';
 
     protected $table = 'cmis.prompt_template_contracts';
+    protected $primaryKey = 'prompt_id';
 
     public $timestamps = false;
 
@@ -21,6 +22,7 @@ class PromptTemplateContract extends Model
     protected $fillable = [
         'prompt_id',
         'contract_id',
+        'provider',
     ];
 
     protected $casts = [

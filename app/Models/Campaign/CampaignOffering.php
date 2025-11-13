@@ -14,6 +14,7 @@ class CampaignOffering extends Model
     protected $connection = 'pgsql';
 
     protected $table = 'cmis.campaign_offerings';
+    protected $primaryKey = 'offering_id';
 
     public $timestamps = false;
 
@@ -22,6 +23,7 @@ class CampaignOffering extends Model
     protected $fillable = [
         'campaign_id',
         'offering_id',
+        'provider',
     ];
 
     protected $casts = [

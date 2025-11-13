@@ -17,18 +17,13 @@ class VisualConcept extends Model
     protected $keyType = 'string';
 
     protected $fillable = [
-        'org_id',
-        'concept_name',
-        'description',
-        'visual_elements',
-        'color_palette',
-        'mood',
+        'concept_id',
+        'asset_id',
+        'visual_prompt',
         'style',
-        'target_audience',
-        'usage_count',
-        'performance_score',
-        'tags',
-        'metadata',
+        'palette',
+        'emotion',
+        'focus_keywords',
     ];
 
     protected $casts = [

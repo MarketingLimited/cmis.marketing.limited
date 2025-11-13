@@ -23,11 +23,13 @@ class PromptTemplate extends Model
     public $timestamps = false;
 
     protected $fillable = [
+        'prompt_id',
         'module_id',
         'name',
         'task',
         'instructions',
         'version',
+        'provider',
     ];
 
     protected $casts = [

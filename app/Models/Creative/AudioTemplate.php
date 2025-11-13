@@ -10,32 +10,22 @@ class AudioTemplate extends Model
     use HasFactory;
 
     protected $table = 'cmis.audio_templates';
-    protected $primaryKey = 'template_id';
+    protected $primaryKey = 'atpl_id';
     protected $connection = 'pgsql';
     public $incrementing = false;
     protected $keyType = 'string';
 
     protected $fillable = [
+        'atpl_id',
         'org_id',
-        'template_name',
-        'description',
-        'duration',
-        'voice_type',
-        'accent',
-        'pacing',
-        'tone',
-        'music_style',
-        'sound_effects',
-        'script_structure',
-        'metadata',
-        'tags',
-        'is_active',
-        'created_by',
+        'name',
+        'voice_hints',
+        'sfx_pack',
+        'version',
         'provider',
     ];
 
-    protected $casts = [
-        'template_id' => 'string',
+    protected $casts = ['template_id' => 'string',
         'org_id' => 'string',
         'created_by' => 'string',
         'duration' => 'integer',
@@ -46,6 +36,8 @@ class AudioTemplate extends Model
         'is_active' => 'boolean',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
+        'voice_hints' => 'array',
+        'sfx_pack' => 'array',
     ];
 
     /**

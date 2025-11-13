@@ -16,23 +16,18 @@ class VideoScene extends Model
     protected $keyType = 'string';
 
     protected $fillable = [
-        'template_id',
+        'scene_id',
         'asset_id',
         'scene_number',
-        'scene_type',
-        'duration',
-        'content',
-        'visual_elements',
-        'audio_elements',
-        'text_overlays',
-        'transitions',
-        'effects',
-        'metadata',
+        'duration_seconds',
+        'visual_prompt_en',
+        'overlay_text_ar',
+        'audio_instructions',
+        'technical_specs',
         'provider',
     ];
 
-    protected $casts = [
-        'scene_id' => 'string',
+    protected $casts = ['scene_id' => 'string',
         'template_id' => 'string',
         'asset_id' => 'string',
         'scene_number' => 'integer',
@@ -45,6 +40,7 @@ class VideoScene extends Model
         'metadata' => 'array',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
+        'technical_specs' => 'array',
     ];
 
     /**

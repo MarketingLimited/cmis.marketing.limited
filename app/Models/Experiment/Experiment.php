@@ -17,21 +17,13 @@ class Experiment extends Model
     protected $keyType = 'string';
 
     protected $fillable = [
+        'exp_id',
         'org_id',
-        'campaign_id',
-        'exp_name',
-        'exp_type',
+        'channel_id',
+        'framework',
         'hypothesis',
-        'start_date',
-        'end_date',
         'status',
-        'control_variant',
-        'winning_variant',
-        'confidence_level',
-        'sample_size',
-        'metadata',
-        'results',
-        'created_by',
+        'campaign_id',
         'provider',
     ];
 

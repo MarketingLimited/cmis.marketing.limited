@@ -14,21 +14,14 @@ class UserSession extends Model
     public $timestamps = false;
 
     protected $fillable = [
+        'session_id',
         'user_id',
-        'org_id',
         'session_token',
         'ip_address',
         'user_agent',
-        'device_type',
-        'browser',
-        'os',
-        'location_data',
-        'started_at',
         'last_activity',
-        'ended_at',
-        'session_duration',
+        'expires_at',
         'is_active',
-        'metadata',
         'provider',
     ];
 
