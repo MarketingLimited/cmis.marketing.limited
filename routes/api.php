@@ -378,6 +378,30 @@ Route::middleware(['auth:sanctum', 'validate.org.access', 'set.db.context'])
 
     /*
     |----------------------------------------------------------------------
+    | إدارة الحملات الإعلانية (Ad Campaign Management) - Sprint 4.1
+    |----------------------------------------------------------------------
+    */
+    Route::prefix('ad-campaigns')->name('ad-campaigns.')->group(function () {
+        // Campaign CRUD
+        Route::get('/', [App\Http\Controllers\AdCampaignController::class, 'index'])->name('index');
+        Route::post('/', [App\Http\Controllers\AdCampaignController::class, 'create'])->name('create');
+        Route::get('/{campaign_id}', [App\Http\Controllers\AdCampaignController::class, 'show'])->name('show');
+        Route::put('/{campaign_id}', [App\Http\Controllers\AdCampaignController::class, 'update'])->name('update');
+        Route::delete('/{campaign_id}', [App\Http\Controllers\AdCampaignController::class, 'destroy'])->name('destroy');
+
+        // Campaign Actions
+        Route::patch('/{campaign_id}/status', [App\Http\Controllers\AdCampaignController::class, 'updateStatus'])->name('status');
+        Route::post('/{campaign_id}/duplicate', [App\Http\Controllers\AdCampaignController::class, 'duplicate'])->name('duplicate');
+
+        // Bulk Operations
+        Route::patch('/bulk/status', [App\Http\Controllers\AdCampaignController::class, 'bulkUpdateStatus'])->name('bulk.status');
+
+        // Statistics
+        Route::get('/statistics/summary', [App\Http\Controllers\AdCampaignController::class, 'statistics'])->name('statistics');
+    });
+
+    /*
+    |----------------------------------------------------------------------
     | صندوق الوارد الموحد (Unified Inbox)
     |----------------------------------------------------------------------
     */
