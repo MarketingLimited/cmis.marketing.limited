@@ -567,6 +567,24 @@ Route::middleware(['auth:sanctum', 'validate.org.access', 'set.db.context'])
 
     /*
     |----------------------------------------------------------------------
+    | تحسين الأداء (Performance Optimization) - Sprint 6.1
+    |----------------------------------------------------------------------
+    */
+    Route::prefix('performance')->name('performance.')->group(function () {
+        // Metrics
+        Route::get('/metrics', [App\Http\Controllers\PerformanceController::class, 'getMetrics'])->name('metrics');
+        Route::get('/slow-queries', [App\Http\Controllers\PerformanceController::class, 'getSlowQueries'])->name('slow-queries');
+
+        // Cache Management
+        Route::post('/cache/clear', [App\Http\Controllers\PerformanceController::class, 'clearCache'])->name('cache.clear');
+        Route::post('/cache/warmup', [App\Http\Controllers\PerformanceController::class, 'warmupCache'])->name('cache.warmup');
+
+        // Database Optimization
+        Route::post('/optimize-database', [App\Http\Controllers\PerformanceController::class, 'optimizeDatabase'])->name('optimize-database');
+    });
+
+    /*
+    |----------------------------------------------------------------------
     | صندوق الوارد الموحد (Unified Inbox)
     |----------------------------------------------------------------------
     */
