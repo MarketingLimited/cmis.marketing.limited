@@ -4,19 +4,19 @@ namespace App\Services;
 
 use App\Models\Campaign;
 use App\Models\CampaignAnalytics;
-use App\Repositories\CMIS\CampaignRepository;
-use App\Repositories\CMIS\PermissionRepository;
+use App\Repositories\Contracts\CampaignRepositoryInterface;
+use App\Repositories\Contracts\PermissionRepositoryInterface;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class CampaignService
 {
-    protected CampaignRepository $campaignRepo;
-    protected PermissionRepository $permissionRepo;
+    protected CampaignRepositoryInterface $campaignRepo;
+    protected PermissionRepositoryInterface $permissionRepo;
 
     public function __construct(
-        CampaignRepository $campaignRepo,
-        PermissionRepository $permissionRepo
+        CampaignRepositoryInterface $campaignRepo,
+        PermissionRepositoryInterface $permissionRepo
     ) {
         $this->campaignRepo = $campaignRepo;
         $this->permissionRepo = $permissionRepo;
