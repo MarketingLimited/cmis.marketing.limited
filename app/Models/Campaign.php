@@ -65,7 +65,7 @@ class Campaign extends Model
 
     public function creator(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'created_by', 'id');
+        return $this->belongsTo(User::class, 'created_by', 'user_id');
     }
 
     public function offerings(): BelongsToMany
@@ -81,6 +81,11 @@ class Campaign extends Model
     public function performanceMetrics(): HasMany
     {
         return $this->hasMany(CampaignPerformanceMetric::class, 'campaign_id', 'campaign_id');
+    }
+
+    public function adCampaigns(): HasMany
+    {
+        return $this->hasMany(AdCampaign::class, 'campaign_id', 'campaign_id');
     }
 
 }

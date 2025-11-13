@@ -3,7 +3,7 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
-use App\Models\Integration;
+use App\Models\Core\Integration;
 use App\Services\Social\InstagramSyncService;
 use Illuminate\Support\Facades\Log;
 

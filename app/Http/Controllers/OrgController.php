@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Campaign;
 use App\Models\CampaignPerformanceMetric;
-use App\Models\Org;
+use App\Models\Core\Org;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -22,6 +22,78 @@ class OrgController extends Controller
             ->get();
 
         return view('orgs.index', compact('orgs'));
+    }
+
+    public function create()
+    {
+        return view('orgs.create');
+    }
+
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255|unique:cmis.orgs,name',
+            'default_locale' => 'nullable|string|max:10',
+            'currency' => 'nullable|string|size:3',
+            'provider' => 'nullable|string|max:255',
+        ]);
+
+        try {
+            DB::beginTransaction();
+
+            // Create the org
+            $org = Org::create([
+                'name' => $validated['name'],
+                'default_locale' => $validated['default_locale'] ?? 'ar-BH',
+                'currency' => $validated['currency'] ?? 'BHD',
+                'provider' => $validated['provider'] ?? null,
+            ]);
+
+            // Get the owner role
+            $ownerRole = \App\Models\Core\Role::where('role_code', 'owner')
+                ->where('is_system', true)
+                ->whereNull('org_id')
+                ->first();
+
+            if (!$ownerRole) {
+                // Create owner role if it doesn't exist
+                $ownerRole = \App\Models\Core\Role::create([
+                    'role_name' => 'Owner',
+                    'role_code' => 'owner',
+                    'description' => 'Organization owner with full permissions',
+                    'is_system' => true,
+                    'is_active' => true,
+                ]);
+            }
+
+            // Attach the current user as owner
+            \App\Models\Core\UserOrg::create([
+                'user_id' => auth()->user()->user_id,
+                'org_id' => $org->org_id,
+                'role_id' => $ownerRole->role_id,
+                'is_active' => true,
+                'joined_at' => now(),
+            ]);
+
+            DB::commit();
+
+            return redirect()
+                ->route('orgs.show', $org->org_id)
+                ->with('success', 'تم إنشاء المؤسسة بنجاح');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            \Log::error('Failed to create organization', [
+                'user_id' => auth()->id(),
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return redirect()
+                ->back()
+                ->withInput()
+                ->with('error', 'فشل إنشاء المؤسسة: ' . $e->getMessage());
+        }
     }
 
     public function show($id)

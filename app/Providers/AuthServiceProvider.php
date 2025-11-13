@@ -7,7 +7,7 @@ use App\Models\Channel;
 use App\Models\Content\ContentItem;
 use App\Models\Core\Org;
 use App\Models\CreativeAsset;
-use App\Models\Integration;
+use App\Models\Core\Integration;
 use App\Models\Offering;
 use App\Models\User;
 use App\Policies\AIPolicy;

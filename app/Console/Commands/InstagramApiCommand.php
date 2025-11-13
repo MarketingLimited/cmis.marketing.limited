@@ -3,7 +3,7 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
-use App\Models\Integration;
+use App\Models\Core\Integration;
 use App\Services\InstagramService;
 use Carbon\Carbon;
 use Illuminate\Support\Str;

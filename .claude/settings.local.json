@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(php scripts/audit-database-sync.php:*)",
+      "Bash(php:*)",
+      "Bash(/tmp/full-audit.txt)",
+      "Bash(cat:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(find:*)",
+      "Bash([ -f phpunit.xml ])",
+      "Bash(composer dump-autoload:*)",
+      "Bash(PGPASSWORD=\"123@Marketing@321\" psql:*)",
+      "Bash(PGPASSWORD=\"123@Marketing@321\" pg_dump:*)",
+      "Bash([ -f /home/cmis/public_html/app/Models/Core/Org.php ])",
+      "Bash(PGPASSWORD=\"123@Marketing@321\" psql -h 127.0.0.1 -U begin -d cmis -c \"SELECT COUNT(*) FROM cmis.user_permissions;\")",
+      "Bash(PGPASSWORD=\"123@Marketing@321\" psql -h 127.0.0.1 -U begin -d cmis -c \"\nSELECT \n    tc.constraint_name, \n    tc.table_name, \n    kcu.column_name,\n    ccu.table_name AS foreign_table_name,\n    ccu.column_name AS foreign_column_name \nFROM information_schema.table_constraints AS tc \nJOIN information_schema.key_column_usage AS kcu\n    ON tc.constraint_name = kcu.constraint_name\n    AND tc.table_schema = kcu.table_schema\nJOIN information_schema.constraint_column_usage AS ccu\n    ON ccu.constraint_name = tc.constraint_name\n    AND ccu.table_schema = tc.table_schema\nWHERE tc.constraint_type = ''FOREIGN KEY'' \nAND tc.table_schema=''cmis'' \nAND ccu.table_name = ''users''\nORDER BY tc.table_name;\")",
+      "Bash(curl -s -I -L -w \"\\n\\nFinal URL: %{url_effective}\\nHTTP Code: %{http_code}\\nRedirect Count: %{num_redirects}\\n\" https://cmis.kazaaz.com/campaigns)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

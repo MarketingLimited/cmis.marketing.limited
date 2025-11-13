@@ -119,7 +119,7 @@ class Notification extends Model
     /**
      * Create a new notification
      */
-    public static function create Notification(
+    public static function createNotification(
         string $userId,
         string $type,
         string $message,
