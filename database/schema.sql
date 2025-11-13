@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict fL9USgZ0bCgwu6UgdZGFeo84xVwQFLKkUmCDHB3eSHauHmEZLHEzT6jLnJ3mAlB
+\restrict Zl8xLC5DOYJwJjQOUQBnu0fLVz0xm9hAaIRTnPUyqgVNQgtoMBibo53q6Ac41fo
 
 -- Dumped from database version 18.0 (Ubuntu 18.0-1.pgdg24.04+3)
 -- Dumped by pg_dump version 18.0 (Ubuntu 18.0-1.pgdg24.04+3)
@@ -970,6 +970,153 @@ COMMENT ON FUNCTION cmis.get_current_user_id_tx() IS 'الحصول على user_i
 
 
 --
+-- Name: get_next_available_slot(uuid, timestamp without time zone); Type: FUNCTION; Schema: cmis; Owner: begin
+--
+
+CREATE FUNCTION cmis.get_next_available_slot(p_social_account_id uuid, p_after_time timestamp without time zone DEFAULT now()) RETURNS TABLE(next_slot timestamp without time zone)
+    LANGUAGE plpgsql SECURITY DEFINER
+    AS $$
+            DECLARE
+                v_queue RECORD;
+                v_current_time TIMESTAMP;
+                v_current_date DATE;
+                v_day_index INT;
+                v_time_slot TEXT;
+                v_candidate_slot TIMESTAMP;
+                v_max_days INT := 30; -- Look ahead max 30 days
+                v_days_checked INT := 0;
+            BEGIN
+                -- Get queue configuration
+                SELECT * INTO v_queue
+                FROM cmis.publishing_queues
+                WHERE social_account_id = p_social_account_id
+                  AND is_active = true;
+
+                -- If no queue configured, return null
+                IF NOT FOUND THEN
+                    RETURN;
+                END IF;
+
+                -- Start from after_time (converted to queue timezone)
+                v_current_time := p_after_time AT TIME ZONE v_queue.timezone;
+                v_current_date := v_current_time::DATE;
+
+                -- Loop through days to find next available slot
+                WHILE v_days_checked < v_max_days LOOP
+                    -- Get day of week (0=Sunday, 1=Monday, ..., 6=Saturday)
+                    -- Convert to our format (0=Monday, 1=Tuesday, ..., 6=Sunday)
+                    v_day_index := CASE EXTRACT(DOW FROM v_current_date)
+                        WHEN 0 THEN 6  -- Sunday -> 6
+                        WHEN 1 THEN 0  -- Monday -> 0
+                        WHEN 2 THEN 1  -- Tuesday -> 1
+                        WHEN 3 THEN 2  -- Wednesday -> 2
+                        WHEN 4 THEN 3  -- Thursday -> 3
+                        WHEN 5 THEN 4  -- Friday -> 4
+                        WHEN 6 THEN 5  -- Saturday -> 5
+                    END;
+
+                    -- Check if this day is enabled in queue
+                    IF SUBSTRING(v_queue.weekdays_enabled FROM (v_day_index + 1) FOR 1) = '1' THEN
+                        -- Loop through time slots for this day
+                        FOR v_time_slot IN
+                            SELECT value::TEXT
+                            FROM jsonb_array_elements_text(v_queue.time_slots)
+                        LOOP
+                            -- Build candidate timestamp
+                            v_candidate_slot := (v_current_date::TEXT || ' ' || v_time_slot)::TIMESTAMP;
+                            v_candidate_slot := v_candidate_slot AT TIME ZONE v_queue.timezone;
+
+                            -- If this slot is after our after_time, check if it's available
+                            IF v_candidate_slot > p_after_time THEN
+                                -- Check if slot is not already taken
+                                -- (Assuming posts table has scheduled_for column)
+                                IF NOT EXISTS (
+                                    SELECT 1
+                                    FROM cmis.social_posts sp
+                                    WHERE sp.social_account_id = p_social_account_id
+                                      AND sp.scheduled_for = v_candidate_slot
+                                      AND sp.status IN ('scheduled', 'queued')
+                                ) THEN
+                                    -- Found an available slot!
+                                    RETURN QUERY SELECT v_candidate_slot;
+                                    RETURN;
+                                END IF;
+                            END IF;
+                        END LOOP;
+                    END IF;
+
+                    -- Move to next day
+                    v_current_date := v_current_date + INTERVAL '1 day';
+                    v_days_checked := v_days_checked + 1;
+                END LOOP;
+
+                -- No available slot found within max_days
+                RETURN;
+            END;
+            $$;
+
+
+ALTER FUNCTION cmis.get_next_available_slot(p_social_account_id uuid, p_after_time timestamp without time zone) OWNER TO begin;
+
+--
+-- Name: get_publishing_queue(uuid); Type: FUNCTION; Schema: cmis; Owner: begin
+--
+
+CREATE FUNCTION cmis.get_publishing_queue(p_social_account_id uuid) RETURNS TABLE(queue_id uuid, org_id uuid, social_account_id uuid, weekdays_enabled character varying, time_slots jsonb, timezone character varying, is_active boolean, created_at timestamp without time zone, updated_at timestamp without time zone)
+    LANGUAGE plpgsql SECURITY DEFINER
+    AS $$
+            BEGIN
+                RETURN QUERY
+                SELECT
+                    pq.queue_id,
+                    pq.org_id,
+                    pq.social_account_id,
+                    pq.weekdays_enabled,
+                    pq.time_slots,
+                    pq.timezone,
+                    pq.is_active,
+                    pq.created_at,
+                    pq.updated_at
+                FROM cmis.publishing_queues pq
+                WHERE pq.social_account_id = p_social_account_id
+                  AND pq.is_active = true;
+            END;
+            $$;
+
+
+ALTER FUNCTION cmis.get_publishing_queue(p_social_account_id uuid) OWNER TO begin;
+
+--
+-- Name: get_queued_posts(uuid); Type: FUNCTION; Schema: cmis; Owner: begin
+--
+
+CREATE FUNCTION cmis.get_queued_posts(p_social_account_id uuid) RETURNS TABLE(post_id uuid, social_account_id uuid, content text, scheduled_for timestamp without time zone, status character varying, platform character varying, post_type character varying, media_urls jsonb, created_at timestamp without time zone)
+    LANGUAGE plpgsql SECURITY DEFINER
+    AS $$
+            BEGIN
+                RETURN QUERY
+                SELECT
+                    sp.post_id,
+                    sp.social_account_id,
+                    sp.content,
+                    sp.scheduled_for,
+                    sp.status,
+                    sp.platform,
+                    sp.post_type,
+                    sp.media_urls,
+                    sp.created_at
+                FROM cmis.social_posts sp
+                WHERE sp.social_account_id = p_social_account_id
+                  AND sp.status IN ('queued', 'scheduled')
+                  AND sp.scheduled_for > NOW()
+                ORDER BY sp.scheduled_for ASC;
+            END;
+            $$;
+
+
+ALTER FUNCTION cmis.get_queued_posts(p_social_account_id uuid) OWNER TO begin;
+
+--
 -- Name: init_transaction_context(uuid, uuid); Type: FUNCTION; Schema: cmis; Owner: begin
 --
 
@@ -1256,6 +1403,64 @@ $$;
 ALTER FUNCTION cmis.refresh_required_fields_cache_with_metrics() OWNER TO begin;
 
 --
+-- Name: remove_post_from_queue(uuid); Type: FUNCTION; Schema: cmis; Owner: begin
+--
+
+CREATE FUNCTION cmis.remove_post_from_queue(p_post_id uuid) RETURNS boolean
+    LANGUAGE plpgsql SECURITY DEFINER
+    AS $$
+            BEGIN
+                -- Update post status to draft and clear scheduled_for
+                UPDATE cmis.social_posts
+                SET
+                    scheduled_for = NULL,
+                    status = 'draft',
+                    updated_at = NOW()
+                WHERE post_id = p_post_id
+                  AND status IN ('queued', 'scheduled');
+
+                -- Check if update was successful
+                IF FOUND THEN
+                    RETURN true;
+                ELSE
+                    RETURN false;
+                END IF;
+            END;
+            $$;
+
+
+ALTER FUNCTION cmis.remove_post_from_queue(p_post_id uuid) OWNER TO begin;
+
+--
+-- Name: schedule_post_to_queue(uuid, uuid, timestamp without time zone); Type: FUNCTION; Schema: cmis; Owner: begin
+--
+
+CREATE FUNCTION cmis.schedule_post_to_queue(p_post_id uuid, p_social_account_id uuid, p_scheduled_for timestamp without time zone) RETURNS boolean
+    LANGUAGE plpgsql SECURITY DEFINER
+    AS $$
+            BEGIN
+                -- Update post with scheduled time
+                UPDATE cmis.social_posts
+                SET
+                    social_account_id = p_social_account_id,
+                    scheduled_for = p_scheduled_for,
+                    status = 'queued',
+                    updated_at = NOW()
+                WHERE post_id = p_post_id;
+
+                -- Check if update was successful
+                IF FOUND THEN
+                    RETURN true;
+                ELSE
+                    RETURN false;
+                END IF;
+            END;
+            $$;
+
+
+ALTER FUNCTION cmis.schedule_post_to_queue(p_post_id uuid, p_social_account_id uuid, p_scheduled_for timestamp without time zone) OWNER TO begin;
+
+--
 -- Name: search_contexts(text, character varying, integer); Type: FUNCTION; Schema: cmis; Owner: begin
 --
 
@@ -1422,6 +1627,64 @@ CREATE FUNCTION cmis.update_updated_at_column() RETURNS trigger
 
 
 ALTER FUNCTION cmis.update_updated_at_column() OWNER TO begin;
+
+--
+-- Name: upsert_publishing_queue(uuid, uuid, character varying, jsonb, character varying); Type: FUNCTION; Schema: cmis; Owner: begin
+--
+
+CREATE FUNCTION cmis.upsert_publishing_queue(p_org_id uuid, p_social_account_id uuid, p_weekdays_enabled character varying, p_time_slots jsonb, p_timezone character varying) RETURNS TABLE(queue_id uuid, org_id uuid, social_account_id uuid, weekdays_enabled character varying, time_slots jsonb, timezone character varying, is_active boolean, created_at timestamp without time zone, updated_at timestamp without time zone)
+    LANGUAGE plpgsql SECURITY DEFINER
+    AS $$
+            BEGIN
+                -- Insert or update publishing queue
+                INSERT INTO cmis.publishing_queues (
+                    queue_id,
+                    org_id,
+                    social_account_id,
+                    weekdays_enabled,
+                    time_slots,
+                    timezone,
+                    is_active,
+                    created_at,
+                    updated_at
+                )
+                VALUES (
+                    gen_random_uuid(),
+                    p_org_id,
+                    p_social_account_id,
+                    COALESCE(p_weekdays_enabled, '1111100'),
+                    COALESCE(p_time_slots, '[]'::jsonb),
+                    COALESCE(p_timezone, 'UTC'),
+                    true,
+                    NOW(),
+                    NOW()
+                )
+                ON CONFLICT (social_account_id)
+                DO UPDATE SET
+                    weekdays_enabled = COALESCE(EXCLUDED.weekdays_enabled, cmis.publishing_queues.weekdays_enabled),
+                    time_slots = COALESCE(EXCLUDED.time_slots, cmis.publishing_queues.time_slots),
+                    timezone = COALESCE(EXCLUDED.timezone, cmis.publishing_queues.timezone),
+                    updated_at = NOW();
+
+                -- Return the upserted queue
+                RETURN QUERY
+                SELECT
+                    pq.queue_id,
+                    pq.org_id,
+                    pq.social_account_id,
+                    pq.weekdays_enabled,
+                    pq.time_slots,
+                    pq.timezone,
+                    pq.is_active,
+                    pq.created_at,
+                    pq.updated_at
+                FROM cmis.publishing_queues pq
+                WHERE pq.social_account_id = p_social_account_id;
+            END;
+            $$;
+
+
+ALTER FUNCTION cmis.upsert_publishing_queue(p_org_id uuid, p_social_account_id uuid, p_weekdays_enabled character varying, p_time_slots jsonb, p_timezone character varying) OWNER TO begin;
 
 --
 -- Name: validate_brief_structure(jsonb); Type: FUNCTION; Schema: cmis; Owner: begin
@@ -3220,6 +3483,62 @@ $$;
 ALTER FUNCTION operations.audit_trigger_function() OWNER TO begin;
 
 --
+-- Name: generate_fixes_report(); Type: FUNCTION; Schema: operations; Owner: begin
+--
+
+CREATE FUNCTION operations.generate_fixes_report() RETURNS TABLE(category text, item text, status text, details text)
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+    -- الأعمدة المضافة
+    RETURN QUERY
+    SELECT 'Added Columns', (table_name || '.' || column_name)::TEXT,
+           CASE WHEN table_name IS NOT NULL THEN 'OK' ELSE 'MISSING' END,
+           'Check for updated_at column'
+    FROM information_schema.columns
+    WHERE table_schema = 'cmis'
+      AND column_name = 'updated_at'
+      AND table_name IN ('creative_assets', 'experiments', 'compliance_audits');
+
+    -- المفاتيح الخارجية
+    RETURN QUERY
+    SELECT 'Foreign Keys', constraint_name::TEXT,
+           CASE WHEN constraint_name IS NOT NULL THEN 'OK' ELSE 'MISSING' END,
+           (table_name || ' -> ' || constraint_name)::TEXT
+    FROM information_schema.table_constraints
+    WHERE constraint_schema = 'cmis'
+      AND constraint_type = 'FOREIGN KEY'
+      AND constraint_name IN ('fk_content_items_org_id','fk_content_items_creative_context','fk_content_plans_org_id');
+
+    -- القيود الفريدة
+    RETURN QUERY
+    SELECT 'Unique Constraints', constraint_name::TEXT,
+           CASE WHEN constraint_name IS NOT NULL THEN 'OK' ELSE 'MISSING' END,
+           table_name::TEXT
+    FROM information_schema.table_constraints
+    WHERE constraint_schema = 'cmis'
+      AND constraint_type = 'UNIQUE'
+      AND constraint_name = 'users_email_unique';
+
+    -- الفهارس المتوقعة
+    RETURN QUERY
+    SELECT 'Indexes', idx::TEXT,
+           CASE WHEN EXISTS (SELECT 1 FROM pg_indexes WHERE schemaname='cmis' AND indexname=idx) THEN 'OK' ELSE 'MISSING' END,
+           'Expected index in cmis schema'
+    FROM (VALUES ('idx_scheduled_posts_status_time'),
+                 ('idx_content_plans_org'),
+                 ('idx_content_items_creative_context'),
+                 ('idx_users_status'),
+                 ('idx_performance_metrics_campaign_time')) AS expected(idx);
+
+    RETURN;
+END;
+$$;
+
+
+ALTER FUNCTION operations.generate_fixes_report() OWNER TO begin;
+
+--
 -- Name: purge_old_audit_logs(integer); Type: FUNCTION; Schema: operations; Owner: begin
 --
 
@@ -3936,6 +4255,70 @@ ALTER SEQUENCE archive.embedding_update_queue_backup_id_seq OWNED BY archive.emb
 
 
 --
+-- Name: ab_test_variations; Type: TABLE; Schema: cmis; Owner: begin
+--
+
+CREATE TABLE cmis.ab_test_variations (
+    variation_id uuid NOT NULL,
+    ab_test_id uuid NOT NULL,
+    variation_name character varying(255) NOT NULL,
+    is_control boolean DEFAULT false,
+    entity_id uuid,
+    variation_config jsonb,
+    traffic_allocation integer DEFAULT 50,
+    created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
+    updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP
+);
+
+
+ALTER TABLE cmis.ab_test_variations OWNER TO begin;
+
+--
+-- Name: TABLE ab_test_variations; Type: COMMENT; Schema: cmis; Owner: begin
+--
+
+COMMENT ON TABLE cmis.ab_test_variations IS 'Variations within an A/B test - Sprint 4.6';
+
+
+--
+-- Name: ab_tests; Type: TABLE; Schema: cmis; Owner: begin
+--
+
+CREATE TABLE cmis.ab_tests (
+    ab_test_id uuid NOT NULL,
+    ad_account_id uuid NOT NULL,
+    entity_type character varying(20),
+    entity_id uuid,
+    test_name character varying(255) NOT NULL,
+    test_type character varying(50) DEFAULT 'creative'::character varying NOT NULL,
+    test_status character varying(20) DEFAULT 'draft'::character varying NOT NULL,
+    hypothesis text,
+    metric_to_optimize character varying(50) DEFAULT 'ctr'::character varying,
+    budget_per_variation numeric(15,2),
+    test_duration_days integer DEFAULT 7,
+    min_sample_size integer DEFAULT 1000,
+    confidence_level numeric(3,2) DEFAULT 0.95,
+    winner_variation_id uuid,
+    config jsonb,
+    started_at timestamp with time zone,
+    scheduled_end_at timestamp with time zone,
+    completed_at timestamp with time zone,
+    stop_reason text,
+    created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
+    updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP
+);
+
+
+ALTER TABLE cmis.ab_tests OWNER TO begin;
+
+--
+-- Name: TABLE ab_tests; Type: COMMENT; Schema: cmis; Owner: begin
+--
+
+COMMENT ON TABLE cmis.ab_tests IS 'A/B testing experiments for ad campaigns - Sprint 4.6';
+
+
+--
 -- Name: ad_accounts; Type: TABLE; Schema: cmis; Owner: begin
 --
 
@@ -4111,6 +4494,54 @@ CREATE TABLE cmis.ad_sets (
 ALTER TABLE cmis.ad_sets OWNER TO begin;
 
 --
+-- Name: ad_variants; Type: TABLE; Schema: cmis; Owner: begin
+--
+
+CREATE TABLE cmis.ad_variants (
+    variant_id uuid NOT NULL,
+    campaign_id uuid NOT NULL,
+    variant_type character varying(50) NOT NULL,
+    variant_name character varying(100) NOT NULL,
+    variant_data jsonb NOT NULL,
+    budget_allocation numeric(5,2) DEFAULT 33.33 NOT NULL,
+    actual_spend numeric(12,2) DEFAULT '0'::numeric NOT NULL,
+    impressions integer DEFAULT 0 NOT NULL,
+    clicks integer DEFAULT 0 NOT NULL,
+    conversions integer DEFAULT 0 NOT NULL,
+    ctr numeric(5,2) DEFAULT '0'::numeric NOT NULL,
+    conversion_rate numeric(5,2) DEFAULT '0'::numeric NOT NULL,
+    is_active boolean DEFAULT true NOT NULL,
+    is_winner boolean DEFAULT false NOT NULL,
+    declared_winner_at timestamp(0) without time zone,
+    created_at timestamp(0) without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updated_at timestamp(0) without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+
+ALTER TABLE cmis.ad_variants OWNER TO begin;
+
+--
+-- Name: TABLE ad_variants; Type: COMMENT; Schema: cmis; Owner: begin
+--
+
+COMMENT ON TABLE cmis.ad_variants IS 'A/B testing variants for ad campaigns (max 3 variants)';
+
+
+--
+-- Name: COLUMN ad_variants.variant_type; Type: COMMENT; Schema: cmis; Owner: begin
+--
+
+COMMENT ON COLUMN cmis.ad_variants.variant_type IS 'creative, copy, or audience';
+
+
+--
+-- Name: COLUMN ad_variants.budget_allocation; Type: COMMENT; Schema: cmis; Owner: begin
+--
+
+COMMENT ON COLUMN cmis.ad_variants.budget_allocation IS 'Percentage of campaign budget (0-100)';
+
+
+--
 -- Name: ai_actions; Type: TABLE; Schema: cmis; Owner: begin
 --
 
@@ -4235,6 +4666,41 @@ CREATE TABLE cmis.api_keys (
 ALTER TABLE cmis.api_keys OWNER TO begin;
 
 --
+-- Name: audience_templates; Type: TABLE; Schema: cmis; Owner: begin
+--
+
+CREATE TABLE cmis.audience_templates (
+    template_id uuid NOT NULL,
+    org_id uuid NOT NULL,
+    name character varying(255) NOT NULL,
+    description text,
+    targeting_criteria jsonb DEFAULT '{}'::jsonb NOT NULL,
+    platforms jsonb DEFAULT '["meta", "google"]'::jsonb NOT NULL,
+    usage_count integer DEFAULT 0 NOT NULL,
+    last_used_at timestamp(0) without time zone,
+    created_by uuid NOT NULL,
+    created_at timestamp(0) without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updated_at timestamp(0) without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+
+ALTER TABLE cmis.audience_templates OWNER TO begin;
+
+--
+-- Name: TABLE audience_templates; Type: COMMENT; Schema: cmis; Owner: begin
+--
+
+COMMENT ON TABLE cmis.audience_templates IS 'Reusable audience targeting templates for multi-platform campaigns';
+
+
+--
+-- Name: COLUMN audience_templates.targeting_criteria; Type: COMMENT; Schema: cmis; Owner: begin
+--
+
+COMMENT ON COLUMN cmis.audience_templates.targeting_criteria IS 'Platform-agnostic targeting configuration';
+
+
+--
 -- Name: audio_templates; Type: TABLE; Schema: cmis; Owner: begin
 --
 
@@ -4309,6 +4775,32 @@ CREATE TABLE cmis.bundle_offerings (
 
 
 ALTER TABLE cmis.bundle_offerings OWNER TO begin;
+
+--
+-- Name: cache; Type: TABLE; Schema: cmis; Owner: begin
+--
+
+CREATE TABLE cmis.cache (
+    key character varying(255) NOT NULL,
+    value text NOT NULL,
+    expiration integer NOT NULL
+);
+
+
+ALTER TABLE cmis.cache OWNER TO begin;
+
+--
+-- Name: cache_locks; Type: TABLE; Schema: cmis; Owner: begin
+--
+
+CREATE TABLE cmis.cache_locks (
+    key character varying(255) NOT NULL,
+    owner character varying(255) NOT NULL,
+    expiration integer NOT NULL
+);
+
+
+ALTER TABLE cmis.cache_locks OWNER TO begin;
 
 --
 -- Name: cache_metadata; Type: TABLE; Schema: cmis; Owner: begin
@@ -5048,6 +5540,44 @@ CREATE TABLE cmis.export_bundles (
 ALTER TABLE cmis.export_bundles OWNER TO begin;
 
 --
+-- Name: failed_jobs; Type: TABLE; Schema: cmis; Owner: begin
+--
+
+CREATE TABLE cmis.failed_jobs (
+    id bigint NOT NULL,
+    uuid character varying(255) NOT NULL,
+    connection text NOT NULL,
+    queue text NOT NULL,
+    payload text NOT NULL,
+    exception text NOT NULL,
+    failed_at timestamp(0) without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+
+ALTER TABLE cmis.failed_jobs OWNER TO begin;
+
+--
+-- Name: failed_jobs_id_seq; Type: SEQUENCE; Schema: cmis; Owner: begin
+--
+
+CREATE SEQUENCE cmis.failed_jobs_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE cmis.failed_jobs_id_seq OWNER TO begin;
+
+--
+-- Name: failed_jobs_id_seq; Type: SEQUENCE OWNED BY; Schema: cmis; Owner: begin
+--
+
+ALTER SEQUENCE cmis.failed_jobs_id_seq OWNED BY cmis.failed_jobs.id;
+
+
+--
 -- Name: feed_items; Type: TABLE; Schema: cmis; Owner: begin
 --
 
@@ -5223,6 +5753,57 @@ CREATE VIEW cmis.funnel_stages AS
 ALTER VIEW cmis.funnel_stages OWNER TO begin;
 
 --
+-- Name: inbox_items; Type: TABLE; Schema: cmis; Owner: begin
+--
+
+CREATE TABLE cmis.inbox_items (
+    item_id uuid NOT NULL,
+    org_id uuid NOT NULL,
+    social_account_id uuid NOT NULL,
+    item_type character varying(50) NOT NULL,
+    platform character varying(50) NOT NULL,
+    external_id character varying(255),
+    content text NOT NULL,
+    sender_name character varying(255) NOT NULL,
+    sender_id character varying(255),
+    sender_avatar_url character varying(500),
+    needs_reply boolean DEFAULT true NOT NULL,
+    assigned_to uuid,
+    status character varying(20) DEFAULT 'unread'::character varying NOT NULL,
+    reply_content text,
+    replied_at timestamp(0) without time zone,
+    sentiment character varying(20),
+    sentiment_score numeric(3,2),
+    platform_created_at timestamp(0) without time zone,
+    created_at timestamp(0) without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updated_at timestamp(0) without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+
+ALTER TABLE cmis.inbox_items OWNER TO begin;
+
+--
+-- Name: TABLE inbox_items; Type: COMMENT; Schema: cmis; Owner: begin
+--
+
+COMMENT ON TABLE cmis.inbox_items IS 'Unified inbox for comments, messages, and mentions from all platforms';
+
+
+--
+-- Name: COLUMN inbox_items.item_type; Type: COMMENT; Schema: cmis; Owner: begin
+--
+
+COMMENT ON COLUMN cmis.inbox_items.item_type IS 'comment, message, or mention';
+
+
+--
+-- Name: COLUMN inbox_items.status; Type: COMMENT; Schema: cmis; Owner: begin
+--
+
+COMMENT ON COLUMN cmis.inbox_items.status IS 'unread, replied, or archived';
+
+
+--
 -- Name: industries; Type: TABLE; Schema: public; Owner: begin
 --
 
@@ -5269,6 +5850,64 @@ CREATE TABLE cmis.integrations (
 
 
 ALTER TABLE cmis.integrations OWNER TO begin;
+
+--
+-- Name: job_batches; Type: TABLE; Schema: cmis; Owner: begin
+--
+
+CREATE TABLE cmis.job_batches (
+    id character varying(255) NOT NULL,
+    name character varying(255) NOT NULL,
+    total_jobs integer NOT NULL,
+    pending_jobs integer NOT NULL,
+    failed_jobs integer NOT NULL,
+    failed_job_ids text NOT NULL,
+    options text,
+    cancelled_at integer,
+    created_at integer NOT NULL,
+    finished_at integer
+);
+
+
+ALTER TABLE cmis.job_batches OWNER TO begin;
+
+--
+-- Name: jobs; Type: TABLE; Schema: cmis; Owner: begin
+--
+
+CREATE TABLE cmis.jobs (
+    id bigint NOT NULL,
+    queue character varying(255) NOT NULL,
+    payload text NOT NULL,
+    attempts smallint NOT NULL,
+    reserved_at integer,
+    available_at integer NOT NULL,
+    created_at integer NOT NULL
+);
+
+
+ALTER TABLE cmis.jobs OWNER TO begin;
+
+--
+-- Name: jobs_id_seq; Type: SEQUENCE; Schema: cmis; Owner: begin
+--
+
+CREATE SEQUENCE cmis.jobs_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE cmis.jobs_id_seq OWNER TO begin;
+
+--
+-- Name: jobs_id_seq; Type: SEQUENCE OWNED BY; Schema: cmis; Owner: begin
+--
+
+ALTER SEQUENCE cmis.jobs_id_seq OWNED BY cmis.jobs.id;
+
 
 --
 -- Name: kpis; Type: TABLE; Schema: public; Owner: begin
@@ -5809,6 +6448,40 @@ CREATE VIEW cmis.playbooks AS
 ALTER VIEW cmis.playbooks OWNER TO begin;
 
 --
+-- Name: post_approvals; Type: TABLE; Schema: cmis; Owner: begin
+--
+
+CREATE TABLE cmis.post_approvals (
+    approval_id uuid NOT NULL,
+    post_id uuid NOT NULL,
+    requested_by uuid NOT NULL,
+    assigned_to uuid,
+    status character varying(20) DEFAULT 'pending'::character varying NOT NULL,
+    comments text,
+    reviewed_at timestamp(0) without time zone,
+    created_at timestamp(0) without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updated_at timestamp(0) without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    CONSTRAINT chk_post_approvals_status CHECK (((status)::text = ANY ((ARRAY['pending'::character varying, 'approved'::character varying, 'rejected'::character varying])::text[])))
+);
+
+
+ALTER TABLE cmis.post_approvals OWNER TO begin;
+
+--
+-- Name: TABLE post_approvals; Type: COMMENT; Schema: cmis; Owner: begin
+--
+
+COMMENT ON TABLE cmis.post_approvals IS 'Post approval workflow system';
+
+
+--
+-- Name: COLUMN post_approvals.status; Type: COMMENT; Schema: cmis; Owner: begin
+--
+
+COMMENT ON COLUMN cmis.post_approvals.status IS 'pending, approved, or rejected';
+
+
+--
 -- Name: predictive_visual_engine; Type: TABLE; Schema: cmis; Owner: begin
 --
 
@@ -5913,6 +6586,32 @@ CREATE VIEW cmis.proof_layers AS
 ALTER VIEW cmis.proof_layers OWNER TO begin;
 
 --
+-- Name: publishing_queues; Type: TABLE; Schema: cmis; Owner: begin
+--
+
+CREATE TABLE cmis.publishing_queues (
+    queue_id uuid NOT NULL,
+    org_id uuid NOT NULL,
+    social_account_id uuid NOT NULL,
+    weekdays_enabled character varying(7) DEFAULT '1111111'::character varying NOT NULL,
+    time_slots jsonb DEFAULT '[]'::jsonb NOT NULL,
+    timezone character varying(50) DEFAULT 'UTC'::character varying NOT NULL,
+    is_active boolean DEFAULT true NOT NULL,
+    created_at timestamp(0) without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updated_at timestamp(0) without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+
+ALTER TABLE cmis.publishing_queues OWNER TO begin;
+
+--
+-- Name: TABLE publishing_queues; Type: COMMENT; Schema: cmis; Owner: begin
+--
+
+COMMENT ON TABLE cmis.publishing_queues IS 'Buffer-style publishing queues with custom time slots per social account';
+
+
+--
 -- Name: reference_entities; Type: TABLE; Schema: cmis; Owner: begin
 --
 
@@ -6007,6 +6706,90 @@ CREATE TABLE cmis.scene_library (
 
 
 ALTER TABLE cmis.scene_library OWNER TO begin;
+
+--
+-- Name: scheduled_reports; Type: TABLE; Schema: cmis; Owner: begin
+--
+
+CREATE TABLE cmis.scheduled_reports (
+    schedule_id uuid NOT NULL,
+    report_type character varying(50) NOT NULL,
+    entity_id uuid NOT NULL,
+    frequency character varying(20) DEFAULT 'weekly'::character varying NOT NULL,
+    format character varying(10) DEFAULT 'pdf'::character varying NOT NULL,
+    delivery_method character varying(20) DEFAULT 'email'::character varying NOT NULL,
+    recipients jsonb,
+    config jsonb,
+    is_active boolean DEFAULT true,
+    last_run_at timestamp with time zone,
+    next_run_at timestamp with time zone,
+    created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
+    updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT chk_scheduled_reports_frequency CHECK (((frequency)::text = ANY ((ARRAY['daily'::character varying, 'weekly'::character varying, 'monthly'::character varying, 'quarterly'::character varying, 'yearly'::character varying])::text[])))
+);
+
+
+ALTER TABLE cmis.scheduled_reports OWNER TO begin;
+
+--
+-- Name: TABLE scheduled_reports; Type: COMMENT; Schema: cmis; Owner: begin
+--
+
+COMMENT ON TABLE cmis.scheduled_reports IS 'Scheduled report configurations for automated PDF/CSV generation';
+
+
+--
+-- Name: COLUMN scheduled_reports.report_type; Type: COMMENT; Schema: cmis; Owner: begin
+--
+
+COMMENT ON COLUMN cmis.scheduled_reports.report_type IS 'Type of report: performance, ai_insights, organization_overview, content_analysis';
+
+
+--
+-- Name: COLUMN scheduled_reports.frequency; Type: COMMENT; Schema: cmis; Owner: begin
+--
+
+COMMENT ON COLUMN cmis.scheduled_reports.frequency IS 'Report frequency: daily, weekly, monthly';
+
+
+--
+-- Name: COLUMN scheduled_reports.delivery_method; Type: COMMENT; Schema: cmis; Owner: begin
+--
+
+COMMENT ON COLUMN cmis.scheduled_reports.delivery_method IS 'Delivery method: email, storage, both';
+
+
+--
+-- Name: scheduled_social_posts; Type: TABLE; Schema: cmis; Owner: begin
+--
+
+CREATE TABLE cmis.scheduled_social_posts (
+    id uuid NOT NULL,
+    org_id uuid NOT NULL,
+    user_id uuid,
+    campaign_id uuid,
+    platforms jsonb NOT NULL,
+    content text NOT NULL,
+    media jsonb,
+    scheduled_at timestamp(0) without time zone,
+    status character varying(50) DEFAULT 'draft'::character varying NOT NULL,
+    published_at timestamp(0) without time zone,
+    published_ids jsonb,
+    error_message text,
+    created_at timestamp(0) without time zone,
+    updated_at timestamp(0) without time zone,
+    deleted_at timestamp with time zone
+);
+
+
+ALTER TABLE cmis.scheduled_social_posts OWNER TO begin;
+
+--
+-- Name: COLUMN scheduled_social_posts.deleted_at; Type: COMMENT; Schema: cmis; Owner: begin
+--
+
+COMMENT ON COLUMN cmis.scheduled_social_posts.deleted_at IS 'تاريخ الحذف الناعم - NULL يعني أن المنشور نشط';
+
 
 --
 -- Name: security_context_audit; Type: TABLE; Schema: cmis; Owner: begin
@@ -6294,6 +7077,39 @@ UNION ALL
 ALTER VIEW cmis.system_health OWNER TO begin;
 
 --
+-- Name: team_account_access; Type: TABLE; Schema: cmis; Owner: begin
+--
+
+CREATE TABLE cmis.team_account_access (
+    access_id uuid NOT NULL,
+    org_user_id uuid NOT NULL,
+    social_account_id uuid NOT NULL,
+    created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP
+);
+
+
+ALTER TABLE cmis.team_account_access OWNER TO begin;
+
+--
+-- Name: team_invitations; Type: TABLE; Schema: cmis; Owner: begin
+--
+
+CREATE TABLE cmis.team_invitations (
+    invitation_id uuid NOT NULL,
+    org_id uuid NOT NULL,
+    invited_email character varying(255) NOT NULL,
+    role_id uuid,
+    invited_by uuid,
+    status character varying(20) DEFAULT 'pending'::character varying,
+    sent_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
+    accepted_at timestamp with time zone,
+    expires_at timestamp with time zone
+);
+
+
+ALTER TABLE cmis.team_invitations OWNER TO begin;
+
+--
 -- Name: tones; Type: TABLE; Schema: public; Owner: begin
 --
 
@@ -6390,6 +7206,8 @@ CREATE TABLE cmis.users (
     provider text,
     status text DEFAULT 'active'::text,
     name text DEFAULT ''::text,
+    password character varying(255),
+    CONSTRAINT chk_users_status CHECK ((status = ANY (ARRAY['active'::text, 'inactive'::text, 'suspended'::text, 'deleted'::text]))),
     CONSTRAINT users_role_check CHECK ((role = ANY (ARRAY['viewer'::text, 'editor'::text, 'admin'::text])))
 );
 
@@ -8229,6 +9047,46 @@ CREATE VIEW operations.audit_summary AS
 ALTER VIEW operations.audit_summary OWNER TO begin;
 
 --
+-- Name: fix_tracking; Type: TABLE; Schema: operations; Owner: begin
+--
+
+CREATE TABLE operations.fix_tracking (
+    fix_id integer NOT NULL,
+    script_part text NOT NULL,
+    fix_category text NOT NULL,
+    fix_description text NOT NULL,
+    status text DEFAULT 'pending'::text,
+    executed_at timestamp with time zone,
+    error_message text,
+    created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP
+);
+
+
+ALTER TABLE operations.fix_tracking OWNER TO begin;
+
+--
+-- Name: fix_tracking_fix_id_seq; Type: SEQUENCE; Schema: operations; Owner: begin
+--
+
+CREATE SEQUENCE operations.fix_tracking_fix_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE operations.fix_tracking_fix_id_seq OWNER TO begin;
+
+--
+-- Name: fix_tracking_fix_id_seq; Type: SEQUENCE OWNED BY; Schema: operations; Owner: begin
+--
+
+ALTER SEQUENCE operations.fix_tracking_fix_id_seq OWNED BY operations.fix_tracking.fix_id;
+
+
+--
 -- Name: migrations; Type: TABLE; Schema: operations; Owner: begin
 --
 
@@ -8767,6 +9625,20 @@ ALTER TABLE ONLY cmis.ad_metrics ALTER COLUMN id SET DEFAULT nextval('cmis.ad_me
 
 
 --
+-- Name: failed_jobs id; Type: DEFAULT; Schema: cmis; Owner: begin
+--
+
+ALTER TABLE ONLY cmis.failed_jobs ALTER COLUMN id SET DEFAULT nextval('cmis.failed_jobs_id_seq'::regclass);
+
+
+--
+-- Name: jobs id; Type: DEFAULT; Schema: cmis; Owner: begin
+--
+
+ALTER TABLE ONLY cmis.jobs ALTER COLUMN id SET DEFAULT nextval('cmis.jobs_id_seq'::regclass);
+
+
+--
 -- Name: meta_field_dictionary id; Type: DEFAULT; Schema: cmis; Owner: begin
 --
 
@@ -8841,6 +9713,13 @@ ALTER TABLE ONLY cmis_knowledge.research ALTER COLUMN id SET DEFAULT nextval('cm
 --
 
 ALTER TABLE ONLY operations.audit_log ALTER COLUMN id SET DEFAULT nextval('operations.audit_log_id_seq'::regclass);
+
+
+--
+-- Name: fix_tracking fix_id; Type: DEFAULT; Schema: operations; Owner: begin
+--
+
+ALTER TABLE ONLY operations.fix_tracking ALTER COLUMN fix_id SET DEFAULT nextval('operations.fix_tracking_fix_id_seq'::regclass);
 
 
 --
@@ -8944,6 +9823,22 @@ ALTER TABLE ONLY archive.embedding_update_queue_backup
 
 
 --
+-- Name: ab_test_variations ab_test_variations_pkey; Type: CONSTRAINT; Schema: cmis; Owner: begin
+--
+
+ALTER TABLE ONLY cmis.ab_test_variations
+    ADD CONSTRAINT ab_test_variations_pkey PRIMARY KEY (variation_id);
+
+
+--
+-- Name: ab_tests ab_tests_pkey; Type: CONSTRAINT; Schema: cmis; Owner: begin
+--
+
+ALTER TABLE ONLY cmis.ab_tests
+    ADD CONSTRAINT ab_tests_pkey PRIMARY KEY (ab_test_id);
+
+
+--
 -- Name: ad_accounts ad_accounts_integration_id_account_external_id_key; Type: CONSTRAINT; Schema: cmis; Owner: begin
 --
 
@@ -9032,6 +9927,14 @@ ALTER TABLE ONLY cmis.ad_sets
 
 
 --
+-- Name: ad_variants ad_variants_pkey; Type: CONSTRAINT; Schema: cmis; Owner: begin
+--
+
+ALTER TABLE ONLY cmis.ad_variants
+    ADD CONSTRAINT ad_variants_pkey PRIMARY KEY (variant_id);
+
+
+--
 -- Name: ai_actions ai_actions_pkey; Type: CONSTRAINT; Schema: cmis; Owner: begin
 --
 
@@ -9096,6 +9999,14 @@ ALTER TABLE ONLY cmis.api_keys
 
 
 --
+-- Name: audience_templates audience_templates_pkey; Type: CONSTRAINT; Schema: cmis; Owner: begin
+--
+
+ALTER TABLE ONLY cmis.audience_templates
+    ADD CONSTRAINT audience_templates_pkey PRIMARY KEY (template_id);
+
+
+--
 -- Name: audio_templates audio_templates_pkey; Type: CONSTRAINT; Schema: cmis; Owner: begin
 --
 
@@ -9120,11 +10031,27 @@ ALTER TABLE ONLY cmis.bundle_offerings
 
 
 --
+-- Name: cache_locks cache_locks_pkey; Type: CONSTRAINT; Schema: cmis; Owner: begin
+--
+
+ALTER TABLE ONLY cmis.cache_locks
+    ADD CONSTRAINT cache_locks_pkey PRIMARY KEY (key);
+
+
+--
 -- Name: cache_metadata cache_metadata_pkey; Type: CONSTRAINT; Schema: cmis; Owner: begin
 --
 
 ALTER TABLE ONLY cmis.cache_metadata
     ADD CONSTRAINT cache_metadata_pkey PRIMARY KEY (cache_name);
+
+
+--
+-- Name: cache cache_pkey; Type: CONSTRAINT; Schema: cmis; Owner: begin
+--
+
+ALTER TABLE ONLY cmis.cache
+    ADD CONSTRAINT cache_pkey PRIMARY KEY (key);
 
 
 --
@@ -9376,6 +10303,22 @@ ALTER TABLE ONLY cmis.export_bundles
 
 
 --
+-- Name: failed_jobs failed_jobs_pkey; Type: CONSTRAINT; Schema: cmis; Owner: begin
+--
+
+ALTER TABLE ONLY cmis.failed_jobs
+    ADD CONSTRAINT failed_jobs_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: failed_jobs failed_jobs_uuid_unique; Type: CONSTRAINT; Schema: cmis; Owner: begin
+--
+
+ALTER TABLE ONLY cmis.failed_jobs
+    ADD CONSTRAINT failed_jobs_uuid_unique UNIQUE (uuid);
+
+
+--
 -- Name: feed_items feed_items_pkey; Type: CONSTRAINT; Schema: cmis; Owner: begin
 --
 
@@ -9448,11 +10391,35 @@ ALTER TABLE ONLY cmis.flows
 
 
 --
+-- Name: inbox_items inbox_items_pkey; Type: CONSTRAINT; Schema: cmis; Owner: begin
+--
+
+ALTER TABLE ONLY cmis.inbox_items
+    ADD CONSTRAINT inbox_items_pkey PRIMARY KEY (item_id);
+
+
+--
 -- Name: integrations integrations_pkey; Type: CONSTRAINT; Schema: cmis; Owner: begin
 --
 
 ALTER TABLE ONLY cmis.integrations
     ADD CONSTRAINT integrations_pkey PRIMARY KEY (integration_id);
+
+
+--
+-- Name: job_batches job_batches_pkey; Type: CONSTRAINT; Schema: cmis; Owner: begin
+--
+
+ALTER TABLE ONLY cmis.job_batches
+    ADD CONSTRAINT job_batches_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: jobs jobs_pkey; Type: CONSTRAINT; Schema: cmis; Owner: begin
+--
+
+ALTER TABLE ONLY cmis.jobs
+    ADD CONSTRAINT jobs_pkey PRIMARY KEY (id);
 
 
 --
@@ -9656,6 +10623,14 @@ ALTER TABLE ONLY cmis.permissions
 
 
 --
+-- Name: post_approvals post_approvals_pkey; Type: CONSTRAINT; Schema: cmis; Owner: begin
+--
+
+ALTER TABLE ONLY cmis.post_approvals
+    ADD CONSTRAINT post_approvals_pkey PRIMARY KEY (approval_id);
+
+
+--
 -- Name: predictive_visual_engine predictive_visual_engine_pkey; Type: CONSTRAINT; Schema: cmis; Owner: begin
 --
 
@@ -9701,6 +10676,22 @@ ALTER TABLE ONLY cmis.prompt_templates
 
 ALTER TABLE ONLY cmis.prompt_templates
     ADD CONSTRAINT prompt_templates_pkey PRIMARY KEY (prompt_id);
+
+
+--
+-- Name: publishing_queues publishing_queues_account_unique; Type: CONSTRAINT; Schema: cmis; Owner: begin
+--
+
+ALTER TABLE ONLY cmis.publishing_queues
+    ADD CONSTRAINT publishing_queues_account_unique UNIQUE (social_account_id);
+
+
+--
+-- Name: publishing_queues publishing_queues_pkey; Type: CONSTRAINT; Schema: cmis; Owner: begin
+--
+
+ALTER TABLE ONLY cmis.publishing_queues
+    ADD CONSTRAINT publishing_queues_pkey PRIMARY KEY (queue_id);
 
 
 --
@@ -9757,6 +10748,22 @@ ALTER TABLE ONLY cmis.roles
 
 ALTER TABLE ONLY cmis.scene_library
     ADD CONSTRAINT scene_library_pkey PRIMARY KEY (scene_id);
+
+
+--
+-- Name: scheduled_reports scheduled_reports_pkey; Type: CONSTRAINT; Schema: cmis; Owner: begin
+--
+
+ALTER TABLE ONLY cmis.scheduled_reports
+    ADD CONSTRAINT scheduled_reports_pkey PRIMARY KEY (schedule_id);
+
+
+--
+-- Name: scheduled_social_posts scheduled_social_posts_pkey; Type: CONSTRAINT; Schema: cmis; Owner: begin
+--
+
+ALTER TABLE ONLY cmis.scheduled_social_posts
+    ADD CONSTRAINT scheduled_social_posts_pkey PRIMARY KEY (id);
 
 
 --
@@ -9864,6 +10871,30 @@ ALTER TABLE ONLY cmis.sync_logs
 
 
 --
+-- Name: team_account_access team_account_access_org_user_id_social_account_id_key; Type: CONSTRAINT; Schema: cmis; Owner: begin
+--
+
+ALTER TABLE ONLY cmis.team_account_access
+    ADD CONSTRAINT team_account_access_org_user_id_social_account_id_key UNIQUE (org_user_id, social_account_id);
+
+
+--
+-- Name: team_account_access team_account_access_pkey; Type: CONSTRAINT; Schema: cmis; Owner: begin
+--
+
+ALTER TABLE ONLY cmis.team_account_access
+    ADD CONSTRAINT team_account_access_pkey PRIMARY KEY (access_id);
+
+
+--
+-- Name: team_invitations team_invitations_pkey; Type: CONSTRAINT; Schema: cmis; Owner: begin
+--
+
+ALTER TABLE ONLY cmis.team_invitations
+    ADD CONSTRAINT team_invitations_pkey PRIMARY KEY (invitation_id);
+
+
+--
 -- Name: campaigns uq_campaign_business; Type: CONSTRAINT; Schema: cmis; Owner: begin
 --
 
@@ -9941,6 +10972,21 @@ ALTER TABLE ONLY cmis.user_sessions
 
 ALTER TABLE ONLY cmis.user_sessions
     ADD CONSTRAINT user_sessions_session_token_key UNIQUE (session_token);
+
+
+--
+-- Name: users users_email_unique; Type: CONSTRAINT; Schema: cmis; Owner: begin
+--
+
+ALTER TABLE ONLY cmis.users
+    ADD CONSTRAINT users_email_unique UNIQUE (email);
+
+
+--
+-- Name: CONSTRAINT users_email_unique ON users; Type: COMMENT; Schema: cmis; Owner: begin
+--
+
+COMMENT ON CONSTRAINT users_email_unique ON cmis.users IS 'Ensures each email address is unique across all users';
 
 
 --
@@ -10336,6 +11382,14 @@ ALTER TABLE ONLY operations.audit_log
 
 
 --
+-- Name: fix_tracking fix_tracking_pkey; Type: CONSTRAINT; Schema: operations; Owner: begin
+--
+
+ALTER TABLE ONLY operations.fix_tracking
+    ADD CONSTRAINT fix_tracking_pkey PRIMARY KEY (fix_id);
+
+
+--
 -- Name: migrations migrations_pkey; Type: CONSTRAINT; Schema: operations; Owner: begin
 --
 
@@ -10608,6 +11662,174 @@ ALTER TABLE ONLY public.visual_recommendations
 
 
 --
+-- Name: ad_variants_campaign_active_idx; Type: INDEX; Schema: cmis; Owner: begin
+--
+
+CREATE INDEX ad_variants_campaign_active_idx ON cmis.ad_variants USING btree (campaign_id, is_active);
+
+
+--
+-- Name: ad_variants_campaign_winner_idx; Type: INDEX; Schema: cmis; Owner: begin
+--
+
+CREATE INDEX ad_variants_campaign_winner_idx ON cmis.ad_variants USING btree (campaign_id, is_winner);
+
+
+--
+-- Name: audience_templates_org_name_idx; Type: INDEX; Schema: cmis; Owner: begin
+--
+
+CREATE INDEX audience_templates_org_name_idx ON cmis.audience_templates USING btree (org_id, name);
+
+
+--
+-- Name: cmis_ad_variants_campaign_id_index; Type: INDEX; Schema: cmis; Owner: begin
+--
+
+CREATE INDEX cmis_ad_variants_campaign_id_index ON cmis.ad_variants USING btree (campaign_id);
+
+
+--
+-- Name: cmis_audience_templates_org_id_index; Type: INDEX; Schema: cmis; Owner: begin
+--
+
+CREATE INDEX cmis_audience_templates_org_id_index ON cmis.audience_templates USING btree (org_id);
+
+
+--
+-- Name: cmis_inbox_items_assigned_to_index; Type: INDEX; Schema: cmis; Owner: begin
+--
+
+CREATE INDEX cmis_inbox_items_assigned_to_index ON cmis.inbox_items USING btree (assigned_to);
+
+
+--
+-- Name: cmis_inbox_items_org_id_index; Type: INDEX; Schema: cmis; Owner: begin
+--
+
+CREATE INDEX cmis_inbox_items_org_id_index ON cmis.inbox_items USING btree (org_id);
+
+
+--
+-- Name: cmis_inbox_items_social_account_id_index; Type: INDEX; Schema: cmis; Owner: begin
+--
+
+CREATE INDEX cmis_inbox_items_social_account_id_index ON cmis.inbox_items USING btree (social_account_id);
+
+
+--
+-- Name: cmis_post_approvals_assigned_to_index; Type: INDEX; Schema: cmis; Owner: begin
+--
+
+CREATE INDEX cmis_post_approvals_assigned_to_index ON cmis.post_approvals USING btree (assigned_to);
+
+
+--
+-- Name: cmis_post_approvals_post_id_index; Type: INDEX; Schema: cmis; Owner: begin
+--
+
+CREATE INDEX cmis_post_approvals_post_id_index ON cmis.post_approvals USING btree (post_id);
+
+
+--
+-- Name: cmis_post_approvals_status_index; Type: INDEX; Schema: cmis; Owner: begin
+--
+
+CREATE INDEX cmis_post_approvals_status_index ON cmis.post_approvals USING btree (status);
+
+
+--
+-- Name: cmis_publishing_queues_org_id_index; Type: INDEX; Schema: cmis; Owner: begin
+--
+
+CREATE INDEX cmis_publishing_queues_org_id_index ON cmis.publishing_queues USING btree (org_id);
+
+
+--
+-- Name: cmis_publishing_queues_social_account_id_index; Type: INDEX; Schema: cmis; Owner: begin
+--
+
+CREATE INDEX cmis_publishing_queues_social_account_id_index ON cmis.publishing_queues USING btree (social_account_id);
+
+
+--
+-- Name: cmis_scheduled_social_posts_org_id_created_at_index; Type: INDEX; Schema: cmis; Owner: begin
+--
+
+CREATE INDEX cmis_scheduled_social_posts_org_id_created_at_index ON cmis.scheduled_social_posts USING btree (org_id, created_at);
+
+
+--
+-- Name: cmis_scheduled_social_posts_org_id_index; Type: INDEX; Schema: cmis; Owner: begin
+--
+
+CREATE INDEX cmis_scheduled_social_posts_org_id_index ON cmis.scheduled_social_posts USING btree (org_id);
+
+
+--
+-- Name: cmis_scheduled_social_posts_org_id_scheduled_at_index; Type: INDEX; Schema: cmis; Owner: begin
+--
+
+CREATE INDEX cmis_scheduled_social_posts_org_id_scheduled_at_index ON cmis.scheduled_social_posts USING btree (org_id, scheduled_at);
+
+
+--
+-- Name: cmis_scheduled_social_posts_org_id_status_index; Type: INDEX; Schema: cmis; Owner: begin
+--
+
+CREATE INDEX cmis_scheduled_social_posts_org_id_status_index ON cmis.scheduled_social_posts USING btree (org_id, status);
+
+
+--
+-- Name: cmis_scheduled_social_posts_scheduled_at_index; Type: INDEX; Schema: cmis; Owner: begin
+--
+
+CREATE INDEX cmis_scheduled_social_posts_scheduled_at_index ON cmis.scheduled_social_posts USING btree (scheduled_at);
+
+
+--
+-- Name: cmis_scheduled_social_posts_status_index; Type: INDEX; Schema: cmis; Owner: begin
+--
+
+CREATE INDEX cmis_scheduled_social_posts_status_index ON cmis.scheduled_social_posts USING btree (status);
+
+
+--
+-- Name: idx_ab_test_variations_entity; Type: INDEX; Schema: cmis; Owner: begin
+--
+
+CREATE INDEX idx_ab_test_variations_entity ON cmis.ab_test_variations USING btree (entity_id);
+
+
+--
+-- Name: idx_ab_test_variations_test; Type: INDEX; Schema: cmis; Owner: begin
+--
+
+CREATE INDEX idx_ab_test_variations_test ON cmis.ab_test_variations USING btree (ab_test_id);
+
+
+--
+-- Name: idx_ab_tests_ad_account; Type: INDEX; Schema: cmis; Owner: begin
+--
+
+CREATE INDEX idx_ab_tests_ad_account ON cmis.ab_tests USING btree (ad_account_id);
+
+
+--
+-- Name: idx_ab_tests_entity; Type: INDEX; Schema: cmis; Owner: begin
+--
+
+CREATE INDEX idx_ab_tests_entity ON cmis.ab_tests USING btree (entity_type, entity_id);
+
+
+--
+-- Name: idx_ab_tests_status; Type: INDEX; Schema: cmis; Owner: begin
+--
+
+CREATE INDEX idx_ab_tests_status ON cmis.ab_tests USING btree (test_status);
+
+
+--
 -- Name: idx_ad_audiences_entity; Type: INDEX; Schema: cmis; Owner: begin
 --
 
@@ -10839,6 +12061,13 @@ CREATE INDEX idx_content_items_context ON cmis.content_items USING btree (contex
 
 
 --
+-- Name: idx_content_items_creative_context; Type: INDEX; Schema: cmis; Owner: begin
+--
+
+CREATE INDEX idx_content_items_creative_context ON cmis.content_items USING btree (creative_context_id) WHERE (deleted_at IS NULL);
+
+
+--
 -- Name: idx_content_items_example; Type: INDEX; Schema: cmis; Owner: begin
 --
 
@@ -10860,6 +12089,13 @@ CREATE INDEX idx_content_items_plan ON cmis.content_items USING btree (plan_id);
 
 
 --
+-- Name: idx_content_plans_org; Type: INDEX; Schema: cmis; Owner: begin
+--
+
+CREATE INDEX idx_content_plans_org ON cmis.content_plans USING btree (org_id) WHERE (deleted_at IS NULL);
+
+
+--
 -- Name: idx_contexts_metadata_gin; Type: INDEX; Schema: cmis; Owner: begin
 --
 
@@ -10871,13 +12107,6 @@ CREATE INDEX idx_contexts_metadata_gin ON cmis.contexts USING gin (metadata json
 --
 
 CREATE INDEX idx_creative_assets_active ON cmis.creative_assets USING btree (org_id, campaign_id) WHERE (deleted_at IS NULL);
-
-
---
--- Name: idx_creative_assets_org; Type: INDEX; Schema: cmis; Owner: begin
---
-
-CREATE INDEX idx_creative_assets_org ON cmis.creative_assets USING btree (org_id);
 
 
 --
@@ -10930,10 +12159,45 @@ CREATE INDEX idx_orgs_id ON cmis.orgs USING btree (org_id);
 
 
 --
+-- Name: idx_performance_metrics_campaign_time; Type: INDEX; Schema: cmis; Owner: begin
+--
+
+CREATE INDEX idx_performance_metrics_campaign_time ON cmis.performance_metrics USING btree (campaign_id, observed_at DESC) WHERE (deleted_at IS NULL);
+
+
+--
 -- Name: idx_reference_entities_metadata_gin; Type: INDEX; Schema: cmis; Owner: begin
 --
 
 CREATE INDEX idx_reference_entities_metadata_gin ON cmis.reference_entities USING gin (metadata jsonb_path_ops);
+
+
+--
+-- Name: idx_scheduled_posts_status_time; Type: INDEX; Schema: cmis; Owner: begin
+--
+
+CREATE INDEX idx_scheduled_posts_status_time ON cmis.scheduled_social_posts USING btree (status, scheduled_at) WHERE (deleted_at IS NULL);
+
+
+--
+-- Name: idx_scheduled_reports_entity; Type: INDEX; Schema: cmis; Owner: begin
+--
+
+CREATE INDEX idx_scheduled_reports_entity ON cmis.scheduled_reports USING btree (entity_id);
+
+
+--
+-- Name: idx_scheduled_reports_next_run; Type: INDEX; Schema: cmis; Owner: begin
+--
+
+CREATE INDEX idx_scheduled_reports_next_run ON cmis.scheduled_reports USING btree (next_run_at) WHERE (is_active = true);
+
+
+--
+-- Name: idx_scheduled_reports_type; Type: INDEX; Schema: cmis; Owner: begin
+--
+
+CREATE INDEX idx_scheduled_reports_type ON cmis.scheduled_reports USING btree (report_type);
 
 
 --
@@ -10948,6 +12212,34 @@ CREATE INDEX idx_security_audit_org_created ON cmis.security_context_audit USING
 --
 
 CREATE INDEX idx_security_audit_user_created ON cmis.security_context_audit USING btree (user_id, created_at DESC);
+
+
+--
+-- Name: idx_team_account_access_user_social; Type: INDEX; Schema: cmis; Owner: begin
+--
+
+CREATE INDEX idx_team_account_access_user_social ON cmis.team_account_access USING btree (org_user_id, social_account_id);
+
+
+--
+-- Name: idx_team_invitations_email; Type: INDEX; Schema: cmis; Owner: begin
+--
+
+CREATE INDEX idx_team_invitations_email ON cmis.team_invitations USING btree (invited_email);
+
+
+--
+-- Name: idx_team_invitations_org_status; Type: INDEX; Schema: cmis; Owner: begin
+--
+
+CREATE INDEX idx_team_invitations_org_status ON cmis.team_invitations USING btree (org_id, status);
+
+
+--
+-- Name: idx_user_orgs_role; Type: INDEX; Schema: cmis; Owner: begin
+--
+
+CREATE INDEX idx_user_orgs_role ON cmis.user_orgs USING btree (role_id);
 
 
 --
@@ -10986,6 +12278,13 @@ CREATE INDEX idx_users_email ON cmis.users USING btree (email);
 
 
 --
+-- Name: idx_users_status; Type: INDEX; Schema: cmis; Owner: begin
+--
+
+CREATE INDEX idx_users_status ON cmis.users USING btree (status) WHERE (deleted_at IS NULL);
+
+
+--
 -- Name: idx_values_context; Type: INDEX; Schema: cmis; Owner: begin
 --
 
@@ -11004,6 +12303,55 @@ CREATE INDEX idx_values_field ON cmis.field_values USING btree (field_id);
 --
 
 CREATE INDEX idx_video_scenes_asset ON cmis.video_scenes USING btree (asset_id);
+
+
+--
+-- Name: inbox_items_assignee_status_idx; Type: INDEX; Schema: cmis; Owner: begin
+--
+
+CREATE INDEX inbox_items_assignee_status_idx ON cmis.inbox_items USING btree (assigned_to, status);
+
+
+--
+-- Name: inbox_items_needs_reply_idx; Type: INDEX; Schema: cmis; Owner: begin
+--
+
+CREATE INDEX inbox_items_needs_reply_idx ON cmis.inbox_items USING btree (needs_reply, status);
+
+
+--
+-- Name: inbox_items_org_status_idx; Type: INDEX; Schema: cmis; Owner: begin
+--
+
+CREATE INDEX inbox_items_org_status_idx ON cmis.inbox_items USING btree (org_id, status);
+
+
+--
+-- Name: inbox_items_platform_external_idx; Type: INDEX; Schema: cmis; Owner: begin
+--
+
+CREATE INDEX inbox_items_platform_external_idx ON cmis.inbox_items USING btree (platform, external_id);
+
+
+--
+-- Name: jobs_queue_index; Type: INDEX; Schema: cmis; Owner: begin
+--
+
+CREATE INDEX jobs_queue_index ON cmis.jobs USING btree (queue);
+
+
+--
+-- Name: post_approvals_post_status_idx; Type: INDEX; Schema: cmis; Owner: begin
+--
+
+CREATE INDEX post_approvals_post_status_idx ON cmis.post_approvals USING btree (post_id, status);
+
+
+--
+-- Name: post_approvals_status_assignee_idx; Type: INDEX; Schema: cmis; Owner: begin
+--
+
+CREATE INDEX post_approvals_status_assignee_idx ON cmis.post_approvals USING btree (status, assigned_to);
 
 
 --
@@ -11651,6 +12999,22 @@ CREATE TRIGGER update_embeddings_on_research_change AFTER INSERT OR UPDATE OF co
 
 
 --
+-- Name: ab_test_variations ab_test_variations_ab_test_id_fkey; Type: FK CONSTRAINT; Schema: cmis; Owner: begin
+--
+
+ALTER TABLE ONLY cmis.ab_test_variations
+    ADD CONSTRAINT ab_test_variations_ab_test_id_fkey FOREIGN KEY (ab_test_id) REFERENCES cmis.ab_tests(ab_test_id) ON DELETE CASCADE;
+
+
+--
+-- Name: ab_tests ab_tests_ad_account_id_fkey; Type: FK CONSTRAINT; Schema: cmis; Owner: begin
+--
+
+ALTER TABLE ONLY cmis.ab_tests
+    ADD CONSTRAINT ab_tests_ad_account_id_fkey FOREIGN KEY (ad_account_id) REFERENCES cmis.ad_accounts(id) ON DELETE CASCADE;
+
+
+--
 -- Name: ad_accounts ad_accounts_integration_id_fkey; Type: FK CONSTRAINT; Schema: cmis; Owner: begin
 --
 
@@ -11824,6 +13188,118 @@ ALTER TABLE ONLY cmis.campaign_offerings
 
 ALTER TABLE ONLY cmis.campaign_performance_dashboard
     ADD CONSTRAINT campaign_performance_dashboard_campaign_id_fkey FOREIGN KEY (campaign_id) REFERENCES cmis.campaigns(campaign_id) MATCH FULL ON DELETE CASCADE;
+
+
+--
+-- Name: ad_variants cmis_ad_variants_campaign_id_foreign; Type: FK CONSTRAINT; Schema: cmis; Owner: begin
+--
+
+ALTER TABLE ONLY cmis.ad_variants
+    ADD CONSTRAINT cmis_ad_variants_campaign_id_foreign FOREIGN KEY (campaign_id) REFERENCES cmis.ad_campaigns(id) ON DELETE CASCADE;
+
+
+--
+-- Name: audience_templates cmis_audience_templates_created_by_foreign; Type: FK CONSTRAINT; Schema: cmis; Owner: begin
+--
+
+ALTER TABLE ONLY cmis.audience_templates
+    ADD CONSTRAINT cmis_audience_templates_created_by_foreign FOREIGN KEY (created_by) REFERENCES cmis.users(user_id) ON DELETE CASCADE;
+
+
+--
+-- Name: audience_templates cmis_audience_templates_org_id_foreign; Type: FK CONSTRAINT; Schema: cmis; Owner: begin
+--
+
+ALTER TABLE ONLY cmis.audience_templates
+    ADD CONSTRAINT cmis_audience_templates_org_id_foreign FOREIGN KEY (org_id) REFERENCES cmis.orgs(org_id) ON DELETE CASCADE;
+
+
+--
+-- Name: inbox_items cmis_inbox_items_assigned_to_foreign; Type: FK CONSTRAINT; Schema: cmis; Owner: begin
+--
+
+ALTER TABLE ONLY cmis.inbox_items
+    ADD CONSTRAINT cmis_inbox_items_assigned_to_foreign FOREIGN KEY (assigned_to) REFERENCES cmis.users(user_id) ON DELETE SET NULL;
+
+
+--
+-- Name: inbox_items cmis_inbox_items_org_id_foreign; Type: FK CONSTRAINT; Schema: cmis; Owner: begin
+--
+
+ALTER TABLE ONLY cmis.inbox_items
+    ADD CONSTRAINT cmis_inbox_items_org_id_foreign FOREIGN KEY (org_id) REFERENCES cmis.orgs(org_id) ON DELETE CASCADE;
+
+
+--
+-- Name: inbox_items cmis_inbox_items_social_account_id_foreign; Type: FK CONSTRAINT; Schema: cmis; Owner: begin
+--
+
+ALTER TABLE ONLY cmis.inbox_items
+    ADD CONSTRAINT cmis_inbox_items_social_account_id_foreign FOREIGN KEY (social_account_id) REFERENCES cmis.social_accounts(id) ON DELETE CASCADE;
+
+
+--
+-- Name: post_approvals cmis_post_approvals_assigned_to_foreign; Type: FK CONSTRAINT; Schema: cmis; Owner: begin
+--
+
+ALTER TABLE ONLY cmis.post_approvals
+    ADD CONSTRAINT cmis_post_approvals_assigned_to_foreign FOREIGN KEY (assigned_to) REFERENCES cmis.users(user_id) ON DELETE SET NULL;
+
+
+--
+-- Name: post_approvals cmis_post_approvals_post_id_foreign; Type: FK CONSTRAINT; Schema: cmis; Owner: begin
+--
+
+ALTER TABLE ONLY cmis.post_approvals
+    ADD CONSTRAINT cmis_post_approvals_post_id_foreign FOREIGN KEY (post_id) REFERENCES cmis.social_posts(id) ON DELETE CASCADE;
+
+
+--
+-- Name: post_approvals cmis_post_approvals_requested_by_foreign; Type: FK CONSTRAINT; Schema: cmis; Owner: begin
+--
+
+ALTER TABLE ONLY cmis.post_approvals
+    ADD CONSTRAINT cmis_post_approvals_requested_by_foreign FOREIGN KEY (requested_by) REFERENCES cmis.users(user_id) ON DELETE CASCADE;
+
+
+--
+-- Name: publishing_queues cmis_publishing_queues_org_id_foreign; Type: FK CONSTRAINT; Schema: cmis; Owner: begin
+--
+
+ALTER TABLE ONLY cmis.publishing_queues
+    ADD CONSTRAINT cmis_publishing_queues_org_id_foreign FOREIGN KEY (org_id) REFERENCES cmis.orgs(org_id) ON DELETE CASCADE;
+
+
+--
+-- Name: publishing_queues cmis_publishing_queues_social_account_id_foreign; Type: FK CONSTRAINT; Schema: cmis; Owner: begin
+--
+
+ALTER TABLE ONLY cmis.publishing_queues
+    ADD CONSTRAINT cmis_publishing_queues_social_account_id_foreign FOREIGN KEY (social_account_id) REFERENCES cmis.social_accounts(id) ON DELETE CASCADE;
+
+
+--
+-- Name: scheduled_social_posts cmis_scheduled_social_posts_campaign_id_foreign; Type: FK CONSTRAINT; Schema: cmis; Owner: begin
+--
+
+ALTER TABLE ONLY cmis.scheduled_social_posts
+    ADD CONSTRAINT cmis_scheduled_social_posts_campaign_id_foreign FOREIGN KEY (campaign_id) REFERENCES cmis.campaigns(campaign_id) ON DELETE SET NULL;
+
+
+--
+-- Name: scheduled_social_posts cmis_scheduled_social_posts_org_id_foreign; Type: FK CONSTRAINT; Schema: cmis; Owner: begin
+--
+
+ALTER TABLE ONLY cmis.scheduled_social_posts
+    ADD CONSTRAINT cmis_scheduled_social_posts_org_id_foreign FOREIGN KEY (org_id) REFERENCES cmis.orgs(org_id) ON DELETE CASCADE;
+
+
+--
+-- Name: scheduled_social_posts cmis_scheduled_social_posts_user_id_foreign; Type: FK CONSTRAINT; Schema: cmis; Owner: begin
+--
+
+ALTER TABLE ONLY cmis.scheduled_social_posts
+    ADD CONSTRAINT cmis_scheduled_social_posts_user_id_foreign FOREIGN KEY (user_id) REFERENCES cmis.users(user_id) ON DELETE SET NULL;
 
 
 --
@@ -12219,6 +13695,51 @@ ALTER TABLE ONLY cmis.content_items
 
 
 --
+-- Name: content_items fk_content_items_creative_context; Type: FK CONSTRAINT; Schema: cmis; Owner: begin
+--
+
+ALTER TABLE ONLY cmis.content_items
+    ADD CONSTRAINT fk_content_items_creative_context FOREIGN KEY (creative_context_id) REFERENCES cmis.creative_contexts(context_id) ON DELETE SET NULL;
+
+
+--
+-- Name: CONSTRAINT fk_content_items_creative_context ON content_items; Type: COMMENT; Schema: cmis; Owner: begin
+--
+
+COMMENT ON CONSTRAINT fk_content_items_creative_context ON cmis.content_items IS 'Links content items to their creative context (optional)';
+
+
+--
+-- Name: content_items fk_content_items_org_id; Type: FK CONSTRAINT; Schema: cmis; Owner: begin
+--
+
+ALTER TABLE ONLY cmis.content_items
+    ADD CONSTRAINT fk_content_items_org_id FOREIGN KEY (org_id) REFERENCES cmis.orgs(org_id) ON DELETE CASCADE;
+
+
+--
+-- Name: CONSTRAINT fk_content_items_org_id ON content_items; Type: COMMENT; Schema: cmis; Owner: begin
+--
+
+COMMENT ON CONSTRAINT fk_content_items_org_id ON cmis.content_items IS 'Ensures content items belong to valid organizations';
+
+
+--
+-- Name: content_plans fk_content_plans_org_id; Type: FK CONSTRAINT; Schema: cmis; Owner: begin
+--
+
+ALTER TABLE ONLY cmis.content_plans
+    ADD CONSTRAINT fk_content_plans_org_id FOREIGN KEY (org_id) REFERENCES cmis.orgs(org_id) ON DELETE CASCADE;
+
+
+--
+-- Name: CONSTRAINT fk_content_plans_org_id ON content_plans; Type: COMMENT; Schema: cmis; Owner: begin
+--
+
+COMMENT ON CONSTRAINT fk_content_plans_org_id ON cmis.content_plans IS 'Ensures content plans belong to valid organizations';
+
+
+--
 -- Name: creative_outputs fk_creative_outputs_context; Type: FK CONSTRAINT; Schema: cmis; Owner: begin
 --
 
@@ -12504,6 +14025,46 @@ ALTER TABLE ONLY cmis.sync_logs
 
 ALTER TABLE ONLY cmis.sync_logs
     ADD CONSTRAINT sync_logs_org_id_fkey FOREIGN KEY (org_id) REFERENCES cmis.orgs(org_id) ON DELETE CASCADE;
+
+
+--
+-- Name: team_account_access team_account_access_org_user_id_fkey; Type: FK CONSTRAINT; Schema: cmis; Owner: begin
+--
+
+ALTER TABLE ONLY cmis.team_account_access
+    ADD CONSTRAINT team_account_access_org_user_id_fkey FOREIGN KEY (org_user_id) REFERENCES cmis.users(user_id) ON DELETE CASCADE;
+
+
+--
+-- Name: team_account_access team_account_access_social_account_id_fkey; Type: FK CONSTRAINT; Schema: cmis; Owner: begin
+--
+
+ALTER TABLE ONLY cmis.team_account_access
+    ADD CONSTRAINT team_account_access_social_account_id_fkey FOREIGN KEY (social_account_id) REFERENCES cmis.social_accounts(id) ON DELETE CASCADE;
+
+
+--
+-- Name: team_invitations team_invitations_invited_by_fkey; Type: FK CONSTRAINT; Schema: cmis; Owner: begin
+--
+
+ALTER TABLE ONLY cmis.team_invitations
+    ADD CONSTRAINT team_invitations_invited_by_fkey FOREIGN KEY (invited_by) REFERENCES cmis.users(user_id) ON DELETE SET NULL;
+
+
+--
+-- Name: team_invitations team_invitations_org_id_fkey; Type: FK CONSTRAINT; Schema: cmis; Owner: begin
+--
+
+ALTER TABLE ONLY cmis.team_invitations
+    ADD CONSTRAINT team_invitations_org_id_fkey FOREIGN KEY (org_id) REFERENCES cmis.orgs(org_id) ON DELETE CASCADE;
+
+
+--
+-- Name: team_invitations team_invitations_role_id_fkey; Type: FK CONSTRAINT; Schema: cmis; Owner: begin
+--
+
+ALTER TABLE ONLY cmis.team_invitations
+    ADD CONSTRAINT team_invitations_role_id_fkey FOREIGN KEY (role_id) REFERENCES cmis.roles(role_id) ON DELETE SET NULL;
 
 
 --
@@ -13149,6 +14710,19 @@ CREATE POLICY rbac_users_update ON cmis.users FOR UPDATE USING (((user_id = cmis
 
 
 --
+-- Name: scheduled_social_posts; Type: ROW SECURITY; Schema: cmis; Owner: begin
+--
+
+ALTER TABLE cmis.scheduled_social_posts ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: scheduled_social_posts scheduled_social_posts_org_isolation; Type: POLICY; Schema: cmis; Owner: begin
+--
+
+CREATE POLICY scheduled_social_posts_org_isolation ON cmis.scheduled_social_posts USING ((org_id = (current_setting('app.current_org_id'::text, true))::uuid));
+
+
+--
 -- Name: user_orgs user_orgs_self; Type: POLICY; Schema: cmis; Owner: begin
 --
 
@@ -13172,6 +14746,55 @@ ALTER TABLE lab.example_sets ENABLE ROW LEVEL SECURITY;
 --
 
 CREATE POLICY org_isolation_example_sets ON lab.example_sets USING (((org_id IS NULL) OR (org_id = (current_setting('app.current_org_id'::text))::uuid)));
+
+
+--
+-- Name: FUNCTION get_next_available_slot(p_social_account_id uuid, p_after_time timestamp without time zone); Type: ACL; Schema: cmis; Owner: begin
+--
+
+GRANT ALL ON FUNCTION cmis.get_next_available_slot(p_social_account_id uuid, p_after_time timestamp without time zone) TO authenticated;
+
+
+--
+-- Name: FUNCTION get_publishing_queue(p_social_account_id uuid); Type: ACL; Schema: cmis; Owner: begin
+--
+
+GRANT ALL ON FUNCTION cmis.get_publishing_queue(p_social_account_id uuid) TO authenticated;
+
+
+--
+-- Name: FUNCTION get_queued_posts(p_social_account_id uuid); Type: ACL; Schema: cmis; Owner: begin
+--
+
+GRANT ALL ON FUNCTION cmis.get_queued_posts(p_social_account_id uuid) TO authenticated;
+
+
+--
+-- Name: FUNCTION remove_post_from_queue(p_post_id uuid); Type: ACL; Schema: cmis; Owner: begin
+--
+
+GRANT ALL ON FUNCTION cmis.remove_post_from_queue(p_post_id uuid) TO authenticated;
+
+
+--
+-- Name: FUNCTION schedule_post_to_queue(p_post_id uuid, p_social_account_id uuid, p_scheduled_for timestamp without time zone); Type: ACL; Schema: cmis; Owner: begin
+--
+
+GRANT ALL ON FUNCTION cmis.schedule_post_to_queue(p_post_id uuid, p_social_account_id uuid, p_scheduled_for timestamp without time zone) TO authenticated;
+
+
+--
+-- Name: FUNCTION upsert_publishing_queue(p_org_id uuid, p_social_account_id uuid, p_weekdays_enabled character varying, p_time_slots jsonb, p_timezone character varying); Type: ACL; Schema: cmis; Owner: begin
+--
+
+GRANT ALL ON FUNCTION cmis.upsert_publishing_queue(p_org_id uuid, p_social_account_id uuid, p_weekdays_enabled character varying, p_time_slots jsonb, p_timezone character varying) TO authenticated;
+
+
+--
+-- Name: TABLE scheduled_social_posts; Type: ACL; Schema: cmis; Owner: begin
+--
+
+GRANT ALL ON TABLE cmis.scheduled_social_posts TO cmis_app;
 
 
 --
@@ -13213,5 +14836,5 @@ ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public GRANT SELECT,INSERT,
 -- PostgreSQL database dump complete
 --
 
-\unrestrict fL9USgZ0bCgwu6UgdZGFeo84xVwQFLKkUmCDHB3eSHauHmEZLHEzT6jLnJ3mAlB
+\unrestrict Zl8xLC5DOYJwJjQOUQBnu0fLVz0xm9hAaIRTnPUyqgVNQgtoMBibo53q6Ac41fo
 
