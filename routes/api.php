@@ -477,6 +477,30 @@ Route::middleware(['auth:sanctum', 'validate.org.access', 'set.db.context'])
 
     /*
     |----------------------------------------------------------------------
+    | اختبار A/B للحملات (A/B Testing) - Sprint 4.6
+    |----------------------------------------------------------------------
+    */
+    Route::prefix('ab-tests')->name('ab-tests.')->group(function () {
+        // Test Management
+        Route::get('/', [App\Http\Controllers\ABTestingController::class, 'listTests'])->name('index');
+        Route::post('/', [App\Http\Controllers\ABTestingController::class, 'createTest'])->name('create');
+        Route::delete('/{test_id}', [App\Http\Controllers\ABTestingController::class, 'deleteTest'])->name('delete');
+
+        // Variations
+        Route::post('/{test_id}/variations', [App\Http\Controllers\ABTestingController::class, 'addVariation'])->name('add-variation');
+
+        // Test Control
+        Route::post('/{test_id}/start', [App\Http\Controllers\ABTestingController::class, 'startTest'])->name('start');
+        Route::post('/{test_id}/stop', [App\Http\Controllers\ABTestingController::class, 'stopTest'])->name('stop');
+        Route::post('/{test_id}/extend', [App\Http\Controllers\ABTestingController::class, 'extendTest'])->name('extend');
+
+        // Results & Winner Selection
+        Route::get('/{test_id}/results', [App\Http\Controllers\ABTestingController::class, 'getResults'])->name('results');
+        Route::post('/{test_id}/select-winner', [App\Http\Controllers\ABTestingController::class, 'selectWinner'])->name('select-winner');
+    });
+
+    /*
+    |----------------------------------------------------------------------
     | صندوق الوارد الموحد (Unified Inbox)
     |----------------------------------------------------------------------
     */
