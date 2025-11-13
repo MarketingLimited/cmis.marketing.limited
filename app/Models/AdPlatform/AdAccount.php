@@ -30,15 +30,10 @@ class AdAccount extends Model
     ];
 
     protected $casts = [
-        'ad_account_id' => 'string',
+        'id' => 'string',
         'org_id' => 'string',
         'integration_id' => 'string',
-        'billing_info' => 'array',
-        'spend_limit' => 'decimal:2',
-        'capabilities' => 'array',
-        'metadata' => 'array',
-        'last_synced_at' => 'datetime',
-        'is_active' => 'boolean',
+        'spend_cap' => 'decimal:2',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
         'deleted_at' => 'datetime',
@@ -60,67 +55,20 @@ class AdAccount extends Model
         return $this->belongsTo(\App\Models\Core\Integration::class, 'integration_id', 'integration_id');
     }
 
-    /**
-     * Get ad campaigns
-     */
-    public function campaigns()
-    {
-        return $this->hasMany(AdCampaign::class, 'ad_account_id', 'ad_account_id');
-    }
-
-    /**
-     * Get ad audiences
-     */
-    public function audiences()
-    {
-        return $this->hasMany(AdAudience::class, 'ad_account_id', 'ad_account_id');
-    }
 
     /**
      * Scope active accounts
      */
     public function scopeActive($query)
     {
-        return $query->where('is_active', true)
-            ->where('account_status', 'active');
+        return $query->where('status', 'active');
     }
 
     /**
-     * Scope by platform
+     * Scope by provider
      */
-    public function scopeByPlatform($query, string $platform)
+    public function scopeByProvider($query, string $provider)
     {
-        return $query->where('platform', $platform);
-    }
-
-    /**
-     * Scope synced recently
-     */
-    public function scopeRecentlySynced($query, int $hours = 24)
-    {
-        return $query->where('last_synced_at', '>=', now()->subHours($hours));
-    }
-
-    /**
-     * Check if account needs sync
-     */
-    public function needsSync(int $hours = 1): bool
-    {
-        if (!$this->last_synced_at) {
-            return true;
-        }
-
-        return $this->last_synced_at->diffInHours(now()) >= $hours;
-    }
-
-    /**
-     * Mark as synced
-     */
-    public function markSynced(string $status = 'success'): void
-    {
-        $this->update([
-            'last_synced_at' => now(),
-            'sync_status' => $status,
-        ]);
+        return $query->where('provider', $provider);
     }
 }

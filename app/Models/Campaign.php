@@ -39,6 +39,7 @@ class Campaign extends Model
         'created_by',
         'provider',
         'deleted_by',
+        'description',
     ];
 
     protected $casts = [
@@ -64,7 +65,7 @@ class Campaign extends Model
 
     public function creator(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'created_by', 'user_id');
+        return $this->belongsTo(User::class, 'created_by', 'id');
     }
 
     public function offerings(): BelongsToMany
@@ -82,13 +83,4 @@ class Campaign extends Model
         return $this->hasMany(CampaignPerformanceMetric::class, 'campaign_id', 'campaign_id');
     }
 
-    /**
-     * Get ad campaigns associated with this campaign
-     *
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany
-     */
-    public function adCampaigns(): HasMany
-    {
-        return $this->hasMany(\App\Models\AdPlatform\AdCampaign::class, 'campaign_id', 'campaign_id');
-    }
 }
