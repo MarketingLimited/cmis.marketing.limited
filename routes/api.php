@@ -547,6 +547,26 @@ Route::middleware(['auth:sanctum', 'validate.org.access', 'set.db.context'])
 
     /*
     |----------------------------------------------------------------------
+    | مكتبة المحتوى المشترك (Shared Content Library) - Sprint 5.4
+    |----------------------------------------------------------------------
+    */
+    Route::prefix('content-library')->name('content-library.')->group(function () {
+        // Assets
+        Route::get('/', [App\Http\Controllers\ContentLibraryController::class, 'list'])->name('index');
+        Route::post('/upload', [App\Http\Controllers\ContentLibraryController::class, 'upload'])->name('upload');
+        Route::get('/search', [App\Http\Controllers\ContentLibraryController::class, 'search'])->name('search');
+        Route::get('/{asset_id}', [App\Http\Controllers\ContentLibraryController::class, 'show'])->name('show');
+        Route::put('/{asset_id}', [App\Http\Controllers\ContentLibraryController::class, 'update'])->name('update');
+        Route::delete('/{asset_id}', [App\Http\Controllers\ContentLibraryController::class, 'delete'])->name('delete');
+        Route::post('/{asset_id}/track-usage', [App\Http\Controllers\ContentLibraryController::class, 'trackUsage'])->name('track-usage');
+
+        // Folders
+        Route::get('/folders/list', [App\Http\Controllers\ContentLibraryController::class, 'listFolders'])->name('folders.list');
+        Route::post('/folders', [App\Http\Controllers\ContentLibraryController::class, 'createFolder'])->name('folders.create');
+    });
+
+    /*
+    |----------------------------------------------------------------------
     | صندوق الوارد الموحد (Unified Inbox)
     |----------------------------------------------------------------------
     */
