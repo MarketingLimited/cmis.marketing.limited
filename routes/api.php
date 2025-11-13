@@ -630,6 +630,35 @@ Route::middleware(['auth:sanctum', 'validate.org.access', 'set.db.context'])
 
     /*
     |----------------------------------------------------------------------
+    | مركز التكاملات (Integration Hub) - Sprint 6.4 - FINAL SPRINT!
+    |----------------------------------------------------------------------
+    */
+    Route::prefix('integrations')->name('integrations.')->group(function () {
+        // Available Integrations
+        Route::get('/available', [App\Http\Controllers\IntegrationHubController::class, 'getAvailableIntegrations'])->name('available');
+
+        // Integration Management
+        Route::post('/', [App\Http\Controllers\IntegrationHubController::class, 'createIntegration'])->name('create');
+        Route::post('/{integration_id}/test', [App\Http\Controllers\IntegrationHubController::class, 'testIntegration'])->name('test');
+
+        // Logs
+        Route::get('/logs', [App\Http\Controllers\IntegrationHubController::class, 'getIntegrationLogs'])->name('logs');
+    });
+
+    // Webhooks
+    Route::prefix('webhooks')->name('webhooks.')->group(function () {
+        Route::post('/', [App\Http\Controllers\IntegrationHubController::class, 'createWebhook'])->name('create');
+    });
+
+    // API Keys
+    Route::prefix('api-keys')->name('api-keys.')->group(function () {
+        Route::get('/', [App\Http\Controllers\IntegrationHubController::class, 'listAPIKeys'])->name('index');
+        Route::post('/', [App\Http\Controllers\IntegrationHubController::class, 'generateAPIKey'])->name('generate');
+        Route::delete('/{api_key_id}', [App\Http\Controllers\IntegrationHubController::class, 'revokeAPIKey'])->name('revoke');
+    });
+
+    /*
+    |----------------------------------------------------------------------
     | صندوق الوارد الموحد (Unified Inbox)
     |----------------------------------------------------------------------
     */
