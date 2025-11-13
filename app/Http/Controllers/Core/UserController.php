@@ -298,4 +298,135 @@ class UserController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Get user activities
+     */
+    public function activities(Request $request, string $orgId, string $userId)
+    {
+        try {
+            $targetUser = User::findOrFail($userId);
+
+            // Get user activities from user_activities table
+            $activities = \App\Models\UserActivity::where('user_id', $userId)
+                ->where('org_id', $orgId)
+                ->orderBy('created_at', 'desc')
+                ->limit(50)
+                ->get()
+                ->map(function ($activity) {
+                    return [
+                        'id' => $activity->activity_id,
+                        'type' => $activity->type,
+                        'description' => $activity->description,
+                        'action' => $activity->action,
+                        'entity_type' => $activity->entity_type,
+                        'entity_id' => $activity->entity_id,
+                        'details' => $activity->details,
+                        'created_at' => $activity->created_at->toISOString(),
+                    ];
+                });
+
+            return response()->json(['activities' => $activities]);
+
+        } catch (\Exception $e) {
+            \Log::error('Failed to load user activities: ' . $e->getMessage());
+            return response()->json([
+                'error' => 'Failed to load activities',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get user permissions
+     */
+    public function permissions(Request $request, string $orgId, string $userId)
+    {
+        try {
+            $targetUser = User::findOrFail($userId);
+
+            // Get user's role from user_orgs
+            $userOrg = \App\Models\Core\UserOrg::where('org_id', $orgId)
+                ->where('user_id', $userId)
+                ->with('role')
+                ->firstOrFail();
+
+            $roleCode = $userOrg->role->role_code ?? 'viewer';
+
+            // Define permissions based on role
+            $allPermissions = [
+                [
+                    'id' => 1,
+                    'name' => 'View Campaigns',
+                    'description' => 'View campaign details',
+                    'icon' => 'fas fa-eye',
+                    'granted' => true // Everyone can view
+                ],
+                [
+                    'id' => 2,
+                    'name' => 'Create Campaigns',
+                    'description' => 'Create new campaigns',
+                    'icon' => 'fas fa-plus',
+                    'granted' => in_array($roleCode, ['owner', 'admin', 'editor'])
+                ],
+                [
+                    'id' => 3,
+                    'name' => 'Edit Campaigns',
+                    'description' => 'Modify existing campaigns',
+                    'icon' => 'fas fa-edit',
+                    'granted' => in_array($roleCode, ['owner', 'admin', 'editor'])
+                ],
+                [
+                    'id' => 4,
+                    'name' => 'Delete Campaigns',
+                    'description' => 'Delete campaigns',
+                    'icon' => 'fas fa-trash',
+                    'granted' => in_array($roleCode, ['owner', 'admin'])
+                ],
+                [
+                    'id' => 5,
+                    'name' => 'Manage Users',
+                    'description' => 'Add/remove team members',
+                    'icon' => 'fas fa-users',
+                    'granted' => in_array($roleCode, ['owner', 'admin'])
+                ],
+                [
+                    'id' => 6,
+                    'name' => 'View Analytics',
+                    'description' => 'Access analytics dashboard',
+                    'icon' => 'fas fa-chart-line',
+                    'granted' => true // Everyone can view
+                ],
+                [
+                    'id' => 7,
+                    'name' => 'Manage Settings',
+                    'description' => 'Configure org settings',
+                    'icon' => 'fas fa-cog',
+                    'granted' => $roleCode === 'owner'
+                ],
+                [
+                    'id' => 8,
+                    'name' => 'Manage Integrations',
+                    'description' => 'Connect platforms',
+                    'icon' => 'fas fa-plug',
+                    'granted' => in_array($roleCode, ['owner', 'admin'])
+                ]
+            ];
+
+            return response()->json([
+                'permissions' => $allPermissions,
+                'role' => [
+                    'code' => $roleCode,
+                    'name' => $userOrg->role->role_name ?? 'N/A'
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Failed to load user permissions: ' . $e->getMessage());
+            return response()->json([
+                'error' => 'Failed to load permissions',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
 }
