@@ -17,30 +17,24 @@ class VoiceScript extends Model
     protected $keyType = 'string';
 
     protected $fillable = [
-        'org_id',
+        'script_id',
         'scenario_id',
-        'script_name',
-        'script_text',
-        'voice_type',
-        'tone',
-        'pace',
+        'task_id',
         'language',
-        'word_count',
-        'estimated_duration_seconds',
-        'audio_file_url',
-        'status',
-        'tags',
-        'metadata',
+        'voice_tone',
+        'narration',
+        'script_structure',
+        'confidence',
     ];
 
-    protected $casts = [
-        'word_count' => 'integer',
+    protected $casts = ['word_count' => 'integer',
         'estimated_duration_seconds' => 'integer',
         'tags' => 'array',
         'metadata' => 'array',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
         'deleted_at' => 'datetime',
+        'script_structure' => 'array',
     ];
 
     public function organization()

@@ -15,16 +15,15 @@ class SocialPostMetric extends Model
     public $timestamps = false;
 
     protected $fillable = [
+        'id',
+        'org_id',
         'integration_id',
         'post_external_id',
-        'metric_date',
         'social_post_id',
-        'impressions',
-        'reach',
-        'likes',
-        'comments',
-        'saves',
-        'shares',
+        'metric',
+        'value',
+        'fetched_at',
+        'provider',
     ];
 
     protected $casts = [

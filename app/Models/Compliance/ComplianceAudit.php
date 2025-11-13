@@ -16,19 +16,12 @@ class ComplianceAudit extends Model
     protected $keyType = 'string';
 
     protected $fillable = [
-        'org_id',
-        'rule_id',
+        'audit_id',
         'asset_id',
-        'content_id',
-        'audit_result',
-        'violations',
-        'recommendations',
-        'auto_fixed',
-        'reviewed_by',
-        'reviewed_at',
+        'rule_id',
         'status',
-        'metadata',
-        'created_by',
+        'owner',
+        'notes',
         'provider',
     ];
 

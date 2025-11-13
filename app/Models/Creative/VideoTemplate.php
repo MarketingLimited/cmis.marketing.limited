@@ -10,31 +10,23 @@ class VideoTemplate extends Model
     use HasFactory;
 
     protected $table = 'cmis.video_templates';
-    protected $primaryKey = 'template_id';
+    protected $primaryKey = 'vtpl_id';
     protected $connection = 'pgsql';
     public $incrementing = false;
     protected $keyType = 'string';
 
     protected $fillable = [
+        'vtpl_id',
         'org_id',
-        'template_name',
-        'description',
-        'duration',
-        'aspect_ratio',
-        'style',
-        'structure',
-        'transitions',
-        'music_style',
-        'pacing',
-        'metadata',
-        'tags',
-        'is_active',
-        'created_by',
+        'channel_id',
+        'format_id',
+        'name',
+        'steps',
+        'version',
         'provider',
     ];
 
-    protected $casts = [
-        'template_id' => 'string',
+    protected $casts = ['template_id' => 'string',
         'org_id' => 'string',
         'created_by' => 'string',
         'duration' => 'integer',
@@ -45,6 +37,7 @@ class VideoTemplate extends Model
         'is_active' => 'boolean',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
+        'steps' => 'array',
     ];
 
     /**

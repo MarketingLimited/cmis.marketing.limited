@@ -7,18 +7,15 @@ use Illuminate\Database\Eloquent\Model;
 class SessionContext extends Model
 {
     protected $table = 'cmis.session_context';
+    protected $primaryKey = 'session_id';
     protected $connection = 'pgsql';
     public $incrementing = false;
     public $timestamps = false;
 
     protected $fillable = [
         'session_id',
-        'context_key',
-        'context_value',
-        'context_type',
-        'set_at',
-        'expires_at',
-        'metadata',
+        'active_org_id',
+        'switched_at',
         'provider',
     ];
 

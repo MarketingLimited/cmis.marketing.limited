@@ -43,14 +43,20 @@ class UserActivity extends Model
      * @var array<string>
      */
     protected $fillable = [
-        'org_id',
+        'activity_id',
         'user_id',
-        'activity_type',
+        'org_id',
+        'session_id',
+        'action',
         'entity_type',
         'entity_id',
-        'description',
+        'details',
         'ip_address',
-        'metadata',
+        'provider',
+    ];
+
+    protected $casts = [
+        'details' => 'array',
     ];
 
     /**

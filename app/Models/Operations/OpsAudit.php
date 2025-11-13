@@ -18,28 +18,21 @@ class OpsAudit extends Model
     const UPDATED_AT = null; // No updated_at column
 
     protected $fillable = [
-        'operation_type',
-        'operation_name',
-        'user_id',
+        'audit_id',
         'org_id',
-        'entity_type',
-        'entity_id',
-        'old_values',
-        'new_values',
-        'changes',
-        'ip_address',
-        'user_agent',
+        'operation_name',
         'status',
-        'error_message',
-        'metadata',
+        'executed_at',
+        'details',
+        'provider',
     ];
 
-    protected $casts = [
-        'old_values' => 'array',
+    protected $casts = ['old_values' => 'array',
         'new_values' => 'array',
         'changes' => 'array',
         'metadata' => 'array',
         'created_at' => 'datetime',
+        'details' => 'array',
     ];
 
     // Relationships

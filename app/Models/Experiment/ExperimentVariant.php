@@ -11,7 +11,7 @@ class ExperimentVariant extends Model
     use HasFactory, SoftDeletes;
 
     protected $table = 'cmis.experiment_variants';
-    protected $primaryKey = 'variant_id';
+    protected $primaryKey = 'exp_id';
     protected $connection = 'pgsql';
     public $incrementing = false;
     protected $keyType = 'string';
@@ -19,15 +19,6 @@ class ExperimentVariant extends Model
     protected $fillable = [
         'exp_id',
         'asset_id',
-        'variant_name',
-        'variant_label',
-        'traffic_allocation',
-        'impressions',
-        'clicks',
-        'conversions',
-        'cost',
-        'performance_metrics',
-        'metadata',
         'provider',
     ];
 

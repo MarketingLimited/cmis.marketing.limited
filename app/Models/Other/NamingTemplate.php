@@ -19,8 +19,10 @@ class NamingTemplate extends Model
     public $timestamps = false;
 
     protected $fillable = [
+        'naming_id',
         'scope',
         'template',
+        'provider',
     ];
 
     protected $casts = [

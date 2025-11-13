@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class VCognitiveVitality extends Model
 {
     protected $table = 'cmis_knowledge.v_cognitive_vitality';
+    public $incrementing = false;
 
     public $timestamps = false;
 }

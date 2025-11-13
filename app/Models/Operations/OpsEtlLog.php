@@ -18,20 +18,14 @@ class OpsEtlLog extends Model
     const UPDATED_AT = null; // No updated_at column
 
     protected $fillable = [
-        'org_id',
-        'job_name',
-        'job_type',
-        'source',
-        'destination',
-        'records_processed',
-        'records_succeeded',
-        'records_failed',
-        'duration_seconds',
-        'started_at',
-        'completed_at',
+        'log_id',
+        'integration_id',
         'status',
-        'error_details',
-        'metadata',
+        'started_at',
+        'ended_at',
+        'rows_processed',
+        'notes',
+        'provider',
     ];
 
     protected $casts = [

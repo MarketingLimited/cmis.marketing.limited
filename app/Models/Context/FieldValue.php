@@ -16,12 +16,14 @@ class FieldValue extends Model
     protected $keyType = 'string';
 
     protected $fillable = [
-        'context_id',
+        'value_id',
         'field_id',
+        'context_id',
         'value',
-        'value_type',
-        'metadata',
-        'created_by',
+        'source',
+        'provider_ref',
+        'justification',
+        'confidence',
         'provider',
     ];
 

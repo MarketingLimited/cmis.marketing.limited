@@ -17,24 +17,16 @@ class MarketingAsset extends Model
     protected $keyType = 'string';
 
     protected $fillable = [
-        'org_id',
-        'campaign_id',
-        'asset_name',
+        'asset_id',
+        'task_id',
+        'platform',
         'asset_type',
-        'file_path',
-        'file_url',
-        'file_size_bytes',
-        'mime_type',
-        'dimensions',
-        'duration_seconds',
-        'thumbnail_url',
-        'status',
-        'tags',
-        'metadata',
+        'content',
+        'generated_by',
+        'confidence',
     ];
 
-    protected $casts = [
-        'file_size_bytes' => 'integer',
+    protected $casts = ['file_size_bytes' => 'integer',
         'dimensions' => 'array',
         'duration_seconds' => 'integer',
         'tags' => 'array',
@@ -42,6 +34,7 @@ class MarketingAsset extends Model
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
         'deleted_at' => 'datetime',
+        'content' => 'array',
     ];
 
     public function organization()

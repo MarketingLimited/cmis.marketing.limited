@@ -10,17 +10,15 @@ class FieldAlias extends Model
     use HasFactory;
 
     protected $table = 'cmis.field_aliases';
-    protected $primaryKey = 'alias_id';
+    protected $primaryKey = 'field_id';
     protected $connection = 'pgsql';
     public $incrementing = false;
     protected $keyType = 'string';
     public $timestamps = false;
 
     protected $fillable = [
+        'alias_slug',
         'field_id',
-        'alias_name',
-        'alias_type',
-        'is_active',
         'provider',
     ];
 

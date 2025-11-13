@@ -19,25 +19,23 @@ class Permission extends Model
     protected $keyType = 'string';
 
     protected $fillable = [
+        'permission_id',
         'permission_code',
         'permission_name',
+        'category',
         'description',
-        'module',
-        'resource',
-        'action',
-        'is_system',
-        'requires_org_context',
-        'metadata',
+        'is_dangerous',
+        'provider',
     ];
 
-    protected $casts = [
-        'permission_id' => 'string',
+    protected $casts = ['permission_id' => 'string',
         'is_system' => 'boolean',
         'requires_org_context' => 'boolean',
         'metadata' => 'array',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
         'deleted_at' => 'datetime',
+        'is_dangerous' => 'boolean',
     ];
 
     /**

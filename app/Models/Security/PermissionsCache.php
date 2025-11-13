@@ -12,17 +12,16 @@ class PermissionsCache extends Model
     use HasFactory;
 
     protected $table = 'cmis.permissions_cache';
+    protected $primaryKey = 'permission_id';
     protected $connection = 'pgsql';
     public $timestamps = false;
     public $incrementing = false;
 
     protected $fillable = [
-        'user_id',
-        'org_id',
         'permission_code',
-        'has_permission',
+        'permission_id',
+        'category',
         'last_used',
-        'cache_metadata',
     ];
 
     protected $casts = [
@@ -100,9 +99,13 @@ class PermissionsCache extends Model
     /**
      * Update last used timestamp
      */
-    public function touch(): void
+    public function touch($attribute = null)
     {
-        $this->update(['last_used' => now()]);
+        if ($attribute === null) {
+            return $this->update(['last_used' => now()]);
+        }
+
+        return parent::touch($attribute);
     }
 
     /**

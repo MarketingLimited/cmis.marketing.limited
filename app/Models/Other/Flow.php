@@ -24,12 +24,14 @@ class Flow extends Model
     public $timestamps = false;
 
     protected $fillable = [
+        'flow_id',
         'org_id',
         'name',
         'description',
         'version',
         'tags',
         'enabled',
+        'provider',
     ];
 
     protected $casts = [

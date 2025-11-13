@@ -23,9 +23,11 @@ class SqlSnippet extends Model
     public $timestamps = false;
 
     protected $fillable = [
+        'snippet_id',
         'name',
         'sql',
         'description',
+        'provider',
     ];
 
     protected $casts = [

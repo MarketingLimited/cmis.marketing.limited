@@ -17,25 +17,22 @@ class DatasetFile extends Model
     protected $keyType = 'string';
 
     protected $fillable = [
-        'package_id',
-        'file_name',
-        'file_path',
-        'file_size_bytes',
-        'mime_type',
+        'file_id',
+        'pkg_id',
+        'filename',
         'checksum',
-        'row_count',
-        'column_count',
-        'file_metadata',
+        'meta',
+        'provider',
     ];
 
-    protected $casts = [
-        'file_size_bytes' => 'integer',
+    protected $casts = ['file_size_bytes' => 'integer',
         'row_count' => 'integer',
         'column_count' => 'integer',
         'file_metadata' => 'array',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
         'deleted_at' => 'datetime',
+        'meta' => 'array',
     ];
 
     // Relationships

@@ -23,9 +23,11 @@ class OutputContract extends Model
     public $timestamps = false;
 
     protected $fillable = [
+        'contract_id',
         'code',
         'json_schema',
         'notes',
+        'provider',
     ];
 
     protected $casts = [

@@ -25,11 +25,13 @@ class ReferenceEntity extends Model
     const UPDATED_AT = null;
 
     protected $fillable = [
+        'ref_id',
         'category',
         'code',
         'label',
         'description',
         'metadata',
+        'provider',
     ];
 
     protected $casts = [

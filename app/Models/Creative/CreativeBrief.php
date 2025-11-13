@@ -17,15 +17,10 @@ class CreativeBrief extends Model
     protected $keyType = 'string';
 
     protected $fillable = [
+        'brief_id',
         'org_id',
-        'campaign_id',
-        'brief_name',
+        'name',
         'brief_data',
-        'status',
-        'approved_by',
-        'approved_at',
-        'metadata',
-        'created_by',
         'provider',
     ];
 

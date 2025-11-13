@@ -11,19 +11,23 @@ class CognitiveTrackerTemplate extends Model
     use HasFactory, HasUuids;
 
     protected $table = 'cmis.cognitive_tracker_template';
-    protected $primaryKey = 'template_id';
+    protected $primaryKey = 'tracker_id';
     public $incrementing = false;
     protected $keyType = 'string';
 
     protected $fillable = [
-        'name',
-        'description',
-        'category',
-        'tracking_pattern',
-        'metrics',
-        'thresholds',
-        'is_active',
-        'metadata',
+        'tracker_id',
+        'org_id',
+        'campaign_id',
+        'record_date',
+        'platform',
+        'content_type',
+        'visual_factor',
+        'ctr',
+        'engagement_rate',
+        'trust_index',
+        'visual_insight',
+        'provider',
     ];
 
     protected $casts = [

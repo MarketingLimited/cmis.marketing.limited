@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Industries extends Model
 {
     protected $table = 'cmis.industries';
+    protected $primaryKey = 'industry_id';
 
     public $timestamps = false;
 }

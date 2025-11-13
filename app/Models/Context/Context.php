@@ -28,10 +28,12 @@ class Context extends Model
     const UPDATED_AT = null;
 
     protected $fillable = [
+        'context_id',
         'org_id',
         'campaign_id',
         'type',
         'metadata',
+        'provider',
     ];
 
     protected $casts = [

@@ -16,11 +16,14 @@ class UserPermission extends Model
     protected $keyType = 'string';
 
     protected $fillable = [
+        'id',
         'user_id',
+        'org_id',
         'permission_id',
         'is_granted',
-        'expires_at',
+        'granted_at',
         'granted_by',
+        'expires_at',
         'provider',
     ];
 

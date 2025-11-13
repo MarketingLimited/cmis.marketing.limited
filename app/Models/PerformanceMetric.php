@@ -20,6 +20,7 @@ class PerformanceMetric extends Model
     public $timestamps = false;
 
     protected $fillable = [
+        'metric_id',
         'org_id',
         'campaign_id',
         'output_id',
@@ -28,6 +29,7 @@ class PerformanceMetric extends Model
         'target',
         'baseline',
         'observed_at',
+        'provider',
     ];
 
     protected $casts = [
