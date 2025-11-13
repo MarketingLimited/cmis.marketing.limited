@@ -261,6 +261,26 @@ Route::middleware(['auth:sanctum', 'validate.org.access', 'set.db.context'])
 
     /*
     |----------------------------------------------------------------------
+    | سير عمل الموافقات (Approval Workflow) - Sprint 2.4
+    |----------------------------------------------------------------------
+    */
+    Route::prefix('approvals')->name('approvals.')->group(function () {
+        // Request Approval
+        Route::post('/request', [App\Http\Controllers\ApprovalController::class, 'requestApproval'])->name('request');
+
+        // Approve/Reject
+        Route::post('/{approval_id}/approve', [App\Http\Controllers\ApprovalController::class, 'approve'])->name('approve');
+        Route::post('/{approval_id}/reject', [App\Http\Controllers\ApprovalController::class, 'reject'])->name('reject');
+        Route::post('/{approval_id}/reassign', [App\Http\Controllers\ApprovalController::class, 'reassign'])->name('reassign');
+
+        // Get Approvals
+        Route::get('/pending', [App\Http\Controllers\ApprovalController::class, 'pending'])->name('pending');
+        Route::get('/post/{post_id}/history', [App\Http\Controllers\ApprovalController::class, 'history'])->name('history');
+        Route::get('/statistics', [App\Http\Controllers\ApprovalController::class, 'statistics'])->name('statistics');
+    });
+
+    /*
+    |----------------------------------------------------------------------
     | صندوق الوارد الموحد (Unified Inbox)
     |----------------------------------------------------------------------
     */
