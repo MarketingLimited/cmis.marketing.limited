@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict Zl8xLC5DOYJwJjQOUQBnu0fLVz0xm9hAaIRTnPUyqgVNQgtoMBibo53q6Ac41fo
+\restrict 7ynjODTHbfjke5Qq3YWAb2d2cRQzFatEdJnWBfuxPqvoIKXl22nCYto4cbSteU9
 
 -- Dumped from database version 18.0 (Ubuntu 18.0-1.pgdg24.04+3)
 -- Dumped by pg_dump version 18.0 (Ubuntu 18.0-1.pgdg24.04+3)
@@ -4932,6 +4932,7 @@ CREATE TABLE cmis.campaigns (
     deleted_at timestamp with time zone,
     provider text,
     deleted_by uuid,
+    description text,
     CONSTRAINT campaigns_status_valid CHECK ((status = ANY (ARRAY['draft'::text, 'active'::text, 'paused'::text, 'completed'::text, 'archived'::text])))
 );
 
@@ -5202,7 +5203,7 @@ CREATE TABLE cmis.contexts_base (
     created_at timestamp with time zone DEFAULT now(),
     deleted_at timestamp with time zone,
     provider text,
-    CONSTRAINT contexts_base_context_type_check CHECK (((context_type)::text = ANY ((ARRAY['creative'::character varying, 'value'::character varying, 'offering'::character varying])::text[])))
+    CONSTRAINT contexts_base_context_type_check CHECK (((context_type)::text = ANY (ARRAY[('creative'::character varying)::text, ('value'::character varying)::text, ('offering'::character varying)::text])))
 );
 
 
@@ -6114,9 +6115,7 @@ ALTER SEQUENCE cmis.meta_function_descriptions_id_seq OWNED BY cmis.meta_functio
 CREATE TABLE cmis.migrations (
     id integer NOT NULL,
     migration character varying(255) NOT NULL,
-    batch integer NOT NULL,
-    deleted_at timestamp with time zone,
-    provider text
+    batch integer NOT NULL
 );
 
 
@@ -6358,6 +6357,19 @@ CREATE TABLE cmis.output_contracts (
 ALTER TABLE cmis.output_contracts OWNER TO begin;
 
 --
+-- Name: password_reset_tokens; Type: TABLE; Schema: cmis; Owner: begin
+--
+
+CREATE TABLE cmis.password_reset_tokens (
+    email character varying(255) NOT NULL,
+    token character varying(255) NOT NULL,
+    created_at timestamp(0) without time zone
+);
+
+
+ALTER TABLE cmis.password_reset_tokens OWNER TO begin;
+
+--
 -- Name: performance_metrics; Type: TABLE; Schema: cmis; Owner: begin
 --
 
@@ -6461,7 +6473,7 @@ CREATE TABLE cmis.post_approvals (
     reviewed_at timestamp(0) without time zone,
     created_at timestamp(0) without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
     updated_at timestamp(0) without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    CONSTRAINT chk_post_approvals_status CHECK (((status)::text = ANY ((ARRAY['pending'::character varying, 'approved'::character varying, 'rejected'::character varying])::text[])))
+    CONSTRAINT chk_post_approvals_status CHECK (((status)::text = ANY (ARRAY[('pending'::character varying)::text, ('approved'::character varying)::text, ('rejected'::character varying)::text])))
 );
 
 
@@ -6725,7 +6737,7 @@ CREATE TABLE cmis.scheduled_reports (
     next_run_at timestamp with time zone,
     created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
     updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT chk_scheduled_reports_frequency CHECK (((frequency)::text = ANY ((ARRAY['daily'::character varying, 'weekly'::character varying, 'monthly'::character varying, 'quarterly'::character varying, 'yearly'::character varying])::text[])))
+    CONSTRAINT chk_scheduled_reports_frequency CHECK (((frequency)::text = ANY (ARRAY[('daily'::character varying)::text, ('weekly'::character varying)::text, ('monthly'::character varying)::text, ('quarterly'::character varying)::text, ('yearly'::character varying)::text])))
 );
 
 
@@ -6850,6 +6862,22 @@ CREATE TABLE cmis.session_context (
 
 
 ALTER TABLE cmis.session_context OWNER TO begin;
+
+--
+-- Name: sessions; Type: TABLE; Schema: cmis; Owner: begin
+--
+
+CREATE TABLE cmis.sessions (
+    id character varying(255) NOT NULL,
+    user_id bigint,
+    ip_address character varying(45),
+    user_agent text,
+    payload text NOT NULL,
+    last_activity integer NOT NULL
+);
+
+
+ALTER TABLE cmis.sessions OWNER TO begin;
 
 --
 -- Name: social_account_metrics; Type: TABLE; Schema: cmis; Owner: begin
@@ -7159,7 +7187,7 @@ ALTER TABLE cmis.user_activities OWNER TO begin;
 
 CREATE TABLE cmis.user_orgs (
     id uuid DEFAULT gen_random_uuid() NOT NULL,
-    user_id uuid NOT NULL,
+    user_id bigint NOT NULL,
     org_id uuid NOT NULL,
     role_id uuid NOT NULL,
     is_active boolean DEFAULT true,
@@ -7198,21 +7226,40 @@ ALTER TABLE cmis.user_permissions OWNER TO begin;
 --
 
 CREATE TABLE cmis.users (
-    user_id uuid DEFAULT public.gen_random_uuid() NOT NULL,
-    email public.citext NOT NULL,
-    display_name text,
-    role text DEFAULT 'editor'::text,
-    deleted_at timestamp with time zone,
-    provider text,
-    status text DEFAULT 'active'::text,
-    name text DEFAULT ''::text,
-    password character varying(255),
-    CONSTRAINT chk_users_status CHECK ((status = ANY (ARRAY['active'::text, 'inactive'::text, 'suspended'::text, 'deleted'::text]))),
-    CONSTRAINT users_role_check CHECK ((role = ANY (ARRAY['viewer'::text, 'editor'::text, 'admin'::text])))
+    id bigint NOT NULL,
+    name character varying(255) NOT NULL,
+    email character varying(255) NOT NULL,
+    email_verified_at timestamp(0) without time zone,
+    password character varying(255) NOT NULL,
+    remember_token character varying(100),
+    created_at timestamp(0) without time zone,
+    updated_at timestamp(0) without time zone,
+    deleted_at timestamp with time zone
 );
 
 
 ALTER TABLE cmis.users OWNER TO begin;
+
+--
+-- Name: users_id_seq; Type: SEQUENCE; Schema: cmis; Owner: begin
+--
+
+CREATE SEQUENCE cmis.users_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE cmis.users_id_seq OWNER TO begin;
+
+--
+-- Name: users_id_seq; Type: SEQUENCE OWNED BY; Schema: cmis; Owner: begin
+--
+
+ALTER SEQUENCE cmis.users_id_seq OWNED BY cmis.users.id;
+
 
 --
 -- Name: v_ai_insights; Type: VIEW; Schema: cmis; Owner: begin
@@ -9674,6 +9721,13 @@ ALTER TABLE ONLY cmis.naming_templates ALTER COLUMN naming_id SET DEFAULT nextva
 
 
 --
+-- Name: users id; Type: DEFAULT; Schema: cmis; Owner: begin
+--
+
+ALTER TABLE ONLY cmis.users ALTER COLUMN id SET DEFAULT nextval('cmis.users_id_seq'::regclass);
+
+
+--
 -- Name: dev id; Type: DEFAULT; Schema: cmis_knowledge; Owner: begin
 --
 
@@ -10591,6 +10645,14 @@ ALTER TABLE ONLY cmis.output_contracts
 
 
 --
+-- Name: password_reset_tokens password_reset_tokens_pkey; Type: CONSTRAINT; Schema: cmis; Owner: begin
+--
+
+ALTER TABLE ONLY cmis.password_reset_tokens
+    ADD CONSTRAINT password_reset_tokens_pkey PRIMARY KEY (email);
+
+
+--
 -- Name: performance_metrics performance_metrics_pkey; Type: CONSTRAINT; Schema: cmis; Owner: begin
 --
 
@@ -10799,6 +10861,14 @@ ALTER TABLE ONLY cmis.session_context
 
 
 --
+-- Name: sessions sessions_pkey; Type: CONSTRAINT; Schema: cmis; Owner: begin
+--
+
+ALTER TABLE ONLY cmis.sessions
+    ADD CONSTRAINT sessions_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: social_account_metrics social_account_metrics_pkey; Type: CONSTRAINT; Schema: cmis; Owner: begin
 --
 
@@ -10983,18 +11053,11 @@ ALTER TABLE ONLY cmis.users
 
 
 --
--- Name: CONSTRAINT users_email_unique ON users; Type: COMMENT; Schema: cmis; Owner: begin
---
-
-COMMENT ON CONSTRAINT users_email_unique ON cmis.users IS 'Ensures each email address is unique across all users';
-
-
---
 -- Name: users users_pkey; Type: CONSTRAINT; Schema: cmis; Owner: begin
 --
 
 ALTER TABLE ONLY cmis.users
-    ADD CONSTRAINT users_pkey PRIMARY KEY (user_id);
+    ADD CONSTRAINT users_pkey PRIMARY KEY (id);
 
 
 --
@@ -12264,24 +12327,10 @@ CREATE INDEX idx_user_sessions_user_id ON cmis.user_sessions USING btree (user_i
 
 
 --
--- Name: idx_users_active; Type: INDEX; Schema: cmis; Owner: begin
---
-
-CREATE INDEX idx_users_active ON cmis.users USING btree (email) WHERE (deleted_at IS NULL);
-
-
---
 -- Name: idx_users_email; Type: INDEX; Schema: cmis; Owner: begin
 --
 
 CREATE INDEX idx_users_email ON cmis.users USING btree (email);
-
-
---
--- Name: idx_users_status; Type: INDEX; Schema: cmis; Owner: begin
---
-
-CREATE INDEX idx_users_status ON cmis.users USING btree (status) WHERE (deleted_at IS NULL);
 
 
 --
@@ -12352,6 +12401,20 @@ CREATE INDEX post_approvals_post_status_idx ON cmis.post_approvals USING btree (
 --
 
 CREATE INDEX post_approvals_status_assignee_idx ON cmis.post_approvals USING btree (status, assigned_to);
+
+
+--
+-- Name: sessions_last_activity_index; Type: INDEX; Schema: cmis; Owner: begin
+--
+
+CREATE INDEX sessions_last_activity_index ON cmis.sessions USING btree (last_activity);
+
+
+--
+-- Name: sessions_user_id_index; Type: INDEX; Schema: cmis; Owner: begin
+--
+
+CREATE INDEX sessions_user_id_index ON cmis.sessions USING btree (user_id);
 
 
 --
@@ -12871,12 +12934,16 @@ CREATE TRIGGER audit_trigger_campaign_context_links AFTER INSERT OR DELETE OR UP
 
 CREATE TRIGGER audit_trigger_campaigns AFTER INSERT OR DELETE OR UPDATE ON cmis.campaigns FOR EACH ROW EXECUTE FUNCTION operations.audit_trigger_function();
 
+ALTER TABLE cmis.campaigns DISABLE TRIGGER audit_trigger_campaigns;
+
 
 --
 -- Name: creative_assets audit_trigger_creative_assets; Type: TRIGGER; Schema: cmis; Owner: begin
 --
 
 CREATE TRIGGER audit_trigger_creative_assets AFTER INSERT OR DELETE OR UPDATE ON cmis.creative_assets FOR EACH ROW EXECUTE FUNCTION operations.audit_trigger_function();
+
+ALTER TABLE cmis.creative_assets DISABLE TRIGGER audit_trigger_creative_assets;
 
 
 --
@@ -12885,6 +12952,8 @@ CREATE TRIGGER audit_trigger_creative_assets AFTER INSERT OR DELETE OR UPDATE ON
 
 CREATE TRIGGER audit_trigger_integrations AFTER INSERT OR DELETE OR UPDATE ON cmis.integrations FOR EACH ROW EXECUTE FUNCTION operations.audit_trigger_function();
 
+ALTER TABLE cmis.integrations DISABLE TRIGGER audit_trigger_integrations;
+
 
 --
 -- Name: orgs audit_trigger_orgs; Type: TRIGGER; Schema: cmis; Owner: begin
@@ -12892,12 +12961,16 @@ CREATE TRIGGER audit_trigger_integrations AFTER INSERT OR DELETE OR UPDATE ON cm
 
 CREATE TRIGGER audit_trigger_orgs AFTER INSERT OR DELETE OR UPDATE ON cmis.orgs FOR EACH ROW EXECUTE FUNCTION operations.audit_trigger_function();
 
+ALTER TABLE cmis.orgs DISABLE TRIGGER audit_trigger_orgs;
+
 
 --
 -- Name: users audit_trigger_users; Type: TRIGGER; Schema: cmis; Owner: begin
 --
 
 CREATE TRIGGER audit_trigger_users AFTER INSERT OR DELETE OR UPDATE ON cmis.users FOR EACH ROW EXECUTE FUNCTION operations.audit_trigger_function();
+
+ALTER TABLE cmis.users DISABLE TRIGGER audit_trigger_users;
 
 
 --
@@ -13199,27 +13272,11 @@ ALTER TABLE ONLY cmis.ad_variants
 
 
 --
--- Name: audience_templates cmis_audience_templates_created_by_foreign; Type: FK CONSTRAINT; Schema: cmis; Owner: begin
---
-
-ALTER TABLE ONLY cmis.audience_templates
-    ADD CONSTRAINT cmis_audience_templates_created_by_foreign FOREIGN KEY (created_by) REFERENCES cmis.users(user_id) ON DELETE CASCADE;
-
-
---
 -- Name: audience_templates cmis_audience_templates_org_id_foreign; Type: FK CONSTRAINT; Schema: cmis; Owner: begin
 --
 
 ALTER TABLE ONLY cmis.audience_templates
     ADD CONSTRAINT cmis_audience_templates_org_id_foreign FOREIGN KEY (org_id) REFERENCES cmis.orgs(org_id) ON DELETE CASCADE;
-
-
---
--- Name: inbox_items cmis_inbox_items_assigned_to_foreign; Type: FK CONSTRAINT; Schema: cmis; Owner: begin
---
-
-ALTER TABLE ONLY cmis.inbox_items
-    ADD CONSTRAINT cmis_inbox_items_assigned_to_foreign FOREIGN KEY (assigned_to) REFERENCES cmis.users(user_id) ON DELETE SET NULL;
 
 
 --
@@ -13239,27 +13296,11 @@ ALTER TABLE ONLY cmis.inbox_items
 
 
 --
--- Name: post_approvals cmis_post_approvals_assigned_to_foreign; Type: FK CONSTRAINT; Schema: cmis; Owner: begin
---
-
-ALTER TABLE ONLY cmis.post_approvals
-    ADD CONSTRAINT cmis_post_approvals_assigned_to_foreign FOREIGN KEY (assigned_to) REFERENCES cmis.users(user_id) ON DELETE SET NULL;
-
-
---
 -- Name: post_approvals cmis_post_approvals_post_id_foreign; Type: FK CONSTRAINT; Schema: cmis; Owner: begin
 --
 
 ALTER TABLE ONLY cmis.post_approvals
     ADD CONSTRAINT cmis_post_approvals_post_id_foreign FOREIGN KEY (post_id) REFERENCES cmis.social_posts(id) ON DELETE CASCADE;
-
-
---
--- Name: post_approvals cmis_post_approvals_requested_by_foreign; Type: FK CONSTRAINT; Schema: cmis; Owner: begin
---
-
-ALTER TABLE ONLY cmis.post_approvals
-    ADD CONSTRAINT cmis_post_approvals_requested_by_foreign FOREIGN KEY (requested_by) REFERENCES cmis.users(user_id) ON DELETE CASCADE;
 
 
 --
@@ -13292,14 +13333,6 @@ ALTER TABLE ONLY cmis.scheduled_social_posts
 
 ALTER TABLE ONLY cmis.scheduled_social_posts
     ADD CONSTRAINT cmis_scheduled_social_posts_org_id_foreign FOREIGN KEY (org_id) REFERENCES cmis.orgs(org_id) ON DELETE CASCADE;
-
-
---
--- Name: scheduled_social_posts cmis_scheduled_social_posts_user_id_foreign; Type: FK CONSTRAINT; Schema: cmis; Owner: begin
---
-
-ALTER TABLE ONLY cmis.scheduled_social_posts
-    ADD CONSTRAINT cmis_scheduled_social_posts_user_id_foreign FOREIGN KEY (user_id) REFERENCES cmis.users(user_id) ON DELETE SET NULL;
 
 
 --
@@ -13892,14 +13925,6 @@ ALTER TABLE ONLY cmis.prompt_templates
 
 
 --
--- Name: role_permissions role_permissions_granted_by_fkey; Type: FK CONSTRAINT; Schema: cmis; Owner: begin
---
-
-ALTER TABLE ONLY cmis.role_permissions
-    ADD CONSTRAINT role_permissions_granted_by_fkey FOREIGN KEY (granted_by) REFERENCES cmis.users(user_id);
-
-
---
 -- Name: role_permissions role_permissions_permission_id_fkey; Type: FK CONSTRAINT; Schema: cmis; Owner: begin
 --
 
@@ -13913,14 +13938,6 @@ ALTER TABLE ONLY cmis.role_permissions
 
 ALTER TABLE ONLY cmis.role_permissions
     ADD CONSTRAINT role_permissions_role_id_fkey FOREIGN KEY (role_id) REFERENCES cmis.roles(role_id) ON DELETE CASCADE;
-
-
---
--- Name: roles roles_created_by_fkey; Type: FK CONSTRAINT; Schema: cmis; Owner: begin
---
-
-ALTER TABLE ONLY cmis.roles
-    ADD CONSTRAINT roles_created_by_fkey FOREIGN KEY (created_by) REFERENCES cmis.users(user_id);
 
 
 --
@@ -14028,27 +14045,11 @@ ALTER TABLE ONLY cmis.sync_logs
 
 
 --
--- Name: team_account_access team_account_access_org_user_id_fkey; Type: FK CONSTRAINT; Schema: cmis; Owner: begin
---
-
-ALTER TABLE ONLY cmis.team_account_access
-    ADD CONSTRAINT team_account_access_org_user_id_fkey FOREIGN KEY (org_user_id) REFERENCES cmis.users(user_id) ON DELETE CASCADE;
-
-
---
 -- Name: team_account_access team_account_access_social_account_id_fkey; Type: FK CONSTRAINT; Schema: cmis; Owner: begin
 --
 
 ALTER TABLE ONLY cmis.team_account_access
     ADD CONSTRAINT team_account_access_social_account_id_fkey FOREIGN KEY (social_account_id) REFERENCES cmis.social_accounts(id) ON DELETE CASCADE;
-
-
---
--- Name: team_invitations team_invitations_invited_by_fkey; Type: FK CONSTRAINT; Schema: cmis; Owner: begin
---
-
-ALTER TABLE ONLY cmis.team_invitations
-    ADD CONSTRAINT team_invitations_invited_by_fkey FOREIGN KEY (invited_by) REFERENCES cmis.users(user_id) ON DELETE SET NULL;
 
 
 --
@@ -14084,22 +14085,6 @@ ALTER TABLE ONLY cmis.user_activities
 
 
 --
--- Name: user_activities user_activities_user_id_fkey; Type: FK CONSTRAINT; Schema: cmis; Owner: begin
---
-
-ALTER TABLE ONLY cmis.user_activities
-    ADD CONSTRAINT user_activities_user_id_fkey FOREIGN KEY (user_id) REFERENCES cmis.users(user_id);
-
-
---
--- Name: user_orgs user_orgs_invited_by_fkey; Type: FK CONSTRAINT; Schema: cmis; Owner: begin
---
-
-ALTER TABLE ONLY cmis.user_orgs
-    ADD CONSTRAINT user_orgs_invited_by_fkey FOREIGN KEY (invited_by) REFERENCES cmis.users(user_id);
-
-
---
 -- Name: user_orgs user_orgs_org_id_fkey; Type: FK CONSTRAINT; Schema: cmis; Owner: begin
 --
 
@@ -14112,15 +14097,7 @@ ALTER TABLE ONLY cmis.user_orgs
 --
 
 ALTER TABLE ONLY cmis.user_orgs
-    ADD CONSTRAINT user_orgs_user_id_fkey FOREIGN KEY (user_id) REFERENCES cmis.users(user_id) ON DELETE CASCADE;
-
-
---
--- Name: user_permissions user_permissions_granted_by_fkey; Type: FK CONSTRAINT; Schema: cmis; Owner: begin
---
-
-ALTER TABLE ONLY cmis.user_permissions
-    ADD CONSTRAINT user_permissions_granted_by_fkey FOREIGN KEY (granted_by) REFERENCES cmis.users(user_id);
+    ADD CONSTRAINT user_orgs_user_id_fkey FOREIGN KEY (user_id) REFERENCES cmis.users(id) ON DELETE CASCADE;
 
 
 --
@@ -14137,22 +14114,6 @@ ALTER TABLE ONLY cmis.user_permissions
 
 ALTER TABLE ONLY cmis.user_permissions
     ADD CONSTRAINT user_permissions_permission_id_fkey FOREIGN KEY (permission_id) REFERENCES cmis.permissions(permission_id) ON DELETE CASCADE;
-
-
---
--- Name: user_permissions user_permissions_user_id_fkey; Type: FK CONSTRAINT; Schema: cmis; Owner: begin
---
-
-ALTER TABLE ONLY cmis.user_permissions
-    ADD CONSTRAINT user_permissions_user_id_fkey FOREIGN KEY (user_id) REFERENCES cmis.users(user_id) ON DELETE CASCADE;
-
-
---
--- Name: user_sessions user_sessions_user_id_fkey; Type: FK CONSTRAINT; Schema: cmis; Owner: begin
---
-
-ALTER TABLE ONLY cmis.user_sessions
-    ADD CONSTRAINT user_sessions_user_id_fkey FOREIGN KEY (user_id) REFERENCES cmis.users(user_id) ON DELETE CASCADE;
 
 
 --
@@ -14356,27 +14317,11 @@ ALTER TABLE ONLY cmis_staging.raw_channel_data
 
 
 --
--- Name: example_sets example_sets_anchor_fkey; Type: FK CONSTRAINT; Schema: lab; Owner: begin
---
-
-ALTER TABLE ONLY lab.example_sets
-    ADD CONSTRAINT example_sets_anchor_fkey FOREIGN KEY (anchor) REFERENCES cmis.anchors(anchor_id) ON DELETE SET NULL;
-
-
---
 -- Name: example_sets example_sets_campaign_id_fkey; Type: FK CONSTRAINT; Schema: lab; Owner: begin
 --
 
 ALTER TABLE ONLY lab.example_sets
     ADD CONSTRAINT example_sets_campaign_id_fkey FOREIGN KEY (campaign_id) REFERENCES cmis.campaigns(campaign_id) MATCH FULL ON DELETE SET NULL;
-
-
---
--- Name: example_sets example_sets_org_id_fkey; Type: FK CONSTRAINT; Schema: lab; Owner: begin
---
-
-ALTER TABLE ONLY lab.example_sets
-    ADD CONSTRAINT example_sets_org_id_fkey FOREIGN KEY (org_id) REFERENCES cmis.orgs(org_id) ON DELETE SET NULL;
 
 
 --
@@ -14692,24 +14637,6 @@ CREATE POLICY rbac_orgs_select ON cmis.orgs FOR SELECT USING (cmis.check_permiss
 
 
 --
--- Name: users rbac_users_select; Type: POLICY; Schema: cmis; Owner: begin
---
-
-CREATE POLICY rbac_users_select ON cmis.users FOR SELECT USING (((user_id = cmis.get_current_user_id()) OR (EXISTS ( SELECT 1
-   FROM cmis.user_orgs uo
-  WHERE ((uo.user_id = cmis.get_current_user_id()) AND (uo.deleted_at IS NULL) AND cmis.check_permission(cmis.get_current_user_id(), uo.org_id, 'admin.users'::text))))));
-
-
---
--- Name: users rbac_users_update; Type: POLICY; Schema: cmis; Owner: begin
---
-
-CREATE POLICY rbac_users_update ON cmis.users FOR UPDATE USING (((user_id = cmis.get_current_user_id()) OR (EXISTS ( SELECT 1
-   FROM cmis.user_orgs uo
-  WHERE ((uo.user_id = cmis.get_current_user_id()) AND (uo.deleted_at IS NULL) AND cmis.check_permission(cmis.get_current_user_id(), uo.org_id, 'admin.users'::text))))));
-
-
---
 -- Name: scheduled_social_posts; Type: ROW SECURITY; Schema: cmis; Owner: begin
 --
 
@@ -14726,7 +14653,9 @@ CREATE POLICY scheduled_social_posts_org_isolation ON cmis.scheduled_social_post
 -- Name: user_orgs user_orgs_self; Type: POLICY; Schema: cmis; Owner: begin
 --
 
-CREATE POLICY user_orgs_self ON cmis.user_orgs FOR SELECT USING ((user_id = cmis.get_current_user_id()));
+CREATE POLICY user_orgs_self ON cmis.user_orgs FOR SELECT USING ((user_id = ( SELECT users.id
+   FROM cmis.users
+  WHERE ((users.email)::text = CURRENT_USER))));
 
 
 --
@@ -14836,5 +14765,5 @@ ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public GRANT SELECT,INSERT,
 -- PostgreSQL database dump complete
 --
 
-\unrestrict Zl8xLC5DOYJwJjQOUQBnu0fLVz0xm9hAaIRTnPUyqgVNQgtoMBibo53q6Ac41fo
+\unrestrict 7ynjODTHbfjke5Qq3YWAb2d2cRQzFatEdJnWBfuxPqvoIKXl22nCYto4cbSteU9
 
