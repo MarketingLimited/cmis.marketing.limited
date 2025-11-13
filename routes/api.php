@@ -328,6 +328,35 @@ Route::middleware(['auth:sanctum', 'validate.org.access', 'set.db.context'])
 
     /*
     |----------------------------------------------------------------------
+    | رؤى الذكاء الاصطناعي (AI Insights) - Sprint 3.3
+    |----------------------------------------------------------------------
+    */
+    Route::prefix('ai/insights')->name('ai.insights.')->group(function () {
+        // Comprehensive Insights
+        Route::get('/{social_account_id}', [App\Http\Controllers\AIInsightsController::class, 'accountInsights'])->name('account');
+        Route::get('/{social_account_id}/summary', [App\Http\Controllers\AIInsightsController::class, 'insightsSummary'])->name('summary');
+
+        // Content Recommendations
+        Route::get('/{social_account_id}/recommendations', [App\Http\Controllers\AIInsightsController::class, 'contentRecommendations'])->name('recommendations');
+
+        // Anomaly Detection
+        Route::get('/{social_account_id}/anomalies', [App\Http\Controllers\AIInsightsController::class, 'anomalyDetection'])->name('anomalies');
+
+        // Predictions
+        Route::get('/{social_account_id}/predictions', [App\Http\Controllers\AIInsightsController::class, 'predictions'])->name('predictions');
+
+        // Observations
+        Route::get('/{social_account_id}/observations', [App\Http\Controllers\AIInsightsController::class, 'observations'])->name('observations');
+
+        // Optimization Opportunities
+        Route::get('/{social_account_id}/opportunities', [App\Http\Controllers\AIInsightsController::class, 'optimizationOpportunities'])->name('opportunities');
+
+        // Competitive Intelligence
+        Route::get('/{social_account_id}/competitive', [App\Http\Controllers\AIInsightsController::class, 'competitiveInsights'])->name('competitive');
+    });
+
+    /*
+    |----------------------------------------------------------------------
     | صندوق الوارد الموحد (Unified Inbox)
     |----------------------------------------------------------------------
     */
