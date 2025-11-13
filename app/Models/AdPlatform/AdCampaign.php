@@ -10,7 +10,7 @@ class AdCampaign extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected $table = 'cmis.ad_campaigns';
+    protected $table = 'cmis_ads.ad_campaigns';
     protected $primaryKey = 'ad_campaign_id';
     protected $connection = 'pgsql';
     public $incrementing = false;
@@ -69,6 +69,15 @@ class AdCampaign extends Model
     public function campaign()
     {
         return $this->belongsTo(\App\Models\Campaign::class, 'campaign_id', 'campaign_id');
+    }
+
+    /**
+     * Get the integration (platform connection)
+     */
+    public function integration()
+    {
+        return $this->belongsTo(\App\Models\Core\Integration::class, 'ad_account_id', 'account_id')
+            ->where('platform', $this->platform);
     }
 
     /**

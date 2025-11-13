@@ -2,23 +2,264 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Creative\FilterCreativeAssetsRequest;
+use App\Http\Requests\Creative\StoreCreativeAssetRequest;
+use App\Http\Requests\Creative\UpdateCreativeAssetRequest;
+use App\Http\Resources\Creative\CreativeAssetCollection;
+use App\Http\Resources\Creative\CreativeAssetResource;
 use App\Models\CreativeAsset;
-use Illuminate\Support\Facades\DB;
+use App\Services\CreativeService;
 use Illuminate\Http\Request;
 
 class CreativeController extends Controller
 {
-    public function show($id)
+    protected CreativeService $creativeService;
+
+    public function __construct(CreativeService $creativeService)
     {
-        // Use Eloquent model for proper authorization
-        $creative = CreativeAsset::where('org_id', session('current_org_id'))
-            ->where('asset_id', $id)
-            ->firstOrFail();
+        $this->creativeService = $creativeService;
+    }
 
-        $this->authorize('view', $creative);
+    /**
+     * Display a listing of creative assets
+     */
+    public function index(FilterCreativeAssetsRequest $request)
+    {
+        try {
+            $validated = $request->validated();
+            $orgId = session('current_org_id') ?? auth()->user()->org_id;
 
-        return view('creatives.show', [
-            'creative' => $creative
+            $query = CreativeAsset::where('org_id', $orgId);
+
+            // Apply filters
+            if (!empty($validated['asset_type'])) {
+                $query->where('asset_type', $validated['asset_type']);
+            }
+
+            if (!empty($validated['status'])) {
+                $query->where('status', $validated['status']);
+            }
+
+            if (!empty($validated['search'])) {
+                $query->where('asset_name', 'ilike', "%{$validated['search']}%");
+            }
+
+            // Sorting
+            $query->orderBy(
+                $validated['sort_by'] ?? 'created_at',
+                $validated['sort_direction'] ?? 'desc'
+            );
+
+            // Pagination
+            $assets = $query->paginate($validated['per_page'] ?? 20);
+
+            return new CreativeAssetCollection($assets);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'error' => 'فشل جلب المواد الإبداعية',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Store a newly created creative asset
+     */
+    public function store(StoreCreativeAssetRequest $request)
+    {
+        try {
+            $validated = $request->validated();
+            $file = $request->file('file');
+
+            $asset = $this->creativeService->uploadAsset($validated, $file);
+
+            return (new CreativeAssetResource($asset))
+                ->additional([
+                    'success' => true,
+                    'message' => 'تم رفع المادة الإبداعية بنجاح',
+                ])
+                ->response()
+                ->setStatusCode(201);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'error' => 'فشل رفع المادة الإبداعية',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Display the specified creative asset
+     */
+    public function show(string $assetId)
+    {
+        try {
+            $orgId = session('current_org_id') ?? auth()->user()->org_id;
+
+            $asset = CreativeAsset::where('org_id', $orgId)
+                ->where('asset_id', $assetId)
+                ->firstOrFail();
+
+            $this->authorize('view', $asset);
+
+            return (new CreativeAssetResource($asset))
+                ->additional([
+                    'success' => true,
+                ]);
+
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json([
+                'success' => false,
+                'error' => 'لم يتم العثور على المادة الإبداعية'
+            ], 404);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'error' => 'فشل جلب المادة الإبداعية',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Update the specified creative asset
+     */
+    public function update(UpdateCreativeAssetRequest $request, string $assetId)
+    {
+        try {
+            $orgId = session('current_org_id') ?? auth()->user()->org_id;
+
+            $asset = CreativeAsset::where('org_id', $orgId)
+                ->where('asset_id', $assetId)
+                ->firstOrFail();
+
+            $validated = $request->validated();
+
+            $asset->update($validated);
+
+            return (new CreativeAssetResource($asset->fresh()))
+                ->additional([
+                    'success' => true,
+                    'message' => 'تم تحديث المادة الإبداعية بنجاح',
+                ]);
+
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json([
+                'success' => false,
+                'error' => 'لم يتم العثور على المادة الإبداعية'
+            ], 404);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'error' => 'فشل التحديث',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Remove the specified creative asset
+     */
+    public function destroy(string $assetId)
+    {
+        try {
+            $deleted = $this->creativeService->deleteAsset($assetId);
+
+            if ($deleted) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'تم حذف المادة الإبداعية بنجاح'
+                ]);
+            }
+
+            return response()->json([
+                'success' => false,
+                'error' => 'فشل حذف المادة الإبداعية'
+            ], 500);
+
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json([
+                'success' => false,
+                'error' => 'لم يتم العثور على المادة الإبداعية'
+            ], 404);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'error' => 'فشل الحذف',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Approve a creative asset
+     */
+    public function approve(string $assetId)
+    {
+        try {
+            $approved = $this->creativeService->approveAsset($assetId, auth()->id());
+
+            if ($approved) {
+                $asset = CreativeAsset::findOrFail($assetId);
+
+                return (new CreativeAssetResource($asset))
+                    ->additional([
+                        'success' => true,
+                        'message' => 'تم اعتماد المادة الإبداعية بنجاح',
+                    ]);
+            }
+
+            return response()->json([
+                'success' => false,
+                'error' => 'فشل اعتماد المادة الإبداعية'
+            ], 500);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'error' => 'فشل اعتماد المادة الإبداعية',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Reject a creative asset
+     */
+    public function reject(Request $request, string $assetId)
+    {
+        $request->validate([
+            'reason' => 'required|string|max:1000',
         ]);
+
+        try {
+            $rejected = $this->creativeService->rejectAsset($assetId, $request->reason);
+
+            if ($rejected) {
+                $asset = CreativeAsset::findOrFail($assetId);
+
+                return (new CreativeAssetResource($asset))
+                    ->additional([
+                        'success' => true,
+                        'message' => 'تم رفض المادة الإبداعية',
+                    ]);
+            }
+
+            return response()->json([
+                'success' => false,
+                'error' => 'فشل رفض المادة الإبداعية'
+            ], 500);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'error' => 'فشل رفض المادة الإبداعية',
+                'message' => $e->getMessage()
+            ], 500);
+        }
     }
 }
