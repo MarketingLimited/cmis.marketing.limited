@@ -210,6 +210,27 @@ Route::middleware(['auth:sanctum', 'validate.org.access', 'set.db.context'])
 
     /*
     |----------------------------------------------------------------------
+    | قوائم النشر (Publishing Queues) - Sprint 2.1
+    |----------------------------------------------------------------------
+    */
+    Route::prefix('queues')->name('queues.')->group(function () {
+        // Queue Configuration
+        Route::get('/{social_account_id}', [App\Http\Controllers\PublishingQueueController::class, 'show'])->name('show');
+        Route::post('/', [App\Http\Controllers\PublishingQueueController::class, 'store'])->name('store');
+        Route::put('/{social_account_id}', [App\Http\Controllers\PublishingQueueController::class, 'update'])->name('update');
+
+        // Queue Information
+        Route::get('/{social_account_id}/next-slot', [App\Http\Controllers\PublishingQueueController::class, 'nextSlot'])->name('next-slot');
+        Route::get('/{social_account_id}/statistics', [App\Http\Controllers\PublishingQueueController::class, 'statistics'])->name('statistics');
+
+        // Queued Posts Management
+        Route::get('/{social_account_id}/posts', [App\Http\Controllers\PublishingQueueController::class, 'queuedPosts'])->name('posts');
+        Route::post('/{social_account_id}/schedule', [App\Http\Controllers\PublishingQueueController::class, 'schedulePost'])->name('schedule');
+        Route::delete('/posts/{post_id}', [App\Http\Controllers\PublishingQueueController::class, 'removePost'])->name('posts.remove');
+    });
+
+    /*
+    |----------------------------------------------------------------------
     | صندوق الوارد الموحد (Unified Inbox)
     |----------------------------------------------------------------------
     */

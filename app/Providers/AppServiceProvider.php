@@ -106,7 +106,7 @@ class AppServiceProvider extends ServiceProvider
         // Social Media Repository
         $this->app->bind(
             \App\Repositories\Contracts\SocialMediaRepositoryInterface::class,
-            \App\Repositories\SocialMedia\SocialMediaRepository::class
+            \App\Repositories\CMIS\SocialMediaRepository::class
         );
 
         // Notification Repository
