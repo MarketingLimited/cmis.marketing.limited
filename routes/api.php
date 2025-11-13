@@ -524,6 +524,29 @@ Route::middleware(['auth:sanctum', 'validate.org.access', 'set.db.context'])
 
     /*
     |----------------------------------------------------------------------
+    | التعليقات والتعاون (Comments & Collaboration) - Sprint 5.3
+    |----------------------------------------------------------------------
+    */
+    Route::prefix('comments')->name('comments.')->group(function () {
+        // Comments
+        Route::get('/', [App\Http\Controllers\CommentController::class, 'list'])->name('index');
+        Route::post('/', [App\Http\Controllers\CommentController::class, 'create'])->name('create');
+        Route::put('/{comment_id}', [App\Http\Controllers\CommentController::class, 'update'])->name('update');
+        Route::delete('/{comment_id}', [App\Http\Controllers\CommentController::class, 'delete'])->name('delete');
+
+        // Replies
+        Route::post('/{comment_id}/reply', [App\Http\Controllers\CommentController::class, 'reply'])->name('reply');
+
+        // Reactions
+        Route::post('/{comment_id}/reactions', [App\Http\Controllers\CommentController::class, 'addReaction'])->name('reactions.add');
+        Route::delete('/{comment_id}/reactions', [App\Http\Controllers\CommentController::class, 'removeReaction'])->name('reactions.remove');
+    });
+
+    // Activity Feed (organization-wide)
+    Route::get('/activity', [App\Http\Controllers\CommentController::class, 'getActivityFeed'])->name('activity.feed');
+
+    /*
+    |----------------------------------------------------------------------
     | صندوق الوارد الموحد (Unified Inbox)
     |----------------------------------------------------------------------
     */
