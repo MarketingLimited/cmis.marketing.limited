@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class VSearchPerformance extends Model
 {
     protected $table = 'cmis_knowledge.v_search_performance';
+    protected $guarded = ['*'];
     public $incrementing = false;
 
     public $timestamps = false;

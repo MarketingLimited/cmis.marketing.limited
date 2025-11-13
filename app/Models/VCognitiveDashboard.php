@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class VCognitiveDashboard extends Model
 {
     protected $table = 'cmis_system_health.v_cognitive_dashboard';
+    protected $guarded = ['*'];
     public $incrementing = false;
 
     public $timestamps = false;
