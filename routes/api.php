@@ -458,6 +458,25 @@ Route::middleware(['auth:sanctum', 'validate.org.access', 'set.db.context'])
 
     /*
     |----------------------------------------------------------------------
+    | تحليلات الحملات الإعلانية (Campaign Analytics) - Sprint 4.5
+    |----------------------------------------------------------------------
+    */
+    Route::prefix('campaign-analytics')->name('campaign-analytics.')->group(function () {
+        // Campaign Analytics
+        Route::get('/{campaign_id}', [App\Http\Controllers\CampaignAnalyticsController::class, 'getCampaignAnalytics'])->name('show');
+        Route::post('/compare', [App\Http\Controllers\CampaignAnalyticsController::class, 'compareCampaigns'])->name('compare');
+
+        // Funnel & Attribution
+        Route::get('/{campaign_id}/funnel', [App\Http\Controllers\CampaignAnalyticsController::class, 'getFunnelAnalytics'])->name('funnel');
+        Route::get('/{campaign_id}/attribution', [App\Http\Controllers\CampaignAnalyticsController::class, 'getAttributionAnalysis'])->name('attribution');
+
+        // Breakdowns
+        Route::get('/{campaign_id}/ad-sets', [App\Http\Controllers\CampaignAnalyticsController::class, 'getAdSetBreakdown'])->name('ad-sets');
+        Route::get('/{campaign_id}/creatives', [App\Http\Controllers\CampaignAnalyticsController::class, 'getCreativeBreakdown'])->name('creatives');
+    });
+
+    /*
+    |----------------------------------------------------------------------
     | صندوق الوارد الموحد (Unified Inbox)
     |----------------------------------------------------------------------
     */
