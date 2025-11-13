@@ -300,6 +300,34 @@ Route::middleware(['auth:sanctum', 'validate.org.access', 'set.db.context'])
 
     /*
     |----------------------------------------------------------------------
+    | تحليل أداء المحتوى (Content Performance Analysis) - Sprint 3.2
+    |----------------------------------------------------------------------
+    */
+    Route::prefix('content/analytics')->name('content.analytics.')->group(function () {
+        // Post-Level Analytics
+        Route::get('/post/{post_id}', [App\Http\Controllers\ContentAnalyticsController::class, 'postAnalytics'])->name('post');
+
+        // Hashtag Analysis
+        Route::get('/hashtags/{social_account_id}', [App\Http\Controllers\ContentAnalyticsController::class, 'hashtagAnalytics'])->name('hashtags');
+
+        // Audience Demographics
+        Route::get('/demographics/{social_account_id}', [App\Http\Controllers\ContentAnalyticsController::class, 'audienceDemographics'])->name('demographics');
+
+        // Engagement Patterns
+        Route::get('/patterns/{social_account_id}', [App\Http\Controllers\ContentAnalyticsController::class, 'engagementPatterns'])->name('patterns');
+
+        // Content Type Performance
+        Route::get('/content-types/{social_account_id}', [App\Http\Controllers\ContentAnalyticsController::class, 'contentTypePerformance'])->name('content-types');
+
+        // Top Performing Posts
+        Route::get('/top-posts/{social_account_id}', [App\Http\Controllers\ContentAnalyticsController::class, 'topPosts'])->name('top-posts');
+
+        // Comprehensive Analysis
+        Route::get('/comprehensive/{social_account_id}', [App\Http\Controllers\ContentAnalyticsController::class, 'comprehensiveAnalysis'])->name('comprehensive');
+    });
+
+    /*
+    |----------------------------------------------------------------------
     | صندوق الوارد الموحد (Unified Inbox)
     |----------------------------------------------------------------------
     */
