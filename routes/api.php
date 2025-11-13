@@ -501,6 +501,29 @@ Route::middleware(['auth:sanctum', 'validate.org.access', 'set.db.context'])
 
     /*
     |----------------------------------------------------------------------
+    | إدارة الفريق (Team Management) - Sprint 5.1
+    |----------------------------------------------------------------------
+    */
+    Route::prefix('team')->name('team.')->group(function () {
+        // Team Members
+        Route::get('/members', [App\Http\Controllers\TeamController::class, 'listMembers'])->name('members.index');
+        Route::delete('/members/{user_id}', [App\Http\Controllers\TeamController::class, 'removeMember'])->name('members.remove');
+        Route::put('/members/{user_id}/role', [App\Http\Controllers\TeamController::class, 'updateRole'])->name('members.update-role');
+        Route::put('/members/{user_id}/accounts', [App\Http\Controllers\TeamController::class, 'assignToAccounts'])->name('members.assign-accounts');
+
+        // Invitations
+        Route::post('/invite', [App\Http\Controllers\TeamController::class, 'invite'])->name('invite');
+        Route::get('/invitations', [App\Http\Controllers\TeamController::class, 'listInvitations'])->name('invitations.index');
+        Route::delete('/invitations/{invitation_id}', [App\Http\Controllers\TeamController::class, 'cancelInvitation'])->name('invitations.cancel');
+        Route::post('/invitations/{token}/accept', [App\Http\Controllers\TeamController::class, 'acceptInvitation'])->name('invitations.accept');
+
+        // Roles & Permissions
+        Route::get('/roles', [App\Http\Controllers\TeamController::class, 'getAllRoles'])->name('roles.index');
+        Route::get('/roles/{role}/permissions', [App\Http\Controllers\TeamController::class, 'getRolePermissions'])->name('roles.permissions');
+    });
+
+    /*
+    |----------------------------------------------------------------------
     | صندوق الوارد الموحد (Unified Inbox)
     |----------------------------------------------------------------------
     */
