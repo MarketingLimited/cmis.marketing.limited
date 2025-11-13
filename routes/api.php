@@ -231,6 +231,24 @@ Route::middleware(['auth:sanctum', 'validate.org.access', 'set.db.context'])
 
     /*
     |----------------------------------------------------------------------
+    | إنشاء المنشورات الجماعي (Bulk Post Composer) - Sprint 2.2
+    |----------------------------------------------------------------------
+    */
+    Route::prefix('bulk-posts')->name('bulk-posts.')->group(function () {
+        // Create Bulk Posts
+        Route::post('/create', [App\Http\Controllers\BulkPostController::class, 'createBulk'])->name('create');
+        Route::post('/import-csv', [App\Http\Controllers\BulkPostController::class, 'importCSV'])->name('import-csv');
+
+        // Bulk Operations
+        Route::put('/update', [App\Http\Controllers\BulkPostController::class, 'bulkUpdate'])->name('update');
+        Route::delete('/delete', [App\Http\Controllers\BulkPostController::class, 'bulkDelete'])->name('delete');
+
+        // Template Suggestions
+        Route::get('/suggestions', [App\Http\Controllers\BulkPostController::class, 'getTemplateSuggestions'])->name('suggestions');
+    });
+
+    /*
+    |----------------------------------------------------------------------
     | صندوق الوارد الموحد (Unified Inbox)
     |----------------------------------------------------------------------
     */
