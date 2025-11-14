@@ -1,10 +1,12 @@
+---
+# yamllint disable rule:truthy
 name: CI Pipeline
 
 on:
   push:
-    branches: [ "main", "develop", "staging" ]
+    branches: ["main", "develop", "staging"]
   pull_request:
-    branches: [ "main", "develop" ]
+    branches: ["main", "develop"]
 
 jobs:
   # PHP Code Quality Checks
@@ -115,7 +117,11 @@ jobs:
         run: php artisan migrate --force
 
       - name: Run tests with coverage
-        run: php artisan test --coverage --min=70 --log-junit=storage/logs/junit.xml
+        run: |
+          php artisan test \
+            --coverage \
+            --min=70 \
+            --log-junit=storage/logs/junit.xml
 
       - name: Upload test results
         if: always()
@@ -246,7 +252,11 @@ jobs:
 
       - name: Wait for server
         run: |
-          timeout 30 bash -c 'until curl -f http://localhost:8000; do sleep 1; done'
+          timeout 30 bash -c '
+            until curl -f http://localhost:8000; do
+              sleep 1
+            done
+          '
 
       - name: Run Playwright tests
         run: npm run test:e2e
