@@ -224,11 +224,13 @@ abstract class TestCase extends BaseTestCase
      *
      * @param string $table
      * @param array $data
+     * @param string|null $connection
+     * @param string $deletedAtColumn
      * @return $this
      */
-    protected function assertSoftDeleted(string $table, array $data): static
+    protected function assertSoftDeleted($table, array $data = [], $connection = null, $deletedAtColumn = 'deleted_at'): static
     {
-        $query = DB::table($table);
+        $query = $connection ? DB::connection($connection)->table($table) : DB::table($table);
 
         foreach ($data as $key => $value) {
             $query->where($key, $value);
@@ -237,7 +239,7 @@ abstract class TestCase extends BaseTestCase
         $record = $query->first();
 
         $this->assertNotNull($record, "Record not found in {$table}");
-        $this->assertNotNull($record->deleted_at, "Record is not soft deleted");
+        $this->assertNotNull($record->{$deletedAtColumn}, "Record is not soft deleted");
 
         return $this;
     }
