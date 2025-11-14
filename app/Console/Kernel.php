@@ -25,6 +25,11 @@ class Kernel extends ConsoleKernel
         \App\Console\Commands\PublishScheduledPostsCommand::class,
         \App\Console\Commands\SyncPlatformsCommand::class,
         \App\Console\Commands\CleanupCacheCommand::class,
+        \App\Console\Commands\CleanupExpiredSessionsCommand::class,
+        \App\Console\Commands\GenerateAnalyticsReportCommand::class,
+        \App\Console\Commands\GenerateReportsCommand::class,
+        \App\Console\Commands\ProcessScheduledPostsCommand::class,
+        \App\Console\Commands\SyncIntegrationsCommand::class,
     ];
 
     protected function schedule(Schedule $schedule): void
