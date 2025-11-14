@@ -1,0 +1,44 @@
+# Auto-labeling configuration for PRs based on changed files
+
+'backend':
+  - app/**/*
+  - database/**/*
+  - routes/**/*
+  - config/**/*
+
+'frontend':
+  - resources/**/*
+  - public/**/*
+
+'tests':
+  - tests/**/*
+  - playwright.config.ts
+  - phpunit.xml
+
+'ci/cd':
+  - .github/**/*
+
+'documentation':
+  - '*.md'
+  - docs/**/*
+
+'dependencies':
+  - composer.json
+  - composer.lock
+  - package.json
+  - package-lock.json
+
+'database':
+  - database/migrations/**/*
+  - database/seeders/**/*
+
+'api':
+  - app/Http/Controllers/Api/**/*
+  - routes/api.php
+
+'security':
+  - app/Http/Middleware/**/*
+  - app/Policies/**/*
+
+'models':
+  - app/Models/**/*
