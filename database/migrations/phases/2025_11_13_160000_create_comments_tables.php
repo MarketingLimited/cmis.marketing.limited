@@ -1,6 +1,8 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
@@ -10,6 +12,11 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Skip if required tables don't exist yet (migration ordering)
+        if (!Schema::hasTable('cmis.orgs') || !Schema::hasTable('cmis.users')) {
+            return;
+        }
+
         // Create comments table
         DB::statement("
             CREATE TABLE IF NOT EXISTS cmis.comments (

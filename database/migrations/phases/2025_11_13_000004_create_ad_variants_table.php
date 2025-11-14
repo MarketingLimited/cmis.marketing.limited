@@ -15,6 +15,16 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Skip if table already exists
+        if (Schema::hasTable('cmis.ad_variants')) {
+            return;
+        }
+
+        // Skip if required tables don't exist yet (migration ordering)
+        if (!Schema::hasTable('cmis.campaigns')) {
+            return;
+        }
+
         Schema::connection('pgsql')->create('cmis.ad_variants', function (Blueprint $table) {
             $table->uuid('variant_id')->primary();
             $table->uuid('campaign_id')->index();

@@ -137,7 +137,7 @@ abstract class TestCase extends BaseTestCase
      */
     protected function initializeTestLogging(): void
     {
-        $testName = $this->getName();
+        $testName = method_exists($this, 'name') ? $this->name() : (method_exists($this, 'getName') ? $this->getName() : 'unknown');
         $testClass = static::class;
 
         try {
@@ -166,7 +166,7 @@ abstract class TestCase extends BaseTestCase
      */
     protected function logTestResult(string $status, array $details = []): void
     {
-        $testName = $this->getName();
+        $testName = method_exists($this, 'name') ? $this->name() : (method_exists($this, 'getName') ? $this->getName() : 'unknown');
         $testClass = static::class;
 
         try {

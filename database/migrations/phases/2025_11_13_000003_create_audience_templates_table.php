@@ -15,6 +15,16 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Skip if table already exists
+        if (Schema::hasTable('cmis.audience_templates')) {
+            return;
+        }
+
+        // Skip if required tables don't exist yet (migration ordering)
+        if (!Schema::hasTable('cmis.orgs') || !Schema::hasTable('cmis.users')) {
+            return;
+        }
+
         Schema::connection('pgsql')->create('cmis.audience_templates', function (Blueprint $table) {
             $table->uuid('template_id')->primary();
             $table->uuid('org_id')->index();
