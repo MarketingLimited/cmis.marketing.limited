@@ -3,6 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
@@ -11,6 +12,16 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Skip if table already exists
+        if (Schema::hasTable('cmis.publishing_queues')) {
+            return;
+        }
+
+        // Skip if required tables don't exist yet (migration ordering)
+        if (!Schema::hasTable('cmis.orgs')) {
+            return;
+        }
+
         Schema::create('cmis.publishing_queues', function (Blueprint $table) {
             $table->uuid('queue_id')->primary();
             $table->uuid('org_id')->index();

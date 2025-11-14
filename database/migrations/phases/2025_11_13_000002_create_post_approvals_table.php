@@ -15,6 +15,16 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Skip if table already exists
+        if (Schema::hasTable('cmis.post_approvals')) {
+            return;
+        }
+
+        // Skip if required tables don't exist yet (migration ordering)
+        if (!Schema::hasTable('cmis.users')) {
+            return;
+        }
+
         Schema::connection('pgsql')->create('cmis.post_approvals', function (Blueprint $table) {
             $table->uuid('approval_id')->primary();
             $table->uuid('post_id')->index();

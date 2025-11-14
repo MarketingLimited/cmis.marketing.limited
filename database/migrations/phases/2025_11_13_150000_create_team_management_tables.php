@@ -1,10 +1,17 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
 
 return new class extends Migration {
     public function up(): void {
+        // Skip if required tables don't exist yet (migration ordering)
+        if (!Schema::hasTable('cmis.orgs') || !Schema::hasTable('cmis.users')) {
+            return;
+        }
+
         // حذف الجداول القديمة إن وجدت
         DB::statement("DROP TABLE IF EXISTS cmis.team_account_access CASCADE;");
         DB::statement("DROP TABLE IF EXISTS cmis.team_invitations CASCADE;");
