@@ -22,7 +22,8 @@
       "Bash(npx playwright install chromium)",
       "Bash(npm run test:e2e:*)",
       "Bash(jobs)",
-      "Bash(npx playwright test:*)"
+      "Bash(npx playwright test:*)",
+      "Bash(rm:*)"
     ],
     "deny": [],
     "ask": []
