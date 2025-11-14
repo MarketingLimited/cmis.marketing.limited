@@ -15,6 +15,29 @@ return new class extends Migration
 {
     public function up(): void
     {
+        // Drop existing triggers first
+        DB::unprepared("
+            DO $$
+            DECLARE
+                trig record;
+            BEGIN
+                FOR trig IN
+                    SELECT
+                        n.nspname as schema_name,
+                        c.relname as table_name,
+                        t.tgname as trigger_name
+                    FROM pg_trigger t
+                    JOIN pg_class c ON t.tgrelid = c.oid
+                    JOIN pg_namespace n ON c.relnamespace = n.oid
+                    WHERE n.nspname IN ('cmis', 'cmis_audit', 'cmis_ops')
+                    AND NOT t.tgisinternal
+                LOOP
+                    EXECUTE format('DROP TRIGGER IF EXISTS %I ON %I.%I CASCADE',
+                        trig.trigger_name, trig.schema_name, trig.table_name);
+                END LOOP;
+            END $$;
+        ");
+
         $sql = file_get_contents(database_path('sql/all_triggers.sql'));
 
         if (!empty(trim($sql))) {

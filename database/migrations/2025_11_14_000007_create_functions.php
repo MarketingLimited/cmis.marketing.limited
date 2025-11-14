@@ -14,6 +14,27 @@ return new class extends Migration
 {
     public function up(): void
     {
+        // Drop existing functions first
+        DB::unprepared("
+            DO $$
+            DECLARE
+                func record;
+            BEGIN
+                FOR func IN
+                    SELECT
+                        n.nspname as schema_name,
+                        p.proname as function_name,
+                        pg_get_function_identity_arguments(p.oid) as args
+                    FROM pg_proc p
+                    JOIN pg_namespace n ON p.pronamespace = n.oid
+                    WHERE n.nspname IN ('cmis', 'cmis_audit', 'cmis_ops', 'cmis_analytics', 'cmis_knowledge')
+                LOOP
+                    EXECUTE format('DROP FUNCTION IF EXISTS %I.%I(%s) CASCADE',
+                        func.schema_name, func.function_name, func.args);
+                END LOOP;
+            END $$;
+        ");
+
         $functions = file_get_contents(database_path('sql/all_functions.sql'));
         $procedures = file_get_contents(database_path('sql/complete_procedures.sql'));
 
