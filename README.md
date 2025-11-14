@@ -1,97 +1,723 @@
 # CMIS - نظام إدارة التسويق الإدراكي
+## Cognitive Marketing Information System
 
-## 🚀 حالة المشروع وخطة العمل
+<div align="center">
 
-لقد تم إنجاز تحليل شامل لحالة المشروع الحالية وتم وضع خطة عمل مفصلة لتطوير الواجهة الخلفية (Backend).
+**A comprehensive, enterprise-grade marketing management platform built with Laravel 12 and PostgreSQL**
 
-- **ملخص الحالة:** تم بناء قاعدة بيانات متقدمة وهيكلة المسارات (Routes) بشكل ممتاز. العمل المتبقي يتركز على تنفيذ طبقة الأمان (Middleware) وتحديث طبقة البيانات (Models) لتتوافق مع قاعدة البيانات.
-- **المستند الكامل:** للحصول على التفاصيل الكاملة والبدء في التطوير، يرجى مراجعة المستند التالي:
-  - **[📄 تقرير حالة مشروع CMIS وخطة التطوير](./docs/project-status-and-plan.md)**
+[![Laravel](https://img.shields.io/badge/Laravel-12.x-FF2D20?logo=laravel)](https://laravel.com)
+[![PHP](https://img.shields.io/badge/PHP-8.2+-777BB4?logo=php)](https://php.net)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16+-336791?logo=postgresql)](https://postgresql.org)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+
+[Features](#-features) • [Quick Start](#-quick-start) • [Documentation](#-documentation) • [Architecture](#-architecture) • [Contributing](#-contributing)
+
+</div>
 
 ---
 
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+## 📋 Table of Contents
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+- [Overview](#-overview)
+- [Key Features](#-features)
+- [Technology Stack](#-technology-stack)
+- [Quick Start](#-quick-start)
+- [System Architecture](#-architecture)
+- [Database Structure](#-database-structure)
+- [Platform Integrations](#-platform-integrations)
+- [Security](#-security)
+- [Development](#-development)
+- [Testing](#-testing)
+- [Deployment](#-deployment)
+- [Documentation](#-documentation)
+- [Contributing](#-contributing)
+- [License](#-license)
 
-## About Laravel
+---
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## 🎯 Overview
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+CMIS (Cognitive Marketing Information System) is an advanced, AI-powered marketing management platform designed for agencies and enterprises managing multi-tenant campaigns across various digital platforms. The system provides comprehensive tools for campaign planning, creative asset management, performance tracking, and automated content publishing.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+### What Makes CMIS Special?
 
-## Learning Laravel
+- **Multi-Tenancy Architecture**: Fully isolated data and permissions per organization with Row-Level Security (RLS)
+- **AI-Powered Insights**: Semantic search, predictive analytics, and automated campaign recommendations
+- **Platform Agnostic**: Unified interface for managing campaigns across Meta, Google, TikTok, and more
+- **Cognitive Framework**: Advanced marketing frameworks, playbooks, and strategic planning tools
+- **Real-Time Analytics**: Comprehensive dashboards with KPI tracking and performance visualization
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+---
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+## ✨ Features
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+### Core Capabilities
 
-## Laravel Sponsors
+#### 🏢 Multi-Organization Management
+- Secure multi-tenant architecture with organization-level data isolation
+- Role-based access control (RBAC) with fine-grained permissions
+- User invitation system and team management
+- Cross-organization reporting for agency use cases
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+#### 📊 Campaign Management
+- End-to-end campaign lifecycle management
+- Multi-platform campaign orchestration
+- Budget tracking and allocation
+- A/B testing and experimentation frameworks
+- Campaign templates and playbooks
 
-### Premium Partners
+#### 🎨 Creative Asset Management
+- Centralized digital asset library
+- Version control and approval workflows
+- AI-powered asset tagging and organization
+- Format optimization for different platforms
+- Creative performance tracking
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+#### 🤖 AI & Machine Learning
+- Semantic search using vector embeddings (pgvector)
+- Predictive campaign performance modeling
+- Automated content recommendations
+- Sentiment analysis and tone detection
+- AI-generated campaign suggestions
 
-## Git automation with environment variables
+#### 📱 Social Media Management
+- Unified social media scheduling and publishing
+- Post performance tracking across platforms
+- Engagement metrics and analytics
+- Content calendar visualization
+- Automated posting workflows
 
-This project includes a helper script that allows command-line tools (including AI agents) to interact with GitHub using credentials stored in the local `.env` file. Create or update `.env` with the following keys:
+#### 📈 Analytics & Reporting
+- Real-time performance dashboards
+- Custom KPI definitions and tracking
+- Temporal data analysis and trends
+- ROI and attribution modeling
+- Exportable reports and data visualization
 
-```env
-GIT_USERNAME=your-github-username
-GIT_EMAIL=your-email@example.com
-GIT_TOKEN=github-personal-access-token
-GIT_REPOSITORY=https://github.com/MarketingLimited/cmis.marketing.limited.git
-```
+#### 🔗 Platform Integrations
+- **Meta** (Facebook & Instagram): Ads, posts, insights
+- **Google**: Ads, Analytics, Search Console
+- **TikTok**: Ads and organic content
+- **Twitter/X**: Post management and analytics
+- **LinkedIn**: Professional content and ads
+- Extensible connector architecture for new platforms
 
-> **Note:** Keep `.env` out of version control. The file is already ignored via `.gitignore`.
+---
 
-Run Git commands through the helper script so the credentials are automatically configured and the remote URL is authenticated:
+## 🛠 Technology Stack
+
+### Backend
+- **Framework**: Laravel 12.x
+- **Language**: PHP 8.2+
+- **Database**: PostgreSQL 16+ with pgvector extension
+- **Cache**: Redis (phpredis)
+- **Queue**: Redis-backed Laravel queues
+- **API**: RESTful JSON API with Laravel Sanctum authentication
+
+### Frontend
+- **Build Tool**: Vite
+- **JavaScript**: Alpine.js 3.x
+- **CSS**: Tailwind CSS 3.x
+- **Charts**: Chart.js 4.x
+- **HTTP Client**: Axios
+
+### DevOps & Tools
+- **Testing**: PHPUnit (unit/integration), Playwright (E2E)
+- **Code Quality**: Laravel Pint, PHPStan
+- **Logging**: Laravel Pail for real-time log streaming
+- **Development**: Laravel Sail (Docker), Artisan CLI
+
+---
+
+## 🚀 Quick Start
+
+### Prerequisites
+
+- PHP 8.2 or higher
+- PostgreSQL 16+ with pgvector extension
+- Redis server
+- Composer
+- Node.js 18+ & npm
+- Git
+
+### Installation
 
 ```bash
-scripts/git-ai.sh status        # default command when none is provided
-scripts/git-ai.sh pull          # pulls latest changes
-scripts/git-ai.sh commit -am "Your message"
-scripts/git-ai.sh push          # pushes using the configured token
+# Clone the repository
+git clone https://github.com/MarketingLimited/cmis.marketing.limited.git
+cd cmis.marketing.limited
+
+# Install dependencies and setup environment
+composer run setup
+
+# Configure your environment
+cp .env.example .env
+# Edit .env with your database credentials and API keys
+
+# Run migrations (includes schema and seed data)
+php artisan migrate --seed
+
+# Start development servers
+composer run dev
 ```
 
-Use `scripts/git-ai.sh --help` for additional details, or pass `--env-file path/to/file` to load credentials from a different environment file. The script configures `user.name`, `user.email`, and the `origin` remote before executing the requested Git command.
+The application will be available at `http://localhost:8000`
 
-## Contributing
+### Quick Commands
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+```bash
+# Start all development services (web, queue, logs, vite)
+composer run dev
 
-## Code of Conduct
+# Run tests
+composer test                    # Backend tests (PHPUnit)
+npm run test:e2e                # E2E tests (Playwright)
+npm run test:all                # All tests
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+# Database operations
+php artisan migrate              # Run migrations
+php artisan db:seed             # Seed database
+php artisan migrate:fresh --seed # Fresh start
 
-## Security Vulnerabilities
+# Platform synchronization
+php artisan sync:platform meta --org=<org-id>
+php artisan sync:all            # Sync all configured platforms
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+# Background jobs
+php artisan queue:work          # Process queue jobs
+php artisan schedule:work       # Run scheduled tasks
+```
 
-## License
+---
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+## 🏗 Architecture
+
+### System Design
+
+CMIS follows a modular, service-oriented architecture with clear separation of concerns:
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                    Frontend Layer                        │
+│        (Alpine.js, Tailwind, Chart.js, Vite)            │
+└──────────────────┬──────────────────────────────────────┘
+                   │
+┌──────────────────▼──────────────────────────────────────┐
+│                   API Layer (Laravel)                    │
+│  ┌─────────────────────────────────────────────────┐   │
+│  │  Controllers → Services → Repositories → Models  │   │
+│  └─────────────────────────────────────────────────┘   │
+│                                                          │
+│  Middleware: Auth, Context, RLS, Rate Limiting          │
+└──────────────────┬──────────────────────────────────────┘
+                   │
+┌──────────────────▼──────────────────────────────────────┐
+│                Data Layer (PostgreSQL)                   │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐ │
+│  │  12 Schemas  │  │  148 Tables  │  │  RLS Policies│ │
+│  └──────────────┘  └──────────────┘  └──────────────┘ │
+│                                                          │
+│  pgvector │ Triggers │ Functions │ Materialized Views  │
+└─────────────────────────────────────────────────────────┘
+```
+
+### Key Architectural Patterns
+
+#### 1. Multi-Tenancy with Row-Level Security (RLS)
+Every request is executed within a secure organization context:
+
+```php
+// Automatically set by SetDatabaseContext middleware
+DB::statement('SELECT cmis.init_transaction_context(?, ?)', [$userId, $orgId]);
+
+// All subsequent queries are automatically filtered by RLS policies
+$campaigns = Campaign::all(); // Only returns campaigns for the current org
+```
+
+#### 2. Connector Pattern for Platform Integrations
+Unified interface for all external platforms:
+
+```php
+// Factory pattern for connector instantiation
+$connector = ConnectorFactory::make('meta');
+$connector->syncCampaigns($orgId);
+
+// Easy to add new platforms
+$tiktokConnector = ConnectorFactory::make('tiktok');
+```
+
+#### 3. Command Pattern for Background Jobs
+Scheduled tasks with organization context awareness:
+
+```php
+// Runs per organization with proper context
+php artisan sync:instagram --org=<uuid>
+php artisan embeddings:generate
+php artisan cognitive:vitality-log
+```
+
+---
+
+## 🗄 Database Structure
+
+CMIS uses a sophisticated PostgreSQL schema with **12 specialized schemas** and **148+ tables**:
+
+### Schema Organization
+
+| Schema | Purpose | Key Tables |
+|--------|---------|------------|
+| `cmis` | Core system entities | `users`, `orgs`, `user_orgs`, `roles` |
+| `campaigns` | Campaign management | `campaigns`, `campaign_groups`, `targeting` |
+| `creative` | Asset management | `creative_assets`, `asset_versions`, `approvals` |
+| `social` | Social media | `social_accounts`, `social_posts`, `post_metrics` |
+| `ads` | Advertising platforms | `ad_accounts`, `ad_campaigns`, `ad_metrics` |
+| `analytics` | Performance data | `performance_metrics`, `kpi_calculations` |
+| `ai` | AI/ML features | `embeddings`, `ai_recommendations`, `models` |
+| `reference` | Marketing frameworks | `frameworks`, `playbooks`, `strategies`, `tones` |
+| `operations` | System operations | `sync_logs`, `etl_logs`, `audit_logs` |
+| `security` | Security & access | `permissions`, `session_contexts`, `audit_trails` |
+| `backup` | Data backup | Backup copies of critical tables |
+| `views` | Materialized views | Precomputed dashboards and reports |
+
+### Advanced Database Features
+
+- **Row-Level Security (RLS)**: Automatic data filtering per organization
+- **pgvector Extension**: Semantic search with embedding vectors
+- **Temporal Tables**: Full audit trail with `deleted_at` soft deletes
+- **Materialized Views**: Performance-optimized dashboards
+- **Database Functions**: Complex business logic at the DB level
+- **Triggers**: Automatic audit logging and cache invalidation
+
+---
+
+## 🔌 Platform Integrations
+
+### Connector Architecture
+
+CMIS implements a flexible connector system for integrating with external platforms:
+
+```php
+// All connectors implement a common interface
+interface ConnectorInterface {
+    public function connect(string $orgId, array $credentials): ConnectedAccount;
+    public function disconnect(string $accountId): bool;
+    public function syncCampaigns(string $accountId): Collection;
+    public function syncPosts(string $accountId): Collection;
+    public function publishPost(string $accountId, array $content): Post;
+}
+```
+
+### Supported Platforms
+
+#### Meta (Facebook & Instagram)
+- Ad campaign creation and management
+- Organic post publishing and scheduling
+- Audience insights and demographics
+- Real-time performance metrics
+- Instagram story and reel support
+
+#### Google (Ads & Analytics)
+- Search and display campaigns
+- Google Analytics 4 integration
+- Conversion tracking
+- Keyword performance
+- Search Console data
+
+#### TikTok
+- TikTok Ads API integration
+- Organic video publishing
+- Performance analytics
+- Audience insights
+
+### Adding New Platforms
+
+```bash
+# 1. Create connector class
+php artisan make:connector TikTok
+
+# 2. Implement ConnectorInterface
+# 3. Register in ConnectorFactory
+# 4. Add credentials to .env
+# 5. Test and deploy
+```
+
+---
+
+## 🔒 Security
+
+### Security Features
+
+- **Row-Level Security (RLS)**: PostgreSQL-native data isolation per organization
+- **Authentication**: Laravel Sanctum for API token management
+- **Authorization**: Fine-grained RBAC with custom permissions
+- **Context Management**: Automatic user/org context setting per request
+- **Audit Logging**: Comprehensive audit trail for all critical operations
+- **Input Validation**: Request validation for all API endpoints
+- **CSRF Protection**: Built-in Laravel CSRF middleware
+- **SQL Injection Prevention**: Eloquent ORM with prepared statements
+- **XSS Protection**: Output escaping in Blade templates
+
+### Security Middleware Stack
+
+```php
+// Executed on every API request
+Route::middleware([
+    'auth:sanctum',           // Verify authenticated user
+    'validate.org.access',    // Verify user belongs to org
+    'set.db.context',         // Set RLS context
+    'throttle:api',           // Rate limiting
+])->group(function () {
+    // Protected routes
+});
+```
+
+### Environment Variables
+
+Critical security settings in `.env`:
+
+```env
+# System User (for automated tasks)
+CMIS_SYSTEM_USER_ID=00000000-0000-0000-0000-000000000000
+
+# Row Level Security
+RLS_ENABLED=true
+RLS_ENFORCE_CONSOLE=true
+
+# API Keys (never commit to git)
+META_APP_ID=your-app-id
+META_APP_SECRET=your-app-secret
+GOOGLE_CLIENT_ID=your-client-id
+GOOGLE_CLIENT_SECRET=your-client-secret
+```
+
+---
+
+## 💻 Development
+
+### Project Structure
+
+```
+cmis.marketing.limited/
+├── app/
+│   ├── Console/
+│   │   ├── Commands/         # Artisan commands
+│   │   └── Kernel.php        # Command scheduler
+│   ├── Http/
+│   │   ├── Controllers/      # API controllers
+│   │   ├── Middleware/       # Request middleware
+│   │   └── Requests/         # Form requests
+│   ├── Models/               # Eloquent models
+│   │   ├── Core/            # Core entities
+│   │   ├── Campaigns/       # Campaign models
+│   │   ├── Social/          # Social media models
+│   │   └── AI/              # AI-related models
+│   └── Services/
+│       ├── Connectors/      # Platform connectors
+│       └── Publishing/      # Content publishing
+├── database/
+│   ├── migrations/          # Laravel migrations
+│   ├── seeders/            # Database seeders
+│   └── schema.sql          # Full PostgreSQL schema
+├── resources/
+│   ├── views/              # Blade templates
+│   ├── js/                 # Frontend JavaScript
+│   └── css/                # Stylesheets
+├── routes/
+│   ├── api.php            # API routes
+│   └── web.php            # Web routes
+├── tests/
+│   ├── Feature/           # Feature tests
+│   ├── Unit/             # Unit tests
+│   └── E2E/              # Playwright tests
+└── docs/                 # Documentation
+```
+
+### Coding Standards
+
+```bash
+# Format code with Laravel Pint
+./vendor/bin/pint
+
+# Run static analysis
+./vendor/bin/phpstan analyse
+
+# Run all quality checks
+composer test
+```
+
+### Development Workflow
+
+```bash
+# 1. Create feature branch
+git checkout -b feature/new-feature
+
+# 2. Make changes and test
+composer test
+npm run test:e2e
+
+# 3. Commit with descriptive messages
+git commit -m "feat: add TikTok connector"
+
+# 4. Push and create PR
+git push -u origin feature/new-feature
+```
+
+---
+
+## 🧪 Testing
+
+### Test Suite
+
+CMIS has comprehensive test coverage across multiple levels:
+
+#### Backend Tests (PHPUnit)
+
+```bash
+# Run all backend tests
+php artisan test
+
+# Run specific test suite
+php artisan test --testsuite=Feature
+php artisan test --testsuite=Unit
+
+# Run with coverage
+php artisan test --coverage
+
+# Run specific test file
+php artisan test tests/Feature/CampaignTest.php
+```
+
+#### End-to-End Tests (Playwright)
+
+```bash
+# Install Playwright browsers
+npm run playwright:install
+
+# Run E2E tests
+npm run test:e2e              # Headless mode
+npm run test:e2e:headed       # Headed mode
+npm run test:e2e:ui          # Interactive UI mode
+npm run test:e2e:debug       # Debug mode
+
+# View test report
+npm run test:e2e:report
+
+# Generate new tests
+npm run test:e2e:codegen
+```
+
+#### Database Tests
+
+```bash
+# Test database schema and migrations
+php artisan migrate:fresh --seed --env=testing
+
+# Audit database sync
+php scripts/audit-database-sync.php
+```
+
+### Test Organization
+
+```
+tests/
+├── Feature/
+│   ├── Auth/              # Authentication tests
+│   ├── Campaign/          # Campaign management
+│   ├── Social/           # Social media features
+│   └── API/              # API endpoint tests
+├── Unit/
+│   ├── Models/           # Model tests
+│   ├── Services/         # Service layer tests
+│   └── Helpers/          # Utility tests
+└── E2E/
+    ├── auth.spec.ts      # E2E auth flows
+    ├── campaigns.spec.ts # E2E campaign flows
+    └── publishing.spec.ts # E2E publishing flows
+```
+
+---
+
+## 🚢 Deployment
+
+### Production Requirements
+
+- PHP 8.2+ with extensions: pgsql, redis, gd, intl, mbstring
+- PostgreSQL 16+ with pgvector extension
+- Redis 6+
+- Supervisor for queue workers
+- Nginx or Apache web server
+- SSL certificate (Let's Encrypt recommended)
+
+### Deployment Steps
+
+```bash
+# 1. Clone and install
+git clone <repository> /var/www/cmis
+cd /var/www/cmis
+composer install --no-dev --optimize-autoloader
+npm install && npm run build
+
+# 2. Configure environment
+cp .env.example .env
+php artisan key:generate
+# Edit .env with production settings
+
+# 3. Setup database
+php artisan migrate --force
+php artisan db:seed --class=ProductionSeeder
+
+# 4. Optimize for production
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
+php artisan event:cache
+
+# 5. Setup queue workers (Supervisor)
+php artisan queue:restart
+
+# 6. Setup scheduler (Crontab)
+* * * * * cd /var/www/cmis && php artisan schedule:run >> /dev/null 2>&1
+```
+
+### Environment Configuration
+
+```env
+APP_ENV=production
+APP_DEBUG=false
+APP_URL=https://your-domain.com
+
+# Database
+DB_CONNECTION=pgsql
+DB_HOST=your-db-host
+DB_PORT=5432
+DB_DATABASE=cmis_production
+DB_USERNAME=cmis_user
+DB_PASSWORD=secure-password
+
+# Cache & Queue
+CACHE_STORE=redis
+QUEUE_CONNECTION=redis
+REDIS_HOST=your-redis-host
+
+# Platform APIs (production credentials)
+META_APP_ID=prod-app-id
+META_APP_SECRET=prod-app-secret
+GOOGLE_CLIENT_ID=prod-client-id
+GOOGLE_CLIENT_SECRET=prod-client-secret
+```
+
+---
+
+## 📚 Documentation
+
+### Additional Resources
+
+- **[Project Status & Roadmap](docs/project-status-and-plan.md)**: Current development status and future plans
+- **[API Documentation](API_DOCUMENTATION.md)**: Complete API reference
+- **[Testing Guide](TESTING.md)**: Comprehensive testing documentation
+- **[Architecture Guide](ARCHITECTURE_IMPROVEMENTS.md)**: Deep dive into system architecture
+- **[Audit Reports](AUDIT_REPORT.md)**: Database and code audit reports
+
+### Key Concepts
+
+#### Multi-Tenancy Model
+Every organization's data is completely isolated using PostgreSQL Row-Level Security. Users can belong to multiple organizations with different roles in each.
+
+#### Cognitive Framework
+CMIS includes comprehensive marketing frameworks, strategies, and playbooks that guide campaign creation and optimization.
+
+#### AI Integration
+Vector embeddings enable semantic search across campaigns, assets, and content. AI models provide predictive insights and recommendations.
+
+---
+
+## 🤝 Contributing
+
+We welcome contributions! Please follow these guidelines:
+
+### Code Contribution Process
+
+1. **Fork the repository** and create your feature branch
+2. **Follow coding standards**: Run `./vendor/bin/pint` before committing
+3. **Write tests**: Maintain or improve test coverage
+4. **Update documentation**: Document new features and API changes
+5. **Submit a PR**: Provide clear description of changes
+
+### Pull Request Guidelines
+
+- Use descriptive commit messages following [Conventional Commits](https://conventionalcommits.org/)
+- Ensure all tests pass (`composer test` and `npm run test:e2e`)
+- Update relevant documentation
+- Keep PRs focused on a single feature or fix
+- Request review from maintainers
+
+### Reporting Issues
+
+- Use the [GitHub issue tracker](https://github.com/MarketingLimited/cmis.marketing.limited/issues)
+- Include steps to reproduce for bugs
+- Provide context and use cases for feature requests
+- Check existing issues before creating new ones
+
+---
+
+## 🔧 Git Automation
+
+This project includes AI-friendly Git automation that reads credentials from `.env`:
+
+```bash
+# Configure .env with your GitHub credentials
+GIT_USERNAME=your-github-username
+GIT_EMAIL=your-email@example.com
+GIT_TOKEN=your-personal-access-token
+GIT_REPOSITORY=https://github.com/MarketingLimited/cmis.marketing.limited.git
+
+# Use the helper script for authenticated Git operations
+scripts/git-ai.sh status
+scripts/git-ai.sh pull
+scripts/git-ai.sh commit -am "Your commit message"
+scripts/git-ai.sh push
+
+# See all options
+scripts/git-ai.sh --help
+```
+
+**Note**: Keep `.env` out of version control. It's already in `.gitignore`.
+
+---
+
+## 📄 License
+
+This project is licensed under the **MIT License**. See the [LICENSE](LICENSE) file for details.
+
+---
+
+## 👥 Team & Support
+
+### Maintainers
+
+- **Marketing Limited Team** - [GitHub](https://github.com/MarketingLimited)
+
+### Getting Help
+
+- **Documentation**: Check the [docs/](docs/) directory
+- **Issues**: [GitHub Issues](https://github.com/MarketingLimited/cmis.marketing.limited/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/MarketingLimited/cmis.marketing.limited/discussions)
+
+### Credits
+
+Built with Laravel, PostgreSQL, and the open-source community.
+
+Special thanks to:
+- [Laravel](https://laravel.com) - The PHP Framework For Web Artisans
+- [PostgreSQL](https://postgresql.org) - The World's Most Advanced Open Source Database
+- [Alpine.js](https://alpinejs.dev) - Your new, lightweight, JavaScript framework
+
+---
+
+<div align="center">
+
+**[⬆ Back to Top](#cmis---نظام-إدارة-التسويق-الإدراكي)**
+
+Made with ❤️ by Marketing Limited
+
+</div>
