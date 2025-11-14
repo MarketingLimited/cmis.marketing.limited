@@ -742,6 +742,24 @@ $$;
 
 ALTER FUNCTION cmis.init_transaction_context(p_user_id uuid, p_org_id uuid) OWNER TO begin;
 
+CREATE FUNCTION cmis.clear_transaction_context() RETURNS void
+    LANGUAGE plpgsql SECURITY DEFINER
+    AS $$
+BEGIN
+    -- Clear LOCAL context (transaction-scoped)
+    PERFORM set_config('app.current_user_id', NULL, TRUE);
+    PERFORM set_config('app.current_org_id', NULL, TRUE);
+    PERFORM set_config('app.context_initialized', 'false', TRUE);
+    PERFORM set_config('app.context_version', NULL, TRUE);
+
+    -- Log cleanup (optional)
+    RAISE DEBUG 'Transaction context cleared';
+END;
+$$;
+
+
+ALTER FUNCTION cmis.clear_transaction_context() OWNER TO begin;
+
 CREATE FUNCTION cmis.link_brief_to_content(p_brief_id uuid, p_content_id uuid) RETURNS void
     LANGUAGE plpgsql
     AS $$
