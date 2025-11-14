@@ -28,6 +28,7 @@ return new class extends Migration
                     FROM pg_proc p
                     JOIN pg_namespace n ON p.pronamespace = n.oid
                     WHERE n.nspname IN ('cmis', 'cmis_audit', 'cmis_ops', 'cmis_analytics', 'cmis_knowledge')
+                      AND p.prokind = 'f'
                 LOOP
                     EXECUTE format('DROP FUNCTION IF EXISTS %I.%I(%s) CASCADE',
                         func.schema_name, func.function_name, func.args);
@@ -70,6 +71,7 @@ return new class extends Migration
                     FROM pg_proc p
                     JOIN pg_namespace n ON p.pronamespace = n.oid
                     WHERE n.nspname IN ('cmis', 'cmis_audit', 'cmis_ops', 'cmis_analytics')
+                      AND p.prokind = 'f'
                 LOOP
                     EXECUTE format('DROP FUNCTION IF EXISTS %I.%I(%s) CASCADE',
                         func.schema_name, func.function_name, func.args);
