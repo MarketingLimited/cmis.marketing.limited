@@ -1,3 +1,5 @@
+---
+# yamllint disable rule:truthy
 name: PR Automation
 
 on:
@@ -98,9 +100,17 @@ jobs:
       - name: Get PR stats
         id: pr-stats
         run: |
-          files_changed=$(git diff --name-only origin/${{ github.base_ref }}...HEAD | wc -l)
-          lines_added=$(git diff --numstat origin/${{ github.base_ref }}...HEAD | awk '{sum+=$1} END {print sum}')
-          lines_deleted=$(git diff --numstat origin/${{ github.base_ref }}...HEAD | awk '{sum+=$2} END {print sum}')
+          base_ref="${{ github.base_ref }}"
+          diff_range="origin/${base_ref}...HEAD"
+
+          files_changed=$(git diff --name-only "$diff_range" | wc -l)
+          diff_output=$(git diff --numstat "$diff_range")
+          lines_added=$(\
+            printf '%s\n' "$diff_output" | awk '{sum+=$1} END {print sum}'
+          )
+          lines_deleted=$(\
+            printf '%s\n' "$diff_output" | awk '{sum+=$2} END {print sum}'
+          )
 
           echo "files_changed=$files_changed" >> $GITHUB_OUTPUT
           echo "lines_added=$lines_added" >> $GITHUB_OUTPUT
@@ -108,12 +118,16 @@ jobs:
 
       - name: Comment PR stats
         uses: actions/github-script@v7
+        env:
+          FILES_CHANGED: ${{ steps.pr-stats.outputs.files_changed }}
+          LINES_ADDED: ${{ steps.pr-stats.outputs.lines_added }}
+          LINES_DELETED: ${{ steps.pr-stats.outputs.lines_deleted }}
         with:
           script: |
             const stats = {
-              files: '${{ steps.pr-stats.outputs.files_changed }}',
-              added: '${{ steps.pr-stats.outputs.lines_added }}',
-              deleted: '${{ steps.pr-stats.outputs.lines_deleted }}'
+              files: process.env.FILES_CHANGED,
+              added: process.env.LINES_ADDED,
+              deleted: process.env.LINES_DELETED,
             };
 
             const body = `## 📊 PR Statistics
