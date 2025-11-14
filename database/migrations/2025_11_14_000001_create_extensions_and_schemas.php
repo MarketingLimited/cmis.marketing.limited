@@ -27,19 +27,20 @@ return new class extends Migration
 
         // Application Schemas
         $schemas = [
-            'cmis',                    // Main application
-            'cmis_ai_analytics',       // AI/ML analytics
-            'cmis_analytics',          // Business analytics
-            'cmis_audit',              // Audit logs
-            'cmis_dev',                // Development
-            'cmis_knowledge',          // Knowledge base
-            'cmis_marketing',          // Marketing data
-            'cmis_ops',                // Operations
-            'cmis_staging',            // Staging area
-            'cmis_system_health',      // Health monitoring
-            'archive',                 // Historical data
-            'lab',                     // Experimental features
-            'operations',              // Ops tables
+            'cmis',                                  // Main application
+            'cmis_ai_analytics',                     // AI/ML analytics
+            'cmis_analytics',                        // Business analytics
+            'cmis_audit',                            // Audit logs
+            'cmis_dev',                              // Development
+            'cmis_knowledge',                        // Knowledge base
+            'cmis_marketing',                        // Marketing data
+            'cmis_ops',                              // Operations
+            'cmis_security_backup_20251111_202413',  // Security backup (from schema.sql)
+            'cmis_staging',                          // Staging area
+            'cmis_system_health',                    // Health monitoring
+            'archive',                               // Historical data
+            'lab',                                   // Experimental features
+            'operations',                            // Ops tables
         ];
 
         foreach ($schemas as $schema) {
@@ -51,8 +52,9 @@ return new class extends Migration
     {
         $schemas = [
             'operations', 'lab', 'archive', 'cmis_system_health',
-            'cmis_staging', 'cmis_ops', 'cmis_marketing', 'cmis_knowledge',
-            'cmis_dev', 'cmis_audit', 'cmis_analytics', 'cmis_ai_analytics', 'cmis'
+            'cmis_staging', 'cmis_security_backup_20251111_202413', 'cmis_ops',
+            'cmis_marketing', 'cmis_knowledge', 'cmis_dev', 'cmis_audit',
+            'cmis_analytics', 'cmis_ai_analytics', 'cmis'
         ];
 
         foreach ($schemas as $schema) {
