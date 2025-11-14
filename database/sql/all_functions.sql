@@ -3291,3 +3291,278 @@ CREATE FUNCTION public.update_knowledge_chunk(p_parent_id uuid, p_part_index int
 
 ALTER FUNCTION public.update_knowledge_chunk(p_parent_id uuid, p_part_index integer, p_new_content text) OWNER TO begin;
 
+--
+-- Name: audit_creative_changes(); Type: FUNCTION; Schema: cmis; Owner: begin
+--
+
+CREATE FUNCTION cmis.audit_creative_changes() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+  INSERT INTO cmis_audit.logs(event_type, event_source, description, created_at)
+  VALUES (
+    'creative_brief_change',
+    TG_TABLE_NAME,
+    CONCAT('✏️ تعديل في الموجز الإبداعي: ', COALESCE(NEW.name, '<unnamed>')),
+    NOW()
+  );
+  RETURN NEW;
+END;
+$$;
+
+
+ALTER FUNCTION cmis.audit_creative_changes() OWNER TO begin;
+
+--
+-- Name: auto_refresh_cache_on_field_change(); Type: FUNCTION; Schema: cmis; Owner: begin
+--
+
+CREATE FUNCTION cmis.auto_refresh_cache_on_field_change() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+    -- تحديث الـ cache فوراً عند أي تغيير
+    PERFORM cmis.refresh_required_fields_cache();
+    
+    -- تسجيل التحديث
+    INSERT INTO cmis_audit.logs (
+        event_type,
+        event_source,
+        description,
+        metadata,
+        created_at
+    ) VALUES (
+        'cache_refresh',
+        'field_definitions',
+        'تم تحديث cache الحقول المطلوبة تلقائياً',
+        jsonb_build_object(
+            'trigger_op', TG_OP,
+            'table_name', TG_TABLE_NAME,
+            'timestamp', CURRENT_TIMESTAMP
+        ),
+        CURRENT_TIMESTAMP
+    );
+    
+    RETURN NULL; -- FOR EACH STATEMENT triggers
+END;
+$$;
+
+
+ALTER FUNCTION cmis.auto_refresh_cache_on_field_change() OWNER TO begin;
+
+--
+-- Name: prevent_incomplete_briefs_optimized(); Type: FUNCTION; Schema: cmis; Owner: begin
+--
+
+CREATE FUNCTION cmis.prevent_incomplete_briefs_optimized() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+DECLARE
+    v_required_fields TEXT[];
+    v_existing_fields TEXT[];
+    v_missing_fields TEXT[];
+BEGIN
+    -- جلب الحقول المطلوبة من الـ cache (أسرع بكثير)
+    SELECT required_fields INTO v_required_fields
+    FROM cmis.required_fields_cache
+    WHERE module_scope = 'creative_brief';
+    
+    -- إذا لم توجد حقول مطلوبة، السماح بالإدراج
+    IF v_required_fields IS NULL OR array_length(v_required_fields, 1) IS NULL THEN
+        RETURN NEW;
+    END IF;
+    
+    -- جلب الحقول الموجودة
+    SELECT array_agg(lower(regexp_replace(key, '[^a-z0-9_]+', '', 'g')))
+    INTO v_existing_fields
+    FROM jsonb_object_keys(NEW.brief_data) AS key;
+    
+    -- حساب الحقول المفقودة
+    v_missing_fields := v_required_fields - COALESCE(v_existing_fields, ARRAY[]::TEXT[]);
+    
+    IF array_length(v_missing_fields, 1) > 0 THEN
+        RAISE EXCEPTION 'Creative brief missing required fields: %', 
+            array_to_string(v_missing_fields, ', ');
+    END IF;
+    
+    RETURN NEW;
+END;
+$$;
+
+
+ALTER FUNCTION cmis.prevent_incomplete_briefs_optimized() OWNER TO begin;
+
+--
+-- Name: refresh_permissions_cache(); Type: FUNCTION; Schema: cmis; Owner: begin
+--
+
+CREATE FUNCTION cmis.refresh_permissions_cache() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+    -- تحديث أو إدراج في الـ cache
+    IF TG_OP = 'DELETE' THEN
+        DELETE FROM cmis.permissions_cache 
+        WHERE permission_code = OLD.permission_code;
+    ELSE
+        INSERT INTO cmis.permissions_cache (permission_code, permission_id, category)
+        VALUES (NEW.permission_code, NEW.permission_id, NEW.category)
+        ON CONFLICT (permission_code) DO UPDATE
+        SET permission_id = NEW.permission_id,
+            category = NEW.category,
+            last_used = CURRENT_TIMESTAMP;
+    END IF;
+    
+    RETURN NULL;
+END;
+$$;
+
+
+ALTER FUNCTION cmis.refresh_permissions_cache() OWNER TO begin;
+
+--
+-- Name: update_updated_at_column(); Type: FUNCTION; Schema: cmis; Owner: begin
+--
+
+CREATE FUNCTION cmis.update_updated_at_column() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$ BEGIN NEW.updated_at = CURRENT_TIMESTAMP; RETURN NEW; END; $$;
+
+
+ALTER FUNCTION cmis.update_updated_at_column() OWNER TO begin;
+
+--
+-- Name: trigger_update_embeddings(); Type: FUNCTION; Schema: cmis_knowledge; Owner: begin
+--
+
+CREATE FUNCTION cmis_knowledge.trigger_update_embeddings() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+    -- إضافة إلى قائمة الانتظار للمعالجة غير المتزامنة
+    INSERT INTO cmis_knowledge.embedding_update_queue (
+        knowledge_id,
+        source_table,
+        source_field,
+        priority,
+        created_at
+    ) VALUES (
+        COALESCE(NEW.knowledge_id, OLD.knowledge_id),
+        TG_TABLE_NAME,
+        CASE 
+            WHEN TG_TABLE_NAME = 'index' THEN 'topic'
+            ELSE 'content'
+        END,
+        CASE 
+            WHEN TG_TABLE_NAME = 'index' AND NEW.tier = 1 THEN 10
+            WHEN TG_TABLE_NAME = 'index' AND NEW.tier = 2 THEN 7
+            ELSE 5
+        END,
+        now()
+    ) ON CONFLICT DO NOTHING;
+    
+    RETURN NEW;
+END;
+$$;
+
+
+ALTER FUNCTION cmis_knowledge.trigger_update_embeddings() OWNER TO begin;
+
+--
+-- Name: update_manifest_on_change(); Type: FUNCTION; Schema: cmis_knowledge; Owner: begin
+--
+
+CREATE FUNCTION cmis_knowledge.update_manifest_on_change() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$ DECLARE v_layer TEXT; BEGIN v_layer := TG_TABLE_NAME; UPDATE cmis_knowledge.cognitive_manifest SET last_updated = NOW(), confidence = LEAST(confidence + 0.02, 1.00) WHERE LOWER(layer_name) = LOWER(v_layer) OR (LOWER(layer_name) = 'temporal' AND TG_TABLE_NAME LIKE '%temporal%') OR (LOWER(layer_name) = 'predictive' AND TG_TABLE_NAME LIKE '%predictive%') OR (LOWER(layer_name) = 'feedback' AND TG_TABLE_NAME LIKE '%audit%') OR (LOWER(layer_name) = 'learning' AND TG_TABLE_NAME LIKE '%learning%'); INSERT INTO cmis_audit.logs(event_type, event_source, description, created_at) VALUES ('manifest_sync', TG_TABLE_NAME, CONCAT('🔄 تحديث تلقائي في الـ Manifest بعد تعديل في الطبقة ', v_layer), NOW()); RETURN NEW; END; $$;
+
+
+ALTER FUNCTION cmis_knowledge.update_manifest_on_change() OWNER TO begin;
+
+--
+-- Name: update_timestamp(); Type: FUNCTION; Schema: cmis_ops; Owner: begin
+--
+
+CREATE FUNCTION cmis_ops.update_timestamp() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$ BEGIN NEW.updated_at = NOW(); RETURN NEW; END; $$;
+
+
+ALTER FUNCTION cmis_ops.update_timestamp() OWNER TO begin;
+
+--
+-- Name: FUNCTION update_timestamp(); Type: COMMENT; Schema: cmis_ops; Owner: begin
+--
+
+COMMENT ON FUNCTION cmis_ops.update_timestamp() IS 'دالة قياسية لتحديث عمود updated_at تلقائيًا قبل تنفيذ أي UPDATE على الصف.';
+
+--
+-- Name: audit_trigger_function(); Type: FUNCTION; Schema: operations; Owner: begin
+--
+
+CREATE FUNCTION operations.audit_trigger_function() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+DECLARE
+    v_action TEXT;
+    v_record_id UUID;
+    v_record_key TEXT;
+    v_old_values JSONB;
+    v_new_values JSONB;
+BEGIN
+    IF TG_OP = 'INSERT' THEN
+        v_action := 'INSERT';
+    ELSIF TG_OP = 'UPDATE' THEN
+        v_action := 'UPDATE';
+    ELSE
+        v_action := 'DELETE';
+    END IF;
+
+    BEGIN
+        v_record_id := COALESCE(
+            (CASE WHEN TG_OP != 'DELETE' AND to_jsonb(NEW) ? 'campaign_id' THEN (NEW).campaign_id ELSE NULL END),
+            (CASE WHEN TG_OP != 'DELETE' AND to_jsonb(NEW) ? 'id' THEN (NEW).id ELSE NULL END),
+            (CASE WHEN TG_OP != 'DELETE' AND to_jsonb(NEW) ? 'org_id' THEN (NEW).org_id ELSE NULL END),
+            (CASE WHEN TG_OP != 'DELETE' AND to_jsonb(NEW) ? 'context_id' THEN (NEW).context_id ELSE NULL END),
+            (CASE WHEN TG_OP != 'DELETE' AND to_jsonb(NEW) ? 'creative_id' THEN (NEW).creative_id ELSE NULL END),
+            (CASE WHEN TG_OP != 'DELETE' AND to_jsonb(NEW) ? 'value_id' THEN (NEW).value_id ELSE NULL END),
+            (CASE WHEN TG_OP = 'DELETE' AND to_jsonb(OLD) ? 'campaign_id' THEN (OLD).campaign_id ELSE NULL END),
+            (CASE WHEN TG_OP = 'DELETE' AND to_jsonb(OLD) ? 'id' THEN (OLD).id ELSE NULL END),
+            (CASE WHEN TG_OP = 'DELETE' AND to_jsonb(OLD) ? 'org_id' THEN (OLD).org_id ELSE NULL END),
+            (CASE WHEN TG_OP = 'DELETE' AND to_jsonb(OLD) ? 'context_id' THEN (OLD).context_id ELSE NULL END),
+            (CASE WHEN TG_OP = 'DELETE' AND to_jsonb(OLD) ? 'creative_id' THEN (OLD).creative_id ELSE NULL END),
+            (CASE WHEN TG_OP = 'DELETE' AND to_jsonb(OLD) ? 'value_id' THEN (OLD).value_id ELSE NULL END)
+        );
+    EXCEPTION WHEN OTHERS THEN
+        v_record_id := NULL;
+    END;
+
+    v_record_key := COALESCE(
+        (CASE WHEN TG_OP != 'DELETE' AND to_jsonb(NEW) ? 'name' THEN (NEW).name ELSE NULL END),
+        (CASE WHEN TG_OP != 'DELETE' AND to_jsonb(NEW) ? 'status' THEN (NEW).status ELSE NULL END),
+        (CASE WHEN TG_OP = 'DELETE' AND to_jsonb(OLD) ? 'name' THEN (OLD).name ELSE NULL END),
+        (CASE WHEN TG_OP = 'DELETE' AND to_jsonb(OLD) ? 'status' THEN (OLD).status ELSE NULL END),
+        'unknown'
+    );
+
+    IF TG_OP = 'INSERT' THEN
+        v_old_values := NULL;
+        v_new_values := row_to_json(NEW)::jsonb;
+    ELSIF TG_OP = 'UPDATE' THEN
+        v_old_values := row_to_json(OLD)::jsonb;
+        v_new_values := row_to_json(NEW)::jsonb;
+    ELSE
+        v_old_values := row_to_json(OLD)::jsonb;
+        v_new_values := NULL;
+    END IF;
+
+    INSERT INTO operations.audit_log (table_schema, table_name, action, record_id, record_key, old_values, new_values, timestamp)
+    VALUES (TG_TABLE_SCHEMA, TG_TABLE_NAME, v_action, v_record_id, v_record_key, v_old_values, v_new_values, NOW());
+
+    RETURN NEW;
+END;
+$$;
+
+
+ALTER FUNCTION operations.audit_trigger_function() OWNER TO begin;
+
