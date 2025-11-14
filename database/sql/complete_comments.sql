@@ -11,6 +11,7 @@ COMMENT ON FUNCTION cmis.check_permission_tx(p_permission text) IS 'التحقق
 COMMENT ON FUNCTION cmis.get_current_org_id_tx() IS 'الحصول على org_id من السياق المحلي للمعاملة';
 COMMENT ON FUNCTION cmis.get_current_user_id_tx() IS 'الحصول على user_id من السياق المحلي للمعاملة';
 COMMENT ON FUNCTION cmis.init_transaction_context(p_user_id uuid, p_org_id uuid) IS 'تهيئة سياق الأمان للمعاملة الحالية باستخدام SET LOCAL - v2.0';
+COMMENT ON FUNCTION cmis.clear_transaction_context() IS 'مسح سياق الأمان للمعاملة الحالية وتنظيف الإعدادات المحلية';
 COMMENT ON FUNCTION cmis.test_new_security_context() IS 'اختبار شامل للنظام الأمني الجديد';
 COMMENT ON FUNCTION cmis.validate_transaction_context() IS 'التحقق من صحة سياق المعاملة وإرجاع معلومات المستخدم والمؤسسة';
 COMMENT ON FUNCTION cmis.verify_rbac_policies() IS 'التحقق من حالة سياسات الأمان وما إذا كانت تستخدم الدالة المحسنة';
