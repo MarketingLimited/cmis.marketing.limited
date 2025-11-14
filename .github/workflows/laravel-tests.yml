@@ -1,10 +1,12 @@
+---
+# yamllint disable rule:truthy
 name: Laravel Tests (PostgreSQL + SSH)
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [main]
   pull_request:
-    branches: [ "main" ]
+    branches: [main]
 
 jobs:
   laravel-tests:
@@ -21,7 +23,7 @@ jobs:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
         options: >-
-          --health-cmd="pg_isready -U postgres"
+          --health-cmd='pg_isready -U postgres'
           --health-interval=10s
           --health-timeout=5s
           --health-retries=5
@@ -31,7 +33,7 @@ jobs:
         ports:
           - 6379:6379
         options: >-
-          --health-cmd "redis-cli ping"
+          --health-cmd='redis-cli ping'
           --health-interval=10s
           --health-timeout=5s
           --health-retries=5
@@ -89,7 +91,11 @@ jobs:
         continue-on-error: true
 
       - name: Run tests with coverage
-        run: php artisan test --coverage --min=70 --log-junit=storage/logs/junit.xml
+        run: |
+          php artisan test \
+            --coverage \
+            --min=70 \
+            --log-junit=storage/logs/junit.xml
 
       - name: Upload test results
         if: always()

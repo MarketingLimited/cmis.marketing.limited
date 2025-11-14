@@ -1,3 +1,5 @@
+---
+# yamllint disable rule:truthy
 name: Cache Cleanup
 
 on:
@@ -24,17 +26,17 @@ jobs:
           echo "Cleaning up caches older than 7 days..."
           gh extension install actions/gh-actions-cache
 
-          REPO=${{ github.repository }}
-          BRANCH="refs/pull/${{ github.event.pull_request.number }}/merge"
+          repo="${{ github.repository }}"
+          branch="refs/pull/${{ github.event.pull_request.number }}/merge"
 
           # Get list of cache keys
-          cacheKeysForPR=$(gh actions-cache list -R $REPO -B $BRANCH | cut -f 1 )
+          cache_keys=$(gh actions-cache list -R "$repo" -B "$branch" | cut -f 1)
 
           # Delete all old caches
           set +e
-          for cacheKey in $cacheKeysForPR
-          do
-              gh actions-cache delete $cacheKey -R $REPO -B $BRANCH --confirm
+          for cache_key in $cache_keys; do
+            gh actions-cache delete "$cache_key" \
+              -R "$repo" -B "$branch" --confirm
           done
 
           echo "✅ Cache cleanup completed!"
