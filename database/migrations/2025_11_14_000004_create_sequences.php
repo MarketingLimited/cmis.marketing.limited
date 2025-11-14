@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\DB;
 /**
  * Domain: Database Sequences
  *
- * Description: Create all database sequences for auto-incrementing columns
+ * Description: Create all 30 sequences for auto-incrementing columns
  *
  * AI Agent Context: Sequences must be created before constraints that reference them
  */
