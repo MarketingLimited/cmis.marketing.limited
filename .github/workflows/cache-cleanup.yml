@@ -27,18 +27,21 @@ jobs:
           gh extension install actions/gh-actions-cache
 
           repo="${{ github.repository }}"
-          branch="refs/pull/${{ github.event.pull_request.number }}/merge"
 
-          # Get list of cache keys
-          cache_keys=$(gh actions-cache list -R "$repo" -B "$branch" | cut -f 1)
+          # Get list of cache keys for all branches
+          echo "Fetching cache list..."
+          cache_keys=$(gh actions-cache list -R "$repo" --limit 100 | cut -f 1)
 
           # Delete all old caches
           set +e
+          deleted=0
           for cache_key in $cache_keys; do
-            gh actions-cache delete "$cache_key" \
-              -R "$repo" -B "$branch" --confirm
+            echo "Deleting cache: $cache_key"
+            if gh actions-cache delete "$cache_key" -R "$repo" --confirm; then
+              deleted=$((deleted + 1))
+            fi
           done
 
-          echo "✅ Cache cleanup completed!"
+          echo "✅ Cache cleanup completed! Deleted $deleted caches."
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
