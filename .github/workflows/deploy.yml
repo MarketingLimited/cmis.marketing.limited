@@ -1,3 +1,5 @@
+---
+# yamllint disable rule:truthy
 name: Deploy
 
 on:
@@ -19,7 +21,10 @@ on:
 jobs:
   deploy-staging:
     name: Deploy to Staging
-    if: github.ref == 'refs/heads/staging' || (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'staging')
+    if: >-
+      github.ref == 'refs/heads/staging' ||
+      (github.event_name == 'workflow_dispatch' &&
+      github.event.inputs.environment == 'staging')
     runs-on: ubuntu-latest
     environment:
       name: staging
@@ -43,7 +48,13 @@ jobs:
           cache: 'npm'
 
       - name: Install Composer dependencies
-        run: composer install --prefer-dist --no-progress --no-interaction --no-dev --optimize-autoloader
+        run: |
+          composer install \
+            --prefer-dist \
+            --no-progress \
+            --no-interaction \
+            --no-dev \
+            --optimize-autoloader
 
       - name: Install npm dependencies
         run: npm ci
@@ -86,7 +97,10 @@ jobs:
 
   deploy-production:
     name: Deploy to Production
-    if: github.ref == 'refs/heads/main' || (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'production')
+    if: >-
+      github.ref == 'refs/heads/main' ||
+      (github.event_name == 'workflow_dispatch' &&
+      github.event.inputs.environment == 'production')
     runs-on: ubuntu-latest
     environment:
       name: production
@@ -110,7 +124,13 @@ jobs:
           cache: 'npm'
 
       - name: Install Composer dependencies
-        run: composer install --prefer-dist --no-progress --no-interaction --no-dev --optimize-autoloader
+        run: |
+          composer install \
+            --prefer-dist \
+            --no-progress \
+            --no-interaction \
+            --no-dev \
+            --optimize-autoloader
 
       - name: Install npm dependencies
         run: npm ci
@@ -121,7 +141,14 @@ jobs:
       - name: Create deployment package
         run: |
           mkdir -p deployment
-          rsync -av --exclude='.git' --exclude='.github' --exclude='node_modules' --exclude='tests' --exclude='storage/logs' --exclude='.env' . deployment/
+          rsync -av \
+            --exclude='.git' \
+            --exclude='.github' \
+            --exclude='node_modules' \
+            --exclude='tests' \
+            --exclude='storage/logs' \
+            --exclude='.env' \
+            . deployment/
 
       - name: Deploy to production server
         uses: easingthemes/ssh-deploy@v5
@@ -141,7 +168,12 @@ jobs:
           script: |
             cd ${{ secrets.PRODUCTION_PATH }}
             mkdir -p backups
-            PGPASSWORD="${{ secrets.PRODUCTION_DB_PASSWORD }}" pg_dump -h 127.0.0.1 -U ${{ secrets.PRODUCTION_DB_USER }} -d ${{ secrets.PRODUCTION_DB_NAME }} > backups/backup_$(date +%Y%m%d_%H%M%S).sql
+            export PGPASSWORD="${{ secrets.PRODUCTION_DB_PASSWORD }}"
+            pg_dump \
+              -h 127.0.0.1 \
+              -U ${{ secrets.PRODUCTION_DB_USER }} \
+              -d ${{ secrets.PRODUCTION_DB_NAME }} \
+              > "backups/backup_$(date +%Y%m%d_%H%M%S).sql"
 
       - name: Run deployment commands
         uses: appleboy/ssh-action@v1.0.0
@@ -151,7 +183,7 @@ jobs:
           key: ${{ secrets.PRODUCTION_SSH_PRIVATE_KEY }}
           script: |
             cd ${{ secrets.PRODUCTION_PATH }}
-            php artisan down --message="Deploying new version. We'll be back shortly!"
+            php artisan down --message="Deploying new version. Back soon!"
             php artisan migrate --force
             php artisan config:cache
             php artisan route:cache
