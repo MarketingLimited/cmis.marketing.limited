@@ -6,31 +6,36 @@ use Illuminate\Support\Facades\DB;
 /**
  * Domain: Database Functions
  *
- * Description: Create all stored functions and procedures
+ * Description: Create all 126 stored functions and 1 procedure
  *
  * AI Agent Context: Functions encapsulate business logic at the database level.
- * Common patterns: permission checking, cache management, data transformations.
- * Functions can be called from triggers, queries, or application code.
  */
 return new class extends Migration
 {
     public function up(): void
     {
-        $sql = file_get_contents(database_path('sql/all_functions.sql'));
+        $functions = file_get_contents(database_path('sql/all_functions.sql'));
+        $procedures = file_get_contents(database_path('sql/complete_procedures.sql'));
 
-        if (!empty(trim($sql))) {
+        if (!empty(trim($functions))) {
             try {
-                DB::unprepared($sql);
+                DB::unprepared($functions);
             } catch (\Exception $e) {
                 \Log::warning("Function creation warning: " . $e->getMessage());
-                // Some functions may require extensions or permissions we don't have
+            }
+        }
+
+        if (!empty(trim($procedures))) {
+            try {
+                DB::unprepared($procedures);
+            } catch (\Exception $e) {
+                \Log::warning("Procedure creation warning: " . $e->getMessage());
             }
         }
     }
 
     public function down(): void
     {
-        // Drop all functions in application schemas
         DB::unprepared("
             DO $$
             DECLARE

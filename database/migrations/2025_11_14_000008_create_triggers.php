@@ -6,11 +6,10 @@ use Illuminate\Support\Facades\DB;
 /**
  * Domain: Database Triggers
  *
- * Description: Create all triggers for automated actions
+ * Description: Create all 20 triggers for automated actions
  *
- * AI Agent Context: Triggers automatically execute functions when events occur (INSERT, UPDATE, DELETE).
- * Common uses: audit logging, cache invalidation, data validation, cascading updates.
- * Triggers depend on functions, so this must run after create_functions migration.
+ * AI Agent Context: Triggers automatically execute functions when events occur.
+ * Depends on functions, so must run after create_functions migration.
  */
 return new class extends Migration
 {
@@ -29,7 +28,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        // Drop all triggers in application schemas
         DB::unprepared("
             DO $$
             DECLARE
@@ -37,9 +35,9 @@ return new class extends Migration
             BEGIN
                 FOR trig IN
                     SELECT
-                        schemaname,
-                        tablename,
-                        trigname
+                        n.nspname as schema_name,
+                        c.relname as table_name,
+                        t.tgname as trigger_name
                     FROM pg_trigger t
                     JOIN pg_class c ON t.tgrelid = c.oid
                     JOIN pg_namespace n ON c.relnamespace = n.oid
@@ -47,7 +45,7 @@ return new class extends Migration
                     AND NOT t.tgisinternal
                 LOOP
                     EXECUTE format('DROP TRIGGER IF EXISTS %I ON %I.%I CASCADE',
-                        trig.trigname, trig.schemaname, trig.tablename);
+                        trig.trigger_name, trig.schema_name, trig.table_name);
                 END LOOP;
             END $$;
         ");
