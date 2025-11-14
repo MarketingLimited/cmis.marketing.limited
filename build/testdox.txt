@@ -55,20 +55,6 @@ Ad Campaign (Tests\Unit\Models\AdPlatform\AdCampaign)
  [ ] It has timestamps
  [ ] It respects rls policies
 
-All Platforms Sync (Tests\Integration\Sync\AllPlatformsSync)
- [ ] It syncs facebook page data
- [ ] It syncs facebook posts
- [ ] It syncs facebook insights
- [ ] It syncs tiktok account info
- [ ] It syncs tiktok videos
- [ ] It syncs twitter profile
- [ ] It syncs twitter tweets
- [ ] It syncs linkedin company page
- [ ] It syncs linkedin posts
- [ ] It handles rate limiting gracefully
- [ ] It retries failed sync operations
- [ ] It syncs multiple platforms simultaneously
-
 Analytics API (Tests\Feature\API\AnalyticsAPI)
  [ ] It can get campaign analytics
  [ ] It can get analytics by date range
@@ -84,18 +70,6 @@ Analytics API (Tests\Feature\API\AnalyticsAPI)
  [ ] It requires authentication
  [ ] It can export analytics to pdf
  [ ] It can export analytics to excel
-
-Analytics Controller (Tests\Feature\Controllers\AnalyticsController)
- [ ] It can get campaign analytics
- [ ] It can get overview analytics
- [ ] It can get platform analytics
- [ ] It can get time series data
- [ ] It can export analytics report
- [ ] It can get top performing content
- [ ] It can compare campaigns
- [ ] It validates date range
- [ ] It respects org isolation
- [ ] It requires authentication
 
 Analytics Report (Tests\Unit\Models\Analytics\AnalyticsReport)
  [ ] It can create analytics report
@@ -186,18 +160,6 @@ Asset (Tests\Unit\Models\Asset\Asset)
  [ ] It has timestamps
  [ ] It respects rls policies
 
-Asset Controller (Tests\Feature\Controllers\AssetController)
- [ ] It can list assets
- [ ] It can upload asset
- [ ] It can view asset details
- [ ] It can update asset metadata
- [ ] It can delete asset
- [ ] It can filter by file type
- [ ] It can search assets
- [ ] Viewer cannot delete assets
- [ ] It respects org isolation
- [ ] It can download asset
-
 Audience (Tests\Unit\Models\Audience\Audience)
  [ ] It can create audience
  [ ] It belongs to org
@@ -270,13 +232,6 @@ Budget (Tests\Unit\Models\Budget\Budget)
  [ ] It has timestamps
  [ ] It respects rls policies
 
-Bulk Operations Workflow (Tests\Integration\Bulk\BulkOperationsWorkflow)
- [ ] It creates bulk posts from csv
- [ ] It handles bulk post validation errors
- [ ] It performs bulk campaign status update
- [ ] It performs bulk creative asset deletion
- [ ] It performs bulk post scheduling with queue
-
 Campaign (Tests\Feature\Campaign)
  [ ] Example
 
@@ -339,20 +294,6 @@ Campaign Completed Event (Tests\Unit\Events\CampaignCompletedEvent)
  [ ] It can be listened to
  [ ] It includes completion timestamp
 
-Campaign Controller (Tests\Feature\Controllers\CampaignController)
- [ ] It can list all campaigns
- [ ] It can create campaign
- [ ] It can get single campaign
- [ ] It can update campaign
- [ ] It can delete campaign
- [ ] It validates required fields
- [ ] It can filter campaigns by status
- [ ] It can search campaigns
- [ ] It can get campaign analytics
- [ ] It respects org isolation
- [ ] It requires authentication
- [ ] It can duplicate campaign
-
 Campaign Created Event (Tests\Unit\Events\CampaignCreatedEvent)
  [ ] It can be instantiated
  [ ] It is dispatched when campaign is created
@@ -371,16 +312,6 @@ Campaign Factory (Tests\Unit\Factories\CampaignFactory)
  [ ] It creates campaign with dates
  [ ] It respects org relationship
  [ ] It generates unique campaign ids
-
-Campaign Management (Tests\Feature\Campaigns\CampaignManagement)
- [ ] User can list campaigns
- [ ] User can create campaign
- [ ] User can view campaign details
- [ ] User can update campaign
- [ ] User can delete campaign
- [ ] User can search campaigns
- [ ] User can filter campaigns by status
- [ ] User cannot access campaigns from another org
 
 Campaign Notification (Tests\Unit\Notifications\CampaignNotification)
  [ ] It can send campaign completed notification
@@ -497,14 +428,6 @@ Comment (Tests\Unit\Models\Comment\Comment)
  [ ] It has timestamps
  [ ] It respects rls policies
 
-Complete Campaign Lifecycle (Tests\Integration\Campaign\CompleteCampaignLifecycle)
- [ ] It executes complete campaign lifecycle
- [ ] It handles campaign pause and resume
- [ ] It archives completed campaign
-
-Complete Marketing Workflow (Tests\Integration\CompleteFlow\CompleteMarketingWorkflow)
- [ ] It executes complete marketing workflow with all details
-
 Contact (Tests\Unit\Models\Contact\Contact)
  [ ] It can create contact
  [ ] It belongs to org
@@ -532,18 +455,6 @@ Content Approval (Tests\Unit\Models\Content\ContentApproval)
  [ ] It uses uuid as primary key
  [ ] It has timestamps
  [ ] It respects rls policies
-
-Content Controller (Tests\Feature\Controllers\ContentController)
- [ ] It can list content items
- [ ] It can create content item
- [ ] It can get single content item
- [ ] It can update content item
- [ ] It can delete content item
- [ ] It can schedule content
- [ ] It can filter by status
- [ ] It validates required fields
- [ ] It respects org isolation
- [ ] It requires authentication
 
 Content Media (Tests\Unit\Models\Content\ContentMedia)
  [ ] It can create content media
@@ -627,12 +538,6 @@ Content Validator (Tests\Unit\Validators\ContentValidator)
  [ ] It validates tags as array
  [ ] It accepts valid content data
 
-Creative Approval Workflow (Tests\Integration\Creative\CreativeApprovalWorkflow)
- [ ] It completes creative brief to approval workflow
- [ ] It handles creative rejection and revision
- [ ] It supports multi level approval
- [ ] It tracks approval history
-
 Creative Brief (Tests\Unit\Models\Creative\CreativeBrief)
  [ ] It can create a creative brief
  [ ] It belongs to an organization
@@ -683,19 +588,6 @@ Custom Field (Tests\Unit\Models\CustomField\CustomField)
  [ ] It has timestamps
  [ ] It respects rls policies
 
-Dashboard Controller (Tests\Feature\Controllers\DashboardController)
- [ ] It shows dashboard for authenticated user
- [ ] It requires authentication
- [ ] It returns campaign summary
- [ ] It returns analytics overview
- [ ] It returns recent activity
- [ ] It returns top performing campaigns
- [ ] It returns upcoming scheduled posts
- [ ] It returns budget summary
- [ ] It filters data by date range
- [ ] It respects org isolation
- [ ] It handles empty data gracefully
-
 Date Formatter (Tests\Unit\Formatters\DateFormatter)
  [ ] It formats date for display
  [ ] It formats date with time
@@ -735,18 +627,6 @@ Email Service (Tests\Unit\Services\EmailService)
  [ ] It handles send failures
  [ ] It can personalize content
 
-Embedding Workflow (Tests\Integration\Knowledge\EmbeddingWorkflow)
- [ ] It can generate embeddings for content
- [ ] It caches generated embeddings
- [ ] It can perform semantic search
- [ ] It caches search results
- [ ] It can queue embedding generation
- [ ] It handles embedding api errors
- [ ] It can register feedback for search results
- [ ] It can batch generate embeddings
- [ ] It respects embedding quality threshold
- [ ] It can update embeddings when content changes
-
 Ensure Org Active Middleware (Tests\Unit\Middleware\EnsureOrgActiveMiddleware)
  [ ] It allows active org access
  [ ] It blocks inactive org access
@@ -757,19 +637,6 @@ Ensure Org Active Middleware (Tests\Unit\Middleware\EnsureOrgActiveMiddleware)
  [ ] It exempts admin users
  [ ] It handles missing org
  [ ] It respects different org statuses
-
-Error Recovery Workflow (Tests\Integration\ErrorHandling\ErrorRecoveryWorkflow)
- [ ] It handles network timeout with retry
- [ ] It handles invalid token with refresh
- [ ] It handles rate limit with backoff
- [ ] It handles partial data sync failure
- [ ] It handles database transaction rollback
- [ ] It handles job retry on failure
- [ ] It handles validation errors gracefully
- [ ] It logs all errors for debugging
-
-Example (Tests\Feature\Example)
- [ ] The application returns a successful response
 
 Example (Tests\Unit\Example)
  [x] That true is true
@@ -796,15 +663,6 @@ Facebook Service (Tests\Unit\Services\FacebookService)
  [ ] It can get page conversations
  [ ] It can send message
  [ ] It handles api errors
-
-Facebook Sync Integration (Tests\Integration\Social\FacebookSyncIntegration)
- [ ] It can sync facebook account data
- [ ] It can sync facebook posts
- [ ] It handles facebook api errors gracefully
- [ ] It handles rate limiting
- [ ] It can dispatch sync job
- [ ] It respects sync lookback period
- [ ] It updates existing posts on resync
 
 Facebook Sync Service (Tests\Unit\Services\Social\FacebookSyncService)
  [ ] Get configuration returns correct structure
@@ -858,18 +716,6 @@ Generate Reports Command (Tests\Unit\Commands\GenerateReportsCommand)
  [ ] It handles generation errors
  [ ] It respects org isolation
 
-Google Ads Workflow (Tests\Integration\AdPlatform\GoogleAdsWorkflow)
- [ ] It creates google ads campaign
- [ ] It creates google ads ad group
- [ ] It creates google responsive search ad
- [ ] It creates google display ad
- [ ] It adds keywords to ad group
- [ ] It fetches google ads campaign performance
- [ ] It pauses google ads campaign
- [ ] It updates campaign budget
- [ ] It handles google ads api errors
- [ ] It respects org isolation for google campaigns
-
 Google Business Service (Tests\Unit\Services\GoogleBusinessService)
  [ ] It can create local post
  [ ] It can create offer post
@@ -905,14 +751,6 @@ Instagram Service (Tests\Unit\Services\InstagramService)
  [ ] It can get hashtag search
  [ ] It handles api errors gracefully
  [ ] It handles rate limiting
-
-Instagram Sync Workflow (Tests\Integration\Social\InstagramSyncWorkflow)
- [ ] It syncs instagram account profile
- [ ] It syncs instagram media posts
- [ ] It syncs instagram insights metrics
- [ ] It syncs instagram stories
- [ ] It handles instagram api token expiration
- [ ] It syncs instagram comments
 
 Integration (Tests\Unit\Models\Integration)
  [ ] It can create an integration
@@ -958,18 +796,6 @@ Integration API (Tests\Feature\API\IntegrationAPI)
  [ ] It respects org isolation
  [ ] It can configure webhook for integration
  [ ] It can get available integrations
-
-Integration Controller (Tests\Feature\Controllers\IntegrationController)
- [ ] It can list all integrations
- [ ] It can create new integration
- [ ] It can get single integration
- [ ] It can update integration
- [ ] It can delete integration
- [ ] It can test integration connection
- [ ] It can refresh integration token
- [ ] It validates required fields
- [ ] It respects org isolation
- [ ] It requires authentication
 
 Integration Validator (Tests\Unit\Validators\IntegrationValidator)
  [ ] It validates platform is required
@@ -1065,18 +891,6 @@ Lead Captured Event (Tests\Unit\Events\LeadCapturedEvent)
  [ ] It includes lead source information
  [ ] It triggers notification workflows
 
-Lead Controller (Tests\Feature\Controllers\LeadController)
- [ ] It can list all leads
- [ ] It can create lead
- [ ] It can get single lead
- [ ] It can update lead
- [ ] It can delete lead
- [ ] It can filter leads by status
- [ ] It can convert lead
- [ ] It validates required fields
- [ ] It respects org isolation
- [ ] It requires authentication
-
 Lead Policy (Tests\Unit\Policies\LeadPolicy)
  [ ] Admin can view leads
  [ ] Admin can create leads
@@ -1126,18 +940,6 @@ Lead Validator (Tests\Unit\Validators\LeadValidator)
  [ ] It validates utm parameters
  [ ] It accepts valid lead data
 
-Linked In Ads Workflow (Tests\Integration\AdPlatform\LinkedInAdsWorkflow)
- [ ] It creates linkedin ad campaign
- [ ] It creates linkedin sponsored content
- [ ] It creates linkedin lead gen form
- [ ] It creates linkedin audience targeting
- [ ] It fetches linkedin campaign analytics
- [ ] It fetches linkedin lead gen submissions
- [ ] It creates linkedin text ad
- [ ] It pauses linkedin campaign
- [ ] It updates linkedin campaign budget
- [ ] It handles linkedin api errors
-
 Linked In Service (Tests\Unit\Services\LinkedInService)
  [ ] It can publish post
  [ ] It can publish article
@@ -1172,15 +974,6 @@ Meta Ads Service (Tests\Unit\Services\Ads\MetaAdsService)
  [ ] Sync metrics for campaigns
  [ ] Validate token with expired integration
 
-Meta Ads Workflow (Tests\Integration\AdPlatform\MetaAdsWorkflow)
- [ ] It creates meta ad campaign
- [ ] It creates ad set with targeting
- [ ] It creates ad creative with media
- [ ] It syncs ad campaign metrics
- [ ] It updates campaign budget
- [ ] It pauses and resumes campaign
- [ ] It creates lookalike audience
-
 Metric (Tests\Unit\Models\Metric\Metric)
  [ ] It can create metric
  [ ] It belongs to org
@@ -1205,17 +998,6 @@ Notification (Tests\Unit\Models\Notification\Notification)
  [ ] It uses uuid as primary key
  [ ] It has timestamps
  [ ] It can be deleted
-
-Notification Controller (Tests\Feature\Controllers\NotificationController)
- [ ] It can list user notifications
- [ ] It can mark notification as read
- [ ] It can mark all as read
- [ ] It can delete notification
- [ ] It shows unread count
- [ ] It filters by notification type
- [ ] User cannot access others notifications
- [ ] It can delete all read notifications
- [ ] It paginates notifications
 
 Notification Preference (Tests\Unit\Models\Notification\NotificationPreference)
  [ ] It can create notification preference
@@ -1282,37 +1064,6 @@ Org (Tests\Unit\Models\Org)
  [ ] It has timestamps
  [ ] It can count active campaigns
  [ ] It validates required fields
-
-Org Management (Tests\Feature\Orgs\OrgManagement)
- [ ] User can list their organizations
- [ ] User can create new organization
- [ ] User can view organization details
- [ ] Owner can update organization
- [ ] Owner can soft delete organization
- [ ] User cannot access org without membership
- [ ] User can view org statistics
- [ ] Non owner cannot delete organization
-
-Org Web Flow (Tests\Feature\Orgs\OrgWebFlow)
- [ ] Authenticated user can view orgs list page
- [ ] Unauthenticated user cannot view orgs list
- [ ] Authenticated user can view create org form
- [ ] User can create new organization with valid data
- [ ] User can create organization with minimal required data
- [ ] Organization creation fails without required name
- [ ] Organization name must be unique
- [ ] Organization creation with invalid currency code fails
- [ ] User can view their organization
- [ ] Organization stores creator as owner
- [ ] Organization creation rolls back on failure
- [ ] Organization supports different locales
- [ ] Organization supports different currencies
- [ ] Organization provider field is optional
- [ ] Organization can set provider field
- [ ] Created organization has valid uuid
- [ ] Created organization has timestamps
- [ ] Organization index shows all organizations
- [ ] Form validation provides helpful error messages
 
 Permission (Tests\Unit\Models\Permission\Permission)
  [ ] It can create permission
@@ -1460,17 +1211,6 @@ Publishing API (Tests\Feature\API\PublishingAPI)
  [ ] It can get publishing history
  [ ] It can preview post before publishing
 
-Publishing Workflow (Tests\Integration\Publishing\PublishingWorkflow)
- [ ] It can create a publishing queue
- [ ] It can schedule a post
- [ ] It dispatches publish job at scheduled time
- [ ] It publishes post to multiple platforms
- [ ] It handles publishing failures gracefully
- [ ] It calculates next available time slot
- [ ] It validates time slots configuration
- [ ] It enforces one queue per social account
- [ ] It can update post status after publishing
-
 RLSMiddleware (Tests\Unit\Middleware\RLSMiddleware)
  [ ] It sets rls context for authenticated user
  [ ] It clears rls context after request
@@ -1508,18 +1248,6 @@ Report (Tests\Unit\Models\Report\Report)
  [ ] It uses uuid as primary key
  [ ] It has timestamps
  [ ] It respects rls policies
-
-Report Controller (Tests\Feature\Controllers\ReportController)
- [ ] It can list reports
- [ ] It can generate new report
- [ ] It can view report details
- [ ] It can download report
- [ ] It can delete report
- [ ] It can filter reports by type
- [ ] It can schedule recurring report
- [ ] Viewer cannot delete reports
- [ ] It respects org isolation
- [ ] It can export report to different formats
 
 Role (Tests\Unit\Models\Role\Role)
  [ ] It can create role
@@ -1672,29 +1400,6 @@ Setting (Tests\Unit\Models\Setting\Setting)
  [ ] It respects rls policies
  [ ] It can store json metadata
 
-Settings Controller (Tests\Feature\Controllers\SettingsController)
- [ ] It can view general settings
- [ ] It can update org settings
- [ ] It can view notification settings
- [ ] It can update notification preferences
- [ ] It can view integration settings
- [ ] It can view billing settings
- [ ] It can update security settings
- [ ] Viewer cannot update settings
- [ ] It respects org isolation
- [ ] It validates settings updates
-
-Snapchat Ads Workflow (Tests\Integration\AdPlatform\SnapchatAdsWorkflow)
- [ ] It creates snapchat ad campaign
- [ ] It creates snapchat ad squad
- [ ] It creates snapchat video ad
- [ ] It uploads creative to snapchat
- [ ] It creates snapchat collection ad
- [ ] It fetches snapchat campaign stats
- [ ] It pauses snapchat campaign
- [ ] It updates snapchat campaign budget
- [ ] It handles snapchat api errors
-
 Snapchat Service (Tests\Unit\Services\SnapchatService)
  [ ] It can create snap ad
  [ ] It can create story ad
@@ -1719,55 +1424,6 @@ Social Account (Tests\Unit\Models\Social\SocialAccount)
  [ ] It has timestamps
  [ ] It tracks last sync time
  [ ] It respects rls policies
-
-Social Media Comments (Tests\Integration\Social\SocialMediaComments)
- [ ] It receives instagram comment
- [ ] It replies to instagram comment
- [ ] It receives facebook comment
- [ ] It replies to facebook comment
- [ ] It receives tiktok comment
- [ ] It replies to tiktok comment
- [ ] It receives youtube comment
- [ ] It replies to youtube comment
- [ ] It receives twitter reply
- [ ] It replies to twitter mention
- [ ] It receives linkedin comment
- [ ] It replies to linkedin comment
- [ ] It auto moderates comments with keywords
- [ ] It handles nested comment threads
-
-Social Media Messaging (Tests\Integration\Social\SocialMediaMessaging)
- [ ] It receives instagram direct message
- [ ] It sends instagram direct message reply
- [ ] It receives facebook messenger message
- [ ] It sends facebook messenger reply
- [ ] It receives twitter direct message
- [ ] It sends twitter direct message reply
- [ ] It receives linkedin message
- [ ] It sends linkedin message reply
- [ ] It receives tiktok message
- [ ] It handles message thread with multiple messages
- [ ] It auto responds with ai for common questions
- [ ] It marks thread as resolved
-
-Social Media Publishing (Tests\Integration\Social\SocialMediaPublishing)
- [ ] It creates and publishes instagram feed post
- [ ] It creates and publishes instagram story
- [ ] It creates and publishes instagram reel
- [ ] It creates and publishes facebook post
- [ ] It creates and publishes facebook story
- [ ] It creates and publishes tiktok video
- [ ] It creates and publishes youtube video
- [ ] It creates and publishes youtube short
- [ ] It creates and publishes twitter tweet
- [ ] It creates and publishes twitter thread
- [ ] It creates and publishes linkedin post
- [ ] It creates and publishes linkedin article
- [ ] It creates and publishes snapchat story
- [ ] It creates and publishes google business post
- [ ] It publishes to multiple platforms simultaneously
- [ ] It handles publishing failure and retries
- [ ] It tracks published post metrics
 
 Social Post (Tests\Unit\Models\Social\SocialPost)
  [ ] It can create a social post
@@ -1825,18 +1481,6 @@ Sync Analytics Job (Tests\Unit\Jobs\SyncAnalyticsJob)
  [ ] It supports batch syncing
  [ ] It respects org isolation
 
-Sync Commands (Tests\Feature\Commands\SyncCommands)
- [ ] Sync instagram command dispatches jobs when queue flag used
- [ ] Sync facebook command dispatches jobs when queue flag used
- [ ] Sync meta ads command dispatches jobs when queue flag used
- [ ] Sync all command runs all platform syncs
- [ ] Sync all command with queue flag dispatches all jobs
- [ ] Sync command handles date range filters
- [ ] Sync command warns when no active integrations
- [ ] Database cleanup command with dry run
- [ ] System health command checks database
- [ ] Embeddings generate command dispatches job
-
 Sync Facebook Data Job (Tests\Unit\Jobs\SyncFacebookDataJob)
  [ ] Job can be dispatched
  [ ] Job has correct configuration
@@ -1893,17 +1537,6 @@ Team API (Tests\Feature\API\TeamAPI)
  [ ] It respects org isolation
  [ ] It can resend invitation
 
-Team Controller (Tests\Feature\Controllers\TeamController)
- [ ] It can list team members
- [ ] It can add team member
- [ ] It can update team member role
- [ ] It can remove team member
- [ ] Viewer cannot add team members
- [ ] It can send team invitation
- [ ] It can filter by role
- [ ] It shows team member details
- [ ] It respects org isolation
-
 Team Member (Tests\Unit\Models\Team\TeamMember)
  [ ] It can create team member
  [ ] It belongs to org and user
@@ -1932,17 +1565,6 @@ Template (Tests\Unit\Models\Template\Template)
  [ ] It can be soft deleted
  [ ] It respects rls policies
 
-Tik Tok Ads Workflow (Tests\Integration\AdPlatform\TikTokAdsWorkflow)
- [ ] It creates tiktok ad campaign
- [ ] It creates tiktok ad set
- [ ] It creates tiktok video ad
- [ ] It uploads video to tiktok
- [ ] It fetches tiktok campaign insights
- [ ] It pauses tiktok campaign
- [ ] It updates tiktok campaign budget
- [ ] It handles tiktok api errors
- [ ] It respects org isolation for tiktok campaigns
-
 Tik Tok Service (Tests\Unit\Services\TikTokService)
  [ ] It can publish video
  [ ] It can get user info
@@ -1953,18 +1575,6 @@ Tik Tok Service (Tests\Unit\Services\TikTokService)
  [ ] It can get audience insights
  [ ] It validates video requirements
  [ ] It handles api errors
-
-Twitter Ads Workflow (Tests\Integration\AdPlatform\TwitterAdsWorkflow)
- [ ] It creates twitter ads campaign
- [ ] It creates twitter line item
- [ ] It creates twitter promoted tweet
- [ ] It creates twitter tailored audience
- [ ] It uploads media to twitter
- [ ] It fetches twitter campaign analytics
- [ ] It creates twitter website card
- [ ] It pauses twitter campaign
- [ ] It updates twitter campaign budget
- [ ] It handles twitter api errors
 
 Twitter Service (Tests\Unit\Services\TwitterService)
  [ ] It can publish tweet
@@ -2039,12 +1649,6 @@ User (Tests\Unit\Models\User)
  [ ] It enforces unique email
  [ ] It can be soft deleted
 
-User Onboarding Workflow (Tests\Integration\Team\UserOnboardingWorkflow)
- [ ] It completes new user onboarding workflow
- [ ] It handles team member role change
- [ ] It handles team member deactivation
- [ ] It handles user belongs to multiple organizations
-
 User Policy (Tests\Unit\Policies\UserPolicy)
  [ ] User can view own profile
  [ ] User can update own profile
@@ -2100,18 +1704,6 @@ Webhook API (Tests\Feature\API\WebhookAPI)
  [ ] It processes webhooks asynchronously
  [ ] It handles malformed webhook payloads gracefully
 
-Webhook Controller (Tests\Feature\Controllers\WebhookController)
- [ ] It can list webhooks
- [ ] It can create webhook
- [ ] It can update webhook
- [ ] It can delete webhook
- [ ] It can show webhook details
- [ ] It can toggle webhook status
- [ ] It can test webhook delivery
- [ ] Viewer cannot create webhooks
- [ ] It respects org isolation
- [ ] It can view webhook delivery logs
-
 Webhook Handler (Tests\Unit\Services\WebhookHandler)
  [ ] It can process facebook webhook
  [ ] It can process instagram webhook
@@ -2125,20 +1717,6 @@ Webhook Handler (Tests\Unit\Services\WebhookHandler)
  [ ] It validates webhook payload structure
  [ ] It handles webhook processing errors
  [ ] It tracks webhook processing time
-
-Whats App Messaging (Tests\Integration\Social\WhatsAppMessaging)
- [ ] It receives whatsapp text message
- [ ] It sends whatsapp text message reply
- [ ] It receives whatsapp image message
- [ ] It sends whatsapp image message
- [ ] It sends whatsapp template message
- [ ] It receives whatsapp document message
- [ ] It sends whatsapp interactive button message
- [ ] It sends whatsapp interactive list message
- [ ] It receives whatsapp button reply
- [ ] It handles whatsapp message status updates
- [ ] It handles whatsapp api errors
- [ ] It tracks whatsapp conversation metrics
 
 Whats App Service (Tests\Unit\Services\WhatsAppService)
  [ ] It can send text message
