@@ -160,5 +160,8 @@ class AppServiceProvider extends ServiceProvider
         foreach ($this->policies as $model => $policy) {
             Gate::policy($model, $policy);
         }
+
+        // Load migrations from phases directory
+        $this->loadMigrationsFrom(database_path('migrations/phases'));
     }
 }

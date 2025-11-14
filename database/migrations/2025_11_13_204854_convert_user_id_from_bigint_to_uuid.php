@@ -10,6 +10,32 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Check if users table exists
+        $usersExists = DB::select("
+            SELECT EXISTS (
+                SELECT 1 FROM information_schema.tables
+                WHERE table_schema = 'cmis'
+                AND table_name = 'users'
+            ) as exists
+        ");
+
+        if (!$usersExists[0]->exists) {
+            return; // Skip if users table doesn't exist
+        }
+
+        // Check if user_id column already exists and is already UUID
+        $column = DB::select("
+            SELECT data_type
+            FROM information_schema.columns
+            WHERE table_schema = 'cmis'
+            AND table_name = 'users'
+            AND column_name = 'user_id'
+        ");
+
+        if (!empty($column) && $column[0]->data_type === 'uuid') {
+            return; // Already converted, skip
+        }
+
         // Step 1: Create a temporary mapping table to store old_id -> new_uuid
         DB::statement('
             CREATE TEMP TABLE user_id_mapping (
@@ -18,8 +44,10 @@ return new class extends Migration
             )
         ');
 
-        // Step 2: Add new user_id column to users table
-        DB::statement('ALTER TABLE cmis.users ADD COLUMN user_id UUID');
+        // Step 2: Add new user_id column to users table (only if it doesn't exist)
+        if (empty($column)) {
+            DB::statement('ALTER TABLE cmis.users ADD COLUMN user_id UUID');
+        }
 
         // Step 3: Generate UUIDs for all existing users and populate mapping table
         DB::statement("

@@ -15,6 +15,16 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Skip if table already exists
+        if (Schema::hasTable('cmis.inbox_items')) {
+            return;
+        }
+
+        // Skip if required tables don't exist yet (migration ordering)
+        if (!Schema::hasTable('cmis.orgs') || !Schema::hasTable('cmis.users')) {
+            return;
+        }
+
         Schema::connection('pgsql')->create('cmis.inbox_items', function (Blueprint $table) {
             $table->uuid('item_id')->primary();
             $table->uuid('org_id')->index();
