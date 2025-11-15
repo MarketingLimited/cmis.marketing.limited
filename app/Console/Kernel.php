@@ -31,6 +31,7 @@ class Kernel extends ConsoleKernel
         \App\Console\Commands\GenerateReportsCommand::class,
         \App\Console\Commands\ProcessScheduledPostsCommand::class,
         \App\Console\Commands\SyncIntegrationsCommand::class,
+        \App\Console\Commands\ManagePartitions::class,
 
         // Vector Embeddings v2.0 Commands
         \App\Console\Commands\VectorEmbeddings\ProcessEmbeddingQueueCommand::class,
@@ -125,6 +126,21 @@ class Kernel extends ConsoleKernel
             ->at('04:00')
             ->onSuccess(function () {
                 Log::info('✅ Cache cleanup completed');
+            });
+
+        // ==========================================
+        // 📊 Database Partition Management (Phase 4)
+        // ==========================================
+
+        // Manage partitions monthly (create future, cleanup old)
+        $schedule->command('partitions:manage')
+            ->monthlyOn(1, '05:00')
+            ->withoutOverlapping()
+            ->onSuccess(function () {
+                Log::info('✅ Database partitions managed successfully');
+            })
+            ->onFailure(function () {
+                Log::error('❌ Failed to manage database partitions');
             });
 
         // ==========================================
