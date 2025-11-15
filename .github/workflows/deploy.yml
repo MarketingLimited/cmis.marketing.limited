@@ -25,7 +25,7 @@ jobs:
       github.ref == 'refs/heads/staging' ||
       (github.event_name == 'workflow_dispatch' &&
       github.event.inputs.environment == 'staging')
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.RUNS_ON || 'ubuntu-latest' }}
     environment:
       name: staging
       url: https://staging.cmis.kazaaz.com
@@ -101,7 +101,7 @@ jobs:
       github.ref == 'refs/heads/main' ||
       (github.event_name == 'workflow_dispatch' &&
       github.event.inputs.environment == 'production')
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.RUNS_ON || 'ubuntu-latest' }}
     environment:
       name: production
       url: https://cmis.kazaaz.com
