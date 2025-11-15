@@ -39,7 +39,7 @@ The seeders create a complete demo environment with:
 
 | Seeder | Table(s) | Description |
 |--------|----------|-------------|
-| **DemoDataSeeder** | Multiple tables | Creates comprehensive interconnected demo data including:<br>• User-organization relationships<br>• Role permissions<br>• Offerings and segments<br>• Integrations (Instagram, Facebook Ads)<br>• Social accounts<br>• Ad accounts<br>• Campaigns<br>• Creative assets<br>• Content plans<br>• Social posts (published)<br>• Scheduled posts<br>• Ad campaigns with ad sets and ads |
+| **DemoDataSeeder** | Multiple tables | Creates comprehensive interconnected demo data including:<br>• User-organization relationships<br>• Role permissions<br>• Offerings and segments<br>• Integrations (Instagram, Facebook Ads)<br>• Social accounts<br>• Ad accounts<br>• Campaigns<br>• Creative briefs<br>• Creative assets<br>• Content plans<br>• Social posts (published)<br>• Scheduled posts<br>• Ad campaigns with ad sets and ads<br>• Performance metrics<br>• Publishing queues<br>• Inbox items (comments & messages)<br>• Post approvals<br>• AB tests with variations<br>• Audience templates<br>• Notifications<br>• User activities<br>• Team invitations |
 
 ### Optional (Development Only)
 
@@ -156,7 +156,17 @@ The `DatabaseSeeder` orchestrates the seeding in this order:
        ├── Content Plans
        ├── Social Posts (published)
        ├── Scheduled Posts
-       └── Ad Campaigns (with ad sets & ads)
+       ├── Ad Campaigns (with ad sets & ads)
+       ├── Creative Briefs
+       ├── Performance Metrics
+       ├── Publishing Queues
+       ├── Inbox Items
+       ├── Post Approvals
+       ├── AB Tests & Variations
+       ├── Audience Templates
+       ├── Notifications
+       ├── User Activities
+       └── Team Invitations
 ```
 
 ## What Gets Created
@@ -178,6 +188,7 @@ The `DatabaseSeeder` orchestrates the seeding in this order:
 
 ### Demo Data (TechVision Solutions Example)
 - ✅ **1 Active Campaign**: CloudSync Pro Launch ($25,000 budget)
+- ✅ **1 Creative Brief** with objectives, target audience, brand guidelines
 - ✅ **1 Instagram Integration** (12,543 followers)
 - ✅ **1 Facebook Ads Integration**
 - ✅ **2 Published Instagram Posts** (with engagement metrics)
@@ -185,18 +196,37 @@ The `DatabaseSeeder` orchestrates the seeding in this order:
 - ✅ **1 Ad Account** with active campaigns
 - ✅ **1 Ad Campaign** ($10,000 budget, 156 leads generated)
 - ✅ **1 Ad Set** targeting IT Directors in US/UK
+- ✅ **1 Individual Ad** (Variant A)
+- ✅ **1 AB Test** (Headline variation testing - running)
 - ✅ **1 Creative Asset** (approved)
 - ✅ **2 Product Offerings**
 - ✅ **1 Audience Segment**
+- ✅ **1 Audience Template** (Enterprise IT Decision Makers)
+- ✅ **3 Performance Metrics** (impressions, CTR, conversion rate)
+- ✅ **1 Publishing Queue** (Mon-Fri, 4 time slots)
+- ✅ **2 Inbox Items** (comment & message awaiting response)
+- ✅ **1 Post Approval** (pending approval workflow)
+- ✅ **Multiple Notifications** (welcome, campaign updates)
+- ✅ **4 User Activities** (login, view campaign, create post, edit creative)
+- ✅ **1 Team Invitation** (pending)
 
 ### Demo Data (FashionHub Retail Example)
 - ✅ **1 Active Campaign**: Summer Collection 2025 (€15,000 budget)
+- ✅ **1 Creative Brief** with collection launch strategy
 - ✅ **1 Instagram Integration** (45,621 followers)
 - ✅ **1 Published Carousel Post** (1,253 likes, 87 comments)
 - ✅ **1 Scheduled Carousel Post** (3 images)
 - ✅ **1 Content Plan** with daily posting strategy
 - ✅ **2 Product Offerings** (Summer Collection, Premium Accessories)
 - ✅ **1 Audience Segment** (Fashion Enthusiasts 18-35)
+- ✅ **1 Audience Template** (reusable targeting)
+- ✅ **3 Performance Metrics** with targets and baselines
+- ✅ **1 Publishing Queue** (auto-scheduling system)
+- ✅ **2 Inbox Items** (customer inquiries)
+- ✅ **1 Post Approval** (in workflow)
+- ✅ **Multiple Notifications** per user
+- ✅ **User Activities** tracking
+- ✅ **1 Team Invitation** (pending)
 
 ## Database Relationships Demonstrated
 
