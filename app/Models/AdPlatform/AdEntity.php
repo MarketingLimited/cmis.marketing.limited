@@ -43,19 +43,35 @@ class AdEntity extends Model
     ];
 
     /**
+     * Get the organization
+     */
+    public function org()
+    {
+        return $this->belongsTo(\App\Models\Core\Org::class, 'org_id', 'org_id');
+    }
+
+    /**
+     * Get the integration
+     */
+    public function integration()
+    {
+        return $this->belongsTo(\App\Models\Core\Integration::class, 'integration_id', 'integration_id');
+    }
+
+    /**
      * Get the ad set
      */
     public function adSet()
     {
-        return $this->belongsTo(AdSet::class, 'ad_set_id', 'ad_set_id');
+        return $this->belongsTo(AdSet::class, 'adset_external_id', 'adset_external_id');
     }
 
     /**
      * Get the creative asset
      */
-    public function asset()
+    public function creative()
     {
-        return $this->belongsTo(\App\Models\CreativeAsset::class, 'asset_id', 'asset_id');
+        return $this->belongsTo(\App\Models\Core\Creative::class, 'creative_id', 'creative_id');
     }
 
     /**
@@ -63,8 +79,8 @@ class AdEntity extends Model
      */
     public function metrics()
     {
-        return $this->hasMany(AdMetric::class, 'entity_id', 'ad_entity_id')
-            ->where('entity_type', 'ad');
+        return $this->hasMany(AdMetric::class, 'entity_external_id', 'ad_external_id')
+            ->where('entity_level', 'ad');
     }
 
     /**
