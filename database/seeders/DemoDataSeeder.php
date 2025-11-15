@@ -36,8 +36,18 @@ class DemoDataSeeder extends Seeder
         $this->createSocialPosts();
         $this->createScheduledPosts();
         $this->createAdCampaigns();
+        $this->createCreativeBriefs();
+        $this->createPerformanceMetrics();
+        $this->createPublishingQueues();
+        $this->createInboxItems();
+        $this->createPostApprovals();
+        $this->createABTests();
+        $this->createAudienceTemplates();
+        $this->createNotifications();
+        $this->createUserActivities();
+        $this->createTeamInvitations();
 
-        $this->command->info('✓ Demo data seeded successfully!');
+        $this->command->info('✓ Comprehensive demo data seeded successfully!');
         $this->command->info('');
         $this->command->info('Demo Organizations:');
         $this->command->info('  • TechVision Solutions (Technology, USD)');
@@ -651,5 +661,479 @@ class DemoDataSeeder extends Seeder
             'provider' => 'meta',
             'deleted_by' => null,
         ]);
+    }
+
+    private function createCreativeBriefs()
+    {
+        $briefs = [
+            [
+                'brief_id' => Str::uuid(),
+                'org_id' => $this->orgIds['TechVision Solutions'],
+                'name' => 'CloudSync Pro Launch Brief',
+                'brief_data' => json_encode([
+                    'objective' => 'Drive awareness and trial signups for CloudSync Pro',
+                    'target_audience' => 'Enterprise IT Directors and CTOs',
+                    'key_messages' => [
+                        'Seamless cloud synchronization for enterprise teams',
+                        'Bank-grade security and compliance',
+                        '99.99% uptime guarantee'
+                    ],
+                    'brand_guidelines' => [
+                        'tone' => 'professional, trustworthy, innovative',
+                        'colors' => ['#0066CC', '#FFFFFF', '#F5F5F5'],
+                        'fonts' => ['Inter', 'Roboto']
+                    ],
+                    'deliverables' => [
+                        'Social media posts (Instagram, Facebook, LinkedIn)',
+                        'Ad creatives for Facebook/Instagram',
+                        'Landing page copy'
+                    ],
+                    'timeline' => '3 weeks',
+                    'budget' => '$25,000'
+                ]),
+                'created_at' => now()->subDays(30),
+                'deleted_at' => null,
+                'provider' => null,
+            ],
+            [
+                'brief_id' => Str::uuid(),
+                'org_id' => $this->orgIds['FashionHub Retail'],
+                'name' => 'Summer Collection 2025 Creative Brief',
+                'brief_data' => json_encode([
+                    'objective' => 'Launch summer collection and drive online sales',
+                    'target_audience' => 'Fashion-forward women aged 18-35',
+                    'key_messages' => [
+                        'Trendy, affordable summer fashion',
+                        'New arrivals every week',
+                        'Free shipping on orders over €50'
+                    ],
+                    'brand_guidelines' => [
+                        'tone' => 'playful, inspiring, trendy',
+                        'colors' => ['#FF6B9D', '#FFA07A', '#FFFFFF'],
+                        'style' => 'bright, vibrant, lifestyle photography'
+                    ],
+                    'deliverables' => [
+                        'Instagram carousel posts',
+                        'Instagram Stories',
+                        'Product photography',
+                        'Lifestyle shots'
+                    ],
+                    'timeline' => '2 months',
+                    'budget' => '€15,000'
+                ]),
+                'created_at' => now()->subDays(40),
+                'deleted_at' => null,
+                'provider' => null,
+            ],
+        ];
+
+        foreach ($briefs as $brief) {
+            DB::table('cmis.creative_briefs')->insert($brief);
+        }
+    }
+
+    private function createPerformanceMetrics()
+    {
+        $campaigns = DB::table('cmis.campaigns')->get();
+
+        foreach ($campaigns as $campaign) {
+            // Create multiple metric entries to show trends
+            $baseMetrics = [
+                'impressions' => rand(50000, 200000),
+                'clicks' => rand(1000, 5000),
+                'conversions' => rand(50, 300),
+                'spend' => rand(1000, 5000)
+            ];
+
+            DB::table('cmis.performance_metrics')->insert([
+                [
+                    'metric_id' => Str::uuid(),
+                    'org_id' => $campaign->org_id,
+                    'campaign_id' => $campaign->campaign_id,
+                    'output_id' => null,
+                    'kpi' => 'impressions',
+                    'observed' => $baseMetrics['impressions'],
+                    'target' => $baseMetrics['impressions'] * 1.2,
+                    'baseline' => $baseMetrics['impressions'] * 0.8,
+                    'observed_at' => now()->subDays(7),
+                    'deleted_at' => null,
+                    'provider' => null,
+                ],
+                [
+                    'metric_id' => Str::uuid(),
+                    'org_id' => $campaign->org_id,
+                    'campaign_id' => $campaign->campaign_id,
+                    'output_id' => null,
+                    'kpi' => 'click_through_rate',
+                    'observed' => round(($baseMetrics['clicks'] / $baseMetrics['impressions']) * 100, 2),
+                    'target' => 3.5,
+                    'baseline' => 2.0,
+                    'observed_at' => now()->subDays(7),
+                    'deleted_at' => null,
+                    'provider' => null,
+                ],
+                [
+                    'metric_id' => Str::uuid(),
+                    'org_id' => $campaign->org_id,
+                    'campaign_id' => $campaign->campaign_id,
+                    'output_id' => null,
+                    'kpi' => 'conversion_rate',
+                    'observed' => round(($baseMetrics['conversions'] / $baseMetrics['clicks']) * 100, 2),
+                    'target' => 8.0,
+                    'baseline' => 4.5,
+                    'observed_at' => now()->subDays(7),
+                    'deleted_at' => null,
+                    'provider' => null,
+                ],
+            ]);
+        }
+    }
+
+    private function createPublishingQueues()
+    {
+        $socialAccounts = DB::table('cmis.social_accounts')->get();
+
+        foreach ($socialAccounts as $account) {
+            DB::table('cmis.publishing_queues')->insert([
+                'queue_id' => Str::uuid(),
+                'org_id' => $account->org_id,
+                'social_account_id' => $account->id,
+                'weekdays_enabled' => json_encode([1, 2, 3, 4, 5]), // Mon-Fri
+                'time_slots' => json_encode([
+                    '09:00', '12:00', '15:00', '18:00'
+                ]),
+                'timezone' => 'UTC',
+                'is_active' => true,
+                'created_at' => now()->subDays(20),
+                'updated_at' => now()->subDays(20),
+            ]);
+        }
+    }
+
+    private function createInboxItems()
+    {
+        $socialAccounts = DB::table('cmis.social_accounts')->get();
+
+        foreach ($socialAccounts as $account) {
+            // Create some inbox items (comments, messages)
+            DB::table('cmis.inbox_items')->insert([
+                [
+                    'item_id' => Str::uuid(),
+                    'org_id' => $account->org_id,
+                    'social_account_id' => $account->id,
+                    'item_type' => 'comment',
+                    'platform' => 'instagram',
+                    'external_id' => 'comment_' . Str::random(16),
+                    'content' => 'Love this! Where can I buy it?',
+                    'sender_name' => 'Sarah Martinez',
+                    'sender_id' => 'user_' . rand(100000, 999999),
+                    'sender_avatar_url' => 'https://example.com/avatar1.jpg',
+                    'needs_reply' => true,
+                    'assigned_to' => null,
+                    'status' => 'pending',
+                    'reply_content' => null,
+                    'replied_at' => null,
+                    'sentiment' => 'positive',
+                    'sentiment_score' => 0.85,
+                    'platform_created_at' => now()->subHours(3),
+                    'created_at' => now()->subHours(3),
+                    'updated_at' => now()->subHours(3),
+                ],
+                [
+                    'item_id' => Str::uuid(),
+                    'org_id' => $account->org_id,
+                    'social_account_id' => $account->id,
+                    'item_type' => 'message',
+                    'platform' => 'instagram',
+                    'external_id' => 'message_' . Str::random(16),
+                    'content' => 'Do you ship internationally?',
+                    'sender_name' => 'John Smith',
+                    'sender_id' => 'user_' . rand(100000, 999999),
+                    'sender_avatar_url' => 'https://example.com/avatar2.jpg',
+                    'needs_reply' => true,
+                    'assigned_to' => null,
+                    'status' => 'pending',
+                    'reply_content' => null,
+                    'replied_at' => null,
+                    'sentiment' => 'neutral',
+                    'sentiment_score' => 0.5,
+                    'platform_created_at' => now()->subHours(1),
+                    'created_at' => now()->subHours(1),
+                    'updated_at' => now()->subHours(1),
+                ],
+            ]);
+        }
+    }
+
+    private function createPostApprovals()
+    {
+        $scheduledPosts = DB::table('cmis.scheduled_social_posts')->get();
+
+        foreach ($scheduledPosts as $post) {
+            // Get a manager from the org to approve
+            $manager = DB::table('cmis.user_orgs')
+                ->join('cmis.roles', 'user_orgs.role_id', '=', 'roles.role_id')
+                ->where('user_orgs.org_id', $post->org_id)
+                ->where('roles.role_code', 'marketing_manager')
+                ->first();
+
+            if (!$manager) continue;
+
+            DB::table('cmis.post_approvals')->insert([
+                'approval_id' => Str::uuid(),
+                'post_id' => $post->id,
+                'requested_by' => $post->user_id,
+                'assigned_to' => $manager->user_id,
+                'status' => 'pending',
+                'comments' => null,
+                'reviewed_at' => null,
+                'created_at' => $post->created_at,
+                'updated_at' => $post->updated_at,
+            ]);
+        }
+    }
+
+    private function createABTests()
+    {
+        $adAccount = DB::table('cmis.ad_accounts')
+            ->where('org_id', $this->orgIds['TechVision Solutions'])
+            ->first();
+
+        if (!$adAccount) return;
+
+        // Create an A/B test
+        $testId = Str::uuid();
+        DB::table('cmis.ab_tests')->insert([
+            'ab_test_id' => $testId,
+            'ad_account_id' => $adAccount->id,
+            'entity_type' => 'creative',
+            'entity_id' => null,
+            'test_name' => 'Headline Variation Test',
+            'test_type' => 'split',
+            'test_status' => 'running',
+            'hypothesis' => 'Benefit-focused headlines will outperform feature-focused headlines',
+            'metric_to_optimize' => 'click_through_rate',
+            'budget_per_variation' => 500.00,
+            'test_duration_days' => 14,
+            'min_sample_size' => 1000,
+            'confidence_level' => 95,
+            'winner_variation_id' => null,
+            'config' => json_encode([
+                'traffic_split' => '50/50',
+                'significance_threshold' => 0.05
+            ]),
+            'started_at' => now()->subDays(7),
+            'scheduled_end_at' => now()->addDays(7),
+            'completed_at' => null,
+            'stop_reason' => null,
+            'created_at' => now()->subDays(10),
+            'updated_at' => now()->subDays(7),
+        ]);
+
+        // Create variations
+        DB::table('cmis.ab_test_variations')->insert([
+            [
+                'variation_id' => Str::uuid(),
+                'ab_test_id' => $testId,
+                'variation_name' => 'Control - Feature Focused',
+                'is_control' => true,
+                'entity_id' => null,
+                'variation_config' => json_encode([
+                    'headline' => 'CloudSync Pro - Enterprise Cloud Platform',
+                    'description' => 'Advanced features for modern teams'
+                ]),
+                'traffic_allocation' => 50,
+                'created_at' => now()->subDays(10),
+                'updated_at' => now()->subDays(7),
+            ],
+            [
+                'variation_id' => Str::uuid(),
+                'ab_test_id' => $testId,
+                'variation_name' => 'Variation A - Benefit Focused',
+                'is_control' => false,
+                'entity_id' => null,
+                'variation_config' => json_encode([
+                    'headline' => 'Transform Team Collaboration Today',
+                    'description' => 'Save 10+ hours per week with automated workflows'
+                ]),
+                'traffic_allocation' => 50,
+                'created_at' => now()->subDays(10),
+                'updated_at' => now()->subDays(7),
+            ],
+        ]);
+    }
+
+    private function createAudienceTemplates()
+    {
+        $templates = [
+            [
+                'template_id' => Str::uuid(),
+                'org_id' => $this->orgIds['TechVision Solutions'],
+                'name' => 'Enterprise IT Decision Makers',
+                'description' => 'IT Directors, CTOs, and Technology Leaders at enterprises',
+                'targeting_criteria' => json_encode([
+                    'age_range' => ['min' => 30, 'max' => 55],
+                    'job_titles' => ['IT Director', 'CTO', 'VP Technology', 'Technology Manager'],
+                    'company_size' => ['min' => 500],
+                    'interests' => ['Enterprise Software', 'Cloud Computing', 'IT Management'],
+                    'industries' => ['Technology', 'Finance', 'Healthcare']
+                ]),
+                'platforms' => json_encode(['facebook', 'linkedin', 'google_ads']),
+                'usage_count' => 3,
+                'last_used_at' => now()->subDays(5),
+                'created_by' => $this->userIds['sarah@techvision.com'],
+                'created_at' => now()->subDays(30),
+                'updated_at' => now()->subDays(5),
+            ],
+            [
+                'template_id' => Str::uuid(),
+                'org_id' => $this->orgIds['FashionHub Retail'],
+                'name' => 'Fashion Enthusiasts 18-35',
+                'description' => 'Young professionals interested in fashion and lifestyle',
+                'targeting_criteria' => json_encode([
+                    'age_range' => ['min' => 18, 'max' => 35],
+                    'gender' => ['female'],
+                    'interests' => ['Fashion', 'Shopping', 'Style', 'Beauty'],
+                    'behaviors' => ['Online Shoppers', 'Fashion Forward'],
+                    'locations' => ['Urban areas', 'Major cities']
+                ]),
+                'platforms' => json_encode(['instagram', 'facebook', 'tiktok']),
+                'usage_count' => 8,
+                'last_used_at' => now()->subDays(2),
+                'created_by' => $this->userIds['emma@fashionhub.com'],
+                'created_at' => now()->subDays(45),
+                'updated_at' => now()->subDays(2),
+            ],
+        ];
+
+        foreach ($templates as $template) {
+            DB::table('cmis.audience_templates')->insert($template);
+        }
+    }
+
+    private function createNotifications()
+    {
+        foreach ($this->userIds as $email => $userId) {
+            if ($email === 'admin@cmis.test') continue;
+
+            // Get user's organizations
+            $userOrgs = DB::table('cmis.user_orgs')
+                ->where('user_id', $userId)
+                ->get();
+
+            foreach ($userOrgs as $userOrg) {
+                // Create welcome notification
+                DB::table('cmis.notifications')->insert([
+                    'notification_id' => Str::uuid(),
+                    'user_id' => $userId,
+                    'org_id' => $userOrg->org_id,
+                    'type' => 'welcome',
+                    'title' => 'Welcome to CMIS!',
+                    'message' => 'You have been added to the organization. Explore campaigns and start creating content.',
+                    'data' => json_encode([
+                        'action_url' => '/dashboard',
+                        'icon' => 'welcome'
+                    ]),
+                    'read' => false,
+                    'read_at' => null,
+                    'created_at' => $userOrg->joined_at,
+                    'updated_at' => $userOrg->joined_at,
+                ]);
+
+                // Create campaign notification
+                $campaigns = DB::table('cmis.campaigns')
+                    ->where('org_id', $userOrg->org_id)
+                    ->get();
+
+                foreach ($campaigns as $campaign) {
+                    DB::table('cmis.notifications')->insert([
+                        'notification_id' => Str::uuid(),
+                        'user_id' => $userId,
+                        'org_id' => $userOrg->org_id,
+                        'type' => 'campaign_update',
+                        'title' => 'Campaign Performance Update',
+                        'message' => "Campaign '{$campaign->name}' has reached 50% of budget.",
+                        'data' => json_encode([
+                            'campaign_id' => $campaign->campaign_id,
+                            'action_url' => "/campaigns/{$campaign->campaign_id}",
+                            'icon' => 'chart'
+                        ]),
+                        'read' => rand(0, 1) === 1,
+                        'read_at' => rand(0, 1) === 1 ? now()->subDays(rand(1, 5)) : null,
+                        'created_at' => now()->subDays(rand(1, 10)),
+                        'updated_at' => now()->subDays(rand(1, 10)),
+                    ]);
+                }
+            }
+        }
+    }
+
+    private function createUserActivities()
+    {
+        foreach ($this->userIds as $email => $userId) {
+            $userOrgs = DB::table('cmis.user_orgs')
+                ->where('user_id', $userId)
+                ->get();
+
+            foreach ($userOrgs as $userOrg) {
+                // Create various activity types
+                $activities = [
+                    ['action' => 'login', 'entity_type' => null, 'entity_id' => null, 'details' => json_encode(['ip' => '192.168.1.100'])],
+                    ['action' => 'view_campaign', 'entity_type' => 'campaign', 'entity_id' => null, 'details' => json_encode(['campaign_name' => 'Sample Campaign'])],
+                    ['action' => 'create_post', 'entity_type' => 'social_post', 'entity_id' => null, 'details' => json_encode(['platform' => 'instagram'])],
+                    ['action' => 'edit_creative', 'entity_type' => 'creative_asset', 'entity_id' => null, 'details' => json_encode(['changes' => 'Updated copy'])],
+                ];
+
+                foreach ($activities as $activity) {
+                    DB::table('cmis.user_activities')->insert([
+                        'activity_id' => Str::uuid(),
+                        'user_id' => $userId,
+                        'org_id' => $userOrg->org_id,
+                        'session_id' => null,
+                        'action' => $activity['action'],
+                        'entity_type' => $activity['entity_type'],
+                        'entity_id' => $activity['entity_id'],
+                        'details' => $activity['details'],
+                        'ip_address' => '192.168.1.' . rand(1, 255),
+                        'created_at' => now()->subDays(rand(1, 30)),
+                        'deleted_at' => null,
+                        'provider' => null,
+                    ]);
+                }
+            }
+        }
+    }
+
+    private function createTeamInvitations()
+    {
+        // Create some pending invitations
+        $invitations = [
+            [
+                'invitation_id' => Str::uuid(),
+                'org_id' => $this->orgIds['TechVision Solutions'],
+                'invited_email' => 'john.doe@techvision.com',
+                'role_id' => $this->roleIds['analyst'],
+                'invited_by' => $this->userIds['sarah@techvision.com'],
+                'status' => 'pending',
+                'sent_at' => now()->subDays(3),
+                'accepted_at' => null,
+                'expires_at' => now()->addDays(4),
+            ],
+            [
+                'invitation_id' => Str::uuid(),
+                'org_id' => $this->orgIds['FashionHub Retail'],
+                'invited_email' => 'lisa.chen@fashionhub.com',
+                'role_id' => $this->roleIds['content_creator'],
+                'invited_by' => $this->userIds['emma@fashionhub.com'],
+                'status' => 'pending',
+                'sent_at' => now()->subDays(1),
+                'accepted_at' => null,
+                'expires_at' => now()->addDays(6),
+            ],
+        ];
+
+        foreach ($invitations as $invitation) {
+            DB::table('cmis.team_invitations')->insert($invitation);
+        }
     }
 }
