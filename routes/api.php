@@ -1112,9 +1112,8 @@ Route::middleware(['auth:sanctum', 'validate.org.access', 'set.db.context'])
         });
     });
 
-    // Cache Statistics (Global)
-    Route::get('/cache/stats', [App\Http\Controllers\API\CacheController::class, 'stats'])->name('cache.stats');
-});
+// Cache Statistics (Global)
+Route::get('/cache/stats', [App\Http\Controllers\API\CacheController::class, 'stats'])->name('cache.stats');
 
 /*
 |--------------------------------------------------------------------------
