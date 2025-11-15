@@ -9,10 +9,47 @@ use App\Models\Core\{Org, Integration};
 use App\Jobs\Sync\{SyncPlatformData, DispatchPlatformSyncs};
 use Carbon\Carbon;
 
+/**
+ * @group Sync Management
+ *
+ * APIs for managing and monitoring platform data synchronization.
+ * The system automatically syncs metrics every hour and campaigns every 4 hours.
+ */
 class SyncStatusController extends Controller
 {
     /**
-     * Get sync status for an organization
+     * Get organization sync status
+     *
+     * Returns sync status for all integrations in an organization.
+     * Includes last sync time, current status, errors, and next scheduled sync.
+     *
+     * @urlParam org string required Organization UUID. Example: 550e8400-e29b-41d4-a716-446655440000
+     *
+     * @response 200 {
+     *   "org_id": "550e8400-e29b-41d4-a716-446655440000",
+     *   "total_integrations": 3,
+     *   "active_syncs": 0,
+     *   "failed_syncs": 1,
+     *   "integrations": [
+     *     {
+     *       "integration_id": "uuid",
+     *       "provider": "google",
+     *       "platform": "advertising",
+     *       "last_synced_at": "2024-01-15T14:30:00Z",
+     *       "sync_status": "success",
+     *       "sync_errors": null,
+     *       "next_sync_at": "2024-01-15T18:30:00Z",
+     *       "is_syncing": false,
+     *       "token_status": {
+     *         "status": "valid",
+     *         "message": "Token is valid",
+     *         "expires_at": "2024-02-15T14:30:00Z"
+     *       }
+     *     }
+     *   ]
+     * }
+     *
+     * @authenticated
      */
     public function orgStatus(Org $org): JsonResponse
     {
@@ -44,7 +81,36 @@ class SyncStatusController extends Controller
     }
 
     /**
-     * Get sync status for specific integration
+     * Get integration sync status
+     *
+     * Returns detailed sync status for a specific integration including retry count.
+     *
+     * @urlParam org string required Organization UUID. Example: 550e8400-e29b-41d4-a716-446655440000
+     * @urlParam integration string required Integration UUID. Example: 660e8400-e29b-41d4-a716-446655440001
+     *
+     * @response 200 {
+     *   "integration_id": "660e8400-e29b-41d4-a716-446655440001",
+     *   "provider": "meta",
+     *   "platform": "advertising",
+     *   "last_synced_at": "2024-01-15T14:30:00Z",
+     *   "sync_status": "success",
+     *   "sync_errors": null,
+     *   "sync_retry_count": 0,
+     *   "next_sync_at": "2024-01-15T18:30:00Z",
+     *   "is_syncing": false,
+     *   "token_status": {
+     *     "status": "valid",
+     *     "message": "Token is valid",
+     *     "expires_at": "2024-02-15T14:30:00Z"
+     *   },
+     *   "is_active": true
+     * }
+     *
+     * @response 404 {
+     *   "error": "Integration not found"
+     * }
+     *
+     * @authenticated
      */
     public function integrationStatus(Org $org, Integration $integration): JsonResponse
     {
@@ -69,7 +135,31 @@ class SyncStatusController extends Controller
     }
 
     /**
-     * Trigger manual sync for organization (all integrations)
+     * Trigger organization sync
+     *
+     * Manually triggers synchronization for all active integrations in the organization.
+     * Sync jobs are queued with priority and execute asynchronously.
+     *
+     * @urlParam org string required Organization UUID. Example: 550e8400-e29b-41d4-a716-446655440000
+     *
+     * @bodyParam data_type string Data type to sync. Must be one of: all, campaigns, metrics, posts. Defaults to "all". Example: metrics
+     *
+     * @response 200 {
+     *   "message": "Sync triggered successfully",
+     *   "integrations_count": 3,
+     *   "data_type": "metrics",
+     *   "status": "queued"
+     * }
+     *
+     * @response 400 {
+     *   "error": "Invalid data type"
+     * }
+     *
+     * @response 404 {
+     *   "error": "No active integrations found"
+     * }
+     *
+     * @authenticated
      */
     public function triggerOrgSync(Request $request, Org $org): JsonResponse
     {
@@ -104,7 +194,37 @@ class SyncStatusController extends Controller
     }
 
     /**
-     * Trigger manual sync for specific integration
+     * Trigger integration sync
+     *
+     * Manually triggers synchronization for a specific integration.
+     * The sync job is queued with priority and executes asynchronously.
+     *
+     * @urlParam org string required Organization UUID. Example: 550e8400-e29b-41d4-a716-446655440000
+     * @urlParam integration string required Integration UUID. Example: 660e8400-e29b-41d4-a716-446655440001
+     *
+     * @bodyParam data_type string Data type to sync. Must be one of: all, campaigns, metrics, posts. Defaults to "all". Example: campaigns
+     *
+     * @response 200 {
+     *   "message": "Sync triggered successfully",
+     *   "integration_id": "660e8400-e29b-41d4-a716-446655440001",
+     *   "provider": "meta",
+     *   "data_type": "campaigns",
+     *   "status": "queued"
+     * }
+     *
+     * @response 400 {
+     *   "error": "Invalid data type"
+     * }
+     *
+     * @response 400 {
+     *   "error": "Integration is not active"
+     * }
+     *
+     * @response 404 {
+     *   "error": "Integration not found"
+     * }
+     *
+     * @authenticated
      */
     public function triggerIntegrationSync(Request $request, Org $org, Integration $integration): JsonResponse
     {
@@ -193,6 +313,36 @@ class SyncStatusController extends Controller
 
     /**
      * Get sync statistics
+     *
+     * Returns aggregated sync statistics for the organization including
+     * totals by provider, status breakdown, and last 24h activity.
+     *
+     * @urlParam org string required Organization UUID. Example: 550e8400-e29b-41d4-a716-446655440000
+     *
+     * @response 200 {
+     *   "total_integrations": 8,
+     *   "by_provider": {
+     *     "google": 2,
+     *     "meta": 3,
+     *     "tiktok": 1,
+     *     "linkedin": 1,
+     *     "twitter": 1
+     *   },
+     *   "sync_status": {
+     *     "success": 7,
+     *     "pending": 0,
+     *     "syncing": 0,
+     *     "failed": 1
+     *   },
+     *   "last_24h": {
+     *     "synced": 8,
+     *     "failed": 1
+     *   },
+     *   "oldest_sync": "2024-01-14T10:00:00Z",
+     *   "newest_sync": "2024-01-15T14:30:00Z"
+     * }
+     *
+     * @authenticated
      */
     public function statistics(Org $org): JsonResponse
     {
