@@ -989,6 +989,32 @@ Route::middleware(['auth:sanctum', 'validate.org.access', 'set.db.context'])
         Route::get('/charts/campaigns-performance', [App\Http\Controllers\DashboardController::class, 'campaignsPerformance'])->name('charts.campaigns');
         Route::get('/charts/engagement', [App\Http\Controllers\DashboardController::class, 'engagement'])->name('charts.engagement');
     });
+
+    /*
+    |----------------------------------------------------------------------
+    | نظام التدقيق والتقارير (Audit & Reporting System)
+    |----------------------------------------------------------------------
+    */
+    Route::prefix('audit')->name('audit.')->group(function () {
+        // Dashboard & Overview
+        Route::get('/dashboard', [App\Http\Controllers\API\AuditController::class, 'dashboard'])->name('dashboard');
+
+        // Reports
+        Route::get('/realtime-status', [App\Http\Controllers\API\AuditController::class, 'realtimeStatus'])->name('realtime-status');
+        Route::get('/daily-summary', [App\Http\Controllers\API\AuditController::class, 'dailySummary'])->name('daily-summary');
+        Route::get('/weekly-performance', [App\Http\Controllers\API\AuditController::class, 'weeklyPerformance'])->name('weekly-performance');
+        Route::get('/audit-summary', [App\Http\Controllers\API\AuditController::class, 'auditSummary'])->name('audit-summary');
+
+        // Activity Log
+        Route::get('/activity-log', [App\Http\Controllers\API\AuditController::class, 'activityLog'])->name('activity-log');
+        Route::post('/log-event', [App\Http\Controllers\API\AuditController::class, 'logEvent'])->name('log-event');
+
+        // Alerts
+        Route::get('/check-alerts', [App\Http\Controllers\API\AuditController::class, 'checkAlerts'])->name('check-alerts');
+
+        // Export
+        Route::post('/export-report', [App\Http\Controllers\API\AuditController::class, 'exportReport'])->name('export-report');
+    });
 });
 
 /*
