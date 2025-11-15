@@ -12,7 +12,7 @@ jobs:
   # PHP Code Quality Checks
   code-quality:
     name: Code Quality (Laravel Pint)
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.RUNS_ON || 'ubuntu-latest' }}
 
     steps:
       - name: Checkout code
@@ -42,7 +42,7 @@ jobs:
   # Backend Tests with Multiple PHP Versions
   backend-tests:
     name: Backend Tests (PHP ${{ matrix.php }})
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.RUNS_ON || 'ubuntu-latest' }}
 
     strategy:
       fail-fast: false
@@ -140,7 +140,7 @@ jobs:
   # Frontend Build and Tests
   frontend:
     name: Frontend Build & Tests
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.RUNS_ON || 'ubuntu-latest' }}
 
     steps:
       - name: Checkout code
@@ -168,7 +168,7 @@ jobs:
   # E2E Tests with Playwright
   e2e-tests:
     name: E2E Tests (Playwright)
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.RUNS_ON || 'ubuntu-latest' }}
     needs: [backend-tests, frontend]
 
     services:
@@ -272,7 +272,7 @@ jobs:
   # Security Scanning
   security:
     name: Security Scanning
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.RUNS_ON || 'ubuntu-latest' }}
 
     steps:
       - name: Checkout code
