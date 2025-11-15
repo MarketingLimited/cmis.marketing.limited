@@ -1087,6 +1087,12 @@ Route::middleware(['auth:sanctum', 'validate.org.access', 'set.db.context'])
             Route::delete('/campaigns', [App\Http\Controllers\API\CacheController::class, 'clearCampaigns'])->name('clear-campaigns');
             Route::post('/warm', [App\Http\Controllers\API\CacheController::class, 'warmCache'])->name('warm');
         });
+
+        // AI Optimization (من Phase 5)
+        Route::prefix('ai')->name('ai.')->group(function () {
+            Route::get('/campaigns/analyze', [App\Http\Controllers\API\AIOptimizationController::class, 'analyzeAllCampaigns'])->name('analyze-all');
+            Route::get('/campaigns/{campaign}/analyze', [App\Http\Controllers\API\AIOptimizationController::class, 'analyzeCampaign'])->name('analyze-campaign');
+        });
     });
 
     // Cache Statistics (Global)
