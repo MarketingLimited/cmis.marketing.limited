@@ -37,24 +37,59 @@ use App\Http\Controllers\API\AdCampaignController as APIAdCampaignController;
 /*
 |--------------------------------------------------------------------------
 | Webhooks (Public - لاستقبال التحديثات من المنصات)
+| مع التحقق من التوقيع (Signature Verification)
 |--------------------------------------------------------------------------
 */
-Route::prefix('webhooks')->name('webhooks.')->group(function () {
-    Route::match(['get', 'post'], '/meta', [WebhookController::class, 'handleMetaWebhook'])->name('meta');
-    Route::match(['get', 'post'], '/whatsapp', [WebhookController::class, 'handleWhatsAppWebhook'])->name('whatsapp');
-    Route::post('/tiktok', [WebhookController::class, 'handleTikTokWebhook'])->name('tiktok');
-    Route::post('/twitter', [WebhookController::class, 'handleTwitterWebhook'])->name('twitter');
-});
+Route::prefix('webhooks')->name('webhooks.')
+    ->middleware('throttle:webhooks')
+    ->group(function () {
+        // Meta webhooks - GET for verification, POST for events
+        Route::get('/meta', [WebhookController::class, 'handleMetaWebhook'])->name('meta.verify');
+        Route::post('/meta', [WebhookController::class, 'handleMetaWebhook'])
+            ->middleware('verify.webhook:meta')
+            ->name('meta');
+
+        Route::get('/whatsapp', [WebhookController::class, 'handleWhatsAppWebhook'])->name('whatsapp.verify');
+        Route::post('/whatsapp', [WebhookController::class, 'handleWhatsAppWebhook'])
+            ->middleware('verify.webhook:meta')
+            ->name('whatsapp');
+
+        // Other platform webhooks with signature verification
+        Route::post('/google', [WebhookController::class, 'handleGoogleWebhook'])
+            ->middleware('verify.webhook:google')
+            ->name('google');
+
+        Route::post('/tiktok', [WebhookController::class, 'handleTikTokWebhook'])
+            ->middleware('verify.webhook:tiktok')
+            ->name('tiktok');
+
+        Route::post('/twitter', [WebhookController::class, 'handleTwitterWebhook'])
+            ->middleware('verify.webhook:twitter')
+            ->name('twitter');
+
+        Route::post('/linkedin', [WebhookController::class, 'handleLinkedInWebhook'])
+            ->middleware('verify.webhook:linkedin')
+            ->name('linkedin');
+
+        Route::post('/snapchat', [WebhookController::class, 'handleSnapchatWebhook'])
+            ->middleware('verify.webhook:snapchat')
+            ->name('snapchat');
+    });
 
 /*
 |--------------------------------------------------------------------------
 | مسارات المصادقة (Authentication) - بدون org_id
+| مع Rate Limiting للحماية من Brute Force
 |--------------------------------------------------------------------------
 */
 Route::prefix('auth')->group(function () {
-    // التسجيل وتسجيل الدخول (عام - بدون مصادقة)
-    Route::post('/register', [AuthController::class, 'register'])->name('auth.register');
-    Route::post('/login', [AuthController::class, 'login'])->name('auth.login');
+    // التسجيل وتسجيل الدخول (عام - بدون مصادقة) - مع rate limiting
+    Route::post('/register', [AuthController::class, 'register'])
+        ->middleware('throttle:auth')
+        ->name('auth.register');
+    Route::post('/login', [AuthController::class, 'login'])
+        ->middleware('throttle:auth')
+        ->name('auth.login');
 
     // OAuth callbacks
     Route::get('/oauth/{provider}/callback', [AuthController::class, 'oauthCallback'])->name('auth.oauth.callback');
@@ -1016,6 +1051,69 @@ Route::middleware(['auth:sanctum', 'validate.org.access', 'set.db.context'])
         Route::post('/export-report', [App\Http\Controllers\API\AuditController::class, 'exportReport'])->name('export-report');
     });
 });
+
+    /*
+    |----------------------------------------------------------------------
+    | Unified Dashboard & Sync Management (من Phase 2)
+    |----------------------------------------------------------------------
+    */
+    Route::prefix('orgs/{org}')->name('orgs.')->group(function () {
+        // Unified Dashboard
+        Route::get('/dashboard', [App\Http\Controllers\API\DashboardController::class, 'index'])->name('dashboard.index');
+        Route::post('/dashboard/refresh', [App\Http\Controllers\API\DashboardController::class, 'refresh'])->name('dashboard.refresh');
+
+        // Sync Management
+        Route::prefix('sync')->name('sync.')->group(function () {
+            Route::get('/status', [App\Http\Controllers\API\SyncStatusController::class, 'orgStatus'])->name('status');
+            Route::post('/trigger', [App\Http\Controllers\API\SyncStatusController::class, 'triggerOrgSync'])->name('trigger');
+            Route::get('/statistics', [App\Http\Controllers\API\SyncStatusController::class, 'statistics'])->name('statistics');
+
+            // Integration-specific sync
+            Route::get('/integrations/{integration}/status', [App\Http\Controllers\API\SyncStatusController::class, 'integrationStatus'])->name('integration.status');
+            Route::post('/integrations/{integration}/trigger', [App\Http\Controllers\API\SyncStatusController::class, 'triggerIntegrationSync'])->name('integration.trigger');
+        });
+
+        // Unified Campaign API (من Phase 3)
+        Route::prefix('unified-campaigns')->name('unified-campaigns.')->group(function () {
+            Route::get('/', [App\Http\Controllers\API\UnifiedCampaignController::class, 'index'])->name('index');
+            Route::post('/', [App\Http\Controllers\API\UnifiedCampaignController::class, 'store'])->name('store');
+            Route::get('/{campaign}', [App\Http\Controllers\API\UnifiedCampaignController::class, 'show'])->name('show');
+        });
+
+        // Cache Management (من Phase 4)
+        Route::prefix('cache')->name('cache.')->group(function () {
+            Route::delete('/clear', [App\Http\Controllers\API\CacheController::class, 'clearOrg'])->name('clear');
+            Route::delete('/dashboard', [App\Http\Controllers\API\CacheController::class, 'clearDashboard'])->name('clear-dashboard');
+            Route::delete('/campaigns', [App\Http\Controllers\API\CacheController::class, 'clearCampaigns'])->name('clear-campaigns');
+            Route::post('/warm', [App\Http\Controllers\API\CacheController::class, 'warmCache'])->name('warm');
+        });
+
+        // AI Optimization (من Phase 5)
+        Route::prefix('ai')->name('ai.')->group(function () {
+            Route::get('/campaigns/analyze', [App\Http\Controllers\API\AIOptimizationController::class, 'analyzeAllCampaigns'])->name('analyze-all');
+            Route::get('/campaigns/{campaign}/analyze', [App\Http\Controllers\API\AIOptimizationController::class, 'analyzeCampaign'])->name('analyze-campaign');
+        });
+
+        // Predictive Analytics (من Phase 5B)
+        Route::prefix('predictive')->name('predictive.')->group(function () {
+            Route::get('/forecast', [App\Http\Controllers\API\PredictiveAnalyticsController::class, 'forecastOrganization'])->name('forecast-org');
+            Route::get('/campaigns/{campaign}/forecast', [App\Http\Controllers\API\PredictiveAnalyticsController::class, 'forecastCampaign'])->name('forecast-campaign');
+            Route::post('/campaigns/{campaign}/scenarios', [App\Http\Controllers\API\PredictiveAnalyticsController::class, 'compareScenarios'])->name('compare-scenarios');
+            Route::get('/campaigns/{campaign}/trends', [App\Http\Controllers\API\PredictiveAnalyticsController::class, 'analyzeTrends'])->name('analyze-trends');
+        });
+
+        // Knowledge Learning System (من Phase 5C)
+        Route::prefix('knowledge')->name('knowledge.')->group(function () {
+            Route::get('/learn', [App\Http\Controllers\API\KnowledgeLearningController::class, 'learnFromHistory'])->name('learn');
+            Route::post('/campaigns/{campaign}/decision-support', [App\Http\Controllers\API\KnowledgeLearningController::class, 'getDecisionSupport'])->name('decision-support');
+            Route::get('/best-practices', [App\Http\Controllers\API\KnowledgeLearningController::class, 'getBestPractices'])->name('best-practices');
+            Route::get('/insights', [App\Http\Controllers\API\KnowledgeLearningController::class, 'getInsights'])->name('insights');
+            Route::get('/failure-patterns', [App\Http\Controllers\API\KnowledgeLearningController::class, 'getFailurePatterns'])->name('failure-patterns');
+        });
+    });
+
+// Cache Statistics (Global)
+Route::get('/cache/stats', [App\Http\Controllers\API\CacheController::class, 'stats'])->name('cache.stats');
 
 /*
 |--------------------------------------------------------------------------
