@@ -1052,6 +1052,47 @@ Route::middleware(['auth:sanctum', 'validate.org.access', 'set.db.context'])
     });
 });
 
+    /*
+    |----------------------------------------------------------------------
+    | Unified Dashboard & Sync Management (من Phase 2)
+    |----------------------------------------------------------------------
+    */
+    Route::prefix('orgs/{org}')->name('orgs.')->group(function () {
+        // Unified Dashboard
+        Route::get('/dashboard', [App\Http\Controllers\API\DashboardController::class, 'index'])->name('dashboard.index');
+        Route::post('/dashboard/refresh', [App\Http\Controllers\API\DashboardController::class, 'refresh'])->name('dashboard.refresh');
+
+        // Sync Management
+        Route::prefix('sync')->name('sync.')->group(function () {
+            Route::get('/status', [App\Http\Controllers\API\SyncStatusController::class, 'orgStatus'])->name('status');
+            Route::post('/trigger', [App\Http\Controllers\API\SyncStatusController::class, 'triggerOrgSync'])->name('trigger');
+            Route::get('/statistics', [App\Http\Controllers\API\SyncStatusController::class, 'statistics'])->name('statistics');
+
+            // Integration-specific sync
+            Route::get('/integrations/{integration}/status', [App\Http\Controllers\API\SyncStatusController::class, 'integrationStatus'])->name('integration.status');
+            Route::post('/integrations/{integration}/trigger', [App\Http\Controllers\API\SyncStatusController::class, 'triggerIntegrationSync'])->name('integration.trigger');
+        });
+
+        // Unified Campaign API (من Phase 3)
+        Route::prefix('unified-campaigns')->name('unified-campaigns.')->group(function () {
+            Route::get('/', [App\Http\Controllers\API\UnifiedCampaignController::class, 'index'])->name('index');
+            Route::post('/', [App\Http\Controllers\API\UnifiedCampaignController::class, 'store'])->name('store');
+            Route::get('/{campaign}', [App\Http\Controllers\API\UnifiedCampaignController::class, 'show'])->name('show');
+        });
+
+        // Cache Management (من Phase 4)
+        Route::prefix('cache')->name('cache.')->group(function () {
+            Route::delete('/clear', [App\Http\Controllers\API\CacheController::class, 'clearOrg'])->name('clear');
+            Route::delete('/dashboard', [App\Http\Controllers\API\CacheController::class, 'clearDashboard'])->name('clear-dashboard');
+            Route::delete('/campaigns', [App\Http\Controllers\API\CacheController::class, 'clearCampaigns'])->name('clear-campaigns');
+            Route::post('/warm', [App\Http\Controllers\API\CacheController::class, 'warmCache'])->name('warm');
+        });
+    });
+
+    // Cache Statistics (Global)
+    Route::get('/cache/stats', [App\Http\Controllers\API\CacheController::class, 'stats'])->name('cache.stats');
+});
+
 /*
 |--------------------------------------------------------------------------
 | OAuth Callbacks (Public - No Authentication Required)

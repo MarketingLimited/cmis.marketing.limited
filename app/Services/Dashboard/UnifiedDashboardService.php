@@ -7,20 +7,23 @@ use App\Models\Core\Integration;
 use App\Models\AdPlatform\{AdCampaign, AdMetric};
 use App\Models\Social\{SocialPost, SocialAccount};
 use App\Models\Campaign;
+use App\Services\Cache\CacheService;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Cache;
 use Carbon\Carbon;
 
 class UnifiedDashboardService
 {
+    public function __construct(
+        private CacheService $cache
+    ) {}
+
     /**
      * Get unified dashboard data for an organization
      */
     public function getOrgDashboard(Org $org): array
     {
-        return Cache::remember(
-            "dashboard:org:{$org->org_id}",
-            now()->addMinutes(15),
+        return $this->cache->cacheDashboard(
+            $org,
             fn() => $this->buildDashboard($org)
         );
     }
@@ -329,6 +332,6 @@ class UnifiedDashboardService
      */
     public function clearCache(Org $org): void
     {
-        Cache::forget("dashboard:org:{$org->org_id}");
+        $this->cache->clearDashboard($org->org_id);
     }
 }

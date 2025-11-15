@@ -12,6 +12,7 @@ use App\Models\Core\Integration;
 use App\Models\AdPlatform\AdCampaign;
 use App\Models\AdPlatform\AdMetric;
 use App\Models\Social\SocialPost;
+use App\Events\Integration\{IntegrationSyncCompleted, IntegrationSyncFailed};
 
 class SyncPlatformData implements ShouldQueue
 {
@@ -67,6 +68,13 @@ class SyncPlatformData implements ShouldQueue
                 'result' => $result,
             ]);
 
+            // Fire sync completed event
+            event(new IntegrationSyncCompleted(
+                $this->integration,
+                $this->dataType,
+                $result ?? []
+            ));
+
         } catch (\Exception $e) {
             Log::error("Sync failed", [
                 'integration_id' => $this->integration->integration_id,
@@ -81,6 +89,13 @@ class SyncPlatformData implements ShouldQueue
                 'data_type' => $this->dataType,
                 'timestamp' => now()->toIso8601String(),
             ]);
+
+            // Fire sync failed event
+            event(new IntegrationSyncFailed(
+                $this->integration,
+                $this->dataType,
+                $e->getMessage()
+            ));
 
             throw $e; // Re-throw to trigger retry
         }
