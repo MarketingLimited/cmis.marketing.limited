@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use App\Jobs\Sync\DispatchPlatformSyncs;
 
 class Kernel extends ConsoleKernel
 {
@@ -40,8 +41,41 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule): void
     {
         // ==========================================
-        // 🔄 CMIS Platform Sync & Processing
+        // 🔄 CMIS Platform Sync & Processing (Phase 2)
         // ==========================================
+
+        // Auto-sync platform metrics every hour
+        $schedule->job(new DispatchPlatformSyncs('metrics'))
+            ->hourly()
+            ->withoutOverlapping()
+            ->onSuccess(function () {
+                Log::info('✅ Platform metrics sync dispatched');
+            })
+            ->onFailure(function () {
+                Log::error('❌ Failed to dispatch metrics sync');
+            });
+
+        // Auto-sync campaigns every 4 hours
+        $schedule->job(new DispatchPlatformSyncs('campaigns'))
+            ->everyFourHours()
+            ->withoutOverlapping()
+            ->onSuccess(function () {
+                Log::info('✅ Campaign sync dispatched');
+            })
+            ->onFailure(function () {
+                Log::error('❌ Failed to dispatch campaign sync');
+            });
+
+        // Full sync daily at 2 AM
+        $schedule->job(new DispatchPlatformSyncs('all'))
+            ->dailyAt('02:00')
+            ->withoutOverlapping()
+            ->onSuccess(function () {
+                Log::info('✅ Full platform sync dispatched');
+            })
+            ->onFailure(function () {
+                Log::error('❌ Failed to dispatch full sync');
+            });
 
         // Publish scheduled posts every 5 minutes
         $schedule->command('cmis:publish-scheduled')
