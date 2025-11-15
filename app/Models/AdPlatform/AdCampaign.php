@@ -93,6 +93,78 @@ class AdCampaign extends Model
     }
 
     /**
+     * Get ad sets for this campaign
+     */
+    public function adSets()
+    {
+        return $this->hasMany(AdSet::class, 'campaign_external_id', 'campaign_external_id');
+    }
+
+    /**
+     * Get ad account
+     */
+    public function adAccount()
+    {
+        return $this->hasOneThrough(
+            AdAccount::class,
+            \App\Models\Core\Integration::class,
+            'integration_id',
+            'integration_id',
+            'integration_id',
+            'integration_id'
+        );
+    }
+
+    /**
+     * Get metrics for this campaign
+     */
+    public function adMetrics()
+    {
+        return $this->hasMany(AdMetric::class, 'entity_external_id', 'campaign_external_id')
+            ->where('entity_level', 'campaign');
+    }
+
+    /**
+     * Scope by organization
+     */
+    public function scopeForOrg($query, string $orgId)
+    {
+        return $query->where('org_id', $orgId);
+    }
+
+    /**
+     * Scope by integration
+     */
+    public function scopeForIntegration($query, string $integrationId)
+    {
+        return $query->where('integration_id', $integrationId);
+    }
+
+    /**
+     * Scope by provider/platform
+     */
+    public function scopeByProvider($query, string $provider)
+    {
+        return $query->where('provider', $provider);
+    }
+
+    /**
+     * Scope running campaigns
+     */
+    public function scopeRunning($query)
+    {
+        return $query->where('status', 'active')
+            ->where(function ($q) {
+                $q->whereNull('start_date')
+                    ->orWhere('start_date', '<=', now());
+            })
+            ->where(function ($q) {
+                $q->whereNull('end_date')
+                    ->orWhere('end_date', '>=', now());
+            });
+    }
+
+    /**
      * Check if campaign is running
      */
     public function isRunning(): bool
@@ -110,5 +182,45 @@ class AdCampaign extends Model
         }
 
         return true;
+    }
+
+    /**
+     * Get performance summary
+     */
+    public function getPerformanceSummary(): array
+    {
+        $metrics = $this->adMetrics()
+            ->selectRaw('
+                SUM(spend) as total_spend,
+                SUM(impressions) as total_impressions,
+                SUM(clicks) as total_clicks
+            ')
+            ->first();
+
+        if (!$metrics) {
+            return [
+                'spend' => 0,
+                'impressions' => 0,
+                'clicks' => 0,
+                'ctr' => 0,
+                'cpc' => 0,
+            ];
+        }
+
+        $ctr = $metrics->total_impressions > 0
+            ? ($metrics->total_clicks / $metrics->total_impressions) * 100
+            : 0;
+
+        $cpc = $metrics->total_clicks > 0
+            ? $metrics->total_spend / $metrics->total_clicks
+            : 0;
+
+        return [
+            'spend' => round($metrics->total_spend, 2),
+            'impressions' => $metrics->total_impressions,
+            'clicks' => $metrics->total_clicks,
+            'ctr' => round($ctr, 2),
+            'cpc' => round($cpc, 2),
+        ];
     }
 }
