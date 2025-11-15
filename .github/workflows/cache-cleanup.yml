@@ -15,7 +15,7 @@ permissions:
 jobs:
   cleanup:
     name: Clean up old caches
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.RUNS_ON || 'ubuntu-latest' }}
 
     steps:
       - name: Checkout code
