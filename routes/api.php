@@ -37,24 +37,59 @@ use App\Http\Controllers\API\AdCampaignController as APIAdCampaignController;
 /*
 |--------------------------------------------------------------------------
 | Webhooks (Public - لاستقبال التحديثات من المنصات)
+| مع التحقق من التوقيع (Signature Verification)
 |--------------------------------------------------------------------------
 */
-Route::prefix('webhooks')->name('webhooks.')->group(function () {
-    Route::match(['get', 'post'], '/meta', [WebhookController::class, 'handleMetaWebhook'])->name('meta');
-    Route::match(['get', 'post'], '/whatsapp', [WebhookController::class, 'handleWhatsAppWebhook'])->name('whatsapp');
-    Route::post('/tiktok', [WebhookController::class, 'handleTikTokWebhook'])->name('tiktok');
-    Route::post('/twitter', [WebhookController::class, 'handleTwitterWebhook'])->name('twitter');
-});
+Route::prefix('webhooks')->name('webhooks.')
+    ->middleware('throttle:webhooks')
+    ->group(function () {
+        // Meta webhooks - GET for verification, POST for events
+        Route::get('/meta', [WebhookController::class, 'handleMetaWebhook'])->name('meta.verify');
+        Route::post('/meta', [WebhookController::class, 'handleMetaWebhook'])
+            ->middleware('verify.webhook:meta')
+            ->name('meta');
+
+        Route::get('/whatsapp', [WebhookController::class, 'handleWhatsAppWebhook'])->name('whatsapp.verify');
+        Route::post('/whatsapp', [WebhookController::class, 'handleWhatsAppWebhook'])
+            ->middleware('verify.webhook:meta')
+            ->name('whatsapp');
+
+        // Other platform webhooks with signature verification
+        Route::post('/google', [WebhookController::class, 'handleGoogleWebhook'])
+            ->middleware('verify.webhook:google')
+            ->name('google');
+
+        Route::post('/tiktok', [WebhookController::class, 'handleTikTokWebhook'])
+            ->middleware('verify.webhook:tiktok')
+            ->name('tiktok');
+
+        Route::post('/twitter', [WebhookController::class, 'handleTwitterWebhook'])
+            ->middleware('verify.webhook:twitter')
+            ->name('twitter');
+
+        Route::post('/linkedin', [WebhookController::class, 'handleLinkedInWebhook'])
+            ->middleware('verify.webhook:linkedin')
+            ->name('linkedin');
+
+        Route::post('/snapchat', [WebhookController::class, 'handleSnapchatWebhook'])
+            ->middleware('verify.webhook:snapchat')
+            ->name('snapchat');
+    });
 
 /*
 |--------------------------------------------------------------------------
 | مسارات المصادقة (Authentication) - بدون org_id
+| مع Rate Limiting للحماية من Brute Force
 |--------------------------------------------------------------------------
 */
 Route::prefix('auth')->group(function () {
-    // التسجيل وتسجيل الدخول (عام - بدون مصادقة)
-    Route::post('/register', [AuthController::class, 'register'])->name('auth.register');
-    Route::post('/login', [AuthController::class, 'login'])->name('auth.login');
+    // التسجيل وتسجيل الدخول (عام - بدون مصادقة) - مع rate limiting
+    Route::post('/register', [AuthController::class, 'register'])
+        ->middleware('throttle:auth')
+        ->name('auth.register');
+    Route::post('/login', [AuthController::class, 'login'])
+        ->middleware('throttle:auth')
+        ->name('auth.login');
 
     // OAuth callbacks
     Route::get('/oauth/{provider}/callback', [AuthController::class, 'oauthCallback'])->name('auth.oauth.callback');
