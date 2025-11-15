@@ -1093,6 +1093,23 @@ Route::middleware(['auth:sanctum', 'validate.org.access', 'set.db.context'])
             Route::get('/campaigns/analyze', [App\Http\Controllers\API\AIOptimizationController::class, 'analyzeAllCampaigns'])->name('analyze-all');
             Route::get('/campaigns/{campaign}/analyze', [App\Http\Controllers\API\AIOptimizationController::class, 'analyzeCampaign'])->name('analyze-campaign');
         });
+
+        // Predictive Analytics (من Phase 5B)
+        Route::prefix('predictive')->name('predictive.')->group(function () {
+            Route::get('/forecast', [App\Http\Controllers\API\PredictiveAnalyticsController::class, 'forecastOrganization'])->name('forecast-org');
+            Route::get('/campaigns/{campaign}/forecast', [App\Http\Controllers\API\PredictiveAnalyticsController::class, 'forecastCampaign'])->name('forecast-campaign');
+            Route::post('/campaigns/{campaign}/scenarios', [App\Http\Controllers\API\PredictiveAnalyticsController::class, 'compareScenarios'])->name('compare-scenarios');
+            Route::get('/campaigns/{campaign}/trends', [App\Http\Controllers\API\PredictiveAnalyticsController::class, 'analyzeTrends'])->name('analyze-trends');
+        });
+
+        // Knowledge Learning System (من Phase 5C)
+        Route::prefix('knowledge')->name('knowledge.')->group(function () {
+            Route::get('/learn', [App\Http\Controllers\API\KnowledgeLearningController::class, 'learnFromHistory'])->name('learn');
+            Route::post('/campaigns/{campaign}/decision-support', [App\Http\Controllers\API\KnowledgeLearningController::class, 'getDecisionSupport'])->name('decision-support');
+            Route::get('/best-practices', [App\Http\Controllers\API\KnowledgeLearningController::class, 'getBestPractices'])->name('best-practices');
+            Route::get('/insights', [App\Http\Controllers\API\KnowledgeLearningController::class, 'getInsights'])->name('insights');
+            Route::get('/failure-patterns', [App\Http\Controllers\API\KnowledgeLearningController::class, 'getFailurePatterns'])->name('failure-patterns');
+        });
     });
 
     // Cache Statistics (Global)
