@@ -384,6 +384,208 @@ php artisan audit:report daily_summary --path=/home/user/reports
 
 ---
 
+## 🌐 استخدام API
+
+### نقاط النهاية المتاحة (API Endpoints)
+
+جميع الطلبات تحت المسار: `/api/orgs/{org_id}/audit/`
+
+#### 1. Dashboard - نظرة شاملة
+```http
+GET /api/orgs/{org_id}/audit/dashboard
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "realtime": { ... },
+    "daily_summary": { ... },
+    "alerts": [ ... ],
+    "has_critical_alerts": false
+  }
+}
+```
+
+#### 2. Realtime Status - الحالة اللحظية
+```http
+GET /api/orgs/{org_id}/audit/realtime-status
+```
+
+#### 3. Daily Summary - الملخص اليومي
+```http
+GET /api/orgs/{org_id}/audit/daily-summary
+```
+
+#### 4. Weekly Performance - الأداء الأسبوعي
+```http
+GET /api/orgs/{org_id}/audit/weekly-performance?limit=4
+```
+
+#### 5. Activity Log - سجل الأنشطة
+```http
+GET /api/orgs/{org_id}/audit/activity-log?category=task&limit=50
+```
+
+**Query Parameters:**
+- `category` (optional): task, knowledge, security, system
+- `actor` (optional): اسم الفاعل
+- `action` (optional): نوع الحدث
+- `from` (optional): تاريخ البداية
+- `to` (optional): تاريخ النهاية
+- `limit` (optional): عدد النتائج (max: 1000)
+- `offset` (optional): للترقيم
+
+#### 6. Log Event - تسجيل حدث
+```http
+POST /api/orgs/{org_id}/audit/log-event
+Content-Type: application/json
+
+{
+  "actor": "admin@company.com",
+  "action": "campaign_created",
+  "category": "task",
+  "context": {
+    "campaign_id": "123",
+    "name": "Summer Sale"
+  }
+}
+```
+
+#### 7. Check Alerts - فحص التنبيهات
+```http
+GET /api/orgs/{org_id}/audit/check-alerts
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "alert_type": "failed_tasks",
+      "severity": "warning",
+      "message": "عدد المهام الفاشلة تجاوز الحد المسموح",
+      "current_count": 15,
+      "threshold": 10
+    }
+  ],
+  "has_critical": false,
+  "count": 1
+}
+```
+
+#### 8. Export Report - تصدير تقرير
+```http
+POST /api/orgs/{org_id}/audit/export-report
+Content-Type: application/json
+
+{
+  "period": "daily_summary",
+  "path": "/var/reports"
+}
+```
+
+---
+
+### مثال الاستخدام مع JavaScript
+
+```javascript
+// الحصول على Dashboard
+async function getAuditDashboard(orgId) {
+  const response = await fetch(`/api/orgs/${orgId}/audit/dashboard`, {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Accept': 'application/json'
+    }
+  });
+
+  const data = await response.json();
+  return data;
+}
+
+// تسجيل حدث
+async function logAuditEvent(orgId, eventData) {
+  const response = await fetch(`/api/orgs/${orgId}/audit/log-event`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(eventData)
+  });
+
+  return response.json();
+}
+
+// Usage
+await logAuditEvent(123, {
+  actor: 'system',
+  action: 'deployment_completed',
+  category: 'system',
+  context: {
+    version: '2.1.0',
+    duration: 120
+  }
+});
+```
+
+---
+
+## 🔧 Middleware للتدقيق التلقائي
+
+### إضافة Middleware في الـ Routes
+
+```php
+// في routes/api.php أو routes/web.php
+
+// تطبيق التدقيق على جميع الطلبات
+Route::middleware(['auth', 'audit:system'])->group(function () {
+    // Routes here will be audited automatically
+});
+
+// تطبيق التدقيق على endpoints محددة
+Route::middleware('audit:security')->group(function () {
+    Route::post('/admin/users', ...);
+    Route::delete('/admin/users/{id}', ...);
+});
+
+// تحديد الفئة حسب النشاط
+Route::middleware('audit:task')->group(function () {
+    Route::post('/campaigns', ...);
+    Route::put('/campaigns/{id}', ...);
+});
+```
+
+### أنواع الفئات المتاحة
+
+- `audit:task` - المهام والحملات
+- `audit:knowledge` - المعرفة والمحتوى
+- `audit:security` - الأمان والصلاحيات
+- `audit:system` - النظام والعمليات
+
+### التفعيل في Kernel.php
+
+```php
+// في app/Http/Kernel.php
+
+protected $middlewareGroups = [
+    'api' => [
+        // ... existing middleware
+        \App\Http\Middleware\AuditLogger::class,
+    ],
+];
+
+// أو في routeMiddleware للاستخدام الاختياري
+protected $middlewareAliases = [
+    // ... existing middleware
+    'audit' => \App\Http\Middleware\AuditLogger::class,
+];
+```
+
+---
+
 ## ✅ حالة التطبيق
 
 - ✅ Migration جاهز
@@ -391,6 +593,8 @@ php artisan audit:report daily_summary --path=/home/user/reports
 - ✅ جميع الدوال
 - ✅ جميع الأوامر
 - ✅ نظام التنبيهات
+- ✅ **API Endpoints كاملة**
+- ✅ **Middleware للتدقيق التلقائي**
 - ✅ التوثيق الكامل
 
-**النظام جاهز للاستخدام الفوري!** 🚀
+**النظام جاهز للاستخدام الفوري عبر CLI و API!** 🚀
