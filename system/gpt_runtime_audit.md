@@ -162,16 +162,140 @@ SELECT export_audit_report('weekly_performance');
 
 ---
 
-## 🧩 9. الهدف العام
+## 🧩 9. استخدام Artisan Commands
 
-يوفّر هذا النظام:
-- شفافية تشغيلية كاملة.
-- قابلية تتبع لكل قرار.
-- تحليلاً تاريخيًا لأداء النظام الإدراكي.
+تم تطبيق نظام التدقيق كاملاً وتوفير أوامر CLI للتعامل معه:
+
+### عرض حالة النظام الشاملة
+```bash
+php artisan audit:status
+
+# عرض تفصيلي مع الأداء الأسبوعي
+php artisan audit:status --detailed
+```
+
+### توليد وتصدير التقارير
+```bash
+# التقرير اليومي
+php artisan audit:report daily_summary
+
+# الأداء الأسبوعي
+php artisan audit:report weekly_performance
+
+# الحالة اللحظية
+php artisan audit:report realtime_status
+
+# تحديد مسار التصدير
+php artisan audit:report daily_summary --path=/home/user/reports
+```
+
+### فحص التنبيهات التلقائية
+```bash
+php artisan audit:check-alerts
+```
+
+### تسجيل حدث يدوياً
+```bash
+# تسجيل حدث بسيط
+php artisan audit:log "deployment_completed" --category=system
+
+# تسجيل حدث مع بيانات إضافية
+php artisan audit:log "task_completed" \
+  --actor="GPT-Agent" \
+  --category=task \
+  --context='{"task":"fix-bug-123","duration":45}'
+```
 
 ---
 
-📍 **الموقع:** `/httpdocs/system/gpt_runtime_audit.md`
+## 🎯 10. التكامل مع العمليات الآلية
+
+### إضافة إلى Schedule (Kernel.php)
+```php
+// في app/Console/Kernel.php
+protected function schedule(Schedule $schedule)
+{
+    // فحص التنبيهات كل ساعة
+    $schedule->command('audit:check-alerts')
+             ->hourly()
+             ->appendOutputTo('/var/log/cmis/audit-alerts.log');
+
+    // توليد التقرير اليومي كل منتصف ليل
+    $schedule->command('audit:report daily_summary --path=/var/reports')
+             ->dailyAt('00:00');
+
+    // التقرير الأسبوعي كل إثنين
+    $schedule->command('audit:report weekly_performance --path=/var/reports')
+             ->weeklyOn(1, '00:00');
+}
+```
+
+### استخدام في الكود
+```php
+use Illuminate\Support\Facades\DB;
+
+// تسجيل حدث
+DB::table('cmis_audit.activity_log')->insert([
+    'actor' => 'GPT-Agent',
+    'action' => 'task_created',
+    'context' => json_encode(['task_name' => 'Meta Refresh']),
+    'category' => 'task',
+    'created_at' => now()
+]);
+
+// استعلام عن الحالة اللحظية
+$status = DB::select("SELECT * FROM cmis_audit.realtime_status")[0];
+
+// تصدير تقرير
+$result = DB::select("
+    SELECT * FROM cmis_audit.export_audit_report('daily_summary', '/tmp')
+")[0];
+```
+
+---
+
+## 🗂️ 11. الهيكل الكامل للنظام
+
+### الجداول (Tables)
+- ✅ `cmis_audit.activity_log` - سجل الأحداث التفصيلي
+- ✅ `cmis_audit.file_backups` - تتبع النسخ الاحتياطية للملفات
+- ✅ `cmis_audit.logs` - السجل القديم (للتوافق مع الأنظمة الموجودة)
+
+### طرق العرض (Views)
+- ✅ `cmis_audit.daily_summary` - ملخص يومي
+- ✅ `cmis_audit.weekly_performance` - أداء أسبوعي
+- ✅ `cmis_audit.realtime_status` - حالة لحظية
+- ✅ `cmis_audit.audit_summary` - ملخص شامل (24 ساعة، 7 أيام، 30 يوم)
+
+### الدوال (Functions)
+- ✅ `cmis_audit.export_audit_report(period, path)` - تصدير التقارير
+- ✅ `cmis_audit.check_alerts()` - فحص التنبيهات
+
+### الأوامر (Commands)
+- ✅ `audit:status` - عرض حالة النظام
+- ✅ `audit:report` - توليد وتصدير التقارير
+- ✅ `audit:check-alerts` - فحص التنبيهات
+- ✅ `audit:log` - تسجيل الأحداث
+
+---
+
+## 🧩 12. الهدف العام
+
+يوفّر هذا النظام:
+- ✅ شفافية تشغيلية كاملة
+- ✅ قابلية تتبع لكل قرار ونشاط
+- ✅ تحليلاً تاريخيًا لأداء النظام الإدراكي
+- ✅ تنبيهات آلية للمشاكل المحتملة
+- ✅ تقارير قابلة للتصدير والمشاركة
+- ✅ واجهة CLI سهلة الاستخدام
+
+---
+
+📍 **الموقع:** `/system/gpt_runtime_audit.md`
+📁 **Migration:** `/database/migrations/2025_11_15_000001_create_cmis_audit_reporting_system.php`
+⚙️ **Commands:** `/app/Console/Commands/Audit*.php`
 
 هذا الملف يُكمل المنظومة الإدراكية التشغيلية لـ **CMIS Orchestrator**،
 ويجعلها نظامًا يمكن تتبع كل فعل ونتيجة فيه، آليًا وبشكل آمن ومنظم.
+
+✅ **حالة التطبيق:** مُطبَّق كاملاً ✅
