@@ -34,6 +34,11 @@ return new class extends Migration
         $sql = file_get_contents(database_path('sql/complete_views.sql'));
 
         if (!empty(trim($sql))) {
+            // In test environments, skip OWNER statements as the database user may differ
+            if (app()->environment('testing') || env('DB_USERNAME') !== 'begin') {
+                $sql = preg_replace('/ALTER\s+VIEW\s+[^\s]+\s+OWNER\s+TO\s+begin;/i', '', $sql);
+            }
+
             DB::unprepared($sql);
         }
     }
