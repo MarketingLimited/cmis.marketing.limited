@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use App\Jobs\Sync\DispatchPlatformSyncs;
 
 class Kernel extends ConsoleKernel
 {
@@ -30,6 +31,7 @@ class Kernel extends ConsoleKernel
         \App\Console\Commands\GenerateReportsCommand::class,
         \App\Console\Commands\ProcessScheduledPostsCommand::class,
         \App\Console\Commands\SyncIntegrationsCommand::class,
+        \App\Console\Commands\ManagePartitions::class,
 
         // Vector Embeddings v2.0 Commands
         \App\Console\Commands\VectorEmbeddings\ProcessEmbeddingQueueCommand::class,
@@ -40,8 +42,41 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule): void
     {
         // ==========================================
-        // 🔄 CMIS Platform Sync & Processing
+        // 🔄 CMIS Platform Sync & Processing (Phase 2)
         // ==========================================
+
+        // Auto-sync platform metrics every hour
+        $schedule->job(new DispatchPlatformSyncs('metrics'))
+            ->hourly()
+            ->withoutOverlapping()
+            ->onSuccess(function () {
+                Log::info('✅ Platform metrics sync dispatched');
+            })
+            ->onFailure(function () {
+                Log::error('❌ Failed to dispatch metrics sync');
+            });
+
+        // Auto-sync campaigns every 4 hours
+        $schedule->job(new DispatchPlatformSyncs('campaigns'))
+            ->everyFourHours()
+            ->withoutOverlapping()
+            ->onSuccess(function () {
+                Log::info('✅ Campaign sync dispatched');
+            })
+            ->onFailure(function () {
+                Log::error('❌ Failed to dispatch campaign sync');
+            });
+
+        // Full sync daily at 2 AM
+        $schedule->job(new DispatchPlatformSyncs('all'))
+            ->dailyAt('02:00')
+            ->withoutOverlapping()
+            ->onSuccess(function () {
+                Log::info('✅ Full platform sync dispatched');
+            })
+            ->onFailure(function () {
+                Log::error('❌ Failed to dispatch full sync');
+            });
 
         // Publish scheduled posts every 5 minutes
         $schedule->command('cmis:publish-scheduled')
@@ -91,6 +126,21 @@ class Kernel extends ConsoleKernel
             ->at('04:00')
             ->onSuccess(function () {
                 Log::info('✅ Cache cleanup completed');
+            });
+
+        // ==========================================
+        // 📊 Database Partition Management (Phase 4)
+        // ==========================================
+
+        // Manage partitions monthly (create future, cleanup old)
+        $schedule->command('partitions:manage')
+            ->monthlyOn(1, '05:00')
+            ->withoutOverlapping()
+            ->onSuccess(function () {
+                Log::info('✅ Database partitions managed successfully');
+            })
+            ->onFailure(function () {
+                Log::error('❌ Failed to manage database partitions');
             });
 
         // ==========================================

@@ -28,6 +28,9 @@ return Application::configure(basePath: dirname(__DIR__))
             'set.db.context' => \App\Http\Middleware\SetDatabaseContext::class,
             'validate.org.access' => \App\Http\Middleware\ValidateOrgAccess::class,
             'permission' => \App\Http\Middleware\CheckPermission::class,
+            'refresh.tokens' => \App\Http\Middleware\RefreshExpiredTokens::class,
+            'verify.webhook' => \App\Http\Middleware\VerifyWebhookSignature::class,
+            'security.headers' => \App\Http\Middleware\SecurityHeaders::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
