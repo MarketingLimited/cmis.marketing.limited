@@ -52,6 +52,14 @@ class DatabaseSeeder extends Seeder
             DemoDataSeeder::class,
         ]);
 
+        $this->command->newLine();
+        $this->command->info('📦 Seeding extended demo data (50+ additional tables)...');
+
+        // Level 4: Extended Demo Data (AI, modules, contexts, compliance, analytics, etc.)
+        $this->call([
+            ExtendedDemoDataSeeder::class,
+        ]);
+
         // Optional: Session data from backup (for development/testing)
         if (app()->environment('local', 'development')) {
             $this->call([
@@ -61,6 +69,7 @@ class DatabaseSeeder extends Seeder
 
         $this->command->newLine();
         $this->command->info('✅ Database seeding completed successfully!');
+        $this->command->info('📊 Seeded 90+ tables with comprehensive, interconnected demo data!');
         $this->command->newLine();
     }
 }
