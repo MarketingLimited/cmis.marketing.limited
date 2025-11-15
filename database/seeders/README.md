@@ -4,7 +4,7 @@ This directory contains comprehensive Laravel database seeders for the CMIS mark
 
 ## Overview
 
-The seeders create a complete demo environment with:
+The seeders create a complete demo environment with **90+ tables** seeded across:
 - **Reference data** (channels, industries, markets, marketing objectives)
 - **Core entities** (organizations, users, roles, permissions)
 - **Demo organizations** with complete workflows
@@ -12,6 +12,7 @@ The seeders create a complete demo environment with:
 - **Campaigns, content plans, creative assets**
 - **Social media posts (published and scheduled)**
 - **Ad accounts and campaigns**
+- **Extended features** (AI/Knowledge, Compliance, Analytics, Automation, Metadata)
 
 ## Complete Seeder List
 
@@ -39,7 +40,13 @@ The seeders create a complete demo environment with:
 
 | Seeder | Table(s) | Description |
 |--------|----------|-------------|
-| **DemoDataSeeder** | Multiple tables | Creates comprehensive interconnected demo data including:<br>• User-organization relationships<br>• Role permissions<br>• Offerings and segments<br>• Integrations (Instagram, Facebook Ads)<br>• Social accounts<br>• Ad accounts<br>• Campaigns<br>• Creative briefs<br>• Creative assets<br>• Content plans<br>• Social posts (published)<br>• Scheduled posts<br>• Ad campaigns with ad sets and ads<br>• Performance metrics<br>• Publishing queues<br>• Inbox items (comments & messages)<br>• Post approvals<br>• AB tests with variations<br>• Audience templates<br>• Notifications<br>• User activities<br>• Team invitations |
+| **DemoDataSeeder** | 40+ tables | Creates comprehensive interconnected demo data including:<br>• User-organization relationships<br>• Role permissions<br>• Offerings and segments<br>• Integrations (Instagram, Facebook Ads)<br>• Social accounts<br>• Ad accounts<br>• Campaigns<br>• Creative briefs<br>• Creative assets<br>• Content plans<br>• Social posts (published)<br>• Scheduled posts<br>• Ad campaigns with ad sets and ads<br>• Performance metrics<br>• Publishing queues<br>• Inbox items (comments & messages)<br>• Post approvals<br>• AB tests with variations<br>• Audience templates<br>• Notifications<br>• User activities<br>• Team invitations |
+
+### Level 4: Extended Demo Data (Depends on Level 3)
+
+| Seeder | Table(s) | Description |
+|--------|----------|-------------|
+| **ExtendedDemoDataSeeder** | 50+ tables | Creates comprehensive extended features data including:<br>• **System & Configuration**: Modules, field definitions, prompt templates, reference entities, component types, proof layers, naming templates, output contracts, variation policies<br>• **Contexts & Value Propositions**: Context base, value contexts, field values, campaign-context links<br>• **Creative Components**: Copy components, video templates, audio templates, scene library, video scenes<br>• **AI & Knowledge**: AI models, AI actions, AI-generated campaigns, cognitive trends, predictive visual engine<br>• **Compliance & Quality**: Compliance rules, compliance audits<br>• **Experiments**: Multivariate experiments, export bundles<br>• **Data Management**: Dataset packages, data feeds<br>• **Analytics & Operations**: Analytics integrations, ops audit logs, sync logs, scheduled reports<br>• **Ad Platform Extensions**: Ad audiences, ad metrics (time-series), ad variants, social metrics (time-series)<br>• **Automation**: SQL snippets, flows with steps<br>• **Metadata**: System metadata documentation |
 
 ### Optional (Development Only)
 
@@ -144,7 +151,7 @@ The `DatabaseSeeder` orchestrates the seeding in this order:
    └── UsersSeeder
 
 3. Demo Data (Level 3)
-   └── DemoDataSeeder
+   └── DemoDataSeeder (40+ tables)
        ├── User-Org relationships
        ├── Role permissions
        ├── Offerings & Segments
@@ -167,6 +174,33 @@ The `DatabaseSeeder` orchestrates the seeding in this order:
        ├── Notifications
        ├── User Activities
        └── Team Invitations
+
+4. Extended Demo Data (Level 4)
+   └── ExtendedDemoDataSeeder (50+ tables)
+       ├── Modules & Field Definitions
+       ├── Prompt Templates & Reference Entities
+       ├── Component Types & Proof Layers
+       ├── Naming Templates & Output Contracts
+       ├── Variation Policies
+       ├── Contexts & Value Propositions
+       ├── Field Values & Campaign-Context Links
+       ├── Copy Components
+       ├── Video/Audio Templates & Scenes
+       ├── AI Models & Actions
+       ├── AI-Generated Campaigns
+       ├── Cognitive Trends & Predictive Engine
+       ├── Compliance Rules & Audits
+       ├── Experiments & Export Bundles
+       ├── Dataset Packages & Data Feeds
+       ├── Analytics Integrations & Ops Audits
+       ├── Sync Logs & Scheduled Reports
+       ├── Ad Audiences & Metrics (time-series)
+       ├── Ad Variants & Social Metrics
+       ├── SQL Snippets & Automation Flows
+       └── Metadata Documentation
+
+5. Optional: Sessions (Development Only)
+   └── SessionsSeeder
 ```
 
 ## What Gets Created
@@ -317,6 +351,31 @@ php artisan tinker
 >>> DB::table('cmis.role_permissions')->join('cmis.roles', 'role_permissions.role_id', '=', 'roles.role_id')->count();
 ```
 
+## Feature Coverage Summary
+
+The seeders provide comprehensive coverage across **90+ database tables**:
+
+### Core Platform (40+ tables)
+- Multi-tenancy and organizations
+- User management and RBAC
+- Campaign lifecycle management
+- Social media integrations and posting
+- Ad platform integration and management
+- Content planning and creative assets
+- Performance tracking and analytics
+
+### Extended Features (50+ tables)
+- **AI & Knowledge System**: AI model configurations, actions, predictions, cognitive trends
+- **Module System**: Configurable modules and field definitions
+- **Context Engine**: Value propositions, field values, campaign contexts
+- **Creative Studio**: Video/audio templates, scene library, copy components
+- **Compliance**: Rules engine and audit trails
+- **Experiments**: Multivariate testing framework
+- **Data Management**: Dataset packages and feeds
+- **Analytics**: Time-series metrics for ads and social media
+- **Automation**: Workflow engine with SQL snippets
+- **Metadata**: System documentation and reference data
+
 ## Understanding the Application
 
 This demo data helps you understand:
@@ -326,8 +385,12 @@ This demo data helps you understand:
 3. **Campaign Workflow**: From creation → content planning → creative assets → publishing
 4. **Social Media Management**: Integration → account connection → post publishing → scheduling
 5. **Ad Platform Integration**: Ad account → campaign → ad set → individual ad hierarchy
-6. **Analytics**: Metrics collection for posts, campaigns, and ads
+6. **Analytics**: Metrics collection for posts, campaigns, and ads (including time-series data)
 7. **Multi-language Support**: Arabic and English content examples
+8. **AI-Powered Features**: AI models, actions, and campaign generation
+9. **Compliance System**: Rules, audits, and quality control
+10. **Automation**: Workflow engine and data feed management
+11. **Module Architecture**: Flexible field-based system for extending functionality
 
 ## Next Steps
 
