@@ -30,6 +30,11 @@ class Kernel extends ConsoleKernel
         \App\Console\Commands\GenerateReportsCommand::class,
         \App\Console\Commands\ProcessScheduledPostsCommand::class,
         \App\Console\Commands\SyncIntegrationsCommand::class,
+
+        // Vector Embeddings v2.0 Commands
+        \App\Console\Commands\VectorEmbeddings\ProcessEmbeddingQueueCommand::class,
+        \App\Console\Commands\VectorEmbeddings\HybridSearchCommand::class,
+        \App\Console\Commands\VectorEmbeddings\SystemStatusCommand::class,
     ];
 
     protected function schedule(Schedule $schedule): void
