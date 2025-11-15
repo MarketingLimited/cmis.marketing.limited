@@ -52,11 +52,27 @@ class AdSet extends Model
     ];
 
     /**
+     * Get the organization
+     */
+    public function org()
+    {
+        return $this->belongsTo(\App\Models\Core\Org::class, 'org_id', 'org_id');
+    }
+
+    /**
+     * Get the integration
+     */
+    public function integration()
+    {
+        return $this->belongsTo(\App\Models\Core\Integration::class, 'integration_id', 'integration_id');
+    }
+
+    /**
      * Get the ad campaign
      */
     public function adCampaign()
     {
-        return $this->belongsTo(AdCampaign::class, 'ad_campaign_id', 'ad_campaign_id');
+        return $this->belongsTo(AdCampaign::class, 'campaign_external_id', 'campaign_external_id');
     }
 
     /**
@@ -64,7 +80,7 @@ class AdSet extends Model
      */
     public function ads()
     {
-        return $this->hasMany(AdEntity::class, 'ad_set_id', 'ad_set_id');
+        return $this->hasMany(AdEntity::class, 'adset_external_id', 'adset_external_id');
     }
 
     /**
@@ -72,8 +88,8 @@ class AdSet extends Model
      */
     public function metrics()
     {
-        return $this->hasMany(AdMetric::class, 'entity_id', 'ad_set_id')
-            ->where('entity_type', 'ad_set');
+        return $this->hasMany(AdMetric::class, 'entity_external_id', 'adset_external_id')
+            ->where('entity_level', 'adset');
     }
 
     /**

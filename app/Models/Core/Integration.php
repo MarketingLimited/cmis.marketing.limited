@@ -78,6 +78,36 @@ class Integration extends Model
      */
     public function adCampaigns()
     {
-        return $this->hasMany(\App\Models\AdPlatform\AdCampaign::class, 'ad_account_id', 'account_id');
+        return $this->hasMany(\App\Models\AdPlatform\AdCampaign::class, 'integration_id', 'integration_id');
+    }
+
+    /**
+     * Get ad accounts associated with this integration
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function adAccounts()
+    {
+        return $this->hasMany(\App\Models\AdPlatform\AdAccount::class, 'integration_id', 'integration_id');
+    }
+
+    /**
+     * Get ad sets associated with this integration
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function adSets()
+    {
+        return $this->hasMany(\App\Models\AdPlatform\AdSet::class, 'integration_id', 'integration_id');
+    }
+
+    /**
+     * Get ad entities associated with this integration
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function adEntities()
+    {
+        return $this->hasMany(\App\Models\AdPlatform\AdEntity::class, 'integration_id', 'integration_id');
     }
 }
