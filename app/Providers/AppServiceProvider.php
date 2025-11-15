@@ -149,6 +149,23 @@ class AppServiceProvider extends ServiceProvider
                 );
             }
         );
+
+        // Gemini Embedding Service
+        $this->app->singleton(\App\Services\CMIS\GeminiEmbeddingService::class);
+
+        // Semantic Search Service
+        $this->app->singleton(\App\Services\CMIS\SemanticSearchService::class);
+
+        // Vector Integration Service
+        $this->app->singleton(
+            \App\Services\CMIS\VectorIntegrationService::class,
+            function ($app) {
+                return new \App\Services\CMIS\VectorIntegrationService(
+                    $app->make(\App\Services\CMIS\SemanticSearchService::class),
+                    $app->make(\App\Services\CMIS\GeminiEmbeddingService::class)
+                );
+            }
+        );
     }
 
     /**
