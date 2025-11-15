@@ -4,6 +4,9 @@ namespace App\Providers;
 
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Http\Request;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -180,5 +183,70 @@ class AppServiceProvider extends ServiceProvider
 
         // Load migrations from phases directory
         $this->loadMigrationsFrom(database_path('migrations/phases'));
+
+        // Configure Rate Limiters
+        $this->configureRateLimiters();
+    }
+
+    /**
+     * Configure rate limiters for different API endpoint types
+     */
+    protected function configureRateLimiters(): void
+    {
+        // Authentication endpoints - strict limit
+        RateLimiter::for('auth', function (Request $request) {
+            return Limit::perMinute(10)
+                ->by($request->ip())
+                ->response(function () {
+                    return response()->json([
+                        'error' => 'Too many authentication attempts',
+                        'message' => 'Please try again in 1 minute'
+                    ], 429);
+                });
+        });
+
+        // General API endpoints - moderate limit per user+org
+        RateLimiter::for('api', function (Request $request) {
+            $key = $request->user()?->user_id . '|' . ($request->route('org') ?? 'no-org');
+
+            return Limit::perMinute(100)
+                ->by($key)
+                ->response(function () {
+                    return response()->json([
+                        'error' => 'Rate limit exceeded',
+                        'message' => 'Too many requests. Please slow down.'
+                    ], 429);
+                });
+        });
+
+        // Webhook endpoints - high limit (platforms send many requests)
+        RateLimiter::for('webhooks', function (Request $request) {
+            return Limit::perMinute(1000)
+                ->by($request->ip());
+        });
+
+        // Heavy operations (sync, analytics) - lower limit
+        RateLimiter::for('heavy', function (Request $request) {
+            $key = $request->user()?->user_id . '|' . ($request->route('org') ?? 'no-org');
+
+            return Limit::perMinute(20)
+                ->by($key)
+                ->response(function () {
+                    return response()->json([
+                        'error' => 'Rate limit exceeded',
+                        'message' => 'This operation is rate limited. Please wait before retrying.'
+                    ], 429);
+                });
+        });
+
+        // AI operations - strict limit (expensive)
+        RateLimiter::for('ai', function (Request $request) {
+            $key = $request->user()?->user_id . '|' . ($request->route('org') ?? 'no-org');
+
+            return [
+                Limit::perMinute(30)->by($key),
+                Limit::perHour(500)->by($key),
+            ];
+        });
     }
 }
