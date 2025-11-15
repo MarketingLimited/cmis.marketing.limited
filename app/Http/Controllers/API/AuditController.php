@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
+use App\Policies\AuditPolicy;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\JsonResponse;
@@ -14,8 +15,17 @@ class AuditController extends Controller
      *
      * @return JsonResponse
      */
-    public function realtimeStatus(): JsonResponse
+    public function realtimeStatus(Request $request): JsonResponse
     {
+        // Check permission
+        $policy = new AuditPolicy();
+        if (!$policy->viewRealtimeStatus($request->user())) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized: You do not have permission to view realtime status'
+            ], 403);
+        }
+
         try {
             $status = DB::select("SELECT * FROM cmis_audit.realtime_status")[0] ?? null;
 
@@ -54,8 +64,17 @@ class AuditController extends Controller
      *
      * @return JsonResponse
      */
-    public function dailySummary(): JsonResponse
+    public function dailySummary(Request $request): JsonResponse
     {
+        // Check permission
+        $policy = new AuditPolicy();
+        if (!$policy->viewReports($request->user())) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized: You do not have permission to view reports'
+            ], 403);
+        }
+
         try {
             $summary = DB::select("SELECT * FROM cmis_audit.daily_summary")[0] ?? null;
 
@@ -90,6 +109,15 @@ class AuditController extends Controller
      */
     public function weeklyPerformance(Request $request): JsonResponse
     {
+        // Check permission
+        $policy = new AuditPolicy();
+        if (!$policy->viewReports($request->user())) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized: You do not have permission to view reports'
+            ], 403);
+        }
+
         try {
             $limit = $request->input('limit', 4);
 
@@ -119,8 +147,17 @@ class AuditController extends Controller
      *
      * @return JsonResponse
      */
-    public function auditSummary(): JsonResponse
+    public function auditSummary(Request $request): JsonResponse
     {
+        // Check permission
+        $policy = new AuditPolicy();
+        if (!$policy->viewReports($request->user())) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized: You do not have permission to view reports'
+            ], 403);
+        }
+
         try {
             $summary = DB::select("SELECT * FROM cmis_audit.audit_summary");
 
@@ -147,6 +184,15 @@ class AuditController extends Controller
      */
     public function activityLog(Request $request): JsonResponse
     {
+        // Check permission
+        $policy = new AuditPolicy();
+        if (!$policy->viewActivityLog($request->user())) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized: You do not have permission to view activity log'
+            ], 403);
+        }
+
         try {
             $validated = $request->validate([
                 'category' => 'nullable|in:task,knowledge,security,system',
@@ -236,6 +282,15 @@ class AuditController extends Controller
      */
     public function logEvent(Request $request): JsonResponse
     {
+        // Check permission
+        $policy = new AuditPolicy();
+        if (!$policy->logEvent($request->user())) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized: You do not have permission to log events'
+            ], 403);
+        }
+
         try {
             $validated = $request->validate([
                 'actor' => 'required|string|max:255',
@@ -277,8 +332,17 @@ class AuditController extends Controller
      *
      * @return JsonResponse
      */
-    public function checkAlerts(): JsonResponse
+    public function checkAlerts(Request $request): JsonResponse
     {
+        // Check permission
+        $policy = new AuditPolicy();
+        if (!$policy->viewAlerts($request->user())) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized: You do not have permission to view alerts'
+            ], 403);
+        }
+
         try {
             $alerts = DB::select("SELECT * FROM cmis_audit.check_alerts()");
 
@@ -309,6 +373,15 @@ class AuditController extends Controller
      */
     public function exportReport(Request $request): JsonResponse
     {
+        // Check permission
+        $policy = new AuditPolicy();
+        if (!$policy->exportReports($request->user())) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized: You do not have permission to export reports'
+            ], 403);
+        }
+
         try {
             $validated = $request->validate([
                 'period' => 'required|in:daily_summary,weekly_performance,realtime_status,audit_summary',
@@ -351,8 +424,17 @@ class AuditController extends Controller
      *
      * @return JsonResponse
      */
-    public function dashboard(): JsonResponse
+    public function dashboard(Request $request): JsonResponse
     {
+        // Check permission
+        $policy = new AuditPolicy();
+        if (!$policy->viewDashboard($request->user())) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized: You do not have permission to view audit dashboard'
+            ], 403);
+        }
+
         try {
             $realtime = DB::select("SELECT * FROM cmis_audit.realtime_status")[0] ?? null;
             $daily = DB::select("SELECT * FROM cmis_audit.daily_summary")[0] ?? null;
