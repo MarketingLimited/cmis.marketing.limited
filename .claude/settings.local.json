@@ -23,7 +23,16 @@
       "Bash(npm run test:e2e:*)",
       "Bash(jobs)",
       "Bash(npx playwright test:*)",
-      "Bash(rm:*)"
+      "Bash(rm:*)",
+      "Bash(python3:*)",
+      "Bash(sed:*)",
+      "Bash(psql:*)",
+      "Bash(for table in \"campaigns\" \"content_plans\" \"content_items\" \"creative_assets\" \"copy_components\" \"ad_accounts\" \"ad_campaigns\" \"ad_sets\" \"ad_entities\" \"ad_metrics\" \"compliance_rules\" \"compliance_audits\" \"ab_tests\" \"ab_test_variations\")",
+      "Bash(do echo \"Searching for: cmis.$table\")",
+      "Bash(done)",
+      "Bash([ -f /home/cmis-test/public_html/app/Models/Core/Org.php ])",
+      "Bash(.env)",
+      "Bash(git reset:*)"
     ],
     "deny": [],
     "ask": []
