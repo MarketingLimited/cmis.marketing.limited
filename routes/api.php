@@ -2,8 +2,9 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\AuthController;
-use App\Http\Controllers\Core\{OrgController, UserController};
+use App\Http\Controllers\Core\{OrgController, UserController, OrgMarketController};
 use App\Http\Controllers\Creative\CreativeAssetController;
+use App\Http\Controllers\Creative\ContentPlanController;
 use App\Http\Controllers\Channels\ChannelController;
 use App\Http\Controllers\Social\SocialSchedulerController;
 use App\Http\Controllers\Integration\IntegrationController;
@@ -177,6 +178,22 @@ Route::middleware(['auth:sanctum', 'validate.org.access', 'set.db.context'])
 
     /*
     |----------------------------------------------------------------------
+    | Markets (Organization Markets Management)
+    |----------------------------------------------------------------------
+    */
+    Route::prefix('markets')->name('markets.')->group(function () {
+        Route::get('/', [OrgMarketController::class, 'index'])->name('index');
+        Route::post('/', [OrgMarketController::class, 'store'])->name('store');
+        Route::get('/available', [OrgMarketController::class, 'available'])->name('available');
+        Route::get('/stats', [OrgMarketController::class, 'stats'])->name('stats');
+        Route::get('/{market_id}', [OrgMarketController::class, 'show'])->name('show');
+        Route::put('/{market_id}', [OrgMarketController::class, 'update'])->name('update');
+        Route::delete('/{market_id}', [OrgMarketController::class, 'destroy'])->name('destroy');
+        Route::post('/{market_id}/roi', [OrgMarketController::class, 'calculateRoi'])->name('roi');
+    });
+
+    /*
+    |----------------------------------------------------------------------
     | CMIS AI & Embeddings (الموجود حالياً)
     |----------------------------------------------------------------------
     */
@@ -206,6 +223,16 @@ Route::middleware(['auth:sanctum', 'validate.org.access', 'set.db.context'])
         Route::apiResource('assets', CreativeAssetController::class)->parameters([
             'assets' => 'asset_id'
         ]);
+
+        // Content Plans
+        Route::apiResource('content-plans', ContentPlanController::class)->parameters([
+            'content-plans' => 'plan_id'
+        ]);
+        Route::post('content-plans/{plan_id}/generate', [ContentPlanController::class, 'generateContent'])->name('content-plans.generate');
+        Route::post('content-plans/{plan_id}/approve', [ContentPlanController::class, 'approve'])->name('content-plans.approve');
+        Route::post('content-plans/{plan_id}/reject', [ContentPlanController::class, 'reject'])->name('content-plans.reject');
+        Route::post('content-plans/{plan_id}/publish', [ContentPlanController::class, 'publish'])->name('content-plans.publish');
+        Route::get('content-plans-stats', [ContentPlanController::class, 'stats'])->name('content-plans.stats');
     });
 
     /*
