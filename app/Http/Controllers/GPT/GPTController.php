@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\GPT;
 
 use App\Http\Controllers\Controller;
-use App\Models\Strategic\Campaign;
+use App\Models\Campaign;
 use App\Models\Creative\ContentPlan;
 use App\Services\CampaignService;
 use App\Services\ContentPlanService;

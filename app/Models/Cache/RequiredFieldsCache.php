@@ -4,8 +4,10 @@ namespace App\Models\Cache;
 
 use Illuminate\Database\Eloquent\Model;
 
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 class RequiredFieldsCache extends Model
 {
+    use HasUuids;
     protected $table = 'cmis.required_fields_cache';
     protected $primaryKey = 'module_scope';
     protected $connection = 'pgsql';

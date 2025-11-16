@@ -4,8 +4,10 @@ namespace App\Models\Channel;
 
 use Illuminate\Database\Eloquent\Model;
 
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 class ChannelMetric extends Model
 {
+    use HasUuids;
     protected $table = 'cmis.channel_metrics';
     protected $primaryKey = 'metric_id';
     protected $connection = 'pgsql';

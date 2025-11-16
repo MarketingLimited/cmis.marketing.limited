@@ -9,9 +9,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use App\Models\Core\Org;
 use App\Models\Social\SocialAccount;
 
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 class PublishingQueue extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, HasUuids;
 
     protected $table = 'cmis.publishing_queues';
     protected $primaryKey = 'queue_id';

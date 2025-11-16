@@ -4,8 +4,10 @@ namespace App\Models\Knowledge;
 
 use Illuminate\Database\Eloquent\Model;
 
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 class EmbeddingApiLog extends Model
 {
+    use HasUuids;
     protected $table = 'cmis.embedding_api_log';
     protected $primaryKey = 'log_id';
     protected $connection = 'pgsql';

@@ -4,8 +4,10 @@ namespace App\Models\Knowledge;
 
 use Illuminate\Database\Eloquent\Model;
 
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 class TemporalAnalytics extends Model
 {
+    use HasUuids;
     protected $table = 'cmis.temporal_analytics';
     protected $primaryKey = 'analytics_id';
     protected $connection = 'pgsql';

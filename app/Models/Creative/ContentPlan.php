@@ -5,6 +5,7 @@ namespace App\Models\Creative;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Str;
 
 class ContentPlan extends Model
 {
@@ -16,15 +17,34 @@ class ContentPlan extends Model
     public $incrementing = false;
     protected $keyType = 'string';
 
+    /**
+     * Boot function to auto-generate UUID
+     */
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($model) {
+            if (empty($model->{$model->getKeyName()})) {
+                $model->{$model->getKeyName()} = (string) Str::uuid();
+            }
+        });
+    }
+
     protected $fillable = [
         'plan_id',
         'org_id',
         'campaign_id',
         'name',
+        'description',
+        'content_type',
+        'status',
+        'key_messages',
         'timeframe_daterange',
         'strategy',
         'brief_id',
         'creative_context_id',
+        'created_by',
         'provider',
     ];
 

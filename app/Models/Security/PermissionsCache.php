@@ -5,6 +5,7 @@ namespace App\Models\Security;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 /**
  * PermissionsCache - Permission code lookup table
  *
@@ -14,7 +15,7 @@ use Illuminate\Database\Eloquent\Model;
  */
 class PermissionsCache extends Model
 {
-    use HasFactory;
+    use HasFactory, HasUuids;
 
     protected $table = 'cmis.permissions_cache';
     protected $primaryKey = 'permission_id';

@@ -4,8 +4,10 @@ namespace App\Models\Knowledge;
 
 use Illuminate\Database\Eloquent\Model;
 
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 class DirectionMapping extends Model
 {
+    use HasUuids;
     protected $table = 'cmis.direction_mappings';
     protected $primaryKey = 'direction_id';
     protected $connection = 'pgsql';

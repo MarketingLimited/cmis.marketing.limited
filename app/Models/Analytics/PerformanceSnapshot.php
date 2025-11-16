@@ -7,8 +7,10 @@ use App\Models\Core\Org;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 class PerformanceSnapshot extends Model
 {
+    use HasUuids;
     /**
      * The table associated with the model.
      *

@@ -6,9 +6,10 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Models\Scopes\OrgScope;
 
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 abstract class BaseModel extends Model
 {
-    use SoftDeletes;
+    use SoftDeletes, HasUuids;
 
     /**
      * The connection name for the model.

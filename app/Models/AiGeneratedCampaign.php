@@ -4,8 +4,10 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 class AiGeneratedCampaign extends Model
 {
+    use HasUuids;
     protected $connection = 'pgsql';
 
     protected $table = 'cmis.ai_generated_campaigns';

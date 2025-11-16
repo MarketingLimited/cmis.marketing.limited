@@ -135,15 +135,20 @@ return new class extends Migration
         }
 
         // تسجيل في Audit Log
-        DB::insert(
-            'INSERT INTO cmis_audit.logs (event_type, event_source, description, created_at) VALUES (?, ?, ?, ?)',
-            [
-                'permissions_added',
-                'ai_vector_v2_migration',
-                '✨ Added ' . count($permissions) . ' new AI & Vector Embeddings permissions',
-                now()
-            ]
-        );
+        try {
+            DB::insert(
+                'INSERT INTO cmis_audit.activity_log (event_type, event_source, description, created_at) VALUES (?, ?, ?, ?)',
+                [
+                    'permissions_added',
+                    'ai_vector_v2_migration',
+                    '✨ Added ' . count($permissions) . ' new AI & Vector Embeddings permissions',
+                    now()
+                ]
+            );
+        } catch (\Exception $e) {
+            // Log to Laravel logs if audit table doesn't exist
+            \Log::info('AI Vector permissions migration: Added ' . count($permissions) . ' permissions');
+        }
     }
 
     /**

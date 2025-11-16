@@ -5,9 +5,10 @@ namespace App\Models\Creative;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 class AudioTemplate extends Model
 {
-    use HasFactory;
+    use HasFactory, HasUuids;
 
     protected $table = 'cmis.audio_templates';
     protected $primaryKey = 'atpl_id';

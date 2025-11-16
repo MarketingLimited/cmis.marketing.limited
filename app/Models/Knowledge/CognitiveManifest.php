@@ -4,8 +4,10 @@ namespace App\Models\Knowledge;
 
 use Illuminate\Database\Eloquent\Model;
 
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 class CognitiveManifest extends Model
 {
+    use HasUuids;
     protected $table = 'cmis.cognitive_manifest';
     protected $primaryKey = 'manifest_id';
     protected $connection = 'pgsql';

@@ -2,9 +2,9 @@
 
 namespace App\Services;
 
-use App\Models\AdCampaign;
-use App\Models\AdSet;
-use App\Models\AdEntity;
+use App\Models\AdPlatform\AdCampaign;
+use App\Models\AdPlatform\AdSet;
+use App\Models\AdPlatform\AdEntity;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;

@@ -4,8 +4,10 @@ namespace App\Models\AdPlatform;
 
 use Illuminate\Database\Eloquent\Model;
 
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 class AdMetric extends Model
 {
+    use HasUuids;
     protected $table = 'cmis.ad_metrics';
     protected $primaryKey = 'id';
     protected $connection = 'pgsql';

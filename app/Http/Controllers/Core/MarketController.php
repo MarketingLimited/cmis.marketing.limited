@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Core;
 
 use App\Http\Controllers\Controller;
-use App\Models\Organization;
+use App\Models\Core\Org;
 use Illuminate\Http\Request;
 
 /**
@@ -17,7 +17,7 @@ class MarketController extends Controller
      */
     public function index()
     {
-        $this->authorize('viewAny', Organization::class);
+        $this->authorize('viewAny', Org::class);
 
         return view('core.markets.index');
     }

@@ -4,8 +4,10 @@ namespace App\Models\Knowledge;
 
 use Illuminate\Database\Eloquent\Model;
 
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 class PurposeMapping extends Model
 {
+    use HasUuids;
     protected $table = 'cmis.purpose_mappings';
     protected $primaryKey = 'purpose_id';
     protected $connection = 'pgsql';
