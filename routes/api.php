@@ -1201,4 +1201,11 @@ Route::prefix('gpt')->middleware(['auth:sanctum', 'throttle:60,1'])->group(funct
 
     // AI Insights
     Route::post('/ai/insights', [GPTController::class, 'getAIInsights'])->name('gpt.ai.insights');
+
+    // Conversational Context
+    Route::get('/conversation/session', [GPTController::class, 'conversationSession'])->name('gpt.conversation.session');
+    Route::post('/conversation/message', [GPTController::class, 'conversationMessage'])->name('gpt.conversation.message');
+    Route::get('/conversation/{sessionId}/history', [GPTController::class, 'conversationHistory'])->name('gpt.conversation.history');
+    Route::delete('/conversation/{sessionId}/clear', [GPTController::class, 'conversationClear'])->name('gpt.conversation.clear');
+    Route::get('/conversation/{sessionId}/stats', [GPTController::class, 'conversationStats'])->name('gpt.conversation.stats');
 });

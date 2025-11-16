@@ -10,6 +10,7 @@ use App\Services\ContentPlanService;
 use App\Services\KnowledgeService;
 use App\Services\AnalyticsService;
 use App\Services\AIService;
+use App\Services\GPTConversationService;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Validator;
@@ -27,7 +28,8 @@ class GPTController extends Controller
         private ContentPlanService $contentPlanService,
         private KnowledgeService $knowledgeService,
         private AnalyticsService $analyticsService,
-        private AIService $aiService
+        private AIService $aiService,
+        private GPTConversationService $conversationService
     ) {}
 
     /**
@@ -336,6 +338,101 @@ class GPTController extends Controller
             ],
             'confidence' => 0.65,
         ]);
+    }
+
+    /**
+     * Create or get conversation session
+     */
+    public function conversationSession(Request $request): JsonResponse
+    {
+        $sessionId = $request->query('session_id');
+        $session = $this->conversationService->getOrCreateSession(
+            $request->user()->user_id,
+            $sessionId
+        );
+
+        return $this->success($session, 'Conversation session ready');
+    }
+
+    /**
+     * Send message in conversation
+     */
+    public function conversationMessage(Request $request): JsonResponse
+    {
+        $validator = Validator::make($request->all(), [
+            'session_id' => 'required|uuid',
+            'message' => 'required|string|max:2000',
+        ]);
+
+        if ($validator->fails()) {
+            return $this->error('Validation failed', $validator->errors(), 422);
+        }
+
+        // Add user message
+        $this->conversationService->addMessage(
+            $request->input('session_id'),
+            'user',
+            $request->input('message')
+        );
+
+        // Get context for AI
+        $context = $this->conversationService->buildGPTContext(
+            $request->input('session_id')
+        );
+
+        // TODO: Generate AI response using context
+        // For now, return acknowledgment
+        $aiResponse = "I understand. How can I help you with that?";
+
+        // Add assistant message
+        $this->conversationService->addMessage(
+            $request->input('session_id'),
+            'assistant',
+            $aiResponse
+        );
+
+        return $this->success([
+            'response' => $aiResponse,
+            'session_id' => $request->input('session_id'),
+        ]);
+    }
+
+    /**
+     * Get conversation history
+     */
+    public function conversationHistory(Request $request, string $sessionId): JsonResponse
+    {
+        $limit = $request->query('limit', 20);
+        $history = $this->conversationService->getHistory($sessionId, $limit);
+
+        return $this->success([
+            'session_id' => $sessionId,
+            'messages' => $history,
+        ]);
+    }
+
+    /**
+     * Clear conversation history
+     */
+    public function conversationClear(Request $request, string $sessionId): JsonResponse
+    {
+        $this->conversationService->clearHistory($sessionId);
+
+        return $this->success(null, 'Conversation history cleared');
+    }
+
+    /**
+     * Get conversation statistics
+     */
+    public function conversationStats(Request $request, string $sessionId): JsonResponse
+    {
+        $stats = $this->conversationService->getSessionStats($sessionId);
+
+        if (!$stats) {
+            return $this->error('Session not found', null, 404);
+        }
+
+        return $this->success($stats);
     }
 
     /**
