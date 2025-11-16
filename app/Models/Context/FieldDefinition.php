@@ -5,9 +5,10 @@ namespace App\Models\Context;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 class FieldDefinition extends Model
 {
-    use HasFactory;
+    use HasFactory, HasUuids;
 
     protected $table = 'cmis.field_definitions';
     protected $primaryKey = 'field_id';

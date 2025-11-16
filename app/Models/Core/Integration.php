@@ -10,9 +10,10 @@ use Illuminate\Database\Eloquent\Casts\Encrypted;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 class Integration extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, HasUuids;
 
     protected $connection = 'pgsql';
 

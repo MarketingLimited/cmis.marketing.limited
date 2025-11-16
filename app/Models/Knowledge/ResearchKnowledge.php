@@ -5,9 +5,10 @@ namespace App\Models\Knowledge;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 class ResearchKnowledge extends Model
 {
-    use HasFactory;
+    use HasFactory, HasUuids;
 
     protected $table = 'cmis.research_knowledge';
     protected $primaryKey = 'research_id';

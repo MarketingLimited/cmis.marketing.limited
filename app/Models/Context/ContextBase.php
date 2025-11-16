@@ -8,9 +8,10 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Models\Core\Org;
 use App\Models\User;
 
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 class ContextBase extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, HasUuids;
 
     protected $table = 'cmis.contexts_base';
     protected $primaryKey = 'id';

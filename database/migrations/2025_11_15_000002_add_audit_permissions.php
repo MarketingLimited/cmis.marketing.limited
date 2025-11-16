@@ -71,11 +71,10 @@ return new class extends Migration
         foreach ($permissions as $permission) {
             DB::table('cmis.permissions')->insertOrIgnore([
                 'permission_id' => DB::raw('gen_random_uuid()'),
-                'name' => $permission['name'],
+                'permission_code' => $permission['name'],
+                'permission_name' => str_replace('.', ' ', ucwords(str_replace('_', ' ', $permission['name']))),
                 'description' => $permission['description'],
                 'category' => $permission['category'],
-                'created_at' => now(),
-                'updated_at' => now()
             ]);
         }
 
@@ -93,7 +92,7 @@ return new class extends Migration
                 -- Get role ID
                 SELECT role_id INTO v_role_id
                 FROM cmis.roles
-                WHERE name = p_role_name
+                WHERE role_code = p_role_name
                 LIMIT 1;
 
                 IF v_role_id IS NULL THEN
@@ -106,7 +105,7 @@ return new class extends Migration
                 LOOP
                     SELECT permission_id INTO v_permission_id
                     FROM cmis.permissions
-                    WHERE name = v_permission
+                    WHERE permission_code = v_permission
                     LIMIT 1;
 
                     IF v_permission_id IS NOT NULL THEN

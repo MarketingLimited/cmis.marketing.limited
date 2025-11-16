@@ -4,8 +4,10 @@ namespace App\Models\Knowledge;
 
 use Illuminate\Database\Eloquent\Model;
 
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 class SemanticSearchResultCache extends Model
 {
+    use HasUuids;
     protected $table = 'cmis.semantic_search_result_cache';
     protected $primaryKey = 'cache_id';
     protected $connection = 'pgsql';

@@ -4,8 +4,10 @@ namespace App\Models\Analytics;
 
 use Illuminate\Database\Eloquent\Model;
 
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 class CampaignAnalytics extends Model
 {
+    use HasUuids;
     protected $table = 'cmis.campaign_analytics';
     protected $primaryKey = 'analytics_id';
     protected $connection = 'pgsql';

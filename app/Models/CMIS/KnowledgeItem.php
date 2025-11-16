@@ -4,8 +4,10 @@ namespace App\Models\CMIS;
 
 use Illuminate\Database\Eloquent\Model;
 
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 class KnowledgeItem extends Model
 {
+    use HasUuids;
     protected $connection = 'pgsql';
     protected $table = 'cmis_knowledge.index';
     protected $primaryKey = 'knowledge_id';

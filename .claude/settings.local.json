@@ -32,7 +32,22 @@
       "Bash(done)",
       "Bash([ -f /home/cmis-test/public_html/app/Models/Core/Org.php ])",
       "Bash(.env)",
-      "Bash(git reset:*)"
+      "Bash(git reset:*)",
+      "Bash(composer require:*)",
+      "Bash(curl:*)",
+      "Bash(PGPASSWORD=\"zx93YJnt\" psql:*)",
+      "Bash(service php8.3-fpm restart:*)",
+      "Bash(systemctl restart:*)",
+      "Bash(sudo systemctl restart:*)",
+      "Bash(env)",
+      "Bash(export DB_USERNAME=begin:*)",
+      "Bash(export DB_PASSWORD='123@Marketing@321')",
+      "Bash(unset:*)",
+      "Bash(for:*)",
+      "Bash(do if [ -f \"$file\" ])",
+      "Bash(then echo \"=== $file ===\" grep -A 5 \"public $incrementing = false\" \"$file\")",
+      "Bash(xargs:*)",
+      "Bash(comm:*)"
     ],
     "deny": [],
     "ask": []

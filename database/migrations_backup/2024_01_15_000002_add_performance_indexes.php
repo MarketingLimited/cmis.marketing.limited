@@ -35,7 +35,7 @@ return new class extends Migration
 
         // Integrations - org lookup with active filter
         DB::statement('CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_integrations_org_active
-            ON cmis_integrations.integrations (org_id, is_active, last_synced_at DESC)');
+            ON cmis.integrations (org_id, is_active, last_synced_at DESC)');
 
         // Campaigns - main campaign table
         DB::statement('CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_campaigns_org_type_status

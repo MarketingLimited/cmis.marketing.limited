@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::connection('pgsql')->table('cmis_integrations.integrations', function (Blueprint $table) {
+        Schema::connection('pgsql')->table('cmis.integrations', function (Blueprint $table) {
             // Add encrypted token fields
             $table->text('refresh_token')->nullable()->after('access_token');
             $table->timestamp('token_expires_at')->nullable()->after('refresh_token');
@@ -30,7 +30,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::connection('pgsql')->table('cmis_integrations.integrations', function (Blueprint $table) {
+        Schema::connection('pgsql')->table('cmis.integrations', function (Blueprint $table) {
             $table->dropColumn([
                 'refresh_token',
                 'token_expires_at',

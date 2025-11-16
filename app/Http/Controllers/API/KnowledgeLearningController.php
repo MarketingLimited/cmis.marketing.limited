@@ -4,7 +4,7 @@ namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
 use App\Models\Core\Org;
-use App\Models\Marketing\AdCampaign;
+use App\Models\AdPlatform\AdCampaign;
 use App\Services\AI\KnowledgeLearningService;
 use Illuminate\Http\{JsonResponse, Request};
 

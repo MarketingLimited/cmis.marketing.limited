@@ -4,8 +4,10 @@ namespace App\Models\Knowledge;
 
 use Illuminate\Database\Eloquent\Model;
 
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 class SemanticSearchLog extends Model
 {
+    use HasUuids;
     protected $table = 'cmis.semantic_search_log';
     protected $primaryKey = 'search_id';
     protected $connection = 'pgsql';

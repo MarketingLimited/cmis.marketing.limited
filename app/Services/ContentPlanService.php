@@ -3,7 +3,7 @@
 namespace App\Services;
 
 use App\Models\Creative\ContentPlan;
-use App\Models\Strategic\Campaign;
+use App\Models\Campaign;
 use App\Jobs\GenerateAIContent;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -29,25 +29,23 @@ class ContentPlanService
         $campaign = Campaign::findOrFail($data['campaign_id']);
 
         $contentPlan = ContentPlan::create([
-            'id' => Str::uuid(),
             'org_id' => $campaign->org_id,
             'campaign_id' => $data['campaign_id'],
             'name' => $data['name'],
             'description' => $data['description'] ?? null,
             'content_type' => $data['content_type'],
-            'target_platforms' => $data['target_platforms'],
-            'tone' => $data['tone'] ?? null,
+            'strategy' => $data['strategy'] ?? null,
             'key_messages' => $data['key_messages'] ?? null,
             'status' => 'draft',
             'created_by' => auth()->id(),
         ]);
 
         // Invalidate campaign cache
-        $this->cache->invalidateCampaign($campaign->id);
+        $this->cache->invalidateCampaign($campaign->campaign_id);
 
         Log::info('Content plan created', [
-            'content_plan_id' => $contentPlan->id,
-            'campaign_id' => $campaign->id,
+            'content_plan_id' => $contentPlan->plan_id,
+            'campaign_id' => $campaign->campaign_id,
         ]);
 
         return $contentPlan;
@@ -61,13 +59,13 @@ class ContentPlanService
         $contentPlan->update($data);
 
         // Invalidate caches
-        $this->cache->invalidate("content_plan:{$contentPlan->id}:*");
+        $this->cache->invalidate("content_plan:{$contentPlan->plan_id}:*");
         if ($contentPlan->campaign_id) {
             $this->cache->invalidateCampaign($contentPlan->campaign_id);
         }
 
         Log::info('Content plan updated', [
-            'content_plan_id' => $contentPlan->id,
+            'content_plan_id' => $contentPlan->plan_id,
         ]);
 
         return $contentPlan->fresh();
@@ -78,7 +76,7 @@ class ContentPlanService
      */
     public function delete(ContentPlan $contentPlan): bool
     {
-        $contentPlanId = $contentPlan->id;
+        $contentPlanId = $contentPlan->plan_id;
         $campaignId = $contentPlan->campaign_id;
 
         $deleted = $contentPlan->delete();
@@ -113,19 +111,19 @@ class ContentPlanService
 
         // Dispatch async job for content generation
         GenerateAIContent::dispatch(
-            $contentPlan->id,
+            $contentPlan->plan_id,
             $prompt,
             $contentPlan->content_type,
             $options
         );
 
         Log::info('Content generation started', [
-            'content_plan_id' => $contentPlan->id,
+            'content_plan_id' => $contentPlan->plan_id,
             'content_type' => $contentPlan->content_type,
         ]);
 
         return [
-            'content_plan_id' => $contentPlan->id,
+            'content_plan_id' => $contentPlan->plan_id,
             'status' => 'generating',
             'message' => 'Content generation has been queued. Check back in a few moments.',
         ];
@@ -167,7 +165,7 @@ class ContentPlanService
                 ]);
 
                 Log::info('Content generated successfully', [
-                    'content_plan_id' => $contentPlan->id,
+                    'content_plan_id' => $contentPlan->plan_id,
                 ]);
 
                 return $result['content'];
@@ -178,7 +176,7 @@ class ContentPlanService
 
         } catch (\Exception $e) {
             Log::error('Content generation failed', [
-                'content_plan_id' => $contentPlan->id,
+                'content_plan_id' => $contentPlan->plan_id,
                 'error' => $e->getMessage(),
             ]);
 
@@ -281,10 +279,10 @@ class ContentPlanService
             'approved_at' => now(),
         ]);
 
-        $this->cache->invalidate("content_plan:{$contentPlan->id}:*");
+        $this->cache->invalidate("content_plan:{$contentPlan->plan_id}:*");
 
         Log::info('Content plan approved', [
-            'content_plan_id' => $contentPlan->id,
+            'content_plan_id' => $contentPlan->plan_id,
             'approved_by' => auth()->id(),
         ]);
 
@@ -303,10 +301,10 @@ class ContentPlanService
             'rejected_at' => now(),
         ]);
 
-        $this->cache->invalidate("content_plan:{$contentPlan->id}:*");
+        $this->cache->invalidate("content_plan:{$contentPlan->plan_id}:*");
 
         Log::info('Content plan rejected', [
-            'content_plan_id' => $contentPlan->id,
+            'content_plan_id' => $contentPlan->plan_id,
             'rejected_by' => auth()->id(),
             'reason' => $reason,
         ]);
@@ -325,10 +323,10 @@ class ContentPlanService
             'published_at' => now(),
         ]);
 
-        $this->cache->invalidate("content_plan:{$contentPlan->id}:*");
+        $this->cache->invalidate("content_plan:{$contentPlan->plan_id}:*");
 
         Log::info('Content plan published', [
-            'content_plan_id' => $contentPlan->id,
+            'content_plan_id' => $contentPlan->plan_id,
             'published_by' => auth()->id(),
         ]);
 

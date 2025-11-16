@@ -4,8 +4,10 @@ namespace App\Models\Session;
 
 use Illuminate\Database\Eloquent\Model;
 
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 class UserSession extends Model
 {
+    use HasUuids;
     protected $table = 'cmis.user_sessions';
     protected $primaryKey = 'session_id';
     protected $connection = 'pgsql';

@@ -6,9 +6,10 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Campaign;
 
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 class CampaignContextLink extends Model
 {
-    use HasFactory;
+    use HasFactory, HasUuids;
 
     protected $table = 'cmis.campaign_context_links';
     protected $primaryKey = 'id';

@@ -4,8 +4,10 @@ namespace App\Models\Knowledge;
 
 use Illuminate\Database\Eloquent\Model;
 
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 class EmbeddingUpdateQueue extends Model
 {
+    use HasUuids;
     protected $table = 'cmis.embedding_update_queue';
     protected $primaryKey = 'queue_id';
     protected $connection = 'pgsql';

@@ -4,8 +4,10 @@ namespace App\Models\Knowledge;
 
 use Illuminate\Database\Eloquent\Model;
 
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 class IntentMapping extends Model
 {
+    use HasUuids;
     protected $table = 'cmis.intent_mappings';
     protected $primaryKey = 'intent_id';
     protected $connection = 'pgsql';

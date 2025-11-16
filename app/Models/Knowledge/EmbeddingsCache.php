@@ -5,8 +5,10 @@ namespace App\Models\Knowledge;
 use App\Casts\VectorCast;
 use Illuminate\Database\Eloquent\Model;
 
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 class EmbeddingsCache extends Model
 {
+    use HasUuids;
     protected $table = 'cmis.embeddings_cache';
     protected $primaryKey = 'cache_id';
     protected $connection = 'pgsql';

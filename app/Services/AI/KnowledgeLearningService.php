@@ -3,7 +3,7 @@
 namespace App\Services\AI;
 
 use App\Models\Core\Org;
-use App\Models\Marketing\AdCampaign;
+use App\Models\AdPlatform\AdCampaign;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
