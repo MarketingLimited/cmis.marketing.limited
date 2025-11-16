@@ -150,4 +150,19 @@ return [
         'api_key' => env('MICROSOFT_CLARITY_API_KEY'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | AI Services
+    |--------------------------------------------------------------------------
+    */
+
+    'ai' => [
+        'rate_limit' => env('AI_RATE_LIMIT', 10), // requests per minute per user
+        'openai_key' => env('OPENAI_API_KEY'),
+        'anthropic_key' => env('ANTHROPIC_API_KEY'),
+        'model' => env('AI_MODEL', 'gpt-4'),
+        'max_tokens' => env('AI_MAX_TOKENS', 2000),
+        'temperature' => env('AI_TEMPERATURE', 0.7),
+    ],
+
 ];

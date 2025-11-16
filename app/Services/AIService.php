@@ -68,6 +68,82 @@ class AIService
     }
 
     /**
+     * Generate content (generic method for GPT interface)
+     *
+     * @param string $prompt The prompt to generate content from
+     * @param string $type The type of content to generate
+     * @param array $options Additional options for generation
+     * @return array|null Generated content with metadata
+     */
+    public function generate(string $prompt, string $type, array $options = []): ?array
+    {
+        try {
+            // Set defaults based on content type
+            $defaults = $this->getDefaultsForType($type);
+            $options = array_merge($defaults, $options);
+
+            // Call AI API
+            $result = $this->callAIAPI($prompt, $options);
+
+            if (!$result) {
+                return null;
+            }
+
+            return [
+                'content' => $result['content'] ?? '',
+                'model' => $options['model'] ?? 'gpt-4',
+                'tokens' => [
+                    'prompt' => $result['usage']['prompt_tokens'] ?? 0,
+                    'completion' => $result['usage']['completion_tokens'] ?? 0,
+                    'total' => $result['usage']['total_tokens'] ?? 0,
+                ],
+                'type' => $type,
+                'generated_at' => now()->toISOString(),
+            ];
+        } catch (\Exception $e) {
+            Log::error('Content generation failed', [
+                'type' => $type,
+                'error' => $e->getMessage(),
+            ]);
+            return null;
+        }
+    }
+
+    /**
+     * Get default options based on content type
+     */
+    protected function getDefaultsForType(string $type): array
+    {
+        $defaults = [
+            'social_post' => [
+                'temperature' => 0.8,
+                'max_tokens' => 500,
+            ],
+            'blog_article' => [
+                'temperature' => 0.7,
+                'max_tokens' => 2000,
+            ],
+            'ad_copy' => [
+                'temperature' => 0.9,
+                'max_tokens' => 300,
+            ],
+            'email' => [
+                'temperature' => 0.7,
+                'max_tokens' => 1000,
+            ],
+            'video_script' => [
+                'temperature' => 0.8,
+                'max_tokens' => 1500,
+            ],
+        ];
+
+        return $defaults[$type] ?? [
+            'temperature' => 0.7,
+            'max_tokens' => 1000,
+        ];
+    }
+
+    /**
      * Generate content variations
      */
     public function generateVariations(string $content, int $count = 3, array $options = []): array

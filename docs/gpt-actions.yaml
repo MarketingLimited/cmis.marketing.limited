@@ -1,0 +1,629 @@
+openapi: 3.1.0
+info:
+  title: CMIS GPT Actions API
+  description: |
+    Cognitive Marketing Intelligence System (CMIS) API for GPT integration.
+
+    This API allows ChatGPT to interact with the CMIS platform to:
+    - Manage marketing campaigns
+    - Generate AI-powered content
+    - Search knowledge base
+    - Analyze campaign performance
+    - Manage ad accounts and creatives
+
+    Authentication: Use Bearer token obtained from user login.
+  version: 1.0.0
+  contact:
+    name: CMIS API Support
+    url: https://cmis.kazaaz.com
+    email: support@kazaaz.com
+
+servers:
+  - url: https://cmis.kazaaz.com/api/gpt
+    description: Production server
+  - url: https://cmis-test.kazaaz.com/api/gpt
+    description: Testing server
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Use the token obtained from /api/auth/login
+
+  schemas:
+    Error:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        message:
+          type: string
+        errors:
+          type: object
+
+    Campaign:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        description:
+          type: string
+        status:
+          type: string
+          enum: [draft, active, paused, completed, archived]
+        start_date:
+          type: string
+          format: date
+        end_date:
+          type: string
+          format: date
+        budget:
+          type: number
+        spent:
+          type: number
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    ContentPlan:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        campaign_id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        description:
+          type: string
+        content_type:
+          type: string
+          enum: [social_post, blog_article, ad_copy, email, video_script]
+        target_platforms:
+          type: array
+          items:
+            type: string
+        status:
+          type: string
+          enum: [draft, generating, generated, approved, published]
+        generated_content:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+
+    KnowledgeItem:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        content_type:
+          type: string
+          enum: [brand_guideline, market_research, competitor_analysis, campaign_brief, product_info]
+        content:
+          type: string
+        summary:
+          type: string
+        relevance_score:
+          type: number
+        created_at:
+          type: string
+          format: date-time
+
+security:
+  - bearerAuth: []
+
+paths:
+  # Campaign Operations
+  /campaigns:
+    get:
+      operationId: listCampaigns
+      summary: List all campaigns for the current organization
+      description: Retrieve all marketing campaigns with optional filtering
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [draft, active, paused, completed, archived]
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: List of campaigns
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Campaign'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    post:
+      operationId: createCampaign
+      summary: Create a new marketing campaign
+      description: Create a new campaign with the specified details
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - start_date
+                - end_date
+              properties:
+                name:
+                  type: string
+                  description: Campaign name
+                description:
+                  type: string
+                start_date:
+                  type: string
+                  format: date
+                end_date:
+                  type: string
+                  format: date
+                budget:
+                  type: number
+                  description: Campaign budget in organization currency
+                target_audience:
+                  type: object
+                  description: Target audience details
+                objectives:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        '201':
+          description: Campaign created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/Campaign'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /campaigns/{campaignId}:
+    get:
+      operationId: getCampaign
+      summary: Get campaign details
+      parameters:
+        - name: campaignId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Campaign details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/Campaign'
+
+    put:
+      operationId: updateCampaign
+      summary: Update campaign details
+      parameters:
+        - name: campaignId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                description:
+                  type: string
+                status:
+                  type: string
+                  enum: [draft, active, paused, completed, archived]
+                budget:
+                  type: number
+      responses:
+        '200':
+          description: Campaign updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/Campaign'
+
+  /campaigns/{campaignId}/analytics:
+    get:
+      operationId: getCampaignAnalytics
+      summary: Get analytics for a campaign
+      parameters:
+        - name: campaignId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: start_date
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: end_date
+          in: query
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Campaign analytics
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      impressions:
+                        type: integer
+                      clicks:
+                        type: integer
+                      conversions:
+                        type: integer
+                      spend:
+                        type: number
+                      ctr:
+                        type: number
+                      cpc:
+                        type: number
+
+  # Content Plan Operations
+  /content-plans:
+    get:
+      operationId: listContentPlans
+      summary: List all content plans
+      parameters:
+        - name: campaign_id
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: status
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of content plans
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ContentPlan'
+
+    post:
+      operationId: createContentPlan
+      summary: Create a new content plan
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - campaign_id
+                - name
+                - content_type
+                - target_platforms
+              properties:
+                campaign_id:
+                  type: string
+                  format: uuid
+                name:
+                  type: string
+                description:
+                  type: string
+                content_type:
+                  type: string
+                  enum: [social_post, blog_article, ad_copy, email, video_script]
+                target_platforms:
+                  type: array
+                  items:
+                    type: string
+                    enum: [facebook, instagram, twitter, linkedin, youtube, tiktok]
+                tone:
+                  type: string
+                key_messages:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        '201':
+          description: Content plan created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/ContentPlan'
+
+  /content-plans/{contentPlanId}/generate:
+    post:
+      operationId: generateContent
+      summary: Generate AI content for a content plan
+      description: Use AI to generate content based on the content plan specifications
+      parameters:
+        - name: contentPlanId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                prompt:
+                  type: string
+                  description: Custom prompt for content generation
+                options:
+                  type: object
+                  properties:
+                    temperature:
+                      type: number
+                    max_tokens:
+                      type: integer
+      responses:
+        '200':
+          description: Content generation started
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  data:
+                    type: object
+                    properties:
+                      content_plan_id:
+                        type: string
+                        format: uuid
+                      status:
+                        type: string
+
+  # Knowledge Base Operations
+  /knowledge/search:
+    post:
+      operationId: searchKnowledge
+      summary: Search the knowledge base using semantic search
+      description: Find relevant information from brand guidelines, research, and briefs
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - query
+              properties:
+                query:
+                  type: string
+                  description: Search query
+                limit:
+                  type: integer
+                  default: 10
+                  maximum: 50
+                content_type:
+                  type: string
+                  enum: [brand_guideline, market_research, competitor_analysis, campaign_brief, product_info]
+      responses:
+        '200':
+          description: Search results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/KnowledgeItem'
+
+  /knowledge:
+    post:
+      operationId: addKnowledge
+      summary: Add a new item to the knowledge base
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - title
+                - content_type
+                - content
+              properties:
+                title:
+                  type: string
+                content_type:
+                  type: string
+                  enum: [brand_guideline, market_research, competitor_analysis, campaign_brief, product_info]
+                content:
+                  type: string
+                summary:
+                  type: string
+                tags:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        '201':
+          description: Knowledge item created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/KnowledgeItem'
+
+  # AI Operations
+  /ai/insights:
+    post:
+      operationId: getAIInsights
+      summary: Get AI-powered insights for campaigns or content
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - context_type
+                - context_id
+              properties:
+                context_type:
+                  type: string
+                  enum: [campaign, content_plan, ad_account]
+                context_id:
+                  type: string
+                  format: uuid
+                question:
+                  type: string
+      responses:
+        '200':
+          description: AI insights
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      insights:
+                        type: array
+                        items:
+                          type: string
+                      recommendations:
+                        type: array
+                        items:
+                          type: string
+                      confidence:
+                        type: number
+
+  # User Context
+  /context:
+    get:
+      operationId: getUserContext
+      summary: Get current user and organization context
+      description: Retrieve information about the authenticated user and their current organization
+      responses:
+        '200':
+          description: User context
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      user:
+                        type: object
+                        properties:
+                          id:
+                            type: string
+                            format: uuid
+                          name:
+                            type: string
+                          email:
+                            type: string
+                      organization:
+                        type: object
+                        properties:
+                          id:
+                            type: string
+                            format: uuid
+                          name:
+                            type: string
+                          currency:
+                            type: string
+                          locale:
+                            type: string
