@@ -175,3 +175,14 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/profile', [App\Http\Controllers\ProfileController::class, 'show'])->name('profile');
 
 }); // End of Auth Middleware Group
+
+// ==================== API Documentation (Public) ====================
+Route::get('/api/documentation', function () {
+    return view('api-docs');
+})->name('api.documentation');
+
+Route::get('/api/openapi.yaml', function () {
+    return response()->file(base_path('docs/openapi.yaml'), [
+        'Content-Type' => 'application/x-yaml',
+    ]);
+})->name('api.openapi');

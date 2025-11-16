@@ -1208,4 +1208,10 @@ Route::prefix('gpt')->middleware(['auth:sanctum', 'throttle:60,1'])->group(funct
     Route::get('/conversation/{sessionId}/history', [GPTController::class, 'conversationHistory'])->name('gpt.conversation.history');
     Route::delete('/conversation/{sessionId}/clear', [GPTController::class, 'conversationClear'])->name('gpt.conversation.clear');
     Route::get('/conversation/{sessionId}/stats', [GPTController::class, 'conversationStats'])->name('gpt.conversation.stats');
+
+    // Bulk Operations
+    Route::post('/bulk-operation', [GPTController::class, 'bulkOperation'])->name('gpt.bulk-operation');
+
+    // Smart Search
+    Route::post('/search', [GPTController::class, 'smartSearch'])->name('gpt.search');
 });

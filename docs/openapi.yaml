@@ -1,0 +1,725 @@
+openapi: 3.1.0
+info:
+  title: CMIS API
+  description: |
+    Cognitive Marketing Intelligence System API
+
+    Complete API documentation for the CMIS platform including authentication,
+    campaign management, content planning, GPT interface, and more.
+
+    **Base URL**: `https://cmis.kazaaz.com/api`
+
+    **Authentication**: All endpoints require Bearer token authentication via Laravel Sanctum.
+  version: 1.0.0
+  contact:
+    name: CMIS Support
+    email: support@cmis.marketing.limited
+    url: https://cmis.kazaaz.com
+  license:
+    name: Proprietary
+    url: https://cmis.kazaaz.com/license
+
+servers:
+  - url: https://cmis.kazaaz.com/api
+    description: Production server
+  - url: https://cmis-test.kazaaz.com/api
+    description: Staging server
+  - url: http://localhost:8000/api
+    description: Development server
+
+tags:
+  - name: Authentication
+    description: User authentication and token management
+  - name: GPT
+    description: GPT interface endpoints for AI-powered features
+  - name: Campaigns
+    description: Marketing campaign management
+  - name: Content Plans
+    description: Content plan creation and management
+  - name: Markets
+    description: Organization market management
+  - name: Compliance
+    description: Content compliance validation
+  - name: Conversations
+    description: GPT conversational context management
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Laravel Sanctum token authentication
+
+  schemas:
+    # Response Schemas
+    SuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: "Operation completed successfully"
+        data:
+          type: object
+        meta:
+          type: object
+          properties:
+            timestamp:
+              type: string
+              format: date-time
+
+    ErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        message:
+          type: string
+          example: "Operation failed"
+        errors:
+          type: object
+          additionalProperties: true
+
+    ValidationErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        message:
+          type: string
+          example: "Validation failed"
+        errors:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+
+    # Entity Schemas
+    User:
+      type: object
+      properties:
+        user_id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        role:
+          type: string
+          enum: [admin, manager, user]
+        current_org_id:
+          type: string
+          format: uuid
+        created_at:
+          type: string
+          format: date-time
+
+    Campaign:
+      type: object
+      properties:
+        campaign_id:
+          type: string
+          format: uuid
+        org_id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        description:
+          type: string
+        status:
+          type: string
+          enum: [draft, active, paused, completed, archived]
+        start_date:
+          type: string
+          format: date
+        end_date:
+          type: string
+          format: date
+        budget:
+          type: number
+          format: double
+        spent:
+          type: number
+          format: double
+        created_at:
+          type: string
+          format: date-time
+
+    ContentPlan:
+      type: object
+      properties:
+        plan_id:
+          type: string
+          format: uuid
+        campaign_id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        description:
+          type: string
+        content_type:
+          type: string
+          enum: [social_post, blog_article, ad_copy, email, video_script]
+        target_platforms:
+          type: array
+          items:
+            type: string
+        status:
+          type: string
+          enum: [draft, pending, approved, rejected, published]
+        tone:
+          type: string
+        key_messages:
+          type: array
+          items:
+            type: string
+        generated_content:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+
+    ConversationSession:
+      type: object
+      properties:
+        session_id:
+          type: string
+          format: uuid
+        user_id:
+          type: string
+        org_id:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        message_count:
+          type: integer
+        context:
+          type: object
+
+    SearchResult:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [campaign, content_plan, knowledge]
+        id:
+          type: string
+        name:
+          type: string
+        relevance_score:
+          type: number
+          format: float
+
+paths:
+  # Authentication Endpoints
+  /auth/login:
+    post:
+      tags: [Authentication]
+      summary: Login user
+      description: Authenticate user and receive access token
+      operationId: login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: "user@example.com"
+                password:
+                  type: string
+                  format: password
+                  example: "password123"
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          token:
+                            type: string
+                            example: "1|abcdefghijklmnopqrstuvwxyz"
+                          user:
+                            $ref: '#/components/schemas/User'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/logout:
+    post:
+      tags: [Authentication]
+      summary: Logout user
+      description: Revoke current access token
+      operationId: logout
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Logout successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+
+  # GPT Interface Endpoints
+  /gpt/context:
+    get:
+      tags: [GPT]
+      summary: Get user and organization context
+      description: Retrieve current user and organization information
+      operationId: getGPTContext
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Context retrieved successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          user:
+                            type: object
+                          organization:
+                            type: object
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /gpt/campaigns:
+    get:
+      tags: [GPT, Campaigns]
+      summary: List campaigns
+      description: Get list of campaigns for GPT interface
+      operationId: listCampaigns
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [draft, active, paused, completed, archived]
+          description: Filter by campaign status
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+          description: Maximum number of results
+      responses:
+        '200':
+          description: Campaigns retrieved successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Campaign'
+
+    post:
+      tags: [GPT, Campaigns]
+      summary: Create campaign
+      description: Create a new marketing campaign
+      operationId: createCampaign
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, start_date, end_date]
+              properties:
+                name:
+                  type: string
+                  example: "Summer Sale 2025"
+                description:
+                  type: string
+                start_date:
+                  type: string
+                  format: date
+                end_date:
+                  type: string
+                  format: date
+                budget:
+                  type: number
+                  format: double
+                target_audience:
+                  type: array
+                  items:
+                    type: string
+                objectives:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        '201':
+          description: Campaign created successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Campaign'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+
+  /gpt/campaigns/{campaignId}:
+    get:
+      tags: [GPT, Campaigns]
+      summary: Get campaign
+      description: Get single campaign details
+      operationId: getCampaign
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: campaignId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Campaign retrieved successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Campaign'
+        '404':
+          description: Campaign not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # Content Plans
+  /gpt/content-plans:
+    get:
+      tags: [GPT, Content Plans]
+      summary: List content plans
+      description: Get list of content plans
+      operationId: listContentPlans
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: campaign_id
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [draft, pending, approved, rejected, published]
+      responses:
+        '200':
+          description: Content plans retrieved successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/ContentPlan'
+
+    post:
+      tags: [GPT, Content Plans]
+      summary: Create content plan
+      description: Create a new content plan
+      operationId: createContentPlan
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [campaign_id, name, content_type, target_platforms]
+              properties:
+                campaign_id:
+                  type: string
+                  format: uuid
+                name:
+                  type: string
+                description:
+                  type: string
+                content_type:
+                  type: string
+                  enum: [social_post, blog_article, ad_copy, email, video_script]
+                target_platforms:
+                  type: array
+                  items:
+                    type: string
+                tone:
+                  type: string
+                key_messages:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        '201':
+          description: Content plan created successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/ContentPlan'
+
+  # Conversations
+  /gpt/conversation/session:
+    get:
+      tags: [GPT, Conversations]
+      summary: Get or create conversation session
+      description: Get existing session or create new one
+      operationId: getConversationSession
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: session_id
+          in: query
+          schema:
+            type: string
+            format: uuid
+          description: Existing session ID to retrieve
+      responses:
+        '200':
+          description: Session ready
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/ConversationSession'
+
+  /gpt/conversation/message:
+    post:
+      tags: [GPT, Conversations]
+      summary: Send message in conversation
+      description: Send a message and receive AI response
+      operationId: sendConversationMessage
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [session_id, message]
+              properties:
+                session_id:
+                  type: string
+                  format: uuid
+                message:
+                  type: string
+                  maxLength: 2000
+      responses:
+        '200':
+          description: Message processed successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          response:
+                            type: string
+                          session_id:
+                            type: string
+                            format: uuid
+                          tokens_used:
+                            type: integer
+
+  # Bulk Operations
+  /gpt/bulk-operation:
+    post:
+      tags: [GPT]
+      summary: Execute bulk operation
+      description: Perform bulk operations on multiple resources
+      operationId: bulkOperation
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [operation, resource_type, resource_ids]
+              properties:
+                operation:
+                  type: string
+                  enum: [approve, reject, publish, archive]
+                resource_type:
+                  type: string
+                  enum: [content_plans, campaigns]
+                resource_ids:
+                  type: array
+                  items:
+                    type: string
+                    format: uuid
+                  minItems: 1
+                  maxItems: 50
+                reason:
+                  type: string
+                  description: Required for reject operation
+      responses:
+        '200':
+          description: Bulk operation completed
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          successful:
+                            type: integer
+                          failed:
+                            type: integer
+                          results:
+                            type: array
+                            items:
+                              type: object
+                          errors:
+                            type: array
+                            items:
+                              type: object
+
+  # Smart Search
+  /gpt/search:
+    post:
+      tags: [GPT]
+      summary: Smart search across resources
+      description: Search campaigns, content plans, and knowledge base
+      operationId: smartSearch
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [query]
+              properties:
+                query:
+                  type: string
+                  minLength: 2
+                  example: "summer campaign"
+                resources:
+                  type: array
+                  items:
+                    type: string
+                    enum: [campaigns, content_plans, knowledge, markets]
+                  default: [campaigns, content_plans, knowledge]
+                limit:
+                  type: integer
+                  minimum: 1
+                  maximum: 50
+                  default: 10
+      responses:
+        '200':
+          description: Search completed successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          query:
+                            type: string
+                          total_results:
+                            type: integer
+                          results:
+                            type: array
+                            items:
+                              $ref: '#/components/schemas/SearchResult'
+                          by_type:
+                            type: object
+
+security:
+  - bearerAuth: []
+
+externalDocs:
+  description: CMIS Documentation
+  url: https://cmis.kazaaz.com/docs
