@@ -535,6 +535,268 @@ class GPTController extends Controller
     }
 
     /**
+     * Execute bulk operations on resources
+     */
+    public function bulkOperation(Request $request): JsonResponse
+    {
+        $validator = Validator::make($request->all(), [
+            'operation' => 'required|in:approve,reject,publish,archive',
+            'resource_type' => 'required|in:content_plans,campaigns',
+            'resource_ids' => 'required|array|min:1|max:50',
+            'reason' => 'sometimes|required_if:operation,reject|string',
+        ]);
+
+        if ($validator->fails()) {
+            return $this->error('Validation failed', $validator->errors(), 422);
+        }
+
+        try {
+            $results = [];
+            $errors = [];
+
+            foreach ($request->input('resource_ids') as $resourceId) {
+                try {
+                    $result = $this->executeBulkOperation(
+                        $request->input('resource_type'),
+                        $resourceId,
+                        $request->input('operation'),
+                        $request->input('reason'),
+                        $request->user()
+                    );
+
+                    $results[] = [
+                        'id' => $resourceId,
+                        'status' => 'success',
+                        'result' => $result,
+                    ];
+                } catch (\Exception $e) {
+                    \Log::warning('Bulk operation failed for resource', [
+                        'resource_id' => $resourceId,
+                        'operation' => $request->input('operation'),
+                        'error' => $e->getMessage(),
+                    ]);
+
+                    $errors[] = [
+                        'id' => $resourceId,
+                        'status' => 'failed',
+                        'error' => $e->getMessage(),
+                    ];
+                }
+            }
+
+            return $this->success([
+                'successful' => count($results),
+                'failed' => count($errors),
+                'results' => $results,
+                'errors' => $errors,
+            ], 'Bulk operation completed');
+
+        } catch (\Exception $e) {
+            \Log::error('Bulk operation failed', [
+                'operation' => $request->input('operation'),
+                'error' => $e->getMessage(),
+            ]);
+
+            return $this->error('Bulk operation failed', ['detail' => $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Execute single bulk operation
+     */
+    private function executeBulkOperation(
+        string $resourceType,
+        string $resourceId,
+        string $operation,
+        ?string $reason = null,
+        $user = null
+    ): array {
+        if ($resourceType === 'content_plans') {
+            $plan = ContentPlan::where('plan_id', $resourceId)
+                ->where('org_id', $user->current_org_id)
+                ->firstOrFail();
+
+            switch ($operation) {
+                case 'approve':
+                    $this->contentPlanService->approve($plan);
+                    break;
+                case 'reject':
+                    $this->contentPlanService->reject($plan, $reason);
+                    break;
+                case 'publish':
+                    $this->contentPlanService->publish($plan);
+                    break;
+                case 'archive':
+                    $plan->update(['status' => 'archived']);
+                    break;
+            }
+
+            return [
+                'id' => $plan->plan_id,
+                'name' => $plan->name,
+                'status' => $plan->status,
+            ];
+        }
+
+        if ($resourceType === 'campaigns') {
+            $campaign = Campaign::where('campaign_id', $resourceId)
+                ->where('org_id', $user->current_org_id)
+                ->firstOrFail();
+
+            switch ($operation) {
+                case 'archive':
+                    $campaign->update(['status' => 'archived']);
+                    break;
+                default:
+                    throw new \Exception("Operation {$operation} not supported for campaigns");
+            }
+
+            return [
+                'id' => $campaign->campaign_id,
+                'name' => $campaign->name,
+                'status' => $campaign->status,
+            ];
+        }
+
+        throw new \Exception("Unsupported resource type: {$resourceType}");
+    }
+
+    /**
+     * Smart search across multiple resources
+     */
+    public function smartSearch(Request $request): JsonResponse
+    {
+        $validator = Validator::make($request->all(), [
+            'query' => 'required|string|min:2',
+            'resources' => 'nullable|array',
+            'resources.*' => 'in:campaigns,content_plans,knowledge,markets',
+            'limit' => 'nullable|integer|min:1|max:50',
+        ]);
+
+        if ($validator->fails()) {
+            return $this->error('Validation failed', $validator->errors(), 422);
+        }
+
+        try {
+            $query = $request->input('query');
+            $resources = $request->input('resources', ['campaigns', 'content_plans', 'knowledge']);
+            $limit = $request->input('limit', 10);
+            $orgId = $request->user()->current_org_id;
+
+            $results = [];
+
+            // Search campaigns
+            if (in_array('campaigns', $resources)) {
+                $campaigns = Campaign::where('org_id', $orgId)
+                    ->where(function($q) use ($query) {
+                        $q->where('name', 'ILIKE', "%{$query}%")
+                          ->orWhere('description', 'ILIKE', "%{$query}%");
+                    })
+                    ->limit($limit)
+                    ->get()
+                    ->map(fn($c) => [
+                        'type' => 'campaign',
+                        'id' => $c->campaign_id,
+                        'name' => $c->name,
+                        'description' => $c->description,
+                        'status' => $c->status,
+                        'relevance_score' => $this->calculateRelevance($query, $c->name, $c->description),
+                    ]);
+
+                $results['campaigns'] = $campaigns;
+            }
+
+            // Search content plans
+            if (in_array('content_plans', $resources)) {
+                $contentPlans = ContentPlan::where('org_id', $orgId)
+                    ->where(function($q) use ($query) {
+                        $q->where('name', 'ILIKE', "%{$query}%")
+                          ->orWhere('description', 'ILIKE', "%{$query}%");
+                    })
+                    ->limit($limit)
+                    ->get()
+                    ->map(fn($p) => [
+                        'type' => 'content_plan',
+                        'id' => $p->plan_id,
+                        'name' => $p->name,
+                        'content_type' => $p->content_type,
+                        'status' => $p->status,
+                        'relevance_score' => $this->calculateRelevance($query, $p->name, $p->description),
+                    ]);
+
+                $results['content_plans'] = $contentPlans;
+            }
+
+            // Search knowledge base with semantic search
+            if (in_array('knowledge', $resources)) {
+                $knowledgeItems = $this->knowledgeService->semanticSearch(
+                    $query,
+                    $orgId,
+                    $limit
+                )->map(fn($k) => [
+                    'type' => 'knowledge',
+                    'id' => $k->id,
+                    'title' => $k->title,
+                    'content_type' => $k->content_type,
+                    'relevance_score' => 1 - ($k->distance ?? 0.5),
+                ]);
+
+                $results['knowledge'] = $knowledgeItems;
+            }
+
+            // Sort all results by relevance
+            $allResults = collect($results)->flatten(1)->sortByDesc('relevance_score')->take($limit);
+
+            return $this->success([
+                'query' => $query,
+                'total_results' => $allResults->count(),
+                'results' => $allResults->values(),
+                'by_type' => array_map(fn($r) => count($r), $results),
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Smart search failed', [
+                'query' => $request->input('query'),
+                'error' => $e->getMessage(),
+            ]);
+
+            return $this->error('Search failed', ['detail' => $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Calculate text relevance score
+     */
+    private function calculateRelevance(string $query, string $title, ?string $description = ''): float
+    {
+        $query = strtolower($query);
+        $title = strtolower($title);
+        $description = strtolower($description ?? '');
+
+        $score = 0.0;
+
+        // Exact match in title
+        if (strpos($title, $query) !== false) {
+            $score += 1.0;
+        }
+
+        // Partial match in title
+        $queryWords = explode(' ', $query);
+        foreach ($queryWords as $word) {
+            if (strlen($word) > 2) {
+                if (strpos($title, $word) !== false) {
+                    $score += 0.5;
+                }
+                if (strpos($description, $word) !== false) {
+                    $score += 0.2;
+                }
+            }
+        }
+
+        return min($score, 1.0);
+    }
+
+    /**
      * Format campaign for GPT response
      */
     private function formatCampaign($campaign, bool $detailed = false): array
