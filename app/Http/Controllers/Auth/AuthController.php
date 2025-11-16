@@ -126,12 +126,14 @@ class AuthController extends Controller
 
         $user = User::where('email', $request->email)->first();
 
-        if (!$user) {
+        // Check if user exists and password is correct
+        if (!$user || !Hash::check($request->password, $user->password)) {
             throw ValidationException::withMessages([
                 'email' => ['The provided credentials are incorrect.'],
             ]);
         }
 
+        // Check if user account is active
         if ($user->status !== 'active') {
             return response()->json([
                 'success' => false,
@@ -216,6 +218,33 @@ class AuthController extends Controller
                 'error' => config('app.debug') ? $e->getMessage() : 'Internal server error'
             ], 500);
         }
+    }
+
+    /**
+     * Refresh access token.
+     *
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function refresh(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        // Revoke current token
+        $request->user()->currentAccessToken()->delete();
+
+        // Create new token
+        $token = $user->createToken('auth_token')->plainTextToken;
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Token refreshed successfully',
+            'data' => [
+                'token' => $token,
+                'token_type' => 'Bearer',
+                'expires_in' => config('sanctum.expiration', 10080) // minutes
+            ]
+        ]);
     }
 
     /**

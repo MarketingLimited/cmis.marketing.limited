@@ -19,28 +19,35 @@ class SecurityHeaders
         // Prevent MIME type sniffing
         $response->headers->set('X-Content-Type-Options', 'nosniff');
 
-        // Clickjacking protection
-        $response->headers->set('X-Frame-Options', 'DENY');
+        // Clickjacking protection - use SAMEORIGIN to allow embedding from same domain
+        $response->headers->set('X-Frame-Options', 'SAMEORIGIN');
 
         // XSS Protection (legacy browsers)
         $response->headers->set('X-XSS-Protection', '1; mode=block');
 
-        // Force HTTPS
-        $response->headers->set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+        // Force HTTPS in production only
+        if (app()->environment('production')) {
+            $response->headers->set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
+        }
 
         // Referrer Policy
         $response->headers->set('Referrer-Policy', 'strict-origin-when-cross-origin');
 
-        // Content Security Policy
-        $response->headers->set('Content-Security-Policy', implode('; ', [
-            "default-src 'self'",
-            "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
-            "style-src 'self' 'unsafe-inline'",
-            "img-src 'self' data: https:",
-            "font-src 'self' data:",
-            "connect-src 'self'",
-            "frame-ancestors 'none'",
-        ]));
+        // Content Security Policy - only for HTML responses
+        $contentType = $response->headers->get('Content-Type', '');
+        if (str_contains($contentType, 'text/html')) {
+            $response->headers->set('Content-Security-Policy', implode('; ', [
+                "default-src 'self'",
+                "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.tailwindcss.com",
+                "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+                "img-src 'self' data: https: blob:",
+                "font-src 'self' data: https://fonts.gstatic.com",
+                "connect-src 'self' https://api.openai.com",
+                "frame-ancestors 'self'",
+                "base-uri 'self'",
+                "form-action 'self'",
+            ]));
+        }
 
         // Permissions Policy (formerly Feature Policy)
         $response->headers->set('Permissions-Policy', implode(', ', [
@@ -49,6 +56,8 @@ class SecurityHeaders
             'camera=()',
             'payment=()',
             'usb=()',
+            'magnetometer=()',
+            'gyroscope=()',
         ]));
 
         return $response;

@@ -13,13 +13,16 @@ class CampaignService
 {
     protected CampaignRepositoryInterface $campaignRepo;
     protected PermissionRepositoryInterface $permissionRepo;
+    protected CacheService $cache;
 
     public function __construct(
         CampaignRepositoryInterface $campaignRepo,
-        PermissionRepositoryInterface $permissionRepo
+        PermissionRepositoryInterface $permissionRepo,
+        CacheService $cache
     ) {
         $this->campaignRepo = $campaignRepo;
         $this->permissionRepo = $permissionRepo;
+        $this->cache = $cache;
     }
 
     /**
@@ -97,32 +100,40 @@ class CampaignService
     }
 
     /**
-     * Get campaign analytics summary
+     * Get campaign analytics summary (with caching)
      */
     public function getAnalyticsSummary(string $campaignId): ?array
     {
         try {
-            $campaign = Campaign::with(['performanceMetrics', 'analytics'])->findOrFail($campaignId);
+            $cacheKey = $this->cache->campaignKey($campaignId, 'analytics:summary');
 
-            $metrics = $campaign->performanceMetrics()
-                ->latest('collected_at')
-                ->limit(10)
-                ->get();
+            return $this->cache->remember(
+                $cacheKey,
+                CacheService::TTL_SHORT,
+                function() use ($campaignId) {
+                    $campaign = Campaign::with(['performanceMetrics', 'analytics'])->findOrFail($campaignId);
 
-            $analytics = CampaignAnalytics::where('campaign_id', $campaignId)
-                ->latest('calculated_at')
-                ->first();
+                    $metrics = $campaign->performanceMetrics()
+                        ->latest('collected_at')
+                        ->limit(10)
+                        ->get();
 
-            return [
-                'campaign' => $campaign,
-                'recent_metrics' => $metrics,
-                'analytics' => $analytics,
-                'performance_summary' => [
-                    'total_metrics' => $metrics->count(),
-                    'avg_confidence' => $metrics->avg('confidence_level'),
-                    'total_variance' => $metrics->sum('variance'),
-                ],
-            ];
+                    $analytics = CampaignAnalytics::where('campaign_id', $campaignId)
+                        ->latest('calculated_at')
+                        ->first();
+
+                    return [
+                        'campaign' => $campaign,
+                        'recent_metrics' => $metrics,
+                        'analytics' => $analytics,
+                        'performance_summary' => [
+                            'total_metrics' => $metrics->count(),
+                            'avg_confidence' => $metrics->avg('confidence_level'),
+                            'total_variance' => $metrics->sum('variance'),
+                        ],
+                    ];
+                }
+            );
 
         } catch (\Exception $e) {
             Log::error('Failed to get campaign analytics', [
@@ -144,6 +155,11 @@ class CampaignService
             $campaign = Campaign::create($campaignData);
 
             DB::commit();
+
+            // Invalidate org cache
+            if (isset($campaignData['org_id'])) {
+                $this->cache->invalidateOrg($campaignData['org_id']);
+            }
 
             Log::info('Campaign created', ['campaign_id' => $campaign->campaign_id]);
 
@@ -171,6 +187,12 @@ class CampaignService
 
             DB::commit();
 
+            // Invalidate caches
+            $this->cache->invalidateCampaign($campaign->campaign_id);
+            if ($campaign->org_id) {
+                $this->cache->invalidateOrg($campaign->org_id);
+            }
+
             Log::info('Campaign updated', ['campaign_id' => $campaign->campaign_id]);
 
             return $campaign->fresh();
@@ -193,11 +215,20 @@ class CampaignService
         try {
             DB::beginTransaction();
 
+            $orgId = $campaign->org_id;
+            $campaignId = $campaign->campaign_id;
+
             $campaign->delete();
 
             DB::commit();
 
-            Log::info('Campaign deleted', ['campaign_id' => $campaign->campaign_id]);
+            // Invalidate caches
+            $this->cache->invalidateCampaign($campaignId);
+            if ($orgId) {
+                $this->cache->invalidateOrg($orgId);
+            }
+
+            Log::info('Campaign deleted', ['campaign_id' => $campaignId]);
 
             return true;
 

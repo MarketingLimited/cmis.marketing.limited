@@ -23,6 +23,9 @@ return Application::configure(basePath: dirname(__DIR__))
         }
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Apply security headers globally to all requests
+        $middleware->append(\App\Http\Middleware\SecurityHeaders::class);
+
         // Register middleware aliases
         $middleware->alias([
             'set.db.context' => \App\Http\Middleware\SetDatabaseContext::class,
@@ -31,6 +34,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'refresh.tokens' => \App\Http\Middleware\RefreshExpiredTokens::class,
             'verify.webhook' => \App\Http\Middleware\VerifyWebhookSignature::class,
             'security.headers' => \App\Http\Middleware\SecurityHeaders::class,
+            'throttle.ai' => \App\Http\Middleware\ThrottleAI::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

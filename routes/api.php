@@ -98,6 +98,7 @@ Route::prefix('auth')->group(function () {
     Route::middleware('auth:sanctum')->group(function () {
         Route::get('/me', [AuthController::class, 'me'])->name('auth.me');
         Route::put('/profile', [AuthController::class, 'updateProfile'])->name('auth.profile.update');
+        Route::post('/refresh', [AuthController::class, 'refresh'])->name('auth.refresh');
         Route::post('/logout', [AuthController::class, 'logout'])->name('auth.logout');
         Route::post('/logout-all', [AuthController::class, 'logoutAll'])->name('auth.logout.all');
 
@@ -622,9 +623,10 @@ Route::middleware(['auth:sanctum', 'validate.org.access', 'set.db.context'])
     /*
     |----------------------------------------------------------------------
     | الأتمتة الذكية (AI-Powered Automation) - Sprint 6.2
+    | Rate Limited: 10 requests per minute per user
     |----------------------------------------------------------------------
     */
-    Route::prefix('ai')->name('ai.')->group(function () {
+    Route::prefix('ai')->name('ai.')->middleware('throttle.ai')->group(function () {
         // Optimal Posting Times
         Route::get('/optimal-times/{account_id}', [App\Http\Controllers\AIAutomationController::class, 'getOptimalPostingTimes'])->name('optimal-times');
         Route::post('/auto-schedule/{account_id}', [App\Http\Controllers\AIAutomationController::class, 'autoSchedulePost'])->name('auto-schedule');
@@ -832,9 +834,10 @@ Route::middleware(['auth:sanctum', 'validate.org.access', 'set.db.context'])
     /*
     |----------------------------------------------------------------------
     | الذكاء الاصطناعي (AI & Content Generation)
+    | Rate Limited: 10 requests per minute per user
     |----------------------------------------------------------------------
     */
-    Route::prefix('ai')->name('ai.')->group(function () {
+    Route::prefix('ai')->name('ai.')->middleware('throttle.ai')->group(function () {
         // Dashboard & Stats
         Route::get('/dashboard', [AIGenerationController::class, 'dashboard'])->name('dashboard');
 
@@ -1139,3 +1142,36 @@ Route::get('/health', function () {
 Route::get('/ping', function () {
     return response()->json(['pong' => true]);
 })->name('ping');
+
+/*
+|--------------------------------------------------------------------------
+| GPT Interface Routes - ChatGPT Integration
+|--------------------------------------------------------------------------
+| These routes provide GPT-optimized endpoints for ChatGPT integration
+| All endpoints require authentication and follow OpenAPI 3.1 spec
+*/
+use App\Http\Controllers\GPT\GPTController;
+
+Route::prefix('gpt')->middleware(['auth:sanctum', 'throttle:60,1'])->group(function () {
+    // Context
+    Route::get('/context', [GPTController::class, 'getContext'])->name('gpt.context');
+
+    // Campaigns
+    Route::get('/campaigns', [GPTController::class, 'listCampaigns'])->name('gpt.campaigns.index');
+    Route::post('/campaigns', [GPTController::class, 'createCampaign'])->name('gpt.campaigns.create');
+    Route::get('/campaigns/{campaignId}', [GPTController::class, 'getCampaign'])->name('gpt.campaigns.show');
+    Route::put('/campaigns/{campaignId}', [GPTController::class, 'updateCampaign'])->name('gpt.campaigns.update');
+    Route::get('/campaigns/{campaignId}/analytics', [GPTController::class, 'getCampaignAnalytics'])->name('gpt.campaigns.analytics');
+
+    // Content Plans
+    Route::get('/content-plans', [GPTController::class, 'listContentPlans'])->name('gpt.content-plans.index');
+    Route::post('/content-plans', [GPTController::class, 'createContentPlan'])->name('gpt.content-plans.create');
+    Route::post('/content-plans/{contentPlanId}/generate', [GPTController::class, 'generateContent'])->name('gpt.content-plans.generate');
+
+    // Knowledge Base
+    Route::post('/knowledge/search', [GPTController::class, 'searchKnowledge'])->name('gpt.knowledge.search');
+    Route::post('/knowledge', [GPTController::class, 'addKnowledge'])->name('gpt.knowledge.add');
+
+    // AI Insights
+    Route::post('/ai/insights', [GPTController::class, 'getAIInsights'])->name('gpt.ai.insights');
+});
