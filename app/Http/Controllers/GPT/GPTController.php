@@ -37,22 +37,27 @@ class GPTController extends Controller
      */
     public function getContext(Request $request): JsonResponse
     {
-        $user = $request->user();
+        try {
+            $user = $request->user();
 
-        return $this->success([
-            'user' => [
-                'id' => $user->user_id,
-                'name' => $user->name,
-                'email' => $user->email,
-                'role' => $user->role,
-            ],
-            'organization' => [
-                'id' => $user->current_org_id,
-                'name' => $user->currentOrg?->name,
-                'currency' => $user->currentOrg?->currency ?? 'USD',
-                'locale' => $user->currentOrg?->default_locale ?? 'en',
-            ]
-        ]);
+            return $this->success([
+                'user' => [
+                    'id' => $user->user_id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'role' => $user->role,
+                ],
+                'organization' => [
+                    'id' => $user->current_org_id,
+                    'name' => $user->currentOrg?->name,
+                    'currency' => $user->currentOrg?->currency ?? 'USD',
+                    'locale' => $user->currentOrg?->default_locale ?? 'en',
+                ]
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('GPT context error: ' . $e->getMessage());
+            return $this->error('Failed to retrieve context', null, 500);
+        }
     }
 
     /**
@@ -345,13 +350,19 @@ class GPTController extends Controller
      */
     public function conversationSession(Request $request): JsonResponse
     {
-        $sessionId = $request->query('session_id');
-        $session = $this->conversationService->getOrCreateSession(
-            $request->user()->user_id,
-            $sessionId
-        );
+        try {
+            $sessionId = $request->query('session_id');
+            $session = $this->conversationService->getOrCreateSession(
+                $sessionId,
+                $request->user()->user_id,
+                $request->user()->current_org_id
+            );
 
-        return $this->success($session, 'Conversation session ready');
+            return $this->success($session, 'Conversation session ready');
+        } catch (\Exception $e) {
+            \Log::error('GPT conversation session error: ' . $e->getMessage());
+            return $this->error('Failed to create/retrieve session', null, 500);
+        }
     }
 
     /**
@@ -368,33 +379,102 @@ class GPTController extends Controller
             return $this->error('Validation failed', $validator->errors(), 422);
         }
 
-        // Add user message
-        $this->conversationService->addMessage(
-            $request->input('session_id'),
-            'user',
-            $request->input('message')
-        );
+        try {
+            $sessionId = $request->input('session_id');
+            $userMessage = $request->input('message');
 
-        // Get context for AI
-        $context = $this->conversationService->buildGPTContext(
-            $request->input('session_id')
-        );
+            // Add user message
+            $this->conversationService->addMessage(
+                $sessionId,
+                'user',
+                $userMessage
+            );
 
-        // TODO: Generate AI response using context
-        // For now, return acknowledgment
-        $aiResponse = "I understand. How can I help you with that?";
+            // Get conversation context for AI
+            $context = $this->conversationService->buildGPTContext($sessionId);
 
-        // Add assistant message
-        $this->conversationService->addMessage(
-            $request->input('session_id'),
-            'assistant',
-            $aiResponse
-        );
+            // Build enhanced prompt with conversation history and context
+            $prompt = $this->buildConversationalPrompt($userMessage, $context);
 
-        return $this->success([
-            'response' => $aiResponse,
-            'session_id' => $request->input('session_id'),
-        ]);
+            // Generate AI response
+            $aiResult = $this->aiService->generate($prompt, 'chat_response', [
+                'max_tokens' => 500,
+                'temperature' => 0.7,
+            ]);
+
+            $aiResponse = $aiResult['content'] ?? "I'm here to help with your marketing campaigns. What would you like to know?";
+
+            // Add assistant message
+            $this->conversationService->addMessage(
+                $sessionId,
+                'assistant',
+                $aiResponse,
+                [
+                    'tokens_used' => $aiResult['tokens']['total'] ?? 0,
+                    'model' => $aiResult['model'] ?? 'gpt-4',
+                ]
+            );
+
+            return $this->success([
+                'response' => $aiResponse,
+                'session_id' => $sessionId,
+                'tokens_used' => $aiResult['tokens']['total'] ?? 0,
+            ], 'Message processed successfully');
+
+        } catch (\Exception $e) {
+            \Log::error('GPT conversation message error: ' . $e->getMessage(), [
+                'session_id' => $request->input('session_id'),
+                'user_id' => $request->user()->user_id,
+            ]);
+
+            // Return fallback response
+            $fallbackResponse = "I apologize, but I'm having trouble processing your request right now. Please try again in a moment.";
+
+            try {
+                $this->conversationService->addMessage(
+                    $request->input('session_id'),
+                    'assistant',
+                    $fallbackResponse,
+                    ['error' => true]
+                );
+            } catch (\Exception $innerException) {
+                \Log::error('Failed to save fallback message: ' . $innerException->getMessage());
+            }
+
+            return $this->error('Failed to process message', ['detail' => $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Build conversational prompt with context
+     */
+    private function buildConversationalPrompt(string $userMessage, array $context): string
+    {
+        $prompt = "You are an AI assistant for CMIS (Cognitive Marketing Intelligence System), helping users manage their marketing campaigns.\n\n";
+
+        // Add conversation history
+        if (!empty($context['conversation_history'])) {
+            $prompt .= "Previous conversation:\n";
+            $recentMessages = array_slice($context['conversation_history'], -5); // Last 5 messages
+            foreach ($recentMessages as $msg) {
+                $prompt .= "{$msg['role']}: {$msg['content']}\n";
+            }
+            $prompt .= "\n";
+        }
+
+        // Add user context
+        if (!empty($context['context'])) {
+            $orgId = $context['context']['org_id'] ?? null;
+            if ($orgId) {
+                $prompt .= "User's Organization ID: {$orgId}\n";
+            }
+        }
+
+        $prompt .= "\nCurrent user message: {$userMessage}\n\n";
+        $prompt .= "Please provide a helpful, concise response focused on marketing campaign management. ";
+        $prompt .= "If the user asks about campaigns, content plans, analytics, or knowledge base, provide specific actionable guidance.";
+
+        return $prompt;
     }
 
     /**
@@ -402,13 +482,19 @@ class GPTController extends Controller
      */
     public function conversationHistory(Request $request, string $sessionId): JsonResponse
     {
-        $limit = $request->query('limit', 20);
-        $history = $this->conversationService->getHistory($sessionId, $limit);
+        try {
+            $limit = $request->query('limit', 20);
+            $history = $this->conversationService->getHistory($sessionId, $limit);
 
-        return $this->success([
-            'session_id' => $sessionId,
-            'messages' => $history,
-        ]);
+            return $this->success([
+                'session_id' => $sessionId,
+                'messages' => $history,
+                'count' => count($history),
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('GPT conversation history error: ' . $e->getMessage());
+            return $this->error('Failed to retrieve conversation history', null, 500);
+        }
     }
 
     /**
@@ -416,9 +502,17 @@ class GPTController extends Controller
      */
     public function conversationClear(Request $request, string $sessionId): JsonResponse
     {
-        $this->conversationService->clearHistory($sessionId);
+        try {
+            $this->conversationService->clearHistory($sessionId);
 
-        return $this->success(null, 'Conversation history cleared');
+            return $this->success([
+                'session_id' => $sessionId,
+                'cleared' => true,
+            ], 'Conversation history cleared');
+        } catch (\Exception $e) {
+            \Log::error('GPT conversation clear error: ' . $e->getMessage());
+            return $this->error('Failed to clear conversation history', null, 500);
+        }
     }
 
     /**
@@ -426,13 +520,18 @@ class GPTController extends Controller
      */
     public function conversationStats(Request $request, string $sessionId): JsonResponse
     {
-        $stats = $this->conversationService->getSessionStats($sessionId);
+        try {
+            $stats = $this->conversationService->getSessionStats($sessionId);
 
-        if (!$stats) {
-            return $this->error('Session not found', null, 404);
+            if (!$stats) {
+                return $this->error('Session not found', null, 404);
+            }
+
+            return $this->success($stats);
+        } catch (\Exception $e) {
+            \Log::error('GPT conversation stats error: ' . $e->getMessage());
+            return $this->error('Failed to retrieve conversation statistics', null, 500);
         }
-
-        return $this->success($stats);
     }
 
     /**
