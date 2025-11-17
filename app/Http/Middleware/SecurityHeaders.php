@@ -38,11 +38,11 @@ class SecurityHeaders
         if (str_contains($contentType, 'text/html')) {
             $response->headers->set('Content-Security-Policy', implode('; ', [
                 "default-src 'self'",
-                "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.tailwindcss.com",
-                "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+                "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.tailwindcss.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://static.cloudflareinsights.com",
+                "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com",
                 "img-src 'self' data: https: blob:",
-                "font-src 'self' data: https://fonts.gstatic.com",
-                "connect-src 'self' https://api.openai.com",
+                "font-src 'self' data: https://fonts.gstatic.com https://cdnjs.cloudflare.com",
+                "connect-src 'self' https://api.openai.com https://cloudflareinsights.com https://cdn.jsdelivr.net",
                 "frame-ancestors 'self'",
                 "base-uri 'self'",
                 "form-action 'self'",
