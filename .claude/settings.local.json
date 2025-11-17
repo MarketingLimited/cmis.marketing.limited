@@ -51,7 +51,10 @@
       "Bash(service apache2 restart:*)",
       "Bash(/etc/init.d/apache2 restart:*)",
       "Bash(apachectl:*)",
-      "Bash(source ~/.bashrc)"
+      "Bash(source ~/.bashrc)",
+      "Bash(composer install:*)",
+      "Bash(sudo service:*)",
+      "Bash(git config:*)"
     ],
     "deny": [],
     "ask": []
