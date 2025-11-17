@@ -53,12 +53,14 @@ test.describe('Authentication', () => {
     await authHelper.login('admin@example.com', 'password');
     await authHelper.logout();
 
-    // Verify redirect to login
-    await expect(page).toHaveURL(/.*\/login/);
+    // Verify logout shows login form without redirecting off the requested page
+    await expect(page.locator('form[action="/login"]')).toBeVisible();
+    await expect(page).toHaveURL(/.*\/dashboard/);
 
     // Verify cannot access protected pages
     await page.goto('/dashboard');
-    await expect(page).toHaveURL(/.*\/login/);
+    await expect(page).toHaveURL(/.*\/dashboard/);
+    await expect(page.locator('form[action="/login"]')).toBeVisible();
   });
 
   test('should register new user', async ({ page }) => {
@@ -102,8 +104,9 @@ test.describe('Authentication', () => {
     // Try to access protected page
     await page.goto('/campaigns');
 
-    // Should redirect to login
-    await expect(page).toHaveURL(/.*\/login/);
+    // Should show login form without redirect
+    await expect(page).toHaveURL(/.*\/campaigns/);
+    await expect(page.locator('form[action="/login"]')).toBeVisible();
 
     // Login
     await authHelper.login('admin@example.com', 'password');
