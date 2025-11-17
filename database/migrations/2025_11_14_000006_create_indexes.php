@@ -12,6 +12,12 @@ use Illuminate\Support\Facades\DB;
  */
 return new class extends Migration
 {
+    /**
+     * Index creation should not run inside a single transaction; if one index
+     * fails, we still want the remaining statements to execute and be logged.
+     */
+    public $withinTransaction = false;
+
     public function up(): void
     {
         $sql = file_get_contents(database_path('sql/all_indexes.sql'));

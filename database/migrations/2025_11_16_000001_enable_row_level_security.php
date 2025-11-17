@@ -5,6 +5,8 @@ use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
+    public $withinTransaction = false;
+
     /**
      * Run the migrations.
      *
@@ -17,15 +19,12 @@ return new class extends Migration
         $tables = [
             'cmis.orgs',
             'cmis.org_markets',
-            'cmis.org_users',
             'cmis.user_orgs',
             'cmis.campaigns',
             'cmis.content_plans',
             'cmis.content_items',
             'cmis.creative_assets',
             'cmis.copy_components',
-            'cmis.knowledge_base',
-            'cmis.knowledge_embeddings',
             'cmis.ad_accounts',
             'cmis.ad_campaigns',
             'cmis.ad_sets',
@@ -35,7 +34,7 @@ return new class extends Migration
             'cmis.compliance_audits',
             'cmis.ab_tests',
             'cmis.ab_test_variations',
-            'cmis_audit.activity_logs',
+            'cmis_audit.activity_log',
         ];
 
         // Create function to get current org_id from session
@@ -64,13 +63,47 @@ return new class extends Migration
 
         // Enable RLS on all tables
         foreach ($tables as $table) {
+            $exists = DB::selectOne('SELECT to_regclass(?) as reg', [$table]);
+
+            if (!$exists?->reg) {
+                echo "Skipping RLS enable for missing table {$table}...\n";
+                continue;
+            }
+
+            [$schema, $tableName] = explode('.', $table);
+            $orgColumn = DB::selectOne(
+                'SELECT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = ? AND table_name = ? AND column_name = ?) AS exists',
+                [$schema, $tableName, 'org_id']
+            );
+
+            if (!$orgColumn?->exists) {
+                echo "Skipping RLS enable for {$table} (no org_id column)...\n";
+                continue;
+            }
+
             echo "Enabling RLS on {$table}...\n";
             DB::statement("ALTER TABLE {$table} ENABLE ROW LEVEL SECURITY");
         }
 
         // Create RLS policies for each table
         foreach ($tables as $table) {
-            $tableName = explode('.', $table)[1];
+            $exists = DB::selectOne('SELECT to_regclass(?) as reg', [$table]);
+
+            if (!$exists?->reg) {
+                echo "Skipping RLS policy for missing table {$table}...\n";
+                continue;
+            }
+
+            [$schema, $tableName] = explode('.', $table);
+            $orgColumn = DB::selectOne(
+                'SELECT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = ? AND table_name = ? AND column_name = ?) AS exists',
+                [$schema, $tableName, 'org_id']
+            );
+
+            if (!$orgColumn?->exists) {
+                echo "Skipping RLS policy for {$table} (no org_id column)...\n";
+                continue;
+            }
 
             // Drop existing policy if it exists
             DB::statement("DROP POLICY IF EXISTS {$tableName}_tenant_isolation ON {$table}");
@@ -108,15 +141,12 @@ return new class extends Migration
         $tables = [
             'cmis.orgs',
             'cmis.org_markets',
-            'cmis.org_users',
             'cmis.user_orgs',
             'cmis.campaigns',
             'cmis.content_plans',
             'cmis.content_items',
             'cmis.creative_assets',
             'cmis.copy_components',
-            'cmis.knowledge_base',
-            'cmis.knowledge_embeddings',
             'cmis.ad_accounts',
             'cmis.ad_campaigns',
             'cmis.ad_sets',
@@ -126,17 +156,47 @@ return new class extends Migration
             'cmis.compliance_audits',
             'cmis.ab_tests',
             'cmis.ab_test_variations',
-            'cmis_audit.activity_logs',
+            'cmis_audit.activity_log',
         ];
 
         // Drop all policies
         foreach ($tables as $table) {
-            $tableName = explode('.', $table)[1];
+            $exists = DB::selectOne('SELECT to_regclass(?) as reg', [$table]);
+
+            if (!$exists?->reg) {
+                continue;
+            }
+
+            [$schema, $tableName] = explode('.', $table);
+            $orgColumn = DB::selectOne(
+                'SELECT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = ? AND table_name = ? AND column_name = ?) AS exists',
+                [$schema, $tableName, 'org_id']
+            );
+
+            if (!$orgColumn?->exists) {
+                continue;
+            }
             DB::statement("DROP POLICY IF EXISTS {$tableName}_tenant_isolation ON {$table}");
         }
 
         // Disable RLS on all tables
         foreach ($tables as $table) {
+            $exists = DB::selectOne('SELECT to_regclass(?) as reg', [$table]);
+
+            if (!$exists?->reg) {
+                continue;
+            }
+
+            [$schema, $tableName] = explode('.', $table);
+            $orgColumn = DB::selectOne(
+                'SELECT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = ? AND table_name = ? AND column_name = ?) AS exists',
+                [$schema, $tableName, 'org_id']
+            );
+
+            if (!$orgColumn?->exists) {
+                continue;
+            }
+
             DB::statement("ALTER TABLE {$table} DISABLE ROW LEVEL SECURITY");
         }
 

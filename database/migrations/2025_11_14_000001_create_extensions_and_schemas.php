@@ -16,6 +16,22 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (DB::connection()->getDriverName() !== 'pgsql') {
+            return;
+        }
+
+        DB::unprepared(<<<SQL
+            DO $$
+            BEGIN
+                IF NOT EXISTS (
+                    SELECT 1 FROM pg_roles WHERE rolname = 'begin'
+                ) THEN
+                    CREATE ROLE begin;
+                END IF;
+            END
+            $$;
+        SQL);
+
         // PostgreSQL Extensions
         DB::unprepared('CREATE EXTENSION IF NOT EXISTS "uuid-ossp"');
         DB::unprepared('CREATE EXTENSION IF NOT EXISTS pgcrypto');
@@ -50,6 +66,10 @@ return new class extends Migration
 
     public function down(): void
     {
+        if (DB::connection()->getDriverName() !== 'pgsql') {
+            return;
+        }
+
         $schemas = [
             'operations', 'lab', 'archive', 'cmis_system_health',
             'cmis_staging', 'cmis_security_backup_20251111_202413', 'cmis_ops',
