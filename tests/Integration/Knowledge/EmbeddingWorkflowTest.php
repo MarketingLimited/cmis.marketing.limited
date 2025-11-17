@@ -26,7 +26,6 @@ class EmbeddingWorkflowTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->artisan('migrate:fresh');
         $this->embeddingService = app(EmbeddingService::class);
         $this->searchService = app(SemanticSearchService::class);
         $this->feedbackService = app(KnowledgeFeedbackService::class);
