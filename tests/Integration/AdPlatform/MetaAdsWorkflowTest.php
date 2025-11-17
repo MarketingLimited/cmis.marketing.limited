@@ -23,7 +23,6 @@ class MetaAdsWorkflowTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->artisan('migrate:fresh');
         $this->metaAdsService = app(MetaAdsService::class);
     }
 

@@ -20,7 +20,6 @@ class FacebookSyncIntegrationTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->artisan('migrate:fresh');
         $this->syncService = app(FacebookSyncService::class);
     }
 
