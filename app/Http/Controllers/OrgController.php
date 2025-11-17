@@ -135,9 +135,6 @@ class OrgController extends Controller
         // Fetch team members with their roles
         $teamMembers = $org->users()
             ->select('cmis.users.user_id', 'cmis.users.name', 'cmis.users.email', 'cmis.users.display_name')
-            ->with(['roles' => function ($query) {
-                $query->select('cmis.roles.role_id', 'cmis.roles.role_name');
-            }])
             ->limit(10)
             ->get()
             ->map(function ($user) {
