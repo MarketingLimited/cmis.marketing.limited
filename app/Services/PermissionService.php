@@ -24,7 +24,10 @@ class PermissionService
      */
     public function check(User $user, string $permissionCode, ?string $orgId = null): bool
     {
-        $orgId = $orgId ?? session('current_org_id');
+        $orgId = $orgId
+            ?? session('current_org_id')
+            ?? ($user->current_org_id ?? null)
+            ?? $user->org_id;
 
         if (!$orgId) {
             Log::warning('Permission check without org context', [
@@ -36,9 +39,10 @@ class PermissionService
 
         // Check cache first
         $cacheKey = "permission:{$user->user_id}:{$orgId}:{$permissionCode}";
-        $cached = Cache::remember($cacheKey, now()->addMinutes(10), function () use ($user, $orgId, $permissionCode) {
+
+        return Cache::remember($cacheKey, now()->addMinutes(10), function () use ($user, $orgId, $permissionCode) {
             try {
-                $hasPermission = $this->permissionRepo->canAccessCampaign($user->user_id, $orgId);
+                $permissions = $this->permissionRepo->getUserOrgPermissions($user->user_id, $orgId);
 
                 // Update permission cache metadata if it exists
                 $permissionCache = PermissionsCache::getByCode($permissionCode);
@@ -46,7 +50,7 @@ class PermissionService
                     $permissionCache->touch();
                 }
 
-                return $hasPermission;
+                return in_array($permissionCode, $permissions, true);
             } catch (\Exception $e) {
                 Log::error('Permission check failed', [
                     'user_id' => $user->user_id,
@@ -57,8 +61,6 @@ class PermissionService
                 return false;
             }
         });
-
-        return $cached;
     }
 
     /**

@@ -36,6 +36,9 @@ class SetOrgContextMiddleware
 
             // Store in request for easy access
             $request->attributes->set('current_org_id', Auth::user()->org_id);
+
+            // Mirror context into session for policies and permission checks
+            session(['current_org_id' => Auth::user()->org_id]);
         }
 
         $response = $next($request);
