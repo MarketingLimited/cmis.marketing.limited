@@ -3,7 +3,7 @@
 @section('title', 'المؤسسات')
 
 @section('content')
-<div x-data="orgsManager(@json($orgs))" x-init="init()">
+<div x-data="orgsManager({{ Js::from($orgs) }})">
 
     <!-- Page Header -->
     <div class="flex items-center justify-between mb-6">
