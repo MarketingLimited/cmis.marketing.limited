@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.admin')
 
 @section('page-title', 'إدارة سير العمل')
 @section('page-subtitle', 'تتبع وإدارة سير عمل الحملات والمشاريع')

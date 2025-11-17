@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.admin')
 
 @section('page-title', $service->name ?? 'تفاصيل الخدمة')
 @section('page-subtitle', 'عرض تفاصيل الخدمة التسويقية')

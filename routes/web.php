@@ -151,7 +151,9 @@ Route::middleware(['auth'])->group(function () {
     // ==================== Social Media ====================
     Route::prefix('social')->name('social.')->group(function () {
         Route::get('/', function () { return view('social.index'); })->name('index');
-        Route::get('/posts', function () { return view('social.index'); })->name('posts');
+        Route::get('/posts', function () { return view('social.posts'); })->name('posts');
+        Route::get('/scheduler', function () { return view('social.scheduler'); })->name('scheduler');
+        Route::get('/inbox', function () { return view('social.inbox'); })->name('inbox');
     });
 
     // ==================== User Management ====================
