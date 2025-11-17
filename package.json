@@ -15,14 +15,14 @@
         "playwright:install": "playwright install --with-deps"
     },
     "dependencies": {
-        "alpinejs": "^3.13.5",
+        "alpinejs": "^3.15.2",
         "chart.js": "^4.4.1"
     },
     "devDependencies": {
         "@playwright/test": "^1.40.0",
         "@tailwindcss/forms": "^0.5.2",
         "@types/node": "^20.10.0",
-        "alpinejs": "^3.4.2",
+        "alpinejs": "^3.15.2",
         "autoprefixer": "^10.4.2",
         "axios": "^1.11.0",
         "concurrently": "^9.0.1",
