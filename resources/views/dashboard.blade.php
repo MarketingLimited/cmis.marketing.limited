@@ -283,10 +283,12 @@ function dashboardData(initialStats = null, initialCampaignStatus = null, initia
         renderCharts() {
             // Status Pie Chart
             const statusCtx = document.getElementById('statusChart');
-            if (statusCtx && this.campaignStatus) {
-                if (this.statusChart) this.statusChart.destroy();
+            if (statusCtx && statusCtx.getContext && this.campaignStatus) {
+                try {
+                    if (this.statusChart) this.statusChart.destroy();
+                } catch (e) { console.warn('Error destroying status chart:', e); }
 
-                this.statusChart = new Chart(statusCtx, {
+                this.statusChart = new Chart(statusCtx.getContext('2d'), {
                     type: 'doughnut',
                     data: {
                         labels: Object.keys(this.campaignStatus),
@@ -316,10 +318,12 @@ function dashboardData(initialStats = null, initialCampaignStatus = null, initia
 
             // Organizations Bar Chart
             const orgCtx = document.getElementById('orgChart');
-            if (orgCtx && this.campaignsByOrg && this.campaignsByOrg.length > 0) {
-                if (this.orgChart) this.orgChart.destroy();
+            if (orgCtx && orgCtx.getContext && this.campaignsByOrg && this.campaignsByOrg.length > 0) {
+                try {
+                    if (this.orgChart) this.orgChart.destroy();
+                } catch (e) { console.warn('Error destroying org chart:', e); }
 
-                this.orgChart = new Chart(orgCtx, {
+                this.orgChart = new Chart(orgCtx.getContext('2d'), {
                     type: 'bar',
                     data: {
                         labels: this.campaignsByOrg.map(x => x.org_name),
