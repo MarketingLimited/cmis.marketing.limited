@@ -1,14 +1,410 @@
 @extends('layouts.admin')
 
-@section('content')
-<h2>{{ $org->name }}</h2>
-<p><strong>العملة:</strong> {{ $org->currency }}</p>
-<p><strong>اللغة:</strong> {{ $org->default_locale }}</p>
+@section('title', $org->name)
 
-<h3>الروابط</h3>
-<ul>
-  <li><a href="{{ route('orgs.campaigns', $org->org_id) }}">الحملات</a></li>
-  <li><a href="{{ route('orgs.services', $org->org_id) }}">الخدمات</a></li>
-  <li><a href="{{ route('orgs.products', $org->org_id) }}">المنتجات</a></li>
-</ul>
+@section('content')
+<div x-data="orgDetails({{ Js::from($org) }})" x-init="init()">
+    <!-- Hero Section -->
+    <div class="bg-gradient-to-r from-blue-600 to-purple-700 rounded-2xl p-8 mb-8 text-white relative overflow-hidden">
+        <div class="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-32 translate-x-32"></div>
+        <div class="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full translate-y-24 -translate-x-24"></div>
+
+        <div class="relative z-10">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-6">
+                    <div class="w-24 h-24 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center">
+                        <i class="fas fa-building text-5xl"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-4xl font-bold mb-2" x-text="org.name">{{ $org->name }}</h1>
+                        <div class="flex items-center gap-4 text-white/80">
+                            <span class="flex items-center gap-2">
+                                <i class="fas fa-globe"></i>
+                                <span x-text="org.default_locale || 'ar'">{{ $org->default_locale }}</span>
+                            </span>
+                            <span class="flex items-center gap-2">
+                                <i class="fas fa-coins"></i>
+                                <span x-text="org.currency || 'SAR'">{{ $org->currency }}</span>
+                            </span>
+                            <span class="flex items-center gap-2">
+                                <i class="fas fa-calendar"></i>
+                                <span x-text="formatDate(org.created_at)"></span>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex gap-3">
+                    <a href="{{ route('orgs.edit', $org->org_id) }}"
+                       class="bg-white/20 hover:bg-white/30 backdrop-blur-sm px-6 py-3 rounded-xl flex items-center gap-2 transition">
+                        <i class="fas fa-edit"></i>
+                        تعديل
+                    </a>
+                    <button @click="showSettings = true"
+                            class="bg-white/20 hover:bg-white/30 backdrop-blur-sm px-6 py-3 rounded-xl flex items-center gap-2 transition">
+                        <i class="fas fa-cog"></i>
+                        الإعدادات
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 transform hover:scale-105 transition">
+            <div class="flex items-center justify-between mb-4">
+                <div class="p-3 bg-blue-100 dark:bg-blue-900 rounded-lg">
+                    <i class="fas fa-bullhorn text-2xl text-blue-600 dark:text-blue-400"></i>
+                </div>
+                <span class="text-xs px-2 py-1 bg-green-100 text-green-800 rounded-full">+12%</span>
+            </div>
+            <h3 class="text-3xl font-bold text-gray-900 dark:text-white mb-1" x-text="stats.campaigns">0</h3>
+            <p class="text-gray-600 dark:text-gray-400">الحملات النشطة</p>
+        </div>
+
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 transform hover:scale-105 transition">
+            <div class="flex items-center justify-between mb-4">
+                <div class="p-3 bg-green-100 dark:bg-green-900 rounded-lg">
+                    <i class="fas fa-users text-2xl text-green-600 dark:text-green-400"></i>
+                </div>
+                <span class="text-xs px-2 py-1 bg-blue-100 text-blue-800 rounded-full">+3</span>
+            </div>
+            <h3 class="text-3xl font-bold text-gray-900 dark:text-white mb-1" x-text="stats.members">0</h3>
+            <p class="text-gray-600 dark:text-gray-400">أعضاء الفريق</p>
+        </div>
+
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 transform hover:scale-105 transition">
+            <div class="flex items-center justify-between mb-4">
+                <div class="p-3 bg-purple-100 dark:bg-purple-900 rounded-lg">
+                    <i class="fas fa-palette text-2xl text-purple-600 dark:text-purple-400"></i>
+                </div>
+                <span class="text-xs px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full">+25</span>
+            </div>
+            <h3 class="text-3xl font-bold text-gray-900 dark:text-white mb-1" x-text="stats.assets">0</h3>
+            <p class="text-gray-600 dark:text-gray-400">الأصول الإبداعية</p>
+        </div>
+
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 transform hover:scale-105 transition">
+            <div class="flex items-center justify-between mb-4">
+                <div class="p-3 bg-yellow-100 dark:bg-yellow-900 rounded-lg">
+                    <i class="fas fa-chart-line text-2xl text-yellow-600 dark:text-yellow-400"></i>
+                </div>
+                <span class="text-xs px-2 py-1 bg-green-100 text-green-800 rounded-full">+18%</span>
+            </div>
+            <h3 class="text-3xl font-bold text-gray-900 dark:text-white mb-1" x-text="stats.roi + '%'">0%</h3>
+            <p class="text-gray-600 dark:text-gray-400">العائد على الاستثمار</p>
+        </div>
+    </div>
+
+    <!-- Main Content Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Left Column - Quick Actions & Campaigns -->
+        <div class="lg:col-span-2 space-y-8">
+            <!-- Quick Actions -->
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+                <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-6">الإجراءات السريعة</h3>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <a href="{{ route('orgs.campaigns', $org->org_id) }}"
+                       class="flex flex-col items-center p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl hover:bg-blue-100 dark:hover:bg-blue-900/40 transition group">
+                        <div class="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition">
+                            <i class="fas fa-bullhorn text-white text-xl"></i>
+                        </div>
+                        <span class="text-sm font-medium text-gray-900 dark:text-white">الحملات</span>
+                    </a>
+                    <a href="{{ route('orgs.products', $org->org_id) }}"
+                       class="flex flex-col items-center p-4 bg-green-50 dark:bg-green-900/20 rounded-xl hover:bg-green-100 dark:hover:bg-green-900/40 transition group">
+                        <div class="w-12 h-12 bg-green-500 rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition">
+                            <i class="fas fa-box text-white text-xl"></i>
+                        </div>
+                        <span class="text-sm font-medium text-gray-900 dark:text-white">المنتجات</span>
+                    </a>
+                    <a href="{{ route('orgs.services', $org->org_id) }}"
+                       class="flex flex-col items-center p-4 bg-purple-50 dark:bg-purple-900/20 rounded-xl hover:bg-purple-100 dark:hover:bg-purple-900/40 transition group">
+                        <div class="w-12 h-12 bg-purple-500 rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition">
+                            <i class="fas fa-concierge-bell text-white text-xl"></i>
+                        </div>
+                        <span class="text-sm font-medium text-gray-900 dark:text-white">الخدمات</span>
+                    </a>
+                    <button @click="createCampaign()"
+                            class="flex flex-col items-center p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-xl hover:bg-yellow-100 dark:hover:bg-yellow-900/40 transition group">
+                        <div class="w-12 h-12 bg-yellow-500 rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition">
+                            <i class="fas fa-plus text-white text-xl"></i>
+                        </div>
+                        <span class="text-sm font-medium text-gray-900 dark:text-white">حملة جديدة</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Recent Campaigns -->
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-xl font-bold text-gray-900 dark:text-white">أحدث الحملات</h3>
+                    <a href="{{ route('orgs.campaigns', $org->org_id) }}" class="text-blue-600 hover:text-blue-700 text-sm">
+                        عرض الكل <i class="fas fa-arrow-left mr-1"></i>
+                    </a>
+                </div>
+                <div class="space-y-4">
+                    <template x-for="campaign in recentCampaigns" :key="campaign.id">
+                        <div class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition">
+                            <div class="flex items-center gap-4">
+                                <div class="w-10 h-10 rounded-lg flex items-center justify-center"
+                                     :class="getCampaignStatusColor(campaign.status)">
+                                    <i class="fas fa-bullhorn text-white"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-gray-900 dark:text-white" x-text="campaign.name"></h4>
+                                    <p class="text-xs text-gray-500" x-text="campaign.objective"></p>
+                                </div>
+                            </div>
+                            <div class="text-left">
+                                <span class="text-xs px-2 py-1 rounded-full"
+                                      :class="getStatusBadgeClass(campaign.status)"
+                                      x-text="campaign.status"></span>
+                                <p class="text-xs text-gray-500 mt-1" x-text="formatDate(campaign.start_date)"></p>
+                            </div>
+                        </div>
+                    </template>
+                    <template x-if="recentCampaigns.length === 0">
+                        <div class="text-center py-8 text-gray-500">
+                            <i class="fas fa-bullhorn text-4xl mb-2 opacity-30"></i>
+                            <p>لا توجد حملات بعد</p>
+                        </div>
+                    </template>
+                </div>
+            </div>
+
+            <!-- Performance Chart -->
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+                <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-6">أداء المؤسسة</h3>
+                <div class="h-64">
+                    <canvas id="performanceChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column - Team & Activity -->
+        <div class="space-y-8">
+            <!-- Team Members -->
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-lg font-bold text-gray-900 dark:text-white">فريق العمل</h3>
+                    <button @click="inviteMember()" class="text-blue-600 hover:text-blue-700 text-sm">
+                        <i class="fas fa-user-plus"></i>
+                    </button>
+                </div>
+                <div class="space-y-4">
+                    <template x-for="member in teamMembers" :key="member.id">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold">
+                                <span x-text="member.name.charAt(0)"></span>
+                            </div>
+                            <div class="flex-1">
+                                <h4 class="text-sm font-semibold text-gray-900 dark:text-white" x-text="member.name"></h4>
+                                <p class="text-xs text-gray-500" x-text="member.role"></p>
+                            </div>
+                            <span class="w-2 h-2 rounded-full" :class="member.online ? 'bg-green-500' : 'bg-gray-400'"></span>
+                        </div>
+                    </template>
+                </div>
+            </div>
+
+            <!-- Recent Activity -->
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+                <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-6">النشاط الأخير</h3>
+                <div class="space-y-4">
+                    <template x-for="activity in activities" :key="activity.id">
+                        <div class="flex items-start gap-3">
+                            <div class="w-8 h-8 rounded-full flex items-center justify-center text-sm"
+                                 :class="getActivityIconClass(activity.type)">
+                                <i :class="getActivityIcon(activity.type)"></i>
+                            </div>
+                            <div class="flex-1">
+                                <p class="text-sm text-gray-900 dark:text-white" x-text="activity.message"></p>
+                                <p class="text-xs text-gray-500" x-text="activity.time"></p>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </div>
+
+            <!-- Organization Info -->
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+                <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-6">معلومات المؤسسة</h3>
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between">
+                        <span class="text-gray-600 dark:text-gray-400">المعرف</span>
+                        <span class="text-sm font-mono text-gray-900 dark:text-white" x-text="org.org_id?.substring(0, 8) + '...'"></span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-gray-600 dark:text-gray-400">اللغة الافتراضية</span>
+                        <span class="text-sm font-semibold text-gray-900 dark:text-white" x-text="org.default_locale"></span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-gray-600 dark:text-gray-400">العملة</span>
+                        <span class="text-sm font-semibold text-gray-900 dark:text-white" x-text="org.currency"></span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-gray-600 dark:text-gray-400">تاريخ الإنشاء</span>
+                        <span class="text-sm font-semibold text-gray-900 dark:text-white" x-text="formatDate(org.created_at)"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 @endsection
+
+@push('scripts')
+<script>
+function orgDetails(serverOrg) {
+    return {
+        org: serverOrg || {},
+        stats: {
+            campaigns: 0,
+            members: 0,
+            assets: 0,
+            roi: 0
+        },
+        recentCampaigns: [],
+        teamMembers: [],
+        activities: [],
+        showSettings: false,
+        performanceChart: null,
+
+        init() {
+            this.loadStats();
+            this.loadRecentCampaigns();
+            this.loadTeamMembers();
+            this.loadActivities();
+            this.$nextTick(() => {
+                this.renderPerformanceChart();
+            });
+        },
+
+        loadStats() {
+            // Demo data - in production, fetch from API
+            this.stats = {
+                campaigns: Math.floor(Math.random() * 20) + 5,
+                members: Math.floor(Math.random() * 10) + 3,
+                assets: Math.floor(Math.random() * 100) + 20,
+                roi: Math.floor(Math.random() * 50) + 10
+            };
+        },
+
+        loadRecentCampaigns() {
+            // Demo data
+            this.recentCampaigns = [
+                { id: 1, name: 'حملة رمضان 2025', objective: 'زيادة الوعي بالعلامة التجارية', status: 'active', start_date: new Date().toISOString() },
+                { id: 2, name: 'إطلاق المنتج الجديد', objective: 'تحويلات المبيعات', status: 'planning', start_date: new Date(Date.now() + 86400000).toISOString() },
+                { id: 3, name: 'عروض نهاية الأسبوع', objective: 'زيادة المبيعات', status: 'completed', start_date: new Date(Date.now() - 604800000).toISOString() }
+            ];
+        },
+
+        loadTeamMembers() {
+            this.teamMembers = [
+                { id: 1, name: 'أحمد محمد', role: 'مدير التسويق', online: true },
+                { id: 2, name: 'سارة أحمد', role: 'مصمم إبداعي', online: true },
+                { id: 3, name: 'محمد علي', role: 'محلل بيانات', online: false },
+                { id: 4, name: 'فاطمة حسن', role: 'مدير المحتوى', online: true }
+            ];
+        },
+
+        loadActivities() {
+            this.activities = [
+                { id: 1, type: 'campaign', message: 'تم إنشاء حملة جديدة', time: 'منذ 5 دقائق' },
+                { id: 2, type: 'member', message: 'انضم عضو جديد للفريق', time: 'منذ ساعة' },
+                { id: 3, type: 'asset', message: 'تم رفع 5 أصول إبداعية', time: 'منذ 3 ساعات' },
+                { id: 4, type: 'report', message: 'تم إنشاء تقرير الأداء', time: 'منذ يوم' }
+            ];
+        },
+
+        renderPerformanceChart() {
+            const ctx = document.getElementById('performanceChart');
+            if (!ctx || !ctx.getContext) return;
+
+            this.performanceChart = new Chart(ctx.getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو'],
+                    datasets: [{
+                        label: 'الأداء',
+                        data: [65, 78, 72, 85, 90, 95],
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+        },
+
+        formatDate(dateString) {
+            if (!dateString) return 'غير متوفر';
+            return new Date(dateString).toLocaleDateString('ar-SA', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+        },
+
+        getCampaignStatusColor(status) {
+            const colors = {
+                'active': 'bg-green-500',
+                'planning': 'bg-blue-500',
+                'completed': 'bg-gray-500',
+                'paused': 'bg-yellow-500'
+            };
+            return colors[status] || 'bg-gray-500';
+        },
+
+        getStatusBadgeClass(status) {
+            const classes = {
+                'active': 'bg-green-100 text-green-800',
+                'planning': 'bg-blue-100 text-blue-800',
+                'completed': 'bg-gray-100 text-gray-800',
+                'paused': 'bg-yellow-100 text-yellow-800'
+            };
+            return classes[status] || 'bg-gray-100 text-gray-800';
+        },
+
+        getActivityIcon(type) {
+            const icons = {
+                'campaign': 'fas fa-bullhorn',
+                'member': 'fas fa-user-plus',
+                'asset': 'fas fa-image',
+                'report': 'fas fa-chart-bar'
+            };
+            return icons[type] || 'fas fa-info';
+        },
+
+        getActivityIconClass(type) {
+            const classes = {
+                'campaign': 'bg-blue-100 text-blue-600',
+                'member': 'bg-green-100 text-green-600',
+                'asset': 'bg-purple-100 text-purple-600',
+                'report': 'bg-yellow-100 text-yellow-600'
+            };
+            return classes[type] || 'bg-gray-100 text-gray-600';
+        },
+
+        createCampaign() {
+            window.location.href = '/campaigns/create';
+        },
+
+        inviteMember() {
+            if (window.notify) window.notify('ميزة دعوة الأعضاء قريباً', 'info');
+        }
+    };
+}
+</script>
+@endpush
