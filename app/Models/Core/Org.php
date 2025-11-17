@@ -67,7 +67,6 @@ class Org extends Model
             'user_id'
         )
         ->withPivot(['role_id', 'is_active', 'joined_at', 'invited_by', 'last_accessed'])
-        ->withTimestamps()
         ->wherePivot('is_active', true)
         ->wherePivotNull('deleted_at');
     }
