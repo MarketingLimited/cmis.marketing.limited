@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Repositories\Contracts\SocialMediaRepositoryInterface;
 use App\Services\Embedding\EmbeddingOrchestrator;
+use App\Services\AIService;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -25,15 +26,18 @@ class BulkPostService
     protected SocialMediaRepositoryInterface $socialMediaRepo;
     protected PublishingQueueService $queueService;
     protected EmbeddingOrchestrator $embeddingService;
+    protected AIService $aiService;
 
     public function __construct(
         SocialMediaRepositoryInterface $socialMediaRepo,
         PublishingQueueService $queueService,
-        EmbeddingOrchestrator $embeddingService
+        EmbeddingOrchestrator $embeddingService,
+        AIService $aiService
     ) {
         $this->socialMediaRepo = $socialMediaRepo;
         $this->queueService = $queueService;
         $this->embeddingService = $embeddingService;
+        $this->aiService = $aiService;
     }
 
     /**
@@ -323,27 +327,35 @@ class BulkPostService
         string $style = 'moderate'
     ): string {
         try {
-            // For now, return variations based on style
-            // In production, this would call Gemini API for AI generation
+            $toneMap = [
+                'creative' => ['temperature' => 0.9, 'suffix' => 'creative tone with emojis and energy'],
+                'moderate' => ['temperature' => 0.7, 'suffix' => 'balanced tone suitable for most audiences'],
+                'conservative' => ['temperature' => 0.5, 'suffix' => 'professional tone without emojis'],
+            ];
 
-            switch ($style) {
-                case 'creative':
-                    // Add emojis, exclamations
-                    return $originalContent . ' 🎉';
+            $tone = $toneMap[$style] ?? $toneMap['moderate'];
 
-                case 'conservative':
-                    // Keep it professional
-                    return $originalContent;
+            $prompt = sprintf(
+                'Rewrite this social media post for account %s with a %s. Preserve offers/CTAs, keep length similar, '
+                . 'return Arabic copy only: "%s"',
+                $accountId,
+                $tone['suffix'],
+                $originalContent
+            );
 
-                case 'moderate':
-                default:
-                    // Slight variation
-                    return $originalContent;
+            $generated = $this->aiService->generate($prompt, 'social_post', [
+                'model' => 'gemini-pro',
+                'temperature' => $tone['temperature'],
+                'max_tokens' => 320,
+            ]);
+
+            if ($generated && !empty($generated['content'])) {
+                return trim($generated['content']);
             }
 
-            // TODO: Implement actual AI variation using Gemini
-            // $prompt = "Rewrite this social media post with a {$style} tone: {$originalContent}";
-            // return $this->callGeminiAPI($prompt);
+            if ($style === 'creative') {
+                return $originalContent . ' ✨';
+            }
 
         } catch (\Exception $e) {
             Log::warning('AI variation failed, using original content', [
@@ -351,6 +363,8 @@ class BulkPostService
             ]);
             return $originalContent;
         }
+
+        return $originalContent;
     }
 
     /**

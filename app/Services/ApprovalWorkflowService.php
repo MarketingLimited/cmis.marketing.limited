@@ -426,16 +426,23 @@ class ApprovalWorkflowService
     protected function sendNotification(string $userId, string $type, array $data): void
     {
         try {
-            // This would use the NotificationRepository to create notification
-            // For now, just log it
-            Log::info('Notification sent', [
+            $title = $data['title'] ?? __('إشعار الموافقات');
+            $message = $data['message'] ?? __('تم تحديث حالة طلب الموافقة الخاصة بك');
+
+            $notificationId = $this->notificationRepo->createNotification(
+                $userId,
+                $type,
+                $title,
+                $message,
+                $data
+            );
+
+            Log::info('Approval workflow notification dispatched', [
                 'user_id' => $userId,
                 'type' => $type,
+                'notification_id' => $notificationId,
                 'data' => $data
             ]);
-
-            // TODO: Implement actual notification via NotificationRepository
-            // $this->notificationRepo->create($userId, $type, $data);
 
         } catch (\Exception $e) {
             Log::warning('Failed to send notification', [
