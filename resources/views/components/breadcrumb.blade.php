@@ -4,7 +4,7 @@
     <ol class="inline-flex items-center space-x-reverse space-x-2">
         <!-- Home Icon -->
         <li class="inline-flex items-center">
-            <a href="{{ route('dashboard.index') }}" class="inline-flex items-center text-sm font-medium text-gray-500 hover:text-indigo-600 transition">
+            <a href="{{ route('dashboard') }}" class="inline-flex items-center text-sm font-medium text-gray-500 hover:text-indigo-600 transition">
                 <i class="fas fa-home ml-2"></i>
                 الرئيسية
             </a>

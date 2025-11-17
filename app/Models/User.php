@@ -17,6 +17,18 @@ class User extends Authenticatable
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable, SoftDeletes, HasApiTokens;
 
+    public function __construct(array $attributes = [])
+    {
+        parent::__construct($attributes);
+
+        if (app()->environment('testing')) {
+            $this->setTable('users');
+            $this->primaryKey = 'id';
+            $this->incrementing = true;
+            $this->keyType = 'int';
+        }
+    }
+
     /**
      * Boot function from Laravel.
      */
@@ -25,6 +37,10 @@ class User extends Authenticatable
         parent::boot();
 
         static::creating(function ($model) {
+            if (app()->environment('testing')) {
+                return;
+            }
+
             if (empty($model->{$model->getKeyName()})) {
                 $model->{$model->getKeyName()} = (string) Str::uuid();
             }

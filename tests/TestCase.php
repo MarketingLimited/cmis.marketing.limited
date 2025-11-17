@@ -245,6 +245,39 @@ abstract class TestCase extends BaseTestCase
     }
 
     /**
+     * Customize migration options for test runs to use lightweight schemas.
+     */
+    protected function migrateFreshUsing()
+    {
+        $options = [
+            '--database' => config('database.default'),
+            '--drop-views' => $this->shouldDropViews(),
+            '--drop-types' => $this->shouldDropTypes(),
+            '--path' => $this->testingMigrationPath(),
+        ];
+
+        $seeder = method_exists($this, 'seeder') ? $this->seeder() : null;
+
+        return array_merge(
+            $options,
+            $seeder ? ['--seeder' => $seeder] : ['--seed' => $this->shouldSeed()]
+        );
+    }
+
+    /**
+     * Resolve the migration path for the current test environment.
+     */
+    protected function testingMigrationPath(): string
+    {
+        $configuredPath = env('DB_MIGRATIONS_PATH', 'testing-migrations');
+        $fullPath = database_path($configuredPath);
+
+        return file_exists($fullPath)
+            ? 'database/' . trim($configuredPath, '/\\')
+            : 'database/migrations';
+    }
+
+    /**
      * Clean up the test environment.
      */
     protected function tearDown(): void

@@ -45,7 +45,7 @@ class CampaignController extends Controller
                     $orgId = $firstOrg->org_id;
                     session(['current_org_id' => $orgId]);
                 } else {
-                    return redirect()->route('dashboard.index')
+                    return redirect()->route('dashboard')
                         ->with('error', 'يجب أن تكون عضواً في منظمة للوصول إلى الحملات');
                 }
             }
@@ -130,7 +130,7 @@ class CampaignController extends Controller
                 ], 500);
             }
 
-            return redirect()->route('dashboard.index')
+            return redirect()->route('dashboard')
                 ->with('error', 'فشل جلب الحملات: ' . $e->getMessage());
         }
     }
@@ -180,7 +180,7 @@ class CampaignController extends Controller
                     $orgId = $firstOrg->org_id;
                     session(['current_org_id' => $orgId]);
                 } else {
-                    return redirect()->route('dashboard.index')
+                    return redirect()->route('dashboard')
                         ->with('error', 'يجب أن تكون عضواً في منظمة');
                 }
             }
@@ -230,7 +230,7 @@ class CampaignController extends Controller
                     $orgId = $firstOrg->org_id;
                     session(['current_org_id' => $orgId]);
                 } else {
-                    return redirect()->route('dashboard.index')
+                    return redirect()->route('dashboard')
                         ->with('error', 'يجب أن تكون عضواً في منظمة');
                 }
             }
