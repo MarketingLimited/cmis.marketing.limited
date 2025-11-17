@@ -3,7 +3,7 @@
 @section('title', $org->name)
 
 @section('content')
-<div x-data="orgDetails({{ Js::from($org) }})" x-init="init()">
+<div x-data="orgDetails({{ Js::from($org) }}, {{ Js::from($stats) }}, {{ Js::from($recentCampaigns) }}, {{ Js::from($teamMembers) }}, {{ Js::from($activities) }}, {{ Js::from($performanceData) }})" x-init="init()">
     <!-- Hero Section -->
     <div class="bg-gradient-to-r from-blue-600 to-purple-700 rounded-2xl p-8 mb-8 text-white relative overflow-hidden">
         <div class="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-32 translate-x-32"></div>
@@ -56,10 +56,9 @@
                 <div class="p-3 bg-blue-100 dark:bg-blue-900 rounded-lg">
                     <i class="fas fa-bullhorn text-2xl text-blue-600 dark:text-blue-400"></i>
                 </div>
-                <span class="text-xs px-2 py-1 bg-green-100 text-green-800 rounded-full">+12%</span>
             </div>
-            <h3 class="text-3xl font-bold text-gray-900 dark:text-white mb-1" x-text="stats.campaigns">0</h3>
-            <p class="text-gray-600 dark:text-gray-400">الحملات النشطة</p>
+            <h3 class="text-3xl font-bold text-gray-900 dark:text-white mb-1" x-text="stats.campaigns_count">{{ $stats['campaigns_count'] }}</h3>
+            <p class="text-gray-600 dark:text-gray-400">الحملات</p>
         </div>
 
         <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 transform hover:scale-105 transition">
@@ -67,9 +66,8 @@
                 <div class="p-3 bg-green-100 dark:bg-green-900 rounded-lg">
                     <i class="fas fa-users text-2xl text-green-600 dark:text-green-400"></i>
                 </div>
-                <span class="text-xs px-2 py-1 bg-blue-100 text-blue-800 rounded-full">+3</span>
             </div>
-            <h3 class="text-3xl font-bold text-gray-900 dark:text-white mb-1" x-text="stats.members">0</h3>
+            <h3 class="text-3xl font-bold text-gray-900 dark:text-white mb-1" x-text="stats.team_members_count">{{ $stats['team_members_count'] }}</h3>
             <p class="text-gray-600 dark:text-gray-400">أعضاء الفريق</p>
         </div>
 
@@ -78,21 +76,19 @@
                 <div class="p-3 bg-purple-100 dark:bg-purple-900 rounded-lg">
                     <i class="fas fa-palette text-2xl text-purple-600 dark:text-purple-400"></i>
                 </div>
-                <span class="text-xs px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full">+25</span>
             </div>
-            <h3 class="text-3xl font-bold text-gray-900 dark:text-white mb-1" x-text="stats.assets">0</h3>
+            <h3 class="text-3xl font-bold text-gray-900 dark:text-white mb-1" x-text="stats.assets_count">{{ $stats['assets_count'] }}</h3>
             <p class="text-gray-600 dark:text-gray-400">الأصول الإبداعية</p>
         </div>
 
         <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 transform hover:scale-105 transition">
             <div class="flex items-center justify-between mb-4">
                 <div class="p-3 bg-yellow-100 dark:bg-yellow-900 rounded-lg">
-                    <i class="fas fa-chart-line text-2xl text-yellow-600 dark:text-yellow-400"></i>
+                    <i class="fas fa-coins text-2xl text-yellow-600 dark:text-yellow-400"></i>
                 </div>
-                <span class="text-xs px-2 py-1 bg-green-100 text-green-800 rounded-full">+18%</span>
             </div>
-            <h3 class="text-3xl font-bold text-gray-900 dark:text-white mb-1" x-text="stats.roi + '%'">0%</h3>
-            <p class="text-gray-600 dark:text-gray-400">العائد على الاستثمار</p>
+            <h3 class="text-3xl font-bold text-gray-900 dark:text-white mb-1" x-text="formatBudget(stats.total_budget)">{{ number_format($stats['total_budget'], 0) }}</h3>
+            <p class="text-gray-600 dark:text-gray-400">إجمالي الميزانية</p>
         </div>
     </div>
 
@@ -153,14 +149,16 @@
                                 </div>
                                 <div>
                                     <h4 class="font-semibold text-gray-900 dark:text-white" x-text="campaign.name"></h4>
-                                    <p class="text-xs text-gray-500" x-text="campaign.objective"></p>
+                                    <p class="text-xs text-gray-500" x-text="campaign.budget"></p>
                                 </div>
                             </div>
                             <div class="text-left">
                                 <span class="text-xs px-2 py-1 rounded-full"
                                       :class="getStatusBadgeClass(campaign.status)"
-                                      x-text="campaign.status"></span>
-                                <p class="text-xs text-gray-500 mt-1" x-text="formatDate(campaign.start_date)"></p>
+                                      x-text="getStatusLabel(campaign.status)"></span>
+                                <p class="text-xs text-gray-500 mt-1">
+                                    <span class="font-semibold" x-text="campaign.performance + '%'"></span> أداء
+                                </p>
                             </div>
                         </div>
                     </template>
@@ -205,6 +203,12 @@
                             <span class="w-2 h-2 rounded-full" :class="member.online ? 'bg-green-500' : 'bg-gray-400'"></span>
                         </div>
                     </template>
+                    <template x-if="teamMembers.length === 0">
+                        <div class="text-center py-4 text-gray-500">
+                            <i class="fas fa-users text-2xl mb-2 opacity-30"></i>
+                            <p class="text-sm">لا يوجد أعضاء</p>
+                        </div>
+                    </template>
                 </div>
             </div>
 
@@ -215,13 +219,19 @@
                     <template x-for="activity in activities" :key="activity.id">
                         <div class="flex items-start gap-3">
                             <div class="w-8 h-8 rounded-full flex items-center justify-center text-sm"
-                                 :class="getActivityIconClass(activity.type)">
-                                <i :class="getActivityIcon(activity.type)"></i>
+                                 :class="getActivityIconClass(activity.action)">
+                                <i :class="getActivityIcon(activity.action)"></i>
                             </div>
                             <div class="flex-1">
                                 <p class="text-sm text-gray-900 dark:text-white" x-text="activity.message"></p>
                                 <p class="text-xs text-gray-500" x-text="activity.time"></p>
                             </div>
+                        </div>
+                    </template>
+                    <template x-if="activities.length === 0">
+                        <div class="text-center py-4 text-gray-500">
+                            <i class="fas fa-history text-2xl mb-2 opacity-30"></i>
+                            <p class="text-sm">لا يوجد نشاط</p>
                         </div>
                     </template>
                 </div>
@@ -256,66 +266,21 @@
 
 @push('scripts')
 <script>
-function orgDetails(serverOrg) {
+function orgDetails(serverOrg, serverStats, serverCampaigns, serverTeamMembers, serverActivities, serverPerformanceData) {
     return {
         org: serverOrg || {},
-        stats: {
-            campaigns: 0,
-            members: 0,
-            assets: 0,
-            roi: 0
-        },
-        recentCampaigns: [],
-        teamMembers: [],
-        activities: [],
+        stats: serverStats || { campaigns_count: 0, team_members_count: 0, assets_count: 0, total_budget: 0 },
+        recentCampaigns: serverCampaigns || [],
+        teamMembers: serverTeamMembers || [],
+        activities: serverActivities || [],
+        performanceData: serverPerformanceData || { labels: [], impressions: [], clicks: [], conversions: [] },
         showSettings: false,
         performanceChart: null,
 
         init() {
-            this.loadStats();
-            this.loadRecentCampaigns();
-            this.loadTeamMembers();
-            this.loadActivities();
             this.$nextTick(() => {
                 this.renderPerformanceChart();
             });
-        },
-
-        loadStats() {
-            // Demo data - in production, fetch from API
-            this.stats = {
-                campaigns: Math.floor(Math.random() * 20) + 5,
-                members: Math.floor(Math.random() * 10) + 3,
-                assets: Math.floor(Math.random() * 100) + 20,
-                roi: Math.floor(Math.random() * 50) + 10
-            };
-        },
-
-        loadRecentCampaigns() {
-            // Demo data
-            this.recentCampaigns = [
-                { id: 1, name: 'حملة رمضان 2025', objective: 'زيادة الوعي بالعلامة التجارية', status: 'active', start_date: new Date().toISOString() },
-                { id: 2, name: 'إطلاق المنتج الجديد', objective: 'تحويلات المبيعات', status: 'planning', start_date: new Date(Date.now() + 86400000).toISOString() },
-                { id: 3, name: 'عروض نهاية الأسبوع', objective: 'زيادة المبيعات', status: 'completed', start_date: new Date(Date.now() - 604800000).toISOString() }
-            ];
-        },
-
-        loadTeamMembers() {
-            this.teamMembers = [
-                { id: 1, name: 'أحمد محمد', role: 'مدير التسويق', online: true },
-                { id: 2, name: 'سارة أحمد', role: 'مصمم إبداعي', online: true },
-                { id: 3, name: 'محمد علي', role: 'محلل بيانات', online: false },
-                { id: 4, name: 'فاطمة حسن', role: 'مدير المحتوى', online: true }
-            ];
-        },
-
-        loadActivities() {
-            this.activities = [
-                { id: 1, type: 'campaign', message: 'تم إنشاء حملة جديدة', time: 'منذ 5 دقائق' },
-                { id: 2, type: 'member', message: 'انضم عضو جديد للفريق', time: 'منذ ساعة' },
-                { id: 3, type: 'asset', message: 'تم رفع 5 أصول إبداعية', time: 'منذ 3 ساعات' },
-                { id: 4, type: 'report', message: 'تم إنشاء تقرير الأداء', time: 'منذ يوم' }
-            ];
         },
 
         renderPerformanceChart() {
@@ -325,21 +290,42 @@ function orgDetails(serverOrg) {
             this.performanceChart = new Chart(ctx.getContext('2d'), {
                 type: 'line',
                 data: {
-                    labels: ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو'],
-                    datasets: [{
-                        label: 'الأداء',
-                        data: [65, 78, 72, 85, 90, 95],
-                        borderColor: '#3b82f6',
-                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                        fill: true,
-                        tension: 0.4
-                    }]
+                    labels: this.performanceData.labels,
+                    datasets: [
+                        {
+                            label: 'الانطباعات',
+                            data: this.performanceData.impressions,
+                            borderColor: '#3b82f6',
+                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                            fill: false,
+                            tension: 0.4
+                        },
+                        {
+                            label: 'النقرات',
+                            data: this.performanceData.clicks,
+                            borderColor: '#10b981',
+                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                            fill: false,
+                            tension: 0.4
+                        },
+                        {
+                            label: 'التحويلات',
+                            data: this.performanceData.conversions,
+                            borderColor: '#8b5cf6',
+                            backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                            fill: false,
+                            tension: 0.4
+                        }
+                    ]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
-                        legend: { display: false }
+                        legend: {
+                            position: 'top',
+                            rtl: true
+                        }
                     },
                     scales: {
                         y: { beginAtZero: true }
@@ -357,11 +343,17 @@ function orgDetails(serverOrg) {
             });
         },
 
+        formatBudget(amount) {
+            if (!amount) return '0';
+            return new Intl.NumberFormat('ar-SA').format(amount);
+        },
+
         getCampaignStatusColor(status) {
             const colors = {
                 'active': 'bg-green-500',
                 'planning': 'bg-blue-500',
-                'completed': 'bg-gray-500',
+                'draft': 'bg-gray-500',
+                'completed': 'bg-purple-500',
                 'paused': 'bg-yellow-500'
             };
             return colors[status] || 'bg-gray-500';
@@ -371,30 +363,44 @@ function orgDetails(serverOrg) {
             const classes = {
                 'active': 'bg-green-100 text-green-800',
                 'planning': 'bg-blue-100 text-blue-800',
-                'completed': 'bg-gray-100 text-gray-800',
+                'draft': 'bg-gray-100 text-gray-800',
+                'completed': 'bg-purple-100 text-purple-800',
                 'paused': 'bg-yellow-100 text-yellow-800'
             };
             return classes[status] || 'bg-gray-100 text-gray-800';
         },
 
-        getActivityIcon(type) {
-            const icons = {
-                'campaign': 'fas fa-bullhorn',
-                'member': 'fas fa-user-plus',
-                'asset': 'fas fa-image',
-                'report': 'fas fa-chart-bar'
+        getStatusLabel(status) {
+            const labels = {
+                'active': 'نشط',
+                'planning': 'تخطيط',
+                'draft': 'مسودة',
+                'completed': 'مكتمل',
+                'paused': 'متوقف'
             };
-            return icons[type] || 'fas fa-info';
+            return labels[status] || status;
         },
 
-        getActivityIconClass(type) {
-            const classes = {
-                'campaign': 'bg-blue-100 text-blue-600',
-                'member': 'bg-green-100 text-green-600',
-                'asset': 'bg-purple-100 text-purple-600',
-                'report': 'bg-yellow-100 text-yellow-600'
+        getActivityIcon(action) {
+            const icons = {
+                'create': 'fas fa-plus',
+                'update': 'fas fa-edit',
+                'delete': 'fas fa-trash',
+                'login': 'fas fa-sign-in-alt',
+                'logout': 'fas fa-sign-out-alt'
             };
-            return classes[type] || 'bg-gray-100 text-gray-600';
+            return icons[action] || 'fas fa-info';
+        },
+
+        getActivityIconClass(action) {
+            const classes = {
+                'create': 'bg-green-100 text-green-600',
+                'update': 'bg-blue-100 text-blue-600',
+                'delete': 'bg-red-100 text-red-600',
+                'login': 'bg-purple-100 text-purple-600',
+                'logout': 'bg-yellow-100 text-yellow-600'
+            };
+            return classes[action] || 'bg-gray-100 text-gray-600';
         },
 
         createCampaign() {
