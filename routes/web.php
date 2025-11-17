@@ -63,17 +63,17 @@ Route::middleware(['auth'])->group(function () {
     // ==================== Organizations ====================
     Route::prefix('orgs')->name('orgs.')->group(function () {
         Route::get('/', [OrgController::class, 'index'])->name('index');
-        Route::get('{org}', [OrgController::class, 'show'])->whereNumber('org')->name('show');
-        Route::get('{org}/campaigns', [OrgController::class, 'campaigns'])->whereNumber('org')->name('campaigns');
-        Route::get('{org}/campaigns/compare', [OrgController::class, 'compareCampaigns'])->whereNumber('org')->name('campaigns.compare');
-        Route::get('{org}/services', [OrgController::class, 'services'])->whereNumber('org')->name('services');
-        Route::get('{org}/products', [OrgController::class, 'products'])->whereNumber('org')->name('products');
-        Route::post('{org}/campaigns/export/pdf', [OrgController::class, 'exportComparePdf'])->whereNumber('org')->name('campaigns.export.pdf');
-        Route::post('{org}/campaigns/export/excel', [OrgController::class, 'exportCompareExcel'])->whereNumber('org')->name('campaigns.export.excel');
         Route::get('/create', function () { return view('orgs.create'); })->name('create');
         Route::post('/', [OrgController::class, 'store'])->name('store');
-        Route::get('/{org}/edit', [OrgController::class, 'edit'])->name('edit');
-        Route::put('/{org}', [OrgController::class, 'update'])->name('update');
+        Route::get('/{org}', [OrgController::class, 'show'])->whereUuid('org')->name('show');
+        Route::get('/{org}/edit', [OrgController::class, 'edit'])->whereUuid('org')->name('edit');
+        Route::put('/{org}', [OrgController::class, 'update'])->whereUuid('org')->name('update');
+        Route::get('/{org}/campaigns', [OrgController::class, 'campaigns'])->whereUuid('org')->name('campaigns');
+        Route::get('/{org}/campaigns/compare', [OrgController::class, 'compareCampaigns'])->whereUuid('org')->name('campaigns.compare');
+        Route::get('/{org}/services', [OrgController::class, 'services'])->whereUuid('org')->name('services');
+        Route::get('/{org}/products', [OrgController::class, 'products'])->whereUuid('org')->name('products');
+        Route::post('/{org}/campaigns/export/pdf', [OrgController::class, 'exportComparePdf'])->whereUuid('org')->name('campaigns.export.pdf');
+        Route::post('/{org}/campaigns/export/excel', [OrgController::class, 'exportCompareExcel'])->whereUuid('org')->name('campaigns.export.excel');
     });
 
     // ==================== Offerings ====================
