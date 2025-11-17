@@ -35,9 +35,13 @@
         <env name="APP_URL" value="http://localhost"/>
         <env name="VITE_MANIFEST_PATH" value="./tests/fixtures/vite/manifest.json"/>
 
-        <!-- Database Configuration (SQLite for isolated feature tests) -->
-        <env name="DB_CONNECTION" value="sqlite"/>
-        <env name="DB_DATABASE" value=":memory:"/>
+        <!-- Database Configuration (PostgreSQL by default) -->
+        <env name="DB_CONNECTION" value="pgsql"/>
+        <env name="DB_HOST" value="127.0.0.1"/>
+        <env name="DB_PORT" value="5432"/>
+        <env name="DB_DATABASE" value="cmis_marketing_test"/>
+        <env name="DB_USERNAME" value="postgres"/>
+        <env name="DB_PASSWORD" value=""/>
         <env name="DB_FOREIGN_KEYS" value="true"/>
         <env name="DB_MIGRATIONS_PATH" value="testing-migrations"/>
 
