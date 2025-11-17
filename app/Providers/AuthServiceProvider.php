@@ -98,18 +98,23 @@ class AuthServiceProvider extends ServiceProvider
                 || app(AIPolicy::class)->viewInsights($user);
         });
 
-        // Super admin gate
+        // Super admin/admin gate
         Gate::before(function ($user, $ability) {
-            // Check if user has super admin role
-            $currentOrgId = session('current_org_id');
+            // Check if user has a bypass role in current organization
+            $currentOrgId = session('current_org_id')
+                ?? ($user->current_org_id ?? null)
+                ?? $user->org_id;
+
             if ($currentOrgId) {
                 $userOrg = $user->orgs()
                     ->where('cmis.orgs.org_id', $currentOrgId)
                     ->first();
 
                 if ($userOrg && $userOrg->pivot && $userOrg->pivot->role) {
-                    if ($userOrg->pivot->role->role_code === 'super_admin') {
-                        return true; // Super admin bypasses all checks
+                    $roleCode = $userOrg->pivot->role->role_code;
+
+                    if (in_array($roleCode, ['super_admin', 'admin'], true)) {
+                        return true; // Admin and super admin bypass all checks
                     }
                 }
             }
