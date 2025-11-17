@@ -18,7 +18,7 @@ export class AuthHelper {
     await this.page.fill('input[name="email"]', email);
     await this.page.fill('input[name="password"]', password);
     await this.page.click('button[type="submit"]');
-    await this.page.waitForURL('/dashboard');
+    await this.page.waitForSelector('[data-testid="user-menu"]');
   }
 
   /**
@@ -27,7 +27,7 @@ export class AuthHelper {
   async logout(): Promise<void> {
     await this.page.click('[data-testid="user-menu"]');
     await this.page.click('[data-testid="logout-button"]');
-    await this.page.waitForURL('/login');
+    await this.page.waitForSelector('form[action="/login"]');
   }
 
   /**

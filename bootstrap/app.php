@@ -28,6 +28,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // Register middleware aliases
         $middleware->alias([
+            'auth' => \App\Http\Middleware\Authenticate::class,
             'set.db.context' => \App\Http\Middleware\SetDatabaseContext::class,
             'validate.org.access' => \App\Http\Middleware\ValidateOrgAccess::class,
             'permission' => \App\Http\Middleware\CheckPermission::class,
