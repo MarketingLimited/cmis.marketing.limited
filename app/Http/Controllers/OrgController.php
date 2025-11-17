@@ -218,7 +218,7 @@ class OrgController extends Controller
             $monthEnd = $date->copy()->endOfMonth();
 
             $monthMetrics = CampaignPerformanceMetric::whereIn('campaign_id', $campaignIds)
-                ->whereBetween('recorded_at', [$monthStart, $monthEnd])
+                ->whereBetween('collected_at', [$monthStart, $monthEnd])
                 ->selectRaw("
                     SUM(CASE WHEN metric_name = 'impressions' THEN metric_value ELSE 0 END) as impressions,
                     SUM(CASE WHEN metric_name = 'clicks' THEN metric_value ELSE 0 END) as clicks,
