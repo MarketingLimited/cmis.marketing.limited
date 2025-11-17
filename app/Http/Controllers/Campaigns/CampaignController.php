@@ -9,6 +9,7 @@ use App\Http\Resources\Campaign\CampaignCollection;
 use App\Http\Resources\Campaign\CampaignDetailResource;
 use App\Http\Resources\Campaign\CampaignResource;
 use App\Models\Campaign;
+use App\Models\Core\Org;
 use App\Services\CampaignService;
 use Illuminate\Http\Request;
 
@@ -35,6 +36,10 @@ class CampaignController extends Controller
                 }
 
                 $firstOrg = $user->orgs()->first();
+
+                if (!$firstOrg) {
+                    $firstOrg = Org::orderBy('created_at')->first();
+                }
 
                 if ($firstOrg) {
                     $orgId = $firstOrg->org_id;

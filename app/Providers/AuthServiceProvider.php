@@ -67,6 +67,14 @@ class AuthServiceProvider extends ServiceProvider
         Gate::define('analytics.view_performance', [AnalyticsPolicy::class, 'viewPerformance']);
         Gate::define('analytics.manage_dashboard', [AnalyticsPolicy::class, 'manageDashboard']);
 
+        // Legacy analytics abilities used across controllers
+        Gate::define('viewDashboard', [AnalyticsPolicy::class, 'viewDashboard']);
+        Gate::define('viewReports', [AnalyticsPolicy::class, 'viewReports']);
+        Gate::define('createReport', [AnalyticsPolicy::class, 'createReport']);
+        Gate::define('exportData', [AnalyticsPolicy::class, 'exportData']);
+        Gate::define('viewPerformance', [AnalyticsPolicy::class, 'viewPerformance']);
+        Gate::define('manageDashboard', [AnalyticsPolicy::class, 'manageDashboard']);
+
         // AI gates (no specific model)
         Gate::define('ai.generate_content', [AIPolicy::class, 'generateContent']);
         Gate::define('ai.generate_campaign', [AIPolicy::class, 'generateCampaign']);
@@ -75,6 +83,20 @@ class AuthServiceProvider extends ServiceProvider
         Gate::define('ai.manage_knowledge', [AIPolicy::class, 'manageKnowledge']);
         Gate::define('ai.manage_prompts', [AIPolicy::class, 'managePrompts']);
         Gate::define('ai.view_insights', [AIPolicy::class, 'viewInsights']);
+
+        // Legacy AI abilities used across controllers
+        Gate::define('generateContent', [AIPolicy::class, 'generateContent']);
+        Gate::define('generateCampaign', [AIPolicy::class, 'generateCampaign']);
+        Gate::define('viewRecommendations', [AIPolicy::class, 'viewRecommendations']);
+        Gate::define('useSemanticSearch', [AIPolicy::class, 'useSemanticSearch']);
+        Gate::define('manageKnowledge', [AIPolicy::class, 'manageKnowledge']);
+        Gate::define('managePrompts', [AIPolicy::class, 'managePrompts']);
+
+        // Shared legacy ability name across analytics and AI contexts
+        Gate::define('viewInsights', function ($user) {
+            return app(AnalyticsPolicy::class)->viewInsights($user)
+                || app(AIPolicy::class)->viewInsights($user);
+        });
 
         // Super admin gate
         Gate::before(function ($user, $ability) {

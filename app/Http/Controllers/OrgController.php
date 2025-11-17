@@ -78,6 +78,14 @@ class OrgController extends Controller
 
             DB::commit();
 
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'org' => $org,
+                    'message' => 'تم إنشاء المؤسسة بنجاح',
+                ], 201);
+            }
+
             return redirect()
                 ->route('orgs.show', $org->org_id)
                 ->with('success', 'تم إنشاء المؤسسة بنجاح');
@@ -89,12 +97,56 @@ class OrgController extends Controller
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'فشل إنشاء المؤسسة: ' . $e->getMessage(),
+                ], 500);
+            }
 
             return redirect()
                 ->back()
                 ->withInput()
                 ->with('error', 'فشل إنشاء المؤسسة: ' . $e->getMessage());
         }
+    }
+
+    public function edit($id)
+    {
+        $org = $this->resolveOrg($id);
+
+        return view('orgs.edit', compact('org'));
+    }
+
+    public function update(Request $request, $id)
+    {
+        $org = $this->resolveOrg($id);
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255|unique:cmis.orgs,name,' . $org->org_id . ',org_id',
+            'default_locale' => 'nullable|string|max:10',
+            'currency' => 'nullable|string|size:3',
+            'provider' => 'nullable|string|max:255',
+        ]);
+
+        $org->update([
+            'name' => $validated['name'],
+            'default_locale' => $validated['default_locale'] ?? $org->default_locale,
+            'currency' => $validated['currency'] ?? $org->currency,
+            'provider' => $validated['provider'] ?? $org->provider,
+        ]);
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'org' => $org->fresh(),
+                'message' => 'تم تحديث بيانات المؤسسة بنجاح',
+            ]);
+        }
+
+        return redirect()
+            ->route('orgs.show', $org->org_id)
+            ->with('success', 'تم تحديث بيانات المؤسسة بنجاح');
     }
 
     public function show($id)
