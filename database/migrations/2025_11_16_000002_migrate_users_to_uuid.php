@@ -43,6 +43,12 @@ return new class extends Migration
                 AND column_name = 'user_id'
             ");
 
+            if (!$currentType) {
+                echo "Users.user_id column not found. Skipping UUID migration.\n";
+                DB::commit();
+                return;
+            }
+
             if ($currentType->data_type === 'uuid') {
                 echo "✓ Users table already uses UUID. Skipping migration.\n";
                 DB::commit();

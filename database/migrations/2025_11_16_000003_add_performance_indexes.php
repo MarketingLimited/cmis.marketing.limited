@@ -5,6 +5,8 @@ use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
+    public $withinTransaction = false;
+
     /**
      * Run the migrations.
      *
@@ -159,6 +161,13 @@ return new class extends Migration
         string $method = 'btree'
     ): void {
         try {
+            $exists = DB::selectOne('SELECT to_regclass(?) as reg', [$tableName]);
+
+            if (!$exists?->reg) {
+                echo "Skipping index {$indexName}: table {$tableName} is missing.\n";
+                return;
+            }
+
             $columnList = implode(', ', $columns);
 
             if ($method === 'ivfflat') {

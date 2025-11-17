@@ -13,6 +13,15 @@ use Illuminate\Support\Facades\DB;
  */
 return new class extends Migration
 {
+    /**
+     * Running hundreds of ALTER statements cannot be wrapped in a single
+     * PostgreSQL transaction because a single failure would abort the
+     * connection state for all subsequent statements. Disable transactions so
+     * we can log and continue past non-critical failures (for example, owner
+     * changes for roles that may not exist in local environments).
+     */
+    public $withinTransaction = false;
+
     public function up(): void
     {
         $sql = file_get_contents(database_path('sql/complete_alters.sql'));
