@@ -456,32 +456,34 @@ function socialSchedulerManager() {
 
         async fetchData() {
             try {
-                // TODO: Backend Controller Needed - SocialSchedulerController
-                // This page requires a new controller to be created for social post scheduling
-                // Required API endpoints:
-                // - GET /api/social/dashboard - Get stats and scheduled posts overview
-                // - GET /api/social/posts/scheduled - Get all scheduled posts
-                // - GET /api/social/posts/published - Get published posts with engagement
-                // - GET /api/social/posts/drafts - Get draft posts
-                // - POST /api/social/posts/schedule - Schedule a new post
-                // - PUT /api/social/posts/{id} - Update scheduled/draft post
-                // - DELETE /api/social/posts/{id} - Delete post
-                // - POST /api/social/posts/{id}/publish-now - Publish immediately
+                const csrf = document.querySelector('meta[name="csrf-token"]').content;
+                const headers = { 'Accept': 'application/json', 'X-CSRF-TOKEN': csrf };
 
-                // Simulated data until backend is implemented
+                const [dashboardResp, scheduledResp, publishedResp, draftsResp] = await Promise.all([
+                    fetch('/api/social/dashboard', { headers }),
+                    fetch('/api/social/posts/scheduled', { headers }),
+                    fetch('/api/social/posts/published', { headers }),
+                    fetch('/api/social/posts/drafts', { headers })
+                ]);
+
+                const dashboard = await dashboardResp.json();
+                const scheduled = await scheduledResp.json();
+                const published = await publishedResp.json();
+                const drafts = await draftsResp.json();
+
                 this.stats = {
-                    scheduled: 47,
-                    nextPost: 'بعد ساعتين',
-                    publishedToday: 12,
-                    engagementChange: 18.5,
-                    drafts: 8,
-                    recentDrafts: 3,
-                    activePlatforms: 5,
-                    totalPlatforms: 5
+                    scheduled: dashboard?.stats?.scheduled ?? 0,
+                    nextPost: dashboard?.upcoming?.[0]?.scheduled_at ?? '—',
+                    publishedToday: dashboard?.stats?.published_today ?? 0,
+                    engagementChange: 0,
+                    drafts: dashboard?.stats?.drafts ?? 0,
+                    recentDrafts: drafts?.data?.length ?? 0,
+                    activePlatforms: dashboard?.stats?.active_platforms ?? 0,
+                    totalPlatforms: dashboard?.stats?.active_platforms ?? 0
                 };
 
                 this.platforms = [
-                    { id: 'meta', name: 'Meta', icon: 'fab fa-meta', color: 'blue' },
+                    { id: 'facebook', name: 'Meta', icon: 'fab fa-meta', color: 'blue' },
                     { id: 'instagram', name: 'Instagram', icon: 'fab fa-instagram', color: 'pink' },
                     { id: 'twitter', name: 'X', icon: 'fab fa-x-twitter', color: 'gray' },
                     { id: 'linkedin', name: 'LinkedIn', icon: 'fab fa-linkedin', color: 'blue' },
@@ -490,22 +492,34 @@ function socialSchedulerManager() {
 
                 this.selectedPlatforms = this.platforms.map(p => p.id);
 
-                this.scheduledPosts = [
-                    { id: 1, title: 'عرض الصيف الخاص', content: 'لا تفوت عروضنا الحصرية لموسم الصيف! خصومات تصل إلى 50% على جميع المنتجات.', image: 'https://via.placeholder.com/100', platforms: ['meta', 'instagram'], scheduledTime: 'اليوم 6:00 م', author: 'أحمد محمد' },
-                    { id: 2, title: 'إطلاق منتج جديد', content: 'نحن متحمسون للإعلان عن إطلاق منتجنا الثوري الجديد! ابقوا معنا للمزيد.', image: 'https://via.placeholder.com/100', platforms: ['twitter', 'linkedin'], scheduledTime: 'غداً 10:00 ص', author: 'سارة أحمد' },
-                    { id: 3, title: 'نصيحة الأسبوع', content: '💡 نصيحة اليوم: استخدم تحليلات البيانات لتحسين استراتيجية التسويق الخاصة بك.', image: null, platforms: ['linkedin'], scheduledTime: 'غداً 2:00 م', author: 'محمد علي' }
-                ];
+                this.scheduledPosts = (scheduled?.data ?? scheduled ?? []).map(post => ({
+                    id: post.post_id || post.id,
+                    title: post.campaign?.name || 'منشور مجدول',
+                    content: post.content,
+                    image: Array.isArray(post.media) && post.media.length ? post.media[0] : null,
+                    platforms: post.platforms || [],
+                    scheduledTime: post.scheduled_at,
+                    author: post.user?.name || '—'
+                }));
 
-                this.publishedPosts = [
-                    { id: 1, title: 'مرحباً بالأسبوع الجديد', content: 'بداية رائعة لأسبوع مليء بالإنجازات! كيف تخطط لتحقيق أهدافك هذا الأسبوع؟', image: 'https://via.placeholder.com/80', publishedAt: 'اليوم 9:00 ص', likes: 234, comments: 45, shares: 67 },
-                    { id: 2, title: 'نجاح باهر', content: 'شكراً لكل من شارك في فعاليتنا الأخيرة! كان حدثاً رائعاً.', image: 'https://via.placeholder.com/80', publishedAt: 'أمس 4:00 م', likes: 567, comments: 89, shares: 123 }
-                ];
+                this.publishedPosts = (published?.data ?? published ?? []).map(post => ({
+                    id: post.post_id || post.id,
+                    title: post.campaign?.name || 'منشور منشور',
+                    content: post.content,
+                    image: Array.isArray(post.media) && post.media.length ? post.media[0] : null,
+                    publishedAt: post.published_at,
+                    likes: post.likes || 0,
+                    comments: post.comments || 0,
+                    shares: post.shares || 0
+                }));
 
-                this.drafts = [
-                    { id: 1, title: 'مسودة حملة رمضان', content: 'خطة كاملة لحملة رمضان المبارك مع عروض خاصة...', platforms: ['meta', 'instagram'], lastEdited: 'منذ ساعة' },
-                    { id: 2, title: 'إعلان الشراكة', content: 'نحن فخورون بالإعلان عن شراكتنا الجديدة مع...', platforms: ['linkedin'], lastEdited: 'منذ يومين' },
-                    { id: 3, title: 'مسابقة العملاء', content: 'شارك واربح! مسابقة حصرية لعملائنا الأوفياء...', platforms: ['meta', 'instagram', 'twitter'], lastEdited: 'منذ 3 أيام' }
-                ];
+                this.drafts = (drafts?.data ?? drafts ?? []).map(post => ({
+                    id: post.post_id || post.id,
+                    title: post.campaign?.name || 'مسودة',
+                    content: post.content,
+                    platforms: post.platforms || [],
+                    lastEdited: post.updated_at
+                }));
 
             } catch (error) {
                 console.error(error);
@@ -616,24 +630,21 @@ function socialSchedulerManager() {
             if (!confirm('هل أنت متأكد من حذف هذا المنشور؟')) return;
 
             try {
-                // TODO: Implement actual API call
-                // DELETE /api/social/posts/{id}
-                // const response = await fetch(`/api/social/posts/${id}`, {
-                //     method: 'DELETE',
-                //     headers: {
-                //         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                //         'Accept': 'application/json'
-                //     }
-                // });
-                //
-                // if (!response.ok) throw new Error('Failed to delete');
+                const response = await fetch(`/api/social/posts/${id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json'
+                    }
+                });
 
-                window.notify('جاري حذف المنشور...', 'info');
-
-                // Remove from local array for now
-                this.scheduledPosts = this.scheduledPosts.filter(p => p.id !== id);
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.message || 'Failed to delete');
+                }
 
                 window.notify('تم حذف المنشور', 'success');
+                await this.fetchData();
             } catch (error) {
                 console.error('Error deleting post:', error);
                 window.notify('فشل حذف المنشور', 'error');
@@ -650,15 +661,21 @@ function socialSchedulerManager() {
             if (!confirm('هل أنت متأكد من حذف هذه المسودة؟')) return;
 
             try {
-                // TODO: Implement actual API call
-                // DELETE /api/social/posts/drafts/{id}
+                const response = await fetch(`/api/social/posts/${id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json'
+                    }
+                });
 
-                window.notify('جاري حذف المسودة...', 'info');
-
-                // Remove from local array for now
-                this.drafts = this.drafts.filter(d => d.id !== id);
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.message || 'Failed to delete draft');
+                }
 
                 window.notify('تم حذف المسودة', 'success');
+                await this.fetchData();
             } catch (error) {
                 console.error('Error deleting draft:', error);
                 window.notify('فشل حذف المسودة', 'error');
@@ -700,32 +717,26 @@ function socialSchedulerManager() {
             }
 
             try {
-                window.notify('جاري جدولة المنشور...', 'info');
+                const response = await fetch('/api/social/posts/schedule', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        platforms: this.composerForm.platforms,
+                        content: this.composerForm.content,
+                        scheduled_date: this.composerForm.scheduleDate,
+                        scheduled_time: this.composerForm.scheduleTime,
+                        media: []
+                    })
+                });
 
-                // TODO: Implement actual API call with CSRF token
-                // const response = await fetch('/api/social/posts/schedule', {
-                //     method: 'POST',
-                //     headers: {
-                //         'Content-Type': 'application/json',
-                //         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                //         'Accept': 'application/json'
-                //     },
-                //     body: JSON.stringify({
-                //         platforms: this.composerForm.platforms,
-                //         content: this.composerForm.content,
-                //         scheduled_date: this.composerForm.scheduleDate,
-                //         scheduled_time: this.composerForm.scheduleTime,
-                //         media: [] // Add media attachments if available
-                //     })
-                // });
-                //
-                // if (!response.ok) {
-                //     const error = await response.json();
-                //     throw new Error(error.message || 'Failed to schedule post');
-                // }
-
-                // Simulate API delay
-                await new Promise(resolve => setTimeout(resolve, 1500));
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.message || 'Failed to schedule post');
+                }
 
                 window.notify('تم جدولة المنشور بنجاح!', 'success');
                 this.showComposerModal = false;
@@ -739,17 +750,29 @@ function socialSchedulerManager() {
 
         async saveDraft() {
             try {
-                window.notify('جاري حفظ المسودة...', 'info');
+                const response = await fetch('/api/social/posts/schedule', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        platforms: this.composerForm.platforms,
+                        content: this.composerForm.content,
+                        media: [],
+                        status: 'draft'
+                    })
+                });
 
-                // TODO: Implement actual API call
-                // POST /api/social/posts/drafts with same data structure as schedule
-                // but without scheduled_date and scheduled_time
-
-                // Simulate API delay
-                await new Promise(resolve => setTimeout(resolve, 1000));
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.message || 'Failed to save draft');
+                }
 
                 window.notify('تم حفظ المسودة', 'success');
                 this.showComposerModal = false;
+                await this.fetchData();
             } catch (error) {
                 console.error('Error saving draft:', error);
                 window.notify('فشل حفظ المسودة', 'error');

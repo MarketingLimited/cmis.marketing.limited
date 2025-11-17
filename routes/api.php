@@ -21,6 +21,7 @@ use App\Http\Controllers\API\ContentPublishingController;
 use App\Http\Controllers\API\WebhookController;
 use App\Http\Controllers\API\AnalyticsController;
 use App\Http\Controllers\API\AdCampaignController as APIAdCampaignController;
+use App\Http\Controllers\Analytics\FrontendAnalyticsController;
 
 /*
 |--------------------------------------------------------------------------
@@ -270,6 +271,18 @@ Route::middleware(['auth:sanctum', 'validate.org.access', 'set.db.context'])
             Route::post('/{post_id}/publish-now', [SocialSchedulerController::class, 'publishNow'])->name('publish-now');
             Route::post('/{post_id}/reschedule', [SocialSchedulerController::class, 'reschedule'])->name('reschedule');
         });
+    });
+
+    /*
+    |----------------------------------------------------------------------
+    | تحليلات الواجهة (Analytics for UI)
+    |----------------------------------------------------------------------
+    */
+    Route::prefix('analytics')->name('analytics.')->group(function () {
+        Route::get('/summary', [FrontendAnalyticsController::class, 'summary'])->name('summary');
+        Route::get('/platform-performance', [FrontendAnalyticsController::class, 'platformPerformance'])->name('platform-performance');
+        Route::post('/export/pdf', [FrontendAnalyticsController::class, 'exportPdf'])->name('export.pdf');
+        Route::post('/export/excel', [FrontendAnalyticsController::class, 'exportExcel'])->name('export.excel');
     });
 
     /*

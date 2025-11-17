@@ -13,12 +13,20 @@ use Illuminate\Support\Facades\DB;
 
 class SocialSchedulerController extends Controller
 {
+    protected function resolveOrgId(Request $request): string
+    {
+        return $request->user()?->org_id
+            ?? session('current_org_id')
+            ?? $request->get('org_id');
+    }
+
     /**
      * Get dashboard overview with stats and scheduled posts
      */
-    public function dashboard(Request $request, string $orgId)
+    public function dashboard(Request $request)
     {
         $this->authorize('viewAnalytics', Channel::class);
+        $orgId = $this->resolveOrgId($request);
         try {
             $stats = [
                 'scheduled' => ScheduledSocialPost::forOrg($orgId)
@@ -57,9 +65,10 @@ class SocialSchedulerController extends Controller
     /**
      * Get all scheduled posts
      */
-    public function scheduled(Request $request, string $orgId)
+    public function scheduled(Request $request)
     {
         $this->authorize('viewAny', Channel::class);
+        $orgId = $this->resolveOrgId($request);
         try {
             $perPage = $request->input('per_page', 20);
 
@@ -82,9 +91,10 @@ class SocialSchedulerController extends Controller
     /**
      * Get all published posts with engagement metrics
      */
-    public function published(Request $request, string $orgId)
+    public function published(Request $request)
     {
         $this->authorize('viewAny', Channel::class);
+        $orgId = $this->resolveOrgId($request);
         try {
             $perPage = $request->input('per_page', 20);
             $platform = $request->input('platform');
@@ -113,9 +123,10 @@ class SocialSchedulerController extends Controller
     /**
      * Get all draft posts
      */
-    public function drafts(Request $request, string $orgId)
+    public function drafts(Request $request)
     {
         $this->authorize('viewAny', Channel::class);
+        $orgId = $this->resolveOrgId($request);
         try {
             $posts = ScheduledSocialPost::forOrg($orgId)
                 ->drafts()
@@ -136,9 +147,10 @@ class SocialSchedulerController extends Controller
     /**
      * Schedule a new post
      */
-    public function schedule(Request $request, string $orgId)
+    public function schedule(Request $request)
     {
         $this->authorize('schedule', Channel::class);
+        $orgId = $this->resolveOrgId($request);
         $validator = Validator::make($request->all(), [
             'platforms' => 'required|array|min:1',
             'platforms.*' => 'required|string|in:facebook,instagram,twitter,linkedin,tiktok',
@@ -202,9 +214,10 @@ class SocialSchedulerController extends Controller
     /**
      * Update a scheduled or draft post
      */
-    public function update(Request $request, string $orgId, string $postId)
+    public function update(Request $request, string $postId)
     {
         $this->authorize('update', Channel::class);
+        $orgId = $this->resolveOrgId($request);
         $validator = Validator::make($request->all(), [
             'platforms' => 'sometimes|array|min:1',
             'platforms.*' => 'sometimes|string|in:facebook,instagram,twitter,linkedin,tiktok',
@@ -264,9 +277,10 @@ class SocialSchedulerController extends Controller
     /**
      * Delete a post
      */
-    public function destroy(Request $request, string $orgId, string $postId)
+    public function destroy(Request $request, string $postId)
     {
         $this->authorize('delete', Channel::class);
+        $orgId = $this->resolveOrgId($request);
         try {
             $post = ScheduledSocialPost::forOrg($orgId)->findOrFail($postId);
 
@@ -301,9 +315,10 @@ class SocialSchedulerController extends Controller
     /**
      * Publish a post immediately
      */
-    public function publishNow(Request $request, string $orgId, string $postId)
+    public function publishNow(Request $request, string $postId)
     {
         $this->authorize('publish', Channel::class);
+        $orgId = $this->resolveOrgId($request);
         try {
             $post = ScheduledSocialPost::forOrg($orgId)->findOrFail($postId);
 
@@ -349,9 +364,10 @@ class SocialSchedulerController extends Controller
     /**
      * Reschedule a post
      */
-    public function reschedule(Request $request, string $orgId, string $postId)
+    public function reschedule(Request $request, string $postId)
     {
         $this->authorize('schedule', Channel::class);
+        $orgId = $this->resolveOrgId($request);
         $validator = Validator::make($request->all(), [
             'scheduled_date' => 'required|date|after:now',
             'scheduled_time' => 'required|date_format:H:i',
@@ -403,9 +419,10 @@ class SocialSchedulerController extends Controller
     /**
      * Get post by ID
      */
-    public function show(Request $request, string $orgId, string $postId)
+    public function show(Request $request, string $postId)
     {
         $this->authorize('view', Channel::class);
+        $orgId = $this->resolveOrgId($request);
         try {
             $post = ScheduledSocialPost::forOrg($orgId)
                 ->with(['user:id,name', 'campaign:campaign_id,name'])
