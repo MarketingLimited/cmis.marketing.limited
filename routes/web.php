@@ -11,9 +11,8 @@ use App\Http\Controllers\Offerings\OverviewController as OfferingsOverviewContro
 use App\Http\Controllers\Offerings\ProductController;
 use App\Http\Controllers\Offerings\ServiceController;
 use App\Http\Controllers\OrgController;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Web\ChannelController as WebChannelController;
-use App\Http\Controllers\Auth\LoginController;
-use App\Http\Controllers\Auth\RegisterController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -22,18 +21,6 @@ use Illuminate\Support\Facades\Route;
 |--------------------------------------------------------------------------
 */
 
-// ==================== Guest Routes (Authentication) ====================
-Route::middleware('guest')->group(function () {
-    Route::get('/login', [LoginController::class, 'create'])->name('login');
-    Route::post('/login', [LoginController::class, 'store']);
-    Route::get('/register', [RegisterController::class, 'create'])->name('register');
-    Route::post('/register', [RegisterController::class, 'store']);
-});
-
-Route::post('/logout', [LoginController::class, 'destroy'])
-    ->middleware('auth')
-    ->name('logout');
-
 // Public Routes (will redirect to login if not authenticated)
 Route::redirect('/', '/dashboard');
 
@@ -41,7 +28,9 @@ Route::redirect('/', '/dashboard');
 Route::middleware(['auth'])->group(function () {
 
     // ==================== Dashboard ====================
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard.index');
+    Route::get('/dashboard', [DashboardController::class, 'index'])
+        ->middleware('verified')
+        ->name('dashboard');
     Route::get('/dashboard/data', [DashboardController::class, 'data'])->name('dashboard.data');
     Route::get('/notifications/latest', [DashboardController::class, 'latest'])->name('notifications.latest');
     Route::post('/notifications/{notificationId}/read', [DashboardController::class, 'markAsRead'])->name('notifications.markAsRead');
@@ -78,7 +67,7 @@ Route::middleware(['auth'])->group(function () {
 
     // ==================== Offerings ====================
     Route::get('/offerings', [OfferingsOverviewController::class, 'index'])->name('offerings.index');
-    
+
     Route::prefix('products')->name('products.')->group(function () {
         Route::get('/', [ProductController::class, 'index'])->name('index');
         Route::get('/{productId}', function ($productId) {
@@ -174,7 +163,9 @@ Route::middleware(['auth'])->group(function () {
     });
 
     // ==================== Profile ====================
-    Route::get('/profile', [App\Http\Controllers\ProfileController::class, 'show'])->name('profile');
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
 }); // End of Auth Middleware Group
 
@@ -188,3 +179,5 @@ Route::get('/api/openapi.yaml', function () {
         'Content-Type' => 'application/x-yaml',
     ]);
 })->name('api.openapi');
+
+require __DIR__.'/auth.php';

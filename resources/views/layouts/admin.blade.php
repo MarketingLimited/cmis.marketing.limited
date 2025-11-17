@@ -131,7 +131,7 @@
             <!-- Navigation -->
             <nav class="px-4 py-6 space-y-2 overflow-y-auto h-[calc(100vh-4rem)]">
 
-                <a href="{{ route('dashboard.index') }}"
+                <a href="{{ route('dashboard') }}"
                    class="flex items-center px-4 py-3 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-blue-50 dark:hover:bg-gray-700 transition {{ request()->routeIs('dashboard.*') ? 'bg-blue-50 text-blue-600 font-semibold' : '' }}">
                     <i class="fas fa-home text-lg w-6"></i>
                     <span class="mr-3">الرئيسية</span>
@@ -303,7 +303,7 @@
                              x-transition
                              class="absolute left-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 z-50"
                              x-cloak>
-                            <a href="{{ route('profile') }}" class="block px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-t-lg">
+                            <a href="{{ route('profile.edit') }}" class="block px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-t-lg">
                                 <i class="fas fa-user ml-2"></i> الملف الشخصي
                             </a>
                             <a href="{{ route('settings.index') }}" class="block px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">

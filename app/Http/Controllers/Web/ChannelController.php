@@ -24,7 +24,7 @@ class ChannelController extends Controller
         $orgId = session('current_org_id');
 
         if (!$orgId) {
-            return redirect()->route('dashboard.index')
+            return redirect()->route('dashboard')
                 ->with('error', 'الرجاء اختيار منظمة أولاً');
         }
 
