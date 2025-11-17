@@ -6,6 +6,17 @@ use Symfony\Component\Console\Input\ArgvInput;
 
 define('LARAVEL_START', microtime(true));
 
+// Clear system environment variables that override .env file
+// This ensures .env values are used even when system has conflicting vars
+$envVarsToClear = [
+    'DB_USERNAME', 'DB_PASSWORD', 'DB_DATABASE', 'DB_HOST', 'DB_PORT', 'DB_CONNECTION',
+    'CACHE_STORE', 'SESSION_DRIVER', 'QUEUE_CONNECTION',
+];
+foreach ($envVarsToClear as $var) {
+    putenv($var);
+    unset($_ENV[$var], $_SERVER[$var]);
+}
+
 // Register the Composer autoloader...
 $autoloadPaths = [
     __DIR__.'/vendor/autoload.php',

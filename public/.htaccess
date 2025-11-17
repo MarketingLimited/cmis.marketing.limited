@@ -3,6 +3,17 @@
         Options -MultiViews -Indexes
     </IfModule>
 
+    # Override system environment variables to use .env file values
+    SetEnv DB_USERNAME begin
+    SetEnv DB_PASSWORD "123@Marketing@321"
+    SetEnv DB_DATABASE cmis-test
+    SetEnv DB_HOST 127.0.0.1
+    SetEnv DB_PORT 5432
+    SetEnv DB_CONNECTION pgsql
+    SetEnv CACHE_STORE file
+    SetEnv SESSION_DRIVER file
+    SetEnv QUEUE_CONNECTION sync
+
     RewriteEngine On
 
     # Handle Authorization Header
