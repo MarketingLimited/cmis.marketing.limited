@@ -30,9 +30,10 @@
     <php>
         <!-- Application Environment -->
         <env name="APP_ENV" value="testing"/>
-        <env name="APP_KEY" value="base64:TEST_KEY_FOR_TESTING_ONLY_32_CHARS"/>
+        <env name="APP_KEY" value="base64:JUECwaYkN0K3mAtdTXmnZp/YtlR+W2p+3oh2g6slyt8="/>
         <env name="APP_DEBUG" value="true"/>
         <env name="APP_URL" value="http://localhost"/>
+        <env name="VITE_MANIFEST_PATH" value="./tests/fixtures/vite/manifest.json"/>
 
         <!-- Database Configuration (SQLite for isolated feature tests) -->
         <env name="DB_CONNECTION" value="sqlite"/>
