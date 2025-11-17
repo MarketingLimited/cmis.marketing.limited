@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.admin')
 
 @section('page-title', 'إدارة وسائل التواصل الاجتماعي')
 @section('page-subtitle', 'جدولة ونشر المحتوى على جميع منصات التواصل')

@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.admin')
 
 @section('page-title', 'بريفات الحملات الإبداعية')
 @section('page-subtitle', 'إدارة بريفات الحملات والمشاريع التسويقية')

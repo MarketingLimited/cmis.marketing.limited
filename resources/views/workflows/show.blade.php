@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.admin')
 
 @section('page-title', $workflow->flow_name ?? 'تفاصيل سير العمل')
 @section('page-subtitle', 'تتبع تقدم وخطوات سير العمل')

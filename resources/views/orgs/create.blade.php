@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.admin')
 
 @section('page-title', 'إنشاء مؤسسة جديدة')
 @section('page-subtitle', 'أضف مؤسسة جديدة إلى النظام')

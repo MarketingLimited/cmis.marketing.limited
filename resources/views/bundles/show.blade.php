@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.admin')
 @section('title', 'تفاصيل الحزمة')
 @section('content')
 <div class="container mx-auto px-4 py-6" x-data="bundleShow({{ $bundle->bundle_id }})">

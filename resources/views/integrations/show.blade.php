@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.admin')
 
 @section('content')
 <h2>🧩 تفاصيل التكامل (Integration Details)</h2>

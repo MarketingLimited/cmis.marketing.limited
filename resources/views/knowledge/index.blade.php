@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.admin')
 
 @section('page-title', 'قاعدة المعرفة')
 @section('page-subtitle', 'إدارة وبحث قاعدة معرفة النظام')

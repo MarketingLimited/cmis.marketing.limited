@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.admin')
 
 @section('page-title', $product->name ?? 'تفاصيل المنتج')
 @section('page-subtitle', 'عرض تفاصيل ومعلومات المنتج')

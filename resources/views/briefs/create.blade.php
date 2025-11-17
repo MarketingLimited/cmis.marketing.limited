@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.admin')
 
 @section('page-title', 'إنشاء بريف جديد')
 @section('page-subtitle', 'أنشئ بريف إبداعي شامل لحملتك التسويقية')

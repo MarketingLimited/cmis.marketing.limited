@@ -260,19 +260,17 @@ function orgsManager(serverOrgs) {
             if (!confirm('هل أنت متأكد من حذف هذه المؤسسة؟ سيتم حذف جميع البيانات المرتبطة بها.')) return;
 
             try {
-                // TODO: Implement actual API call with CSRF token
-                // For now, just remove from local array
                 window.notify('جاري حذف المؤسسة...', 'info');
 
-                // const response = await fetch(`/api/orgs/${orgId}`, {
-                //     method: 'DELETE',
-                //     headers: {
-                //         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                //         'Accept': 'application/json'
-                //     }
-                // });
+                const response = await fetch(`/api/orgs/${orgId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json'
+                    }
+                });
 
-                // if (!response.ok) throw new Error('Failed to delete');
+                if (!response.ok) throw new Error('Failed to delete');
 
                 this.allOrgs = this.allOrgs.filter(o => o.org_id !== orgId);
                 this.filterOrgs();
@@ -307,21 +305,20 @@ function orgForm() {
 
                 window.notify('جاري إنشاء المؤسسة...', 'info');
 
-                // TODO: Implement actual API call with CSRF token
-                // const response = await fetch('/api/orgs', {
-                //     method: 'POST',
-                //     headers: {
-                //         'Content-Type': 'application/json',
-                //         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                //         'Accept': 'application/json'
-                //     },
-                //     body: JSON.stringify(this.formData)
-                // });
+                const response = await fetch('/api/orgs', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(this.formData)
+                });
 
-                // if (!response.ok) {
-                //     const error = await response.json();
-                //     throw new Error(error.message || 'Failed to create organization');
-                // }
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.message || 'Failed to create organization');
+                }
 
                 window.notify('تم إنشاء المؤسسة بنجاح', 'success');
                 closeModal('create-org-modal');
