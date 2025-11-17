@@ -47,7 +47,11 @@
       "Bash(do if [ -f \"$file\" ])",
       "Bash(then echo \"=== $file ===\" grep -A 5 \"public $incrementing = false\" \"$file\")",
       "Bash(xargs:*)",
-      "Bash(comm:*)"
+      "Bash(comm:*)",
+      "Bash(service apache2 restart:*)",
+      "Bash(/etc/init.d/apache2 restart:*)",
+      "Bash(apachectl:*)",
+      "Bash(source ~/.bashrc)"
     ],
     "deny": [],
     "ask": []
