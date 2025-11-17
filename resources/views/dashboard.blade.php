@@ -3,7 +3,7 @@
 @section('title', 'لوحة التحكم')
 
 @section('content')
-<div x-data="dashboardData(@json($stats ?? []), @json($campaignStatus ?? []), @json($campaignsByOrg ?? []))" x-init="init()">
+<div x-data="dashboardData({{ Js::from($stats ?? []) }}, {{ Js::from($campaignStatus ?? []) }}, {{ Js::from($campaignsByOrg ?? []) }})">
 
     <!-- Page Header -->
     <div class="mb-6">
@@ -244,7 +244,8 @@ function dashboardData(initialStats = null, initialCampaignStatus = null, initia
                 // Fetch recent activity/notifications
                 const notifResponse = await fetch('/notifications/latest');
                 if (notifResponse.ok) {
-                    const notifications = await notifResponse.json();
+                    const notifData = await notifResponse.json();
+                    const notifications = notifData.notifications || [];
                     this.recentActivity = notifications.map((notif, index) => ({
                         id: index + 1,
                         type: this.detectActivityType(notif.message),
