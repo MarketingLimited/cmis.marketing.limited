@@ -8,7 +8,6 @@ CREATE SEQUENCE cmis.meta_function_descriptions_id_seq;
 CREATE SEQUENCE IF NOT EXISTS cmis.migrations_id_seq;
 CREATE SEQUENCE cmis.modules_module_id_seq;
 CREATE SEQUENCE cmis.naming_templates_naming_id_seq;
-CREATE SEQUENCE cmis.users_id_seq;
 CREATE SEQUENCE cmis_knowledge.dev_id_seq;
 CREATE SEQUENCE cmis_knowledge.index_backup_2025_11_10_id_seq;
 CREATE SEQUENCE cmis_knowledge.marketing_id_seq;

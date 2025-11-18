@@ -40,10 +40,15 @@ class IndustriesSeeder extends Seeder
             'Marketing & Advertising',
         ];
 
+        // First, truncate the table to ensure clean state
+        DB::statement('TRUNCATE TABLE public.industries RESTART IDENTITY CASCADE');
+
         foreach ($industries as $industry) {
-            DB::table('public.industries')->insert([
-                'name' => $industry
-            ]);
+            // Use raw SQL with nextval to get the next sequence value for industry_id
+            DB::statement(
+                "INSERT INTO public.industries (industry_id, name) VALUES (nextval('industries_industry_id_seq'), ?)",
+                [$industry]
+            );
         }
 
         $this->command->info('Industries seeded successfully!');

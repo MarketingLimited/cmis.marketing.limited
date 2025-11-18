@@ -17,89 +17,110 @@ class UsersSeeder extends Seeder
     {
         DB::statement('SET CONSTRAINTS ALL DEFERRED');
 
+        // Get PDO for prepared statements (safer than string concatenation)
+        $pdo = DB::connection()->getPdo();
+
+        // Temporarily disable RLS for seeding
+        $pdo->exec('ALTER TABLE cmis.users DISABLE ROW LEVEL SECURITY');
+
+        // Truncate users table first (CASCADE will handle dependent records)
+        $pdo->exec('TRUNCATE TABLE cmis.users CASCADE');
+
+        $hashedPassword = Hash::make('password');
+        $now = now()->toDateTimeString();
+
         $users = [
             [
-                'user_id' => 'd76b3d33-4d67-4dd6-9df9-845a18ba3435',
-                'name' => 'Admin User',
-                'email' => 'admin@cmis.test',
-                'email_verified_at' => now(),
-                'password' => Hash::make('password'),
-                'remember_token' => null,
-                'created_at' => now(),
-                'updated_at' => now(),
-                'deleted_at' => null,
+                'd76b3d33-4d67-4dd6-9df9-845a18ba3435',
+                'Admin User',
+                'admin@cmis.test',
+                $now,
+                $hashedPassword,
+                null,
+                $now,
+                $now,
+                null,
             ],
             [
-                'user_id' => Str::uuid(),
-                'name' => 'Sarah Johnson',
-                'email' => 'sarah@techvision.com',
-                'email_verified_at' => now(),
-                'password' => Hash::make('password'),
-                'remember_token' => null,
-                'created_at' => now(),
-                'updated_at' => now(),
-                'deleted_at' => null,
+                (string) Str::uuid(),
+                'Sarah Johnson',
+                'sarah@techvision.com',
+                $now,
+                $hashedPassword,
+                null,
+                $now,
+                $now,
+                null,
             ],
             [
-                'user_id' => Str::uuid(),
-                'name' => 'محمد أحمد',
-                'email' => 'mohamed@arabic-marketing.com',
-                'email_verified_at' => now(),
-                'password' => Hash::make('password'),
-                'remember_token' => null,
-                'created_at' => now(),
-                'updated_at' => now(),
-                'deleted_at' => null,
+                (string) Str::uuid(),
+                'محمد أحمد',
+                'mohamed@arabic-marketing.com',
+                $now,
+                $hashedPassword,
+                null,
+                $now,
+                $now,
+                null,
             ],
             [
-                'user_id' => Str::uuid(),
-                'name' => 'Emma Williams',
-                'email' => 'emma@fashionhub.com',
-                'email_verified_at' => now(),
-                'password' => Hash::make('password'),
-                'remember_token' => null,
-                'created_at' => now(),
-                'updated_at' => now(),
-                'deleted_at' => null,
+                (string) Str::uuid(),
+                'Emma Williams',
+                'emma@fashionhub.com',
+                $now,
+                $hashedPassword,
+                null,
+                $now,
+                $now,
+                null,
             ],
             [
-                'user_id' => Str::uuid(),
-                'name' => 'David Chen',
-                'email' => 'david@healthwell.com',
-                'email_verified_at' => now(),
-                'password' => Hash::make('password'),
-                'remember_token' => null,
-                'created_at' => now(),
-                'updated_at' => now(),
-                'deleted_at' => null,
+                (string) Str::uuid(),
+                'David Chen',
+                'david@healthwell.com',
+                $now,
+                $hashedPassword,
+                null,
+                $now,
+                $now,
+                null,
             ],
             [
-                'user_id' => Str::uuid(),
-                'name' => 'Maria Garcia',
-                'email' => 'maria@techvision.com',
-                'email_verified_at' => now(),
-                'password' => Hash::make('password'),
-                'remember_token' => null,
-                'created_at' => now(),
-                'updated_at' => now(),
-                'deleted_at' => null,
+                (string) Str::uuid(),
+                'Maria Garcia',
+                'maria@techvision.com',
+                $now,
+                $hashedPassword,
+                null,
+                $now,
+                $now,
+                null,
             ],
             [
-                'user_id' => Str::uuid(),
-                'name' => 'Ahmed Al-Rashid',
-                'email' => 'ahmed@arabic-marketing.com',
-                'email_verified_at' => now(),
-                'password' => Hash::make('password'),
-                'remember_token' => null,
-                'created_at' => now(),
-                'updated_at' => now(),
-                'deleted_at' => null,
+                (string) Str::uuid(),
+                'Ahmed Al-Rashid',
+                'ahmed@arabic-marketing.com',
+                $now,
+                $hashedPassword,
+                null,
+                $now,
+                $now,
+                null,
             ],
         ];
 
+        // Use prepared statement for secure insertion
+        $stmt = $pdo->prepare("
+            INSERT INTO cmis.users (user_id, name, email, email_verified_at, password, remember_token, created_at, updated_at, deleted_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ");
+
         foreach ($users as $user) {
-            DB::table('cmis.users')->insert($user);
+            $stmt->execute($user);
         }
+
+        // Re-enable RLS after seeding
+        $pdo->exec('ALTER TABLE cmis.users ENABLE ROW LEVEL SECURITY');
 
         $this->command->info('Users seeded successfully! Default password: password');
     }

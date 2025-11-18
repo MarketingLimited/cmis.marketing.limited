@@ -1530,7 +1530,7 @@ CREATE TABLE cmis.user_activities (
 
 CREATE TABLE cmis.user_orgs (
     id uuid DEFAULT gen_random_uuid() NOT NULL,
-    user_id bigint NOT NULL,
+    user_id uuid NOT NULL,
     org_id uuid NOT NULL,
     role_id uuid NOT NULL,
     is_active boolean DEFAULT true,
@@ -1555,7 +1555,7 @@ CREATE TABLE cmis.user_permissions (
 );
 
 CREATE TABLE cmis.users (
-    id bigint NOT NULL,
+    user_id uuid DEFAULT gen_random_uuid() NOT NULL,
     name character varying(255) NOT NULL,
     email character varying(255) NOT NULL,
     email_verified_at timestamp(0) without time zone,
@@ -1563,7 +1563,7 @@ CREATE TABLE cmis.users (
     remember_token character varying(100),
     created_at timestamp(0) without time zone,
     updated_at timestamp(0) without time zone,
-    deleted_at timestamp with time zone
+    deleted_at timestamp(0) without time zone
 );
 
 CREATE TABLE cmis.value_contexts (

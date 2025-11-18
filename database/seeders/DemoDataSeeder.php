@@ -114,7 +114,7 @@ class DemoDataSeeder extends Seeder
                 'role_id' => $this->roleIds[$uo['role']],
                 'is_active' => true,
                 'joined_at' => now()->subDays(rand(30, 90)),
-                'invited_by' => $this->userIds['admin@cmis.test'],
+                'invited_by' => null, // Can't reference users.id (bigint) from invited_by (uuid)
                 'last_accessed' => now()->subHours(rand(1, 48)),
                 'deleted_at' => null,
                 'provider' => null,
@@ -202,10 +202,10 @@ class DemoDataSeeder extends Seeder
             ['offering_id' => Str::uuid(), 'org_id' => $this->orgIds['FashionHub Retail'], 'kind' => 'product', 'name' => 'Premium Accessories', 'description' => 'Luxury fashion accessories', 'created_at' => now(), 'deleted_at' => null, 'provider' => null],
         ]);
 
-        // Segments
+        // Segments (no created_at/updated_at columns)
         DB::table('cmis.segments')->insert([
-            ['segment_id' => Str::uuid(), 'org_id' => $this->orgIds['TechVision Solutions'], 'name' => 'Enterprise IT Directors', 'persona' => json_encode(['age_range' => '35-55', 'job_title' => 'IT Director', 'company_size' => '500+']), 'notes' => 'Decision makers for enterprise software', 'created_at' => now(), 'deleted_at' => null, 'provider' => null],
-            ['segment_id' => Str::uuid(), 'org_id' => $this->orgIds['FashionHub Retail'], 'name' => 'Fashion Enthusiasts 18-35', 'persona' => json_encode(['age_range' => '18-35', 'interests' => ['fashion', 'lifestyle', 'trends']]), 'notes' => 'Young adults following fashion trends', 'created_at' => now(), 'deleted_at' => null, 'provider' => null],
+            ['segment_id' => Str::uuid(), 'org_id' => $this->orgIds['TechVision Solutions'], 'name' => 'Enterprise IT Directors', 'persona' => json_encode(['age_range' => '35-55', 'job_title' => 'IT Director', 'company_size' => '500+']), 'notes' => 'Decision makers for enterprise software', 'deleted_at' => null, 'provider' => null],
+            ['segment_id' => Str::uuid(), 'org_id' => $this->orgIds['FashionHub Retail'], 'name' => 'Fashion Enthusiasts 18-35', 'persona' => json_encode(['age_range' => '18-35', 'interests' => ['fashion', 'lifestyle', 'trends']]), 'notes' => 'Young adults following fashion trends', 'deleted_at' => null, 'provider' => null],
         ]);
     }
 
@@ -216,7 +216,7 @@ class DemoDataSeeder extends Seeder
         $integrations = [
             // TechVision - Instagram
             [
-                'id' => Str::uuid(),
+                'integration_id' => Str::uuid(),
                 'org_id' => $this->orgIds['TechVision Solutions'],
                 'platform' => 'instagram',
                 'account_id' => 'techvision_official',
@@ -225,7 +225,7 @@ class DemoDataSeeder extends Seeder
                 'is_active' => true,
                 'business_id' => 'business_' . rand(100000, 999999),
                 'created_at' => now()->subDays(60),
-                'created_by' => $this->userIds['sarah@techvision.com'],
+                'created_by' => null, // Can't reference users.id (bigint) from created_by (uuid)
                 'updated_by' => null,
                 'updated_at' => now()->subDays(60),
                 'deleted_at' => null,
@@ -233,7 +233,7 @@ class DemoDataSeeder extends Seeder
             ],
             // FashionHub - Instagram
             [
-                'id' => Str::uuid(),
+                'integration_id' => Str::uuid(),
                 'org_id' => $this->orgIds['FashionHub Retail'],
                 'platform' => 'instagram',
                 'account_id' => 'fashionhub_style',
@@ -242,7 +242,7 @@ class DemoDataSeeder extends Seeder
                 'is_active' => true,
                 'business_id' => 'business_' . rand(100000, 999999),
                 'created_at' => now()->subDays(90),
-                'created_by' => $this->userIds['emma@fashionhub.com'],
+                'created_by' => null, // Can't reference users.id (bigint) from created_by (uuid)
                 'updated_by' => null,
                 'updated_at' => now()->subDays(90),
                 'deleted_at' => null,
@@ -250,7 +250,7 @@ class DemoDataSeeder extends Seeder
             ],
             // TechVision - Facebook Ads
             [
-                'id' => Str::uuid(),
+                'integration_id' => Str::uuid(),
                 'org_id' => $this->orgIds['TechVision Solutions'],
                 'platform' => 'facebook_ads',
                 'account_id' => 'act_123456789',
@@ -259,7 +259,7 @@ class DemoDataSeeder extends Seeder
                 'is_active' => true,
                 'business_id' => 'business_' . rand(100000, 999999),
                 'created_at' => now()->subDays(60),
-                'created_by' => $this->userIds['sarah@techvision.com'],
+                'created_by' => null, // Can't reference users.id (bigint) from created_by (uuid)
                 'updated_by' => null,
                 'updated_at' => now()->subDays(60),
                 'deleted_at' => null,
@@ -269,7 +269,7 @@ class DemoDataSeeder extends Seeder
 
         foreach ($integrations as $integration) {
             DB::table('cmis.integrations')->insert($integration);
-            $this->integrationIds[$integration['org_id']][$integration['platform']] = $integration['id'];
+            $this->integrationIds[$integration['org_id']][$integration['platform']] = $integration['integration_id'];
         }
     }
 
@@ -450,10 +450,7 @@ class DemoDataSeeder extends Seeder
                 'org_id' => $this->orgIds['FashionHub Retail'],
                 'campaign_id' => $this->campaignIds[$this->orgIds['FashionHub Retail']][0],
                 'name' => 'Summer Collection Social Media Plan',
-                'timeframe_daterange' => json_encode([
-                    'start' => now()->subDays(30)->toDateString(),
-                    'end' => now()->addDays(60)->toDateString(),
-                ]),
+                'timeframe_daterange' => DB::raw("'[" . now()->subDays(30)->toDateString() . "," . now()->addDays(60)->toDateString() . "]'::daterange"),
                 'strategy' => json_encode([
                     'objectives' => ['brand_awareness', 'sales'],
                     'posting_frequency' => 'daily',
@@ -798,7 +795,7 @@ class DemoDataSeeder extends Seeder
                 'queue_id' => Str::uuid(),
                 'org_id' => $account->org_id,
                 'social_account_id' => $account->id,
-                'weekdays_enabled' => json_encode([1, 2, 3, 4, 5]), // Mon-Fri
+                'weekdays_enabled' => '1111100', // Mon-Fri enabled (7 bits for each day)
                 'time_slots' => json_encode([
                     '09:00', '12:00', '15:00', '18:00'
                 ]),
@@ -916,7 +913,7 @@ class DemoDataSeeder extends Seeder
             'budget_per_variation' => 500.00,
             'test_duration_days' => 14,
             'min_sample_size' => 1000,
-            'confidence_level' => 95,
+            'confidence_level' => 0.95, // 95% as decimal
             'winner_variation_id' => null,
             'config' => json_encode([
                 'traffic_split' => '50/50',

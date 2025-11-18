@@ -197,7 +197,6 @@ ALTER TABLE ONLY cmis.meta_function_descriptions ALTER COLUMN id SET DEFAULT nex
 ALTER TABLE ONLY cmis.migrations ALTER COLUMN id SET DEFAULT nextval('cmis.migrations_id_seq'::regclass);
 ALTER TABLE ONLY cmis.modules ALTER COLUMN module_id SET DEFAULT nextval('cmis.modules_module_id_seq'::regclass);
 ALTER TABLE ONLY cmis.naming_templates ALTER COLUMN naming_id SET DEFAULT nextval('cmis.naming_templates_naming_id_seq'::regclass);
-ALTER TABLE ONLY cmis.users ALTER COLUMN id SET DEFAULT nextval('cmis.users_id_seq'::regclass);
 ALTER TABLE ONLY cmis_knowledge.dev ALTER COLUMN id SET DEFAULT nextval('cmis_knowledge.dev_id_seq'::regclass);
 ALTER TABLE ONLY cmis_knowledge.index_backup_2025_11_10 ALTER COLUMN id SET DEFAULT nextval('cmis_knowledge.index_backup_2025_11_10_id_seq'::regclass);
 ALTER TABLE ONLY cmis_knowledge.marketing ALTER COLUMN id SET DEFAULT nextval('cmis_knowledge.marketing_id_seq'::regclass);
@@ -366,7 +365,7 @@ ALTER TABLE ONLY cmis.user_permissions     ADD CONSTRAINT user_permissions_user_
 ALTER TABLE ONLY cmis.user_sessions     ADD CONSTRAINT user_sessions_pkey PRIMARY KEY (session_id);
 ALTER TABLE ONLY cmis.user_sessions     ADD CONSTRAINT user_sessions_session_token_key UNIQUE (session_token);
 ALTER TABLE ONLY cmis.users     ADD CONSTRAINT users_email_unique UNIQUE (email);
-ALTER TABLE ONLY cmis.users     ADD CONSTRAINT users_pkey PRIMARY KEY (id);
+ALTER TABLE ONLY cmis.users     ADD CONSTRAINT users_pkey PRIMARY KEY (user_id);
 ALTER TABLE ONLY cmis.value_contexts     ADD CONSTRAINT value_contexts_pkey PRIMARY KEY (context_id);
 ALTER TABLE ONLY cmis.variation_policies     ADD CONSTRAINT variation_policies_pkey PRIMARY KEY (policy_id);
 ALTER TABLE ONLY cmis.video_scenes     ADD CONSTRAINT video_scenes_pkey PRIMARY KEY (scene_id);
@@ -580,7 +579,7 @@ ALTER TABLE ONLY cmis.team_invitations     ADD CONSTRAINT team_invitations_role_
 ALTER TABLE ONLY cmis.user_activities     ADD CONSTRAINT user_activities_org_id_fkey FOREIGN KEY (org_id) REFERENCES cmis.orgs(org_id);
 ALTER TABLE ONLY cmis.user_activities     ADD CONSTRAINT user_activities_session_id_fkey FOREIGN KEY (session_id) REFERENCES cmis.user_sessions(session_id);
 ALTER TABLE ONLY cmis.user_orgs     ADD CONSTRAINT user_orgs_org_id_fkey FOREIGN KEY (org_id) REFERENCES cmis.orgs(org_id) ON DELETE CASCADE;
-ALTER TABLE ONLY cmis.user_orgs     ADD CONSTRAINT user_orgs_user_id_fkey FOREIGN KEY (user_id) REFERENCES cmis.users(id) ON DELETE CASCADE;
+ALTER TABLE ONLY cmis.user_orgs     ADD CONSTRAINT user_orgs_user_id_fkey FOREIGN KEY (user_id) REFERENCES cmis.users(user_id) ON DELETE CASCADE;
 ALTER TABLE ONLY cmis.user_permissions     ADD CONSTRAINT user_permissions_org_id_fkey FOREIGN KEY (org_id) REFERENCES cmis.orgs(org_id) ON DELETE CASCADE;
 ALTER TABLE ONLY cmis.user_permissions     ADD CONSTRAINT user_permissions_permission_id_fkey FOREIGN KEY (permission_id) REFERENCES cmis.permissions(permission_id) ON DELETE CASCADE;
 ALTER TABLE ONLY cmis.value_contexts     ADD CONSTRAINT value_contexts_campaign_id_fkey FOREIGN KEY (campaign_id) REFERENCES cmis.campaigns(campaign_id) MATCH FULL ON DELETE SET NULL DEFERRABLE;
