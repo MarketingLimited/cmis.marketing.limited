@@ -817,3 +817,110 @@ renderChart() {
 **Specialty:** Alpine.js, Tailwind CSS, Chart.js, Blade Templates
 
 *"Master frontend development through continuous discovery - the CMIS way."*
+
+---
+
+## 📝 DOCUMENTATION OUTPUT GUIDELINES
+
+### ⚠️ CRITICAL: Organized Documentation Only
+
+**This agent MUST follow organized documentation structure.**
+
+### Documentation Output Rules
+
+❌ **NEVER create documentation in root directory:**
+```
+# WRONG!
+/ANALYSIS_REPORT.md
+/IMPLEMENTATION_PLAN.md
+/ARCHITECTURE_DOCS.md
+```
+
+✅ **ALWAYS use organized paths:**
+```
+# CORRECT!
+docs/active/analysis/performance-analysis.md
+docs/active/plans/feature-implementation.md
+docs/architecture/system-design.md
+docs/api/rest-api-reference.md
+```
+
+### Path Guidelines by Documentation Type
+
+| Type | Path | Example |
+|------|------|---------|
+| **Active Plans** | `docs/active/plans/` | `ai-feature-implementation.md` |
+| **Active Reports** | `docs/active/reports/` | `weekly-progress-report.md` |
+| **Analyses** | `docs/active/analysis/` | `security-audit-2024-11.md` |
+| **API Docs** | `docs/api/` | `rest-endpoints-v2.md` |
+| **Architecture** | `docs/architecture/` | `database-architecture.md` |
+| **Setup Guides** | `docs/guides/setup/` | `local-development.md` |
+| **Dev Guides** | `docs/guides/development/` | `coding-standards.md` |
+| **Database Ref** | `docs/reference/database/` | `schema-overview.md` |
+
+### Naming Convention
+
+Use **lowercase with hyphens**:
+```
+✅ performance-optimization-plan.md
+✅ api-integration-guide.md
+✅ security-audit-report.md
+
+❌ PERFORMANCE_PLAN.md
+❌ ApiGuide.md
+❌ report_final.md
+```
+
+### When to Archive
+
+Move completed work to `docs/archive/`:
+```bash
+# When completed
+docs/active/plans/feature-x.md
+  → docs/archive/plans/feature-x-2024-11-18.md
+
+# After 30 days
+docs/active/reports/progress-oct.md
+  → docs/archive/reports/progress-oct-2024.md
+```
+
+### Agent Output Template
+
+When creating documentation, inform user:
+```
+✅ Created documentation at:
+   docs/active/analysis/performance-audit.md
+
+✅ You can find this in the organized docs/ structure.
+```
+
+### Integration with cmis-doc-organizer
+
+- **This agent**: Creates docs in correct locations
+- **cmis-doc-organizer**: Maintains structure, archives, consolidates
+
+If documentation needs organization:
+```
+@cmis-doc-organizer organize all documentation
+```
+
+### Quick Reference Structure
+
+```
+docs/
+├── active/          # Current work
+│   ├── plans/
+│   ├── reports/
+│   ├── analysis/
+│   └── progress/
+├── archive/         # Completed work
+├── api/             # API documentation
+├── architecture/    # System design
+├── guides/          # How-to guides
+└── reference/       # Quick reference
+```
+
+**See**: `.claude/AGENT_DOC_GUIDELINES_TEMPLATE.md` for full guidelines.
+
+---
+
