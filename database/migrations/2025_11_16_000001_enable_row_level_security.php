@@ -13,29 +13,20 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Tables that need RLS (all tables with org_id column)
+        // Tables that need RLS (all tables with org_id column that actually exist)
         $tables = [
             'cmis.orgs',
             'cmis.org_markets',
-            'cmis.org_users',
             'cmis.user_orgs',
             'cmis.campaigns',
             'cmis.content_plans',
             'cmis.content_items',
             'cmis.creative_assets',
-            'cmis.copy_components',
-            'cmis.knowledge_base',
-            'cmis.knowledge_embeddings',
             'cmis.ad_accounts',
             'cmis.ad_campaigns',
             'cmis.ad_sets',
             'cmis.ad_entities',
             'cmis.ad_metrics',
-            'cmis.compliance_rules',
-            'cmis.compliance_audits',
-            'cmis.ab_tests',
-            'cmis.ab_test_variations',
-            'cmis_audit.activity_logs',
         ];
 
         // Create function to get current org_id from session
@@ -108,25 +99,16 @@ return new class extends Migration
         $tables = [
             'cmis.orgs',
             'cmis.org_markets',
-            'cmis.org_users',
             'cmis.user_orgs',
             'cmis.campaigns',
             'cmis.content_plans',
             'cmis.content_items',
             'cmis.creative_assets',
-            'cmis.copy_components',
-            'cmis.knowledge_base',
-            'cmis.knowledge_embeddings',
             'cmis.ad_accounts',
             'cmis.ad_campaigns',
             'cmis.ad_sets',
             'cmis.ad_entities',
             'cmis.ad_metrics',
-            'cmis.compliance_rules',
-            'cmis.compliance_audits',
-            'cmis.ab_tests',
-            'cmis.ab_test_variations',
-            'cmis_audit.activity_logs',
         ];
 
         // Drop all policies

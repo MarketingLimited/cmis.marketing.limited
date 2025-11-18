@@ -121,8 +121,15 @@ class ChannelsSeeder extends Seeder
             ],
         ];
 
+        // First, truncate the table to ensure clean state (use public schema explicitly)
+        DB::statement('TRUNCATE TABLE public.channels RESTART IDENTITY CASCADE');
+
         foreach ($channels as $channel) {
-            DB::table('public.channels')->insert($channel);
+            // Use raw SQL with nextval to get the next sequence value
+            DB::statement(
+                "INSERT INTO public.channels (channel_id, code, name, constraints) VALUES (nextval('channels_channel_id_seq'), ?, ?, ?::jsonb)",
+                [$channel['code'], $channel['name'], $channel['constraints']]
+            );
         }
 
         $this->command->info('Channels seeded successfully!');

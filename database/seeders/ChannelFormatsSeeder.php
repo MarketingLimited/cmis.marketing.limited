@@ -62,6 +62,9 @@ class ChannelFormatsSeeder extends Seeder
             ['channel_code' => 'meta_ads', 'code' => 'carousel', 'ratio' => '1:1', 'length_hint' => null],
         ];
 
+        // First, truncate the table to ensure clean state
+        DB::statement('TRUNCATE TABLE public.channel_formats RESTART IDENTITY CASCADE');
+
         // Get channel IDs
         $channels = DB::table('public.channels')->get()->keyBy('code');
 
@@ -69,12 +72,17 @@ class ChannelFormatsSeeder extends Seeder
             $channel = $channels[$format['channel_code']] ?? null;
             if (!$channel) continue;
 
-            DB::table('public.channel_formats')->insert([
-                'channel_id' => $channel->channel_id,
-                'code' => $format['code'],
-                'ratio' => $format['ratio'],
-                'length_hint' => $format['length_hint'],
-            ]);
+            // Use raw SQL with nextval to get the next sequence value for format_id
+            DB::statement(
+                "INSERT INTO public.channel_formats (format_id, channel_id, code, ratio, length_hint)
+                 VALUES (nextval('channel_formats_format_id_seq'), ?, ?, ?, ?)",
+                [
+                    $channel->channel_id,
+                    $format['code'],
+                    $format['ratio'],
+                    $format['length_hint']
+                ]
+            );
         }
 
         $this->command->info('Channel formats seeded successfully!');

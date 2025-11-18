@@ -42,8 +42,21 @@ class MarketsSeeder extends Seeder
             ['market_name' => 'Australia', 'language_code' => 'en', 'currency_code' => 'AUD', 'text_direction' => 'ltr'],
         ];
 
+        // First, truncate the table to ensure clean state
+        DB::statement('TRUNCATE TABLE public.markets RESTART IDENTITY CASCADE');
+
         foreach ($markets as $market) {
-            DB::table('public.markets')->insert($market);
+            // Use raw SQL with nextval to get the next sequence value for market_id
+            DB::statement(
+                "INSERT INTO public.markets (market_id, market_name, language_code, currency_code, text_direction)
+                 VALUES (nextval('markets_market_id_seq'), ?, ?, ?, ?)",
+                [
+                    $market['market_name'],
+                    $market['language_code'],
+                    $market['currency_code'],
+                    $market['text_direction']
+                ]
+            );
         }
 
         $this->command->info('Markets seeded successfully!');
