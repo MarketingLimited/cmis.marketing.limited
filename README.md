@@ -610,24 +610,70 @@ GOOGLE_CLIENT_SECRET=prod-client-secret
 
 ## 📚 Documentation
 
-### Additional Resources
+### Documentation Hub
 
-- **[Project Status & Roadmap](docs/project-status-and-plan.md)**: Current development status and future plans
-- **[API Documentation](API_DOCUMENTATION.md)**: Complete API reference
-- **[Testing Guide](TESTING.md)**: Comprehensive testing documentation
-- **[Architecture Guide](ARCHITECTURE_IMPROVEMENTS.md)**: Deep dive into system architecture
-- **[Audit Reports](AUDIT_REPORT.md)**: Database and code audit reports
+All documentation has been organized into a comprehensive, easy-to-navigate structure. Start at the **[Documentation Hub](docs/README.md)** for complete access to all documentation.
+
+### Quick Links by Role
+
+#### For Executives
+- **[Executive Summary](docs/reports/executive-summary.md)** - High-level project overview
+- **[Master Action Plan](docs/reports/master-action-plan.md)** - Strategic planning and roadmap
+- **[Gap Analysis](docs/reports/gap-analysis.md)** - Current status and gaps
+
+#### For Developers
+- **[Getting Started](QUICK_START.md)** - Quick start guide
+- **[API Documentation](docs/api/)** - Complete REST API reference
+- **[Architecture Guide](docs/architecture/)** - System architecture and design patterns
+- **[Testing Guide](docs/development/testing.md)** - Testing documentation
+- **[Repository Pattern Guide](app/Repositories/README.md)** - Data access layer
+
+#### For DevOps Engineers
+- **[Deployment Guide](docs/deployment/setup-guide.md)** - Production deployment
+- **[Database Setup](docs/deployment/database-setup.md)** - Database configuration
+- **[System Recovery](docs/deployment/system_recovery_plan.md)** - Recovery procedures
+- **[Maintenance Checklist](docs/deployment/devops_maintenance_checklist.md)** - Regular maintenance
+
+#### For Project Managers
+- **[Project Status & Roadmap](docs/reports/project-status-and-plan.md)** - Current status and plans
+- **[Implementation Roadmap](docs/reports/implementation-roadmap.md)** - Implementation timeline
+- **[Reports & Analysis](docs/reports/)** - All project reports
+
+### Documentation by Topic
+
+#### Features
+- **[AI & Semantic Features](docs/features/ai-semantic/)** - AI capabilities and semantic search
+- **[Social Publishing](docs/features/social-publishing/)** - Social media publishing features
+- **[Frontend](docs/features/frontend/)** - Frontend architecture and components
+- **[Database](docs/features/database/)** - Database architecture and optimization
+- **[Campaigns](docs/features/campaigns/)** - Campaign management
+
+#### Integrations
+- **[Platform Integrations](docs/integrations/)** - All platform integrations
+- **[Instagram](docs/integrations/instagram/)** - Instagram integration guide
+- **[Facebook](docs/integrations/facebook/)** - Facebook integration
+- **[LinkedIn](docs/integrations/linkedin/)** - LinkedIn integration
+- **[TikTok](docs/integrations/tiktok/)** - TikTok integration
+
+#### Development
+- **[Testing](docs/development/testing.md)** - Comprehensive testing guide
+- **[E2E Testing](docs/development/e2e-testing.md)** - End-to-end testing
+- **[Test Framework](docs/development/test-framework.md)** - Testing framework overview
 
 ### Key Concepts
 
 #### Multi-Tenancy Model
 Every organization's data is completely isolated using PostgreSQL Row-Level Security. Users can belong to multiple organizations with different roles in each.
 
+See **[Architecture Documentation](docs/architecture/)** for detailed information.
+
 #### Cognitive Framework
 CMIS includes comprehensive marketing frameworks, strategies, and playbooks that guide campaign creation and optimization.
 
 #### AI Integration
 Vector embeddings enable semantic search across campaigns, assets, and content. AI models provide predictive insights and recommendations.
+
+See **[AI Features Documentation](docs/features/ai-semantic/)** for complete details.
 
 ---
 
