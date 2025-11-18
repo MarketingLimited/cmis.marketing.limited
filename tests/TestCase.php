@@ -11,9 +11,11 @@ use App\Models\Core\Org;
 use App\Models\Core\Role;
 use App\Models\Core\UserOrg;
 use Illuminate\Support\Str;
+use Tests\Traits\OptimizesTestPerformance;
 
 abstract class TestCase extends BaseTestCase
 {
+    use OptimizesTestPerformance;
     /**
      * Indicates whether the default seeder should run before each test.
      *
@@ -137,7 +139,8 @@ abstract class TestCase extends BaseTestCase
      */
     protected function initializeTestLogging(): void
     {
-        $testName = method_exists($this, 'name') ? $this->name() : (method_exists($this, 'getName') ? $this->getName() : 'unknown');
+        // Laravel 12.x compatible: use name() method
+        $testName = $this->name();
         $testClass = static::class;
 
         try {
@@ -166,7 +169,8 @@ abstract class TestCase extends BaseTestCase
      */
     protected function logTestResult(string $status, array $details = []): void
     {
-        $testName = method_exists($this, 'name') ? $this->name() : (method_exists($this, 'getName') ? $this->getName() : 'unknown');
+        // Laravel 12.x compatible: use name() method
+        $testName = $this->name();
         $testClass = static::class;
 
         try {
