@@ -38,52 +38,52 @@ $gradient = $gradients[$color] ?? $gradients['indigo'];
 $iconColor = $iconColors[$color] ?? $iconColors['indigo'];
 @endphp
 
-<div {{ $attributes->merge(['class' => 'bg-gradient-to-br ' . $gradient . ' rounded-xl shadow-lg p-6 text-white']) }}>
+<div {{ $attributes->merge(['class' => 'bg-gradient-to-br ' . $gradient . ' rounded-xl shadow-lg p-4 sm:p-6 text-white']) }}>
     <div class="flex items-center justify-between">
-        <div class="flex-1">
-            <p class="text-white/80 text-sm mb-1">{{ $title }}</p>
-            <p class="text-3xl font-bold">{{ $value }}</p>
+        <div class="flex-1 min-w-0">
+            <p class="text-white/80 text-xs sm:text-sm mb-1">{{ $title }}</p>
+            <p class="text-2xl sm:text-3xl font-bold truncate">{{ $value }}</p>
 
             @if ($subtitle)
-            <p class="text-white/70 text-xs mt-2">{{ $subtitle }}</p>
+            <p class="text-white/70 text-[10px] sm:text-xs mt-1 sm:mt-2 truncate">{{ $subtitle }}</p>
             @endif
 
             @if ($trend !== null)
-            <div class="flex items-center gap-2 mt-3">
+            <div class="flex items-center gap-1 sm:gap-2 mt-2 sm:mt-3">
                 @if ($trendDirection === 'up')
-                <span class="flex items-center text-sm font-medium text-white/90">
-                    <i class="fas fa-arrow-up ml-1"></i>
+                <span class="flex items-center text-xs sm:text-sm font-medium text-white/90">
+                    <i class="fas fa-arrow-up ml-1 text-xs"></i>
                     {{ $trend }}
                 </span>
                 @elseif ($trendDirection === 'down')
-                <span class="flex items-center text-sm font-medium text-white/90">
-                    <i class="fas fa-arrow-down ml-1"></i>
+                <span class="flex items-center text-xs sm:text-sm font-medium text-white/90">
+                    <i class="fas fa-arrow-down ml-1 text-xs"></i>
                     {{ $trend }}
                 </span>
                 @else
-                <span class="flex items-center text-sm font-medium text-white/90">
-                    <i class="fas fa-minus ml-1"></i>
+                <span class="flex items-center text-xs sm:text-sm font-medium text-white/90">
+                    <i class="fas fa-minus ml-1 text-xs"></i>
                     {{ $trend }}
                 </span>
                 @endif
-                <span class="text-xs text-white/60">مقارنة بالأمس</span>
+                <span class="text-[10px] sm:text-xs text-white/60 hidden sm:inline">مقارنة بالأمس</span>
             </div>
             @endif
         </div>
 
         @if ($icon)
-        <div>
-            <i class="{{ $icon }} text-5xl {{ $iconColor }} opacity-50"></i>
+        <div class="flex-shrink-0 mr-2 sm:mr-0">
+            <i class="{{ $icon }} text-3xl sm:text-4xl md:text-5xl {{ $iconColor }} opacity-50"></i>
         </div>
         @endif
     </div>
 
     @if ($link)
     <a href="{{ $link }}"
-       class="block mt-4 pt-4 border-t border-white/20 text-sm text-white hover:text-white/80 transition">
+       class="block mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-white/20 text-xs sm:text-sm text-white hover:text-white/80 transition">
         <span class="flex items-center justify-between">
             <span>عرض التفاصيل</span>
-            <i class="fas fa-arrow-left"></i>
+            <i class="fas fa-arrow-left text-xs"></i>
         </span>
     </a>
     @endif
