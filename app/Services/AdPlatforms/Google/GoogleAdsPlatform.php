@@ -3,6 +3,7 @@
 namespace App\Services\AdPlatforms\Google;
 
 use App\Services\AdPlatforms\AbstractAdPlatform;
+use App\Traits\HasRateLimiting; // NEW: Phase 2 - Rate Limiting
 use Carbon\Carbon;
 
 /**
@@ -23,8 +24,11 @@ use Carbon\Carbon;
  */
 class GoogleAdsPlatform extends AbstractAdPlatform
 {
+    use HasRateLimiting; // NEW: Phase 2 - Rate Limiting
+
     protected string $apiVersion = 'v15';
     protected string $apiBaseUrl = 'https://googleads.googleapis.com';
+    protected string $platform = 'google'; // For rate limiting
 
     /**
      * Google Ads Customer ID (without dashes)
