@@ -577,4 +577,70 @@ class IntegrationController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Get expiring tokens for dashboard warnings (NEW: Week 2)
+     *
+     * Returns integrations with tokens expiring within specified days
+     */
+    public function getExpiringTokens(Request $request, string $orgId)
+    {
+        $this->authorize('viewAny', Integration::class);
+
+        try {
+            $warningDays = $request->input('days', 7);
+            $now = now();
+            $threshold = $now->copy()->addDays($warningDays);
+
+            $expiringTokens = Integration::where('org_id', $orgId)
+                ->where('is_active', true)
+                ->whereNotNull('token_expires_at')
+                ->where('token_expires_at', '<=', $threshold)
+                ->where('token_expires_at', '>', $now) // Not yet expired
+                ->orderBy('token_expires_at', 'asc')
+                ->get()
+                ->map(function ($integration) use ($now) {
+                    $expiresAt = $integration->token_expires_at;
+                    $daysUntilExpiry = $now->diffInDays($expiresAt, false);
+                    $hoursUntilExpiry = $now->diffInHours($expiresAt, false);
+
+                    // Determine severity
+                    $severity = 'warning';
+                    if ($hoursUntilExpiry <= 24) {
+                        $severity = 'critical';
+                    } elseif ($daysUntilExpiry <= 3) {
+                        $severity = 'urgent';
+                    }
+
+                    return [
+                        'integration_id' => $integration->integration_id,
+                        'platform' => $integration->platform,
+                        'platform_name' => self::PLATFORMS[$integration->platform]['name'] ?? ucfirst($integration->platform),
+                        'username' => $integration->username,
+                        'account_id' => $integration->account_id,
+                        'expires_at' => $expiresAt->toIso8601String(),
+                        'expires_at_human' => $expiresAt->diffForHumans(),
+                        'days_until_expiry' => round($daysUntilExpiry, 1),
+                        'hours_until_expiry' => round($hoursUntilExpiry, 1),
+                        'severity' => $severity,
+                        'has_refresh_token' => !empty($integration->refresh_token),
+                        'reconnect_url' => "/dashboard/{$orgId}/integrations/{$integration->integration_id}/reconnect",
+                    ];
+                });
+
+            return response()->json([
+                'expiring_tokens' => $expiringTokens,
+                'total_count' => $expiringTokens->count(),
+                'critical_count' => $expiringTokens->where('severity', 'critical')->count(),
+                'urgent_count' => $expiringTokens->where('severity', 'urgent')->count(),
+                'warning_count' => $expiringTokens->where('severity', 'warning')->count(),
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Failed to fetch expiring tokens',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
 }
