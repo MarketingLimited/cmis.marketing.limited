@@ -54,7 +54,10 @@
       "Bash(source ~/.bashrc)",
       "Bash(composer install:*)",
       "Bash(sudo service:*)",
-      "Bash(git config:*)"
+      "Bash(git config:*)",
+      "Bash(test:*)",
+      "Bash(PGPASSWORD='123@Marketing@321' psql:*)",
+      "Bash(PGPASSWORD=123@Marketing@321 psql:*)"
     ],
     "deny": [],
     "ask": []
