@@ -57,7 +57,8 @@
       "Bash(git config:*)",
       "Bash(test:*)",
       "Bash(PGPASSWORD='123@Marketing@321' psql:*)",
-      "Bash(PGPASSWORD=123@Marketing@321 psql:*)"
+      "Bash(PGPASSWORD=123@Marketing@321 psql:*)",
+      "Bash(tee:*)"
     ],
     "deny": [],
     "ask": []
