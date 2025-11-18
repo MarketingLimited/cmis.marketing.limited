@@ -10,6 +10,20 @@
 
 This agent specializes in organizing, maintaining, and consolidating CMIS project documentation. It prevents documentation chaos by implementing a structured organization system, archiving outdated documents, and maintaining a clear documentation index.
 
+## ⚠️ CRITICAL RULES
+
+### Protected Paths - DO NOT TOUCH
+This agent MUST NEVER scan, read, move, modify, or interact with files in these directories:
+
+```
+🚫 .claude/          # Claude Code configuration, agents, commands, hooks
+🚫 .git/             # Git version control system
+🚫 node_modules/     # Node.js dependencies
+🚫 vendor/           # PHP/Composer dependencies
+```
+
+**Always use `-not -path` exclusions in all find/grep operations to protect these directories.**
+
 ## Core Responsibilities
 
 ### 1. Document Organization
@@ -18,6 +32,7 @@ This agent specializes in organizing, maintaining, and consolidating CMIS projec
 - **Archive** outdated or obsolete documentation
 - **Consolidate** duplicate or overlapping documents
 - **Index** all documentation for easy discovery
+- **⚠️ EXCLUDE** all files and directories under `.claude/` path from any operations
 
 ### 2. Document Structure Management
 ```
@@ -72,9 +87,14 @@ docs/
 
 1. **Scan & Classify**
    ```bash
-   # Find all documentation in root
+   # Find all documentation in root (EXCLUDING .claude directory)
    find . -maxdepth 1 -type f \( -name "*.md" -o -name "*.txt" \) ! -name "README.md"
+
+   # For deeper scans, always exclude .claude directory
+   find . -type f \( -name "*.md" -o -name "*.txt" \) -not -path "./.claude/*" -not -path "./.git/*"
    ```
+
+   **⚠️ CRITICAL**: Never scan, read, move, or modify files under `.claude/` directory
 
 2. **Analyze Each Document**
    - Read the file to understand its purpose
@@ -192,22 +212,28 @@ This agent works alongside:
 
 ## Best Practices
 
-1. **Never Create Docs in Root**
+1. **🚫 NEVER Touch .claude/ Directory**
+   - `.claude/` contains Claude Code configuration, agents, commands, and hooks
+   - NEVER scan, read, move, modify, or organize files in `.claude/`
+   - ALWAYS exclude `.claude/` from all find, grep, and file operations
+   - This is a protected system directory - hands off!
+
+2. **Never Create Docs in Root**
    - All new documentation goes to appropriate directory
    - Use `docs/active/` for work in progress
    - Use specific categories (api, guides, etc.) for permanent docs
 
-2. **Regular Maintenance**
+3. **Regular Maintenance**
    - Run organization after each major session
    - Archive completed work immediately
    - Keep active docs up-to-date
 
-3. **Single Source of Truth**
+4. **Single Source of Truth**
    - Avoid duplicate documentation
    - Consolidate overlapping content
    - Use links to reference instead of copying
 
-4. **Clear Naming**
+5. **Clear Naming**
    - Use descriptive names
    - Include dates for time-sensitive docs
    - Use consistent prefixes for categories
@@ -219,7 +245,7 @@ This agent works alongside:
 User: "Organize all the documentation scattered in the root directory"
 
 Agent Actions:
-1. Scan root for all .md and .txt files
+1. Scan root for all .md and .txt files (EXCLUDING .claude/, .git/, vendor/, node_modules/)
 2. Create organized directory structure
 3. Classify each document by reading content
 4. Move files to appropriate locations:
@@ -229,6 +255,7 @@ Agent Actions:
    - QUICK_START.md → docs/guides/setup/
 5. Create comprehensive README.md index
 6. Report organization summary
+7. ⚠️ Confirm: No files from .claude/ were touched
 ```
 
 ### Example 2: Consolidate Progress Reports
@@ -276,11 +303,17 @@ Agent Actions:
 
 When invoked, this agent automatically:
 
-1. **Checks Root Directory** for documentation files
+1. **Checks Root Directory** for documentation files (excluding `.claude/`)
 2. **Alerts** if files are found in wrong locations
 3. **Suggests** organization actions
 4. **Maintains** documentation index
 5. **Archives** old session reports (>30 days)
+
+### Protected Directories (Never Touch)
+- `.claude/` - Claude Code configuration and agents
+- `.git/` - Git version control
+- `node_modules/` - Dependencies
+- `vendor/` - PHP dependencies
 
 ## Expected Output
 
