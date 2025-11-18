@@ -191,15 +191,17 @@ Technical reference documentation:
 
 Current analysis and strategic reports:
 
-- **[Master Action Plan](reports/)** - Strategic action plan
-- **[Executive Summary](reports/)** - Executive overview
-- **[Gap Analysis](reports/)** - Gap analysis report
-- **[Technical Audit](reports/)** - Technical audit findings
-- **[Comprehensive Audit](CMIS_COMPREHENSIVE_AUDIT_REPORT.md)** - Full audit report
+- **[Master Action Plan](reports/master-action-plan.md)** - Strategic action plan
+- **[Executive Summary](reports/executive-summary.md)** - Executive overview
+- **[Gap Analysis](reports/gap-analysis.md)** - Gap analysis report
+- **[Technical Audit](reports/technical-audit.md)** - Technical audit findings
+- **[Comprehensive Audit](reports/comprehensive-audit.md)** - Full audit report
+- **[Project Reality Check](reports/project-reality-check.md)** - Reality check report (2025-11-12)
+- **[System Interfaces Audit (AR)](reports/system-interfaces-audit-ar.md)** - تدقيق واجهات النظام
 
 ### Additional Reports
 - **[Changelog](changelog.md)** - Change history and releases
-- **[Database Sync Report](DATABASE_SYNC_REPORT.md)** - Database synchronization status
+- **[Database Sync Report](reports/database-sync.md)** - Database synchronization status
 
 ---
 
