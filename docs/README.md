@@ -32,9 +32,9 @@ Welcome to the CMIS (Campaign Management & Intelligence System) documentation. T
 
 New to CMIS? Start here:
 
-- **[Quick Start Guide](../QUICK_START.md)** - Get up and running quickly
+- **[Quick Start Guide](guides/quick-start.md)** - Get up and running quickly
 - **[Main README](../README.md)** - Project overview and introduction
-- **[Arabic Guide](../START_HERE_README.md)** - دليل شامل بالعربية
+- **[Arabic Guide](guides/start-here.md)** - دليل شامل بالعربية
 - **[Installation Guide](getting-started/)** - Detailed installation instructions
 - **[Configuration Guide](getting-started/)** - System configuration
 
@@ -180,6 +180,8 @@ Technical reference documentation:
 - **[Artisan Commands](reference/)** - All artisan commands
 - **[Models](reference/)** - Model reference
 - **[Helper Functions](reference/)** - Helper functions reference
+- **[Project Structure Tree](reference/project-full-tree.txt)** - Complete project structure
+- **[Latest Project Tree](reference/project-latest-tree.txt)** - Most recent project structure
 
 ---
 
