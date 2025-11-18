@@ -32,9 +32,9 @@ Welcome to the CMIS (Campaign Management & Intelligence System) documentation. T
 
 New to CMIS? Start here:
 
-- **[Quick Start Guide](../QUICK_START.md)** - Get up and running quickly
+- **[Quick Start Guide](guides/quick-start.md)** - Get up and running quickly
 - **[Main README](../README.md)** - Project overview and introduction
-- **[Arabic Guide](../START_HERE_README.md)** - دليل شامل بالعربية
+- **[Arabic Guide](guides/start-here.md)** - دليل شامل بالعربية
 - **[Installation Guide](getting-started/)** - Detailed installation instructions
 - **[Configuration Guide](getting-started/)** - System configuration
 
@@ -180,6 +180,8 @@ Technical reference documentation:
 - **[Artisan Commands](reference/)** - All artisan commands
 - **[Models](reference/)** - Model reference
 - **[Helper Functions](reference/)** - Helper functions reference
+- **[Project Structure Tree](reference/project-full-tree.txt)** - Complete project structure
+- **[Latest Project Tree](reference/project-latest-tree.txt)** - Most recent project structure
 
 ---
 
@@ -189,15 +191,17 @@ Technical reference documentation:
 
 Current analysis and strategic reports:
 
-- **[Master Action Plan](reports/)** - Strategic action plan
-- **[Executive Summary](reports/)** - Executive overview
-- **[Gap Analysis](reports/)** - Gap analysis report
-- **[Technical Audit](reports/)** - Technical audit findings
-- **[Comprehensive Audit](CMIS_COMPREHENSIVE_AUDIT_REPORT.md)** - Full audit report
+- **[Master Action Plan](reports/master-action-plan.md)** - Strategic action plan
+- **[Executive Summary](reports/executive-summary.md)** - Executive overview
+- **[Gap Analysis](reports/gap-analysis.md)** - Gap analysis report
+- **[Technical Audit](reports/technical-audit.md)** - Technical audit findings
+- **[Comprehensive Audit](reports/comprehensive-audit.md)** - Full audit report
+- **[Project Reality Check](reports/project-reality-check.md)** - Reality check report (2025-11-12)
+- **[System Interfaces Audit (AR)](reports/system-interfaces-audit-ar.md)** - تدقيق واجهات النظام
 
 ### Additional Reports
 - **[Changelog](changelog.md)** - Change history and releases
-- **[Database Sync Report](DATABASE_SYNC_REPORT.md)** - Database synchronization status
+- **[Database Sync Report](reports/database-sync.md)** - Database synchronization status
 
 ---
 
