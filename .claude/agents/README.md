@@ -19,12 +19,53 @@ This directory contains **specialized AI agents** custom-built for the CMIS proj
 - Social media management and publishing
 - Real-time analytics and performance tracking
 
-**Total Agents:** 20 specialized agents
+**Total Agents:** 21 specialized agents
 **Project Knowledge Base:** `.claude/CMIS_PROJECT_KNOWLEDGE.md`
 
 ---
 
 ## 🤖 CMIS-SPECIFIC AGENTS
+
+### 📁 Utility Agents
+
+#### **cmis-doc-organizer** - Documentation Organization Specialist 🆕
+**File:** `cmis-doc-organizer.md`
+
+**Purpose:** Automatically organize, maintain, and consolidate project documentation, preventing documentation chaos.
+
+**Use when:**
+- Documentation files scattered in root directory
+- Need to archive old/completed documents
+- Multiple duplicate or overlapping documents
+- Creating organized documentation structure
+- Regular documentation maintenance
+
+**Handles:**
+- Automatic classification of documents by type and status
+- Moving documents to organized directory structure
+- Archiving completed/outdated documentation
+- Consolidating duplicate documents
+- Creating comprehensive documentation index
+- Maintaining clean project structure
+
+**Key Features:**
+- **Auto-classification**: Plans, Reports, Analyses, Guides, etc.
+- **Smart archiving**: Automatically identifies completed work
+- **Consolidation**: Merges duplicate/overlapping documents
+- **Index generation**: Creates navigable documentation map
+- **Continuous maintenance**: Keeps docs organized over time
+
+**Example:**
+```
+"Organize all documentation files in the root directory"
+→ Scans 70+ .md files, classifies, moves to docs/active or docs/archive
+→ Creates comprehensive docs/README.md index
+→ Reports organization summary
+```
+
+**See:** `DOC_ORGANIZER_GUIDE.md` for detailed usage guide.
+
+---
 
 ### 🎯 Core CMIS Agents
 
@@ -360,6 +401,7 @@ This directory contains **specialized AI agents** custom-built for the CMIS proj
 | **Security Audit** | laravel-security | cmis-multi-tenancy |
 | **Database** | laravel-db-architect | cmis-multi-tenancy |
 | **Testing** | laravel-testing | cmis-context-awareness |
+| **Documentation Management** | cmis-doc-organizer | laravel-documentation |
 | **Complex Multi-Domain** | cmis-orchestrator | [Multiple] |
 
 ---
@@ -403,6 +445,16 @@ This directory contains **specialized AI agents** custom-built for the CMIS proj
 4. laravel-testing → Tests AI operations
 ```
 
+### Workflow 5: Documentation Organization
+
+```
+1. cmis-doc-organizer → Scans and classifies documentation
+2. cmis-doc-organizer → Moves files to organized structure
+3. cmis-doc-organizer → Archives old/completed documents
+4. cmis-doc-organizer → Creates comprehensive index
+5. [Regular maintenance] → Run after major sessions
+```
+
 ---
 
 ## 💡 USAGE EXAMPLES
@@ -438,6 +490,22 @@ This directory contains **specialized AI agents** custom-built for the CMIS proj
 3. `cmis-ui-frontend` - Dashboard UI
 4. `laravel-performance` - Optimization
 5. `laravel-testing` - Test strategy
+
+---
+
+### Example 4: Documentation Chaos
+
+**User:** "I have 70+ markdown files in my root directory and can't find anything"
+
+**Agent to use:** `cmis-doc-organizer`
+
+**Why:** Specialized in organizing, archiving, and indexing documentation.
+
+**Result:**
+- Clean root directory
+- Organized docs/ structure with active/ and archive/
+- Comprehensive documentation index
+- Old documents properly archived
 
 ---
 

@@ -256,6 +256,7 @@
 | DevOps | تحتاج إعداد CI/CD أو تحسين عمليات النشر |
 | API Design | تصمم API جديدة أو تحسن موجودة |
 | Documentation | تحتاج توثيق شامل أو تحديث الوثائق |
+| Doc Organizer | مستندات متناثرة أو تحتاج تنظيم وأرشفة |
 
 ---
 
@@ -271,6 +272,59 @@
 ```
 "باستخدام Laravel Architect، راجع البنية المعمارية الحالية مع التركيز على
 قابلية التوسع والفصل بين الطبقات"
+```
+
+---
+
+### السيناريو 9: تنظيم المستندات المتناثرة
+
+**الهدف:** تنظيم وأرشفة المستندات المتراكمة في المشروع
+
+**مثال للطلب:**
+
+```
+"باستخدام cmis-doc-organizer، نظم جميع المستندات في المجلد الجذر:
+- افحص جميع ملفات .md و .txt
+- صنفها حسب النوع (plans, reports, analyses, guides)
+- انقل المستندات المكتملة إلى الأرشيف
+- دمج المستندات المكررة
+- أنشئ فهرس شامل في docs/README.md"
+```
+
+**النتيجة المتوقعة:**
+```
+✅ Root directory نظيف
+✅ docs/active/ يحتوي على المستندات الحالية
+✅ docs/archive/ يحتوي على المستندات المكتملة
+✅ docs/README.md فهرس شامل سهل التصفح
+✅ تقرير بالتغييرات المنفذة
+```
+
+**مثال متقدم للصيانة الدورية:**
+
+```
+"باستخدام cmis-doc-organizer، قم بصيانة شهرية:
+- أرشف session summaries أقدم من 30 يوم
+- دمج progress reports المكررة في تقرير واحد
+- حدّث documentation index
+- حدد المستندات الزائدة عن الحاجة
+- قدم تقرير بصحة المستندات"
+```
+
+**استخدام لدمج المستندات المكررة:**
+
+```
+"باستخدام cmis-doc-organizer، لاحظت وجود:
+- IMPLEMENTATION_PLAN.md
+- IMPLEMENTATION_SUMMARY.md
+- IMPLEMENTATION_ROADMAP.md
+- IMPLEMENTATION_STATUS.md
+- IMPLEMENTATION_COMPLETE.md
+
+قم بدمج هذه المستندات في:
+1. ملف واحد نشط: docs/active/plans/current-implementation.md
+2. أرشف المكتمل: docs/archive/plans/implementation-history.md
+3. احذف المكرر تماماً"
 ```
 
 ---

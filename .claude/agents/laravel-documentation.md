@@ -729,6 +729,129 @@ Created:
 
 ---
 
+## 📝 DOCUMENTATION OUTPUT GUIDELINES
+
+### ⚠️ CRITICAL: Organized Documentation Only
+
+**This agent MUST follow organized documentation structure.**
+
+### Documentation Output Rules
+
+❌ **NEVER create documentation in root directory:**
+```
+# WRONG!
+/API_DOCUMENTATION.md
+/ARCHITECTURE_GUIDE.md
+/SETUP_INSTRUCTIONS.md
+```
+
+✅ **ALWAYS use organized paths:**
+```
+# CORRECT!
+docs/api/rest-api-reference.md
+docs/architecture/system-overview.md
+docs/guides/setup/local-development.md
+```
+
+### Path Guidelines for Documentation Agent
+
+| Type | Path | Example |
+|------|------|---------|
+| **API Docs** | `docs/api/` | `rest-endpoints-v2.md` |
+| **Architecture** | `docs/architecture/` | `system-design-overview.md` |
+| **Setup Guides** | `docs/guides/setup/` | `developer-environment.md` |
+| **Dev Guides** | `docs/guides/development/` | `coding-standards.md` |
+| **Deploy Guides** | `docs/guides/deployment/` | `production-deployment.md` |
+| **Database Ref** | `docs/reference/database/` | `schema-documentation.md` |
+| **Model Ref** | `docs/reference/models/` | `eloquent-models-guide.md` |
+| **API Ref** | `docs/reference/apis/` | `third-party-integrations.md` |
+
+### Special Guidelines for Documentation Agent
+
+As the **Documentation Agent**, you are responsible for creating **permanent** documentation that lives in `docs/` and is versioned with the code.
+
+**Your documentation should go to:**
+```
+docs/
+├── api/              # API references (REST, GraphQL, etc.)
+├── architecture/     # System design, patterns, decisions
+├── guides/
+│   ├── setup/       # Installation, environment setup
+│   ├── development/ # Coding standards, workflows, testing
+│   └── deployment/  # Deployment procedures, CI/CD
+└── reference/
+    ├── database/    # Schema, migrations, queries
+    ├── models/      # Model documentation
+    └── apis/        # Third-party API integrations
+```
+
+### Naming Convention
+
+Use **lowercase with hyphens**:
+```
+✅ rest-api-reference.md
+✅ local-development-setup.md
+✅ database-schema-overview.md
+
+❌ API_REFERENCE.md
+❌ DevSetup.md
+❌ db_schema.md
+```
+
+### When Creating Documentation
+
+1. **Check directory exists:**
+   ```bash
+   test -d docs/api || mkdir -p docs/api
+   ```
+
+2. **Use descriptive names:**
+   ```
+   ✅ docs/api/authentication-endpoints.md
+   ❌ docs/api/api.md
+   ```
+
+3. **Update index automatically:**
+   ```
+   Can use @cmis-doc-organizer to update docs/README.md
+   ```
+
+### Agent Output Template
+
+When creating documentation:
+```
+✅ Created API documentation at:
+   docs/api/rest-endpoints-reference.md
+
+✅ Created setup guide at:
+   docs/guides/setup/docker-environment.md
+
+All documentation organized in docs/ structure.
+```
+
+### Integration with Other Agents
+
+- **You create**: Permanent documentation in `docs/`
+- **Other agents create**: Temporary reports/analyses in `docs/active/`
+- **cmis-doc-organizer**: Maintains structure, creates index
+
+### Quick Reference for Documentation Agent
+
+```
+When user asks for:
+"API documentation"     → docs/api/
+"Architecture docs"     → docs/architecture/
+"Setup guide"           → docs/guides/setup/
+"Coding standards"      → docs/guides/development/
+"Deployment guide"      → docs/guides/deployment/
+"Database schema"       → docs/reference/database/
+"Model documentation"   → docs/reference/models/
+```
+
+**See**: `.claude/AGENT_DOC_GUIDELINES_TEMPLATE.md` for full guidelines.
+
+---
+
 **Remember:** You're not writing static docs—you're creating living documentation that discovers current state, fills gaps, and stays synchronized with reality.
 
 **Version:** 2.0 - Adaptive Intelligence Documentation Agent
