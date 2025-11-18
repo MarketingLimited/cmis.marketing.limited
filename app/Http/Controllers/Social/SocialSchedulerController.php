@@ -300,6 +300,7 @@ class SocialSchedulerController extends Controller
 
     /**
      * Publish a post immediately
+     * FIXED: Now uses actual publishing job instead of simulation
      */
     public function publishNow(Request $request, string $orgId, string $postId)
     {
@@ -315,30 +316,46 @@ class SocialSchedulerController extends Controller
                 ], 400);
             }
 
+            // Validate integration_ids exist
+            if (empty($post->integration_ids)) {
+                return response()->json([
+                    'error' => 'No integrations selected',
+                    'message' => 'Please select at least one social media platform'
+                ], 400);
+            }
+
             // Mark as publishing
             $post->markAsPublishing();
 
-            // TODO: Implement actual publishing logic here
-            // This would integrate with platform APIs (Meta, Twitter, LinkedIn, TikTok, etc.)
-            // For now, we'll simulate success
+            // Set scheduled_at to now for immediate publishing
+            $post->update(['scheduled_at' => now()]);
 
-            // Simulate publishing to platforms
-            $publishedIds = [];
-            foreach ($post->platforms as $platform) {
-                $publishedIds[$platform] = 'simulated_' . uniqid();
-            }
+            // Dispatch actual publishing job
+            \App\Jobs\PublishScheduledSocialPostJob::dispatch($post)
+                ->onQueue('social-publishing');
 
-            // Mark as published
-            $post->markAsPublished($publishedIds);
+            \Illuminate\Support\Facades\Log::info('Post queued for immediate publishing', [
+                'post_id' => $post->id,
+                'org_id' => $orgId,
+                'integration_ids' => $post->integration_ids,
+            ]);
 
             return response()->json([
-                'message' => 'Post published successfully',
-                'post' => $post->fresh(['user', 'campaign'])
+                'success' => true,
+                'message' => 'Post is being published. This may take a few moments.',
+                'post' => $post->fresh(['user', 'campaign']),
+                'note' => 'You will receive a notification once publishing is complete.'
             ]);
 
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json(['error' => 'Post not found'], 404);
         } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Failed to queue post for publishing', [
+                'post_id' => $postId,
+                'org_id' => $orgId,
+                'error' => $e->getMessage(),
+            ]);
+
             return response()->json([
                 'error' => 'Failed to publish post',
                 'message' => $e->getMessage()

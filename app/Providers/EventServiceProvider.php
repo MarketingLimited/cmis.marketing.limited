@@ -26,6 +26,10 @@ use App\Listeners\Integration\{
     HandleSyncFailure
 };
 
+// Token Expiry Events (NEW: Week 2)
+use App\Events\IntegrationTokenExpiring;
+use App\Listeners\SendTokenExpiringNotification;
+
 // Budget Events
 use App\Events\Budget\BudgetThresholdReached;
 use App\Listeners\Budget\NotifyBudgetThreshold;
@@ -78,6 +82,11 @@ class EventServiceProvider extends ServiceProvider
 
         IntegrationSyncFailed::class => [
             HandleSyncFailure::class,
+        ],
+
+        // Token Expiry Events (NEW: Week 2)
+        IntegrationTokenExpiring::class => [
+            SendTokenExpiringNotification::class,
         ],
 
         // Budget Events

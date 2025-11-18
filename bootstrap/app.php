@@ -35,6 +35,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'verify.webhook' => \App\Http\Middleware\VerifyWebhookSignature::class,
             'security.headers' => \App\Http\Middleware\SecurityHeaders::class,
             'throttle.ai' => \App\Http\Middleware\ThrottleAI::class,
+            'throttle.platform' => \App\Http\Middleware\ThrottlePlatformRequests::class, // NEW: Week 2
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

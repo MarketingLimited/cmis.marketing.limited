@@ -33,6 +33,12 @@ class ScheduledSocialPost extends Model
         'published_at',
         'published_ids',
         'error_message',
+        // NEW: Social Publishing Fix
+        'integration_ids',
+        'media_urls',
+        'publish_results',
+        'post_id',
+        'created_by',
     ];
 
     protected $casts = [
@@ -47,6 +53,10 @@ class ScheduledSocialPost extends Model
         'published_ids' => 'array',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
+        // NEW: Social Publishing Fix
+        'integration_ids' => 'array',
+        'media_urls' => 'array',
+        'publish_results' => 'array',
     ];
 
     /**
@@ -56,6 +66,7 @@ class ScheduledSocialPost extends Model
     const STATUS_SCHEDULED = 'scheduled';
     const STATUS_PUBLISHING = 'publishing';
     const STATUS_PUBLISHED = 'published';
+    const STATUS_PARTIALLY_PUBLISHED = 'partially_published'; // NEW: Social Publishing Fix
     const STATUS_FAILED = 'failed';
 
     /**
@@ -153,5 +164,21 @@ class ScheduledSocialPost extends Model
             'status' => self::STATUS_FAILED,
             'error_message' => $errorMessage,
         ]);
+    }
+
+    /**
+     * Get integrations for this post (NEW: Social Publishing Fix)
+     */
+    public function integrations()
+    {
+        if (empty($this->integration_ids)) {
+            return collect([]);
+        }
+
+        return \Illuminate\Support\Facades\DB::table('cmis_integrations.integrations')
+            ->whereIn('integration_id', $this->integration_ids)
+            ->where('org_id', $this->org_id)
+            ->where('is_active', true)
+            ->get();
     }
 }

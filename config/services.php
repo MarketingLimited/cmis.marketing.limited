@@ -48,6 +48,9 @@ return [
         'redirect_uri' => env('META_REDIRECT_URI'),
         'api_version' => env('META_API_VERSION', 'v19.0'),
         'rate_limit' => env('META_RATE_LIMIT', 200),
+        // Webhook security (CRITICAL: Required for webhook signature verification)
+        'app_secret' => env('META_APP_SECRET', env('META_CLIENT_SECRET')), // Fallback to client_secret
+        'webhook_verify_token' => env('META_WEBHOOK_VERIFY_TOKEN'),
     ],
 
     'facebook' => [

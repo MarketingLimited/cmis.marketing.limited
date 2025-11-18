@@ -5,27 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ config('app.name', 'CMIS') }} - @yield('title', 'لوحة التحكم')</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Font Awesome CDN (keeping this as it's external assets) -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        * { font-family: 'Cairo', sans-serif; }
-        .sidebar-item { transition: all 0.2s ease; }
-        .sidebar-item:hover { transform: translateX(-2px); }
-        .card-hover { transition: all 0.3s ease; }
-        .card-hover:hover { transform: translateY(-4px); box-shadow: 0 10px 30px rgba(0,0,0,0.15); }
-        .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
-        .gradient-blue { background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); }
-        .nav-active { background: linear-gradient(90deg, #667eea 0%, #764ba2 100%); }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .fade-in { animation: fadeIn 0.5s ease; }
-    </style>
+
+    <!-- Vite Assets -->
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+
     @stack('styles')
 </head>
 <body class="bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen">
-    <div x-data="{ sidebarOpen: false, notificationsOpen: false }" class="min-h-screen flex">
+    <div x-data="{ sidebarOpen: false, notificationsOpen: false }" x-cloak class="min-h-screen flex">
         <!-- Sidebar -->
         <div :class="sidebarOpen ? 'translate-x-0' : 'translate-x-full md:translate-x-0'"
              class="fixed inset-y-0 right-0 z-40 w-72 gradient-bg shadow-2xl md:relative transition-transform duration-300">
@@ -142,7 +132,7 @@
                                     <span class="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
                                 </button>
 
-                                <div x-show="open" @click.away="open = false" x-transition
+                                <div x-show="open" @click.away="open = false" x-transition x-cloak
                                      class="absolute left-0 mt-2 w-80 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden">
                                     <div class="p-4 bg-gradient-to-r from-indigo-500 to-purple-600">
                                         <h3 class="text-white font-bold">الإشعارات</h3>
@@ -170,7 +160,7 @@
                                     <i class="fas fa-chevron-down text-gray-600 text-xs"></i>
                                 </button>
 
-                                <div x-show="open" @click.away="open = false" x-transition
+                                <div x-show="open" @click.away="open = false" x-transition x-cloak
                                      class="absolute left-0 mt-2 w-56 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden">
                                     <div class="p-4 bg-gradient-to-r from-indigo-500 to-purple-600">
                                         <p class="text-white font-bold">{{ Auth::user()->name }}</p>
@@ -244,7 +234,7 @@
     </div>
 
     <!-- Overlay for Mobile -->
-    <div x-show="sidebarOpen" @click="sidebarOpen = false" class="fixed inset-0 bg-black/50 z-30 md:hidden" x-transition></div>
+    <div x-show="sidebarOpen" @click="sidebarOpen = false" class="fixed inset-0 bg-black/50 z-30 md:hidden" x-transition x-cloak></div>
 
     @stack('scripts')
 </body>
