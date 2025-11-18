@@ -8,4 +8,29 @@ export default defineConfig({
             refresh: true,
         }),
     ],
+    build: {
+        // Optimize bundle size
+        rollupOptions: {
+            output: {
+                manualChunks: {
+                    'alpine': ['alpinejs'],
+                    'chart': ['chart.js'],
+                    'vendor': ['axios'],
+                },
+            },
+        },
+        // Reduce chunk size warnings threshold
+        chunkSizeWarningLimit: 1000,
+        // Enable minification
+        minify: 'terser',
+        terserOptions: {
+            compress: {
+                drop_console: true, // Remove console.logs in production
+            },
+        },
+    },
+    // Optimize dependencies
+    optimizeDeps: {
+        include: ['alpinejs', 'chart.js', 'axios'],
+    },
 });

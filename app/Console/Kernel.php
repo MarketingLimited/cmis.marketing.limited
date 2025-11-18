@@ -24,6 +24,11 @@ class Kernel extends ConsoleKernel
         CognitiveVitalityWatch::class,
         \App\Console\Commands\ProcessEmbeddingsCommand::class,
         \App\Console\Commands\PublishScheduledPostsCommand::class,
+        \App\Console\Commands\PublishScheduledSocialPostsCommand::class, // NEW: Social Publishing Fix
+        \App\Console\Commands\CheckExpiringTokensCommand::class, // NEW: Week 2 - Token Expiry Monitoring
+        \App\Console\Commands\Database\BackupDatabaseCommand::class, // NEW: Week 4 - Database Backups
+        \App\Console\Commands\Database\RestoreDatabaseCommand::class, // NEW: Week 4 - Database Restoration
+        \App\Console\Commands\Database\AuditForeignKeysCommand::class, // NEW: Week 4 - Foreign Key Audit
         \App\Console\Commands\SyncPlatformsCommand::class,
         \App\Console\Commands\CleanupCacheCommand::class,
         \App\Console\Commands\CleanupExpiredSessionsCommand::class,
@@ -90,6 +95,34 @@ class Kernel extends ConsoleKernel
                 Log::error('❌ Failed to publish scheduled posts');
             });
 
+        // 🚀 NEW: Publish scheduled social media posts every minute
+        $schedule->command('social:publish-scheduled')
+            ->everyMinute()
+            ->withoutOverlapping()
+            ->onOneServer()
+            ->runInBackground()
+            ->appendOutputTo(storage_path('logs/social-publishing.log'))
+            ->onSuccess(function () {
+                Log::info('✅ Social media posts published successfully');
+            })
+            ->onFailure(function () {
+                Log::error('❌ Failed to publish social media posts');
+            });
+
+        // 🔐 NEW Week 2: Check for expiring integration tokens daily at 9 AM
+        $schedule->command('integrations:check-expiring-tokens --days=7')
+            ->dailyAt('09:00')
+            ->withoutOverlapping()
+            ->onOneServer()
+            ->runInBackground()
+            ->appendOutputTo(storage_path('logs/token-monitoring.log'))
+            ->onSuccess(function () {
+                Log::info('✅ Token expiry check completed successfully');
+            })
+            ->onFailure(function () {
+                Log::error('❌ Failed to check expiring tokens');
+            });
+
         // Process embedding queue every 15 minutes
         $schedule->command('cmis:process-embeddings --batch=20')
             ->everyFifteenMinutes()
@@ -126,6 +159,35 @@ class Kernel extends ConsoleKernel
             ->at('04:00')
             ->onSuccess(function () {
                 Log::info('✅ Cache cleanup completed');
+            });
+
+        // ==========================================
+        // 💾 Database Backups (NEW: Week 4)
+        // ==========================================
+
+        // Full database backup daily at 2 AM
+        $schedule->command('db:backup --no-interaction')
+            ->dailyAt('02:00')
+            ->withoutOverlapping()
+            ->onOneServer()
+            ->runInBackground()
+            ->appendOutputTo(storage_path('logs/database-backups.log'))
+            ->onSuccess(function () {
+                Log::info('✅ Daily database backup completed');
+            })
+            ->onFailure(function () {
+                Log::error('❌ Daily database backup failed');
+            });
+
+        // Schema-specific backup (cmis schema only) every 6 hours
+        $schedule->command('db:backup --schema=cmis --no-interaction')
+            ->everySixHours()
+            ->withoutOverlapping()
+            ->onOneServer()
+            ->runInBackground()
+            ->appendOutputTo(storage_path('logs/database-backups.log'))
+            ->onSuccess(function () {
+                Log::info('✅ Schema backup completed (cmis)');
             });
 
         // ==========================================

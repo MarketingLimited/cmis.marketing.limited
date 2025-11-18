@@ -1,6 +1,14 @@
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+    * {
+        font-family: 'Cairo', sans-serif;
+    }
+}
 
 @layer components {
     .btn-primary {
@@ -29,5 +37,54 @@
 
     .stat-card {
         @apply bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-lg shadow-lg p-6 hover:shadow-xl transition duration-300;
+    }
+
+    .sidebar-item {
+        @apply transition-all duration-200;
+    }
+
+    .sidebar-item:hover {
+        @apply -translate-x-0.5;
+    }
+
+    .card-hover {
+        @apply transition-all duration-300;
+    }
+
+    .card-hover:hover {
+        @apply -translate-y-1 shadow-2xl;
+    }
+
+    .gradient-bg {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    .gradient-blue {
+        background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+    }
+
+    .nav-active {
+        background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+    }
+}
+
+@layer utilities {
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .fade-in {
+        animation: fadeIn 0.5s ease;
+    }
+
+    [x-cloak] {
+        display: none !important;
     }
 }
