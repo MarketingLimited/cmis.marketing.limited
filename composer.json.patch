@@ -1,0 +1,14 @@
+{
+  "require-dev": {
+    "brianium/paratest": "^7.0",
+    "pestphp/pest-plugin-laravel": "^3.0"
+  },
+  "scripts": {
+    "test": "vendor/bin/phpunit",
+    "test:parallel": "./run-tests-parallel.sh",
+    "test:unit": "./run-tests-parallel.sh --unit",
+    "test:feature": "./run-tests-parallel.sh --feature",
+    "test:integration": "./run-tests-parallel.sh --integration",
+    "test:fast": "vendor/bin/paratest --processes=auto --runner=WrapperRunner"
+  }
+}
