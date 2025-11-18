@@ -24,6 +24,7 @@ class Kernel extends ConsoleKernel
         CognitiveVitalityWatch::class,
         \App\Console\Commands\ProcessEmbeddingsCommand::class,
         \App\Console\Commands\PublishScheduledPostsCommand::class,
+        \App\Console\Commands\PublishScheduledSocialPostsCommand::class, // NEW: Social Publishing Fix
         \App\Console\Commands\SyncPlatformsCommand::class,
         \App\Console\Commands\CleanupCacheCommand::class,
         \App\Console\Commands\CleanupExpiredSessionsCommand::class,
@@ -88,6 +89,20 @@ class Kernel extends ConsoleKernel
             })
             ->onFailure(function () {
                 Log::error('❌ Failed to publish scheduled posts');
+            });
+
+        // 🚀 NEW: Publish scheduled social media posts every minute
+        $schedule->command('social:publish-scheduled')
+            ->everyMinute()
+            ->withoutOverlapping()
+            ->onOneServer()
+            ->runInBackground()
+            ->appendOutputTo(storage_path('logs/social-publishing.log'))
+            ->onSuccess(function () {
+                Log::info('✅ Social media posts published successfully');
+            })
+            ->onFailure(function () {
+                Log::error('❌ Failed to publish social media posts');
             });
 
         // Process embedding queue every 15 minutes
