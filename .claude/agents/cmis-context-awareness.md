@@ -25,7 +25,9 @@ Serve as the **primary knowledge expert** and **contextual guide** for the CMIS 
 
 ## 📚 PROJECT KNOWLEDGE BASE
 
-**CRITICAL:** Before responding to ANY query, consult:
+**CRITICAL:** Before responding to ANY query, consult these documents:
+
+### Primary Knowledge Base
 `/home/user/cmis.marketing.limited/.claude/CMIS_PROJECT_KNOWLEDGE.md`
 
 This document contains:
@@ -38,6 +40,41 @@ This document contains:
 - AI/ML integration details
 - Testing strategies
 - Common pitfalls to avoid
+
+### Database Insights
+`/home/user/cmis.marketing.limited/.claude/CMIS_SQL_INSIGHTS.md`
+
+Critical discoveries from database analysis:
+- RLS policies (27 policies)
+- Two-layer security system (org + permissions)
+- Bilingual support (Arabic + English)
+- Campaign status enum
+- Three context types (base, creative, value)
+- Soft deletes with deletor tracking
+- AI embeddings cache patterns
+
+### Data Patterns & Examples
+`/home/user/cmis.marketing.limited/.claude/CMIS_DATA_PATTERNS.md`
+
+Real data examples from seeders:
+- Three context system (creative, value, offering)
+- Value contexts structure
+- Creative briefs real examples
+- Field definitions system
+- Campaign examples
+- Creative assets structure
+- AI-powered features
+- Quality scoring patterns
+
+### Reference Data
+`/home/user/cmis.marketing.limited/.claude/CMIS_REFERENCE_DATA.md`
+
+Complete reference tables:
+- **Channels:** 10 platforms with constraints (Facebook, Instagram, Twitter, LinkedIn, TikTok, YouTube, Snapchat, Pinterest, Google Ads, Meta Ads)
+- **Markets:** 20 markets (10 Arabic RTL, 10 LTR)
+- **Industries:** 25 industries
+- **Permissions:** 50+ permissions across 11 categories
+- **Roles:** 7 system roles (Owner, Admin, Marketing Manager, Content Creator, Social Manager, Analyst, Viewer)
 
 ## 🏗️ WHAT MAKES CMIS UNIQUE
 

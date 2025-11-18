@@ -86,18 +86,47 @@ public function handle(Request $request, Closure $next)
 
 ### The RLS Policies
 
+## ⚠️ CRITICAL DISCOVERY: Two-Layer Security System
+
+**CMIS uses BOTH org-level AND permission-level isolation!**
+
+```sql
+-- Real example from CMIS database:
+CREATE POLICY rbac_campaigns_delete ON cmis.campaigns
+FOR DELETE
+USING (
+    (org_id = cmis.get_current_org_id())              -- Layer 1: Org isolation
+    AND
+    cmis.check_permission(                             -- Layer 2: Permission check
+        cmis.get_current_user_id(),
+        org_id,
+        'campaigns.delete'
+    )
+);
+```
+
+**This means:**
+1. ✅ User must belong to the organization (RLS org filtering)
+2. ✅ User must have specific permission (granular permission check)
+
+**Helper Functions (27 RLS policies use these):**
+- `cmis.get_current_org_id()` - Get org from transaction context
+- `cmis.get_current_user_id()` - Get user from transaction context
+- `cmis.check_permission(user_id, org_id, permission_code)` - Check granular permission
+
 **Example Policy for Campaigns:**
 
 ```sql
 -- Enable RLS
 ALTER TABLE cmis.campaigns ENABLE ROW LEVEL SECURITY;
 
--- Policy for SELECT
-CREATE POLICY campaigns_select_policy ON cmis.campaigns
+-- Policy for SELECT (with permission check)
+CREATE POLICY rbac_campaigns_select ON cmis.campaigns
     FOR SELECT
     USING (
-        org_id = current_setting('cmis.current_org_id', true)::uuid
-        OR current_setting('cmis.current_org_id', true) IS NULL  -- For system operations
+        (org_id = cmis.get_current_org_id())
+        AND
+        cmis.check_permission(cmis.get_current_user_id(), org_id, 'campaigns.view')
     );
 
 -- Policy for INSERT
@@ -525,3 +554,56 @@ When adding RLS to existing tables:
 ---
 
 **Remember:** RLS is THE foundation of CMIS. Every feature, every query, every operation depends on proper org context. Master this, and you master CMIS multi-tenancy.
+
+## 🔑 PERMISSION CODES CATALOG
+
+### Discovered Permission Codes (from RLS policies)
+
+**Pattern:** `{domain}.{action}`
+
+**Campaign Domain:**
+```
+campaigns.view       - View campaigns
+campaigns.delete     - Delete campaigns
+campaigns.create     - Create campaigns (implied)
+campaigns.update     - Update campaigns (implied)
+```
+
+**Analytics Domain:**
+```
+analytics.view       - View analytics data
+analytics.configure  - Configure analytics integrations
+```
+
+**Admin Domain:**
+```
+admin.settings       - Access admin settings and audit logs
+```
+
+### Permission Check in Application Layer
+
+**Always check permissions BEFORE operations:**
+
+```php
+// In controller
+public function destroy(string $orgId, string $campaignId)
+{
+    // Check permission explicitly for better error messages
+    if (!auth()->user()->can('campaigns.delete')) {
+        return response()->json([
+            'error' => 'You do not have permission to delete campaigns'
+        ], 403);
+    }
+
+    // RLS will also enforce at database level
+    $campaign = Campaign::findOrFail($campaignId);
+    $campaign->delete();
+
+    return response()->json(['message' => 'Campaign deleted'], 200);
+}
+```
+
+**Why check twice (app + database)?**
+1. **App-level check** - Better error messages, early return
+2. **DB-level check (RLS)** - Defense in depth, prevents bypass
+
