@@ -25,6 +25,7 @@ class Kernel extends ConsoleKernel
         \App\Console\Commands\ProcessEmbeddingsCommand::class,
         \App\Console\Commands\PublishScheduledPostsCommand::class,
         \App\Console\Commands\PublishScheduledSocialPostsCommand::class, // NEW: Social Publishing Fix
+        \App\Console\Commands\CheckExpiringTokensCommand::class, // NEW: Week 2 - Token Expiry Monitoring
         \App\Console\Commands\SyncPlatformsCommand::class,
         \App\Console\Commands\CleanupCacheCommand::class,
         \App\Console\Commands\CleanupExpiredSessionsCommand::class,
@@ -103,6 +104,20 @@ class Kernel extends ConsoleKernel
             })
             ->onFailure(function () {
                 Log::error('❌ Failed to publish social media posts');
+            });
+
+        // 🔐 NEW Week 2: Check for expiring integration tokens daily at 9 AM
+        $schedule->command('integrations:check-expiring-tokens --days=7')
+            ->dailyAt('09:00')
+            ->withoutOverlapping()
+            ->onOneServer()
+            ->runInBackground()
+            ->appendOutputTo(storage_path('logs/token-monitoring.log'))
+            ->onSuccess(function () {
+                Log::info('✅ Token expiry check completed successfully');
+            })
+            ->onFailure(function () {
+                Log::error('❌ Failed to check expiring tokens');
             });
 
         // Process embedding queue every 15 minutes
