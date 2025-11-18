@@ -1047,7 +1047,7 @@ class DemoDataSeeder extends Seeder
                         'notification_id' => Str::uuid(),
                         'user_id' => $userId,
                         'org_id' => $userOrg->org_id,
-                        'type' => 'campaign_update',
+                        'type' => 'campaign',
                         'title' => 'Campaign Performance Update',
                         'message' => "Campaign '{$campaign->name}' has reached 50% of budget.",
                         'data' => json_encode([

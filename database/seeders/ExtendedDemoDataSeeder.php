@@ -113,14 +113,14 @@ class ExtendedDemoDataSeeder extends Seeder
         ];
 
         foreach ($modules as $module) {
-            DB::table('cmis.modules')->insert([
-                'module_id' => Str::uuid(),
-                'code' => $module['code'],
-                'name' => $module['name'],
-                'version' => $module['version'],
-                'deleted_at' => null,
-                'provider' => null,
-            ]);
+            $code = $module['code'];
+            $name = $module['name'];
+            $version = $module['version'];
+
+            DB::unprepared("
+                INSERT INTO cmis.modules (code, name, version)
+                VALUES ('{$code}', '{$name}', '{$version}')
+            ");
         }
     }
 
