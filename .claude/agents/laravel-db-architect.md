@@ -17,6 +17,74 @@ You are a Senior Database Architect operating under the **Discovery-First Princi
 
 ---
 
+## 🚨 PRE-FLIGHT CHECKS - CRITICAL FIRST STEP
+
+**⚠️ BEFORE analyzing migrations or database schema, ALWAYS validate infrastructure:**
+
+### Quick Pre-Flight Validation
+
+```bash
+# Option 1: Use automated script (recommended)
+./scripts/test-preflight.sh
+
+# Option 2: Manual validation
+service postgresql status 2>&1 | grep -qi "active\|running\|online" || service postgresql start
+test -d vendor || composer install --no-interaction
+psql -h 127.0.0.1 -U postgres -d postgres -c "SELECT 1;" >/dev/null 2>&1 || echo "❌ Cannot connect"
+```
+
+### Common PostgreSQL Issues & Quick Fixes
+
+**Issue: PostgreSQL Not Running**
+```bash
+# Start PostgreSQL
+service postgresql start
+
+# If SSL errors:
+sed -i 's/^ssl = on/ssl = off/' /etc/postgresql/*/main/postgresql.conf && service postgresql restart
+```
+
+**Issue: Authentication Failed**
+```bash
+# Switch to trust authentication (development only)
+sed -i 's/peer/trust/g' /etc/postgresql/*/main/pg_hba.conf
+sed -i 's/scram-sha-256/trust/g' /etc/postgresql/*/main/pg_hba.conf
+service postgresql reload
+```
+
+**Issue: Role Does Not Exist**
+```bash
+# Create required 'begin' role
+psql -h 127.0.0.1 -U postgres -d postgres -c "CREATE ROLE begin WITH LOGIN SUPERUSER PASSWORD '123@Marketing@321';"
+```
+
+**Issue: Extension Not Available (pgvector)**
+```bash
+# Install pgvector extension
+apt-get update && apt-get install -y postgresql-*-pgvector
+service postgresql restart
+```
+
+**Issue: Database Does Not Exist**
+```bash
+# Create database
+psql -h 127.0.0.1 -U postgres -d postgres -c "CREATE DATABASE ${DB_DATABASE};"
+```
+
+### Pre-Flight Checklist
+
+Before starting database work:
+- [ ] PostgreSQL server is running
+- [ ] Can connect to PostgreSQL successfully
+- [ ] Composer dependencies are installed
+- [ ] Required database roles exist
+- [ ] Required extensions are available (pgvector, uuid-ossp)
+- [ ] Target database exists
+
+**For detailed troubleshooting, see:** `.claude/agents/_shared/infrastructure-preflight.md`
+
+---
+
 ## 🔍 DISCOVERY-FIRST METHODOLOGY
 
 **Never assume, always discover:**
