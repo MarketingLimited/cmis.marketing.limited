@@ -34,8 +34,10 @@ Route::post('/logout', [LoginController::class, 'destroy'])
     ->middleware('auth')
     ->name('logout');
 
-// Public Routes (will redirect to login if not authenticated)
-Route::redirect('/', '/dashboard');
+// Public Routes
+Route::get('/', function () {
+    return view('welcome');
+});
 
 // Protected Routes - Require Authentication
 Route::middleware(['auth'])->group(function () {
