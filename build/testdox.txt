@@ -246,9 +246,9 @@ Audit Log (Tests\Unit\Models\Operations\AuditLog)
 
 Auth (Tests\Feature\Auth\Auth)
  [ ] Login requires correct password
- [x] Login fails with nonexistent email
+ [ ] Login fails with nonexistent email
  [x] Login fails for inactive users
- [x] Login validates required fields
+ [ ] Login validates required fields
  [ ] Registration creates user and returns token
  [ ] Registration with org creates organization
  [ ] Token refresh works
@@ -261,7 +261,7 @@ Auth (Tests\Feature\Auth\Auth)
 
 Authentication (Tests\Feature\Auth\Authentication)
  [ ] User can register
- [ ] Registration requires valid email
+ [x] Registration requires valid email
  [ ] Registration requires password confirmation
  [ ] User can login with correct credentials
  [ ] User cannot login with incorrect password
@@ -490,7 +490,7 @@ Cleanup Expired Sessions Command (Tests\Unit\Commands\CleanupExpiredSessionsComm
 Cleanup Old Logs Job (Tests\Unit\Jobs\CleanupOldLogsJob)
  [ ] It cleans up old api logs
  [ ] It cleans up old activity logs
- [ ] It can be dispatched
+ [x] It can be dispatched
  [ ] It accepts custom retention days
  [ ] It respects org isolation
  [ ] It returns deleted count
@@ -879,10 +879,10 @@ Facebook Sync Service (Tests\Unit\Services\Social\FacebookSyncService)
 
 Facebook Tik Tok You Tube Publishing (Tests\Integration\Social\FacebookTikTokYouTubePublishing)
  [ ] It creates and publishes facebook post
- [ ] It creates and publishes facebook story
+ [x] It creates and publishes facebook story
  [ ] It creates and publishes tiktok video
  [ ] It creates and publishes youtube video
- [ ] It creates and publishes youtube short
+ [x] It creates and publishes youtube short
 
 GPTConversation Service (Tests\Unit\Services\GPTConversationService)
  [ ] It can create new session
@@ -1026,7 +1026,7 @@ Instagram Facebook Messaging (Tests\Integration\Social\InstagramFacebookMessagin
 Instagram Publishing (Tests\Integration\Social\InstagramPublishing)
  [ ] It creates and publishes instagram feed post
  [ ] It creates and publishes instagram story
- [ ] It creates and publishes instagram reel
+ [x] It creates and publishes instagram reel
 
 Instagram Service (Tests\Unit\Services\InstagramService)
  [ ] It can publish feed post
@@ -1546,7 +1546,7 @@ Process Scheduled Content Job (Tests\Unit\Jobs\ProcessScheduledContentJob)
  [ ] It processes due scheduled content
  [ ] It ignores future scheduled content
  [ ] It publishes scheduled content
- [ ] It can be dispatched
+ [x] It can be dispatched
  [ ] It handles publishing errors
  [ ] It processes multiple scheduled posts
  [ ] It respects batch size limit
@@ -1594,7 +1594,7 @@ Publish To Facebook Job (Tests\Unit\Jobs\PublishToFacebookJob)
  [ ] It validates post content before publishing
 
 Publish To Instagram Job (Tests\Unit\Jobs\PublishToInstagramJob)
- [ ] It can be dispatched
+ [x] It can be dispatched
  [ ] It publishes feed post to instagram
  [ ] It publishes story to instagram
  [ ] It handles api errors
@@ -1816,7 +1816,7 @@ Send Campaign Notification Listener (Tests\Unit\Listeners\SendCampaignNotificati
 
 Send Email Campaign Job (Tests\Unit\Jobs\SendEmailCampaignJob)
  [ ] It sends email to recipients
- [ ] It can be dispatched
+ [x] It can be dispatched
  [ ] It personalizes content
  [ ] It tracks sent emails
  [ ] It handles errors gracefully
@@ -2131,9 +2131,9 @@ Twitter Ads Workflow (Tests\Integration\AdPlatform\TwitterAdsWorkflow)
 
 Twitter Linked In Other Publishing (Tests\Integration\Social\TwitterLinkedInOtherPublishing)
  [ ] It creates and publishes twitter tweet
- [ ] It creates and publishes twitter thread
+ [x] It creates and publishes twitter thread
  [ ] It creates and publishes linkedin post
- [ ] It creates and publishes linkedin article
+ [x] It creates and publishes linkedin article
  [ ] It creates and publishes snapchat story
  [ ] It creates and publishes google business post
  [ ] It publishes to multiple platforms simultaneously
