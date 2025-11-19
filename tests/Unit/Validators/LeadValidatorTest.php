@@ -19,7 +19,6 @@ class LeadValidatorTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->artisan('migrate:fresh');
         $this->validator = new LeadValidator();
     }
 

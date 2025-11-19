@@ -23,7 +23,6 @@ class AssetControllerTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->artisan('migrate:fresh');
         Storage::fake('assets');
     }
 
