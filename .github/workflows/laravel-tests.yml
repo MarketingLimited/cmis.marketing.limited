@@ -13,54 +13,38 @@ jobs:
     runs-on: ${{ vars.RUNS_ON || 'ubuntu-latest' }}
     timeout-minutes: 15
 
+    services:
+      postgres:
+        image: pgvector/pgvector:pg15
+        ports:
+          - 5432:5432
+        env:
+          POSTGRES_DB: cmis_test
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        options: >-
+          --health-cmd="pg_isready -U postgres"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd="redis-cli ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
 
-      - name: Install PostgreSQL and Redis (if needed)
+      - name: Install pgvector extension
         run: |
-          # Check if PostgreSQL is installed
-          if ! command -v psql &> /dev/null; then
-            echo "Installing PostgreSQL..."
-            sudo apt-get update
-            sudo apt-get install -y postgresql postgresql-contrib postgresql-server-dev-all
-          fi
-
-          # Check if Redis is installed
-          if ! command -v redis-cli &> /dev/null; then
-            echo "Installing Redis..."
-            sudo apt-get install -y redis-server
-          fi
-
-          # Ensure services are running
-          sudo systemctl start postgresql || true
-          sudo systemctl start redis-server || true
-
-          # Wait for PostgreSQL to be ready
-          timeout 30 bash -c 'until pg_isready -h localhost; do sleep 1; done'
-
-          echo "Services are ready"
-
-      - name: Setup test database
-        run: |
-          # Create test database and user (use postgres system user)
-          sudo -u postgres psql -c "DROP DATABASE IF EXISTS cmis_test;" || true
-          sudo -u postgres psql -c "CREATE DATABASE cmis_test;"
-
-          # Set password for postgres user if needed
-          sudo -u postgres psql -c "ALTER USER postgres WITH PASSWORD 'postgres';"
-
-          # Update pg_hba.conf to allow password authentication
-          PG_HBA=$(sudo -u postgres psql -t -P format=unaligned -c 'SHOW hba_file;')
-          sudo sed -i 's/local\s*all\s*postgres\s*peer/local all postgres md5/' "$PG_HBA" || true
-          sudo sed -i 's/host\s*all\s*all\s*127.0.0.1\/32\s*ident/host all all 127.0.0.1\/32 md5/' "$PG_HBA" || true
-          sudo sed -i 's/host\s*all\s*all\s*::1\/128\s*ident/host all all ::1\/128 md5/' "$PG_HBA" || true
-
-          # Reload PostgreSQL configuration
-          sudo systemctl reload postgresql || sudo -u postgres psql -c "SELECT pg_reload_conf();"
-
-          # Install pgvector extension (if available)
-          sudo -u postgres psql -d cmis_test -c "CREATE EXTENSION IF NOT EXISTS vector;" || echo "pgvector not available, skipping..."
+          PGPASSWORD=postgres psql -h localhost -U postgres -d cmis_test -c "CREATE EXTENSION IF NOT EXISTS vector;" || echo "pgvector extension setup complete"
 
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
