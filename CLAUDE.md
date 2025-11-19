@@ -1,0 +1,320 @@
+# CMIS Project Guidelines for Claude Code
+
+**Last Updated:** 2025-11-19
+**Project:** CMIS - Cognitive Marketing Information System
+**Framework Version:** 3.0 - Optimized for Claude Code 2025
+
+---
+
+## 🎯 Project Overview
+
+CMIS is a Laravel-based Campaign Management & Integration System with:
+- **Multi-tenancy:** PostgreSQL Row-Level Security (RLS)
+- **Database:** 12 schemas, 189 tables, pgvector for AI
+- **Platforms:** Meta, Google, TikTok, LinkedIn, Twitter, Snapchat
+- **AI:** Semantic search via Google Gemini + pgvector
+- **Frontend:** Alpine.js, Tailwind CSS, Chart.js
+
+---
+
+## 🚨 Critical Rules
+
+### Multi-Tenancy (ALWAYS RESPECT)
+- ✅ ALL database operations MUST respect RLS policies
+- ✅ Use schema-qualified table names: `cmis.campaigns`, `cmis_meta.ad_accounts`
+- ✅ NEVER bypass RLS with manual org_id filtering
+- ✅ Test with multiple organizations for data isolation
+- ❌ NEVER hard-delete records (use soft deletes)
+
+### Database Operations
+- ✅ Use migrations for ALL schema changes
+- ✅ Add RLS policies to new tables via migrations
+- ✅ Use `init_transaction_context(org_id)` in Laravel
+- ✅ Qualify all table names with schema prefix
+- ❌ NEVER create tables without RLS policies
+
+### Security
+- ✅ Validate all platform webhook signatures
+- ✅ Store credentials in Laravel encrypted storage
+- ✅ Rate limit AI operations (30/min, 500/hour for Gemini)
+- ✅ Sanitize all user inputs
+- ❌ NEVER commit .env files or credentials
+
+### Code Quality
+- ✅ Follow Repository + Service pattern
+- ✅ Use Laravel conventions (PSR-12)
+- ✅ Write tests for ALL business logic
+- ✅ Document complex algorithms
+- ❌ NEVER put business logic in controllers
+
+---
+
+## 📁 Repository Structure
+
+```
+app/
+├── Models/
+│   ├── Core/          # Organizations, users, permissions
+│   ├── Campaign/      # Campaigns, content, budgets
+│   ├── Platform/      # Ad platforms, accounts, entities
+│   ├── Social/        # Social media, posts, engagement
+│   └── AI/            # Embeddings, semantic search
+├── Services/          # Business logic layer
+├── Repositories/      # Data access layer
+└── Http/
+    ├── Controllers/   # Keep thin - delegate to services
+    └── Middleware/    # Auth, tenancy, rate limiting
+
+database/
+├── migrations/        # Version-controlled schema
+└── seeders/          # Test data generators
+
+.claude/
+├── agents/           # Specialized AI agents (21 total)
+├── knowledge/        # Project documentation
+├── commands/         # Custom slash commands
+├── hooks/            # Automation scripts
+└── settings.local.json
+```
+
+---
+
+## 🤖 Agent Usage
+
+### When to Use Specialized Agents
+
+| Task | Use Agent | Reason |
+|------|-----------|--------|
+| Multi-tenancy issues | `cmis-multi-tenancy` | RLS expert |
+| Platform integration | `cmis-platform-integration` | OAuth/webhook specialist |
+| AI/semantic search | `cmis-ai-semantic` | pgvector + Gemini expert |
+| Campaign features | `cmis-campaign-expert` | Campaign domain expert |
+| Frontend/UI | `cmis-ui-frontend` | Alpine.js + Tailwind specialist |
+| Database work | `laravel-db-architect` | PostgreSQL + migrations |
+| Complex tasks | `cmis-orchestrator` | Multi-agent coordinator |
+
+### Agent Best Practices
+- Use `haiku` model for lightweight agents (cost-effective)
+- Use `sonnet` model for complex reasoning tasks
+- Limit tool access to what each agent needs
+- Check `.claude/agents/README.md` for full agent list
+
+---
+
+## 🔧 Development Workflow
+
+### Git & Branching
+- **Branch naming:** `claude/<feature-name>-<session-id>`
+- **Commit format:** Clear, descriptive messages
+- **Push policy:** Always use `git push -u origin <branch-name>`
+- **NEVER** push to main/master directly
+
+### Testing Requirements
+- ✅ Unit tests for all service methods
+- ✅ Feature tests for API endpoints
+- ✅ Multi-tenancy isolation tests
+- ✅ Platform integration mocking
+- Run: `vendor/bin/phpunit`
+
+### Database Migrations
+```php
+// ALWAYS add RLS policies in migrations
+public function up()
+{
+    // 1. Create table
+    Schema::create('cmis.new_table', function (Blueprint $table) {
+        $table->uuid('id')->primary();
+        $table->uuid('org_id');
+        // ... columns
+    });
+
+    // 2. Add RLS policy
+    DB::statement("
+        ALTER TABLE cmis.new_table ENABLE ROW LEVEL SECURITY;
+        CREATE POLICY org_isolation ON cmis.new_table
+        USING (org_id = current_setting('app.current_org_id')::uuid);
+    ");
+}
+```
+
+### Code Review Checklist
+- [ ] Multi-tenancy respected?
+- [ ] RLS policies added?
+- [ ] Tests written and passing?
+- [ ] Security validated?
+- [ ] Documentation updated?
+- [ ] No hardcoded credentials?
+
+---
+
+## 🎨 Frontend Conventions
+
+### Alpine.js Components
+```html
+<!-- Use x-data for component state -->
+<div x-data="campaignDashboard()">
+    <button @click="loadMetrics">Load</button>
+    <div x-show="loading">Loading...</div>
+</div>
+```
+
+### Tailwind Utilities
+- Use `@apply` in components sparingly
+- Prefer utility classes in templates
+- Custom colors in `tailwind.config.js`
+
+### Chart.js Integration
+- Store in `resources/js/components/`
+- Use Alpine.js for state management
+- Async data loading via Axios
+
+---
+
+## 🔌 Platform Integration
+
+### OAuth Flow Pattern
+1. Redirect to platform authorization URL
+2. Handle callback with authorization code
+3. Exchange code for access + refresh tokens
+4. Store encrypted in `cmis_platform.platform_credentials`
+5. Implement token refresh logic
+
+### Webhook Handling
+```php
+// ALWAYS verify signatures
+public function handleWebhook(Request $request)
+{
+    if (!$this->verifySignature($request)) {
+        abort(403, 'Invalid signature');
+    }
+    // Process webhook...
+}
+```
+
+---
+
+## 🧠 AI & Semantic Search
+
+### Embedding Generation
+- **Service:** `EmbeddingOrchestrator`
+- **Rate limits:** 30 requests/min, 500/hour
+- **Model:** Google Gemini `text-embedding-004`
+- **Storage:** pgvector in `cmis_ai.embeddings`
+
+### Vector Search
+```php
+// Use cosine similarity for search
+$results = DB::select("
+    SELECT *,
+           1 - (embedding <=> ?::vector) AS similarity
+    FROM cmis_ai.embeddings
+    WHERE embedding <=> ?::vector < 0.3
+    ORDER BY embedding <=> ?::vector
+    LIMIT 10
+", [$queryVector, $queryVector, $queryVector]);
+```
+
+---
+
+## 📊 Performance Guidelines
+
+### Query Optimization
+- Use indexes for frequently queried columns
+- Add indexes on foreign keys
+- Use `EXPLAIN ANALYZE` for slow queries
+- Consider materialized views for dashboards
+
+### Caching Strategy
+- Cache platform data (5-15 min TTL)
+- Cache embeddings (permanent until updated)
+- Cache analytics (1-60 min based on frequency)
+- Use Redis for session + cache
+
+### N+1 Query Prevention
+```php
+// ALWAYS eager load relationships
+$campaigns = Campaign::with(['org', 'contentPlans.items'])
+    ->get();
+```
+
+---
+
+## 🔍 Debugging Tips
+
+### Multi-Tenancy Issues
+```sql
+-- Check current org context
+SELECT current_setting('app.current_org_id', true);
+
+-- Test RLS policy
+SET app.current_org_id = 'org-uuid-here';
+SELECT * FROM cmis.campaigns; -- Should only show this org's data
+```
+
+### Platform Integration
+- Check webhook logs in `cmis_platform.webhook_logs`
+- Verify token expiration dates
+- Test with platform's debugging tools
+
+### AI Operations
+- Monitor rate limits in logs
+- Check embedding dimensions (768 for Gemini)
+- Verify vector index exists: `\d cmis_ai.embeddings`
+
+---
+
+## 📚 Essential Documentation
+
+- **Project Knowledge:** `.claude/CMIS_PROJECT_KNOWLEDGE.md`
+- **Multi-Tenancy:** `.claude/knowledge/MULTI_TENANCY_PATTERNS.md`
+- **Data Patterns:** `.claude/knowledge/CMIS_DATA_PATTERNS.md`
+- **Agent Guide:** `.claude/agents/README.md`
+
+---
+
+## 🚀 Quick Commands
+
+```bash
+# Run tests
+vendor/bin/phpunit
+
+# Database refresh
+php artisan migrate:fresh --seed
+
+# Clear caches
+php artisan optimize:clear
+
+# Generate IDE helper
+php artisan ide-helper:generate
+
+# Database console
+PGPASSWORD="123@Marketing@321" psql -h 127.0.0.1 -U begin -d cmis
+```
+
+---
+
+## ⚠️ Common Pitfalls
+
+1. **Forgetting RLS context** - Always call `init_transaction_context()`
+2. **Unqualified table names** - Use `cmis.table_name`, not just `table_name`
+3. **Missing indexes** - Add indexes for foreign keys and search columns
+4. **Hardcoded org filtering** - Let RLS handle it, don't add `WHERE org_id = ?`
+5. **Token expiration** - Implement refresh logic for platform tokens
+6. **Rate limit violations** - Queue AI operations, don't run synchronously
+
+---
+
+## 📞 Support & Resources
+
+- **Laravel Docs:** https://laravel.com/docs
+- **PostgreSQL RLS:** https://www.postgresql.org/docs/current/ddl-rowsecurity.html
+- **pgvector:** https://github.com/pgvector/pgvector
+- **Alpine.js:** https://alpinejs.dev
+- **Tailwind:** https://tailwindcss.com
+
+---
+
+**Remember:** CMIS is NOT a generic Laravel app. Always consider multi-tenancy, platform integrations, and AI capabilities in your solutions!
+
+**Status:** 49% Complete (Phase 2: Platform Integration)
+**Next:** Phase 3 (AI Analytics), Phase 4 (Ad Campaign Orchestration)
