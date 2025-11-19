@@ -366,4 +366,22 @@ class MetaSyncService extends BasePlatformSyncService
             $since
         );
     }
+
+    /**
+     * Sync Page Data
+     */
+    public function syncPageData($integration): array
+    {
+        // TODO: Implement page data sync
+        return ['success' => true, 'data' => []];
+    }
+
+    /**
+     * Sync Insights
+     */
+    public function syncInsights($integration): array
+    {
+        // TODO: Implement insights sync
+        return ['success' => true, 'data' => []];
+    }
 }

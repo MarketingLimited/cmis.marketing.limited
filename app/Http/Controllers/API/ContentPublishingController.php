@@ -31,7 +31,7 @@ class ContentPublishingController extends Controller
                 'content' => 'required|string',
                 'title' => 'nullable|string',
                 'integration_ids' => 'required|array',
-                'integration_ids.*' => 'required|string|exists:cmis_integrations.integrations,integration_id',
+                'integration_ids.*' => 'required|string|exists:cmis.integrations,integration_id',
                 'media_urls' => 'nullable|array',
             ]);
 
@@ -124,7 +124,7 @@ class ContentPublishingController extends Controller
                 'content' => 'required|string',
                 'title' => 'nullable|string',
                 'integration_ids' => 'required|array',
-                'integration_ids.*' => 'required|string|exists:cmis_integrations.integrations,integration_id',
+                'integration_ids.*' => 'required|string|exists:cmis.integrations,integration_id',
                 'scheduled_at' => 'required|date|after:now',
                 'media_urls' => 'nullable|array',
             ]);
@@ -207,7 +207,7 @@ class ContentPublishingController extends Controller
 
             $scheduledPosts = DB::table('cmis_creative.scheduled_posts as sp')
                 ->join('cmis_creative.content_items as ci', 'sp.content_id', '=', 'ci.content_id')
-                ->join('cmis_integrations.integrations as int', 'sp.integration_id', '=', 'int.integration_id')
+                ->join('cmis.integrations as int', 'sp.integration_id', '=', 'int.integration_id')
                 ->where('sp.org_id', $orgId)
                 ->where('sp.status', $status)
                 ->select(
@@ -353,7 +353,7 @@ class ContentPublishingController extends Controller
             $limit = $request->input('limit', 50);
 
             $history = DB::table('cmis_social.social_posts as sp')
-                ->join('cmis_integrations.integrations as int', 'sp.integration_id', '=', 'int.integration_id')
+                ->join('cmis.integrations as int', 'sp.integration_id', '=', 'int.integration_id')
                 ->where('sp.org_id', $orgId)
                 ->select(
                     'sp.*',

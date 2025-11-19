@@ -35,6 +35,14 @@ class CompleteCampaignLifecycleTest extends TestCase
         $this->metaAdsService = app(MetaAdsService::class);
     }
 
+    protected function tearDown(): void
+    {
+        \Mockery::close();
+        @restore_error_handler();
+        @restore_exception_handler();
+        parent::tearDown();
+    }
+
     #[Test]
     public function it_executes_complete_campaign_lifecycle()
     {

@@ -57,7 +57,7 @@ abstract class BasePlatformSyncService
      */
     protected function logSync(string $type, string $status, array $data = [], ?string $error = null): void
     {
-        DB::table('cmis_integrations.platform_sync_logs')->insert([
+        DB::table('cmis.sync_logs')->insert([
             'integration_id' => $this->integration->integration_id,
             'org_id' => $this->orgId,
             'platform' => $this->platform,
@@ -77,7 +77,7 @@ abstract class BasePlatformSyncService
      */
     protected function getLastSyncTime(string $type): Carbon
     {
-        $lastSync = DB::table('cmis_integrations.platform_sync_logs')
+        $lastSync = DB::table('cmis.sync_logs')
             ->where('integration_id', $this->integration->integration_id)
             ->where('sync_type', $type)
             ->where('status', 'success')

@@ -31,26 +31,34 @@ return new class extends Migration
         $this->createIndexConcurrently('idx_content_items_plan', 'cmis.content_items', ['plan_id']);
         $this->createIndexConcurrently('idx_content_items_status', 'cmis.content_items', ['status', 'scheduled_at']);
 
-        // Knowledge Base indexes
-        echo "Creating indexes for knowledge_base table...\n";
-        $this->createIndexConcurrently('idx_knowledge_org_type', 'cmis.knowledge_base', ['org_id', 'content_type']);
-        $this->createIndexConcurrently('idx_knowledge_created', 'cmis.knowledge_base', ['created_at DESC']);
-        $this->createIndexConcurrently('idx_knowledge_title', 'cmis.knowledge_base', ['title']);
+        // Knowledge Base indexes (skip if table doesn't exist)
+        if ($this->tableExists('cmis.knowledge_base')) {
+            echo "Creating indexes for knowledge_base table...\n";
+            $this->createIndexConcurrently('idx_knowledge_org_type', 'cmis.knowledge_base', ['org_id', 'content_type']);
+            $this->createIndexConcurrently('idx_knowledge_created', 'cmis.knowledge_base', ['created_at DESC']);
+            $this->createIndexConcurrently('idx_knowledge_title', 'cmis.knowledge_base', ['title']);
+        }
 
-        // Knowledge Embeddings - Vector similarity search index
-        echo "Creating vector index for knowledge_embeddings table...\n";
-        $this->createIndexConcurrently(
-            'idx_embeddings_vector',
-            'cmis.knowledge_embeddings',
-            ['embedding vector_cosine_ops'],
-            'ivfflat'
-        );
-        $this->createIndexConcurrently('idx_embeddings_knowledge', 'cmis.knowledge_embeddings', ['knowledge_id']);
+        // Knowledge Embeddings - Vector similarity search index (skip if table doesn't exist)
+        if ($this->tableExists('cmis.knowledge_embeddings')) {
+            echo "Creating vector index for knowledge_embeddings table...\n";
+            $this->createIndexConcurrently(
+                'idx_embeddings_vector',
+                'cmis.knowledge_embeddings',
+                ['embedding vector_cosine_ops'],
+                'ivfflat'
+            );
+            $this->createIndexConcurrently('idx_embeddings_knowledge', 'cmis.knowledge_embeddings', ['knowledge_id']);
+        }
 
-        // Ad Accounts indexes
-        echo "Creating indexes for ad_accounts table...\n";
-        $this->createIndexConcurrently('idx_ad_accounts_org', 'cmis.ad_accounts', ['org_id', 'platform']);
-        $this->createIndexConcurrently('idx_ad_accounts_status', 'cmis.ad_accounts', ['status']);
+        // Ad Accounts indexes (check if platform column exists)
+        if ($this->tableExists('cmis.ad_accounts')) {
+            echo "Creating indexes for ad_accounts table...\n";
+            if ($this->columnExists('cmis.ad_accounts', 'platform')) {
+                $this->createIndexConcurrently('idx_ad_accounts_org', 'cmis.ad_accounts', ['org_id', 'platform']);
+            }
+            $this->createIndexConcurrently('idx_ad_accounts_status', 'cmis.ad_accounts', ['status']);
+        }
 
         // Ad Campaigns indexes
         echo "Creating indexes for ad_campaigns table...\n";
@@ -147,6 +155,51 @@ return new class extends Migration
         }
 
         echo "\n✓ Performance indexes removed\n\n";
+    }
+
+    /**
+     * Check if a table exists in the database.
+     */
+    private function tableExists(string $tableName): bool
+    {
+        try {
+            [$schema, $table] = explode('.', $tableName);
+            $result = DB::select("
+                SELECT EXISTS (
+                    SELECT 1
+                    FROM information_schema.tables
+                    WHERE table_schema = ?
+                    AND table_name = ?
+                )
+            ", [$schema, $table]);
+
+            return $result[0]->exists ?? false;
+        } catch (\Exception $e) {
+            return false;
+        }
+    }
+
+    /**
+     * Check if a column exists in a table.
+     */
+    private function columnExists(string $tableName, string $columnName): bool
+    {
+        try {
+            [$schema, $table] = explode('.', $tableName);
+            $result = DB::select("
+                SELECT EXISTS (
+                    SELECT 1
+                    FROM information_schema.columns
+                    WHERE table_schema = ?
+                    AND table_name = ?
+                    AND column_name = ?
+                )
+            ", [$schema, $table, $columnName]);
+
+            return $result[0]->exists ?? false;
+        } catch (\Exception $e) {
+            return false;
+        }
     }
 
     /**

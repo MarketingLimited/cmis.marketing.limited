@@ -27,6 +27,14 @@ class SyncFacebookDataJobTest extends TestCase
         ]);
     }
 
+    protected function tearDown(): void
+    {
+        \Mockery::close();
+        @restore_error_handler();
+        @restore_exception_handler();
+        parent::tearDown();
+    }
+
     public function test_job_can_be_dispatched()
     {
         Queue::fake();
