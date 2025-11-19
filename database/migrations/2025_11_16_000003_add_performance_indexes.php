@@ -51,10 +51,14 @@ return new class extends Migration
             $this->createIndexConcurrently('idx_embeddings_knowledge', 'cmis.knowledge_embeddings', ['knowledge_id']);
         }
 
-        // Ad Accounts indexes
-        echo "Creating indexes for ad_accounts table...\n";
-        $this->createIndexConcurrently('idx_ad_accounts_org', 'cmis.ad_accounts', ['org_id', 'platform']);
-        $this->createIndexConcurrently('idx_ad_accounts_status', 'cmis.ad_accounts', ['status']);
+        // Ad Accounts indexes (check if platform column exists)
+        if ($this->tableExists('cmis.ad_accounts')) {
+            echo "Creating indexes for ad_accounts table...\n";
+            if ($this->columnExists('cmis.ad_accounts', 'platform')) {
+                $this->createIndexConcurrently('idx_ad_accounts_org', 'cmis.ad_accounts', ['org_id', 'platform']);
+            }
+            $this->createIndexConcurrently('idx_ad_accounts_status', 'cmis.ad_accounts', ['status']);
+        }
 
         // Ad Campaigns indexes
         echo "Creating indexes for ad_campaigns table...\n";
@@ -168,6 +172,29 @@ return new class extends Migration
                     AND table_name = ?
                 )
             ", [$schema, $table]);
+
+            return $result[0]->exists ?? false;
+        } catch (\Exception $e) {
+            return false;
+        }
+    }
+
+    /**
+     * Check if a column exists in a table.
+     */
+    private function columnExists(string $tableName, string $columnName): bool
+    {
+        try {
+            [$schema, $table] = explode('.', $tableName);
+            $result = DB::select("
+                SELECT EXISTS (
+                    SELECT 1
+                    FROM information_schema.columns
+                    WHERE table_schema = ?
+                    AND table_name = ?
+                    AND column_name = ?
+                )
+            ", [$schema, $table, $columnName]);
 
             return $result[0]->exists ?? false;
         } catch (\Exception $e) {
