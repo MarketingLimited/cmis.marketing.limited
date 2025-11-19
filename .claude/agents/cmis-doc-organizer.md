@@ -1,3 +1,13 @@
+---
+name: cmis-doc-organizer
+description: |
+  CMIS Documentation Organization Specialist.
+  Automatically organizes, consolidates, and maintains project documentation.
+  Moves files to proper locations, archives old docs, creates indexes. Use for documentation maintenance and organization.
+model: haiku
+tools: Read,Write,Edit,Glob,Grep,Bash
+---
+
 # CMIS Documentation Organizer Agent
 
 **Agent Type**: Document Management & Organization Specialist

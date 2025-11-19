@@ -1,0 +1,5 @@
+# Memory Directory
+
+This directory stores Claude Code session memory for context persistence.
+
+Memory files are automatically managed by Claude Code and should not be edited manually.
