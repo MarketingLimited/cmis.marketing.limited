@@ -88,3 +88,66 @@
         display: none !important;
     }
 }
+
+@layer utilities {
+    /* Mobile-specific optimizations */
+    @media (max-width: 640px) {
+        /* Improve touch targets on mobile */
+        button, a, input[type="button"], input[type="submit"] {
+            min-height: 44px;
+            min-width: 44px;
+        }
+
+        /* Prevent zoom on input focus */
+        input, select, textarea {
+            font-size: 16px !important;
+        }
+
+        /* Optimize mobile spacing */
+        .mobile-compact {
+            @apply p-2 text-sm;
+        }
+
+        /* Hide elements on mobile */
+        .hide-mobile {
+            display: none !important;
+        }
+
+        /* Responsive text scaling */
+        h1 { font-size: 1.5rem !important; }
+        h2 { font-size: 1.25rem !important; }
+        h3 { font-size: 1.125rem !important; }
+    }
+
+    /* Tablet optimizations */
+    @media (min-width: 641px) and (max-width: 1024px) {
+        .hide-tablet {
+            display: none !important;
+        }
+    }
+
+    /* Prevent text selection on buttons and interactive elements */
+    button, .no-select {
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    /* Smooth scrolling */
+    html {
+        scroll-behavior: smooth;
+    }
+
+    /* Optimize for RTL on mobile */
+    @media (max-width: 640px) {
+        [dir="rtl"] .overflow-x-auto {
+            direction: ltr;
+        }
+
+        [dir="rtl"] .overflow-x-auto > * {
+            direction: rtl;
+        }
+    }
+}
