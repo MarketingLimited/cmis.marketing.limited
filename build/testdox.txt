@@ -288,7 +288,7 @@ Budget (Tests\Unit\Models\Budget\Budget)
 Bulk Operations Workflow (Tests\Integration\Bulk\BulkOperationsWorkflow)
  [ ] It creates bulk posts from csv
  [ ] It handles bulk post validation errors
- [ ] It performs bulk campaign status update
+ [x] It performs bulk campaign status update
  [ ] It performs bulk creative asset deletion
  [ ] It performs bulk post scheduling with queue
 
@@ -296,14 +296,14 @@ Campaign (Tests\Feature\Campaign)
  [ ] Example
 
 Campaign (Tests\Unit\Models\Campaign)
- [ ] It can create a campaign
- [ ] It belongs to an organization
+ [x] It can create a campaign
+ [x] It belongs to an organization
  [ ] It has many creative assets
  [ ] It has many performance metrics
- [ ] It enforces valid status values
+ [x] It enforces valid status values
  [ ] It respects rls policies
- [ ] It can be soft deleted
- [ ] It validates budget format
+ [x] It can be soft deleted
+ [x] It validates budget format
  [ ] It validates date range
  [ ] It cascades delete to creative assets
 
@@ -315,7 +315,7 @@ Campaign API (Tests\Feature\API\CampaignAPI)
  [ ] It can delete a campaign
  [ ] It enforces org isolation for campaigns
  [ ] It validates campaign creation data
- [ ] It requires authentication
+ [x] It requires authentication
  [ ] It can filter campaigns by status
  [ ] It can search campaigns
 
@@ -449,8 +449,8 @@ Campaign Repository (Tests\Unit\Repositories\CampaignRepository)
 Campaign Service (Tests\Unit\Services\CampaignService)
  [ ] It can create campaign with context
  [ ] It can update campaign
- [ ] It can find related campaigns
- [ ] It can get campaign contexts
+ [x] It can find related campaigns
+ [x] It can get campaign contexts
  [ ] It enforces org isolation
  [ ] It handles campaign deletion
 
@@ -514,8 +514,8 @@ Comment (Tests\Unit\Models\Comment\Comment)
 
 Complete Campaign Lifecycle (Tests\Integration\Campaign\CompleteCampaignLifecycle)
  [ ] It executes complete campaign lifecycle
- [ ] It handles campaign pause and resume
- [ ] It archives completed campaign
+ [x] It handles campaign pause and resume
+ [x] It archives completed campaign
 
 Complete Marketing Workflow (Tests\Integration\CompleteFlow\CompleteMarketingWorkflow)
  [ ] It executes complete marketing workflow with all details
@@ -824,9 +824,9 @@ Error Recovery Workflow (Tests\Integration\ErrorHandling\ErrorRecoveryWorkflow)
  [ ] It handles invalid token with refresh
  [ ] It handles rate limit with backoff
  [ ] It handles partial data sync failure
- [ ] It handles database transaction rollback
+ [x] It handles database transaction rollback
  [ ] It handles job retry on failure
- [ ] It handles validation errors gracefully
+ [x] It handles validation errors gracefully
  [ ] It logs all errors for debugging
 
 Example (Tests\Feature\Example)
@@ -1625,7 +1625,7 @@ Publishing API (Tests\Feature\API\PublishingAPI)
 
 Publishing Workflow (Tests\Integration\Publishing\PublishingWorkflow)
  [ ] It can create a publishing queue
- [ ] It can schedule a post
+ [x] It can schedule a post
  [ ] It dispatches publish job at scheduled time
  [ ] It publishes post to multiple platforms
  [ ] It handles publishing failures gracefully
@@ -2213,7 +2213,7 @@ Url Helper (Tests\Unit\Helpers\UrlHelper)
 User (Tests\Unit\Models\User)
  [x] It can create a user with uuid
  [ ] It has many organizations
- [ ] It can check organization membership
+ [x] It can check organization membership
  [ ] It can check permissions
  [ ] It belongs to multiple organizations
  [ ] It uses uuid as primary identifier
