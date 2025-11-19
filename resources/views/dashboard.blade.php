@@ -6,62 +6,62 @@
 <div x-data="dashboardData({{ Js::from($stats ?? []) }}, {{ Js::from($campaignStatus ?? []) }}, {{ Js::from($campaignsByOrg ?? []) }})">
 
     <!-- Page Header -->
-    <div class="mb-6">
-        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">لوحة التحكم</h1>
-        <p class="mt-2 text-gray-600 dark:text-gray-400">نظرة شاملة على أداء النظام والحملات التسويقية</p>
+    <div class="mb-4 sm:mb-6">
+        <h1 class="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">لوحة التحكم</h1>
+        <p class="mt-1 sm:mt-2 text-sm sm:text-base text-gray-600 dark:text-gray-400">نظرة شاملة على أداء النظام والحملات التسويقية</p>
     </div>
 
     <!-- Stats Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6 mb-6 sm:mb-8">
 
         <!-- Organizations -->
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 sm:p-6">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-sm font-medium text-gray-600 dark:text-gray-400">المؤسسات</p>
-                    <p class="text-3xl font-bold text-gray-900 dark:text-white mt-2" x-text="stats ? (stats.orgs || 0) : 0"></p>
+                    <p class="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400">المؤسسات</p>
+                    <p class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mt-1 sm:mt-2" x-text="stats ? (stats.orgs || 0) : 0"></p>
                 </div>
-                <div class="p-3 rounded-full bg-blue-100 dark:bg-blue-900">
-                    <i class="fas fa-building text-blue-600 dark:text-blue-300 text-2xl"></i>
+                <div class="p-2 sm:p-3 rounded-full bg-blue-100 dark:bg-blue-900">
+                    <i class="fas fa-building text-blue-600 dark:text-blue-300 text-lg sm:text-2xl"></i>
                 </div>
             </div>
         </div>
 
         <!-- Campaigns -->
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 sm:p-6">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-sm font-medium text-gray-600 dark:text-gray-400">الحملات النشطة</p>
-                    <p class="text-3xl font-bold text-gray-900 dark:text-white mt-2" x-text="stats ? (stats.campaigns || 0) : 0"></p>
+                    <p class="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400">الحملات النشطة</p>
+                    <p class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mt-1 sm:mt-2" x-text="stats ? (stats.campaigns || 0) : 0"></p>
                 </div>
-                <div class="p-3 rounded-full bg-green-100 dark:bg-green-900">
-                    <i class="fas fa-bullhorn text-green-600 dark:text-green-300 text-2xl"></i>
+                <div class="p-2 sm:p-3 rounded-full bg-green-100 dark:bg-green-900">
+                    <i class="fas fa-bullhorn text-green-600 dark:text-green-300 text-lg sm:text-2xl"></i>
                 </div>
             </div>
         </div>
 
         <!-- Creative Assets -->
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 sm:p-6">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-sm font-medium text-gray-600 dark:text-gray-400">الأصول الإبداعية</p>
-                    <p class="text-3xl font-bold text-gray-900 dark:text-white mt-2" x-text="stats ? (stats.creative_assets || 0) : 0"></p>
+                    <p class="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400">الأصول الإبداعية</p>
+                    <p class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mt-1 sm:mt-2" x-text="stats ? (stats.creative_assets || 0) : 0"></p>
                 </div>
-                <div class="p-3 rounded-full bg-purple-100 dark:bg-purple-900">
-                    <i class="fas fa-palette text-purple-600 dark:text-purple-300 text-2xl"></i>
+                <div class="p-2 sm:p-3 rounded-full bg-purple-100 dark:bg-purple-900">
+                    <i class="fas fa-palette text-purple-600 dark:text-purple-300 text-lg sm:text-2xl"></i>
                 </div>
             </div>
         </div>
 
         <!-- KPIs -->
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 sm:p-6">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-sm font-medium text-gray-600 dark:text-gray-400">مؤشرات الأداء</p>
-                    <p class="text-3xl font-bold text-gray-900 dark:text-white mt-2" x-text="stats ? (stats.kpis || 0) : 0"></p>
+                    <p class="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400">مؤشرات الأداء</p>
+                    <p class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mt-1 sm:mt-2" x-text="stats ? (stats.kpis || 0) : 0"></p>
                 </div>
-                <div class="p-3 rounded-full bg-yellow-100 dark:bg-yellow-900">
-                    <i class="fas fa-chart-line text-yellow-600 dark:text-yellow-300 text-2xl"></i>
+                <div class="p-2 sm:p-3 rounded-full bg-yellow-100 dark:bg-yellow-900">
+                    <i class="fas fa-chart-line text-yellow-600 dark:text-yellow-300 text-lg sm:text-2xl"></i>
                 </div>
             </div>
         </div>
@@ -69,18 +69,18 @@
     </div>
 
     <!-- Charts Row -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 md:gap-6 mb-6 sm:mb-8">
 
         <!-- Campaign Status Chart -->
         <x-ui.card title="توزيع الحملات حسب الحالة">
-            <div class="h-64 flex items-center justify-center">
+            <div class="h-48 sm:h-56 md:h-64 flex items-center justify-center">
                 <canvas id="statusChart"></canvas>
             </div>
         </x-ui.card>
 
         <!-- Campaigns by Organization -->
         <x-ui.card title="الحملات حسب المؤسسة">
-            <div class="h-64 flex items-center justify-center">
+            <div class="h-48 sm:h-56 md:h-64 flex items-center justify-center">
                 <canvas id="orgChart"></canvas>
             </div>
         </x-ui.card>
@@ -88,7 +88,7 @@
     </div>
 
     <!-- Performance Metrics -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6 mb-6 sm:mb-8">
 
         <!-- Weekly Performance -->
         <x-ui.card title="الأداء الأسبوعي">
@@ -151,30 +151,30 @@
 
     <!-- Quick Actions -->
     <x-ui.card title="إجراءات سريعة">
-        <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
-            <a href="{{ route('campaigns.index') }}" class="flex flex-col items-center p-4 bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-lg hover:shadow-lg transition">
-                <i class="fas fa-plus-circle text-3xl mb-2"></i>
-                <span class="text-sm font-semibold">حملة جديدة</span>
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-3 md:gap-4">
+            <a href="{{ route('campaigns.index') }}" class="flex flex-col items-center p-3 sm:p-4 bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-lg hover:shadow-lg transition">
+                <i class="fas fa-plus-circle text-xl sm:text-2xl md:text-3xl mb-1 sm:mb-2"></i>
+                <span class="text-xs sm:text-sm font-semibold text-center">حملة جديدة</span>
             </a>
-            <a href="{{ route('orgs.create') }}" class="flex flex-col items-center p-4 bg-gradient-to-br from-green-500 to-green-600 text-white rounded-lg hover:shadow-lg transition">
-                <i class="fas fa-building text-3xl mb-2"></i>
-                <span class="text-sm font-semibold">مؤسسة جديدة</span>
+            <a href="{{ route('orgs.create') }}" class="flex flex-col items-center p-3 sm:p-4 bg-gradient-to-br from-green-500 to-green-600 text-white rounded-lg hover:shadow-lg transition">
+                <i class="fas fa-building text-xl sm:text-2xl md:text-3xl mb-1 sm:mb-2"></i>
+                <span class="text-xs sm:text-sm font-semibold text-center">مؤسسة جديدة</span>
             </a>
-            <a href="{{ route('creative.index') }}" class="flex flex-col items-center p-4 bg-gradient-to-br from-purple-500 to-purple-600 text-white rounded-lg hover:shadow-lg transition">
-                <i class="fas fa-palette text-3xl mb-2"></i>
-                <span class="text-sm font-semibold">محتوى إبداعي</span>
+            <a href="{{ route('creative.index') }}" class="flex flex-col items-center p-3 sm:p-4 bg-gradient-to-br from-purple-500 to-purple-600 text-white rounded-lg hover:shadow-lg transition">
+                <i class="fas fa-palette text-xl sm:text-2xl md:text-3xl mb-1 sm:mb-2"></i>
+                <span class="text-xs sm:text-sm font-semibold text-center">محتوى إبداعي</span>
             </a>
-            <a href="{{ route('analytics.index') }}" class="flex flex-col items-center p-4 bg-gradient-to-br from-yellow-500 to-yellow-600 text-white rounded-lg hover:shadow-lg transition">
-                <i class="fas fa-chart-line text-3xl mb-2"></i>
-                <span class="text-sm font-semibold">التحليلات</span>
+            <a href="{{ route('analytics.index') }}" class="flex flex-col items-center p-3 sm:p-4 bg-gradient-to-br from-yellow-500 to-yellow-600 text-white rounded-lg hover:shadow-lg transition">
+                <i class="fas fa-chart-line text-xl sm:text-2xl md:text-3xl mb-1 sm:mb-2"></i>
+                <span class="text-xs sm:text-sm font-semibold text-center">التحليلات</span>
             </a>
-            <a href="{{ route('settings.integrations') }}" class="flex flex-col items-center p-4 bg-gradient-to-br from-red-500 to-red-600 text-white rounded-lg hover:shadow-lg transition">
-                <i class="fas fa-plug text-3xl mb-2"></i>
-                <span class="text-sm font-semibold">التكاملات</span>
+            <a href="{{ route('settings.integrations') }}" class="flex flex-col items-center p-3 sm:p-4 bg-gradient-to-br from-red-500 to-red-600 text-white rounded-lg hover:shadow-lg transition">
+                <i class="fas fa-plug text-xl sm:text-2xl md:text-3xl mb-1 sm:mb-2"></i>
+                <span class="text-xs sm:text-sm font-semibold text-center">التكاملات</span>
             </a>
-            <a href="{{ route('ai.index') }}" class="flex flex-col items-center p-4 bg-gradient-to-br from-indigo-500 to-indigo-600 text-white rounded-lg hover:shadow-lg transition">
-                <i class="fas fa-robot text-3xl mb-2"></i>
-                <span class="text-sm font-semibold">الذكاء الاصطناعي</span>
+            <a href="{{ route('ai.index') }}" class="flex flex-col items-center p-3 sm:p-4 bg-gradient-to-br from-indigo-500 to-indigo-600 text-white rounded-lg hover:shadow-lg transition">
+                <i class="fas fa-robot text-xl sm:text-2xl md:text-3xl mb-1 sm:mb-2"></i>
+                <span class="text-xs sm:text-sm font-semibold text-center">الذكاء الاصطناعي</span>
             </a>
         </div>
     </x-ui.card>

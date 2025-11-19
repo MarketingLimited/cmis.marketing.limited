@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl" x-data="{ sidebarOpen: true, darkMode: false }" :class="{ 'dark': darkMode }">
+<html lang="ar" dir="rtl" x-data="{ sidebarOpen: window.innerWidth >= 1024, darkMode: false }" :class="{ 'dark': darkMode }">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -72,6 +72,14 @@
         .gradient-info {
             background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
         }
+
+        /* Mobile optimizations */
+        @media (max-width: 640px) {
+            /* Prevent double-tap zoom on buttons */
+            button, a {
+                touch-action: manipulation;
+            }
+        }
     </style>
 
     @stack('styles')
@@ -111,9 +119,21 @@
     <!-- Main Container -->
     <div class="flex h-screen overflow-hidden">
 
+        <!-- Mobile Overlay -->
+        <div x-show="sidebarOpen"
+             @click="sidebarOpen = false"
+             x-transition:enter="transition-opacity ease-linear duration-300"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
+             x-transition:leave="transition-opacity ease-linear duration-300"
+             x-transition:leave-start="opacity-100"
+             x-transition:leave-end="opacity-0"
+             class="fixed inset-0 bg-black bg-opacity-50 z-30 lg:hidden"
+             x-cloak></div>
+
         <!-- Sidebar -->
         <aside :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
-               class="fixed inset-y-0 right-0 z-40 w-64 bg-white dark:bg-gray-800 shadow-xl transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0">
+               class="fixed inset-y-0 right-0 z-40 w-72 sm:w-80 md:w-64 bg-white dark:bg-gray-800 shadow-xl transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0">
 
             <!-- Logo -->
             <div class="flex items-center justify-between h-16 px-6 bg-gradient-to-r from-blue-600 to-purple-600">
@@ -129,70 +149,70 @@
             </div>
 
             <!-- Navigation -->
-            <nav class="px-4 py-6 space-y-2 overflow-y-auto h-[calc(100vh-4rem)]">
+            <nav class="px-3 sm:px-4 py-4 sm:py-6 space-y-1 sm:space-y-2 overflow-y-auto h-[calc(100vh-4rem)]">
 
                 <a href="{{ route('dashboard.index') }}"
-                   class="flex items-center px-4 py-3 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-blue-50 dark:hover:bg-gray-700 transition {{ request()->routeIs('dashboard.*') ? 'bg-blue-50 text-blue-600 font-semibold' : '' }}">
-                    <i class="fas fa-home text-lg w-6"></i>
-                    <span class="mr-3">الرئيسية</span>
+                   class="flex items-center px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base text-gray-700 dark:text-gray-300 rounded-lg hover:bg-blue-50 dark:hover:bg-gray-700 transition {{ request()->routeIs('dashboard.*') ? 'bg-blue-50 text-blue-600 font-semibold' : '' }}">
+                    <i class="fas fa-home text-base sm:text-lg w-5 sm:w-6"></i>
+                    <span class="mr-2 sm:mr-3">الرئيسية</span>
                 </a>
 
-                <div class="pt-4 pb-2 text-xs font-semibold text-gray-400 uppercase">الإدارة</div>
+                <div class="pt-3 sm:pt-4 pb-1 sm:pb-2 text-[10px] sm:text-xs font-semibold text-gray-400 uppercase px-3 sm:px-4">الإدارة</div>
 
                 <a href="{{ route('orgs.index') }}"
-                   class="flex items-center px-4 py-3 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-blue-50 dark:hover:bg-gray-700 transition {{ request()->routeIs('orgs.*') ? 'bg-blue-50 text-blue-600 font-semibold' : '' }}">
-                    <i class="fas fa-building text-lg w-6"></i>
-                    <span class="mr-3">المؤسسات</span>
+                   class="flex items-center px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base text-gray-700 dark:text-gray-300 rounded-lg hover:bg-blue-50 dark:hover:bg-gray-700 transition {{ request()->routeIs('orgs.*') ? 'bg-blue-50 text-blue-600 font-semibold' : '' }}">
+                    <i class="fas fa-building text-base sm:text-lg w-5 sm:w-6"></i>
+                    <span class="mr-2 sm:mr-3">المؤسسات</span>
                 </a>
 
                 <a href="{{ route('campaigns.index') }}"
-                   class="flex items-center px-4 py-3 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-blue-50 dark:hover:bg-gray-700 transition {{ request()->routeIs('campaigns.*') ? 'bg-blue-50 text-blue-600 font-semibold' : '' }}">
-                    <i class="fas fa-bullhorn text-lg w-6"></i>
-                    <span class="mr-3">الحملات</span>
+                   class="flex items-center px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base text-gray-700 dark:text-gray-300 rounded-lg hover:bg-blue-50 dark:hover:bg-gray-700 transition {{ request()->routeIs('campaigns.*') ? 'bg-blue-50 text-blue-600 font-semibold' : '' }}">
+                    <i class="fas fa-bullhorn text-base sm:text-lg w-5 sm:w-6"></i>
+                    <span class="mr-2 sm:mr-3">الحملات</span>
                 </a>
 
-                <div class="pt-4 pb-2 text-xs font-semibold text-gray-400 uppercase">المحتوى</div>
+                <div class="pt-3 sm:pt-4 pb-1 sm:pb-2 text-[10px] sm:text-xs font-semibold text-gray-400 uppercase px-3 sm:px-4">المحتوى</div>
 
                 <a href="{{ route('creative.index') }}"
-                   class="flex items-center px-4 py-3 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-blue-50 dark:hover:bg-gray-700 transition {{ request()->routeIs('creative.*') ? 'bg-blue-50 text-blue-600 font-semibold' : '' }}">
-                    <i class="fas fa-palette text-lg w-6"></i>
-                    <span class="mr-3">الإبداع</span>
+                   class="flex items-center px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base text-gray-700 dark:text-gray-300 rounded-lg hover:bg-blue-50 dark:hover:bg-gray-700 transition {{ request()->routeIs('creative.*') ? 'bg-blue-50 text-blue-600 font-semibold' : '' }}">
+                    <i class="fas fa-palette text-base sm:text-lg w-5 sm:w-6"></i>
+                    <span class="mr-2 sm:mr-3">الإبداع</span>
                 </a>
 
                 <a href="{{ route('social.index') }}"
-                   class="flex items-center px-4 py-3 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-blue-50 dark:hover:bg-gray-700 transition {{ request()->routeIs('social.*') ? 'bg-blue-50 text-blue-600 font-semibold' : '' }}">
-                    <i class="fas fa-share-alt text-lg w-6"></i>
-                    <span class="mr-3">القنوات الاجتماعية</span>
+                   class="flex items-center px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base text-gray-700 dark:text-gray-300 rounded-lg hover:bg-blue-50 dark:hover:bg-gray-700 transition {{ request()->routeIs('social.*') ? 'bg-blue-50 text-blue-600 font-semibold' : '' }}">
+                    <i class="fas fa-share-alt text-base sm:text-lg w-5 sm:w-6"></i>
+                    <span class="mr-2 sm:mr-3 text-sm sm:text-base">القنوات الاجتماعية</span>
                 </a>
 
-                <div class="pt-4 pb-2 text-xs font-semibold text-gray-400 uppercase">التحليلات</div>
+                <div class="pt-3 sm:pt-4 pb-1 sm:pb-2 text-[10px] sm:text-xs font-semibold text-gray-400 uppercase px-3 sm:px-4">التحليلات</div>
 
                 <a href="{{ route('analytics.index') }}"
-                   class="flex items-center px-4 py-3 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-blue-50 dark:hover:bg-gray-700 transition {{ request()->routeIs('analytics.*') ? 'bg-blue-50 text-blue-600 font-semibold' : '' }}">
-                    <i class="fas fa-chart-line text-lg w-6"></i>
-                    <span class="mr-3">التحليلات</span>
+                   class="flex items-center px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base text-gray-700 dark:text-gray-300 rounded-lg hover:bg-blue-50 dark:hover:bg-gray-700 transition {{ request()->routeIs('analytics.*') ? 'bg-blue-50 text-blue-600 font-semibold' : '' }}">
+                    <i class="fas fa-chart-line text-base sm:text-lg w-5 sm:w-6"></i>
+                    <span class="mr-2 sm:mr-3">التحليلات</span>
                 </a>
 
-                <div class="pt-4 pb-2 text-xs font-semibold text-gray-400 uppercase">الذكاء الاصطناعي</div>
+                <div class="pt-3 sm:pt-4 pb-1 sm:pb-2 text-[10px] sm:text-xs font-semibold text-gray-400 uppercase px-3 sm:px-4">الذكاء الاصطناعي</div>
 
                 <a href="{{ route('ai.index') }}"
-                   class="flex items-center px-4 py-3 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-blue-50 dark:hover:bg-gray-700 transition {{ request()->routeIs('ai.*') ? 'bg-blue-50 text-blue-600 font-semibold' : '' }}">
-                    <i class="fas fa-robot text-lg w-6"></i>
-                    <span class="mr-3">الذكاء الاصطناعي</span>
+                   class="flex items-center px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base text-gray-700 dark:text-gray-300 rounded-lg hover:bg-blue-50 dark:hover:bg-gray-700 transition {{ request()->routeIs('ai.*') ? 'bg-blue-50 text-blue-600 font-semibold' : '' }}">
+                    <i class="fas fa-robot text-base sm:text-lg w-5 sm:w-6"></i>
+                    <span class="mr-2 sm:mr-3">الذكاء الاصطناعي</span>
                 </a>
 
-                <div class="pt-4 pb-2 text-xs font-semibold text-gray-400 uppercase">الإعدادات</div>
+                <div class="pt-3 sm:pt-4 pb-1 sm:pb-2 text-[10px] sm:text-xs font-semibold text-gray-400 uppercase px-3 sm:px-4">الإعدادات</div>
 
                 <a href="{{ route('settings.integrations') }}"
-                   class="flex items-center px-4 py-3 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-blue-50 dark:hover:bg-gray-700 transition {{ request()->routeIs('settings.integrations') ? 'bg-blue-50 text-blue-600 font-semibold' : '' }}">
-                    <i class="fas fa-plug text-lg w-6"></i>
-                    <span class="mr-3">التكاملات</span>
+                   class="flex items-center px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base text-gray-700 dark:text-gray-300 rounded-lg hover:bg-blue-50 dark:hover:bg-gray-700 transition {{ request()->routeIs('settings.integrations') ? 'bg-blue-50 text-blue-600 font-semibold' : '' }}">
+                    <i class="fas fa-plug text-base sm:text-lg w-5 sm:w-6"></i>
+                    <span class="mr-2 sm:mr-3">التكاملات</span>
                 </a>
 
                 <a href="{{ route('offerings.index') }}"
-                   class="flex items-center px-4 py-3 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-blue-50 dark:hover:bg-gray-700 transition {{ request()->routeIs('offerings.*') || request()->routeIs('products.*') || request()->routeIs('services.*') ? 'bg-blue-50 text-blue-600 font-semibold' : '' }}">
-                    <i class="fas fa-box text-lg w-6"></i>
-                    <span class="mr-3">العروض</span>
+                   class="flex items-center px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base text-gray-700 dark:text-gray-300 rounded-lg hover:bg-blue-50 dark:hover:bg-gray-700 transition {{ request()->routeIs('offerings.*') || request()->routeIs('products.*') || request()->routeIs('services.*') ? 'bg-blue-50 text-blue-600 font-semibold' : '' }}">
+                    <i class="fas fa-box text-base sm:text-lg w-5 sm:w-6"></i>
+                    <span class="mr-2 sm:mr-3">العروض</span>
                 </a>
 
             </nav>
@@ -202,42 +222,42 @@
         <div class="flex-1 flex flex-col overflow-hidden">
 
             <!-- Top Navigation Bar -->
-            <header class="flex items-center justify-between h-16 px-6 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-sm">
+            <header class="flex items-center justify-between h-14 sm:h-16 px-3 sm:px-6 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-sm">
 
-                <div class="flex items-center space-x-4 space-x-reverse">
-                    <button @click="sidebarOpen = !sidebarOpen" class="text-gray-600 dark:text-gray-300 lg:hidden">
-                        <i class="fas fa-bars text-xl"></i>
+                <div class="flex items-center space-x-2 sm:space-x-4 space-x-reverse">
+                    <button @click="sidebarOpen = !sidebarOpen" class="p-2 text-gray-600 dark:text-gray-300 lg:hidden hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">
+                        <i class="fas fa-bars text-lg sm:text-xl"></i>
                     </button>
 
-                    <div class="relative" x-data="{ searchOpen: false }">
-                        <button @click="searchOpen = !searchOpen" class="flex items-center px-4 py-2 text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition">
-                            <i class="fas fa-search ml-2"></i>
-                            <span>بحث...</span>
+                    <div class="relative hidden sm:block" x-data="{ searchOpen: false }">
+                        <button @click="searchOpen = !searchOpen" class="flex items-center px-3 sm:px-4 py-1.5 sm:py-2 text-sm sm:text-base text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition">
+                            <i class="fas fa-search ml-2 text-sm"></i>
+                            <span class="hidden md:inline">بحث...</span>
                         </button>
                     </div>
                 </div>
 
-                <div class="flex items-center space-x-4 space-x-reverse">
+                <div class="flex items-center space-x-1.5 sm:space-x-4 space-x-reverse">
 
                     <!-- Dark Mode Toggle -->
-                    <button @click="darkMode = !darkMode" class="p-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition">
-                        <i class="fas" :class="darkMode ? 'fa-sun' : 'fa-moon'"></i>
+                    <button @click="darkMode = !darkMode" class="p-1.5 sm:p-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition">
+                        <i class="fas text-sm sm:text-base" :class="darkMode ? 'fa-sun' : 'fa-moon'"></i>
                     </button>
 
                     <!-- Notifications -->
                     <div class="relative" x-data="notificationsWidget()" x-init="init()">
-                        <button @click="toggleNotifications()" class="relative p-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition">
-                            <i class="fas fa-bell"></i>
+                        <button @click="toggleNotifications()" class="relative p-1.5 sm:p-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition">
+                            <i class="fas fa-bell text-sm sm:text-base"></i>
                             <span x-show="unreadCount > 0"
                                   x-text="unreadCount > 9 ? '9+' : unreadCount"
-                                  class="absolute -top-1 -left-1 min-w-[20px] h-5 flex items-center justify-center bg-red-500 text-white text-xs font-bold rounded-full px-1">
+                                  class="absolute -top-0.5 sm:-top-1 -left-0.5 sm:-left-1 min-w-[16px] sm:min-w-[20px] h-4 sm:h-5 text-[10px] sm:text-xs flex items-center justify-center bg-red-500 text-white font-bold rounded-full px-0.5 sm:px-1">
                             </span>
                         </button>
 
                         <div x-show="notifOpen"
                              @click.away="notifOpen = false"
                              x-transition
-                             class="absolute left-0 mt-2 w-80 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 z-50"
+                             class="absolute left-0 mt-2 w-[calc(100vw-2rem)] sm:w-80 max-w-sm bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 z-50"
                              x-cloak>
                             <div class="p-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
                                 <h3 class="font-semibold text-gray-900 dark:text-white">الإشعارات</h3>
@@ -289,19 +309,19 @@
 
                     <!-- User Menu -->
                     <div class="relative" x-data="{ userMenuOpen: false }">
-                        <button @click="userMenuOpen = !userMenuOpen" class="flex items-center space-x-2 space-x-reverse p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition">
-                            <img src="https://ui-avatars.com/api/?name=Admin&background=667eea&color=fff" class="w-8 h-8 rounded-full">
-                            <div class="text-right hidden md:block">
-                                <p class="text-sm font-semibold text-gray-700 dark:text-gray-300">{{ auth()->user()->name ?? 'المستخدم' }}</p>
-                                <p class="text-xs text-gray-500">مدير النظام</p>
+                        <button @click="userMenuOpen = !userMenuOpen" class="flex items-center space-x-1 sm:space-x-2 space-x-reverse p-1 sm:p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition">
+                            <img src="https://ui-avatars.com/api/?name=Admin&background=667eea&color=fff" class="w-7 h-7 sm:w-8 sm:h-8 rounded-full">
+                            <div class="text-right hidden lg:block">
+                                <p class="text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300">{{ auth()->user()->name ?? 'المستخدم' }}</p>
+                                <p class="text-[10px] sm:text-xs text-gray-500">مدير النظام</p>
                             </div>
-                            <i class="fas fa-chevron-down text-xs text-gray-600 dark:text-gray-300"></i>
+                            <i class="fas fa-chevron-down text-[10px] sm:text-xs text-gray-600 dark:text-gray-300 hidden sm:inline"></i>
                         </button>
 
                         <div x-show="userMenuOpen"
                              @click.away="userMenuOpen = false"
                              x-transition
-                             class="absolute left-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 z-50"
+                             class="absolute left-0 right-0 sm:left-0 sm:right-auto mt-2 w-full sm:w-48 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 z-50"
                              x-cloak>
                             <a href="{{ route('profile') }}" class="block px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-t-lg">
                                 <i class="fas fa-user ml-2"></i> الملف الشخصي
@@ -323,7 +343,7 @@
             </header>
 
             <!-- Page Content -->
-            <main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 dark:bg-gray-900 p-6">
+            <main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 dark:bg-gray-900 p-3 sm:p-4 md:p-6">
                 @yield('content')
             </main>
 
