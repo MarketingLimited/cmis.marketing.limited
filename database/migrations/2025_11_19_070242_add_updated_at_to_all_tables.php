@@ -10,9 +10,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Add updated_at column to all tables that have created_at but not updated_at
+        // Add both created_at and updated_at columns to all tables that need them
         $tables = [
             'orgs',
+            'user_orgs',
+            'org_markets',
             'ad_campaigns',
             'ad_metrics',
             'ai_actions',
@@ -49,11 +51,36 @@ return new class extends Migration
             'user_activities',
             'user_sessions',
             'value_contexts',
+            'permissions',
+            'role_permissions',
+            'user_permissions',
+            'social_accounts',
+            'team_invitations',
+            'sessions',
         ];
 
         foreach ($tables as $table) {
-            // Check if table exists and doesn't already have updated_at
-            $hasColumn = DB::selectOne("
+            // Check and add created_at if it doesn't exist
+            $hasCreatedAt = DB::selectOne("
+                SELECT EXISTS (
+                    SELECT 1
+                    FROM information_schema.columns
+                    WHERE table_schema = 'cmis'
+                    AND table_name = ?
+                    AND column_name = 'created_at'
+                ) as exists
+            ", [$table]);
+
+            if (!$hasCreatedAt->exists) {
+                DB::statement("
+                    ALTER TABLE cmis.{$table}
+                    ADD COLUMN created_at TIMESTAMP WITH TIME ZONE DEFAULT now()
+                ");
+                echo "✓ Added created_at to cmis.{$table}\n";
+            }
+
+            // Check and add updated_at if it doesn't exist
+            $hasUpdatedAt = DB::selectOne("
                 SELECT EXISTS (
                     SELECT 1
                     FROM information_schema.columns
@@ -63,12 +90,11 @@ return new class extends Migration
                 ) as exists
             ", [$table]);
 
-            if (!$hasColumn->exists) {
+            if (!$hasUpdatedAt->exists) {
                 DB::statement("
                     ALTER TABLE cmis.{$table}
                     ADD COLUMN updated_at TIMESTAMP WITH TIME ZONE DEFAULT now()
                 ");
-
                 echo "✓ Added updated_at to cmis.{$table}\n";
             }
         }
