@@ -96,6 +96,13 @@ return new class extends Migration
                 ADD COLUMN IF NOT EXISTS campaign_external_id VARCHAR(255) NULL
             ");
             echo "✓ Added campaign_external_id to cmis.ad_campaigns\n";
+        } else {
+            // Column exists, make sure it's nullable
+            DB::statement("
+                ALTER TABLE cmis.ad_campaigns
+                ALTER COLUMN campaign_external_id DROP NOT NULL
+            ");
+            echo "✓ Made campaign_external_id nullable in cmis.ad_campaigns\n";
         }
     }
 
