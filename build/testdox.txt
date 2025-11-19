@@ -261,7 +261,7 @@ Auth (Tests\Feature\Auth\Auth)
 
 Authentication (Tests\Feature\Auth\Authentication)
  [ ] User can register
- [ ] Registration requires valid email
+ [x] Registration requires valid email
  [ ] Registration requires password confirmation
  [ ] User can login with correct credentials
  [ ] User cannot login with incorrect password
