@@ -261,7 +261,7 @@ Auth (Tests\Feature\Auth\Auth)
 
 Authentication (Tests\Feature\Auth\Authentication)
  [ ] User can register
- [x] Registration requires valid email
+ [ ] Registration requires valid email
  [ ] Registration requires password confirmation
  [ ] User can login with correct credentials
  [ ] User cannot login with incorrect password
@@ -289,7 +289,7 @@ Bulk Operations Workflow (Tests\Integration\Bulk\BulkOperationsWorkflow)
  [ ] It creates bulk posts from csv
  [ ] It handles bulk post validation errors
  [x] It performs bulk campaign status update
- [ ] It performs bulk creative asset deletion
+ [x] It performs bulk creative asset deletion
  [ ] It performs bulk post scheduling with queue
 
 Campaign (Tests\Feature\Campaign)

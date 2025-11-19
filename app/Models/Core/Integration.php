@@ -6,7 +6,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Casts\Encrypted;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -58,8 +57,8 @@ class Integration extends Model
         'created_by' => 'string',
         'updated_by' => 'string',
         'is_active' => 'boolean',
-        'access_token' => Encrypted::class,
-        'refresh_token' => Encrypted::class,
+        'access_token' => 'encrypted',
+        'refresh_token' => 'encrypted',
         'token_expires_at' => 'datetime',
         'token_refreshed_at' => 'datetime',
         'last_synced_at' => 'datetime',
