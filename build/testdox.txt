@@ -46,14 +46,28 @@ Ad Campaign (Tests\Unit\Models\AdPlatform\AdCampaign)
  [ ] It can create an ad campaign
  [ ] It belongs to organization and integration
  [ ] It validates platform
- [ ] It validates objective
- [ ] It validates status
+ [x] It validates objective
+ [x] It validates status
  [ ] It stores budget information
- [ ] It stores metrics as json
+ [x] It stores metrics as json
  [ ] It uses uuid as primary key
  [ ] It can be soft deleted
- [ ] It has timestamps
- [ ] It respects rls policies
+ [x] It has timestamps
+ [x] It respects rls policies
+
+All Platforms Sync (Tests\Integration\Sync\AllPlatformsSync)
+ [ ] It syncs facebook page data
+ [ ] It syncs facebook posts
+ [ ] It syncs facebook insights
+ [ ] It syncs tiktok account info
+ [ ] It syncs tiktok videos
+ [ ] It syncs twitter profile
+ [ ] It syncs twitter tweets
+ [ ] It syncs linkedin company page
+ [ ] It syncs linkedin posts
+ [ ] It handles rate limiting gracefully
+ [ ] It retries failed sync operations
+ [ ] It syncs multiple platforms simultaneously
 
 Analytics API (Tests\Feature\API\AnalyticsAPI)
  [ ] It can get campaign analytics
@@ -70,6 +84,18 @@ Analytics API (Tests\Feature\API\AnalyticsAPI)
  [ ] It requires authentication
  [ ] It can export analytics to pdf
  [ ] It can export analytics to excel
+
+Analytics Controller (Tests\Feature\Controllers\AnalyticsController)
+ [ ] It can get campaign analytics
+ [ ] It can get overview analytics
+ [ ] It can get platform analytics
+ [ ] It can get time series data
+ [ ] It can export analytics report
+ [ ] It can get top performing content
+ [ ] It can compare campaigns
+ [ ] It validates date range
+ [ ] It respects org isolation
+ [ ] It requires authentication
 
 Analytics Report (Tests\Unit\Models\Analytics\AnalyticsReport)
  [ ] It can create analytics report
@@ -132,19 +158,19 @@ Api Log (Tests\Unit\Models\Log\ApiLog)
  [ ] It respects rls policies
 
 Array Helper (Tests\Unit\Helpers\ArrayHelper)
- [ ] It flattens nested arrays
- [ ] It plucks values by key
- [ ] It groups array by key
- [ ] It removes null values
- [ ] It removes empty values
- [ ] It sorts by key
- [ ] It gets nested value
- [ ] It sets nested value
- [ ] It merges recursive
- [ ] It checks if associative
+ [x] It flattens nested arrays
+ [x] It plucks values by key
+ [x] It groups array by key
+ [x] It removes null values
+ [x] It removes empty values
+ [x] It sorts by key
+ [x] It gets nested value
+ [x] It sets nested value
+ [x] It merges recursive
+ [x] It checks if associative
 
 Asset (Tests\Unit\Models\Asset\Asset)
- [ ] It can create asset
+ [x] It can create asset
  [ ] It belongs to org
  [ ] It has different file types
  [ ] It stores file size
@@ -152,16 +178,28 @@ Asset (Tests\Unit\Models\Asset\Asset)
  [ ] It stores image dimensions
  [ ] It stores video duration
  [ ] It stores thumbnail path
- [ ] It stores metadata
+ [x] It stores metadata
  [ ] It tracks usage count
  [ ] It stores tags
  [ ] It can be public or private
  [ ] It uses uuid as primary key
- [ ] It has timestamps
+ [x] It has timestamps
  [ ] It respects rls policies
 
+Asset Controller (Tests\Feature\Controllers\AssetController)
+ [ ] It can list assets
+ [ ] It can upload asset
+ [ ] It can view asset details
+ [ ] It can update asset metadata
+ [ ] It can delete asset
+ [ ] It can filter by file type
+ [ ] It can search assets
+ [ ] Viewer cannot delete assets
+ [ ] It respects org isolation
+ [ ] It can download asset
+
 Audience (Tests\Unit\Models\Audience\Audience)
- [ ] It can create audience
+ [x] It can create audience
  [ ] It belongs to org
  [ ] It has demographic criteria
  [ ] It has interest criteria
@@ -173,7 +211,7 @@ Audience (Tests\Unit\Models\Audience\Audience)
  [ ] It has lookalike source
  [ ] It tracks last updated time
  [ ] It uses uuid as primary key
- [ ] It has timestamps
+ [x] It has timestamps
  [ ] It respects rls policies
 
 Audience Segment (Tests\Unit\Models\Audience\AudienceSegment)
@@ -206,6 +244,21 @@ Audit Log (Tests\Unit\Models\Operations\AuditLog)
  [ ] It respects rls policies
  [ ] It can query by entity type
 
+Auth (Tests\Feature\Auth\Auth)
+ [ ] Login requires correct password
+ [x] Login fails with nonexistent email
+ [x] Login fails for inactive users
+ [x] Login validates required fields
+ [ ] Registration creates user and returns token
+ [ ] Registration with org creates organization
+ [ ] Token refresh works
+ [x] Token refresh requires authentication
+ [ ] Logout revokes current token
+ [ ] Logout all revokes all tokens
+ [ ] Authenticated user can get profile
+ [ ] Authenticated user can update profile
+ [ ] Password is hashed during registration
+
 Authentication (Tests\Feature\Auth\Authentication)
  [ ] User can register
  [ ] Registration requires valid email
@@ -232,18 +285,25 @@ Budget (Tests\Unit\Models\Budget\Budget)
  [ ] It has timestamps
  [ ] It respects rls policies
 
+Bulk Operations Workflow (Tests\Integration\Bulk\BulkOperationsWorkflow)
+ [ ] It creates bulk posts from csv
+ [ ] It handles bulk post validation errors
+ [x] It performs bulk campaign status update
+ [x] It performs bulk creative asset deletion
+ [ ] It performs bulk post scheduling with queue
+
 Campaign (Tests\Feature\Campaign)
  [ ] Example
 
 Campaign (Tests\Unit\Models\Campaign)
- [ ] It can create a campaign
- [ ] It belongs to an organization
+ [x] It can create a campaign
+ [x] It belongs to an organization
  [ ] It has many creative assets
  [ ] It has many performance metrics
- [ ] It enforces valid status values
+ [x] It enforces valid status values
  [ ] It respects rls policies
- [ ] It can be soft deleted
- [ ] It validates budget format
+ [x] It can be soft deleted
+ [x] It validates budget format
  [ ] It validates date range
  [ ] It cascades delete to creative assets
 
@@ -255,7 +315,7 @@ Campaign API (Tests\Feature\API\CampaignAPI)
  [ ] It can delete a campaign
  [ ] It enforces org isolation for campaigns
  [ ] It validates campaign creation data
- [ ] It requires authentication
+ [x] It requires authentication
  [ ] It can filter campaigns by status
  [ ] It can search campaigns
 
@@ -287,12 +347,26 @@ Campaign Budget (Tests\Unit\Models\Campaign\CampaignBudget)
  [ ] It respects rls policies
 
 Campaign Completed Event (Tests\Unit\Events\CampaignCompletedEvent)
- [ ] It can be instantiated
- [ ] It can be dispatched
- [ ] It contains campaign data
- [ ] It broadcasts on private channel
- [ ] It can be listened to
+ [x] It can be instantiated
+ [x] It can be dispatched
+ [x] It contains campaign data
+ [x] It broadcasts on private channel
+ [x] It can be listened to
  [ ] It includes completion timestamp
+
+Campaign Controller (Tests\Feature\Controllers\CampaignController)
+ [ ] It can list all campaigns
+ [ ] It can create campaign
+ [ ] It can get single campaign
+ [ ] It can update campaign
+ [ ] It can delete campaign
+ [ ] It validates required fields
+ [ ] It can filter campaigns by status
+ [ ] It can search campaigns
+ [ ] It can get campaign analytics
+ [ ] It respects org isolation
+ [ ] It requires authentication
+ [ ] It can duplicate campaign
 
 Campaign Created Event (Tests\Unit\Events\CampaignCreatedEvent)
  [ ] It can be instantiated
@@ -302,36 +376,46 @@ Campaign Created Event (Tests\Unit\Events\CampaignCreatedEvent)
  [ ] It broadcasts on correct channel
 
 Campaign Factory (Tests\Unit\Factories\CampaignFactory)
- [ ] It creates campaign with factory
- [ ] It creates multiple campaigns
- [ ] It creates campaign with custom attributes
- [ ] It creates draft campaign
- [ ] It creates active campaign
+ [x] It creates campaign with factory
+ [x] It creates multiple campaigns
+ [x] It creates campaign with custom attributes
+ [x] It creates draft campaign
+ [x] It creates active campaign
  [ ] It creates completed campaign
- [ ] It creates campaign with budget
- [ ] It creates campaign with dates
- [ ] It respects org relationship
- [ ] It generates unique campaign ids
+ [x] It creates campaign with budget
+ [x] It creates campaign with dates
+ [x] It respects org relationship
+ [x] It generates unique campaign ids
+
+Campaign Management (Tests\Feature\Campaigns\CampaignManagement)
+ [ ] User can list campaigns
+ [ ] User can create campaign
+ [ ] User can view campaign details
+ [ ] User can update campaign
+ [ ] User can delete campaign
+ [ ] User can search campaigns
+ [ ] User can filter campaigns by status
+ [ ] User cannot access campaigns from another org
 
 Campaign Notification (Tests\Unit\Notifications\CampaignNotification)
- [ ] It can send campaign completed notification
+ [x] It can send campaign completed notification
  [ ] It includes campaign details in notification
- [ ] It can send campaign started notification
+ [x] It can send campaign started notification
  [ ] It can send post published notification
- [ ] It supports mail channel
- [ ] It supports database channel
+ [x] It supports mail channel
+ [x] It supports database channel
  [ ] It creates database notification record
- [ ] It can be sent to multiple users
- [ ] It includes action url in notification
- [ ] It respects user notification preferences
+ [x] It can be sent to multiple users
+ [x] It includes action url in notification
+ [x] It respects user notification preferences
 
 Campaign Observer (Tests\Unit\Observers\CampaignObserver)
- [ ] It fires creating event
- [ ] It fires created event
- [ ] It fires updating event
- [ ] It fires updated event
- [ ] It fires deleting event
- [ ] It fires deleted event
+ [x] It fires creating event
+ [x] It fires created event
+ [x] It fires updating event
+ [x] It fires updated event
+ [x] It fires deleting event
+ [x] It fires deleted event
  [ ] It sets defaults on creation
 
 Campaign Orchestrator Service (Tests\Unit\Services\CampaignOrchestratorService)
@@ -365,48 +449,48 @@ Campaign Repository (Tests\Unit\Repositories\CampaignRepository)
 Campaign Service (Tests\Unit\Services\CampaignService)
  [ ] It can create campaign with context
  [ ] It can update campaign
- [ ] It can find related campaigns
- [ ] It can get campaign contexts
+ [x] It can find related campaigns
+ [x] It can get campaign contexts
  [ ] It enforces org isolation
  [ ] It handles campaign deletion
 
 Campaign Status Changed Event (Tests\Unit\Events\CampaignStatusChangedEvent)
- [ ] It can be instantiated
- [ ] It contains old and new status
- [ ] It can be dispatched
- [ ] It broadcasts on org channel
- [ ] It triggers notifications for important changes
- [ ] It includes timestamp
- [ ] It tracks draft to active transition
- [ ] It tracks active to paused transition
- [ ] It respects org context
+ [x] It can be instantiated
+ [x] It contains old and new status
+ [x] It can be dispatched
+ [x] It broadcasts on org channel
+ [x] It triggers notifications for important changes
+ [x] It includes timestamp
+ [x] It tracks draft to active transition
+ [x] It tracks active to paused transition
+ [x] It respects org context
 
 Campaign Validator (Tests\Unit\Validators\CampaignValidator)
- [ ] It validates campaign name is required
- [ ] It validates campaign name max length
- [ ] It validates status values
- [ ] It validates date format
- [ ] It validates end date after start date
- [ ] It validates budget is numeric
- [ ] It validates budget minimum value
- [ ] It validates campaign type
- [ ] It allows valid campaign data
+ [x] It validates campaign name is required
+ [x] It validates campaign name max length
+ [x] It validates status values
+ [x] It validates date format
+ [x] It validates end date after start date
+ [x] It validates budget is numeric
+ [x] It validates budget minimum value
+ [x] It validates campaign type
+ [x] It allows valid campaign data
 
 Cleanup Expired Sessions Command (Tests\Unit\Commands\CleanupExpiredSessionsCommand)
- [ ] It cleans up expired sessions
- [ ] It shows verbose output
- [ ] It shows dry run mode
- [ ] It accepts custom expiry time
- [ ] It handles no expired sessions
- [ ] It limits batch size
- [ ] It shows cleanup summary
- [ ] It cleans database sessions
- [ ] It cleans redis sessions
+ [x] It cleans up expired sessions
+ [x] It shows verbose output
+ [x] It shows dry run mode
+ [x] It accepts custom expiry time
+ [x] It handles no expired sessions
+ [x] It limits batch size
+ [x] It shows cleanup summary
+ [x] It cleans database sessions
+ [x] It cleans redis sessions
 
 Cleanup Old Logs Job (Tests\Unit\Jobs\CleanupOldLogsJob)
  [ ] It cleans up old api logs
  [ ] It cleans up old activity logs
- [ ] It can be dispatched
+ [x] It can be dispatched
  [ ] It accepts custom retention days
  [ ] It respects org isolation
  [ ] It returns deleted count
@@ -428,8 +512,46 @@ Comment (Tests\Unit\Models\Comment\Comment)
  [ ] It has timestamps
  [ ] It respects rls policies
 
+Complete Campaign Lifecycle (Tests\Integration\Campaign\CompleteCampaignLifecycle)
+ [ ] It executes complete campaign lifecycle
+ [x] It handles campaign pause and resume
+ [x] It archives completed campaign
+
+Complete Marketing Workflow (Tests\Integration\CompleteFlow\CompleteMarketingWorkflow)
+ [x] It executes complete marketing workflow with all details
+
+Compliance Validation Service (Tests\Unit\Services\ComplianceValidationService)
+ [x] It validates compliant content
+ [ ] It detects social media length violations
+ [ ] It detects offensive content
+ [x] It detects health claims
+ [ ] It can add custom rules
+ [x] It applies rules based on context
+ [x] It calculates compliance score
+ [ ] It provides warnings for us market
+ [ ] It provides warnings for eu market
+ [x] It handles multiple violations
+ [x] It validates empty content
+ [x] It validates short content
+ [x] It detects case insensitive violations
+ [x] It returns proper structure
+ [x] It includes severity in violations
+ [x] It includes rule information in violations
+ [x] It validates facebook specific rules
+ [x] It validates instagram specific rules
+ [x] It provides suggestions
+ [x] It handles special characters
+ [x] It handles unicode characters
+ [x] It handles urls in content
+ [x] It handles hashtags in content
+ [ ] It validates ccpa for california
+ [x] It handles multiple context attributes
+ [ ] It rejects critical violations immediately
+ [x] It accumulates score deductions
+ [ ] It respects minimum score of zero
+
 Contact (Tests\Unit\Models\Contact\Contact)
- [ ] It can create contact
+ [x] It can create contact
  [ ] It belongs to org
  [ ] It has full name accessor
  [ ] It stores contact segments
@@ -439,7 +561,7 @@ Contact (Tests\Unit\Models\Contact\Contact)
  [ ] It stores social profiles
  [ ] It stores contact source
  [ ] It uses uuid as primary key
- [ ] It has timestamps
+ [x] It has timestamps
  [ ] It can be soft deleted
  [ ] It respects rls policies
 
@@ -456,6 +578,18 @@ Content Approval (Tests\Unit\Models\Content\ContentApproval)
  [ ] It has timestamps
  [ ] It respects rls policies
 
+Content Controller (Tests\Feature\Controllers\ContentController)
+ [ ] It can list content items
+ [ ] It can create content item
+ [ ] It can get single content item
+ [ ] It can update content item
+ [ ] It can delete content item
+ [ ] It can schedule content
+ [ ] It can filter by status
+ [ ] It validates required fields
+ [ ] It respects org isolation
+ [ ] It requires authentication
+
 Content Media (Tests\Unit\Models\Content\ContentMedia)
  [ ] It can create content media
  [ ] It belongs to org
@@ -471,14 +605,30 @@ Content Media (Tests\Unit\Models\Content\ContentMedia)
  [ ] It respects rls policies
 
 Content Plan (Tests\Unit\Models\Creative\ContentPlan)
- [ ] It can create a content plan
- [ ] It belongs to organization and campaign
+ [x] It can create a content plan
+ [x] It belongs to organization and campaign
  [ ] It has many content items
  [ ] It validates date range
- [ ] It uses uuid as primary key
- [ ] It can be soft deleted
+ [x] It uses uuid as primary key
+ [x] It can be soft deleted
  [ ] It cascades soft delete to content items
- [ ] It has timestamps
+ [x] It has timestamps
+
+Content Plan Controller (Tests\Feature\Creative\ContentPlanController)
+ [ ] It can list content plans
+ [ ] It can filter content plans by campaign
+ [ ] It can create a content plan
+ [ ] It validates required fields when creating
+ [ ] It can show a content plan
+ [ ] It cannot show content plan from different org
+ [ ] It can update a content plan
+ [ ] It can delete a content plan
+ [ ] It can get content plan stats
+ [ ] It requires authentication
+ [ ] It can approve a content plan
+ [ ] It can reject a content plan
+ [ ] It requires reason when rejecting
+ [ ] It enforces pagination limits
 
 Content Plan Item (Tests\Unit\Models\Content\ContentPlanItem)
  [ ] It can create a content plan item
@@ -538,14 +688,20 @@ Content Validator (Tests\Unit\Validators\ContentValidator)
  [ ] It validates tags as array
  [ ] It accepts valid content data
 
+Creative Approval Workflow (Tests\Integration\Creative\CreativeApprovalWorkflow)
+ [ ] It completes creative brief to approval workflow
+ [ ] It handles creative rejection and revision
+ [ ] It supports multi level approval
+ [ ] It tracks approval history
+
 Creative Brief (Tests\Unit\Models\Creative\CreativeBrief)
- [ ] It can create a creative brief
+ [x] It can create a creative brief
  [ ] It belongs to an organization
- [ ] It stores brief data as json
+ [x] It stores brief data as json
  [ ] It uses uuid as primary key
  [ ] It can be soft deleted
- [ ] It validates marketing objectives
- [ ] It stores complete art direction
+ [x] It validates marketing objectives
+ [x] It stores complete art direction
  [ ] It has timestamps
  [ ] It respects rls policies
 
@@ -562,46 +718,59 @@ Creative Brief API (Tests\Feature\API\CreativeBriefAPI)
  [ ] It includes complete art direction in response
 
 Currency Formatter (Tests\Unit\Formatters\CurrencyFormatter)
- [ ] It formats sar currency
- [ ] It formats usd currency
- [ ] It converts sar to usd
- [ ] It converts usd to sar
- [ ] It formats with custom decimals
- [ ] It formats large amounts
- [ ] It handles negative amounts
- [ ] It formats without decimals
- [ ] It supports multiple currencies
- [ ] It calculates percentage of budget
+ [x] It formats sar currency
+ [x] It formats usd currency
+ [x] It converts sar to usd
+ [x] It converts usd to sar
+ [x] It formats with custom decimals
+ [x] It formats large amounts
+ [x] It handles negative amounts
+ [x] It formats without decimals
+ [x] It supports multiple currencies
+ [x] It calculates percentage of budget
 
 Custom Field (Tests\Unit\Models\CustomField\CustomField)
- [ ] It can create custom field
+ [x] It can create custom field
  [ ] It belongs to org
- [ ] It has different field types
- [ ] It applies to different entity types
- [ ] It stores field options for select types
+ [x] It has different field types
+ [x] It applies to different entity types
+ [x] It stores field options for select types
  [ ] It has validation rules
  [ ] It has default value
  [ ] It can be required or optional
  [ ] It has display order
  [ ] It can be active or inactive
  [ ] It uses uuid as primary key
- [ ] It has timestamps
- [ ] It respects rls policies
+ [x] It has timestamps
+ [x] It respects rls policies
+
+Dashboard Controller (Tests\Feature\Controllers\DashboardController)
+ [ ] It shows dashboard for authenticated user
+ [ ] It requires authentication
+ [ ] It returns campaign summary
+ [ ] It returns analytics overview
+ [ ] It returns recent activity
+ [ ] It returns top performing campaigns
+ [ ] It returns upcoming scheduled posts
+ [ ] It returns budget summary
+ [ ] It filters data by date range
+ [ ] It respects org isolation
+ [ ] It handles empty data gracefully
 
 Date Formatter (Tests\Unit\Formatters\DateFormatter)
- [ ] It formats date for display
- [ ] It formats date with time
- [ ] It formats date for humans
- [ ] It formats arabic dates
- [ ] It converts to timezone
- [ ] It gets start of day
- [ ] It gets end of day
- [ ] It calculates age from date
- [ ] It checks if date is past
- [ ] It checks if date is future
- [ ] It formats month year
- [ ] It gets quarter from date
- [ ] It formats iso8601
+ [x] It formats date for display
+ [x] It formats date with time
+ [x] It formats date for humans
+ [x] It formats arabic dates
+ [x] It converts to timezone
+ [x] It gets start of day
+ [x] It gets end of day
+ [x] It calculates age from date
+ [x] It checks if date is past
+ [x] It checks if date is future
+ [x] It formats month year
+ [x] It gets quarter from date
+ [x] It formats iso8601
 
 Date Helper (Tests\Unit\Helpers\DateHelper)
  [x] It formats date for display
@@ -627,6 +796,18 @@ Email Service (Tests\Unit\Services\EmailService)
  [ ] It handles send failures
  [ ] It can personalize content
 
+Embedding Workflow (Tests\Integration\Knowledge\EmbeddingWorkflow)
+ [ ] It can generate embeddings for content
+ [ ] It caches generated embeddings
+ [ ] It can perform semantic search
+ [ ] It caches search results
+ [ ] It can queue embedding generation
+ [x] It handles embedding api errors
+ [ ] It can register feedback for search results
+ [ ] It can batch generate embeddings
+ [ ] It respects embedding quality threshold
+ [ ] It can update embeddings when content changes
+
 Ensure Org Active Middleware (Tests\Unit\Middleware\EnsureOrgActiveMiddleware)
  [ ] It allows active org access
  [ ] It blocks inactive org access
@@ -634,9 +815,22 @@ Ensure Org Active Middleware (Tests\Unit\Middleware\EnsureOrgActiveMiddleware)
  [ ] It provides appropriate error message
  [ ] It checks org trial expiry
  [ ] It allows access during grace period
- [ ] It exempts admin users
- [ ] It handles missing org
+ [x] It exempts admin users
+ [x] It handles missing org
  [ ] It respects different org statuses
+
+Error Recovery Workflow (Tests\Integration\ErrorHandling\ErrorRecoveryWorkflow)
+ [ ] It handles network timeout with retry
+ [ ] It handles invalid token with refresh
+ [ ] It handles rate limit with backoff
+ [ ] It handles partial data sync failure
+ [x] It handles database transaction rollback
+ [ ] It handles job retry on failure
+ [x] It handles validation errors gracefully
+ [ ] It logs all errors for debugging
+
+Example (Tests\Feature\Example)
+ [ ] The application returns a successful response
 
 Example (Tests\Unit\Example)
  [x] That true is true
@@ -645,7 +839,7 @@ Export Campaign Data Job (Tests\Unit\Jobs\ExportCampaignDataJob)
  [ ] It exports campaign data to csv
  [ ] It exports campaign data to excel
  [ ] It exports campaign data to json
- [ ] It can be dispatched
+ [x] It can be dispatched
  [ ] It stores export file
  [ ] It includes campaign analytics in export
  [ ] It notifies user when export is ready
@@ -664,6 +858,15 @@ Facebook Service (Tests\Unit\Services\FacebookService)
  [ ] It can send message
  [ ] It handles api errors
 
+Facebook Sync Integration (Tests\Integration\Social\FacebookSyncIntegration)
+ [ ] It can sync facebook account data
+ [ ] It can sync facebook posts
+ [ ] It handles facebook api errors gracefully
+ [ ] It handles rate limiting
+ [ ] It can dispatch sync job
+ [ ] It respects sync lookback period
+ [ ] It updates existing posts on resync
+
 Facebook Sync Service (Tests\Unit\Services\Social\FacebookSyncService)
  [ ] Get configuration returns correct structure
  [ ] Sync account with invalid token
@@ -674,21 +877,79 @@ Facebook Sync Service (Tests\Unit\Services\Social\FacebookSyncService)
  [ ] Sync posts filters by date range
  [ ] Refresh token returns true
 
+Facebook Tik Tok You Tube Publishing (Tests\Integration\Social\FacebookTikTokYouTubePublishing)
+ [ ] It creates and publishes facebook post
+ [x] It creates and publishes facebook story
+ [ ] It creates and publishes tiktok video
+ [ ] It creates and publishes youtube video
+ [x] It creates and publishes youtube short
+
+GPTConversation Service (Tests\Unit\Services\GPTConversationService)
+ [ ] It can create new session
+ [ ] It can get or create session
+ [ ] It can add user message
+ [ ] It can add assistant message
+ [ ] It can add message with metadata
+ [ ] It increments message count
+ [ ] It limits message history
+ [ ] It can get conversation history
+ [ ] It can limit history results
+ [ ] It can update session context
+ [ ] It merges context updates
+ [ ] It can build gpt context
+ [ ] It limits context message history
+ [ ] It can clear conversation history
+ [ ] It can get session statistics
+ [x] It returns null for non existent session stats
+ [ ] It can summarize conversation
+ [ ] It stores sessions in cache
+ [ ] It sets correct cache ttl
+ [ ] It handles invalid session id gracefully
+ [ ] It generates unique message ids
+ [ ] It maintains message order
+ [ ] It preserves org context in session
+
+GPTWorkflow (Tests\Feature\GPT\GPTWorkflow)
+ [ ] It can get user and org context
+ [ ] It can list campaigns via gpt
+ [ ] It can filter campaigns by status
+ [ ] It can get single campaign
+ [ ] It can create campaign via gpt
+ [ ] It can list content plans
+ [ ] It can create content plan
+ [ ] It can search knowledge base
+ [ ] It validates knowledge search query
+ [ ] It can add knowledge item
+ [ ] It can get ai insights for campaign
+ [ ] It requires authentication for gpt endpoints
+ [ ] It prevents access to other orgs campaigns
+ [ ] It can create conversation session
+ [ ] It can reuse existing session
+ [ ] It can send message in conversation
+ [ ] It validates conversation message
+ [ ] It enforces message max length
+ [ ] It can get conversation history
+ [ ] It can limit conversation history
+ [ ] It can clear conversation history
+ [ ] It can get conversation statistics
+ [ ] It handles conversation errors gracefully
+ [ ] It maintains conversation context across messages
+
 Generate Analytics Report Command (Tests\Unit\Commands\GenerateAnalyticsReportCommand)
- [ ] It can generate report for org
- [ ] It accepts date range parameters
- [ ] It accepts report type option
- [ ] It validates org id
- [ ] It can export to pdf
- [ ] It can export to excel
- [ ] It shows progress output
- [ ] It handles errors gracefully
+ [x] It can generate report for org
+ [x] It accepts date range parameters
+ [x] It accepts report type option
+ [x] It validates org id
+ [x] It can export to pdf
+ [x] It can export to excel
+ [x] It shows progress output
+ [x] It handles errors gracefully
 
 Generate Campaign Report Job (Tests\Unit\Jobs\GenerateCampaignReportJob)
  [ ] It generates campaign report
  [ ] It generates pdf report
  [ ] It generates excel report
- [ ] It can be dispatched
+ [x] It can be dispatched
  [ ] It includes campaign analytics
  [ ] It stores report file
 
@@ -705,16 +966,28 @@ Generate Invoice Job (Tests\Unit\Jobs\GenerateInvoiceJob)
  [ ] It includes line items
 
 Generate Reports Command (Tests\Unit\Commands\GenerateReportsCommand)
- [ ] It generates pending reports
- [ ] It generates specific report type
- [ ] It generates reports for specific org
- [ ] It shows verbose output
- [ ] It handles no pending reports
- [ ] It limits batch size
- [ ] It supports dry run mode
- [ ] It updates report status
- [ ] It handles generation errors
- [ ] It respects org isolation
+ [x] It generates pending reports
+ [x] It generates specific report type
+ [x] It generates reports for specific org
+ [x] It shows verbose output
+ [x] It handles no pending reports
+ [x] It limits batch size
+ [x] It supports dry run mode
+ [x] It updates report status
+ [x] It handles generation errors
+ [x] It respects org isolation
+
+Google Ads Workflow (Tests\Integration\AdPlatform\GoogleAdsWorkflow)
+ [ ] It creates google ads campaign
+ [ ] It creates google ads ad group
+ [ ] It creates google responsive search ad
+ [ ] It creates google display ad
+ [ ] It adds keywords to ad group
+ [ ] It fetches google ads campaign performance
+ [ ] It pauses google ads campaign
+ [ ] It updates campaign budget
+ [ ] It handles google ads api errors
+ [ ] It respects org isolation for google campaigns
 
 Google Business Service (Tests\Unit\Services\GoogleBusinessService)
  [ ] It can create local post
@@ -729,14 +1002,31 @@ Google Business Service (Tests\Unit\Services\GoogleBusinessService)
  [ ] It handles api errors
 
 Has Uuid (Tests\Unit\Traits\HasUuid)
- [ ] It automatically generates uuid on creation
+ [x] It automatically generates uuid on creation
  [ ] It does not auto increment
- [ ] It allows manual uuid assignment
+ [x] It allows manual uuid assignment
  [ ] It uses string key type
- [ ] It works with relationships
- [ ] It generates unique uuids
- [ ] It maintains uuid format
- [ ] It works across different models
+ [x] It works with relationships
+ [x] It generates unique uuids
+ [x] It maintains uuid format
+ [x] It works across different models
+
+Instagram Facebook Comments (Tests\Integration\Social\InstagramFacebookComments)
+ [ ] It receives instagram comment
+ [ ] It replies to instagram comment
+ [ ] It receives facebook comment
+ [ ] It replies to facebook comment
+
+Instagram Facebook Messaging (Tests\Integration\Social\InstagramFacebookMessaging)
+ [ ] It receives instagram direct message
+ [ ] It sends instagram direct message reply
+ [ ] It receives facebook messenger message
+ [ ] It sends facebook messenger reply
+
+Instagram Publishing (Tests\Integration\Social\InstagramPublishing)
+ [ ] It creates and publishes instagram feed post
+ [ ] It creates and publishes instagram story
+ [x] It creates and publishes instagram reel
 
 Instagram Service (Tests\Unit\Services\InstagramService)
  [ ] It can publish feed post
@@ -752,35 +1042,43 @@ Instagram Service (Tests\Unit\Services\InstagramService)
  [ ] It handles api errors gracefully
  [ ] It handles rate limiting
 
+Instagram Sync Workflow (Tests\Integration\Social\InstagramSyncWorkflow)
+ [ ] It syncs instagram account profile
+ [ ] It syncs instagram media posts
+ [ ] It syncs instagram insights metrics
+ [ ] It syncs instagram stories
+ [ ] It handles instagram api token expiration
+ [ ] It syncs instagram comments
+
 Integration (Tests\Unit\Models\Integration)
- [ ] It can create an integration
+ [x] It can create an integration
  [ ] It belongs to an organization
- [ ] It encrypts access token
- [ ] It validates platform
- [ ] It validates status
- [ ] It stores metadata as json
+ [x] It encrypts access token
+ [x] It validates platform
+ [x] It validates status
+ [x] It stores metadata as json
  [ ] It uses uuid as primary key
- [ ] It can be soft deleted
- [ ] It has timestamps
- [ ] It tracks token expiration
- [ ] It can check if token is expired
- [ ] It respects rls policies
+ [x] It can be soft deleted
+ [x] It has timestamps
+ [x] It tracks token expiration
+ [x] It can check if token is expired
+ [x] It respects rls policies
 
 Integration (Tests\Unit\Models\Integration\Integration)
- [ ] It can create integration
- [ ] It belongs to org
- [ ] It encrypts credentials
- [ ] It supports multiple platforms
- [ ] It can be activated or deactivated
+ [x] It can create integration
+ [x] It belongs to org
+ [x] It encrypts credentials
+ [x] It supports multiple platforms
+ [x] It can be activated or deactivated
  [ ] It stores metadata as json
- [ ] It tracks last sync time
+ [x] It tracks last sync time
  [ ] It tracks token expiry
  [ ] It can check if token is expired
  [ ] It stores connection status
- [ ] It uses uuid as primary key
- [ ] It has timestamps
- [ ] It can be soft deleted
- [ ] It respects rls policies
+ [x] It uses uuid as primary key
+ [x] It has timestamps
+ [x] It can be soft deleted
+ [x] It respects rls policies
 
 Integration API (Tests\Feature\API\IntegrationAPI)
  [ ] It can list all integrations
@@ -797,31 +1095,43 @@ Integration API (Tests\Feature\API\IntegrationAPI)
  [ ] It can configure webhook for integration
  [ ] It can get available integrations
 
+Integration Controller (Tests\Feature\Controllers\IntegrationController)
+ [ ] It can list all integrations
+ [ ] It can create new integration
+ [ ] It can get single integration
+ [ ] It can update integration
+ [ ] It can delete integration
+ [ ] It can test integration connection
+ [ ] It can refresh integration token
+ [ ] It validates required fields
+ [ ] It respects org isolation
+ [ ] It requires authentication
+
 Integration Validator (Tests\Unit\Validators\IntegrationValidator)
- [ ] It validates platform is required
- [ ] It validates platform values
- [ ] It validates name is required
- [ ] It validates credentials is array
- [ ] It validates is active is boolean
- [ ] It validates token expires at date
- [ ] It validates metadata is array
- [ ] It allows valid integration data
+ [x] It validates platform is required
+ [x] It validates platform values
+ [x] It validates name is required
+ [x] It validates credentials is array
+ [x] It validates is active is boolean
+ [x] It validates token expires at date
+ [x] It validates metadata is array
+ [x] It allows valid integration data
 
 Invoice (Tests\Unit\Models\Billing\Invoice)
  [ ] It can create invoice
  [ ] It belongs to org
  [ ] It belongs to subscription
- [ ] It has different statuses
+ [x] It has different statuses
  [ ] It stores line items as json
  [ ] It calculates total with tax
  [ ] It has due date
  [ ] It tracks payment date
- [ ] It supports different currencies
+ [x] It supports different currencies
  [ ] It stores payment method
  [ ] It has billing address
  [ ] It stores notes
  [ ] It uses uuid as primary key
- [ ] It has timestamps
+ [x] It has timestamps
  [ ] It respects rls policies
 
 Knowledge API (Tests\Feature\API\KnowledgeAPI)
@@ -854,31 +1164,31 @@ Knowledge Repository (Tests\Unit\Repositories\KnowledgeRepository)
  [ ] It can register knowledge
  [ ] It accepts different categories
  [ ] It can auto analyze knowledge
- [ ] It can auto retrieve knowledge
+ [x] It can auto retrieve knowledge
  [ ] It can load smart context
  [ ] It respects token limit in context loader
  [ ] It can generate system report
- [ ] It can perform semantic analysis
- [ ] It can perform advanced semantic search
+ [x] It can perform semantic analysis
+ [x] It can perform advanced semantic search
  [ ] It supports arabic content
  [ ] It can cleanup old embeddings
  [ ] It can verify installation
 
 Lead (Tests\Unit\Models\Lead\Lead)
- [ ] It can create lead
+ [x] It can create lead
  [ ] It belongs to org
  [ ] It can belong to campaign
- [ ] It has different lead statuses
- [ ] It stores lead source
+ [x] It has different lead statuses
+ [x] It stores lead source
  [ ] It stores lead score
  [ ] It stores additional data as json
  [ ] It tracks last contact date
  [ ] It tracks conversion date
  [ ] It stores utm parameters
  [ ] It tracks lead value
- [ ] It assigns lead to user
+ [x] It assigns lead to user
  [ ] It uses uuid as primary key
- [ ] It has timestamps
+ [x] It has timestamps
  [ ] It can be soft deleted
  [ ] It respects rls policies
 
@@ -890,6 +1200,18 @@ Lead Captured Event (Tests\Unit\Events\LeadCapturedEvent)
  [ ] It can be listened to
  [ ] It includes lead source information
  [ ] It triggers notification workflows
+
+Lead Controller (Tests\Feature\Controllers\LeadController)
+ [ ] It can list all leads
+ [ ] It can create lead
+ [ ] It can get single lead
+ [ ] It can update lead
+ [ ] It can delete lead
+ [ ] It can filter leads by status
+ [ ] It can convert lead
+ [ ] It validates required fields
+ [ ] It respects org isolation
+ [ ] It requires authentication
 
 Lead Policy (Tests\Unit\Policies\LeadPolicy)
  [ ] Admin can view leads
@@ -915,18 +1237,18 @@ Lead Qualified Event (Tests\Unit\Events\LeadQualifiedEvent)
  [ ] It respects org context
 
 Lead Service (Tests\Unit\Services\LeadService)
- [ ] It creates lead with validation
+ [x] It creates lead with validation
  [ ] It qualifies lead based on score
- [ ] It assigns lead to campaign
- [ ] It enriches lead data
- [ ] It merges duplicate leads
- [ ] It calculates lead score
- [ ] It imports leads from csv
- [ ] It exports leads to csv
- [ ] It sends follow up email
+ [x] It assigns lead to campaign
+ [x] It enriches lead data
+ [x] It merges duplicate leads
+ [x] It calculates lead score
+ [x] It imports leads from csv
+ [x] It exports leads to csv
+ [x] It sends follow up email
  [ ] It segments leads by criteria
- [ ] It validates email deliverability
- [ ] It respects org isolation
+ [x] It validates email deliverability
+ [x] It respects org isolation
 
 Lead Validator (Tests\Unit\Validators\LeadValidator)
  [ ] It validates required name
@@ -939,6 +1261,24 @@ Lead Validator (Tests\Unit\Validators\LeadValidator)
  [ ] It validates custom fields as array
  [ ] It validates utm parameters
  [ ] It accepts valid lead data
+
+Linked In Ads Workflow (Tests\Integration\AdPlatform\LinkedInAdsWorkflow)
+ [ ] It creates linkedin ad campaign
+ [ ] It creates linkedin sponsored content
+ [ ] It creates linkedin lead gen form
+ [ ] It creates linkedin audience targeting
+ [ ] It fetches linkedin campaign analytics
+ [ ] It fetches linkedin lead gen submissions
+ [ ] It creates linkedin text ad
+ [ ] It pauses linkedin campaign
+ [ ] It updates linkedin campaign budget
+ [ ] It handles linkedin api errors
+
+Linked In Comments Moderation (Tests\Integration\Social\LinkedInCommentsModeration)
+ [ ] It receives linkedin comment
+ [ ] It replies to linkedin comment
+ [ ] It auto moderates comments with keywords
+ [ ] It handles nested comment threads
 
 Linked In Service (Tests\Unit\Services\LinkedInService)
  [ ] It can publish post
@@ -954,16 +1294,21 @@ Linked In Service (Tests\Unit\Services\LinkedInService)
  [ ] It handles api errors
 
 Log Activity Listener (Tests\Unit\Listeners\LogActivityListener)
- [ ] It logs campaign created activity
- [ ] It logs campaign updated activity
- [ ] It logs campaign deleted activity
- [ ] It stores activity metadata
- [ ] It logs different resource types
- [ ] It logs user authentication events
- [ ] It captures changes for updates
- [ ] It respects org context
- [ ] It batches similar activities
- [ ] It excludes sensitive data
+ [x] It logs campaign created activity
+ [x] It logs campaign updated activity
+ [x] It logs campaign deleted activity
+ [x] It stores activity metadata
+ [x] It logs different resource types
+ [x] It logs user authentication events
+ [x] It captures changes for updates
+ [x] It respects org context
+ [x] It batches similar activities
+ [x] It excludes sensitive data
+
+Messaging Threads Automation (Tests\Integration\Social\MessagingThreadsAutomation)
+ [ ] It handles message thread with multiple messages
+ [ ] It auto responds with ai for common questions
+ [ ] It marks thread as resolved
 
 Meta Ads Service (Tests\Unit\Services\Ads\MetaAdsService)
  [ ] Get configuration returns correct structure
@@ -973,6 +1318,15 @@ Meta Ads Service (Tests\Unit\Services\Ads\MetaAdsService)
  [ ] Sync campaigns with empty ad account
  [ ] Sync metrics for campaigns
  [ ] Validate token with expired integration
+
+Meta Ads Workflow (Tests\Integration\AdPlatform\MetaAdsWorkflow)
+ [ ] It creates meta ad campaign
+ [ ] It creates ad set with targeting
+ [ ] It creates ad creative with media
+ [ ] It syncs ad campaign metrics
+ [ ] It updates campaign budget
+ [ ] It pauses and resumes campaign
+ [ ] It creates lookalike audience
 
 Metric (Tests\Unit\Models\Metric\Metric)
  [ ] It can create metric
@@ -999,6 +1353,17 @@ Notification (Tests\Unit\Models\Notification\Notification)
  [ ] It has timestamps
  [ ] It can be deleted
 
+Notification Controller (Tests\Feature\Controllers\NotificationController)
+ [ ] It can list user notifications
+ [ ] It can mark notification as read
+ [ ] It can mark all as read
+ [ ] It can delete notification
+ [ ] It shows unread count
+ [ ] It filters by notification type
+ [ ] User cannot access others notifications
+ [ ] It can delete all read notifications
+ [ ] It paginates notifications
+
 Notification Preference (Tests\Unit\Models\Notification\NotificationPreference)
  [ ] It can create notification preference
  [ ] It belongs to user
@@ -1014,31 +1379,31 @@ Notification Preference (Tests\Unit\Models\Notification\NotificationPreference)
  [ ] It respects rls policies
 
 Number Formatter (Tests\Unit\Formatters\NumberFormatter)
- [ ] It formats currency
- [ ] It formats saudi riyal
- [ ] It formats percentage
- [ ] It formats large numbers
- [ ] It formats file size
- [ ] It formats phone number
- [ ] It calculates percentage change
- [ ] It rounds to nearest
- [ ] It formats decimal with arabic numbers
- [ ] It calculates average
- [ ] It formats with thousand separator
- [ ] It calculates discount amount
- [ ] It formats rating
+ [x] It formats currency
+ [x] It formats saudi riyal
+ [x] It formats percentage
+ [x] It formats large numbers
+ [x] It formats file size
+ [x] It formats phone number
+ [x] It calculates percentage change
+ [x] It rounds to nearest
+ [x] It formats decimal with arabic numbers
+ [x] It calculates average
+ [x] It formats with thousand separator
+ [x] It calculates discount amount
+ [x] It formats rating
 
 Offering (Tests\Unit\Models\Offering)
  [ ] It can create a product
  [ ] It can create a service
- [ ] It belongs to an organization
+ [x] It belongs to an organization
  [ ] It stores features benefits and usps
  [ ] It validates offering type
  [ ] It validates price format
- [ ] It uses uuid as primary key
+ [x] It uses uuid as primary key
  [ ] It can be soft deleted
  [ ] It has timestamps
- [ ] It respects rls policies
+ [x] It respects rls policies
 
 Offering API (Tests\Feature\API\OfferingAPI)
  [ ] It can list offerings for organization
@@ -1054,16 +1419,63 @@ Offering API (Tests\Feature\API\OfferingAPI)
  [ ] It requires authentication
 
 Org (Tests\Unit\Models\Org)
- [ ] It can create an organization
+ [x] It can create an organization
  [ ] It has many users
- [ ] It has many campaigns
- [ ] It uses uuid as primary key
+ [x] It has many campaigns
+ [x] It uses uuid as primary key
  [ ] It enforces unique name constraint
- [ ] It can be soft deleted
+ [x] It can be soft deleted
  [ ] It stores settings as json
- [ ] It has timestamps
- [ ] It can count active campaigns
- [ ] It validates required fields
+ [x] It has timestamps
+ [x] It can count active campaigns
+ [x] It validates required fields
+
+Org Management (Tests\Feature\Orgs\OrgManagement)
+ [ ] User can list their organizations
+ [ ] User can create new organization
+ [ ] User can view organization details
+ [ ] Owner can update organization
+ [ ] Owner can soft delete organization
+ [ ] User cannot access org without membership
+ [ ] User can view org statistics
+ [ ] Non owner cannot delete organization
+
+Org Market Controller (Tests\Feature\Core\OrgMarketController)
+ [ ] It can list organization markets
+ [ ] It can filter markets by status
+ [ ] It can add market to organization
+ [ ] It validates required fields when adding market
+ [ ] It prevents duplicate markets
+ [ ] It can show organization market
+ [ ] It can update organization market
+ [ ] It can remove market from organization
+ [ ] It can list available markets
+ [ ] It can get organization market stats
+ [ ] It can calculate roi
+ [ ] It validates priority level range
+ [ ] It requires authentication
+ [ ] It cannot access markets from different org
+
+Org Web Flow (Tests\Feature\Orgs\OrgWebFlow)
+ [x] Authenticated user can view orgs list page
+ [x] Unauthenticated user cannot view orgs list
+ [x] Authenticated user can view create org form
+ [ ] User can create new organization with valid data
+ [ ] User can create organization with minimal required data
+ [ ] Organization creation fails without required name
+ [ ] Organization name must be unique
+ [ ] Organization creation with invalid currency code fails
+ [ ] User can view their organization
+ [ ] Organization stores creator as owner
+ [x] Organization creation rolls back on failure
+ [ ] Organization supports different locales
+ [ ] Organization supports different currencies
+ [ ] Organization provider field is optional
+ [ ] Organization can set provider field
+ [ ] Created organization has valid uuid
+ [ ] Created organization has timestamps
+ [x] Organization index shows all organizations
+ [ ] Form validation provides helpful error messages
 
 Permission (Tests\Unit\Models\Permission\Permission)
  [ ] It can create permission
@@ -1094,9 +1506,9 @@ Pinterest Service (Tests\Unit\Services\PinterestService)
  [ ] It handles rate limiting
 
 Platform Connection (Tests\Unit\Models\Platform\PlatformConnection)
- [ ] It can create platform connection
+ [x] It can create platform connection
  [ ] It belongs to org
- [ ] It has different platforms
+ [x] It has different platforms
  [ ] It has different statuses
  [ ] It stores access token
  [ ] It stores refresh token
@@ -1106,8 +1518,8 @@ Platform Connection (Tests\Unit\Models\Platform\PlatformConnection)
  [ ] It stores additional metadata
  [ ] It tracks last synced time
  [ ] It uses uuid as primary key
- [ ] It has timestamps
- [ ] It respects rls policies
+ [x] It has timestamps
+ [x] It respects rls policies
 
 Post Published Event (Tests\Unit\Events\PostPublishedEvent)
  [ ] It can be instantiated
@@ -1134,21 +1546,21 @@ Process Scheduled Content Job (Tests\Unit\Jobs\ProcessScheduledContentJob)
  [ ] It processes due scheduled content
  [ ] It ignores future scheduled content
  [ ] It publishes scheduled content
- [ ] It can be dispatched
- [ ] It handles publishing errors
+ [x] It can be dispatched
+ [x] It handles publishing errors
  [ ] It processes multiple scheduled posts
  [ ] It respects batch size limit
- [ ] It updates content status after publishing
+ [x] It updates content status after publishing
  [ ] It logs processing activity
 
 Process Scheduled Posts Command (Tests\Unit\Commands\ProcessScheduledPostsCommand)
- [ ] It processes due scheduled posts
- [ ] It skips future posts
- [ ] It accepts limit option
- [ ] It accepts dry run option
- [ ] It displays processing count
- [ ] It handles empty queue
- [ ] It logs processed posts
+ [x] It processes due scheduled posts
+ [x] It skips future posts
+ [x] It accepts limit option
+ [x] It accepts dry run option
+ [x] It displays processing count
+ [x] It handles empty queue
+ [x] It logs processed posts
 
 Process Webhook Job (Tests\Unit\Jobs\ProcessWebhookJob)
  [ ] It processes webhook delivery
@@ -1182,7 +1594,7 @@ Publish To Facebook Job (Tests\Unit\Jobs\PublishToFacebookJob)
  [ ] It validates post content before publishing
 
 Publish To Instagram Job (Tests\Unit\Jobs\PublishToInstagramJob)
- [ ] It can be dispatched
+ [x] It can be dispatched
  [ ] It publishes feed post to instagram
  [ ] It publishes story to instagram
  [ ] It handles api errors
@@ -1211,43 +1623,78 @@ Publishing API (Tests\Feature\API\PublishingAPI)
  [ ] It can get publishing history
  [ ] It can preview post before publishing
 
+Publishing Workflow (Tests\Integration\Publishing\PublishingWorkflow)
+ [ ] It can create a publishing queue
+ [x] It can schedule a post
+ [ ] It dispatches publish job at scheduled time
+ [ ] It publishes post to multiple platforms
+ [ ] It handles publishing failures gracefully
+ [ ] It calculates next available time slot
+ [ ] It validates time slots configuration
+ [ ] It enforces one queue per social account
+ [ ] It can update post status after publishing
+
 RLSMiddleware (Tests\Unit\Middleware\RLSMiddleware)
- [ ] It sets rls context for authenticated user
+ [x] It sets rls context for authenticated user
  [ ] It clears rls context after request
- [ ] It skips rls for unauthenticated requests
- [ ] It handles missing org id gracefully
+ [x] It skips rls for unauthenticated requests
+ [x] It handles missing org id gracefully
  [ ] It sets correct org id in context
  [ ] It sets correct user id in context
  [ ] It works with sanctum authentication
- [ ] It handles exceptions gracefully
+ [x] It handles exceptions gracefully
+
+Rate Limit (Tests\Feature\AI\RateLimit)
+ [ ] Ai generation endpoint is rate limited
+ [ ] Ai hashtag generation is rate limited
+ [ ] Ai caption generation is rate limited
+ [ ] Rate limit headers are present
+ [ ] Rate limits are per user
+ [ ] Unauthenticated requests are rate limited by ip
+ [ ] Retry after header is present when rate limited
+ [ ] Rate limit resets after time window
+ [ ] Semantic search is rate limited
+ [ ] Knowledge processing is rate limited
 
 Rate Limit Middleware (Tests\Unit\Middleware\RateLimitMiddleware)
- [ ] It allows requests within limit
- [ ] It blocks requests exceeding limit
- [ ] It uses different limits per endpoint
- [ ] It resets after time window
- [ ] It provides retry after header
- [ ] It tracks remaining attempts
- [ ] It applies per user limits
- [ ] It applies per ip limits for guests
- [ ] It exempts admin users
- [ ] It respects org specific limits
+ [x] It allows requests within limit
+ [x] It blocks requests exceeding limit
+ [x] It uses different limits per endpoint
+ [x] It resets after time window
+ [x] It provides retry after header
+ [x] It tracks remaining attempts
+ [x] It applies per user limits
+ [x] It applies per ip limits for guests
+ [x] It exempts admin users
+ [x] It respects org specific limits
 
 Report (Tests\Unit\Models\Report\Report)
- [ ] It can create report
- [ ] It belongs to org
- [ ] It belongs to user
- [ ] It has different report types
- [ ] It has different statuses
+ [x] It can create report
+ [x] It belongs to org
+ [x] It belongs to user
+ [x] It has different report types
+ [x] It has different statuses
  [ ] It stores report data as json
  [ ] It stores filter parameters
- [ ] It stores file path
- [ ] It has format type
- [ ] It tracks generation time
+ [x] It stores file path
+ [x] It has format type
+ [x] It tracks generation time
  [ ] It can be scheduled
- [ ] It uses uuid as primary key
- [ ] It has timestamps
- [ ] It respects rls policies
+ [x] It uses uuid as primary key
+ [x] It has timestamps
+ [x] It respects rls policies
+
+Report Controller (Tests\Feature\Controllers\ReportController)
+ [ ] It can list reports
+ [ ] It can generate new report
+ [ ] It can view report details
+ [ ] It can download report
+ [ ] It can delete report
+ [ ] It can filter reports by type
+ [ ] It can schedule recurring report
+ [ ] Viewer cannot delete reports
+ [ ] It respects org isolation
+ [ ] It can export report to different formats
 
 Role (Tests\Unit\Models\Role\Role)
  [ ] It can create role
@@ -1263,6 +1710,18 @@ Role (Tests\Unit\Models\Role\Role)
  [ ] It respects rls policies
  [ ] It can count users with role
  [ ] It stores metadata as json
+
+Row Level Security (Tests\Feature\Security\RowLevelSecurity)
+ [ ] Rls prevents cross tenant campaign access
+ [ ] Rls blocks direct database queries across tenants
+ [ ] Rls isolates content plans
+ [ ] Rls isolates knowledge base
+ [ ] Rls prevents updates to other org data
+ [ ] Rls prevents deletes of other org data
+ [ ] Rls blocks unauthenticated access
+ [ ] Rls function returns correct org id
+ [ ] Rls context switches with org change
+ [ ] Rls works with joins
 
 SMSService (Tests\Unit\Services\SMSService)
  [ ] It can send sms
@@ -1292,34 +1751,51 @@ Schedule (Tests\Unit\Models\Schedule\Schedule)
  [ ] It respects rls policies
 
 Scheduled Post (Tests\Unit\Models\Content\ScheduledPost)
- [ ] It can create scheduled post
- [ ] It belongs to org
+ [x] It can create scheduled post
+ [x] It belongs to org
  [ ] It can belong to campaign
  [ ] It can belong to integration
- [ ] It has different post statuses
+ [x] It has different post statuses
  [ ] It stores media urls
  [ ] It stores post metadata
  [ ] It tracks published time
  [ ] It stores platform post id
  [ ] It stores error messages for failed posts
  [ ] It tracks retry count
- [ ] It supports different platforms
- [ ] It uses uuid as primary key
- [ ] It has timestamps
- [ ] It respects rls policies
+ [x] It supports different platforms
+ [x] It uses uuid as primary key
+ [x] It has timestamps
+ [x] It respects rls policies
+
+Security Headers (Tests\Feature\Security\SecurityHeaders)
+ [x] Security headers are present
+ [x] X content type options is nosniff
+ [x] X frame options is sameorigin
+ [x] X xss protection is enabled
+ [x] Referrer policy is set
+ [x] Permissions policy is restrictive
+ [x] Hsts header in production
+ [x] Hsts header not in development
+ [x] Csp header for html responses
+ [ ] Security headers on api responses
+ [x] Security headers on error responses
+ [x] All critical security headers present
+ [x] Security headers on authenticated routes
+ [ ] Security headers dont break functionality
+ [x] Csp allows necessary resources
 
 Segment (Tests\Unit\Models\Other\Segment)
- [ ] It can create segment
- [ ] It belongs to org
- [ ] It stores persona data
- [ ] It supports arabic names
- [ ] It can have notes
- [ ] It tracks provider
- [ ] It uses soft deletes
- [ ] It can scope by org
- [ ] It uses uuid as primary key
- [ ] It respects rls policies
- [ ] It can store complex persona
+ [x] It can create segment
+ [x] It belongs to org
+ [x] It stores persona data
+ [x] It supports arabic names
+ [x] It can have notes
+ [x] It tracks provider
+ [x] It uses soft deletes
+ [x] It can scope by org
+ [x] It uses uuid as primary key
+ [x] It respects rls policies
+ [x] It can store complex persona
 
 Semantic Search Service (Tests\Unit\Services\CMIS\SemanticSearchService)
  [ ] It can perform semantic search
@@ -1335,27 +1811,27 @@ Semantic Search Service (Tests\Unit\Services\CMIS\SemanticSearchService)
 Send Campaign Notification Listener (Tests\Unit\Listeners\SendCampaignNotificationListener)
  [ ] It sends notification when campaign is created
  [ ] It handles event correctly
- [ ] It can be queued
+ [x] It can be queued
  [ ] It handles errors gracefully
 
 Send Email Campaign Job (Tests\Unit\Jobs\SendEmailCampaignJob)
  [ ] It sends email to recipients
- [ ] It can be dispatched
- [ ] It personalizes content
- [ ] It tracks sent emails
- [ ] It handles errors gracefully
+ [x] It can be dispatched
+ [x] It personalizes content
+ [x] It tracks sent emails
+ [x] It handles errors gracefully
 
 Send Notification Job (Tests\Unit\Jobs\SendNotificationJob)
  [ ] It sends notification to user
  [ ] It sends email notification
  [ ] It sends database notification
- [ ] It can be dispatched
+ [x] It can be dispatched
  [ ] It supports multiple channels
  [ ] It handles notification preferences
- [ ] It sends bulk notifications
+ [x] It sends bulk notifications
  [ ] It includes action url
- [ ] It handles failed delivery
- [ ] It queues with delay
+ [x] It handles failed delivery
+ [x] It queues with delay
 
 Send SMSJob (Tests\Unit\Jobs\SendSMSJob)
  [ ] It sends sms to contact
@@ -1378,14 +1854,14 @@ Send Webhook Notification Listener (Tests\Unit\Listeners\SendWebhookNotification
  [ ] It respects org isolation
 
 Set RLSContext Middleware (Tests\Unit\Middleware\SetRLSContextMiddleware)
- [ ] It sets rls context for authenticated user
- [ ] It sets org id in session
- [ ] It sets user id in session
- [ ] It executes set config function
- [ ] It clears context after request
- [ ] It handles unauthenticated requests
- [ ] It isolates data between organizations
- [ ] It uses transaction scoped context
+ [x] It sets rls context for authenticated user
+ [x] It sets org id in session
+ [x] It sets user id in session
+ [x] It executes set config function
+ [x] It clears context after request
+ [x] It handles unauthenticated requests
+ [x] It isolates data between organizations
+ [x] It uses transaction scoped context
 
 Setting (Tests\Unit\Models\Setting\Setting)
  [ ] It can create setting
@@ -1399,6 +1875,29 @@ Setting (Tests\Unit\Models\Setting\Setting)
  [ ] It has timestamps
  [ ] It respects rls policies
  [ ] It can store json metadata
+
+Settings Controller (Tests\Feature\Controllers\SettingsController)
+ [ ] It can view general settings
+ [ ] It can update org settings
+ [ ] It can view notification settings
+ [ ] It can update notification preferences
+ [ ] It can view integration settings
+ [ ] It can view billing settings
+ [ ] It can update security settings
+ [ ] Viewer cannot update settings
+ [ ] It respects org isolation
+ [ ] It validates settings updates
+
+Snapchat Ads Workflow (Tests\Integration\AdPlatform\SnapchatAdsWorkflow)
+ [ ] It creates snapchat ad campaign
+ [ ] It creates snapchat ad squad
+ [ ] It creates snapchat video ad
+ [ ] It uploads creative to snapchat
+ [ ] It creates snapchat collection ad
+ [ ] It fetches snapchat campaign stats
+ [ ] It pauses snapchat campaign
+ [ ] It updates snapchat campaign budget
+ [ ] It handles snapchat api errors
 
 Snapchat Service (Tests\Unit\Services\SnapchatService)
  [ ] It can create snap ad
@@ -1457,15 +1956,15 @@ String Helper (Tests\Unit\Helpers\StringHelper)
 Subscription (Tests\Unit\Models\Subscription\Subscription)
  [ ] It can create subscription
  [ ] It belongs to org
- [ ] It has different plan types
- [ ] It has different statuses
+ [x] It has different plan types
+ [x] It has different statuses
  [ ] It stores pricing information
  [ ] It stores plan features
- [ ] It tracks subscription dates
- [ ] It can check if subscription is active
+ [x] It tracks subscription dates
+ [x] It can check if subscription is active
  [ ] It tracks trial period
  [ ] It uses uuid as primary key
- [ ] It has timestamps
+ [x] It has timestamps
  [ ] It respects rls policies
 
 Sync Analytics Job (Tests\Unit\Jobs\SyncAnalyticsJob)
@@ -1473,13 +1972,25 @@ Sync Analytics Job (Tests\Unit\Jobs\SyncAnalyticsJob)
  [ ] It syncs platform specific metrics
  [ ] It updates existing analytics
  [ ] It can sync for date range
- [ ] It can be dispatched
+ [x] It can be dispatched
  [ ] It handles api errors gracefully
  [ ] It calculates engagement rate
  [ ] It syncs cost metrics
  [ ] It stores historical data
  [ ] It supports batch syncing
- [ ] It respects org isolation
+ [x] It respects org isolation
+
+Sync Commands (Tests\Feature\Commands\SyncCommands)
+ [ ] Sync instagram command dispatches jobs when queue flag used
+ [ ] Sync facebook command dispatches jobs when queue flag used
+ [ ] Sync meta ads command dispatches jobs when queue flag used
+ [ ] Sync all command runs all platform syncs
+ [ ] Sync all command with queue flag dispatches all jobs
+ [ ] Sync command handles date range filters
+ [ ] Sync command warns when no active integrations
+ [ ] Database cleanup command with dry run
+ [x] System health command checks database
+ [ ] Embeddings generate command dispatches job
 
 Sync Facebook Data Job (Tests\Unit\Jobs\SyncFacebookDataJob)
  [ ] Job can be dispatched
@@ -1491,15 +2002,15 @@ Sync Facebook Data Job (Tests\Unit\Jobs\SyncFacebookDataJob)
  [ ] Job serialization
 
 Sync Integrations Command (Tests\Unit\Commands\SyncIntegrationsCommand)
- [ ] It syncs all integrations
- [ ] It syncs specific platform
- [ ] It syncs specific organization
- [ ] It handles sync errors gracefully
- [ ] It supports dry run mode
- [ ] It outputs sync summary
- [ ] It updates last synced timestamp
- [ ] It supports verbose output
- [ ] It handles no integrations
+ [x] It syncs all integrations
+ [x] It syncs specific platform
+ [x] It syncs specific organization
+ [x] It handles sync errors gracefully
+ [x] It supports dry run mode
+ [x] It outputs sync summary
+ [x] It updates last synced timestamp
+ [x] It supports verbose output
+ [x] It handles no integrations
 
 Sync Social Media Metrics Job (Tests\Unit\Jobs\SyncSocialMediaMetricsJob)
  [ ] It syncs facebook metrics
@@ -1537,6 +2048,17 @@ Team API (Tests\Feature\API\TeamAPI)
  [ ] It respects org isolation
  [ ] It can resend invitation
 
+Team Controller (Tests\Feature\Controllers\TeamController)
+ [ ] It can list team members
+ [ ] It can add team member
+ [ ] It can update team member role
+ [ ] It can remove team member
+ [ ] Viewer cannot add team members
+ [ ] It can send team invitation
+ [ ] It can filter by role
+ [ ] It shows team member details
+ [ ] It respects org isolation
+
 Team Member (Tests\Unit\Models\Team\TeamMember)
  [ ] It can create team member
  [ ] It belongs to org and user
@@ -1551,19 +2073,30 @@ Team Member (Tests\Unit\Models\Team\TeamMember)
  [ ] It respects rls policies
 
 Template (Tests\Unit\Models\Template\Template)
- [ ] It can create template
+ [x] It can create template
  [ ] It belongs to org
- [ ] It has different template types
+ [x] It has different template types
  [ ] It stores template variables
- [ ] It stores template metadata
+ [x] It stores template metadata
  [ ] It tracks usage count
  [ ] It can be active or inactive
  [ ] It can be default template
  [ ] It stores category
  [ ] It uses uuid as primary key
- [ ] It has timestamps
+ [x] It has timestamps
  [ ] It can be soft deleted
  [ ] It respects rls policies
+
+Tik Tok Ads Workflow (Tests\Integration\AdPlatform\TikTokAdsWorkflow)
+ [ ] It creates tiktok ad campaign
+ [ ] It creates tiktok ad set
+ [ ] It creates tiktok video ad
+ [ ] It uploads video to tiktok
+ [ ] It fetches tiktok campaign insights
+ [ ] It pauses tiktok campaign
+ [ ] It updates tiktok campaign budget
+ [ ] It handles tiktok api errors
+ [ ] It respects org isolation for tiktok campaigns
 
 Tik Tok Service (Tests\Unit\Services\TikTokService)
  [ ] It can publish video
@@ -1575,6 +2108,44 @@ Tik Tok Service (Tests\Unit\Services\TikTokService)
  [ ] It can get audience insights
  [ ] It validates video requirements
  [ ] It handles api errors
+
+Tik Tok You Tube Twitter Comments (Tests\Integration\Social\TikTokYouTubeTwitterComments)
+ [ ] It receives tiktok comment
+ [ ] It replies to tiktok comment
+ [ ] It receives youtube comment
+ [ ] It replies to youtube comment
+ [ ] It receives twitter reply
+ [ ] It replies to twitter mention
+
+Twitter Ads Workflow (Tests\Integration\AdPlatform\TwitterAdsWorkflow)
+ [ ] It creates twitter ads campaign
+ [ ] It creates twitter line item
+ [ ] It creates twitter promoted tweet
+ [ ] It creates twitter tailored audience
+ [ ] It uploads media to twitter
+ [ ] It fetches twitter campaign analytics
+ [ ] It creates twitter website card
+ [ ] It pauses twitter campaign
+ [ ] It updates twitter campaign budget
+ [ ] It handles twitter api errors
+
+Twitter Linked In Other Publishing (Tests\Integration\Social\TwitterLinkedInOtherPublishing)
+ [ ] It creates and publishes twitter tweet
+ [x] It creates and publishes twitter thread
+ [ ] It creates and publishes linkedin post
+ [x] It creates and publishes linkedin article
+ [ ] It creates and publishes snapchat story
+ [ ] It creates and publishes google business post
+ [ ] It publishes to multiple platforms simultaneously
+ [ ] It handles publishing failure and retries
+ [ ] It tracks published post metrics
+
+Twitter Linked In Tik Tok Messaging (Tests\Integration\Social\TwitterLinkedInTikTokMessaging)
+ [ ] It receives twitter direct message
+ [ ] It sends twitter direct message reply
+ [ ] It receives linkedin message
+ [ ] It sends linkedin message reply
+ [ ] It receives tiktok message
 
 Twitter Service (Tests\Unit\Services\TwitterService)
  [ ] It can publish tweet
@@ -1600,18 +2171,18 @@ Update Analytics Listener (Tests\Unit\Listeners\UpdateAnalyticsListener)
  [ ] It respects org isolation
 
 Update Campaign Request (Tests\Unit\Requests\UpdateCampaignRequest)
- [ ] It validates campaign name max length
- [ ] It validates campaign type
- [ ] It validates status
- [ ] It validates budget is numeric
- [ ] It validates budget minimum value
- [ ] It validates date format
- [ ] It validates end date after start date
- [ ] It validates target audience is array
- [ ] It validates objectives is array
- [ ] It validates channels is array
- [ ] It allows valid campaign data
- [ ] All fields are optional
+ [x] It validates campaign name max length
+ [x] It validates campaign type
+ [x] It validates status
+ [x] It validates budget is numeric
+ [x] It validates budget minimum value
+ [x] It validates date format
+ [x] It validates end date after start date
+ [x] It validates target audience is array
+ [x] It validates objectives is array
+ [x] It validates channels is array
+ [x] It allows valid campaign data
+ [x] All fields are optional
 
 Update Campaign Stats Job (Tests\Unit\Jobs\UpdateCampaignStatsJob)
  [ ] It updates campaign statistics
@@ -1619,35 +2190,41 @@ Update Campaign Stats Job (Tests\Unit\Jobs\UpdateCampaignStatsJob)
  [ ] It calculates conversion rate
  [ ] It updates roi metrics
  [ ] It aggregates platform stats
- [ ] It can be dispatched
+ [x] It can be dispatched
  [ ] It calculates click through rate
  [ ] It tracks cost per click
  [ ] It updates reach metrics
  [ ] It handles campaigns with no data
  [ ] It stores stats snapshot
- [ ] It respects org isolation
+ [x] It respects org isolation
 
 Url Helper (Tests\Unit\Helpers\UrlHelper)
- [ ] It validates url format
- [ ] It extracts domain from url
- [ ] It adds utm parameters
- [ ] It extracts utm parameters
- [ ] It shortens url
- [ ] It builds query string
- [ ] It parses query string
- [ ] It checks if url is secure
- [ ] It removes query parameters
- [ ] It appends path to url
+ [x] It validates url format
+ [x] It extracts domain from url
+ [x] It adds utm parameters
+ [x] It extracts utm parameters
+ [x] It shortens url
+ [x] It builds query string
+ [x] It parses query string
+ [x] It checks if url is secure
+ [x] It removes query parameters
+ [x] It appends path to url
 
 User (Tests\Unit\Models\User)
- [ ] It can create a user with uuid
- [ ] It has many organizations
- [ ] It can check organization membership
+ [x] It can create a user with uuid
+ [x] It has many organizations
+ [x] It can check organization membership
  [ ] It can check permissions
  [ ] It belongs to multiple organizations
  [ ] It uses uuid as primary identifier
  [ ] It enforces unique email
  [ ] It can be soft deleted
+
+User Onboarding Workflow (Tests\Integration\Team\UserOnboardingWorkflow)
+ [ ] It completes new user onboarding workflow
+ [ ] It handles team member role change
+ [ ] It handles team member deactivation
+ [ ] It handles user belongs to multiple organizations
 
 User Policy (Tests\Unit\Policies\UserPolicy)
  [ ] User can view own profile
@@ -1664,19 +2241,19 @@ User Policy (Tests\Unit\Policies\UserPolicy)
  [ ] Viewer cannot view other users
 
 Validation Helper (Tests\Unit\Helpers\ValidationHelper)
- [ ] It validates email
+ [x] It validates email
  [ ] It validates url
- [ ] It validates saudi phone
- [ ] It validates uuid
- [ ] It validates arabic text
- [ ] It validates strong password
- [ ] It validates credit card
- [ ] It validates date format
- [ ] It validates json
- [ ] It validates ip address
- [ ] It sanitizes input
- [ ] It validates file extension
- [ ] It validates hashtag
+ [x] It validates saudi phone
+ [x] It validates uuid
+ [x] It validates arabic text
+ [x] It validates strong password
+ [x] It validates credit card
+ [x] It validates date format
+ [x] It validates json
+ [x] It validates ip address
+ [x] It sanitizes input
+ [x] It validates file extension
+ [x] It validates hashtag
 
 Webhook (Tests\Unit\Models\Webhook\Webhook)
  [ ] It can create webhook
@@ -1704,6 +2281,18 @@ Webhook API (Tests\Feature\API\WebhookAPI)
  [ ] It processes webhooks asynchronously
  [ ] It handles malformed webhook payloads gracefully
 
+Webhook Controller (Tests\Feature\Controllers\WebhookController)
+ [ ] It can list webhooks
+ [ ] It can create webhook
+ [ ] It can update webhook
+ [ ] It can delete webhook
+ [ ] It can show webhook details
+ [ ] It can toggle webhook status
+ [ ] It can test webhook delivery
+ [ ] Viewer cannot create webhooks
+ [ ] It respects org isolation
+ [ ] It can view webhook delivery logs
+
 Webhook Handler (Tests\Unit\Services\WebhookHandler)
  [ ] It can process facebook webhook
  [ ] It can process instagram webhook
@@ -1730,6 +2319,24 @@ Whats App Service (Tests\Unit\Services\WhatsAppService)
  [ ] It validates phone number format
  [ ] It handles api errors
  [ ] It handles rate limiting
+
+Whats App Status Metrics Messaging (Tests\Integration\Social\WhatsAppStatusMetricsMessaging)
+ [ ] It handles whatsapp message status updates
+ [ ] It handles whatsapp api errors
+ [ ] It tracks whatsapp conversation metrics
+
+Whats App Template Interactive Messaging (Tests\Integration\Social\WhatsAppTemplateInteractiveMessaging)
+ [ ] It sends whatsapp template message
+ [ ] It receives whatsapp document message
+ [ ] It sends whatsapp interactive button message
+ [ ] It sends whatsapp interactive list message
+ [ ] It receives whatsapp button reply
+
+Whats App Text Image Messaging (Tests\Integration\Social\WhatsAppTextImageMessaging)
+ [ ] It receives whatsapp text message
+ [ ] It sends whatsapp text message reply
+ [ ] It receives whatsapp image message
+ [ ] It sends whatsapp image message
 
 Workflow (Tests\Unit\Models\Workflow\Workflow)
  [ ] It can create workflow
