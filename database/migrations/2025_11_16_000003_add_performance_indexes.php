@@ -28,7 +28,7 @@ return new class extends Migration
 
         // Content Items indexes
         echo "Creating indexes for content_items table...\n";
-        $this->createIndexConcurrently('idx_content_items_plan', 'cmis.content_items', ['content_plan_id']);
+        $this->createIndexConcurrently('idx_content_items_plan', 'cmis.content_items', ['plan_id']);
         $this->createIndexConcurrently('idx_content_items_status', 'cmis.content_items', ['status', 'scheduled_at']);
 
         // Knowledge Base indexes
