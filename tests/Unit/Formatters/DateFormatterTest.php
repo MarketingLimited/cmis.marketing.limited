@@ -5,6 +5,7 @@ namespace Tests\Unit\Formatters;
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * Date Formatter Unit Tests
  */
@@ -17,7 +18,7 @@ class DateFormatterTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_formats_date_for_display()
     {
         if (!function_exists('format_date_display')) {
@@ -37,7 +38,7 @@ class DateFormatterTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_formats_date_with_time()
     {
         if (!function_exists('format_datetime')) {
@@ -57,7 +58,7 @@ class DateFormatterTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_formats_date_for_humans()
     {
         if (!function_exists('format_date_human')) {
@@ -77,7 +78,7 @@ class DateFormatterTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_formats_arabic_dates()
     {
         if (!function_exists('format_date_arabic')) {
@@ -99,7 +100,7 @@ class DateFormatterTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_converts_to_timezone()
     {
         if (!function_exists('convert_timezone')) {
@@ -119,7 +120,7 @@ class DateFormatterTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_gets_start_of_day()
     {
         if (!function_exists('get_start_of_day')) {
@@ -139,7 +140,7 @@ class DateFormatterTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_gets_end_of_day()
     {
         if (!function_exists('get_end_of_day')) {
@@ -159,7 +160,7 @@ class DateFormatterTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_calculates_age_from_date()
     {
         if (!function_exists('calculate_age')) {
@@ -179,7 +180,7 @@ class DateFormatterTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_checks_if_date_is_past()
     {
         if (!function_exists('is_past_date')) {
@@ -200,7 +201,7 @@ class DateFormatterTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_checks_if_date_is_future()
     {
         if (!function_exists('is_future_date')) {
@@ -221,7 +222,7 @@ class DateFormatterTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_formats_month_year()
     {
         if (!function_exists('format_month_year')) {
@@ -241,7 +242,7 @@ class DateFormatterTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_gets_quarter_from_date()
     {
         if (!function_exists('get_quarter')) {
@@ -266,7 +267,7 @@ class DateFormatterTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_formats_iso8601()
     {
         if (!function_exists('format_iso8601')) {

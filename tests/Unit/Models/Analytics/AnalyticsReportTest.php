@@ -9,6 +9,7 @@ use App\Models\Analytics\AnalyticsReport;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * Analytics Report Model Unit Tests
  */
@@ -21,7 +22,7 @@ class AnalyticsReportTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_can_create_analytics_report()
     {
         $org = Org::create([
@@ -45,7 +46,7 @@ class AnalyticsReportTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_belongs_to_org()
     {
         $org = Org::create([
@@ -64,7 +65,7 @@ class AnalyticsReportTest extends TestCase
         $this->assertEquals($org->org_id, $report->org->org_id);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_belong_to_campaign()
     {
         $org = Org::create([
@@ -91,7 +92,7 @@ class AnalyticsReportTest extends TestCase
         $this->assertEquals($campaign->campaign_id, $report->campaign->campaign_id);
     }
 
-    /** @test */
+    #[Test]
     public function it_stores_report_data_as_json()
     {
         $org = Org::create([
@@ -125,7 +126,7 @@ class AnalyticsReportTest extends TestCase
         $this->assertEquals(3000, $report->report_data['platforms']['facebook']['clicks']);
     }
 
-    /** @test */
+    #[Test]
     public function it_has_different_report_types()
     {
         $org = Org::create([
@@ -162,7 +163,7 @@ class AnalyticsReportTest extends TestCase
         $this->assertEquals('comparison', $comparisonReport->report_type);
     }
 
-    /** @test */
+    #[Test]
     public function it_tracks_report_generation_status()
     {
         $org = Org::create([
@@ -199,7 +200,7 @@ class AnalyticsReportTest extends TestCase
         $this->assertEquals('completed', $completedReport->status);
     }
 
-    /** @test */
+    #[Test]
     public function it_stores_export_file_path()
     {
         $org = Org::create([
@@ -219,7 +220,7 @@ class AnalyticsReportTest extends TestCase
         $this->assertEquals('/exports/reports/2024-01-report.pdf', $report->file_path);
     }
 
-    /** @test */
+    #[Test]
     public function it_tracks_generated_at_timestamp()
     {
         $org = Org::create([
@@ -239,7 +240,7 @@ class AnalyticsReportTest extends TestCase
         $this->assertNotNull($report->generated_at);
     }
 
-    /** @test */
+    #[Test]
     public function it_supports_scheduled_reports()
     {
         $org = Org::create([
@@ -261,7 +262,7 @@ class AnalyticsReportTest extends TestCase
         $this->assertEquals('monthly', $report->schedule_frequency);
     }
 
-    /** @test */
+    #[Test]
     public function it_stores_filters_as_json()
     {
         $org = Org::create([
@@ -289,7 +290,7 @@ class AnalyticsReportTest extends TestCase
         $this->assertEquals(1000, $report->filters['min_spend']);
     }
 
-    /** @test */
+    #[Test]
     public function it_uses_uuid_as_primary_key()
     {
         $org = Org::create([
@@ -308,7 +309,7 @@ class AnalyticsReportTest extends TestCase
         $this->assertTrue(Str::isUuid($report->report_id));
     }
 
-    /** @test */
+    #[Test]
     public function it_has_timestamps()
     {
         $org = Org::create([
@@ -328,7 +329,7 @@ class AnalyticsReportTest extends TestCase
         $this->assertNotNull($report->updated_at);
     }
 
-    /** @test */
+    #[Test]
     public function it_respects_rls_policies()
     {
         $org1 = Org::create([

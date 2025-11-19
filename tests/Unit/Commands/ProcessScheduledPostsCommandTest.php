@@ -10,6 +10,7 @@ use App\Models\Content\ScheduledPost;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Queue;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * Process Scheduled Posts Command Unit Tests
  */
@@ -22,7 +23,7 @@ class ProcessScheduledPostsCommandTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_processes_due_scheduled_posts()
     {
         Queue::fake();
@@ -50,7 +51,7 @@ class ProcessScheduledPostsCommandTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_skips_future_posts()
     {
         $org = Org::create([
@@ -76,7 +77,7 @@ class ProcessScheduledPostsCommandTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_accepts_limit_option()
     {
         $this->artisan('posts:process-scheduled', [
@@ -89,7 +90,7 @@ class ProcessScheduledPostsCommandTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_accepts_dry_run_option()
     {
         $org = Org::create([
@@ -121,7 +122,7 @@ class ProcessScheduledPostsCommandTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_displays_processing_count()
     {
         $org = Org::create([
@@ -148,7 +149,7 @@ class ProcessScheduledPostsCommandTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_empty_queue()
     {
         $this->artisan('posts:process-scheduled')
@@ -161,7 +162,7 @@ class ProcessScheduledPostsCommandTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_logs_processed_posts()
     {
         $org = Org::create([

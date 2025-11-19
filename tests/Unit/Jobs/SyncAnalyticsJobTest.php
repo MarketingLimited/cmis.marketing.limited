@@ -13,6 +13,7 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Http;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * SyncAnalytics Job Unit Tests
  */
@@ -25,7 +26,7 @@ class SyncAnalyticsJobTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_syncs_campaign_analytics()
     {
         Http::fake([
@@ -61,7 +62,7 @@ class SyncAnalyticsJobTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_syncs_platform_specific_metrics()
     {
         Http::fake([
@@ -97,7 +98,7 @@ class SyncAnalyticsJobTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_updates_existing_analytics()
     {
         Http::fake([
@@ -127,7 +128,7 @@ class SyncAnalyticsJobTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_sync_for_date_range()
     {
         Http::fake([
@@ -160,7 +161,7 @@ class SyncAnalyticsJobTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_be_dispatched()
     {
         Queue::fake();
@@ -187,7 +188,7 @@ class SyncAnalyticsJobTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_api_errors_gracefully()
     {
         Http::fake([
@@ -217,7 +218,7 @@ class SyncAnalyticsJobTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_calculates_engagement_rate()
     {
         Http::fake([
@@ -253,7 +254,7 @@ class SyncAnalyticsJobTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_syncs_cost_metrics()
     {
         Http::fake([
@@ -290,7 +291,7 @@ class SyncAnalyticsJobTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_stores_historical_data()
     {
         Http::fake([
@@ -320,7 +321,7 @@ class SyncAnalyticsJobTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_supports_batch_syncing()
     {
         Http::fake([
@@ -354,7 +355,7 @@ class SyncAnalyticsJobTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_respects_org_isolation()
     {
         Http::fake();

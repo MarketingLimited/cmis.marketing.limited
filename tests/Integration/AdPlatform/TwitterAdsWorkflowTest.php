@@ -12,6 +12,7 @@ use App\Models\AdPlatform\AdSet;
 use App\Models\AdPlatform\Ad;
 use Illuminate\Support\Str;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * Twitter/X Ads Platform Integration Tests
  */
@@ -24,7 +25,7 @@ class TwitterAdsWorkflowTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_creates_twitter_ads_campaign()
     {
         $setup = $this->createUserWithOrg();
@@ -67,7 +68,7 @@ class TwitterAdsWorkflowTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_creates_twitter_line_item()
     {
         $setup = $this->createUserWithOrg();
@@ -122,7 +123,7 @@ class TwitterAdsWorkflowTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_creates_twitter_promoted_tweet()
     {
         $setup = $this->createUserWithOrg();
@@ -181,7 +182,7 @@ class TwitterAdsWorkflowTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_creates_twitter_tailored_audience()
     {
         $setup = $this->createUserWithOrg();
@@ -216,7 +217,7 @@ class TwitterAdsWorkflowTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_uploads_media_to_twitter()
     {
         $setup = $this->createUserWithOrg();
@@ -241,7 +242,7 @@ class TwitterAdsWorkflowTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_fetches_twitter_campaign_analytics()
     {
         $setup = $this->createUserWithOrg();
@@ -291,7 +292,7 @@ class TwitterAdsWorkflowTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_creates_twitter_website_card()
     {
         $setup = $this->createUserWithOrg();
@@ -325,7 +326,7 @@ class TwitterAdsWorkflowTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_pauses_twitter_campaign()
     {
         $setup = $this->createUserWithOrg();
@@ -365,7 +366,7 @@ class TwitterAdsWorkflowTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_updates_twitter_campaign_budget()
     {
         $setup = $this->createUserWithOrg();
@@ -406,7 +407,7 @@ class TwitterAdsWorkflowTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_twitter_api_errors()
     {
         $setup = $this->createUserWithOrg();

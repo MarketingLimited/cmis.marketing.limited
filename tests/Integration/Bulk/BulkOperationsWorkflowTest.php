@@ -8,6 +8,7 @@ use Tests\Traits\MocksExternalAPIs;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use App\Services\BulkPostService;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * Bulk Operations Workflow Tests
  */
@@ -23,7 +24,7 @@ class BulkOperationsWorkflowTest extends TestCase
         $this->bulkPostService = app(BulkPostService::class);
     }
 
-    /** @test */
+    #[Test]
     public function it_creates_bulk_posts_from_csv()
     {
         $setup = $this->createUserWithOrg();
@@ -57,7 +58,7 @@ class BulkOperationsWorkflowTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_bulk_post_validation_errors()
     {
         $setup = $this->createUserWithOrg();
@@ -89,7 +90,7 @@ class BulkOperationsWorkflowTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_performs_bulk_campaign_status_update()
     {
         $setup = $this->createUserWithOrg();
@@ -129,7 +130,7 @@ class BulkOperationsWorkflowTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_performs_bulk_creative_asset_deletion()
     {
         $setup = $this->createUserWithOrg();
@@ -166,7 +167,7 @@ class BulkOperationsWorkflowTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_performs_bulk_post_scheduling_with_queue()
     {
         $setup = $this->createUserWithOrg();

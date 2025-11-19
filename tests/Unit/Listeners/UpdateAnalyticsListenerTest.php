@@ -12,6 +12,7 @@ use App\Models\Content\Post;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Event;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * UpdateAnalytics Listener Unit Tests
  */
@@ -24,7 +25,7 @@ class UpdateAnalyticsListenerTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_listens_to_post_published_event()
     {
         Event::fake();
@@ -52,7 +53,7 @@ class UpdateAnalyticsListenerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_updates_analytics_on_post_published()
     {
         $org = Org::create([
@@ -81,7 +82,7 @@ class UpdateAnalyticsListenerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_event_gracefully()
     {
         $org = Org::create([
@@ -113,7 +114,7 @@ class UpdateAnalyticsListenerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_processes_different_platforms()
     {
         $org = Org::create([
@@ -145,7 +146,7 @@ class UpdateAnalyticsListenerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_increments_post_count()
     {
         $org = Org::create([
@@ -173,7 +174,7 @@ class UpdateAnalyticsListenerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_updates_last_published_timestamp()
     {
         $org = Org::create([
@@ -202,7 +203,7 @@ class UpdateAnalyticsListenerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_tracks_platform_specific_metrics()
     {
         $org = Org::create([
@@ -230,7 +231,7 @@ class UpdateAnalyticsListenerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_respects_org_isolation()
     {
         $org1 = Org::create([

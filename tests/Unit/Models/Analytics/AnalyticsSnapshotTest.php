@@ -9,6 +9,7 @@ use App\Models\Analytics\AnalyticsSnapshot;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * AnalyticsSnapshot Model Unit Tests
  */
@@ -21,7 +22,7 @@ class AnalyticsSnapshotTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_can_create_analytics_snapshot()
     {
         $org = Org::create([
@@ -41,7 +42,7 @@ class AnalyticsSnapshotTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_belongs_to_org()
     {
         $org = Org::create([
@@ -59,7 +60,7 @@ class AnalyticsSnapshotTest extends TestCase
         $this->assertEquals($org->org_id, $snapshot->org->org_id);
     }
 
-    /** @test */
+    #[Test]
     public function it_belongs_to_campaign()
     {
         $org = Org::create([
@@ -85,7 +86,7 @@ class AnalyticsSnapshotTest extends TestCase
         $this->assertEquals($campaign->campaign_id, $snapshot->campaign->campaign_id);
     }
 
-    /** @test */
+    #[Test]
     public function it_stores_metrics_as_json()
     {
         $org = Org::create([
@@ -113,7 +114,7 @@ class AnalyticsSnapshotTest extends TestCase
         $this->assertEquals(6.0, $snapshot->metrics['conversion_rate']);
     }
 
-    /** @test */
+    #[Test]
     public function it_stores_platform_specific_metrics()
     {
         $org = Org::create([
@@ -137,7 +138,7 @@ class AnalyticsSnapshotTest extends TestCase
         $this->assertEquals(15000, $snapshot->metrics['page_likes']);
     }
 
-    /** @test */
+    #[Test]
     public function it_tracks_snapshot_date()
     {
         $org = Org::create([
@@ -157,7 +158,7 @@ class AnalyticsSnapshotTest extends TestCase
         $this->assertEquals($snapshotDate->toDateString(), $snapshot->snapshot_date->toDateString());
     }
 
-    /** @test */
+    #[Test]
     public function it_stores_daily_snapshots()
     {
         $org = Org::create([
@@ -180,7 +181,7 @@ class AnalyticsSnapshotTest extends TestCase
         $this->assertCount(7, $snapshots);
     }
 
-    /** @test */
+    #[Test]
     public function it_calculates_metric_trends()
     {
         $org = Org::create([
@@ -206,7 +207,7 @@ class AnalyticsSnapshotTest extends TestCase
         $this->assertTrue($today->metrics['impressions'] > $yesterday->metrics['impressions']);
     }
 
-    /** @test */
+    #[Test]
     public function it_stores_cost_metrics()
     {
         $org = Org::create([
@@ -229,7 +230,7 @@ class AnalyticsSnapshotTest extends TestCase
         $this->assertEquals(1.25, $snapshot->metrics['cost_per_click']);
     }
 
-    /** @test */
+    #[Test]
     public function it_stores_engagement_metrics()
     {
         $org = Org::create([
@@ -254,7 +255,7 @@ class AnalyticsSnapshotTest extends TestCase
         $this->assertEquals(4.5, $snapshot->metrics['engagement_rate']);
     }
 
-    /** @test */
+    #[Test]
     public function it_uses_uuid_as_primary_key()
     {
         $org = Org::create([
@@ -272,7 +273,7 @@ class AnalyticsSnapshotTest extends TestCase
         $this->assertTrue(Str::isUuid($snapshot->snapshot_id));
     }
 
-    /** @test */
+    #[Test]
     public function it_has_timestamps()
     {
         $org = Org::create([
@@ -291,7 +292,7 @@ class AnalyticsSnapshotTest extends TestCase
         $this->assertNotNull($snapshot->updated_at);
     }
 
-    /** @test */
+    #[Test]
     public function it_respects_rls_policies()
     {
         $org1 = Org::create([

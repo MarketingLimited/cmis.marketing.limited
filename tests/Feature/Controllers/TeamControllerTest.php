@@ -10,6 +10,7 @@ use App\Models\User;
 use App\Models\Team\TeamMember;
 use Illuminate\Support\Str;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * Team Controller Feature Tests
  */
@@ -22,7 +23,7 @@ class TeamControllerTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_can_list_team_members()
     {
         $org = Org::create([
@@ -55,7 +56,7 @@ class TeamControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_add_team_member()
     {
         $org = Org::create([
@@ -95,7 +96,7 @@ class TeamControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_update_team_member_role()
     {
         $org = Org::create([
@@ -142,7 +143,7 @@ class TeamControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_remove_team_member()
     {
         $org = Org::create([
@@ -189,7 +190,7 @@ class TeamControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function viewer_cannot_add_team_members()
     {
         $org = Org::create([
@@ -222,7 +223,7 @@ class TeamControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_send_team_invitation()
     {
         $org = Org::create([
@@ -255,7 +256,7 @@ class TeamControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_filter_by_role()
     {
         $org = Org::create([
@@ -302,7 +303,7 @@ class TeamControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_shows_team_member_details()
     {
         $org = Org::create([
@@ -335,7 +336,7 @@ class TeamControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_respects_org_isolation()
     {
         $org1 = Org::create([

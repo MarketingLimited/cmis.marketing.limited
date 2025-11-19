@@ -12,6 +12,7 @@ use App\Jobs\ReplyToCommentJob;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Str;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * TikTok, YouTube & Twitter Comments Integration Test
  *
@@ -26,7 +27,7 @@ class TikTokYouTubeTwitterCommentsTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_receives_tiktok_comment()
     {
         $setup = $this->createUserWithOrg();
@@ -69,7 +70,7 @@ class TikTokYouTubeTwitterCommentsTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_replies_to_tiktok_comment()
     {
         Queue::fake();
@@ -133,7 +134,7 @@ class TikTokYouTubeTwitterCommentsTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_receives_youtube_comment()
     {
         $setup = $this->createUserWithOrg();
@@ -176,7 +177,7 @@ class TikTokYouTubeTwitterCommentsTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_replies_to_youtube_comment()
     {
         Queue::fake();
@@ -238,7 +239,7 @@ class TikTokYouTubeTwitterCommentsTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_receives_twitter_reply()
     {
         $setup = $this->createUserWithOrg();
@@ -281,7 +282,7 @@ class TikTokYouTubeTwitterCommentsTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_replies_to_twitter_mention()
     {
         Queue::fake();

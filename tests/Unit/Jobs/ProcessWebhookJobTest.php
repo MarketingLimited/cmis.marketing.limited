@@ -13,6 +13,7 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Http;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * Process Webhook Job Unit Tests
  */
@@ -25,7 +26,7 @@ class ProcessWebhookJobTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_processes_webhook_delivery()
     {
         $org = Org::create([
@@ -72,7 +73,7 @@ class ProcessWebhookJobTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_sends_post_request_to_webhook_url()
     {
         $org = Org::create([
@@ -109,7 +110,7 @@ class ProcessWebhookJobTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_includes_custom_headers()
     {
         $org = Org::create([
@@ -147,7 +148,7 @@ class ProcessWebhookJobTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_generates_signature_when_secret_is_set()
     {
         $org = Org::create([
@@ -183,7 +184,7 @@ class ProcessWebhookJobTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_failed_deliveries()
     {
         $org = Org::create([
@@ -221,7 +222,7 @@ class ProcessWebhookJobTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_updates_delivery_statistics()
     {
         $org = Org::create([
@@ -259,7 +260,7 @@ class ProcessWebhookJobTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_be_dispatched()
     {
         Queue::fake();
@@ -290,7 +291,7 @@ class ProcessWebhookJobTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_retries_on_failure()
     {
         $org = Org::create([

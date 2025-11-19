@@ -9,6 +9,7 @@ use App\Models\Activity\ActivityLog;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * Activity Log Model Unit Tests
  */
@@ -21,7 +22,7 @@ class ActivityLogTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_can_create_activity_log()
     {
         $org = Org::create([
@@ -51,7 +52,7 @@ class ActivityLogTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_belongs_to_user_and_org()
     {
         $org = Org::create([
@@ -78,7 +79,7 @@ class ActivityLogTest extends TestCase
         $this->assertEquals($org->org_id, $activity->org->org_id);
     }
 
-    /** @test */
+    #[Test]
     public function it_tracks_different_action_types()
     {
         $org = Org::create([
@@ -115,7 +116,7 @@ class ActivityLogTest extends TestCase
         $this->assertCount(5, $logs);
     }
 
-    /** @test */
+    #[Test]
     public function it_stores_metadata_as_json()
     {
         $org = Org::create([
@@ -152,7 +153,7 @@ class ActivityLogTest extends TestCase
         $this->assertContains('status', $activity->metadata['changes']);
     }
 
-    /** @test */
+    #[Test]
     public function it_stores_ip_address()
     {
         $org = Org::create([
@@ -179,7 +180,7 @@ class ActivityLogTest extends TestCase
         $this->assertEquals('203.0.113.42', $activity->ip_address);
     }
 
-    /** @test */
+    #[Test]
     public function it_stores_user_agent()
     {
         $org = Org::create([
@@ -206,7 +207,7 @@ class ActivityLogTest extends TestCase
         $this->assertStringContainsString('Mozilla', $activity->user_agent);
     }
 
-    /** @test */
+    #[Test]
     public function it_tracks_entity_type_and_id()
     {
         $org = Org::create([
@@ -235,7 +236,7 @@ class ActivityLogTest extends TestCase
         $this->assertEquals('camp_123', $activity->entity_id);
     }
 
-    /** @test */
+    #[Test]
     public function it_uses_uuid_as_primary_key()
     {
         $org = Org::create([
@@ -261,7 +262,7 @@ class ActivityLogTest extends TestCase
         $this->assertTrue(Str::isUuid($activity->activity_id));
     }
 
-    /** @test */
+    #[Test]
     public function it_has_timestamps()
     {
         $org = Org::create([
@@ -288,7 +289,7 @@ class ActivityLogTest extends TestCase
         $this->assertNotNull($activity->updated_at);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_filter_by_date_range()
     {
         $org = Org::create([
@@ -328,7 +329,7 @@ class ActivityLogTest extends TestCase
         $this->assertCount(1, $recentLogs);
     }
 
-    /** @test */
+    #[Test]
     public function it_respects_rls_policies()
     {
         $org1 = Org::create([

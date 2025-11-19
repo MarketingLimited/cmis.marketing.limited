@@ -9,6 +9,7 @@ use App\Models\Core\Campaign;
 use App\Models\User;
 use Illuminate\Support\Str;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * HasUuid Trait Unit Tests
  */
@@ -21,7 +22,7 @@ class HasUuidTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_automatically_generates_uuid_on_creation()
     {
         $org = Org::create([
@@ -38,7 +39,7 @@ class HasUuidTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_does_not_auto_increment()
     {
         $org1 = Org::create([
@@ -62,7 +63,7 @@ class HasUuidTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_allows_manual_uuid_assignment()
     {
         $customUuid = Str::uuid();
@@ -80,7 +81,7 @@ class HasUuidTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_uses_string_key_type()
     {
         $org = Org::create([
@@ -98,7 +99,7 @@ class HasUuidTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_works_with_relationships()
     {
         $org = Org::create([
@@ -123,7 +124,7 @@ class HasUuidTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_generates_unique_uuids()
     {
         $uuids = [];
@@ -146,7 +147,7 @@ class HasUuidTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_maintains_uuid_format()
     {
         $org = Org::create([
@@ -164,7 +165,7 @@ class HasUuidTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_works_across_different_models()
     {
         $org = Org::create([

@@ -8,6 +8,7 @@ use App\Models\Creative\CreativeBrief;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * Creative Brief Model Unit Tests
  */
@@ -20,7 +21,7 @@ class CreativeBriefTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_can_create_a_creative_brief()
     {
         $org = Org::create([
@@ -44,7 +45,7 @@ class CreativeBriefTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_belongs_to_an_organization()
     {
         $org = Org::create([
@@ -61,7 +62,7 @@ class CreativeBriefTest extends TestCase
         $this->assertEquals($org->org_id, $brief->org->org_id);
     }
 
-    /** @test */
+    #[Test]
     public function it_stores_brief_data_as_json()
     {
         $org = Org::create([
@@ -97,7 +98,7 @@ class CreativeBriefTest extends TestCase
         $this->assertEquals('#FF6B35', $brief->brief_data['art_direction']['color_palette']['primary']);
     }
 
-    /** @test */
+    #[Test]
     public function it_uses_uuid_as_primary_key()
     {
         $org = Org::create([
@@ -114,7 +115,7 @@ class CreativeBriefTest extends TestCase
         $this->assertTrue(Str::isUuid($brief->brief_id));
     }
 
-    /** @test */
+    #[Test]
     public function it_can_be_soft_deleted()
     {
         $org = Org::create([
@@ -135,7 +136,7 @@ class CreativeBriefTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_marketing_objectives()
     {
         $org = Org::create([
@@ -160,7 +161,7 @@ class CreativeBriefTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_stores_complete_art_direction()
     {
         $org = Org::create([
@@ -204,7 +205,7 @@ class CreativeBriefTest extends TestCase
         $this->assertEquals('1:1', $artDirection['ratio']);
     }
 
-    /** @test */
+    #[Test]
     public function it_has_timestamps()
     {
         $org = Org::create([
@@ -222,7 +223,7 @@ class CreativeBriefTest extends TestCase
         $this->assertNotNull($brief->updated_at);
     }
 
-    /** @test */
+    #[Test]
     public function it_respects_rls_policies()
     {
         $org1 = Org::create([

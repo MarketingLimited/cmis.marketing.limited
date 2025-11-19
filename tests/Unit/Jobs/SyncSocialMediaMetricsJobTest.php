@@ -12,6 +12,7 @@ use App\Models\Integration\Integration;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Queue;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * Sync Social Media Metrics Job Unit Tests
  */
@@ -24,7 +25,7 @@ class SyncSocialMediaMetricsJobTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_syncs_facebook_metrics()
     {
         $org = Org::create([
@@ -61,7 +62,7 @@ class SyncSocialMediaMetricsJobTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_syncs_instagram_metrics()
     {
         $org = Org::create([
@@ -98,7 +99,7 @@ class SyncSocialMediaMetricsJobTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_be_dispatched()
     {
         Queue::fake();
@@ -126,7 +127,7 @@ class SyncSocialMediaMetricsJobTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_api_errors()
     {
         $org = Org::create([
@@ -162,7 +163,7 @@ class SyncSocialMediaMetricsJobTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_updates_last_synced_timestamp()
     {
         $org = Org::create([
@@ -196,7 +197,7 @@ class SyncSocialMediaMetricsJobTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_stores_metrics_in_database()
     {
         $org = Org::create([

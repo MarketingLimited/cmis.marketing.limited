@@ -10,6 +10,7 @@ use App\Models\Content\ContentPlanItem;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * Content Plan Item Model Unit Tests
  */
@@ -22,7 +23,7 @@ class ContentPlanItemTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_can_create_a_content_plan_item()
     {
         $org = Org::create([
@@ -61,7 +62,7 @@ class ContentPlanItemTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_belongs_to_content_plan_and_org()
     {
         $org = Org::create([
@@ -97,7 +98,7 @@ class ContentPlanItemTest extends TestCase
         $this->assertEquals($org->org_id, $item->org->org_id);
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_content_type()
     {
         $org = Org::create([
@@ -139,7 +140,7 @@ class ContentPlanItemTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_platform()
     {
         $org = Org::create([
@@ -182,7 +183,7 @@ class ContentPlanItemTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_status()
     {
         $org = Org::create([
@@ -223,7 +224,7 @@ class ContentPlanItemTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_stores_content_details_as_json()
     {
         $org = Org::create([
@@ -267,7 +268,7 @@ class ContentPlanItemTest extends TestCase
         $this->assertContains('#تسويق', $item->content_details['hashtags']);
     }
 
-    /** @test */
+    #[Test]
     public function it_uses_uuid_as_primary_key()
     {
         $org = Org::create([
@@ -302,7 +303,7 @@ class ContentPlanItemTest extends TestCase
         $this->assertTrue(Str::isUuid($item->item_id));
     }
 
-    /** @test */
+    #[Test]
     public function it_can_be_soft_deleted()
     {
         $org = Org::create([
@@ -341,7 +342,7 @@ class ContentPlanItemTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_has_timestamps()
     {
         $org = Org::create([
@@ -377,7 +378,7 @@ class ContentPlanItemTest extends TestCase
         $this->assertNotNull($item->updated_at);
     }
 
-    /** @test */
+    #[Test]
     public function it_respects_rls_policies()
     {
         $org1 = Org::create([

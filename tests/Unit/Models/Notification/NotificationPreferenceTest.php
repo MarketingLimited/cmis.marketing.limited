@@ -9,6 +9,7 @@ use App\Models\Notification\NotificationPreference;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * NotificationPreference Model Unit Tests
  */
@@ -21,7 +22,7 @@ class NotificationPreferenceTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_can_create_notification_preference()
     {
         $org = Org::create([
@@ -51,7 +52,7 @@ class NotificationPreferenceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_belongs_to_user()
     {
         $org = Org::create([
@@ -77,7 +78,7 @@ class NotificationPreferenceTest extends TestCase
         $this->assertEquals($user->user_id, $preference->user->user_id);
     }
 
-    /** @test */
+    #[Test]
     public function it_belongs_to_org()
     {
         $org = Org::create([
@@ -103,7 +104,7 @@ class NotificationPreferenceTest extends TestCase
         $this->assertEquals($org->org_id, $preference->org->org_id);
     }
 
-    /** @test */
+    #[Test]
     public function it_has_different_notification_types()
     {
         $org = Org::create([
@@ -141,7 +142,7 @@ class NotificationPreferenceTest extends TestCase
         $this->assertCount(6, $preferences);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_enable_email_notifications()
     {
         $org = Org::create([
@@ -167,7 +168,7 @@ class NotificationPreferenceTest extends TestCase
         $this->assertTrue($preference->email_enabled);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_enable_sms_notifications()
     {
         $org = Org::create([
@@ -193,7 +194,7 @@ class NotificationPreferenceTest extends TestCase
         $this->assertTrue($preference->sms_enabled);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_enable_push_notifications()
     {
         $org = Org::create([
@@ -219,7 +220,7 @@ class NotificationPreferenceTest extends TestCase
         $this->assertTrue($preference->push_enabled);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_enable_in_app_notifications()
     {
         $org = Org::create([
@@ -245,7 +246,7 @@ class NotificationPreferenceTest extends TestCase
         $this->assertTrue($preference->in_app_enabled);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_disable_all_channels()
     {
         $org = Org::create([
@@ -277,7 +278,7 @@ class NotificationPreferenceTest extends TestCase
         $this->assertFalse($preference->in_app_enabled);
     }
 
-    /** @test */
+    #[Test]
     public function it_uses_uuid_as_primary_key()
     {
         $org = Org::create([
@@ -303,7 +304,7 @@ class NotificationPreferenceTest extends TestCase
         $this->assertTrue(Str::isUuid($preference->preference_id));
     }
 
-    /** @test */
+    #[Test]
     public function it_has_timestamps()
     {
         $org = Org::create([
@@ -330,7 +331,7 @@ class NotificationPreferenceTest extends TestCase
         $this->assertNotNull($preference->updated_at);
     }
 
-    /** @test */
+    #[Test]
     public function it_respects_rls_policies()
     {
         $org1 = Org::create([

@@ -6,12 +6,13 @@ use Tests\TestCase;
 use App\Http\Requests\Campaign\StoreCampaignRequest;
 use Illuminate\Support\Facades\Validator;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * Store Campaign Request Unit Tests
  */
 class StoreCampaignRequestTest extends TestCase
 {
-    /** @test */
+    #[Test]
     public function it_validates_required_fields()
     {
         $request = new StoreCampaignRequest();
@@ -28,7 +29,7 @@ class StoreCampaignRequestTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_passes_with_valid_data()
     {
         $request = new StoreCampaignRequest();
@@ -52,7 +53,7 @@ class StoreCampaignRequestTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_name_max_length()
     {
         $request = new StoreCampaignRequest();
@@ -74,7 +75,7 @@ class StoreCampaignRequestTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_status_enum()
     {
         $request = new StoreCampaignRequest();
@@ -96,7 +97,7 @@ class StoreCampaignRequestTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_dates()
     {
         $request = new StoreCampaignRequest();

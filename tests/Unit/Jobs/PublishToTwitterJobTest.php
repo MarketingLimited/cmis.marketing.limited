@@ -11,6 +11,7 @@ use App\Models\Content\ScheduledPost;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Str;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * Publish To Twitter Job Unit Tests
  */
@@ -23,7 +24,7 @@ class PublishToTwitterJobTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_publishes_tweet()
     {
         $setup = $this->createUserWithOrg();
@@ -59,7 +60,7 @@ class PublishToTwitterJobTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_character_limit()
     {
         $setup = $this->createUserWithOrg();
@@ -96,7 +97,7 @@ class PublishToTwitterJobTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_publishes_tweet_with_media()
     {
         $setup = $this->createUserWithOrg();
@@ -133,7 +134,7 @@ class PublishToTwitterJobTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_api_errors()
     {
         $setup = $this->createUserWithOrg();
@@ -170,7 +171,7 @@ class PublishToTwitterJobTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_be_dispatched()
     {
         Queue::fake();
@@ -200,7 +201,7 @@ class PublishToTwitterJobTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_processes_hashtags()
     {
         $setup = $this->createUserWithOrg();

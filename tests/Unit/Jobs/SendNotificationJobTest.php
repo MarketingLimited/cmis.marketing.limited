@@ -12,6 +12,7 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Notification;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * SendNotification Job Unit Tests
  */
@@ -24,7 +25,7 @@ class SendNotificationJobTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_sends_notification_to_user()
     {
         $org = Org::create([
@@ -56,7 +57,7 @@ class SendNotificationJobTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_sends_email_notification()
     {
         $org = Org::create([
@@ -88,7 +89,7 @@ class SendNotificationJobTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_sends_database_notification()
     {
         $org = Org::create([
@@ -120,7 +121,7 @@ class SendNotificationJobTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_be_dispatched()
     {
         Queue::fake();
@@ -142,7 +143,7 @@ class SendNotificationJobTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_supports_multiple_channels()
     {
         $user = User::create([
@@ -169,7 +170,7 @@ class SendNotificationJobTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_notification_preferences()
     {
         $user = User::create([
@@ -197,7 +198,7 @@ class SendNotificationJobTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_sends_bulk_notifications()
     {
         $users = [];
@@ -228,7 +229,7 @@ class SendNotificationJobTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_includes_action_url()
     {
         $user = User::create([
@@ -256,7 +257,7 @@ class SendNotificationJobTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_failed_delivery()
     {
         $user = User::create([
@@ -286,7 +287,7 @@ class SendNotificationJobTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_queues_with_delay()
     {
         Queue::fake();

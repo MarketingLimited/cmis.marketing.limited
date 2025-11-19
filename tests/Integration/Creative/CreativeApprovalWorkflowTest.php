@@ -8,6 +8,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use App\Services\ApprovalWorkflowService;
 use App\Services\CreativeService;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * Complete Creative Approval Workflow Test
  */
@@ -25,7 +26,7 @@ class CreativeApprovalWorkflowTest extends TestCase
         $this->creativeService = app(CreativeService::class);
     }
 
-    /** @test */
+    #[Test]
     public function it_completes_creative_brief_to_approval_workflow()
     {
         $setup = $this->createUserWithOrg();
@@ -98,7 +99,7 @@ class CreativeApprovalWorkflowTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_creative_rejection_and_revision()
     {
         $setup = $this->createUserWithOrg();
@@ -153,7 +154,7 @@ class CreativeApprovalWorkflowTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_supports_multi_level_approval()
     {
         $setup = $this->createUserWithOrg();
@@ -206,7 +207,7 @@ class CreativeApprovalWorkflowTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_tracks_approval_history()
     {
         $setup = $this->createUserWithOrg();

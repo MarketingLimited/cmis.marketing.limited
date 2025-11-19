@@ -11,6 +11,7 @@ use App\Services\GPTConversationService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 
+use PHPUnit\Framework\Attributes\Test;
 class GPTWorkflowTest extends TestCase
 {
     use RefreshDatabase;
@@ -34,7 +35,7 @@ class GPTWorkflowTest extends TestCase
         $this->actingAs($this->user);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_user_and_org_context()
     {
         $response = $this->getJson('/api/gpt/context');
@@ -56,7 +57,7 @@ class GPTWorkflowTest extends TestCase
             ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_list_campaigns_via_gpt()
     {
         Campaign::factory()->count(3)->create([
@@ -77,7 +78,7 @@ class GPTWorkflowTest extends TestCase
         $this->assertCount(4, $response->json('data')); // 3 + setUp campaign
     }
 
-    /** @test */
+    #[Test]
     public function it_can_filter_campaigns_by_status()
     {
         Campaign::factory()->create([
@@ -100,7 +101,7 @@ class GPTWorkflowTest extends TestCase
         }
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_single_campaign()
     {
         $response = $this->getJson("/api/gpt/campaigns/{$this->campaign->campaign_id}");
@@ -115,7 +116,7 @@ class GPTWorkflowTest extends TestCase
             ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_create_campaign_via_gpt()
     {
         $data = [
@@ -145,7 +146,7 @@ class GPTWorkflowTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_list_content_plans()
     {
         ContentPlan::factory()->count(2)->create([
@@ -164,7 +165,7 @@ class GPTWorkflowTest extends TestCase
             ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_create_content_plan()
     {
         $data = [
@@ -190,7 +191,7 @@ class GPTWorkflowTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_search_knowledge_base()
     {
         $data = [
@@ -204,7 +205,7 @@ class GPTWorkflowTest extends TestCase
             ->assertJson(['success' => true]);
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_knowledge_search_query()
     {
         $response = $this->postJson('/api/gpt/knowledge/search', []);
@@ -213,7 +214,7 @@ class GPTWorkflowTest extends TestCase
             ->assertJsonValidationErrors(['query']);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_add_knowledge_item()
     {
         $data = [
@@ -233,7 +234,7 @@ class GPTWorkflowTest extends TestCase
             ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_ai_insights_for_campaign()
     {
         $data = [
@@ -254,7 +255,7 @@ class GPTWorkflowTest extends TestCase
             ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_requires_authentication_for_gpt_endpoints()
     {
         $this->app['auth']->forgetGuards();
@@ -264,7 +265,7 @@ class GPTWorkflowTest extends TestCase
         $response->assertStatus(401);
     }
 
-    /** @test */
+    #[Test]
     public function it_prevents_access_to_other_orgs_campaigns()
     {
         $otherOrg = Org::factory()->create();
@@ -277,7 +278,7 @@ class GPTWorkflowTest extends TestCase
         $response->assertStatus(403);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_create_conversation_session()
     {
         $response = $this->getJson('/api/gpt/conversation/session');
@@ -297,7 +298,7 @@ class GPTWorkflowTest extends TestCase
             ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_reuse_existing_session()
     {
         $firstResponse = $this->getJson('/api/gpt/conversation/session');
@@ -309,7 +310,7 @@ class GPTWorkflowTest extends TestCase
         $this->assertEquals($sessionId, $secondResponse->json('data.session_id'));
     }
 
-    /** @test */
+    #[Test]
     public function it_can_send_message_in_conversation()
     {
         $session = $this->getJson('/api/gpt/conversation/session');
@@ -338,7 +339,7 @@ class GPTWorkflowTest extends TestCase
             ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_conversation_message()
     {
         $response = $this->postJson('/api/gpt/conversation/message', []);
@@ -347,7 +348,7 @@ class GPTWorkflowTest extends TestCase
             ->assertJsonValidationErrors(['session_id', 'message']);
     }
 
-    /** @test */
+    #[Test]
     public function it_enforces_message_max_length()
     {
         $session = $this->getJson('/api/gpt/conversation/session');
@@ -364,7 +365,7 @@ class GPTWorkflowTest extends TestCase
             ->assertJsonValidationErrors(['message']);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_conversation_history()
     {
         $session = $this->getJson('/api/gpt/conversation/session');
@@ -391,7 +392,7 @@ class GPTWorkflowTest extends TestCase
         $this->assertGreaterThanOrEqual(2, $response->json('data.count')); // At least user + assistant message
     }
 
-    /** @test */
+    #[Test]
     public function it_can_limit_conversation_history()
     {
         $session = $this->getJson('/api/gpt/conversation/session');
@@ -411,7 +412,7 @@ class GPTWorkflowTest extends TestCase
         $this->assertLessThanOrEqual(5, $response->json('data.count'));
     }
 
-    /** @test */
+    #[Test]
     public function it_can_clear_conversation_history()
     {
         $session = $this->getJson('/api/gpt/conversation/session');
@@ -432,7 +433,7 @@ class GPTWorkflowTest extends TestCase
             ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_conversation_statistics()
     {
         $session = $this->getJson('/api/gpt/conversation/session');
@@ -451,7 +452,7 @@ class GPTWorkflowTest extends TestCase
             ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_conversation_errors_gracefully()
     {
         // Try to get history for non-existent session
@@ -465,7 +466,7 @@ class GPTWorkflowTest extends TestCase
             ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_maintains_conversation_context_across_messages()
     {
         $session = $this->getJson('/api/gpt/conversation/session');

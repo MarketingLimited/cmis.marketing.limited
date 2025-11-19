@@ -12,6 +12,7 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Mail;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * Send Email Campaign Job Unit Tests
  */
@@ -24,7 +25,7 @@ class SendEmailCampaignJobTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_sends_email_to_recipients()
     {
         Mail::fake();
@@ -67,7 +68,7 @@ class SendEmailCampaignJobTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_be_dispatched()
     {
         Queue::fake();
@@ -90,7 +91,7 @@ class SendEmailCampaignJobTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_personalizes_content()
     {
         Mail::fake();
@@ -125,7 +126,7 @@ class SendEmailCampaignJobTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_tracks_sent_emails()
     {
         Mail::fake();
@@ -160,7 +161,7 @@ class SendEmailCampaignJobTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_errors_gracefully()
     {
         $org = Org::create([

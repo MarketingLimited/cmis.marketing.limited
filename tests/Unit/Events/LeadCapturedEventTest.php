@@ -11,6 +11,7 @@ use App\Models\Lead\Lead;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Event;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * LeadCaptured Event Unit Tests
  */
@@ -23,7 +24,7 @@ class LeadCapturedEventTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_can_be_instantiated()
     {
         $org = Org::create([
@@ -50,7 +51,7 @@ class LeadCapturedEventTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_be_dispatched()
     {
         Event::fake();
@@ -78,7 +79,7 @@ class LeadCapturedEventTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_contains_lead_data()
     {
         $org = Org::create([
@@ -107,7 +108,7 @@ class LeadCapturedEventTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_broadcasts_on_private_channel()
     {
         $org = Org::create([
@@ -134,7 +135,7 @@ class LeadCapturedEventTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_be_listened_to()
     {
         Event::fake([LeadCapturedEvent::class]);
@@ -164,7 +165,7 @@ class LeadCapturedEventTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_includes_lead_source_information()
     {
         $org = Org::create([
@@ -196,7 +197,7 @@ class LeadCapturedEventTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_triggers_notification_workflows()
     {
         $org = Org::create([

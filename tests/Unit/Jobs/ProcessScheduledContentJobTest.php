@@ -12,6 +12,7 @@ use App\Models\Content\Content;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Queue;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * ProcessScheduledContent Job Unit Tests
  */
@@ -24,7 +25,7 @@ class ProcessScheduledContentJobTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_processes_due_scheduled_content()
     {
         $org = Org::create([
@@ -53,7 +54,7 @@ class ProcessScheduledContentJobTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_ignores_future_scheduled_content()
     {
         $org = Org::create([
@@ -82,7 +83,7 @@ class ProcessScheduledContentJobTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_publishes_scheduled_content()
     {
         $org = Org::create([
@@ -112,7 +113,7 @@ class ProcessScheduledContentJobTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_be_dispatched()
     {
         Queue::fake();
@@ -127,7 +128,7 @@ class ProcessScheduledContentJobTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_publishing_errors()
     {
         $org = Org::create([
@@ -158,7 +159,7 @@ class ProcessScheduledContentJobTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_processes_multiple_scheduled_posts()
     {
         $org = Org::create([
@@ -190,7 +191,7 @@ class ProcessScheduledContentJobTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_respects_batch_size_limit()
     {
         $org = Org::create([
@@ -224,7 +225,7 @@ class ProcessScheduledContentJobTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_updates_content_status_after_publishing()
     {
         $org = Org::create([
@@ -255,7 +256,7 @@ class ProcessScheduledContentJobTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_logs_processing_activity()
     {
         $org = Org::create([

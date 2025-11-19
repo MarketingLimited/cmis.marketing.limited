@@ -9,6 +9,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use App\Models\Knowledge\KnowledgeIndex;
 use Illuminate\Support\Str;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * Knowledge Base API Feature Tests
  */
@@ -21,7 +22,7 @@ class KnowledgeAPITest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_can_create_knowledge_entry()
     {
         $setup = $this->createUserWithOrg();
@@ -52,7 +53,7 @@ class KnowledgeAPITest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_all_knowledge_entries()
     {
         $setup = $this->createUserWithOrg();
@@ -89,7 +90,7 @@ class KnowledgeAPITest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_knowledge_entry_by_id()
     {
         $setup = $this->createUserWithOrg();
@@ -117,7 +118,7 @@ class KnowledgeAPITest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_update_knowledge_entry()
     {
         $setup = $this->createUserWithOrg();
@@ -150,7 +151,7 @@ class KnowledgeAPITest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_delete_knowledge_entry()
     {
         $setup = $this->createUserWithOrg();
@@ -181,7 +182,7 @@ class KnowledgeAPITest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_perform_semantic_search()
     {
         $setup = $this->createUserWithOrg();
@@ -218,7 +219,7 @@ class KnowledgeAPITest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_find_similar_content()
     {
         $setup = $this->createUserWithOrg();
@@ -250,7 +251,7 @@ class KnowledgeAPITest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_filter_by_category()
     {
         $setup = $this->createUserWithOrg();
@@ -289,7 +290,7 @@ class KnowledgeAPITest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_filter_by_content_type()
     {
         $setup = $this->createUserWithOrg();
@@ -326,7 +327,7 @@ class KnowledgeAPITest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_knowledge_statistics()
     {
         $setup = $this->createUserWithOrg();
@@ -356,7 +357,7 @@ class KnowledgeAPITest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_respects_org_isolation()
     {
         $setup1 = $this->createUserWithOrg();
@@ -383,7 +384,7 @@ class KnowledgeAPITest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_required_fields()
     {
         $setup = $this->createUserWithOrg();

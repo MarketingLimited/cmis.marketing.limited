@@ -12,6 +12,7 @@ use App\Models\AdPlatform\AdSet;
 use App\Models\AdPlatform\Ad;
 use Illuminate\Support\Str;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * Snapchat Ads Platform Integration Tests
  */
@@ -24,7 +25,7 @@ class SnapchatAdsWorkflowTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_creates_snapchat_ad_campaign()
     {
         $setup = $this->createUserWithOrg();
@@ -66,7 +67,7 @@ class SnapchatAdsWorkflowTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_creates_snapchat_ad_squad()
     {
         $setup = $this->createUserWithOrg();
@@ -141,7 +142,7 @@ class SnapchatAdsWorkflowTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_creates_snapchat_video_ad()
     {
         $setup = $this->createUserWithOrg();
@@ -210,7 +211,7 @@ class SnapchatAdsWorkflowTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_uploads_creative_to_snapchat()
     {
         $setup = $this->createUserWithOrg();
@@ -244,7 +245,7 @@ class SnapchatAdsWorkflowTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_creates_snapchat_collection_ad()
     {
         $setup = $this->createUserWithOrg();
@@ -287,7 +288,7 @@ class SnapchatAdsWorkflowTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_fetches_snapchat_campaign_stats()
     {
         $setup = $this->createUserWithOrg();
@@ -334,7 +335,7 @@ class SnapchatAdsWorkflowTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_pauses_snapchat_campaign()
     {
         $setup = $this->createUserWithOrg();
@@ -376,7 +377,7 @@ class SnapchatAdsWorkflowTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_updates_snapchat_campaign_budget()
     {
         $setup = $this->createUserWithOrg();
@@ -419,7 +420,7 @@ class SnapchatAdsWorkflowTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_snapchat_api_errors()
     {
         $setup = $this->createUserWithOrg();

@@ -8,6 +8,7 @@ use App\Models\Workflow\Workflow;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * Workflow Model Unit Tests
  */
@@ -20,7 +21,7 @@ class WorkflowTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_can_create_workflow()
     {
         $org = Org::create([
@@ -43,7 +44,7 @@ class WorkflowTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_belongs_to_org()
     {
         $org = Org::create([
@@ -61,7 +62,7 @@ class WorkflowTest extends TestCase
         $this->assertEquals($org->org_id, $workflow->org->org_id);
     }
 
-    /** @test */
+    #[Test]
     public function it_has_different_trigger_types()
     {
         $org = Org::create([
@@ -90,7 +91,7 @@ class WorkflowTest extends TestCase
         $this->assertCount(5, $workflows);
     }
 
-    /** @test */
+    #[Test]
     public function it_stores_workflow_steps_as_json()
     {
         $org = Org::create([
@@ -134,7 +135,7 @@ class WorkflowTest extends TestCase
         $this->assertEquals('wait_for_approval', $workflow->steps[1]['type']);
     }
 
-    /** @test */
+    #[Test]
     public function it_stores_workflow_conditions()
     {
         $org = Org::create([
@@ -160,7 +161,7 @@ class WorkflowTest extends TestCase
         $this->assertEquals(10000, $workflow->conditions['value']);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_be_active_or_inactive()
     {
         $org = Org::create([
@@ -188,7 +189,7 @@ class WorkflowTest extends TestCase
         $this->assertFalse($inactiveWorkflow->is_active);
     }
 
-    /** @test */
+    #[Test]
     public function it_tracks_execution_count()
     {
         $org = Org::create([
@@ -209,7 +210,7 @@ class WorkflowTest extends TestCase
         $this->assertEquals(5, $workflow->fresh()->execution_count);
     }
 
-    /** @test */
+    #[Test]
     public function it_tracks_last_execution_time()
     {
         $org = Org::create([
@@ -228,7 +229,7 @@ class WorkflowTest extends TestCase
         $this->assertNotNull($workflow->last_executed_at);
     }
 
-    /** @test */
+    #[Test]
     public function it_uses_uuid_as_primary_key()
     {
         $org = Org::create([
@@ -246,7 +247,7 @@ class WorkflowTest extends TestCase
         $this->assertTrue(Str::isUuid($workflow->workflow_id));
     }
 
-    /** @test */
+    #[Test]
     public function it_has_timestamps()
     {
         $org = Org::create([
@@ -265,7 +266,7 @@ class WorkflowTest extends TestCase
         $this->assertNotNull($workflow->updated_at);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_be_soft_deleted()
     {
         $org = Org::create([
@@ -289,7 +290,7 @@ class WorkflowTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_respects_rls_policies()
     {
         $org1 = Org::create([

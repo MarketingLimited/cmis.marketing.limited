@@ -12,6 +12,7 @@ use App\Jobs\SendWhatsAppMessageJob;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Str;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * WhatsApp Status Updates & Metrics Integration Test
  *
@@ -26,7 +27,7 @@ class WhatsAppStatusMetricsMessagingTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_whatsapp_message_status_updates()
     {
         $setup = $this->createUserWithOrg();
@@ -69,7 +70,7 @@ class WhatsAppStatusMetricsMessagingTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_whatsapp_api_errors()
     {
         Queue::fake();
@@ -116,7 +117,7 @@ class WhatsAppStatusMetricsMessagingTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_tracks_whatsapp_conversation_metrics()
     {
         $setup = $this->createUserWithOrg();

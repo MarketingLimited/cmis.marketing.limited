@@ -11,6 +11,7 @@ use App\Models\Security\Permission;
 use App\Models\Security\UserPermission;
 use Illuminate\Support\Str;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * Complete User Onboarding & Team Collaboration Workflow
  */
@@ -23,7 +24,7 @@ class UserOnboardingWorkflowTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_completes_new_user_onboarding_workflow()
     {
         $setup = $this->createUserWithOrg();
@@ -110,7 +111,7 @@ class UserOnboardingWorkflowTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_team_member_role_change()
     {
         $setup = $this->createUserWithOrg();
@@ -162,7 +163,7 @@ class UserOnboardingWorkflowTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_team_member_deactivation()
     {
         $setup = $this->createUserWithOrg();
@@ -195,7 +196,7 @@ class UserOnboardingWorkflowTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_user_belongs_to_multiple_organizations()
     {
         // Create user

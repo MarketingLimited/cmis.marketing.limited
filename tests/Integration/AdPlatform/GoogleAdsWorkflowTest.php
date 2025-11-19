@@ -12,6 +12,7 @@ use App\Models\AdPlatform\AdSet;
 use App\Models\AdPlatform\Ad;
 use Illuminate\Support\Str;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * Google Ads Platform Integration Tests
  */
@@ -24,7 +25,7 @@ class GoogleAdsWorkflowTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_creates_google_ads_campaign()
     {
         $setup = $this->createUserWithOrg();
@@ -75,7 +76,7 @@ class GoogleAdsWorkflowTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_creates_google_ads_ad_group()
     {
         $setup = $this->createUserWithOrg();
@@ -130,7 +131,7 @@ class GoogleAdsWorkflowTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_creates_google_responsive_search_ad()
     {
         $setup = $this->createUserWithOrg();
@@ -210,7 +211,7 @@ class GoogleAdsWorkflowTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_creates_google_display_ad()
     {
         $setup = $this->createUserWithOrg();
@@ -262,7 +263,7 @@ class GoogleAdsWorkflowTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_adds_keywords_to_ad_group()
     {
         $setup = $this->createUserWithOrg();
@@ -307,7 +308,7 @@ class GoogleAdsWorkflowTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_fetches_google_ads_campaign_performance()
     {
         $setup = $this->createUserWithOrg();
@@ -356,7 +357,7 @@ class GoogleAdsWorkflowTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_pauses_google_ads_campaign()
     {
         $setup = $this->createUserWithOrg();
@@ -395,7 +396,7 @@ class GoogleAdsWorkflowTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_updates_campaign_budget()
     {
         $setup = $this->createUserWithOrg();
@@ -435,7 +436,7 @@ class GoogleAdsWorkflowTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_google_ads_api_errors()
     {
         $setup = $this->createUserWithOrg();
@@ -459,7 +460,7 @@ class GoogleAdsWorkflowTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_respects_org_isolation_for_google_campaigns()
     {
         $setup1 = $this->createUserWithOrg();

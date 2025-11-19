@@ -12,6 +12,7 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Http;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * ProcessWebhookResponse Job Unit Tests
  */
@@ -24,7 +25,7 @@ class ProcessWebhookResponseJobTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_processes_successful_webhook_response()
     {
         Http::fake([
@@ -55,7 +56,7 @@ class ProcessWebhookResponseJobTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_failed_webhook_response()
     {
         Http::fake([
@@ -86,7 +87,7 @@ class ProcessWebhookResponseJobTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_retries_on_timeout()
     {
         Http::fake([
@@ -118,7 +119,7 @@ class ProcessWebhookResponseJobTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_sends_custom_headers()
     {
         Http::fake([
@@ -153,7 +154,7 @@ class ProcessWebhookResponseJobTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_includes_signature()
     {
         Http::fake([
@@ -186,7 +187,7 @@ class ProcessWebhookResponseJobTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_logs_webhook_delivery()
     {
         Http::fake([
@@ -218,7 +219,7 @@ class ProcessWebhookResponseJobTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_updates_webhook_statistics()
     {
         Http::fake([
@@ -252,7 +253,7 @@ class ProcessWebhookResponseJobTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_be_dispatched()
     {
         Queue::fake();
@@ -280,7 +281,7 @@ class ProcessWebhookResponseJobTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_respects_max_retry_limit()
     {
         Http::fake([
@@ -314,7 +315,7 @@ class ProcessWebhookResponseJobTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_network_errors()
     {
         Http::fake([
@@ -348,7 +349,7 @@ class ProcessWebhookResponseJobTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_respects_org_isolation()
     {
         Http::fake();

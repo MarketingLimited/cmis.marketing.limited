@@ -9,6 +9,7 @@ use App\Models\Setting\Setting;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * Setting Model Unit Tests
  */
@@ -21,7 +22,7 @@ class SettingTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_can_create_setting()
     {
         $org = Org::create([
@@ -47,7 +48,7 @@ class SettingTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_belongs_to_org()
     {
         $org = Org::create([
@@ -70,7 +71,7 @@ class SettingTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_has_unique_key_per_org()
     {
         $org = Org::create([
@@ -94,7 +95,7 @@ class SettingTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_stores_different_value_types()
     {
         $org = Org::create([
@@ -136,7 +137,7 @@ class SettingTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_has_category_grouping()
     {
         $org = Org::create([
@@ -169,7 +170,7 @@ class SettingTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_tracks_description()
     {
         $org = Org::create([
@@ -193,7 +194,7 @@ class SettingTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_be_public_or_private()
     {
         $org = Org::create([
@@ -226,7 +227,7 @@ class SettingTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_uses_uuid_as_primary_key()
     {
         $org = Org::create([
@@ -249,7 +250,7 @@ class SettingTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_has_timestamps()
     {
         $org = Org::create([
@@ -273,7 +274,7 @@ class SettingTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_respects_rls_policies()
     {
         $org1 = Org::create([
@@ -309,7 +310,7 @@ class SettingTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_store_json_metadata()
     {
         $org = Org::create([

@@ -10,6 +10,7 @@ use App\Models\Content\ContentPlanItem;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * Content Approval Model Unit Tests
  */
@@ -22,7 +23,7 @@ class ContentApprovalTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_can_create_content_approval()
     {
         $org = Org::create([
@@ -58,7 +59,7 @@ class ContentApprovalTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_belongs_to_content_item_and_org()
     {
         $org = Org::create([
@@ -92,7 +93,7 @@ class ContentApprovalTest extends TestCase
         $this->assertEquals($org->org_id, $approval->org->org_id);
     }
 
-    /** @test */
+    #[Test]
     public function it_has_different_approval_statuses()
     {
         $org = Org::create([
@@ -143,7 +144,7 @@ class ContentApprovalTest extends TestCase
         $this->assertEquals('rejected', $rejectedApproval->status);
     }
 
-    /** @test */
+    #[Test]
     public function it_stores_approval_comments()
     {
         $org = Org::create([
@@ -177,7 +178,7 @@ class ContentApprovalTest extends TestCase
         $this->assertEquals('المحتوى ممتاز، موافق عليه', $approval->comments);
     }
 
-    /** @test */
+    #[Test]
     public function it_tracks_approval_timestamp()
     {
         $org = Org::create([
@@ -211,7 +212,7 @@ class ContentApprovalTest extends TestCase
         $this->assertNotNull($approval->approved_at);
     }
 
-    /** @test */
+    #[Test]
     public function it_supports_multi_level_approvals()
     {
         $org = Org::create([
@@ -262,7 +263,7 @@ class ContentApprovalTest extends TestCase
         $this->assertEquals(2, $approval2->approval_level);
     }
 
-    /** @test */
+    #[Test]
     public function it_stores_revision_requests()
     {
         $org = Org::create([
@@ -303,7 +304,7 @@ class ContentApprovalTest extends TestCase
         $this->assertContains('يرجى تغيير العنوان', $approval->revision_requests);
     }
 
-    /** @test */
+    #[Test]
     public function it_tracks_approval_duration()
     {
         $org = Org::create([
@@ -342,7 +343,7 @@ class ContentApprovalTest extends TestCase
         $this->assertEquals(2, $duration);
     }
 
-    /** @test */
+    #[Test]
     public function it_uses_uuid_as_primary_key()
     {
         $org = Org::create([
@@ -375,7 +376,7 @@ class ContentApprovalTest extends TestCase
         $this->assertTrue(Str::isUuid($approval->approval_id));
     }
 
-    /** @test */
+    #[Test]
     public function it_has_timestamps()
     {
         $org = Org::create([
@@ -409,7 +410,7 @@ class ContentApprovalTest extends TestCase
         $this->assertNotNull($approval->updated_at);
     }
 
-    /** @test */
+    #[Test]
     public function it_respects_rls_policies()
     {
         $org1 = Org::create([

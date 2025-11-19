@@ -8,6 +8,7 @@ use Tests\Traits\MocksExternalAPIs;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use App\Services\Social\PinterestService;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * Pinterest Service Unit Tests
  */
@@ -23,7 +24,7 @@ class PinterestServiceTest extends TestCase
         $this->service = app(PinterestService::class);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_create_pin()
     {
         $setup = $this->createUserWithOrg();
@@ -53,7 +54,7 @@ class PinterestServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_create_story_pin()
     {
         $setup = $this->createUserWithOrg();
@@ -88,7 +89,7 @@ class PinterestServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_create_board()
     {
         $setup = $this->createUserWithOrg();
@@ -116,7 +117,7 @@ class PinterestServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_board_pins()
     {
         $setup = $this->createUserWithOrg();
@@ -143,7 +144,7 @@ class PinterestServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_pin_analytics()
     {
         $setup = $this->createUserWithOrg();
@@ -180,7 +181,7 @@ class PinterestServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_user_analytics()
     {
         $setup = $this->createUserWithOrg();
@@ -216,7 +217,7 @@ class PinterestServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_search_pins()
     {
         $setup = $this->createUserWithOrg();
@@ -245,7 +246,7 @@ class PinterestServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_delete_pin()
     {
         $setup = $this->createUserWithOrg();
@@ -265,7 +266,7 @@ class PinterestServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_update_board()
     {
         $setup = $this->createUserWithOrg();
@@ -291,7 +292,7 @@ class PinterestServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_required_fields()
     {
         $setup = $this->createUserWithOrg();
@@ -312,7 +313,7 @@ class PinterestServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_api_errors()
     {
         $setup = $this->createUserWithOrg();
@@ -337,7 +338,7 @@ class PinterestServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_rate_limiting()
     {
         $setup = $this->createUserWithOrg();

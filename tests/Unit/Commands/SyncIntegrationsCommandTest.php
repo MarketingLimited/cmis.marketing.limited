@@ -10,6 +10,7 @@ use App\Models\Core\Org;
 use App\Models\Integration\Integration;
 use Illuminate\Support\Str;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * SyncIntegrations Command Unit Tests
  */
@@ -22,7 +23,7 @@ class SyncIntegrationsCommandTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_syncs_all_integrations()
     {
         $org = Org::create([
@@ -59,7 +60,7 @@ class SyncIntegrationsCommandTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_syncs_specific_platform()
     {
         $org = Org::create([
@@ -86,7 +87,7 @@ class SyncIntegrationsCommandTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_syncs_specific_organization()
     {
         $org1 = Org::create([
@@ -126,7 +127,7 @@ class SyncIntegrationsCommandTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_sync_errors_gracefully()
     {
         $org = Org::create([
@@ -153,7 +154,7 @@ class SyncIntegrationsCommandTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_supports_dry_run_mode()
     {
         $org = Org::create([
@@ -179,7 +180,7 @@ class SyncIntegrationsCommandTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_outputs_sync_summary()
     {
         $org = Org::create([
@@ -207,7 +208,7 @@ class SyncIntegrationsCommandTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_updates_last_synced_timestamp()
     {
         $org = Org::create([
@@ -238,7 +239,7 @@ class SyncIntegrationsCommandTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_supports_verbose_output()
     {
         $org = Org::create([
@@ -265,7 +266,7 @@ class SyncIntegrationsCommandTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_no_integrations()
     {
         $this->artisan('integrations:sync')

@@ -8,6 +8,7 @@ use App\Models\Integration\Integration;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * Integration Model Unit Tests
  */
@@ -20,7 +21,7 @@ class IntegrationTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_can_create_integration()
     {
         $org = Org::create([
@@ -46,7 +47,7 @@ class IntegrationTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_belongs_to_org()
     {
         $org = Org::create([
@@ -65,7 +66,7 @@ class IntegrationTest extends TestCase
         $this->assertEquals($org->org_id, $integration->org->org_id);
     }
 
-    /** @test */
+    #[Test]
     public function it_encrypts_credentials()
     {
         $org = Org::create([
@@ -91,7 +92,7 @@ class IntegrationTest extends TestCase
         $this->assertEquals('secret_456', $integration->credentials['client_secret']);
     }
 
-    /** @test */
+    #[Test]
     public function it_supports_multiple_platforms()
     {
         $org = Org::create([
@@ -115,7 +116,7 @@ class IntegrationTest extends TestCase
         $this->assertCount(6, $integrations);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_be_activated_or_deactivated()
     {
         $org = Org::create([
@@ -139,7 +140,7 @@ class IntegrationTest extends TestCase
         $this->assertFalse($integration->fresh()->is_active);
     }
 
-    /** @test */
+    #[Test]
     public function it_stores_metadata_as_json()
     {
         $org = Org::create([
@@ -168,7 +169,7 @@ class IntegrationTest extends TestCase
         $this->assertTrue($integration->metadata['verified']);
     }
 
-    /** @test */
+    #[Test]
     public function it_tracks_last_sync_time()
     {
         $org = Org::create([
@@ -188,7 +189,7 @@ class IntegrationTest extends TestCase
         $this->assertNotNull($integration->last_synced_at);
     }
 
-    /** @test */
+    #[Test]
     public function it_tracks_token_expiry()
     {
         $org = Org::create([
@@ -211,7 +212,7 @@ class IntegrationTest extends TestCase
         $this->assertTrue($integration->token_expires_at->isFuture());
     }
 
-    /** @test */
+    #[Test]
     public function it_can_check_if_token_is_expired()
     {
         $org = Org::create([
@@ -241,7 +242,7 @@ class IntegrationTest extends TestCase
         $this->assertTrue($validIntegration->token_expires_at->isFuture());
     }
 
-    /** @test */
+    #[Test]
     public function it_stores_connection_status()
     {
         $org = Org::create([
@@ -261,7 +262,7 @@ class IntegrationTest extends TestCase
         $this->assertEquals('connected', $integration->connection_status);
     }
 
-    /** @test */
+    #[Test]
     public function it_uses_uuid_as_primary_key()
     {
         $org = Org::create([
@@ -280,7 +281,7 @@ class IntegrationTest extends TestCase
         $this->assertTrue(Str::isUuid($integration->integration_id));
     }
 
-    /** @test */
+    #[Test]
     public function it_has_timestamps()
     {
         $org = Org::create([
@@ -300,7 +301,7 @@ class IntegrationTest extends TestCase
         $this->assertNotNull($integration->updated_at);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_be_soft_deleted()
     {
         $org = Org::create([
@@ -325,7 +326,7 @@ class IntegrationTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_respects_rls_policies()
     {
         $org1 = Org::create([
