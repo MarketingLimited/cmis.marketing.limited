@@ -46,6 +46,9 @@
         <env name="DB_USERNAME" value="postgres"/>
         <env name="DB_PASSWORD" value="postgres"/>
 
+        <!-- Parallel Testing Support -->
+        <env name="PARALLEL_TESTING" value="true"/>
+
         <!-- RLS Configuration -->
         <env name="RLS_ENABLED" value="true"/>
         <env name="RLS_ENFORCE_CONSOLE" value="false"/>

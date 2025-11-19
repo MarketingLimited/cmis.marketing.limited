@@ -21,7 +21,6 @@ class CreativeApprovalWorkflowTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->artisan('migrate:fresh');
         $this->approvalService = app(ApprovalWorkflowService::class);
         $this->creativeService = app(CreativeService::class);
     }

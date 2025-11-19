@@ -18,7 +18,6 @@ class CustomFieldTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->artisan('migrate:fresh');
     }
 
     /** @test */
