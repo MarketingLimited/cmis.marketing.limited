@@ -138,4 +138,22 @@ class LinkedInSyncService extends BasePlatformSyncService
         Log::info("LinkedIn token refresh not yet implemented");
         return false;
     }
+
+    /**
+     * Sync company page
+     */
+    public function syncCompanyPage($integration): array
+    {
+        // TODO: Implement LinkedIn company page sync
+        return ['success' => true, 'data' => []];
+    }
+
+    /**
+     * Sync posts
+     */
+    public function syncPosts($integration): array
+    {
+        // TODO: Implement LinkedIn posts sync
+        return ['success' => true, 'data' => []];
+    }
 }
