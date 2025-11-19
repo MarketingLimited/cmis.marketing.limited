@@ -246,8 +246,8 @@ Audit Log (Tests\Unit\Models\Operations\AuditLog)
 
 Auth (Tests\Feature\Auth\Auth)
  [ ] Login requires correct password
- [x] Login fails with nonexistent email
- [x] Login fails for inactive users
+ [ ] Login fails with nonexistent email
+ [ ] Login fails for inactive users
  [x] Login validates required fields
  [ ] Registration creates user and returns token
  [ ] Registration with org creates organization
@@ -261,7 +261,7 @@ Auth (Tests\Feature\Auth\Auth)
 
 Authentication (Tests\Feature\Auth\Authentication)
  [ ] User can register
- [ ] Registration requires valid email
+ [x] Registration requires valid email
  [ ] Registration requires password confirmation
  [ ] User can login with correct credentials
  [ ] User cannot login with incorrect password
@@ -398,15 +398,15 @@ Campaign Management (Tests\Feature\Campaigns\CampaignManagement)
  [ ] User cannot access campaigns from another org
 
 Campaign Notification (Tests\Unit\Notifications\CampaignNotification)
- [x] It can send campaign completed notification
+ [ ] It can send campaign completed notification
  [ ] It includes campaign details in notification
- [x] It can send campaign started notification
+ [ ] It can send campaign started notification
  [ ] It can send post published notification
- [x] It supports mail channel
- [x] It supports database channel
+ [ ] It supports mail channel
+ [ ] It supports database channel
  [ ] It creates database notification record
- [x] It can be sent to multiple users
- [x] It includes action url in notification
+ [ ] It can be sent to multiple users
+ [ ] It includes action url in notification
  [ ] It respects user notification preferences
 
 Campaign Observer (Tests\Unit\Observers\CampaignObserver)
@@ -1368,15 +1368,15 @@ Notification Preference (Tests\Unit\Models\Notification\NotificationPreference)
  [ ] It can create notification preference
  [ ] It belongs to user
  [ ] It belongs to org
- [x] It has different notification types
+ [ ] It has different notification types
  [ ] It can enable email notifications
  [ ] It can enable sms notifications
  [ ] It can enable push notifications
  [ ] It can enable in app notifications
  [ ] It can disable all channels
  [ ] It uses uuid as primary key
- [x] It has timestamps
- [x] It respects rls policies
+ [ ] It has timestamps
+ [ ] It respects rls policies
 
 Number Formatter (Tests\Unit\Formatters\NumberFormatter)
  [x] It formats currency
@@ -1554,13 +1554,13 @@ Process Scheduled Content Job (Tests\Unit\Jobs\ProcessScheduledContentJob)
  [ ] It logs processing activity
 
 Process Scheduled Posts Command (Tests\Unit\Commands\ProcessScheduledPostsCommand)
- [x] It processes due scheduled posts
- [x] It skips future posts
- [x] It accepts limit option
- [x] It accepts dry run option
- [x] It displays processing count
- [x] It handles empty queue
- [x] It logs processed posts
+ [ ] It processes due scheduled posts
+ [ ] It skips future posts
+ [ ] It accepts limit option
+ [ ] It accepts dry run option
+ [ ] It displays processing count
+ [ ] It handles empty queue
+ [ ] It logs processed posts
 
 Process Webhook Job (Tests\Unit\Jobs\ProcessWebhookJob)
  [ ] It processes webhook delivery
@@ -1657,16 +1657,16 @@ Rate Limit (Tests\Feature\AI\RateLimit)
  [ ] Knowledge processing is rate limited
 
 Rate Limit Middleware (Tests\Unit\Middleware\RateLimitMiddleware)
- [x] It allows requests within limit
- [x] It blocks requests exceeding limit
- [x] It uses different limits per endpoint
- [x] It resets after time window
- [x] It provides retry after header
- [x] It tracks remaining attempts
- [x] It applies per user limits
- [x] It applies per ip limits for guests
- [x] It exempts admin users
- [x] It respects org specific limits
+ [ ] It allows requests within limit
+ [ ] It blocks requests exceeding limit
+ [ ] It uses different limits per endpoint
+ [ ] It resets after time window
+ [ ] It provides retry after header
+ [ ] It tracks remaining attempts
+ [ ] It applies per user limits
+ [ ] It applies per ip limits for guests
+ [ ] It exempts admin users
+ [ ] It respects org specific limits
 
 Report (Tests\Unit\Models\Report\Report)
  [x] It can create report
