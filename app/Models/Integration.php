@@ -33,10 +33,13 @@ class Integration extends Model
         'platform',
         'account_id',
         'account_name',
+        'account_username',
         'access_token',
         'refresh_token',
+        'token_expires_at',
         'expires_at',
         'is_active',
+        'status',
         'scopes',
         'metadata',
     ];
@@ -46,6 +49,7 @@ class Integration extends Model
         'metadata' => 'array',
         'is_active' => 'boolean',
         'expires_at' => 'datetime',
+        'token_expires_at' => 'datetime',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
