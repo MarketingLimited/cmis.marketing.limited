@@ -16,18 +16,19 @@ return new class extends Migration
     public function up(): void
     {
         // Drop all existing tables in schemas to ensure clean state
-        $schemas = ['cmis', 'cmis_ai_analytics', 'cmis_analytics', 'cmis_audit', 'cmis_dev',
+        // Exclude 'migrations' table as Laravel manages it
+        $schemas = ['public', 'cmis', 'cmis_ai_analytics', 'cmis_analytics', 'cmis_audit', 'cmis_dev',
                     'cmis_knowledge', 'cmis_marketing', 'cmis_ops', 'cmis_security_backup_20251111_202413',
                     'cmis_staging', 'cmis_system_health', 'archive', 'lab', 'operations'];
 
         foreach ($schemas as $schema) {
-            // Drop all tables in schema (but not the schema itself)
+            // Drop all tables in schema except migrations (Laravel managed)
             DB::unprepared("
                 DO $$
                 DECLARE
                     r RECORD;
                 BEGIN
-                    FOR r IN (SELECT tablename FROM pg_tables WHERE schemaname = '{$schema}') LOOP
+                    FOR r IN (SELECT tablename FROM pg_tables WHERE schemaname = '{$schema}' AND tablename != 'migrations') LOOP
                         EXECUTE 'DROP TABLE IF EXISTS {$schema}.' || quote_ident(r.tablename) || ' CASCADE';
                     END LOOP;
                 END $$;
@@ -37,6 +38,14 @@ return new class extends Migration
         $sql = file_get_contents(database_path('sql/complete_tables.sql'));
 
         if (!empty(trim($sql))) {
+            // Replace CREATE TABLE migrations statements to use CREATE TABLE IF NOT EXISTS
+            // This prevents conflicts with Laravel's migrations table
+            $sql = preg_replace(
+                '/CREATE TABLE ([\w.]+\.)?migrations \(/i',
+                'CREATE TABLE IF NOT EXISTS $1migrations (',
+                $sql
+            );
+
             DB::unprepared($sql);
         }
 
