@@ -21,7 +21,6 @@ class YouTubeServiceTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->artisan('migrate:fresh');
         $this->service = app(YouTubeService::class);
     }
 

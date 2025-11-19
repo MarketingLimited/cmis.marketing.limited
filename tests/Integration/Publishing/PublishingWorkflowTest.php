@@ -21,7 +21,6 @@ class PublishingWorkflowTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->artisan('migrate:fresh');
         $this->publishingService = app(PublishingService::class);
         $this->queueService = app(PublishingQueueService::class);
     }

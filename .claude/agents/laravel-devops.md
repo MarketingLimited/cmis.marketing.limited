@@ -44,6 +44,75 @@ ps aux | grep "queue:work"
 
 ---
 
+## 🚨 INFRASTRUCTURE PRE-FLIGHT CHECKS
+
+**⚠️ BEFORE any deployment or infrastructure task, validate the environment:**
+
+### PostgreSQL Infrastructure Validation
+
+```bash
+# 1. Check PostgreSQL status
+service postgresql status 2>&1 | grep -qi "active\|running\|online" && echo "✅ PostgreSQL running" || {
+    echo "Starting PostgreSQL..."
+    service postgresql start
+}
+
+# 2. Verify connection
+psql -h 127.0.0.1 -U postgres -d postgres -c "SELECT version();" 2>&1 | head -2
+
+# 3. Check required roles
+psql -h 127.0.0.1 -U postgres -d postgres -c "\du" 2>&1 | grep "begin" || {
+    echo "Creating 'begin' role..."
+    psql -h 127.0.0.1 -U postgres -d postgres -c "CREATE ROLE begin WITH LOGIN SUPERUSER PASSWORD '123@Marketing@321';"
+}
+
+# 4. Verify extensions
+psql -h 127.0.0.1 -U postgres -d postgres -c "SELECT * FROM pg_available_extensions WHERE name IN ('vector', 'uuid-ossp');"
+```
+
+### Composer Dependencies Validation
+
+```bash
+# 1. Check if vendor exists
+test -d vendor && echo "✅ Dependencies installed" || {
+    echo "Installing composer dependencies..."
+    composer install --no-interaction --prefer-dist
+}
+
+# 2. Verify autoload
+test -f vendor/autoload.php && echo "✅ Autoload ready" || echo "❌ Autoload missing"
+```
+
+### Common Infrastructure Issues
+
+**PostgreSQL Not Starting:**
+```bash
+# Issue: SSL certificate permissions
+chmod 640 /etc/ssl/private/ssl-cert-snakeoil.key
+chown root:ssl-cert /etc/ssl/private/ssl-cert-snakeoil.key
+
+# Or disable SSL for development
+sed -i 's/^ssl = on/ssl = off/' /etc/postgresql/*/main/postgresql.conf
+service postgresql restart
+```
+
+**PostgreSQL Authentication Failed:**
+```bash
+# Switch to trust authentication (development only)
+sed -i 's/peer/trust/g' /etc/postgresql/*/main/pg_hba.conf
+sed -i 's/scram-sha-256/trust/g' /etc/postgresql/*/main/pg_hba.conf
+service postgresql reload
+```
+
+**Use automated script:**
+```bash
+./scripts/test-preflight.sh
+```
+
+**For detailed troubleshooting, see:** `.claude/agents/_shared/infrastructure-preflight.md`
+
+---
+
 ## 🔍 DISCOVERY-FIRST METHODOLOGY
 
 ### Before Making Infrastructure Recommendations
