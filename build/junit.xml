@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <testsuites>
-  <testsuite name="/home/user/cmis.marketing.limited/phpunit.xml" tests="14" assertions="14" errors="0" failures="14" skipped="0" time="18.932265">
-    <testsuite name="Feature" tests="14" assertions="14" errors="0" failures="14" skipped="0" time="18.932265">
-      <testsuite name="Tests\Feature\API\AIAssistantAPITest" file="/home/user/cmis.marketing.limited/tests/Feature/API/AIAssistantAPITest.php" tests="14" assertions="14" errors="0" failures="14" skipped="0" time="18.932265">
-        <testcase name="it_can_generate_content_variations" file="/home/user/cmis.marketing.limited/tests/Feature/API/AIAssistantAPITest.php" line="197" class="Tests\Feature\API\AIAssistantAPITest" classname="Tests.Feature.API.AIAssistantAPITest" assertions="1" time="14.844209">
-          <failure type="PHPUnit\Framework\ExpectationFailedException">Tests\Feature\API\AIAssistantAPITest::it_can_generate_content_variations
-Expected response status code [200] but received 404.
-Failed asserting that 404 is identical to 200.
+  <testsuite name="/home/user/cmis.marketing.limited/phpunit.xml" tests="1" assertions="1" errors="0" failures="1" skipped="0" time="15.495400">
+    <testsuite name="Feature" tests="1" assertions="1" errors="0" failures="1" skipped="0" time="15.495400">
+      <testsuite name="Tests\Feature\API\AIAssistantAPITest" file="/home/user/cmis.marketing.limited/tests/Feature/API/AIAssistantAPITest.php" tests="1" assertions="1" errors="0" failures="1" skipped="0" time="15.495400">
+        <testcase name="it_can_generate_content_suggestions" file="/home/user/cmis.marketing.limited/tests/Feature/API/AIAssistantAPITest.php" line="23" class="Tests\Feature\API\AIAssistantAPITest" classname="Tests.Feature.API.AIAssistantAPITest" assertions="1" time="15.495400">
+          <failure type="PHPUnit\Framework\ExpectationFailedException">Tests\Feature\API\AIAssistantAPITest::it_can_generate_content_suggestions
+Expected response status code [200] but received 500.
+Failed asserting that 500 is identical to 200.
 
 /home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Testing/TestResponseAssert.php:45
 /home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Testing/TestResponse.php:174
-/home/user/cmis.marketing.limited/tests/Feature/API/AIAssistantAPITest.php:211</failure>
+/home/user/cmis.marketing.limited/tests/Feature/API/AIAssistantAPITest.php:37</failure>
           <system-out>Enabling RLS on cmis.orgs...
 Enabling RLS on cmis.org_markets...
 Enabling RLS on cmis.user_orgs...
@@ -356,123 +356,6 @@ Creating indexes for personal_access_tokens table...
 
 ✅ All NULL constraint fixes applied!
 </system-out>
-        </testcase>
-        <testcase name="it_handles_ai_api_errors" file="/home/user/cmis.marketing.limited/tests/Feature/API/AIAssistantAPITest.php" line="341" class="Tests\Feature\API\AIAssistantAPITest" classname="Tests.Feature.API.AIAssistantAPITest" assertions="1" time="0.318207">
-          <failure type="PHPUnit\Framework\ExpectationFailedException">Tests\Feature\API\AIAssistantAPITest::it_handles_ai_api_errors
-Expected response status code [500] but received 404.
-Failed asserting that 404 is identical to 500.
-
-/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Testing/TestResponseAssert.php:45
-/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Testing/TestResponse.php:174
-/home/user/cmis.marketing.limited/tests/Feature/API/AIAssistantAPITest.php:354</failure>
-        </testcase>
-        <testcase name="it_can_analyze_sentiment" file="/home/user/cmis.marketing.limited/tests/Feature/API/AIAssistantAPITest.php" line="148" class="Tests\Feature\API\AIAssistantAPITest" classname="Tests.Feature.API.AIAssistantAPITest" assertions="1" time="0.312794">
-          <failure type="PHPUnit\Framework\ExpectationFailedException">Tests\Feature\API\AIAssistantAPITest::it_can_analyze_sentiment
-Expected response status code [200] but received 404.
-Failed asserting that 404 is identical to 200.
-
-/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Testing/TestResponseAssert.php:45
-/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Testing/TestResponse.php:174
-/home/user/cmis.marketing.limited/tests/Feature/API/AIAssistantAPITest.php:161</failure>
-        </testcase>
-        <testcase name="it_can_generate_visual_description" file="/home/user/cmis.marketing.limited/tests/Feature/API/AIAssistantAPITest.php" line="74" class="Tests\Feature\API\AIAssistantAPITest" classname="Tests.Feature.API.AIAssistantAPITest" assertions="1" time="0.317449">
-          <failure type="PHPUnit\Framework\ExpectationFailedException">Tests\Feature\API\AIAssistantAPITest::it_can_generate_visual_description
-Expected response status code [200] but received 404.
-Failed asserting that 404 is identical to 200.
-
-/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Testing/TestResponseAssert.php:45
-/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Testing/TestResponse.php:174
-/home/user/cmis.marketing.limited/tests/Feature/API/AIAssistantAPITest.php:88</failure>
-        </testcase>
-        <testcase name="it_can_auto_categorize_content" file="/home/user/cmis.marketing.limited/tests/Feature/API/AIAssistantAPITest.php" line="249" class="Tests\Feature\API\AIAssistantAPITest" classname="Tests.Feature.API.AIAssistantAPITest" assertions="1" time="0.323663">
-          <failure type="PHPUnit\Framework\ExpectationFailedException">Tests\Feature\API\AIAssistantAPITest::it_can_auto_categorize_content
-Expected response status code [200] but received 404.
-Failed asserting that 404 is identical to 200.
-
-/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Testing/TestResponseAssert.php:45
-/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Testing/TestResponse.php:174
-/home/user/cmis.marketing.limited/tests/Feature/API/AIAssistantAPITest.php:262</failure>
-        </testcase>
-        <testcase name="it_can_generate_hashtags" file="/home/user/cmis.marketing.limited/tests/Feature/API/AIAssistantAPITest.php" line="123" class="Tests\Feature\API\AIAssistantAPITest" classname="Tests.Feature.API.AIAssistantAPITest" assertions="1" time="0.329241">
-          <failure type="PHPUnit\Framework\ExpectationFailedException">Tests\Feature\API\AIAssistantAPITest::it_can_generate_hashtags
-Expected response status code [200] but received 404.
-Failed asserting that 404 is identical to 200.
-
-/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Testing/TestResponseAssert.php:45
-/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Testing/TestResponse.php:174
-/home/user/cmis.marketing.limited/tests/Feature/API/AIAssistantAPITest.php:137</failure>
-        </testcase>
-        <testcase name="it_can_translate_content" file="/home/user/cmis.marketing.limited/tests/Feature/API/AIAssistantAPITest.php" line="172" class="Tests\Feature\API\AIAssistantAPITest" classname="Tests.Feature.API.AIAssistantAPITest" assertions="1" time="0.317943">
-          <failure type="PHPUnit\Framework\ExpectationFailedException">Tests\Feature\API\AIAssistantAPITest::it_can_translate_content
-Expected response status code [200] but received 404.
-Failed asserting that 404 is identical to 200.
-
-/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Testing/TestResponseAssert.php:45
-/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Testing/TestResponse.php:174
-/home/user/cmis.marketing.limited/tests/Feature/API/AIAssistantAPITest.php:186</failure>
-        </testcase>
-        <testcase name="it_can_suggest_improvements" file="/home/user/cmis.marketing.limited/tests/Feature/API/AIAssistantAPITest.php" line="297" class="Tests\Feature\API\AIAssistantAPITest" classname="Tests.Feature.API.AIAssistantAPITest" assertions="1" time="0.309234">
-          <failure type="PHPUnit\Framework\ExpectationFailedException">Tests\Feature\API\AIAssistantAPITest::it_can_suggest_improvements
-Expected response status code [200] but received 404.
-Failed asserting that 404 is identical to 200.
-
-/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Testing/TestResponseAssert.php:45
-/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Testing/TestResponse.php:174
-/home/user/cmis.marketing.limited/tests/Feature/API/AIAssistantAPITest.php:311</failure>
-        </testcase>
-        <testcase name="it_can_generate_meta_description" file="/home/user/cmis.marketing.limited/tests/Feature/API/AIAssistantAPITest.php" line="273" class="Tests\Feature\API\AIAssistantAPITest" classname="Tests.Feature.API.AIAssistantAPITest" assertions="1" time="0.308574">
-          <failure type="PHPUnit\Framework\ExpectationFailedException">Tests\Feature\API\AIAssistantAPITest::it_can_generate_meta_description
-Expected response status code [200] but received 404.
-Failed asserting that 404 is identical to 200.
-
-/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Testing/TestResponseAssert.php:45
-/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Testing/TestResponse.php:174
-/home/user/cmis.marketing.limited/tests/Feature/API/AIAssistantAPITest.php:286</failure>
-        </testcase>
-        <testcase name="it_can_generate_content_suggestions" file="/home/user/cmis.marketing.limited/tests/Feature/API/AIAssistantAPITest.php" line="23" class="Tests\Feature\API\AIAssistantAPITest" classname="Tests.Feature.API.AIAssistantAPITest" assertions="1" time="0.307238">
-          <failure type="PHPUnit\Framework\ExpectationFailedException">Tests\Feature\API\AIAssistantAPITest::it_can_generate_content_suggestions
-Expected response status code [200] but received 404.
-Failed asserting that 404 is identical to 200.
-
-/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Testing/TestResponseAssert.php:45
-/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Testing/TestResponse.php:174
-/home/user/cmis.marketing.limited/tests/Feature/API/AIAssistantAPITest.php:37</failure>
-        </testcase>
-        <testcase name="it_can_generate_content_calendar" file="/home/user/cmis.marketing.limited/tests/Feature/API/AIAssistantAPITest.php" line="222" class="Tests\Feature\API\AIAssistantAPITest" classname="Tests.Feature.API.AIAssistantAPITest" assertions="1" time="0.307914">
-          <failure type="PHPUnit\Framework\ExpectationFailedException">Tests\Feature\API\AIAssistantAPITest::it_can_generate_content_calendar
-Expected response status code [200] but received 404.
-Failed asserting that 404 is identical to 200.
-
-/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Testing/TestResponseAssert.php:45
-/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Testing/TestResponse.php:174
-/home/user/cmis.marketing.limited/tests/Feature/API/AIAssistantAPITest.php:238</failure>
-        </testcase>
-        <testcase name="it_validates_required_fields" file="/home/user/cmis.marketing.limited/tests/Feature/API/AIAssistantAPITest.php" line="322" class="Tests\Feature\API\AIAssistantAPITest" classname="Tests.Feature.API.AIAssistantAPITest" assertions="1" time="0.322684">
-          <failure type="PHPUnit\Framework\ExpectationFailedException">Tests\Feature\API\AIAssistantAPITest::it_validates_required_fields
-Expected response status code [422] but received 404.
-Failed asserting that 404 is identical to 422.
-
-/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Testing/TestResponseAssert.php:45
-/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Testing/TestResponse.php:174
-/home/user/cmis.marketing.limited/tests/Feature/API/AIAssistantAPITest.php:331</failure>
-        </testcase>
-        <testcase name="it_can_extract_keywords" file="/home/user/cmis.marketing.limited/tests/Feature/API/AIAssistantAPITest.php" line="99" class="Tests\Feature\API\AIAssistantAPITest" classname="Tests.Feature.API.AIAssistantAPITest" assertions="1" time="0.307189">
-          <failure type="PHPUnit\Framework\ExpectationFailedException">Tests\Feature\API\AIAssistantAPITest::it_can_extract_keywords
-Expected response status code [200] but received 404.
-Failed asserting that 404 is identical to 200.
-
-/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Testing/TestResponseAssert.php:45
-/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Testing/TestResponse.php:174
-/home/user/cmis.marketing.limited/tests/Feature/API/AIAssistantAPITest.php:112</failure>
-        </testcase>
-        <testcase name="it_can_generate_campaign_brief" file="/home/user/cmis.marketing.limited/tests/Feature/API/AIAssistantAPITest.php" line="48" class="Tests\Feature\API\AIAssistantAPITest" classname="Tests.Feature.API.AIAssistantAPITest" assertions="1" time="0.305929">
-          <failure type="PHPUnit\Framework\ExpectationFailedException">Tests\Feature\API\AIAssistantAPITest::it_can_generate_campaign_brief
-Expected response status code [200] but received 404.
-Failed asserting that 404 is identical to 200.
-
-/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Testing/TestResponseAssert.php:45
-/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Testing/TestResponse.php:174
-/home/user/cmis.marketing.limited/tests/Feature/API/AIAssistantAPITest.php:63</failure>
         </testcase>
       </testsuite>
     </testsuite>
