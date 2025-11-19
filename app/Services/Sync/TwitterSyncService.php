@@ -138,4 +138,22 @@ class TwitterSyncService extends BasePlatformSyncService
         Log::info("Twitter token refresh not yet implemented");
         return false;
     }
+
+    /**
+     * Sync profile
+     */
+    public function syncProfile($integration): array
+    {
+        // TODO: Implement Twitter profile sync
+        return ['success' => true, 'data' => []];
+    }
+
+    /**
+     * Sync tweets
+     */
+    public function syncTweets($integration): array
+    {
+        // TODO: Implement Twitter tweets sync
+        return ['success' => true, 'data' => []];
+    }
 }

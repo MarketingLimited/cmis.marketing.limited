@@ -138,4 +138,22 @@ class TikTokSyncService extends BasePlatformSyncService
         Log::info("TikTok token refresh not yet implemented");
         return false;
     }
+
+    /**
+     * Sync account info
+     */
+    public function syncAccountInfo($integration): array
+    {
+        // TODO: Implement TikTok account info sync
+        return ['success' => true, 'data' => []];
+    }
+
+    /**
+     * Sync videos
+     */
+    public function syncVideos($integration): array
+    {
+        // TODO: Implement TikTok videos sync
+        return ['success' => true, 'data' => []];
+    }
 }
