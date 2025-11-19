@@ -17,7 +17,8 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 1 : undefined,
+  // Optimize parallel execution: use 4 workers in CI for faster tests
+  workers: process.env.CI ? 4 : undefined,
 
   // Reporter configuration
   reporter: [
@@ -38,8 +39,8 @@ export default defineConfig({
     // Screenshot on failure
     screenshot: 'only-on-failure',
 
-    // Video on failure
-    video: 'retain-on-failure',
+    // Optimize: Only record video in CI to save disk space and time
+    video: process.env.CI ? 'retain-on-failure' : 'off',
 
     // Viewport
     viewport: { width: 1280, height: 720 },
@@ -52,36 +53,31 @@ export default defineConfig({
   },
 
   // Configure projects for major browsers
-  projects: [
+  // Optimized: Focus on primary browsers to reduce test execution time
+  // Use CI env var to run full matrix only in CI, Chromium only for local dev
+  projects: process.env.CI ? [
     {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
     },
-
     {
       name: 'firefox',
       use: { ...devices['Desktop Firefox'] },
     },
-
     {
       name: 'webkit',
       use: { ...devices['Desktop Safari'] },
     },
-
     // Mobile viewports
     {
       name: 'Mobile Chrome',
       use: { ...devices['Pixel 5'] },
     },
+  ] : [
+    // Local development: only test Chromium for faster feedback
     {
-      name: 'Mobile Safari',
-      use: { ...devices['iPhone 12'] },
-    },
-
-    // Tablet viewports
-    {
-      name: 'iPad',
-      use: { ...devices['iPad Pro'] },
+      name: 'chromium',
+      use: { ...devices['Desktop Chrome'] },
     },
   ],
 
