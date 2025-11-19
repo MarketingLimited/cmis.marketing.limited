@@ -24,10 +24,15 @@ class TeamMember extends Model
             if (empty($model->{$model->getKeyName()})) {
                 $model->{$model->getKeyName()} = (string) Str::uuid();
             }
+            // Also generate member_id (database primary key)
+            if (empty($model->member_id)) {
+                $model->member_id = (string) Str::uuid();
+            }
         });
     }
 
     protected $fillable = [
+        'member_id',
         'team_member_id',
         'user_id',
         'org_id',

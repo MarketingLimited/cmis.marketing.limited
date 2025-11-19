@@ -27,6 +27,14 @@ class WhatsAppStatusMetricsMessagingTest extends TestCase
         parent::setUp();
     }
 
+    protected function tearDown(): void
+    {
+        \Mockery::close();
+        @restore_error_handler();
+        @restore_exception_handler();
+        parent::tearDown();
+    }
+
     #[Test]
     public function it_handles_whatsapp_message_status_updates()
     {
