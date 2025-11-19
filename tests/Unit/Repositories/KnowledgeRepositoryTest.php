@@ -26,6 +26,8 @@ class KnowledgeRepositoryTest extends TestCase
     protected function tearDown(): void
     {
         \Mockery::close();
+        @restore_error_handler();
+        @restore_exception_handler();
         parent::tearDown();
     }
 

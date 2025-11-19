@@ -179,7 +179,7 @@ Asset (Tests\Unit\Models\Asset\Asset)
  [ ] It stores video duration
  [ ] It stores thumbnail path
  [x] It stores metadata
- [ ] It tracks usage count
+ [x] It tracks usage count
  [ ] It stores tags
  [ ] It can be public or private
  [ ] It uses uuid as primary key
