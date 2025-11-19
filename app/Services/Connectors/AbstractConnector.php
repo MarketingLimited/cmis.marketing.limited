@@ -169,7 +169,7 @@ abstract class AbstractConnector implements ConnectorInterface
      */
     protected function logApiCall(Integration $integration, string $method, string $endpoint, bool $success, ?string $errorMessage = null): void
     {
-        DB::table('cmis_integrations.platform_sync_logs')->insert([
+        DB::table('cmis.sync_logs')->insert([
             'integration_id' => $integration->integration_id,
             'org_id' => $integration->org_id,
             'platform' => $this->platform,
@@ -260,7 +260,7 @@ abstract class AbstractConnector implements ConnectorInterface
      */
     protected function logSync(Integration $integration, string $syncType, int $itemsSynced, array $additionalData = []): void
     {
-        DB::table('cmis_integrations.platform_sync_logs')->insert([
+        DB::table('cmis.sync_logs')->insert([
             'integration_id' => $integration->integration_id,
             'org_id' => $integration->org_id,
             'platform' => $this->platform,

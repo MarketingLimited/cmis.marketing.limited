@@ -33,24 +33,24 @@ class AdCampaignTest extends TestCase
         $integration = Integration::create([
             'integration_id' => Str::uuid(),
             'org_id' => $org->org_id,
-            'platform' => 'meta_ads',
+            
             'status' => 'active',
         ]);
 
         $adCampaign = AdCampaign::create([
-            'campaign_id' => Str::uuid(),
+            'id' => Str::uuid(),
             'org_id' => $org->org_id,
             'integration_id' => $integration->integration_id,
-            'platform' => 'meta',
-            'external_campaign_id' => 'meta_campaign_123',
+            'campaign_external_id' => 'meta_campaign_123',
             'name' => 'Summer Sale Campaign',
             'objective' => 'conversions',
             'status' => 'active',
+            'provider' => 'meta',
         ]);
 
         $this->assertDatabaseHas('cmis.ad_campaigns', [
-            'campaign_id' => $adCampaign->campaign_id,
-            'platform' => 'meta',
+            'id' => $adCampaign->id,
+            'provider' => 'meta',
         ]);
     }
 
@@ -65,16 +65,16 @@ class AdCampaignTest extends TestCase
         $integration = Integration::create([
             'integration_id' => Str::uuid(),
             'org_id' => $org->org_id,
-            'platform' => 'google_ads',
+            
             'status' => 'active',
         ]);
 
         $adCampaign = AdCampaign::create([
-            'campaign_id' => Str::uuid(),
+            'id' => Str::uuid(),
             'org_id' => $org->org_id,
             'integration_id' => $integration->integration_id,
-            'platform' => 'google',
-            'external_campaign_id' => 'google_campaign_456',
+            
+            'campaign_external_id' => 'google_campaign_456',
             'name' => 'Brand Awareness',
             'objective' => 'awareness',
             'status' => 'active',
@@ -100,17 +100,18 @@ class AdCampaignTest extends TestCase
         ]);
 
         $adCampaign = AdCampaign::create([
-            'campaign_id' => Str::uuid(),
+            'id' => Str::uuid(),
             'org_id' => $org->org_id,
             'integration_id' => $integration->integration_id,
-            'platform' => 'tiktok',
-            'external_campaign_id' => 'tiktok_campaign_789',
+            'campaign_external_id' => 'tiktok_campaign_789',
             'name' => 'App Install Campaign',
             'objective' => 'app_installs',
             'status' => 'active',
+            'provider' => 'tiktok',
         ]);
 
-        $this->assertContains($adCampaign->platform, [
+        // Validate provider field
+        $this->assertContains($adCampaign->provider, [
             'meta',
             'google',
             'tiktok',
@@ -131,16 +132,16 @@ class AdCampaignTest extends TestCase
         $integration = Integration::create([
             'integration_id' => Str::uuid(),
             'org_id' => $org->org_id,
-            'platform' => 'meta_ads',
+            
             'status' => 'active',
         ]);
 
         $adCampaign = AdCampaign::create([
-            'campaign_id' => Str::uuid(),
+            'id' => Str::uuid(),
             'org_id' => $org->org_id,
             'integration_id' => $integration->integration_id,
-            'platform' => 'meta',
-            'external_campaign_id' => 'meta_123',
+            
+            'campaign_external_id' => 'meta_123',
             'name' => 'Lead Generation',
             'objective' => 'lead_generation',
             'status' => 'active',
@@ -168,16 +169,16 @@ class AdCampaignTest extends TestCase
         $integration = Integration::create([
             'integration_id' => Str::uuid(),
             'org_id' => $org->org_id,
-            'platform' => 'google_ads',
+            
             'status' => 'active',
         ]);
 
         $adCampaign = AdCampaign::create([
-            'campaign_id' => Str::uuid(),
+            'id' => Str::uuid(),
             'org_id' => $org->org_id,
             'integration_id' => $integration->integration_id,
-            'platform' => 'google',
-            'external_campaign_id' => 'google_123',
+            
+            'campaign_external_id' => 'google_123',
             'name' => 'Paused Campaign',
             'objective' => 'conversions',
             'status' => 'paused',
@@ -207,20 +208,17 @@ class AdCampaignTest extends TestCase
         ]);
 
         $adCampaign = AdCampaign::create([
-            'campaign_id' => Str::uuid(),
+            'id' => Str::uuid(),
             'org_id' => $org->org_id,
             'integration_id' => $integration->integration_id,
-            'platform' => 'meta',
-            'external_campaign_id' => 'meta_budget_123',
+            'campaign_external_id' => 'meta_budget_123',
             'name' => 'Budget Test Campaign',
             'objective' => 'conversions',
             'status' => 'active',
-            'daily_budget' => 100.00,
-            'lifetime_budget' => 3000.00,
+            'budget' => 3000.00,
         ]);
 
-        $this->assertEquals(100.00, $adCampaign->daily_budget);
-        $this->assertEquals(3000.00, $adCampaign->lifetime_budget);
+        $this->assertEquals(3000.00, $adCampaign->budget);
     }
 
     #[Test]
@@ -234,7 +232,7 @@ class AdCampaignTest extends TestCase
         $integration = Integration::create([
             'integration_id' => Str::uuid(),
             'org_id' => $org->org_id,
-            'platform' => 'meta_ads',
+            
             'status' => 'active',
         ]);
 
@@ -248,11 +246,11 @@ class AdCampaignTest extends TestCase
         ];
 
         $adCampaign = AdCampaign::create([
-            'campaign_id' => Str::uuid(),
+            'id' => Str::uuid(),
             'org_id' => $org->org_id,
             'integration_id' => $integration->integration_id,
-            'platform' => 'meta',
-            'external_campaign_id' => 'meta_metrics_123',
+            
+            'campaign_external_id' => 'meta_metrics_123',
             'name' => 'Metrics Test Campaign',
             'objective' => 'conversions',
             'status' => 'active',
@@ -275,22 +273,22 @@ class AdCampaignTest extends TestCase
         $integration = Integration::create([
             'integration_id' => Str::uuid(),
             'org_id' => $org->org_id,
-            'platform' => 'google_ads',
+            
             'status' => 'active',
         ]);
 
         $adCampaign = AdCampaign::create([
-            'campaign_id' => Str::uuid(),
+            'id' => Str::uuid(),
             'org_id' => $org->org_id,
             'integration_id' => $integration->integration_id,
-            'platform' => 'google',
-            'external_campaign_id' => 'google_uuid_123',
+            
+            'campaign_external_id' => 'google_uuid_123',
             'name' => 'UUID Test',
             'objective' => 'conversions',
             'status' => 'active',
         ]);
 
-        $this->assertTrue(Str::isUuid($adCampaign->campaign_id));
+        $this->assertTrue(Str::isUuid($adCampaign->id));
     }
 
     #[Test]
@@ -309,11 +307,10 @@ class AdCampaignTest extends TestCase
         ]);
 
         $adCampaign = AdCampaign::create([
-            'campaign_id' => Str::uuid(),
+            'id' => Str::uuid(),
             'org_id' => $org->org_id,
             'integration_id' => $integration->integration_id,
-            'platform' => 'tiktok',
-            'external_campaign_id' => 'tiktok_delete_123',
+            'campaign_external_id' => 'tiktok_delete_123',
             'name' => 'Delete Test',
             'objective' => 'conversions',
             'status' => 'active',
@@ -322,7 +319,7 @@ class AdCampaignTest extends TestCase
         $adCampaign->delete();
 
         $this->assertSoftDeleted('cmis.ad_campaigns', [
-            'campaign_id' => $adCampaign->campaign_id,
+            'id' => $adCampaign->id,
         ]);
     }
 
@@ -337,16 +334,16 @@ class AdCampaignTest extends TestCase
         $integration = Integration::create([
             'integration_id' => Str::uuid(),
             'org_id' => $org->org_id,
-            'platform' => 'linkedin_ads',
+            
             'status' => 'active',
         ]);
 
         $adCampaign = AdCampaign::create([
-            'campaign_id' => Str::uuid(),
+            'id' => Str::uuid(),
             'org_id' => $org->org_id,
             'integration_id' => $integration->integration_id,
-            'platform' => 'linkedin',
-            'external_campaign_id' => 'linkedin_timestamp_123',
+            
+            'campaign_external_id' => 'linkedin_timestamp_123',
             'name' => 'Timestamp Test',
             'objective' => 'lead_generation',
             'status' => 'active',
@@ -372,34 +369,34 @@ class AdCampaignTest extends TestCase
         $integration1 = Integration::create([
             'integration_id' => Str::uuid(),
             'org_id' => $org1->org_id,
-            'platform' => 'meta_ads',
+            
             'status' => 'active',
         ]);
 
         $integration2 = Integration::create([
             'integration_id' => Str::uuid(),
             'org_id' => $org2->org_id,
-            'platform' => 'meta_ads',
+            
             'status' => 'active',
         ]);
 
         AdCampaign::create([
-            'campaign_id' => Str::uuid(),
+            'id' => Str::uuid(),
             'org_id' => $org1->org_id,
             'integration_id' => $integration1->integration_id,
-            'platform' => 'meta',
-            'external_campaign_id' => 'meta_org1',
+            
+            'campaign_external_id' => 'meta_org1',
             'name' => 'Org 1 Campaign',
             'objective' => 'conversions',
             'status' => 'active',
         ]);
 
         AdCampaign::create([
-            'campaign_id' => Str::uuid(),
+            'id' => Str::uuid(),
             'org_id' => $org2->org_id,
             'integration_id' => $integration2->integration_id,
-            'platform' => 'meta',
-            'external_campaign_id' => 'meta_org2',
+            
+            'campaign_external_id' => 'meta_org2',
             'name' => 'Org 2 Campaign',
             'objective' => 'conversions',
             'status' => 'active',
