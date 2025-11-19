@@ -3,6 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
@@ -11,28 +12,61 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::connection('pgsql')->table('cmis.scheduled_social_posts', function (Blueprint $table) {
-            // Add integration_ids as JSONB array
-            $table->jsonb('integration_ids')->nullable()->after('content');
+        // Check if the table exists and only add columns if they don't exist
+        $connection = Schema::connection('pgsql');
 
-            // Add media URLs as JSONB array
-            $table->jsonb('media_urls')->nullable()->after('integration_ids');
+        if (!$connection->hasColumn('cmis.scheduled_social_posts', 'integration_ids')) {
+            $connection->table('cmis.scheduled_social_posts', function (Blueprint $table) {
+                $table->jsonb('integration_ids')->nullable();
+            });
+        }
 
-            // Add publish results as JSONB object
-            $table->jsonb('publish_results')->nullable()->after('scheduled_at');
+        if (!$connection->hasColumn('cmis.scheduled_social_posts', 'media_urls')) {
+            $connection->table('cmis.scheduled_social_posts', function (Blueprint $table) {
+                $table->jsonb('media_urls')->nullable();
+            });
+        }
 
-            // Add published_at timestamp
-            $table->timestamp('published_at')->nullable()->after('publish_results');
+        if (!$connection->hasColumn('cmis.scheduled_social_posts', 'publish_results')) {
+            $connection->table('cmis.scheduled_social_posts', function (Blueprint $table) {
+                $table->jsonb('publish_results')->nullable();
+            });
+        }
 
-            // Add error_message for failed posts
-            $table->text('error_message')->nullable()->after('published_at');
+        if (!$connection->hasColumn('cmis.scheduled_social_posts', 'published_at')) {
+            $connection->table('cmis.scheduled_social_posts', function (Blueprint $table) {
+                $table->timestamp('published_at')->nullable();
+            });
+        }
 
-            // Add index for scheduled posts query optimization
-            $table->index(['status', 'scheduled_at'], 'idx_scheduled_posts_status_time');
+        if (!$connection->hasColumn('cmis.scheduled_social_posts', 'error_message')) {
+            $connection->table('cmis.scheduled_social_posts', function (Blueprint $table) {
+                $table->text('error_message')->nullable();
+            });
+        }
 
-            // Add index for org_id (for multi-tenancy)
-            $table->index('org_id', 'idx_scheduled_posts_org_id');
+        // Add indexes if they don't exist
+        $connection->table('cmis.scheduled_social_posts', function (Blueprint $table) use ($connection) {
+            if (!$this->indexExists('idx_scheduled_posts_status_time')) {
+                $table->index(['status', 'scheduled_at'], 'idx_scheduled_posts_status_time');
+            }
+            if (!$this->indexExists('idx_scheduled_posts_org_id')) {
+                $table->index('org_id', 'idx_scheduled_posts_org_id');
+            }
         });
+    }
+
+    private function indexExists($indexName): bool
+    {
+        $exists = DB::connection('pgsql')->selectOne("
+            SELECT EXISTS (
+                SELECT 1
+                FROM pg_indexes
+                WHERE indexname = ?
+            ) as exists
+        ", [$indexName]);
+
+        return $exists->exists ?? false;
     }
 
     /**

@@ -23,8 +23,8 @@ return new class extends Migration
 
         // Content Plans indexes
         echo "Creating indexes for content_plans table...\n";
-        $this->createIndexConcurrently('idx_content_plans_campaign', 'cmis.content_plans', ['campaign_id', 'status']);
-        $this->createIndexConcurrently('idx_content_plans_org', 'cmis.content_plans', ['org_id', 'created_at DESC']);
+        $this->createIndexConcurrently('idx_content_plans_campaign', 'cmis.content_plans', ['campaign_id']);
+        $this->createIndexConcurrently('idx_content_plans_org_created', 'cmis.content_plans', ['org_id', 'created_at DESC']);
 
         // Content Items indexes
         echo "Creating indexes for content_items table...\n";
@@ -105,7 +105,7 @@ return new class extends Migration
             'idx_campaigns_dates',
             'idx_campaigns_created',
             'idx_content_plans_campaign',
-            'idx_content_plans_org',
+            'idx_content_plans_org_created',
             'idx_content_items_plan',
             'idx_content_items_status',
             'idx_knowledge_org_type',
@@ -139,7 +139,7 @@ return new class extends Migration
                 $schemas = ['cmis', 'cmis_audit', 'public'];
 
                 foreach ($schemas as $schema) {
-                    DB::statement("DROP INDEX CONCURRENTLY IF EXISTS {$schema}.{$index}");
+                    DB::statement("DROP INDEX IF EXISTS {$schema}.{$index}");
                 }
             } catch (\Exception $e) {
                 echo "Warning: Could not drop index {$index}: " . $e->getMessage() . "\n";
@@ -150,7 +150,7 @@ return new class extends Migration
     }
 
     /**
-     * Create an index concurrently to avoid table locking.
+     * Create an index (without CONCURRENTLY in migrations to avoid transaction conflicts).
      */
     private function createIndexConcurrently(
         string $indexName,
@@ -164,13 +164,13 @@ return new class extends Migration
             if ($method === 'ivfflat') {
                 // Special handling for vector indexes
                 DB::statement("
-                    CREATE INDEX CONCURRENTLY IF NOT EXISTS {$indexName}
+                    CREATE INDEX IF NOT EXISTS {$indexName}
                     ON {$tableName}
                     USING ivfflat ({$columnList})
                 ");
             } else {
                 DB::statement("
-                    CREATE INDEX CONCURRENTLY IF NOT EXISTS {$indexName}
+                    CREATE INDEX IF NOT EXISTS {$indexName}
                     ON {$tableName} ({$columnList})
                 ");
             }

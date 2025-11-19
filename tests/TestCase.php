@@ -103,7 +103,7 @@ abstract class TestCase extends BaseTestCase
         // Associate user with org and role
         UserOrg::create([
             'id' => Str::uuid(),
-            'user_id' => $user->id,
+            'user_id' => $user->user_id,
             'org_id' => $org->org_id,
             'role_id' => $role->role_id,
             'is_active' => true,
