@@ -43,8 +43,8 @@
         <env name="DB_HOST" value="127.0.0.1"/>
         <env name="DB_PORT" value="5432"/>
         <env name="DB_DATABASE" value="cmis_test"/>
-        <env name="DB_USERNAME" value="postgres"/>
-        <env name="DB_PASSWORD" value="postgres"/>
+        <env name="DB_USERNAME" value="begin"/>
+        <env name="DB_PASSWORD" value="123@Marketing@321"/>
 
         <!-- Parallel Testing Support -->
         <env name="PARALLEL_TESTING" value="true"/>
