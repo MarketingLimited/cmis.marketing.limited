@@ -8,6 +8,7 @@ use Tests\Traits\InteractsWithRLS;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 
+use PHPUnit\Framework\Attributes\Test;
 class CampaignAPITest extends TestCase
 {
     use RefreshDatabase, CreatesTestData, InteractsWithRLS;
@@ -17,7 +18,7 @@ class CampaignAPITest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_can_list_campaigns_for_organization()
     {
         $setup = $this->createUserWithOrg();
@@ -54,7 +55,7 @@ class CampaignAPITest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_create_a_campaign()
     {
         $setup = $this->createUserWithOrg();
@@ -102,7 +103,7 @@ class CampaignAPITest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_view_a_specific_campaign()
     {
         $setup = $this->createUserWithOrg();
@@ -130,7 +131,7 @@ class CampaignAPITest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_update_a_campaign()
     {
         $setup = $this->createUserWithOrg();
@@ -170,7 +171,7 @@ class CampaignAPITest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_delete_a_campaign()
     {
         $setup = $this->createUserWithOrg();
@@ -194,7 +195,7 @@ class CampaignAPITest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_enforces_org_isolation_for_campaigns()
     {
         $setup1 = $this->createUserWithOrg();
@@ -215,7 +216,7 @@ class CampaignAPITest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_campaign_creation_data()
     {
         $setup = $this->createUserWithOrg();
@@ -239,7 +240,7 @@ class CampaignAPITest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_requires_authentication()
     {
         $setup = $this->createUserWithOrg();
@@ -255,7 +256,7 @@ class CampaignAPITest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_filter_campaigns_by_status()
     {
         $setup = $this->createUserWithOrg();
@@ -279,7 +280,7 @@ class CampaignAPITest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_search_campaigns()
     {
         $setup = $this->createUserWithOrg();

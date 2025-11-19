@@ -10,6 +10,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Event;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * ContentPublished Event Unit Tests
  */
@@ -22,7 +23,7 @@ class ContentPublishedEventTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_can_be_instantiated()
     {
         $org = Org::create([
@@ -49,7 +50,7 @@ class ContentPublishedEventTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_contains_content_data()
     {
         $org = Org::create([
@@ -75,7 +76,7 @@ class ContentPublishedEventTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_be_dispatched()
     {
         Event::fake();
@@ -103,7 +104,7 @@ class ContentPublishedEventTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_broadcasts_on_org_channel()
     {
         $org = Org::create([
@@ -130,7 +131,7 @@ class ContentPublishedEventTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_includes_publication_timestamp()
     {
         $org = Org::create([
@@ -158,7 +159,7 @@ class ContentPublishedEventTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_triggers_platform_distribution()
     {
         Event::fake();
@@ -187,7 +188,7 @@ class ContentPublishedEventTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_includes_platform_information()
     {
         $org = Org::create([
@@ -215,7 +216,7 @@ class ContentPublishedEventTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_respects_org_context()
     {
         Event::fake();

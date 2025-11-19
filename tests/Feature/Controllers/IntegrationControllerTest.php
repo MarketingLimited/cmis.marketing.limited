@@ -9,6 +9,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use App\Models\Integration\Integration;
 use Illuminate\Support\Str;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * Integration Controller Feature Tests
  */
@@ -21,7 +22,7 @@ class IntegrationControllerTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_can_list_all_integrations()
     {
         $setup = $this->createUserWithOrg();
@@ -44,7 +45,7 @@ class IntegrationControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_create_new_integration()
     {
         $setup = $this->createUserWithOrg();
@@ -70,7 +71,7 @@ class IntegrationControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_single_integration()
     {
         $setup = $this->createUserWithOrg();
@@ -92,7 +93,7 @@ class IntegrationControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_update_integration()
     {
         $setup = $this->createUserWithOrg();
@@ -117,7 +118,7 @@ class IntegrationControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_delete_integration()
     {
         $setup = $this->createUserWithOrg();
@@ -142,7 +143,7 @@ class IntegrationControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_test_integration_connection()
     {
         $setup = $this->createUserWithOrg();
@@ -166,7 +167,7 @@ class IntegrationControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_refresh_integration_token()
     {
         $setup = $this->createUserWithOrg();
@@ -192,7 +193,7 @@ class IntegrationControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_required_fields()
     {
         $setup = $this->createUserWithOrg();
@@ -214,7 +215,7 @@ class IntegrationControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_respects_org_isolation()
     {
         $setup1 = $this->createUserWithOrg();
@@ -234,7 +235,7 @@ class IntegrationControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_requires_authentication()
     {
         $response = $this->getJson('/api/integrations');

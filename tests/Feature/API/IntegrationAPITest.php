@@ -8,6 +8,7 @@ use Tests\Traits\MocksExternalAPIs;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * Integration API Feature Tests
  */
@@ -20,7 +21,7 @@ class IntegrationAPITest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_can_list_all_integrations()
     {
         $setup = $this->createUserWithOrg();
@@ -47,7 +48,7 @@ class IntegrationAPITest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_integration_by_id()
     {
         $setup = $this->createUserWithOrg();
@@ -68,7 +69,7 @@ class IntegrationAPITest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_connect_instagram_integration()
     {
         $setup = $this->createUserWithOrg();
@@ -104,7 +105,7 @@ class IntegrationAPITest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_disconnect_integration()
     {
         $setup = $this->createUserWithOrg();
@@ -128,7 +129,7 @@ class IntegrationAPITest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_refresh_integration_token()
     {
         $setup = $this->createUserWithOrg();
@@ -154,7 +155,7 @@ class IntegrationAPITest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_test_integration_connection()
     {
         $setup = $this->createUserWithOrg();
@@ -179,7 +180,7 @@ class IntegrationAPITest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_integration_permissions()
     {
         $setup = $this->createUserWithOrg();
@@ -206,7 +207,7 @@ class IntegrationAPITest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_sync_integration_data()
     {
         $setup = $this->createUserWithOrg();
@@ -234,7 +235,7 @@ class IntegrationAPITest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_integration_activity_log()
     {
         $setup = $this->createUserWithOrg();
@@ -259,7 +260,7 @@ class IntegrationAPITest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_platform_on_connect()
     {
         $setup = $this->createUserWithOrg();
@@ -281,7 +282,7 @@ class IntegrationAPITest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_respects_org_isolation()
     {
         $setup1 = $this->createUserWithOrg();
@@ -301,7 +302,7 @@ class IntegrationAPITest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_configure_webhook_for_integration()
     {
         $setup = $this->createUserWithOrg();
@@ -324,7 +325,7 @@ class IntegrationAPITest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_available_integrations()
     {
         $setup = $this->createUserWithOrg();

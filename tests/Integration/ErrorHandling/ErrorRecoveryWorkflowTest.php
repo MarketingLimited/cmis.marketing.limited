@@ -10,6 +10,7 @@ use App\Services\Social\FacebookSyncService;
 use App\Jobs\SyncFacebookDataJob;
 use Illuminate\Support\Facades\Queue;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * Error Handling & Recovery Workflow Tests
  */
@@ -25,7 +26,7 @@ class ErrorRecoveryWorkflowTest extends TestCase
         $this->syncService = app(FacebookSyncService::class);
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_network_timeout_with_retry()
     {
         $setup = $this->createUserWithOrg();
@@ -56,7 +57,7 @@ class ErrorRecoveryWorkflowTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_invalid_token_with_refresh()
     {
         $setup = $this->createUserWithOrg();
@@ -87,7 +88,7 @@ class ErrorRecoveryWorkflowTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_rate_limit_with_backoff()
     {
         $setup = $this->createUserWithOrg();
@@ -116,7 +117,7 @@ class ErrorRecoveryWorkflowTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_partial_data_sync_failure()
     {
         $setup = $this->createUserWithOrg();
@@ -148,7 +149,7 @@ class ErrorRecoveryWorkflowTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_database_transaction_rollback()
     {
         $setup = $this->createUserWithOrg();
@@ -177,7 +178,7 @@ class ErrorRecoveryWorkflowTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_job_retry_on_failure()
     {
         Queue::fake();
@@ -199,7 +200,7 @@ class ErrorRecoveryWorkflowTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_validation_errors_gracefully()
     {
         $setup = $this->createUserWithOrg();
@@ -226,7 +227,7 @@ class ErrorRecoveryWorkflowTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_logs_all_errors_for_debugging()
     {
         $setup = $this->createUserWithOrg();

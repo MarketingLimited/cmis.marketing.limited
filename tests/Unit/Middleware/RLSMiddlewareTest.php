@@ -9,6 +9,7 @@ use App\Http\Middleware\SetRLSContext;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * RLS Middleware Unit Tests
  */
@@ -24,7 +25,7 @@ class RLSMiddlewareTest extends TestCase
         $this->middleware = new SetRLSContext();
     }
 
-    /** @test */
+    #[Test]
     public function it_sets_rls_context_for_authenticated_user()
     {
         $setup = $this->createUserWithOrg();
@@ -46,7 +47,7 @@ class RLSMiddlewareTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_clears_rls_context_after_request()
     {
         $setup = $this->createUserWithOrg();
@@ -67,7 +68,7 @@ class RLSMiddlewareTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_skips_rls_for_unauthenticated_requests()
     {
         $request = Request::create('/api/public', 'GET');
@@ -84,7 +85,7 @@ class RLSMiddlewareTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_missing_org_id_gracefully()
     {
         $setup = $this->createUserWithOrg();
@@ -109,7 +110,7 @@ class RLSMiddlewareTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_sets_correct_org_id_in_context()
     {
         $setup = $this->createUserWithOrg();
@@ -135,7 +136,7 @@ class RLSMiddlewareTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_sets_correct_user_id_in_context()
     {
         $setup = $this->createUserWithOrg();
@@ -160,7 +161,7 @@ class RLSMiddlewareTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_works_with_sanctum_authentication()
     {
         $setup = $this->createUserWithOrg();
@@ -185,7 +186,7 @@ class RLSMiddlewareTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_exceptions_gracefully()
     {
         $setup = $this->createUserWithOrg();

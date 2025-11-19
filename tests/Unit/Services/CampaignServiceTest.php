@@ -10,6 +10,7 @@ use App\Repositories\Contracts\CampaignRepositoryInterface;
 use App\Repositories\Contracts\PermissionRepositoryInterface;
 use Mockery;
 
+use PHPUnit\Framework\Attributes\Test;
 class CampaignServiceTest extends TestCase
 {
     use RefreshDatabase, CreatesTestData;
@@ -22,7 +23,7 @@ class CampaignServiceTest extends TestCase
         $this->service = app(CampaignService::class);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_create_campaign_with_context()
     {
         $setup = $this->createUserWithOrg();
@@ -59,7 +60,7 @@ class CampaignServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_update_campaign()
     {
         $setup = $this->createUserWithOrg();
@@ -91,7 +92,7 @@ class CampaignServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_find_related_campaigns()
     {
         $setup = $this->createUserWithOrg();
@@ -120,7 +121,7 @@ class CampaignServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_campaign_contexts()
     {
         $setup = $this->createUserWithOrg();
@@ -141,7 +142,7 @@ class CampaignServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_enforces_org_isolation()
     {
         $setup1 = $this->createUserWithOrg();
@@ -166,7 +167,7 @@ class CampaignServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_campaign_deletion()
     {
         $setup = $this->createUserWithOrg();

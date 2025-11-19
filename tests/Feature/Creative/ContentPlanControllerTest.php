@@ -11,6 +11,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Laravel\Sanctum\Sanctum;
 
+use PHPUnit\Framework\Attributes\Test;
 class ContentPlanControllerTest extends TestCase
 {
     use RefreshDatabase, WithFaker;
@@ -40,7 +41,7 @@ class ContentPlanControllerTest extends TestCase
         Sanctum::actingAs($this->user);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_list_content_plans()
     {
         // Create test content plans
@@ -64,7 +65,7 @@ class ContentPlanControllerTest extends TestCase
         $this->assertCount(3, $response->json('data'));
     }
 
-    /** @test */
+    #[Test]
     public function it_can_filter_content_plans_by_campaign()
     {
         $campaign2 = Campaign::factory()->create(['org_id' => $this->org->org_id]);
@@ -85,7 +86,7 @@ class ContentPlanControllerTest extends TestCase
         $this->assertCount(1, $response->json('data'));
     }
 
-    /** @test */
+    #[Test]
     public function it_can_create_a_content_plan()
     {
         $data = [
@@ -119,7 +120,7 @@ class ContentPlanControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_required_fields_when_creating()
     {
         $response = $this->postJson('/api/creative/content-plans', []);
@@ -128,7 +129,7 @@ class ContentPlanControllerTest extends TestCase
             ->assertJsonValidationErrors(['campaign_id', 'name']);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_show_a_content_plan()
     {
         $plan = ContentPlan::factory()->create([
@@ -148,7 +149,7 @@ class ContentPlanControllerTest extends TestCase
             ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_cannot_show_content_plan_from_different_org()
     {
         $otherOrg = Org::factory()->create();
@@ -161,7 +162,7 @@ class ContentPlanControllerTest extends TestCase
         $response->assertStatus(404);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_update_a_content_plan()
     {
         $plan = ContentPlan::factory()->create([
@@ -190,7 +191,7 @@ class ContentPlanControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_delete_a_content_plan()
     {
         $plan = ContentPlan::factory()->create([
@@ -207,7 +208,7 @@ class ContentPlanControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_content_plan_stats()
     {
         ContentPlan::factory()->count(5)->create([
@@ -231,7 +232,7 @@ class ContentPlanControllerTest extends TestCase
         $this->assertEquals(8, $response->json('data.total'));
     }
 
-    /** @test */
+    #[Test]
     public function it_requires_authentication()
     {
         Sanctum::actingAs(null);
@@ -241,7 +242,7 @@ class ContentPlanControllerTest extends TestCase
         $response->assertStatus(401);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_approve_a_content_plan()
     {
         $plan = ContentPlan::factory()->create([
@@ -261,7 +262,7 @@ class ContentPlanControllerTest extends TestCase
         $this->assertEquals('approved', $plan->status);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_reject_a_content_plan()
     {
         $plan = ContentPlan::factory()->create([
@@ -284,7 +285,7 @@ class ContentPlanControllerTest extends TestCase
         $this->assertEquals('Content needs revision', $plan->rejection_reason);
     }
 
-    /** @test */
+    #[Test]
     public function it_requires_reason_when_rejecting()
     {
         $plan = ContentPlan::factory()->create([
@@ -297,7 +298,7 @@ class ContentPlanControllerTest extends TestCase
             ->assertJsonValidationErrors(['reason']);
     }
 
-    /** @test */
+    #[Test]
     public function it_enforces_pagination_limits()
     {
         ContentPlan::factory()->count(150)->create([

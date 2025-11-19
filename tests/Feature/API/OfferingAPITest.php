@@ -8,6 +8,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use App\Models\Offering;
 use Illuminate\Support\Str;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * Offering (Products/Services) API Feature Tests
  */
@@ -20,7 +21,7 @@ class OfferingAPITest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_can_list_offerings_for_organization()
     {
         $setup = $this->createUserWithOrg();
@@ -53,7 +54,7 @@ class OfferingAPITest extends TestCase
                  ->assertJsonFragment(['name' => 'Service 1']);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_create_a_product()
     {
         $setup = $this->createUserWithOrg();
@@ -99,7 +100,7 @@ class OfferingAPITest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_create_a_service()
     {
         $setup = $this->createUserWithOrg();
@@ -123,7 +124,7 @@ class OfferingAPITest extends TestCase
                  ->assertJsonFragment(['type' => 'service']);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_view_a_specific_offering()
     {
         $setup = $this->createUserWithOrg();
@@ -150,7 +151,7 @@ class OfferingAPITest extends TestCase
                  ->assertJsonPath('data.details.features.0', 'Feature 1');
     }
 
-    /** @test */
+    #[Test]
     public function it_can_update_an_offering()
     {
         $setup = $this->createUserWithOrg();
@@ -179,7 +180,7 @@ class OfferingAPITest extends TestCase
                  ->assertJsonPath('data.price', 60.00);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_delete_an_offering()
     {
         $setup = $this->createUserWithOrg();
@@ -205,7 +206,7 @@ class OfferingAPITest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_filter_offerings_by_type()
     {
         $setup = $this->createUserWithOrg();
@@ -237,7 +238,7 @@ class OfferingAPITest extends TestCase
                  ->assertJsonMissing(['name' => 'Service']);
     }
 
-    /** @test */
+    #[Test]
     public function it_enforces_org_isolation_for_offerings()
     {
         $setup1 = $this->createUserWithOrg();
@@ -272,7 +273,7 @@ class OfferingAPITest extends TestCase
                  ->assertJsonMissing(['name' => 'Org 2 Product']);
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_offering_creation_data()
     {
         $setup = $this->createUserWithOrg();
@@ -292,7 +293,7 @@ class OfferingAPITest extends TestCase
                  ->assertJsonValidationErrors(['type', 'name', 'price']);
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_price_is_positive()
     {
         $setup = $this->createUserWithOrg();
@@ -314,7 +315,7 @@ class OfferingAPITest extends TestCase
                  ->assertJsonValidationErrors(['price']);
     }
 
-    /** @test */
+    #[Test]
     public function it_requires_authentication()
     {
         $response = $this->getJson('/api/offerings');

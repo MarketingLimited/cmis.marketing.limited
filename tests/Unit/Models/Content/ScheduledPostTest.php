@@ -10,6 +10,7 @@ use App\Models\Integration\Integration;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * Scheduled Post Model Unit Tests
  */
@@ -22,7 +23,7 @@ class ScheduledPostTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_can_create_scheduled_post()
     {
         $org = Org::create([
@@ -45,7 +46,7 @@ class ScheduledPostTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_belongs_to_org()
     {
         $org = Org::create([
@@ -65,7 +66,7 @@ class ScheduledPostTest extends TestCase
         $this->assertEquals($org->org_id, $post->org->org_id);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_belong_to_campaign()
     {
         $org = Org::create([
@@ -93,7 +94,7 @@ class ScheduledPostTest extends TestCase
         $this->assertEquals($campaign->campaign_id, $post->campaign->campaign_id);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_belong_to_integration()
     {
         $org = Org::create([
@@ -122,7 +123,7 @@ class ScheduledPostTest extends TestCase
         $this->assertEquals($integration->integration_id, $post->integration->integration_id);
     }
 
-    /** @test */
+    #[Test]
     public function it_has_different_post_statuses()
     {
         $org = Org::create([
@@ -162,7 +163,7 @@ class ScheduledPostTest extends TestCase
         $this->assertEquals('failed', $failed->status);
     }
 
-    /** @test */
+    #[Test]
     public function it_stores_media_urls()
     {
         $org = Org::create([
@@ -190,7 +191,7 @@ class ScheduledPostTest extends TestCase
         $this->assertContains('https://example.com/image1.jpg', $post->media_urls);
     }
 
-    /** @test */
+    #[Test]
     public function it_stores_post_metadata()
     {
         $org = Org::create([
@@ -219,7 +220,7 @@ class ScheduledPostTest extends TestCase
         $this->assertEquals('Manama, Bahrain', $post->metadata['location']);
     }
 
-    /** @test */
+    #[Test]
     public function it_tracks_published_time()
     {
         $org = Org::create([
@@ -240,7 +241,7 @@ class ScheduledPostTest extends TestCase
         $this->assertNotNull($post->published_at);
     }
 
-    /** @test */
+    #[Test]
     public function it_stores_platform_post_id()
     {
         $org = Org::create([
@@ -261,7 +262,7 @@ class ScheduledPostTest extends TestCase
         $this->assertEquals('fb_post_123456', $post->platform_post_id);
     }
 
-    /** @test */
+    #[Test]
     public function it_stores_error_messages_for_failed_posts()
     {
         $org = Org::create([
@@ -282,7 +283,7 @@ class ScheduledPostTest extends TestCase
         $this->assertEquals('API rate limit exceeded', $post->error_message);
     }
 
-    /** @test */
+    #[Test]
     public function it_tracks_retry_count()
     {
         $org = Org::create([
@@ -306,7 +307,7 @@ class ScheduledPostTest extends TestCase
         $this->assertEquals(2, $post->fresh()->retry_count);
     }
 
-    /** @test */
+    #[Test]
     public function it_supports_different_platforms()
     {
         $org = Org::create([
@@ -331,7 +332,7 @@ class ScheduledPostTest extends TestCase
         $this->assertCount(6, $posts);
     }
 
-    /** @test */
+    #[Test]
     public function it_uses_uuid_as_primary_key()
     {
         $org = Org::create([
@@ -351,7 +352,7 @@ class ScheduledPostTest extends TestCase
         $this->assertTrue(Str::isUuid($post->post_id));
     }
 
-    /** @test */
+    #[Test]
     public function it_has_timestamps()
     {
         $org = Org::create([
@@ -372,7 +373,7 @@ class ScheduledPostTest extends TestCase
         $this->assertNotNull($post->updated_at);
     }
 
-    /** @test */
+    #[Test]
     public function it_respects_rls_policies()
     {
         $org1 = Org::create([

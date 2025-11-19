@@ -8,6 +8,7 @@ use Tests\Traits\MocksExternalAPIs;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use App\Services\Social\TwitterService;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * Twitter/X Service Unit Tests
  */
@@ -23,7 +24,7 @@ class TwitterServiceTest extends TestCase
         $this->service = app(TwitterService::class);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_publish_tweet()
     {
         $setup = $this->createUserWithOrg();
@@ -51,7 +52,7 @@ class TwitterServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_publish_tweet_with_media()
     {
         $setup = $this->createUserWithOrg();
@@ -79,7 +80,7 @@ class TwitterServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_publish_thread()
     {
         $setup = $this->createUserWithOrg();
@@ -115,7 +116,7 @@ class TwitterServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_user_timeline()
     {
         $setup = $this->createUserWithOrg();
@@ -147,7 +148,7 @@ class TwitterServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_tweet_metrics()
     {
         $setup = $this->createUserWithOrg();
@@ -179,7 +180,7 @@ class TwitterServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_reply_to_tweet()
     {
         $setup = $this->createUserWithOrg();
@@ -204,7 +205,7 @@ class TwitterServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_delete_tweet()
     {
         $setup = $this->createUserWithOrg();
@@ -228,7 +229,7 @@ class TwitterServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_search_tweets()
     {
         $setup = $this->createUserWithOrg();
@@ -256,7 +257,7 @@ class TwitterServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_mentions()
     {
         $setup = $this->createUserWithOrg();
@@ -284,7 +285,7 @@ class TwitterServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_character_limit()
     {
         $setup = $this->createUserWithOrg();
@@ -307,7 +308,7 @@ class TwitterServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_api_errors()
     {
         $setup = $this->createUserWithOrg();

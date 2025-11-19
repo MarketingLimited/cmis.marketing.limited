@@ -12,6 +12,7 @@ use App\Jobs\ReplyToCommentJob;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Str;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * LinkedIn Comments & Comment Moderation Integration Test
  *
@@ -26,7 +27,7 @@ class LinkedInCommentsModerationTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_receives_linkedin_comment()
     {
         $setup = $this->createUserWithOrg();
@@ -69,7 +70,7 @@ class LinkedInCommentsModerationTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_replies_to_linkedin_comment()
     {
         Queue::fake();
@@ -131,7 +132,7 @@ class LinkedInCommentsModerationTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_auto_moderates_comments_with_keywords()
     {
         $setup = $this->createUserWithOrg();
@@ -175,7 +176,7 @@ class LinkedInCommentsModerationTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_nested_comment_threads()
     {
         $setup = $this->createUserWithOrg();

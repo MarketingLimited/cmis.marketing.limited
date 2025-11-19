@@ -11,6 +11,7 @@ use App\Models\Core\Campaign;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Event;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * CampaignCompleted Event Unit Tests
  */
@@ -23,7 +24,7 @@ class CampaignCompletedEventTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_can_be_instantiated()
     {
         $org = Org::create([
@@ -49,7 +50,7 @@ class CampaignCompletedEventTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_be_dispatched()
     {
         Event::fake();
@@ -76,7 +77,7 @@ class CampaignCompletedEventTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_contains_campaign_data()
     {
         $org = Org::create([
@@ -104,7 +105,7 @@ class CampaignCompletedEventTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_broadcasts_on_private_channel()
     {
         $org = Org::create([
@@ -130,7 +131,7 @@ class CampaignCompletedEventTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_be_listened_to()
     {
         Event::fake([CampaignCompletedEvent::class]);
@@ -159,7 +160,7 @@ class CampaignCompletedEventTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_includes_completion_timestamp()
     {
         $org = Org::create([

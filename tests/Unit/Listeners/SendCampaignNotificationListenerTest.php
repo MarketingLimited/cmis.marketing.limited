@@ -13,6 +13,7 @@ use App\Models\User;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Notification;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * Send Campaign Notification Listener Unit Tests
  */
@@ -28,7 +29,7 @@ class SendCampaignNotificationListenerTest extends TestCase
         $this->listener = app(SendCampaignNotification::class);
     }
 
-    /** @test */
+    #[Test]
     public function it_sends_notification_when_campaign_is_created()
     {
         Notification::fake();
@@ -67,7 +68,7 @@ class SendCampaignNotificationListenerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_event_correctly()
     {
         $org = Org::create([
@@ -99,7 +100,7 @@ class SendCampaignNotificationListenerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_be_queued()
     {
         $listenerReflection = new \ReflectionClass($this->listener);
@@ -118,7 +119,7 @@ class SendCampaignNotificationListenerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_errors_gracefully()
     {
         $org = Org::create([

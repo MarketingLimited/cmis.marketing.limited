@@ -12,6 +12,7 @@ use App\Models\Contact\Contact;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Queue;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * SendSMS Job Unit Tests
  */
@@ -24,7 +25,7 @@ class SendSMSJobTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_sends_sms_to_contact()
     {
         $org = Org::create([
@@ -53,7 +54,7 @@ class SendSMSJobTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_sends_arabic_message()
     {
         $org = Org::create([
@@ -84,7 +85,7 @@ class SendSMSJobTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_be_dispatched()
     {
         Queue::fake();
@@ -112,7 +113,7 @@ class SendSMSJobTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_invalid_phone_number()
     {
         $org = Org::create([
@@ -145,7 +146,7 @@ class SendSMSJobTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_supports_message_personalization()
     {
         $org = Org::create([
@@ -176,7 +177,7 @@ class SendSMSJobTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_tracks_sms_delivery_status()
     {
         $org = Org::create([
@@ -209,7 +210,7 @@ class SendSMSJobTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_rate_limiting()
     {
         $org = Org::create([
@@ -243,7 +244,7 @@ class SendSMSJobTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_splits_long_messages()
     {
         $org = Org::create([

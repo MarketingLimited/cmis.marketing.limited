@@ -5,6 +5,7 @@ namespace Tests\Unit\Helpers;
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * Validation Helper Unit Tests
  */
@@ -17,7 +18,7 @@ class ValidationHelperTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_email()
     {
         if (!function_exists('is_valid_email')) {
@@ -37,7 +38,7 @@ class ValidationHelperTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_url()
     {
         if (!function_exists('is_valid_url')) {
@@ -57,7 +58,7 @@ class ValidationHelperTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_saudi_phone()
     {
         if (!function_exists('is_valid_saudi_phone')) {
@@ -80,7 +81,7 @@ class ValidationHelperTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_uuid()
     {
         if (!function_exists('is_valid_uuid')) {
@@ -100,7 +101,7 @@ class ValidationHelperTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_arabic_text()
     {
         if (!function_exists('contains_arabic')) {
@@ -119,7 +120,7 @@ class ValidationHelperTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_strong_password()
     {
         if (!function_exists('is_strong_password')) {
@@ -144,7 +145,7 @@ class ValidationHelperTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_credit_card()
     {
         if (!function_exists('is_valid_credit_card')) {
@@ -178,7 +179,7 @@ class ValidationHelperTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_date_format()
     {
         if (!function_exists('is_valid_date')) {
@@ -199,7 +200,7 @@ class ValidationHelperTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_json()
     {
         if (!function_exists('is_valid_json')) {
@@ -220,7 +221,7 @@ class ValidationHelperTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_ip_address()
     {
         if (!function_exists('is_valid_ip')) {
@@ -240,7 +241,7 @@ class ValidationHelperTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_sanitizes_input()
     {
         if (!function_exists('sanitize_input')) {
@@ -261,7 +262,7 @@ class ValidationHelperTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_file_extension()
     {
         if (!function_exists('is_allowed_extension')) {
@@ -282,7 +283,7 @@ class ValidationHelperTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_hashtag()
     {
         if (!function_exists('is_valid_hashtag')) {

@@ -11,6 +11,7 @@ use App\Models\Content\Post;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Event;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * PostPublished Event Unit Tests
  */
@@ -23,7 +24,7 @@ class PostPublishedEventTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_can_be_instantiated()
     {
         $org = Org::create([
@@ -50,7 +51,7 @@ class PostPublishedEventTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_be_dispatched()
     {
         Event::fake();
@@ -78,7 +79,7 @@ class PostPublishedEventTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_contains_post_data()
     {
         $org = Org::create([
@@ -107,7 +108,7 @@ class PostPublishedEventTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_broadcasts_on_private_channel()
     {
         $org = Org::create([
@@ -134,7 +135,7 @@ class PostPublishedEventTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_be_listened_to()
     {
         Event::fake([PostPublishedEvent::class]);

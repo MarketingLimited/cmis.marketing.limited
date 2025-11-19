@@ -11,6 +11,7 @@ use App\Models\Creative\CreativeAsset;
 use App\Models\CampaignPerformanceMetric;
 use Illuminate\Support\Str;
 
+use PHPUnit\Framework\Attributes\Test;
 class CampaignTest extends TestCase
 {
     use RefreshDatabase, CreatesTestData, InteractsWithRLS;
@@ -20,7 +21,7 @@ class CampaignTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_can_create_a_campaign()
     {
         $setup = $this->createUserWithOrg();
@@ -48,7 +49,7 @@ class CampaignTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_belongs_to_an_organization()
     {
         $setup = $this->createUserWithOrg();
@@ -63,7 +64,7 @@ class CampaignTest extends TestCase
         $this->logTestResult('passed');
     }
 
-    /** @test */
+    #[Test]
     public function it_has_many_creative_assets()
     {
         $setup = $this->createUserWithOrg();
@@ -85,7 +86,7 @@ class CampaignTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_has_many_performance_metrics()
     {
         $setup = $this->createUserWithOrg();
@@ -123,7 +124,7 @@ class CampaignTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_enforces_valid_status_values()
     {
         $setup = $this->createUserWithOrg();
@@ -145,7 +146,7 @@ class CampaignTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_respects_rls_policies()
     {
         $setup1 = $this->createUserWithOrg();
@@ -176,7 +177,7 @@ class CampaignTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_be_soft_deleted()
     {
         $setup = $this->createUserWithOrg();
@@ -193,7 +194,7 @@ class CampaignTest extends TestCase
         $this->logTestResult('passed');
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_budget_format()
     {
         $setup = $this->createUserWithOrg();
@@ -212,7 +213,7 @@ class CampaignTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_date_range()
     {
         $setup = $this->createUserWithOrg();
@@ -231,7 +232,7 @@ class CampaignTest extends TestCase
         $this->logTestResult('passed');
     }
 
-    /** @test */
+    #[Test]
     public function it_cascades_delete_to_creative_assets()
     {
         $setup = $this->createUserWithOrg();

@@ -9,6 +9,7 @@ use App\Models\Permission\Permission;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * Permission Model Unit Tests
  */
@@ -21,7 +22,7 @@ class PermissionTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_can_create_permission()
     {
         $permission = Permission::create([
@@ -37,7 +38,7 @@ class PermissionTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_has_unique_name()
     {
         Permission::create([
@@ -55,7 +56,7 @@ class PermissionTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_has_display_name()
     {
         $permission = Permission::create([
@@ -67,7 +68,7 @@ class PermissionTest extends TestCase
         $this->assertEquals('حذف المنشورات', $permission->display_name);
     }
 
-    /** @test */
+    #[Test]
     public function it_has_description()
     {
         $permission = Permission::create([
@@ -80,7 +81,7 @@ class PermissionTest extends TestCase
         $this->assertNotNull($permission->description);
     }
 
-    /** @test */
+    #[Test]
     public function it_has_category()
     {
         $permission = Permission::create([
@@ -93,7 +94,7 @@ class PermissionTest extends TestCase
         $this->assertEquals('analytics', $permission->category);
     }
 
-    /** @test */
+    #[Test]
     public function it_groups_permissions_by_category()
     {
         $categories = ['campaigns', 'content', 'analytics', 'team'];
@@ -111,7 +112,7 @@ class PermissionTest extends TestCase
         $this->assertCount(1, $campaignPermissions);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_be_assigned_to_roles()
     {
         $permission = Permission::create([
@@ -129,7 +130,7 @@ class PermissionTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_supports_wildcard_permissions()
     {
         $permission = Permission::create([
@@ -141,7 +142,7 @@ class PermissionTest extends TestCase
         $this->assertStringContainsString('*', $permission->name);
     }
 
-    /** @test */
+    #[Test]
     public function it_has_priority_order()
     {
         $permission = Permission::create([
@@ -154,7 +155,7 @@ class PermissionTest extends TestCase
         $this->assertEquals(100, $permission->priority);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_be_active_or_inactive()
     {
         $activePermission = Permission::create([
@@ -175,7 +176,7 @@ class PermissionTest extends TestCase
         $this->assertFalse($inactivePermission->is_active);
     }
 
-    /** @test */
+    #[Test]
     public function it_uses_uuid_as_primary_key()
     {
         $permission = Permission::create([
@@ -187,7 +188,7 @@ class PermissionTest extends TestCase
         $this->assertTrue(Str::isUuid($permission->permission_id));
     }
 
-    /** @test */
+    #[Test]
     public function it_has_timestamps()
     {
         $permission = Permission::create([

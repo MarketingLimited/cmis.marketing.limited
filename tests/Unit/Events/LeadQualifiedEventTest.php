@@ -10,6 +10,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Event;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * LeadQualified Event Unit Tests
  */
@@ -22,7 +23,7 @@ class LeadQualifiedEventTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_can_be_instantiated()
     {
         $org = Org::create([
@@ -50,7 +51,7 @@ class LeadQualifiedEventTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_contains_lead_data()
     {
         $org = Org::create([
@@ -79,7 +80,7 @@ class LeadQualifiedEventTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_be_dispatched()
     {
         Event::fake();
@@ -107,7 +108,7 @@ class LeadQualifiedEventTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_broadcasts_on_private_channel()
     {
         $org = Org::create([
@@ -134,7 +135,7 @@ class LeadQualifiedEventTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_includes_qualification_reason()
     {
         $org = Org::create([
@@ -162,7 +163,7 @@ class LeadQualifiedEventTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_includes_timestamp()
     {
         $org = Org::create([
@@ -189,7 +190,7 @@ class LeadQualifiedEventTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_triggers_notifications()
     {
         Event::fake();
@@ -218,7 +219,7 @@ class LeadQualifiedEventTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_respects_org_context()
     {
         Event::fake();

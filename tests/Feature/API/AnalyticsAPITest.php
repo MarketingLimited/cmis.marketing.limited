@@ -9,6 +9,7 @@ use App\Models\Campaign;
 use App\Models\Analytics\CampaignMetric;
 use Illuminate\Support\Str;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * Analytics API Feature Tests
  */
@@ -21,7 +22,7 @@ class AnalyticsAPITest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_campaign_analytics()
     {
         $setup = $this->createUserWithOrg();
@@ -65,7 +66,7 @@ class AnalyticsAPITest extends TestCase
                  ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_analytics_by_date_range()
     {
         $setup = $this->createUserWithOrg();
@@ -99,7 +100,7 @@ class AnalyticsAPITest extends TestCase
                  ->assertJsonCount(7, 'data.daily_metrics');
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_overall_organization_analytics()
     {
         $setup = $this->createUserWithOrg();
@@ -125,7 +126,7 @@ class AnalyticsAPITest extends TestCase
                  ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_social_media_analytics()
     {
         $setup = $this->createUserWithOrg();
@@ -152,7 +153,7 @@ class AnalyticsAPITest extends TestCase
                  ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_engagement_metrics()
     {
         $setup = $this->createUserWithOrg();
@@ -174,7 +175,7 @@ class AnalyticsAPITest extends TestCase
                  ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_compare_campaigns()
     {
         $setup = $this->createUserWithOrg();
@@ -192,7 +193,7 @@ class AnalyticsAPITest extends TestCase
                  ->assertJsonCount(2, 'data.campaigns');
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_funnel_analytics()
     {
         $setup = $this->createUserWithOrg();
@@ -217,7 +218,7 @@ class AnalyticsAPITest extends TestCase
                  ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_audience_demographics()
     {
         $setup = $this->createUserWithOrg();
@@ -239,7 +240,7 @@ class AnalyticsAPITest extends TestCase
                  ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_content_performance()
     {
         $setup = $this->createUserWithOrg();
@@ -260,7 +261,7 @@ class AnalyticsAPITest extends TestCase
                  ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_calculate_roi()
     {
         $setup = $this->createUserWithOrg();
@@ -289,7 +290,7 @@ class AnalyticsAPITest extends TestCase
                  ->assertJsonPath('data.roi_percentage', 200); // (15000-5000)/5000 * 100
     }
 
-    /** @test */
+    #[Test]
     public function it_enforces_org_isolation_for_analytics()
     {
         $setup1 = $this->createUserWithOrg();
@@ -308,7 +309,7 @@ class AnalyticsAPITest extends TestCase
         $response->assertStatus(403); // Forbidden - different org
     }
 
-    /** @test */
+    #[Test]
     public function it_requires_authentication()
     {
         $response = $this->getJson('/api/analytics/overview');
@@ -316,7 +317,7 @@ class AnalyticsAPITest extends TestCase
         $response->assertStatus(401);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_export_analytics_to_pdf()
     {
         $setup = $this->createUserWithOrg();
@@ -333,7 +334,7 @@ class AnalyticsAPITest extends TestCase
                  ->assertHeader('Content-Type', 'application/pdf');
     }
 
-    /** @test */
+    #[Test]
     public function it_can_export_analytics_to_excel()
     {
         $setup = $this->createUserWithOrg();

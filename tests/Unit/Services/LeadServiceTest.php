@@ -10,6 +10,7 @@ use App\Models\Core\Campaign;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * Lead Service Unit Tests
  */
@@ -22,7 +23,7 @@ class LeadServiceTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_creates_lead_with_validation()
     {
         $org = Org::create([
@@ -45,7 +46,7 @@ class LeadServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_qualifies_lead_based_on_score()
     {
         $org = Org::create([
@@ -71,7 +72,7 @@ class LeadServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_assigns_lead_to_campaign()
     {
         $org = Org::create([
@@ -103,7 +104,7 @@ class LeadServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_enriches_lead_data()
     {
         $org = Org::create([
@@ -128,7 +129,7 @@ class LeadServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_merges_duplicate_leads()
     {
         $org = Org::create([
@@ -161,7 +162,7 @@ class LeadServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_calculates_lead_score()
     {
         $org = Org::create([
@@ -187,7 +188,7 @@ class LeadServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_imports_leads_from_csv()
     {
         $org = Org::create([
@@ -210,7 +211,7 @@ class LeadServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_exports_leads_to_csv()
     {
         $org = Org::create([
@@ -237,7 +238,7 @@ class LeadServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_sends_follow_up_email()
     {
         $org = Org::create([
@@ -262,7 +263,7 @@ class LeadServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_segments_leads_by_criteria()
     {
         $org = Org::create([
@@ -297,7 +298,7 @@ class LeadServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_email_deliverability()
     {
         $org = Org::create([
@@ -322,7 +323,7 @@ class LeadServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_respects_org_isolation()
     {
         $org1 = Org::create([

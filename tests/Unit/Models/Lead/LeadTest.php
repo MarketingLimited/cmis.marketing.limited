@@ -9,6 +9,7 @@ use App\Models\Lead\Lead;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * Lead Model Unit Tests
  */
@@ -21,7 +22,7 @@ class LeadTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_can_create_lead()
     {
         $org = Org::create([
@@ -44,7 +45,7 @@ class LeadTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_belongs_to_org()
     {
         $org = Org::create([
@@ -63,7 +64,7 @@ class LeadTest extends TestCase
         $this->assertEquals($org->org_id, $lead->org->org_id);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_belong_to_campaign()
     {
         $org = Org::create([
@@ -90,7 +91,7 @@ class LeadTest extends TestCase
         $this->assertEquals($campaign->campaign_id, $lead->campaign->campaign_id);
     }
 
-    /** @test */
+    #[Test]
     public function it_has_different_lead_statuses()
     {
         $org = Org::create([
@@ -136,7 +137,7 @@ class LeadTest extends TestCase
         $this->assertEquals('converted', $convertedLead->status);
     }
 
-    /** @test */
+    #[Test]
     public function it_stores_lead_source()
     {
         $org = Org::create([
@@ -166,7 +167,7 @@ class LeadTest extends TestCase
         $this->assertEquals('website', $websiteLead->source);
     }
 
-    /** @test */
+    #[Test]
     public function it_stores_lead_score()
     {
         $org = Org::create([
@@ -186,7 +187,7 @@ class LeadTest extends TestCase
         $this->assertEquals(85, $lead->score);
     }
 
-    /** @test */
+    #[Test]
     public function it_stores_additional_data_as_json()
     {
         $org = Org::create([
@@ -215,7 +216,7 @@ class LeadTest extends TestCase
         $this->assertContains('digital-marketing', $lead->additional_data['interests']);
     }
 
-    /** @test */
+    #[Test]
     public function it_tracks_last_contact_date()
     {
         $org = Org::create([
@@ -235,7 +236,7 @@ class LeadTest extends TestCase
         $this->assertNotNull($lead->last_contacted_at);
     }
 
-    /** @test */
+    #[Test]
     public function it_tracks_conversion_date()
     {
         $org = Org::create([
@@ -255,7 +256,7 @@ class LeadTest extends TestCase
         $this->assertNotNull($lead->converted_at);
     }
 
-    /** @test */
+    #[Test]
     public function it_stores_utm_parameters()
     {
         $org = Org::create([
@@ -284,7 +285,7 @@ class LeadTest extends TestCase
         $this->assertEquals('summer_sale', $lead->utm_parameters['utm_campaign']);
     }
 
-    /** @test */
+    #[Test]
     public function it_tracks_lead_value()
     {
         $org = Org::create([
@@ -304,7 +305,7 @@ class LeadTest extends TestCase
         $this->assertEquals(50000.00, $lead->estimated_value);
     }
 
-    /** @test */
+    #[Test]
     public function it_assigns_lead_to_user()
     {
         $org = Org::create([
@@ -331,7 +332,7 @@ class LeadTest extends TestCase
         $this->assertEquals($salesRep->id, $lead->assigned_to);
     }
 
-    /** @test */
+    #[Test]
     public function it_uses_uuid_as_primary_key()
     {
         $org = Org::create([
@@ -350,7 +351,7 @@ class LeadTest extends TestCase
         $this->assertTrue(Str::isUuid($lead->lead_id));
     }
 
-    /** @test */
+    #[Test]
     public function it_has_timestamps()
     {
         $org = Org::create([
@@ -370,7 +371,7 @@ class LeadTest extends TestCase
         $this->assertNotNull($lead->updated_at);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_be_soft_deleted()
     {
         $org = Org::create([
@@ -395,7 +396,7 @@ class LeadTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_respects_rls_policies()
     {
         $org1 = Org::create([

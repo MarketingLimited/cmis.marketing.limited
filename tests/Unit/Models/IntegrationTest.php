@@ -8,6 +8,7 @@ use App\Models\Integration;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * Integration Model Unit Tests
  */
@@ -20,7 +21,7 @@ class IntegrationTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_can_create_an_integration()
     {
         $org = Org::create([
@@ -42,7 +43,7 @@ class IntegrationTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_belongs_to_an_organization()
     {
         $org = Org::create([
@@ -60,7 +61,7 @@ class IntegrationTest extends TestCase
         $this->assertEquals($org->org_id, $integration->org->org_id);
     }
 
-    /** @test */
+    #[Test]
     public function it_encrypts_access_token()
     {
         $org = Org::create([
@@ -82,7 +83,7 @@ class IntegrationTest extends TestCase
         $this->assertEquals($plainToken, $decryptedToken);
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_platform()
     {
         $org = Org::create([
@@ -111,7 +112,7 @@ class IntegrationTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_status()
     {
         $org = Org::create([
@@ -134,7 +135,7 @@ class IntegrationTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_stores_metadata_as_json()
     {
         $org = Org::create([
@@ -162,7 +163,7 @@ class IntegrationTest extends TestCase
         $this->assertContains('instagram_basic', $integration->metadata['scopes']);
     }
 
-    /** @test */
+    #[Test]
     public function it_uses_uuid_as_primary_key()
     {
         $org = Org::create([
@@ -180,7 +181,7 @@ class IntegrationTest extends TestCase
         $this->assertTrue(Str::isUuid($integration->integration_id));
     }
 
-    /** @test */
+    #[Test]
     public function it_can_be_soft_deleted()
     {
         $org = Org::create([
@@ -202,7 +203,7 @@ class IntegrationTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_has_timestamps()
     {
         $org = Org::create([
@@ -221,7 +222,7 @@ class IntegrationTest extends TestCase
         $this->assertNotNull($integration->updated_at);
     }
 
-    /** @test */
+    #[Test]
     public function it_tracks_token_expiration()
     {
         $org = Org::create([
@@ -243,7 +244,7 @@ class IntegrationTest extends TestCase
         $this->assertTrue($integration->expires_at->isFuture());
     }
 
-    /** @test */
+    #[Test]
     public function it_can_check_if_token_is_expired()
     {
         $org = Org::create([
@@ -271,7 +272,7 @@ class IntegrationTest extends TestCase
         $this->assertTrue($activeIntegration->expires_at->isFuture());
     }
 
-    /** @test */
+    #[Test]
     public function it_respects_rls_policies()
     {
         $org1 = Org::create([

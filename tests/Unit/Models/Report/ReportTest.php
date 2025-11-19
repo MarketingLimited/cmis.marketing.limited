@@ -9,6 +9,7 @@ use App\Models\Report\Report;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * Report Model Unit Tests
  */
@@ -21,7 +22,7 @@ class ReportTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_can_create_report()
     {
         $org = Org::create([
@@ -43,7 +44,7 @@ class ReportTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_belongs_to_org()
     {
         $org = Org::create([
@@ -62,7 +63,7 @@ class ReportTest extends TestCase
         $this->assertEquals($org->org_id, $report->org->org_id);
     }
 
-    /** @test */
+    #[Test]
     public function it_belongs_to_user()
     {
         $org = Org::create([
@@ -89,7 +90,7 @@ class ReportTest extends TestCase
         $this->assertEquals($user->user_id, $report->user->user_id);
     }
 
-    /** @test */
+    #[Test]
     public function it_has_different_report_types()
     {
         $org = Org::create([
@@ -120,7 +121,7 @@ class ReportTest extends TestCase
         $this->assertCount(6, $reports);
     }
 
-    /** @test */
+    #[Test]
     public function it_has_different_statuses()
     {
         $org = Org::create([
@@ -157,7 +158,7 @@ class ReportTest extends TestCase
         $this->assertEquals('completed', $completedReport->status);
     }
 
-    /** @test */
+    #[Test]
     public function it_stores_report_data_as_json()
     {
         $org = Org::create([
@@ -187,7 +188,7 @@ class ReportTest extends TestCase
         $this->assertEquals(6.0, $report->data['conversion_rate']);
     }
 
-    /** @test */
+    #[Test]
     public function it_stores_filter_parameters()
     {
         $org = Org::create([
@@ -215,7 +216,7 @@ class ReportTest extends TestCase
         $this->assertCount(2, $report->filters['campaign_ids']);
     }
 
-    /** @test */
+    #[Test]
     public function it_stores_file_path()
     {
         $org = Org::create([
@@ -235,7 +236,7 @@ class ReportTest extends TestCase
         $this->assertEquals('reports/2024/01/campaign_report_123.pdf', $report->file_path);
     }
 
-    /** @test */
+    #[Test]
     public function it_has_format_type()
     {
         $org = Org::create([
@@ -265,7 +266,7 @@ class ReportTest extends TestCase
         $this->assertEquals('excel', $excelReport->format);
     }
 
-    /** @test */
+    #[Test]
     public function it_tracks_generation_time()
     {
         $org = Org::create([
@@ -285,7 +286,7 @@ class ReportTest extends TestCase
         $this->assertNotNull($report->generated_at);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_be_scheduled()
     {
         $org = Org::create([
@@ -307,7 +308,7 @@ class ReportTest extends TestCase
         $this->assertEquals('monthly', $scheduledReport->schedule_frequency);
     }
 
-    /** @test */
+    #[Test]
     public function it_uses_uuid_as_primary_key()
     {
         $org = Org::create([
@@ -326,7 +327,7 @@ class ReportTest extends TestCase
         $this->assertTrue(Str::isUuid($report->report_id));
     }
 
-    /** @test */
+    #[Test]
     public function it_has_timestamps()
     {
         $org = Org::create([
@@ -346,7 +347,7 @@ class ReportTest extends TestCase
         $this->assertNotNull($report->updated_at);
     }
 
-    /** @test */
+    #[Test]
     public function it_respects_rls_policies()
     {
         $org1 = Org::create([

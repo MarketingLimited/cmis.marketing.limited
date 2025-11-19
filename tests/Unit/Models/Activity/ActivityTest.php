@@ -9,6 +9,7 @@ use App\Models\Activity\Activity;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * Activity Model Unit Tests
  */
@@ -21,7 +22,7 @@ class ActivityTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_can_create_activity()
     {
         $org = Org::create([
@@ -56,7 +57,7 @@ class ActivityTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_belongs_to_org()
     {
         $org = Org::create([
@@ -88,7 +89,7 @@ class ActivityTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_belongs_to_user()
     {
         $org = Org::create([
@@ -120,7 +121,7 @@ class ActivityTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_tracks_different_actions()
     {
         $org = Org::create([
@@ -156,7 +157,7 @@ class ActivityTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_stores_properties_as_json()
     {
         $org = Org::create([
@@ -196,7 +197,7 @@ class ActivityTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_tracks_ip_address()
     {
         $org = Org::create([
@@ -229,7 +230,7 @@ class ActivityTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_tracks_user_agent()
     {
         $org = Org::create([
@@ -264,7 +265,7 @@ class ActivityTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_has_description()
     {
         $org = Org::create([
@@ -297,7 +298,7 @@ class ActivityTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_is_polymorphic()
     {
         $org = Org::create([
@@ -333,7 +334,7 @@ class ActivityTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_uses_uuid_as_primary_key()
     {
         $org = Org::create([
@@ -365,7 +366,7 @@ class ActivityTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_has_timestamps()
     {
         $org = Org::create([
@@ -398,7 +399,7 @@ class ActivityTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_respects_rls_policies()
     {
         $org1 = Org::create([
@@ -452,7 +453,7 @@ class ActivityTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_be_filtered_by_date_range()
     {
         $org = Org::create([

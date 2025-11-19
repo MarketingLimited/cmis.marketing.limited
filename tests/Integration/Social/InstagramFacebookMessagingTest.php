@@ -12,6 +12,7 @@ use App\Jobs\SendSocialMessageJob;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Str;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * Instagram & Facebook Messaging Integration Test
  *
@@ -26,7 +27,7 @@ class InstagramFacebookMessagingTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_receives_instagram_direct_message()
     {
         $setup = $this->createUserWithOrg();
@@ -95,7 +96,7 @@ class InstagramFacebookMessagingTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_sends_instagram_direct_message_reply()
     {
         Queue::fake();
@@ -145,7 +146,7 @@ class InstagramFacebookMessagingTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_receives_facebook_messenger_message()
     {
         $setup = $this->createUserWithOrg();
@@ -189,7 +190,7 @@ class InstagramFacebookMessagingTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_sends_facebook_messenger_reply()
     {
         Queue::fake();

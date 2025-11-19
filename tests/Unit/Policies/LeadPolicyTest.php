@@ -10,6 +10,7 @@ use App\Models\Lead\Lead;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * Lead Policy Unit Tests
  */
@@ -22,7 +23,7 @@ class LeadPolicyTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function admin_can_view_leads()
     {
         $org = Org::create([
@@ -62,7 +63,7 @@ class LeadPolicyTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function admin_can_create_leads()
     {
         $org = Org::create([
@@ -94,7 +95,7 @@ class LeadPolicyTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function admin_can_update_leads()
     {
         $org = Org::create([
@@ -134,7 +135,7 @@ class LeadPolicyTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function admin_can_delete_leads()
     {
         $org = Org::create([
@@ -174,7 +175,7 @@ class LeadPolicyTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function editor_can_view_leads()
     {
         $org = Org::create([
@@ -214,7 +215,7 @@ class LeadPolicyTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function editor_can_update_leads()
     {
         $org = Org::create([
@@ -254,7 +255,7 @@ class LeadPolicyTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function editor_cannot_delete_leads()
     {
         $org = Org::create([
@@ -295,7 +296,7 @@ class LeadPolicyTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function viewer_can_view_leads()
     {
         $org = Org::create([
@@ -335,7 +336,7 @@ class LeadPolicyTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function viewer_cannot_create_leads()
     {
         $org = Org::create([
@@ -368,7 +369,7 @@ class LeadPolicyTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function viewer_cannot_update_leads()
     {
         $org = Org::create([
@@ -409,7 +410,7 @@ class LeadPolicyTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_respects_org_boundaries()
     {
         $org1 = Org::create([

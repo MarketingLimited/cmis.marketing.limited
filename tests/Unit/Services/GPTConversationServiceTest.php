@@ -7,6 +7,7 @@ use App\Services\GPTConversationService;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
+use PHPUnit\Framework\Attributes\Test;
 class GPTConversationServiceTest extends TestCase
 {
     use RefreshDatabase;
@@ -30,7 +31,7 @@ class GPTConversationServiceTest extends TestCase
         parent::tearDown();
     }
 
-    /** @test */
+    #[Test]
     public function it_can_create_new_session()
     {
         $session = $this->service->createSession($this->userId, $this->orgId);
@@ -49,7 +50,7 @@ class GPTConversationServiceTest extends TestCase
         $this->assertEmpty($session['messages']);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_or_create_session()
     {
         $sessionId = null;
@@ -67,7 +68,7 @@ class GPTConversationServiceTest extends TestCase
         $this->assertEquals($session1['session_id'], $session2['session_id']);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_add_user_message()
     {
         $session = $this->service->createSession($this->userId, $this->orgId);
@@ -85,7 +86,7 @@ class GPTConversationServiceTest extends TestCase
         $this->assertEquals('Hello, how are you?', $message['content']);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_add_assistant_message()
     {
         $session = $this->service->createSession($this->userId, $this->orgId);
@@ -97,7 +98,7 @@ class GPTConversationServiceTest extends TestCase
         $this->assertEquals('I am fine, thank you!', $message['content']);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_add_message_with_metadata()
     {
         $session = $this->service->createSession($this->userId, $this->orgId);
@@ -115,7 +116,7 @@ class GPTConversationServiceTest extends TestCase
         $this->assertEquals('gpt-4', $message['metadata']['model']);
     }
 
-    /** @test */
+    #[Test]
     public function it_increments_message_count()
     {
         $session = $this->service->createSession($this->userId, $this->orgId);
@@ -130,7 +131,7 @@ class GPTConversationServiceTest extends TestCase
         $this->assertEquals(3, $updatedSession['metadata']['message_count']);
     }
 
-    /** @test */
+    #[Test]
     public function it_limits_message_history()
     {
         $session = $this->service->createSession($this->userId, $this->orgId);
@@ -150,7 +151,7 @@ class GPTConversationServiceTest extends TestCase
         $this->assertStringContainsString('Message 5', $updatedSession['messages'][0]['content']);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_conversation_history()
     {
         $session = $this->service->createSession($this->userId, $this->orgId);
@@ -168,7 +169,7 @@ class GPTConversationServiceTest extends TestCase
         $this->assertEquals('How are you?', $history[2]['content']);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_limit_history_results()
     {
         $session = $this->service->createSession($this->userId, $this->orgId);
@@ -185,7 +186,7 @@ class GPTConversationServiceTest extends TestCase
         $this->assertStringContainsString('Message 5', $history[0]['content']);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_update_session_context()
     {
         $session = $this->service->createSession($this->userId, $this->orgId);
@@ -204,7 +205,7 @@ class GPTConversationServiceTest extends TestCase
         $this->assertEquals('Creating content plan', $updatedSession['context']['current_task']);
     }
 
-    /** @test */
+    #[Test]
     public function it_merges_context_updates()
     {
         $session = $this->service->createSession($this->userId, $this->orgId);
@@ -219,7 +220,7 @@ class GPTConversationServiceTest extends TestCase
         $this->assertEquals('value2', $updatedSession['context']['key2']);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_build_gpt_context()
     {
         $session = $this->service->createSession($this->userId, $this->orgId);
@@ -242,7 +243,7 @@ class GPTConversationServiceTest extends TestCase
         $this->assertEquals(5, $context['context']['campaign_count']);
     }
 
-    /** @test */
+    #[Test]
     public function it_limits_context_message_history()
     {
         $session = $this->service->createSession($this->userId, $this->orgId);
@@ -259,7 +260,7 @@ class GPTConversationServiceTest extends TestCase
         $this->assertCount(5, $context['conversation_history']);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_clear_conversation_history()
     {
         $session = $this->service->createSession($this->userId, $this->orgId);
@@ -275,7 +276,7 @@ class GPTConversationServiceTest extends TestCase
         $this->assertEmpty($history);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_session_statistics()
     {
         $session = $this->service->createSession($this->userId, $this->orgId);
@@ -296,7 +297,7 @@ class GPTConversationServiceTest extends TestCase
         $this->assertEquals(2, $stats['message_count']);
     }
 
-    /** @test */
+    #[Test]
     public function it_returns_null_for_non_existent_session_stats()
     {
         $stats = $this->service->getSessionStats('non-existent-session-id');
@@ -304,7 +305,7 @@ class GPTConversationServiceTest extends TestCase
         $this->assertNull($stats);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_summarize_conversation()
     {
         $session = $this->service->createSession($this->userId, $this->orgId);
@@ -323,7 +324,7 @@ class GPTConversationServiceTest extends TestCase
         $this->assertArrayHasKey('summary', $summary);
     }
 
-    /** @test */
+    #[Test]
     public function it_stores_sessions_in_cache()
     {
         $session = $this->service->createSession($this->userId, $this->orgId);
@@ -334,7 +335,7 @@ class GPTConversationServiceTest extends TestCase
         $this->assertTrue(Cache::has($cacheKey));
     }
 
-    /** @test */
+    #[Test]
     public function it_sets_correct_cache_ttl()
     {
         $session = $this->service->createSession($this->userId, $this->orgId);
@@ -353,7 +354,7 @@ class GPTConversationServiceTest extends TestCase
         $this->assertFalse(Cache::has($cacheKey));
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_invalid_session_id_gracefully()
     {
         $this->expectException(\Exception::class);
@@ -361,7 +362,7 @@ class GPTConversationServiceTest extends TestCase
         $this->service->getSession('invalid-session-id');
     }
 
-    /** @test */
+    #[Test]
     public function it_generates_unique_message_ids()
     {
         $session = $this->service->createSession($this->userId, $this->orgId);
@@ -373,7 +374,7 @@ class GPTConversationServiceTest extends TestCase
         $this->assertNotEquals($message1['message_id'], $message2['message_id']);
     }
 
-    /** @test */
+    #[Test]
     public function it_maintains_message_order()
     {
         $session = $this->service->createSession($this->userId, $this->orgId);
@@ -390,7 +391,7 @@ class GPTConversationServiceTest extends TestCase
         $this->assertEquals('Third', $history[2]['content']);
     }
 
-    /** @test */
+    #[Test]
     public function it_preserves_org_context_in_session()
     {
         $session = $this->service->createSession($this->userId, $this->orgId);

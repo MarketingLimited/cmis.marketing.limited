@@ -12,6 +12,7 @@ use App\Models\User;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Queue;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * ProcessLeads Job Unit Tests
  */
@@ -24,7 +25,7 @@ class ProcessLeadsJobTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_processes_new_leads()
     {
         $org = Org::create([
@@ -51,7 +52,7 @@ class ProcessLeadsJobTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_assigns_lead_score()
     {
         $org = Org::create([
@@ -81,7 +82,7 @@ class ProcessLeadsJobTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_enriches_lead_data()
     {
         $org = Org::create([
@@ -109,7 +110,7 @@ class ProcessLeadsJobTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_lead_email()
     {
         $org = Org::create([
@@ -137,7 +138,7 @@ class ProcessLeadsJobTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_detects_duplicate_leads()
     {
         $org = Org::create([
@@ -173,7 +174,7 @@ class ProcessLeadsJobTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_assigns_to_campaign()
     {
         $org = Org::create([
@@ -202,7 +203,7 @@ class ProcessLeadsJobTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_be_dispatched()
     {
         Queue::fake();
@@ -230,7 +231,7 @@ class ProcessLeadsJobTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_sends_notification_to_sales_team()
     {
         $org = Org::create([
@@ -259,7 +260,7 @@ class ProcessLeadsJobTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_categorizes_leads_by_source()
     {
         $org = Org::create([
@@ -288,7 +289,7 @@ class ProcessLeadsJobTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_updates_lead_status()
     {
         $org = Org::create([
@@ -315,7 +316,7 @@ class ProcessLeadsJobTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_bulk_processing()
     {
         $org = Org::create([
@@ -346,7 +347,7 @@ class ProcessLeadsJobTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_tracks_processing_time()
     {
         $org = Org::create([

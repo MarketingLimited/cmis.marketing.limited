@@ -6,6 +6,7 @@ use Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Validator;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * UpdateCampaignRequest Unit Tests
  */
@@ -13,7 +14,7 @@ class UpdateCampaignRequestTest extends TestCase
 {
     use RefreshDatabase;
 
-    /** @test */
+    #[Test]
     public function it_validates_campaign_name_max_length()
     {
         $data = [
@@ -32,7 +33,7 @@ class UpdateCampaignRequestTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_campaign_type()
     {
         $invalidData = [
@@ -61,7 +62,7 @@ class UpdateCampaignRequestTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_status()
     {
         $invalidData = [
@@ -90,7 +91,7 @@ class UpdateCampaignRequestTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_budget_is_numeric()
     {
         $invalidData = [
@@ -119,7 +120,7 @@ class UpdateCampaignRequestTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_budget_minimum_value()
     {
         $invalidData = [
@@ -138,7 +139,7 @@ class UpdateCampaignRequestTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_date_format()
     {
         $invalidData = [
@@ -167,7 +168,7 @@ class UpdateCampaignRequestTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_end_date_after_start_date()
     {
         $invalidData = [
@@ -200,7 +201,7 @@ class UpdateCampaignRequestTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_target_audience_is_array()
     {
         $invalidData = [
@@ -232,7 +233,7 @@ class UpdateCampaignRequestTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_objectives_is_array()
     {
         $validData = [
@@ -255,7 +256,7 @@ class UpdateCampaignRequestTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_channels_is_array()
     {
         $validData = [
@@ -274,7 +275,7 @@ class UpdateCampaignRequestTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_allows_valid_campaign_data()
     {
         $validData = [
@@ -319,7 +320,7 @@ class UpdateCampaignRequestTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function all_fields_are_optional()
     {
         $data = [];

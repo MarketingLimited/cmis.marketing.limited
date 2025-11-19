@@ -7,6 +7,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use App\Validators\LeadValidator;
 use Illuminate\Support\Facades\Validator;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * Lead Validator Unit Tests
  */
@@ -22,7 +23,7 @@ class LeadValidatorTest extends TestCase
         $this->validator = new LeadValidator();
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_required_name()
     {
         $data = [
@@ -42,7 +43,7 @@ class LeadValidatorTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_email_format()
     {
         $data = [
@@ -63,7 +64,7 @@ class LeadValidatorTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_phone_format()
     {
         $data = [
@@ -85,7 +86,7 @@ class LeadValidatorTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_source_enum()
     {
         $data = [
@@ -106,7 +107,7 @@ class LeadValidatorTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_accepts_valid_sources()
     {
         $validSources = ['website', 'facebook', 'instagram', 'google_ads', 'linkedin', 'referral'];
@@ -130,7 +131,7 @@ class LeadValidatorTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_status_enum()
     {
         $data = [
@@ -152,7 +153,7 @@ class LeadValidatorTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_score_range()
     {
         $data = [
@@ -174,7 +175,7 @@ class LeadValidatorTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_custom_fields_as_array()
     {
         $data = [
@@ -196,7 +197,7 @@ class LeadValidatorTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_utm_parameters()
     {
         $data = [
@@ -218,7 +219,7 @@ class LeadValidatorTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_accepts_valid_lead_data()
     {
         $data = [

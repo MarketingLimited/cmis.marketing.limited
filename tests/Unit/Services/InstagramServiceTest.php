@@ -9,6 +9,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use App\Services\Social\InstagramService;
 use Illuminate\Support\Facades\Http;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * Instagram Service Unit Tests
  */
@@ -24,7 +25,7 @@ class InstagramServiceTest extends TestCase
         $this->service = app(InstagramService::class);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_publish_feed_post()
     {
         $setup = $this->createUserWithOrg();
@@ -50,7 +51,7 @@ class InstagramServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_publish_story()
     {
         $setup = $this->createUserWithOrg();
@@ -75,7 +76,7 @@ class InstagramServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_publish_reel()
     {
         $setup = $this->createUserWithOrg();
@@ -102,7 +103,7 @@ class InstagramServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_publish_carousel()
     {
         $setup = $this->createUserWithOrg();
@@ -131,7 +132,7 @@ class InstagramServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_account_insights()
     {
         $setup = $this->createUserWithOrg();
@@ -168,7 +169,7 @@ class InstagramServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_media_insights()
     {
         $setup = $this->createUserWithOrg();
@@ -205,7 +206,7 @@ class InstagramServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_comments()
     {
         $setup = $this->createUserWithOrg();
@@ -241,7 +242,7 @@ class InstagramServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_reply_to_comment()
     {
         $setup = $this->createUserWithOrg();
@@ -263,7 +264,7 @@ class InstagramServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_delete_comment()
     {
         $setup = $this->createUserWithOrg();
@@ -285,7 +286,7 @@ class InstagramServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_hashtag_search()
     {
         $setup = $this->createUserWithOrg();
@@ -313,7 +314,7 @@ class InstagramServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_api_errors_gracefully()
     {
         $setup = $this->createUserWithOrg();
@@ -337,7 +338,7 @@ class InstagramServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_rate_limiting()
     {
         $setup = $this->createUserWithOrg();

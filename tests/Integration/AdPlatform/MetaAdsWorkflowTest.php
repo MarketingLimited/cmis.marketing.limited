@@ -11,6 +11,7 @@ use App\Models\AdPlatform\AdAccount;
 use App\Models\AdPlatform\AdCampaign;
 use App\Models\AdPlatform\AdSet;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * Meta Ads Platform Complete Workflow Test
  */
@@ -26,7 +27,7 @@ class MetaAdsWorkflowTest extends TestCase
         $this->metaAdsService = app(MetaAdsService::class);
     }
 
-    /** @test */
+    #[Test]
     public function it_creates_meta_ad_campaign()
     {
         $setup = $this->createUserWithOrg();
@@ -61,7 +62,7 @@ class MetaAdsWorkflowTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_creates_ad_set_with_targeting()
     {
         $setup = $this->createUserWithOrg();
@@ -105,7 +106,7 @@ class MetaAdsWorkflowTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_creates_ad_creative_with_media()
     {
         $setup = $this->createUserWithOrg();
@@ -141,7 +142,7 @@ class MetaAdsWorkflowTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_syncs_ad_campaign_metrics()
     {
         $setup = $this->createUserWithOrg();
@@ -179,7 +180,7 @@ class MetaAdsWorkflowTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_updates_campaign_budget()
     {
         $setup = $this->createUserWithOrg();
@@ -206,7 +207,7 @@ class MetaAdsWorkflowTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_pauses_and_resumes_campaign()
     {
         $setup = $this->createUserWithOrg();
@@ -241,7 +242,7 @@ class MetaAdsWorkflowTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_creates_lookalike_audience()
     {
         $setup = $this->createUserWithOrg();

@@ -9,6 +9,7 @@ use App\Models\Core\Org;
 use App\Models\Core\Campaign;
 use Illuminate\Support\Str;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * Generate Analytics Report Command Unit Tests
  */
@@ -21,7 +22,7 @@ class GenerateAnalyticsReportCommandTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_can_generate_report_for_org()
     {
         $org = Org::create([
@@ -46,7 +47,7 @@ class GenerateAnalyticsReportCommandTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_accepts_date_range_parameters()
     {
         $org = Org::create([
@@ -66,7 +67,7 @@ class GenerateAnalyticsReportCommandTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_accepts_report_type_option()
     {
         $org = Org::create([
@@ -85,7 +86,7 @@ class GenerateAnalyticsReportCommandTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_org_id()
     {
         $this->artisan('analytics:generate', [
@@ -98,7 +99,7 @@ class GenerateAnalyticsReportCommandTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_export_to_pdf()
     {
         $org = Org::create([
@@ -117,7 +118,7 @@ class GenerateAnalyticsReportCommandTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_export_to_excel()
     {
         $org = Org::create([
@@ -136,7 +137,7 @@ class GenerateAnalyticsReportCommandTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_shows_progress_output()
     {
         $org = Org::create([
@@ -155,7 +156,7 @@ class GenerateAnalyticsReportCommandTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_errors_gracefully()
     {
         // Try with non-existent org

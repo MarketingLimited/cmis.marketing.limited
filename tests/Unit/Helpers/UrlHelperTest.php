@@ -5,6 +5,7 @@ namespace Tests\Unit\Helpers;
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * URL Helper Unit Tests
  */
@@ -17,7 +18,7 @@ class UrlHelperTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_url_format()
     {
         if (!function_exists('is_valid_url')) {
@@ -37,7 +38,7 @@ class UrlHelperTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_extracts_domain_from_url()
     {
         if (!function_exists('get_domain')) {
@@ -56,7 +57,7 @@ class UrlHelperTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_adds_utm_parameters()
     {
         if (!function_exists('add_utm_params')) {
@@ -84,7 +85,7 @@ class UrlHelperTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_extracts_utm_parameters()
     {
         if (!function_exists('extract_utm_params')) {
@@ -111,7 +112,7 @@ class UrlHelperTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_shortens_url()
     {
         if (!function_exists('shorten_url_display')) {
@@ -135,7 +136,7 @@ class UrlHelperTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_builds_query_string()
     {
         if (!function_exists('build_query_string')) {
@@ -160,7 +161,7 @@ class UrlHelperTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_parses_query_string()
     {
         if (!function_exists('parse_query_string')) {
@@ -183,7 +184,7 @@ class UrlHelperTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_checks_if_url_is_secure()
     {
         if (!function_exists('is_secure_url')) {
@@ -201,7 +202,7 @@ class UrlHelperTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_removes_query_parameters()
     {
         if (!function_exists('remove_query_params')) {
@@ -222,7 +223,7 @@ class UrlHelperTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_appends_path_to_url()
     {
         if (!function_exists('append_path')) {

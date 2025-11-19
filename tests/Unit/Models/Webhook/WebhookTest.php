@@ -8,6 +8,7 @@ use App\Models\Webhook\Webhook;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * Webhook Model Unit Tests
  */
@@ -20,7 +21,7 @@ class WebhookTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_can_create_webhook()
     {
         $org = Org::create([
@@ -43,7 +44,7 @@ class WebhookTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_belongs_to_org()
     {
         $org = Org::create([
@@ -62,7 +63,7 @@ class WebhookTest extends TestCase
         $this->assertEquals($org->org_id, $webhook->org->org_id);
     }
 
-    /** @test */
+    #[Test]
     public function it_has_different_event_types()
     {
         $org = Org::create([
@@ -92,7 +93,7 @@ class WebhookTest extends TestCase
         $this->assertCount(5, $webhooks);
     }
 
-    /** @test */
+    #[Test]
     public function it_stores_headers_as_json()
     {
         $org = Org::create([
@@ -119,7 +120,7 @@ class WebhookTest extends TestCase
         $this->assertEquals('custom_value', $webhook->headers['X-Custom-Header']);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_be_active_or_inactive()
     {
         $org = Org::create([
@@ -149,7 +150,7 @@ class WebhookTest extends TestCase
         $this->assertFalse($inactiveWebhook->is_active);
     }
 
-    /** @test */
+    #[Test]
     public function it_has_secret_for_signature_verification()
     {
         $org = Org::create([
@@ -169,7 +170,7 @@ class WebhookTest extends TestCase
         $this->assertEquals('webhook_secret_key_123', $webhook->secret);
     }
 
-    /** @test */
+    #[Test]
     public function it_tracks_delivery_attempts()
     {
         $org = Org::create([
@@ -195,7 +196,7 @@ class WebhookTest extends TestCase
         $this->assertEquals(1, $webhook->fresh()->successful_deliveries);
     }
 
-    /** @test */
+    #[Test]
     public function it_tracks_last_delivery_time()
     {
         $org = Org::create([
@@ -215,7 +216,7 @@ class WebhookTest extends TestCase
         $this->assertNotNull($webhook->last_delivered_at);
     }
 
-    /** @test */
+    #[Test]
     public function it_stores_retry_configuration()
     {
         $org = Org::create([
@@ -237,7 +238,7 @@ class WebhookTest extends TestCase
         $this->assertEquals(60, $webhook->retry_delay);
     }
 
-    /** @test */
+    #[Test]
     public function it_uses_uuid_as_primary_key()
     {
         $org = Org::create([
@@ -256,7 +257,7 @@ class WebhookTest extends TestCase
         $this->assertTrue(Str::isUuid($webhook->webhook_id));
     }
 
-    /** @test */
+    #[Test]
     public function it_has_timestamps()
     {
         $org = Org::create([
@@ -276,7 +277,7 @@ class WebhookTest extends TestCase
         $this->assertNotNull($webhook->updated_at);
     }
 
-    /** @test */
+    #[Test]
     public function it_respects_rls_policies()
     {
         $org1 = Org::create([

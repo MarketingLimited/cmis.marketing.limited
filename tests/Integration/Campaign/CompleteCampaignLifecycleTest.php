@@ -11,6 +11,7 @@ use App\Services\CreativeService;
 use App\Services\PublishingService;
 use App\Services\Ads\MetaAdsService;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * Complete Campaign Lifecycle Integration Test
  *
@@ -34,7 +35,7 @@ class CompleteCampaignLifecycleTest extends TestCase
         $this->metaAdsService = app(MetaAdsService::class);
     }
 
-    /** @test */
+    #[Test]
     public function it_executes_complete_campaign_lifecycle()
     {
         $setup = $this->createUserWithOrg();
@@ -202,7 +203,7 @@ class CompleteCampaignLifecycleTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_campaign_pause_and_resume()
     {
         $setup = $this->createUserWithOrg();
@@ -231,7 +232,7 @@ class CompleteCampaignLifecycleTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_archives_completed_campaign()
     {
         $setup = $this->createUserWithOrg();

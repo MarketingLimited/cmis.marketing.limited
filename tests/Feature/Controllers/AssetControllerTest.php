@@ -13,6 +13,7 @@ use Illuminate\Support\Str;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * Asset Controller Feature Tests
  */
@@ -26,7 +27,7 @@ class AssetControllerTest extends TestCase
         Storage::fake('assets');
     }
 
-    /** @test */
+    #[Test]
     public function it_can_list_assets()
     {
         $org = Org::create([
@@ -67,7 +68,7 @@ class AssetControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_upload_asset()
     {
         $org = Org::create([
@@ -102,7 +103,7 @@ class AssetControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_view_asset_details()
     {
         $org = Org::create([
@@ -143,7 +144,7 @@ class AssetControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_update_asset_metadata()
     {
         $org = Org::create([
@@ -184,7 +185,7 @@ class AssetControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_delete_asset()
     {
         $org = Org::create([
@@ -225,7 +226,7 @@ class AssetControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_filter_by_file_type()
     {
         $org = Org::create([
@@ -274,7 +275,7 @@ class AssetControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_search_assets()
     {
         $org = Org::create([
@@ -315,7 +316,7 @@ class AssetControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function viewer_cannot_delete_assets()
     {
         $org = Org::create([
@@ -356,7 +357,7 @@ class AssetControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_respects_org_isolation()
     {
         $org1 = Org::create([
@@ -410,7 +411,7 @@ class AssetControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_download_asset()
     {
         $org = Org::create([

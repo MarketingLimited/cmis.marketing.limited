@@ -12,6 +12,7 @@ use App\Models\AdPlatform\AdSet;
 use App\Models\AdPlatform\Ad;
 use Illuminate\Support\Str;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * TikTok Ads Platform Integration Tests
  */
@@ -24,7 +25,7 @@ class TikTokAdsWorkflowTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_creates_tiktok_ad_campaign()
     {
         $setup = $this->createUserWithOrg();
@@ -63,7 +64,7 @@ class TikTokAdsWorkflowTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_creates_tiktok_ad_set()
     {
         $setup = $this->createUserWithOrg();
@@ -120,7 +121,7 @@ class TikTokAdsWorkflowTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_creates_tiktok_video_ad()
     {
         $setup = $this->createUserWithOrg();
@@ -183,7 +184,7 @@ class TikTokAdsWorkflowTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_uploads_video_to_tiktok()
     {
         $setup = $this->createUserWithOrg();
@@ -210,7 +211,7 @@ class TikTokAdsWorkflowTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_fetches_tiktok_campaign_insights()
     {
         $setup = $this->createUserWithOrg();
@@ -263,7 +264,7 @@ class TikTokAdsWorkflowTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_pauses_tiktok_campaign()
     {
         $setup = $this->createUserWithOrg();
@@ -303,7 +304,7 @@ class TikTokAdsWorkflowTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_updates_tiktok_campaign_budget()
     {
         $setup = $this->createUserWithOrg();
@@ -344,7 +345,7 @@ class TikTokAdsWorkflowTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_tiktok_api_errors()
     {
         $setup = $this->createUserWithOrg();
@@ -369,7 +370,7 @@ class TikTokAdsWorkflowTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_respects_org_isolation_for_tiktok_campaigns()
     {
         $setup1 = $this->createUserWithOrg();

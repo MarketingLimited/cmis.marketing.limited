@@ -7,6 +7,7 @@ use Tests\Traits\CreatesTestData;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * Creative Brief API Feature Tests
  */
@@ -19,7 +20,7 @@ class CreativeBriefAPITest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_can_list_creative_briefs_for_organization()
     {
         $setup = $this->createUserWithOrg();
@@ -40,7 +41,7 @@ class CreativeBriefAPITest extends TestCase
                  ->assertJsonFragment(['name' => 'Brief 2']);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_create_a_creative_brief()
     {
         $setup = $this->createUserWithOrg();
@@ -77,7 +78,7 @@ class CreativeBriefAPITest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_view_a_specific_creative_brief()
     {
         $setup = $this->createUserWithOrg();
@@ -100,7 +101,7 @@ class CreativeBriefAPITest extends TestCase
                  ->assertJsonPath('data.brief_data.marketing_objective', 'brand_awareness');
     }
 
-    /** @test */
+    #[Test]
     public function it_can_update_a_creative_brief()
     {
         $setup = $this->createUserWithOrg();
@@ -132,7 +133,7 @@ class CreativeBriefAPITest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_delete_a_creative_brief()
     {
         $setup = $this->createUserWithOrg();
@@ -154,7 +155,7 @@ class CreativeBriefAPITest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_enforces_org_isolation_for_briefs()
     {
         $setup1 = $this->createUserWithOrg();
@@ -176,7 +177,7 @@ class CreativeBriefAPITest extends TestCase
                  ->assertJsonMissing(['name' => 'Org 2 Brief']);
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_creative_brief_creation_data()
     {
         $setup = $this->createUserWithOrg();
@@ -196,7 +197,7 @@ class CreativeBriefAPITest extends TestCase
                  ->assertJsonValidationErrors(['name']);
     }
 
-    /** @test */
+    #[Test]
     public function it_requires_authentication()
     {
         $response = $this->getJson('/api/creative-briefs');
@@ -204,7 +205,7 @@ class CreativeBriefAPITest extends TestCase
         $response->assertStatus(401);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_search_creative_briefs()
     {
         $setup = $this->createUserWithOrg();
@@ -223,7 +224,7 @@ class CreativeBriefAPITest extends TestCase
                  ->assertJsonMissing(['name' => 'Winter Campaign']);
     }
 
-    /** @test */
+    #[Test]
     public function it_includes_complete_art_direction_in_response()
     {
         $setup = $this->createUserWithOrg();

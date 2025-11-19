@@ -13,6 +13,7 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Storage;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * ExportCampaignData Job Unit Tests
  */
@@ -26,7 +27,7 @@ class ExportCampaignDataJobTest extends TestCase
         Storage::fake('exports');
     }
 
-    /** @test */
+    #[Test]
     public function it_exports_campaign_data_to_csv()
     {
         $org = Org::create([
@@ -60,7 +61,7 @@ class ExportCampaignDataJobTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_exports_campaign_data_to_excel()
     {
         $org = Org::create([
@@ -94,7 +95,7 @@ class ExportCampaignDataJobTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_exports_campaign_data_to_json()
     {
         $org = Org::create([
@@ -128,7 +129,7 @@ class ExportCampaignDataJobTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_be_dispatched()
     {
         Queue::fake();
@@ -162,7 +163,7 @@ class ExportCampaignDataJobTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_stores_export_file()
     {
         $org = Org::create([
@@ -196,7 +197,7 @@ class ExportCampaignDataJobTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_includes_campaign_analytics_in_export()
     {
         $org = Org::create([
@@ -230,7 +231,7 @@ class ExportCampaignDataJobTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_notifies_user_when_export_is_ready()
     {
         $org = Org::create([
@@ -264,7 +265,7 @@ class ExportCampaignDataJobTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_large_datasets()
     {
         $org = Org::create([

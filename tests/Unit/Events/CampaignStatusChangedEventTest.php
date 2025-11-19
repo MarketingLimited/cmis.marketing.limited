@@ -10,6 +10,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Event;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * CampaignStatusChanged Event Unit Tests
  */
@@ -22,7 +23,7 @@ class CampaignStatusChangedEventTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_can_be_instantiated()
     {
         $org = Org::create([
@@ -48,7 +49,7 @@ class CampaignStatusChangedEventTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_contains_old_and_new_status()
     {
         $org = Org::create([
@@ -74,7 +75,7 @@ class CampaignStatusChangedEventTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_be_dispatched()
     {
         Event::fake();
@@ -101,7 +102,7 @@ class CampaignStatusChangedEventTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_broadcasts_on_org_channel()
     {
         $org = Org::create([
@@ -127,7 +128,7 @@ class CampaignStatusChangedEventTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_triggers_notifications_for_important_changes()
     {
         Event::fake();
@@ -155,7 +156,7 @@ class CampaignStatusChangedEventTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_includes_timestamp()
     {
         $org = Org::create([
@@ -181,7 +182,7 @@ class CampaignStatusChangedEventTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_tracks_draft_to_active_transition()
     {
         Event::fake();
@@ -209,7 +210,7 @@ class CampaignStatusChangedEventTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_tracks_active_to_paused_transition()
     {
         Event::fake();
@@ -237,7 +238,7 @@ class CampaignStatusChangedEventTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_respects_org_context()
     {
         Event::fake();

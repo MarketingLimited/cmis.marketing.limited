@@ -8,6 +8,7 @@ use App\Models\Audience\AudienceSegment;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * Audience Segment Model Unit Tests
  */
@@ -20,7 +21,7 @@ class AudienceSegmentTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_can_create_audience_segment()
     {
         $org = Org::create([
@@ -46,7 +47,7 @@ class AudienceSegmentTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_belongs_to_org()
     {
         $org = Org::create([
@@ -64,7 +65,7 @@ class AudienceSegmentTest extends TestCase
         $this->assertEquals($org->org_id, $segment->org->org_id);
     }
 
-    /** @test */
+    #[Test]
     public function it_stores_criteria_as_json()
     {
         $org = Org::create([
@@ -90,7 +91,7 @@ class AudienceSegmentTest extends TestCase
         $this->assertContains('fashion', $segment->criteria['interests']);
     }
 
-    /** @test */
+    #[Test]
     public function it_tracks_audience_size()
     {
         $org = Org::create([
@@ -109,7 +110,7 @@ class AudienceSegmentTest extends TestCase
         $this->assertEquals(15000, $segment->audience_size);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_be_active_or_inactive()
     {
         $org = Org::create([
@@ -137,7 +138,7 @@ class AudienceSegmentTest extends TestCase
         $this->assertFalse($inactiveSegment->is_active);
     }
 
-    /** @test */
+    #[Test]
     public function it_supports_dynamic_and_static_segments()
     {
         $org = Org::create([
@@ -165,7 +166,7 @@ class AudienceSegmentTest extends TestCase
         $this->assertEquals('static', $staticSegment->segment_type);
     }
 
-    /** @test */
+    #[Test]
     public function it_stores_demographic_criteria()
     {
         $org = Org::create([
@@ -193,7 +194,7 @@ class AudienceSegmentTest extends TestCase
         $this->assertContains('ar', $segment->criteria['demographics']['languages']);
     }
 
-    /** @test */
+    #[Test]
     public function it_stores_behavioral_criteria()
     {
         $org = Org::create([
@@ -221,7 +222,7 @@ class AudienceSegmentTest extends TestCase
         $this->assertEquals('high', $segment->criteria['behavior']['email_engagement']);
     }
 
-    /** @test */
+    #[Test]
     public function it_tracks_last_calculated_date()
     {
         $org = Org::create([
@@ -240,7 +241,7 @@ class AudienceSegmentTest extends TestCase
         $this->assertNotNull($segment->last_calculated_at);
     }
 
-    /** @test */
+    #[Test]
     public function it_uses_uuid_as_primary_key()
     {
         $org = Org::create([
@@ -258,7 +259,7 @@ class AudienceSegmentTest extends TestCase
         $this->assertTrue(Str::isUuid($segment->segment_id));
     }
 
-    /** @test */
+    #[Test]
     public function it_has_timestamps()
     {
         $org = Org::create([
@@ -277,7 +278,7 @@ class AudienceSegmentTest extends TestCase
         $this->assertNotNull($segment->updated_at);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_be_soft_deleted()
     {
         $org = Org::create([
@@ -301,7 +302,7 @@ class AudienceSegmentTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_respects_rls_policies()
     {
         $org1 = Org::create([

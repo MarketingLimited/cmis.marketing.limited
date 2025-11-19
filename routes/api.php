@@ -1147,6 +1147,36 @@ Route::get('/cache/stats', [App\Http\Controllers\API\CacheController::class, 'st
 
 /*
 |--------------------------------------------------------------------------
+| AI Assistant API - Content Generation & Analysis (Global)
+| Rate Limited: 10 requests per minute per user
+|--------------------------------------------------------------------------
+*/
+Route::prefix('ai')->middleware(['auth:sanctum'])->group(function () {
+    // Content Suggestions & Generation
+    Route::post('/generate-suggestions', [App\Http\Controllers\API\AIAssistantController::class, 'generateSuggestions']);
+    Route::post('/generate-brief', [App\Http\Controllers\API\AIAssistantController::class, 'generateBrief']);
+    Route::post('/generate-visual', [App\Http\Controllers\API\AIAssistantController::class, 'generateVisual']);
+    Route::post('/generate-variations', [App\Http\Controllers\API\AIAssistantController::class, 'generateVariations']);
+    Route::post('/generate-calendar', [App\Http\Controllers\API\AIAssistantController::class, 'generateCalendar']);
+    Route::post('/generate-meta', [App\Http\Controllers\API\AIAssistantController::class, 'generateMeta']);
+
+    // Content Analysis
+    Route::post('/extract-keywords', [App\Http\Controllers\API\AIAssistantController::class, 'extractKeywords']);
+    Route::post('/analyze-sentiment', [App\Http\Controllers\API\AIAssistantController::class, 'analyzeSentiment']);
+    Route::post('/categorize', [App\Http\Controllers\API\AIAssistantController::class, 'categorize']);
+
+    // Social Media Tools
+    Route::post('/generate-hashtags', [App\Http\Controllers\API\AIAssistantController::class, 'generateHashtags']);
+
+    // Translation
+    Route::post('/translate', [App\Http\Controllers\API\AIAssistantController::class, 'translate']);
+
+    // Improvements & Suggestions
+    Route::post('/suggest-improvements', [App\Http\Controllers\API\AIAssistantController::class, 'suggestImprovements']);
+});
+
+/*
+|--------------------------------------------------------------------------
 | OAuth Callbacks (Public - No Authentication Required)
 |--------------------------------------------------------------------------
 */

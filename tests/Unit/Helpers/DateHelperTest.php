@@ -4,12 +4,13 @@ namespace Tests\Unit\Helpers;
 
 use Tests\TestCase;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * Date Helper Unit Tests
  */
 class DateHelperTest extends TestCase
 {
-    /** @test */
+    #[Test]
     public function it_formats_date_for_display()
     {
         $date = '2024-06-15';
@@ -23,7 +24,7 @@ class DateHelperTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_calculates_days_difference()
     {
         $startDate = '2024-06-01';
@@ -39,7 +40,7 @@ class DateHelperTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_checks_if_date_is_past()
     {
         $pastDate = now()->subDays(5)->toDateString();
@@ -54,7 +55,7 @@ class DateHelperTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_checks_if_date_is_future()
     {
         $futureDate = now()->addDays(5)->toDateString();
@@ -69,7 +70,7 @@ class DateHelperTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_gets_start_of_month()
     {
         $date = '2024-06-15';
@@ -83,7 +84,7 @@ class DateHelperTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_gets_end_of_month()
     {
         $date = '2024-06-15';
@@ -97,7 +98,7 @@ class DateHelperTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_formats_time_ago()
     {
         $recentDate = now()->subMinutes(5);
@@ -111,7 +112,7 @@ class DateHelperTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_gets_date_range_array()
     {
         $startDate = '2024-06-01';

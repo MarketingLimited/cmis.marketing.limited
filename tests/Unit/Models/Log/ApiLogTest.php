@@ -9,6 +9,7 @@ use App\Models\Log\ApiLog;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * ApiLog Model Unit Tests
  */
@@ -21,7 +22,7 @@ class ApiLogTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_can_create_api_log()
     {
         $org = Org::create([
@@ -43,7 +44,7 @@ class ApiLogTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_belongs_to_org()
     {
         $org = Org::create([
@@ -62,7 +63,7 @@ class ApiLogTest extends TestCase
         $this->assertEquals($org->org_id, $apiLog->org->org_id);
     }
 
-    /** @test */
+    #[Test]
     public function it_belongs_to_user()
     {
         $org = Org::create([
@@ -89,7 +90,7 @@ class ApiLogTest extends TestCase
         $this->assertEquals($user->user_id, $apiLog->user->user_id);
     }
 
-    /** @test */
+    #[Test]
     public function it_logs_different_http_methods()
     {
         $org = Org::create([
@@ -113,7 +114,7 @@ class ApiLogTest extends TestCase
         $this->assertCount(5, $logs);
     }
 
-    /** @test */
+    #[Test]
     public function it_stores_request_payload()
     {
         $org = Org::create([
@@ -140,7 +141,7 @@ class ApiLogTest extends TestCase
         $this->assertEquals(5000, $apiLog->request_payload['budget']);
     }
 
-    /** @test */
+    #[Test]
     public function it_stores_response_payload()
     {
         $org = Org::create([
@@ -167,7 +168,7 @@ class ApiLogTest extends TestCase
         $this->assertNotNull($apiLog->response_payload['campaign_id']);
     }
 
-    /** @test */
+    #[Test]
     public function it_tracks_response_time()
     {
         $org = Org::create([
@@ -187,7 +188,7 @@ class ApiLogTest extends TestCase
         $this->assertEquals(125.45, $apiLog->response_time);
     }
 
-    /** @test */
+    #[Test]
     public function it_stores_ip_address()
     {
         $org = Org::create([
@@ -207,7 +208,7 @@ class ApiLogTest extends TestCase
         $this->assertEquals('192.168.1.100', $apiLog->ip_address);
     }
 
-    /** @test */
+    #[Test]
     public function it_stores_user_agent()
     {
         $org = Org::create([
@@ -229,7 +230,7 @@ class ApiLogTest extends TestCase
         $this->assertEquals($userAgent, $apiLog->user_agent);
     }
 
-    /** @test */
+    #[Test]
     public function it_logs_different_status_codes()
     {
         $org = Org::create([
@@ -253,7 +254,7 @@ class ApiLogTest extends TestCase
         $this->assertCount(6, $logs);
     }
 
-    /** @test */
+    #[Test]
     public function it_stores_error_message_for_failed_requests()
     {
         $org = Org::create([
@@ -273,7 +274,7 @@ class ApiLogTest extends TestCase
         $this->assertEquals('Validation failed: name field is required', $apiLog->error_message);
     }
 
-    /** @test */
+    #[Test]
     public function it_uses_uuid_as_primary_key()
     {
         $org = Org::create([
@@ -292,7 +293,7 @@ class ApiLogTest extends TestCase
         $this->assertTrue(Str::isUuid($apiLog->log_id));
     }
 
-    /** @test */
+    #[Test]
     public function it_has_timestamps()
     {
         $org = Org::create([
@@ -312,7 +313,7 @@ class ApiLogTest extends TestCase
         $this->assertNotNull($apiLog->updated_at);
     }
 
-    /** @test */
+    #[Test]
     public function it_respects_rls_policies()
     {
         $org1 = Org::create([

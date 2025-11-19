@@ -11,6 +11,7 @@ use App\Models\Activity\ActivityLog;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Queue;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * CleanupOldLogs Job Unit Tests
  */
@@ -23,7 +24,7 @@ class CleanupOldLogsJobTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_cleans_up_old_api_logs()
     {
         $org = Org::create([
@@ -61,7 +62,7 @@ class CleanupOldLogsJobTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_cleans_up_old_activity_logs()
     {
         $org = Org::create([
@@ -97,7 +98,7 @@ class CleanupOldLogsJobTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_be_dispatched()
     {
         Queue::fake();
@@ -112,7 +113,7 @@ class CleanupOldLogsJobTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_accepts_custom_retention_days()
     {
         $org = Org::create([
@@ -141,7 +142,7 @@ class CleanupOldLogsJobTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_respects_org_isolation()
     {
         $org1 = Org::create([
@@ -184,7 +185,7 @@ class CleanupOldLogsJobTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_returns_deleted_count()
     {
         $org = Org::create([
@@ -216,7 +217,7 @@ class CleanupOldLogsJobTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_no_logs_to_delete()
     {
         $org = Org::create([
@@ -245,7 +246,7 @@ class CleanupOldLogsJobTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_processes_in_batches()
     {
         $org = Org::create([

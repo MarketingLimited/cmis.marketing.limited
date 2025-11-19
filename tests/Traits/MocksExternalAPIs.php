@@ -175,6 +175,21 @@ trait MocksExternalAPIs
     {
         $responses = [
             'success' => [
+                'candidates' => [
+                    [
+                        'content' => [
+                            'parts' => [
+                                [
+                                    'text' => 'This is a test AI-generated response. Here are some marketing suggestions for your campaign.',
+                                ],
+                            ],
+                        ],
+                        'finishReason' => 'STOP',
+                        'index' => 0,
+                    ],
+                ],
+            ],
+            'embedding' => [
                 'embedding' => [
                     'values' => array_fill(0, 768, 0.1),
                 ],

@@ -15,6 +15,7 @@ use App\Models\Knowledge\SemanticSearchLog;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Str;
 
+use PHPUnit\Framework\Attributes\Test;
 class EmbeddingWorkflowTest extends TestCase
 {
     use RefreshDatabase, CreatesTestData, MocksExternalAPIs;
@@ -31,7 +32,7 @@ class EmbeddingWorkflowTest extends TestCase
         $this->feedbackService = app(KnowledgeFeedbackService::class);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_generate_embeddings_for_content()
     {
         $this->mockGeminiAPI('success');
@@ -50,7 +51,7 @@ class EmbeddingWorkflowTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_caches_generated_embeddings()
     {
         $this->mockGeminiAPI('success');
@@ -85,7 +86,7 @@ class EmbeddingWorkflowTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_perform_semantic_search()
     {
         $this->mockGeminiAPI('success');
@@ -113,7 +114,7 @@ class EmbeddingWorkflowTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_caches_search_results()
     {
         $this->mockGeminiAPI('success');
@@ -142,7 +143,7 @@ class EmbeddingWorkflowTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_queue_embedding_generation()
     {
         Queue::fake();
@@ -162,7 +163,7 @@ class EmbeddingWorkflowTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_embedding_api_errors()
     {
         $this->mockGeminiAPI('error');
@@ -172,7 +173,7 @@ class EmbeddingWorkflowTest extends TestCase
         $this->embeddingService->generateEmbedding('test content');
     }
 
-    /** @test */
+    #[Test]
     public function it_can_register_feedback_for_search_results()
     {
         $setup = $this->createUserWithOrg();
@@ -205,7 +206,7 @@ class EmbeddingWorkflowTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_batch_generate_embeddings()
     {
         $this->mockGeminiAPI('batch_success');
@@ -228,7 +229,7 @@ class EmbeddingWorkflowTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_respects_embedding_quality_threshold()
     {
         $this->mockGeminiAPI('success');
@@ -247,7 +248,7 @@ class EmbeddingWorkflowTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_update_embeddings_when_content_changes()
     {
         $this->mockGeminiAPI('success');

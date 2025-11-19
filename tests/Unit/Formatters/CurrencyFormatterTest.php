@@ -5,6 +5,7 @@ namespace Tests\Unit\Formatters;
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * Currency Formatter Unit Tests
  */
@@ -17,7 +18,7 @@ class CurrencyFormatterTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_formats_sar_currency()
     {
         if (!function_exists('format_sar')) {
@@ -35,7 +36,7 @@ class CurrencyFormatterTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_formats_usd_currency()
     {
         if (!function_exists('format_usd')) {
@@ -53,7 +54,7 @@ class CurrencyFormatterTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_converts_sar_to_usd()
     {
         if (!function_exists('sar_to_usd')) {
@@ -71,7 +72,7 @@ class CurrencyFormatterTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_converts_usd_to_sar()
     {
         if (!function_exists('usd_to_sar')) {
@@ -89,7 +90,7 @@ class CurrencyFormatterTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_formats_with_custom_decimals()
     {
         if (!function_exists('format_currency_decimals')) {
@@ -107,7 +108,7 @@ class CurrencyFormatterTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_formats_large_amounts()
     {
         if (!function_exists('format_large_currency')) {
@@ -131,7 +132,7 @@ class CurrencyFormatterTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_negative_amounts()
     {
         if (!function_exists('format_currency_signed')) {
@@ -150,7 +151,7 @@ class CurrencyFormatterTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_formats_without_decimals()
     {
         if (!function_exists('format_currency_whole')) {
@@ -168,7 +169,7 @@ class CurrencyFormatterTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_supports_multiple_currencies()
     {
         if (!function_exists('format_multi_currency')) {
@@ -200,7 +201,7 @@ class CurrencyFormatterTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_calculates_percentage_of_budget()
     {
         if (!function_exists('budget_percentage')) {

@@ -11,6 +11,7 @@ use App\Models\Webhook\Webhook;
 use App\Models\Team\TeamMember;
 use Illuminate\Support\Str;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * Webhook Controller Feature Tests
  */
@@ -23,7 +24,7 @@ class WebhookControllerTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_can_list_webhooks()
     {
         $org = Org::create([
@@ -65,7 +66,7 @@ class WebhookControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_create_webhook()
     {
         $org = Org::create([
@@ -98,7 +99,7 @@ class WebhookControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_update_webhook()
     {
         $org = Org::create([
@@ -140,7 +141,7 @@ class WebhookControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_delete_webhook()
     {
         $org = Org::create([
@@ -182,7 +183,7 @@ class WebhookControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_show_webhook_details()
     {
         $org = Org::create([
@@ -224,7 +225,7 @@ class WebhookControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_toggle_webhook_status()
     {
         $org = Org::create([
@@ -266,7 +267,7 @@ class WebhookControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_test_webhook_delivery()
     {
         $org = Org::create([
@@ -308,7 +309,7 @@ class WebhookControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function viewer_cannot_create_webhooks()
     {
         $org = Org::create([
@@ -341,7 +342,7 @@ class WebhookControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_respects_org_isolation()
     {
         $org1 = Org::create([
@@ -397,7 +398,7 @@ class WebhookControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_view_webhook_delivery_logs()
     {
         $org = Org::create([

@@ -10,6 +10,7 @@ use App\Notifications\CampaignCompletedNotification;
 use App\Notifications\CampaignStartedNotification;
 use App\Notifications\PostPublishedNotification;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * Campaign Notification Unit Tests
  */
@@ -22,7 +23,7 @@ class CampaignNotificationTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_can_send_campaign_completed_notification()
     {
         Notification::fake();
@@ -46,7 +47,7 @@ class CampaignNotificationTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_includes_campaign_details_in_notification()
     {
         Notification::fake();
@@ -72,7 +73,7 @@ class CampaignNotificationTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_send_campaign_started_notification()
     {
         Notification::fake();
@@ -96,7 +97,7 @@ class CampaignNotificationTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_send_post_published_notification()
     {
         Notification::fake();
@@ -121,7 +122,7 @@ class CampaignNotificationTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_supports_mail_channel()
     {
         $setup = $this->createUserWithOrg();
@@ -140,7 +141,7 @@ class CampaignNotificationTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_supports_database_channel()
     {
         $setup = $this->createUserWithOrg();
@@ -159,7 +160,7 @@ class CampaignNotificationTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_creates_database_notification_record()
     {
         $setup = $this->createUserWithOrg();
@@ -183,7 +184,7 @@ class CampaignNotificationTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_be_sent_to_multiple_users()
     {
         Notification::fake();
@@ -205,7 +206,7 @@ class CampaignNotificationTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_includes_action_url_in_notification()
     {
         $setup = $this->createUserWithOrg();
@@ -226,7 +227,7 @@ class CampaignNotificationTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_respects_user_notification_preferences()
     {
         Notification::fake();
@@ -249,6 +250,11 @@ class CampaignNotificationTest extends TestCase
 
         // Check if notification respects preferences
         $channels = $notification->via($user);
+
+        // Assert that channels array is returned
+        $this->assertIsArray($channels);
+        // When notification is disabled, channels should be empty or not include standard channels
+        $this->assertEmpty($channels, 'Notification channels should be empty when user preferences disable them');
 
         $this->logTestResult('passed', [
             'notification' => 'CampaignCompletedNotification',

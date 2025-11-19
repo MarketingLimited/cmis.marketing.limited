@@ -8,6 +8,7 @@ use App\Models\Platform\PlatformConnection;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * PlatformConnection Model Unit Tests
  */
@@ -20,7 +21,7 @@ class PlatformConnectionTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_can_create_platform_connection()
     {
         $org = Org::create([
@@ -41,7 +42,7 @@ class PlatformConnectionTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_belongs_to_org()
     {
         $org = Org::create([
@@ -59,7 +60,7 @@ class PlatformConnectionTest extends TestCase
         $this->assertEquals($org->org_id, $connection->org->org_id);
     }
 
-    /** @test */
+    #[Test]
     public function it_has_different_platforms()
     {
         $org = Org::create([
@@ -82,7 +83,7 @@ class PlatformConnectionTest extends TestCase
         $this->assertCount(6, $connections);
     }
 
-    /** @test */
+    #[Test]
     public function it_has_different_statuses()
     {
         $org = Org::create([
@@ -116,7 +117,7 @@ class PlatformConnectionTest extends TestCase
         $this->assertEquals('expired', $expired->status);
     }
 
-    /** @test */
+    #[Test]
     public function it_stores_access_token()
     {
         $org = Org::create([
@@ -135,7 +136,7 @@ class PlatformConnectionTest extends TestCase
         $this->assertNotNull($connection->access_token);
     }
 
-    /** @test */
+    #[Test]
     public function it_stores_refresh_token()
     {
         $org = Org::create([
@@ -155,7 +156,7 @@ class PlatformConnectionTest extends TestCase
         $this->assertNotNull($connection->refresh_token);
     }
 
-    /** @test */
+    #[Test]
     public function it_tracks_token_expiry()
     {
         $org = Org::create([
@@ -176,7 +177,7 @@ class PlatformConnectionTest extends TestCase
         $this->assertTrue($connection->expires_at->isFuture());
     }
 
-    /** @test */
+    #[Test]
     public function it_stores_platform_account_id()
     {
         $org = Org::create([
@@ -195,7 +196,7 @@ class PlatformConnectionTest extends TestCase
         $this->assertEquals('fb_page_123456789', $connection->platform_account_id);
     }
 
-    /** @test */
+    #[Test]
     public function it_stores_platform_account_name()
     {
         $org = Org::create([
@@ -214,7 +215,7 @@ class PlatformConnectionTest extends TestCase
         $this->assertEquals('شركة_التسويق_الرقمي', $connection->platform_account_name);
     }
 
-    /** @test */
+    #[Test]
     public function it_stores_additional_metadata()
     {
         $org = Org::create([
@@ -240,7 +241,7 @@ class PlatformConnectionTest extends TestCase
         $this->assertTrue($connection->metadata['verified']);
     }
 
-    /** @test */
+    #[Test]
     public function it_tracks_last_synced_time()
     {
         $org = Org::create([
@@ -259,7 +260,7 @@ class PlatformConnectionTest extends TestCase
         $this->assertNotNull($connection->last_synced_at);
     }
 
-    /** @test */
+    #[Test]
     public function it_uses_uuid_as_primary_key()
     {
         $org = Org::create([
@@ -277,7 +278,7 @@ class PlatformConnectionTest extends TestCase
         $this->assertTrue(Str::isUuid($connection->connection_id));
     }
 
-    /** @test */
+    #[Test]
     public function it_has_timestamps()
     {
         $org = Org::create([
@@ -296,7 +297,7 @@ class PlatformConnectionTest extends TestCase
         $this->assertNotNull($connection->updated_at);
     }
 
-    /** @test */
+    #[Test]
     public function it_respects_rls_policies()
     {
         $org1 = Org::create([

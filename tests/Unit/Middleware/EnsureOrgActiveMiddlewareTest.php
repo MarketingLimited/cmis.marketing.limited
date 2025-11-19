@@ -9,6 +9,7 @@ use App\Models\Team\TeamMember;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * EnsureOrgActive Middleware Unit Tests
  */
@@ -21,7 +22,7 @@ class EnsureOrgActiveMiddlewareTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_allows_active_org_access()
     {
         $org = Org::create([
@@ -53,7 +54,7 @@ class EnsureOrgActiveMiddlewareTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_blocks_inactive_org_access()
     {
         $org = Org::create([
@@ -85,7 +86,7 @@ class EnsureOrgActiveMiddlewareTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_blocks_suspended_org_access()
     {
         $org = Org::create([
@@ -117,7 +118,7 @@ class EnsureOrgActiveMiddlewareTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_provides_appropriate_error_message()
     {
         $org = Org::create([
@@ -149,7 +150,7 @@ class EnsureOrgActiveMiddlewareTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_checks_org_trial_expiry()
     {
         $org = Org::create([
@@ -182,7 +183,7 @@ class EnsureOrgActiveMiddlewareTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_allows_access_during_grace_period()
     {
         $org = Org::create([
@@ -216,7 +217,7 @@ class EnsureOrgActiveMiddlewareTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_exempts_admin_users()
     {
         $org = Org::create([
@@ -242,7 +243,7 @@ class EnsureOrgActiveMiddlewareTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_missing_org()
     {
         $user = User::create([
@@ -261,7 +262,7 @@ class EnsureOrgActiveMiddlewareTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_respects_different_org_statuses()
     {
         $activeOrg = Org::create([

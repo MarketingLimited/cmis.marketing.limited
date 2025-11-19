@@ -9,6 +9,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Support\Str;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * Comprehensive test suite for Organization web flows
  * Tests the complete organization lifecycle through web interface
@@ -42,7 +43,7 @@ class OrgWebFlowTest extends TestCase
         );
     }
 
-    /** @test */
+    #[Test]
     public function authenticated_user_can_view_orgs_list_page()
     {
         $response = $this->actingAs($this->user)
@@ -53,7 +54,7 @@ class OrgWebFlowTest extends TestCase
             ->assertViewHas('orgs');
     }
 
-    /** @test */
+    #[Test]
     public function unauthenticated_user_cannot_view_orgs_list()
     {
         $response = $this->get(route('orgs.index'));
@@ -62,7 +63,7 @@ class OrgWebFlowTest extends TestCase
             ->assertRedirect(route('login'));
     }
 
-    /** @test */
+    #[Test]
     public function authenticated_user_can_view_create_org_form()
     {
         $response = $this->actingAs($this->user)
@@ -72,7 +73,7 @@ class OrgWebFlowTest extends TestCase
             ->assertViewIs('orgs.create');
     }
 
-    /** @test */
+    #[Test]
     public function user_can_create_new_organization_with_valid_data()
     {
         $orgData = [
@@ -109,7 +110,7 @@ class OrgWebFlowTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function user_can_create_organization_with_minimal_required_data()
     {
         $orgData = [
@@ -130,7 +131,7 @@ class OrgWebFlowTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function organization_creation_fails_without_required_name()
     {
         $orgData = [
@@ -148,7 +149,7 @@ class OrgWebFlowTest extends TestCase
         $this->assertDatabaseCount('cmis.orgs', 0);
     }
 
-    /** @test */
+    #[Test]
     public function organization_name_must_be_unique()
     {
         $orgName = 'Duplicate Org Name';
@@ -173,7 +174,7 @@ class OrgWebFlowTest extends TestCase
         $this->assertDatabaseCount('cmis.orgs', 1);
     }
 
-    /** @test */
+    #[Test]
     public function organization_creation_with_invalid_currency_code_fails()
     {
         $orgData = [
@@ -188,7 +189,7 @@ class OrgWebFlowTest extends TestCase
             ->assertSessionHasErrors(['currency']);
     }
 
-    /** @test */
+    #[Test]
     public function user_can_view_their_organization()
     {
         // Create org and associate user
@@ -214,7 +215,7 @@ class OrgWebFlowTest extends TestCase
             ->assertViewHas('org');
     }
 
-    /** @test */
+    #[Test]
     public function organization_stores_creator_as_owner()
     {
         $orgData = [
@@ -237,7 +238,7 @@ class OrgWebFlowTest extends TestCase
         $this->assertNotNull($userOrg->joined_at);
     }
 
-    /** @test */
+    #[Test]
     public function organization_creation_rolls_back_on_failure()
     {
         // This test simulates a failure scenario
@@ -262,7 +263,7 @@ class OrgWebFlowTest extends TestCase
         $this->assertEquals($userOrgCountBefore, UserOrg::count());
     }
 
-    /** @test */
+    #[Test]
     public function organization_supports_different_locales()
     {
         $locales = ['ar-BH', 'en-US', 'ar-SA', 'ar-AE'];
@@ -286,7 +287,7 @@ class OrgWebFlowTest extends TestCase
         }
     }
 
-    /** @test */
+    #[Test]
     public function organization_supports_different_currencies()
     {
         $currencies = ['BHD', 'SAR', 'AED', 'USD'];
@@ -310,7 +311,7 @@ class OrgWebFlowTest extends TestCase
         }
     }
 
-    /** @test */
+    #[Test]
     public function organization_provider_field_is_optional()
     {
         $orgData = [
@@ -328,7 +329,7 @@ class OrgWebFlowTest extends TestCase
         $this->assertNull($org->provider);
     }
 
-    /** @test */
+    #[Test]
     public function organization_can_set_provider_field()
     {
         $orgData = [
@@ -348,7 +349,7 @@ class OrgWebFlowTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function created_organization_has_valid_uuid()
     {
         $orgData = [
@@ -364,7 +365,7 @@ class OrgWebFlowTest extends TestCase
         $this->assertTrue(Str::isUuid($org->org_id));
     }
 
-    /** @test */
+    #[Test]
     public function created_organization_has_timestamps()
     {
         $orgData = [
@@ -380,7 +381,7 @@ class OrgWebFlowTest extends TestCase
         $this->assertNull($org->deleted_at);  // Should not be soft deleted
     }
 
-    /** @test */
+    #[Test]
     public function organization_index_shows_all_organizations()
     {
         // Create multiple orgs
@@ -404,7 +405,7 @@ class OrgWebFlowTest extends TestCase
         }
     }
 
-    /** @test */
+    #[Test]
     public function form_validation_provides_helpful_error_messages()
     {
         // Test with empty name

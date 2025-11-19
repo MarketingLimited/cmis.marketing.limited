@@ -5,6 +5,7 @@ namespace Tests\Unit\Formatters;
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * Number Formatter Unit Tests
  */
@@ -17,7 +18,7 @@ class NumberFormatterTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_formats_currency()
     {
         if (!function_exists('format_currency')) {
@@ -36,7 +37,7 @@ class NumberFormatterTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_formats_saudi_riyal()
     {
         if (!function_exists('format_sar')) {
@@ -55,7 +56,7 @@ class NumberFormatterTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_formats_percentage()
     {
         if (!function_exists('format_percentage')) {
@@ -74,7 +75,7 @@ class NumberFormatterTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_formats_large_numbers()
     {
         if (!function_exists('format_large_number')) {
@@ -98,7 +99,7 @@ class NumberFormatterTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_formats_file_size()
     {
         if (!function_exists('format_file_size')) {
@@ -122,7 +123,7 @@ class NumberFormatterTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_formats_phone_number()
     {
         if (!function_exists('format_phone')) {
@@ -145,7 +146,7 @@ class NumberFormatterTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_calculates_percentage_change()
     {
         if (!function_exists('calculate_percentage_change')) {
@@ -167,7 +168,7 @@ class NumberFormatterTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_rounds_to_nearest()
     {
         if (!function_exists('round_to_nearest')) {
@@ -186,7 +187,7 @@ class NumberFormatterTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_formats_decimal_with_arabic_numbers()
     {
         if (!function_exists('format_arabic_number')) {
@@ -207,7 +208,7 @@ class NumberFormatterTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_calculates_average()
     {
         if (!function_exists('calculate_average')) {
@@ -229,7 +230,7 @@ class NumberFormatterTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_formats_with_thousand_separator()
     {
         if (!function_exists('format_with_separator')) {
@@ -247,7 +248,7 @@ class NumberFormatterTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_calculates_discount_amount()
     {
         if (!function_exists('calculate_discount')) {
@@ -266,7 +267,7 @@ class NumberFormatterTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_formats_rating()
     {
         if (!function_exists('format_rating')) {
