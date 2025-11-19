@@ -247,7 +247,7 @@ Audit Log (Tests\Unit\Models\Operations\AuditLog)
 Auth (Tests\Feature\Auth\Auth)
  [ ] Login requires correct password
  [x] Login fails with nonexistent email
- [ ] Login fails for inactive users
+ [x] Login fails for inactive users
  [x] Login validates required fields
  [ ] Registration creates user and returns token
  [ ] Registration with org creates organization
@@ -1780,7 +1780,7 @@ Security Headers (Tests\Feature\Security\SecurityHeaders)
  [ ] Security headers on api responses
  [x] Security headers on error responses
  [x] All critical security headers present
- [ ] Security headers on authenticated routes
+ [x] Security headers on authenticated routes
  [ ] Security headers dont break functionality
  [x] Csp allows necessary resources
 
@@ -1811,7 +1811,7 @@ Semantic Search Service (Tests\Unit\Services\CMIS\SemanticSearchService)
 Send Campaign Notification Listener (Tests\Unit\Listeners\SendCampaignNotificationListener)
  [ ] It sends notification when campaign is created
  [ ] It handles event correctly
- [ ] It can be queued
+ [x] It can be queued
  [ ] It handles errors gracefully
 
 Send Email Campaign Job (Tests\Unit\Jobs\SendEmailCampaignJob)
