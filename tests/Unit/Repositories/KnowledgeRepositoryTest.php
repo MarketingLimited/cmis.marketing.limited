@@ -23,6 +23,14 @@ class KnowledgeRepositoryTest extends TestCase
         $this->repository = app(KnowledgeRepository::class);
     }
 
+    protected function tearDown(): void
+    {
+        \Mockery::close();
+        @restore_error_handler();
+        @restore_exception_handler();
+        parent::tearDown();
+    }
+
     #[Test]
     public function it_can_register_knowledge()
     {

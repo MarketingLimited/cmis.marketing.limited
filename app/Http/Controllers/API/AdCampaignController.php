@@ -33,7 +33,7 @@ class AdCampaignController extends Controller
     {
         try {
             $validated = $request->validate([
-                'integration_id' => 'required|string|exists:cmis_integrations.integrations,integration_id',
+                'integration_id' => 'required|string|exists:cmis.integrations,integration_id',
                 'campaign_name' => 'required|string',
                 'objective' => 'required|string',
                 'status' => 'nullable|string|in:ACTIVE,PAUSED,DRAFT',
@@ -269,7 +269,7 @@ class AdCampaignController extends Controller
     {
         try {
             $validated = $request->validate([
-                'integration_id' => 'required|string|exists:cmis_integrations.integrations,integration_id',
+                'integration_id' => 'required|string|exists:cmis.integrations,integration_id',
             ]);
 
             $orgId = $request->user()->org_id;

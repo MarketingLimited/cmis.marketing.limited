@@ -15,6 +15,18 @@ class SMSService
         return false;
     }
 
+    public function sendSMS(string $to, string $message): array
+    {
+        // TODO: Implement SMS sending
+        return ['success' => true, 'message_id' => 'test_sms_' . uniqid()];
+    }
+
+    public function scheduleSMS(string $to, string $message, string $scheduleDate): array
+    {
+        // TODO: Implement SMS scheduling
+        return ['success' => true, 'scheduled_id' => 'test_scheduled_' . uniqid()];
+    }
+
     public function sendTemplate(string $template, array $data): bool
     {
         // TODO: Implement template SMS sending

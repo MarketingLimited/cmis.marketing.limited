@@ -16,7 +16,7 @@ class Integration extends Model
 
     protected $connection = 'pgsql';
 
-    protected $table = 'cmis_integrations.integrations';
+    protected $table = 'cmis.integrations';
 
     protected $primaryKey = 'integration_id';
 

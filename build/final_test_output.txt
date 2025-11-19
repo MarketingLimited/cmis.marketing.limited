@@ -1,0 +1,2202 @@
+Enabling RLS on cmis.orgs...
+Enabling RLS on cmis.org_markets...
+Enabling RLS on cmis.user_orgs...
+Enabling RLS on cmis.campaigns...
+Enabling RLS on cmis.content_plans...
+Enabling RLS on cmis.content_items...
+Enabling RLS on cmis.creative_assets...
+Enabling RLS on cmis.ad_accounts...
+Enabling RLS on cmis.ad_campaigns...
+Enabling RLS on cmis.ad_sets...
+Enabling RLS on cmis.ad_entities...
+Enabling RLS on cmis.ad_metrics...
+Creating RLS policy for cmis.orgs...
+Creating RLS policy for cmis.org_markets...
+Creating RLS policy for cmis.user_orgs...
+Creating RLS policy for cmis.campaigns...
+Creating RLS policy for cmis.content_plans...
+Creating RLS policy for cmis.content_items...
+Creating RLS policy for cmis.creative_assets...
+Creating RLS policy for cmis.ad_accounts...
+Creating RLS policy for cmis.ad_campaigns...
+Creating RLS policy for cmis.ad_sets...
+Creating RLS policy for cmis.ad_entities...
+Creating RLS policy for cmis.ad_metrics...
+Row-Level Security enabled successfully!
+
+⚠️  CRITICAL MIGRATION: Converting users.user_id from BIGINT to UUID
+This will invalidate all existing user sessions and API tokens.
+Press Ctrl+C within 10 seconds to abort...
+
+Step 1/10: Checking current schema...
+✓ Users table already uses UUID. Skipping migration.
+
+📊 Adding performance indexes...
+
+Creating indexes for campaigns table...
+✓ Created index: idx_campaigns_org_status
+✓ Created index: idx_campaigns_dates
+✓ Created index: idx_campaigns_created
+Creating indexes for content_plans table...
+✓ Created index: idx_content_plans_campaign
+✓ Created index: idx_content_plans_org_created
+Creating indexes for content_items table...
+✓ Created index: idx_content_items_plan
+✓ Created index: idx_content_items_status
+Creating indexes for ad_accounts table...
+✓ Created index: idx_ad_accounts_status
+Creating indexes for ad_campaigns table...
+⚠ Warning: Could not create index idx_ad_campaigns_account: SQLSTATE[42703]: Undefined column: 7 ERROR:  column "ad_account_id" does not exist (Connection: pgsql, SQL: 
+                    CREATE INDEX IF NOT EXISTS idx_ad_campaigns_account
+                    ON cmis.ad_campaigns (ad_account_id, status)
+                )
+⚠ Warning: Could not create index idx_ad_campaigns_dates: SQLSTATE[25P02]: In failed sql transaction: 7 ERROR:  current transaction is aborted, commands ignored until end of transaction block (Connection: pgsql, SQL: 
+                    CREATE INDEX IF NOT EXISTS idx_ad_campaigns_dates
+                    ON cmis.ad_campaigns (start_date, end_date)
+                )
+Creating indexes for ad_metrics table...
+⚠ Warning: Could not create index idx_ad_metrics_entity_date: SQLSTATE[25P02]: In failed sql transaction: 7 ERROR:  current transaction is aborted, commands ignored until end of transaction block (Connection: pgsql, SQL: 
+                    CREATE INDEX IF NOT EXISTS idx_ad_metrics_entity_date
+                    ON cmis.ad_metrics (ad_entity_id, recorded_at DESC)
+                )
+⚠ Warning: Could not create index idx_ad_metrics_date: SQLSTATE[25P02]: In failed sql transaction: 7 ERROR:  current transaction is aborted, commands ignored until end of transaction block (Connection: pgsql, SQL: 
+                    CREATE INDEX IF NOT EXISTS idx_ad_metrics_date
+                    ON cmis.ad_metrics (recorded_at DESC)
+                )
+⚠ Warning: Could not create index idx_ad_metrics_campaign: SQLSTATE[25P02]: In failed sql transaction: 7 ERROR:  current transaction is aborted, commands ignored until end of transaction block (Connection: pgsql, SQL: 
+                    CREATE INDEX IF NOT EXISTS idx_ad_metrics_campaign
+                    ON cmis.ad_metrics (ad_campaign_id, recorded_at DESC)
+                )
+Creating indexes for user_orgs table...
+⚠ Warning: Could not create index idx_user_orgs_user: SQLSTATE[25P02]: In failed sql transaction: 7 ERROR:  current transaction is aborted, commands ignored until end of transaction block (Connection: pgsql, SQL: 
+                    CREATE INDEX IF NOT EXISTS idx_user_orgs_user
+                    ON cmis.user_orgs (user_id, is_active)
+                )
+⚠ Warning: Could not create index idx_user_orgs_org: SQLSTATE[25P02]: In failed sql transaction: 7 ERROR:  current transaction is aborted, commands ignored until end of transaction block (Connection: pgsql, SQL: 
+                    CREATE INDEX IF NOT EXISTS idx_user_orgs_org
+                    ON cmis.user_orgs (org_id, is_active)
+                )
+Creating indexes for creative_assets table...
+⚠ Warning: Could not create index idx_creative_assets_org: SQLSTATE[25P02]: In failed sql transaction: 7 ERROR:  current transaction is aborted, commands ignored until end of transaction block (Connection: pgsql, SQL: 
+                    CREATE INDEX IF NOT EXISTS idx_creative_assets_org
+                    ON cmis.creative_assets (org_id, asset_type)
+                )
+⚠ Warning: Could not create index idx_creative_assets_created: SQLSTATE[25P02]: In failed sql transaction: 7 ERROR:  current transaction is aborted, commands ignored until end of transaction block (Connection: pgsql, SQL: 
+                    CREATE INDEX IF NOT EXISTS idx_creative_assets_created
+                    ON cmis.creative_assets (created_at DESC)
+                )
+Creating indexes for compliance_audits table...
+⚠ Warning: Could not create index idx_compliance_audits_content: SQLSTATE[25P02]: In failed sql transaction: 7 ERROR:  current transaction is aborted, commands ignored until end of transaction block (Connection: pgsql, SQL: 
+                    CREATE INDEX IF NOT EXISTS idx_compliance_audits_content
+                    ON cmis.compliance_audits (content_item_id)
+                )
+⚠ Warning: Could not create index idx_compliance_audits_status: SQLSTATE[25P02]: In failed sql transaction: 7 ERROR:  current transaction is aborted, commands ignored until end of transaction block (Connection: pgsql, SQL: 
+                    CREATE INDEX IF NOT EXISTS idx_compliance_audits_status
+                    ON cmis.compliance_audits (status, created_at DESC)
+                )
+Creating indexes for activity_logs table...
+⚠ Warning: Could not create index idx_audit_user_date: SQLSTATE[25P02]: In failed sql transaction: 7 ERROR:  current transaction is aborted, commands ignored until end of transaction block (Connection: pgsql, SQL: 
+                    CREATE INDEX IF NOT EXISTS idx_audit_user_date
+                    ON cmis_audit.activity_logs (user_id, created_at DESC)
+                )
+⚠ Warning: Could not create index idx_audit_action: SQLSTATE[25P02]: In failed sql transaction: 7 ERROR:  current transaction is aborted, commands ignored until end of transaction block (Connection: pgsql, SQL: 
+                    CREATE INDEX IF NOT EXISTS idx_audit_action
+                    ON cmis_audit.activity_logs (action, created_at DESC)
+                )
+⚠ Warning: Could not create index idx_audit_model: SQLSTATE[25P02]: In failed sql transaction: 7 ERROR:  current transaction is aborted, commands ignored until end of transaction block (Connection: pgsql, SQL: 
+                    CREATE INDEX IF NOT EXISTS idx_audit_model
+                    ON cmis_audit.activity_logs (model_type, model_id)
+                )
+Creating indexes for personal_access_tokens table...
+⚠ Warning: Could not create index idx_tokens_tokenable: SQLSTATE[25P02]: In failed sql transaction: 7 ERROR:  current transaction is aborted, commands ignored until end of transaction block (Connection: pgsql, SQL: 
+                    CREATE INDEX IF NOT EXISTS idx_tokens_tokenable
+                    ON personal_access_tokens (tokenable_type, tokenable_id)
+                )
+⚠ Warning: Could not create index idx_tokens_created: SQLSTATE[25P02]: In failed sql transaction: 7 ERROR:  current transaction is aborted, commands ignored until end of transaction block (Connection: pgsql, SQL: 
+                    CREATE INDEX IF NOT EXISTS idx_tokens_created
+                    ON personal_access_tokens (created_at DESC)
+                )
+
+✓ All performance indexes created successfully!
+✓ Query performance should be significantly improved
+
+
+📊 Adding foreign key constraints for user reference columns...
+
+⚠️  Could not add FK fk_user_permissions_user: SQLSTATE[42830]: Invalid foreign key: 7 ERROR:  there is no unique constraint matching given keys fo...
+⚠️  Could not add FK fk_user_activities_user: SQLSTATE[42830]: Invalid foreign key: 7 ERROR:  there is no unique constraint matching given keys fo...
+⚠️  Could not add FK fk_user_sessions_user: SQLSTATE[42830]: Invalid foreign key: 7 ERROR:  there is no unique constraint matching given keys fo...
+⚠️  Could not add FK fk_sessions_user: SQLSTATE[42830]: Invalid foreign key: 7 ERROR:  there is no unique constraint matching given keys fo...
+⚠️  Could not add FK fk_scheduled_social_posts_user: SQLSTATE[42830]: Invalid foreign key: 7 ERROR:  there is no unique constraint matching given keys fo...
+⚠️  Could not add FK fk_security_context_audit_user: SQLSTATE[42830]: Invalid foreign key: 7 ERROR:  there is no unique constraint matching given keys fo...
+⚠️  Could not add FK fk_audience_templates_created_by: SQLSTATE[42830]: Invalid foreign key: 7 ERROR:  there is no unique constraint matching given keys fo...
+⚠️  Could not add FK fk_campaign_context_links_created_by: SQLSTATE[42830]: Invalid foreign key: 7 ERROR:  there is no unique constraint matching given keys fo...
+⚠️  Could not add FK fk_campaigns_created_by: SQLSTATE[42830]: Invalid foreign key: 7 ERROR:  there is no unique constraint matching given keys fo...
+⚠️  Could not add FK fk_integrations_created_by: SQLSTATE[42830]: Invalid foreign key: 7 ERROR:  there is no unique constraint matching given keys fo...
+⚠️  Could not add FK fk_roles_created_by: SQLSTATE[42830]: Invalid foreign key: 7 ERROR:  there is no unique constraint matching given keys fo...
+⚠️  Could not add FK fk_campaign_context_links_updated_by: SQLSTATE[42830]: Invalid foreign key: 7 ERROR:  there is no unique constraint matching given keys fo...
+⚠️  Could not add FK fk_integrations_updated_by: SQLSTATE[42830]: Invalid foreign key: 7 ERROR:  there is no unique constraint matching given keys fo...
+⚠️  Could not add FK fk_team_invitations_invited_by: SQLSTATE[42830]: Invalid foreign key: 7 ERROR:  there is no unique constraint matching given keys fo...
+⚠️  Could not add FK fk_user_orgs_invited_by: SQLSTATE[42830]: Invalid foreign key: 7 ERROR:  there is no unique constraint matching given keys fo...
+
+✅ Foreign key migration complete!
+   Added: 0
+   Skipped: 15
+
+✓ Fixed performance_metrics constraints
+✓ Notifications table created with RLS policies
+
+📊 Creating foreign keys directly...
+
+⚠️  Could not add FK fk_user_permissions_user: SQLSTATE[42830]: Invalid foreign key: 7 ERROR:  there is no unique constraint ma...
+⚠️  Could not add FK fk_user_activities_user: SQLSTATE[42830]: Invalid foreign key: 7 ERROR:  there is no unique constraint ma...
+⚠️  Could not add FK fk_user_sessions_user: SQLSTATE[42830]: Invalid foreign key: 7 ERROR:  there is no unique constraint ma...
+⚠️  Could not add FK fk_sessions_user: SQLSTATE[42830]: Invalid foreign key: 7 ERROR:  there is no unique constraint ma...
+⚠️  Could not add FK fk_scheduled_social_posts_user: SQLSTATE[42830]: Invalid foreign key: 7 ERROR:  there is no unique constraint ma...
+⚠️  Could not add FK fk_security_context_audit_user: SQLSTATE[42830]: Invalid foreign key: 7 ERROR:  there is no unique constraint ma...
+⚠️  Could not add FK fk_notifications_user: SQLSTATE[42830]: Invalid foreign key: 7 ERROR:  there is no unique constraint ma...
+⚠️  Could not add FK fk_audience_templates_created_by: SQLSTATE[42830]: Invalid foreign key: 7 ERROR:  there is no unique constraint ma...
+⚠️  Could not add FK fk_campaign_context_links_created_by: SQLSTATE[42830]: Invalid foreign key: 7 ERROR:  there is no unique constraint ma...
+⚠️  Could not add FK fk_campaigns_created_by: SQLSTATE[42830]: Invalid foreign key: 7 ERROR:  there is no unique constraint ma...
+⚠️  Could not add FK fk_integrations_created_by: SQLSTATE[42830]: Invalid foreign key: 7 ERROR:  there is no unique constraint ma...
+⚠️  Could not add FK fk_roles_created_by: SQLSTATE[42830]: Invalid foreign key: 7 ERROR:  there is no unique constraint ma...
+⚠️  Could not add FK fk_campaign_context_links_updated_by: SQLSTATE[42830]: Invalid foreign key: 7 ERROR:  there is no unique constraint ma...
+⚠️  Could not add FK fk_integrations_updated_by: SQLSTATE[42830]: Invalid foreign key: 7 ERROR:  there is no unique constraint ma...
+⚠️  Could not add FK fk_team_invitations_invited_by: SQLSTATE[42830]: Invalid foreign key: 7 ERROR:  there is no unique constraint ma...
+⚠️  Could not add FK fk_user_orgs_invited_by: SQLSTATE[42830]: Invalid foreign key: 7 ERROR:  there is no unique constraint ma...
+✓ Added FK: fk_notifications_org on cmis.notifications.org_id -> cmis.orgs.org_id
+
+✅ Foreign key creation complete!
+   Added: 1
+   Skipped: 16
+
+✓ Added updated_at to cmis.orgs
+✓ Added created_at to cmis.user_orgs
+✓ Added updated_at to cmis.user_orgs
+✓ Added created_at to cmis.org_markets
+✓ Added updated_at to cmis.org_markets
+✓ Added updated_at to cmis.ad_campaigns
+✓ Added updated_at to cmis.ad_metrics
+✓ Added updated_at to cmis.ai_actions
+✓ Added updated_at to cmis.ai_generated_campaigns
+✓ Added updated_at to cmis.ai_models
+✓ Added updated_at to cmis.cognitive_tracker_template
+✓ Added updated_at to cmis.cognitive_trends
+✓ Added updated_at to cmis.compliance_audits
+✓ Added updated_at to cmis.content_plans
+✓ Added updated_at to cmis.contexts
+✓ Added updated_at to cmis.contexts_base
+✓ Added updated_at to cmis.copy_components
+✓ Added updated_at to cmis.creative_assets
+✓ Added updated_at to cmis.creative_briefs
+✓ Added updated_at to cmis.experiments
+✓ Added updated_at to cmis.export_bundles
+✓ Added updated_at to cmis.field_definitions
+✓ Added updated_at to cmis.field_values
+✓ Added updated_at to cmis.job_batches
+✓ Added updated_at to cmis.jobs
+✓ Added updated_at to cmis.meta_documentation
+✓ Added updated_at to cmis.meta_field_dictionary
+✓ Added updated_at to cmis.meta_function_descriptions
+✓ Added updated_at to cmis.offerings_full_details
+✓ Added updated_at to cmis.offerings_old
+✓ Added updated_at to cmis.password_reset_tokens
+✓ Added updated_at to cmis.predictive_visual_engine
+✓ Added updated_at to cmis.reference_entities
+✓ Added updated_at to cmis.roles
+✓ Added updated_at to cmis.security_context_audit
+✓ Added updated_at to cmis.social_post_metrics
+✓ Added updated_at to cmis.social_posts
+✓ Added updated_at to cmis.team_account_access
+✓ Added updated_at to cmis.user_activities
+✓ Added updated_at to cmis.user_sessions
+✓ Added updated_at to cmis.value_contexts
+✓ Added created_at to cmis.permissions
+✓ Added updated_at to cmis.permissions
+✓ Added created_at to cmis.role_permissions
+✓ Added updated_at to cmis.role_permissions
+✓ Added created_at to cmis.user_permissions
+✓ Added updated_at to cmis.user_permissions
+✓ Added created_at to cmis.social_accounts
+✓ Added created_at to cmis.team_invitations
+✓ Added updated_at to cmis.team_invitations
+✓ Added created_at to cmis.sessions
+✓ Added updated_at to cmis.sessions
+✓ Added current_org_id to cmis.users
+✓ Added status to cmis.users
+✓ Added id column to cmis.notifications
+✓ Created transaction context functions
+✓ Added notifiable_type and notifiable_id to cmis.notifications
+✓ Added post_id to cmis.scheduled_social_posts
+✓ Added metadata to cmis.users
+✓ Added primary key to cmis.users(user_id)
+✓ Added account_username to cmis.integrations
+✓ Added account_name to cmis.integrations
+✓ Added refresh_token to cmis.integrations
+✓ Added token_expires_at to cmis.integrations
+✓ Added expires_at to cmis.integrations
+✓ Added status to cmis.integrations
+✓ Added metadata to cmis.integrations
+✓ Added scopes to cmis.integrations
+✓ Added user_org_id to cmis.user_orgs
+✓ Added invited_at to cmis.user_orgs
+✓ Made campaign_external_id nullable in cmis.ad_campaigns
+✓ Created table: cmis.team_members
+✓ Created table: cmis.leads
+✓ Created table: cmis.webhooks
+✓ Created table: cmis.contacts
+✓ Created table: cmis.knowledge_index
+✓ Created table: cmis.subscriptions
+✓ Created table: cmis.api_logs
+✓ Created table: cmis.content_plan_items
+✓ Created table: cmis.offerings
+✓ Created table: cmis.content
+✓ Created table: cmis.platform_connections
+✓ Created table: cmis.assets
+✓ Created table: cmis.invoices
+✓ Created table: cmis.audiences
+✓ Created table: cmis.templates
+✓ Created table: cmis.posts
+✓ Created table: cmis.custom_fields
+✓ Created table: cmis.comments
+✓ Created table: cmis.budgets
+✓ Created table: cmis.audit_logs
+
+✅ Migration complete! Created 20 missing tables.
+✓ Added code column to public.markets
+✓ Updated cmis.markets view to include code column
+✓ Added name column to cmis.permissions
+
+✅ Added missing columns successfully!
+✓ Created table: cmis.audience_segments
+✓ Created table: cmis.analytics_snapshots
+✓ Created table: cmis.analytics_reports
+✓ Created table: cmis.activities
+✓ Created table: cmis.workflows
+✓ Created table: cmis.tags
+✓ Created table: cmis.notification_preferences
+✓ Created table: cmis.metrics
+✓ Created table: cmis.content_media
+✓ Created table: cmis.campaign_budgets
+
+✅ Migration complete! Created 10 additional tables.
+✓ Added team_member_id to team_members
+✓ Added updated_at to api_logs
+✓ Added name to markets
+✓ Added knowledge_id to knowledge_index
+✓ Added platform to posts
+✓ Added commentable_type to comments
+✓ Added commentable_id to comments
+✓ Added total_amount to budgets
+✓ Added title to knowledge_index
+✓ Added score to leads
+✓ Added log_id to audit_logs
+
+✅ All column fixes applied successfully!
+✓ Created table: cmis.activity_logs
+✓ Created table: cmis.settings
+✓ Created table: cmis.schedules
+✓ Created table: cmis.campaign_analytics
+✓ Created table: cmis.social_posts_v2
+✓ Created table: cmis.social_accounts_v2
+✓ Created table: cmis.content_plans_v2
+✓ Created table: cmis.scheduled_social_posts_v2
+✓ Created table: cmis.embeddings_cache
+✓ Created table: cmis.campaign_metrics
+
+✅ Migration complete! Created 10 additional tables.
+✓ Made event_type nullable in webhooks
+✓ Made plan_id nullable in content_plan_items
+✓ Made role_name nullable in roles
+✓ Made permission_code nullable in permissions
+✓ Made brief_data nullable in creative_briefs
+
+✅ All NULL constraint fixes applied!
+✓ Added usage_count to assets
+✓ Added report_name to analytics_reports
+✓ Added activity_id to activity_logs
+
+   FAIL  Tests\Feature\Controllers\NotificationControllerTest
+  ⨯ user cannot access others notifications                             15.36s  
+  ⨯ it paginates notifications                                           0.32s  
+  ⨯ it can list user notifications                                       0.31s  
+  ⨯ it can mark all as read                                              0.31s  
+  ⨯ it can delete notification                                           0.31s  
+  ⨯ it can mark notification as read                                     0.31s  
+  ⨯ it shows unread count                                                0.31s  
+  ⨯ it filters by notification type                                      0.31s  
+  ⨯ it can delete all read notifications                                 0.31s  
+
+   FAIL  Tests\Feature\API\AnalyticsAPITest
+  ⨯ it enforces org isolation for analytics                              0.63s  
+  ⨯ it requires authentication                                           0.08s  
+  ⨯ it can compare campaigns                                             0.33s  
+  ⨯ it can get content performance                                       0.33s  
+  ⨯ it can get analytics by date range                                   0.34s  
+  ⨯ it can calculate roi                                                 0.34s  
+  ⨯ it can get engagement metrics                                        0.33s  
+  ⨯ it can get audience demographics                                     0.33s  
+  ⨯ it can export analytics to pdf                                       0.34s  
+  ⨯ it can get overall organization analytics                            0.33s  
+  ⨯ it can get social media analytics                                    0.33s  
+  ⨯ it can export analytics to excel                                     0.33s  
+  ⨯ it can get funnel analytics                                          0.34s  
+  ⨯ it can get campaign analytics                                        0.33s  
+
+   FAIL  Tests\Feature\API\TeamAPITest
+  ⨯ it validates email on invite                                         0.33s  
+  ⨯ it can get team member details                                       0.56s  
+  ⨯ it can get team statistics                                           0.32s  
+  ⨯ it can list team members                                             0.79s  
+  ⨯ it can update team member role                                       0.56s  
+  ⨯ it prevents duplicate email invites                                  0.56s  
+  ⨯ it can update team member permissions                                0.56s  
+  ⨯ it can get team activity log                                         0.32s  
+  ⨯ it can invite team member                                            0.33s  
+  ⨯ it can resend invitation                                             0.55s  
+  ⨯ it respects org isolation                                            0.80s  
+  ⨯ it can remove team member                                            0.56s  
+
+   FAIL  Tests\Feature\Creative\ContentPlanControllerTest
+  ⨯ it can create a content plan
+  ⨯ it can list content plans
+  ⨯ it requires reason when rejecting
+  ⨯ it can delete a content plan
+  ⨯ it validates required fields when creating
+  ⨯ it cannot show content plan from different org
+  ⨯ it can show a content plan
+  ⨯ it enforces pagination limits
+  ⨯ it requires authentication
+  ⨯ it can reject a content plan
+  ⨯ it can get content plan stats
+  ⨯ it can filter content plans by campaign
+  ⨯ it can approve a content plan
+  ⨯ it can update a content plan
+
+   FAIL  Tests\Feature\Controllers\ContentControllerTest
+  ⨯ it can create content item                                           0.33s  
+  ⨯ it can delete content item                                           0.32s  
+  ⨯ it can schedule content                                              0.32s  
+  ⨯ it requires authentication                                           0.09s  
+  ⨯ it can list content items                                            0.32s  
+  ⨯ it validates required fields                                         0.32s  
+  ⨯ it can get single content item                                       0.32s  
+  ⨯ it can filter by status                                              0.31s  
+  ⨯ it respects org isolation                                            0.55s  
+  ⨯ it can update content item                                           0.32s  
+
+   FAIL  Tests\Feature\Security\SecurityHeadersTest
+  ! security headers on authenticated routes → file_get_contents(/home/… 0.11s  
+  ! security headers are present → file_get_contents(/home/user/cmis.ma… 0.09s  
+  ! hsts header not in development → file_get_contents(/home/user/cmis.… 0.07s  
+  ! csp header for html responses → file_get_contents(/home/user/cmis.m… 0.08s  
+  ! referrer policy is set → file_get_contents(/home/user/cmis.marketin… 0.08s  
+  ! x xss protection is enabled → file_get_contents(/home/user/cmis.mar… 0.07s  
+  ! all critical security headers present → file_get_contents(/home/use… 0.07s  
+  ! x frame options is sameorigin → file_get_contents(/home/user/cmis.m… 0.08s  
+  ! csp allows necessary resources → file_get_contents(/home/user/cmis.… 0.07s  
+  ! permissions policy is restrictive → file_get_contents(/home/user/cm… 0.07s  
+  ! security headers on error responses → file_get_contents(/home/user/… 0.09s  
+  ⨯ security headers on api responses                                    0.09s  
+  ! hsts header in production → file_get_contents(/home/user/cmis.marke… 0.07s  
+  ⨯ security headers dont break functionality                            0.08s  
+  ! x content type options is nosniff → file_get_contents(/home/user/cm… 0.07s  
+
+   FAIL  Tests\Feature\Controllers\SettingsControllerTest
+  ⨯ it can view billing settings                                         0.31s  
+  ⨯ it can view notification settings                                    0.31s  
+  ⨯ it validates settings updates                                        0.31s  
+  ⨯ it respects org isolation                                            0.30s  
+  ⨯ it can view integration settings                                     0.30s  
+  ⨯ viewer cannot update settings                                        0.30s  
+  ⨯ it can view general settings                                         0.31s  
+  ⨯ it can update notification preferences                               0.31s  
+  ⨯ it can update security settings                                      0.31s  
+  ⨯ it can update org settings                                           0.31s  
+
+   FAIL  Tests\Feature\Auth\AuthTest
+  ⨯ registration creates user and returns token                          0.12s  
+  ! login validates required fields → file_get_contents(/home/user/cmis… 0.09s  
+  ⨯ logout all revokes all tokens                                        0.08s  
+  ⨯ authenticated user can update profile                                0.08s  
+  ⨯ registration with org creates organization                           0.08s  
+  ⨯ login requires correct password                                      0.77s  
+  ⨯ authenticated user can get profile                                   0.09s  
+  ! login fails with nonexistent email → file_get_contents(/home/user/c… 0.09s  
+  ⨯ token refresh works                                                  0.08s  
+  ! login fails for inactive users → file_get_contents(/home/user/cmis.… 0.54s  
+  ! token refresh requires authentication → file_get_contents(/home/use… 0.08s  
+  ⨯ logout revokes current token                                         0.08s  
+  ⨯ password is hashed during registration                               0.08s  
+
+   FAIL  Tests\Feature\Orgs\OrgManagementTest
+  ⨯ user can view organization details                                   0.10s  
+  ⨯ user can create new organization                                     0.09s  
+  ⨯ owner can update organization                                        0.09s  
+  ⨯ owner can soft delete organization                                   0.08s  
+  ⨯ non owner cannot delete organization                                 0.08s  
+  ⨯ user can list their organizations                                    0.11s  
+  ⨯ user can view org statistics                                         0.09s  
+  ⨯ user cannot access org without membership                            0.09s  
+
+   FAIL  Tests\Feature\API\IntegrationAPITest
+  ⨯ it can get integration activity log                                  0.34s  
+  ⨯ it can connect instagram integration                                 0.34s  
+  ⨯ it validates platform on connect                                     0.33s  
+  ⨯ it can test integration connection                                   0.33s  
+  ⨯ it can list all integrations                                         0.34s  
+  ⨯ it can sync integration data                                         0.34s  
+  ⨯ it can get available integrations                                    0.34s  
+  ⨯ it can refresh integration token                                     0.34s  
+  ⨯ it can get integration permissions                                   0.33s  
+  ⨯ it respects org isolation                                            0.57s  
+  ⨯ it can get integration by id                                         0.32s  
+  ⨯ it can configure webhook for integration                             0.33s  
+  ⨯ it can disconnect integration                                        0.33s  
+
+   FAIL  Tests\Feature\API\AIAssistantAPITest
+  ⨯ it can generate content calendar                                     0.33s  
+  ⨯ it can generate hashtags                                             0.32s  
+  ⨯ it can generate content variations                                   0.33s  
+  ⨯ it can auto categorize content                                       0.33s  
+  ! it handles ai api errors → file_get_contents(/home/user/cmis.market… 0.32s  
+  ⨯ it can generate campaign brief                                       0.33s  
+  ⨯ it can generate visual description                                   0.32s  
+  ⨯ it can extract keywords                                              0.32s  
+  ⨯ it can analyze sentiment                                             0.33s  
+  ⨯ it can generate content suggestions                                  0.32s  
+  ⨯ it can translate content                                             0.32s  
+  ⨯ it can generate meta description                                     0.33s  
+  ! it validates required fields → file_get_contents(/home/user/cmis.ma… 0.32s  
+  ⨯ it can suggest improvements                                          0.32s  
+
+   FAIL  Tests\Feature\GPT\GPTWorkflowTest
+  ⨯ it can add knowledge item
+  ⨯ it can get conversation history
+  ⨯ it can create campaign via gpt
+  ⨯ it can get conversation statistics
+  ⨯ it can get ai insights for campaign
+  ⨯ it can create content plan
+  ⨯ it validates conversation message
+  ⨯ it can get single campaign
+  ⨯ it maintains conversation context across messages
+  ⨯ it can create conversation session
+  ⨯ it can reuse existing session
+  ⨯ it can get user and org context
+  ⨯ it requires authentication for gpt endpoints
+  ⨯ it validates knowledge search query
+  ⨯ it enforces message max length
+  ⨯ it can limit conversation history
+  ⨯ it can filter campaigns by status
+  ⨯ it can list campaigns via gpt
+  ⨯ it can send message in conversation
+  ⨯ it can clear conversation history
+  ⨯ it prevents access to other orgs campaigns
+  ⨯ it can search knowledge base
+  ⨯ it can list content plans
+  ⨯ it handles conversation errors gracefully
+
+   FAIL  Tests\Feature\ExampleTest
+  ⨯ the application returns a successful response                        0.09s  
+
+   FAIL  Tests\Feature\Controllers\IntegrationControllerTest
+  ⨯ it can refresh integration token                                     0.34s  
+  ⨯ it can delete integration                                            0.33s  
+  ⨯ it validates required fields                                         0.33s  
+  ⨯ it requires authentication                                           0.09s  
+  ⨯ it can test integration connection                                   0.33s  
+  ⨯ it can update integration                                            0.34s  
+  ⨯ it can list all integrations                                         0.32s  
+  ⨯ it respects org isolation                                            0.57s  
+  ⨯ it can get single integration                                        0.33s  
+  ⨯ it can create new integration                                        0.32s  
+
+   FAIL  Tests\Feature\Controllers\DashboardControllerTest
+  ⨯ it returns campaign summary                                          0.34s  
+  ⨯ it returns analytics overview                                        0.34s  
+  ⨯ it returns top performing campaigns                                  0.34s  
+  ⨯ it returns budget summary                                            0.34s  
+  ⨯ it requires authentication                                           0.09s  
+  ⨯ it shows dashboard for authenticated user                            0.34s  
+  ⨯ it handles empty data gracefully                                     0.33s  
+  ⨯ it filters data by date range                                        0.33s  
+  ⨯ it returns recent activity                                           0.33s  
+  ⨯ it returns upcoming scheduled posts                                  0.32s  
+  ⨯ it respects org isolation                                            0.57s  
+
+   FAIL  Tests\Feature\API\PublishingAPITest
+  ⨯ it can schedule instagram post                                       0.34s  
+  ⨯ it can get publishing history                                        0.32s  
+  ⨯ it respects org isolation                                            0.57s  
+  ⨯ it can publish immediately to facebook                               0.32s  
+  ⨯ it can schedule multiple platforms                                   0.32s  
+  ⨯ it can bulk schedule posts                                           0.32s  
+  ⨯ it can cancel scheduled post                                         0.32s  
+  ⨯ it can retry failed publishing                                       0.32s  
+  ⨯ it validates scheduling time                                         0.31s  
+  ⨯ it can preview post before publishing                                0.33s  
+  ⨯ it can get publishing queue                                          0.33s  
+
+   FAIL  Tests\Feature\API\CreativeBriefAPITest
+  ⨯ it requires authentication                                           0.10s  
+  ⨯ it enforces org isolation for briefs                                 0.57s  
+  ⨯ it can view a specific creative brief                                0.34s  
+  ⨯ it can update a creative brief                                       0.34s  
+  ⨯ it can create a creative brief                                       0.33s  
+  ⨯ it includes complete art direction in response                       0.34s  
+  ⨯ it can search creative briefs                                        0.33s  
+  ⨯ it validates creative brief creation data                            0.34s  
+  ⨯ it can list creative briefs for organization                         0.34s  
+  ⨯ it can delete a creative brief                                       0.33s  
+
+   FAIL  Tests\Feature\Auth\AuthenticationTest
+  ⨯ user can logout                                                      0.09s  
+  ⨯ registration requires password confirmation                          0.08s  
+  ⨯ unauthenticated user cannot access protected routes                  0.08s  
+  ! registration requires valid email → file_get_contents(/home/user/cm… 0.08s  
+  ⨯ authenticated user can update profile                                0.09s  
+  ⨯ authenticated user can view profile                                  0.10s  
+  ⨯ user cannot login with incorrect password                            0.54s  
+  ⨯ user can register                                                    0.08s  
+  ⨯ user can login with correct credentials                              0.54s  
+
+   FAIL  Tests\Feature\Core\OrgMarketControllerTest
+  ⨯ it can add market to organization
+  ⨯ it requires authentication
+  ⨯ it validates priority level range
+  ⨯ it can update organization market
+  ⨯ it can show organization market
+  ⨯ it can list available markets
+  ⨯ it can get organization market stats
+  ⨯ it can list organization markets
+  ⨯ it can filter markets by status
+  ⨯ it prevents duplicate markets
+  ⨯ it can calculate roi
+  ⨯ it cannot access markets from different org
+  ⨯ it can remove market from organization
+  ⨯ it validates required fields when adding market
+
+   FAIL  Tests\Feature\Commands\SyncCommandsTest
+  ⨯ database cleanup command with dry run                                0.09s  
+  ⨯ sync meta ads command dispatches jobs when queue flag used           0.09s  
+  ⨯ embeddings generate command dispatches job                           0.08s  
+  ! system health command checks database → file_get_contents(/home/use… 0.09s  
+  ⨯ sync all command with queue flag dispatches all jobs                 0.08s  
+  ⨯ sync facebook command dispatches jobs when queue flag used           0.08s  
+  ⨯ sync all command runs all platform syncs                             0.08s  
+  ⨯ sync instagram command dispatches jobs when queue flag used          0.08s  
+  ⨯ sync command warns when no active integrations                       0.08s  
+  ⨯ sync command handles date range filters                              0.09s  
+
+   FAIL  Tests\Feature\API\OfferingAPITest
+  ⨯ it can filter offerings by type                                      0.34s  
+  ⨯ it can delete an offering                                            0.34s  
+  ⨯ it validates price is positive                                       0.33s  
+  ⨯ it can create a product                                              0.32s  
+  ⨯ it can list offerings for organization                               0.33s  
+  ⨯ it can update an offering                                            0.32s  
+  ⨯ it enforces org isolation for offerings                              0.57s  
+  ⨯ it can create a service                                              0.33s  
+  ⨯ it can view a specific offering                                      0.33s  
+  ⨯ it validates offering creation data                                  0.33s  
+  ⨯ it requires authentication                                           0.08s  
+
+   FAIL  Tests\Feature\Controllers\AnalyticsControllerTest
+  ⨯ it can get top performing content                                    0.33s  
+  ⨯ it can get campaign analytics                                        0.33s  
+  ⨯ it respects org isolation                                            0.56s  
+  ⨯ it can compare campaigns                                             0.33s  
+  ⨯ it requires authentication                                           0.07s  
+  ⨯ it can export analytics report                                       0.32s  
+  ⨯ it can get time series data                                          0.33s  
+  ⨯ it can get overview analytics                                        0.31s  
+  ⨯ it can get platform analytics                                        0.32s  
+  ⨯ it validates date range                                              0.31s  
+
+   FAIL  Tests\Feature\Controllers\WebhookControllerTest
+  ⨯ viewer cannot create webhooks                                        0.32s  
+  ⨯ it can test webhook delivery                                         0.30s  
+  ⨯ it can create webhook                                                0.30s  
+  ⨯ it can view webhook delivery logs                                    0.30s  
+  ⨯ it can toggle webhook status                                         0.30s  
+  ⨯ it can show webhook details                                          0.31s  
+  ⨯ it can update webhook                                                0.31s  
+  ⨯ it can list webhooks                                                 0.30s  
+  ⨯ it can delete webhook                                                0.30s  
+  ⨯ it respects org isolation                                            0.31s  
+
+   FAIL  Tests\Feature\Security\RowLevelSecurityTest
+  ⨯ rls prevents cross tenant campaign access                            0.09s  
+  ⨯ rls blocks direct database queries across tenants                    0.08s  
+  ⨯ rls prevents deletes of other org data                               0.07s  
+  ⨯ rls function returns correct org id                                  0.08s  
+  ⨯ rls works with joins                                                 0.07s  
+  ⨯ rls prevents updates to other org data                               0.09s  
+  ⨯ rls isolates knowledge base                                          0.08s  
+  ⨯ rls context switches with org change                                 0.07s  
+  ⨯ rls blocks unauthenticated access                                    0.07s  
+  ⨯ rls isolates content plans                                           0.08s  
+
+   FAIL  Tests\Feature\Controllers\ReportControllerTest
+  ⨯ it can schedule recurring report                                     0.32s  
+  ⨯ it respects org isolation                                            0.30s  
+  ⨯ it can delete report                                                 0.30s  
+  ⨯ it can generate new report                                           0.31s  
+  ⨯ it can view report details                                           0.31s  
+  ⨯ it can export report to different formats                            0.31s  
+  ⨯ it can list reports                                                  0.31s  
+  ⨯ viewer cannot delete reports                                         0.31s  
+  ⨯ it can download report                                               0.31s  
+  ⨯ it can filter reports by type                                        0.31s  
+
+   FAIL  Tests\Feature\API\KnowledgeAPITest
+  ⨯ it can perform semantic search                                       0.34s  
+  ⨯ it can update knowledge entry                                        0.33s  
+  ⨯ it can delete knowledge entry                                        0.32s  
+  ⨯ it can get all knowledge entries                                     0.32s  
+  ⨯ it can find similar content                                          0.32s  
+  ⨯ it can get knowledge statistics                                      0.33s  
+  ⨯ it can create knowledge entry                                        0.32s  
+  ⨯ it can filter by content type                                        0.32s  
+  ⨯ it validates required fields                                         0.34s  
+  ⨯ it respects org isolation                                            0.56s  
+  ⨯ it can get knowledge entry by id                                     0.33s  
+  ⨯ it can filter by category                                            0.33s  
+
+   FAIL  Tests\Feature\Controllers\TeamControllerTest
+  ⨯ it respects org isolation                                            0.33s  
+  ⨯ it can add team member                                               0.31s  
+  ⨯ it shows team member details                                         0.31s  
+  ⨯ it can filter by role                                                0.54s  
+  ⨯ it can send team invitation                                          0.31s  
+  ⨯ it can list team members                                             0.32s  
+  ⨯ it can remove team member                                            0.54s  
+  ⨯ viewer cannot add team members                                       0.31s  
+  ⨯ it can update team member role                                       0.54s  
+
+   FAIL  Tests\Feature\Controllers\LeadControllerTest
+  ⨯ it can get single lead                                               0.35s  
+  ⨯ it requires authentication                                           0.09s  
+  ⨯ it can create lead                                                   0.32s  
+  ⨯ it respects org isolation                                            0.58s  
+  ⨯ it can list all leads                                                0.33s  
+  ⨯ it can filter leads by status                                        0.35s  
+  ⨯ it can delete lead                                                   0.34s  
+  ⨯ it can update lead                                                   0.35s  
+  ⨯ it can convert lead                                                  0.35s  
+  ⨯ it validates required fields                                         0.33s  
+
+   FAIL  Tests\Feature\Controllers\AssetControllerTest
+  ⨯ it can search assets                                                 0.35s  
+  ⨯ it can filter by file type                                           0.31s  
+  ⨯ it can update asset metadata                                         0.31s  
+  ⨯ it can upload asset                                                  0.31s  
+  ⨯ viewer cannot delete assets                                          0.30s  
+  ⨯ it can download asset                                                0.31s  
+  ⨯ it respects org isolation                                            0.30s  
+  ⨯ it can view asset details                                            0.31s  
+  ⨯ it can list assets                                                   0.32s  
+  ⨯ it can delete asset                                                  0.31s  
+
+   FAIL  Tests\Feature\Orgs\OrgWebFlowTest
+  ⨯ created organization has valid uuid                                  0.11s  
+  ⨯ organization can set provider field                                  0.10s  
+  ⨯ organization name must be unique                                     0.10s  
+  ! unauthenticated user cannot view orgs list → file_get_contents(/hom… 0.09s  
+  ! organization index shows all organizations → file_get_contents(/hom… 0.12s  
+  ! authenticated user can view orgs list page → file_get_contents(/hom… 0.10s  
+  ⨯ organization creation with invalid currency code fails               0.08s  
+  ⨯ form validation provides helpful error messages                      0.10s  
+  ! organization creation rolls back on failure → file_get_contents(/ho… 0.10s  
+  ⨯ organization creation fails without required name                    0.09s  
+  ⨯ created organization has timestamps                                  0.09s  
+  ⨯ organization provider field is optional                              0.10s  
+  ⨯ user can view their organization                                     1.96s  
+  ⨯ organization supports different currencies                           0.09s  
+  ! authenticated user can view create org form → file_get_contents(/ho… 0.09s  
+  ⨯ organization supports different locales                              0.11s  
+  ⨯ user can create new organization with valid data                     0.09s  
+  ⨯ user can create organization with minimal required data              0.08s  
+  ⨯ organization stores creator as owner                                 0.09s  
+
+   FAIL  Tests\Feature\Campaigns\CampaignManagementTest
+  ⨯ user can delete campaign                                             0.11s  
+  ⨯ user cannot access campaigns from another org                        0.09s  
+  ⨯ user can list campaigns                                              0.09s  
+  ⨯ user can view campaign details                                       0.09s  
+  ⨯ user can create campaign                                             0.09s  
+  ⨯ user can filter campaigns by status                                  0.10s  
+  ⨯ user can update campaign                                             0.09s  
+  ⨯ user can search campaigns                                            0.09s  
+
+   FAIL  Tests\Feature\API\CampaignAPITest
+  ⨯ it can filter campaigns by status                                    0.33s  
+  ⨯ it can list campaigns for organization                               0.34s  
+  ⨯ it can update a campaign                                             0.32s  
+  ! it requires authentication → file_get_contents(/home/user/cmis.mark… 0.32s  
+  ⨯ it enforces org isolation for campaigns                              0.55s  
+  ⨯ it can view a specific campaign                                      0.32s  
+  ⨯ it can delete a campaign                                             0.31s  
+  ⨯ it can create a campaign                                             0.32s  
+  ⨯ it validates campaign creation data                                  0.32s  
+  ⨯ it can search campaigns                                              0.34s  
+
+   FAIL  Tests\Feature\Controllers\CampaignControllerTest
+  ⨯ it respects org isolation                                            0.57s  
+  ⨯ it validates required fields                                         0.33s  
+  ⨯ it can list all campaigns                                            0.33s  
+  ⨯ it can search campaigns                                              0.32s  
+  ⨯ it can update campaign                                               0.33s  
+  ⨯ it can get single campaign                                           0.33s  
+  ⨯ it can get campaign analytics                                        0.34s  
+  ⨯ it can delete campaign                                               0.34s  
+  ⨯ it can filter campaigns by status                                    0.33s  
+  ⨯ it can create campaign                                               0.34s  
+  ⨯ it requires authentication                                           0.08s  
+  ⨯ it can duplicate campaign                                            0.34s  
+
+   FAIL  Tests\Feature\API\WebhookAPITest
+  ⨯ it receives facebook comment webhook                                 0.33s  
+  ⨯ it processes webhooks asynchronously                                 0.34s  
+  ⨯ it receives instagram message webhook                                0.34s  
+  ⨯ it validates webhook signatures                                      0.08s  
+  ⨯ it receives twitter webhook                                          0.33s  
+  ⨯ it receives tiktok webhook                                           0.33s  
+  ⨯ it receives facebook webhook verification                            0.10s  
+  ⨯ it handles malformed webhook payloads gracefully                     0.09s  
+  ⨯ it receives whatsapp message webhook                                 0.33s  
+  ⨯ it receives whatsapp status update webhook                           0.32s  
+
+   FAIL  Tests\Feature\AI\RateLimitTest
+  ⨯ rate limit headers are present                                       0.08s  
+  ⨯ ai caption generation is rate limited                                0.09s  
+  ⨯ rate limits are per user                                             0.08s  
+  ⨯ knowledge processing is rate limited                                 0.08s  
+  ⨯ semantic search is rate limited                                      0.08s  
+  ⨯ rate limit resets after time window                                  0.08s  
+  ⨯ ai generation endpoint is rate limited                               0.08s  
+  ⨯ unauthenticated requests are rate limited by ip                      0.10s  
+  ⨯ retry after header is present when rate limited                      0.08s  
+  ⨯ ai hashtag generation is rate limited                                0.08s  
+
+   FAIL  Tests\Feature\CampaignTest
+  ⨯ example                                                              0.10s  
+
+   FAIL  Tests\Unit\Observers\CampaignObserverTest
+  ! it fires updating event → file_get_contents(/home/user/cmis.marketi… 0.10s  
+  ! it fires creating event → file_get_contents(/home/user/cmis.marketi… 0.08s  
+  ! it fires deleting event → file_get_contents(/home/user/cmis.marketi… 0.08s  
+  ! it fires updated event → file_get_contents(/home/user/cmis.marketin… 0.09s  
+  ⨯ it sets defaults on creation                                         0.08s  
+  ! it fires created event → file_get_contents(/home/user/cmis.marketin… 0.08s  
+  ! it fires deleted event → file_get_contents(/home/user/cmis.marketin… 0.10s  
+
+   FAIL  Tests\Unit\Events\ContentPublishedEventTest
+  ! it can be instantiated → file_get_contents(/home/user/cmis.marketin… 0.09s  
+  ! it contains content data → file_get_contents(/home/user/cmis.market… 0.08s  
+  ⨯ it includes publication timestamp                                    0.08s  
+  ! it triggers platform distribution → file_get_contents(/home/user/cm… 0.10s  
+  ! it respects org context → file_get_contents(/home/user/cmis.marketi… 0.08s  
+  ! it broadcasts on org channel → file_get_contents(/home/user/cmis.ma… 0.08s  
+  ⨯ it includes platform information                                     0.08s  
+  ! it can be dispatched → file_get_contents(/home/user/cmis.marketing.… 0.08s  
+
+   WARN  Tests\Unit\Models\AdPlatform\AdCampaignTest
+  ! it stores budget information → file_get_contents(/home/user/cmis.ma… 0.11s  
+  ! it can be soft deleted → file_get_contents(/home/user/cmis.marketin… 0.09s  
+  ! it has timestamps → file_get_contents(/home/user/cmis.marketing.lim… 0.09s  
+  ! it respects rls policies → file_get_contents(/home/user/cmis.market… 0.09s  
+  ! it validates platform → file_get_contents(/home/user/cmis.marketing… 0.08s  
+  ! it belongs to organization and integration → file_get_contents(/hom… 0.10s  
+  ! it validates status → file_get_contents(/home/user/cmis.marketing.l… 0.09s  
+  ! it uses uuid as primary key → file_get_contents(/home/user/cmis.mar… 0.08s  
+  ! it can create an ad campaign → file_get_contents(/home/user/cmis.ma… 0.08s  
+  ! it validates objective → file_get_contents(/home/user/cmis.marketin… 0.08s  
+  ! it stores metrics as json → file_get_contents(/home/user/cmis.marke… 0.08s  
+
+   FAIL  Tests\Unit\Services\YouTubeServiceTest
+  ⨯ it can upload short                                                  0.35s  
+  ⨯ it can get comments                                                  0.32s  
+  ⨯ it handles api errors                                                0.32s  
+  ⨯ it can reply to comment                                              0.32s  
+  ⨯ it can delete video                                                  0.33s  
+  ⨯ it can get video analytics                                           0.34s  
+  ⨯ it validates video file                                              0.33s  
+  ⨯ it can update video metadata                                         0.33s  
+  ⨯ it can create playlist                                               0.33s  
+  ⨯ it can get channel analytics                                         0.33s  
+  ⨯ it can upload video                                                  0.34s  
+  ⨯ it can add video to playlist                                         0.32s  
+
+   FAIL  Tests\Unit\Models\Notification\NotificationPreferenceTest
+  ⨯ it can disable all channels                                          0.32s  
+  ⨯ it can enable in app notifications                                   0.33s  
+  ⨯ it can enable push notifications                                     0.34s  
+  ⨯ it can enable email notifications                                    0.34s  
+  ⨯ it uses uuid as primary key                                          0.32s  
+  ⨯ it belongs to org                                                    0.34s  
+  ⨯ it can create notification preference                                0.32s  
+  ⨯ it can enable sms notifications                                      0.33s  
+  ! it respects rls policies → file_get_contents(/home/user/cmis.market… 0.58s  
+  ! it has timestamps → file_get_contents(/home/user/cmis.marketing.lim… 0.32s  
+  ! it has different notification types → file_get_contents(/home/user/… 0.32s  
+  ⨯ it belongs to user                                                   0.31s  
+
+   FAIL  Tests\Unit\Models\Webhook\WebhookTest
+  ⨯ it can create webhook                                                0.08s  
+  ⨯ it stores headers as json                                            0.10s  
+  ! it can be active or inactive → file_get_contents(/home/user/cmis.ma… 0.09s  
+  ! it has different event types → file_get_contents(/home/user/cmis.ma… 0.09s  
+  ! it has secret for signature verification → file_get_contents(/home/… 0.11s  
+  ! it has timestamps → file_get_contents(/home/user/cmis.marketing.lim… 0.09s  
+  ⨯ it tracks last delivery time                                         0.10s  
+  ⨯ it tracks delivery attempts                                          0.08s  
+  ⨯ it belongs to org                                                    0.09s  
+  ⨯ it respects rls policies                                             0.09s  
+  ⨯ it stores retry configuration                                        0.08s  
+  ⨯ it uses uuid as primary key                                          0.08s  
+
+   FAIL  Tests\Unit\Services\PinterestServiceTest
+  ⨯ it can update board                                                  0.35s  
+  ⨯ it handles rate limiting                                             0.33s  
+  ⨯ it can get board pins                                                0.33s  
+  ⨯ it can create board                                                  0.33s  
+  ⨯ it can get pin analytics                                             0.33s  
+  ⨯ it validates required fields                                         0.34s  
+  ⨯ it can search pins                                                   0.32s  
+  ⨯ it can create story pin                                              0.32s  
+  ⨯ it can get user analytics                                            0.32s  
+  ⨯ it can create pin                                                    0.32s  
+  ⨯ it handles api errors                                                0.34s  
+  ⨯ it can delete pin                                                    0.33s  
+
+   FAIL  Tests\Unit\Models\OrgTest
+  ! it can count active campaigns → file_get_contents(/home/user/cmis.m… 0.10s  
+  ⨯ it enforces unique name constraint                                   0.08s  
+  ! it can be soft deleted → file_get_contents(/home/user/cmis.marketin… 0.09s  
+  ! it uses uuid as primary key → file_get_contents(/home/user/cmis.mar… 0.10s  
+  ⨯ it stores settings as json                                           0.08s  
+  ⨯ it has many users                                                    0.56s  
+  ! it has many campaigns → file_get_contents(/home/user/cmis.marketing… 0.08s  
+  ! it can create an organization → file_get_contents(/home/user/cmis.m… 0.08s  
+  ! it validates required fields → file_get_contents(/home/user/cmis.ma… 0.09s  
+  ! it has timestamps → file_get_contents(/home/user/cmis.marketing.lim… 0.08s  
+
+   FAIL  Tests\Unit\Jobs\UpdateCampaignStatsJobTest
+  ⨯ it updates roi metrics                                               0.09s  
+  ⨯ it stores stats snapshot                                             0.08s  
+  ! it respects org isolation → file_get_contents(/home/user/cmis.marke… 0.09s  
+  ! it can be dispatched → file_get_contents(/home/user/cmis.marketing.… 0.11s  
+  ⨯ it updates reach metrics                                             0.08s  
+  ⨯ it calculates click through rate                                     0.09s  
+  ⨯ it updates campaign statistics                                       0.09s  
+  ⨯ it handles campaigns with no data                                    0.09s  
+  ⨯ it calculates conversion rate                                        0.10s  
+  ⨯ it tracks cost per click                                             0.08s  
+  ⨯ it aggregates platform stats                                         0.08s  
+  ⨯ it calculates engagement metrics                                     0.08s  
+
+   FAIL  Tests\Unit\Services\InstagramServiceTest
+  ⨯ it can get comments                                                  0.33s  
+  ⨯ it can publish story                                                 0.34s  
+  ⨯ it can get media insights                                            0.33s  
+  ⨯ it can publish feed post                                             0.32s  
+  ! it can publish carousel → file_get_contents(/home/user/cmis.marketi… 0.33s  
+  ⨯ it can delete comment                                                0.32s  
+  ⨯ it can publish reel                                                  0.34s  
+  ⨯ it can get account insights                                          0.32s  
+  ⨯ it can get hashtag search                                            0.33s  
+  ⨯ it handles rate limiting                                             0.32s  
+  ! it can reply to comment → file_get_contents(/home/user/cmis.marketi… 0.32s  
+  ⨯ it handles api errors gracefully                                     0.32s  
+
+   FAIL  Tests\Unit\Models\Social\SocialPostTest
+  ⨯ it validates post type                                               0.10s  
+  ⨯ it can create a social post                                          0.09s  
+  ! it validates platform → file_get_contents(/home/user/cmis.marketing… 0.08s  
+  ! it has timestamps → file_get_contents(/home/user/cmis.marketing.lim… 0.08s  
+  ! it respects rls policies → file_get_contents(/home/user/cmis.market… 0.09s  
+  ⨯ it calculates engagement rate                                        0.10s  
+  ⨯ it belongs to organization and integration                           0.08s  
+  ⨯ it can be soft deleted                                               0.08s  
+  ⨯ it uses uuid as primary key                                          0.08s  
+  ⨯ it stores metrics as json                                            0.08s  
+
+   FAIL  Tests\Unit\Listeners\SendCampaignNotificationListenerTest
+  ⨯ it sends notification when campaign is created                       0.33s  
+  ⨯ it handles errors gracefully                                         0.08s  
+  ⨯ it handles event correctly                                           0.08s  
+  ! it can be queued → file_get_contents(/home/user/cmis.marketing.limi… 0.07s  
+
+   FAIL  Tests\Unit\Jobs\SendNotificationJobTest
+  ⨯ it includes action url                                               0.32s  
+  ⨯ it handles notification preferences                                  0.30s  
+  ⨯ it sends database notification                                       0.30s  
+  ! it handles failed delivery → file_get_contents(/home/user/cmis.mark… 0.31s  
+  ⨯ it supports multiple channels                                        0.30s  
+  ! it sends bulk notifications → file_get_contents(/home/user/cmis.mar… 1.23s  
+  ! it queues with delay → file_get_contents(/home/user/cmis.marketing.… 0.32s  
+  ⨯ it sends notification to user                                        0.31s  
+  ⨯ it sends email notification                                          0.31s  
+  ! it can be dispatched → file_get_contents(/home/user/cmis.marketing.… 0.30s  
+
+   WARN  Tests\Unit\Models\Creative\CreativeBriefTest
+  ! it stores brief data as json → file_get_contents(/home/user/cmis.ma… 0.10s  
+  ! it stores complete art direction → file_get_contents(/home/user/cmi… 0.08s  
+  ! it belongs to an organization → file_get_contents(/home/user/cmis.m… 0.08s  
+  ! it validates marketing objectives → file_get_contents(/home/user/cm… 0.08s  
+  ! it uses uuid as primary key → file_get_contents(/home/user/cmis.mar… 0.08s  
+  ! it can create a creative brief → file_get_contents(/home/user/cmis.… 0.08s  
+  ! it has timestamps → file_get_contents(/home/user/cmis.marketing.lim… 0.09s  
+  ! it respects rls policies → file_get_contents(/home/user/cmis.market… 0.08s  
+  ! it can be soft deleted → file_get_contents(/home/user/cmis.marketin… 0.09s  
+
+   FAIL  Tests\Unit\Validators\LeadValidatorTest
+  ⨯ it validates source enum                                             0.08s  
+  ⨯ it validates custom fields as array                                  0.07s  
+  ⨯ it accepts valid lead data                                           0.09s  
+  ⨯ it validates phone format                                            0.07s  
+  ⨯ it validates email format                                            0.07s  
+  ⨯ it validates status enum                                             0.07s  
+  ⨯ it validates required name                                           0.08s  
+  ⨯ it accepts valid sources                                             0.09s  
+  ⨯ it validates score range                                             0.08s  
+  ⨯ it validates utm parameters                                          0.08s  
+
+   WARN  Tests\Unit\Helpers\UrlHelperTest
+  ! it appends path to url → file_get_contents(/home/user/cmis.marketin… 0.08s  
+  ! it builds query string → file_get_contents(/home/user/cmis.marketin… 0.08s  
+  ! it validates url format → file_get_contents(/home/user/cmis.marketi… 0.09s  
+  ! it removes query parameters → file_get_contents(/home/user/cmis.mar… 0.07s  
+  ! it parses query string → file_get_contents(/home/user/cmis.marketin… 0.08s  
+  ! it extracts domain from url → file_get_contents(/home/user/cmis.mar… 0.08s  
+  ! it shortens url → file_get_contents(/home/user/cmis.marketing.limit… 0.09s  
+  ! it checks if url is secure → file_get_contents(/home/user/cmis.mark… 0.08s  
+  ! it adds utm parameters → file_get_contents(/home/user/cmis.marketin… 0.09s  
+  ! it extracts utm parameters → file_get_contents(/home/user/cmis.mark… 0.07s  
+
+   FAIL  Tests\Unit\Middleware\EnsureOrgActiveMiddlewareTest
+  ! it handles missing org → file_get_contents(/home/user/cmis.marketin… 0.31s  
+  ⨯ it respects different org statuses                                   0.08s  
+  ⨯ it allows active org access                                          0.32s  
+  ⨯ it blocks suspended org access                                       0.31s  
+  ⨯ it blocks inactive org access                                        0.30s  
+  ! it exempts admin users → file_get_contents(/home/user/cmis.marketin… 0.31s  
+  ⨯ it checks org trial expiry                                           0.32s  
+  ⨯ it provides appropriate error message                                0.32s  
+  ⨯ it allows access during grace period                                 0.33s  
+
+   WARN  Tests\Unit\Requests\StoreCampaignRequestTest
+  ! it validates dates → file_get_contents(/home/user/cmis.marketing.li… 0.09s  
+  ! it validates name max length → file_get_contents(/home/user/cmis.ma… 0.09s  
+  ! it passes with valid data → file_get_contents(/home/user/cmis.marke… 0.08s  
+  ! it validates required fields → file_get_contents(/home/user/cmis.ma… 0.08s  
+  ! it validates status enum → file_get_contents(/home/user/cmis.market… 0.10s  
+
+   FAIL  Tests\Unit\Models\Analytics\AnalyticsReportTest
+  ⨯ it stores export file path                                           0.08s  
+  ! it has timestamps → file_get_contents(/home/user/cmis.marketing.lim… 0.08s  
+  ⨯ it stores filters as json                                            0.08s  
+  ⨯ it can create analytics report                                       0.10s  
+  ⨯ it tracks generated at timestamp                                     0.07s  
+  ⨯ it uses uuid as primary key                                          0.08s  
+  ⨯ it belongs to org                                                    0.08s  
+  ⨯ it tracks report generation status                                   0.08s  
+  ⨯ it has different report types                                        0.09s  
+  ⨯ it respects rls policies                                             0.10s  
+  ⨯ it stores report data as json                                        0.08s  
+  ⨯ it can belong to campaign                                            0.08s  
+  ⨯ it supports scheduled reports                                        0.08s  
+
+   FAIL  Tests\Unit\Models\Content\ScheduledPostTest
+  ⨯ it stores post metadata                                              0.10s  
+  ! it uses uuid as primary key → file_get_contents(/home/user/cmis.mar… 0.07s  
+  ! it has timestamps → file_get_contents(/home/user/cmis.marketing.lim… 0.08s  
+  ! it can create scheduled post → file_get_contents(/home/user/cmis.ma… 0.08s  
+  ! it has different post statuses → file_get_contents(/home/user/cmis.… 0.08s  
+  ! it supports different platforms → file_get_contents(/home/user/cmis… 0.08s  
+  ⨯ it tracks retry count                                                0.09s  
+  ⨯ it stores error messages for failed posts                            0.08s  
+  ! it respects rls policies → file_get_contents(/home/user/cmis.market… 0.08s  
+  ⨯ it stores media urls                                                 0.08s  
+  ! it belongs to org → file_get_contents(/home/user/cmis.marketing.lim… 0.08s  
+  ⨯ it tracks published time                                             0.10s  
+  ⨯ it can belong to campaign                                            0.08s  
+  ⨯ it stores platform post id                                           0.08s  
+  ⨯ it can belong to integration                                         0.08s  
+
+   FAIL  Tests\Unit\Services\WhatsAppServiceTest
+  ⨯ it can send template message                                         0.32s  
+  ⨯ it can mark message as read                                          0.34s  
+  ⨯ it can send image message                                            0.32s  
+  ⨯ it can get media url                                                 0.31s  
+  ⨯ it validates phone number format                                     0.31s  
+  ⨯ it can send interactive button message                               0.32s  
+  ⨯ it handles rate limiting                                             0.33s  
+  ⨯ it can send document message                                         0.32s  
+  ⨯ it handles api errors                                                0.32s  
+  ⨯ it can send text message                                             0.31s  
+  ⨯ it can send interactive list message                                 0.31s  
+
+   FAIL  Tests\Unit\Models\Lead\LeadTest
+  ⨯ it can be soft deleted                                               0.10s  
+  ⨯ it stores additional data as json                                    0.08s  
+  ⨯ it stores utm parameters                                             0.08s  
+  ! it can create lead → file_get_contents(/home/user/cmis.marketing.li… 0.08s  
+  ⨯ it belongs to org                                                    0.08s  
+  ! it stores lead source → file_get_contents(/home/user/cmis.marketing… 0.10s  
+  ! it has timestamps → file_get_contents(/home/user/cmis.marketing.lim… 0.07s  
+  ! it stores lead score → file_get_contents(/home/user/cmis.marketing.… 0.08s  
+  ⨯ it can belong to campaign                                            0.08s  
+  ⨯ it tracks lead value                                                 0.08s  
+  ! it assigns lead to user → file_get_contents(/home/user/cmis.marketi… 0.30s  
+  ⨯ it tracks last contact date                                          0.10s  
+  ! it has different lead statuses → file_get_contents(/home/user/cmis.… 0.08s  
+  ⨯ it uses uuid as primary key                                          0.08s  
+  ⨯ it respects rls policies                                             0.08s  
+  ⨯ it tracks conversion date                                            0.08s  
+
+   FAIL  Tests\Unit\Models\Contact\ContactTest
+  ⨯ it tracks subscription status                                        0.11s  
+  ⨯ it tracks last engagement date                                       0.08s  
+  ⨯ it uses uuid as primary key                                          0.08s  
+  ⨯ it stores custom fields                                              0.08s  
+  ⨯ it stores social profiles                                            0.08s  
+  ⨯ it can be soft deleted                                               0.09s  
+  ⨯ it respects rls policies                                             0.08s  
+  ! it has timestamps → file_get_contents(/home/user/cmis.marketing.lim… 0.08s  
+  ⨯ it stores contact source                                             0.08s  
+  ⨯ it stores contact segments                                           0.08s  
+  ⨯ it has full name accessor                                            0.10s  
+  ⨯ it belongs to org                                                    0.08s  
+  ! it can create contact → file_get_contents(/home/user/cmis.marketing… 0.08s  
+
+   FAIL  Tests\Unit\Policies\LeadPolicyTest
+  ⨯ viewer cannot create leads                                           0.31s  
+  ⨯ editor cannot delete leads                                           0.31s  
+  ⨯ it respects org boundaries                                           0.33s  
+  ⨯ editor can view leads                                                0.31s  
+  ⨯ admin can update leads                                               0.31s  
+  ⨯ admin can create leads                                               0.31s  
+  ⨯ viewer cannot update leads                                           0.31s  
+  ⨯ admin can delete leads                                               0.33s  
+  ⨯ viewer can view leads                                                0.31s  
+  ⨯ editor can update leads                                              0.33s  
+  ⨯ admin can view leads                                                 0.32s  
+
+   FAIL  Tests\Unit\Helpers\ValidationHelperTest
+  ! it validates email → file_get_contents(/home/user/cmis.marketing.li… 0.10s  
+  ! it validates file extension → file_get_contents(/home/user/cmis.mar… 0.11s  
+  ! it validates hashtag → file_get_contents(/home/user/cmis.marketing.… 0.08s  
+  ! it validates uuid → file_get_contents(/home/user/cmis.marketing.lim… 0.08s  
+  ! it validates arabic text → file_get_contents(/home/user/cmis.market… 0.08s  
+  ! it validates date format → file_get_contents(/home/user/cmis.market… 0.08s  
+  ! it validates credit card → file_get_contents(/home/user/cmis.market… 0.08s  
+  ! it validates saudi phone → file_get_contents(/home/user/cmis.market… 0.10s  
+  ! it validates strong password → file_get_contents(/home/user/cmis.ma… 0.08s  
+  ! it validates json → file_get_contents(/home/user/cmis.marketing.lim… 0.08s  
+  ⨯ it validates url                                                     0.08s  
+  ! it sanitizes input → file_get_contents(/home/user/cmis.marketing.li… 0.08s  
+  ! it validates ip address → file_get_contents(/home/user/cmis.marketi… 0.08s  
+
+   FAIL  Tests\Unit\Services\ComplianceValidationServiceTest
+  ! it validates empty content → file_get_contents(/home/user/cmis.mark… 0.09s  
+  ! it provides suggestions → file_get_contents(/home/user/cmis.marketi… 0.08s  
+  ! it handles multiple violations → file_get_contents(/home/user/cmis.… 0.08s  
+  ! it handles multiple context attributes → file_get_contents(/home/us… 0.07s  
+  ⨯ it detects offensive content                                         0.08s  
+  ⨯ it provides warnings for us market                                   0.10s  
+  ! it validates compliant content → file_get_contents(/home/user/cmis.… 0.08s  
+  ! it includes rule information in violations → file_get_contents(/hom… 0.08s  
+  ! it handles hashtags in content → file_get_contents(/home/user/cmis.… 0.08s  
+  ⨯ it respects minimum score of zero                                    0.08s  
+  ! it returns proper structure → file_get_contents(/home/user/cmis.mar… 0.11s  
+  ! it handles unicode characters → file_get_contents(/home/user/cmis.m… 0.09s  
+  ! it detects health claims → file_get_contents(/home/user/cmis.market… 0.08s  
+  ! it handles urls in content → file_get_contents(/home/user/cmis.mark… 0.08s  
+  ⨯ it validates ccpa for california                                     0.08s  
+  ⨯ it rejects critical violations immediately                           0.08s  
+  ! it handles special characters → file_get_contents(/home/user/cmis.m… 0.10s  
+  ! it includes severity in violations → file_get_contents(/home/user/c… 0.08s  
+  ! it accumulates score deductions → file_get_contents(/home/user/cmis… 0.08s  
+  ⨯ it provides warnings for eu market                                   0.08s  
+  ! it detects case insensitive violations → file_get_contents(/home/us… 0.08s  
+  ! it validates short content → file_get_contents(/home/user/cmis.mark… 0.08s  
+  ! it validates facebook specific rules → file_get_contents(/home/user… 0.10s  
+  ! it applies rules based on context → file_get_contents(/home/user/cm… 0.08s  
+  ⨯ it can add custom rules                                              0.07s  
+  ⨯ it detects social media length violations                            0.07s  
+  ! it validates instagram specific rules → file_get_contents(/home/use… 0.09s  
+  ! it calculates compliance score → file_get_contents(/home/user/cmis.… 0.11s  
+
+   WARN  Tests\Unit\Commands\CleanupExpiredSessionsCommandTest
+  ! it shows cleanup summary → file_get_contents(/home/user/cmis.market… 0.09s  
+  ! it accepts custom expiry time → file_get_contents(/home/user/cmis.m… 0.07s  
+  ! it cleans up expired sessions → file_get_contents(/home/user/cmis.m… 0.08s  
+  ! it cleans database sessions → file_get_contents(/home/user/cmis.mar… 0.10s  
+  ! it limits batch size → file_get_contents(/home/user/cmis.marketing.… 0.08s  
+  ! it shows dry run mode → file_get_contents(/home/user/cmis.marketing… 0.08s  
+  ! it cleans redis sessions → file_get_contents(/home/user/cmis.market… 0.08s  
+  ! it shows verbose output → file_get_contents(/home/user/cmis.marketi… 0.11s  
+  ! it handles no expired sessions → file_get_contents(/home/user/cmis.… 0.08s  
+
+   FAIL  Tests\Unit\Services\LinkedInServiceTest
+  ⨯ it can publish video post                                            0.32s  
+  ⨯ it handles api errors                                                0.32s  
+  ⨯ it can delete post                                                   0.35s  
+  ⨯ it can publish article                                               0.32s  
+  ⨯ it can publish post                                                  0.32s  
+  ⨯ it can get post statistics                                           0.31s  
+  ⨯ it can get comments                                                  0.32s  
+  ⨯ it can get follower demographics                                     0.33s  
+  ⨯ it can publish image post                                            0.32s  
+  ⨯ it can get organization statistics                                   0.31s  
+  ⨯ it validates post content                                            0.31s  
+
+   FAIL  Tests\Unit\Models\Asset\AssetTest
+  ⨯ it stores mime type                                                  0.08s  
+  ⨯ it can be public or private                                          0.10s  
+  ⨯ it respects rls policies                                             0.08s  
+  ! it stores metadata → file_get_contents(/home/user/cmis.marketing.li… 0.08s  
+  ⨯ it stores thumbnail path                                             0.07s  
+  ⨯ it stores tags                                                       0.08s  
+  ! it tracks usage count → file_get_contents(/home/user/cmis.marketing… 0.10s  
+  ⨯ it has different file types                                          0.07s  
+  ⨯ it uses uuid as primary key                                          0.07s  
+  ! it can create asset → file_get_contents(/home/user/cmis.marketing.l… 0.07s  
+  ⨯ it stores video duration                                             0.08s  
+  ⨯ it belongs to org                                                    0.08s  
+  ⨯ it stores file size                                                  0.09s  
+  ! it has timestamps → file_get_contents(/home/user/cmis.marketing.lim… 0.08s  
+  ⨯ it stores image dimensions                                           0.08s  
+
+   FAIL  Tests\Unit\Services\Ads\MetaAdsServiceTest
+  ⨯ sync campaigns with empty ad account                                 0.09s  
+  ⨯ get configuration returns correct structure                          0.10s  
+  ⨯ validate token with expired integration                              0.08s  
+  ⨯ sync account successfully                                            0.08s  
+  ⨯ sync campaigns successfully                                          0.08s  
+  ⨯ sync account without ad account id                                   0.08s  
+  ⨯ sync metrics for campaigns                                           0.09s  
+
+   FAIL  Tests\Unit\Models\Creative\ContentPlanTest
+  ! it belongs to organization and campaign → file_get_contents(/home/u… 0.08s  
+  ⨯ it validates date range                                              0.08s  
+  ! it uses uuid as primary key → file_get_contents(/home/user/cmis.mar… 0.08s  
+  ! it can be soft deleted → file_get_contents(/home/user/cmis.marketin… 0.08s  
+  ⨯ it cascades soft delete to content items                             0.11s  
+  ! it can create a content plan → file_get_contents(/home/user/cmis.ma… 0.08s  
+  ⨯ it has many content items                                            0.08s  
+  ! it has timestamps → file_get_contents(/home/user/cmis.marketing.lim… 0.07s  
+
+   WARN  Tests\Unit\Commands\GenerateReportsCommandTest
+  ! it handles no pending reports → file_get_contents(/home/user/cmis.m… 0.10s  
+  ! it shows verbose output → file_get_contents(/home/user/cmis.marketi… 0.09s  
+  ! it generates pending reports → file_get_contents(/home/user/cmis.ma… 0.08s  
+  ! it generates reports for specific org → file_get_contents(/home/use… 0.08s  
+  ! it respects org isolation → file_get_contents(/home/user/cmis.marke… 0.08s  
+  ! it updates report status → file_get_contents(/home/user/cmis.market… 0.11s  
+  ! it generates specific report type → file_get_contents(/home/user/cm… 0.08s  
+  ! it limits batch size → file_get_contents(/home/user/cmis.marketing.… 0.10s  
+  ! it supports dry run mode → file_get_contents(/home/user/cmis.market… 0.08s  
+  ! it handles generation errors → file_get_contents(/home/user/cmis.ma… 0.11s  
+
+   FAIL  Tests\Unit\Models\Content\ContentMediaTest
+  ⨯ it respects rls policies                                             0.08s  
+  ⨯ it tracks usage count                                                0.08s  
+  ⨯ it uses uuid as primary key                                          0.07s  
+  ⨯ it belongs to org                                                    0.10s  
+  ⨯ it stores thumbnail path                                             0.07s  
+  ⨯ it has timestamps                                                    0.07s  
+  ⨯ it can be soft deleted                                               0.08s  
+  ⨯ it can create content media                                          0.07s  
+  ⨯ it has file type categories                                          0.10s  
+  ⨯ it stores metadata as json                                           0.07s  
+  ⨯ it stores video duration                                             0.07s  
+  ⨯ it stores image dimensions                                           0.07s  
+
+   WARN  Tests\Unit\Helpers\ArrayHelperTest
+  ! it plucks values by key → file_get_contents(/home/user/cmis.marketi… 0.07s  
+  ! it checks if associative → file_get_contents(/home/user/cmis.market… 0.09s  
+  ! it removes empty values → file_get_contents(/home/user/cmis.marketi… 0.07s  
+  ! it merges recursive → file_get_contents(/home/user/cmis.marketing.l… 0.08s  
+  ! it flattens nested arrays → file_get_contents(/home/user/cmis.marke… 0.07s  
+  ! it gets nested value → file_get_contents(/home/user/cmis.marketing.… 0.07s  
+  ! it sorts by key → file_get_contents(/home/user/cmis.marketing.limit… 0.07s  
+  ! it removes null values → file_get_contents(/home/user/cmis.marketin… 0.09s  
+  ! it sets nested value → file_get_contents(/home/user/cmis.marketing.… 0.07s  
+  ! it groups array by key → file_get_contents(/home/user/cmis.marketin… 0.07s  
+
+   FAIL  Tests\Unit\Events\CampaignCreatedEventTest
+  ⨯ it can be instantiated                                               0.08s  
+  ⨯ it contains campaign data                                            0.09s  
+  ⨯ it can be serialized                                                 0.07s  
+  ⨯ it broadcasts on correct channel                                     0.07s  
+  ⨯ it is dispatched when campaign is created                            0.07s  
+
+   FAIL  Tests\Unit\Jobs\SendSMSJobTest
+  ⨯ it splits long messages                                              0.07s  
+  ! it can be dispatched → file_get_contents(/home/user/cmis.marketing.… 0.09s  
+  ⨯ it sends arabic message                                              0.07s  
+  ⨯ it sends sms to contact                                              0.07s  
+  ⨯ it handles rate limiting                                             0.07s  
+  ⨯ it supports message personalization                                  0.07s  
+  ⨯ it tracks sms delivery status                                        0.09s  
+  ⨯ it handles invalid phone number                                      0.07s  
+
+   FAIL  Tests\Unit\Jobs\ProcessWebhookJobTest
+  ! it retries on failure → file_get_contents(/home/user/cmis.marketing… 0.07s  
+  ⨯ it updates delivery statistics                                       0.07s  
+  ⨯ it sends post request to webhook url                                 0.07s  
+  ⨯ it handles failed deliveries                                         0.11s  
+  ⨯ it generates signature when secret is set                            0.07s  
+  ⨯ it processes webhook delivery                                        0.08s  
+  ⨯ it includes custom headers                                           0.08s  
+  ⨯ it can be dispatched                                                 0.08s  
+
+   WARN  Tests\Unit\Helpers\StringHelperTest
+  ! it removes special characters → file_get_contents(/home/user/cmis.m… 0.11s  
+  ! it extracts hashtags → file_get_contents(/home/user/cmis.marketing.… 0.08s  
+  ! it truncates string → file_get_contents(/home/user/cmis.marketing.l… 0.08s  
+  ! it extracts mentions → file_get_contents(/home/user/cmis.marketing.… 0.08s  
+  ! it generates slug → file_get_contents(/home/user/cmis.marketing.lim… 0.08s  
+  ! it converts to title case → file_get_contents(/home/user/cmis.marke… 0.09s  
+  ! it masks sensitive data → file_get_contents(/home/user/cmis.marketi… 0.11s  
+  ! it counts words → file_get_contents(/home/user/cmis.marketing.limit… 0.07s  
+
+   FAIL  Tests\Unit\Services\CampaignOrchestratorServiceTest
+  ⨯ it tracks campaign performance metrics                               0.32s  
+  ⨯ it can complete campaign                                             0.32s  
+  ⨯ it can create complete campaign workflow                             0.34s  
+  ⨯ it validates campaign date range                                     0.31s  
+  ⨯ it validates campaign budget                                         0.31s  
+  ⨯ it can duplicate campaign                                            0.32s  
+  ⨯ it can pause campaign                                                0.32s  
+  ! it respects org isolation → file_get_contents(/home/user/cmis.marke… 0.57s  
+  ⨯ it can generate campaign insights                                    0.33s  
+  ⨯ it can activate campaign                                             0.32s  
+
+   FAIL  Tests\Unit\Models\Operations\AuditLogTest
+  ⨯ it stores additional metadata                                        0.08s  
+  ⨯ it can query by entity type                                          0.07s  
+  ⨯ it tracks ip address                                                 0.09s  
+  ⨯ it belongs to user                                                   0.30s  
+  ⨯ it tracks user agent                                                 0.07s  
+  ⨯ it uses uuid as primary key                                          0.07s  
+  ⨯ it respects rls policies                                             0.07s  
+  ⨯ it stores entity information                                         0.09s  
+  ⨯ it belongs to org                                                    0.07s  
+  ⨯ it tracks action type                                                0.07s  
+  ⨯ it has timestamps                                                    0.07s  
+  ⨯ it can create audit log                                              0.31s  
+  ⨯ it stores old and new values                                         0.07s  
+
+   FAIL  Tests\Unit\Models\Social\SocialAccountTest
+  ⨯ it stores metrics as json                                            0.10s  
+  ! it has timestamps → file_get_contents(/home/user/cmis.marketing.lim… 0.07s  
+  ⨯ it uses uuid as primary key                                          0.08s  
+  ⨯ it stores profile data as json                                       0.08s  
+  ⨯ it can be soft deleted                                               0.07s  
+  ⨯ it can create a social account                                       0.09s  
+  ⨯ it tracks last sync time                                             0.07s  
+  ! it respects rls policies → file_get_contents(/home/user/cmis.market… 0.08s  
+  ⨯ it belongs to organization and integration                           0.08s  
+  ! it validates platform → file_get_contents(/home/user/cmis.marketing… 0.07s  
+
+   FAIL  Tests\Unit\Models\Permission\PermissionTest
+  ⨯ it has display name                                                  0.10s  
+  ⨯ it has description                                                   0.07s  
+  ⨯ it can be assigned to roles                                          0.07s  
+  ⨯ it has unique name                                                   0.07s  
+  ⨯ it has priority order                                                0.07s  
+  ⨯ it uses uuid as primary key                                          0.09s  
+  ⨯ it supports wildcard permissions                                     0.07s  
+  ⨯ it has timestamps                                                    0.07s  
+  ⨯ it has category                                                      0.07s  
+  ⨯ it can create permission                                             0.08s  
+  ⨯ it groups permissions by category                                    0.07s  
+  ⨯ it can be active or inactive                                         0.09s  
+
+   WARN  Tests\Unit\Validators\CampaignValidatorTest
+  ! it validates budget is numeric → file_get_contents(/home/user/cmis.… 0.08s  
+  ! it validates end date after start date → file_get_contents(/home/us… 0.07s  
+  ! it validates campaign name is required → file_get_contents(/home/us… 0.07s  
+  ! it validates date format → file_get_contents(/home/user/cmis.market… 0.07s  
+  ! it validates campaign type → file_get_contents(/home/user/cmis.mark… 0.09s  
+  ! it validates campaign name max length → file_get_contents(/home/use… 0.07s  
+  ! it validates status values → file_get_contents(/home/user/cmis.mark… 0.07s  
+  ! it allows valid campaign data → file_get_contents(/home/user/cmis.m… 0.07s  
+  ! it validates budget minimum value → file_get_contents(/home/user/cm… 0.07s  
+
+   FAIL  Tests\Unit\Services\TikTokServiceTest
+  ⨯ it can publish video                                                 0.33s  
+  ⨯ it can get user info                                                 0.31s  
+  ⨯ it can get comments                                                  0.31s  
+  ⨯ it can get videos list                                               0.32s  
+  ⨯ it handles api errors                                                0.32s  
+  ⨯ it can reply to comment                                              0.34s  
+  ⨯ it can get audience insights                                         0.32s  
+  ⨯ it can get video analytics                                           0.33s  
+  ⨯ it validates video requirements                                      0.32s  
+
+   WARN  Tests\Unit\Validators\IntegrationValidatorTest
+  ! it validates metadata is array → file_get_contents(/home/user/cmis.… 0.08s  
+  ! it allows valid integration data → file_get_contents(/home/user/cmi… 0.10s  
+  ! it validates platform is required → file_get_contents(/home/user/cm… 0.08s  
+  ! it validates is active is boolean → file_get_contents(/home/user/cm… 0.08s  
+  ! it validates name is required → file_get_contents(/home/user/cmis.m… 0.08s  
+  ! it validates platform values → file_get_contents(/home/user/cmis.ma… 0.08s  
+  ! it validates credentials is array → file_get_contents(/home/user/cm… 0.10s  
+  ! it validates token expires at date → file_get_contents(/home/user/c… 0.08s  
+
+   FAIL  Tests\Unit\Models\UserTest
+  ⨯ it can check permissions                                             0.32s  
+  ⨯ it can be soft deleted                                               0.31s  
+  ⨯ it uses uuid as primary identifier                                   0.30s  
+  ! it has many organizations → file_get_contents(/home/user/cmis.marke… 0.35s  
+  ⨯ it enforces unique email                                             0.53s  
+  ⨯ it belongs to multiple organizations                                 0.31s  
+  ! it can check organization membership → file_get_contents(/home/user… 0.32s  
+  ! it can create a user with uuid → file_get_contents(/home/user/cmis.… 0.31s  
+
+   FAIL  Tests\Unit\Models\Platform\PlatformConnectionTest
+  ⨯ it stores additional metadata                                        0.11s  
+  ⨯ it uses uuid as primary key                                          0.08s  
+  ⨯ it tracks token expiry                                               0.08s  
+  ! it can create platform connection → file_get_contents(/home/user/cm… 0.09s  
+  ⨯ it tracks last synced time                                           0.08s  
+  ! it has timestamps → file_get_contents(/home/user/cmis.marketing.lim… 0.11s  
+  ⨯ it has different statuses                                            0.09s  
+  ⨯ it stores platform account name                                      0.08s  
+  ! it respects rls policies → file_get_contents(/home/user/cmis.market… 0.08s  
+  ⨯ it stores platform account id                                        0.08s  
+  ! it has different platforms → file_get_contents(/home/user/cmis.mark… 0.08s  
+  ⨯ it stores access token                                               0.10s  
+  ⨯ it stores refresh token                                              0.08s  
+  ⨯ it belongs to org                                                    0.09s  
+
+   WARN  Tests\Unit\Models\Other\SegmentTest
+  ! it supports arabic names → file_get_contents(/home/user/cmis.market… 0.09s  
+  ! it uses uuid as primary key → file_get_contents(/home/user/cmis.mar… 0.11s  
+  ! it belongs to org → file_get_contents(/home/user/cmis.marketing.lim… 0.08s  
+  ! it stores persona data → file_get_contents(/home/user/cmis.marketin… 0.08s  
+  ! it can store complex persona → file_get_contents(/home/user/cmis.ma… 0.08s  
+  ! it can create segment → file_get_contents(/home/user/cmis.marketing… 0.09s  
+  ! it respects rls policies → file_get_contents(/home/user/cmis.market… 0.09s  
+  ! it tracks provider → file_get_contents(/home/user/cmis.marketing.li… 0.11s  
+  ! it can scope by org → file_get_contents(/home/user/cmis.marketing.l… 0.08s  
+  ! it can have notes → file_get_contents(/home/user/cmis.marketing.lim… 0.08s  
+  ! it uses soft deletes → file_get_contents(/home/user/cmis.marketing.… 0.09s  
+
+   FAIL  Tests\Unit\Events\PostPublishedEventTest
+  ⨯ it can be dispatched                                                 0.12s  
+  ⨯ it can be listened to                                                0.09s  
+  ⨯ it broadcasts on private channel                                     0.08s  
+  ⨯ it can be instantiated                                               0.08s  
+  ⨯ it contains post data                                                0.08s  
+
+   FAIL  Tests\Unit\Models\Workflow\WorkflowTest
+  ⨯ it belongs to org                                                    0.11s  
+  ! it can be soft deleted → file_get_contents(/home/user/cmis.marketin… 0.08s  
+  ⨯ it stores workflow conditions                                        0.08s  
+  ! it respects rls policies → file_get_contents(/home/user/cmis.market… 0.08s  
+  ⨯ it uses uuid as primary key                                          0.08s  
+  ! it has different trigger types → file_get_contents(/home/user/cmis.… 0.08s  
+  ! it can be active or inactive → file_get_contents(/home/user/cmis.ma… 0.11s  
+  ⨯ it tracks execution count                                            0.08s  
+  ! it has timestamps → file_get_contents(/home/user/cmis.marketing.lim… 0.08s  
+  ⨯ it tracks last execution time                                        0.08s  
+  ⨯ it stores workflow steps as json                                     0.08s  
+  ! it can create workflow → file_get_contents(/home/user/cmis.marketin… 0.10s  
+
+   FAIL  Tests\Unit\Listeners\UpdateAnalyticsListenerTest
+  ⨯ it processes different platforms                                     0.09s  
+  ! it respects org isolation → file_get_contents(/home/user/cmis.marke… 0.09s  
+  ⨯ it updates analytics on post published                               0.09s  
+  ⨯ it handles event gracefully                                          0.08s  
+  ⨯ it listens to post published event                                   0.10s  
+  ⨯ it tracks platform specific metrics                                  0.08s  
+  ⨯ it updates last published timestamp                                  0.08s  
+  ⨯ it increments post count                                             0.08s  
+
+   FAIL  Tests\Unit\Models\Analytics\CampaignAnalyticsTest
+  ⨯ it can calculate roi                                                 0.11s  
+  ⨯ it can calculate cpm                                                 0.08s  
+  ⨯ it has timestamps                                                    0.08s  
+  ⨯ it can calculate cpc                                                 0.08s  
+  ⨯ it can calculate ctr                                                 0.10s  
+  ⨯ it respects rls policies                                             0.08s  
+  ⨯ it belongs to campaign and org                                       0.10s  
+  ⨯ it stores detailed metrics as json                                   0.08s  
+  ⨯ it can create campaign analytics                                     0.08s  
+  ⨯ it uses uuid as primary key                                          0.09s  
+  ⨯ it can calculate conversion rate                                     0.08s  
+
+   WARN  Tests\Unit\Requests\UpdateCampaignRequestTest
+  ! it validates budget is numeric → file_get_contents(/home/user/cmis.… 0.11s  
+  ! it validates campaign name max length → file_get_contents(/home/use… 0.09s  
+  ! it validates channels is array → file_get_contents(/home/user/cmis.… 0.08s  
+  ! it validates end date after start date → file_get_contents(/home/us… 0.08s  
+  ! all fields are optional → file_get_contents(/home/user/cmis.marketi… 0.08s  
+  ! it validates target audience is array → file_get_contents(/home/use… 0.10s  
+  ! it validates status → file_get_contents(/home/user/cmis.marketing.l… 0.08s  
+  ! it validates budget minimum value → file_get_contents(/home/user/cm… 0.07s  
+  ! it validates campaign type → file_get_contents(/home/user/cmis.mark… 0.08s  
+  ! it allows valid campaign data → file_get_contents(/home/user/cmis.m… 0.08s  
+  ! it validates objectives is array → file_get_contents(/home/user/cmi… 0.08s  
+  ! it validates date format → file_get_contents(/home/user/cmis.market… 0.11s  
+
+   FAIL  Tests\Unit\Jobs\GenerateInvoiceJobTest
+  ⨯ it includes line items                                               0.10s  
+  ⨯ it generates unique invoice number                                   0.09s  
+  ⨯ it calculates invoice total                                          0.09s  
+  ⨯ it handles different currencies                                      0.11s  
+  ⨯ it sends invoice notification                                        0.09s  
+  ⨯ it applies tax to invoice                                            0.08s  
+  ⨯ it includes billing address                                          0.09s  
+  ⨯ it stores invoice pdf                                                0.09s  
+  ⨯ it generates invoice for subscription                                0.09s  
+  ! it can be dispatched → file_get_contents(/home/user/cmis.marketing.… 0.12s  
+
+   FAIL  Tests\Unit\Jobs\SyncAnalyticsJobTest
+  ⨯ it calculates engagement rate                                        0.10s  
+  ⨯ it stores historical data                                            0.09s  
+  ⨯ it supports batch syncing                                            0.09s  
+  ! it can be dispatched → file_get_contents(/home/user/cmis.marketing.… 0.11s  
+  ! it respects org isolation → file_get_contents(/home/user/cmis.marke… 0.08s  
+  ⨯ it syncs cost metrics                                                0.08s  
+  ⨯ it syncs platform specific metrics                                   0.08s  
+  ⨯ it updates existing analytics                                        0.09s  
+  ⨯ it can sync for date range                                           0.09s  
+  ⨯ it syncs campaign analytics                                          0.12s  
+  ⨯ it handles api errors gracefully                                     0.09s  
+
+   FAIL  Tests\Unit\Jobs\SyncSocialMediaMetricsJobTest
+  ⨯ it syncs facebook metrics                                            0.09s  
+  ⨯ it updates last synced timestamp                                     0.09s  
+  ⨯ it handles api errors                                                0.11s  
+  ⨯ it can be dispatched                                                 0.08s  
+  ⨯ it syncs instagram metrics                                           0.09s  
+  ⨯ it stores metrics in database                                        0.09s  
+
+   FAIL  Tests\Unit\Models\Content\ContentPlanItemTest
+  ⨯ it can be soft deleted                                               0.09s  
+  ⨯ it belongs to content plan and org                                   0.11s  
+  ⨯ it validates content type                                            0.09s  
+  ⨯ it uses uuid as primary key                                          0.09s  
+  ⨯ it stores content details as json                                    0.09s  
+  ⨯ it has timestamps                                                    0.09s  
+  ⨯ it can create a content plan item                                    0.10s  
+  ⨯ it validates status                                                  0.07s  
+  ⨯ it respects rls policies                                             0.07s  
+  ⨯ it validates platform                                                0.07s  
+
+   FAIL  Tests\Unit\Services\GoogleBusinessServiceTest
+  ⨯ it can create local post                                             0.31s  
+  ⨯ it can get location insights                                         0.33s  
+  ⨯ it can create offer post                                             0.31s  
+  ⨯ it can get location questions                                        0.31s  
+  ⨯ it can update business hours                                         0.31s  
+  ⨯ it handles api errors                                                0.31s  
+  ⨯ it validates location id                                             0.34s  
+  ⨯ it can reply to review                                               0.32s  
+  ⨯ it can get reviews                                                   0.32s  
+  ⨯ it can answer question                                               0.32s  
+
+   FAIL  Tests\Unit\Models\Role\RoleTest
+  ⨯ it stores metadata as json                                           0.08s  
+  ⨯ it can count users with role                                         0.10s  
+  ⨯ it has unique name per org                                           0.07s  
+  ⨯ it respects rls policies                                             0.08s  
+  ⨯ it can be system role                                                0.07s  
+  ⨯ it has timestamps                                                    0.08s  
+  ⨯ it uses uuid as primary key                                          0.10s  
+  ⨯ it tracks is default flag                                            0.07s  
+  ⨯ it can create role                                                   0.07s  
+  ⨯ it has display name in arabic                                        0.07s  
+  ⨯ it can have permissions                                              0.07s  
+  ⨯ it belongs to org                                                    0.07s  
+  ⨯ it has priority order                                                0.10s  
+
+   FAIL  Tests\Unit\Middleware\RLSMiddlewareTest
+  ⨯ it clears rls context after request                                  0.31s  
+  ⨯ it sets correct org id in context                                    0.32s  
+  ! it skips rls for unauthenticated requests → file_get_contents(/home… 0.07s  
+  ! it handles exceptions gracefully → file_get_contents(/home/user/cmi… 0.34s  
+  ! it handles missing org id gracefully → file_get_contents(/home/user… 0.32s  
+  ! it sets rls context for authenticated user → file_get_contents(/hom… 0.32s  
+  ⨯ it sets correct user id in context                                   0.32s  
+  ⨯ it works with sanctum authentication                                 0.32s  
+
+   FAIL  Tests\Unit\Validators\ContentValidatorTest
+  ⨯ it accepts valid content data                                        0.11s  
+  ⨯ it validates title max length                                        0.08s  
+  ⨯ it validates required body                                           0.08s  
+  ⨯ it validates tags as array                                           0.08s  
+  ⨯ it validates media urls as array                                     0.08s  
+  ⨯ it validates media urls format                                       0.08s  
+  ⨯ it accepts valid statuses                                            0.11s  
+  ⨯ it validates scheduled date in future                                0.07s  
+  ⨯ it validates scheduled date format                                   0.10s  
+  ⨯ it validates status enum                                             0.09s  
+  ⨯ it validates required title                                          0.08s  
+
+   FAIL  Tests\Unit\Repositories\ContentRepositoryTest
+  ⨯ it can search content by keyword
+  ⨯ it can filter content by status
+  ⨯ it can get content performance
+  ⨯ it can get content by platform
+  ⨯ it can get scheduled content
+  ⨯ it can find similar content
+  ⨯ it can create content with context
+  ⨯ it can bulk update content status
+  ⨯ it can get content for campaign
+  ⨯ it respects transaction context
+
+   FAIL  Tests\Unit\Models\Tag\TagTest
+  ! it can create tag → file_get_contents(/home/user/cmis.marketing.lim… 0.12s  
+  ⨯ it belongs to org                                                    0.08s  
+  ! it respects rls policies → file_get_contents(/home/user/cmis.market… 0.08s  
+  ⨯ it tracks usage count                                                0.08s  
+  ⨯ it has different tag types                                           0.09s  
+  ⨯ it stores tag description                                            0.11s  
+  ⨯ it can be soft deleted                                               0.08s  
+  ⨯ it uses uuid as primary key                                          0.08s  
+  ! it has timestamps → file_get_contents(/home/user/cmis.marketing.lim… 0.08s  
+  ⨯ it can be active or inactive                                         0.08s  
+  ! it has unique slug → file_get_contents(/home/user/cmis.marketing.li… 0.08s  
+  ! it stores tag color → file_get_contents(/home/user/cmis.marketing.l… 0.10s  
+
+   FAIL  Tests\Unit\Models\Budget\BudgetTest
+  ⨯ it uses uuid as primary key                                          0.08s  
+  ! it respects rls policies → file_get_contents(/home/user/cmis.market… 0.08s  
+  ⨯ it tracks budget status                                              0.07s  
+  ! it supports different currencies → file_get_contents(/home/user/cmi… 0.10s  
+  ⨯ it calculates remaining amount                                       0.07s  
+  ⨯ it belongs to org                                                    0.07s  
+  ⨯ it stores approval information                                       0.30s  
+  ⨯ it can create budget                                                 0.07s  
+  ⨯ it belongs to campaign                                               0.07s  
+  ⨯ it tracks spent amount                                               0.10s  
+  ! it has timestamps → file_get_contents(/home/user/cmis.marketing.lim… 0.08s  
+  ⨯ it can have budget breakdown                                         0.08s  
+  ⨯ it has start and end dates                                           0.08s  
+
+   FAIL  Tests\Unit\Models\Activity\ActivityLogTest
+  ⨯ it stores ip address                                                 0.34s  
+  ⨯ it stores user agent                                                 0.31s  
+  ! it tracks different action types → file_get_contents(/home/user/cmi… 0.32s  
+  ! it stores metadata as json → file_get_contents(/home/user/cmis.mark… 0.31s  
+  ! it has timestamps → file_get_contents(/home/user/cmis.marketing.lim… 0.31s  
+  ⨯ it can create activity log                                           0.31s  
+  ⨯ it respects rls policies                                             0.34s  
+  ⨯ it tracks entity type and id                                         0.32s  
+  ⨯ it uses uuid as primary key                                          0.31s  
+  ⨯ it belongs to user and org                                           0.31s  
+  ⨯ it can filter by date range                                          0.32s  
+
+   FAIL  Tests\Unit\Models\Log\ApiLogTest
+  ⨯ it belongs to user                                                   0.34s  
+  ⨯ it tracks response time                                              0.07s  
+  ⨯ it respects rls policies                                             0.08s  
+  ⨯ it uses uuid as primary key                                          0.07s  
+  ⨯ it stores error message for failed requests                          0.07s  
+  ! it has timestamps → file_get_contents(/home/user/cmis.marketing.lim… 0.10s  
+  ⨯ it stores user agent                                                 0.08s  
+  ⨯ it belongs to org                                                    0.07s  
+  ⨯ it stores ip address                                                 0.07s  
+  ⨯ it stores response payload                                           0.07s  
+  ⨯ it can create api log                                                0.10s  
+  ! it logs different http methods → file_get_contents(/home/user/cmis.… 0.07s  
+  ⨯ it stores request payload                                            0.08s  
+  ! it logs different status codes → file_get_contents(/home/user/cmis.… 0.09s  
+
+   FAIL  Tests\Unit\Models\Analytics\AnalyticsSnapshotTest
+  ! it can create analytics snapshot → file_get_contents(/home/user/cmi… 0.09s  
+  ⨯ it stores platform specific metrics                                  0.11s  
+  ! it has timestamps → file_get_contents(/home/user/cmis.marketing.lim… 0.08s  
+  ⨯ it uses uuid as primary key                                          0.08s  
+  ! it stores daily snapshots → file_get_contents(/home/user/cmis.marke… 0.09s  
+  ! it stores engagement metrics → file_get_contents(/home/user/cmis.ma… 0.08s  
+  ! it respects rls policies → file_get_contents(/home/user/cmis.market… 0.12s  
+  ⨯ it belongs to campaign                                               0.08s  
+  ! it stores metrics as json → file_get_contents(/home/user/cmis.marke… 0.08s  
+  ! it tracks snapshot date → file_get_contents(/home/user/cmis.marketi… 0.08s  
+  ! it calculates metric trends → file_get_contents(/home/user/cmis.mar… 0.08s  
+  ! it stores cost metrics → file_get_contents(/home/user/cmis.marketin… 0.07s  
+  ⨯ it belongs to org                                                    0.10s  
+
+   FAIL  Tests\Unit\Jobs\SyncFacebookDataJobTest
+  ⨯ job creates sync log on success                                      0.08s  
+  ⨯ job can be dispatched                                                0.07s  
+  ⨯ job logs success on completion                                       0.07s  
+  ⨯ job updates integration on failure                                   0.10s  
+  ⨯ job serialization                                                    0.07s  
+  ⨯ job has correct configuration                                        0.07s  
+  ⨯ job is pushed to correct queue                                       0.07s  
+
+   WARN  Tests\Unit\Formatters\DateFormatterTest
+  ! it formats date for display → file_get_contents(/home/user/cmis.mar… 0.07s  
+  ! it formats month year → file_get_contents(/home/user/cmis.marketing… 0.10s  
+  ! it formats date with time → file_get_contents(/home/user/cmis.marke… 0.07s  
+  ! it gets quarter from date → file_get_contents(/home/user/cmis.marke… 0.06s  
+  ! it gets start of day → file_get_contents(/home/user/cmis.marketing.… 0.07s  
+  ! it calculates age from date → file_get_contents(/home/user/cmis.mar… 0.07s  
+  ! it checks if date is past → file_get_contents(/home/user/cmis.marke… 0.07s  
+  ! it formats iso8601 → file_get_contents(/home/user/cmis.marketing.li… 0.10s  
+  ! it formats date for humans → file_get_contents(/home/user/cmis.mark… 0.26s  
+  ! it checks if date is future → file_get_contents(/home/user/cmis.mar… 0.07s  
+  ! it gets end of day → file_get_contents(/home/user/cmis.marketing.li… 0.07s  
+  ! it formats arabic dates → file_get_contents(/home/user/cmis.marketi… 0.27s  
+  ! it converts to timezone → file_get_contents(/home/user/cmis.marketi… 0.08s  
+
+   WARN  Tests\Unit\Events\CampaignStatusChangedEventTest
+  ! it can be instantiated → file_get_contents(/home/user/cmis.marketin… 0.08s  
+  ! it tracks active to paused transition → file_get_contents(/home/use… 0.08s  
+  ! it can be dispatched → file_get_contents(/home/user/cmis.marketing.… 0.07s  
+  ! it broadcasts on org channel → file_get_contents(/home/user/cmis.ma… 0.07s  
+  ! it triggers notifications for important changes → file_get_contents… 0.07s  
+  ! it respects org context → file_get_contents(/home/user/cmis.marketi… 0.07s  
+  ! it contains old and new status → file_get_contents(/home/user/cmis.… 0.07s  
+  ! it includes timestamp → file_get_contents(/home/user/cmis.marketing… 0.07s  
+  ! it tracks draft to active transition → file_get_contents(/home/user… 0.07s  
+
+   FAIL  Tests\Unit\Jobs\ProcessWebhookResponseJobTest
+  ⨯ it retries on timeout                                                0.07s  
+  ⨯ it sends custom headers                                              0.07s  
+  ⨯ it processes successful webhook response                             0.07s  
+  ⨯ it updates webhook statistics                                        0.07s  
+  ⨯ it respects max retry limit                                          0.07s  
+  ⨯ it handles failed webhook response                                   0.07s  
+  ⨯ it logs webhook delivery                                             0.11s  
+  ! it respects org isolation → file_get_contents(/home/user/cmis.marke… 0.07s  
+  ⨯ it can be dispatched                                                 0.07s  
+  ⨯ it includes signature                                                0.07s  
+  ⨯ it handles network errors                                            0.07s  
+
+   FAIL  Tests\Unit\Models\Content\ContentApprovalTest
+  ⨯ it has different approval statuses                                   0.30s  
+  ⨯ it belongs to content item and org                                   0.30s  
+  ⨯ it has timestamps                                                    0.30s  
+  ⨯ it supports multi level approvals                                    0.53s  
+  ⨯ it can create content approval                                       0.30s  
+  ⨯ it respects rls policies                                             0.30s  
+  ⨯ it uses uuid as primary key                                          0.31s  
+  ⨯ it stores revision requests                                          0.31s  
+  ⨯ it stores approval comments                                          0.30s  
+  ⨯ it tracks approval duration                                          0.30s  
+  ⨯ it tracks approval timestamp                                         0.30s  
+
+   FAIL  Tests\Unit\Jobs\PublishToFacebookJobTest
+  ⨯ it handles publishing errors                                         0.33s  
+  ⨯ it publishes post to facebook                                        0.37s  
+  ⨯ it can be dispatched                                                 0.32s  
+  ⨯ it validates post content before publishing                          0.32s  
+  ⨯ it updates post metadata on success                                  0.32s  
+  ⨯ it retries on failure                                                0.32s  
+
+   FAIL  Tests\Unit\Services\EmailServiceTest
+  ⨯ it can send campaign email                                           0.33s  
+  ⨯ it can track email opens                                             0.31s  
+  ⨯ it can schedule email                                                0.32s  
+  ⨯ it can send transactional email                                      0.31s  
+  ⨯ it can send bulk emails                                              0.32s  
+  ⨯ it can send email with attachments                                   0.31s  
+  ⨯ it validates required fields                                         0.36s  
+  ⨯ it validates email address                                           0.31s  
+  ⨯ it handles send failures                                             0.31s  
+  ⨯ it can track email clicks                                            0.31s  
+  ⨯ it can personalize content                                           0.31s  
+  ⨯ it can send template email                                           0.35s  
+
+   FAIL  Tests\Unit\Services\SMSServiceTest
+  ⨯ it can get delivery report                                           0.32s  
+  ⨯ it can get message status                                            0.32s  
+  ⨯ it can send otp sms                                                  0.31s  
+  ⨯ it validates phone number                                            0.35s  
+  ⨯ it can schedule sms                                                  0.32s  
+  ⨯ it handles api errors                                                0.32s  
+  ⨯ it validates message length                                          0.32s  
+  ⨯ it handles rate limiting                                             0.32s  
+  ⨯ it can send unicode sms                                              0.32s  
+  ⨯ it can send bulk sms                                                 0.35s  
+  ⨯ it can send sms                                                      0.32s  
+  ⨯ it can send personalized sms                                         0.32s  
+
+   FAIL  Tests\Unit\Models\Setting\SettingTest
+  ⨯ it uses uuid as primary key                                          0.09s  
+  ⨯ it can store json metadata                                           0.12s  
+  ⨯ it has category grouping                                             0.08s  
+  ! it respects rls policies → file_get_contents(/home/user/cmis.market… 0.08s  
+  ! it stores different value types → file_get_contents(/home/user/cmis… 0.09s  
+  ⨯ it tracks description                                                0.08s  
+  ! it has unique key per org → file_get_contents(/home/user/cmis.marke… 0.08s  
+  ⨯ it can be public or private                                          0.12s  
+  ! it has timestamps → file_get_contents(/home/user/cmis.marketing.lim… 0.08s  
+  ! it can create setting → file_get_contents(/home/user/cmis.marketing… 0.09s  
+  ⨯ it belongs to org                                                    0.08s  
+
+   FAIL  Tests\Unit\Models\Subscription\SubscriptionTest
+  ⨯ it tracks trial period                                               0.12s  
+  ! it can check if subscription is active → file_get_contents(/home/us… 0.08s  
+  ⨯ it respects rls policies                                             0.08s  
+  ⨯ it belongs to org                                                    0.08s  
+  ⨯ it stores plan features                                              0.08s  
+  ! it has different statuses → file_get_contents(/home/user/cmis.marke… 0.09s  
+  ! it tracks subscription dates → file_get_contents(/home/user/cmis.ma… 0.12s  
+  ! it has timestamps → file_get_contents(/home/user/cmis.marketing.lim… 0.08s  
+  ⨯ it stores pricing information                                        0.08s  
+  ! it has different plan types → file_get_contents(/home/user/cmis.mar… 0.08s  
+  ⨯ it can create subscription                                           0.08s  
+  ⨯ it uses uuid as primary key                                          0.12s  
+
+   WARN  Tests\Unit\Helpers\DateHelperTest
+  ! it formats date for display → file_get_contents(/home/user/cmis.mar… 0.08s  
+  ! it formats time ago → file_get_contents(/home/user/cmis.marketing.l… 0.30s  
+  ! it gets date range array → file_get_contents(/home/user/cmis.market… 0.08s  
+  ! it checks if date is future → file_get_contents(/home/user/cmis.mar… 0.08s  
+  ! it gets end of month → file_get_contents(/home/user/cmis.marketing.… 0.08s  
+  ! it calculates days difference → file_get_contents(/home/user/cmis.m… 0.09s  
+  ! it gets start of month → file_get_contents(/home/user/cmis.marketin… 0.08s  
+  ! it checks if date is past → file_get_contents(/home/user/cmis.marke… 0.08s  
+
+   WARN  Tests\Unit\Commands\ProcessScheduledPostsCommandTest
+  ! it logs processed posts → file_get_contents(/home/user/cmis.marketi… 0.09s  
+  ! it displays processing count → file_get_contents(/home/user/cmis.ma… 0.09s  
+  ! it skips future posts → file_get_contents(/home/user/cmis.marketing… 0.08s  
+  ! it accepts dry run option → file_get_contents(/home/user/cmis.marke… 0.08s  
+  ! it handles empty queue → file_get_contents(/home/user/cmis.marketin… 0.08s  
+  ! it processes due scheduled posts → file_get_contents(/home/user/cmi… 0.08s  
+  ! it accepts limit option → file_get_contents(/home/user/cmis.marketi… 0.08s  
+
+   WARN  Tests\Unit\Formatters\NumberFormatterTest
+  ! it calculates percentage change → file_get_contents(/home/user/cmis… 0.08s  
+  ! it formats rating → file_get_contents(/home/user/cmis.marketing.lim… 0.07s  
+  ! it rounds to nearest → file_get_contents(/home/user/cmis.marketing.… 0.07s  
+  ! it formats saudi riyal → file_get_contents(/home/user/cmis.marketin… 0.07s  
+  ! it formats percentage → file_get_contents(/home/user/cmis.marketing… 0.07s  
+  ! it formats file size → file_get_contents(/home/user/cmis.marketing.… 0.07s  
+  ! it formats with thousand separator → file_get_contents(/home/user/c… 0.07s  
+  ! it formats currency → file_get_contents(/home/user/cmis.marketing.l… 0.07s  
+  ! it calculates discount amount → file_get_contents(/home/user/cmis.m… 0.13s  
+  ! it formats decimal with arabic numbers → file_get_contents(/home/us… 0.07s  
+  ! it formats large numbers → file_get_contents(/home/user/cmis.market… 0.07s  
+  ! it calculates average → file_get_contents(/home/user/cmis.marketing… 0.07s  
+  ! it formats phone number → file_get_contents(/home/user/cmis.marketi… 0.07s  
+
+   FAIL  Tests\Unit\Models\Audience\AudienceTest
+  ! it can create audience → file_get_contents(/home/user/cmis.marketin… 0.09s  
+  ⨯ it has interest criteria                                             0.08s  
+  ⨯ it can be active or inactive                                         0.07s  
+  ⨯ it has lookalike source                                              0.08s  
+  ⨯ it tracks source platforms                                           0.08s  
+  ⨯ it has different audience types                                      0.07s  
+  ⨯ it belongs to org                                                    0.08s  
+  ⨯ it tracks last updated time                                          0.07s  
+  ⨯ it respects rls policies                                             0.07s  
+  ⨯ it tracks audience size                                              0.07s  
+  ! it has timestamps → file_get_contents(/home/user/cmis.marketing.lim… 0.07s  
+  ⨯ it has behavioral criteria                                           0.08s  
+  ⨯ it has demographic criteria                                          0.13s  
+  ⨯ it uses uuid as primary key                                          0.07s  
+
+   FAIL  Tests\Unit\Models\Activity\ActivityTest
+  ⨯ it tracks user agent                                                 0.31s  
+  ! it tracks different actions → file_get_contents(/home/user/cmis.mar… 0.31s  
+  ⨯ it stores properties as json                                         0.31s  
+  ⨯ it uses uuid as primary key                                          0.30s  
+  ⨯ it belongs to user                                                   0.31s  
+  ! it can create activity → file_get_contents(/home/user/cmis.marketin… 0.31s  
+  ⨯ it is polymorphic                                                    0.31s  
+  ⨯ it belongs to org                                                    0.30s  
+  ⨯ it has description                                                   0.32s  
+  ⨯ it can be filtered by date range                                     0.35s  
+  ! it respects rls policies → file_get_contents(/home/user/cmis.market… 0.54s  
+  ⨯ it tracks ip address                                                 0.31s  
+  ! it has timestamps → file_get_contents(/home/user/cmis.marketing.lim… 0.31s  
+
+   FAIL  Tests\Unit\Jobs\CleanupOldLogsJobTest
+  ⨯ it cleans up old api logs                                            0.08s  
+  ⨯ it returns deleted count                                             0.13s  
+  ⨯ it processes in batches                                              0.81s  
+  ⨯ it respects org isolation                                            0.08s  
+  ⨯ it accepts custom retention days                                     0.08s  
+  ⨯ it handles no logs to delete                                         0.08s  
+  ! it can be dispatched → file_get_contents(/home/user/cmis.marketing.… 0.12s  
+  ⨯ it cleans up old activity logs                                       0.09s  
+
+   WARN  Tests\Unit\Middleware\RateLimitMiddlewareTest
+  ! it uses different limits per endpoint → file_get_contents(/home/use… 0.32s  
+  ! it respects org specific limits → file_get_contents(/home/user/cmis… 0.08s  
+  ! it tracks remaining attempts → file_get_contents(/home/user/cmis.ma… 0.35s  
+  ! it allows requests within limit → file_get_contents(/home/user/cmis… 0.32s  
+  ! it applies per ip limits for guests → file_get_contents(/home/user/… 0.09s  
+  ! it provides retry after header → file_get_contents(/home/user/cmis.… 0.31s  
+  ! it applies per user limits → file_get_contents(/home/user/cmis.mark… 0.54s  
+  ! it exempts admin users → file_get_contents(/home/user/cmis.marketin… 0.30s  
+  ! it resets after time window → file_get_contents(/home/user/cmis.mar… 0.35s  
+  ! it blocks requests exceeding limit → file_get_contents(/home/user/c… 0.31s  
+
+   FAIL  Tests\Unit\Models\Report\ReportTest
+  ! it stores file path → file_get_contents(/home/user/cmis.marketing.l… 0.08s  
+  ! it belongs to org → file_get_contents(/home/user/cmis.marketing.lim… 0.08s  
+  ! it tracks generation time → file_get_contents(/home/user/cmis.marke… 0.12s  
+  ⨯ it stores filter parameters                                          0.08s  
+  ! it has different report types → file_get_contents(/home/user/cmis.m… 0.08s  
+  ! it has format type → file_get_contents(/home/user/cmis.marketing.li… 0.08s  
+  ! it uses uuid as primary key → file_get_contents(/home/user/cmis.mar… 0.08s  
+  ! it has different statuses → file_get_contents(/home/user/cmis.marke… 0.08s  
+  ! it can create report → file_get_contents(/home/user/cmis.marketing.… 0.11s  
+  ⨯ it stores report data as json                                        0.09s  
+  ! it belongs to user → file_get_contents(/home/user/cmis.marketing.li… 0.32s  
+  ! it has timestamps → file_get_contents(/home/user/cmis.marketing.lim… 0.08s  
+  ! it respects rls policies → file_get_contents(/home/user/cmis.market… 0.09s  
+  ⨯ it can be scheduled                                                  0.12s  
+
+   FAIL  Tests\Unit\Models\Team\TeamMemberTest
+  ⨯ it tracks invitation details                                         0.32s  
+  ⨯ it can be soft deleted                                               0.31s  
+  ⨯ it can be active or inactive                                         0.54s  
+  ⨯ it belongs to org and user                                           0.31s  
+  ⨯ it stores permissions as json                                        0.34s  
+  ⨯ it has timestamps                                                    0.31s  
+  ⨯ it uses uuid as primary key                                          0.32s  
+  ⨯ it can create team member                                            0.31s  
+  ⨯ it has different roles                                               0.31s  
+  ⨯ it tracks last access time                                           0.35s  
+  ⨯ it respects rls policies                                             0.54s  
+
+   FAIL  Tests\Unit\Repositories\AnalyticsRepositoryTest
+  ⨯ it respects transaction context                                      0.57s  
+  ⨯ it can get campaign analytics                                        0.32s  
+  ⨯ it can get platform analytics                                        0.32s  
+  ⨯ it can calculate roi                                                 0.37s  
+  ⨯ it can get channel attribution                                       0.33s  
+  ⨯ it can get org overview analytics                                    0.33s  
+  ⨯ it can get audience demographics                                     0.33s  
+  ⨯ it can get conversion funnel                                         0.33s  
+  ⨯ it can compare campaigns                                             0.37s  
+  ⨯ it can get top performing content                                    0.33s  
+  ⨯ it can calculate engagement metrics                                  0.33s  
+  ⨯ it can get real time analytics                                       0.33s  
+
+   WARN  Tests\Unit\Commands\SyncIntegrationsCommandTest
+  ! it updates last synced timestamp → file_get_contents(/home/user/cmi… 0.10s  
+  ! it outputs sync summary → file_get_contents(/home/user/cmis.marketi… 0.13s  
+  ! it handles sync errors gracefully → file_get_contents(/home/user/cm… 0.09s  
+  ! it syncs specific organization → file_get_contents(/home/user/cmis.… 0.10s  
+  ! it supports dry run mode → file_get_contents(/home/user/cmis.market… 0.09s  
+  ! it syncs specific platform → file_get_contents(/home/user/cmis.mark… 0.13s  
+  ! it supports verbose output → file_get_contents(/home/user/cmis.mark… 0.09s  
+  ! it handles no integrations → file_get_contents(/home/user/cmis.mark… 0.08s  
+  ! it syncs all integrations → file_get_contents(/home/user/cmis.marke… 0.09s  
+
+   WARN  Tests\Unit\Formatters\CurrencyFormatterTest
+  ! it formats usd currency → file_get_contents(/home/user/cmis.marketi… 0.13s  
+  ! it formats sar currency → file_get_contents(/home/user/cmis.marketi… 0.08s  
+  ! it supports multiple currencies → file_get_contents(/home/user/cmis… 0.08s  
+  ! it formats with custom decimals → file_get_contents(/home/user/cmis… 0.08s  
+  ! it handles negative amounts → file_get_contents(/home/user/cmis.mar… 0.08s  
+  ! it calculates percentage of budget → file_get_contents(/home/user/c… 0.12s  
+  ! it formats large amounts → file_get_contents(/home/user/cmis.market… 0.07s  
+  ! it converts sar to usd → file_get_contents(/home/user/cmis.marketin… 0.07s  
+  ! it converts usd to sar → file_get_contents(/home/user/cmis.marketin… 0.07s  
+  ! it formats without decimals → file_get_contents(/home/user/cmis.mar… 0.08s  
+
+   FAIL  Tests\Unit\Jobs\ProcessLeadsJobTest
+  ⨯ it sends notification to sales team                                  0.12s  
+  ⨯ it tracks processing time                                            0.08s  
+  ⨯ it handles bulk processing                                           0.09s  
+  ⨯ it detects duplicate leads                                           0.08s  
+  ! it can be dispatched → file_get_contents(/home/user/cmis.marketing.… 0.08s  
+  ⨯ it categorizes leads by source                                       0.13s  
+  ⨯ it assigns to campaign                                               0.08s  
+  ⨯ it assigns lead score                                                0.08s  
+  ⨯ it updates lead status                                               0.08s  
+  ⨯ it processes new leads                                               0.08s  
+  ⨯ it validates lead email                                              0.08s  
+  ⨯ it enriches lead data                                                0.11s  
+
+   FAIL  Tests\Unit\Services\FacebookServiceTest
+  ! it can publish photo → file_get_contents(/home/user/cmis.marketing.… 0.33s  
+  ! it can send message → file_get_contents(/home/user/cmis.marketing.l… 0.32s  
+  ⨯ it handles api errors                                                0.32s  
+  ⨯ it can get post insights                                             0.37s  
+  ⨯ it can get comments                                                  0.32s  
+  ⨯ it can get page conversations                                        0.32s  
+  ! it can publish story → file_get_contents(/home/user/cmis.marketing.… 0.33s  
+  ! it can reply to comment → file_get_contents(/home/user/cmis.marketi… 0.32s  
+  ! it can publish video → file_get_contents(/home/user/cmis.marketing.… 0.37s  
+  ⨯ it can get page insights                                             0.32s  
+  ⨯ it can publish page post                                             0.32s  
+
+   WARN  Tests\Unit\Events\LeadQualifiedEventTest
+  ! it triggers notifications → file_get_contents(/home/user/cmis.marke… 0.09s  
+  ! it can be dispatched → file_get_contents(/home/user/cmis.marketing.… 0.08s  
+  ! it includes timestamp → file_get_contents(/home/user/cmis.marketing… 0.12s  
+  ! it contains lead data → file_get_contents(/home/user/cmis.marketing… 0.08s  
+  ! it can be instantiated → file_get_contents(/home/user/cmis.marketin… 0.08s  
+  ! it includes qualification reason → file_get_contents(/home/user/cmi… 0.08s  
+  ! it respects org context → file_get_contents(/home/user/cmis.marketi… 0.07s  
+  ! it broadcasts on private channel → file_get_contents(/home/user/cmi… 0.11s  
+
+   FAIL  Tests\Unit\Jobs\GenerateCampaignReportJobTest
+  ! it can be dispatched → file_get_contents(/home/user/cmis.marketing.… 0.08s  
+  ⨯ it generates excel report                                            0.08s  
+  ⨯ it generates campaign report                                         0.07s  
+  ⨯ it generates pdf report                                              0.07s  
+  ⨯ it includes campaign analytics                                       0.11s  
+  ⨯ it stores report file                                                0.07s  
+
+   FAIL  Tests\Unit\Models\CustomField\CustomFieldTest
+  ⨯ it belongs to org                                                    0.07s  
+  ⨯ it can be required or optional                                       0.06s  
+  ⨯ it has display order                                                 0.11s  
+  ! it applies to different entity types → file_get_contents(/home/user… 0.07s  
+  ! it has different field types → file_get_contents(/home/user/cmis.ma… 0.07s  
+  ! it stores field options for select types → file_get_contents(/home/… 0.07s  
+  ⨯ it has default value                                                 0.06s  
+  ! it has timestamps → file_get_contents(/home/user/cmis.marketing.lim… 0.07s  
+  ⨯ it has validation rules                                              0.15s  
+  ! it can create custom field → file_get_contents(/home/user/cmis.mark… 0.08s  
+  ⨯ it can be active or inactive                                         0.07s  
+  ⨯ it uses uuid as primary key                                          0.07s  
+  ! it respects rls policies → file_get_contents(/home/user/cmis.market… 0.07s  
+
+   WARN  Tests\Unit\Listeners\SendWebhookNotificationListenerTest
+  ! it only sends to matching webhooks → file_get_contents(/home/user/c… 0.12s  
+  ! it skips inactive webhooks → file_get_contents(/home/user/cmis.mark… 0.07s  
+  ! it includes event data in payload → file_get_contents(/home/user/cm… 0.07s  
+  ! it sends webhook on campaign created → file_get_contents(/home/user… 0.07s  
+  ! it queues webhook delivery → file_get_contents(/home/user/cmis.mark… 0.07s  
+  ! it respects org isolation → file_get_contents(/home/user/cmis.marke… 0.12s  
+  ! it handles webhook failures gracefully → file_get_contents(/home/us… 0.07s  
+  ! it sends webhook on campaign published → file_get_contents(/home/us… 0.07s  
+
+   PASS  Tests\Unit\ExampleTest
+  ✓ that true is true
+
+   FAIL  Tests\Unit\Jobs\PublishToTwitterJobTest
+  ⨯ it publishes tweet with media                                        0.31s  
+  ⨯ it publishes tweet                                                   0.36s  
+  ⨯ it processes hashtags                                                0.31s  
+  ! it handles character limit → file_get_contents(/home/user/cmis.mark… 0.31s  
+  ⨯ it handles api errors                                                0.31s  
+  ! it can be dispatched → file_get_contents(/home/user/cmis.marketing.… 0.31s  
+
+   FAIL  Tests\Unit\Jobs\SendEmailCampaignJobTest
+  ⨯ it sends email to recipients                                         0.10s  
+  ! it can be dispatched → file_get_contents(/home/user/cmis.marketing.… 0.06s  
+  ! it personalizes content → file_get_contents(/home/user/cmis.marketi… 0.07s  
+  ! it handles errors gracefully → file_get_contents(/home/user/cmis.ma… 0.07s  
+  ! it tracks sent emails → file_get_contents(/home/user/cmis.marketing… 0.06s  
+
+   FAIL  Tests\Unit\Models\Notification\NotificationTest
+  ⨯ it can create notification                                           0.33s  
+  ⨯ it has timestamps                                                    0.29s  
+  ⨯ it can filter unread notifications                                   0.29s  
+  ⨯ it can be marked as read                                             0.29s  
+  ⨯ it has different notification types                                  0.29s  
+  ⨯ it belongs to notifiable                                             0.33s  
+  ⨯ it can be deleted                                                    0.29s  
+  ⨯ it stores notification data as json                                  0.30s  
+  ⨯ it uses uuid as primary key                                          0.29s  
+
+   FAIL  Tests\Unit\Repositories\KnowledgeRepositoryTest
+  ⨯ it respects token limit in context loader                            0.06s  
+  ⨯ it can generate system report                                        0.10s  
+  ⨯ it can load smart context                                            0.07s  
+  ⨯ it can auto analyze knowledge                                        0.10s  
+  ⨯ it can register knowledge                                            0.06s  
+  ⨯ it accepts different categories                                      0.06s  
+  ! it can auto retrieve knowledge → file_get_contents(/home/user/cmis.… 0.12s  
+  ! it can perform semantic analysis → file_get_contents(/home/user/cmi… 0.06s  
+  ! it can perform advanced semantic search → file_get_contents(/home/u… 0.06s  
+  ⨯ it supports arabic content                                           0.06s  
+  ! it can cleanup old embeddings → file_get_contents(/home/user/cmis.m… 0.06s  
+  ⨯ it can verify installation                                           0.12s  
+
+   FAIL  Tests\Unit\Models\Template\TemplateTest
+  ! it can create template → file_get_contents(/home/user/cmis.marketin… 0.08s  
+  ⨯ it tracks usage count                                                0.07s  
+  ⨯ it can be active or inactive                                         0.07s  
+  ! it has different template types → file_get_contents(/home/user/cmis… 0.11s  
+  ⨯ it belongs to org                                                    0.06s  
+  ⨯ it stores template variables                                         0.06s  
+  ⨯ it stores category                                                   0.07s  
+  ⨯ it can be default template                                           0.07s  
+  ⨯ it uses uuid as primary key                                          0.12s  
+  ! it has timestamps → file_get_contents(/home/user/cmis.marketing.lim… 0.07s  
+  ⨯ it respects rls policies                                             0.06s  
+  ! it stores template metadata → file_get_contents(/home/user/cmis.mar… 0.07s  
+  ⨯ it can be soft deleted                                               0.07s  
+
+   FAIL  Tests\Unit\Notifications\CampaignNotificationTest
+  ! it can send campaign started notification → file_get_contents(/home… 0.36s  
+  ! it includes action url in notification → file_get_contents(/home/us… 0.31s  
+  ⨯ it creates database notification record                              0.31s  
+  ⨯ it includes campaign details in notification                         0.31s  
+  ! it can be sent to multiple users → file_get_contents(/home/user/cmi… 0.54s  
+  ! it supports database channel → file_get_contents(/home/user/cmis.ma… 0.37s  
+  ⨯ it respects user notification preferences                            0.33s  
+  ! it can send campaign completed notification → file_get_contents(/ho… 0.32s  
+  ! it supports mail channel → file_get_contents(/home/user/cmis.market… 0.33s  
+  ⨯ it can send post published notification                              0.32s  
+
+   FAIL  Tests\Unit\Jobs\ProcessScheduledContentJobTest
+  ! it can be dispatched → file_get_contents(/home/user/cmis.marketing.… 0.12s  
+  ! it handles publishing errors → file_get_contents(/home/user/cmis.ma… 0.08s  
+  ! it updates content status after publishing → file_get_contents(/hom… 0.08s  
+  ⨯ it processes multiple scheduled posts                                0.09s  
+  ⨯ it logs processing activity                                          0.08s  
+  ⨯ it publishes scheduled content                                       0.12s  
+  ⨯ it ignores future scheduled content                                  0.07s  
+  ⨯ it processes due scheduled content                                   0.07s  
+  ⨯ it respects batch size limit                                         0.11s  
+
+   FAIL  Tests\Unit\Models\Billing\InvoiceTest
+  ⨯ it tracks payment date                                               0.07s  
+  ⨯ it calculates total with tax                                         0.11s  
+  ⨯ it stores notes                                                      0.08s  
+  ! it has different statuses → file_get_contents(/home/user/cmis.marke… 0.08s  
+  ⨯ it belongs to subscription                                           0.08s  
+  ⨯ it belongs to org                                                    0.08s  
+  ⨯ it has due date                                                      0.13s  
+  ⨯ it can create invoice                                                0.07s  
+  ⨯ it has billing address                                               0.08s  
+  ! it supports different currencies → file_get_contents(/home/user/cmi… 0.09s  
+  ⨯ it stores line items as json                                         0.08s  
+  ⨯ it respects rls policies                                             0.09s  
+  ⨯ it stores payment method                                             0.11s  
+  ⨯ it uses uuid as primary key                                          0.08s  
+  ! it has timestamps → file_get_contents(/home/user/cmis.marketing.lim… 0.08s  
+
+   FAIL  Tests\Unit\Policies\ContentPolicyTest
+  ⨯ editor can update draft content                                      0.32s  
+  ⨯ user from different org cannot view content                          0.34s  
+  ⨯ viewer cannot delete content                                         0.30s  
+  ⨯ editor can update content                                            0.30s  
+  ⨯ admin can create content                                             0.30s  
+  ⨯ owner can view content                                               0.31s  
+  ⨯ owner can delete content                                             0.36s  
+  ⨯ admin can delete content                                             0.31s  
+  ⨯ viewer can view published content                                    0.30s  
+
+   FAIL  Tests\Unit\Services\GPTConversationServiceTest
+  ⨯ it can add message with metadata                                     0.07s  
+  ⨯ it increments message count                                          0.07s  
+  ⨯ it can summarize conversation                                        0.11s  
+  ! it returns null for non existent session stats → file_get_contents(… 0.07s  
+  ⨯ it can add assistant message                                         0.07s  
+  ⨯ it handles invalid session id gracefully                             0.07s  
+  ⨯ it limits context message history                                    0.07s  
+  ⨯ it can clear conversation history                                    0.07s  
+  ⨯ it preserves org context in session                                  0.11s  
+  ⨯ it can get conversation history                                      0.07s  
+  ⨯ it merges context updates                                            0.07s  
+  ⨯ it can update session context                                        0.07s  
+  ⨯ it can get or create session                                         0.07s  
+  ⨯ it can add user message                                              0.11s  
+  ⨯ it stores sessions in cache                                          0.07s  
+  ⨯ it can create new session                                            0.07s  
+  ⨯ it sets correct cache ttl                                            0.07s  
+  ⨯ it can build gpt context                                             0.07s  
+  ⨯ it can get session statistics                                        0.07s  
+  ⨯ it can limit history results                                         0.11s  
+  ⨯ it generates unique message ids                                      0.08s  
+  ⨯ it maintains message order                                           0.08s  
+  ⨯ it limits message history                                            0.08s  
+
+   FAIL  Tests\Unit\Services\WebhookHandlerTest
+  ⨯ it handles webhook processing errors                                 0.39s  
+  ⨯ it can retry failed webhooks                                         0.32s  
+  ⨯ it validates webhook payload structure                               0.08s  
+  ⨯ it stores webhook events                                             0.32s  
+  ⨯ it can verify webhook signature                                      0.07s  
+  ⨯ it handles subscription verification                                 0.07s  
+  ⨯ it can process instagram webhook                                     0.37s  
+  ⨯ it tracks webhook processing time                                    0.31s  
+  ⨯ it can process facebook webhook                                      0.32s  
+  ⨯ it processes whatsapp webhooks                                       0.32s  
+  ⨯ it can process twitter webhook                                       0.32s  
+  ⨯ it rejects invalid signature                                         0.13s  
+
+   FAIL  Tests\Unit\Models\Schedule\ScheduleTest
+  ⨯ it uses uuid as primary key                                          0.09s  
+  ⨯ it can be active or inactive                                         0.08s  
+  ⨯ it tracks last run time                                              0.09s  
+  ! it has timestamps → file_get_contents(/home/user/cmis.marketing.lim… 0.13s  
+  ⨯ it belongs to org                                                    0.08s  
+  ⨯ it has different frequencies                                         0.08s  
+  ⨯ it stores scheduled time                                             0.08s  
+  ! it respects rls policies → file_get_contents(/home/user/cmis.market… 0.09s  
+  ⨯ it tracks next run time                                              0.08s  
+  ⨯ it stores schedule config                                            0.12s  
+  ⨯ it can create schedule                                               0.08s  
+
+   WARN  Tests\Unit\Commands\GenerateAnalyticsReportCommandTest
+  ! it can generate report for org → file_get_contents(/home/user/cmis.… 0.10s  
+  ! it validates org id → file_get_contents(/home/user/cmis.marketing.l… 0.08s  
+  ! it accepts report type option → file_get_contents(/home/user/cmis.m… 0.13s  
+  ! it handles errors gracefully → file_get_contents(/home/user/cmis.ma… 0.09s  
+  ! it can export to pdf → file_get_contents(/home/user/cmis.marketing.… 0.09s  
+  ! it shows progress output → file_get_contents(/home/user/cmis.market… 0.09s  
+  ! it accepts date range parameters → file_get_contents(/home/user/cmi… 0.15s  
+  ! it can export to excel → file_get_contents(/home/user/cmis.marketin… 0.09s  
+
+   FAIL  Tests\Unit\Services\TwitterServiceTest
+  ⨯ it can get user timeline                                             0.33s  
+  ⨯ it handles api errors                                                0.33s  
+  ⨯ it can publish tweet with media                                      0.38s  
+  ⨯ it can search tweets                                                 0.32s  
+  ⨯ it can reply to tweet                                                0.32s  
+  ⨯ it can get tweet metrics                                             0.32s  
+  ⨯ it can get mentions                                                  0.32s  
+  ⨯ it can publish tweet                                                 0.37s  
+  ⨯ it can delete tweet                                                  0.32s  
+  ⨯ it can publish thread                                                0.33s  
+  ⨯ it handles character limit                                           0.33s  
+
+   FAIL  Tests\Unit\Events\CampaignCompletedEventTest
+  ! it can be dispatched → file_get_contents(/home/user/cmis.marketing.… 0.09s  
+  ⨯ it includes completion timestamp                                     0.12s  
+  ! it broadcasts on private channel → file_get_contents(/home/user/cmi… 0.08s  
+  ! it can be listened to → file_get_contents(/home/user/cmis.marketing… 0.08s  
+  ! it contains campaign data → file_get_contents(/home/user/cmis.marke… 0.08s  
+  ! it can be instantiated → file_get_contents(/home/user/cmis.marketin… 0.08s  
+
+   FAIL  Tests\Unit\Events\LeadCapturedEventTest
+  ! it broadcasts on private channel → file_get_contents(/home/user/cmi… 0.13s  
+  ! it can be instantiated → file_get_contents(/home/user/cmis.marketin… 0.08s  
+  ! it can be listened to → file_get_contents(/home/user/cmis.marketing… 0.08s  
+  ⨯ it includes lead source information                                  0.08s  
+  ! it contains lead data → file_get_contents(/home/user/cmis.marketing… 0.08s  
+  ! it triggers notification workflows → file_get_contents(/home/user/c… 0.13s  
+  ! it can be dispatched → file_get_contents(/home/user/cmis.marketing.… 0.09s  
+
+   FAIL  Tests\Unit\Models\CampaignTest
+  ! it enforces valid status values → file_get_contents(/home/user/cmis… 0.33s  
+  ! it belongs to an organization → file_get_contents(/home/user/cmis.m… 0.33s  
+  ! it can create a campaign → file_get_contents(/home/user/cmis.market… 0.33s  
+  ! it can be soft deleted → file_get_contents(/home/user/cmis.marketin… 0.37s  
+  ⨯ it has many performance metrics                                      0.33s  
+  ⨯ it cascades delete to creative assets                                0.34s  
+  ⨯ it has many creative assets                                          0.34s  
+  ⨯ it respects rls policies                                             0.56s  
+  ⨯ it validates date range                                              0.38s  
+  ! it validates budget format → file_get_contents(/home/user/cmis.mark… 0.33s  
+
+   FAIL  Tests\Unit\Models\Comment\CommentTest
+  ⨯ it can be edited                                                     0.32s  
+  ⨯ it belongs to user                                                   0.32s  
+  ! it is polymorphic → file_get_contents(/home/user/cmis.marketing.lim… 0.32s  
+  ⨯ it can be marked as resolved                                         0.37s  
+  ⨯ it belongs to org                                                    0.31s  
+  ⨯ it stores attachments                                                0.33s  
+  ⨯ it can have parent comment                                           0.33s  
+  ⨯ it tracks mentions                                                   0.32s  
+  ⨯ it respects rls policies                                             0.37s  
+  ⨯ it supports soft deletes                                             0.32s  
+  ⨯ it uses uuid as primary key                                          0.32s  
+  ! it has timestamps → file_get_contents(/home/user/cmis.marketing.lim… 0.32s  
+  ⨯ it can create comment                                                0.32s  

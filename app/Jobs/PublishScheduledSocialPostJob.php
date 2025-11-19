@@ -72,7 +72,7 @@ class PublishScheduledSocialPostJob implements ShouldQueue
             }
 
             // Get integration models
-            $integrations = DB::table('cmis_integrations.integrations')
+            $integrations = DB::table('cmis.integrations')
                 ->whereIn('integration_id', $integrationIds)
                 ->where('org_id', $this->post->org_id)
                 ->where('is_active', true)

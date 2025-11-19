@@ -258,7 +258,7 @@ class SyncController extends Controller
                 ->firstOrFail();
 
             // Get recent sync logs
-            $syncLogs = \DB::table('cmis_integrations.api_logs')
+            $syncLogs = \DB::table('cmis.api_logs')
                 ->where('integration_id', $integrationId)
                 ->where('operation', 'like', 'sync_%')
                 ->orderBy('created_at', 'desc')
@@ -295,8 +295,8 @@ class SyncController extends Controller
             $orgId = $request->user()->org_id;
             $limit = $request->input('limit', 50);
 
-            $syncLogs = \DB::table('cmis_integrations.api_logs as logs')
-                ->join('cmis_integrations.integrations as int', 'logs.integration_id', '=', 'int.integration_id')
+            $syncLogs = \DB::table('cmis.api_logs as logs')
+                ->join('cmis.integrations as int', 'logs.integration_id', '=', 'int.integration_id')
                 ->where('int.org_id', $orgId)
                 ->where('logs.operation', 'like', 'sync_%')
                 ->select('logs.*', 'int.platform')
