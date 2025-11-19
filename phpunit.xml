@@ -6,6 +6,10 @@
          stopOnFailure="false"
          processIsolation="false"
          backupGlobals="false"
+         cacheDirectory=".phpunit.cache"
+         executionOrder="random"
+         beStrictAboutOutputDuringTests="true"
+         beStrictAboutTodoAnnotatedTests="true"
 >
     <testsuites>
         <testsuite name="Unit">
@@ -53,9 +57,15 @@
         <env name="BCRYPT_ROUNDS" value="4"/>
         <env name="BROADCAST_CONNECTION" value="null"/>
         <env name="CACHE_STORE" value="array"/>
+        <env name="CACHE_PREFIX" value="test_"/>
         <env name="MAIL_MAILER" value="array"/>
         <env name="QUEUE_CONNECTION" value="sync"/>
         <env name="SESSION_DRIVER" value="array"/>
+        <env name="LOG_CHANNEL" value="null"/>
+
+        <!-- Database Performance -->
+        <env name="DB_FOREIGN_KEYS" value="false"/>
+        <env name="SCOUT_DRIVER" value="null"/>
 
         <!-- Disable Monitoring -->
         <env name="PULSE_ENABLED" value="false"/>
