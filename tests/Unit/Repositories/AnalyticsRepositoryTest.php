@@ -9,6 +9,7 @@ use App\Repositories\CMIS\AnalyticsRepository;
 use App\Repositories\Contracts\AnalyticsRepositoryInterface;
 use Illuminate\Support\Str;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * Analytics Repository Unit Tests
  */
@@ -24,7 +25,7 @@ class AnalyticsRepositoryTest extends TestCase
         $this->repository = app(AnalyticsRepositoryInterface::class);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_campaign_analytics()
     {
         $setup = $this->createUserWithOrg();
@@ -49,7 +50,7 @@ class AnalyticsRepositoryTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_org_overview_analytics()
     {
         $setup = $this->createUserWithOrg();
@@ -77,7 +78,7 @@ class AnalyticsRepositoryTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_platform_analytics()
     {
         $setup = $this->createUserWithOrg();
@@ -102,7 +103,7 @@ class AnalyticsRepositoryTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_calculate_engagement_metrics()
     {
         $setup = $this->createUserWithOrg();
@@ -127,7 +128,7 @@ class AnalyticsRepositoryTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_conversion_funnel()
     {
         $setup = $this->createUserWithOrg();
@@ -150,7 +151,7 @@ class AnalyticsRepositoryTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_audience_demographics()
     {
         $setup = $this->createUserWithOrg();
@@ -173,7 +174,7 @@ class AnalyticsRepositoryTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_compare_campaigns()
     {
         $setup = $this->createUserWithOrg();
@@ -198,7 +199,7 @@ class AnalyticsRepositoryTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_top_performing_content()
     {
         $setup = $this->createUserWithOrg();
@@ -234,7 +235,7 @@ class AnalyticsRepositoryTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_calculate_roi()
     {
         $setup = $this->createUserWithOrg();
@@ -264,7 +265,7 @@ class AnalyticsRepositoryTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_respects_transaction_context()
     {
         $setup1 = $this->createUserWithOrg();
@@ -298,7 +299,7 @@ class AnalyticsRepositoryTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_real_time_analytics()
     {
         $setup = $this->createUserWithOrg();
@@ -321,7 +322,7 @@ class AnalyticsRepositoryTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_channel_attribution()
     {
         $setup = $this->createUserWithOrg();

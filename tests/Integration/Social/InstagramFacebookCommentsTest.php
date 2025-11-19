@@ -12,6 +12,7 @@ use App\Jobs\ReplyToCommentJob;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Str;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * Instagram & Facebook Comments Integration Test
  *
@@ -26,7 +27,7 @@ class InstagramFacebookCommentsTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_receives_instagram_comment()
     {
         $setup = $this->createUserWithOrg();
@@ -73,7 +74,7 @@ class InstagramFacebookCommentsTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_replies_to_instagram_comment()
     {
         Queue::fake();
@@ -136,7 +137,7 @@ class InstagramFacebookCommentsTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_receives_facebook_comment()
     {
         $setup = $this->createUserWithOrg();
@@ -180,7 +181,7 @@ class InstagramFacebookCommentsTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_replies_to_facebook_comment()
     {
         Queue::fake();

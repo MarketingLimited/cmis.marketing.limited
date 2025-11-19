@@ -12,6 +12,7 @@ use App\Models\AdPlatform\AdSet;
 use App\Models\AdPlatform\Ad;
 use Illuminate\Support\Str;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * LinkedIn Ads Platform Integration Tests
  */
@@ -24,7 +25,7 @@ class LinkedInAdsWorkflowTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_creates_linkedin_ad_campaign()
     {
         $setup = $this->createUserWithOrg();
@@ -68,7 +69,7 @@ class LinkedInAdsWorkflowTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_creates_linkedin_sponsored_content()
     {
         $setup = $this->createUserWithOrg();
@@ -123,7 +124,7 @@ class LinkedInAdsWorkflowTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_creates_linkedin_lead_gen_form()
     {
         $setup = $this->createUserWithOrg();
@@ -172,7 +173,7 @@ class LinkedInAdsWorkflowTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_creates_linkedin_audience_targeting()
     {
         $setup = $this->createUserWithOrg();
@@ -214,7 +215,7 @@ class LinkedInAdsWorkflowTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_fetches_linkedin_campaign_analytics()
     {
         $setup = $this->createUserWithOrg();
@@ -271,7 +272,7 @@ class LinkedInAdsWorkflowTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_fetches_linkedin_lead_gen_submissions()
     {
         $setup = $this->createUserWithOrg();
@@ -309,7 +310,7 @@ class LinkedInAdsWorkflowTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_creates_linkedin_text_ad()
     {
         $setup = $this->createUserWithOrg();
@@ -349,7 +350,7 @@ class LinkedInAdsWorkflowTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_pauses_linkedin_campaign()
     {
         $setup = $this->createUserWithOrg();
@@ -387,7 +388,7 @@ class LinkedInAdsWorkflowTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_updates_linkedin_campaign_budget()
     {
         $setup = $this->createUserWithOrg();
@@ -429,7 +430,7 @@ class LinkedInAdsWorkflowTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_linkedin_api_errors()
     {
         $setup = $this->createUserWithOrg();

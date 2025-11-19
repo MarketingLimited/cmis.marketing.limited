@@ -13,6 +13,7 @@ use App\Jobs\SendWhatsAppMessageJob;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Str;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * WhatsApp Template & Interactive Messaging Integration Test
  *
@@ -27,7 +28,7 @@ class WhatsAppTemplateInteractiveMessagingTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_sends_whatsapp_template_message()
     {
         Queue::fake();
@@ -115,7 +116,7 @@ class WhatsAppTemplateInteractiveMessagingTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_receives_whatsapp_document_message()
     {
         $setup = $this->createUserWithOrg();
@@ -160,7 +161,7 @@ class WhatsAppTemplateInteractiveMessagingTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_sends_whatsapp_interactive_button_message()
     {
         Queue::fake();
@@ -238,7 +239,7 @@ class WhatsAppTemplateInteractiveMessagingTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_sends_whatsapp_interactive_list_message()
     {
         Queue::fake();
@@ -310,7 +311,7 @@ class WhatsAppTemplateInteractiveMessagingTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_receives_whatsapp_button_reply()
     {
         $setup = $this->createUserWithOrg();

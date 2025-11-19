@@ -8,6 +8,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use App\Models\Lead\Lead;
 use Illuminate\Support\Str;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * Lead Controller Feature Tests
  */
@@ -20,7 +21,7 @@ class LeadControllerTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_can_list_all_leads()
     {
         $setup = $this->createUserWithOrg();
@@ -56,7 +57,7 @@ class LeadControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_create_lead()
     {
         $setup = $this->createUserWithOrg();
@@ -81,7 +82,7 @@ class LeadControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_single_lead()
     {
         $setup = $this->createUserWithOrg();
@@ -109,7 +110,7 @@ class LeadControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_update_lead()
     {
         $setup = $this->createUserWithOrg();
@@ -142,7 +143,7 @@ class LeadControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_delete_lead()
     {
         $setup = $this->createUserWithOrg();
@@ -173,7 +174,7 @@ class LeadControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_filter_leads_by_status()
     {
         $setup = $this->createUserWithOrg();
@@ -209,7 +210,7 @@ class LeadControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_convert_lead()
     {
         $setup = $this->createUserWithOrg();
@@ -239,7 +240,7 @@ class LeadControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_required_fields()
     {
         $setup = $this->createUserWithOrg();
@@ -261,7 +262,7 @@ class LeadControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_respects_org_isolation()
     {
         $setup1 = $this->createUserWithOrg();
@@ -287,7 +288,7 @@ class LeadControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_requires_authentication()
     {
         $response = $this->getJson('/api/leads');

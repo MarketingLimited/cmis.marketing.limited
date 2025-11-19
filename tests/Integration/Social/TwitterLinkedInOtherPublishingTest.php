@@ -17,6 +17,7 @@ use App\Jobs\PublishToFacebookJob;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Str;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * Twitter, LinkedIn & Other Platforms Publishing Integration Test
  *
@@ -31,7 +32,7 @@ class TwitterLinkedInOtherPublishingTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_creates_and_publishes_twitter_tweet()
     {
         Queue::fake();
@@ -75,7 +76,7 @@ class TwitterLinkedInOtherPublishingTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_creates_and_publishes_twitter_thread()
     {
         Queue::fake();
@@ -122,7 +123,7 @@ class TwitterLinkedInOtherPublishingTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_creates_and_publishes_linkedin_post()
     {
         Queue::fake();
@@ -169,7 +170,7 @@ class TwitterLinkedInOtherPublishingTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_creates_and_publishes_linkedin_article()
     {
         Queue::fake();
@@ -212,7 +213,7 @@ class TwitterLinkedInOtherPublishingTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_creates_and_publishes_snapchat_story()
     {
         Queue::fake();
@@ -255,7 +256,7 @@ class TwitterLinkedInOtherPublishingTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_creates_and_publishes_google_business_post()
     {
         Queue::fake();
@@ -305,7 +306,7 @@ class TwitterLinkedInOtherPublishingTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_publishes_to_multiple_platforms_simultaneously()
     {
         Queue::fake();
@@ -358,7 +359,7 @@ class TwitterLinkedInOtherPublishingTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_publishing_failure_and_retries()
     {
         Queue::fake();
@@ -401,7 +402,7 @@ class TwitterLinkedInOtherPublishingTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_tracks_published_post_metrics()
     {
         $setup = $this->createUserWithOrg();

@@ -11,6 +11,7 @@ use App\Models\Content\Content;
 use App\Models\Team\TeamMember;
 use Illuminate\Support\Str;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * Content Policy Unit Tests
  */
@@ -23,7 +24,7 @@ class ContentPolicyTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function owner_can_view_content()
     {
         $org = Org::create([
@@ -63,7 +64,7 @@ class ContentPolicyTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function admin_can_create_content()
     {
         $org = Org::create([
@@ -95,7 +96,7 @@ class ContentPolicyTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function editor_can_update_content()
     {
         $org = Org::create([
@@ -135,7 +136,7 @@ class ContentPolicyTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function viewer_cannot_delete_content()
     {
         $org = Org::create([
@@ -176,7 +177,7 @@ class ContentPolicyTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function user_from_different_org_cannot_view_content()
     {
         $org1 = Org::create([
@@ -220,7 +221,7 @@ class ContentPolicyTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function owner_can_delete_content()
     {
         $org = Org::create([
@@ -260,7 +261,7 @@ class ContentPolicyTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function admin_can_delete_content()
     {
         $org = Org::create([
@@ -300,7 +301,7 @@ class ContentPolicyTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function editor_can_update_draft_content()
     {
         $org = Org::create([
@@ -340,7 +341,7 @@ class ContentPolicyTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function viewer_can_view_published_content()
     {
         $org = Org::create([

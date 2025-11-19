@@ -8,6 +8,7 @@ use App\Models\Core\Org;
 use App\Models\Core\Campaign;
 use Illuminate\Support\Str;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * Campaign Factory Unit Tests
  */
@@ -20,7 +21,7 @@ class CampaignFactoryTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_creates_campaign_with_factory()
     {
         $org = Org::create([
@@ -46,7 +47,7 @@ class CampaignFactoryTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_creates_multiple_campaigns()
     {
         $org = Org::create([
@@ -73,7 +74,7 @@ class CampaignFactoryTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_creates_campaign_with_custom_attributes()
     {
         $org = Org::create([
@@ -101,7 +102,7 @@ class CampaignFactoryTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_creates_draft_campaign()
     {
         $org = Org::create([
@@ -124,7 +125,7 @@ class CampaignFactoryTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_creates_active_campaign()
     {
         $org = Org::create([
@@ -147,7 +148,7 @@ class CampaignFactoryTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_creates_completed_campaign()
     {
         $org = Org::create([
@@ -172,7 +173,7 @@ class CampaignFactoryTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_creates_campaign_with_budget()
     {
         $org = Org::create([
@@ -200,7 +201,7 @@ class CampaignFactoryTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_creates_campaign_with_dates()
     {
         $org = Org::create([
@@ -227,7 +228,7 @@ class CampaignFactoryTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_respects_org_relationship()
     {
         $org = Org::create([
@@ -251,7 +252,7 @@ class CampaignFactoryTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_generates_unique_campaign_ids()
     {
         $org = Org::create([

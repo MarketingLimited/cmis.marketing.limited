@@ -12,6 +12,7 @@ use App\Jobs\PublishToFacebookJob;
 use App\Jobs\PublishToTwitterJob;
 use Illuminate\Support\Str;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * Publishing API Feature Tests
  */
@@ -25,7 +26,7 @@ class PublishingAPITest extends TestCase
         Queue::fake();
     }
 
-    /** @test */
+    #[Test]
     public function it_can_schedule_instagram_post()
     {
         $setup = $this->createUserWithOrg();
@@ -57,7 +58,7 @@ class PublishingAPITest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_publish_immediately_to_facebook()
     {
         $setup = $this->createUserWithOrg();
@@ -93,7 +94,7 @@ class PublishingAPITest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_schedule_multiple_platforms()
     {
         $setup = $this->createUserWithOrg();
@@ -125,7 +126,7 @@ class PublishingAPITest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_cancel_scheduled_post()
     {
         $setup = $this->createUserWithOrg();
@@ -151,7 +152,7 @@ class PublishingAPITest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_publishing_queue()
     {
         $setup = $this->createUserWithOrg();
@@ -186,7 +187,7 @@ class PublishingAPITest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_retry_failed_publishing()
     {
         $setup = $this->createUserWithOrg();
@@ -214,7 +215,7 @@ class PublishingAPITest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_scheduling_time()
     {
         $setup = $this->createUserWithOrg();
@@ -242,7 +243,7 @@ class PublishingAPITest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_respects_org_isolation()
     {
         $setup1 = $this->createUserWithOrg();
@@ -267,7 +268,7 @@ class PublishingAPITest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_bulk_schedule_posts()
     {
         $setup = $this->createUserWithOrg();
@@ -302,7 +303,7 @@ class PublishingAPITest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_publishing_history()
     {
         $setup = $this->createUserWithOrg();
@@ -337,7 +338,7 @@ class PublishingAPITest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_preview_post_before_publishing()
     {
         $setup = $this->createUserWithOrg();

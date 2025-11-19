@@ -9,6 +9,7 @@ use App\Models\Campaign\CampaignBudget;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * Campaign Budget Model Unit Tests
  */
@@ -21,7 +22,7 @@ class CampaignBudgetTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_can_create_campaign_budget()
     {
         $org = Org::create([
@@ -52,7 +53,7 @@ class CampaignBudgetTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_belongs_to_campaign_and_org()
     {
         $org = Org::create([
@@ -79,7 +80,7 @@ class CampaignBudgetTest extends TestCase
         $this->assertEquals($org->org_id, $budget->org->org_id);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_allocate_budget()
     {
         $org = Org::create([
@@ -109,7 +110,7 @@ class CampaignBudgetTest extends TestCase
         $this->assertEquals(7000.00, $budget->remaining_budget);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_track_spent_budget()
     {
         $org = Org::create([
@@ -138,7 +139,7 @@ class CampaignBudgetTest extends TestCase
         $this->assertEquals(2500.00, $budget->fresh()->spent_budget);
     }
 
-    /** @test */
+    #[Test]
     public function it_calculates_remaining_budget()
     {
         $org = Org::create([
@@ -167,7 +168,7 @@ class CampaignBudgetTest extends TestCase
         $this->assertEquals(6500.00, $remaining);
     }
 
-    /** @test */
+    #[Test]
     public function it_calculates_budget_utilization_percentage()
     {
         $org = Org::create([
@@ -197,7 +198,7 @@ class CampaignBudgetTest extends TestCase
         $this->assertEquals(75.0, $utilization);
     }
 
-    /** @test */
+    #[Test]
     public function it_stores_budget_allocation_by_channel()
     {
         $org = Org::create([
@@ -232,7 +233,7 @@ class CampaignBudgetTest extends TestCase
         $this->assertEquals(4000.00, $budget->channel_allocation['google_ads']);
     }
 
-    /** @test */
+    #[Test]
     public function it_tracks_daily_budget_cap()
     {
         $org = Org::create([
@@ -259,7 +260,7 @@ class CampaignBudgetTest extends TestCase
         $this->assertEquals(1000.00, $budget->daily_budget_cap);
     }
 
-    /** @test */
+    #[Test]
     public function it_supports_multiple_currencies()
     {
         $org = Org::create([
@@ -294,7 +295,7 @@ class CampaignBudgetTest extends TestCase
         $this->assertEquals('USD', $usdBudget->currency);
     }
 
-    /** @test */
+    #[Test]
     public function it_uses_uuid_as_primary_key()
     {
         $org = Org::create([
@@ -320,7 +321,7 @@ class CampaignBudgetTest extends TestCase
         $this->assertTrue(Str::isUuid($budget->budget_id));
     }
 
-    /** @test */
+    #[Test]
     public function it_has_timestamps()
     {
         $org = Org::create([
@@ -347,7 +348,7 @@ class CampaignBudgetTest extends TestCase
         $this->assertNotNull($budget->updated_at);
     }
 
-    /** @test */
+    #[Test]
     public function it_respects_rls_policies()
     {
         $org1 = Org::create([

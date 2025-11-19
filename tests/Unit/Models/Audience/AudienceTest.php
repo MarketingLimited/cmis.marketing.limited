@@ -8,6 +8,7 @@ use App\Models\Audience\Audience;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * Audience Model Unit Tests
  */
@@ -20,7 +21,7 @@ class AudienceTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_can_create_audience()
     {
         $org = Org::create([
@@ -41,7 +42,7 @@ class AudienceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_belongs_to_org()
     {
         $org = Org::create([
@@ -59,7 +60,7 @@ class AudienceTest extends TestCase
         $this->assertEquals($org->org_id, $audience->org->org_id);
     }
 
-    /** @test */
+    #[Test]
     public function it_has_demographic_criteria()
     {
         $org = Org::create([
@@ -86,7 +87,7 @@ class AudienceTest extends TestCase
         $this->assertContains('الرياض', $audience->demographics['locations']);
     }
 
-    /** @test */
+    #[Test]
     public function it_has_interest_criteria()
     {
         $org = Org::create([
@@ -112,7 +113,7 @@ class AudienceTest extends TestCase
         $this->assertContains('technology', $audience->interests);
     }
 
-    /** @test */
+    #[Test]
     public function it_has_behavioral_criteria()
     {
         $org = Org::create([
@@ -138,7 +139,7 @@ class AudienceTest extends TestCase
         $this->assertTrue($audience->behaviors['purchase_history']);
     }
 
-    /** @test */
+    #[Test]
     public function it_tracks_audience_size()
     {
         $org = Org::create([
@@ -156,7 +157,7 @@ class AudienceTest extends TestCase
         $this->assertEquals(150000, $audience->estimated_size);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_be_active_or_inactive()
     {
         $org = Org::create([
@@ -182,7 +183,7 @@ class AudienceTest extends TestCase
         $this->assertFalse($inactiveAudience->is_active);
     }
 
-    /** @test */
+    #[Test]
     public function it_has_different_audience_types()
     {
         $org = Org::create([
@@ -216,7 +217,7 @@ class AudienceTest extends TestCase
         $this->assertEquals('saved', $saved->type);
     }
 
-    /** @test */
+    #[Test]
     public function it_tracks_source_platforms()
     {
         $org = Org::create([
@@ -237,7 +238,7 @@ class AudienceTest extends TestCase
         $this->assertContains('facebook', $audience->platforms);
     }
 
-    /** @test */
+    #[Test]
     public function it_has_lookalike_source()
     {
         $org = Org::create([
@@ -265,7 +266,7 @@ class AudienceTest extends TestCase
         $this->assertEquals(5, $lookalike->lookalike_percentage);
     }
 
-    /** @test */
+    #[Test]
     public function it_tracks_last_updated_time()
     {
         $org = Org::create([
@@ -283,7 +284,7 @@ class AudienceTest extends TestCase
         $this->assertNotNull($audience->last_synced_at);
     }
 
-    /** @test */
+    #[Test]
     public function it_uses_uuid_as_primary_key()
     {
         $org = Org::create([
@@ -300,7 +301,7 @@ class AudienceTest extends TestCase
         $this->assertTrue(Str::isUuid($audience->audience_id));
     }
 
-    /** @test */
+    #[Test]
     public function it_has_timestamps()
     {
         $org = Org::create([
@@ -318,7 +319,7 @@ class AudienceTest extends TestCase
         $this->assertNotNull($audience->updated_at);
     }
 
-    /** @test */
+    #[Test]
     public function it_respects_rls_policies()
     {
         $org1 = Org::create([

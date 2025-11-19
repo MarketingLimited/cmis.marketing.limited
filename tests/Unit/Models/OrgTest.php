@@ -9,6 +9,7 @@ use App\Models\Campaign;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * Organization Model Unit Tests
  */
@@ -21,7 +22,7 @@ class OrgTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_can_create_an_organization()
     {
         $org = Org::create([
@@ -37,7 +38,7 @@ class OrgTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_has_many_users()
     {
         $org = Org::create([
@@ -76,7 +77,7 @@ class OrgTest extends TestCase
         $this->assertCount(2, $org->users);
     }
 
-    /** @test */
+    #[Test]
     public function it_has_many_campaigns()
     {
         $org = Org::create([
@@ -101,7 +102,7 @@ class OrgTest extends TestCase
         $this->assertCount(2, $org->campaigns);
     }
 
-    /** @test */
+    #[Test]
     public function it_uses_uuid_as_primary_key()
     {
         $org = Org::create([
@@ -113,7 +114,7 @@ class OrgTest extends TestCase
         $this->assertEquals('org_id', $org->getKeyName());
     }
 
-    /** @test */
+    #[Test]
     public function it_enforces_unique_name_constraint()
     {
         Org::create([
@@ -129,7 +130,7 @@ class OrgTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_be_soft_deleted()
     {
         $org = Org::create([
@@ -147,7 +148,7 @@ class OrgTest extends TestCase
         $this->assertCount(1, Org::withTrashed()->get());
     }
 
-    /** @test */
+    #[Test]
     public function it_stores_settings_as_json()
     {
         $org = Org::create([
@@ -165,7 +166,7 @@ class OrgTest extends TestCase
         $this->assertTrue($org->settings['notifications']);
     }
 
-    /** @test */
+    #[Test]
     public function it_has_timestamps()
     {
         $org = Org::create([
@@ -177,7 +178,7 @@ class OrgTest extends TestCase
         $this->assertNotNull($org->updated_at);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_count_active_campaigns()
     {
         $org = Org::create([
@@ -210,7 +211,7 @@ class OrgTest extends TestCase
         $this->assertEquals(2, $activeCampaigns);
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_required_fields()
     {
         $this->expectException(\Illuminate\Database\QueryException::class);

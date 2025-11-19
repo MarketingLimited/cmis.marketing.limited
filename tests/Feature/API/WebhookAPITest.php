@@ -12,6 +12,7 @@ use App\Models\Social\WhatsAppMessage;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Str;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * Webhook API Feature Tests
  */
@@ -24,7 +25,7 @@ class WebhookAPITest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_receives_facebook_webhook_verification()
     {
         $response = $this->getJson('/api/webhooks/facebook?hub.mode=subscribe&hub.verify_token=test_token&hub.challenge=test_challenge');
@@ -33,7 +34,7 @@ class WebhookAPITest extends TestCase
                  ->assertSee('test_challenge');
     }
 
-    /** @test */
+    #[Test]
     public function it_receives_instagram_message_webhook()
     {
         $setup = $this->createUserWithOrg();
@@ -73,7 +74,7 @@ class WebhookAPITest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_receives_facebook_comment_webhook()
     {
         $setup = $this->createUserWithOrg();
@@ -115,7 +116,7 @@ class WebhookAPITest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_receives_whatsapp_message_webhook()
     {
         $setup = $this->createUserWithOrg();
@@ -169,7 +170,7 @@ class WebhookAPITest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_receives_whatsapp_status_update_webhook()
     {
         $setup = $this->createUserWithOrg();
@@ -231,7 +232,7 @@ class WebhookAPITest extends TestCase
         $this->assertEquals('delivered', $message->status);
     }
 
-    /** @test */
+    #[Test]
     public function it_receives_twitter_webhook()
     {
         $setup = $this->createUserWithOrg();
@@ -261,7 +262,7 @@ class WebhookAPITest extends TestCase
         $response->assertStatus(200);
     }
 
-    /** @test */
+    #[Test]
     public function it_receives_tiktok_webhook()
     {
         $setup = $this->createUserWithOrg();
@@ -283,7 +284,7 @@ class WebhookAPITest extends TestCase
         $response->assertStatus(200);
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_webhook_signatures()
     {
         $webhookPayload = [
@@ -300,7 +301,7 @@ class WebhookAPITest extends TestCase
         $this->assertTrue($response->status() === 200 || $response->status() === 403);
     }
 
-    /** @test */
+    #[Test]
     public function it_processes_webhooks_asynchronously()
     {
         Queue::fake();
@@ -336,7 +337,7 @@ class WebhookAPITest extends TestCase
         Queue::assertPushed(\App\Jobs\ProcessIncomingMessageJob::class);
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_malformed_webhook_payloads_gracefully()
     {
         $malformedPayload = [

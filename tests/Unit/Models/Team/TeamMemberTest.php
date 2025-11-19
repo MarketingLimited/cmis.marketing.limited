@@ -9,6 +9,7 @@ use App\Models\Team\TeamMember;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * Team Member Model Unit Tests
  */
@@ -21,7 +22,7 @@ class TeamMemberTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_can_create_team_member()
     {
         $org = Org::create([
@@ -50,7 +51,7 @@ class TeamMemberTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_belongs_to_org_and_user()
     {
         $org = Org::create([
@@ -76,7 +77,7 @@ class TeamMemberTest extends TestCase
         $this->assertEquals($user->id, $teamMember->user->id);
     }
 
-    /** @test */
+    #[Test]
     public function it_has_different_roles()
     {
         $org = Org::create([
@@ -109,7 +110,7 @@ class TeamMemberTest extends TestCase
         $this->assertEquals('viewer', $members[3]->role);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_be_active_or_inactive()
     {
         $org = Org::create([
@@ -151,7 +152,7 @@ class TeamMemberTest extends TestCase
         $this->assertFalse($inactiveMember->is_active);
     }
 
-    /** @test */
+    #[Test]
     public function it_tracks_invitation_details()
     {
         $org = Org::create([
@@ -179,7 +180,7 @@ class TeamMemberTest extends TestCase
         $this->assertNotNull($teamMember->invitation_accepted_at);
     }
 
-    /** @test */
+    #[Test]
     public function it_stores_permissions_as_json()
     {
         $org = Org::create([
@@ -212,7 +213,7 @@ class TeamMemberTest extends TestCase
         $this->assertContains('view', $teamMember->custom_permissions['analytics']);
     }
 
-    /** @test */
+    #[Test]
     public function it_tracks_last_access_time()
     {
         $org = Org::create([
@@ -238,7 +239,7 @@ class TeamMemberTest extends TestCase
         $this->assertNotNull($teamMember->last_accessed_at);
     }
 
-    /** @test */
+    #[Test]
     public function it_uses_uuid_as_primary_key()
     {
         $org = Org::create([
@@ -263,7 +264,7 @@ class TeamMemberTest extends TestCase
         $this->assertTrue(Str::isUuid($teamMember->member_id));
     }
 
-    /** @test */
+    #[Test]
     public function it_has_timestamps()
     {
         $org = Org::create([
@@ -289,7 +290,7 @@ class TeamMemberTest extends TestCase
         $this->assertNotNull($teamMember->updated_at);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_be_soft_deleted()
     {
         $org = Org::create([
@@ -320,7 +321,7 @@ class TeamMemberTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_respects_rls_policies()
     {
         $org1 = Org::create([

@@ -9,6 +9,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 use Illuminate\Notifications\DatabaseNotification;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * Notification Model Unit Tests
  */
@@ -21,7 +22,7 @@ class NotificationTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_can_create_notification()
     {
         $user = User::create([
@@ -49,7 +50,7 @@ class NotificationTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_belongs_to_notifiable()
     {
         $user = User::create([
@@ -70,7 +71,7 @@ class NotificationTest extends TestCase
         $this->assertEquals($user->id, $notification->notifiable->id);
     }
 
-    /** @test */
+    #[Test]
     public function it_stores_notification_data_as_json()
     {
         $user = User::create([
@@ -100,7 +101,7 @@ class NotificationTest extends TestCase
         $this->assertEquals('/campaigns/camp_456', $notification->data['action_url']);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_be_marked_as_read()
     {
         $user = User::create([
@@ -126,7 +127,7 @@ class NotificationTest extends TestCase
         $this->assertNotNull($notification->fresh()->read_at);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_filter_unread_notifications()
     {
         $user = User::create([
@@ -158,7 +159,7 @@ class NotificationTest extends TestCase
         $this->assertCount(1, $unread);
     }
 
-    /** @test */
+    #[Test]
     public function it_has_different_notification_types()
     {
         $user = User::create([
@@ -189,7 +190,7 @@ class NotificationTest extends TestCase
         $this->assertCount(4, $notifications);
     }
 
-    /** @test */
+    #[Test]
     public function it_uses_uuid_as_primary_key()
     {
         $user = User::create([
@@ -210,7 +211,7 @@ class NotificationTest extends TestCase
         $this->assertTrue(Str::isUuid($notification->id));
     }
 
-    /** @test */
+    #[Test]
     public function it_has_timestamps()
     {
         $user = User::create([
@@ -232,7 +233,7 @@ class NotificationTest extends TestCase
         $this->assertNotNull($notification->updated_at);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_be_deleted()
     {
         $user = User::create([

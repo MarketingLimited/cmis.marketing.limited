@@ -11,6 +11,7 @@ use App\Jobs\PublishToInstagramJob;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Str;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * Instagram Publishing Integration Test
  *
@@ -25,7 +26,7 @@ class InstagramPublishingTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_creates_and_publishes_instagram_feed_post()
     {
         Queue::fake();
@@ -83,7 +84,7 @@ class InstagramPublishingTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_creates_and_publishes_instagram_story()
     {
         Queue::fake();
@@ -132,7 +133,7 @@ class InstagramPublishingTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_creates_and_publishes_instagram_reel()
     {
         Queue::fake();

@@ -11,6 +11,7 @@ use App\Models\Core\Campaign;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Queue;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * UpdateCampaignStats Job Unit Tests
  */
@@ -23,7 +24,7 @@ class UpdateCampaignStatsJobTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_updates_campaign_statistics()
     {
         $org = Org::create([
@@ -49,7 +50,7 @@ class UpdateCampaignStatsJobTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_calculates_engagement_metrics()
     {
         $org = Org::create([
@@ -76,7 +77,7 @@ class UpdateCampaignStatsJobTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_calculates_conversion_rate()
     {
         $org = Org::create([
@@ -103,7 +104,7 @@ class UpdateCampaignStatsJobTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_updates_roi_metrics()
     {
         $org = Org::create([
@@ -130,7 +131,7 @@ class UpdateCampaignStatsJobTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_aggregates_platform_stats()
     {
         $org = Org::create([
@@ -157,7 +158,7 @@ class UpdateCampaignStatsJobTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_be_dispatched()
     {
         Queue::fake();
@@ -184,7 +185,7 @@ class UpdateCampaignStatsJobTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_calculates_click_through_rate()
     {
         $org = Org::create([
@@ -214,7 +215,7 @@ class UpdateCampaignStatsJobTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_tracks_cost_per_click()
     {
         $org = Org::create([
@@ -244,7 +245,7 @@ class UpdateCampaignStatsJobTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_updates_reach_metrics()
     {
         $org = Org::create([
@@ -271,7 +272,7 @@ class UpdateCampaignStatsJobTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_campaigns_with_no_data()
     {
         $org = Org::create([
@@ -297,7 +298,7 @@ class UpdateCampaignStatsJobTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_stores_stats_snapshot()
     {
         $org = Org::create([
@@ -324,7 +325,7 @@ class UpdateCampaignStatsJobTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_respects_org_isolation()
     {
         $org1 = Org::create([

@@ -8,6 +8,7 @@ use Tests\Traits\MocksExternalAPIs;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use App\Services\Social\WhatsAppService;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * WhatsApp Service Unit Tests
  */
@@ -23,7 +24,7 @@ class WhatsAppServiceTest extends TestCase
         $this->service = app(WhatsAppService::class);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_send_text_message()
     {
         $setup = $this->createUserWithOrg();
@@ -48,7 +49,7 @@ class WhatsAppServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_send_template_message()
     {
         $setup = $this->createUserWithOrg();
@@ -84,7 +85,7 @@ class WhatsAppServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_send_image_message()
     {
         $setup = $this->createUserWithOrg();
@@ -111,7 +112,7 @@ class WhatsAppServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_send_document_message()
     {
         $setup = $this->createUserWithOrg();
@@ -139,7 +140,7 @@ class WhatsAppServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_send_interactive_button_message()
     {
         $setup = $this->createUserWithOrg();
@@ -170,7 +171,7 @@ class WhatsAppServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_send_interactive_list_message()
     {
         $setup = $this->createUserWithOrg();
@@ -206,7 +207,7 @@ class WhatsAppServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_mark_message_as_read()
     {
         $setup = $this->createUserWithOrg();
@@ -228,7 +229,7 @@ class WhatsAppServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_media_url()
     {
         $setup = $this->createUserWithOrg();
@@ -252,7 +253,7 @@ class WhatsAppServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_phone_number_format()
     {
         $setup = $this->createUserWithOrg();
@@ -271,7 +272,7 @@ class WhatsAppServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_api_errors()
     {
         $setup = $this->createUserWithOrg();
@@ -292,7 +293,7 @@ class WhatsAppServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_rate_limiting()
     {
         $setup = $this->createUserWithOrg();

@@ -8,6 +8,7 @@ use Tests\Traits\MocksExternalAPIs;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use App\Services\Social\LinkedInService;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * LinkedIn Service Unit Tests
  */
@@ -23,7 +24,7 @@ class LinkedInServiceTest extends TestCase
         $this->service = app(LinkedInService::class);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_publish_post()
     {
         $setup = $this->createUserWithOrg();
@@ -48,7 +49,7 @@ class LinkedInServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_publish_article()
     {
         $setup = $this->createUserWithOrg();
@@ -73,7 +74,7 @@ class LinkedInServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_publish_image_post()
     {
         $setup = $this->createUserWithOrg();
@@ -98,7 +99,7 @@ class LinkedInServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_publish_video_post()
     {
         $setup = $this->createUserWithOrg();
@@ -123,7 +124,7 @@ class LinkedInServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_organization_statistics()
     {
         $setup = $this->createUserWithOrg();
@@ -154,7 +155,7 @@ class LinkedInServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_post_statistics()
     {
         $setup = $this->createUserWithOrg();
@@ -182,7 +183,7 @@ class LinkedInServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_follower_demographics()
     {
         $setup = $this->createUserWithOrg();
@@ -211,7 +212,7 @@ class LinkedInServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_comments()
     {
         $setup = $this->createUserWithOrg();
@@ -240,7 +241,7 @@ class LinkedInServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_delete_post()
     {
         $setup = $this->createUserWithOrg();
@@ -260,7 +261,7 @@ class LinkedInServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_post_content()
     {
         $setup = $this->createUserWithOrg();
@@ -278,7 +279,7 @@ class LinkedInServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_api_errors()
     {
         $setup = $this->createUserWithOrg();

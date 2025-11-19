@@ -10,6 +10,7 @@ use App\Models\User;
 use App\Models\Team\TeamMember;
 use Illuminate\Support\Str;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * Settings Controller Feature Tests
  */
@@ -22,7 +23,7 @@ class SettingsControllerTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_can_view_general_settings()
     {
         $org = Org::create([
@@ -55,7 +56,7 @@ class SettingsControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_update_org_settings()
     {
         $org = Org::create([
@@ -88,7 +89,7 @@ class SettingsControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_view_notification_settings()
     {
         $org = Org::create([
@@ -121,7 +122,7 @@ class SettingsControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_update_notification_preferences()
     {
         $org = Org::create([
@@ -154,7 +155,7 @@ class SettingsControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_view_integration_settings()
     {
         $org = Org::create([
@@ -187,7 +188,7 @@ class SettingsControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_view_billing_settings()
     {
         $org = Org::create([
@@ -220,7 +221,7 @@ class SettingsControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_update_security_settings()
     {
         $org = Org::create([
@@ -253,7 +254,7 @@ class SettingsControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function viewer_cannot_update_settings()
     {
         $org = Org::create([
@@ -286,7 +287,7 @@ class SettingsControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_respects_org_isolation()
     {
         $org1 = Org::create([
@@ -324,7 +325,7 @@ class SettingsControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_settings_updates()
     {
         $org = Org::create([

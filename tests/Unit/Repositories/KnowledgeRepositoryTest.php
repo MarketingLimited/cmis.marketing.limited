@@ -7,6 +7,7 @@ use App\Repositories\Knowledge\KnowledgeRepository;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * KnowledgeRepository Unit Tests
  */
@@ -22,7 +23,7 @@ class KnowledgeRepositoryTest extends TestCase
         $this->repository = app(KnowledgeRepository::class);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_register_knowledge()
     {
         DB::shouldReceive('select')
@@ -48,7 +49,7 @@ class KnowledgeRepositoryTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_accepts_different_categories()
     {
         DB::shouldReceive('select')
@@ -78,7 +79,7 @@ class KnowledgeRepositoryTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_auto_analyze_knowledge()
     {
         $analysisResult = [
@@ -109,7 +110,7 @@ class KnowledgeRepositoryTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_auto_retrieve_knowledge()
     {
         $knowledgeEntries = [
@@ -145,7 +146,7 @@ class KnowledgeRepositoryTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_load_smart_context()
     {
         $contextResult = [
@@ -175,7 +176,7 @@ class KnowledgeRepositoryTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_respects_token_limit_in_context_loader()
     {
         DB::shouldReceive('select')
@@ -209,7 +210,7 @@ class KnowledgeRepositoryTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_generate_system_report()
     {
         $reportData = [
@@ -235,7 +236,7 @@ class KnowledgeRepositoryTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_perform_semantic_analysis()
     {
         $analysisResults = [
@@ -265,7 +266,7 @@ class KnowledgeRepositoryTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_perform_advanced_semantic_search()
     {
         $searchResults = [
@@ -303,7 +304,7 @@ class KnowledgeRepositoryTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_supports_arabic_content()
     {
         DB::shouldReceive('select')
@@ -329,7 +330,7 @@ class KnowledgeRepositoryTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_cleanup_old_embeddings()
     {
         DB::shouldReceive('statement')
@@ -346,7 +347,7 @@ class KnowledgeRepositoryTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_verify_installation()
     {
         $verificationResult = [

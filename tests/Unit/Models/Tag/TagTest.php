@@ -8,6 +8,7 @@ use App\Models\Tag\Tag;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * Tag Model Unit Tests
  */
@@ -20,7 +21,7 @@ class TagTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_can_create_tag()
     {
         $org = Org::create([
@@ -42,7 +43,7 @@ class TagTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_belongs_to_org()
     {
         $org = Org::create([
@@ -60,7 +61,7 @@ class TagTest extends TestCase
         $this->assertEquals($org->org_id, $tag->org->org_id);
     }
 
-    /** @test */
+    #[Test]
     public function it_has_unique_slug()
     {
         $org = Org::create([
@@ -85,7 +86,7 @@ class TagTest extends TestCase
         $this->assertNotEquals($tag1->slug, $tag2->slug);
     }
 
-    /** @test */
+    #[Test]
     public function it_stores_tag_color()
     {
         $org = Org::create([
@@ -104,7 +105,7 @@ class TagTest extends TestCase
         $this->assertEquals('#FF0000', $tag->color);
     }
 
-    /** @test */
+    #[Test]
     public function it_has_different_tag_types()
     {
         $org = Org::create([
@@ -141,7 +142,7 @@ class TagTest extends TestCase
         $this->assertEquals('content', $contentTag->type);
     }
 
-    /** @test */
+    #[Test]
     public function it_tracks_usage_count()
     {
         $org = Org::create([
@@ -164,7 +165,7 @@ class TagTest extends TestCase
         $this->assertEquals(3, $tag->fresh()->usage_count);
     }
 
-    /** @test */
+    #[Test]
     public function it_stores_tag_description()
     {
         $org = Org::create([
@@ -183,7 +184,7 @@ class TagTest extends TestCase
         $this->assertEquals('Tags for special promotional offers', $tag->description);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_be_active_or_inactive()
     {
         $org = Org::create([
@@ -211,7 +212,7 @@ class TagTest extends TestCase
         $this->assertFalse($inactiveTag->is_active);
     }
 
-    /** @test */
+    #[Test]
     public function it_uses_uuid_as_primary_key()
     {
         $org = Org::create([
@@ -229,7 +230,7 @@ class TagTest extends TestCase
         $this->assertTrue(Str::isUuid($tag->tag_id));
     }
 
-    /** @test */
+    #[Test]
     public function it_has_timestamps()
     {
         $org = Org::create([
@@ -248,7 +249,7 @@ class TagTest extends TestCase
         $this->assertNotNull($tag->updated_at);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_be_soft_deleted()
     {
         $org = Org::create([
@@ -272,7 +273,7 @@ class TagTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_respects_rls_policies()
     {
         $org1 = Org::create([

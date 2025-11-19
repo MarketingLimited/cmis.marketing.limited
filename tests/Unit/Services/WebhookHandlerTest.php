@@ -9,6 +9,7 @@ use App\Services\Integration\WebhookHandler;
 use App\Models\Core\Org;
 use Illuminate\Support\Str;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * Webhook Handler Unit Tests
  */
@@ -24,7 +25,7 @@ class WebhookHandlerTest extends TestCase
         $this->handler = app(WebhookHandler::class);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_process_facebook_webhook()
     {
         $setup = $this->createUserWithOrg();
@@ -58,7 +59,7 @@ class WebhookHandlerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_process_instagram_webhook()
     {
         $setup = $this->createUserWithOrg();
@@ -94,7 +95,7 @@ class WebhookHandlerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_process_twitter_webhook()
     {
         $setup = $this->createUserWithOrg();
@@ -120,7 +121,7 @@ class WebhookHandlerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_verify_webhook_signature()
     {
         $payload = '{"test": "data"}';
@@ -137,7 +138,7 @@ class WebhookHandlerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_rejects_invalid_signature()
     {
         $payload = '{"test": "data"}';
@@ -154,7 +155,7 @@ class WebhookHandlerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_stores_webhook_events()
     {
         $setup = $this->createUserWithOrg();
@@ -180,7 +181,7 @@ class WebhookHandlerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_retry_failed_webhooks()
     {
         $setup = $this->createUserWithOrg();
@@ -205,7 +206,7 @@ class WebhookHandlerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_processes_whatsapp_webhooks()
     {
         $setup = $this->createUserWithOrg();
@@ -241,7 +242,7 @@ class WebhookHandlerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_subscription_verification()
     {
         $challenge = 'test_challenge_string';
@@ -258,7 +259,7 @@ class WebhookHandlerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_webhook_payload_structure()
     {
         $validPayload = [
@@ -279,7 +280,7 @@ class WebhookHandlerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_webhook_processing_errors()
     {
         $setup = $this->createUserWithOrg();
@@ -300,7 +301,7 @@ class WebhookHandlerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_tracks_webhook_processing_time()
     {
         $setup = $this->createUserWithOrg();

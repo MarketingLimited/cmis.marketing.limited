@@ -5,6 +5,7 @@ namespace Tests\Unit\Services;
 use Tests\TestCase;
 use App\Services\ComplianceValidationService;
 
+use PHPUnit\Framework\Attributes\Test;
 class ComplianceValidationServiceTest extends TestCase
 {
     private ComplianceValidationService $service;
@@ -16,7 +17,7 @@ class ComplianceValidationServiceTest extends TestCase
         $this->service = new ComplianceValidationService();
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_compliant_content()
     {
         $content = "Check out our amazing summer sale! Great deals on all items.";
@@ -28,7 +29,7 @@ class ComplianceValidationServiceTest extends TestCase
         $this->assertEquals(100, $result['score']);
     }
 
-    /** @test */
+    #[Test]
     public function it_detects_social_media_length_violations()
     {
         $content = str_repeat('a', 300); // Exceeds 280 char limit
@@ -45,7 +46,7 @@ class ComplianceValidationServiceTest extends TestCase
         $this->assertEquals('high', $violation['severity']);
     }
 
-    /** @test */
+    #[Test]
     public function it_detects_offensive_content()
     {
         $content = "This product is offensive_word amazing!";
@@ -65,7 +66,7 @@ class ComplianceValidationServiceTest extends TestCase
         $this->assertTrue($hasOffensiveViolation);
     }
 
-    /** @test */
+    #[Test]
     public function it_detects_health_claims()
     {
         $content = "Our product cures all diseases and guarantees weight loss!";
@@ -86,7 +87,7 @@ class ComplianceValidationServiceTest extends TestCase
         $this->assertTrue($hasHealthViolation);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_add_custom_rules()
     {
         $rule = [
@@ -108,7 +109,7 @@ class ComplianceValidationServiceTest extends TestCase
         $this->assertFalse($result['is_compliant']);
     }
 
-    /** @test */
+    #[Test]
     public function it_applies_rules_based_on_context()
     {
         $twitterContent = str_repeat('a', 300);
@@ -125,7 +126,7 @@ class ComplianceValidationServiceTest extends TestCase
         $this->assertIsArray($result2);
     }
 
-    /** @test */
+    #[Test]
     public function it_calculates_compliance_score()
     {
         // Content with one high severity violation
@@ -142,7 +143,7 @@ class ComplianceValidationServiceTest extends TestCase
         }
     }
 
-    /** @test */
+    #[Test]
     public function it_provides_warnings_for_us_market()
     {
         $content = "Sponsored content about our product";
@@ -155,7 +156,7 @@ class ComplianceValidationServiceTest extends TestCase
         $this->assertNotEmpty($result['warnings']);
     }
 
-    /** @test */
+    #[Test]
     public function it_provides_warnings_for_eu_market()
     {
         $content = "We collect your email address for marketing";
@@ -176,7 +177,7 @@ class ComplianceValidationServiceTest extends TestCase
         $this->assertTrue($hasGdprWarning);
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_multiple_violations()
     {
         $content = str_repeat('offensive_word ', 50) . " " . str_repeat('a', 300);
@@ -189,7 +190,7 @@ class ComplianceValidationServiceTest extends TestCase
         $this->assertGreaterThanOrEqual(1, count($result['violations']));
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_empty_content()
     {
         $result = $this->service->validateContent('');
@@ -198,7 +199,7 @@ class ComplianceValidationServiceTest extends TestCase
         $this->assertEmpty($result['violations']);
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_short_content()
     {
         $content = "Sale!";
@@ -208,7 +209,7 @@ class ComplianceValidationServiceTest extends TestCase
         $this->assertTrue($result['is_compliant']);
     }
 
-    /** @test */
+    #[Test]
     public function it_detects_case_insensitive_violations()
     {
         $content1 = "This product CURES everything!";
@@ -222,7 +223,7 @@ class ComplianceValidationServiceTest extends TestCase
         $this->assertFalse($result2['is_compliant']);
     }
 
-    /** @test */
+    #[Test]
     public function it_returns_proper_structure()
     {
         $result = $this->service->validateContent("Test content");
@@ -239,7 +240,7 @@ class ComplianceValidationServiceTest extends TestCase
         $this->assertIsNumeric($result['score']);
     }
 
-    /** @test */
+    #[Test]
     public function it_includes_severity_in_violations()
     {
         $content = "offensive_word here";
@@ -254,7 +255,7 @@ class ComplianceValidationServiceTest extends TestCase
         }
     }
 
-    /** @test */
+    #[Test]
     public function it_includes_rule_information_in_violations()
     {
         $content = "offensive_word content";
@@ -270,7 +271,7 @@ class ComplianceValidationServiceTest extends TestCase
         }
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_facebook_specific_rules()
     {
         $content = str_repeat('a', 300);
@@ -284,7 +285,7 @@ class ComplianceValidationServiceTest extends TestCase
         $this->assertArrayHasKey('is_compliant', $result);
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_instagram_specific_rules()
     {
         $content = str_repeat('a', 300);
@@ -297,7 +298,7 @@ class ComplianceValidationServiceTest extends TestCase
         $this->assertArrayHasKey('is_compliant', $result);
     }
 
-    /** @test */
+    #[Test]
     public function it_provides_suggestions()
     {
         $content = "Sponsored content";
@@ -306,13 +307,20 @@ class ComplianceValidationServiceTest extends TestCase
             'market' => 'US',
         ]);
 
+        // Always assert that result is an array
+        $this->assertIsArray($result);
+        $this->assertArrayHasKey('suggestions', $result);
+
         if (!empty($result['suggestions'])) {
             $this->assertIsArray($result['suggestions']);
             $this->assertIsString($result['suggestions'][0]);
+        } else {
+            // Even if suggestions are empty, verify it's an array
+            $this->assertIsArray($result['suggestions']);
         }
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_special_characters()
     {
         $content = "Special chars: @#$%^&*()!";
@@ -323,7 +331,7 @@ class ComplianceValidationServiceTest extends TestCase
         $this->assertArrayHasKey('is_compliant', $result);
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_unicode_characters()
     {
         $content = "Unicode test: 你好世界 مرحبا العالم";
@@ -334,7 +342,7 @@ class ComplianceValidationServiceTest extends TestCase
         $this->assertTrue($result['is_compliant']);
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_urls_in_content()
     {
         $content = "Visit https://example.com for more info!";
@@ -345,7 +353,7 @@ class ComplianceValidationServiceTest extends TestCase
         $this->assertTrue($result['is_compliant']);
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_hashtags_in_content()
     {
         $content = "Check out our #Summer #Sale #2025";
@@ -356,7 +364,7 @@ class ComplianceValidationServiceTest extends TestCase
         $this->assertTrue($result['is_compliant']);
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_ccpa_for_california()
     {
         $content = "We use your data for advertising";
@@ -377,7 +385,7 @@ class ComplianceValidationServiceTest extends TestCase
         $this->assertTrue($hasCcpaWarning);
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_multiple_context_attributes()
     {
         $content = "Check out our sale!";
@@ -392,7 +400,7 @@ class ComplianceValidationServiceTest extends TestCase
         $this->assertArrayHasKey('is_compliant', $result);
     }
 
-    /** @test */
+    #[Test]
     public function it_rejects_critical_violations_immediately()
     {
         // Add a critical severity rule
@@ -418,7 +426,7 @@ class ComplianceValidationServiceTest extends TestCase
         $this->assertLessThanOrEqual(70, $result['score']);
     }
 
-    /** @test */
+    #[Test]
     public function it_accumulates_score_deductions()
     {
         $content = "offensive_word and another offensive_term cure guarantee";
@@ -431,7 +439,7 @@ class ComplianceValidationServiceTest extends TestCase
         }
     }
 
-    /** @test */
+    #[Test]
     public function it_respects_minimum_score_of_zero()
     {
         // Add many critical violations

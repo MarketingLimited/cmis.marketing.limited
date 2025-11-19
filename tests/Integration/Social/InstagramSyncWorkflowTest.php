@@ -9,6 +9,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use App\Services\Social\InstagramSyncService;
 use App\Jobs\SyncInstagramDataJob;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * Instagram Sync Complete Workflow Test
  */
@@ -24,7 +25,7 @@ class InstagramSyncWorkflowTest extends TestCase
         $this->syncService = app(InstagramSyncService::class);
     }
 
-    /** @test */
+    #[Test]
     public function it_syncs_instagram_account_profile()
     {
         $setup = $this->createUserWithOrg();
@@ -48,7 +49,7 @@ class InstagramSyncWorkflowTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_syncs_instagram_media_posts()
     {
         $setup = $this->createUserWithOrg();
@@ -84,7 +85,7 @@ class InstagramSyncWorkflowTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_syncs_instagram_insights_metrics()
     {
         $setup = $this->createUserWithOrg();
@@ -122,7 +123,7 @@ class InstagramSyncWorkflowTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_syncs_instagram_stories()
     {
         $setup = $this->createUserWithOrg();
@@ -151,7 +152,7 @@ class InstagramSyncWorkflowTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_instagram_api_token_expiration()
     {
         $setup = $this->createUserWithOrg();
@@ -178,7 +179,7 @@ class InstagramSyncWorkflowTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_syncs_instagram_comments()
     {
         $setup = $this->createUserWithOrg();

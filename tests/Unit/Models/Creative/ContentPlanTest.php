@@ -11,6 +11,7 @@ use App\Models\Creative\ContentItem;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * Content Plan Model Unit Tests
  */
@@ -23,7 +24,7 @@ class ContentPlanTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_can_create_a_content_plan()
     {
         $org = Org::create([
@@ -53,7 +54,7 @@ class ContentPlanTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_belongs_to_organization_and_campaign()
     {
         $org = Org::create([
@@ -79,7 +80,7 @@ class ContentPlanTest extends TestCase
         $this->assertEquals($campaign->campaign_id, $plan->campaign->campaign_id);
     }
 
-    /** @test */
+    #[Test]
     public function it_has_many_content_items()
     {
         $org = Org::create([
@@ -116,7 +117,7 @@ class ContentPlanTest extends TestCase
         $this->assertCount(2, $plan->contentItems);
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_date_range()
     {
         $org = Org::create([
@@ -137,7 +138,7 @@ class ContentPlanTest extends TestCase
         );
     }
 
-    /** @test */
+    #[Test]
     public function it_uses_uuid_as_primary_key()
     {
         $org = Org::create([
@@ -154,7 +155,7 @@ class ContentPlanTest extends TestCase
         $this->assertTrue(Str::isUuid($plan->plan_id));
     }
 
-    /** @test */
+    #[Test]
     public function it_can_be_soft_deleted()
     {
         $org = Org::create([
@@ -175,7 +176,7 @@ class ContentPlanTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_cascades_soft_delete_to_content_items()
     {
         $org = Org::create([
@@ -210,7 +211,7 @@ class ContentPlanTest extends TestCase
         $this->assertEquals(0, $remainingItems);
     }
 
-    /** @test */
+    #[Test]
     public function it_has_timestamps()
     {
         $org = Org::create([

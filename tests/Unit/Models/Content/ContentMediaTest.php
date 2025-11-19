@@ -8,6 +8,7 @@ use App\Models\Content\ContentMedia;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * Content Media Model Unit Tests
  */
@@ -20,7 +21,7 @@ class ContentMediaTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_can_create_content_media()
     {
         $org = Org::create([
@@ -44,7 +45,7 @@ class ContentMediaTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_belongs_to_org()
     {
         $org = Org::create([
@@ -64,7 +65,7 @@ class ContentMediaTest extends TestCase
         $this->assertEquals($org->org_id, $media->org->org_id);
     }
 
-    /** @test */
+    #[Test]
     public function it_stores_image_dimensions()
     {
         $org = Org::create([
@@ -87,7 +88,7 @@ class ContentMediaTest extends TestCase
         $this->assertEquals(1080, $media->height);
     }
 
-    /** @test */
+    #[Test]
     public function it_stores_video_duration()
     {
         $org = Org::create([
@@ -108,7 +109,7 @@ class ContentMediaTest extends TestCase
         $this->assertEquals(120, $media->duration);
     }
 
-    /** @test */
+    #[Test]
     public function it_stores_metadata_as_json()
     {
         $org = Org::create([
@@ -137,7 +138,7 @@ class ContentMediaTest extends TestCase
         $this->assertContains('summer', $media->metadata['tags']);
     }
 
-    /** @test */
+    #[Test]
     public function it_tracks_usage_count()
     {
         $org = Org::create([
@@ -162,7 +163,7 @@ class ContentMediaTest extends TestCase
         $this->assertEquals(3, $media->fresh()->usage_count);
     }
 
-    /** @test */
+    #[Test]
     public function it_stores_thumbnail_path()
     {
         $org = Org::create([
@@ -183,7 +184,7 @@ class ContentMediaTest extends TestCase
         $this->assertEquals('/media/thumbnails/video.jpg', $media->thumbnail_path);
     }
 
-    /** @test */
+    #[Test]
     public function it_has_file_type_categories()
     {
         $org = Org::create([
@@ -223,7 +224,7 @@ class ContentMediaTest extends TestCase
         $this->assertEquals('document', $documentMedia->file_type);
     }
 
-    /** @test */
+    #[Test]
     public function it_uses_uuid_as_primary_key()
     {
         $org = Org::create([
@@ -243,7 +244,7 @@ class ContentMediaTest extends TestCase
         $this->assertTrue(Str::isUuid($media->media_id));
     }
 
-    /** @test */
+    #[Test]
     public function it_has_timestamps()
     {
         $org = Org::create([
@@ -264,7 +265,7 @@ class ContentMediaTest extends TestCase
         $this->assertNotNull($media->updated_at);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_be_soft_deleted()
     {
         $org = Org::create([
@@ -290,7 +291,7 @@ class ContentMediaTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_respects_rls_policies()
     {
         $org1 = Org::create([

@@ -10,6 +10,7 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * SetRLSContext Middleware Unit Tests
  */
@@ -22,7 +23,7 @@ class SetRLSContextMiddlewareTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_sets_rls_context_for_authenticated_user()
     {
         $org = Org::create([
@@ -49,7 +50,7 @@ class SetRLSContextMiddlewareTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_sets_org_id_in_session()
     {
         $org = Org::create([
@@ -75,7 +76,7 @@ class SetRLSContextMiddlewareTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_sets_user_id_in_session()
     {
         $org = Org::create([
@@ -101,7 +102,7 @@ class SetRLSContextMiddlewareTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_executes_set_config_function()
     {
         $org = Org::create([
@@ -126,7 +127,7 @@ class SetRLSContextMiddlewareTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_clears_context_after_request()
     {
         $org = Org::create([
@@ -154,7 +155,7 @@ class SetRLSContextMiddlewareTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_unauthenticated_requests()
     {
         // Guest user - no RLS context should be set
@@ -168,7 +169,7 @@ class SetRLSContextMiddlewareTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_isolates_data_between_organizations()
     {
         $org1 = Org::create([
@@ -205,7 +206,7 @@ class SetRLSContextMiddlewareTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_uses_transaction_scoped_context()
     {
         $org = Org::create([

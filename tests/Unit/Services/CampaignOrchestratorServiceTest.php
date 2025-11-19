@@ -10,6 +10,7 @@ use App\Services\CampaignOrchestratorService;
 use App\Models\Campaign;
 use Illuminate\Support\Str;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * Campaign Orchestrator Service Unit Tests
  */
@@ -25,7 +26,7 @@ class CampaignOrchestratorServiceTest extends TestCase
         $this->service = app(CampaignOrchestratorService::class);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_create_complete_campaign_workflow()
     {
         $setup = $this->createUserWithOrg();
@@ -52,7 +53,7 @@ class CampaignOrchestratorServiceTest extends TestCase
         $this->assertEquals('Summer Campaign 2024', $result['campaign']['name']);
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_campaign_budget()
     {
         $setup = $this->createUserWithOrg();
@@ -73,7 +74,7 @@ class CampaignOrchestratorServiceTest extends TestCase
         $this->assertArrayHasKey('errors', $result);
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_campaign_date_range()
     {
         $setup = $this->createUserWithOrg();
@@ -95,7 +96,7 @@ class CampaignOrchestratorServiceTest extends TestCase
         $this->assertArrayHasKey('errors', $result);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_activate_campaign()
     {
         $setup = $this->createUserWithOrg();
@@ -117,7 +118,7 @@ class CampaignOrchestratorServiceTest extends TestCase
         $this->assertEquals('active', $campaign->fresh()->status);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_pause_campaign()
     {
         $setup = $this->createUserWithOrg();
@@ -139,7 +140,7 @@ class CampaignOrchestratorServiceTest extends TestCase
         $this->assertEquals('paused', $campaign->fresh()->status);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_complete_campaign()
     {
         $setup = $this->createUserWithOrg();
@@ -161,7 +162,7 @@ class CampaignOrchestratorServiceTest extends TestCase
         $this->assertEquals('completed', $campaign->fresh()->status);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_generate_campaign_insights()
     {
         $setup = $this->createUserWithOrg();
@@ -179,7 +180,7 @@ class CampaignOrchestratorServiceTest extends TestCase
         $this->assertArrayHasKey('metrics', $insights);
     }
 
-    /** @test */
+    #[Test]
     public function it_respects_org_isolation()
     {
         $setup1 = $this->createUserWithOrg();
@@ -204,7 +205,7 @@ class CampaignOrchestratorServiceTest extends TestCase
         $this->assertFalse($result['success'] ?? false);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_duplicate_campaign()
     {
         $setup = $this->createUserWithOrg();
@@ -231,7 +232,7 @@ class CampaignOrchestratorServiceTest extends TestCase
         $this->assertEquals('draft', $result['campaign']['status']); // Should be draft
     }
 
-    /** @test */
+    #[Test]
     public function it_tracks_campaign_performance_metrics()
     {
         $setup = $this->createUserWithOrg();

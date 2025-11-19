@@ -9,6 +9,7 @@ use App\Repositories\CMIS\ContentRepository;
 use App\Repositories\Contracts\ContentRepositoryInterface;
 use Illuminate\Support\Str;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * Content Repository Unit Tests
  */
@@ -24,7 +25,7 @@ class ContentRepositoryTest extends TestCase
         $this->repository = app(ContentRepositoryInterface::class);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_create_content_with_context()
     {
         $setup = $this->createUserWithOrg();
@@ -56,7 +57,7 @@ class ContentRepositoryTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_content_for_campaign()
     {
         $setup = $this->createUserWithOrg();
@@ -88,7 +89,7 @@ class ContentRepositoryTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_filter_content_by_status()
     {
         $setup = $this->createUserWithOrg();
@@ -121,7 +122,7 @@ class ContentRepositoryTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_scheduled_content()
     {
         $setup = $this->createUserWithOrg();
@@ -154,7 +155,7 @@ class ContentRepositoryTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_search_content_by_keyword()
     {
         $setup = $this->createUserWithOrg();
@@ -186,7 +187,7 @@ class ContentRepositoryTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_content_by_platform()
     {
         $setup = $this->createUserWithOrg();
@@ -223,7 +224,7 @@ class ContentRepositoryTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_find_similar_content()
     {
         $setup = $this->createUserWithOrg();
@@ -254,7 +255,7 @@ class ContentRepositoryTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_respects_transaction_context()
     {
         $setup1 = $this->createUserWithOrg();
@@ -290,7 +291,7 @@ class ContentRepositoryTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_content_performance()
     {
         $setup = $this->createUserWithOrg();
@@ -322,7 +323,7 @@ class ContentRepositoryTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_bulk_update_content_status()
     {
         $setup = $this->createUserWithOrg();

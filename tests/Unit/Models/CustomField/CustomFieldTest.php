@@ -8,6 +8,7 @@ use App\Models\CustomField\CustomField;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * CustomField Model Unit Tests
  */
@@ -20,7 +21,7 @@ class CustomFieldTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_can_create_custom_field()
     {
         $org = Org::create([
@@ -42,7 +43,7 @@ class CustomFieldTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_belongs_to_org()
     {
         $org = Org::create([
@@ -61,7 +62,7 @@ class CustomFieldTest extends TestCase
         $this->assertEquals($org->org_id, $customField->org->org_id);
     }
 
-    /** @test */
+    #[Test]
     public function it_has_different_field_types()
     {
         $org = Org::create([
@@ -85,7 +86,7 @@ class CustomFieldTest extends TestCase
         $this->assertCount(8, $fields);
     }
 
-    /** @test */
+    #[Test]
     public function it_applies_to_different_entity_types()
     {
         $org = Org::create([
@@ -109,7 +110,7 @@ class CustomFieldTest extends TestCase
         $this->assertCount(4, $fields);
     }
 
-    /** @test */
+    #[Test]
     public function it_stores_field_options_for_select_types()
     {
         $org = Org::create([
@@ -138,7 +139,7 @@ class CustomFieldTest extends TestCase
         $this->assertContains('تكنولوجيا', $customField->options);
     }
 
-    /** @test */
+    #[Test]
     public function it_has_validation_rules()
     {
         $org = Org::create([
@@ -166,7 +167,7 @@ class CustomFieldTest extends TestCase
         $this->assertEquals(5, $customField->validation_rules['min']);
     }
 
-    /** @test */
+    #[Test]
     public function it_has_default_value()
     {
         $org = Org::create([
@@ -186,7 +187,7 @@ class CustomFieldTest extends TestCase
         $this->assertEquals('new', $customField->default_value);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_be_required_or_optional()
     {
         $org = Org::create([
@@ -216,7 +217,7 @@ class CustomFieldTest extends TestCase
         $this->assertFalse($optionalField->is_required);
     }
 
-    /** @test */
+    #[Test]
     public function it_has_display_order()
     {
         $org = Org::create([
@@ -246,7 +247,7 @@ class CustomFieldTest extends TestCase
         $this->assertEquals(2, $field2->display_order);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_be_active_or_inactive()
     {
         $org = Org::create([
@@ -276,7 +277,7 @@ class CustomFieldTest extends TestCase
         $this->assertFalse($inactiveField->is_active);
     }
 
-    /** @test */
+    #[Test]
     public function it_uses_uuid_as_primary_key()
     {
         $org = Org::create([
@@ -295,7 +296,7 @@ class CustomFieldTest extends TestCase
         $this->assertTrue(Str::isUuid($customField->field_id));
     }
 
-    /** @test */
+    #[Test]
     public function it_has_timestamps()
     {
         $org = Org::create([
@@ -315,7 +316,7 @@ class CustomFieldTest extends TestCase
         $this->assertNotNull($customField->updated_at);
     }
 
-    /** @test */
+    #[Test]
     public function it_respects_rls_policies()
     {
         $org1 = Org::create([

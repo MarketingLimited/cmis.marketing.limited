@@ -5,6 +5,7 @@ namespace Tests\Unit\Helpers;
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * Array Helper Unit Tests
  */
@@ -17,7 +18,7 @@ class ArrayHelperTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_flattens_nested_arrays()
     {
         if (!function_exists('array_flatten_custom')) {
@@ -50,7 +51,7 @@ class ArrayHelperTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_plucks_values_by_key()
     {
         if (!function_exists('array_pluck_custom')) {
@@ -77,7 +78,7 @@ class ArrayHelperTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_groups_array_by_key()
     {
         if (!function_exists('array_group_by')) {
@@ -108,7 +109,7 @@ class ArrayHelperTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_removes_null_values()
     {
         if (!function_exists('array_remove_nulls')) {
@@ -132,7 +133,7 @@ class ArrayHelperTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_removes_empty_values()
     {
         if (!function_exists('array_remove_empty')) {
@@ -158,7 +159,7 @@ class ArrayHelperTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_sorts_by_key()
     {
         if (!function_exists('array_sort_by_key')) {
@@ -192,7 +193,7 @@ class ArrayHelperTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_gets_nested_value()
     {
         if (!function_exists('array_get_nested')) {
@@ -227,7 +228,7 @@ class ArrayHelperTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_sets_nested_value()
     {
         if (!function_exists('array_set_nested')) {
@@ -256,7 +257,7 @@ class ArrayHelperTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_merges_recursive()
     {
         if (!function_exists('array_merge_deep')) {
@@ -289,7 +290,7 @@ class ArrayHelperTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_checks_if_associative()
     {
         if (!function_exists('array_is_assoc')) {

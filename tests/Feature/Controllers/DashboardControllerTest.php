@@ -6,6 +6,7 @@ use Tests\TestCase;
 use Tests\Traits\CreatesTestData;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * Dashboard Controller Feature Tests
  */
@@ -18,7 +19,7 @@ class DashboardControllerTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_shows_dashboard_for_authenticated_user()
     {
         $setup = $this->createUserWithOrg();
@@ -43,7 +44,7 @@ class DashboardControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_requires_authentication()
     {
         $response = $this->getJson('/api/dashboard');
@@ -56,7 +57,7 @@ class DashboardControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_returns_campaign_summary()
     {
         $setup = $this->createUserWithOrg();
@@ -86,7 +87,7 @@ class DashboardControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_returns_analytics_overview()
     {
         $setup = $this->createUserWithOrg();
@@ -111,7 +112,7 @@ class DashboardControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_returns_recent_activity()
     {
         $setup = $this->createUserWithOrg();
@@ -139,7 +140,7 @@ class DashboardControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_returns_top_performing_campaigns()
     {
         $setup = $this->createUserWithOrg();
@@ -160,7 +161,7 @@ class DashboardControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_returns_upcoming_scheduled_posts()
     {
         $setup = $this->createUserWithOrg();
@@ -181,7 +182,7 @@ class DashboardControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_returns_budget_summary()
     {
         $setup = $this->createUserWithOrg();
@@ -206,7 +207,7 @@ class DashboardControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_filters_data_by_date_range()
     {
         $setup = $this->createUserWithOrg();
@@ -224,7 +225,7 @@ class DashboardControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_respects_org_isolation()
     {
         $setup1 = $this->createUserWithOrg();
@@ -246,7 +247,7 @@ class DashboardControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_empty_data_gracefully()
     {
         $setup = $this->createUserWithOrg();

@@ -12,6 +12,7 @@ use App\Jobs\ProcessIncomingMessageJob;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Str;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * Messaging Threads & Automation Integration Test
  *
@@ -26,7 +27,7 @@ class MessagingThreadsAutomationTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_message_thread_with_multiple_messages()
     {
         $setup = $this->createUserWithOrg();
@@ -69,7 +70,7 @@ class MessagingThreadsAutomationTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_auto_responds_with_ai_for_common_questions()
     {
         Queue::fake();
@@ -124,7 +125,7 @@ class MessagingThreadsAutomationTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_marks_thread_as_resolved()
     {
         $setup = $this->createUserWithOrg();

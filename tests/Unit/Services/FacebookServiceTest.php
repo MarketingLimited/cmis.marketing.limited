@@ -8,6 +8,7 @@ use Tests\Traits\MocksExternalAPIs;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use App\Services\Social\FacebookService;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * Facebook Service Unit Tests
  */
@@ -23,7 +24,7 @@ class FacebookServiceTest extends TestCase
         $this->service = app(FacebookService::class);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_publish_page_post()
     {
         $setup = $this->createUserWithOrg();
@@ -49,7 +50,7 @@ class FacebookServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_publish_photo()
     {
         $setup = $this->createUserWithOrg();
@@ -75,7 +76,7 @@ class FacebookServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_publish_video()
     {
         $setup = $this->createUserWithOrg();
@@ -100,7 +101,7 @@ class FacebookServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_publish_story()
     {
         $setup = $this->createUserWithOrg();
@@ -124,7 +125,7 @@ class FacebookServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_page_insights()
     {
         $setup = $this->createUserWithOrg();
@@ -161,7 +162,7 @@ class FacebookServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_post_insights()
     {
         $setup = $this->createUserWithOrg();
@@ -193,7 +194,7 @@ class FacebookServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_comments()
     {
         $setup = $this->createUserWithOrg();
@@ -223,7 +224,7 @@ class FacebookServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_reply_to_comment()
     {
         $setup = $this->createUserWithOrg();
@@ -245,7 +246,7 @@ class FacebookServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_page_conversations()
     {
         $setup = $this->createUserWithOrg();
@@ -273,7 +274,7 @@ class FacebookServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_send_message()
     {
         $setup = $this->createUserWithOrg();
@@ -295,7 +296,7 @@ class FacebookServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_api_errors()
     {
         $setup = $this->createUserWithOrg();

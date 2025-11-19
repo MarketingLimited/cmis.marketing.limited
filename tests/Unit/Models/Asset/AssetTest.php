@@ -8,6 +8,7 @@ use App\Models\Asset\Asset;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * Asset Model Unit Tests
  */
@@ -20,7 +21,7 @@ class AssetTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_can_create_asset()
     {
         $org = Org::create([
@@ -42,7 +43,7 @@ class AssetTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_belongs_to_org()
     {
         $org = Org::create([
@@ -61,7 +62,7 @@ class AssetTest extends TestCase
         $this->assertEquals($org->org_id, $asset->org->org_id);
     }
 
-    /** @test */
+    #[Test]
     public function it_has_different_file_types()
     {
         $org = Org::create([
@@ -85,7 +86,7 @@ class AssetTest extends TestCase
         $this->assertCount(4, $assets);
     }
 
-    /** @test */
+    #[Test]
     public function it_stores_file_size()
     {
         $org = Org::create([
@@ -105,7 +106,7 @@ class AssetTest extends TestCase
         $this->assertEquals(2048576, $asset->file_size);
     }
 
-    /** @test */
+    #[Test]
     public function it_stores_mime_type()
     {
         $org = Org::create([
@@ -125,7 +126,7 @@ class AssetTest extends TestCase
         $this->assertEquals('image/png', $asset->mime_type);
     }
 
-    /** @test */
+    #[Test]
     public function it_stores_image_dimensions()
     {
         $org = Org::create([
@@ -147,7 +148,7 @@ class AssetTest extends TestCase
         $this->assertEquals(1080, $asset->height);
     }
 
-    /** @test */
+    #[Test]
     public function it_stores_video_duration()
     {
         $org = Org::create([
@@ -167,7 +168,7 @@ class AssetTest extends TestCase
         $this->assertEquals(120, $asset->duration);
     }
 
-    /** @test */
+    #[Test]
     public function it_stores_thumbnail_path()
     {
         $org = Org::create([
@@ -187,7 +188,7 @@ class AssetTest extends TestCase
         $this->assertEquals('assets/thumbnails/video_thumb.jpg', $asset->thumbnail_path);
     }
 
-    /** @test */
+    #[Test]
     public function it_stores_metadata()
     {
         $org = Org::create([
@@ -215,7 +216,7 @@ class AssetTest extends TestCase
         $this->assertEquals('أحمد محمد', $asset->metadata['photographer']);
     }
 
-    /** @test */
+    #[Test]
     public function it_tracks_usage_count()
     {
         $org = Org::create([
@@ -238,7 +239,7 @@ class AssetTest extends TestCase
         $this->assertEquals(2, $asset->fresh()->usage_count);
     }
 
-    /** @test */
+    #[Test]
     public function it_stores_tags()
     {
         $org = Org::create([
@@ -261,7 +262,7 @@ class AssetTest extends TestCase
         $this->assertContains('رمضان', $asset->tags);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_be_public_or_private()
     {
         $org = Org::create([
@@ -291,7 +292,7 @@ class AssetTest extends TestCase
         $this->assertFalse($privateAsset->is_public);
     }
 
-    /** @test */
+    #[Test]
     public function it_uses_uuid_as_primary_key()
     {
         $org = Org::create([
@@ -310,7 +311,7 @@ class AssetTest extends TestCase
         $this->assertTrue(Str::isUuid($asset->asset_id));
     }
 
-    /** @test */
+    #[Test]
     public function it_has_timestamps()
     {
         $org = Org::create([
@@ -330,7 +331,7 @@ class AssetTest extends TestCase
         $this->assertNotNull($asset->updated_at);
     }
 
-    /** @test */
+    #[Test]
     public function it_respects_rls_policies()
     {
         $org1 = Org::create([

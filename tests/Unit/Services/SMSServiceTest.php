@@ -8,6 +8,7 @@ use Tests\Traits\MocksExternalAPIs;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use App\Services\Communication\SMSService;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * SMS Service Unit Tests
  */
@@ -23,7 +24,7 @@ class SMSServiceTest extends TestCase
         $this->service = app(SMSService::class);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_send_sms()
     {
         $setup = $this->createUserWithOrg();
@@ -49,7 +50,7 @@ class SMSServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_send_bulk_sms()
     {
         $setup = $this->createUserWithOrg();
@@ -80,7 +81,7 @@ class SMSServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_send_otp_sms()
     {
         $setup = $this->createUserWithOrg();
@@ -105,7 +106,7 @@ class SMSServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_send_personalized_sms()
     {
         $setup = $this->createUserWithOrg();
@@ -133,7 +134,7 @@ class SMSServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_schedule_sms()
     {
         $setup = $this->createUserWithOrg();
@@ -154,7 +155,7 @@ class SMSServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_message_status()
     {
         $setup = $this->createUserWithOrg();
@@ -177,7 +178,7 @@ class SMSServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_delivery_report()
     {
         $setup = $this->createUserWithOrg();
@@ -205,7 +206,7 @@ class SMSServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_phone_number()
     {
         $setup = $this->createUserWithOrg();
@@ -225,7 +226,7 @@ class SMSServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_message_length()
     {
         $setup = $this->createUserWithOrg();
@@ -247,7 +248,7 @@ class SMSServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_api_errors()
     {
         $setup = $this->createUserWithOrg();
@@ -269,7 +270,7 @@ class SMSServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_rate_limiting()
     {
         $setup = $this->createUserWithOrg();
@@ -295,7 +296,7 @@ class SMSServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_send_unicode_sms()
     {
         $setup = $this->createUserWithOrg();

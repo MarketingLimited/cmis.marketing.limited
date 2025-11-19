@@ -9,6 +9,7 @@ use App\Models\Subscription\Subscription;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * Invoice Model Unit Tests
  */
@@ -21,7 +22,7 @@ class InvoiceTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_can_create_invoice()
     {
         $org = Org::create([
@@ -44,7 +45,7 @@ class InvoiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_belongs_to_org()
     {
         $org = Org::create([
@@ -64,7 +65,7 @@ class InvoiceTest extends TestCase
         $this->assertEquals($org->org_id, $invoice->org->org_id);
     }
 
-    /** @test */
+    #[Test]
     public function it_belongs_to_subscription()
     {
         $org = Org::create([
@@ -92,7 +93,7 @@ class InvoiceTest extends TestCase
         $this->assertEquals($subscription->subscription_id, $invoice->subscription->subscription_id);
     }
 
-    /** @test */
+    #[Test]
     public function it_has_different_statuses()
     {
         $org = Org::create([
@@ -132,7 +133,7 @@ class InvoiceTest extends TestCase
         $this->assertEquals('void', $voidInvoice->status);
     }
 
-    /** @test */
+    #[Test]
     public function it_stores_line_items_as_json()
     {
         $org = Org::create([
@@ -169,7 +170,7 @@ class InvoiceTest extends TestCase
         $this->assertEquals(99.99, $invoice->line_items[0]['unit_price']);
     }
 
-    /** @test */
+    #[Test]
     public function it_calculates_total_with_tax()
     {
         $org = Org::create([
@@ -193,7 +194,7 @@ class InvoiceTest extends TestCase
         $this->assertEquals(115.00, $invoice->total_amount);
     }
 
-    /** @test */
+    #[Test]
     public function it_has_due_date()
     {
         $org = Org::create([
@@ -217,7 +218,7 @@ class InvoiceTest extends TestCase
         $this->assertTrue($invoice->due_at->greaterThan($invoice->issued_at));
     }
 
-    /** @test */
+    #[Test]
     public function it_tracks_payment_date()
     {
         $org = Org::create([
@@ -238,7 +239,7 @@ class InvoiceTest extends TestCase
         $this->assertNotNull($invoice->paid_at);
     }
 
-    /** @test */
+    #[Test]
     public function it_supports_different_currencies()
     {
         $org = Org::create([
@@ -268,7 +269,7 @@ class InvoiceTest extends TestCase
         $this->assertEquals('SAR', $sarInvoice->currency);
     }
 
-    /** @test */
+    #[Test]
     public function it_stores_payment_method()
     {
         $org = Org::create([
@@ -289,7 +290,7 @@ class InvoiceTest extends TestCase
         $this->assertEquals('credit_card', $invoice->payment_method);
     }
 
-    /** @test */
+    #[Test]
     public function it_has_billing_address()
     {
         $org = Org::create([
@@ -319,7 +320,7 @@ class InvoiceTest extends TestCase
         $this->assertEquals('SA', $invoice->billing_address['country']);
     }
 
-    /** @test */
+    #[Test]
     public function it_stores_notes()
     {
         $org = Org::create([
@@ -340,7 +341,7 @@ class InvoiceTest extends TestCase
         $this->assertStringContainsString('شكراً', $invoice->notes);
     }
 
-    /** @test */
+    #[Test]
     public function it_uses_uuid_as_primary_key()
     {
         $org = Org::create([
@@ -360,7 +361,7 @@ class InvoiceTest extends TestCase
         $this->assertTrue(Str::isUuid($invoice->invoice_id));
     }
 
-    /** @test */
+    #[Test]
     public function it_has_timestamps()
     {
         $org = Org::create([
@@ -381,7 +382,7 @@ class InvoiceTest extends TestCase
         $this->assertNotNull($invoice->updated_at);
     }
 
-    /** @test */
+    #[Test]
     public function it_respects_rls_policies()
     {
         $org1 = Org::create([

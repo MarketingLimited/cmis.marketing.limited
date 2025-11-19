@@ -12,6 +12,7 @@ use App\Jobs\SendSocialMessageJob;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Str;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * Twitter, LinkedIn & TikTok Messaging Integration Test
  *
@@ -26,7 +27,7 @@ class TwitterLinkedInTikTokMessagingTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_receives_twitter_direct_message()
     {
         $setup = $this->createUserWithOrg();
@@ -70,7 +71,7 @@ class TwitterLinkedInTikTokMessagingTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_sends_twitter_direct_message_reply()
     {
         Queue::fake();
@@ -121,7 +122,7 @@ class TwitterLinkedInTikTokMessagingTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_receives_linkedin_message()
     {
         $setup = $this->createUserWithOrg();
@@ -165,7 +166,7 @@ class TwitterLinkedInTikTokMessagingTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_sends_linkedin_message_reply()
     {
         Queue::fake();
@@ -214,7 +215,7 @@ class TwitterLinkedInTikTokMessagingTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_receives_tiktok_message()
     {
         $setup = $this->createUserWithOrg();

@@ -11,6 +11,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Laravel\Sanctum\Sanctum;
 
+use PHPUnit\Framework\Attributes\Test;
 class OrgMarketControllerTest extends TestCase
 {
     use RefreshDatabase, WithFaker;
@@ -38,7 +39,7 @@ class OrgMarketControllerTest extends TestCase
         Sanctum::actingAs($this->user);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_list_organization_markets()
     {
         OrgMarket::factory()->count(3)->create([
@@ -60,7 +61,7 @@ class OrgMarketControllerTest extends TestCase
         $this->assertCount(3, $response->json('data'));
     }
 
-    /** @test */
+    #[Test]
     public function it_can_filter_markets_by_status()
     {
         OrgMarket::factory()->create([
@@ -79,7 +80,7 @@ class OrgMarketControllerTest extends TestCase
         $this->assertCount(1, $response->json('data'));
     }
 
-    /** @test */
+    #[Test]
     public function it_can_add_market_to_organization()
     {
         $data = [
@@ -113,7 +114,7 @@ class OrgMarketControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_required_fields_when_adding_market()
     {
         $response = $this->postJson("/api/orgs/{$this->org->org_id}/markets", []);
@@ -122,7 +123,7 @@ class OrgMarketControllerTest extends TestCase
             ->assertJsonValidationErrors(['market_id', 'status', 'priority_level']);
     }
 
-    /** @test */
+    #[Test]
     public function it_prevents_duplicate_markets()
     {
         OrgMarket::factory()->create([
@@ -143,7 +144,7 @@ class OrgMarketControllerTest extends TestCase
             ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_show_organization_market()
     {
         $orgMarket = OrgMarket::factory()->create([
@@ -163,7 +164,7 @@ class OrgMarketControllerTest extends TestCase
             ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_update_organization_market()
     {
         $orgMarket = OrgMarket::factory()->create([
@@ -195,7 +196,7 @@ class OrgMarketControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_remove_market_from_organization()
     {
         $orgMarket = OrgMarket::factory()->create([
@@ -214,7 +215,7 @@ class OrgMarketControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_list_available_markets()
     {
         // Create some markets
@@ -239,7 +240,7 @@ class OrgMarketControllerTest extends TestCase
         $this->assertContains($market2->market_id, $marketIds);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_organization_market_stats()
     {
         OrgMarket::factory()->count(3)->create([
@@ -273,7 +274,7 @@ class OrgMarketControllerTest extends TestCase
         $this->assertEquals(40000, $data['total_investment']);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_calculate_roi()
     {
         $orgMarket = OrgMarket::factory()->create([
@@ -301,7 +302,7 @@ class OrgMarketControllerTest extends TestCase
         $this->assertEquals(50, $response->json('data.roi_percentage'));
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_priority_level_range()
     {
         $response = $this->postJson("/api/orgs/{$this->org->org_id}/markets", [
@@ -314,7 +315,7 @@ class OrgMarketControllerTest extends TestCase
             ->assertJsonValidationErrors(['priority_level']);
     }
 
-    /** @test */
+    #[Test]
     public function it_requires_authentication()
     {
         Sanctum::actingAs(null);
@@ -324,7 +325,7 @@ class OrgMarketControllerTest extends TestCase
         $response->assertStatus(401);
     }
 
-    /** @test */
+    #[Test]
     public function it_cannot_access_markets_from_different_org()
     {
         $otherOrg = Org::factory()->create();

@@ -10,6 +10,7 @@ use App\Models\Permission\Permission;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * Role Model Unit Tests
  */
@@ -22,7 +23,7 @@ class RoleTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_can_create_role()
     {
         $org = Org::create([
@@ -49,7 +50,7 @@ class RoleTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_belongs_to_org()
     {
         $org = Org::create([
@@ -72,7 +73,7 @@ class RoleTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_has_unique_name_per_org()
     {
         $org = Org::create([
@@ -96,7 +97,7 @@ class RoleTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_has_display_name_in_arabic()
     {
         $org = Org::create([
@@ -120,7 +121,7 @@ class RoleTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_have_permissions()
     {
         $org = Org::create([
@@ -157,7 +158,7 @@ class RoleTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_tracks_is_default_flag()
     {
         $org = Org::create([
@@ -181,7 +182,7 @@ class RoleTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_be_system_role()
     {
         $org = Org::create([
@@ -206,7 +207,7 @@ class RoleTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_has_priority_order()
     {
         $org = Org::create([
@@ -240,7 +241,7 @@ class RoleTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_uses_uuid_as_primary_key()
     {
         $org = Org::create([
@@ -263,7 +264,7 @@ class RoleTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_has_timestamps()
     {
         $org = Org::create([
@@ -287,7 +288,7 @@ class RoleTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_respects_rls_policies()
     {
         $org1 = Org::create([
@@ -323,7 +324,7 @@ class RoleTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_count_users_with_role()
     {
         $org = Org::create([
@@ -350,7 +351,7 @@ class RoleTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_stores_metadata_as_json()
     {
         $org = Org::create([

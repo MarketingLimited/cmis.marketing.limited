@@ -11,6 +11,7 @@ use App\Models\Core\Campaign;
 use App\Models\Team\TeamMember;
 use Illuminate\Support\Str;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * Campaign Policy Unit Tests
  */
@@ -23,7 +24,7 @@ class CampaignPolicyTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function owner_can_view_campaign()
     {
         $org = Org::create([
@@ -62,7 +63,7 @@ class CampaignPolicyTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function admin_can_create_campaign()
     {
         $org = Org::create([
@@ -94,7 +95,7 @@ class CampaignPolicyTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function editor_can_update_campaign()
     {
         $org = Org::create([
@@ -133,7 +134,7 @@ class CampaignPolicyTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function viewer_cannot_delete_campaign()
     {
         $org = Org::create([
@@ -173,7 +174,7 @@ class CampaignPolicyTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function user_from_different_org_cannot_view_campaign()
     {
         $org1 = Org::create([
@@ -216,7 +217,7 @@ class CampaignPolicyTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function owner_can_delete_campaign()
     {
         $org = Org::create([
@@ -255,7 +256,7 @@ class CampaignPolicyTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function admin_can_delete_campaign()
     {
         $org = Org::create([
@@ -294,7 +295,7 @@ class CampaignPolicyTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function viewer_can_view_but_not_edit()
     {
         $org = Org::create([

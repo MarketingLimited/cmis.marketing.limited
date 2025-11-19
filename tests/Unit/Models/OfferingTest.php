@@ -8,6 +8,7 @@ use App\Models\Offering;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * Offering (Product/Service) Model Unit Tests
  */
@@ -20,7 +21,7 @@ class OfferingTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_can_create_a_product()
     {
         $org = Org::create([
@@ -45,7 +46,7 @@ class OfferingTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_create_a_service()
     {
         $org = Org::create([
@@ -69,7 +70,7 @@ class OfferingTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_belongs_to_an_organization()
     {
         $org = Org::create([
@@ -88,7 +89,7 @@ class OfferingTest extends TestCase
         $this->assertEquals($org->org_id, $offering->org->org_id);
     }
 
-    /** @test */
+    #[Test]
     public function it_stores_features_benefits_and_usps()
     {
         $org = Org::create([
@@ -129,7 +130,7 @@ class OfferingTest extends TestCase
         $this->assertCount(2, $offering->details['usps']);
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_offering_type()
     {
         $org = Org::create([
@@ -148,7 +149,7 @@ class OfferingTest extends TestCase
         $this->assertContains($offering->type, ['product', 'service']);
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_price_format()
     {
         $org = Org::create([
@@ -169,7 +170,7 @@ class OfferingTest extends TestCase
         $this->assertGreaterThan(0, $offering->price);
     }
 
-    /** @test */
+    #[Test]
     public function it_uses_uuid_as_primary_key()
     {
         $org = Org::create([
@@ -188,7 +189,7 @@ class OfferingTest extends TestCase
         $this->assertTrue(Str::isUuid($offering->offering_id));
     }
 
-    /** @test */
+    #[Test]
     public function it_can_be_soft_deleted()
     {
         $org = Org::create([
@@ -211,7 +212,7 @@ class OfferingTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_has_timestamps()
     {
         $org = Org::create([
@@ -231,7 +232,7 @@ class OfferingTest extends TestCase
         $this->assertNotNull($offering->updated_at);
     }
 
-    /** @test */
+    #[Test]
     public function it_respects_rls_policies()
     {
         $org1 = Org::create([

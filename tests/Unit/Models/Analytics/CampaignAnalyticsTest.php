@@ -9,6 +9,7 @@ use App\Models\Analytics\CampaignAnalytics;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * Campaign Analytics Model Unit Tests
  */
@@ -21,7 +22,7 @@ class CampaignAnalyticsTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_can_create_campaign_analytics()
     {
         $org = Org::create([
@@ -54,7 +55,7 @@ class CampaignAnalyticsTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_belongs_to_campaign_and_org()
     {
         $org = Org::create([
@@ -81,7 +82,7 @@ class CampaignAnalyticsTest extends TestCase
         $this->assertEquals($org->org_id, $analytics->org->org_id);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_calculate_ctr()
     {
         $org = Org::create([
@@ -111,7 +112,7 @@ class CampaignAnalyticsTest extends TestCase
         $this->assertEquals(5.0, $ctr);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_calculate_conversion_rate()
     {
         $org = Org::create([
@@ -141,7 +142,7 @@ class CampaignAnalyticsTest extends TestCase
         $this->assertEquals(5.0, $conversionRate);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_calculate_roi()
     {
         $org = Org::create([
@@ -171,7 +172,7 @@ class CampaignAnalyticsTest extends TestCase
         $this->assertEquals(400.0, $roi);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_calculate_cpc()
     {
         $org = Org::create([
@@ -201,7 +202,7 @@ class CampaignAnalyticsTest extends TestCase
         $this->assertEquals(0.30, $cpc);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_calculate_cpm()
     {
         $org = Org::create([
@@ -231,7 +232,7 @@ class CampaignAnalyticsTest extends TestCase
         $this->assertEquals(1.50, $cpm);
     }
 
-    /** @test */
+    #[Test]
     public function it_stores_detailed_metrics_as_json()
     {
         $org = Org::create([
@@ -277,7 +278,7 @@ class CampaignAnalyticsTest extends TestCase
         $this->assertEquals(45, $analytics->detailed_metrics['demographics']['age_25_34']);
     }
 
-    /** @test */
+    #[Test]
     public function it_uses_uuid_as_primary_key()
     {
         $org = Org::create([
@@ -303,7 +304,7 @@ class CampaignAnalyticsTest extends TestCase
         $this->assertTrue(Str::isUuid($analytics->analytics_id));
     }
 
-    /** @test */
+    #[Test]
     public function it_has_timestamps()
     {
         $org = Org::create([
@@ -330,7 +331,7 @@ class CampaignAnalyticsTest extends TestCase
         $this->assertNotNull($analytics->updated_at);
     }
 
-    /** @test */
+    #[Test]
     public function it_respects_rls_policies()
     {
         $org1 = Org::create([

@@ -10,6 +10,7 @@ use App\Models\Comment\Comment;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * Comment Model Unit Tests
  */
@@ -22,7 +23,7 @@ class CommentTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_can_create_comment()
     {
         $org = Org::create([
@@ -52,7 +53,7 @@ class CommentTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_belongs_to_org()
     {
         $org = Org::create([
@@ -79,7 +80,7 @@ class CommentTest extends TestCase
         $this->assertEquals($org->org_id, $comment->org->org_id);
     }
 
-    /** @test */
+    #[Test]
     public function it_belongs_to_user()
     {
         $org = Org::create([
@@ -106,7 +107,7 @@ class CommentTest extends TestCase
         $this->assertEquals($user->user_id, $comment->user->user_id);
     }
 
-    /** @test */
+    #[Test]
     public function it_is_polymorphic()
     {
         $org = Org::create([
@@ -141,7 +142,7 @@ class CommentTest extends TestCase
         $this->assertEquals($campaign->campaign_id, $comment->commentable_id);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_have_parent_comment()
     {
         $org = Org::create([
@@ -178,7 +179,7 @@ class CommentTest extends TestCase
         $this->assertEquals($parentComment->comment_id, $replyComment->parent_id);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_be_edited()
     {
         $org = Org::create([
@@ -211,7 +212,7 @@ class CommentTest extends TestCase
         $this->assertTrue($comment->fresh()->is_edited);
     }
 
-    /** @test */
+    #[Test]
     public function it_tracks_mentions()
     {
         $org = Org::create([
@@ -244,7 +245,7 @@ class CommentTest extends TestCase
         $this->assertCount(2, $comment->mentions);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_be_marked_as_resolved()
     {
         $org = Org::create([
@@ -274,7 +275,7 @@ class CommentTest extends TestCase
         $this->assertTrue($comment->fresh()->is_resolved);
     }
 
-    /** @test */
+    #[Test]
     public function it_supports_soft_deletes()
     {
         $org = Org::create([
@@ -305,7 +306,7 @@ class CommentTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_stores_attachments()
     {
         $org = Org::create([
@@ -338,7 +339,7 @@ class CommentTest extends TestCase
         $this->assertCount(2, $comment->attachments);
     }
 
-    /** @test */
+    #[Test]
     public function it_uses_uuid_as_primary_key()
     {
         $org = Org::create([
@@ -365,7 +366,7 @@ class CommentTest extends TestCase
         $this->assertTrue(Str::isUuid($comment->comment_id));
     }
 
-    /** @test */
+    #[Test]
     public function it_has_timestamps()
     {
         $org = Org::create([
@@ -393,7 +394,7 @@ class CommentTest extends TestCase
         $this->assertNotNull($comment->updated_at);
     }
 
-    /** @test */
+    #[Test]
     public function it_respects_rls_policies()
     {
         $org1 = Org::create([

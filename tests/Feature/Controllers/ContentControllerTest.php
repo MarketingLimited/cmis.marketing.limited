@@ -8,6 +8,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use App\Models\Content\ContentPlanItem;
 use Illuminate\Support\Str;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * Content Controller Feature Tests
  */
@@ -20,7 +21,7 @@ class ContentControllerTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_can_list_content_items()
     {
         $setup = $this->createUserWithOrg();
@@ -54,7 +55,7 @@ class ContentControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_create_content_item()
     {
         $setup = $this->createUserWithOrg();
@@ -79,7 +80,7 @@ class ContentControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_single_content_item()
     {
         $setup = $this->createUserWithOrg();
@@ -106,7 +107,7 @@ class ContentControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_update_content_item()
     {
         $setup = $this->createUserWithOrg();
@@ -136,7 +137,7 @@ class ContentControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_delete_content_item()
     {
         $setup = $this->createUserWithOrg();
@@ -166,7 +167,7 @@ class ContentControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_schedule_content()
     {
         $setup = $this->createUserWithOrg();
@@ -195,7 +196,7 @@ class ContentControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_filter_by_status()
     {
         $setup = $this->createUserWithOrg();
@@ -229,7 +230,7 @@ class ContentControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_required_fields()
     {
         $setup = $this->createUserWithOrg();
@@ -250,7 +251,7 @@ class ContentControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_respects_org_isolation()
     {
         $setup1 = $this->createUserWithOrg();
@@ -275,7 +276,7 @@ class ContentControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_requires_authentication()
     {
         $response = $this->getJson('/api/content');

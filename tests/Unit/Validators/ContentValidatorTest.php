@@ -7,6 +7,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use App\Validators\ContentValidator;
 use Illuminate\Support\Facades\Validator;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * Content Validator Unit Tests
  */
@@ -22,7 +23,7 @@ class ContentValidatorTest extends TestCase
         $this->validator = new ContentValidator();
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_required_title()
     {
         $data = [
@@ -42,7 +43,7 @@ class ContentValidatorTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_title_max_length()
     {
         $data = [
@@ -63,7 +64,7 @@ class ContentValidatorTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_required_body()
     {
         $data = [
@@ -83,7 +84,7 @@ class ContentValidatorTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_status_enum()
     {
         $data = [
@@ -104,7 +105,7 @@ class ContentValidatorTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_accepts_valid_statuses()
     {
         $validStatuses = ['draft', 'published', 'archived', 'scheduled'];
@@ -128,7 +129,7 @@ class ContentValidatorTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_scheduled_date_format()
     {
         $data = [
@@ -150,7 +151,7 @@ class ContentValidatorTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_scheduled_date_in_future()
     {
         $data = [
@@ -172,7 +173,7 @@ class ContentValidatorTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_media_urls_as_array()
     {
         $data = [
@@ -194,7 +195,7 @@ class ContentValidatorTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_media_urls_format()
     {
         $data = [
@@ -216,7 +217,7 @@ class ContentValidatorTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_tags_as_array()
     {
         $data = [
@@ -238,7 +239,7 @@ class ContentValidatorTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_accepts_valid_content_data()
     {
         $data = [

@@ -8,6 +8,7 @@ use Tests\Traits\MocksExternalAPIs;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * Complete Marketing Workflow Integration Test
  *
@@ -22,7 +23,7 @@ class CompleteMarketingWorkflowTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_executes_complete_marketing_workflow_with_all_details()
     {
         // ========== Setup: إنشاء المستخدم والمنظمة ==========

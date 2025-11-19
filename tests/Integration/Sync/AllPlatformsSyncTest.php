@@ -12,6 +12,7 @@ use App\Services\Sync\TwitterSyncService;
 use App\Services\Sync\LinkedInSyncService;
 use Illuminate\Support\Str;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * All Platforms Sync Integration Tests
  */
@@ -24,7 +25,7 @@ class AllPlatformsSyncTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_syncs_facebook_page_data()
     {
         $setup = $this->createUserWithOrg();
@@ -57,7 +58,7 @@ class AllPlatformsSyncTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_syncs_facebook_posts()
     {
         $setup = $this->createUserWithOrg();
@@ -93,7 +94,7 @@ class AllPlatformsSyncTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_syncs_facebook_insights()
     {
         $setup = $this->createUserWithOrg();
@@ -125,7 +126,7 @@ class AllPlatformsSyncTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_syncs_tiktok_account_info()
     {
         $setup = $this->createUserWithOrg();
@@ -156,7 +157,7 @@ class AllPlatformsSyncTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_syncs_tiktok_videos()
     {
         $setup = $this->createUserWithOrg();
@@ -192,7 +193,7 @@ class AllPlatformsSyncTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_syncs_twitter_profile()
     {
         $setup = $this->createUserWithOrg();
@@ -225,7 +226,7 @@ class AllPlatformsSyncTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_syncs_twitter_tweets()
     {
         $setup = $this->createUserWithOrg();
@@ -260,7 +261,7 @@ class AllPlatformsSyncTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_syncs_linkedin_company_page()
     {
         $setup = $this->createUserWithOrg();
@@ -286,7 +287,7 @@ class AllPlatformsSyncTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_syncs_linkedin_posts()
     {
         $setup = $this->createUserWithOrg();
@@ -320,7 +321,7 @@ class AllPlatformsSyncTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_rate_limiting_gracefully()
     {
         $setup = $this->createUserWithOrg();
@@ -342,7 +343,7 @@ class AllPlatformsSyncTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_retries_failed_sync_operations()
     {
         $setup = $this->createUserWithOrg();
@@ -370,7 +371,7 @@ class AllPlatformsSyncTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_syncs_multiple_platforms_simultaneously()
     {
         $setup = $this->createUserWithOrg();

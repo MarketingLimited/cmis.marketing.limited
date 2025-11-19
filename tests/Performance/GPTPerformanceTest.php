@@ -10,6 +10,7 @@ use App\Models\Creative\ContentPlan;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 
+use PHPUnit\Framework\Attributes\Test;
 class GPTPerformanceTest extends TestCase
 {
     use RefreshDatabase;
@@ -31,7 +32,7 @@ class GPTPerformanceTest extends TestCase
         Cache::flush();
     }
 
-    /** @test */
+    #[Test]
     public function it_responds_to_context_request_within_acceptable_time()
     {
         $startTime = microtime(true);
@@ -44,7 +45,7 @@ class GPTPerformanceTest extends TestCase
         $this->assertLessThan(200, $duration, "Context endpoint took {$duration}ms (expected < 200ms)");
     }
 
-    /** @test */
+    #[Test]
     public function it_lists_campaigns_efficiently_with_cache()
     {
         Campaign::factory()->count(50)->create(['org_id' => $this->org->org_id]);
@@ -66,7 +67,7 @@ class GPTPerformanceTest extends TestCase
         $this->assertLessThan(500, $duration2, "Second campaign list took {$duration2}ms (expected < 500ms)");
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_concurrent_conversation_requests()
     {
         $session = $this->getJson('/api/gpt/conversation/session');
@@ -96,7 +97,7 @@ class GPTPerformanceTest extends TestCase
         $this->assertLessThan(10000, $maxTime, "Max conversation response time: {$maxTime}ms (expected < 10000ms)");
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_bulk_operations_efficiently()
     {
         $plans = ContentPlan::factory()->count(20)->create([
@@ -122,7 +123,7 @@ class GPTPerformanceTest extends TestCase
         $this->assertLessThan(150, $avgTimePerItem, "Average time per item: {$avgTimePerItem}ms (expected < 150ms)");
     }
 
-    /** @test */
+    #[Test]
     public function it_searches_efficiently_across_resources()
     {
         Campaign::factory()->count(30)->create(['org_id' => $this->org->org_id]);
@@ -142,7 +143,7 @@ class GPTPerformanceTest extends TestCase
         $this->assertLessThan(1000, $duration, "Smart search took {$duration}ms (expected < 1000ms)");
     }
 
-    /** @test */
+    #[Test]
     public function it_maintains_acceptable_memory_usage()
     {
         $memoryBefore = memory_get_usage(true);
@@ -156,7 +157,7 @@ class GPTPerformanceTest extends TestCase
         $this->assertLessThan(50, $memoryUsed, "Memory usage: {$memoryUsed}MB (expected < 50MB)");
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_rapid_sequential_requests()
     {
         $times = [];
@@ -184,7 +185,7 @@ class GPTPerformanceTest extends TestCase
         $this->assertLessThan(5, $consistency, "Response time consistency ratio: {$consistency} (expected < 5)");
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_large_query_results()
     {
         Campaign::factory()->count(500)->create(['org_id' => $this->org->org_id]);
@@ -199,7 +200,7 @@ class GPTPerformanceTest extends TestCase
         $this->assertLessThan(2000, $duration, "Large query took {$duration}ms (expected < 2000ms for 100 results)");
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_content_plan_creation_efficiently()
     {
         $campaign = Campaign::factory()->create(['org_id' => $this->org->org_id]);
@@ -221,7 +222,7 @@ class GPTPerformanceTest extends TestCase
         $this->assertLessThan(500, $duration, "Content plan creation took {$duration}ms (expected < 500ms)");
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_conversation_session_creation_efficiently()
     {
         $times = [];
@@ -246,7 +247,7 @@ class GPTPerformanceTest extends TestCase
         $this->assertLessThan(300, $avgTime, "Average session creation time: {$avgTime}ms (expected < 300ms)");
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_search_with_varying_query_lengths()
     {
         Campaign::factory()->count(50)->create(['org_id' => $this->org->org_id]);
@@ -273,7 +274,7 @@ class GPTPerformanceTest extends TestCase
         }
     }
 
-    /** @test */
+    #[Test]
     public function it_scales_with_increasing_data_volume()
     {
         $dataVolumes = [10, 50, 100];
@@ -296,7 +297,7 @@ class GPTPerformanceTest extends TestCase
         $this->assertLessThan(15, $scalingFactor, "Scaling factor from 10 to 100 items: {$scalingFactor}x (expected < 15x)");
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_error_conditions_efficiently()
     {
         $startTime = microtime(true);
@@ -310,7 +311,7 @@ class GPTPerformanceTest extends TestCase
         $this->assertLessThan(200, $duration, "Error response took {$duration}ms (expected < 200ms)");
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_validation_errors_quickly()
     {
         $startTime = microtime(true);
@@ -328,7 +329,7 @@ class GPTPerformanceTest extends TestCase
         $this->assertLessThan(100, $duration, "Validation error response took {$duration}ms (expected < 100ms)");
     }
 
-    /** @test */
+    #[Test]
     public function it_maintains_performance_under_mixed_load()
     {
         Campaign::factory()->count(50)->create(['org_id' => $this->org->org_id]);

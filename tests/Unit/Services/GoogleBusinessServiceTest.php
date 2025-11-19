@@ -8,6 +8,7 @@ use Tests\Traits\MocksExternalAPIs;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use App\Services\Social\GoogleBusinessService;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * Google My Business Service Unit Tests
  */
@@ -23,7 +24,7 @@ class GoogleBusinessServiceTest extends TestCase
         $this->service = app(GoogleBusinessService::class);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_create_local_post()
     {
         $setup = $this->createUserWithOrg();
@@ -57,7 +58,7 @@ class GoogleBusinessServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_create_offer_post()
     {
         $setup = $this->createUserWithOrg();
@@ -88,7 +89,7 @@ class GoogleBusinessServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_location_insights()
     {
         $setup = $this->createUserWithOrg();
@@ -123,7 +124,7 @@ class GoogleBusinessServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_reviews()
     {
         $setup = $this->createUserWithOrg();
@@ -161,7 +162,7 @@ class GoogleBusinessServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_reply_to_review()
     {
         $setup = $this->createUserWithOrg();
@@ -187,7 +188,7 @@ class GoogleBusinessServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_update_business_hours()
     {
         $setup = $this->createUserWithOrg();
@@ -218,7 +219,7 @@ class GoogleBusinessServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_location_questions()
     {
         $setup = $this->createUserWithOrg();
@@ -248,7 +249,7 @@ class GoogleBusinessServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_answer_question()
     {
         $setup = $this->createUserWithOrg();
@@ -274,7 +275,7 @@ class GoogleBusinessServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_location_id()
     {
         $setup = $this->createUserWithOrg();
@@ -295,7 +296,7 @@ class GoogleBusinessServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_api_errors()
     {
         $setup = $this->createUserWithOrg();

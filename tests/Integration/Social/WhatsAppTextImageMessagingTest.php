@@ -12,6 +12,7 @@ use App\Jobs\SendWhatsAppMessageJob;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Str;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * WhatsApp Text & Image Messaging Integration Test
  *
@@ -26,7 +27,7 @@ class WhatsAppTextImageMessagingTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_receives_whatsapp_text_message()
     {
         $setup = $this->createUserWithOrg();
@@ -111,7 +112,7 @@ class WhatsAppTextImageMessagingTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_sends_whatsapp_text_message_reply()
     {
         Queue::fake();
@@ -167,7 +168,7 @@ class WhatsAppTextImageMessagingTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_receives_whatsapp_image_message()
     {
         $setup = $this->createUserWithOrg();
@@ -212,7 +213,7 @@ class WhatsAppTextImageMessagingTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_sends_whatsapp_image_message()
     {
         Queue::fake();

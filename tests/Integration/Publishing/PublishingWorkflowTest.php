@@ -11,6 +11,7 @@ use App\Services\PublishingQueueService;
 use App\Jobs\PublishScheduledPostJob;
 use Illuminate\Support\Facades\Queue;
 
+use PHPUnit\Framework\Attributes\Test;
 class PublishingWorkflowTest extends TestCase
 {
     use RefreshDatabase, CreatesTestData, MocksExternalAPIs;
@@ -25,7 +26,7 @@ class PublishingWorkflowTest extends TestCase
         $this->queueService = app(PublishingQueueService::class);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_create_a_publishing_queue()
     {
         $setup = $this->createUserWithOrg();
@@ -61,7 +62,7 @@ class PublishingWorkflowTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_schedule_a_post()
     {
         $setup = $this->createUserWithOrg();
@@ -90,7 +91,7 @@ class PublishingWorkflowTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_dispatches_publish_job_at_scheduled_time()
     {
         Queue::fake();
@@ -115,7 +116,7 @@ class PublishingWorkflowTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_publishes_post_to_multiple_platforms()
     {
         $setup = $this->createUserWithOrg();
@@ -146,7 +147,7 @@ class PublishingWorkflowTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_publishing_failures_gracefully()
     {
         $setup = $this->createUserWithOrg();
@@ -176,7 +177,7 @@ class PublishingWorkflowTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_calculates_next_available_time_slot()
     {
         $setup = $this->createUserWithOrg();
@@ -199,7 +200,7 @@ class PublishingWorkflowTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_time_slots_configuration()
     {
         $setup = $this->createUserWithOrg();
@@ -220,7 +221,7 @@ class PublishingWorkflowTest extends TestCase
         $this->queueService->createQueue($org->org_id, $invalidConfig);
     }
 
-    /** @test */
+    #[Test]
     public function it_enforces_one_queue_per_social_account()
     {
         $setup = $this->createUserWithOrg();
@@ -234,7 +235,7 @@ class PublishingWorkflowTest extends TestCase
         $this->createTestPublishingQueue($org->org_id, $publishingQueue->social_account_id);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_update_post_status_after_publishing()
     {
         $setup = $this->createUserWithOrg();

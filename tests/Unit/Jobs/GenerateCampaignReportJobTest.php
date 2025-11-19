@@ -12,6 +12,7 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Storage;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * Generate Campaign Report Job Unit Tests
  */
@@ -25,7 +26,7 @@ class GenerateCampaignReportJobTest extends TestCase
         Storage::fake('reports');
     }
 
-    /** @test */
+    #[Test]
     public function it_generates_campaign_report()
     {
         $org = Org::create([
@@ -51,7 +52,7 @@ class GenerateCampaignReportJobTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_generates_pdf_report()
     {
         $org = Org::create([
@@ -78,7 +79,7 @@ class GenerateCampaignReportJobTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_generates_excel_report()
     {
         $org = Org::create([
@@ -105,7 +106,7 @@ class GenerateCampaignReportJobTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_be_dispatched()
     {
         Queue::fake();
@@ -132,7 +133,7 @@ class GenerateCampaignReportJobTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_includes_campaign_analytics()
     {
         $org = Org::create([
@@ -159,7 +160,7 @@ class GenerateCampaignReportJobTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_stores_report_file()
     {
         $org = Org::create([

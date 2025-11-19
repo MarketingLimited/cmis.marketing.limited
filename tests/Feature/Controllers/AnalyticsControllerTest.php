@@ -6,6 +6,7 @@ use Tests\TestCase;
 use Tests\Traits\CreatesTestData;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * Analytics Controller Feature Tests
  */
@@ -18,7 +19,7 @@ class AnalyticsControllerTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_campaign_analytics()
     {
         $setup = $this->createUserWithOrg();
@@ -48,7 +49,7 @@ class AnalyticsControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_overview_analytics()
     {
         $setup = $this->createUserWithOrg();
@@ -74,7 +75,7 @@ class AnalyticsControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_platform_analytics()
     {
         $setup = $this->createUserWithOrg();
@@ -102,7 +103,7 @@ class AnalyticsControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_time_series_data()
     {
         $setup = $this->createUserWithOrg();
@@ -129,7 +130,7 @@ class AnalyticsControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_export_analytics_report()
     {
         $setup = $this->createUserWithOrg();
@@ -151,7 +152,7 @@ class AnalyticsControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_top_performing_content()
     {
         $setup = $this->createUserWithOrg();
@@ -179,7 +180,7 @@ class AnalyticsControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_compare_campaigns()
     {
         $setup = $this->createUserWithOrg();
@@ -203,7 +204,7 @@ class AnalyticsControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_date_range()
     {
         $setup = $this->createUserWithOrg();
@@ -221,7 +222,7 @@ class AnalyticsControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_respects_org_isolation()
     {
         $setup1 = $this->createUserWithOrg();
@@ -241,7 +242,7 @@ class AnalyticsControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_requires_authentication()
     {
         $response = $this->getJson('/api/analytics/overview');
