@@ -1055,13 +1055,13 @@ Integration (Tests\Unit\Models\Integration)
  [ ] It belongs to an organization
  [x] It encrypts access token
  [x] It validates platform
- [ ] It validates status
- [ ] It stores metadata as json
+ [x] It validates status
+ [x] It stores metadata as json
  [ ] It uses uuid as primary key
  [x] It can be soft deleted
  [x] It has timestamps
- [ ] It tracks token expiration
- [ ] It can check if token is expired
+ [x] It tracks token expiration
+ [x] It can check if token is expired
  [x] It respects rls policies
 
 Integration (Tests\Unit\Models\Integration\Integration)
@@ -1989,7 +1989,7 @@ Sync Commands (Tests\Feature\Commands\SyncCommands)
  [ ] Sync command handles date range filters
  [ ] Sync command warns when no active integrations
  [ ] Database cleanup command with dry run
- [ ] System health command checks database
+ [x] System health command checks database
  [ ] Embeddings generate command dispatches job
 
 Sync Facebook Data Job (Tests\Unit\Jobs\SyncFacebookDataJob)
@@ -2212,7 +2212,7 @@ Url Helper (Tests\Unit\Helpers\UrlHelper)
 
 User (Tests\Unit\Models\User)
  [x] It can create a user with uuid
- [ ] It has many organizations
+ [x] It has many organizations
  [x] It can check organization membership
  [ ] It can check permissions
  [ ] It belongs to multiple organizations
