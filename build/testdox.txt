@@ -46,14 +46,14 @@ Ad Campaign (Tests\Unit\Models\AdPlatform\AdCampaign)
  [ ] It can create an ad campaign
  [ ] It belongs to organization and integration
  [ ] It validates platform
- [ ] It validates objective
- [ ] It validates status
+ [x] It validates objective
+ [x] It validates status
  [ ] It stores budget information
- [ ] It stores metrics as json
+ [x] It stores metrics as json
  [ ] It uses uuid as primary key
  [ ] It can be soft deleted
- [ ] It has timestamps
- [ ] It respects rls policies
+ [x] It has timestamps
+ [x] It respects rls policies
 
 All Platforms Sync (Tests\Integration\Sync\AllPlatformsSync)
  [ ] It syncs facebook page data
