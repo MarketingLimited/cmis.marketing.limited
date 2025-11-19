@@ -101,7 +101,7 @@ CREATE TABLE cmis.ab_tests (
 );
 
 CREATE TABLE cmis.ad_accounts (
-    id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
     org_id uuid NOT NULL,
     integration_id uuid NOT NULL,
     account_external_id text NOT NULL,
@@ -117,7 +117,7 @@ CREATE TABLE cmis.ad_accounts (
 );
 
 CREATE TABLE cmis.ad_audiences (
-    id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
     org_id uuid NOT NULL,
     integration_id uuid NOT NULL,
     entity_level text NOT NULL,
@@ -140,7 +140,7 @@ CREATE TABLE cmis.ad_audiences (
 );
 
 CREATE TABLE cmis.ad_campaigns (
-    id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
     org_id uuid NOT NULL,
     integration_id uuid NOT NULL,
     campaign_external_id text NOT NULL,
@@ -159,7 +159,7 @@ CREATE TABLE cmis.ad_campaigns (
 );
 
 CREATE TABLE cmis.ad_entities (
-    id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
     org_id uuid NOT NULL,
     integration_id uuid NOT NULL,
     adset_external_id text NOT NULL,
@@ -193,7 +193,7 @@ CREATE TABLE cmis.ad_metrics (
 );
 
 CREATE TABLE cmis.ad_sets (
-    id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
     org_id uuid NOT NULL,
     integration_id uuid NOT NULL,
     campaign_external_id text NOT NULL,
@@ -233,7 +233,7 @@ CREATE TABLE cmis.ad_variants (
 );
 
 CREATE TABLE cmis.ai_actions (
-    action_id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    action_id uuid DEFAULT gen_random_uuid() NOT NULL,
     org_id uuid NOT NULL,
     campaign_id uuid,
     prompt_used text,
@@ -247,7 +247,7 @@ CREATE TABLE cmis.ai_actions (
 );
 
 CREATE TABLE cmis.ai_generated_campaigns (
-    campaign_id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    campaign_id uuid DEFAULT gen_random_uuid() NOT NULL,
     org_id uuid NOT NULL,
     objective_code text,
     recommended_principle text,
@@ -261,7 +261,7 @@ CREATE TABLE cmis.ai_generated_campaigns (
 );
 
 CREATE TABLE cmis.ai_models (
-    model_id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    model_id uuid DEFAULT gen_random_uuid() NOT NULL,
     org_id uuid,
     name text NOT NULL,
     engine text,
@@ -277,7 +277,7 @@ CREATE TABLE cmis.ai_models (
 );
 
 CREATE TABLE cmis.analytics_integrations (
-    integration_id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    integration_id uuid DEFAULT gen_random_uuid() NOT NULL,
     org_id uuid NOT NULL,
     campaign_id uuid NOT NULL,
     platform text NOT NULL,
@@ -292,7 +292,7 @@ CREATE TABLE cmis.analytics_integrations (
 );
 
 CREATE TABLE cmis.anchors (
-    anchor_id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    anchor_id uuid DEFAULT gen_random_uuid() NOT NULL,
     module_id integer,
     code public.ltree NOT NULL,
     title text,
@@ -329,7 +329,7 @@ CREATE TABLE cmis.audience_templates (
 );
 
 CREATE TABLE cmis.audio_templates (
-    atpl_id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    atpl_id uuid DEFAULT gen_random_uuid() NOT NULL,
     org_id uuid,
     name text NOT NULL,
     voice_hints jsonb,
@@ -340,7 +340,7 @@ CREATE TABLE cmis.audio_templates (
 );
 
 CREATE TABLE cmis.audit_log (
-    log_id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    log_id uuid DEFAULT gen_random_uuid() NOT NULL,
     org_id uuid,
     actor text,
     action text,
@@ -421,7 +421,7 @@ CREATE TABLE cmis.campaign_offerings (
 );
 
 CREATE TABLE cmis.campaign_performance_dashboard (
-    dashboard_id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    dashboard_id uuid DEFAULT gen_random_uuid() NOT NULL,
     org_id uuid NOT NULL,
     campaign_id uuid NOT NULL,
     metric_name text NOT NULL,
@@ -436,7 +436,7 @@ CREATE TABLE cmis.campaign_performance_dashboard (
 );
 
 CREATE TABLE cmis.campaigns (
-    campaign_id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    campaign_id uuid DEFAULT gen_random_uuid() NOT NULL,
     org_id uuid NOT NULL,
     name text NOT NULL,
     objective text,
@@ -474,7 +474,7 @@ CREATE TABLE public.channels (
 );
 
 CREATE TABLE cmis.cognitive_tracker_template (
-    tracker_id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    tracker_id uuid DEFAULT gen_random_uuid() NOT NULL,
     org_id uuid NOT NULL,
     campaign_id uuid,
     record_date date NOT NULL,
@@ -491,7 +491,7 @@ CREATE TABLE cmis.cognitive_tracker_template (
 );
 
 CREATE TABLE cmis.cognitive_trends (
-    trend_id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    trend_id uuid DEFAULT gen_random_uuid() NOT NULL,
     org_id uuid NOT NULL,
     factor_name text NOT NULL,
     trend_direction text,
@@ -505,7 +505,7 @@ CREATE TABLE cmis.cognitive_trends (
 );
 
 CREATE TABLE cmis.compliance_audits (
-    audit_id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    audit_id uuid DEFAULT gen_random_uuid() NOT NULL,
     asset_id uuid,
     rule_id uuid NOT NULL,
     status text NOT NULL,
@@ -525,7 +525,7 @@ CREATE TABLE cmis.compliance_rule_channels (
 );
 
 CREATE TABLE cmis.compliance_rules (
-    rule_id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    rule_id uuid DEFAULT gen_random_uuid() NOT NULL,
     code text NOT NULL,
     description text NOT NULL,
     severity text NOT NULL,
@@ -540,7 +540,7 @@ CREATE TABLE public.component_types (
 );
 
 CREATE TABLE cmis.content_items (
-    item_id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    item_id uuid DEFAULT gen_random_uuid() NOT NULL,
     plan_id uuid NOT NULL,
     channel_id integer,
     format_id integer,
@@ -561,7 +561,7 @@ CREATE TABLE cmis.content_items (
 );
 
 CREATE TABLE cmis.content_plans (
-    plan_id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    plan_id uuid DEFAULT gen_random_uuid() NOT NULL,
     org_id uuid NOT NULL,
     campaign_id uuid,
     name text NOT NULL,
@@ -575,7 +575,7 @@ CREATE TABLE cmis.content_plans (
 );
 
 CREATE TABLE cmis.contexts (
-    context_id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    context_id uuid DEFAULT gen_random_uuid() NOT NULL,
     org_id uuid NOT NULL,
     campaign_id uuid,
     type text NOT NULL,
@@ -625,7 +625,7 @@ CREATE TABLE cmis.contexts_value (
 );
 
 CREATE TABLE cmis.copy_components (
-    component_id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    component_id uuid DEFAULT gen_random_uuid() NOT NULL,
     type_code text NOT NULL,
     content text NOT NULL,
     industry_id integer,
@@ -646,7 +646,7 @@ CREATE TABLE cmis.copy_components (
 );
 
 CREATE TABLE cmis.creative_assets (
-    asset_id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    asset_id uuid DEFAULT gen_random_uuid() NOT NULL,
     org_id uuid NOT NULL,
     campaign_id uuid,
     strategy jsonb,
@@ -672,7 +672,7 @@ CREATE TABLE cmis.creative_assets (
 );
 
 CREATE TABLE cmis.creative_briefs (
-    brief_id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    brief_id uuid DEFAULT gen_random_uuid() NOT NULL,
     org_id uuid NOT NULL,
     name text NOT NULL,
     brief_data jsonb NOT NULL,
@@ -682,7 +682,7 @@ CREATE TABLE cmis.creative_briefs (
 );
 
 CREATE TABLE cmis.creative_contexts (
-    context_id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    context_id uuid DEFAULT gen_random_uuid() NOT NULL,
     org_id uuid NOT NULL,
     name text NOT NULL,
     creative_brief jsonb NOT NULL,
@@ -693,7 +693,7 @@ CREATE TABLE cmis.creative_contexts (
 );
 
 CREATE TABLE cmis.creative_outputs (
-    output_id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    output_id uuid DEFAULT gen_random_uuid() NOT NULL,
     org_id uuid NOT NULL,
     campaign_id uuid,
     context_id uuid,
@@ -709,7 +709,7 @@ CREATE TABLE cmis.creative_outputs (
 );
 
 CREATE TABLE cmis.data_feeds (
-    feed_id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    feed_id uuid DEFAULT gen_random_uuid() NOT NULL,
     org_id uuid NOT NULL,
     kind text NOT NULL,
     source_meta jsonb,
@@ -720,7 +720,7 @@ CREATE TABLE cmis.data_feeds (
 );
 
 CREATE TABLE cmis.dataset_files (
-    file_id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    file_id uuid DEFAULT gen_random_uuid() NOT NULL,
     pkg_id uuid NOT NULL,
     filename text NOT NULL,
     checksum text,
@@ -730,7 +730,7 @@ CREATE TABLE cmis.dataset_files (
 );
 
 CREATE TABLE cmis.dataset_packages (
-    pkg_id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    pkg_id uuid DEFAULT gen_random_uuid() NOT NULL,
     code text NOT NULL,
     version text NOT NULL,
     notes text,
@@ -746,7 +746,7 @@ CREATE TABLE cmis.experiment_variants (
 );
 
 CREATE TABLE cmis.experiments (
-    exp_id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    exp_id uuid DEFAULT gen_random_uuid() NOT NULL,
     org_id uuid NOT NULL,
     channel_id integer,
     framework text,
@@ -766,7 +766,7 @@ CREATE TABLE cmis.export_bundle_items (
 );
 
 CREATE TABLE cmis.export_bundles (
-    bundle_id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    bundle_id uuid DEFAULT gen_random_uuid() NOT NULL,
     org_id uuid NOT NULL,
     name text NOT NULL,
     created_at timestamp with time zone DEFAULT now(),
@@ -785,7 +785,7 @@ CREATE TABLE cmis.failed_jobs (
 );
 
 CREATE TABLE cmis.feed_items (
-    item_id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    item_id uuid DEFAULT gen_random_uuid() NOT NULL,
     feed_id uuid NOT NULL,
     sku text,
     payload jsonb NOT NULL,
@@ -803,7 +803,7 @@ CREATE TABLE cmis.field_aliases (
 );
 
 CREATE TABLE cmis.field_definitions (
-    field_id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    field_id uuid DEFAULT gen_random_uuid() NOT NULL,
     module_id integer,
     name text NOT NULL,
     slug text NOT NULL,
@@ -823,7 +823,7 @@ CREATE TABLE cmis.field_definitions (
 );
 
 CREATE TABLE cmis.field_values (
-    value_id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    value_id uuid DEFAULT gen_random_uuid() NOT NULL,
     field_id uuid NOT NULL,
     context_id uuid NOT NULL,
     value jsonb NOT NULL,
@@ -839,7 +839,7 @@ CREATE TABLE cmis.field_values (
 );
 
 CREATE TABLE cmis.flow_steps (
-    step_id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    step_id uuid DEFAULT gen_random_uuid() NOT NULL,
     flow_id uuid NOT NULL,
     ord smallint NOT NULL,
     type text NOT NULL,
@@ -854,7 +854,7 @@ CREATE TABLE cmis.flow_steps (
 );
 
 CREATE TABLE cmis.flows (
-    flow_id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    flow_id uuid DEFAULT gen_random_uuid() NOT NULL,
     org_id uuid,
     name text NOT NULL,
     description text,
@@ -866,7 +866,7 @@ CREATE TABLE cmis.flows (
 );
 
 CREATE TABLE public.frameworks (
-    framework_id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    framework_id uuid DEFAULT gen_random_uuid() NOT NULL,
     framework_name text NOT NULL,
     framework_type text,
     description text,
@@ -906,7 +906,7 @@ CREATE TABLE public.industries (
 );
 
 CREATE TABLE cmis.integrations (
-    integration_id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    integration_id uuid DEFAULT gen_random_uuid() NOT NULL,
     org_id uuid,
     platform text,
     account_id text,
@@ -951,7 +951,7 @@ CREATE TABLE public.kpis (
 );
 
 CREATE TABLE cmis.logs_migration (
-    log_id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    log_id uuid DEFAULT gen_random_uuid() NOT NULL,
     phase text NOT NULL,
     status text NOT NULL,
     executed_at timestamp without time zone DEFAULT now(),
@@ -978,7 +978,7 @@ CREATE TABLE public.markets (
 );
 
 CREATE TABLE cmis.meta_documentation (
-    doc_id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    doc_id uuid DEFAULT gen_random_uuid() NOT NULL,
     meta_key text NOT NULL,
     meta_value text NOT NULL,
     updated_by text,
@@ -1034,7 +1034,7 @@ CREATE TABLE cmis.naming_templates (
 );
 
 CREATE TABLE cmis.offerings_full_details (
-    detail_id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    detail_id uuid DEFAULT gen_random_uuid() NOT NULL,
     offering_id uuid,
     full_description text NOT NULL,
     pricing_notes text,
@@ -1045,7 +1045,7 @@ CREATE TABLE cmis.offerings_full_details (
 );
 
 CREATE TABLE cmis.offerings_old (
-    offering_id uuid DEFAULT public.gen_random_uuid() CONSTRAINT offerings_offering_id_not_null NOT NULL,
+    offering_id uuid DEFAULT gen_random_uuid() CONSTRAINT offerings_offering_id_not_null NOT NULL,
     org_id uuid CONSTRAINT offerings_org_id_not_null NOT NULL,
     kind text CONSTRAINT offerings_kind_not_null NOT NULL,
     name text CONSTRAINT offerings_name_not_null NOT NULL,
@@ -1057,7 +1057,7 @@ CREATE TABLE cmis.offerings_old (
 );
 
 CREATE TABLE cmis.ops_audit (
-    audit_id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    audit_id uuid DEFAULT gen_random_uuid() NOT NULL,
     org_id uuid NOT NULL,
     operation_name text NOT NULL,
     status text NOT NULL,
@@ -1068,7 +1068,7 @@ CREATE TABLE cmis.ops_audit (
 );
 
 CREATE TABLE cmis.ops_etl_log (
-    log_id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    log_id uuid DEFAULT gen_random_uuid() NOT NULL,
     integration_id uuid,
     status text,
     started_at timestamp with time zone DEFAULT now(),
@@ -1096,7 +1096,7 @@ CREATE TABLE cmis.org_markets (
 );
 
 CREATE TABLE cmis.orgs (
-    org_id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    org_id uuid DEFAULT gen_random_uuid() NOT NULL,
     name public.citext NOT NULL,
     default_locale text DEFAULT 'ar-BH'::text,
     currency text DEFAULT 'BHD'::text,
@@ -1106,7 +1106,7 @@ CREATE TABLE cmis.orgs (
 );
 
 CREATE TABLE cmis.output_contracts (
-    contract_id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    contract_id uuid DEFAULT gen_random_uuid() NOT NULL,
     code text NOT NULL,
     json_schema jsonb NOT NULL,
     notes text,
@@ -1121,7 +1121,7 @@ CREATE TABLE cmis.password_reset_tokens (
 );
 
 CREATE TABLE cmis.performance_metrics (
-    metric_id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    metric_id uuid DEFAULT gen_random_uuid() NOT NULL,
     org_id uuid NOT NULL,
     campaign_id uuid,
     output_id uuid,
@@ -1167,7 +1167,7 @@ CREATE TABLE cmis.post_approvals (
 );
 
 CREATE TABLE cmis.predictive_visual_engine (
-    prediction_id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    prediction_id uuid DEFAULT gen_random_uuid() NOT NULL,
     org_id uuid NOT NULL,
     campaign_id uuid,
     predicted_ctr double precision,
@@ -1203,7 +1203,7 @@ CREATE TABLE cmis.prompt_template_required_fields (
 );
 
 CREATE TABLE cmis.prompt_templates (
-    prompt_id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    prompt_id uuid DEFAULT gen_random_uuid() NOT NULL,
     module_id integer,
     name text NOT NULL,
     task text NOT NULL,
@@ -1230,7 +1230,7 @@ CREATE TABLE cmis.publishing_queues (
 );
 
 CREATE TABLE cmis.reference_entities (
-    ref_id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    ref_id uuid DEFAULT gen_random_uuid() NOT NULL,
     category text NOT NULL,
     code text NOT NULL,
     label text,
@@ -1274,7 +1274,7 @@ CREATE TABLE cmis.roles (
 );
 
 CREATE TABLE cmis.scene_library (
-    scene_id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    scene_id uuid DEFAULT gen_random_uuid() NOT NULL,
     org_id uuid,
     name text NOT NULL,
     goal text,
@@ -1340,7 +1340,7 @@ CREATE TABLE cmis.security_context_audit (
 );
 
 CREATE TABLE cmis.segments (
-    segment_id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    segment_id uuid DEFAULT gen_random_uuid() NOT NULL,
     org_id uuid NOT NULL,
     name text NOT NULL,
     persona jsonb,
@@ -1379,7 +1379,7 @@ CREATE TABLE cmis.social_account_metrics (
 );
 
 CREATE TABLE cmis.social_accounts (
-    id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
     org_id uuid NOT NULL,
     integration_id uuid NOT NULL,
     account_external_id text NOT NULL,
@@ -1399,7 +1399,7 @@ CREATE TABLE cmis.social_accounts (
 );
 
 CREATE TABLE cmis.social_post_metrics (
-    id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
     org_id uuid NOT NULL,
     integration_id uuid NOT NULL,
     post_external_id text NOT NULL,
@@ -1413,7 +1413,7 @@ CREATE TABLE cmis.social_post_metrics (
 );
 
 CREATE TABLE cmis.social_posts (
-    id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
     org_id uuid NOT NULL,
     integration_id uuid NOT NULL,
     post_external_id text NOT NULL,
@@ -1433,7 +1433,7 @@ CREATE TABLE cmis.social_posts (
 );
 
 CREATE TABLE cmis.sql_snippets (
-    snippet_id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    snippet_id uuid DEFAULT gen_random_uuid() NOT NULL,
     name text NOT NULL,
     sql text NOT NULL,
     description text,
@@ -1446,7 +1446,7 @@ CREATE TABLE public.strategies (
 );
 
 CREATE TABLE cmis.sync_logs (
-    id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
     org_id uuid NOT NULL,
     integration_id uuid,
     platform text,
@@ -1567,7 +1567,7 @@ CREATE TABLE cmis.users (
 );
 
 CREATE TABLE cmis.value_contexts (
-    context_id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    context_id uuid DEFAULT gen_random_uuid() NOT NULL,
     org_id uuid NOT NULL,
     offering_id uuid,
     segment_id uuid,
@@ -1591,7 +1591,7 @@ CREATE TABLE cmis.value_contexts (
 );
 
 CREATE TABLE cmis.variation_policies (
-    policy_id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    policy_id uuid DEFAULT gen_random_uuid() NOT NULL,
     org_id uuid,
     max_variations smallint DEFAULT 3,
     dco_enabled boolean DEFAULT true,
@@ -1601,7 +1601,7 @@ CREATE TABLE cmis.variation_policies (
 );
 
 CREATE TABLE cmis.video_scenes (
-    scene_id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    scene_id uuid DEFAULT gen_random_uuid() NOT NULL,
     asset_id uuid NOT NULL,
     scene_number integer NOT NULL,
     duration_seconds integer,
@@ -1614,7 +1614,7 @@ CREATE TABLE cmis.video_scenes (
 );
 
 CREATE TABLE cmis.video_templates (
-    vtpl_id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    vtpl_id uuid DEFAULT gen_random_uuid() NOT NULL,
     org_id uuid,
     channel_id integer,
     format_id integer,
@@ -1626,7 +1626,7 @@ CREATE TABLE cmis.video_templates (
 );
 
 CREATE TABLE cmis_analytics.ai_queries (
-    query_id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    query_id uuid DEFAULT gen_random_uuid() NOT NULL,
     org_id uuid NOT NULL,
     user_prompt text NOT NULL,
     generated_sql text,
@@ -1636,14 +1636,14 @@ CREATE TABLE cmis_analytics.ai_queries (
 );
 
 CREATE TABLE cmis_analytics.migration_log (
-    id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
     executed_at timestamp with time zone DEFAULT now() NOT NULL,
     action text NOT NULL,
     sql_code text NOT NULL
 );
 
 CREATE TABLE cmis_analytics.performance_snapshot (
-    snapshot_id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    snapshot_id uuid DEFAULT gen_random_uuid() NOT NULL,
     org_id uuid NOT NULL,
     campaign_id uuid,
     kpi text,
@@ -1652,7 +1652,7 @@ CREATE TABLE cmis_analytics.performance_snapshot (
 );
 
 CREATE TABLE cmis_analytics.prompt_templates (
-    template_id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    template_id uuid DEFAULT gen_random_uuid() NOT NULL,
     name text NOT NULL,
     prompt_text text NOT NULL,
     sql_snippet text NOT NULL,
@@ -1661,7 +1661,7 @@ CREATE TABLE cmis_analytics.prompt_templates (
 );
 
 CREATE TABLE cmis_analytics.scheduled_jobs (
-    job_id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    job_id uuid DEFAULT gen_random_uuid() NOT NULL,
     job_name text NOT NULL,
     schedule text NOT NULL,
     function_name text NOT NULL,
@@ -1670,7 +1670,7 @@ CREATE TABLE cmis_analytics.scheduled_jobs (
 );
 
 CREATE TABLE cmis_audit.logs (
-    id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
     event_type text NOT NULL,
     event_source text NOT NULL,
     description text,
@@ -1680,7 +1680,7 @@ CREATE TABLE cmis_audit.logs (
 );
 
 CREATE TABLE cmis_dev.dev_logs (
-    log_id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    log_id uuid DEFAULT gen_random_uuid() NOT NULL,
     task_id uuid,
     event text,
     details jsonb,
@@ -1688,7 +1688,7 @@ CREATE TABLE cmis_dev.dev_logs (
 );
 
 CREATE TABLE cmis_dev.dev_tasks (
-    task_id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    task_id uuid DEFAULT gen_random_uuid() NOT NULL,
     name text,
     description text,
     scope_code text,
@@ -1703,7 +1703,7 @@ CREATE TABLE cmis_dev.dev_tasks (
 );
 
 CREATE TABLE cmis_knowledge.cognitive_manifest (
-    manifest_id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    manifest_id uuid DEFAULT gen_random_uuid() NOT NULL,
     layer_name text NOT NULL,
     status text DEFAULT 'active'::text,
     confidence numeric(5,2) DEFAULT 1.00,
@@ -1712,7 +1712,7 @@ CREATE TABLE cmis_knowledge.cognitive_manifest (
 );
 
 CREATE TABLE cmis_knowledge.creative_templates (
-    template_id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    template_id uuid DEFAULT gen_random_uuid() NOT NULL,
     domain text DEFAULT 'marketing'::text,
     category text,
     title text,
@@ -1811,7 +1811,7 @@ CREATE TABLE cmis_knowledge.embedding_update_queue (
 );
 
 CREATE TABLE cmis_knowledge.index (
-    knowledge_id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    knowledge_id uuid DEFAULT gen_random_uuid() NOT NULL,
     domain text NOT NULL,
     category text NOT NULL,
     topic text NOT NULL,
@@ -1985,7 +1985,7 @@ CREATE TABLE cmis_knowledge.semantic_search_results_cache (
 );
 
 CREATE TABLE cmis_knowledge.temporal_analytics (
-    delta_id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    delta_id uuid DEFAULT gen_random_uuid() NOT NULL,
     knowledge_id uuid,
     domain text NOT NULL,
     previous_snapshot jsonb,
@@ -1999,7 +1999,7 @@ CREATE TABLE cmis_knowledge.temporal_analytics (
 );
 
 CREATE TABLE cmis_marketing.assets (
-    asset_id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    asset_id uuid DEFAULT gen_random_uuid() NOT NULL,
     task_id uuid,
     platform text,
     asset_type text,
@@ -2012,7 +2012,7 @@ CREATE TABLE cmis_marketing.assets (
 );
 
 CREATE TABLE cmis_marketing.generated_creatives (
-    creative_id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    creative_id uuid DEFAULT gen_random_uuid() NOT NULL,
     topic text NOT NULL,
     tone text NOT NULL,
     variant_index integer NOT NULL,
@@ -2026,7 +2026,7 @@ CREATE TABLE cmis_marketing.generated_creatives (
 );
 
 CREATE TABLE cmis_marketing.video_scenarios (
-    scenario_id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    scenario_id uuid DEFAULT gen_random_uuid() NOT NULL,
     task_id uuid,
     asset_id uuid,
     title text,
@@ -2039,7 +2039,7 @@ CREATE TABLE cmis_marketing.video_scenarios (
 );
 
 CREATE TABLE cmis_marketing.visual_concepts (
-    concept_id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    concept_id uuid DEFAULT gen_random_uuid() NOT NULL,
     asset_id uuid,
     visual_prompt text,
     style text,
@@ -2050,7 +2050,7 @@ CREATE TABLE cmis_marketing.visual_concepts (
 );
 
 CREATE TABLE cmis_marketing.visual_scenarios (
-    scenario_id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    scenario_id uuid DEFAULT gen_random_uuid() NOT NULL,
     creative_id uuid,
     topic text,
     tone text,
@@ -2064,7 +2064,7 @@ CREATE TABLE cmis_marketing.visual_scenarios (
 );
 
 CREATE TABLE cmis_marketing.voice_scripts (
-    script_id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    script_id uuid DEFAULT gen_random_uuid() NOT NULL,
     scenario_id uuid,
     task_id uuid,
     language text DEFAULT 'ar'::text,
@@ -2128,7 +2128,7 @@ CREATE TABLE cmis_security_backup_20251111_202413.users_backup (
 );
 
 CREATE TABLE cmis_staging.raw_channel_data (
-    id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
     integration_id uuid,
     platform text NOT NULL,
     payload jsonb NOT NULL,
@@ -2136,7 +2136,7 @@ CREATE TABLE cmis_staging.raw_channel_data (
 );
 
 CREATE TABLE cmis_system_health.cognitive_reports (
-    report_id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    report_id uuid DEFAULT gen_random_uuid() NOT NULL,
     report_text text NOT NULL,
     stability_avg numeric(5,2),
     reanalysis_avg numeric(5,2),
@@ -2145,7 +2145,7 @@ CREATE TABLE cmis_system_health.cognitive_reports (
 );
 
 CREATE TABLE cmis_system_health.cognitive_vitality_log (
-    record_id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    record_id uuid DEFAULT gen_random_uuid() NOT NULL,
     latency_minutes numeric(8,3),
     events_last_hour integer,
     vitality_index numeric(5,3),
@@ -2154,7 +2154,7 @@ CREATE TABLE cmis_system_health.cognitive_vitality_log (
 );
 
 CREATE TABLE lab.example_sets (
-    example_id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    example_id uuid DEFAULT gen_random_uuid() NOT NULL,
     org_id uuid,
     title text,
     kind text NOT NULL,
@@ -2178,7 +2178,7 @@ CREATE TABLE lab.example_used_fields (
 );
 
 CREATE TABLE lab.test_matrix (
-    test_id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    test_id uuid DEFAULT gen_random_uuid() NOT NULL,
     org_id uuid,
     design jsonb NOT NULL,
     notes text
@@ -2241,7 +2241,7 @@ CREATE TABLE public.cache (
 );
 
 CREATE TABLE public.cmis_access_control (
-    rule_id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    rule_id uuid DEFAULT gen_random_uuid() NOT NULL,
     resource_type text,
     resource_id uuid,
     actor text,
@@ -2251,7 +2251,7 @@ CREATE TABLE public.cmis_access_control (
 );
 
 CREATE TABLE public.cmis_system_health (
-    check_id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    check_id uuid DEFAULT gen_random_uuid() NOT NULL,
     metric_name text,
     metric_value numeric,
     threshold numeric,

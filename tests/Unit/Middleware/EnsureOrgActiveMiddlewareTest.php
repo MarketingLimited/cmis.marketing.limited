@@ -41,7 +41,7 @@ class EnsureOrgActiveMiddlewareTest extends TestCase
         TeamMember::create([
             'member_id' => Str::uuid(),
             'org_id' => $org->org_id,
-            'user_id' => $user->id,
+            'user_id' => $user->user_id,
             'role' => 'admin',
         ]);
 
@@ -73,7 +73,7 @@ class EnsureOrgActiveMiddlewareTest extends TestCase
         TeamMember::create([
             'member_id' => Str::uuid(),
             'org_id' => $org->org_id,
-            'user_id' => $user->id,
+            'user_id' => $user->user_id,
             'role' => 'admin',
         ]);
 
@@ -105,7 +105,7 @@ class EnsureOrgActiveMiddlewareTest extends TestCase
         TeamMember::create([
             'member_id' => Str::uuid(),
             'org_id' => $org->org_id,
-            'user_id' => $user->id,
+            'user_id' => $user->user_id,
             'role' => 'admin',
         ]);
 
@@ -137,7 +137,7 @@ class EnsureOrgActiveMiddlewareTest extends TestCase
         TeamMember::create([
             'member_id' => Str::uuid(),
             'org_id' => $org->org_id,
-            'user_id' => $user->id,
+            'user_id' => $user->user_id,
             'role' => 'admin',
         ]);
 
@@ -170,7 +170,7 @@ class EnsureOrgActiveMiddlewareTest extends TestCase
         TeamMember::create([
             'member_id' => Str::uuid(),
             'org_id' => $org->org_id,
-            'user_id' => $user->id,
+            'user_id' => $user->user_id,
             'role' => 'admin',
         ]);
 
@@ -204,7 +204,7 @@ class EnsureOrgActiveMiddlewareTest extends TestCase
         TeamMember::create([
             'member_id' => Str::uuid(),
             'org_id' => $org->org_id,
-            'user_id' => $user->id,
+            'user_id' => $user->user_id,
             'role' => 'admin',
         ]);
 
