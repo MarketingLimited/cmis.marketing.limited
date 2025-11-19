@@ -175,7 +175,7 @@ class ScheduledSocialPost extends Model
             return collect([]);
         }
 
-        return \Illuminate\Support\Facades\DB::table('cmis_integrations.integrations')
+        return \Illuminate\Support\Facades\DB::table('cmis.integrations')
             ->whereIn('integration_id', $this->integration_ids)
             ->where('org_id', $this->org_id)
             ->where('is_active', true)

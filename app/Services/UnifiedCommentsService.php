@@ -103,7 +103,7 @@ class UnifiedCommentsService
         }
 
         // Get integration
-        $integration = DB::table('cmis_integrations.integrations')
+        $integration = DB::table('cmis.integrations')
             ->where('integration_id', $post->integration_id)
             ->first();
 
@@ -282,7 +282,7 @@ class UnifiedCommentsService
 
         // Get integration
         $post = DB::table('cmis_social.social_posts')->where('post_id', $comment->post_id)->first();
-        $integration = DB::table('cmis_integrations.integrations')
+        $integration = DB::table('cmis.integrations')
             ->where('integration_id', $post->integration_id)
             ->first();
 
@@ -349,7 +349,7 @@ class UnifiedCommentsService
 
         // Get integration
         $post = DB::table('cmis_social.social_posts')->where('post_id', $comment->post_id)->first();
-        $integration = DB::table('cmis_integrations.integrations')
+        $integration = DB::table('cmis.integrations')
             ->where('integration_id', $post->integration_id)
             ->first();
 
@@ -399,7 +399,7 @@ class UnifiedCommentsService
 
         // Get integration
         $post = DB::table('cmis_social.social_posts')->where('post_id', $comment->post_id)->first();
-        $integration = DB::table('cmis_integrations.integrations')
+        $integration = DB::table('cmis.integrations')
             ->where('integration_id', $post->integration_id)
             ->first();
 

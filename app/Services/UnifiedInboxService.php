@@ -96,7 +96,7 @@ class UnifiedInboxService
         }
 
         // Get integration
-        $integration = DB::table('cmis_integrations.integrations')
+        $integration = DB::table('cmis.integrations')
             ->where('integration_id', $message->integration_id)
             ->first();
 
