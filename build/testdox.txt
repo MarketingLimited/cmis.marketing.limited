@@ -1,3 +1,3 @@
-Instagram Service (Tests\Unit\Services\InstagramService)
- [ ] It can publish feed post
+Example (Tests\Feature\Example)
+ [x] The application returns a successful response
 

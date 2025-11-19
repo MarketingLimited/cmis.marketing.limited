@@ -2,6 +2,7 @@
 
 namespace App\Repositories\Analytics;
 
+use App\Models\Campaign\Campaign;
 use App\Repositories\Contracts\AnalyticsRepositoryInterface;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Collection;
@@ -226,13 +227,32 @@ class AnalyticsRepository implements AnalyticsRepositoryInterface
     /**
      * Calculate ROI for campaign
      *
-     * @param string $orgId Organization UUID
      * @param string $campaignId Campaign UUID
-     * @return float
+     * @param float $revenue Revenue generated
+     * @return array
      */
-    public function calculateROI(string $orgId, string $campaignId): float
+    public function calculateROI(string $campaignId, float $revenue): array
     {
-        // TODO: Implement ROI calculation
-        return 0.0;
+        $campaign = Campaign::where('campaign_id', $campaignId)->first();
+
+        if (!$campaign || !$campaign->budget) {
+            return [
+                'roi_percentage' => 0,
+                'revenue' => $revenue,
+                'cost' => 0,
+                'profit' => $revenue,
+            ];
+        }
+
+        $cost = $campaign->budget;
+        $profit = $revenue - $cost;
+        $roiPercentage = ($cost > 0) ? ($profit / $cost) * 100 : 0;
+
+        return [
+            'roi_percentage' => round($roiPercentage, 2),
+            'revenue' => $revenue,
+            'cost' => $cost,
+            'profit' => $profit,
+        ];
     }
 }
