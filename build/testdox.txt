@@ -347,11 +347,11 @@ Campaign Budget (Tests\Unit\Models\Campaign\CampaignBudget)
  [ ] It respects rls policies
 
 Campaign Completed Event (Tests\Unit\Events\CampaignCompletedEvent)
- [ ] It can be instantiated
- [ ] It can be dispatched
- [ ] It contains campaign data
- [ ] It broadcasts on private channel
- [ ] It can be listened to
+ [x] It can be instantiated
+ [x] It can be dispatched
+ [x] It contains campaign data
+ [x] It broadcasts on private channel
+ [x] It can be listened to
  [ ] It includes completion timestamp
 
 Campaign Controller (Tests\Feature\Controllers\CampaignController)
@@ -398,16 +398,16 @@ Campaign Management (Tests\Feature\Campaigns\CampaignManagement)
  [ ] User cannot access campaigns from another org
 
 Campaign Notification (Tests\Unit\Notifications\CampaignNotification)
- [ ] It can send campaign completed notification
+ [x] It can send campaign completed notification
  [ ] It includes campaign details in notification
- [ ] It can send campaign started notification
+ [x] It can send campaign started notification
  [ ] It can send post published notification
- [ ] It supports mail channel
- [ ] It supports database channel
+ [x] It supports mail channel
+ [x] It supports database channel
  [ ] It creates database notification record
- [ ] It can be sent to multiple users
- [ ] It includes action url in notification
- [ ] It respects user notification preferences
+ [x] It can be sent to multiple users
+ [x] It includes action url in notification
+ [x] It respects user notification preferences
 
 Campaign Observer (Tests\Unit\Observers\CampaignObserver)
  [x] It fires creating event
@@ -455,15 +455,15 @@ Campaign Service (Tests\Unit\Services\CampaignService)
  [ ] It handles campaign deletion
 
 Campaign Status Changed Event (Tests\Unit\Events\CampaignStatusChangedEvent)
- [ ] It can be instantiated
- [ ] It contains old and new status
- [ ] It can be dispatched
- [ ] It broadcasts on org channel
- [ ] It triggers notifications for important changes
- [ ] It includes timestamp
- [ ] It tracks draft to active transition
- [ ] It tracks active to paused transition
- [ ] It respects org context
+ [x] It can be instantiated
+ [x] It contains old and new status
+ [x] It can be dispatched
+ [x] It broadcasts on org channel
+ [x] It triggers notifications for important changes
+ [x] It includes timestamp
+ [x] It tracks draft to active transition
+ [x] It tracks active to paused transition
+ [x] It respects org context
 
 Campaign Validator (Tests\Unit\Validators\CampaignValidator)
  [x] It validates campaign name is required
@@ -839,7 +839,7 @@ Export Campaign Data Job (Tests\Unit\Jobs\ExportCampaignDataJob)
  [ ] It exports campaign data to csv
  [ ] It exports campaign data to excel
  [ ] It exports campaign data to json
- [ ] It can be dispatched
+ [x] It can be dispatched
  [ ] It stores export file
  [ ] It includes campaign analytics in export
  [ ] It notifies user when export is ready
@@ -949,7 +949,7 @@ Generate Campaign Report Job (Tests\Unit\Jobs\GenerateCampaignReportJob)
  [ ] It generates campaign report
  [ ] It generates pdf report
  [ ] It generates excel report
- [ ] It can be dispatched
+ [x] It can be dispatched
  [ ] It includes campaign analytics
  [ ] It stores report file
 
@@ -1051,18 +1051,18 @@ Instagram Sync Workflow (Tests\Integration\Social\InstagramSyncWorkflow)
  [ ] It syncs instagram comments
 
 Integration (Tests\Unit\Models\Integration)
- [ ] It can create an integration
+ [x] It can create an integration
  [ ] It belongs to an organization
- [ ] It encrypts access token
- [ ] It validates platform
+ [x] It encrypts access token
+ [x] It validates platform
  [ ] It validates status
  [ ] It stores metadata as json
  [ ] It uses uuid as primary key
- [ ] It can be soft deleted
- [ ] It has timestamps
+ [x] It can be soft deleted
+ [x] It has timestamps
  [ ] It tracks token expiration
  [ ] It can check if token is expired
- [ ] It respects rls policies
+ [x] It respects rls policies
 
 Integration (Tests\Unit\Models\Integration\Integration)
  [x] It can create integration
@@ -1635,14 +1635,14 @@ Publishing Workflow (Tests\Integration\Publishing\PublishingWorkflow)
  [ ] It can update post status after publishing
 
 RLSMiddleware (Tests\Unit\Middleware\RLSMiddleware)
- [ ] It sets rls context for authenticated user
+ [x] It sets rls context for authenticated user
  [ ] It clears rls context after request
- [ ] It skips rls for unauthenticated requests
- [ ] It handles missing org id gracefully
+ [x] It skips rls for unauthenticated requests
+ [x] It handles missing org id gracefully
  [ ] It sets correct org id in context
  [ ] It sets correct user id in context
  [ ] It works with sanctum authentication
- [ ] It handles exceptions gracefully
+ [x] It handles exceptions gracefully
 
 Rate Limit (Tests\Feature\AI\RateLimit)
  [ ] Ai generation endpoint is rate limited
@@ -1825,13 +1825,13 @@ Send Notification Job (Tests\Unit\Jobs\SendNotificationJob)
  [ ] It sends notification to user
  [ ] It sends email notification
  [ ] It sends database notification
- [ ] It can be dispatched
+ [x] It can be dispatched
  [ ] It supports multiple channels
  [ ] It handles notification preferences
- [ ] It sends bulk notifications
+ [x] It sends bulk notifications
  [ ] It includes action url
- [ ] It handles failed delivery
- [ ] It queues with delay
+ [x] It handles failed delivery
+ [x] It queues with delay
 
 Send SMSJob (Tests\Unit\Jobs\SendSMSJob)
  [ ] It sends sms to contact
@@ -1972,7 +1972,7 @@ Sync Analytics Job (Tests\Unit\Jobs\SyncAnalyticsJob)
  [ ] It syncs platform specific metrics
  [ ] It updates existing analytics
  [ ] It can sync for date range
- [ ] It can be dispatched
+ [x] It can be dispatched
  [ ] It handles api errors gracefully
  [ ] It calculates engagement rate
  [ ] It syncs cost metrics
@@ -2190,7 +2190,7 @@ Update Campaign Stats Job (Tests\Unit\Jobs\UpdateCampaignStatsJob)
  [ ] It calculates conversion rate
  [ ] It updates roi metrics
  [ ] It aggregates platform stats
- [ ] It can be dispatched
+ [x] It can be dispatched
  [ ] It calculates click through rate
  [ ] It tracks cost per click
  [ ] It updates reach metrics
