@@ -168,4 +168,13 @@ return [
         'temperature' => env('AI_TEMPERATURE', 0.7),
     ],
 
+    // Google Gemini AI
+    'gemini' => [
+        'api_key' => env('GEMINI_API_KEY'),
+        'model' => env('GEMINI_MODEL', 'gemini-pro'),
+        'temperature' => env('GEMINI_TEMPERATURE', 0.7),
+        'max_tokens' => env('GEMINI_MAX_TOKENS', 2048),
+        'rate_limit' => env('GEMINI_RATE_LIMIT', 10),
+    ],
+
 ];

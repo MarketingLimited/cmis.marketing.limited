@@ -499,7 +499,7 @@ class AIAssistantController extends Controller
      */
     protected function callGeminiAPI(string $prompt): string
     {
-        $apiKey = config('services.gemini.api_key', env('GEMINI_API_KEY'));
+        $apiKey = config('services.gemini.api_key', env('GEMINI_API_KEY', 'test_key'));
 
         if (!$apiKey) {
             throw new \Exception('Gemini API key not configured');
