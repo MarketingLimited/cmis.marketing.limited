@@ -1,16 +1,3 @@
 AIAssistant API (Tests\Feature\API\AIAssistantAPI)
  [ ] It can generate content suggestions
- [ ] It can generate campaign brief
- [ ] It can generate visual description
- [ ] It can extract keywords
- [ ] It can generate hashtags
- [ ] It can analyze sentiment
- [ ] It can translate content
- [ ] It can generate content variations
- [ ] It can generate content calendar
- [ ] It can auto categorize content
- [ ] It can generate meta description
- [ ] It can suggest improvements
- [ ] It validates required fields
- [ ] It handles ai api errors
 
