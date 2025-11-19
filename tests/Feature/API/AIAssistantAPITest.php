@@ -7,6 +7,7 @@ use Tests\Traits\CreatesTestData;
 use Tests\Traits\MocksExternalAPIs;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * AI Assistant API Feature Tests
  */
@@ -19,7 +20,7 @@ class AIAssistantAPITest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_can_generate_content_suggestions()
     {
         $setup = $this->createUserWithOrg();
@@ -44,7 +45,7 @@ class AIAssistantAPITest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_generate_campaign_brief()
     {
         $setup = $this->createUserWithOrg();
@@ -70,7 +71,7 @@ class AIAssistantAPITest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_generate_visual_description()
     {
         $setup = $this->createUserWithOrg();
@@ -95,7 +96,7 @@ class AIAssistantAPITest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_extract_keywords()
     {
         $setup = $this->createUserWithOrg();
@@ -119,7 +120,7 @@ class AIAssistantAPITest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_generate_hashtags()
     {
         $setup = $this->createUserWithOrg();
@@ -144,7 +145,7 @@ class AIAssistantAPITest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_analyze_sentiment()
     {
         $setup = $this->createUserWithOrg();
@@ -168,7 +169,7 @@ class AIAssistantAPITest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_translate_content()
     {
         $setup = $this->createUserWithOrg();
@@ -193,7 +194,7 @@ class AIAssistantAPITest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_generate_content_variations()
     {
         $setup = $this->createUserWithOrg();
@@ -218,7 +219,7 @@ class AIAssistantAPITest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_generate_content_calendar()
     {
         $setup = $this->createUserWithOrg();
@@ -245,7 +246,7 @@ class AIAssistantAPITest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_auto_categorize_content()
     {
         $setup = $this->createUserWithOrg();
@@ -269,7 +270,7 @@ class AIAssistantAPITest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_generate_meta_description()
     {
         $setup = $this->createUserWithOrg();
@@ -293,7 +294,7 @@ class AIAssistantAPITest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_suggest_improvements()
     {
         $setup = $this->createUserWithOrg();
@@ -318,7 +319,7 @@ class AIAssistantAPITest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_required_fields()
     {
         $setup = $this->createUserWithOrg();
@@ -337,7 +338,7 @@ class AIAssistantAPITest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_ai_api_errors()
     {
         $setup = $this->createUserWithOrg();

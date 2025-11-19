@@ -9,6 +9,7 @@ use App\Repositories\CMIS\CampaignRepository;
 use App\Repositories\Contracts\CampaignRepositoryInterface;
 use Illuminate\Support\Str;
 
+use PHPUnit\Framework\Attributes\Test;
 class CampaignRepositoryTest extends TestCase
 {
     use RefreshDatabase, CreatesTestData;
@@ -21,7 +22,7 @@ class CampaignRepositoryTest extends TestCase
         $this->repository = app(CampaignRepositoryInterface::class);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_create_campaign_with_context()
     {
         $setup = $this->createUserWithOrg();
@@ -52,7 +53,7 @@ class CampaignRepositoryTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_find_related_campaigns()
     {
         $setup = $this->createUserWithOrg();
@@ -91,7 +92,7 @@ class CampaignRepositoryTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_campaign_contexts()
     {
         $setup = $this->createUserWithOrg();
@@ -115,7 +116,7 @@ class CampaignRepositoryTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_respects_transaction_context()
     {
         $setup1 = $this->createUserWithOrg();

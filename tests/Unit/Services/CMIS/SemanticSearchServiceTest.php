@@ -10,6 +10,7 @@ use App\Services\CMIS\SemanticSearchService;
 use App\Models\Knowledge\KnowledgeIndex;
 use Illuminate\Support\Str;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * Semantic Search Service Unit Tests
  */
@@ -25,7 +26,7 @@ class SemanticSearchServiceTest extends TestCase
         $this->service = app(SemanticSearchService::class);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_perform_semantic_search()
     {
         $setup = $this->createUserWithOrg();
@@ -58,7 +59,7 @@ class SemanticSearchServiceTest extends TestCase
         $this->assertArrayHasKey('results', $results);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_generate_embeddings_for_text()
     {
         $this->mockGeminiAPI('success');
@@ -71,7 +72,7 @@ class SemanticSearchServiceTest extends TestCase
         $this->assertCount(768, $embedding); // Gemini embedding dimension
     }
 
-    /** @test */
+    #[Test]
     public function it_caches_embeddings_for_same_text()
     {
         $this->mockGeminiAPI('success');
@@ -87,7 +88,7 @@ class SemanticSearchServiceTest extends TestCase
         $this->assertEquals($embedding1, $embedding2);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_find_similar_content()
     {
         $setup = $this->createUserWithOrg();
@@ -116,7 +117,7 @@ class SemanticSearchServiceTest extends TestCase
         $this->assertLessThanOrEqual(3, count($similar));
     }
 
-    /** @test */
+    #[Test]
     public function it_filters_search_by_content_type()
     {
         $setup = $this->createUserWithOrg();
@@ -153,7 +154,7 @@ class SemanticSearchServiceTest extends TestCase
         }
     }
 
-    /** @test */
+    #[Test]
     public function it_respects_org_isolation()
     {
         $setup1 = $this->createUserWithOrg();
@@ -190,7 +191,7 @@ class SemanticSearchServiceTest extends TestCase
         }
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_empty_search_results()
     {
         $setup = $this->createUserWithOrg();
@@ -207,7 +208,7 @@ class SemanticSearchServiceTest extends TestCase
         $this->assertEmpty($results['results']);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_index_new_content()
     {
         $setup = $this->createUserWithOrg();
@@ -237,7 +238,7 @@ class SemanticSearchServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_api_errors_gracefully()
     {
         $this->mockGeminiAPI('error');

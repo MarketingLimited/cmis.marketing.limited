@@ -8,6 +8,7 @@ use App\Models\Subscription\Subscription;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * Subscription Model Unit Tests
  */
@@ -20,7 +21,7 @@ class SubscriptionTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_can_create_subscription()
     {
         $org = Org::create([
@@ -43,7 +44,7 @@ class SubscriptionTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_belongs_to_org()
     {
         $org = Org::create([
@@ -61,7 +62,7 @@ class SubscriptionTest extends TestCase
         $this->assertEquals($org->org_id, $subscription->org->org_id);
     }
 
-    /** @test */
+    #[Test]
     public function it_has_different_plan_types()
     {
         $org = Org::create([
@@ -84,7 +85,7 @@ class SubscriptionTest extends TestCase
         $this->assertCount(4, $subscriptions);
     }
 
-    /** @test */
+    #[Test]
     public function it_has_different_statuses()
     {
         $org = Org::create([
@@ -118,7 +119,7 @@ class SubscriptionTest extends TestCase
         $this->assertEquals('expired', $expiredSubscription->status);
     }
 
-    /** @test */
+    #[Test]
     public function it_stores_pricing_information()
     {
         $org = Org::create([
@@ -141,7 +142,7 @@ class SubscriptionTest extends TestCase
         $this->assertEquals('monthly', $subscription->billing_cycle);
     }
 
-    /** @test */
+    #[Test]
     public function it_stores_plan_features()
     {
         $org = Org::create([
@@ -171,7 +172,7 @@ class SubscriptionTest extends TestCase
         $this->assertFalse($subscription->features['priority_support']);
     }
 
-    /** @test */
+    #[Test]
     public function it_tracks_subscription_dates()
     {
         $org = Org::create([
@@ -193,7 +194,7 @@ class SubscriptionTest extends TestCase
         $this->assertTrue($subscription->ends_at->greaterThan($subscription->starts_at));
     }
 
-    /** @test */
+    #[Test]
     public function it_can_check_if_subscription_is_active()
     {
         $org = Org::create([
@@ -214,7 +215,7 @@ class SubscriptionTest extends TestCase
         $this->assertTrue(now()->between($activeSubscription->starts_at, $activeSubscription->ends_at));
     }
 
-    /** @test */
+    #[Test]
     public function it_tracks_trial_period()
     {
         $org = Org::create([
@@ -235,7 +236,7 @@ class SubscriptionTest extends TestCase
         $this->assertTrue($subscription->trial_ends_at->isFuture());
     }
 
-    /** @test */
+    #[Test]
     public function it_uses_uuid_as_primary_key()
     {
         $org = Org::create([
@@ -253,7 +254,7 @@ class SubscriptionTest extends TestCase
         $this->assertTrue(Str::isUuid($subscription->subscription_id));
     }
 
-    /** @test */
+    #[Test]
     public function it_has_timestamps()
     {
         $org = Org::create([
@@ -272,7 +273,7 @@ class SubscriptionTest extends TestCase
         $this->assertNotNull($subscription->updated_at);
     }
 
-    /** @test */
+    #[Test]
     public function it_respects_rls_policies()
     {
         $org1 = Org::create([

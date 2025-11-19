@@ -11,6 +11,7 @@ use App\Models\Core\Org;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Event;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * Campaign Created Event Unit Tests
  */
@@ -23,7 +24,7 @@ class CampaignCreatedEventTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_can_be_instantiated()
     {
         $org = Org::create([
@@ -49,7 +50,7 @@ class CampaignCreatedEventTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_is_dispatched_when_campaign_is_created()
     {
         Event::fake();
@@ -78,7 +79,7 @@ class CampaignCreatedEventTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_contains_campaign_data()
     {
         $org = Org::create([
@@ -106,7 +107,7 @@ class CampaignCreatedEventTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_be_serialized()
     {
         $org = Org::create([
@@ -133,7 +134,7 @@ class CampaignCreatedEventTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_broadcasts_on_correct_channel()
     {
         $org = Org::create([

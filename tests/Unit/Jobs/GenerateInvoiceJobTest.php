@@ -12,6 +12,7 @@ use App\Models\User;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Queue;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * GenerateInvoice Job Unit Tests
  */
@@ -24,7 +25,7 @@ class GenerateInvoiceJobTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_generates_invoice_for_subscription()
     {
         $org = Org::create([
@@ -53,7 +54,7 @@ class GenerateInvoiceJobTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_calculates_invoice_total()
     {
         $org = Org::create([
@@ -82,7 +83,7 @@ class GenerateInvoiceJobTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_applies_tax_to_invoice()
     {
         $org = Org::create([
@@ -111,7 +112,7 @@ class GenerateInvoiceJobTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_be_dispatched()
     {
         Queue::fake();
@@ -140,7 +141,7 @@ class GenerateInvoiceJobTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_generates_unique_invoice_number()
     {
         $org = Org::create([
@@ -170,7 +171,7 @@ class GenerateInvoiceJobTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_includes_billing_address()
     {
         $org = Org::create([
@@ -204,7 +205,7 @@ class GenerateInvoiceJobTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_sends_invoice_notification()
     {
         $org = Org::create([
@@ -233,7 +234,7 @@ class GenerateInvoiceJobTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_stores_invoice_pdf()
     {
         $org = Org::create([
@@ -262,7 +263,7 @@ class GenerateInvoiceJobTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_different_currencies()
     {
         $org = Org::create([
@@ -294,7 +295,7 @@ class GenerateInvoiceJobTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_includes_line_items()
     {
         $org = Org::create([

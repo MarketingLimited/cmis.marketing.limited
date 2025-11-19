@@ -9,6 +9,7 @@ use App\Models\Social\SocialAccount;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * Social Account Model Unit Tests
  */
@@ -21,7 +22,7 @@ class SocialAccountTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_can_create_a_social_account()
     {
         $org = Org::create([
@@ -52,7 +53,7 @@ class SocialAccountTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_belongs_to_organization_and_integration()
     {
         $org = Org::create([
@@ -80,7 +81,7 @@ class SocialAccountTest extends TestCase
         $this->assertEquals($integration->integration_id, $socialAccount->integration->integration_id);
     }
 
-    /** @test */
+    #[Test]
     public function it_stores_profile_data_as_json()
     {
         $org = Org::create([
@@ -116,7 +117,7 @@ class SocialAccountTest extends TestCase
         $this->assertEquals('Marketing', $socialAccount->profile_data['category']);
     }
 
-    /** @test */
+    #[Test]
     public function it_stores_metrics_as_json()
     {
         $org = Org::create([
@@ -152,7 +153,7 @@ class SocialAccountTest extends TestCase
         $this->assertEquals(4.5, $socialAccount->metrics['engagement_rate']);
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_platform()
     {
         $org = Org::create([
@@ -187,7 +188,7 @@ class SocialAccountTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_uses_uuid_as_primary_key()
     {
         $org = Org::create([
@@ -214,7 +215,7 @@ class SocialAccountTest extends TestCase
         $this->assertTrue(Str::isUuid($socialAccount->account_id));
     }
 
-    /** @test */
+    #[Test]
     public function it_can_be_soft_deleted()
     {
         $org = Org::create([
@@ -245,7 +246,7 @@ class SocialAccountTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_has_timestamps()
     {
         $org = Org::create([
@@ -273,7 +274,7 @@ class SocialAccountTest extends TestCase
         $this->assertNotNull($socialAccount->updated_at);
     }
 
-    /** @test */
+    #[Test]
     public function it_tracks_last_sync_time()
     {
         $org = Org::create([
@@ -304,7 +305,7 @@ class SocialAccountTest extends TestCase
         $this->assertTrue($socialAccount->last_sync_at->isPast());
     }
 
-    /** @test */
+    #[Test]
     public function it_respects_rls_policies()
     {
         $org1 = Org::create([

@@ -9,6 +9,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use App\Services\Communication\EmailService;
 use Illuminate\Support\Facades\Mail;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * Email Service Unit Tests
  */
@@ -24,7 +25,7 @@ class EmailServiceTest extends TestCase
         $this->service = app(EmailService::class);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_send_campaign_email()
     {
         $setup = $this->createUserWithOrg();
@@ -51,7 +52,7 @@ class EmailServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_send_bulk_emails()
     {
         $setup = $this->createUserWithOrg();
@@ -81,7 +82,7 @@ class EmailServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_send_template_email()
     {
         $setup = $this->createUserWithOrg();
@@ -106,7 +107,7 @@ class EmailServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_send_transactional_email()
     {
         $setup = $this->createUserWithOrg();
@@ -129,7 +130,7 @@ class EmailServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_send_email_with_attachments()
     {
         $setup = $this->createUserWithOrg();
@@ -158,7 +159,7 @@ class EmailServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_track_email_opens()
     {
         $setup = $this->createUserWithOrg();
@@ -182,7 +183,7 @@ class EmailServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_track_email_clicks()
     {
         $setup = $this->createUserWithOrg();
@@ -205,7 +206,7 @@ class EmailServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_schedule_email()
     {
         $setup = $this->createUserWithOrg();
@@ -227,7 +228,7 @@ class EmailServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_email_address()
     {
         $setup = $this->createUserWithOrg();
@@ -248,7 +249,7 @@ class EmailServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_required_fields()
     {
         $setup = $this->createUserWithOrg();
@@ -266,7 +267,7 @@ class EmailServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_send_failures()
     {
         $setup = $this->createUserWithOrg();
@@ -289,7 +290,7 @@ class EmailServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_personalize_content()
     {
         $setup = $this->createUserWithOrg();

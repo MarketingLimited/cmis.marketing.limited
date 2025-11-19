@@ -8,6 +8,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use App\Models\Core\Campaign;
 use Illuminate\Support\Str;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * Campaign Controller Feature Tests
  */
@@ -20,7 +21,7 @@ class CampaignControllerTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_can_list_all_campaigns()
     {
         $setup = $this->createUserWithOrg();
@@ -43,7 +44,7 @@ class CampaignControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_create_campaign()
     {
         $setup = $this->createUserWithOrg();
@@ -68,7 +69,7 @@ class CampaignControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_single_campaign()
     {
         $setup = $this->createUserWithOrg();
@@ -92,7 +93,7 @@ class CampaignControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_update_campaign()
     {
         $setup = $this->createUserWithOrg();
@@ -121,7 +122,7 @@ class CampaignControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_delete_campaign()
     {
         $setup = $this->createUserWithOrg();
@@ -146,7 +147,7 @@ class CampaignControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_required_fields()
     {
         $setup = $this->createUserWithOrg();
@@ -167,7 +168,7 @@ class CampaignControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_filter_campaigns_by_status()
     {
         $setup = $this->createUserWithOrg();
@@ -191,7 +192,7 @@ class CampaignControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_search_campaigns()
     {
         $setup = $this->createUserWithOrg();
@@ -215,7 +216,7 @@ class CampaignControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_campaign_analytics()
     {
         $setup = $this->createUserWithOrg();
@@ -243,7 +244,7 @@ class CampaignControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_respects_org_isolation()
     {
         $setup1 = $this->createUserWithOrg();
@@ -263,7 +264,7 @@ class CampaignControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_requires_authentication()
     {
         $response = $this->getJson('/api/campaigns');
@@ -276,7 +277,7 @@ class CampaignControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_duplicate_campaign()
     {
         $setup = $this->createUserWithOrg();

@@ -8,6 +8,7 @@ use Tests\Traits\MocksExternalAPIs;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use App\Services\Social\TikTokService;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * TikTok Service Unit Tests
  */
@@ -23,7 +24,7 @@ class TikTokServiceTest extends TestCase
         $this->service = app(TikTokService::class);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_publish_video()
     {
         $setup = $this->createUserWithOrg();
@@ -51,7 +52,7 @@ class TikTokServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_user_info()
     {
         $setup = $this->createUserWithOrg();
@@ -82,7 +83,7 @@ class TikTokServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_videos_list()
     {
         $setup = $this->createUserWithOrg();
@@ -120,7 +121,7 @@ class TikTokServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_video_analytics()
     {
         $setup = $this->createUserWithOrg();
@@ -149,7 +150,7 @@ class TikTokServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_comments()
     {
         $setup = $this->createUserWithOrg();
@@ -181,7 +182,7 @@ class TikTokServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_reply_to_comment()
     {
         $setup = $this->createUserWithOrg();
@@ -205,7 +206,7 @@ class TikTokServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_audience_insights()
     {
         $setup = $this->createUserWithOrg();
@@ -240,7 +241,7 @@ class TikTokServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_video_requirements()
     {
         $setup = $this->createUserWithOrg();
@@ -261,7 +262,7 @@ class TikTokServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_api_errors()
     {
         $setup = $this->createUserWithOrg();

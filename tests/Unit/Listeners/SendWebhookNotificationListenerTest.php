@@ -11,6 +11,7 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * SendWebhookNotification Listener Unit Tests
  */
@@ -23,7 +24,7 @@ class SendWebhookNotificationListenerTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_sends_webhook_on_campaign_created()
     {
         Http::fake([
@@ -59,7 +60,7 @@ class SendWebhookNotificationListenerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_sends_webhook_on_campaign_published()
     {
         Http::fake([
@@ -95,7 +96,7 @@ class SendWebhookNotificationListenerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_includes_event_data_in_payload()
     {
         Http::fake([
@@ -131,7 +132,7 @@ class SendWebhookNotificationListenerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_only_sends_to_matching_webhooks()
     {
         Http::fake();
@@ -173,7 +174,7 @@ class SendWebhookNotificationListenerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_skips_inactive_webhooks()
     {
         Http::fake();
@@ -207,7 +208,7 @@ class SendWebhookNotificationListenerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_webhook_failures_gracefully()
     {
         Http::fake([
@@ -243,7 +244,7 @@ class SendWebhookNotificationListenerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_queues_webhook_delivery()
     {
         Http::fake();
@@ -277,7 +278,7 @@ class SendWebhookNotificationListenerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_respects_org_isolation()
     {
         Http::fake();

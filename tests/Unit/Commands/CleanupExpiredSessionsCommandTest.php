@@ -7,6 +7,7 @@ use Tests\Traits\CreatesTestData;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * CleanupExpiredSessions Command Unit Tests
  */
@@ -19,7 +20,7 @@ class CleanupExpiredSessionsCommandTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_cleans_up_expired_sessions()
     {
         $this->artisan('sessions:cleanup')
@@ -31,7 +32,7 @@ class CleanupExpiredSessionsCommandTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_shows_verbose_output()
     {
         $this->artisan('sessions:cleanup', ['--verbose' => true])
@@ -43,7 +44,7 @@ class CleanupExpiredSessionsCommandTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_shows_dry_run_mode()
     {
         $this->artisan('sessions:cleanup', ['--dry-run' => true])
@@ -55,7 +56,7 @@ class CleanupExpiredSessionsCommandTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_accepts_custom_expiry_time()
     {
         $this->artisan('sessions:cleanup', ['--hours' => 48])
@@ -67,7 +68,7 @@ class CleanupExpiredSessionsCommandTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_no_expired_sessions()
     {
         $this->artisan('sessions:cleanup')
@@ -79,7 +80,7 @@ class CleanupExpiredSessionsCommandTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_limits_batch_size()
     {
         $this->artisan('sessions:cleanup', ['--limit' => 100])
@@ -91,7 +92,7 @@ class CleanupExpiredSessionsCommandTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_shows_cleanup_summary()
     {
         $this->artisan('sessions:cleanup')
@@ -103,7 +104,7 @@ class CleanupExpiredSessionsCommandTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_cleans_database_sessions()
     {
         $this->artisan('sessions:cleanup', ['--type' => 'database'])
@@ -115,7 +116,7 @@ class CleanupExpiredSessionsCommandTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_cleans_redis_sessions()
     {
         $this->artisan('sessions:cleanup', ['--type' => 'redis'])

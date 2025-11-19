@@ -13,6 +13,7 @@ use App\Jobs\PublishToYouTubeJob;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Str;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * Facebook, TikTok & YouTube Publishing Integration Test
  *
@@ -27,7 +28,7 @@ class FacebookTikTokYouTubePublishingTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_creates_and_publishes_facebook_post()
     {
         Queue::fake();
@@ -77,7 +78,7 @@ class FacebookTikTokYouTubePublishingTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_creates_and_publishes_facebook_story()
     {
         Queue::fake();
@@ -116,7 +117,7 @@ class FacebookTikTokYouTubePublishingTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_creates_and_publishes_tiktok_video()
     {
         Queue::fake();
@@ -168,7 +169,7 @@ class FacebookTikTokYouTubePublishingTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_creates_and_publishes_youtube_video()
     {
         Queue::fake();
@@ -219,7 +220,7 @@ class FacebookTikTokYouTubePublishingTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_creates_and_publishes_youtube_short()
     {
         Queue::fake();

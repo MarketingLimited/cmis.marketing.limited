@@ -9,6 +9,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\RateLimiter;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * RateLimit Middleware Unit Tests
  */
@@ -21,7 +22,7 @@ class RateLimitMiddlewareTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_allows_requests_within_limit()
     {
         $org = Org::create([
@@ -47,7 +48,7 @@ class RateLimitMiddlewareTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_blocks_requests_exceeding_limit()
     {
         $org = Org::create([
@@ -77,7 +78,7 @@ class RateLimitMiddlewareTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_uses_different_limits_per_endpoint()
     {
         $org = Org::create([
@@ -102,7 +103,7 @@ class RateLimitMiddlewareTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_resets_after_time_window()
     {
         $org = Org::create([
@@ -129,7 +130,7 @@ class RateLimitMiddlewareTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_provides_retry_after_header()
     {
         $org = Org::create([
@@ -153,7 +154,7 @@ class RateLimitMiddlewareTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_tracks_remaining_attempts()
     {
         $org = Org::create([
@@ -185,7 +186,7 @@ class RateLimitMiddlewareTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_applies_per_user_limits()
     {
         $org = Org::create([
@@ -216,7 +217,7 @@ class RateLimitMiddlewareTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_applies_per_ip_limits_for_guests()
     {
         // Guest users should be rate limited by IP address
@@ -228,7 +229,7 @@ class RateLimitMiddlewareTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_exempts_admin_users()
     {
         $org = Org::create([
@@ -253,7 +254,7 @@ class RateLimitMiddlewareTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_respects_org_specific_limits()
     {
         $org1 = Org::create([

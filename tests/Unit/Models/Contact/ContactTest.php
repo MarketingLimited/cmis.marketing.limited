@@ -8,6 +8,7 @@ use App\Models\Contact\Contact;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * Contact Model Unit Tests
  */
@@ -20,7 +21,7 @@ class ContactTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_can_create_contact()
     {
         $org = Org::create([
@@ -43,7 +44,7 @@ class ContactTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_belongs_to_org()
     {
         $org = Org::create([
@@ -62,7 +63,7 @@ class ContactTest extends TestCase
         $this->assertEquals($org->org_id, $contact->org->org_id);
     }
 
-    /** @test */
+    #[Test]
     public function it_has_full_name_accessor()
     {
         $org = Org::create([
@@ -82,7 +83,7 @@ class ContactTest extends TestCase
         $this->assertEquals('محمد السعيد', $fullName);
     }
 
-    /** @test */
+    #[Test]
     public function it_stores_contact_segments()
     {
         $org = Org::create([
@@ -105,7 +106,7 @@ class ContactTest extends TestCase
         $this->assertContains('newsletter', $contact->segments);
     }
 
-    /** @test */
+    #[Test]
     public function it_stores_custom_fields()
     {
         $org = Org::create([
@@ -133,7 +134,7 @@ class ContactTest extends TestCase
         $this->assertEquals('مدير تسويق', $contact->custom_fields['job_title']);
     }
 
-    /** @test */
+    #[Test]
     public function it_tracks_subscription_status()
     {
         $org = Org::create([
@@ -163,7 +164,7 @@ class ContactTest extends TestCase
         $this->assertFalse($unsubscribedContact->is_subscribed);
     }
 
-    /** @test */
+    #[Test]
     public function it_tracks_last_engagement_date()
     {
         $org = Org::create([
@@ -183,7 +184,7 @@ class ContactTest extends TestCase
         $this->assertNotNull($contact->last_engaged_at);
     }
 
-    /** @test */
+    #[Test]
     public function it_stores_social_profiles()
     {
         $org = Org::create([
@@ -211,7 +212,7 @@ class ContactTest extends TestCase
         $this->assertEquals('https://facebook.com/user123', $contact->social_profiles['facebook']);
     }
 
-    /** @test */
+    #[Test]
     public function it_stores_contact_source()
     {
         $org = Org::create([
@@ -231,7 +232,7 @@ class ContactTest extends TestCase
         $this->assertEquals('landing_page', $contact->source);
     }
 
-    /** @test */
+    #[Test]
     public function it_uses_uuid_as_primary_key()
     {
         $org = Org::create([
@@ -250,7 +251,7 @@ class ContactTest extends TestCase
         $this->assertTrue(Str::isUuid($contact->contact_id));
     }
 
-    /** @test */
+    #[Test]
     public function it_has_timestamps()
     {
         $org = Org::create([
@@ -270,7 +271,7 @@ class ContactTest extends TestCase
         $this->assertNotNull($contact->updated_at);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_be_soft_deleted()
     {
         $org = Org::create([
@@ -295,7 +296,7 @@ class ContactTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_respects_rls_policies()
     {
         $org1 = Org::create([

@@ -11,6 +11,7 @@ use App\Models\Security\Permission;
 use App\Models\Security\UserPermission;
 use Illuminate\Support\Str;
 
+use PHPUnit\Framework\Attributes\Test;
 class UserTest extends TestCase
 {
     use RefreshDatabase;
@@ -20,7 +21,7 @@ class UserTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_can_create_a_user_with_uuid()
     {
         $user = User::create([
@@ -39,7 +40,7 @@ class UserTest extends TestCase
         $this->logTestResult('passed', ['user_id' => $user->user_id]);
     }
 
-    /** @test */
+    #[Test]
     public function it_has_many_organizations()
     {
         $setup = $this->createUserWithOrg();
@@ -53,7 +54,7 @@ class UserTest extends TestCase
         $this->logTestResult('passed');
     }
 
-    /** @test */
+    #[Test]
     public function it_can_check_organization_membership()
     {
         $setup = $this->createUserWithOrg();
@@ -72,7 +73,7 @@ class UserTest extends TestCase
         $this->logTestResult('passed');
     }
 
-    /** @test */
+    #[Test]
     public function it_can_check_permissions()
     {
         $setup = $this->createUserWithOrg();
@@ -106,7 +107,7 @@ class UserTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_belongs_to_multiple_organizations()
     {
         $user = User::create([
@@ -153,7 +154,7 @@ class UserTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_uses_uuid_as_primary_identifier()
     {
         $userId = Str::uuid()->toString();
@@ -177,7 +178,7 @@ class UserTest extends TestCase
         $this->logTestResult('passed');
     }
 
-    /** @test */
+    #[Test]
     public function it_enforces_unique_email()
     {
         User::create([
@@ -197,7 +198,7 @@ class UserTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_be_soft_deleted()
     {
         $user = User::create([

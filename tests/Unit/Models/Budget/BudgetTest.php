@@ -10,6 +10,7 @@ use App\Models\Core\Campaign;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * Budget Model Unit Tests
  */
@@ -22,7 +23,7 @@ class BudgetTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_can_create_budget()
     {
         $org = Org::create([
@@ -56,7 +57,7 @@ class BudgetTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_belongs_to_org()
     {
         $org = Org::create([
@@ -79,7 +80,7 @@ class BudgetTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_belongs_to_campaign()
     {
         $org = Org::create([
@@ -110,7 +111,7 @@ class BudgetTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_tracks_spent_amount()
     {
         $org = Org::create([
@@ -134,7 +135,7 @@ class BudgetTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_calculates_remaining_amount()
     {
         $org = Org::create([
@@ -159,7 +160,7 @@ class BudgetTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_supports_different_currencies()
     {
         $org = Org::create([
@@ -190,7 +191,7 @@ class BudgetTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_has_start_and_end_dates()
     {
         $org = Org::create([
@@ -216,7 +217,7 @@ class BudgetTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_have_budget_breakdown()
     {
         $org = Org::create([
@@ -247,7 +248,7 @@ class BudgetTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_tracks_budget_status()
     {
         $org = Org::create([
@@ -281,7 +282,7 @@ class BudgetTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_stores_approval_information()
     {
         $org = Org::create([
@@ -314,7 +315,7 @@ class BudgetTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_uses_uuid_as_primary_key()
     {
         $org = Org::create([
@@ -337,7 +338,7 @@ class BudgetTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_has_timestamps()
     {
         $org = Org::create([
@@ -361,7 +362,7 @@ class BudgetTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_respects_rls_policies()
     {
         $org1 = Org::create([

@@ -9,6 +9,7 @@ use App\Models\Metric\Metric;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * Metric Model Unit Tests
  */
@@ -21,7 +22,7 @@ class MetricTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_can_create_metric()
     {
         $org = Org::create([
@@ -56,7 +57,7 @@ class MetricTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_belongs_to_org()
     {
         $org = Org::create([
@@ -80,7 +81,7 @@ class MetricTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_belongs_to_campaign()
     {
         $org = Org::create([
@@ -112,7 +113,7 @@ class MetricTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_tracks_different_metric_types()
     {
         $org = Org::create([
@@ -140,7 +141,7 @@ class MetricTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_stores_metric_value()
     {
         $org = Org::create([
@@ -164,7 +165,7 @@ class MetricTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_tracks_metrics_by_platform()
     {
         $org = Org::create([
@@ -199,7 +200,7 @@ class MetricTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_tracks_metrics_by_date()
     {
         $org = Org::create([
@@ -232,7 +233,7 @@ class MetricTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_stores_additional_metadata()
     {
         $org = Org::create([
@@ -264,7 +265,7 @@ class MetricTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_uses_uuid_as_primary_key()
     {
         $org = Org::create([
@@ -288,7 +289,7 @@ class MetricTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_has_timestamps()
     {
         $org = Org::create([
@@ -313,7 +314,7 @@ class MetricTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_respects_rls_policies()
     {
         $org1 = Org::create([
@@ -351,7 +352,7 @@ class MetricTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_calculate_daily_totals()
     {
         $org = Org::create([

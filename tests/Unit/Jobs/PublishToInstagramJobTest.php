@@ -11,6 +11,7 @@ use App\Models\ScheduledSocialPost;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Str;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * Publish To Instagram Job Unit Tests
  */
@@ -23,7 +24,7 @@ class PublishToInstagramJobTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_can_be_dispatched()
     {
         Queue::fake();
@@ -48,7 +49,7 @@ class PublishToInstagramJobTest extends TestCase
         Queue::assertPushed(PublishToInstagramJob::class);
     }
 
-    /** @test */
+    #[Test]
     public function it_publishes_feed_post_to_instagram()
     {
         $setup = $this->createUserWithOrg();
@@ -84,7 +85,7 @@ class PublishToInstagramJobTest extends TestCase
         $this->assertEquals('published', $scheduledPost->status);
     }
 
-    /** @test */
+    #[Test]
     public function it_publishes_story_to_instagram()
     {
         $setup = $this->createUserWithOrg();
@@ -118,7 +119,7 @@ class PublishToInstagramJobTest extends TestCase
         $this->assertEquals('published', $scheduledPost->fresh()->status);
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_api_errors()
     {
         $setup = $this->createUserWithOrg();
@@ -153,7 +154,7 @@ class PublishToInstagramJobTest extends TestCase
         $this->assertEquals('failed', $scheduledPost->status);
     }
 
-    /** @test */
+    #[Test]
     public function it_retries_on_failure()
     {
         Queue::fake();
@@ -179,7 +180,7 @@ class PublishToInstagramJobTest extends TestCase
         $this->assertTrue(method_exists($job, 'retryUntil') || property_exists($job, 'tries'));
     }
 
-    /** @test */
+    #[Test]
     public function it_updates_post_metadata_after_publishing()
     {
         $setup = $this->createUserWithOrg();
@@ -213,7 +214,7 @@ class PublishToInstagramJobTest extends TestCase
         $this->assertNotNull($scheduledPost->metadata);
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_required_fields_before_publishing()
     {
         $setup = $this->createUserWithOrg();

@@ -9,6 +9,7 @@ use App\Models\Social\SocialPost;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * Social Post Model Unit Tests
  */
@@ -21,7 +22,7 @@ class SocialPostTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_can_create_a_social_post()
     {
         $org = Org::create([
@@ -53,7 +54,7 @@ class SocialPostTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_belongs_to_organization_and_integration()
     {
         $org = Org::create([
@@ -83,7 +84,7 @@ class SocialPostTest extends TestCase
         $this->assertEquals($integration->integration_id, $socialPost->integration->integration_id);
     }
 
-    /** @test */
+    #[Test]
     public function it_stores_metrics_as_json()
     {
         $org = Org::create([
@@ -122,7 +123,7 @@ class SocialPostTest extends TestCase
         $this->assertEquals(3.7, $socialPost->metrics['engagement_rate']);
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_post_type()
     {
         $org = Org::create([
@@ -151,7 +152,7 @@ class SocialPostTest extends TestCase
         $this->assertContains($socialPost->post_type, ['feed', 'story', 'reel', 'post', 'video', 'tweet', 'thread']);
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_platform()
     {
         $org = Org::create([
@@ -188,7 +189,7 @@ class SocialPostTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_uses_uuid_as_primary_key()
     {
         $org = Org::create([
@@ -217,7 +218,7 @@ class SocialPostTest extends TestCase
         $this->assertTrue(Str::isUuid($socialPost->post_id));
     }
 
-    /** @test */
+    #[Test]
     public function it_can_be_soft_deleted()
     {
         $org = Org::create([
@@ -250,7 +251,7 @@ class SocialPostTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_has_timestamps()
     {
         $org = Org::create([
@@ -281,7 +282,7 @@ class SocialPostTest extends TestCase
         $this->assertNotNull($socialPost->published_at);
     }
 
-    /** @test */
+    #[Test]
     public function it_respects_rls_policies()
     {
         $org1 = Org::create([
@@ -335,7 +336,7 @@ class SocialPostTest extends TestCase
         $this->assertEquals('Org 1 post', $org1Posts->first()->content);
     }
 
-    /** @test */
+    #[Test]
     public function it_calculates_engagement_rate()
     {
         $org = Org::create([

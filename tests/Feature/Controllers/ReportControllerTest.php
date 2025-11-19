@@ -11,6 +11,7 @@ use App\Models\Report\Report;
 use App\Models\Team\TeamMember;
 use Illuminate\Support\Str;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * Report Controller Feature Tests
  */
@@ -23,7 +24,7 @@ class ReportControllerTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_can_list_reports()
     {
         $org = Org::create([
@@ -65,7 +66,7 @@ class ReportControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_generate_new_report()
     {
         $org = Org::create([
@@ -98,7 +99,7 @@ class ReportControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_view_report_details()
     {
         $org = Org::create([
@@ -140,7 +141,7 @@ class ReportControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_download_report()
     {
         $org = Org::create([
@@ -183,7 +184,7 @@ class ReportControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_delete_report()
     {
         $org = Org::create([
@@ -225,7 +226,7 @@ class ReportControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_filter_reports_by_type()
     {
         $org = Org::create([
@@ -276,7 +277,7 @@ class ReportControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_schedule_recurring_report()
     {
         $org = Org::create([
@@ -309,7 +310,7 @@ class ReportControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function viewer_cannot_delete_reports()
     {
         $org = Org::create([
@@ -351,7 +352,7 @@ class ReportControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_respects_org_isolation()
     {
         $org1 = Org::create([
@@ -406,7 +407,7 @@ class ReportControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_export_report_to_different_formats()
     {
         $org = Org::create([

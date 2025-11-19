@@ -11,6 +11,7 @@ use App\Jobs\SyncFacebookDataJob;
 use App\Models\Operations\SyncLog;
 use Illuminate\Support\Facades\Queue;
 
+use PHPUnit\Framework\Attributes\Test;
 class FacebookSyncIntegrationTest extends TestCase
 {
     use RefreshDatabase, CreatesTestData, MocksExternalAPIs;
@@ -23,7 +24,7 @@ class FacebookSyncIntegrationTest extends TestCase
         $this->syncService = app(FacebookSyncService::class);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_sync_facebook_account_data()
     {
         $setup = $this->createUserWithOrg();
@@ -55,7 +56,7 @@ class FacebookSyncIntegrationTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_sync_facebook_posts()
     {
         $setup = $this->createUserWithOrg();
@@ -83,7 +84,7 @@ class FacebookSyncIntegrationTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_facebook_api_errors_gracefully()
     {
         $setup = $this->createUserWithOrg();
@@ -113,7 +114,7 @@ class FacebookSyncIntegrationTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_rate_limiting()
     {
         $setup = $this->createUserWithOrg();
@@ -134,7 +135,7 @@ class FacebookSyncIntegrationTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_dispatch_sync_job()
     {
         Queue::fake();
@@ -156,7 +157,7 @@ class FacebookSyncIntegrationTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_respects_sync_lookback_period()
     {
         $setup = $this->createUserWithOrg();
@@ -177,7 +178,7 @@ class FacebookSyncIntegrationTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_updates_existing_posts_on_resync()
     {
         $setup = $this->createUserWithOrg();

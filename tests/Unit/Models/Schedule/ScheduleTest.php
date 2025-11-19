@@ -10,6 +10,7 @@ use App\Models\Content\Content;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * Schedule Model Unit Tests
  */
@@ -22,7 +23,7 @@ class ScheduleTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_can_create_schedule()
     {
         $org = Org::create([
@@ -49,7 +50,7 @@ class ScheduleTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_belongs_to_org()
     {
         $org = Org::create([
@@ -72,7 +73,7 @@ class ScheduleTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_has_different_frequencies()
     {
         $org = Org::create([
@@ -99,7 +100,7 @@ class ScheduleTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_stores_scheduled_time()
     {
         $org = Org::create([
@@ -123,7 +124,7 @@ class ScheduleTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_tracks_next_run_time()
     {
         $org = Org::create([
@@ -147,7 +148,7 @@ class ScheduleTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_tracks_last_run_time()
     {
         $org = Org::create([
@@ -171,7 +172,7 @@ class ScheduleTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_be_active_or_inactive()
     {
         $org = Org::create([
@@ -204,7 +205,7 @@ class ScheduleTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_stores_schedule_config()
     {
         $org = Org::create([
@@ -235,7 +236,7 @@ class ScheduleTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_uses_uuid_as_primary_key()
     {
         $org = Org::create([
@@ -258,7 +259,7 @@ class ScheduleTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_has_timestamps()
     {
         $org = Org::create([
@@ -282,7 +283,7 @@ class ScheduleTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_respects_rls_policies()
     {
         $org1 = Org::create([

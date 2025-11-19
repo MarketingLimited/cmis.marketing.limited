@@ -11,6 +11,7 @@ use App\Jobs\PublishToFacebookJob;
 use App\Models\Social\ScheduledSocialPost;
 use Illuminate\Support\Str;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * Publish To Facebook Job Unit Tests
  */
@@ -23,7 +24,7 @@ class PublishToFacebookJobTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_can_be_dispatched()
     {
         Queue::fake();
@@ -50,7 +51,7 @@ class PublishToFacebookJobTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_publishes_post_to_facebook()
     {
         $setup = $this->createUserWithOrg();
@@ -84,7 +85,7 @@ class PublishToFacebookJobTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_publishing_errors()
     {
         $setup = $this->createUserWithOrg();
@@ -121,7 +122,7 @@ class PublishToFacebookJobTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_retries_on_failure()
     {
         Queue::fake();
@@ -148,7 +149,7 @@ class PublishToFacebookJobTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_updates_post_metadata_on_success()
     {
         $setup = $this->createUserWithOrg();
@@ -183,7 +184,7 @@ class PublishToFacebookJobTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_post_content_before_publishing()
     {
         $setup = $this->createUserWithOrg();

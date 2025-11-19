@@ -6,6 +6,7 @@ use Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Validator;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * Campaign Validator Unit Tests
  */
@@ -13,7 +14,7 @@ class CampaignValidatorTest extends TestCase
 {
     use RefreshDatabase;
 
-    /** @test */
+    #[Test]
     public function it_validates_campaign_name_is_required()
     {
         $data = [
@@ -35,7 +36,7 @@ class CampaignValidatorTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_campaign_name_max_length()
     {
         $data = [
@@ -56,7 +57,7 @@ class CampaignValidatorTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_status_values()
     {
         $invalidData = [
@@ -87,7 +88,7 @@ class CampaignValidatorTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_date_format()
     {
         $invalidData = [
@@ -118,7 +119,7 @@ class CampaignValidatorTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_end_date_after_start_date()
     {
         $invalidData = [
@@ -151,7 +152,7 @@ class CampaignValidatorTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_budget_is_numeric()
     {
         $invalidData = [
@@ -182,7 +183,7 @@ class CampaignValidatorTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_budget_minimum_value()
     {
         $invalidData = [
@@ -202,7 +203,7 @@ class CampaignValidatorTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_campaign_type()
     {
         $invalidData = [
@@ -233,7 +234,7 @@ class CampaignValidatorTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_allows_valid_campaign_data()
     {
         $validData = [

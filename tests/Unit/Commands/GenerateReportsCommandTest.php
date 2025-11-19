@@ -9,6 +9,7 @@ use App\Models\Core\Org;
 use App\Models\Report\Report;
 use Illuminate\Support\Str;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * GenerateReports Command Unit Tests
  */
@@ -21,7 +22,7 @@ class GenerateReportsCommandTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_generates_pending_reports()
     {
         $org = Org::create([
@@ -46,7 +47,7 @@ class GenerateReportsCommandTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_generates_specific_report_type()
     {
         $org = Org::create([
@@ -71,7 +72,7 @@ class GenerateReportsCommandTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_generates_reports_for_specific_org()
     {
         $org = Org::create([
@@ -96,7 +97,7 @@ class GenerateReportsCommandTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_shows_verbose_output()
     {
         $org = Org::create([
@@ -121,7 +122,7 @@ class GenerateReportsCommandTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_no_pending_reports()
     {
         $this->artisan('reports:generate')
@@ -133,7 +134,7 @@ class GenerateReportsCommandTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_limits_batch_size()
     {
         $org = Org::create([
@@ -160,7 +161,7 @@ class GenerateReportsCommandTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_supports_dry_run_mode()
     {
         $org = Org::create([
@@ -185,7 +186,7 @@ class GenerateReportsCommandTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_updates_report_status()
     {
         $org = Org::create([
@@ -213,7 +214,7 @@ class GenerateReportsCommandTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_generation_errors()
     {
         $org = Org::create([
@@ -238,7 +239,7 @@ class GenerateReportsCommandTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_respects_org_isolation()
     {
         $org1 = Org::create([

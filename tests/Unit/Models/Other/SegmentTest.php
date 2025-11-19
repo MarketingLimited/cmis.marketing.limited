@@ -8,6 +8,7 @@ use App\Models\Other\Segment;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * Segment Model Unit Tests
  */
@@ -20,7 +21,7 @@ class SegmentTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_can_create_segment()
     {
         $org = Org::create([
@@ -46,7 +47,7 @@ class SegmentTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_belongs_to_org()
     {
         $org = Org::create([
@@ -68,7 +69,7 @@ class SegmentTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_stores_persona_data()
     {
         $org = Org::create([
@@ -99,7 +100,7 @@ class SegmentTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_supports_arabic_names()
     {
         $org = Org::create([
@@ -123,7 +124,7 @@ class SegmentTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_have_notes()
     {
         $org = Org::create([
@@ -146,7 +147,7 @@ class SegmentTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_tracks_provider()
     {
         $org = Org::create([
@@ -173,7 +174,7 @@ class SegmentTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_uses_soft_deletes()
     {
         $org = Org::create([
@@ -199,7 +200,7 @@ class SegmentTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_scope_by_org()
     {
         $org1 = Org::create([
@@ -233,7 +234,7 @@ class SegmentTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_uses_uuid_as_primary_key()
     {
         $org = Org::create([
@@ -255,7 +256,7 @@ class SegmentTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_respects_rls_policies()
     {
         $org1 = Org::create([
@@ -289,7 +290,7 @@ class SegmentTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_store_complex_persona()
     {
         $org = Org::create([

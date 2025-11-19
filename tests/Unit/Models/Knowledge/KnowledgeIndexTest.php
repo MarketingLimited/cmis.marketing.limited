@@ -8,6 +8,7 @@ use App\Models\Knowledge\KnowledgeIndex;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * Knowledge Index Model Unit Tests
  */
@@ -20,7 +21,7 @@ class KnowledgeIndexTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_can_create_a_knowledge_index()
     {
         $org = Org::create([
@@ -42,7 +43,7 @@ class KnowledgeIndexTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_belongs_to_an_organization()
     {
         $org = Org::create([
@@ -61,7 +62,7 @@ class KnowledgeIndexTest extends TestCase
         $this->assertEquals($org->org_id, $knowledgeIndex->org->org_id);
     }
 
-    /** @test */
+    #[Test]
     public function it_stores_embedding_vector()
     {
         $org = Org::create([
@@ -84,7 +85,7 @@ class KnowledgeIndexTest extends TestCase
         $this->assertEquals(0.5, $knowledgeIndex->embedding[0]);
     }
 
-    /** @test */
+    #[Test]
     public function it_stores_metadata_as_json()
     {
         $org = Org::create([
@@ -112,7 +113,7 @@ class KnowledgeIndexTest extends TestCase
         $this->assertContains('summer', $knowledgeIndex->metadata['tags']);
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_content_type()
     {
         $org = Org::create([
@@ -138,7 +139,7 @@ class KnowledgeIndexTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_uses_uuid_as_primary_key()
     {
         $org = Org::create([
@@ -157,7 +158,7 @@ class KnowledgeIndexTest extends TestCase
         $this->assertTrue(Str::isUuid($knowledgeIndex->index_id));
     }
 
-    /** @test */
+    #[Test]
     public function it_can_be_soft_deleted()
     {
         $org = Org::create([
@@ -180,7 +181,7 @@ class KnowledgeIndexTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_has_timestamps()
     {
         $org = Org::create([
@@ -200,7 +201,7 @@ class KnowledgeIndexTest extends TestCase
         $this->assertNotNull($knowledgeIndex->updated_at);
     }
 
-    /** @test */
+    #[Test]
     public function it_respects_rls_policies()
     {
         $org1 = Org::create([
@@ -234,7 +235,7 @@ class KnowledgeIndexTest extends TestCase
         $this->assertEquals('Org 1 knowledge', $org1Indexes->first()->content);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_calculate_similarity()
     {
         $org = Org::create([

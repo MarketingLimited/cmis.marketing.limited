@@ -9,6 +9,7 @@ use App\Models\Core\Campaign;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Event;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * Campaign Observer Unit Tests
  */
@@ -21,7 +22,7 @@ class CampaignObserverTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_fires_creating_event()
     {
         Event::fake();
@@ -47,7 +48,7 @@ class CampaignObserverTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_fires_created_event()
     {
         $org = Org::create([
@@ -72,7 +73,7 @@ class CampaignObserverTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_fires_updating_event()
     {
         $org = Org::create([
@@ -97,7 +98,7 @@ class CampaignObserverTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_fires_updated_event()
     {
         $org = Org::create([
@@ -125,7 +126,7 @@ class CampaignObserverTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_fires_deleting_event()
     {
         $org = Org::create([
@@ -152,7 +153,7 @@ class CampaignObserverTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_fires_deleted_event()
     {
         $org = Org::create([
@@ -178,7 +179,7 @@ class CampaignObserverTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_sets_defaults_on_creation()
     {
         $org = Org::create([

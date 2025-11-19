@@ -10,6 +10,7 @@ use App\Models\User;
 use App\Models\Team\TeamMember;
 use Illuminate\Support\Str;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * User Policy Unit Tests
  */
@@ -22,7 +23,7 @@ class UserPolicyTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function user_can_view_own_profile()
     {
         $org = Org::create([
@@ -54,7 +55,7 @@ class UserPolicyTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function user_can_update_own_profile()
     {
         $org = Org::create([
@@ -86,7 +87,7 @@ class UserPolicyTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function user_cannot_delete_own_account()
     {
         $org = Org::create([
@@ -118,7 +119,7 @@ class UserPolicyTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function user_cannot_assign_own_role()
     {
         $org = Org::create([
@@ -150,7 +151,7 @@ class UserPolicyTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function admin_can_view_other_users()
     {
         $org = Org::create([
@@ -196,7 +197,7 @@ class UserPolicyTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function admin_can_create_users()
     {
         $org = Org::create([
@@ -228,7 +229,7 @@ class UserPolicyTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function admin_can_update_other_users()
     {
         $org = Org::create([
@@ -274,7 +275,7 @@ class UserPolicyTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function admin_can_delete_other_users()
     {
         $org = Org::create([
@@ -320,7 +321,7 @@ class UserPolicyTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function admin_can_invite_users()
     {
         $org = Org::create([
@@ -352,7 +353,7 @@ class UserPolicyTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function admin_can_assign_roles()
     {
         $org = Org::create([
@@ -398,7 +399,7 @@ class UserPolicyTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function viewer_cannot_create_users()
     {
         $org = Org::create([
@@ -431,7 +432,7 @@ class UserPolicyTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function viewer_cannot_view_other_users()
     {
         $org = Org::create([

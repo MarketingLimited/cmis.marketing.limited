@@ -8,6 +8,7 @@ use Tests\Traits\MocksExternalAPIs;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use App\Services\Social\SnapchatService;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * Snapchat Service Unit Tests
  */
@@ -23,7 +24,7 @@ class SnapchatServiceTest extends TestCase
         $this->service = app(SnapchatService::class);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_create_snap_ad()
     {
         $setup = $this->createUserWithOrg();
@@ -54,7 +55,7 @@ class SnapchatServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_create_story_ad()
     {
         $setup = $this->createUserWithOrg();
@@ -84,7 +85,7 @@ class SnapchatServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_upload_media()
     {
         $setup = $this->createUserWithOrg();
@@ -114,7 +115,7 @@ class SnapchatServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_ad_statistics()
     {
         $setup = $this->createUserWithOrg();
@@ -146,7 +147,7 @@ class SnapchatServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_audience_insights()
     {
         $setup = $this->createUserWithOrg();
@@ -179,7 +180,7 @@ class SnapchatServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_create_pixel()
     {
         $setup = $this->createUserWithOrg();
@@ -208,7 +209,7 @@ class SnapchatServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_pixel_events()
     {
         $setup = $this->createUserWithOrg();
@@ -235,7 +236,7 @@ class SnapchatServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_update_ad_status()
     {
         $setup = $this->createUserWithOrg();
@@ -260,7 +261,7 @@ class SnapchatServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_ad_account_id()
     {
         $setup = $this->createUserWithOrg();
@@ -281,7 +282,7 @@ class SnapchatServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_api_errors()
     {
         $setup = $this->createUserWithOrg();
@@ -305,7 +306,7 @@ class SnapchatServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_rate_limiting()
     {
         $setup = $this->createUserWithOrg();

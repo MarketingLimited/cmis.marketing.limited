@@ -10,6 +10,7 @@ use App\Models\Core\UserPermission;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Hash;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * Team Management API Feature Tests
  */
@@ -22,7 +23,7 @@ class TeamAPITest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_can_invite_team_member()
     {
         $setup = $this->createUserWithOrg();
@@ -50,7 +51,7 @@ class TeamAPITest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_list_team_members()
     {
         $setup = $this->createUserWithOrg();
@@ -88,7 +89,7 @@ class TeamAPITest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_team_member_details()
     {
         $setup = $this->createUserWithOrg();
@@ -114,7 +115,7 @@ class TeamAPITest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_update_team_member_role()
     {
         $setup = $this->createUserWithOrg();
@@ -142,7 +143,7 @@ class TeamAPITest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_update_team_member_permissions()
     {
         $setup = $this->createUserWithOrg();
@@ -174,7 +175,7 @@ class TeamAPITest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_remove_team_member()
     {
         $setup = $this->createUserWithOrg();
@@ -203,7 +204,7 @@ class TeamAPITest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_team_activity_log()
     {
         $setup = $this->createUserWithOrg();
@@ -226,7 +227,7 @@ class TeamAPITest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_team_statistics()
     {
         $setup = $this->createUserWithOrg();
@@ -247,7 +248,7 @@ class TeamAPITest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_email_on_invite()
     {
         $setup = $this->createUserWithOrg();
@@ -269,7 +270,7 @@ class TeamAPITest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_prevents_duplicate_email_invites()
     {
         $setup = $this->createUserWithOrg();
@@ -298,7 +299,7 @@ class TeamAPITest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_respects_org_isolation()
     {
         $setup1 = $this->createUserWithOrg();
@@ -323,7 +324,7 @@ class TeamAPITest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_resend_invitation()
     {
         $setup = $this->createUserWithOrg();

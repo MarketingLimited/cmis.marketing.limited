@@ -11,6 +11,7 @@ use App\Models\Team\TeamMember;
 use App\Models\Notification\Notification;
 use Illuminate\Support\Str;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * Notification Controller Feature Tests
  */
@@ -23,7 +24,7 @@ class NotificationControllerTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_can_list_user_notifications()
     {
         $org = Org::create([
@@ -63,7 +64,7 @@ class NotificationControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_mark_notification_as_read()
     {
         $org = Org::create([
@@ -104,7 +105,7 @@ class NotificationControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_mark_all_as_read()
     {
         $org = Org::create([
@@ -147,7 +148,7 @@ class NotificationControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_delete_notification()
     {
         $org = Org::create([
@@ -187,7 +188,7 @@ class NotificationControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_shows_unread_count()
     {
         $org = Org::create([
@@ -231,7 +232,7 @@ class NotificationControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_filters_by_notification_type()
     {
         $org = Org::create([
@@ -278,7 +279,7 @@ class NotificationControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function user_cannot_access_others_notifications()
     {
         $org = Org::create([
@@ -325,7 +326,7 @@ class NotificationControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_delete_all_read_notifications()
     {
         $org = Org::create([
@@ -368,7 +369,7 @@ class NotificationControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_paginates_notifications()
     {
         $org = Org::create([

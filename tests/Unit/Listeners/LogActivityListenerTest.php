@@ -11,6 +11,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Event;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * LogActivity Listener Unit Tests
  */
@@ -23,7 +24,7 @@ class LogActivityListenerTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_logs_campaign_created_activity()
     {
         Event::fake();
@@ -56,7 +57,7 @@ class LogActivityListenerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_logs_campaign_updated_activity()
     {
         Event::fake();
@@ -91,7 +92,7 @@ class LogActivityListenerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_logs_campaign_deleted_activity()
     {
         Event::fake();
@@ -126,7 +127,7 @@ class LogActivityListenerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_stores_activity_metadata()
     {
         Event::fake();
@@ -159,7 +160,7 @@ class LogActivityListenerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_logs_different_resource_types()
     {
         Event::fake();
@@ -186,7 +187,7 @@ class LogActivityListenerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_logs_user_authentication_events()
     {
         Event::fake();
@@ -212,7 +213,7 @@ class LogActivityListenerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_captures_changes_for_updates()
     {
         Event::fake();
@@ -247,7 +248,7 @@ class LogActivityListenerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_respects_org_context()
     {
         Event::fake();
@@ -292,7 +293,7 @@ class LogActivityListenerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_batches_similar_activities()
     {
         Event::fake();
@@ -327,7 +328,7 @@ class LogActivityListenerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_excludes_sensitive_data()
     {
         Event::fake();

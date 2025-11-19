@@ -9,6 +9,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use App\Services\Social\YouTubeService;
 use Illuminate\Support\Facades\Http;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * YouTube Service Unit Tests
  */
@@ -24,7 +25,7 @@ class YouTubeServiceTest extends TestCase
         $this->service = app(YouTubeService::class);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_upload_video()
     {
         $setup = $this->createUserWithOrg();
@@ -55,7 +56,7 @@ class YouTubeServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_upload_short()
     {
         $setup = $this->createUserWithOrg();
@@ -81,7 +82,7 @@ class YouTubeServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_channel_analytics()
     {
         $setup = $this->createUserWithOrg();
@@ -112,7 +113,7 @@ class YouTubeServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_video_analytics()
     {
         $setup = $this->createUserWithOrg();
@@ -145,7 +146,7 @@ class YouTubeServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_comments()
     {
         $setup = $this->createUserWithOrg();
@@ -181,7 +182,7 @@ class YouTubeServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_reply_to_comment()
     {
         $setup = $this->createUserWithOrg();
@@ -203,7 +204,7 @@ class YouTubeServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_update_video_metadata()
     {
         $setup = $this->createUserWithOrg();
@@ -229,7 +230,7 @@ class YouTubeServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_delete_video()
     {
         $setup = $this->createUserWithOrg();
@@ -249,7 +250,7 @@ class YouTubeServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_create_playlist()
     {
         $setup = $this->createUserWithOrg();
@@ -276,7 +277,7 @@ class YouTubeServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_add_video_to_playlist()
     {
         $setup = $this->createUserWithOrg();
@@ -298,7 +299,7 @@ class YouTubeServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_video_file()
     {
         $setup = $this->createUserWithOrg();
@@ -319,7 +320,7 @@ class YouTubeServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_api_errors()
     {
         $setup = $this->createUserWithOrg();

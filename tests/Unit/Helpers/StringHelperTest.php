@@ -4,12 +4,13 @@ namespace Tests\Unit\Helpers;
 
 use Tests\TestCase;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * String Helper Unit Tests
  */
 class StringHelperTest extends TestCase
 {
-    /** @test */
+    #[Test]
     public function it_truncates_string()
     {
         $longText = 'This is a very long text that needs to be truncated for display purposes.';
@@ -24,7 +25,7 @@ class StringHelperTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_generates_slug()
     {
         $title = 'Summer Sale Campaign 2024';
@@ -43,7 +44,7 @@ class StringHelperTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_extracts_hashtags()
     {
         $text = 'Amazing product! #sale #summer #discount #shopping';
@@ -59,7 +60,7 @@ class StringHelperTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_extracts_mentions()
     {
         $text = 'Great collaboration with @john and @sarah!';
@@ -75,7 +76,7 @@ class StringHelperTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_masks_sensitive_data()
     {
         $email = 'user@example.com';
@@ -95,7 +96,7 @@ class StringHelperTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_converts_to_title_case()
     {
         $text = 'summer sale campaign';
@@ -109,7 +110,7 @@ class StringHelperTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_removes_special_characters()
     {
         $text = 'Hello! @World# $123%';
@@ -123,7 +124,7 @@ class StringHelperTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_counts_words()
     {
         $text = 'This is a test sentence with seven words.';

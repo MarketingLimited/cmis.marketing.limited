@@ -9,6 +9,7 @@ use App\Models\Operations\AuditLog;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * AuditLog Model Unit Tests
  */
@@ -21,7 +22,7 @@ class AuditLogTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_can_create_audit_log()
     {
         $org = Org::create([
@@ -57,7 +58,7 @@ class AuditLogTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_belongs_to_org()
     {
         $org = Org::create([
@@ -80,7 +81,7 @@ class AuditLogTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_belongs_to_user()
     {
         $org = Org::create([
@@ -111,7 +112,7 @@ class AuditLogTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_tracks_action_type()
     {
         $org = Org::create([
@@ -138,7 +139,7 @@ class AuditLogTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_stores_entity_information()
     {
         $org = Org::create([
@@ -165,7 +166,7 @@ class AuditLogTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_stores_old_and_new_values()
     {
         $org = Org::create([
@@ -201,7 +202,7 @@ class AuditLogTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_tracks_ip_address()
     {
         $org = Org::create([
@@ -225,7 +226,7 @@ class AuditLogTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_tracks_user_agent()
     {
         $org = Org::create([
@@ -251,7 +252,7 @@ class AuditLogTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_stores_additional_metadata()
     {
         $org = Org::create([
@@ -282,7 +283,7 @@ class AuditLogTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_uses_uuid_as_primary_key()
     {
         $org = Org::create([
@@ -305,7 +306,7 @@ class AuditLogTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_has_timestamps()
     {
         $org = Org::create([
@@ -328,7 +329,7 @@ class AuditLogTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_respects_rls_policies()
     {
         $org1 = Org::create([
@@ -364,7 +365,7 @@ class AuditLogTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_query_by_entity_type()
     {
         $org = Org::create([

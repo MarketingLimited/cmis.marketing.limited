@@ -8,6 +8,7 @@ use App\Models\Template\Template;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * Template Model Unit Tests
  */
@@ -20,7 +21,7 @@ class TemplateTest extends TestCase
         parent::setUp();
     }
 
-    /** @test */
+    #[Test]
     public function it_can_create_template()
     {
         $org = Org::create([
@@ -42,7 +43,7 @@ class TemplateTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_belongs_to_org()
     {
         $org = Org::create([
@@ -61,7 +62,7 @@ class TemplateTest extends TestCase
         $this->assertEquals($org->org_id, $template->org->org_id);
     }
 
-    /** @test */
+    #[Test]
     public function it_has_different_template_types()
     {
         $org = Org::create([
@@ -98,7 +99,7 @@ class TemplateTest extends TestCase
         $this->assertEquals('social', $socialTemplate->type);
     }
 
-    /** @test */
+    #[Test]
     public function it_stores_template_variables()
     {
         $org = Org::create([
@@ -126,7 +127,7 @@ class TemplateTest extends TestCase
         $this->assertEquals('Customer Name', $template->variables['name']);
     }
 
-    /** @test */
+    #[Test]
     public function it_stores_template_metadata()
     {
         $org = Org::create([
@@ -154,7 +155,7 @@ class TemplateTest extends TestCase
         $this->assertEquals('support@example.com', $template->metadata['reply_to']);
     }
 
-    /** @test */
+    #[Test]
     public function it_tracks_usage_count()
     {
         $org = Org::create([
@@ -176,7 +177,7 @@ class TemplateTest extends TestCase
         $this->assertEquals(5, $template->fresh()->usage_count);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_be_active_or_inactive()
     {
         $org = Org::create([
@@ -206,7 +207,7 @@ class TemplateTest extends TestCase
         $this->assertFalse($inactiveTemplate->is_active);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_be_default_template()
     {
         $org = Org::create([
@@ -226,7 +227,7 @@ class TemplateTest extends TestCase
         $this->assertTrue($defaultTemplate->is_default);
     }
 
-    /** @test */
+    #[Test]
     public function it_stores_category()
     {
         $org = Org::create([
@@ -246,7 +247,7 @@ class TemplateTest extends TestCase
         $this->assertEquals('newsletter', $template->category);
     }
 
-    /** @test */
+    #[Test]
     public function it_uses_uuid_as_primary_key()
     {
         $org = Org::create([
@@ -265,7 +266,7 @@ class TemplateTest extends TestCase
         $this->assertTrue(Str::isUuid($template->template_id));
     }
 
-    /** @test */
+    #[Test]
     public function it_has_timestamps()
     {
         $org = Org::create([
@@ -285,7 +286,7 @@ class TemplateTest extends TestCase
         $this->assertNotNull($template->updated_at);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_be_soft_deleted()
     {
         $org = Org::create([
@@ -310,7 +311,7 @@ class TemplateTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_respects_rls_policies()
     {
         $org1 = Org::create([

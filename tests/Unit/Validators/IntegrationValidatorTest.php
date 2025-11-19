@@ -6,6 +6,7 @@ use Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Validator;
 
+use PHPUnit\Framework\Attributes\Test;
 /**
  * Integration Validator Unit Tests
  */
@@ -13,7 +14,7 @@ class IntegrationValidatorTest extends TestCase
 {
     use RefreshDatabase;
 
-    /** @test */
+    #[Test]
     public function it_validates_platform_is_required()
     {
         $data = [
@@ -34,7 +35,7 @@ class IntegrationValidatorTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_platform_values()
     {
         $invalidData = [
@@ -68,7 +69,7 @@ class IntegrationValidatorTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_name_is_required()
     {
         $data = [
@@ -88,7 +89,7 @@ class IntegrationValidatorTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_credentials_is_array()
     {
         $invalidData = [
@@ -124,7 +125,7 @@ class IntegrationValidatorTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_is_active_is_boolean()
     {
         $invalidData = [
@@ -157,7 +158,7 @@ class IntegrationValidatorTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_token_expires_at_date()
     {
         $invalidData = [
@@ -190,7 +191,7 @@ class IntegrationValidatorTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_metadata_is_array()
     {
         $invalidData = [
@@ -226,7 +227,7 @@ class IntegrationValidatorTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_allows_valid_integration_data()
     {
         $validData = [
