@@ -12,6 +12,15 @@ use Illuminate\Support\Facades\Validator;
 class UserController extends Controller
 {
     /**
+     * Constructor - Apply authentication middleware
+     */
+    public function __construct()
+    {
+        // Apply authentication to all user management actions
+        $this->middleware('auth:sanctum');
+    }
+
+    /**
      * قائمة مستخدمي الشركة
      */
     public function index(Request $request, string $orgId)
@@ -306,6 +315,7 @@ class UserController extends Controller
     {
         try {
             $targetUser = User::findOrFail($userId);
+            $this->authorize('view', $targetUser);
 
             // Get user activities from user_activities table
             $activities = \App\Models\UserActivity::where('user_id', $userId)
@@ -344,6 +354,7 @@ class UserController extends Controller
     {
         try {
             $targetUser = User::findOrFail($userId);
+            $this->authorize('view', $targetUser);
 
             // Get user's role from user_orgs
             $userOrg = \App\Models\Core\UserOrg::where('org_id', $orgId)

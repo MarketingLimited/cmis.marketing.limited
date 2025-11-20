@@ -9,6 +9,16 @@ use Illuminate\Support\Facades\Validator;
 
 class CreativeAssetController extends Controller
 {
+    /**
+     * Constructor - Apply authentication middleware
+     */
+    public function __construct()
+    {
+        // Apply authentication to all creative asset operations
+        // Assets include file uploads and sensitive creative content
+        $this->middleware('auth:sanctum');
+    }
+
     public function index(Request $request, string $orgId)
     {
         $this->authorize('viewAny', CreativeAsset::class);
