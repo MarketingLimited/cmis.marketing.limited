@@ -13,13 +13,11 @@ class MarketFactory extends Factory
     public function definition(): array
     {
         return [
-            'market_id' => (string) Str::uuid(),
-            'code' => fake()->unique()->regexify('[A-Z]{2}'),
-            'name' => fake()->country(),
-            'locale' => fake()->randomElement(['ar-BH', 'en-US', 'ar-SA', 'en-GB']),
-            'currency' => fake()->randomElement(['BHD', 'SAR', 'USD', 'GBP']),
-            'timezone' => fake()->timezone(),
-            'is_active' => true,
+            'market_id' => fake()->numberBetween(1, 999),
+            'market_name' => fake()->country(),
+            'language_code' => fake()->randomElement(['ar-BH', 'en-US', 'ar-SA', 'en-GB']),
+            'currency_code' => fake()->randomElement(['BHD', 'SAR', 'USD', 'GBP']),
+            'text_direction' => fake()->randomElement(['RTL', 'LTR']),
         ];
     }
 }

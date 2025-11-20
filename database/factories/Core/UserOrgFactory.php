@@ -13,7 +13,7 @@ class UserOrgFactory extends Factory
     public function definition(): array
     {
         return [
-            'user_org_id' => (string) Str::uuid(),
+            'id' => (string) Str::uuid(),
             'user_id' => User::factory(),
             'org_id' => Org::factory(),
             'role_id' => Role::factory(),

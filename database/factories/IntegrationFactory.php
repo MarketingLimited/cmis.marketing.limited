@@ -17,12 +17,10 @@ class IntegrationFactory extends Factory
             'org_id' => Org::factory(),
             'platform' => fake()->randomElement(['instagram', 'facebook', 'meta_ads']),
             'account_id' => (string) fake()->numberBetween(100000000, 999999999),
-            'account_username' => fake()->userName(),
             'access_token' => Str::random(64),
-            'refresh_token' => Str::random(64),
-            'token_expires_at' => now()->addDays(60),
-            'status' => 'active',
-            'metadata' => [],
+            'is_active' => true,
+            'business_id' => (string) fake()->numberBetween(100000, 999999),
+            'username' => fake()->userName(),
         ];
     }
 
@@ -51,7 +49,7 @@ class IntegrationFactory extends Factory
     public function inactive(): static
     {
         return $this->state(fn (array $attributes) => [
-            'status' => 'inactive',
+            'is_active' => false,
         ]);
     }
 }
