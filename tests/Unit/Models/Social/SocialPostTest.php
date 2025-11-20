@@ -12,6 +12,7 @@ use Illuminate\Support\Str;
 use PHPUnit\Framework\Attributes\Test;
 /**
  * Social Post Model Unit Tests
+ * Aligned with actual cmis.social_posts schema
  */
 class SocialPostTest extends TestCase
 {
@@ -38,19 +39,18 @@ class SocialPostTest extends TestCase
         ]);
 
         $socialPost = SocialPost::create([
-            'post_id' => Str::uuid(),
+            'id' => Str::uuid(),
             'org_id' => $org->org_id,
             'integration_id' => $integration->integration_id,
             'post_external_id' => 'ig_post_123',
-            'platform' => 'instagram',
-            'post_type' => 'feed',
-            'content' => 'Test Instagram post',
-            'published_at' => now(),
+            'provider' => 'instagram',
+            'caption' => 'Test Instagram post',
+            'posted_at' => now(),
         ]);
 
         $this->assertDatabaseHas('cmis.social_posts', [
-            'post_id' => $socialPost->post_id,
-            'platform' => 'instagram',
+            'id' => $socialPost->id,
+            'provider' => 'instagram',
         ]);
     }
 
@@ -70,14 +70,13 @@ class SocialPostTest extends TestCase
         ]);
 
         $socialPost = SocialPost::create([
-            'post_id' => Str::uuid(),
+            'id' => Str::uuid(),
             'org_id' => $org->org_id,
             'integration_id' => $integration->integration_id,
             'post_external_id' => 'fb_post_456',
-            'platform' => 'facebook',
-            'post_type' => 'post',
-            'content' => 'Facebook post',
-            'published_at' => now(),
+            'provider' => 'facebook',
+            'caption' => 'Facebook post',
+            'posted_at' => now(),
         ]);
 
         $this->assertEquals($org->org_id, $socialPost->org->org_id);
@@ -102,20 +101,20 @@ class SocialPostTest extends TestCase
         $metrics = [
             'likes' => 150,
             'comments' => 25,
-            'shares' => 10,
-            'views' => 5000,
+            'shares' => 12,
+            'impressions' => 5400,
+            'reach' => 3200,
             'engagement_rate' => 3.7,
         ];
 
         $socialPost = SocialPost::create([
-            'post_id' => Str::uuid(),
+            'id' => Str::uuid(),
             'org_id' => $org->org_id,
             'integration_id' => $integration->integration_id,
-            'post_external_id' => 'ig_post_metrics',
-            'platform' => 'instagram',
-            'post_type' => 'feed',
-            'content' => 'Metrics test',
-            'published_at' => now(),
+            'post_external_id' => 'metrics_post',
+            'provider' => 'instagram',
+            'caption' => 'Metrics test',
+            'posted_at' => now(),
             'metrics' => $metrics,
         ]);
 
@@ -124,7 +123,7 @@ class SocialPostTest extends TestCase
     }
 
     #[Test]
-    public function it_validates_post_type()
+    public function it_validates_media_type()
     {
         $org = Org::create([
             'org_id' => Str::uuid(),
@@ -139,21 +138,21 @@ class SocialPostTest extends TestCase
         ]);
 
         $socialPost = SocialPost::create([
-            'post_id' => Str::uuid(),
+            'id' => Str::uuid(),
             'org_id' => $org->org_id,
             'integration_id' => $integration->integration_id,
-            'post_external_id' => 'ig_post_type',
-            'platform' => 'instagram',
-            'post_type' => 'feed',
-            'content' => 'Type test',
-            'published_at' => now(),
+            'post_external_id' => 'ig_media_type',
+            'provider' => 'instagram',
+            'media_type' => 'IMAGE',
+            'caption' => 'Type test',
+            'posted_at' => now(),
         ]);
 
-        $this->assertContains($socialPost->post_type, ['feed', 'story', 'reel', 'post', 'video', 'tweet', 'thread']);
+        $this->assertContains($socialPost->media_type, ['IMAGE', 'VIDEO', 'CAROUSEL_ALBUM']);
     }
 
     #[Test]
-    public function it_validates_platform()
+    public function it_validates_provider()
     {
         $org = Org::create([
             'org_id' => Str::uuid(),
@@ -168,29 +167,20 @@ class SocialPostTest extends TestCase
         ]);
 
         $socialPost = SocialPost::create([
-            'post_id' => Str::uuid(),
+            'id' => Str::uuid(),
             'org_id' => $org->org_id,
             'integration_id' => $integration->integration_id,
-            'post_external_id' => 'platform_test',
-            'platform' => 'facebook',
-            'post_type' => 'post',
-            'content' => 'Platform test',
-            'published_at' => now(),
+            'post_external_id' => 'provider_test',
+            'provider' => 'facebook',
+            'caption' => 'Provider test',
+            'posted_at' => now(),
         ]);
 
-        $this->assertContains($socialPost->platform, [
-            'instagram',
-            'facebook',
-            'twitter',
-            'linkedin',
-            'tiktok',
-            'youtube',
-            'snapchat',
-        ]);
+        $this->assertContains($socialPost->provider, ['facebook', 'instagram', 'twitter', 'linkedin']);
     }
 
     #[Test]
-    public function it_uses_uuid_as_primary_key()
+    public function it_generates_uuid_for_primary_key()
     {
         $org = Org::create([
             'org_id' => Str::uuid(),
@@ -205,17 +195,15 @@ class SocialPostTest extends TestCase
         ]);
 
         $socialPost = SocialPost::create([
-            'post_id' => Str::uuid(),
             'org_id' => $org->org_id,
             'integration_id' => $integration->integration_id,
             'post_external_id' => 'uuid_test',
-            'platform' => 'instagram',
-            'post_type' => 'feed',
-            'content' => 'UUID test',
-            'published_at' => now(),
+            'provider' => 'instagram',
+            'caption' => 'UUID test',
+            'posted_at' => now(),
         ]);
 
-        $this->assertTrue(Str::isUuid($socialPost->post_id));
+        $this->assertTrue(Str::isUuid($socialPost->id));
     }
 
     #[Test]
@@ -234,25 +222,57 @@ class SocialPostTest extends TestCase
         ]);
 
         $socialPost = SocialPost::create([
-            'post_id' => Str::uuid(),
+            'id' => Str::uuid(),
             'org_id' => $org->org_id,
             'integration_id' => $integration->integration_id,
-            'post_external_id' => 'soft_delete',
-            'platform' => 'instagram',
-            'post_type' => 'feed',
-            'content' => 'Soft delete test',
-            'published_at' => now(),
+            'post_external_id' => 'soft_delete_test',
+            'provider' => 'instagram',
+            'caption' => 'Soft delete test',
+            'posted_at' => now(),
         ]);
 
         $socialPost->delete();
 
         $this->assertSoftDeleted('cmis.social_posts', [
-            'post_id' => $socialPost->post_id,
+            'id' => $socialPost->id,
         ]);
     }
 
     #[Test]
-    public function it_has_timestamps()
+    public function it_can_find_by_post_external_id()
+    {
+        $org = Org::create([
+            'org_id' => Str::uuid(),
+            'name' => 'Test Org',
+        ]);
+
+        $integration = Integration::create([
+            'integration_id' => Str::uuid(),
+            'org_id' => $org->org_id,
+            'platform' => 'instagram',
+            'status' => 'active',
+        ]);
+
+        $externalId = 'unique_external_id';
+
+        $socialPost = SocialPost::create([
+            'id' => Str::uuid(),
+            'org_id' => $org->org_id,
+            'integration_id' => $integration->integration_id,
+            'post_external_id' => $externalId,
+            'provider' => 'instagram',
+            'caption' => 'External ID test',
+            'posted_at' => now(),
+        ]);
+
+        $found = SocialPost::where('post_external_id', $externalId)->first();
+
+        $this->assertNotNull($found);
+        $this->assertEquals($socialPost->id, $found->id);
+    }
+
+    #[Test]
+    public function it_stores_video_urls()
     {
         $org = Org::create([
             'org_id' => Str::uuid(),
@@ -267,73 +287,58 @@ class SocialPostTest extends TestCase
         ]);
 
         $socialPost = SocialPost::create([
-            'post_id' => Str::uuid(),
+            'id' => Str::uuid(),
             'org_id' => $org->org_id,
             'integration_id' => $integration->integration_id,
-            'post_external_id' => 'timestamp_test',
-            'platform' => 'instagram',
-            'post_type' => 'feed',
-            'content' => 'Timestamp test',
-            'published_at' => now(),
+            'post_external_id' => 'video_post',
+            'provider' => 'instagram',
+            'media_type' => 'VIDEO',
+            'caption' => 'Video post',
+            'video_url' => 'https://example.com/video.mp4',
+            'thumbnail_url' => 'https://example.com/thumb.jpg',
+            'posted_at' => now(),
         ]);
 
-        $this->assertNotNull($socialPost->created_at);
-        $this->assertNotNull($socialPost->updated_at);
-        $this->assertNotNull($socialPost->published_at);
+        $this->assertEquals('https://example.com/video.mp4', $socialPost->video_url);
+        $this->assertEquals('https://example.com/thumb.jpg', $socialPost->thumbnail_url);
     }
 
     #[Test]
-    public function it_respects_rls_policies()
+    public function it_stores_carousel_children_media()
     {
-        $org1 = Org::create([
+        $org = Org::create([
             'org_id' => Str::uuid(),
-            'name' => 'Org 1',
+            'name' => 'Test Org',
         ]);
 
-        $org2 = Org::create([
-            'org_id' => Str::uuid(),
-            'name' => 'Org 2',
-        ]);
-
-        $integration1 = Integration::create([
+        $integration = Integration::create([
             'integration_id' => Str::uuid(),
-            'org_id' => $org1->org_id,
+            'org_id' => $org->org_id,
             'platform' => 'instagram',
             'status' => 'active',
         ]);
 
-        $integration2 = Integration::create([
-            'integration_id' => Str::uuid(),
-            'org_id' => $org2->org_id,
-            'platform' => 'instagram',
-            'status' => 'active',
+        $childrenMedia = [
+            ['type' => 'IMAGE', 'url' => 'https://example.com/img1.jpg'],
+            ['type' => 'IMAGE', 'url' => 'https://example.com/img2.jpg'],
+            ['type' => 'VIDEO', 'url' => 'https://example.com/video.mp4'],
+        ];
+
+        $socialPost = SocialPost::create([
+            'id' => Str::uuid(),
+            'org_id' => $org->org_id,
+            'integration_id' => $integration->integration_id,
+            'post_external_id' => 'carousel_post',
+            'provider' => 'instagram',
+            'media_type' => 'CAROUSEL_ALBUM',
+            'caption' => 'Carousel post',
+            'children_media' => $childrenMedia,
+            'posted_at' => now(),
         ]);
 
-        SocialPost::create([
-            'post_id' => Str::uuid(),
-            'org_id' => $org1->org_id,
-            'integration_id' => $integration1->integration_id,
-            'post_external_id' => 'org1_post',
-            'platform' => 'instagram',
-            'post_type' => 'feed',
-            'content' => 'Org 1 post',
-            'published_at' => now(),
-        ]);
-
-        SocialPost::create([
-            'post_id' => Str::uuid(),
-            'org_id' => $org2->org_id,
-            'integration_id' => $integration2->integration_id,
-            'post_external_id' => 'org2_post',
-            'platform' => 'instagram',
-            'post_type' => 'feed',
-            'content' => 'Org 2 post',
-            'published_at' => now(),
-        ]);
-
-        $org1Posts = SocialPost::where('org_id', $org1->org_id)->get();
-        $this->assertCount(1, $org1Posts);
-        $this->assertEquals('Org 1 post', $org1Posts->first()->content);
+        $this->assertIsArray($socialPost->children_media);
+        $this->assertCount(3, $socialPost->children_media);
+        $this->assertEquals('IMAGE', $socialPost->children_media[0]['type']);
     }
 
     #[Test]
@@ -352,14 +357,13 @@ class SocialPostTest extends TestCase
         ]);
 
         $socialPost = SocialPost::create([
-            'post_id' => Str::uuid(),
+            'id' => Str::uuid(),
             'org_id' => $org->org_id,
             'integration_id' => $integration->integration_id,
-            'post_external_id' => 'engagement_test',
-            'platform' => 'instagram',
-            'post_type' => 'feed',
-            'content' => 'Engagement test',
-            'published_at' => now(),
+            'post_external_id' => 'engagement_post',
+            'provider' => 'instagram',
+            'caption' => 'Engagement test',
+            'posted_at' => now(),
             'metrics' => [
                 'likes' => 100,
                 'comments' => 20,

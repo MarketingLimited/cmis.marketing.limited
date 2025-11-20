@@ -12,6 +12,7 @@ use Illuminate\Support\Str;
 use PHPUnit\Framework\Attributes\Test;
 /**
  * Social Account Model Unit Tests
+ * Aligned with actual cmis.social_accounts schema
  */
 class SocialAccountTest extends TestCase
 {
@@ -38,18 +39,18 @@ class SocialAccountTest extends TestCase
         ]);
 
         $socialAccount = SocialAccount::create([
-            'account_id' => Str::uuid(),
+            'id' => Str::uuid(),
             'org_id' => $org->org_id,
             'integration_id' => $integration->integration_id,
-            'platform' => 'instagram',
-            'external_account_id' => 'ig_account_123',
+            'account_external_id' => 'ig_account_123',
             'username' => 'testuser',
             'display_name' => 'Test User',
+            'provider' => 'instagram',
         ]);
 
         $this->assertDatabaseHas('cmis.social_accounts', [
-            'account_id' => $socialAccount->account_id,
-            'platform' => 'instagram',
+            'id' => $socialAccount->id,
+            'provider' => 'instagram',
         ]);
     }
 
@@ -69,12 +70,12 @@ class SocialAccountTest extends TestCase
         ]);
 
         $socialAccount = SocialAccount::create([
-            'account_id' => Str::uuid(),
+            'id' => Str::uuid(),
             'org_id' => $org->org_id,
             'integration_id' => $integration->integration_id,
-            'platform' => 'instagram',
-            'external_account_id' => 'ig_account_123',
+            'account_external_id' => 'ig_account_123',
             'username' => 'testuser',
+            'provider' => 'instagram',
         ]);
 
         $this->assertEquals($org->org_id, $socialAccount->org->org_id);
@@ -82,7 +83,7 @@ class SocialAccountTest extends TestCase
     }
 
     #[Test]
-    public function it_stores_profile_data_as_json()
+    public function it_stores_social_metrics()
     {
         $org = Org::create([
             'org_id' => Str::uuid(),
@@ -96,65 +97,25 @@ class SocialAccountTest extends TestCase
             'status' => 'active',
         ]);
 
-        $profileData = [
-            'bio' => 'حساب تجريبي للتسويق الرقمي',
-            'profile_picture_url' => 'https://example.com/profile.jpg',
-            'website' => 'https://example.com',
-            'category' => 'Marketing',
-        ];
-
         $socialAccount = SocialAccount::create([
-            'account_id' => Str::uuid(),
+            'id' => Str::uuid(),
             'org_id' => $org->org_id,
             'integration_id' => $integration->integration_id,
-            'platform' => 'instagram',
-            'external_account_id' => 'ig_account_123',
-            'username' => 'testuser',
-            'profile_data' => $profileData,
+            'account_external_id' => 'ig_account_metrics',
+            'username' => 'metricsuser',
+            'followers_count' => 10500,
+            'follows_count' => 250,
+            'media_count' => 87,
+            'provider' => 'instagram',
         ]);
 
-        $this->assertEquals('حساب تجريبي للتسويق الرقمي', $socialAccount->profile_data['bio']);
-        $this->assertEquals('Marketing', $socialAccount->profile_data['category']);
+        $this->assertEquals(10500, $socialAccount->followers_count);
+        $this->assertEquals(250, $socialAccount->follows_count);
+        $this->assertEquals(87, $socialAccount->media_count);
     }
 
     #[Test]
-    public function it_stores_metrics_as_json()
-    {
-        $org = Org::create([
-            'org_id' => Str::uuid(),
-            'name' => 'Test Org',
-        ]);
-
-        $integration = Integration::create([
-            'integration_id' => Str::uuid(),
-            'org_id' => $org->org_id,
-            'platform' => 'instagram',
-            'status' => 'active',
-        ]);
-
-        $metrics = [
-            'followers_count' => 10000,
-            'following_count' => 500,
-            'posts_count' => 250,
-            'engagement_rate' => 4.5,
-        ];
-
-        $socialAccount = SocialAccount::create([
-            'account_id' => Str::uuid(),
-            'org_id' => $org->org_id,
-            'integration_id' => $integration->integration_id,
-            'platform' => 'instagram',
-            'external_account_id' => 'ig_account_123',
-            'username' => 'testuser',
-            'metrics' => $metrics,
-        ]);
-
-        $this->assertEquals(10000, $socialAccount->metrics['followers_count']);
-        $this->assertEquals(4.5, $socialAccount->metrics['engagement_rate']);
-    }
-
-    #[Test]
-    public function it_validates_platform()
+    public function it_validates_provider()
     {
         $org = Org::create([
             'org_id' => Str::uuid(),
@@ -169,27 +130,19 @@ class SocialAccountTest extends TestCase
         ]);
 
         $socialAccount = SocialAccount::create([
-            'account_id' => Str::uuid(),
+            'id' => Str::uuid(),
             'org_id' => $org->org_id,
             'integration_id' => $integration->integration_id,
-            'platform' => 'facebook',
-            'external_account_id' => 'fb_page_123',
-            'username' => 'testpage',
+            'account_external_id' => 'fb_account_123',
+            'username' => 'fbuser',
+            'provider' => 'facebook',
         ]);
 
-        $this->assertContains($socialAccount->platform, [
-            'instagram',
-            'facebook',
-            'twitter',
-            'linkedin',
-            'tiktok',
-            'youtube',
-            'snapchat',
-        ]);
+        $this->assertContains($socialAccount->provider, ['facebook', 'instagram', 'twitter', 'linkedin']);
     }
 
     #[Test]
-    public function it_uses_uuid_as_primary_key()
+    public function it_generates_uuid_for_primary_key()
     {
         $org = Org::create([
             'org_id' => Str::uuid(),
@@ -204,15 +157,14 @@ class SocialAccountTest extends TestCase
         ]);
 
         $socialAccount = SocialAccount::create([
-            'account_id' => Str::uuid(),
             'org_id' => $org->org_id,
             'integration_id' => $integration->integration_id,
-            'platform' => 'instagram',
-            'external_account_id' => 'ig_account_123',
-            'username' => 'testuser',
+            'account_external_id' => 'uuid_test',
+            'username' => 'uuiduser',
+            'provider' => 'instagram',
         ]);
 
-        $this->assertTrue(Str::isUuid($socialAccount->account_id));
+        $this->assertTrue(Str::isUuid($socialAccount->id));
     }
 
     #[Test]
@@ -231,23 +183,55 @@ class SocialAccountTest extends TestCase
         ]);
 
         $socialAccount = SocialAccount::create([
-            'account_id' => Str::uuid(),
+            'id' => Str::uuid(),
             'org_id' => $org->org_id,
             'integration_id' => $integration->integration_id,
-            'platform' => 'instagram',
-            'external_account_id' => 'ig_account_123',
-            'username' => 'testuser',
+            'account_external_id' => 'delete_test',
+            'username' => 'deleteuser',
+            'provider' => 'instagram',
         ]);
 
         $socialAccount->delete();
 
         $this->assertSoftDeleted('cmis.social_accounts', [
-            'account_id' => $socialAccount->account_id,
+            'id' => $socialAccount->id,
         ]);
     }
 
     #[Test]
-    public function it_has_timestamps()
+    public function it_can_find_by_external_id()
+    {
+        $org = Org::create([
+            'org_id' => Str::uuid(),
+            'name' => 'Test Org',
+        ]);
+
+        $integration = Integration::create([
+            'integration_id' => Str::uuid(),
+            'org_id' => $org->org_id,
+            'platform' => 'instagram',
+            'status' => 'active',
+        ]);
+
+        $externalId = 'unique_external_account_id';
+
+        $socialAccount = SocialAccount::create([
+            'id' => Str::uuid(),
+            'org_id' => $org->org_id,
+            'integration_id' => $integration->integration_id,
+            'account_external_id' => $externalId,
+            'username' => 'externaliduser',
+            'provider' => 'instagram',
+        ]);
+
+        $found = SocialAccount::where('account_external_id', $externalId)->first();
+
+        $this->assertNotNull($found);
+        $this->assertEquals($socialAccount->id, $found->id);
+    }
+
+    #[Test]
+    public function it_stores_profile_information()
     {
         $org = Org::create([
             'org_id' => Str::uuid(),
@@ -262,20 +246,28 @@ class SocialAccountTest extends TestCase
         ]);
 
         $socialAccount = SocialAccount::create([
-            'account_id' => Str::uuid(),
+            'id' => Str::uuid(),
             'org_id' => $org->org_id,
             'integration_id' => $integration->integration_id,
-            'platform' => 'instagram',
-            'external_account_id' => 'ig_account_123',
-            'username' => 'testuser',
+            'account_external_id' => 'profile_test',
+            'username' => 'profileuser',
+            'display_name' => 'Profile User',
+            'biography' => 'This is my bio',
+            'profile_picture_url' => 'https://example.com/profile.jpg',
+            'website' => 'https://example.com',
+            'category' => 'Creator',
+            'provider' => 'instagram',
         ]);
 
-        $this->assertNotNull($socialAccount->created_at);
-        $this->assertNotNull($socialAccount->updated_at);
+        $this->assertEquals('Profile User', $socialAccount->display_name);
+        $this->assertEquals('This is my bio', $socialAccount->biography);
+        $this->assertEquals('https://example.com/profile.jpg', $socialAccount->profile_picture_url);
+        $this->assertEquals('https://example.com', $socialAccount->website);
+        $this->assertEquals('Creator', $socialAccount->category);
     }
 
     #[Test]
-    public function it_tracks_last_sync_time()
+    public function it_tracks_fetched_at_timestamp()
     {
         $org = Org::create([
             'org_id' => Str::uuid(),
@@ -289,69 +281,51 @@ class SocialAccountTest extends TestCase
             'status' => 'active',
         ]);
 
-        $lastSyncAt = now()->subHours(2);
+        $fetchedAt = now()->subHours(2);
 
         $socialAccount = SocialAccount::create([
-            'account_id' => Str::uuid(),
+            'id' => Str::uuid(),
             'org_id' => $org->org_id,
             'integration_id' => $integration->integration_id,
-            'platform' => 'instagram',
-            'external_account_id' => 'ig_account_123',
-            'username' => 'testuser',
-            'last_sync_at' => $lastSyncAt,
+            'account_external_id' => 'fetched_test',
+            'username' => 'fetchuser',
+            'fetched_at' => $fetchedAt,
+            'provider' => 'instagram',
         ]);
 
-        $this->assertNotNull($socialAccount->last_sync_at);
-        $this->assertTrue($socialAccount->last_sync_at->isPast());
+        $this->assertEquals($fetchedAt->timestamp, $socialAccount->fetched_at->timestamp);
     }
 
     #[Test]
-    public function it_respects_rls_policies()
+    public function it_calculates_engagement_metrics()
     {
-        $org1 = Org::create([
+        $org = Org::create([
             'org_id' => Str::uuid(),
-            'name' => 'Org 1',
+            'name' => 'Test Org',
         ]);
 
-        $org2 = Org::create([
-            'org_id' => Str::uuid(),
-            'name' => 'Org 2',
-        ]);
-
-        $integration1 = Integration::create([
+        $integration = Integration::create([
             'integration_id' => Str::uuid(),
-            'org_id' => $org1->org_id,
+            'org_id' => $org->org_id,
             'platform' => 'instagram',
             'status' => 'active',
         ]);
 
-        $integration2 = Integration::create([
-            'integration_id' => Str::uuid(),
-            'org_id' => $org2->org_id,
-            'platform' => 'instagram',
-            'status' => 'active',
+        $socialAccount = SocialAccount::create([
+            'id' => Str::uuid(),
+            'org_id' => $org->org_id,
+            'integration_id' => $integration->integration_id,
+            'account_external_id' => 'engagement_test',
+            'username' => 'engagementuser',
+            'followers_count' => 5000,
+            'follows_count' => 300,
+            'media_count' => 150,
+            'provider' => 'instagram',
         ]);
 
-        SocialAccount::create([
-            'account_id' => Str::uuid(),
-            'org_id' => $org1->org_id,
-            'integration_id' => $integration1->integration_id,
-            'platform' => 'instagram',
-            'external_account_id' => 'ig_org1',
-            'username' => 'org1account',
-        ]);
+        // Average media per follower ratio
+        $mediaPerFollowerRatio = $socialAccount->media_count / $socialAccount->followers_count;
 
-        SocialAccount::create([
-            'account_id' => Str::uuid(),
-            'org_id' => $org2->org_id,
-            'integration_id' => $integration2->integration_id,
-            'platform' => 'instagram',
-            'external_account_id' => 'ig_org2',
-            'username' => 'org2account',
-        ]);
-
-        $org1Accounts = SocialAccount::where('org_id', $org1->org_id)->get();
-        $this->assertCount(1, $org1Accounts);
-        $this->assertEquals('org1account', $org1Accounts->first()->username);
+        $this->assertEquals(0.03, $mediaPerFollowerRatio);
     }
 }

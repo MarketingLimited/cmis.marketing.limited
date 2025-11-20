@@ -40,7 +40,7 @@ class TeamMemberTest extends TestCase
         $teamMember = TeamMember::create([
             'member_id' => Str::uuid(),
             'org_id' => $org->org_id,
-            'user_id' => $user->id,
+            'user_id' => $user->user_id,
             'role' => 'editor',
             'is_active' => true,
         ]);
@@ -69,12 +69,12 @@ class TeamMemberTest extends TestCase
         $teamMember = TeamMember::create([
             'member_id' => Str::uuid(),
             'org_id' => $org->org_id,
-            'user_id' => $user->id,
+            'user_id' => $user->user_id,
             'role' => 'viewer',
         ]);
 
         $this->assertEquals($org->org_id, $teamMember->org->org_id);
-        $this->assertEquals($user->id, $teamMember->user->id);
+        $this->assertEquals($user->user_id, $teamMember->user->user_id);
     }
 
     #[Test]
@@ -99,7 +99,7 @@ class TeamMemberTest extends TestCase
             $members[] = TeamMember::create([
                 'member_id' => Str::uuid(),
                 'org_id' => $org->org_id,
-                'user_id' => $user->id,
+                'user_id' => $user->user_id,
                 'role' => $role,
             ]);
         }
@@ -135,7 +135,7 @@ class TeamMemberTest extends TestCase
         $activeMember = TeamMember::create([
             'member_id' => Str::uuid(),
             'org_id' => $org->org_id,
-            'user_id' => $activeUser->id,
+            'user_id' => $activeUser->user_id,
             'role' => 'editor',
             'is_active' => true,
         ]);
@@ -143,7 +143,7 @@ class TeamMemberTest extends TestCase
         $inactiveMember = TeamMember::create([
             'member_id' => Str::uuid(),
             'org_id' => $org->org_id,
-            'user_id' => $inactiveUser->id,
+            'user_id' => $inactiveUser->user_id,
             'role' => 'viewer',
             'is_active' => false,
         ]);
@@ -170,7 +170,7 @@ class TeamMemberTest extends TestCase
         $teamMember = TeamMember::create([
             'member_id' => Str::uuid(),
             'org_id' => $org->org_id,
-            'user_id' => $user->id,
+            'user_id' => $user->user_id,
             'role' => 'editor',
             'invited_at' => now(),
             'invitation_accepted_at' => now()->addHours(2),
@@ -204,7 +204,7 @@ class TeamMemberTest extends TestCase
         $teamMember = TeamMember::create([
             'member_id' => Str::uuid(),
             'org_id' => $org->org_id,
-            'user_id' => $user->id,
+            'user_id' => $user->user_id,
             'role' => 'custom',
             'custom_permissions' => $permissions,
         ]);
@@ -231,7 +231,7 @@ class TeamMemberTest extends TestCase
         $teamMember = TeamMember::create([
             'member_id' => Str::uuid(),
             'org_id' => $org->org_id,
-            'user_id' => $user->id,
+            'user_id' => $user->user_id,
             'role' => 'editor',
             'last_accessed_at' => now(),
         ]);
@@ -257,7 +257,7 @@ class TeamMemberTest extends TestCase
         $teamMember = TeamMember::create([
             'member_id' => Str::uuid(),
             'org_id' => $org->org_id,
-            'user_id' => $user->id,
+            'user_id' => $user->user_id,
             'role' => 'editor',
         ]);
 
@@ -282,7 +282,7 @@ class TeamMemberTest extends TestCase
         $teamMember = TeamMember::create([
             'member_id' => Str::uuid(),
             'org_id' => $org->org_id,
-            'user_id' => $user->id,
+            'user_id' => $user->user_id,
             'role' => 'editor',
         ]);
 
@@ -308,7 +308,7 @@ class TeamMemberTest extends TestCase
         $teamMember = TeamMember::create([
             'member_id' => Str::uuid(),
             'org_id' => $org->org_id,
-            'user_id' => $user->id,
+            'user_id' => $user->user_id,
             'role' => 'editor',
         ]);
 
@@ -351,14 +351,14 @@ class TeamMemberTest extends TestCase
         TeamMember::create([
             'member_id' => Str::uuid(),
             'org_id' => $org1->org_id,
-            'user_id' => $user1->id,
+            'user_id' => $user1->user_id,
             'role' => 'editor',
         ]);
 
         TeamMember::create([
             'member_id' => Str::uuid(),
             'org_id' => $org2->org_id,
-            'user_id' => $user2->id,
+            'user_id' => $user2->user_id,
             'role' => 'viewer',
         ]);
 
