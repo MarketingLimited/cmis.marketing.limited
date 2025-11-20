@@ -8,14 +8,21 @@ use Illuminate\Support\Facades\{Cache, Log};
 
 /**
  * Handles actions when integration sync fails
+ * Note: Stub implementation
  */
 class HandleSyncFailure implements ShouldQueue
 {
+    /**
+     * Handle integration sync failed event
+     *
+     * @param IntegrationSyncFailed $event Integration sync failed event
+     * @return void
+     */
     public function handle(IntegrationSyncFailed $event): void
     {
         $integration = $event->integration;
 
-        Log::error('Integration sync failed', [
+        Log::error('HandleSyncFailure::handle called (stub) - Integration sync failed', [
             'integration_id' => $integration->integration_id,
             'provider' => $integration->provider,
             'data_type' => $event->dataType,
@@ -26,8 +33,8 @@ class HandleSyncFailure implements ShouldQueue
         Cache::forget("sync:org:{$integration->org_id}");
         Cache::forget("sync:integration:{$integration->integration_id}");
 
-        // TODO: Send alert to organization admins
-        // TODO: Create incident record
-        // TODO: Auto-retry logic (if not already handled)
+        // Stub implementation - Send alert to organization admins
+        // Stub implementation - Create incident record
+        // Stub implementation - Auto-retry logic (if not already handled)
     }
 }

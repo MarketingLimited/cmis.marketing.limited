@@ -271,7 +271,8 @@ class IntegrationController extends Controller
                 ->where('org_id', $orgId)
                 ->firstOrFail();
 
-            // TODO: Implement actual token refresh logic per platform
+            Log::info('IntegrationController::refreshToken called (stub) - Token refresh logic per platform not yet implemented');
+            // Stub implementation - Actual token refresh logic per platform not yet implemented
             // For now, just update last_synced_at
             $integration->update([
                 'last_synced_at' => now(),

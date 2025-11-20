@@ -288,12 +288,14 @@ class AuthController extends Controller
      */
     public function oauthCallback(Request $request, string $provider): JsonResponse
     {
-        // TODO: Implement OAuth integration with providers like Google, Facebook, etc.
+        Log::info('AuthController::oauthCallback called (stub)', ['provider' => $provider]);
+        // Stub implementation - OAuth integration with providers like Google, Facebook, etc. not yet implemented
         // This would require Socialite package
 
         return response()->json([
             'success' => false,
-            'message' => 'OAuth authentication is not yet implemented'
+            'message' => 'OAuth authentication is not yet implemented',
+            'stub' => true
         ], 501);
     }
 }

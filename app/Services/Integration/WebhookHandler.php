@@ -242,7 +242,8 @@ class WebhookHandler
             return false;
         }
 
-        // TODO: Implement JWT validation with Google's public keys
+        Log::info("WebhookHandler::validateGoogleSignature called (stub) - JWT validation with Google's public keys not yet implemented");
+        // Stub implementation - JWT validation with Google's public keys not yet implemented
         // For now, log and return true if token exists
         Log::info("Google webhook signature validation (JWT verification pending)");
 

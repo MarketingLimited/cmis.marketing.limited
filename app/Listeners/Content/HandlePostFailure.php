@@ -8,23 +8,30 @@ use Illuminate\Support\Facades\Log;
 
 /**
  * Handles actions when post publishing fails
+ * Note: Stub implementation
  */
 class HandlePostFailure implements ShouldQueue
 {
+    /**
+     * Handle post failure event
+     *
+     * @param PostFailed $event Post failed event
+     * @return void
+     */
     public function handle(PostFailed $event): void
     {
         $post = $event->post;
 
-        Log::error('Post publishing failed', [
+        Log::error('HandlePostFailure::handle called (stub) - Post publishing failed', [
             'post_id' => $post->post_id,
             'platforms' => $post->platforms,
             'error' => $event->error,
             'org_id' => $post->org_id,
         ]);
 
-        // TODO: Send alert to content managers
-        // TODO: Create retry job (with backoff)
-        // TODO: Update dashboard alerts
-        // TODO: Log to incident tracking system
+        // Stub implementation - Send alert to content managers
+        // Stub implementation - Create retry job (with backoff)
+        // Stub implementation - Update dashboard alerts
+        // Stub implementation - Log to incident tracking system
     }
 }

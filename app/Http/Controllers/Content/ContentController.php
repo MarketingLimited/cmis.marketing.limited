@@ -419,10 +419,12 @@ class ContentController extends Controller
      */
     public function publish(Request $request, $content_id)
     {
-        // TODO: Implement content publishing logic
+        Log::info('ContentController::publish called (stub)', ['content_id' => $content_id]);
+        // Stub implementation - Content publishing logic not yet implemented
         return response()->json([
             'message' => 'Content publish endpoint - implementation pending',
-            'content_id' => $content_id
+            'content_id' => $content_id,
+            'stub' => true
         ]);
     }
 
@@ -431,10 +433,12 @@ class ContentController extends Controller
      */
     public function unpublish(Request $request, $content_id)
     {
-        // TODO: Implement content unpublishing logic
+        Log::info('ContentController::unpublish called (stub)', ['content_id' => $content_id]);
+        // Stub implementation - Content unpublishing logic not yet implemented
         return response()->json([
             'message' => 'Content unpublish endpoint - implementation pending',
-            'content_id' => $content_id
+            'content_id' => $content_id,
+            'stub' => true
         ]);
     }
 
@@ -443,11 +447,13 @@ class ContentController extends Controller
      */
     public function versions(Request $request, $content_id)
     {
-        // TODO: Implement content versioning
+        Log::info('ContentController::versions called (stub)', ['content_id' => $content_id]);
+        // Stub implementation - Content versioning not yet implemented
         return response()->json([
             'message' => 'Content versions endpoint - implementation pending',
             'content_id' => $content_id,
-            'versions' => []
+            'versions' => [],
+            'stub' => true
         ]);
     }
 
