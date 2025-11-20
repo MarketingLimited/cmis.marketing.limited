@@ -547,6 +547,277 @@ class CampaignController extends Controller
     }
 
     /**
+     * Get comprehensive performance metrics for a campaign
+     * NEW: P2 Option 3 - Campaign Performance Dashboard
+     */
+    public function performanceMetrics(Request $request, string $campaignId)
+    {
+        try {
+            $orgId = $this->resolveOrgId($request);
+
+            if (!$orgId) {
+                return response()->json([
+                    'success' => false,
+                    'error' => 'No organization context found',
+                ], 400);
+            }
+
+            // Verify campaign belongs to org and authorize
+            $campaign = Campaign::where('org_id', $orgId)
+                ->where('campaign_id', $campaignId)
+                ->first();
+
+            if (!$campaign) {
+                return response()->json([
+                    'success' => false,
+                    'error' => 'Campaign not found',
+                ], 404);
+            }
+
+            $this->authorize('view', $campaign);
+
+            // Parse date range from request
+            $dateRange = null;
+            if ($request->has('start_date') && $request->has('end_date')) {
+                $dateRange = [
+                    'start' => \Carbon\Carbon::parse($request->input('start_date')),
+                    'end' => \Carbon\Carbon::parse($request->input('end_date')),
+                ];
+            }
+
+            // Get metrics from service
+            $metrics = $this->campaignService->getPerformanceMetrics($campaignId, $dateRange);
+
+            return response()->json([
+                'success' => true,
+                'data' => $metrics,
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Campaign performance metrics error', [
+                'campaign_id' => $campaignId,
+                'error' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'error' => 'Failed to retrieve performance metrics',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Compare performance of multiple campaigns
+     * NEW: P2 Option 3 - Campaign Performance Dashboard
+     */
+    public function compareCampaigns(Request $request)
+    {
+        try {
+            $orgId = $this->resolveOrgId($request);
+
+            if (!$orgId) {
+                return response()->json([
+                    'success' => false,
+                    'error' => 'No organization context found',
+                ], 400);
+            }
+
+            // Validate request
+            $validated = $request->validate([
+                'campaign_ids' => 'required|array|min:1|max:10',
+                'campaign_ids.*' => 'required|uuid',
+                'start_date' => 'nullable|date',
+                'end_date' => 'nullable|date|after:start_date',
+            ]);
+
+            // Verify all campaigns belong to org
+            $campaigns = Campaign::where('org_id', $orgId)
+                ->whereIn('campaign_id', $validated['campaign_ids'])
+                ->get();
+
+            if ($campaigns->count() !== count($validated['campaign_ids'])) {
+                return response()->json([
+                    'success' => false,
+                    'error' => 'One or more campaigns not found or unauthorized',
+                ], 404);
+            }
+
+            // Check authorization for all campaigns
+            foreach ($campaigns as $campaign) {
+                $this->authorize('view', $campaign);
+            }
+
+            // Parse date range
+            $dateRange = null;
+            if ($request->has('start_date') && $request->has('end_date')) {
+                $dateRange = [
+                    'start' => \Carbon\Carbon::parse($validated['start_date']),
+                    'end' => \Carbon\Carbon::parse($validated['end_date']),
+                ];
+            }
+
+            // Get comparison from service
+            $comparison = $this->campaignService->compareCampaigns($validated['campaign_ids'], $dateRange);
+
+            return response()->json([
+                'success' => true,
+                'data' => $comparison,
+            ]);
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'error' => 'Validation failed',
+                'errors' => $e->errors(),
+            ], 422);
+        } catch (\Exception $e) {
+            \Log::error('Campaign comparison error', [
+                'error' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'error' => 'Failed to compare campaigns',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get performance trends over time for a campaign
+     * NEW: P2 Option 3 - Campaign Performance Dashboard
+     */
+    public function performanceTrends(Request $request, string $campaignId)
+    {
+        try {
+            $orgId = $this->resolveOrgId($request);
+
+            if (!$orgId) {
+                return response()->json([
+                    'success' => false,
+                    'error' => 'No organization context found',
+                ], 400);
+            }
+
+            // Verify campaign belongs to org and authorize
+            $campaign = Campaign::where('org_id', $orgId)
+                ->where('campaign_id', $campaignId)
+                ->first();
+
+            if (!$campaign) {
+                return response()->json([
+                    'success' => false,
+                    'error' => 'Campaign not found',
+                ], 404);
+            }
+
+            $this->authorize('view', $campaign);
+
+            // Validate request
+            $validated = $request->validate([
+                'interval' => 'sometimes|string|in:day,week,month',
+                'periods' => 'sometimes|integer|min:1|max:365',
+            ]);
+
+            $interval = $validated['interval'] ?? 'day';
+            $periods = $validated['periods'] ?? 30;
+
+            // Get trends from service
+            $trends = $this->campaignService->getPerformanceTrends($campaignId, $interval, $periods);
+
+            return response()->json([
+                'success' => true,
+                'data' => $trends,
+            ]);
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'error' => 'Validation failed',
+                'errors' => $e->errors(),
+            ], 422);
+        } catch (\Exception $e) {
+            \Log::error('Campaign performance trends error', [
+                'campaign_id' => $campaignId,
+                'error' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'error' => 'Failed to retrieve performance trends',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get top performing campaigns for the organization
+     * NEW: P2 Option 3 - Campaign Performance Dashboard
+     */
+    public function topPerforming(Request $request)
+    {
+        try {
+            $orgId = $this->resolveOrgId($request);
+
+            if (!$orgId) {
+                return response()->json([
+                    'success' => false,
+                    'error' => 'No organization context found',
+                ], 400);
+            }
+
+            // Check authorization for viewing campaigns
+            $this->authorize('viewAny', Campaign::class);
+
+            // Validate request
+            $validated = $request->validate([
+                'metric' => 'sometimes|string|in:impressions,clicks,conversions,spend,roi',
+                'limit' => 'sometimes|integer|min:1|max:50',
+                'start_date' => 'nullable|date',
+                'end_date' => 'nullable|date|after:start_date',
+            ]);
+
+            $metric = $validated['metric'] ?? 'conversions';
+            $limit = $validated['limit'] ?? 10;
+
+            // Parse date range
+            $dateRange = null;
+            if ($request->has('start_date') && $request->has('end_date')) {
+                $dateRange = [
+                    'start' => \Carbon\Carbon::parse($validated['start_date']),
+                    'end' => \Carbon\Carbon::parse($validated['end_date']),
+                ];
+            }
+
+            // Get top performers from service
+            $topCampaigns = $this->campaignService->getTopPerformingCampaigns($orgId, $metric, $limit, $dateRange);
+
+            return response()->json([
+                'success' => true,
+                'data' => $topCampaigns,
+            ]);
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'error' => 'Validation failed',
+                'errors' => $e->errors(),
+            ], 422);
+        } catch (\Exception $e) {
+            \Log::error('Top performing campaigns error', [
+                'error' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'error' => 'Failed to retrieve top performing campaigns',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
      * Resolve org_id from request context
      */
     private function resolveOrgId(Request $request): ?string
