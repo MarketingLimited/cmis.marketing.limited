@@ -81,7 +81,7 @@ Analytics API (Tests\Feature\API\AnalyticsAPI)
  [ ] It can get content performance
  [ ] It can calculate roi
  [ ] It enforces org isolation for analytics
- [ ] It requires authentication
+ [x] It requires authentication
  [ ] It can export analytics to pdf
  [ ] It can export analytics to excel
 
@@ -95,7 +95,7 @@ Analytics Controller (Tests\Feature\Controllers\AnalyticsController)
  [ ] It can compare campaigns
  [ ] It validates date range
  [ ] It respects org isolation
- [ ] It requires authentication
+ [x] It requires authentication
 
 Analytics Report (Tests\Unit\Models\Analytics\AnalyticsReport)
  [ ] It can create analytics report
@@ -1082,10 +1082,10 @@ Integration (Tests\Unit\Models\Integration\Integration)
 
 Integration API (Tests\Feature\API\IntegrationAPI)
  [ ] It can list all integrations
- [ ] It can get integration by id
+ [x] It can get integration by id
  [ ] It can connect instagram integration
  [ ] It can disconnect integration
- [ ] It can refresh integration token
+ [x] It can refresh integration token
  [ ] It can test integration connection
  [ ] It can get integration permissions
  [ ] It can sync integration data
@@ -1096,16 +1096,16 @@ Integration API (Tests\Feature\API\IntegrationAPI)
  [ ] It can get available integrations
 
 Integration Controller (Tests\Feature\Controllers\IntegrationController)
- [ ] It can list all integrations
+ [x] It can list all integrations
  [ ] It can create new integration
- [ ] It can get single integration
- [ ] It can update integration
+ [x] It can get single integration
+ [x] It can update integration
  [ ] It can delete integration
  [ ] It can test integration connection
  [ ] It can refresh integration token
  [ ] It validates required fields
  [ ] It respects org isolation
- [ ] It requires authentication
+ [x] It requires authentication
 
 Integration Validator (Tests\Unit\Validators\IntegrationValidator)
  [x] It validates platform is required
@@ -1211,7 +1211,7 @@ Lead Controller (Tests\Feature\Controllers\LeadController)
  [ ] It can convert lead
  [ ] It validates required fields
  [ ] It respects org isolation
- [ ] It requires authentication
+ [x] It requires authentication
 
 Lead Policy (Tests\Unit\Policies\LeadPolicy)
  [ ] Admin can view leads
