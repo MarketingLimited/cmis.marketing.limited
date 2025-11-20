@@ -19,7 +19,7 @@ This directory contains **specialized AI agents** custom-built for the CMIS proj
 - Social media management and publishing
 - Real-time analytics and performance tracking
 
-**Total Agents:** 21 specialized agents
+**Total Agents:** 22 specialized agents
 **Project Knowledge Base:** `.claude/CMIS_PROJECT_KNOWLEDGE.md`
 
 ---
@@ -28,7 +28,83 @@ This directory contains **specialized AI agents** custom-built for the CMIS proj
 
 ### 📁 Utility Agents
 
-#### **cmis-doc-organizer** - Documentation Organization Specialist 🆕
+#### **app-feasibility-researcher** - Dual-Mode App Analysis Expert 🆕
+**File:** `app-feasibility-researcher.md`
+
+**Purpose:** DUAL-MODE agent - Evaluates NEW ideas AND analyzes EXISTING apps for weaknesses.
+
+**Use when:**
+- **MODE 1 (New Ideas):** Evaluating new app/feature proposals
+- **MODE 1:** Need market research on similar solutions
+- **MODE 1:** Assessing technical/business viability before building
+- **MODE 2 (Existing Apps):** Finding نقاط الضعف (weakness points)
+- **MODE 2:** Auditing current app/features for problems
+- **MODE 2:** Getting health score and prioritized fix recommendations
+
+**Handles:**
+
+**MODE 1 (New Ideas):**
+- Logic & coherence analysis
+- Technical viability assessment
+- Market research via web (competitors, trends)
+- Implementation pattern discovery
+- Alternative solution discovery
+- Completability & risk assessment
+- Comprehensive feasibility reporting
+
+**MODE 2 (Existing Apps):**
+- منطقية الفكرة (Idea logic analysis)
+- منطقية الميزات (Feature logic analysis)
+- منطقية الترابط (Relationship logic analysis)
+- منطقية الهيكل (Architecture logic analysis)
+- منطقية التنفيذ (Implementation logic analysis)
+- منطقية الحاجة (Necessity logic analysis)
+- إمكانية الإتمام (Completability assessment)
+- إمكانية التفعيل (Deployment feasibility)
+- إمكانية الاستخدام (Usability analysis)
+- سرعة التنفيذ (Development speed logic)
+- Overall health scoring (0-100)
+- نقاط الضعف (Weakness point detection)
+- Prioritized fix recommendations
+
+**Key Features:**
+- **Dual-mode detection**: Automatically identifies new idea vs. existing app
+- **Web-powered research**: Finds similar apps, competitors, trends
+- **Weakness detection**: Finds نقاط الضعف with severity ratings
+- **Health scoring**: 0-100 score with dimensional breakdown
+- **Data-driven**: Evidence-based, not assumptions
+- **Structured reporting**: Organized docs in `docs/active/analysis/`
+
+**MODE 1 Example:**
+```
+"Analyze feasibility of AI-powered email automation tool"
+→ Researches 15+ similar apps (Mailchimp, HubSpot, etc.)
+→ Finds implementation patterns (SendGrid API, LLM integration)
+→ Suggests alternative: Build as Gmail/Outlook plugin instead
+→ Feasibility score: 7.5/10
+→ Recommends: Proceed with caution, niche differentiation
+→ Report: docs/active/analysis/app-feasibility-[name]-[date].md
+```
+
+**MODE 2 Example:**
+```
+"Analyze CMIS app and find all weaknesses"
+→ Analyzes 10+ dimensions (idea, features, architecture, etc.)
+→ Finds 2 critical, 5 high, 5 medium issues
+→ Provides specific file:line locations for each issue
+→ Overall health score: 71/100
+→ Top 10 critical weaknesses with priorities
+→ Recommends: Fix security issues IMMEDIATELY, then DevOps
+→ Report: docs/active/analysis/app-weakness-analysis-[name]-[date].md
+```
+
+**Output:**
+- **MODE 1:** `docs/active/analysis/app-feasibility-[name]-[date].md`
+- **MODE 2:** `docs/active/analysis/app-weakness-analysis-[name]-[date].md`
+
+---
+
+#### **cmis-doc-organizer** - Documentation Organization Specialist
 **File:** `cmis-doc-organizer.md`
 
 **Purpose:** Automatically organize, maintain, and consolidate project documentation, preventing documentation chaos.
@@ -402,6 +478,7 @@ This directory contains **specialized AI agents** custom-built for the CMIS proj
 | **Database** | laravel-db-architect | cmis-multi-tenancy |
 | **Testing** | laravel-testing | cmis-context-awareness |
 | **Documentation Management** | cmis-doc-organizer | laravel-documentation |
+| **App Idea Feasibility** | app-feasibility-researcher | - |
 | **Complex Multi-Domain** | cmis-orchestrator | [Multiple] |
 
 ---
@@ -506,6 +583,31 @@ This directory contains **specialized AI agents** custom-built for the CMIS proj
 - Organized docs/ structure with active/ and archive/
 - Comprehensive documentation index
 - Old documents properly archived
+
+---
+
+### Example 5: App Idea Evaluation
+
+**User:** "Should we build a real-time collaboration tool for campaign planning?"
+
+**Agent to use:** `app-feasibility-researcher`
+
+**Why:** Comprehensive feasibility analysis with market research.
+
+**Process:**
+1. Analyzes logic and viability
+2. Researches competitors (Figma, Miro, Notion, etc.)
+3. Discovers implementation patterns
+4. Suggests alternatives (integrate with existing tools)
+5. Assesses completability and risks
+6. Creates detailed feasibility report
+
+**Result:**
+- Feasibility score: 6/10
+- Recommendation: Don't build standalone, integrate with existing tools
+- Found 20+ similar solutions already exist
+- Suggested better approach: Build as Figma/Miro plugin
+- Saved months of development on non-viable approach
 
 ---
 
