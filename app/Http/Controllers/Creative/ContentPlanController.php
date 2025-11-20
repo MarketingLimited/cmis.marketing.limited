@@ -14,13 +14,19 @@ class ContentPlanController extends Controller
 {
     public function __construct(
         protected ContentPlanService $contentPlanService
-    ) {}
+    ) {
+        // Apply authorization to all actions
+        $this->middleware('auth:sanctum');
+    }
 
     /**
      * Display a listing of content plans.
      */
     public function index(Request $request): JsonResponse
     {
+        // Check authorization for viewing any content plans
+        $this->authorize('viewAny', ContentPlan::class);
+
         $query = ContentPlan::query()
             ->where('org_id', $request->user()->current_org_id)
             ->with(['campaign', 'creator', 'items']);
@@ -111,6 +117,9 @@ class ContentPlanController extends Controller
      */
     public function store(Request $request): JsonResponse
     {
+        // Check authorization for creating content plans
+        $this->authorize('create', ContentPlan::class);
+
         $validator = Validator::make($request->all(), [
             'campaign_id' => 'required|uuid|exists:cmis.campaigns,campaign_id',
             'name' => 'required|string|max:255',
@@ -158,6 +167,9 @@ class ContentPlanController extends Controller
             ->where('org_id', $request->user()->current_org_id)
             ->firstOrFail();
 
+        // Check authorization for viewing this content plan
+        $this->authorize('view', $contentPlan);
+
         return response()->json([
             'success' => true,
             'data' => $contentPlan
@@ -172,6 +184,9 @@ class ContentPlanController extends Controller
         $contentPlan = ContentPlan::where('plan_id', $plan_id)
             ->where('org_id', $request->user()->current_org_id)
             ->firstOrFail();
+
+        // Check authorization for editing this content plan
+        $this->authorize('update', $contentPlan);
 
         // Return plan data along with options
         return response()->json([
@@ -206,6 +221,9 @@ class ContentPlanController extends Controller
         $contentPlan = ContentPlan::where('plan_id', $plan_id)
             ->where('org_id', $request->user()->current_org_id)
             ->firstOrFail();
+
+        // Check authorization for updating this content plan
+        $this->authorize('update', $contentPlan);
 
         $validator = Validator::make($request->all(), [
             'name' => 'sometimes|string|max:255',
@@ -247,6 +265,9 @@ class ContentPlanController extends Controller
         $contentPlan = ContentPlan::where('plan_id', $plan_id)
             ->where('org_id', $request->user()->current_org_id)
             ->firstOrFail();
+
+        // Check authorization for deleting this content plan
+        $this->authorize('delete', $contentPlan);
 
         $contentPlan->delete();
 
