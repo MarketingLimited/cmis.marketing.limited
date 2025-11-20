@@ -195,6 +195,57 @@ php artisan queue:work          # Process queue jobs
 php artisan schedule:work       # Run scheduled tasks
 ```
 
+### 👥 Initial Users & Access
+
+After running the seeders, the following test accounts are available:
+
+#### Feature Toggle Management
+Access the feature toggle admin dashboard at: `http://localhost/admin/features`
+
+**Admin Account (Feature Management):**
+- Email: `admin@cmis.test`
+- Password: `password`
+- Role: Super Administrator
+- Access: Full feature flag management
+
+#### System Admin Account
+**Super Admin:**
+- Email: `admin@cmis.test`
+- Password: `password`
+- Role: Super Administrator
+- Access: All system features and organizations
+
+#### Test Users (Various Roles)
+
+**Test Admin User:**
+- Email: `test@cmis.test`
+- Password: `password`
+- Role: Administrator
+
+**Demo Organization Users:**
+- **TechVision LLC:**
+  - Email: `sarah@techvision.com` / `password`
+  - Email: `maria@techvision.com` / `password`
+
+- **Arabic Marketing Hub:**
+  - Email: `mohamed@arabic-marketing.com` / `password`
+  - Email: `ahmed@arabic-marketing.com` / `password`
+
+- **FashionHub Co:**
+  - Email: `emma@fashionhub.com` / `password`
+
+- **HealthWell Clinic:**
+  - Email: `david@healthwell.com` / `password`
+
+> **Note:** All demo accounts use the default password: `password`
+> **Security:** Change these credentials in production environments!
+
+#### Quick Access URLs
+- **Admin Dashboard:** `http://localhost/admin`
+- **Feature Toggle Dashboard:** `http://localhost/admin/features`
+- **API Documentation:** `http://localhost/api/documentation`
+- **Main Application:** `http://localhost`
+
 ---
 
 ## 🏗 Architecture
