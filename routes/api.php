@@ -900,6 +900,7 @@ Route::middleware(['auth:sanctum', 'validate.org.access', 'set.db.context'])
 
         // Campaign Performance
         Route::get('/campaigns', [AnalyticsController::class, 'getCampaignPerformance'])->name('campaigns');
+        Route::get('/campaigns/{campaign_id}', [AnalyticsController::class, 'getCampaignAnalytics'])->name('campaigns.show');
 
         // Engagement Analytics
         Route::get('/engagement', [AnalyticsController::class, 'getEngagementAnalytics'])->name('engagement');
@@ -1196,6 +1197,70 @@ Route::middleware(['auth:sanctum'])->prefix('content')->name('content.')->group(
     Route::put('/{content_id}', [App\Http\Controllers\Content\ContentController::class, 'update'])->name('update');
     Route::delete('/{content_id}', [App\Http\Controllers\Content\ContentController::class, 'destroy'])->name('destroy');
     Route::post('/{content_id}/schedule', [App\Http\Controllers\Content\ContentController::class, 'schedule'])->name('schedule');
+});
+
+/*
+|--------------------------------------------------------------------------
+| Integration Convenience Routes (Auto-resolve user's active org)
+| These routes provide access to integration endpoints without requiring org_id
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['auth:sanctum'])->prefix('integrations')->name('integrations.')->group(function () {
+    Route::get('/', [App\Http\Controllers\IntegrationController::class, 'index'])->name('index');
+    Route::post('/', [App\Http\Controllers\IntegrationController::class, 'store'])->name('store');
+    Route::get('/{id}', [App\Http\Controllers\IntegrationController::class, 'show'])->name('show');
+    Route::put('/{id}', [App\Http\Controllers\IntegrationController::class, 'update'])->name('update');
+    Route::delete('/{id}', [App\Http\Controllers\IntegrationController::class, 'destroy'])->name('destroy');
+    Route::post('/{id}/refresh', [App\Http\Controllers\IntegrationController::class, 'refresh'])->name('refresh');
+    Route::get('/{id}/status', [App\Http\Controllers\IntegrationController::class, 'status'])->name('status');
+});
+
+/*
+|--------------------------------------------------------------------------
+| Asset Convenience Routes (Auto-resolve user's active org)
+| These routes provide access to asset endpoints without requiring org_id
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['auth:sanctum'])->prefix('assets')->name('assets.')->group(function () {
+    Route::get('/', [App\Http\Controllers\AssetController::class, 'index'])->name('index');
+    Route::post('/', [App\Http\Controllers\AssetController::class, 'store'])->name('store');
+    Route::get('/{id}', [App\Http\Controllers\AssetController::class, 'show'])->name('show');
+    Route::put('/{id}', [App\Http\Controllers\AssetController::class, 'update'])->name('update');
+    Route::delete('/{id}', [App\Http\Controllers\AssetController::class, 'destroy'])->name('destroy');
+    Route::get('/{id}/download', [App\Http\Controllers\AssetController::class, 'download'])->name('download');
+});
+
+/*
+|--------------------------------------------------------------------------
+| Lead Convenience Routes (Auto-resolve user's active org)
+| These routes provide access to lead endpoints without requiring org_id
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['auth:sanctum'])->prefix('leads')->name('leads.')->group(function () {
+    Route::get('/', [App\Http\Controllers\LeadController::class, 'index'])->name('index');
+    Route::post('/', [App\Http\Controllers\LeadController::class, 'store'])->name('store');
+    Route::get('/{id}', [App\Http\Controllers\LeadController::class, 'show'])->name('show');
+    Route::put('/{id}', [App\Http\Controllers\LeadController::class, 'update'])->name('update');
+    Route::delete('/{id}', [App\Http\Controllers\LeadController::class, 'destroy'])->name('destroy');
+    Route::get('/{id}/score', [App\Http\Controllers\LeadController::class, 'score'])->name('score');
+    Route::put('/{id}/status', [App\Http\Controllers\LeadController::class, 'updateStatus'])->name('update-status');
+});
+
+/*
+|--------------------------------------------------------------------------
+| Analytics Convenience Routes (Auto-resolve user's active org)
+| These routes provide access to analytics endpoints without requiring org_id
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['auth:sanctum'])->prefix('analytics')->name('analytics.')->group(function () {
+    Route::get('/overview', [App\Http\Controllers\API\AnalyticsController::class, 'getOverview'])->name('overview');
+    Route::get('/campaigns', [App\Http\Controllers\API\AnalyticsController::class, 'getCampaignPerformance'])->name('campaigns');
+    Route::get('/campaigns/{campaignId}', [App\Http\Controllers\API\AnalyticsController::class, 'getCampaignAnalytics'])->name('campaigns.show');
+    Route::get('/platforms', [App\Http\Controllers\API\AnalyticsController::class, 'getPlatformPerformance'])->name('platforms');
+    Route::get('/content', [App\Http\Controllers\API\AnalyticsController::class, 'getContentPerformance'])->name('content');
+    Route::get('/social', [App\Http\Controllers\API\AnalyticsController::class, 'getSocialAnalytics'])->name('social');
+    Route::get('/trends', [App\Http\Controllers\API\AnalyticsController::class, 'getTrends'])->name('trends');
+    Route::post('/export', [App\Http\Controllers\API\AnalyticsController::class, 'exportReport'])->name('export');
 });
 
 /*

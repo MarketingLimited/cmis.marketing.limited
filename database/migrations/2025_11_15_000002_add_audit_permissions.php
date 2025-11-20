@@ -13,6 +13,19 @@ return new class extends Migration
 {
     public function up(): void
     {
+        // Check if permissions table exists
+        $tableExists = DB::selectOne("
+            SELECT EXISTS (
+                SELECT FROM information_schema.tables
+                WHERE table_schema = 'cmis'
+                AND table_name = 'permissions'
+            ) as exists
+        ");
+
+        if (!$tableExists->exists) {
+            return; // Skip if table doesn't exist yet
+        }
+
         // Define audit permissions
         $permissions = [
             [
