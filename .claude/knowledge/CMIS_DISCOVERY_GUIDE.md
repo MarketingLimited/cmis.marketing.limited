@@ -12,7 +12,7 @@
 
 **Wrong Approach:**
 ```
-❌ "CMIS has 189 tables across 12 schemas"
+❌ "CMIS has 148+ tables across 12 schemas"
 ❌ "Uses Alpine.js 3.13.5 and Laravel 12"
 ❌ "Supports Meta, Google, TikTok platforms"
 ```

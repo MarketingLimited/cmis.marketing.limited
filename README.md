@@ -6,7 +6,7 @@
 **A comprehensive, enterprise-grade marketing management platform built with Laravel 12 and PostgreSQL**
 
 [![Laravel](https://img.shields.io/badge/Laravel-12.x-FF2D20?logo=laravel)](https://laravel.com)
-[![PHP](https://img.shields.io/badge/PHP-8.2+-777BB4?logo=php)](https://php.net)
+[![PHP](https://img.shields.io/badge/PHP-8.2+%20(tested%208.4)-777BB4?logo=php)](https://php.net)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16+-336791?logo=postgresql)](https://postgresql.org)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
@@ -108,11 +108,18 @@ CMIS (Cognitive Marketing Information System) is an advanced, AI-powered marketi
 
 ### Backend
 - **Framework**: Laravel 12.x
-- **Language**: PHP 8.2+
+- **Language**: PHP 8.2+ (tested on 8.4.14)
 - **Database**: PostgreSQL 16+ with pgvector extension
 - **Cache**: Redis (phpredis)
 - **Queue**: Redis-backed Laravel queues
 - **API**: RESTful JSON API with Laravel Sanctum authentication
+
+### Codebase Stats
+- **PHP Files**: 712 files
+- **Models**: 244 Eloquent models across 51 business domains
+- **Migrations**: 45 database migrations
+- **Tests**: 201 test files (Unit, Feature, Integration)
+- **Agents**: 22 specialized Claude Code agents
 
 ### Frontend
 - **Build Tool**: Vite
@@ -133,7 +140,7 @@ CMIS (Cognitive Marketing Information System) is an advanced, AI-powered marketi
 
 ### Prerequisites
 
-- PHP 8.2 or higher
+- PHP 8.2 or higher (PHP 8.4+ recommended and tested)
 - PostgreSQL 16+ with pgvector extension
 - Redis server
 - Composer
@@ -214,7 +221,10 @@ CMIS follows a modular, service-oriented architecture with clear separation of c
 ┌──────────────────▼──────────────────────────────────────┐
 │                Data Layer (PostgreSQL)                   │
 │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐ │
-│  │  12 Schemas  │  │  148 Tables  │  │  RLS Policies│ │
+│  │  12 Schemas  │  │  148+ Tables │  │  RLS Policies│ │
+│  └──────────────┘  └──────────────┘  └──────────────┘ │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐ │
+│  │ 244 Models   │  │ 45 Migrations│  │  201 Tests   │ │
 │  └──────────────┘  └──────────────┘  └──────────────┘ │
 │                                                          │
 │  pgvector │ Triggers │ Functions │ Materialized Views  │
