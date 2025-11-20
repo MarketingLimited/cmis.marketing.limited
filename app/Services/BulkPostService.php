@@ -323,9 +323,18 @@ class BulkPostService
         string $style = 'moderate'
     ): string {
         try {
-            // For now, return variations based on style
-            // In production, this would call Gemini API for AI generation
+            // Use Gemini API for AI-powered content generation
+            $aiEnabled = config('cmis-embeddings.gemini.enabled', false);
 
+            if ($aiEnabled && !empty(config('cmis-embeddings.gemini.api_key'))) {
+                $variation = $this->callGeminiForVariation($originalContent, $style);
+
+                if ($variation !== null) {
+                    return $variation;
+                }
+            }
+
+            // Fallback to simple variations if AI is disabled or fails
             switch ($style) {
                 case 'creative':
                     // Add emojis, exclamations
@@ -341,15 +350,99 @@ class BulkPostService
                     return $originalContent;
             }
 
-            // TODO: Implement actual AI variation using Gemini
-            // $prompt = "Rewrite this social media post with a {$style} tone: {$originalContent}";
-            // return $this->callGeminiAPI($prompt);
-
         } catch (\Exception $e) {
             Log::warning('AI variation failed, using original content', [
                 'error' => $e->getMessage()
             ]);
             return $originalContent;
+        }
+    }
+
+    /**
+     * Call Gemini API to generate content variation
+     *
+     * @param string $originalContent
+     * @param string $style
+     * @return string|null
+     */
+    protected function callGeminiForVariation(string $originalContent, string $style): ?string
+    {
+        try {
+            $config = config('cmis-embeddings.gemini');
+            $apiKey = $config['api_key'] ?? '';
+            $baseUrl = $config['base_url'] ?? 'https://generativelanguage.googleapis.com/v1beta/';
+
+            if (empty($apiKey)) {
+                return null;
+            }
+
+            // Build style-specific prompt
+            $toneInstructions = match($style) {
+                'creative' => 'Make it more engaging and creative. Use emojis appropriately and add excitement. Keep the core message.',
+                'conservative' => 'Make it more professional and formal. Remove any casual language. Keep it business-appropriate.',
+                'moderate' => 'Slightly rephrase while maintaining the same tone and professionalism. Keep the core message intact.',
+                default => 'Rephrase this content while keeping the same meaning.',
+            };
+
+            $prompt = "You are a social media content writer. {$toneInstructions}\n\nOriginal content: {$originalContent}\n\nRewritten content:";
+
+            // Call Gemini generate content API
+            $url = $baseUrl . 'models/gemini-pro:generateContent';
+
+            $response = Http::timeout(30)
+                ->withHeaders(['Content-Type' => 'application/json'])
+                ->post($url . '?key=' . $apiKey, [
+                    'contents' => [
+                        [
+                            'parts' => [
+                                ['text' => $prompt]
+                            ]
+                        ]
+                    ],
+                    'generationConfig' => [
+                        'temperature' => $style === 'creative' ? 0.9 : ($style === 'conservative' ? 0.3 : 0.7),
+                        'maxOutputTokens' => 500,
+                        'topP' => 0.8,
+                    ],
+                ]);
+
+            if (!$response->successful()) {
+                Log::warning('Gemini API request failed', [
+                    'status' => $response->status(),
+                    'body' => $response->body(),
+                ]);
+                return null;
+            }
+
+            $data = $response->json();
+
+            // Extract generated text from response
+            $generatedText = $data['candidates'][0]['content']['parts'][0]['text'] ?? null;
+
+            if ($generatedText) {
+                // Clean up the generated text
+                $generatedText = trim($generatedText);
+
+                // Remove any quotes that might wrap the content
+                $generatedText = trim($generatedText, '"\'');
+
+                Log::info('AI content variation generated', [
+                    'style' => $style,
+                    'original_length' => strlen($originalContent),
+                    'generated_length' => strlen($generatedText),
+                ]);
+
+                return $generatedText;
+            }
+
+            return null;
+
+        } catch (\Exception $e) {
+            Log::error('Gemini API call failed', [
+                'error' => $e->getMessage(),
+                'style' => $style,
+            ]);
+            return null;
         }
     }
 
