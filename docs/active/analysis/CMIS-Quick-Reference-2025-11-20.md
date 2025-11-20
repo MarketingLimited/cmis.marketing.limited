@@ -12,6 +12,49 @@
 
 ---
 
+## 📊 Detailed Scores
+
+### Component Scores
+
+| Component | Score | Grade | Status |
+|-----------|-------|-------|--------|
+| **Architecture** | 85/100 | A | ✅ Excellent |
+| **Database Design** | 90/100 | A | ✅ Outstanding |
+| **API Implementation** | 70/100 | B- | 🟡 Good |
+| **Feature Completeness** | 49/100 | F | 🔴 Incomplete |
+| **Testing Coverage** | 40/100 | F | 🔴 Poor |
+| **Documentation** | 80/100 | B+ | 🟢 Strong |
+| **Deployment Readiness** | 40/100 | F | 🔴 Not Ready |
+| **Security** | 75/100 | B | 🟡 Acceptable |
+
+### Platform Integration Scores
+
+**Social Platforms:**
+- Meta (FB/IG): 75% (Grade B) - Token refresh issue
+- LinkedIn: 70% (Grade B-) - Company pages
+- Twitter/X: 65% (Grade C+) - API v2 upgrade
+- TikTok: 60% (Grade C) - Video upload
+- Snapchat: 55% (Grade C-) - Stories
+- YouTube: 50% (Grade D) - Livestream
+
+**Ad Platforms:**
+- Meta Ads: 75% (Grade B)
+- Google Ads: 70% (Grade B-)
+- LinkedIn Ads: 65% (Grade C+)
+- TikTok Ads: 60% (Grade C)
+- Snapchat Ads: 55% (Grade C-)
+
+### AI Services Scores
+
+- SemanticSearch: 75% (Grade B) - Mostly functional
+- Embeddings: 70% (Grade B-) - Caching incomplete
+- AIService: 50% (Grade D) - No fallback
+- AIInsights: 45% (Grade D-) - Unvalidated
+- Predictive: 40% (Grade F) - Needs training
+- Automation: 35% (Grade F) - Rules incomplete
+
+---
+
 ## 📊 By The Numbers
 
 | Metric | Count | Status |

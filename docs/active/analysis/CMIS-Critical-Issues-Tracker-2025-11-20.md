@@ -2,6 +2,14 @@
 **Date:** November 20, 2025
 **Priority:** Immediate Action Required
 
+**Total Issues Identified:** 241
+- **P0 Critical:** 3 primary + 50 related
+- **P1 High:** 7 primary + 61 related
+- **P2 Medium:** 78 issues
+- **P3 Low:** 42 issues
+
+**Impact on Overall Score:** Fixing all P0 issues would raise score from 72/100 to ~82/100
+
 ---
 
 ## 🔴 P0: CRITICAL - Must Fix Before Production
@@ -12,6 +20,7 @@
 **Status:** BROKEN - Affects 100% of users
 **Timeline:** 11-15 hours to fix
 **Impact:** Core feature appears to work but doesn't publish posts
+**Score Impact:** Fixing this raises Social Publishing from 40% → 85% (+45%) and Feature Completeness from 49% → 54% (+5%)
 
 **Description:**
 Social media publishing is simulated, not actually connected to platform APIs. Posts show as "published" to users but never appear on social platforms.
@@ -100,6 +109,7 @@ public function publishNow(Request $request)
 **Status:** BROKEN - Integration stops after 60 days
 **Timeline:** 4-6 hours to fix
 **Impact:** All Meta (Facebook/Instagram) integrations silently fail
+**Score Impact:** Fixing this raises Meta Integration from 75% → 90% (+15%) and Platform Reliability Score by +8%
 
 **Description:**
 Meta provides short-lived tokens that expire every 60 days. CMIS doesn't automatically refresh these tokens, causing the integration to stop working without warning or error message.
@@ -212,6 +222,7 @@ public function syncCampaigns($accountId)
 **Status:** NOT IMPLEMENTED
 **Timeline:** 6-8 hours to implement
 **Impact:** Scheduled posting feature appears to work but posts never publish
+**Score Impact:** Fixing this raises Scheduling from 40% → 75% (+35%) and Feature Completeness from 49% → 52% (+3%)
 
 **Description:**
 Users can schedule posts for future publication, but there's no background job to actually publish them at scheduled time.
