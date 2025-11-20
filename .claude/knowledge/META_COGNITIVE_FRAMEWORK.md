@@ -13,7 +13,7 @@
 ### The Old Way (Brittle)
 
 ```markdown
-❌ "CMIS has 189 tables across 12 schemas"
+❌ "CMIS has 148+ tables across 12 schemas"
 ❌ "Campaign model is at app/Models/Core/Campaign.php"
 ❌ "Frontend uses Alpine.js 3.13.5"
 ❌ "There are 10 supported channels"

@@ -40,7 +40,7 @@ This provides executable commands for:
 
 ### 3. NEVER State Facts That Can Become Outdated
 
-❌ **WRONG:** "CMIS has 189 tables across 12 schemas"
+❌ **WRONG:** "CMIS has 148+ tables across 12 schemas"
 ✅ **RIGHT:** "To discover current table count:
 ```sql
 SELECT COUNT(*) FROM information_schema.tables
@@ -296,7 +296,7 @@ FROM cmis_knowledge.embeddings_cache;
 ### 1. Provide Contextual Understanding (Adaptively)
 
 **OLD APPROACH:**
-"CMIS has 189 tables across 12 schemas..."
+"CMIS has 148+ tables across 12 schemas..."
 
 **NEW APPROACH:**
 "Let me discover the current database structure:
