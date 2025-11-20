@@ -13,7 +13,7 @@ class KnowledgeIndex extends Model
     use HasFactory, SoftDeletes, HasUuids;
 
     protected $table = 'cmis.knowledge_index';
-    protected $primaryKey = 'knowledge_id';
+    protected $primaryKey = 'index_id';
     protected $connection = 'pgsql';
     public $incrementing = false;
     protected $keyType = 'string';
@@ -41,6 +41,7 @@ class KnowledgeIndex extends Model
     ];
 
     protected $casts = [
+        'index_id' => 'string',
         'knowledge_id' => 'string',
         'org_id' => 'string',
         'source_id' => 'string',

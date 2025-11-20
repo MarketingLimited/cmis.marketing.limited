@@ -80,7 +80,7 @@ return new class extends Migration
                 index_id UUID PRIMARY KEY,
                 org_id UUID NOT NULL,
                 content TEXT,
-                embedding vector(1536),
+                embedding vector(768),
                 metadata JSONB,
                 created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
                 updated_at TIMESTAMP WITH TIME ZONE DEFAULT now()
