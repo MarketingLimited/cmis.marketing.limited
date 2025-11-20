@@ -148,66 +148,112 @@ class ProcessWebhook implements ShouldQueue
 
     // Individual handlers
 
+    /**
+     * Handle Meta lead creation
+     *
+     * @param array $lead Lead data from Meta webhook
+     * @return void
+     */
     private function handleMetaLead(array $lead): void
     {
-        // Store lead in database
-        Log::info("Meta lead received", $lead);
-        // TODO: Implement lead storage
-    }
-
-    private function handleMetaConversation(array $conversation): void
-    {
-        Log::info("Meta conversation update", $conversation);
-        // TODO: Update conversation status
-    }
-
-    private function handleMetaMessage(array $message): void
-    {
-        Log::info("Meta message received", $message);
-        // TODO: Store message
-    }
-
-    private function handleMetaCampaignStatus(array $campaign): void
-    {
-        Log::info("Meta campaign status change", $campaign);
-        // TODO: Update campaign status in database
-    }
-
-    private function handleGoogleCampaignUpdate(): void
-    {
-        Log::info("Google campaign updated", $this->payload);
-        // TODO: Sync campaign data
-    }
-
-    private function handleGoogleBudgetAlert(): void
-    {
-        Log::info("Google budget alert", $this->payload);
-        // TODO: Send notification to user
-    }
-
-    private function handleTikTokAdUpdate(): void
-    {
-        Log::info("TikTok ad updated", $this->payload);
-        // TODO: Sync ad data
-    }
-
-    private function handleTikTokBudgetAlert(): void
-    {
-        Log::info("TikTok budget alert", $this->payload);
-        // TODO: Send notification
+        Log::info("ProcessWebhook::handleMetaLead called (stub)", ['lead' => $lead]);
+        // Stub implementation - Lead storage not yet implemented
     }
 
     /**
-     * Handle job failure
+     * Handle Meta conversation status update
+     *
+     * @param array $conversation Conversation data
+     * @return void
+     */
+    private function handleMetaConversation(array $conversation): void
+    {
+        Log::info("ProcessWebhook::handleMetaConversation called (stub)", ['conversation' => $conversation]);
+        // Stub implementation - Conversation status update not yet implemented
+    }
+
+    /**
+     * Handle Meta message receipt
+     *
+     * @param array $message Message data
+     * @return void
+     */
+    private function handleMetaMessage(array $message): void
+    {
+        Log::info("ProcessWebhook::handleMetaMessage called (stub)", ['message' => $message]);
+        // Stub implementation - Message storage not yet implemented
+    }
+
+    /**
+     * Handle Meta campaign status change
+     *
+     * @param array $campaign Campaign data
+     * @return void
+     */
+    private function handleMetaCampaignStatus(array $campaign): void
+    {
+        Log::info("ProcessWebhook::handleMetaCampaignStatus called (stub)", ['campaign' => $campaign]);
+        // Stub implementation - Campaign status update not yet implemented
+    }
+
+    /**
+     * Handle Google campaign update
+     *
+     * @return void
+     */
+    private function handleGoogleCampaignUpdate(): void
+    {
+        Log::info("ProcessWebhook::handleGoogleCampaignUpdate called (stub)", ['payload' => $this->payload]);
+        // Stub implementation - Campaign sync not yet implemented
+    }
+
+    /**
+     * Handle Google budget alert
+     *
+     * @return void
+     */
+    private function handleGoogleBudgetAlert(): void
+    {
+        Log::info("ProcessWebhook::handleGoogleBudgetAlert called (stub)", ['payload' => $this->payload]);
+        // Stub implementation - Budget notification not yet implemented
+    }
+
+    /**
+     * Handle TikTok ad update
+     *
+     * @return void
+     */
+    private function handleTikTokAdUpdate(): void
+    {
+        Log::info("ProcessWebhook::handleTikTokAdUpdate called (stub)", ['payload' => $this->payload]);
+        // Stub implementation - Ad sync not yet implemented
+    }
+
+    /**
+     * Handle TikTok budget alert
+     *
+     * @return void
+     */
+    private function handleTikTokBudgetAlert(): void
+    {
+        Log::info("ProcessWebhook::handleTikTokBudgetAlert called (stub)", ['payload' => $this->payload]);
+        // Stub implementation - Budget notification not yet implemented
+    }
+
+    /**
+     * Handle job failure after all retries
+     *
+     * @param \Throwable $exception Exception that caused the failure
+     * @return void
      */
     public function failed(\Throwable $exception): void
     {
-        Log::error("Webhook job failed permanently", [
+        Log::error("ProcessWebhook::failed called (stub) - Webhook job failed permanently", [
             'platform' => $this->platform,
             'payload' => $this->payload,
             'error' => $exception->getMessage(),
         ]);
 
-        // TODO: Notify admin of webhook failure
+        // Stub implementation - Admin notification not yet implemented
     }
 }

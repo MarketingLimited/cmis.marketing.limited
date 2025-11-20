@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Approval;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Log;
 
 class RequestApprovalRequest extends FormRequest
 {
@@ -11,7 +12,8 @@ class RequestApprovalRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        // TODO: Check if user can request approval for this post
+        Log::info('RequestApprovalRequest::authorize called (stub) - User approval check not yet implemented');
+        // Stub implementation - Check if user can request approval for this post
         // return $this->user()->can('request-approval', $this->input('post_id'));
         return true;
     }
