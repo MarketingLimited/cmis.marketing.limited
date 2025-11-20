@@ -1,7 +1,7 @@
 # CMIS Project Knowledge - Discovery Guide
 ## Cognitive Marketing Information System - Teaching Agents HOW to Learn the System
 
-**Last Updated:** 2025-11-18
+**Last Updated:** 2025-11-20
 **Framework:** META_COGNITIVE_FRAMEWORK v2.0
 **Philosophy:** Discovery Over Documentation
 
@@ -9,7 +9,7 @@
 
 ## 🎓 PHILOSOPHY: ADAPTIVE INTELLIGENCE
 
-**Not:** "CMIS has 189 tables"
+**Not:** "CMIS has 148+ tables"
 **But:** "How do I discover what tables exist in CMIS?"
 
 **Not:** "Alpine.js 3.13.5 is used"
