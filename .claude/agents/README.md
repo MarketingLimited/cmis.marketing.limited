@@ -19,7 +19,7 @@ This directory contains **specialized AI agents** custom-built for the CMIS proj
 - Social media management and publishing
 - Real-time analytics and performance tracking
 
-**Total Agents:** 21 specialized agents
+**Total Agents:** 22 specialized agents
 **Project Knowledge Base:** `.claude/CMIS_PROJECT_KNOWLEDGE.md`
 
 ---
@@ -28,7 +28,54 @@ This directory contains **specialized AI agents** custom-built for the CMIS proj
 
 ### 📁 Utility Agents
 
-#### **cmis-doc-organizer** - Documentation Organization Specialist 🆕
+#### **app-feasibility-researcher** - App Idea Analysis & Market Research Expert 🆕
+**File:** `app-feasibility-researcher.md`
+
+**Purpose:** Comprehensive app idea feasibility analysis through systematic evaluation and market intelligence.
+
+**Use when:**
+- Evaluating new app or feature ideas
+- Need market research on similar solutions
+- Assessing technical/business viability
+- Finding better alternative approaches
+- Risk assessment before implementation
+- Determining if idea is worth pursuing
+
+**Handles:**
+- Logic & coherence analysis
+- Technical viability assessment
+- Usability evaluation
+- Market research via web
+- Competitor discovery & analysis
+- Implementation pattern research
+- Alternative solution discovery
+- Completability assessment
+- Risk analysis & mitigation
+- Comprehensive feasibility reporting
+
+**Key Features:**
+- **Web-powered research**: Finds similar apps, competitors, and trends
+- **Data-driven analysis**: Evidence-based recommendations, not gut feelings
+- **Alternative discovery**: Suggests better approaches if they exist
+- **Completability check**: Estimates effort and identifies blockers
+- **Risk assessment**: Technical, market, and business risks
+- **Structured reporting**: Organized documentation in `docs/active/analysis/`
+
+**Example:**
+```
+"Analyze feasibility of AI-powered email automation tool"
+→ Researches 15+ similar apps (Mailchimp, HubSpot, etc.)
+→ Finds implementation patterns (SendGrid API, LLM integration)
+→ Suggests alternative: Build as Gmail/Outlook plugin instead
+→ Creates comprehensive feasibility report with 7.5/10 score
+→ Recommends: Proceed with caution, focus on niche differentiation
+```
+
+**Output:** Creates detailed analysis report at `docs/active/analysis/app-feasibility-[name]-[date].md`
+
+---
+
+#### **cmis-doc-organizer** - Documentation Organization Specialist
 **File:** `cmis-doc-organizer.md`
 
 **Purpose:** Automatically organize, maintain, and consolidate project documentation, preventing documentation chaos.
@@ -402,6 +449,7 @@ This directory contains **specialized AI agents** custom-built for the CMIS proj
 | **Database** | laravel-db-architect | cmis-multi-tenancy |
 | **Testing** | laravel-testing | cmis-context-awareness |
 | **Documentation Management** | cmis-doc-organizer | laravel-documentation |
+| **App Idea Feasibility** | app-feasibility-researcher | - |
 | **Complex Multi-Domain** | cmis-orchestrator | [Multiple] |
 
 ---
@@ -506,6 +554,31 @@ This directory contains **specialized AI agents** custom-built for the CMIS proj
 - Organized docs/ structure with active/ and archive/
 - Comprehensive documentation index
 - Old documents properly archived
+
+---
+
+### Example 5: App Idea Evaluation
+
+**User:** "Should we build a real-time collaboration tool for campaign planning?"
+
+**Agent to use:** `app-feasibility-researcher`
+
+**Why:** Comprehensive feasibility analysis with market research.
+
+**Process:**
+1. Analyzes logic and viability
+2. Researches competitors (Figma, Miro, Notion, etc.)
+3. Discovers implementation patterns
+4. Suggests alternatives (integrate with existing tools)
+5. Assesses completability and risks
+6. Creates detailed feasibility report
+
+**Result:**
+- Feasibility score: 6/10
+- Recommendation: Don't build standalone, integrate with existing tools
+- Found 20+ similar solutions already exist
+- Suggested better approach: Build as Figma/Miro plugin
+- Saved months of development on non-viable approach
 
 ---
 
