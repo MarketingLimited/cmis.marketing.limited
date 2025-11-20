@@ -71,9 +71,8 @@ class PublishScheduledSocialPostJob implements ShouldQueue
                 throw new \Exception('No integrations found for post');
             }
 
-            // Get integration models
-            $integrations = DB::table('cmis.integrations')
-                ->whereIn('integration_id', $integrationIds)
+            // Get integration models (use Eloquent for proper model hydration)
+            $integrations = \App\Models\Core\Integration::whereIn('integration_id', $integrationIds)
                 ->where('org_id', $this->post->org_id)
                 ->where('is_active', true)
                 ->get();
@@ -85,19 +84,21 @@ class PublishScheduledSocialPostJob implements ShouldQueue
             $results = [];
             foreach ($integrations as $integration) {
                 try {
-                    // Get connector for this integration
-                    $connector = ConnectorFactory::make($integration);
+                    // Get connector for this integration's platform
+                    $connector = ConnectorFactory::make($integration->platform);
 
-                    // Publish post
-                    $result = $connector->publishPost([
-                        'message' => $this->post->content,
-                        'media_urls' => $this->post->media_urls ?? [],
-                        'scheduled_time' => $this->post->scheduled_at,
-                    ]);
+                    // Create a ContentItem-like object from post data
+                    $contentItem = new \stdClass();
+                    $contentItem->content = $this->post->content;
+                    $contentItem->media_urls = $this->post->media_urls ?? [];
+                    $contentItem->scheduled_at = $this->post->scheduled_at;
+
+                    // Publish post with proper parameters
+                    $platformPostId = $connector->publishPost($integration, $contentItem);
 
                     $results[$integration->integration_id] = [
                         'success' => true,
-                        'platform_post_id' => $result['id'] ?? null,
+                        'platform_post_id' => $platformPostId,
                         'published_at' => now()->toISOString(),
                         'platform' => $integration->platform,
                     ];
