@@ -280,17 +280,38 @@ class MetaConnector extends AbstractConnector
             throw new \Exception('Page ID is required for publishing');
         }
 
-        $data = [
-            'message' => $item->content,
-        ];
+        // Check if we have media to upload
+        $mediaUrls = is_array($item->media_urls) ? $item->media_urls : [];
 
-        if ($item->media_urls) {
-            $data['link'] = $item->media_urls[0] ?? null;
+        if (!empty($mediaUrls)) {
+            // Determine media type from first URL
+            $firstUrl = $mediaUrls[0];
+            $mediaType = $this->detectMediaType($firstUrl);
+
+            if ($mediaType === 'image') {
+                return $this->publishImage($integration, $pageId, $item->content, $mediaUrls);
+            } elseif ($mediaType === 'video') {
+                return $this->publishVideo($integration, $pageId, $item->content, $firstUrl);
+            } else {
+                // Fallback to link post if media type is unknown
+                $data = [
+                    'message' => $item->content,
+                    'link' => $firstUrl,
+                ];
+            }
+        } else {
+            // Text-only post
+            $data = [
+                'message' => $item->content,
+            ];
         }
 
-        $response = $this->makeRequest($integration, 'POST', "/{$pageId}/feed", $data);
+        if (isset($data)) {
+            $response = $this->makeRequest($integration, 'POST', "/{$pageId}/feed", $data);
+            return $response['id'];
+        }
 
-        return $response['id'];
+        throw new \Exception('Unable to publish post');
     }
 
     public function schedulePost(Integration $integration, ContentItem $item, Carbon $scheduledTime): string
@@ -310,6 +331,98 @@ class MetaConnector extends AbstractConnector
         $response = $this->makeRequest($integration, 'POST', "/{$pageId}/feed", $data);
 
         return $response['id'];
+    }
+
+    /**
+     * Publish an image or multiple images to Facebook/Instagram
+     *
+     * @param Integration $integration
+     * @param string $pageId
+     * @param string $message
+     * @param array $imageUrls
+     * @return string The post ID
+     */
+    protected function publishImage(Integration $integration, string $pageId, string $message, array $imageUrls): string
+    {
+        if (count($imageUrls) === 1) {
+            // Single image post
+            $data = [
+                'message' => $message,
+                'url' => $imageUrls[0], // Meta will fetch and upload the image from this URL
+            ];
+
+            $response = $this->makeRequest($integration, 'POST', "/{$pageId}/photos", $data);
+            return $response['post_id'] ?? $response['id'];
+        } else {
+            // Multiple images (carousel/album)
+            // First, upload images without publishing
+            $photoIds = [];
+            foreach ($imageUrls as $imageUrl) {
+                $photoResponse = $this->makeRequest($integration, 'POST', "/{$pageId}/photos", [
+                    'url' => $imageUrl,
+                    'published' => false, // Don't publish yet
+                ]);
+                $photoIds[] = ['media_fbid' => $photoResponse['id']];
+            }
+
+            // Then create the multi-photo post
+            $response = $this->makeRequest($integration, 'POST', "/{$pageId}/feed", [
+                'message' => $message,
+                'attached_media' => json_encode($photoIds),
+            ]);
+
+            return $response['id'];
+        }
+    }
+
+    /**
+     * Publish a video to Facebook/Instagram
+     *
+     * @param Integration $integration
+     * @param string $pageId
+     * @param string $message
+     * @param string $videoUrl
+     * @return string The post ID
+     */
+    protected function publishVideo(Integration $integration, string $pageId, string $message, string $videoUrl): string
+    {
+        // For videos, Meta Graph API supports uploading from URL
+        $data = [
+            'description' => $message,
+            'file_url' => $videoUrl, // Meta will fetch and upload the video from this URL
+        ];
+
+        $response = $this->makeRequest($integration, 'POST', "/{$pageId}/videos", $data);
+        return $response['id'];
+    }
+
+    /**
+     * Detect media type from URL
+     *
+     * @param string $url
+     * @return string 'image', 'video', or 'unknown'
+     */
+    protected function detectMediaType(string $url): string
+    {
+        $extension = strtolower(pathinfo(parse_url($url, PHP_URL_PATH), PATHINFO_EXTENSION));
+
+        $imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'svg'];
+        $videoExtensions = ['mp4', 'mov', 'avi', 'wmv', 'flv', 'webm', 'mkv', '3gp', 'm4v'];
+
+        if (in_array($extension, $imageExtensions)) {
+            return 'image';
+        } elseif (in_array($extension, $videoExtensions)) {
+            return 'video';
+        }
+
+        // Try to detect from URL patterns or content-type (fallback)
+        if (preg_match('/\.(jpe?g|png|gif|webp|bmp)/i', $url)) {
+            return 'image';
+        } elseif (preg_match('/\.(mp4|mov|avi|webm)/i', $url)) {
+            return 'video';
+        }
+
+        return 'unknown';
     }
 
     // ========================================

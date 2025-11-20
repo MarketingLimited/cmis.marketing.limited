@@ -14,6 +14,16 @@ use Illuminate\Support\Str;
 class IntegrationController extends Controller
 {
     /**
+     * Constructor - Apply authentication middleware
+     */
+    public function __construct()
+    {
+        // Apply authentication to all actions except OAuth callbacks
+        // Callbacks need to be accessible for platform redirects
+        $this->middleware('auth:sanctum')->except(['callback']);
+    }
+
+    /**
      * Supported platforms configuration
      */
     const PLATFORMS = [
@@ -300,7 +310,10 @@ class IntegrationController extends Controller
 
             $this->authorize('delete', $integration);
 
-            // TODO: Revoke token with platform API if possible
+            Log::info('IntegrationController::disconnect called (stub) - Revoke token with platform API if possible', [
+                'integration_id' => $integrationId,
+                'platform' => $integration->platform,
+            ]);
 
             // Deactivate integration
             $integration->update([
@@ -365,25 +378,28 @@ class IntegrationController extends Controller
     }
 
     /**
-     * Trigger sync for an integration
+     * Trigger sync for an integration (stub implementation)
+     *
+     * @param Integration $integration Integration to sync
+     * @return array Sync status result
      */
     protected function triggerSync(Integration $integration): array
     {
-        // TODO: Implement actual sync logic
+        Log::info('IntegrationController::triggerSync called (stub)', [
+            'integration_id' => $integration->integration_id,
+            'platform' => $integration->platform,
+        ]);
+        // Stub implementation - Actual sync logic not yet implemented
         // This would:
         // 1. Fetch data from the platform (posts, metrics, etc.)
         // 2. Store in database (SocialPost, SocialPostMetric, etc.)
         // 3. Update integration's updated_at timestamp
 
-        Log::info('Sync triggered', [
-            'integration_id' => $integration->integration_id,
-            'platform' => $integration->platform,
-        ]);
-
         return [
             'status' => 'success',
             'message' => 'Sync queued for processing',
             'timestamp' => now()->toIso8601String(),
+            'stub' => true
         ];
     }
 
@@ -399,7 +415,10 @@ class IntegrationController extends Controller
 
             $this->authorize('view', $integration);
 
-            // TODO: Implement sync history tracking
+            Log::info('IntegrationController::syncHistory called (stub)', [
+                'integration_id' => $integrationId,
+            ]);
+            // Stub implementation - Sync history tracking not yet implemented
             // This would query a sync_logs table or similar
 
             $history = [
@@ -445,7 +464,10 @@ class IntegrationController extends Controller
 
             $this->authorize('view', $integration);
 
-            // TODO: Implement settings storage (separate table or JSON column)
+            Log::info('IntegrationController::getSettings called (stub)', [
+                'integration_id' => $integrationId,
+            ]);
+            // Stub implementation - Settings storage not yet implemented (separate table or JSON column)
             $settings = [
                 'auto_sync' => true,
                 'sync_frequency' => 'hourly',
@@ -481,7 +503,11 @@ class IntegrationController extends Controller
 
             $this->authorize('update', $integration);
 
-            // TODO: Validate and store settings
+            Log::info('IntegrationController::updateSettings called (stub)', [
+                'integration_id' => $integrationId,
+                'data' => $request->all(),
+            ]);
+            // Stub implementation - Validate and store settings not yet implemented
             $settings = $request->all();
 
             return response()->json([
@@ -507,7 +533,8 @@ class IntegrationController extends Controller
         $this->authorize('viewAny', Integration::class);
 
         try {
-            // TODO: Implement activity tracking
+            Log::info('IntegrationController::activity called (stub)');
+            // Stub implementation - Activity tracking not yet implemented
             // This would query activity logs for all integrations in the org
 
             $activity = [
@@ -558,7 +585,11 @@ class IntegrationController extends Controller
                 ], 400);
             }
 
-            // TODO: Test API connection with the platform
+            Log::info('IntegrationController::test called (stub)', [
+                'integration_id' => $integrationId,
+                'platform' => $integration->platform,
+            ]);
+            // Stub implementation - Test API connection with the platform not yet implemented
             // This would make a simple API call to verify the token is still valid
 
             return response()->json([

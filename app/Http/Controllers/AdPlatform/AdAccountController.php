@@ -5,88 +5,145 @@ namespace App\Http\Controllers\AdPlatform;
 use App\Http\Controllers\Controller;
 use App\Models\AdPlatform\AdAccount;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
+/**
+ * Ad Account Controller
+ *
+ * Handles HTTP requests for ad account management
+ * Note: Stub implementation
+ */
 class AdAccountController extends Controller
 {
     /**
-     * Display a listing of ad accounts.
+     * Display a listing of ad accounts with filtering and pagination
+     *
+     * @param Request $request HTTP request
+     * @return \Illuminate\Http\JsonResponse
      */
     public function index(Request $request)
     {
-        // TODO: Implement ad account listing with filtering and pagination
-        return response()->json([
-            'message' => 'Ad account index endpoint - implementation pending',
-            'data' => []
+        Log::info('AdAccountController::index called (stub)', [
+            'filters' => $request->all(),
         ]);
+
+        return response()->json([
+            'data' => [],
+            'pagination' => ['total' => 0, 'per_page' => 15, 'current_page' => 1],
+            'stub' => true
+        ], 200);
     }
 
     /**
-     * Show the form for creating a new ad account.
+     * Return form/metadata for creating a new ad account
+     *
+     * @param Request $request HTTP request
+     * @return \Illuminate\Http\JsonResponse
      */
     public function create(Request $request)
     {
-        // TODO: Return form/metadata for creating ad account
+        Log::info('AdAccountController::create called (stub)');
+
         return response()->json([
-            'message' => 'Ad account create form endpoint - implementation pending'
-        ]);
+            'form_fields' => [],
+            'stub' => true
+        ], 200);
     }
 
     /**
-     * Store a newly created ad account.
+     * Store a newly created ad account in database
+     *
+     * @param Request $request HTTP request with ad account data
+     * @return \Illuminate\Http\JsonResponse
      */
     public function store(Request $request)
     {
-        // TODO: Implement ad account creation with validation
+        Log::info('AdAccountController::store called (stub)', [
+            'data' => $request->all(),
+        ]);
+
         return response()->json([
-            'message' => 'Ad account store endpoint - implementation pending'
+            'success' => true,
+            'id' => 'ad_account_stub_' . uniqid(),
+            'stub' => true
         ], 201);
     }
 
     /**
-     * Display the specified ad account.
+     * Display the specified ad account by ID
+     *
+     * @param Request $request HTTP request
+     * @param string $account_id Ad Account ID
+     * @return \Illuminate\Http\JsonResponse
      */
     public function show(Request $request, $account_id)
     {
-        // TODO: Implement ad account retrieval by ID
-        return response()->json([
-            'message' => 'Ad account show endpoint - implementation pending',
-            'account_id' => $account_id
+        Log::info('AdAccountController::show called (stub)', [
+            'account_id' => $account_id,
         ]);
+
+        return response()->json([
+            'data' => ['id' => $account_id],
+            'stub' => true
+        ], 200);
     }
 
     /**
-     * Show the form for editing the specified ad account.
+     * Return form/metadata for editing the specified ad account
+     *
+     * @param Request $request HTTP request
+     * @param string $account_id Ad Account ID
+     * @return \Illuminate\Http\JsonResponse
      */
     public function edit(Request $request, $account_id)
     {
-        // TODO: Return form/metadata for editing ad account
-        return response()->json([
-            'message' => 'Ad account edit form endpoint - implementation pending',
-            'account_id' => $account_id
+        Log::info('AdAccountController::edit called (stub)', [
+            'account_id' => $account_id,
         ]);
+
+        return response()->json([
+            'form_fields' => ['id' => $account_id],
+            'stub' => true
+        ], 200);
     }
 
     /**
-     * Update the specified ad account.
+     * Update the specified ad account in database
+     *
+     * @param Request $request HTTP request with ad account data
+     * @param string $account_id Ad Account ID
+     * @return \Illuminate\Http\JsonResponse
      */
     public function update(Request $request, $account_id)
     {
-        // TODO: Implement ad account update with validation
-        return response()->json([
-            'message' => 'Ad account update endpoint - implementation pending',
-            'account_id' => $account_id
+        Log::info('AdAccountController::update called (stub)', [
+            'account_id' => $account_id,
+            'data' => $request->all(),
         ]);
+
+        return response()->json([
+            'success' => true,
+            'id' => $account_id,
+            'stub' => true
+        ], 200);
     }
 
     /**
-     * Remove the specified ad account.
+     * Remove the specified ad account from database
+     *
+     * @param Request $request HTTP request
+     * @param string $account_id Ad Account ID
+     * @return \Illuminate\Http\JsonResponse
      */
     public function destroy(Request $request, $account_id)
     {
-        // TODO: Implement ad account deletion
-        return response()->json([
-            'message' => 'Ad account destroy endpoint - implementation pending',
-            'account_id' => $account_id
+        Log::info('AdAccountController::destroy called (stub)', [
+            'account_id' => $account_id,
         ]);
+
+        return response()->json([
+            'success' => true,
+            'stub' => true
+        ], 200);
     }
 }

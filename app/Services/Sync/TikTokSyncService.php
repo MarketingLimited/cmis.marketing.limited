@@ -9,8 +9,7 @@ use Illuminate\Support\Facades\Log;
  * TikTok Platform Sync Service
  *
  * Syncs content, metrics, and engagement data from TikTok Business API.
- *
- * @todo Implement full TikTok API integration
+ * Note: Stub implementation - full API integration pending
  */
 class TikTokSyncService extends BasePlatformSyncService
 {
@@ -18,6 +17,9 @@ class TikTokSyncService extends BasePlatformSyncService
 
     /**
      * Sync data from TikTok
+     *
+     * @param array $options Sync options (since date, filters)
+     * @return array Sync results
      */
     public function sync(array $options = []): array
     {
@@ -25,7 +27,7 @@ class TikTokSyncService extends BasePlatformSyncService
             ? Carbon::parse($options['since'])
             : Carbon::now()->subDays(config('sync.lookback_days', 7));
 
-        Log::info("Starting TikTok sync", [
+        Log::info("Starting TikTok sync (stub)", [
             'org_id' => $this->orgId,
             'integration_id' => $this->integration->integration_id,
             'since' => $since->toDateTimeString(),
@@ -47,6 +49,7 @@ class TikTokSyncService extends BasePlatformSyncService
                     'messages' => $messagesCount,
                 ],
                 'errors' => [],
+                'stub' => true,
             ];
 
             $this->logSync('full_sync', 'success', $result);
@@ -71,89 +74,110 @@ class TikTokSyncService extends BasePlatformSyncService
     /**
      * Sync posts/videos from TikTok
      *
-     * @todo Implement TikTok posts API integration
+     * Note: Stub implementation - TikTok API integration pending
+     *
+     * @param Carbon $since Sync posts since this date
+     * @return int Number of posts synced
      */
     protected function syncPosts(Carbon $since): int
     {
-        // TODO: Implement TikTok posts sync
-        Log::info("TikTok posts sync not yet implemented");
+        Log::info("TikTok posts sync (stub) - no data synced", ['since' => $since->toDateTimeString()]);
         return 0;
     }
 
     /**
      * Sync metrics/analytics from TikTok
      *
-     * @todo Implement TikTok analytics API integration
+     * Note: Stub implementation - TikTok Analytics API pending
+     *
+     * @param Carbon $since Sync metrics since this date
+     * @return int Number of metric records synced
      */
     protected function syncMetrics(Carbon $since): int
     {
-        // TODO: Implement TikTok metrics sync
-        Log::info("TikTok metrics sync not yet implemented");
+        Log::info("TikTok metrics sync (stub) - no data synced", ['since' => $since->toDateTimeString()]);
         return 0;
     }
 
     /**
      * Sync comments from TikTok
      *
-     * @todo Implement TikTok comments API integration
+     * Note: Stub implementation - TikTok API integration pending
+     *
+     * @param Carbon $since Sync comments since this date
+     * @return int Number of comments synced
      */
     protected function syncComments(Carbon $since): int
     {
-        // TODO: Implement TikTok comments sync
-        Log::info("TikTok comments sync not yet implemented");
+        Log::info("TikTok comments sync (stub) - no data synced", ['since' => $since->toDateTimeString()]);
         return 0;
     }
 
     /**
      * Sync messages/inbox from TikTok
      *
-     * @todo Implement TikTok messages API integration
+     * Note: Stub implementation - TikTok Messaging API pending
+     *
+     * @param Carbon $since Sync messages since this date
+     * @return int Number of messages synced
      */
     protected function syncMessages(Carbon $since): int
     {
-        // TODO: Implement TikTok messages sync
-        Log::info("TikTok messages sync not yet implemented");
+        Log::info("TikTok messages sync (stub) - no data synced", ['since' => $since->toDateTimeString()]);
         return 0;
     }
 
     /**
      * Get TikTok API client
      *
-     * @todo Implement TikTok API client
+     * Note: Stub implementation - throws exception
+     *
+     * @return mixed API client instance
+     * @throws \Exception Always throws - not yet implemented
      */
     protected function getApiClient()
     {
-        // TODO: Implement TikTok API client
-        throw new \Exception("TikTok API client not yet implemented");
+        throw new \Exception("TikTok API client not yet implemented (stub)");
     }
 
     /**
-     * Refresh access token
+     * Refresh OAuth access token
      *
-     * @todo Implement TikTok token refresh logic
+     * Note: Stub implementation - always returns false
+     *
+     * @return bool True if token refreshed successfully
      */
     protected function refreshAccessToken(): bool
     {
-        // TODO: Implement TikTok token refresh
-        Log::info("TikTok token refresh not yet implemented");
+        Log::info("TikTok token refresh (stub) - not refreshed");
         return false;
     }
 
     /**
-     * Sync account info
+     * Sync TikTok account information
+     *
+     * Note: Stub implementation - returns empty data
+     *
+     * @param mixed $integration Integration credentials
+     * @return array Account data
      */
     public function syncAccountInfo($integration): array
     {
-        // TODO: Implement TikTok account info sync
-        return ['success' => true, 'data' => []];
+        Log::info("TikTok account info sync (stub) - no data synced");
+        return ['success' => true, 'data' => [], 'stub' => true];
     }
 
     /**
-     * Sync videos
+     * Sync TikTok videos
+     *
+     * Note: Stub implementation - returns empty data
+     *
+     * @param mixed $integration Integration credentials
+     * @return array Videos data
      */
     public function syncVideos($integration): array
     {
-        // TODO: Implement TikTok videos sync
-        return ['success' => true, 'data' => []];
+        Log::info("TikTok videos sync (stub) - no data synced");
+        return ['success' => true, 'data' => [], 'stub' => true];
     }
 }

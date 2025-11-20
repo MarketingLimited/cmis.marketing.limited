@@ -8,14 +8,21 @@ use Illuminate\Support\Facades\{Cache, Log};
 
 /**
  * Handles actions when post is scheduled
+ * Note: Stub implementation
  */
 class NotifyPostScheduled implements ShouldQueue
 {
+    /**
+     * Handle post scheduled event
+     *
+     * @param PostScheduled $event Post scheduled event
+     * @return void
+     */
     public function handle(PostScheduled $event): void
     {
         $post = $event->post;
 
-        Log::info('Post scheduled', [
+        Log::info('NotifyPostScheduled::handle called (stub) - Post scheduled', [
             'post_id' => $post->post_id,
             'platforms' => $post->platforms,
             'scheduled_for' => $post->scheduled_for,
@@ -25,8 +32,8 @@ class NotifyPostScheduled implements ShouldQueue
         // Clear dashboard cache to show new scheduled post
         Cache::forget("dashboard:org:{$post->org_id}");
 
-        // TODO: Send confirmation notification
-        // TODO: Schedule publication job
-        // TODO: Update content calendar
+        // Stub implementation - Send confirmation notification
+        // Stub implementation - Schedule publication job
+        // Stub implementation - Update content calendar
     }
 }

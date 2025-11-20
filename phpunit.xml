@@ -70,4 +70,12 @@
     <testdoxText outputFile="build/testdox.txt"/>
     <junit outputFile="build/junit.xml"/>
   </logging>
+  <!-- Coverage Configuration -->
+  <coverage includeUncoveredFiles="true" pathCoverage="false" ignoreDeprecatedCodeUnits="true" disableCodeCoverageIgnore="false">
+    <report>
+      <clover outputFile="build/coverage/clover.xml"/>
+      <html outputDirectory="build/coverage/html" lowUpperBound="50" highLowerBound="80"/>
+      <text outputFile="build/coverage/coverage.txt" showUncoveredFiles="false" showOnlySummary="false"/>
+    </report>
+  </coverage>
 </phpunit>
