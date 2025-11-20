@@ -83,7 +83,7 @@ PostgreSQL-specific patterns:
 **Purpose:** Schema reference and table catalog
 
 Quick reference for:
-- All 189 tables across 12 schemas
+- All 148+ tables across 12 schemas
 - Key relationships
 - Important constraints
 - Common queries
@@ -134,7 +134,7 @@ Knowledge files focus on **HOW TO DISCOVER** rather than **WHAT IS**:
 
 ❌ **Static facts** (get outdated):
 ```
-"CMIS has 189 tables"
+"CMIS has 148+ tables"
 "We use Alpine.js 3.13.5"
 ```
 

@@ -331,7 +331,7 @@ composer show | grep laravel
 ```
 
 **Pattern Recognition:**
-- Laravel 11+ = Latest features available
+- Laravel 12+ = Latest features available
 - Laravel 10 = LTS considerations
 - PHP 8.3+ = Modern PHP features available
 
