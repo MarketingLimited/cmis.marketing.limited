@@ -900,6 +900,7 @@ Route::middleware(['auth:sanctum', 'validate.org.access', 'set.db.context'])
 
         // Campaign Performance
         Route::get('/campaigns', [AnalyticsController::class, 'getCampaignPerformance'])->name('campaigns');
+        Route::get('/campaigns/{campaign_id}', [AnalyticsController::class, 'getCampaignAnalytics'])->name('campaigns.show');
 
         // Engagement Analytics
         Route::get('/engagement', [AnalyticsController::class, 'getEngagementAnalytics'])->name('engagement');
