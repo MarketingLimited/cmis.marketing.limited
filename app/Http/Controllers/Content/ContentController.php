@@ -86,6 +86,12 @@ class ContentController extends Controller
                 ], 400);
             }
 
+            // Initialize RLS context for multi-tenancy
+            DB::statement("SELECT cmis.init_transaction_context(?, ?)", [
+                $request->user()->user_id,
+                $orgId
+            ]);
+
             // Validate request
             $validated = $request->validate([
                 'title' => ['required', 'string', 'max:255'],
@@ -94,6 +100,7 @@ class ContentController extends Controller
                 'platform' => ['nullable', 'string'],
                 'status' => ['sometimes', 'string', 'in:draft,scheduled,published,archived'],
                 'scheduled_at' => ['nullable', 'date'],
+                'plan_id' => ['nullable', 'uuid'],
             ]);
 
             $validated['org_id'] = $orgId;
@@ -102,6 +109,22 @@ class ContentController extends Controller
 
             if (!isset($validated['status'])) {
                 $validated['status'] = 'draft';
+            }
+
+            // If no plan_id provided, create a default plan for this content
+            if (!isset($validated['plan_id'])) {
+                $defaultPlan = \App\Models\Content\ContentPlan::firstOrCreate(
+                    [
+                        'org_id' => $orgId,
+                        'name' => 'Default Content Plan',
+                    ],
+                    [
+                        'plan_id' => \Illuminate\Support\Str::uuid()->toString(),
+                        'status' => 'active',
+                        'created_by' => $request->user()->user_id,
+                    ]
+                );
+                $validated['plan_id'] = $defaultPlan->plan_id;
             }
 
             $content = ContentPlanItem::create($validated);
