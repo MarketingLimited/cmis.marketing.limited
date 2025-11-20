@@ -1,17 +1,6 @@
-Content Plan (Tests\Unit\Models\Creative\ContentPlan)
- [ ] It cascades soft delete to content items
-
-Update Campaign Stats Job (Tests\Unit\Jobs\UpdateCampaignStatsJob)
- [ ] It updates campaign statistics
- [ ] It calculates engagement metrics
- [ ] It calculates conversion rate
- [ ] It updates roi metrics
- [ ] It aggregates platform stats
- [x] It can be dispatched
- [ ] It calculates click through rate
- [ ] It tracks cost per click
- [ ] It updates reach metrics
- [ ] It handles campaigns with no data
- [ ] It stores stats snapshot
- [x] It respects org isolation
+Platform Connection (Tests\Unit\Models\Platform\PlatformConnection)
+ [ ] It belongs to org
+ [ ] It stores access token
+ [ ] It tracks last synced time
+ [x] It respects rls policies
 

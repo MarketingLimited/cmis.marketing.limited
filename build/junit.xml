@@ -1,15 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <testsuites>
-  <testsuite name="/home/cmis-test/public_html/phpunit.xml" tests="13" assertions="5" errors="10" failures="1" skipped="0" time="17.386149">
-    <testsuite name="Unit" tests="13" assertions="5" errors="10" failures="1" skipped="0" time="17.386149">
-      <testsuite name="Tests\Unit\Jobs\UpdateCampaignStatsJobTest" file="/home/cmis-test/public_html/tests/Unit/Jobs/UpdateCampaignStatsJobTest.php" tests="12" assertions="2" errors="10" failures="0" skipped="0" time="17.273530">
-        <testcase name="it_calculates_conversion_rate" file="/home/cmis-test/public_html/tests/Unit/Jobs/UpdateCampaignStatsJobTest.php" line="81" class="Tests\Unit\Jobs\UpdateCampaignStatsJobTest" classname="Tests.Unit.Jobs.UpdateCampaignStatsJobTest" assertions="0" time="16.227901">
-          <error type="ErrorException">Tests\Unit\Jobs\UpdateCampaignStatsJobTest::it_calculates_conversion_rate
-ErrorException: Trying to access array offset on null
+  <testsuite name="CLI Arguments" tests="4" assertions="2" errors="2" failures="1" skipped="0" time="14.648332">
+    <testsuite name="Tests\Unit\Models\Platform\PlatformConnectionTest" file="/home/cmis-test/public_html/tests/Unit/Models/Platform/PlatformConnectionTest.php" tests="4" assertions="2" errors="2" failures="1" skipped="0" time="14.648332">
+      <testcase name="it_belongs_to_org" file="/home/cmis-test/public_html/tests/Unit/Models/Platform/PlatformConnectionTest.php" line="46" class="Tests\Unit\Models\Platform\PlatformConnectionTest" classname="Tests.Unit.Models.Platform.PlatformConnectionTest" assertions="0" time="14.386549">
+        <error type="ErrorException">Tests\Unit\Models\Platform\PlatformConnectionTest::it_belongs_to_org
+ErrorException: Attempt to read property "org_id" on null
 
 /home/cmis-test/public_html/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/HandleExceptions.php:258
-/home/cmis-test/public_html/tests/Unit/Jobs/UpdateCampaignStatsJobTest.php:98</error>
-          <system-out>Enabling RLS on cmis.orgs...
+/home/cmis-test/public_html/tests/Unit/Models/Platform/PlatformConnectionTest.php:60</error>
+        <system-out>Enabling RLS on cmis.orgs...
 Enabling RLS on cmis.org_markets...
 Enabling RLS on cmis.user_orgs...
 Enabling RLS on cmis.campaigns...
@@ -327,81 +326,36 @@ Creating indexes for personal_access_tokens table...
 ✓ Added report_name to analytics_reports
 ✓ Added activity_id to activity_logs
 </system-out>
-        </testcase>
-        <testcase name="it_stores_stats_snapshot" file="/home/cmis-test/public_html/tests/Unit/Jobs/UpdateCampaignStatsJobTest.php" line="302" class="Tests\Unit\Jobs\UpdateCampaignStatsJobTest" classname="Tests.Unit.Jobs.UpdateCampaignStatsJobTest" assertions="0" time="0.097272">
-          <error type="ErrorException">Tests\Unit\Jobs\UpdateCampaignStatsJobTest::it_stores_stats_snapshot
-ErrorException: Trying to access array offset on null
+      </testcase>
+      <testcase name="it_respects_rls_policies" file="/home/cmis-test/public_html/tests/Unit/Models/Platform/PlatformConnectionTest.php" line="301" class="Tests\Unit\Models\Platform\PlatformConnectionTest" classname="Tests.Unit.Models.Platform.PlatformConnectionTest" assertions="1" time="0.096616"/>
+      <testcase name="it_stores_access_token" file="/home/cmis-test/public_html/tests/Unit/Models/Platform/PlatformConnectionTest.php" line="121" class="Tests\Unit\Models\Platform\PlatformConnectionTest" classname="Tests.Unit.Models.Platform.PlatformConnectionTest" assertions="0" time="0.081452">
+        <error type="Illuminate\Database\QueryException">Tests\Unit\Models\Platform\PlatformConnectionTest::it_stores_access_token
+Illuminate\Database\QueryException: SQLSTATE[42703]: Undefined column: 7 ERROR:  column "access_token" of relation "platform_connections" does not exist
+LINE 1: ...nections" ("connection_id", "org_id", "platform", "access_to...
+                                                             ^ (Connection: pgsql, SQL: insert into "cmis"."platform_connections" ("connection_id", "org_id", "platform", "access_token", "updated_at", "created_at") values (7e02455d-c2f6-4880-b88b-1c478eb3181a, b0f3e1c5-b21a-407e-9348-00ffce754206, facebook, encrypted_token_123, 2025-11-20 10:52:33, 2025-11-20 10:52:33))
 
-/home/cmis-test/public_html/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/HandleExceptions.php:258
-/home/cmis-test/public_html/tests/Unit/Jobs/UpdateCampaignStatsJobTest.php:319</error>
-        </testcase>
-        <testcase name="it_aggregates_platform_stats" file="/home/cmis-test/public_html/tests/Unit/Jobs/UpdateCampaignStatsJobTest.php" line="135" class="Tests\Unit\Jobs\UpdateCampaignStatsJobTest" classname="Tests.Unit.Jobs.UpdateCampaignStatsJobTest" assertions="0" time="0.096713">
-          <error type="ErrorException">Tests\Unit\Jobs\UpdateCampaignStatsJobTest::it_aggregates_platform_stats
-ErrorException: Trying to access array offset on null
+/home/cmis-test/public_html/vendor/laravel/framework/src/Illuminate/Database/Connection.php:824
+/home/cmis-test/public_html/vendor/laravel/framework/src/Illuminate/Database/Connection.php:778
+/home/cmis-test/public_html/vendor/laravel/framework/src/Illuminate/Database/Connection.php:559
+/home/cmis-test/public_html/vendor/laravel/framework/src/Illuminate/Database/Connection.php:523
+/home/cmis-test/public_html/vendor/laravel/framework/src/Illuminate/Database/Query/Builder.php:3804
+/home/cmis-test/public_html/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Builder.php:2235
+/home/cmis-test/public_html/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Model.php:1412
+/home/cmis-test/public_html/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Model.php:1240
+/home/cmis-test/public_html/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Builder.php:1219
+/home/cmis-test/public_html/vendor/laravel/framework/src/Illuminate/Support/helpers.php:390
+/home/cmis-test/public_html/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Builder.php:1218
+/home/cmis-test/public_html/vendor/laravel/framework/src/Illuminate/Support/Traits/ForwardsCalls.php:23
+/home/cmis-test/public_html/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Model.php:2540
+/home/cmis-test/public_html/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Model.php:2556
+/home/cmis-test/public_html/tests/Unit/Models/Platform/PlatformConnectionTest.php:128</error>
+      </testcase>
+      <testcase name="it_tracks_last_synced_time" file="/home/cmis-test/public_html/tests/Unit/Models/Platform/PlatformConnectionTest.php" line="245" class="Tests\Unit\Models\Platform\PlatformConnectionTest" classname="Tests.Unit.Models.Platform.PlatformConnectionTest" assertions="1" time="0.083715">
+        <failure type="PHPUnit\Framework\ExpectationFailedException">Tests\Unit\Models\Platform\PlatformConnectionTest::it_tracks_last_synced_time
+Failed asserting that null is not null.
 
-/home/cmis-test/public_html/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/HandleExceptions.php:258
-/home/cmis-test/public_html/tests/Unit/Jobs/UpdateCampaignStatsJobTest.php:152</error>
-        </testcase>
-        <testcase name="it_handles_campaigns_with_no_data" file="/home/cmis-test/public_html/tests/Unit/Jobs/UpdateCampaignStatsJobTest.php" line="276" class="Tests\Unit\Jobs\UpdateCampaignStatsJobTest" classname="Tests.Unit.Jobs.UpdateCampaignStatsJobTest" assertions="0" time="0.079129">
-          <error type="ErrorException">Tests\Unit\Jobs\UpdateCampaignStatsJobTest::it_handles_campaigns_with_no_data
-ErrorException: Trying to access array offset on null
-
-/home/cmis-test/public_html/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/HandleExceptions.php:258
-/home/cmis-test/public_html/tests/Unit/Jobs/UpdateCampaignStatsJobTest.php:293</error>
-        </testcase>
-        <testcase name="it_calculates_engagement_metrics" file="/home/cmis-test/public_html/tests/Unit/Jobs/UpdateCampaignStatsJobTest.php" line="54" class="Tests\Unit\Jobs\UpdateCampaignStatsJobTest" classname="Tests.Unit.Jobs.UpdateCampaignStatsJobTest" assertions="0" time="0.088176">
-          <error type="ErrorException">Tests\Unit\Jobs\UpdateCampaignStatsJobTest::it_calculates_engagement_metrics
-ErrorException: Trying to access array offset on null
-
-/home/cmis-test/public_html/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/HandleExceptions.php:258
-/home/cmis-test/public_html/tests/Unit/Jobs/UpdateCampaignStatsJobTest.php:71</error>
-        </testcase>
-        <testcase name="it_updates_reach_metrics" file="/home/cmis-test/public_html/tests/Unit/Jobs/UpdateCampaignStatsJobTest.php" line="249" class="Tests\Unit\Jobs\UpdateCampaignStatsJobTest" classname="Tests.Unit.Jobs.UpdateCampaignStatsJobTest" assertions="0" time="0.087036">
-          <error type="ErrorException">Tests\Unit\Jobs\UpdateCampaignStatsJobTest::it_updates_reach_metrics
-ErrorException: Trying to access array offset on null
-
-/home/cmis-test/public_html/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/HandleExceptions.php:258
-/home/cmis-test/public_html/tests/Unit/Jobs/UpdateCampaignStatsJobTest.php:266</error>
-        </testcase>
-        <testcase name="it_can_be_dispatched" file="/home/cmis-test/public_html/tests/Unit/Jobs/UpdateCampaignStatsJobTest.php" line="162" class="Tests\Unit\Jobs\UpdateCampaignStatsJobTest" classname="Tests.Unit.Jobs.UpdateCampaignStatsJobTest" assertions="1" time="0.090655"/>
-        <testcase name="it_tracks_cost_per_click" file="/home/cmis-test/public_html/tests/Unit/Jobs/UpdateCampaignStatsJobTest.php" line="219" class="Tests\Unit\Jobs\UpdateCampaignStatsJobTest" classname="Tests.Unit.Jobs.UpdateCampaignStatsJobTest" assertions="0" time="0.095258">
-          <error type="ErrorException">Tests\Unit\Jobs\UpdateCampaignStatsJobTest::it_tracks_cost_per_click
-ErrorException: Trying to access array offset on null
-
-/home/cmis-test/public_html/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/HandleExceptions.php:258
-/home/cmis-test/public_html/tests/Unit/Jobs/UpdateCampaignStatsJobTest.php:239</error>
-        </testcase>
-        <testcase name="it_updates_roi_metrics" file="/home/cmis-test/public_html/tests/Unit/Jobs/UpdateCampaignStatsJobTest.php" line="108" class="Tests\Unit\Jobs\UpdateCampaignStatsJobTest" classname="Tests.Unit.Jobs.UpdateCampaignStatsJobTest" assertions="0" time="0.075836">
-          <error type="ErrorException">Tests\Unit\Jobs\UpdateCampaignStatsJobTest::it_updates_roi_metrics
-ErrorException: Trying to access array offset on null
-
-/home/cmis-test/public_html/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/HandleExceptions.php:258
-/home/cmis-test/public_html/tests/Unit/Jobs/UpdateCampaignStatsJobTest.php:125</error>
-        </testcase>
-        <testcase name="it_calculates_click_through_rate" file="/home/cmis-test/public_html/tests/Unit/Jobs/UpdateCampaignStatsJobTest.php" line="189" class="Tests\Unit\Jobs\UpdateCampaignStatsJobTest" classname="Tests.Unit.Jobs.UpdateCampaignStatsJobTest" assertions="0" time="0.140701">
-          <error type="ErrorException">Tests\Unit\Jobs\UpdateCampaignStatsJobTest::it_calculates_click_through_rate
-ErrorException: Trying to access array offset on null
-
-/home/cmis-test/public_html/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/HandleExceptions.php:258
-/home/cmis-test/public_html/tests/Unit/Jobs/UpdateCampaignStatsJobTest.php:209</error>
-        </testcase>
-        <testcase name="it_updates_campaign_statistics" file="/home/cmis-test/public_html/tests/Unit/Jobs/UpdateCampaignStatsJobTest.php" line="28" class="Tests\Unit\Jobs\UpdateCampaignStatsJobTest" classname="Tests.Unit.Jobs.UpdateCampaignStatsJobTest" assertions="0" time="0.101985">
-          <error type="ErrorException">Tests\Unit\Jobs\UpdateCampaignStatsJobTest::it_updates_campaign_statistics
-ErrorException: Trying to access array offset on null
-
-/home/cmis-test/public_html/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/HandleExceptions.php:258
-/home/cmis-test/public_html/tests/Unit/Jobs/UpdateCampaignStatsJobTest.php:45</error>
-        </testcase>
-        <testcase name="it_respects_org_isolation" file="/home/cmis-test/public_html/tests/Unit/Jobs/UpdateCampaignStatsJobTest.php" line="329" class="Tests\Unit\Jobs\UpdateCampaignStatsJobTest" classname="Tests.Unit.Jobs.UpdateCampaignStatsJobTest" assertions="1" time="0.092868"/>
-      </testsuite>
-      <testsuite name="Tests\Unit\Models\Creative\ContentPlanTest" file="/home/cmis-test/public_html/tests/Unit/Models/Creative/ContentPlanTest.php" tests="1" assertions="3" errors="0" failures="1" skipped="0" time="0.112619">
-        <testcase name="it_cascades_soft_delete_to_content_items" file="/home/cmis-test/public_html/tests/Unit/Models/Creative/ContentPlanTest.php" line="180" class="Tests\Unit\Models\Creative\ContentPlanTest" classname="Tests.Unit.Models.Creative.ContentPlanTest" assertions="3" time="0.112619">
-          <failure type="PHPUnit\Framework\ExpectationFailedException">Tests\Unit\Models\Creative\ContentPlanTest::it_cascades_soft_delete_to_content_items
-Failed asserting that 1 matches expected 0.
-
-/home/cmis-test/public_html/tests/Unit/Models/Creative/ContentPlanTest.php:211</failure>
-        </testcase>
-      </testsuite>
+/home/cmis-test/public_html/tests/Unit/Models/Platform/PlatformConnectionTest.php:260</failure>
+      </testcase>
     </testsuite>
   </testsuite>
 </testsuites>
