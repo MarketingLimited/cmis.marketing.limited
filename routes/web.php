@@ -14,6 +14,7 @@ use App\Http\Controllers\OrgController;
 use App\Http\Controllers\Web\ChannelController as WebChannelController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\Auth\InvitationController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -28,6 +29,13 @@ Route::middleware('guest')->group(function () {
     Route::post('/login', [LoginController::class, 'store']);
     Route::get('/register', [RegisterController::class, 'create'])->name('register');
     Route::post('/register', [RegisterController::class, 'store']);
+});
+
+// ==================== Invitation Routes ====================
+Route::prefix('invitations')->name('invitations.')->group(function () {
+    Route::get('/accept/{token}', [InvitationController::class, 'show'])->name('show');
+    Route::post('/accept/{token}', [InvitationController::class, 'accept'])->name('accept');
+    Route::get('/decline/{token}', [InvitationController::class, 'decline'])->name('decline');
 });
 
 Route::post('/logout', [LoginController::class, 'destroy'])

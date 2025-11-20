@@ -5,9 +5,12 @@ namespace App\Http\Controllers\Core;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\Core\{Org, UserOrg, Role};
+use App\Mail\UserInvitation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 
 class UserController extends Controller
 {
@@ -173,12 +176,46 @@ class UserController extends Controller
                 ]);
             }
 
+            // Generate invitation token (expires in 7 days)
+            $invitationToken = Str::random(64);
+            $userOrg->update([
+                'invitation_token' => $invitationToken,
+                'invitation_expires_at' => now()->addDays(7),
+            ]);
+
             DB::commit();
 
-            // TODO: إرسال بريد دعوة
+            // Send invitation email
+            try {
+                $organization = Org::findOrFail($orgId);
+                $role = Role::findOrFail($request->role_id);
+
+                Mail::to($user->email)->send(
+                    new UserInvitation(
+                        $user,
+                        $organization,
+                        $role,
+                        $request->user(),
+                        $invitationToken
+                    )
+                );
+
+                \Log::info('Invitation email sent', [
+                    'user_id' => $user->user_id,
+                    'email' => $user->email,
+                    'org_id' => $orgId,
+                ]);
+            } catch (\Exception $emailError) {
+                // Log email error but don't fail the invitation
+                \Log::error('Failed to send invitation email', [
+                    'user_id' => $user->user_id,
+                    'email' => $user->email,
+                    'error' => $emailError->getMessage(),
+                ]);
+            }
 
             return response()->json([
-                'message' => 'User invited successfully',
+                'message' => 'User invited successfully. An invitation email has been sent.',
                 'user' => $user,
                 'membership' => $userOrg
             ], 201);
