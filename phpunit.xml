@@ -70,4 +70,30 @@
     <testdoxText outputFile="build/testdox.txt"/>
     <junit outputFile="build/junit.xml"/>
   </logging>
+  <!-- Coverage Configuration -->
+  <coverage includeUncoveredFiles="true" processUncoveredFiles="true" pathCoverage="false" ignoreDeprecatedCodeUnits="true" disableCodeCoverageIgnore="false">
+    <report>
+      <clover outputFile="build/coverage/clover.xml"/>
+      <html outputDirectory="build/coverage/html" lowUpperBound="50" highLowerBound="80"/>
+      <text outputFile="build/coverage/coverage.txt" showUncoveredFiles="false" showOnlySummary="false"/>
+    </report>
+  </coverage>
+  <!-- Test Groups -->
+  <groups>
+    <group name="unit">
+      <directory>tests/Unit</directory>
+    </group>
+    <group name="feature">
+      <directory>tests/Feature</directory>
+    </group>
+    <group name="integration">
+      <directory>tests/Integration</directory>
+    </group>
+    <group name="stub">
+      <!-- Tests that run in stub mode -->
+    </group>
+    <group name="slow">
+      <!-- Tests that take longer to execute -->
+    </group>
+  </groups>
 </phpunit>
