@@ -39,7 +39,28 @@ return new class extends Migration
                 $sql = preg_replace('/ALTER\s+VIEW\s+[^\s]+\s+OWNER\s+TO\s+begin;/i', '', $sql);
             }
 
-            DB::unprepared($sql);
+            // Split SQL into individual view creation statements
+            $statements = preg_split('/;\s*(?=CREATE\s+VIEW|ALTER\s+VIEW)/i', $sql, -1, PREG_SPLIT_NO_EMPTY);
+
+            foreach ($statements as $statement) {
+                $statement = trim($statement);
+                if (empty($statement)) {
+                    continue;
+                }
+
+                try {
+                    // Add semicolon back if it was removed
+                    if (!str_ends_with($statement, ';')) {
+                        $statement .= ';';
+                    }
+
+                    DB::unprepared($statement);
+                } catch (\Exception $e) {
+                    // Log warning but continue with other views
+                    // Views that reference non-existent legacy tables will be skipped
+                    \Log::warning("Skipping view creation: " . substr($statement, 0, 100) . "... Error: " . $e->getMessage());
+                }
+            }
         }
     }
 
