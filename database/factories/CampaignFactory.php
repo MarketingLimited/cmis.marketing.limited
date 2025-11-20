@@ -18,14 +18,14 @@ class CampaignFactory extends Factory
         return [
             'campaign_id' => (string) Str::uuid(),
             'org_id' => Org::factory(),
-            'campaign_name' => fake()->catchPhrase(),
+            'name' => fake()->catchPhrase(),
             'description' => fake()->paragraph(),
+            'objective' => fake()->sentence(),
             'status' => fake()->randomElement(['draft', 'active', 'paused', 'completed']),
             'start_date' => $startDate,
             'end_date' => $endDate,
             'budget' => fake()->randomFloat(2, 1000, 100000),
-            'objectives' => [fake()->word(), fake()->word()],
-            'target_audience' => fake()->sentence(),
+            'currency' => 'USD',
         ];
     }
 
