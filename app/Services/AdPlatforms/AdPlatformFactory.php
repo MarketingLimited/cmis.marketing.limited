@@ -10,6 +10,8 @@ use App\Services\AdPlatforms\TikTok\TikTokAdsPlatform;
 use App\Services\AdPlatforms\LinkedIn\LinkedInAdsPlatform;
 use App\Services\AdPlatforms\Twitter\TwitterAdsPlatform;
 use App\Services\AdPlatforms\Snapchat\SnapchatAdsPlatform;
+use App\Services\FeatureToggle\FeatureFlagService;
+use App\Exceptions\FeatureDisabledException;
 
 /**
  * Factory for creating Ad Platform Service instances
@@ -26,9 +28,27 @@ class AdPlatformFactory
      * @param Integration $integration The platform integration
      * @return AdPlatformInterface
      * @throws \InvalidArgumentException If platform is not supported
+     * @throws FeatureDisabledException If paid campaigns are disabled for this platform
      */
     public static function make(Integration $integration): AdPlatformInterface
     {
+        // Get canonical platform name
+        $platform = self::getCanonicalName($integration->platform);
+
+        // Check if paid campaigns are enabled for this platform
+        $featureFlags = app(FeatureFlagService::class);
+        $featureKey = "paid_campaigns.{$platform}.enabled";
+
+        if (!$featureFlags->isEnabled($featureKey)) {
+            $availablePlatforms = $featureFlags->getEnabledPlatforms('paid_campaigns');
+
+            throw new FeatureDisabledException(
+                "Paid campaigns for {$platform} are not available. " .
+                "Enabled platforms: " . implode(', ', $availablePlatforms) . ". " .
+                "Contact your administrator to enable this feature."
+            );
+        }
+
         return match ($integration->platform) {
             'meta', 'facebook', 'instagram' => new MetaAdsPlatform($integration),
             'google', 'google_ads' => new GoogleAdsPlatform($integration),
@@ -129,5 +149,39 @@ class AdPlatformFactory
         }
 
         return $platform;
+    }
+
+    /**
+     * Get list of platforms with paid campaigns enabled
+     *
+     * @return array Array of enabled platform configurations
+     */
+    public static function getEnabledPlatforms(): array
+    {
+        $featureFlags = app(FeatureFlagService::class);
+        $supported = self::getSupportedPlatforms();
+        $enabled = [];
+
+        foreach ($supported as $platform => $config) {
+            if ($featureFlags->isEnabled("paid_campaigns.{$platform}.enabled")) {
+                $enabled[$platform] = $config;
+            }
+        }
+
+        return $enabled;
+    }
+
+    /**
+     * Check if paid campaigns are enabled for a platform
+     *
+     * @param string $platform Platform identifier
+     * @return bool
+     */
+    public static function isPlatformEnabled(string $platform): bool
+    {
+        $platform = self::getCanonicalName($platform);
+        $featureFlags = app(FeatureFlagService::class);
+
+        return $featureFlags->isEnabled("paid_campaigns.{$platform}.enabled");
     }
 }

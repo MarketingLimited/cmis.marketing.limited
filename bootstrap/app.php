@@ -20,6 +20,10 @@ return Application::configure(basePath: dirname(__DIR__))
             // Vector Embeddings Web Routes
             Route::middleware(['web'])
                 ->group(base_path('routes/vector-embeddings-web.php'));
+
+            // Feature Toggle Routes (API & Admin)
+            Route::middleware(['web'])
+                ->group(base_path('routes/features.php'));
         }
     )
     ->withMiddleware(function (Middleware $middleware): void {
@@ -36,6 +40,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'security.headers' => \App\Http\Middleware\SecurityHeaders::class,
             'throttle.ai' => \App\Http\Middleware\ThrottleAI::class,
             'throttle.platform' => \App\Http\Middleware\ThrottlePlatformRequests::class, // NEW: Week 2
+            'feature.platform' => \App\Http\Middleware\CheckPlatformFeatureEnabled::class, // NEW: Feature Toggles
+            'admin' => \App\Http\Middleware\AdminOnly::class, // NEW: Admin access control
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
