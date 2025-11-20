@@ -1,0 +1,100 @@
+✓ Created table: cmis.team_members
+✓ Created table: cmis.leads
+✓ Created table: cmis.webhooks
+✓ Created table: cmis.contacts
+✓ Created table: cmis.knowledge_index
+✓ Created table: cmis.subscriptions
+✓ Created table: cmis.api_logs
+✓ Created table: cmis.content_plan_items
+✓ Created table: cmis.offerings
+✓ Created table: cmis.content
+✓ Created table: cmis.platform_connections
+✓ Created table: cmis.assets
+✓ Created table: cmis.invoices
+✓ Created table: cmis.audiences
+✓ Created table: cmis.templates
+✓ Created table: cmis.posts
+✓ Created table: cmis.custom_fields
+✓ Created table: cmis.comments
+✓ Created table: cmis.budgets
+✓ Created table: cmis.audit_logs
+
+✅ Migration complete! Created 20 missing tables.
+✓ Added code column to public.markets
+✓ Updated cmis.markets view to include code column
+✓ Added name column to cmis.permissions
+
+✅ Added missing columns successfully!
+✓ Created table: cmis.audience_segments
+✓ Created table: cmis.analytics_snapshots
+✓ Created table: cmis.analytics_reports
+✓ Created table: cmis.activities
+✓ Created table: cmis.workflows
+✓ Created table: cmis.tags
+✓ Created table: cmis.notification_preferences
+✓ Created table: cmis.metrics
+✓ Created table: cmis.content_media
+✓ Created table: cmis.campaign_budgets
+
+✅ Migration complete! Created 10 additional tables.
+✓ Added team_member_id to team_members
+✓ Added updated_at to api_logs
+✓ Added name to markets
+✓ Added knowledge_id to knowledge_index
+✓ Added platform to posts
+✓ Added commentable_type to comments
+✓ Added commentable_id to comments
+✓ Added total_amount to budgets
+✓ Added title to knowledge_index
+✓ Added score to leads
+✓ Added log_id to audit_logs
+
+✅ All column fixes applied successfully!
+✓ Created table: cmis.activity_logs
+✓ Created table: cmis.settings
+✓ Created table: cmis.schedules
+✓ Created table: cmis.campaign_analytics
+✓ Created table: cmis.social_posts_v2
+✓ Created table: cmis.social_accounts_v2
+✓ Created table: cmis.content_plans_v2
+✓ Created table: cmis.scheduled_social_posts_v2
+✓ Created table: cmis.embeddings_cache
+✓ Created table: cmis.campaign_metrics
+
+✅ Migration complete! Created 10 additional tables.
+✓ Made event_type nullable in webhooks
+✓ Made plan_id nullable in content_plan_items
+✓ Made role_name nullable in roles
+✓ Made permission_code nullable in permissions
+✓ Made brief_data nullable in creative_briefs
+
+✅ All NULL constraint fixes applied!
+✓ Added usage_count to assets
+✓ Added report_name to analytics_reports
+✓ Added activity_id to activity_logs
+✓ Added status column to cmis.user_orgs
+✓ Added ad_account_id to cmis.ad_campaigns
+✓ Added updated_at to public.markets
+✓ Created personal_access_tokens table
+✓ Made role_code nullable in cmis.roles
+✓ Made audience_id nullable in cmis.audience_segments
+✓ Updated cmis.markets view with correct columns
+
+✅ All critical schema fixes applied successfully!
+✓ Made user_id nullable in cmis.team_members
+✓ Made permission_name nullable in cmis.permissions
+✓ Made content_id nullable in cmis.content_media
+✓ Verified plan_id is nullable in cmis.content_items
+✓ Updated cmis.markets view to include both market_name and name
+
+✅ All NOT NULL constraint fixes applied successfully!
+Fixing pgvector dimension mismatch (1536 → 768)...
+✓ cmis.knowledge_index.embedding already correct or doesn't exist
+
+✅ All pgvector dimension fixes applied successfully!
+Note: Gemini text-embedding-004 produces 768-dimensional vectors.
+
+/home/cmis-test/public_html/tests/Unit/Models/Knowledge/KnowledgeIndexTest.php:47
+
+ERRORS!
+Tests: 8, Assertions: 11, Errors: 2, Failures: 1, Risky: 1.
