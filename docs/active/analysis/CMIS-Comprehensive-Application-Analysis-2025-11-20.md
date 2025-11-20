@@ -36,6 +36,21 @@ CMIS is an **enterprise-grade, AI-powered marketing management platform** built 
 - **Key Issues:** 241 identified problems (53 critical, 68 high-priority)
 - **Recommendation:** Immediate action needed on critical issues before moving to Phase 3
 
+### Detailed Scoring Breakdown
+
+**Overall Health Score: 72/100 (Grade: C+)**
+
+| Component | Score | Grade | Status |
+|-----------|-------|-------|--------|
+| Architecture | 85/100 | A | ✅ Excellent |
+| Database Design | 90/100 | A | ✅ Outstanding |
+| API Implementation | 70/100 | B- | 🟡 Good |
+| Feature Completeness | 49/100 | F | 🔴 Incomplete |
+| Testing Coverage | 40/100 | F | 🔴 Poor |
+| Documentation | 80/100 | B+ | 🟢 Strong |
+| Deployment Readiness | 40/100 | F | 🔴 Not Ready |
+| Security | 75/100 | B | 🟡 Acceptable |
+
 ---
 
 ## 1. Application Overview
@@ -272,6 +287,28 @@ Each API request passes through:
 - Video script generation
 - Hashtag and caption suggestions
 
+### 3.4 Detailed Feature Completion Scores
+
+| Feature Area | % Complete | Grade | Notes |
+|-------------|-----------|-------|-------|
+| **Database Schema** | 95% | A | ✅ Fully designed, working |
+| **Multi-Org & User Mgmt** | 85% | A- | ✅ RBAC, RLS excellent |
+| **Models & ORM** | 75% | B | 🟢 ~100 models created |
+| **Campaign Management** | 70% | B- | 🟡 Core working |
+| **Frontend UI** | 70% | B- | 🟡 Modern, some gaps |
+| **Analytics & Reporting** | 65% | C+ | 🟡 Dashboards good |
+| **API Controllers** | 60% | C | 🟡 50+ created |
+| **Social Media Mgmt** | 60% | C | 🔴 **Publishing broken** |
+| **Services Layer** | 55% | C- | 🟡 Some mock data |
+| **Creative Assets** | 55% | C- | 🟡 Partial |
+| **Ad Platforms** | 50% | D | 🔴 Basic only |
+| **AI Features** | 45% | D- | 🔴 **Mostly simulated** |
+| **Scheduling** | 40% | F | 🔴 **Jobs missing** |
+| **Social Publishing** | 40% | F | 🔴 **CRITICAL - Broken** |
+| **Deployment** | 40% | F | 🔴 Not production-ready |
+| **Testing** | 35% | F | 🔴 Low coverage |
+| **Compliance & Audit** | 50% | D | 🔴 Not enforced |
+
 ---
 
 ## 4. Database & Data Model
@@ -507,6 +544,37 @@ interface ConnectorInterface {
 - Real-time event processing needed
 - Current Status: Infrastructure present, event processing incomplete
 
+### 5.4 Platform Integration Scores
+
+#### Social Media Platforms
+
+| Platform | % Complete | Grade | Critical Issues |
+|----------|-----------|-------|----------------|
+| **Meta (FB/IG)** | 75% | B | 🔴 Token expires (60 days) |
+| **LinkedIn** | 70% | B- | 🟡 Company pages |
+| **Twitter/X** | 65% | C+ | 🟡 V2 API upgrade |
+| **TikTok** | 60% | C | 🔴 Video upload |
+| **Snapchat** | 55% | C- | 🔴 Stories incomplete |
+| **YouTube** | 50% | D | 🔴 Livestream missing |
+
+#### Advertising Platforms
+
+| Platform | % Complete | Grade | Critical Issues |
+|----------|-----------|-------|----------------|
+| **Meta Ads** | 75% | B | 🟡 Budget allocation |
+| **Google Ads** | 70% | B- | 🟢 Working well |
+| **LinkedIn Ads** | 65% | C+ | 🟡 ABM missing |
+| **TikTok Ads** | 60% | C | 🟡 Targeting |
+| **Snapchat Ads** | 55% | C- | 🔴 Optimization |
+
+#### Other Integrations
+
+| Platform | % Complete | Grade | Notes |
+|----------|-----------|-------|-------|
+| **Google Business** | 50% | D | Review mgmt missing |
+| **WooCommerce** | 40% | F | Minimal implementation |
+| **Microsoft Clarity** | 30% | F | Early stage |
+
 ---
 
 ## 6. AI & Semantic Features
@@ -627,6 +695,27 @@ $results = $semanticSearch->search(
 4. **Incomplete Integrations** - AI features partially connected
    - Status: Mostly mock/simulation mode
    - Fix: Complete real API integration
+
+### 6.5 AI Services Scores
+
+| AI Service | % Complete | Grade | Status |
+|------------|-----------|-------|--------|
+| **SemanticSearchService** | 75% | B | 🟢 Mostly functional |
+| **EmbeddingService** | 70% | B- | 🟡 Caching incomplete |
+| **AIService** | 50% | D | 🔴 No fallback provider |
+| **AIInsightsService** | 45% | D- | 🔴 Predictions unvalidated |
+| **PredictiveAnalytics** | 40% | F | 🔴 Models need training |
+| **AIAutomationService** | 35% | F | 🔴 Rules incomplete |
+
+**AI-Powered Features Maturity:**
+
+| Feature | Maturity | Grade | Notes |
+|---------|----------|-------|-------|
+| **Vector Embeddings** | 75% | B | pgvector working well |
+| **Semantic Search** | 70% | B- | Functional but limited |
+| **Content Generation** | 50% | D | Cost issues, incomplete |
+| **Recommendations** | 45% | D- | Logic incomplete |
+| **Predictive Analytics** | 40% | F | Needs training data |
 
 ---
 
