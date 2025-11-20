@@ -369,19 +369,191 @@ class MetaSyncService extends BasePlatformSyncService
 
     /**
      * Sync Page Data
+     * Fetches and stores Facebook Page information
      */
     public function syncPageData($integration): array
     {
-        // TODO: Implement page data sync
-        return ['success' => true, 'data' => []];
+        try {
+            $pageId = $integration->settings['facebook_page_id'] ?? null;
+
+            if (!$pageId) {
+                return [
+                    'success' => false,
+                    'error' => 'No Facebook page ID configured'
+                ];
+            }
+
+            $url = "{$this->baseUrl}/{$pageId}";
+
+            $response = $this->makeApiRequest($url, [
+                'fields' => 'id,name,about,category,description,emails,fan_count,followers_count,link,username,website,picture{url},cover{source},location,phone,verification_status,is_published'
+            ]);
+
+            if (!$response) {
+                return [
+                    'success' => false,
+                    'error' => 'Failed to fetch page data'
+                ];
+            }
+
+            // Store page data in database
+            DB::table('cmis_meta.facebook_pages')->updateOrInsert(
+                [
+                    'page_id' => $response['id'],
+                    'org_id' => $this->orgId,
+                ],
+                [
+                    'integration_id' => $integration->integration_id,
+                    'name' => $response['name'] ?? null,
+                    'about' => $response['about'] ?? null,
+                    'category' => $response['category'] ?? null,
+                    'description' => $response['description'] ?? null,
+                    'fan_count' => $response['fan_count'] ?? 0,
+                    'followers_count' => $response['followers_count'] ?? 0,
+                    'link' => $response['link'] ?? null,
+                    'username' => $response['username'] ?? null,
+                    'website' => $response['website'] ?? null,
+                    'picture_url' => $response['picture']['data']['url'] ?? null,
+                    'cover_url' => $response['cover']['source'] ?? null,
+                    'location' => json_encode($response['location'] ?? []),
+                    'phone' => $response['phone'] ?? null,
+                    'verification_status' => $response['verification_status'] ?? null,
+                    'is_published' => $response['is_published'] ?? true,
+                    'last_synced_at' => now(),
+                    'updated_at' => now(),
+                ]
+            );
+
+            Log::info("Facebook page data synced", [
+                'org_id' => $this->orgId,
+                'page_id' => $pageId,
+                'page_name' => $response['name'] ?? 'Unknown',
+                'followers' => $response['followers_count'] ?? 0,
+            ]);
+
+            return [
+                'success' => true,
+                'data' => [
+                    'page_id' => $response['id'],
+                    'name' => $response['name'] ?? null,
+                    'followers' => $response['followers_count'] ?? 0,
+                    'fans' => $response['fan_count'] ?? 0,
+                ]
+            ];
+
+        } catch (\Exception $e) {
+            Log::error("Failed to sync page data", [
+                'org_id' => $this->orgId ?? null,
+                'error' => $e->getMessage(),
+            ]);
+
+            return [
+                'success' => false,
+                'error' => $e->getMessage()
+            ];
+        }
     }
 
     /**
      * Sync Insights
+     * Fetches and stores Facebook Page insights/analytics
      */
     public function syncInsights($integration): array
     {
-        // TODO: Implement insights sync
-        return ['success' => true, 'data' => []];
+        try {
+            $pageId = $integration->settings['facebook_page_id'] ?? null;
+
+            if (!$pageId) {
+                return [
+                    'success' => false,
+                    'error' => 'No Facebook page ID configured'
+                ];
+            }
+
+            $url = "{$this->baseUrl}/{$pageId}/insights";
+
+            // Fetch various page insights metrics
+            $metrics = [
+                'page_impressions',
+                'page_impressions_unique',
+                'page_impressions_paid',
+                'page_impressions_organic',
+                'page_engaged_users',
+                'page_post_engagements',
+                'page_consumptions',
+                'page_fans',
+                'page_fans_online',
+                'page_views_total',
+                'page_video_views',
+                'page_actions_post_reactions_total',
+            ];
+
+            $response = $this->makeApiRequest($url, [
+                'metric' => implode(',', $metrics),
+                'period' => 'day',
+                'since' => now()->subDays(7)->timestamp,
+                'until' => now()->timestamp,
+            ]);
+
+            if (!isset($response['data']) || empty($response['data'])) {
+                return [
+                    'success' => false,
+                    'error' => 'No insights data available'
+                ];
+            }
+
+            $synced = 0;
+
+            // Store each insight metric
+            foreach ($response['data'] as $insight) {
+                $metricName = $insight['name'];
+                $values = $insight['values'] ?? [];
+
+                foreach ($values as $value) {
+                    DB::table('cmis_meta.page_insights')->updateOrInsert(
+                        [
+                            'page_id' => $pageId,
+                            'org_id' => $this->orgId,
+                            'metric_name' => $metricName,
+                            'date' => Carbon::parse($value['end_time'])->toDateString(),
+                        ],
+                        [
+                            'integration_id' => $integration->integration_id,
+                            'value' => $value['value'] ?? 0,
+                            'period' => $insight['period'] ?? 'day',
+                            'synced_at' => now(),
+                            'updated_at' => now(),
+                        ]
+                    );
+                    $synced++;
+                }
+            }
+
+            Log::info("Facebook page insights synced", [
+                'org_id' => $this->orgId,
+                'page_id' => $pageId,
+                'metrics_synced' => $synced,
+            ]);
+
+            return [
+                'success' => true,
+                'data' => [
+                    'page_id' => $pageId,
+                    'metrics_synced' => $synced,
+                    'metrics' => $response['data'],
+                ]
+            ];
+
+        } catch (\Exception $e) {
+            Log::error("Failed to sync insights", [
+                'org_id' => $this->orgId ?? null,
+                'error' => $e->getMessage(),
+            ]);
+
+            return [
+                'success' => false,
+                'error' => $e->getMessage()
+            ];
+        }
     }
 }
