@@ -187,9 +187,45 @@ Technical reference documentation:
 
 ## Reports & Analysis
 
-**Location:** [`docs/reports/`](reports/)
+### Current Active Reports
 
-Current analysis and strategic reports:
+**Location:** [`docs/active/`](active/)
+
+Latest reports and analysis (2025-11-20):
+
+#### Analysis Reports
+**Location:** [`docs/active/analysis/`](active/analysis/)
+
+- **[CMIS Comprehensive Application Analysis](active/analysis/CMIS-Comprehensive-Application-Analysis-2025-11-20.md)** - Complete application analysis
+- **[CMIS Critical Issues Tracker](active/analysis/CMIS-Critical-Issues-Tracker-2025-11-20.md)** - Critical issues tracking
+- **[CMIS Quick Reference](active/analysis/CMIS-Quick-Reference-2025-11-20.md)** - Quick reference guide
+- **[CMIS Roadmap to 100% Completion](active/analysis/CMIS-Roadmap-To-100-Percent-Completion-2025-11-20.md)** - Completion roadmap
+- **[TODO Update Report](active/analysis/TODO-UPDATE-REPORT-2025-11-20.md)** - Comprehensive TODO analysis (147 items)
+- **[TODO Summary](active/analysis/TODO-SUMMARY-2025-11-20.md)** - Quick TODO summary
+- **[TODO Statistics](active/analysis/TODO-STATISTICS-2025-11-20.md)** - TODO statistics dashboard
+- **[Broken Links Report](active/analysis/BROKEN-LINKS-REPORT-2025-11-20.md)** - Documentation link analysis (63 broken links)
+- **[Documentation Update Analysis](active/analysis/DOCUMENTATION-UPDATE-ANALYSIS-2025-11-20.md)** - Documentation update plan
+- **[Code Review & Product Strategy](active/analysis/code-review-product-strategy-validation.md)** - Strategy validation
+
+#### Progress & Test Reports
+**Location:** [`docs/active/reports/`](active/reports/)
+
+- **[Session Summary (Nov 20)](active/reports/session-summary-2025-11-20.md)** - Latest session summary
+- **[Test Suite 40% Assessment](active/reports/test-suite-40-percent-assessment-2025-11-20.md)** - Test suite assessment
+- **[Test Fixes Report](active/reports/test-fixes-report-2025-11-20.md)** - Comprehensive test fixes
+- **[Test Fixes Progress](active/reports/test-fixes-progress-2025-11-20.md)** - Detailed progress tracking
+- **[Test Failure Fix Report (Nov 19)](active/reports/test-failure-fix-report-2025-11-19.md)** - Failure analysis
+- **[Test Fixes Summary](active/reports/SUMMARY-test-fixes.md)** - Quick summary
+- **[Agent Testing Improvements](active/reports/agent-testing-improvements-2025-01-19.md)** - Agent improvements
+
+#### Next Steps & Planning
+- **[Next Steps](active/NEXT_STEPS.md)** - Immediate action items
+- **[Session Complete (Nov 20)](active/SESSION_COMPLETE_2025-11-20.md)** - Session completion report
+- **[Documentation Update Complete](active/DOCUMENTATION_UPDATE_COMPLETE_2025-11-20.md)** - Documentation update summary
+
+### Strategic Reports
+
+**Location:** [`docs/reports/`](reports/)
 
 - **[Master Action Plan](reports/master-action-plan.md)** - Strategic action plan
 - **[Executive Summary](reports/executive-summary.md)** - Executive overview
@@ -211,6 +247,14 @@ Current analysis and strategic reports:
 
 Historical documentation for reference:
 
+### Recent Archives (2025-11)
+- **[Sessions Nov 2025](archive/sessions-2025-11/)** - Recent session summaries (6 files)
+- **[Test Results](archive/test-results/)** - Historical test results (8 files)
+- **[Progress Reports Nov 2025](archive/progress-reports-2025-11/)** - Recent progress reports (5 files)
+- **[Reports Nov 2025](archive/reports-2025-11/)** - Consolidated reports archive (8 files)
+  - `test-fixes/` - Test fix report versions
+  - `test-analysis/` - Test analysis versions
+
 ### Phase Completion Reports
 - **[Phase 0](archive/phases/phase-0/)** - Initial setup and planning
 - **[Phase 1](archive/phases/phase-1/)** - Foundation phase
@@ -220,7 +264,7 @@ Historical documentation for reference:
 - **[Phase 5](archive/phases/phase-5/)** - Optimization phase
 
 ### Session Reports
-- **[Sessions](archive/sessions/)** - Development session summaries
+- **[Sessions](archive/sessions/)** - Historical development session summaries
 
 ### Progress Reports
 - **[Progress Reports](archive/progress-reports/)** - Historical progress tracking
@@ -313,6 +357,17 @@ To contribute to documentation:
 
 ---
 
-**Last Updated:** 2025-11-18
-**Version:** 1.0.0
+**Last Updated:** 2025-11-20 ✅
+**Version:** 2.0.0
 **Maintained by:** CMIS Development Team
+
+### Recent Documentation Updates (2025-11-20)
+
+- ✅ Updated all statistics (197 tables, 26 agents)
+- ✅ Archived 19 old files from root directory
+- ✅ Updated 147 TODO items with accurate status
+- ✅ Documented 63 broken links with fix plan
+- ✅ Consolidated 16 reports → 8 active reports
+- ✅ Created comprehensive documentation index
+
+See [Documentation Update Complete](active/DOCUMENTATION_UPDATE_COMPLETE_2025-11-20.md) for full details.

@@ -12,7 +12,7 @@
 This directory contains **specialized AI agents** custom-built for the CMIS project. Unlike generic Laravel agents, these agents have deep knowledge of:
 
 - CMIS's unique PostgreSQL RLS-based multi-tenancy
-- 12-schema database architecture (148+ tables)
+- 12-schema database architecture (197 tables)
 - Platform integrations (Meta, Google, TikTok, LinkedIn, Twitter, Snapchat)
 - AI-powered semantic search via pgvector
 - Campaign Context System (EAV pattern)
@@ -21,7 +21,7 @@ This directory contains **specialized AI agents** custom-built for the CMIS proj
 - 244 Models across 51 business domains
 - 201 test suite with continuous improvements
 
-**Total Agents:** 22 specialized agents
+**Total Agents:** 26 specialized agents
 **Project Knowledge Base:** `.claude/CMIS_PROJECT_KNOWLEDGE.md`
 
 ---

@@ -9,7 +9,7 @@
 
 ## 🎓 PHILOSOPHY: ADAPTIVE INTELLIGENCE
 
-**Not:** "CMIS has 148+ tables"
+**Not:** "CMIS has 197 tables"
 **But:** "How do I discover what tables exist in CMIS?"
 
 **Not:** "Alpine.js 3.13.5 is used"

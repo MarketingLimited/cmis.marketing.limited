@@ -119,7 +119,7 @@ CMIS (Cognitive Marketing Information System) is an advanced, AI-powered marketi
 - **Models**: 244 Eloquent models across 51 business domains
 - **Migrations**: 45 database migrations
 - **Tests**: 201 test files (Unit, Feature, Integration)
-- **Agents**: 22 specialized Claude Code agents
+- **Agents**: 26 specialized Claude Code agents
 
 ### Frontend
 - **Build Tool**: Vite
@@ -270,7 +270,7 @@ php artisan cognitive:vitality-log
 
 ## 🗄 Database Structure
 
-CMIS uses a sophisticated PostgreSQL schema with **12 specialized schemas** and **148+ tables**:
+CMIS uses a sophisticated PostgreSQL schema with **12 specialized schemas** and **197 tables**:
 
 ### Schema Organization
 
