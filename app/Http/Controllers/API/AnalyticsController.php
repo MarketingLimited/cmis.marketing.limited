@@ -171,6 +171,69 @@ class AnalyticsController extends Controller
     }
 
     /**
+     * Get analytics for a specific campaign
+     *
+     * @param string $campaignId
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function getCampaignAnalytics(string $campaignId, Request $request): JsonResponse
+    {
+        try {
+            $orgId = $request->user()->org_id;
+            $period = $request->input('period', 30);
+            $startDate = now()->subDays($period);
+
+            // Get campaign (verify org ownership via RLS)
+            $campaign = DB::table('cmis_ads.ad_campaigns')
+                ->where('campaign_id', $campaignId)
+                ->where('org_id', $orgId)
+                ->first();
+
+            if (!$campaign) {
+                return response()->json([
+                    'success' => false,
+                    'error' => 'Campaign not found',
+                ], 404);
+            }
+
+            // Get aggregated metrics for this campaign
+            $metrics = DB::table('cmis_ads.ad_metrics')
+                ->where('campaign_id', $campaignId)
+                ->where('date', '>=', $startDate)
+                ->select(
+                    DB::raw('SUM(impressions) as impressions'),
+                    DB::raw('SUM(clicks) as clicks'),
+                    DB::raw('SUM(conversions) as conversions'),
+                    DB::raw('SUM(spend) as spend'),
+                    DB::raw('SUM(revenue) as revenue')
+                )
+                ->first();
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'campaign_id' => $campaign->campaign_id,
+                    'campaign_name' => $campaign->campaign_name,
+                    'platform' => $campaign->platform,
+                    'status' => $campaign->status,
+                    'impressions' => (int) ($metrics->impressions ?? 0),
+                    'clicks' => (int) ($metrics->clicks ?? 0),
+                    'conversions' => (int) ($metrics->conversions ?? 0),
+                    'spend' => (float) ($metrics->spend ?? 0),
+                    'revenue' => (float) ($metrics->revenue ?? 0),
+                ],
+            ]);
+        } catch (\Exception $e) {
+            Log::error("Failed to get campaign analytics: {$e->getMessage()}");
+            return response()->json([
+                'success' => false,
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
      * Get campaign performance analytics
      *
      * @param Request $request
