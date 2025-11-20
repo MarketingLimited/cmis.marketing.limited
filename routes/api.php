@@ -1147,6 +1147,59 @@ Route::get('/cache/stats', [App\Http\Controllers\API\CacheController::class, 'st
 
 /*
 |--------------------------------------------------------------------------
+| Dashboard Convenience Routes (Auto-resolve user's active org)
+| These routes provide access to dashboard endpoints without requiring org_id
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['auth:sanctum'])->prefix('dashboard')->name('dashboard.')->group(function () {
+    Route::get('/', function(\Illuminate\Http\Request $request) {
+        return app(App\Http\Controllers\DashboardController::class)->overview($request);
+    });
+    Route::get('/overview', [App\Http\Controllers\DashboardController::class, 'overview'])->name('overview');
+    Route::get('/stats', [App\Http\Controllers\DashboardController::class, 'stats'])->name('stats');
+    Route::get('/recent-activity', [App\Http\Controllers\DashboardController::class, 'recentActivity'])->name('recent-activity');
+    Route::get('/campaigns-summary', [App\Http\Controllers\DashboardController::class, 'campaignsSummary'])->name('campaigns-summary');
+    Route::get('/analytics-overview', [App\Http\Controllers\DashboardController::class, 'analyticsOverview'])->name('analytics-overview');
+    Route::get('/upcoming-posts', [App\Http\Controllers\DashboardController::class, 'upcomingPosts'])->name('upcoming-posts');
+    Route::get('/top-campaigns', [App\Http\Controllers\DashboardController::class, 'topCampaigns'])->name('top-campaigns');
+    Route::get('/budget-summary', [App\Http\Controllers\DashboardController::class, 'budgetSummary'])->name('budget-summary');
+    Route::get('/charts/campaigns-performance', [App\Http\Controllers\DashboardController::class, 'campaignsPerformance'])->name('charts.campaigns');
+    Route::get('/charts/engagement', [App\Http\Controllers\DashboardController::class, 'engagement'])->name('charts.engagement');
+});
+
+/*
+|--------------------------------------------------------------------------
+| Campaign Convenience Routes (Auto-resolve user's active org)
+| These routes provide access to campaign endpoints without requiring org_id
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['auth:sanctum'])->prefix('campaigns')->name('campaigns.')->group(function () {
+    Route::get('/', [App\Http\Controllers\Campaigns\CampaignController::class, 'index'])->name('index');
+    Route::post('/', [App\Http\Controllers\Campaigns\CampaignController::class, 'store'])->name('store');
+    Route::get('/{campaign_id}', [App\Http\Controllers\Campaigns\CampaignController::class, 'show'])->name('show');
+    Route::put('/{campaign_id}', [App\Http\Controllers\Campaigns\CampaignController::class, 'update'])->name('update');
+    Route::delete('/{campaign_id}', [App\Http\Controllers\Campaigns\CampaignController::class, 'destroy'])->name('destroy');
+    Route::post('/{campaign_id}/duplicate', [App\Http\Controllers\Campaigns\CampaignController::class, 'duplicate'])->name('duplicate');
+    Route::get('/{campaign_id}/analytics', [App\Http\Controllers\Campaigns\CampaignController::class, 'analytics'])->name('analytics');
+});
+
+/*
+|--------------------------------------------------------------------------
+| Content Convenience Routes (Auto-resolve user's active org)
+| These routes provide access to content endpoints without requiring org_id
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['auth:sanctum'])->prefix('content')->name('content.')->group(function () {
+    Route::get('/', [App\Http\Controllers\Content\ContentController::class, 'index'])->name('index');
+    Route::post('/', [App\Http\Controllers\Content\ContentController::class, 'store'])->name('store');
+    Route::get('/{content_id}', [App\Http\Controllers\Content\ContentController::class, 'show'])->name('show');
+    Route::put('/{content_id}', [App\Http\Controllers\Content\ContentController::class, 'update'])->name('update');
+    Route::delete('/{content_id}', [App\Http\Controllers\Content\ContentController::class, 'destroy'])->name('destroy');
+    Route::post('/{content_id}/schedule', [App\Http\Controllers\Content\ContentController::class, 'schedule'])->name('schedule');
+});
+
+/*
+|--------------------------------------------------------------------------
 | AI Assistant API - Content Generation & Analysis (Global)
 | Rate Limited: 10 requests per minute per user
 |--------------------------------------------------------------------------

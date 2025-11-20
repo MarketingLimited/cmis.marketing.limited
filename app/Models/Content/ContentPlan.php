@@ -11,7 +11,7 @@ class ContentPlan extends Model
     use HasFactory;
 
     protected $connection = 'pgsql';
-    protected $table = 'cmis.content_plans_v2';
+    protected $table = 'cmis.content_plans';
     protected $primaryKey = 'plan_id';
     public $incrementing = false;
     protected $keyType = 'string';
@@ -27,13 +27,20 @@ class ContentPlan extends Model
     }
 
     protected $fillable = [
-        'plan_id', 'org_id', 'name', 'description', 'start_date', 'end_date'
+        'plan_id',
+        'org_id',
+        'campaign_id',
+        'name',
+        'timeframe_daterange',
+        'strategy',
+        'brief_id',
+        'creative_context_id',
+        'provider',
     ];
 
     protected $casts = [
-        'start_date' => 'date',
-        'end_date' => 'date',
+        'strategy' => 'array',
         'created_at' => 'datetime',
-        'updated_at' => 'datetime',
+        'deleted_at' => 'datetime',
     ];
 }
