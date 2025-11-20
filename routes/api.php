@@ -131,6 +131,14 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // إنشاء شركة جديدة
     Route::post('/orgs', [OrgController::class, 'store'])->name('orgs.store');
+
+    // Organization Switcher (NEW: P1 - Multi-Org UI)
+    Route::get('/user/organizations', [\App\Http\Controllers\Core\OrgSwitcherController::class, 'getUserOrganizations'])
+        ->name('user.organizations');
+    Route::post('/user/switch-organization', [\App\Http\Controllers\Core\OrgSwitcherController::class, 'switchOrganization'])
+        ->name('user.switch-organization');
+    Route::get('/user/active-organization', [\App\Http\Controllers\Core\OrgSwitcherController::class, 'getActiveOrganization'])
+        ->name('user.active-organization');
 });
 
 /*
