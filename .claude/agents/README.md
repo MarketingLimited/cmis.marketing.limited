@@ -28,50 +28,79 @@ This directory contains **specialized AI agents** custom-built for the CMIS proj
 
 ### 📁 Utility Agents
 
-#### **app-feasibility-researcher** - App Idea Analysis & Market Research Expert 🆕
+#### **app-feasibility-researcher** - Dual-Mode App Analysis Expert 🆕
 **File:** `app-feasibility-researcher.md`
 
-**Purpose:** Comprehensive app idea feasibility analysis through systematic evaluation and market intelligence.
+**Purpose:** DUAL-MODE agent - Evaluates NEW ideas AND analyzes EXISTING apps for weaknesses.
 
 **Use when:**
-- Evaluating new app or feature ideas
-- Need market research on similar solutions
-- Assessing technical/business viability
-- Finding better alternative approaches
-- Risk assessment before implementation
-- Determining if idea is worth pursuing
+- **MODE 1 (New Ideas):** Evaluating new app/feature proposals
+- **MODE 1:** Need market research on similar solutions
+- **MODE 1:** Assessing technical/business viability before building
+- **MODE 2 (Existing Apps):** Finding نقاط الضعف (weakness points)
+- **MODE 2:** Auditing current app/features for problems
+- **MODE 2:** Getting health score and prioritized fix recommendations
 
 **Handles:**
+
+**MODE 1 (New Ideas):**
 - Logic & coherence analysis
 - Technical viability assessment
-- Usability evaluation
-- Market research via web
-- Competitor discovery & analysis
-- Implementation pattern research
+- Market research via web (competitors, trends)
+- Implementation pattern discovery
 - Alternative solution discovery
-- Completability assessment
-- Risk analysis & mitigation
+- Completability & risk assessment
 - Comprehensive feasibility reporting
 
-**Key Features:**
-- **Web-powered research**: Finds similar apps, competitors, and trends
-- **Data-driven analysis**: Evidence-based recommendations, not gut feelings
-- **Alternative discovery**: Suggests better approaches if they exist
-- **Completability check**: Estimates effort and identifies blockers
-- **Risk assessment**: Technical, market, and business risks
-- **Structured reporting**: Organized documentation in `docs/active/analysis/`
+**MODE 2 (Existing Apps):**
+- منطقية الفكرة (Idea logic analysis)
+- منطقية الميزات (Feature logic analysis)
+- منطقية الترابط (Relationship logic analysis)
+- منطقية الهيكل (Architecture logic analysis)
+- منطقية التنفيذ (Implementation logic analysis)
+- منطقية الحاجة (Necessity logic analysis)
+- إمكانية الإتمام (Completability assessment)
+- إمكانية التفعيل (Deployment feasibility)
+- إمكانية الاستخدام (Usability analysis)
+- سرعة التنفيذ (Development speed logic)
+- Overall health scoring (0-100)
+- نقاط الضعف (Weakness point detection)
+- Prioritized fix recommendations
 
-**Example:**
+**Key Features:**
+- **Dual-mode detection**: Automatically identifies new idea vs. existing app
+- **Web-powered research**: Finds similar apps, competitors, trends
+- **Weakness detection**: Finds نقاط الضعف with severity ratings
+- **Health scoring**: 0-100 score with dimensional breakdown
+- **Data-driven**: Evidence-based, not assumptions
+- **Structured reporting**: Organized docs in `docs/active/analysis/`
+
+**MODE 1 Example:**
 ```
 "Analyze feasibility of AI-powered email automation tool"
 → Researches 15+ similar apps (Mailchimp, HubSpot, etc.)
 → Finds implementation patterns (SendGrid API, LLM integration)
 → Suggests alternative: Build as Gmail/Outlook plugin instead
-→ Creates comprehensive feasibility report with 7.5/10 score
-→ Recommends: Proceed with caution, focus on niche differentiation
+→ Feasibility score: 7.5/10
+→ Recommends: Proceed with caution, niche differentiation
+→ Report: docs/active/analysis/app-feasibility-[name]-[date].md
 ```
 
-**Output:** Creates detailed analysis report at `docs/active/analysis/app-feasibility-[name]-[date].md`
+**MODE 2 Example:**
+```
+"Analyze CMIS app and find all weaknesses"
+→ Analyzes 10+ dimensions (idea, features, architecture, etc.)
+→ Finds 2 critical, 5 high, 5 medium issues
+→ Provides specific file:line locations for each issue
+→ Overall health score: 71/100
+→ Top 10 critical weaknesses with priorities
+→ Recommends: Fix security issues IMMEDIATELY, then DevOps
+→ Report: docs/active/analysis/app-weakness-analysis-[name]-[date].md
+```
+
+**Output:**
+- **MODE 1:** `docs/active/analysis/app-feasibility-[name]-[date].md`
+- **MODE 2:** `docs/active/analysis/app-weakness-analysis-[name]-[date].md`
 
 ---
 
