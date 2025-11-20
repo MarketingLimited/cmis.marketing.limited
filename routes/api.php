@@ -1260,6 +1260,10 @@ Route::middleware(['auth:sanctum'])->prefix('analytics')->name('analytics.')->gr
     Route::get('/content', [App\Http\Controllers\API\AnalyticsController::class, 'getContentPerformance'])->name('content');
     Route::get('/social', [App\Http\Controllers\API\AnalyticsController::class, 'getSocialAnalytics'])->name('social');
     Route::get('/trends', [App\Http\Controllers\API\AnalyticsController::class, 'getTrends'])->name('trends');
+    Route::get('/engagement', [App\Http\Controllers\API\AnalyticsController::class, 'getEngagementAnalytics'])->name('engagement');
+    Route::get('/compare', [App\Http\Controllers\API\AnalyticsController::class, 'compareCampaigns'])->name('compare');
+    Route::get('/funnel/{campaign_id}', [App\Http\Controllers\API\AnalyticsController::class, 'getFunnelAnalytics'])->name('funnel');
+    Route::get('/demographics', [App\Http\Controllers\API\AnalyticsController::class, 'getAudienceDemographics'])->name('demographics');
     Route::post('/export', [App\Http\Controllers\API\AnalyticsController::class, 'exportReport'])->name('export');
 });
 

@@ -75,8 +75,8 @@ Analytics API (Tests\Feature\API\AnalyticsAPI)
  [ ] It can get overall organization analytics
  [ ] It can get social media analytics
  [ ] It can get engagement metrics
- [ ] It can compare campaigns
- [ ] It can get funnel analytics
+ [x] It can compare campaigns
+ [x] It can get funnel analytics
  [ ] It can get audience demographics
  [ ] It can get content performance
  [ ] It can calculate roi
@@ -187,16 +187,16 @@ Asset (Tests\Unit\Models\Asset\Asset)
  [ ] It respects rls policies
 
 Asset Controller (Tests\Feature\Controllers\AssetController)
- [ ] It can list assets
- [ ] It can upload asset
- [ ] It can view asset details
- [ ] It can update asset metadata
- [ ] It can delete asset
- [ ] It can filter by file type
- [ ] It can search assets
- [ ] Viewer cannot delete assets
- [ ] It respects org isolation
- [ ] It can download asset
+ [x] It can list assets
+ [x] It can upload asset
+ [x] It can view asset details
+ [x] It can update asset metadata
+ [x] It can delete asset
+ [x] It can filter by file type
+ [x] It can search assets
+ [x] Viewer cannot delete assets
+ [x] It respects org isolation
+ [x] It can download asset
 
 Audience (Tests\Unit\Models\Audience\Audience)
  [x] It can create audience
@@ -215,19 +215,19 @@ Audience (Tests\Unit\Models\Audience\Audience)
  [ ] It respects rls policies
 
 Audience Segment (Tests\Unit\Models\Audience\AudienceSegment)
- [ ] It can create audience segment
+ [x] It can create audience segment
  [ ] It belongs to org
- [ ] It stores criteria as json
+ [x] It stores criteria as json
  [ ] It tracks audience size
  [ ] It can be active or inactive
  [ ] It supports dynamic and static segments
- [ ] It stores demographic criteria
- [ ] It stores behavioral criteria
+ [x] It stores demographic criteria
+ [x] It stores behavioral criteria
  [ ] It tracks last calculated date
  [ ] It uses uuid as primary key
- [ ] It has timestamps
+ [x] It has timestamps
  [ ] It can be soft deleted
- [ ] It respects rls policies
+ [x] It respects rls policies
 
 Audit Log (Tests\Unit\Models\Operations\AuditLog)
  [ ] It can create audit log
@@ -245,7 +245,7 @@ Audit Log (Tests\Unit\Models\Operations\AuditLog)
  [ ] It can query by entity type
 
 Auth (Tests\Feature\Auth\Auth)
- [ ] Login requires correct password
+ [x] Login requires correct password
  [x] Login fails with nonexistent email
  [x] Login fails for inactive users
  [x] Login validates required fields
@@ -255,13 +255,13 @@ Auth (Tests\Feature\Auth\Auth)
  [x] Token refresh requires authentication
  [ ] Logout revokes current token
  [ ] Logout all revokes all tokens
- [ ] Authenticated user can get profile
- [ ] Authenticated user can update profile
+ [x] Authenticated user can get profile
+ [x] Authenticated user can update profile
  [ ] Password is hashed during registration
 
 Authentication (Tests\Feature\Auth\Authentication)
  [ ] User can register
- [x] Registration requires valid email
+ [ ] Registration requires valid email
  [ ] Registration requires password confirmation
  [ ] User can login with correct credentials
  [ ] User cannot login with incorrect password
@@ -313,7 +313,7 @@ Campaign API (Tests\Feature\API\CampaignAPI)
  [ ] It can view a specific campaign
  [ ] It can update a campaign
  [ ] It can delete a campaign
- [ ] It enforces org isolation for campaigns
+ [x] It enforces org isolation for campaigns
  [ ] It validates campaign creation data
  [x] It requires authentication
  [ ] It can filter campaigns by status
@@ -395,7 +395,7 @@ Campaign Management (Tests\Feature\Campaigns\CampaignManagement)
  [ ] User can delete campaign
  [ ] User can search campaigns
  [ ] User can filter campaigns by status
- [ ] User cannot access campaigns from another org
+ [x] User cannot access campaigns from another org
 
 Campaign Notification (Tests\Unit\Notifications\CampaignNotification)
  [x] It can send campaign completed notification
@@ -431,14 +431,14 @@ Campaign Orchestrator Service (Tests\Unit\Services\CampaignOrchestratorService)
  [ ] It tracks campaign performance metrics
 
 Campaign Policy (Tests\Unit\Policies\CampaignPolicy)
- [ ] Owner can view campaign
- [ ] Admin can create campaign
- [ ] Editor can update campaign
- [ ] Viewer cannot delete campaign
- [ ] User from different org cannot view campaign
- [ ] Owner can delete campaign
- [ ] Admin can delete campaign
- [ ] Viewer can view but not edit
+ [x] Owner can view campaign
+ [x] Admin can create campaign
+ [x] Editor can update campaign
+ [x] Viewer cannot delete campaign
+ [x] User from different org cannot view campaign
+ [x] Owner can delete campaign
+ [x] Admin can delete campaign
+ [x] Viewer can view but not edit
 
 Campaign Repository (Tests\Unit\Repositories\CampaignRepository)
  [ ] It can create campaign with context
@@ -488,14 +488,14 @@ Cleanup Expired Sessions Command (Tests\Unit\Commands\CleanupExpiredSessionsComm
  [x] It cleans redis sessions
 
 Cleanup Old Logs Job (Tests\Unit\Jobs\CleanupOldLogsJob)
- [ ] It cleans up old api logs
- [ ] It cleans up old activity logs
+ [x] It cleans up old api logs
+ [x] It cleans up old activity logs
  [x] It can be dispatched
- [ ] It accepts custom retention days
- [ ] It respects org isolation
+ [x] It accepts custom retention days
+ [x] It respects org isolation
  [ ] It returns deleted count
- [ ] It handles no logs to delete
- [ ] It processes in batches
+ [x] It handles no logs to delete
+ [x] It processes in batches
 
 Comment (Tests\Unit\Models\Comment\Comment)
  [ ] It can create comment
@@ -600,7 +600,7 @@ Content Media (Tests\Unit\Models\Content\ContentMedia)
  [ ] It stores thumbnail path
  [ ] It has file type categories
  [ ] It uses uuid as primary key
- [ ] It has timestamps
+ [x] It has timestamps
  [ ] It can be soft deleted
  [ ] It respects rls policies
 
@@ -643,15 +643,15 @@ Content Plan Item (Tests\Unit\Models\Content\ContentPlanItem)
  [x] It respects rls policies
 
 Content Policy (Tests\Unit\Policies\ContentPolicy)
- [ ] Owner can view content
- [ ] Admin can create content
- [ ] Editor can update content
- [ ] Viewer cannot delete content
- [ ] User from different org cannot view content
- [ ] Owner can delete content
- [ ] Admin can delete content
- [ ] Editor can update draft content
- [ ] Viewer can view published content
+ [x] Owner can view content
+ [x] Admin can create content
+ [x] Editor can update content
+ [x] Viewer cannot delete content
+ [x] User from different org cannot view content
+ [x] Owner can delete content
+ [x] Admin can delete content
+ [x] Editor can update draft content
+ [x] Viewer can view published content
 
 Content Published Event (Tests\Unit\Events\ContentPublishedEvent)
  [x] It can be instantiated
@@ -836,14 +836,14 @@ Example (Tests\Unit\Example)
  [x] That true is true
 
 Export Campaign Data Job (Tests\Unit\Jobs\ExportCampaignDataJob)
- [ ] It exports campaign data to csv
- [ ] It exports campaign data to excel
- [ ] It exports campaign data to json
+ [x] It exports campaign data to csv
+ [x] It exports campaign data to excel
+ [x] It exports campaign data to json
  [x] It can be dispatched
- [ ] It stores export file
- [ ] It includes campaign analytics in export
- [ ] It notifies user when export is ready
- [ ] It handles large datasets
+ [x] It stores export file
+ [x] It includes campaign analytics in export
+ [x] It notifies user when export is ready
+ [x] It handles large datasets
 
 Facebook Service (Tests\Unit\Services\FacebookService)
  [ ] It can publish page post
@@ -954,16 +954,16 @@ Generate Campaign Report Job (Tests\Unit\Jobs\GenerateCampaignReportJob)
  [ ] It stores report file
 
 Generate Invoice Job (Tests\Unit\Jobs\GenerateInvoiceJob)
- [ ] It generates invoice for subscription
- [ ] It calculates invoice total
- [ ] It applies tax to invoice
+ [x] It generates invoice for subscription
+ [x] It calculates invoice total
+ [x] It applies tax to invoice
  [x] It can be dispatched
- [ ] It generates unique invoice number
- [ ] It includes billing address
- [ ] It sends invoice notification
- [ ] It stores invoice pdf
- [ ] It handles different currencies
- [ ] It includes line items
+ [x] It generates unique invoice number
+ [x] It includes billing address
+ [x] It sends invoice notification
+ [x] It stores invoice pdf
+ [x] It handles different currencies
+ [x] It includes line items
 
 Generate Reports Command (Tests\Unit\Commands\GenerateReportsCommand)
  [x] It generates pending reports
@@ -1150,15 +1150,15 @@ Knowledge API (Tests\Feature\API\KnowledgeAPI)
 
 Knowledge Index (Tests\Unit\Models\Knowledge\KnowledgeIndex)
  [ ] It can create a knowledge index
- [ ] It belongs to an organization
- [ ] It stores embedding vector
- [ ] It stores metadata as json
+ [x] It belongs to an organization
+ [x] It stores embedding vector
+ [x] It stores metadata as json
  [ ] It validates content type
- [ ] It uses uuid as primary key
+ [x] It uses uuid as primary key
  [ ] It can be soft deleted
- [ ] It has timestamps
+ [x] It has timestamps
  [ ] It respects rls policies
- [ ] It can calculate similarity
+ [x] It can calculate similarity
 
 Knowledge Repository (Tests\Unit\Repositories\KnowledgeRepository)
  [ ] It can register knowledge
@@ -1214,17 +1214,17 @@ Lead Controller (Tests\Feature\Controllers\LeadController)
  [x] It requires authentication
 
 Lead Policy (Tests\Unit\Policies\LeadPolicy)
- [ ] Admin can view leads
- [ ] Admin can create leads
- [ ] Admin can update leads
- [ ] Admin can delete leads
- [ ] Editor can view leads
- [ ] Editor can update leads
- [ ] Editor cannot delete leads
- [ ] Viewer can view leads
- [ ] Viewer cannot create leads
- [ ] Viewer cannot update leads
- [ ] It respects org boundaries
+ [x] Admin can view leads
+ [x] Admin can create leads
+ [x] Admin can update leads
+ [x] Admin can delete leads
+ [x] Editor can view leads
+ [x] Editor can update leads
+ [x] Editor cannot delete leads
+ [x] Viewer can view leads
+ [x] Viewer cannot create leads
+ [x] Viewer cannot update leads
+ [x] It respects org boundaries
 
 Lead Qualified Event (Tests\Unit\Events\LeadQualifiedEvent)
  [x] It can be instantiated
@@ -1436,7 +1436,7 @@ Org Management (Tests\Feature\Orgs\OrgManagement)
  [ ] User can view organization details
  [ ] Owner can update organization
  [ ] Owner can soft delete organization
- [ ] User cannot access org without membership
+ [x] User cannot access org without membership
  [ ] User can view org statistics
  [ ] Non owner cannot delete organization
 
@@ -1529,18 +1529,18 @@ Post Published Event (Tests\Unit\Events\PostPublishedEvent)
  [ ] It can be listened to
 
 Process Leads Job (Tests\Unit\Jobs\ProcessLeadsJob)
- [ ] It processes new leads
- [ ] It assigns lead score
- [ ] It enriches lead data
- [ ] It validates lead email
+ [x] It processes new leads
+ [x] It assigns lead score
+ [x] It enriches lead data
+ [x] It validates lead email
  [ ] It detects duplicate leads
- [ ] It assigns to campaign
+ [x] It assigns to campaign
  [x] It can be dispatched
- [ ] It sends notification to sales team
- [ ] It categorizes leads by source
- [ ] It updates lead status
- [ ] It handles bulk processing
- [ ] It tracks processing time
+ [x] It sends notification to sales team
+ [x] It categorizes leads by source
+ [x] It updates lead status
+ [x] It handles bulk processing
+ [x] It tracks processing time
 
 Process Scheduled Content Job (Tests\Unit\Jobs\ProcessScheduledContentJob)
  [ ] It processes due scheduled content
@@ -1641,7 +1641,7 @@ RLSMiddleware (Tests\Unit\Middleware\RLSMiddleware)
  [x] It handles missing org id gracefully
  [ ] It sets correct org id in context
  [ ] It sets correct user id in context
- [ ] It works with sanctum authentication
+ [x] It works with sanctum authentication
  [x] It handles exceptions gracefully
 
 Rate Limit (Tests\Feature\AI\RateLimit)
@@ -1685,29 +1685,29 @@ Report (Tests\Unit\Models\Report\Report)
  [x] It respects rls policies
 
 Report Controller (Tests\Feature\Controllers\ReportController)
- [ ] It can list reports
- [ ] It can generate new report
- [ ] It can view report details
- [ ] It can download report
- [ ] It can delete report
- [ ] It can filter reports by type
- [ ] It can schedule recurring report
- [ ] Viewer cannot delete reports
- [ ] It respects org isolation
- [ ] It can export report to different formats
+ [x] It can list reports
+ [x] It can generate new report
+ [x] It can view report details
+ [x] It can download report
+ [x] It can delete report
+ [x] It can filter reports by type
+ [x] It can schedule recurring report
+ [x] Viewer cannot delete reports
+ [x] It respects org isolation
+ [x] It can export report to different formats
 
 Role (Tests\Unit\Models\Role\Role)
  [ ] It can create role
- [ ] It belongs to org
- [ ] It has unique name per org
+ [x] It belongs to org
+ [x] It has unique name per org
  [ ] It has display name in arabic
  [ ] It can have permissions
  [ ] It tracks is default flag
- [ ] It can be system role
+ [x] It can be system role
  [ ] It has priority order
- [ ] It uses uuid as primary key
- [ ] It has timestamps
- [ ] It respects rls policies
+ [x] It uses uuid as primary key
+ [x] It has timestamps
+ [x] It respects rls policies
  [ ] It can count users with role
  [ ] It stores metadata as json
 
@@ -1777,11 +1777,11 @@ Security Headers (Tests\Feature\Security\SecurityHeaders)
  [x] Hsts header in production
  [x] Hsts header not in development
  [x] Csp header for html responses
- [ ] Security headers on api responses
+ [x] Security headers on api responses
  [x] Security headers on error responses
  [x] All critical security headers present
  [x] Security headers on authenticated routes
- [ ] Security headers dont break functionality
+ [x] Security headers dont break functionality
  [x] Csp allows necessary resources
 
 Segment (Tests\Unit\Models\Other\Segment)
@@ -1822,14 +1822,14 @@ Send Email Campaign Job (Tests\Unit\Jobs\SendEmailCampaignJob)
  [x] It handles errors gracefully
 
 Send Notification Job (Tests\Unit\Jobs\SendNotificationJob)
- [ ] It sends notification to user
- [ ] It sends email notification
- [ ] It sends database notification
+ [x] It sends notification to user
+ [x] It sends email notification
+ [x] It sends database notification
  [x] It can be dispatched
- [ ] It supports multiple channels
- [ ] It handles notification preferences
+ [x] It supports multiple channels
+ [x] It handles notification preferences
  [x] It sends bulk notifications
- [ ] It includes action url
+ [x] It includes action url
  [x] It handles failed delivery
  [x] It queues with delay
 
@@ -1877,16 +1877,16 @@ Setting (Tests\Unit\Models\Setting\Setting)
  [ ] It can store json metadata
 
 Settings Controller (Tests\Feature\Controllers\SettingsController)
- [ ] It can view general settings
- [ ] It can update org settings
- [ ] It can view notification settings
- [ ] It can update notification preferences
- [ ] It can view integration settings
- [ ] It can view billing settings
- [ ] It can update security settings
- [ ] Viewer cannot update settings
- [ ] It respects org isolation
- [ ] It validates settings updates
+ [x] It can view general settings
+ [x] It can update org settings
+ [x] It can view notification settings
+ [x] It can update notification preferences
+ [x] It can view integration settings
+ [x] It can view billing settings
+ [x] It can update security settings
+ [x] Viewer cannot update settings
+ [x] It respects org isolation
+ [x] It validates settings updates
 
 Snapchat Ads Workflow (Tests\Integration\AdPlatform\SnapchatAdsWorkflow)
  [ ] It creates snapchat ad campaign
@@ -1969,15 +1969,15 @@ Subscription (Tests\Unit\Models\Subscription\Subscription)
  [ ] It respects rls policies
 
 Sync Analytics Job (Tests\Unit\Jobs\SyncAnalyticsJob)
- [ ] It syncs campaign analytics
+ [x] It syncs campaign analytics
  [ ] It syncs platform specific metrics
- [ ] It updates existing analytics
- [ ] It can sync for date range
+ [x] It updates existing analytics
+ [x] It can sync for date range
  [x] It can be dispatched
  [ ] It handles api errors gracefully
  [ ] It calculates engagement rate
  [ ] It syncs cost metrics
- [ ] It stores historical data
+ [x] It stores historical data
  [ ] It supports batch syncing
  [x] It respects org isolation
 
@@ -2050,15 +2050,15 @@ Team API (Tests\Feature\API\TeamAPI)
  [ ] It can resend invitation
 
 Team Controller (Tests\Feature\Controllers\TeamController)
- [ ] It can list team members
- [ ] It can add team member
- [ ] It can update team member role
- [ ] It can remove team member
- [ ] Viewer cannot add team members
- [ ] It can send team invitation
- [ ] It can filter by role
- [ ] It shows team member details
- [ ] It respects org isolation
+ [x] It can list team members
+ [x] It can add team member
+ [x] It can update team member role
+ [x] It can remove team member
+ [x] Viewer cannot add team members
+ [x] It can send team invitation
+ [x] It can filter by role
+ [x] It shows team member details
+ [x] It respects org isolation
 
 Team Member (Tests\Unit\Models\Team\TeamMember)
  [ ] It can create team member
@@ -2186,17 +2186,17 @@ Update Campaign Request (Tests\Unit\Requests\UpdateCampaignRequest)
  [x] All fields are optional
 
 Update Campaign Stats Job (Tests\Unit\Jobs\UpdateCampaignStatsJob)
- [ ] It updates campaign statistics
- [ ] It calculates engagement metrics
- [ ] It calculates conversion rate
- [ ] It updates roi metrics
- [ ] It aggregates platform stats
+ [x] It updates campaign statistics
+ [x] It calculates engagement metrics
+ [x] It calculates conversion rate
+ [x] It updates roi metrics
+ [x] It aggregates platform stats
  [x] It can be dispatched
- [ ] It calculates click through rate
- [ ] It tracks cost per click
- [ ] It updates reach metrics
- [ ] It handles campaigns with no data
- [ ] It stores stats snapshot
+ [x] It calculates click through rate
+ [x] It tracks cost per click
+ [x] It updates reach metrics
+ [x] It handles campaigns with no data
+ [x] It stores stats snapshot
  [x] It respects org isolation
 
 Url Helper (Tests\Unit\Helpers\UrlHelper)
@@ -2228,18 +2228,18 @@ User Onboarding Workflow (Tests\Integration\Team\UserOnboardingWorkflow)
  [ ] It handles user belongs to multiple organizations
 
 User Policy (Tests\Unit\Policies\UserPolicy)
- [ ] User can view own profile
- [ ] User can update own profile
- [ ] User cannot delete own account
- [ ] User cannot assign own role
- [ ] Admin can view other users
- [ ] Admin can create users
- [ ] Admin can update other users
- [ ] Admin can delete other users
- [ ] Admin can invite users
- [ ] Admin can assign roles
- [ ] Viewer cannot create users
- [ ] Viewer cannot view other users
+ [x] User can view own profile
+ [x] User can update own profile
+ [x] User cannot delete own account
+ [x] User cannot assign own role
+ [x] Admin can view other users
+ [x] Admin can create users
+ [x] Admin can update other users
+ [x] Admin can delete other users
+ [x] Admin can invite users
+ [x] Admin can assign roles
+ [x] Viewer cannot create users
+ [x] Viewer cannot view other users
 
 Validation Helper (Tests\Unit\Helpers\ValidationHelper)
  [x] It validates email
@@ -2283,16 +2283,16 @@ Webhook API (Tests\Feature\API\WebhookAPI)
  [ ] It handles malformed webhook payloads gracefully
 
 Webhook Controller (Tests\Feature\Controllers\WebhookController)
- [ ] It can list webhooks
- [ ] It can create webhook
- [ ] It can update webhook
- [ ] It can delete webhook
- [ ] It can show webhook details
- [ ] It can toggle webhook status
- [ ] It can test webhook delivery
- [ ] Viewer cannot create webhooks
- [ ] It respects org isolation
- [ ] It can view webhook delivery logs
+ [x] It can list webhooks
+ [x] It can create webhook
+ [x] It can update webhook
+ [x] It can delete webhook
+ [x] It can show webhook details
+ [x] It can toggle webhook status
+ [x] It can test webhook delivery
+ [x] Viewer cannot create webhooks
+ [x] It respects org isolation
+ [x] It can view webhook delivery logs
 
 Webhook Handler (Tests\Unit\Services\WebhookHandler)
  [ ] It can process facebook webhook

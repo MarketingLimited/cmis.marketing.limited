@@ -133,7 +133,7 @@ return new class extends Migration
             DB::statement("CREATE TABLE cmis.embeddings_cache (
                 cache_id UUID PRIMARY KEY,
                 content_hash VARCHAR(64) NOT NULL,
-                embedding vector(1536),
+                embedding vector(768),
                 model VARCHAR(100),
                 created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
                 UNIQUE(content_hash, model)
