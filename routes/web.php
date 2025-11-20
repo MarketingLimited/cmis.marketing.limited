@@ -51,6 +51,9 @@ Route::middleware(['auth'])->group(function () {
     // ==================== Campaigns ====================
     Route::prefix('campaigns')->name('campaigns.')->group(function () {
         Route::get('/', [CampaignController::class, 'index'])->name('index');
+        Route::get('/performance-dashboard', function () {
+            return view('campaigns.performance-dashboard');
+        })->name('performance-dashboard');
         Route::get('create', [CampaignController::class, 'create'])->name('create');
         Route::post('/', [CampaignController::class, 'store'])->name('store');
         Route::get('{campaign}', [CampaignController::class, 'show'])->name('show');
