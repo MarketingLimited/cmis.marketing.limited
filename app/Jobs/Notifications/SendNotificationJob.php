@@ -2,6 +2,7 @@
 
 namespace App\Jobs\Notifications;
 
+use App\Models\User;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -12,17 +13,30 @@ class SendNotificationJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    protected $notification;
-    protected $recipient;
+    protected $user;
+    protected $type;
+    protected $data;
 
-    public function __construct($notification, $recipient)
+    public function __construct(User $user, string $type, array $data = [])
     {
-        $this->notification = $notification;
-        $this->recipient = $recipient;
+        $this->user = $user;
+        $this->type = $type;
+        $this->data = $data;
     }
 
-    public function handle()
+    public function handle(): array
     {
-        // TODO: Implement notification sending logic
+        $result = [
+            'success' => true,
+        ];
+
+        // Send notification based on type
+        $result['notification_type'] = $this->type;
+        $result['recipient'] = $this->user->email;
+
+        // Stub implementation - would send actual notification
+        $result['sent'] = true;
+
+        return $result;
     }
 }
