@@ -409,4 +409,265 @@ class AnalyticsController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Get platform performance analytics
+     *
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function getPlatformPerformance(Request $request): JsonResponse
+    {
+        try {
+            $orgId = $this->resolveOrgId($request);
+
+            if (!$orgId) {
+                return response()->json(['error' => 'No active organization found'], 404);
+            }
+
+            $period = $request->input('period', 30);
+            $startDate = now()->subDays($period);
+
+            // Get metrics by platform
+            $platformMetrics = DB::table('cmis_ads.ad_campaigns as c')
+                ->leftJoin('cmis_ads.ad_metrics as m', 'c.campaign_id', '=', 'm.campaign_id')
+                ->where('c.org_id', $orgId)
+                ->where('m.date', '>=', $startDate)
+                ->select(
+                    'c.platform',
+                    DB::raw('COUNT(DISTINCT c.campaign_id) as campaign_count'),
+                    DB::raw('SUM(m.impressions) as total_impressions'),
+                    DB::raw('SUM(m.clicks) as total_clicks'),
+                    DB::raw('SUM(m.spend) as total_spend'),
+                    DB::raw('SUM(m.conversions) as total_conversions'),
+                    DB::raw('AVG(m.clicks::float / NULLIF(m.impressions, 0) * 100) as avg_ctr')
+                )
+                ->groupBy('c.platform')
+                ->get();
+
+            return response()->json([
+                'data' => $platformMetrics,
+                'period_days' => $period,
+            ]);
+        } catch (\Exception $e) {
+            Log::error("Failed to get platform performance: {$e->getMessage()}");
+            return response()->json([
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get content performance analytics
+     *
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function getContentPerformance(Request $request): JsonResponse
+    {
+        try {
+            $orgId = $this->resolveOrgId($request);
+
+            if (!$orgId) {
+                return response()->json(['error' => 'No active organization found'], 404);
+            }
+
+            $period = $request->input('period', 30);
+            $startDate = now()->subDays($period);
+
+            // Get top performing content
+            $contentMetrics = DB::table('cmis_social.social_posts')
+                ->where('org_id', $orgId)
+                ->where('published_at', '>=', $startDate)
+                ->select(
+                    'post_id',
+                    'platform',
+                    'content',
+                    'published_at',
+                    DB::raw("COALESCE((metadata->>'likes')::int, 0) as likes"),
+                    DB::raw("COALESCE((metadata->>'comments')::int, 0) as comments"),
+                    DB::raw("COALESCE((metadata->>'shares')::int, 0) as shares"),
+                    DB::raw("COALESCE((metadata->>'reach')::int, 0) as reach")
+                )
+                ->orderByRaw("(COALESCE((metadata->>'likes')::int, 0) + COALESCE((metadata->>'comments')::int, 0) + COALESCE((metadata->>'shares')::int, 0)) DESC")
+                ->limit(20)
+                ->get();
+
+            return response()->json([
+                'data' => $contentMetrics,
+                'period_days' => $period,
+            ]);
+        } catch (\Exception $e) {
+            Log::error("Failed to get content performance: {$e->getMessage()}");
+            return response()->json([
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get social media analytics
+     *
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function getSocialAnalytics(Request $request): JsonResponse
+    {
+        try {
+            $orgId = $this->resolveOrgId($request);
+
+            if (!$orgId) {
+                return response()->json(['error' => 'No active organization found'], 404);
+            }
+
+            $period = $request->input('period', 30);
+            $startDate = now()->subDays($period);
+
+            // Posts by platform
+            $postsByPlatform = DB::table('cmis_social.social_posts')
+                ->where('org_id', $orgId)
+                ->where('published_at', '>=', $startDate)
+                ->select('platform', DB::raw('COUNT(*) as count'))
+                ->groupBy('platform')
+                ->get();
+
+            // Engagement metrics
+            $totalEngagement = DB::table('cmis_social.social_posts')
+                ->where('org_id', $orgId)
+                ->where('published_at', '>=', $startDate)
+                ->select(
+                    DB::raw("SUM(COALESCE((metadata->>'likes')::int, 0)) as total_likes"),
+                    DB::raw("SUM(COALESCE((metadata->>'comments')::int, 0)) as total_comments"),
+                    DB::raw("SUM(COALESCE((metadata->>'shares')::int, 0)) as total_shares"),
+                    DB::raw("SUM(COALESCE((metadata->>'reach')::int, 0)) as total_reach")
+                )
+                ->first();
+
+            // Daily trends
+            $dailyTrends = DB::table('cmis_social.social_posts')
+                ->where('org_id', $orgId)
+                ->where('published_at', '>=', $startDate)
+                ->select(
+                    DB::raw('DATE(published_at) as date'),
+                    DB::raw('COUNT(*) as post_count'),
+                    DB::raw("SUM(COALESCE((metadata->>'likes')::int, 0)) as likes"),
+                    DB::raw("SUM(COALESCE((metadata->>'comments')::int, 0)) as comments")
+                )
+                ->groupBy('date')
+                ->orderBy('date')
+                ->get();
+
+            return response()->json([
+                'data' => [
+                    'posts_by_platform' => $postsByPlatform,
+                    'total_engagement' => $totalEngagement,
+                    'daily_trends' => $dailyTrends,
+                ],
+                'period_days' => $period,
+            ]);
+        } catch (\Exception $e) {
+            Log::error("Failed to get social analytics: {$e->getMessage()}");
+            return response()->json([
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get trending metrics
+     *
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function getTrends(Request $request): JsonResponse
+    {
+        try {
+            $orgId = $this->resolveOrgId($request);
+
+            if (!$orgId) {
+                return response()->json(['error' => 'No active organization found'], 404);
+            }
+
+            $period = $request->input('period', 30);
+            $startDate = now()->subDays($period);
+
+            // Campaign spend trends
+            $spendTrends = DB::table('cmis_ads.ad_metrics')
+                ->join('cmis_ads.ad_campaigns', 'cmis_ads.ad_metrics.campaign_id', '=', 'cmis_ads.ad_campaigns.campaign_id')
+                ->where('cmis_ads.ad_campaigns.org_id', $orgId)
+                ->where('cmis_ads.ad_metrics.date', '>=', $startDate)
+                ->select(
+                    DB::raw('DATE(cmis_ads.ad_metrics.date) as date'),
+                    DB::raw('SUM(spend) as daily_spend'),
+                    DB::raw('SUM(impressions) as daily_impressions'),
+                    DB::raw('SUM(clicks) as daily_clicks')
+                )
+                ->groupBy('date')
+                ->orderBy('date')
+                ->get();
+
+            // Social engagement trends
+            $engagementTrends = DB::table('cmis_social.social_posts')
+                ->where('org_id', $orgId)
+                ->where('published_at', '>=', $startDate)
+                ->select(
+                    DB::raw('DATE(published_at) as date'),
+                    DB::raw("SUM(COALESCE((metadata->>'likes')::int, 0)) as daily_likes"),
+                    DB::raw("SUM(COALESCE((metadata->>'comments')::int, 0)) as daily_comments"),
+                    DB::raw("SUM(COALESCE((metadata->>'shares')::int, 0)) as daily_shares")
+                )
+                ->groupBy('date')
+                ->orderBy('date')
+                ->get();
+
+            return response()->json([
+                'data' => [
+                    'spend_trends' => $spendTrends,
+                    'engagement_trends' => $engagementTrends,
+                ],
+                'period_days' => $period,
+            ]);
+        } catch (\Exception $e) {
+            Log::error("Failed to get trends: {$e->getMessage()}");
+            return response()->json([
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Resolve organization ID from request
+     *
+     * @param Request $request
+     * @return string|null
+     */
+    private function resolveOrgId(Request $request): ?string
+    {
+        $user = $request->user();
+        if (!$user) {
+            return null;
+        }
+
+        // Try to get from route parameter first
+        if ($request->route('org_id')) {
+            return $request->route('org_id');
+        }
+
+        // Fall back to user's active org
+        if (isset($user->org_id)) {
+            return $user->org_id;
+        }
+
+        if (isset($user->active_org_id)) {
+            return $user->active_org_id;
+        }
+
+        // Query the user_orgs pivot table for an active org
+        $activeOrg = DB::table('cmis.user_orgs')
+            ->where('user_id', $user->user_id)
+            ->where('is_active', true)
+            ->first();
+
+        return $activeOrg?->org_id;
+    }
 }
