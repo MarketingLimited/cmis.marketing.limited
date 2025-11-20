@@ -21,10 +21,16 @@ class CampaignController extends Controller
     public function __construct(CampaignService $campaignService)
     {
         $this->campaignService = $campaignService;
+
+        // Apply authorization to all actions
+        $this->middleware('auth:sanctum');
     }
 
     public function index(Request $request)
     {
+        // Check authorization for viewing any campaigns
+        $this->authorize('viewAny', Campaign::class);
+
         try {
             $orgId = $this->resolveOrgId($request);
 
@@ -100,6 +106,9 @@ class CampaignController extends Controller
 
     public function store(Request $request)
     {
+        // Check authorization for creating campaigns
+        $this->authorize('create', Campaign::class);
+
         try {
             $orgId = $this->resolveOrgId($request);
 
@@ -191,6 +200,9 @@ class CampaignController extends Controller
                 ], 404);
             }
 
+            // Check authorization for viewing this specific campaign
+            $this->authorize('view', $campaign);
+
             return response()->json([
                 'data' => $campaign,
                 'success' => true,
@@ -242,6 +254,9 @@ class CampaignController extends Controller
                     'error' => 'Campaign not found',
                 ], 404);
             }
+
+            // Check authorization for updating this campaign
+            $this->authorize('update', $campaign);
 
             // Validate request
             $validated = $request->validate([
@@ -315,6 +330,9 @@ class CampaignController extends Controller
                 ], 404);
             }
 
+            // Check authorization for deleting this campaign
+            $this->authorize('delete', $campaign);
+
             // Soft delete the campaign
             $campaign->delete();
 
@@ -369,6 +387,10 @@ class CampaignController extends Controller
                     'error' => 'Campaign not found',
                 ], 404);
             }
+
+            // Check authorization for viewing (needed to duplicate) and creating
+            $this->authorize('view', $campaign);
+            $this->authorize('create', Campaign::class);
 
             // Create duplicate
             $duplicateData = $campaign->toArray();
@@ -436,6 +458,9 @@ class CampaignController extends Controller
                     'error' => 'Campaign not found',
                 ], 404);
             }
+
+            // Check authorization for viewing campaign analytics
+            $this->authorize('view', $campaign);
 
             // Get analytics data
             // Note: performance_metrics table uses KPI-based structure (kpi, observed columns)
