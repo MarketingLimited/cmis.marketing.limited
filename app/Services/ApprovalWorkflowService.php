@@ -426,16 +426,25 @@ class ApprovalWorkflowService
     protected function sendNotification(string $userId, string $type, array $data): void
     {
         try {
-            // This would use the NotificationRepository to create notification
-            // For now, just log it
-            Log::info('Notification sent', [
-                'user_id' => $userId,
-                'type' => $type,
-                'data' => $data
-            ]);
+            // Generate title and message based on notification type
+            [$title, $message] = $this->getNotificationContent($type, $data);
 
-            // TODO: Implement actual notification via NotificationRepository
-            // $this->notificationRepo->create($userId, $type, $data);
+            // Create notification via repository
+            $notificationId = $this->notificationRepo->createNotification(
+                $userId,
+                $type,
+                $title,
+                $message,
+                $data
+            );
+
+            if ($notificationId) {
+                Log::info('Notification sent', [
+                    'notification_id' => $notificationId,
+                    'user_id' => $userId,
+                    'type' => $type
+                ]);
+            }
 
         } catch (\Exception $e) {
             Log::warning('Failed to send notification', [
@@ -444,5 +453,40 @@ class ApprovalWorkflowService
                 'error' => $e->getMessage()
             ]);
         }
+    }
+
+    /**
+     * Get notification title and message based on type
+     *
+     * @param string $type
+     * @param array $data
+     * @return array [title, message]
+     */
+    protected function getNotificationContent(string $type, array $data): array
+    {
+        return match($type) {
+            'approval_requested' => [
+                'Approval Request',
+                'A new post is awaiting your review and approval.'
+            ],
+            'approval_approved' => [
+                'Post Approved',
+                'Your post has been approved and is ready for publishing.'
+            ],
+            'approval_rejected' => [
+                'Post Rejected',
+                isset($data['comments']) && $data['comments']
+                    ? "Your post was rejected with feedback: {$data['comments']}"
+                    : 'Your post was rejected. Please review the feedback and make necessary changes.'
+            ],
+            'approval_reassigned' => [
+                'Approval Reassigned',
+                'A post approval has been reassigned to you for review.'
+            ],
+            default => [
+                'Notification',
+                'You have a new notification regarding post approval.'
+            ]
+        };
     }
 }

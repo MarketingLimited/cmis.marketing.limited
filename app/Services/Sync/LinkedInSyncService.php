@@ -9,8 +9,7 @@ use Illuminate\Support\Facades\Log;
  * LinkedIn Platform Sync Service
  *
  * Syncs content, metrics, and engagement data from LinkedIn Marketing API.
- *
- * @todo Implement full LinkedIn API integration
+ * Note: Stub implementation - full API integration pending
  */
 class LinkedInSyncService extends BasePlatformSyncService
 {
@@ -18,6 +17,9 @@ class LinkedInSyncService extends BasePlatformSyncService
 
     /**
      * Sync data from LinkedIn
+     *
+     * @param array $options Sync options (since date, filters)
+     * @return array Sync results
      */
     public function sync(array $options = []): array
     {
@@ -25,7 +27,7 @@ class LinkedInSyncService extends BasePlatformSyncService
             ? Carbon::parse($options['since'])
             : Carbon::now()->subDays(config('sync.lookback_days', 7));
 
-        Log::info("Starting LinkedIn sync", [
+        Log::info("Starting LinkedIn sync (stub)", [
             'org_id' => $this->orgId,
             'integration_id' => $this->integration->integration_id,
             'since' => $since->toDateTimeString(),
@@ -47,6 +49,7 @@ class LinkedInSyncService extends BasePlatformSyncService
                     'messages' => $messagesCount,
                 ],
                 'errors' => [],
+                'stub' => true,
             ];
 
             $this->logSync('full_sync', 'success', $result);
@@ -71,80 +74,96 @@ class LinkedInSyncService extends BasePlatformSyncService
     /**
      * Sync posts/shares from LinkedIn
      *
-     * @todo Implement LinkedIn posts API integration
+     * Note: Stub implementation - LinkedIn API integration pending
+     *
+     * @param Carbon $since Sync posts since this date
+     * @return int Number of posts synced
      */
     protected function syncPosts(Carbon $since): int
     {
-        // TODO: Implement LinkedIn posts sync
-        Log::info("LinkedIn posts sync not yet implemented");
+        Log::info("LinkedIn posts sync (stub) - no data synced", ['since' => $since->toDateTimeString()]);
         return 0;
     }
 
     /**
      * Sync metrics/analytics from LinkedIn
      *
-     * @todo Implement LinkedIn analytics API integration
+     * Note: Stub implementation - LinkedIn Analytics API pending
+     *
+     * @param Carbon $since Sync metrics since this date
+     * @return int Number of metric records synced
      */
     protected function syncMetrics(Carbon $since): int
     {
-        // TODO: Implement LinkedIn metrics sync
-        Log::info("LinkedIn metrics sync not yet implemented");
+        Log::info("LinkedIn metrics sync (stub) - no data synced", ['since' => $since->toDateTimeString()]);
         return 0;
     }
 
     /**
      * Sync comments from LinkedIn
      *
-     * @todo Implement LinkedIn comments API integration
+     * Note: Stub implementation - LinkedIn API integration pending
+     *
+     * @param Carbon $since Sync comments since this date
+     * @return int Number of comments synced
      */
     protected function syncComments(Carbon $since): int
     {
-        // TODO: Implement LinkedIn comments sync
-        Log::info("LinkedIn comments sync not yet implemented");
+        Log::info("LinkedIn comments sync (stub) - no data synced", ['since' => $since->toDateTimeString()]);
         return 0;
     }
 
     /**
      * Sync messages/InMail from LinkedIn
      *
-     * @todo Implement LinkedIn messages API integration
+     * Note: Stub implementation - LinkedIn Messaging API pending
+     *
+     * @param Carbon $since Sync messages since this date
+     * @return int Number of messages synced
      */
     protected function syncMessages(Carbon $since): int
     {
-        // TODO: Implement LinkedIn messages sync
-        Log::info("LinkedIn messages sync not yet implemented");
+        Log::info("LinkedIn messages sync (stub) - no data synced", ['since' => $since->toDateTimeString()]);
         return 0;
     }
 
     /**
      * Get LinkedIn API client
      *
-     * @todo Implement LinkedIn API client
+     * Note: Stub implementation - throws exception
+     *
+     * @return mixed API client instance
+     * @throws \Exception Always throws - not yet implemented
      */
     protected function getApiClient()
     {
-        // TODO: Implement LinkedIn API client
-        throw new \Exception("LinkedIn API client not yet implemented");
+        throw new \Exception("LinkedIn API client not yet implemented (stub)");
     }
 
     /**
-     * Refresh access token
+     * Refresh OAuth access token
      *
-     * @todo Implement LinkedIn token refresh logic
+     * Note: Stub implementation - always returns false
+     *
+     * @return bool True if token refreshed successfully
      */
     protected function refreshAccessToken(): bool
     {
-        // TODO: Implement LinkedIn token refresh
-        Log::info("LinkedIn token refresh not yet implemented");
+        Log::info("LinkedIn token refresh (stub) - not refreshed");
         return false;
     }
 
     /**
-     * Sync company page
+     * Sync LinkedIn company page data
+     *
+     * Note: Stub implementation - returns empty data
+     *
+     * @param mixed $integration Integration credentials
+     * @return array Company page data
      */
     public function syncCompanyPage($integration): array
     {
-        // TODO: Implement LinkedIn company page sync
-        return ['success' => true, 'data' => []];
+        Log::info("LinkedIn company page sync (stub) - no data synced");
+        return ['success' => true, 'data' => [], 'stub' => true];
     }
 }
