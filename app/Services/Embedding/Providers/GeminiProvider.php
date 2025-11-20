@@ -93,7 +93,7 @@ class GeminiProvider implements EmbeddingProviderInterface
      */
     public function getDimension(): int
     {
-        return $this->config['embedding_dim'] ?? 768;
+        return $this->config['embedding_dimension'] ?? 768;
     }
 
     /**
