@@ -131,6 +131,14 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // إنشاء شركة جديدة
     Route::post('/orgs', [OrgController::class, 'store'])->name('orgs.store');
+
+    // Organization Switcher (NEW: P1 - Multi-Org UI)
+    Route::get('/user/organizations', [\App\Http\Controllers\Core\OrgSwitcherController::class, 'getUserOrganizations'])
+        ->name('user.organizations');
+    Route::post('/user/switch-organization', [\App\Http\Controllers\Core\OrgSwitcherController::class, 'switchOrganization'])
+        ->name('user.switch-organization');
+    Route::get('/user/active-organization', [\App\Http\Controllers\Core\OrgSwitcherController::class, 'getActiveOrganization'])
+        ->name('user.active-organization');
 });
 
 /*
@@ -1182,6 +1190,12 @@ Route::middleware(['auth:sanctum'])->prefix('campaigns')->name('campaigns.')->gr
     Route::delete('/{campaign_id}', [App\Http\Controllers\Campaigns\CampaignController::class, 'destroy'])->name('destroy');
     Route::post('/{campaign_id}/duplicate', [App\Http\Controllers\Campaigns\CampaignController::class, 'duplicate'])->name('duplicate');
     Route::get('/{campaign_id}/analytics', [App\Http\Controllers\Campaigns\CampaignController::class, 'analytics'])->name('analytics');
+
+    // Campaign Performance Dashboard (P2 Option 3)
+    Route::get('/{campaign_id}/performance-metrics', [App\Http\Controllers\Campaigns\CampaignController::class, 'performanceMetrics'])->name('performance-metrics');
+    Route::post('/compare', [App\Http\Controllers\Campaigns\CampaignController::class, 'compareCampaigns'])->name('compare');
+    Route::get('/{campaign_id}/performance-trends', [App\Http\Controllers\Campaigns\CampaignController::class, 'performanceTrends'])->name('performance-trends');
+    Route::get('/top-performing', [App\Http\Controllers\Campaigns\CampaignController::class, 'topPerforming'])->name('top-performing');
 });
 
 /*

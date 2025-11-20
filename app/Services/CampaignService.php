@@ -282,4 +282,257 @@ class CampaignService
     {
         return $this->permissionRepo->checkPermission($userId, $orgId, $permissionCode);
     }
+
+    /**
+     * Get performance metrics for a campaign within a date range
+     *
+     * @param string $campaignId
+     * @param array $dateRange ['start' => Carbon, 'end' => Carbon]
+     * @return array
+     */
+    public function getPerformanceMetrics(string $campaignId, array $dateRange = null): array
+    {
+        try {
+            $campaign = Campaign::findOrFail($campaignId);
+
+            // Default to last 30 days if no range provided
+            if (!$dateRange) {
+                $dateRange = [
+                    'start' => now()->subDays(30),
+                    'end' => now(),
+                ];
+            }
+
+            // Get metrics from performance_metrics table
+            $metrics = DB::table('cmis.performance_metrics')
+                ->where('campaign_id', $campaignId)
+                ->whereBetween('collected_at', [$dateRange['start'], $dateRange['end']])
+                ->select(
+                    DB::raw('SUM(CASE WHEN kpi = \'impressions\' THEN CAST(observed AS INTEGER) ELSE 0 END) as impressions'),
+                    DB::raw('SUM(CASE WHEN kpi = \'clicks\' THEN CAST(observed AS INTEGER) ELSE 0 END) as clicks'),
+                    DB::raw('SUM(CASE WHEN kpi = \'conversions\' THEN CAST(observed AS INTEGER) ELSE 0 END) as conversions'),
+                    DB::raw('SUM(CASE WHEN kpi = \'spend\' THEN CAST(observed AS NUMERIC) ELSE 0 END) as spend'),
+                    DB::raw('AVG(CASE WHEN kpi = \'ctr\' THEN CAST(observed AS NUMERIC) ELSE NULL END) as ctr'),
+                    DB::raw('AVG(CASE WHEN kpi = \'cpc\' THEN CAST(observed AS NUMERIC) ELSE NULL END) as cpc'),
+                    DB::raw('AVG(CASE WHEN kpi = \'cpa\' THEN CAST(observed AS NUMERIC) ELSE NULL END) as cpa'),
+                    DB::raw('AVG(CASE WHEN kpi = \'roi\' THEN CAST(observed AS NUMERIC) ELSE NULL END) as roi')
+                )
+                ->first();
+
+            return [
+                'campaign_id' => $campaignId,
+                'campaign_name' => $campaign->name,
+                'date_range' => [
+                    'start' => $dateRange['start']->toDateString(),
+                    'end' => $dateRange['end']->toDateString(),
+                ],
+                'metrics' => [
+                    'impressions' => (int) ($metrics->impressions ?? 0),
+                    'clicks' => (int) ($metrics->clicks ?? 0),
+                    'conversions' => (int) ($metrics->conversions ?? 0),
+                    'spend' => (float) ($metrics->spend ?? 0),
+                    'ctr' => round((float) ($metrics->ctr ?? 0), 2),
+                    'cpc' => round((float) ($metrics->cpc ?? 0), 2),
+                    'cpa' => round((float) ($metrics->cpa ?? 0), 2),
+                    'roi' => round((float) ($metrics->roi ?? 0), 2),
+                ],
+            ];
+
+        } catch (\Exception $e) {
+            Log::error('Failed to get performance metrics', [
+                'campaign_id' => $campaignId,
+                'error' => $e->getMessage()
+            ]);
+            throw $e;
+        }
+    }
+
+    /**
+     * Compare performance of multiple campaigns
+     *
+     * @param array $campaignIds
+     * @param array $dateRange
+     * @return array
+     */
+    public function compareCampaigns(array $campaignIds, array $dateRange = null): array
+    {
+        try {
+            if (empty($campaignIds)) {
+                return [];
+            }
+
+            // Default to last 30 days if no range provided
+            if (!$dateRange) {
+                $dateRange = [
+                    'start' => now()->subDays(30),
+                    'end' => now(),
+                ];
+            }
+
+            $comparisons = [];
+
+            foreach ($campaignIds as $campaignId) {
+                try {
+                    $metrics = $this->getPerformanceMetrics($campaignId, $dateRange);
+                    $comparisons[] = $metrics;
+                } catch (\Exception $e) {
+                    Log::warning('Failed to get metrics for campaign in comparison', [
+                        'campaign_id' => $campaignId,
+                        'error' => $e->getMessage()
+                    ]);
+                    continue;
+                }
+            }
+
+            return [
+                'campaigns' => $comparisons,
+                'summary' => [
+                    'total_campaigns' => count($comparisons),
+                    'total_impressions' => array_sum(array_column(array_column($comparisons, 'metrics'), 'impressions')),
+                    'total_clicks' => array_sum(array_column(array_column($comparisons, 'metrics'), 'clicks')),
+                    'total_conversions' => array_sum(array_column(array_column($comparisons, 'metrics'), 'conversions')),
+                    'total_spend' => array_sum(array_column(array_column($comparisons, 'metrics'), 'spend')),
+                ],
+            ];
+
+        } catch (\Exception $e) {
+            Log::error('Failed to compare campaigns', [
+                'campaign_ids' => $campaignIds,
+                'error' => $e->getMessage()
+            ]);
+            throw $e;
+        }
+    }
+
+    /**
+     * Get performance trends over time for a campaign
+     *
+     * @param string $campaignId
+     * @param string $interval 'day', 'week', 'month'
+     * @param int $periods Number of periods to fetch
+     * @return array
+     */
+    public function getPerformanceTrends(string $campaignId, string $interval = 'day', int $periods = 30): array
+    {
+        try {
+            $campaign = Campaign::findOrFail($campaignId);
+
+            // Build date grouping based on interval
+            $dateGrouping = match($interval) {
+                'week' => "DATE_TRUNC('week', collected_at)",
+                'month' => "DATE_TRUNC('month', collected_at)",
+                default => "DATE(collected_at)", // day
+            };
+
+            $startDate = match($interval) {
+                'week' => now()->subWeeks($periods),
+                'month' => now()->subMonths($periods),
+                default => now()->subDays($periods),
+            };
+
+            // Get daily/weekly/monthly trends
+            $trends = DB::table('cmis.performance_metrics')
+                ->where('campaign_id', $campaignId)
+                ->where('collected_at', '>=', $startDate)
+                ->select(
+                    DB::raw("{$dateGrouping} as period"),
+                    DB::raw('SUM(CASE WHEN kpi = \'impressions\' THEN CAST(observed AS INTEGER) ELSE 0 END) as impressions'),
+                    DB::raw('SUM(CASE WHEN kpi = \'clicks\' THEN CAST(observed AS INTEGER) ELSE 0 END) as clicks'),
+                    DB::raw('SUM(CASE WHEN kpi = \'conversions\' THEN CAST(observed AS INTEGER) ELSE 0 END) as conversions'),
+                    DB::raw('SUM(CASE WHEN kpi = \'spend\' THEN CAST(observed AS NUMERIC) ELSE 0 END) as spend')
+                )
+                ->groupBy('period')
+                ->orderBy('period')
+                ->get()
+                ->map(function($row) {
+                    return [
+                        'period' => $row->period,
+                        'impressions' => (int) $row->impressions,
+                        'clicks' => (int) $row->clicks,
+                        'conversions' => (int) $row->conversions,
+                        'spend' => (float) $row->spend,
+                    ];
+                });
+
+            return [
+                'campaign_id' => $campaignId,
+                'campaign_name' => $campaign->name,
+                'interval' => $interval,
+                'trends' => $trends->toArray(),
+            ];
+
+        } catch (\Exception $e) {
+            Log::error('Failed to get performance trends', [
+                'campaign_id' => $campaignId,
+                'error' => $e->getMessage()
+            ]);
+            throw $e;
+        }
+    }
+
+    /**
+     * Get top performing campaigns for an organization
+     *
+     * @param string $orgId
+     * @param string $metric 'impressions', 'clicks', 'conversions', 'roi'
+     * @param int $limit
+     * @param array $dateRange
+     * @return array
+     */
+    public function getTopPerformingCampaigns(
+        string $orgId,
+        string $metric = 'conversions',
+        int $limit = 10,
+        array $dateRange = null
+    ): array {
+        try {
+            // Default to last 30 days if no range provided
+            if (!$dateRange) {
+                $dateRange = [
+                    'start' => now()->subDays(30),
+                    'end' => now(),
+                ];
+            }
+
+            // Get all campaigns for the org
+            $campaigns = Campaign::where('org_id', $orgId)
+                ->where('status', '!=', 'archived')
+                ->pluck('campaign_id', 'name');
+
+            $campaignPerformances = [];
+
+            foreach ($campaigns as $name => $campaignId) {
+                try {
+                    $metrics = $this->getPerformanceMetrics($campaignId, $dateRange);
+                    $campaignPerformances[] = [
+                        'campaign_id' => $campaignId,
+                        'name' => $name,
+                        'metric_value' => $metrics['metrics'][$metric] ?? 0,
+                        'all_metrics' => $metrics['metrics'],
+                    ];
+                } catch (\Exception $e) {
+                    continue;
+                }
+            }
+
+            // Sort by the specified metric
+            usort($campaignPerformances, function($a, $b) {
+                return $b['metric_value'] <=> $a['metric_value'];
+            });
+
+            return [
+                'org_id' => $orgId,
+                'metric' => $metric,
+                'top_campaigns' => array_slice($campaignPerformances, 0, $limit),
+                'total_campaigns' => count($campaignPerformances),
+            ];
+
+        } catch (\Exception $e) {
+            Log::error('Failed to get top performing campaigns', [
+                'org_id' => $orgId,
+                'error' => $e->getMessage()
+            ]);
+            throw $e;
+        }
+    }
 }

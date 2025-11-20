@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Campaign;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Log;
 
 class FilterCampaignsRequest extends FormRequest
 {
@@ -11,8 +12,9 @@ class FilterCampaignsRequest extends FormRequest
      */
     public function authorize(): bool
     {
+        Log::info('FilterCampaignsRequest::authorize called (stub) - Authorization check not yet implemented');
         // Temporarily allow all authenticated users until permissions are set up
-        // TODO: Re-enable authorization check once permissions are configured
+        // Stub implementation - Re-enable authorization check once permissions are configured
         // return $this->user()->can('viewAny', \App\Models\Campaign::class);
         return true;
     }

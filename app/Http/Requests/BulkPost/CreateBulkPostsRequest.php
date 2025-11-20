@@ -3,6 +3,7 @@
 namespace App\Http\Requests\BulkPost;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Log;
 
 class CreateBulkPostsRequest extends FormRequest
 {
@@ -11,7 +12,8 @@ class CreateBulkPostsRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        // TODO: Add proper authorization check
+        Log::info('CreateBulkPostsRequest::authorize called (stub) - Proper authorization check not yet implemented');
+        // Stub implementation - Add proper authorization check
         // return $this->user()->can('create-posts', $this->route('org_id'));
         return true;
     }

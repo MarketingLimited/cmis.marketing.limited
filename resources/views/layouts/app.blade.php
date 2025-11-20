@@ -79,10 +79,14 @@
                 </div>
             </nav>
 
-            <!-- User Card at Bottom -->
-            <div class="absolute bottom-0 right-0 left-0 p-4 border-t border-white/20">
+            <!-- Organization Switcher & User Card at Bottom -->
+            <div class="absolute bottom-0 right-0 left-0 p-4 border-t border-white/20 space-y-3">
+                @auth
+                {{-- Organization Switcher (NEW: P1 - Multi-Org UI) --}}
+                <x-org-switcher />
+
+                {{-- User Card --}}
                 <div class="bg-white/10 backdrop-blur-sm rounded-xl p-3">
-                    @auth
                     <div class="flex items-center gap-3">
                         <div class="bg-white/20 rounded-lg p-2">
                             <i class="fas fa-user text-white"></i>
@@ -92,8 +96,8 @@
                             <p class="text-white/60 text-xs">{{ Auth::user()->email }}</p>
                         </div>
                     </div>
-                    @endauth
                 </div>
+                @endauth
             </div>
         </div>
 

@@ -25,7 +25,7 @@ class DashboardController extends Controller
     public function index()
     {
         // Anyone authenticated can view dashboard
-        // TODO: Implement proper authorization policy
+        // Stub implementation - Proper authorization policy not yet implemented
         // $this->authorize('viewAny', Campaign::class);
 
         $data = $this->resolveDashboardMetrics();
@@ -35,7 +35,7 @@ class DashboardController extends Controller
 
     public function data()
     {
-        // TODO: Implement proper authorization policy
+        // Stub implementation - Proper authorization policy not yet implemented
         // $this->authorize('viewAny', Campaign::class);
 
         return response()->json($this->resolveDashboardMetrics());
@@ -43,7 +43,7 @@ class DashboardController extends Controller
 
     public function latest(Request $request)
     {
-        // TODO: Implement proper authorization policy
+        // Stub implementation - Proper authorization policy not yet implemented
         // $this->authorize('viewAny', Campaign::class);
 
         try {

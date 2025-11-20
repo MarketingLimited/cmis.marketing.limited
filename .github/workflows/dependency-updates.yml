@@ -1,0 +1,51 @@
+name: Dependency Updates
+
+on:
+  schedule:
+    - cron: '0 0 * * 1'  # Weekly on Mondays at midnight
+  workflow_dispatch:
+
+jobs:
+  update-dependencies:
+    name: Update Composer & NPM Dependencies
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: pdo, pdo_pgsql, mbstring, bcmath, intl, zip
+          tools: composer:v2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Update Composer dependencies
+        run: |
+          composer update --prefer-dist --no-progress --no-interaction
+          git diff --exit-code composer.lock || echo "composer_updated=true" >> $GITHUB_ENV
+
+      - name: Update NPM dependencies
+        run: |
+          npm update
+          git diff --exit-code package-lock.json || echo "npm_updated=true" >> $GITHUB_ENV
+
+      - name: Create Pull Request
+        if: env.composer_updated == 'true' || env.npm_updated == 'true'
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: 'chore: update dependencies'
+          title: 'chore: Weekly dependency updates'
+          body: |
+            Automated dependency updates for the week.
+
+            Please review the changes and ensure all tests pass before merging.
+          branch: deps/weekly-updates
+          delete-branch: true

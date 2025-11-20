@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Queue;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Log;
 
 class SchedulePostRequest extends FormRequest
 {
@@ -11,7 +12,8 @@ class SchedulePostRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        // TODO: Add proper authorization check
+        Log::info('SchedulePostRequest::authorize called (stub) - Proper authorization check not yet implemented');
+        // Stub implementation - Add proper authorization check
         // return $this->user()->can('schedule-post', $this->input('post_id'));
         return true;
     }

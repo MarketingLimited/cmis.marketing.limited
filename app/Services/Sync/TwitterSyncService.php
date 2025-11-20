@@ -9,8 +9,7 @@ use Illuminate\Support\Facades\Log;
  * Twitter/X Platform Sync Service
  *
  * Syncs content, metrics, and engagement data from Twitter/X API v2.
- *
- * @todo Implement full Twitter API v2 integration
+ * Note: Stub implementation - full API integration pending
  */
 class TwitterSyncService extends BasePlatformSyncService
 {
@@ -25,7 +24,7 @@ class TwitterSyncService extends BasePlatformSyncService
             ? Carbon::parse($options['since'])
             : Carbon::now()->subDays(config('sync.lookback_days', 7));
 
-        Log::info("Starting Twitter sync", [
+        Log::info("Starting Twitter sync (stub)", [
             'org_id' => $this->orgId,
             'integration_id' => $this->integration->integration_id,
             'since' => $since->toDateTimeString(),
@@ -47,6 +46,7 @@ class TwitterSyncService extends BasePlatformSyncService
                     'messages' => $messagesCount,
                 ],
                 'errors' => [],
+                'stub' => true,
             ];
 
             $this->logSync('full_sync', 'success', $result);
@@ -71,89 +71,110 @@ class TwitterSyncService extends BasePlatformSyncService
     /**
      * Sync tweets from Twitter/X
      *
-     * @todo Implement Twitter tweets API integration
+     * Note: Stub implementation - Twitter tweets API integration pending
+     *
+     * @param Carbon $since Sync posts since this date
+     * @return int Number of posts synced
      */
     protected function syncPosts(Carbon $since): int
     {
-        // TODO: Implement Twitter posts sync
-        Log::info("Twitter posts sync not yet implemented");
+        Log::info("Twitter posts sync (stub) - no data synced", ['since' => $since->toDateTimeString()]);
         return 0;
     }
 
     /**
      * Sync metrics/analytics from Twitter/X
      *
-     * @todo Implement Twitter analytics API integration
+     * Note: Stub implementation - Twitter analytics API integration pending
+     *
+     * @param Carbon $since Sync metrics since this date
+     * @return int Number of metric records synced
      */
     protected function syncMetrics(Carbon $since): int
     {
-        // TODO: Implement Twitter metrics sync
-        Log::info("Twitter metrics sync not yet implemented");
+        Log::info("Twitter metrics sync (stub) - no data synced", ['since' => $since->toDateTimeString()]);
         return 0;
     }
 
     /**
      * Sync replies/mentions from Twitter/X
      *
-     * @todo Implement Twitter replies API integration
+     * Note: Stub implementation - Twitter replies API integration pending
+     *
+     * @param Carbon $since Sync comments since this date
+     * @return int Number of comments synced
      */
     protected function syncComments(Carbon $since): int
     {
-        // TODO: Implement Twitter comments sync
-        Log::info("Twitter comments sync not yet implemented");
+        Log::info("Twitter comments sync (stub) - no data synced", ['since' => $since->toDateTimeString()]);
         return 0;
     }
 
     /**
      * Sync direct messages from Twitter/X
      *
-     * @todo Implement Twitter DMs API integration
+     * Note: Stub implementation - Twitter DMs API integration pending
+     *
+     * @param Carbon $since Sync messages since this date
+     * @return int Number of messages synced
      */
     protected function syncMessages(Carbon $since): int
     {
-        // TODO: Implement Twitter messages sync
-        Log::info("Twitter messages sync not yet implemented");
+        Log::info("Twitter messages sync (stub) - no data synced", ['since' => $since->toDateTimeString()]);
         return 0;
     }
 
     /**
      * Get Twitter API client
      *
-     * @todo Implement Twitter API v2 client
+     * Note: Stub implementation - throws exception
+     *
+     * @return mixed API client instance
+     * @throws \Exception Always throws - not yet implemented
      */
     protected function getApiClient()
     {
-        // TODO: Implement Twitter API client
-        throw new \Exception("Twitter API client not yet implemented");
+        throw new \Exception("Twitter API client not yet implemented (stub)");
     }
 
     /**
      * Refresh access token
      *
-     * @todo Implement Twitter token refresh logic
+     * Note: Stub implementation - always returns false
+     *
+     * @return bool True if token refreshed successfully
      */
     protected function refreshAccessToken(): bool
     {
-        // TODO: Implement Twitter token refresh
-        Log::info("Twitter token refresh not yet implemented");
+        Log::info("Twitter token refresh (stub) - not refreshed");
         return false;
     }
 
     /**
-     * Sync profile
+     * Sync Twitter user profile data
+     *
+     * Note: Stub implementation - returns empty data
+     *
+     * @param mixed $integration Integration credentials
+     * @return array Profile data
      */
     public function syncProfile($integration): array
     {
-        // TODO: Implement Twitter profile sync
-        return ['success' => true, 'data' => []];
+        Log::info("Twitter profile sync (stub) - no data synced");
+        return ['success' => true, 'data' => [], 'stub' => true];
     }
 
     /**
-     * Sync tweets
+     * Sync Twitter tweets data
+     *
+     * Note: Stub implementation - returns empty data
+     *
+     * @param mixed $integration Integration credentials
+     * @return array Tweets data
      */
     public function syncTweets($integration): array
     {
-        // TODO: Implement Twitter tweets sync
-        return ['success' => true, 'data' => []];
+        Log::info("Twitter tweets sync (stub) - no data synced");
+        return ['success' => true, 'data' => [], 'stub' => true];
     }
 }

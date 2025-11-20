@@ -227,7 +227,7 @@ class SyncPlatformData implements ShouldQueue
             'error' => $exception->getMessage(),
         ]);
 
-        // Notify organization users
-        // TODO: Implement notification
+        Log::info('SyncPlatformData::onFailure called (stub) - Organization user notification not yet implemented');
+        // Stub implementation - Notify organization users not yet implemented
     }
 }

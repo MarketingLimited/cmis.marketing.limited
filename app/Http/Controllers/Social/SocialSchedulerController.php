@@ -14,6 +14,16 @@ use Illuminate\Support\Facades\DB;
 class SocialSchedulerController extends Controller
 {
     /**
+     * Constructor - Apply authentication middleware
+     */
+    public function __construct()
+    {
+        // Apply authentication to all social scheduling operations
+        // Social posts are critical business content requiring authentication
+        $this->middleware('auth:sanctum');
+    }
+
+    /**
      * Get dashboard overview with stats and scheduled posts
      */
     public function dashboard(Request $request, string $orgId)

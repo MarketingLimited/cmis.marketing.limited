@@ -1,0 +1,255 @@
+# CMIS GitLab CI/CD Pipeline
+# Supports testing, building, and deploying to staging/production
+
+variables:
+  PHP_VERSION: "8.2"
+  POSTGRES_DB: cmis_test
+  POSTGRES_USER: cmis
+  POSTGRES_PASSWORD: test_password_123
+  POSTGRES_HOST: postgres
+  REDIS_HOST: redis
+  DOCKER_DRIVER: overlay2
+  DOCKER_TLS_CERTDIR: "/certs"
+
+stages:
+  - prepare
+  - test
+  - build
+  - deploy
+
+# Cache configuration
+.cache-template:
+  cache:
+    key:
+      files:
+        - composer.lock
+        - package-lock.json
+    paths:
+      - vendor/
+      - node_modules/
+      - .npm/
+
+# Prepare dependencies
+prepare:composer:
+  stage: prepare
+  image: composer:latest
+  extends: .cache-template
+  script:
+    - composer install --prefer-dist --no-progress --no-interaction --no-scripts
+  artifacts:
+    paths:
+      - vendor/
+    expire_in: 1 hour
+
+prepare:npm:
+  stage: prepare
+  image: node:18-alpine
+  extends: .cache-template
+  script:
+    - npm ci
+  artifacts:
+    paths:
+      - node_modules/
+    expire_in: 1 hour
+
+# Code quality checks
+code-quality:phpcs:
+  stage: test
+  image: php:${PHP_VERSION}-cli-alpine
+  needs: [prepare:composer]
+  script:
+    - |
+      if [ -f "vendor/bin/phpcs" ]; then
+        vendor/bin/phpcs --standard=PSR12 app/
+      else
+        echo "PHP_CodeSniffer not installed, skipping..."
+      fi
+  allow_failure: true
+
+code-quality:phpstan:
+  stage: test
+  image: php:${PHP_VERSION}-cli-alpine
+  needs: [prepare:composer]
+  script:
+    - apk add --no-cache $PHPIZE_DEPS postgresql-dev
+    - docker-php-ext-install pdo pdo_pgsql
+    - |
+      if [ -f "vendor/bin/phpstan" ]; then
+        vendor/bin/phpstan analyse --memory-limit=2G
+      else
+        echo "PHPStan not installed, skipping..."
+      fi
+  allow_failure: true
+
+# Unit tests
+test:unit:
+  stage: test
+  image: php:${PHP_VERSION}-cli-alpine
+  services:
+    - name: pgvector/pgvector:pg16
+      alias: postgres
+    - name: redis:7-alpine
+      alias: redis
+  needs: [prepare:composer, prepare:npm]
+  before_script:
+    - apk add --no-cache $PHPIZE_DEPS postgresql-dev libzip-dev icu-dev oniguruma-dev
+    - docker-php-ext-install pdo pdo_pgsql zip intl mbstring bcmath
+    - pecl install redis && docker-php-ext-enable redis
+    - cp .env.example .env
+    - php artisan key:generate
+  script:
+    - npm run build
+    - php artisan migrate --force
+    - php artisan test --testsuite=Unit --stop-on-failure
+  artifacts:
+    reports:
+      junit: test-results.xml
+
+# Feature tests
+test:feature:
+  stage: test
+  image: php:${PHP_VERSION}-cli-alpine
+  services:
+    - name: pgvector/pgvector:pg16
+      alias: postgres
+    - name: redis:7-alpine
+      alias: redis
+  needs: [prepare:composer, prepare:npm]
+  before_script:
+    - apk add --no-cache $PHPIZE_DEPS postgresql-dev libzip-dev icu-dev oniguruma-dev
+    - docker-php-ext-install pdo pdo_pgsql zip intl mbstring bcmath
+    - pecl install redis && docker-php-ext-enable redis
+    - cp .env.example .env
+    - php artisan key:generate
+  script:
+    - npm run build
+    - php artisan migrate --force
+    - php artisan test --testsuite=Feature --stop-on-failure
+
+# Integration tests
+test:integration:
+  stage: test
+  image: php:${PHP_VERSION}-cli-alpine
+  services:
+    - name: pgvector/pgvector:pg16
+      alias: postgres
+    - name: redis:7-alpine
+      alias: redis
+  needs: [prepare:composer, prepare:npm]
+  before_script:
+    - apk add --no-cache $PHPIZE_DEPS postgresql-dev libzip-dev icu-dev oniguruma-dev
+    - docker-php-ext-install pdo pdo_pgsql zip intl mbstring bcmath
+    - pecl install redis && docker-php-ext-enable redis
+    - cp .env.example .env
+    - php artisan key:generate
+  script:
+    - npm run build
+    - php artisan migrate --force
+    - php artisan test --group=integration --stop-on-failure
+
+# Test coverage
+test:coverage:
+  stage: test
+  image: php:${PHP_VERSION}-cli-alpine
+  services:
+    - name: pgvector/pgvector:pg16
+      alias: postgres
+    - name: redis:7-alpine
+      alias: redis
+  needs: [prepare:composer, prepare:npm]
+  before_script:
+    - apk add --no-cache $PHPIZE_DEPS postgresql-dev libzip-dev icu-dev oniguruma-dev
+    - docker-php-ext-install pdo pdo_pgsql zip intl mbstring bcmath
+    - pecl install redis && docker-php-ext-enable redis
+    - pecl install xdebug && docker-php-ext-enable xdebug
+    - cp .env.example .env
+    - php artisan key:generate
+  script:
+    - npm run build
+    - php artisan migrate --force
+    - php artisan test --coverage --min=30
+  coverage: '/^\s*Lines:\s*\d+\.\d+\%/'
+  artifacts:
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: coverage.xml
+
+# Build Docker image
+build:docker:
+  stage: build
+  image: docker:latest
+  services:
+    - docker:dind
+  needs: [test:unit, test:feature, test:integration]
+  before_script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+  script:
+    - docker build
+        --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
+        --build-arg VCS_REF=$CI_COMMIT_SHA
+        -t $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
+        -t $CI_REGISTRY_IMAGE:latest
+        .
+    - docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
+    - docker push $CI_REGISTRY_IMAGE:latest
+  only:
+    - main
+    - develop
+    - tags
+
+# Deploy to staging
+deploy:staging:
+  stage: deploy
+  image: alpine:latest
+  needs: [build:docker]
+  before_script:
+    - apk add --no-cache openssh-client
+    - eval $(ssh-agent -s)
+    - echo "$STAGING_SSH_KEY" | tr -d '\r' | ssh-add -
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - ssh-keyscan $STAGING_HOST >> ~/.ssh/known_hosts
+  script:
+    - ssh $STAGING_USER@$STAGING_HOST "
+        cd /var/www/cmis &&
+        docker-compose pull &&
+        docker-compose up -d --build &&
+        docker-compose exec -T app php artisan migrate --force &&
+        docker-compose exec -T app php artisan optimize &&
+        docker-compose exec -T app php artisan queue:restart
+      "
+  environment:
+    name: staging
+    url: https://staging.cmis.marketing
+  only:
+    - develop
+
+# Deploy to production
+deploy:production:
+  stage: deploy
+  image: alpine:latest
+  needs: [build:docker]
+  before_script:
+    - apk add --no-cache openssh-client
+    - eval $(ssh-agent -s)
+    - echo "$PRODUCTION_SSH_KEY" | tr -d '\r' | ssh-add -
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - ssh-keyscan $PRODUCTION_HOST >> ~/.ssh/known_hosts
+  script:
+    - ssh $PRODUCTION_USER@$PRODUCTION_HOST "
+        cd /var/www/cmis &&
+        docker-compose pull &&
+        docker-compose up -d --build &&
+        docker-compose exec -T app php artisan migrate --force &&
+        docker-compose exec -T app php artisan optimize &&
+        docker-compose exec -T app php artisan queue:restart
+      "
+  environment:
+    name: production
+    url: https://cmis.marketing
+  when: manual
+  only:
+    - main
+    - tags
