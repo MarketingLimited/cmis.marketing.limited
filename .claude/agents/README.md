@@ -28,7 +28,7 @@ This directory contains **specialized AI agents** custom-built for the CMIS proj
 
 ### 📁 Utility Agents
 
-#### **app-feasibility-researcher** - Dual-Mode App Analysis Expert 🆕
+#### **app-feasibility-researcher** - Dual-Mode App Analysis Expert V2.1 ⚡
 **File:** `app-feasibility-researcher.md`
 
 **Purpose:** DUAL-MODE agent - Evaluates NEW ideas AND analyzes EXISTING apps for weaknesses.
@@ -68,12 +68,13 @@ This directory contains **specialized AI agents** custom-built for the CMIS proj
 - Prioritized fix recommendations
 
 **Key Features:**
-- **Dual-mode detection**: Automatically identifies new idea vs. existing app
-- **Web-powered research**: Finds similar apps, competitors, trends
-- **Weakness detection**: Finds نقاط الضعف with severity ratings
-- **Health scoring**: 0-100 score with dimensional breakdown
-- **Data-driven**: Evidence-based, not assumptions
-- **Structured reporting**: Organized docs in `docs/active/analysis/`
+- **Dual-mode detection**: Automatically identifies new idea vs. existing app with confirmation
+- **Web-powered research**: Finds similar apps, competitors, trends using parallel searches
+- **Weakness detection**: Finds نقاط الضعف with severity ratings and file:line locations
+- **Health scoring**: 0-100 score with systematic calculation methodology
+- **Data-driven**: Evidence-based with quality validation checklist
+- **Structured reporting**: Organized docs with comprehensive templates
+- **⚡ Optimized (V2.1)**: Parallel execution, time limits, quality gates, Bash tool for codebase analysis
 
 **MODE 1 Example:**
 ```
