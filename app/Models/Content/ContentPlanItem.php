@@ -12,7 +12,7 @@ class ContentPlanItem extends Model
     use HasFactory, SoftDeletes;
 
     protected $connection = 'pgsql';
-    protected $table = 'cmis.content_plan_items';
+    protected $table = 'cmis.content_items';
     protected $primaryKey = 'item_id';
     public $incrementing = false;
     protected $keyType = 'string';
@@ -29,20 +29,26 @@ class ContentPlanItem extends Model
 
     protected $fillable = [
         'item_id',
-        'content_plan_id',
-        'title',
-        'description',
+        'plan_id',
+        'channel_id',
+        'format_id',
         'scheduled_at',
+        'title',
+        'brief',
+        'asset_id',
         'status',
-        'platform',
-        'content_type',
-        'metadata',
+        'context_id',
+        'example_id',
+        'creative_context_id',
+        'provider',
+        'org_id',
     ];
 
     protected $casts = [
-        'metadata' => 'array',
+        'brief' => 'array',
         'scheduled_at' => 'datetime',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
+        'deleted_at' => 'datetime',
     ];
 }

@@ -6,6 +6,7 @@ use Tests\TestCase;
 use Tests\Traits\CreatesTestData;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use App\Models\Content\ContentPlanItem;
+use App\Models\Content\ContentPlan;
 use Illuminate\Support\Str;
 
 use PHPUnit\Framework\Attributes\Test;
@@ -28,8 +29,15 @@ class ContentControllerTest extends TestCase
         $user = $setup['user'];
         $org = $setup['org'];
 
+        $plan = ContentPlan::create([
+            'plan_id' => Str::uuid(),
+            'org_id' => $org->org_id,
+            'name' => 'Test Plan',
+        ]);
+
         ContentPlanItem::create([
             'item_id' => Str::uuid(),
+            'plan_id' => $plan->plan_id,
             'org_id' => $org->org_id,
             'title' => 'Content 1',
             'status' => 'draft',
@@ -37,6 +45,7 @@ class ContentControllerTest extends TestCase
 
         ContentPlanItem::create([
             'item_id' => Str::uuid(),
+            'plan_id' => $plan->plan_id,
             'org_id' => $org->org_id,
             'title' => 'Content 2',
             'status' => 'published',
@@ -87,8 +96,15 @@ class ContentControllerTest extends TestCase
         $user = $setup['user'];
         $org = $setup['org'];
 
+        $plan = ContentPlan::create([
+            'plan_id' => Str::uuid(),
+            'org_id' => $org->org_id,
+            'name' => 'Test Plan',
+        ]);
+
         $content = ContentPlanItem::create([
             'item_id' => Str::uuid(),
+            'plan_id' => $plan->plan_id,
             'org_id' => $org->org_id,
             'title' => 'Test Content',
             'status' => 'draft',
@@ -114,8 +130,15 @@ class ContentControllerTest extends TestCase
         $user = $setup['user'];
         $org = $setup['org'];
 
+        $plan = ContentPlan::create([
+            'plan_id' => Str::uuid(),
+            'org_id' => $org->org_id,
+            'name' => 'Test Plan',
+        ]);
+
         $content = ContentPlanItem::create([
             'item_id' => Str::uuid(),
+            'plan_id' => $plan->plan_id,
             'org_id' => $org->org_id,
             'title' => 'Original Title',
             'status' => 'draft',
@@ -144,8 +167,15 @@ class ContentControllerTest extends TestCase
         $user = $setup['user'];
         $org = $setup['org'];
 
+        $plan = ContentPlan::create([
+            'plan_id' => Str::uuid(),
+            'org_id' => $org->org_id,
+            'name' => 'Test Plan',
+        ]);
+
         $content = ContentPlanItem::create([
             'item_id' => Str::uuid(),
+            'plan_id' => $plan->plan_id,
             'org_id' => $org->org_id,
             'title' => 'To Delete',
             'status' => 'draft',
@@ -157,7 +187,7 @@ class ContentControllerTest extends TestCase
 
         $response->assertStatus(200);
 
-        $this->assertSoftDeleted('cmis.content_plan_items', [
+        $this->assertSoftDeleted('cmis.content_items', [
             'item_id' => $content->item_id,
         ]);
 
@@ -174,8 +204,15 @@ class ContentControllerTest extends TestCase
         $user = $setup['user'];
         $org = $setup['org'];
 
+        $plan = ContentPlan::create([
+            'plan_id' => Str::uuid(),
+            'org_id' => $org->org_id,
+            'name' => 'Test Plan',
+        ]);
+
         $content = ContentPlanItem::create([
             'item_id' => Str::uuid(),
+            'plan_id' => $plan->plan_id,
             'org_id' => $org->org_id,
             'title' => 'Content to Schedule',
             'status' => 'draft',
@@ -184,7 +221,7 @@ class ContentControllerTest extends TestCase
         $this->actingAs($user, 'sanctum');
 
         $response = $this->postJson("/api/content/{$content->item_id}/schedule", [
-            'scheduled_time' => now()->addHours(2)->toDateTimeString(),
+            'scheduled_at' => now()->addHours(2)->toDateTimeString(),
             'platform' => 'facebook',
         ]);
 
@@ -203,8 +240,15 @@ class ContentControllerTest extends TestCase
         $user = $setup['user'];
         $org = $setup['org'];
 
+        $plan = ContentPlan::create([
+            'plan_id' => Str::uuid(),
+            'org_id' => $org->org_id,
+            'name' => 'Test Plan',
+        ]);
+
         ContentPlanItem::create([
             'item_id' => Str::uuid(),
+            'plan_id' => $plan->plan_id,
             'org_id' => $org->org_id,
             'title' => 'Draft 1',
             'status' => 'draft',
@@ -212,6 +256,7 @@ class ContentControllerTest extends TestCase
 
         ContentPlanItem::create([
             'item_id' => Str::uuid(),
+            'plan_id' => $plan->plan_id,
             'org_id' => $org->org_id,
             'title' => 'Published 1',
             'status' => 'published',
@@ -257,8 +302,15 @@ class ContentControllerTest extends TestCase
         $setup1 = $this->createUserWithOrg();
         $setup2 = $this->createUserWithOrg();
 
+        $plan1 = ContentPlan::create([
+            'plan_id' => Str::uuid(),
+            'org_id' => $setup1['org']->org_id,
+            'name' => 'Org 1 Plan',
+        ]);
+
         $content1 = ContentPlanItem::create([
             'item_id' => Str::uuid(),
+            'plan_id' => $plan1->plan_id,
             'org_id' => $setup1['org']->org_id,
             'title' => 'Org 1 Content',
             'status' => 'draft',
