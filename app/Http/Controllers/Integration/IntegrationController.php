@@ -14,6 +14,16 @@ use Illuminate\Support\Str;
 class IntegrationController extends Controller
 {
     /**
+     * Constructor - Apply authentication middleware
+     */
+    public function __construct()
+    {
+        // Apply authentication to all actions except OAuth callbacks
+        // Callbacks need to be accessible for platform redirects
+        $this->middleware('auth:sanctum')->except(['callback']);
+    }
+
+    /**
      * Supported platforms configuration
      */
     const PLATFORMS = [

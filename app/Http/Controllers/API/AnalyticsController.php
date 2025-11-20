@@ -17,6 +17,16 @@ use Carbon\Carbon;
 class AnalyticsController extends Controller
 {
     /**
+     * Constructor - Apply authentication middleware
+     */
+    public function __construct()
+    {
+        // Apply authentication to all analytics endpoints
+        // Analytics contains sensitive business data and requires authentication
+        $this->middleware('auth:sanctum');
+    }
+
+    /**
      * Get overview analytics for organization
      *
      * @param Request $request
