@@ -1601,6 +1601,31 @@ Route::middleware(['auth:sanctum'])->prefix('orgs/{org_id}/analytics')->name('an
         Route::post('/', [App\Http\Controllers\Analytics\DataExportsController::class, 'createToken'])->name('store');
         Route::delete('/{token_id}', [App\Http\Controllers\Analytics\DataExportsController::class, 'revokeToken'])->name('revoke');
     });
+
+    // A/B Testing & Experimentation (Phase 15)
+    Route::prefix('experiments')->name('experiments.')->group(function () {
+        // Experiment Management
+        Route::get('/', [App\Http\Controllers\Analytics\ExperimentsController::class, 'index'])->name('index');
+        Route::post('/', [App\Http\Controllers\Analytics\ExperimentsController::class, 'store'])->name('store');
+        Route::get('/stats', [App\Http\Controllers\Analytics\ExperimentsController::class, 'stats'])->name('stats');
+        Route::get('/{experiment_id}', [App\Http\Controllers\Analytics\ExperimentsController::class, 'show'])->name('show');
+        Route::put('/{experiment_id}', [App\Http\Controllers\Analytics\ExperimentsController::class, 'update'])->name('update');
+        Route::delete('/{experiment_id}', [App\Http\Controllers\Analytics\ExperimentsController::class, 'destroy'])->name('destroy');
+
+        // Experiment Actions
+        Route::post('/{experiment_id}/start', [App\Http\Controllers\Analytics\ExperimentsController::class, 'start'])->name('start');
+        Route::post('/{experiment_id}/pause', [App\Http\Controllers\Analytics\ExperimentsController::class, 'pause'])->name('pause');
+        Route::post('/{experiment_id}/resume', [App\Http\Controllers\Analytics\ExperimentsController::class, 'resume'])->name('resume');
+        Route::post('/{experiment_id}/complete', [App\Http\Controllers\Analytics\ExperimentsController::class, 'complete'])->name('complete');
+
+        // Variant Management
+        Route::post('/{experiment_id}/variants', [App\Http\Controllers\Analytics\ExperimentsController::class, 'addVariant'])->name('variants.store');
+        Route::put('/{experiment_id}/variants/{variant_id}', [App\Http\Controllers\Analytics\ExperimentsController::class, 'updateVariant'])->name('variants.update');
+
+        // Results & Events
+        Route::get('/{experiment_id}/results', [App\Http\Controllers\Analytics\ExperimentsController::class, 'results'])->name('results');
+        Route::post('/{experiment_id}/events', [App\Http\Controllers\Analytics\ExperimentsController::class, 'recordEvent'])->name('events.store');
+    });
 });
 
 // Alert Templates (Global) (Phase 13)
