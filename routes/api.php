@@ -2012,3 +2012,43 @@ Route::prefix('optimization')->middleware(['auth:sanctum', 'rls.context'])->name
     Route::get('/models', [\App\Http\Controllers\Api\OptimizationController::class, 'getOptimizationModels'])
         ->name('models.index');
 });
+
+/*
+|--------------------------------------------------------------------------
+| Cross-Platform Campaign Orchestration Routes - Phase 21 Implementation
+|--------------------------------------------------------------------------
+| Unified campaign management across multiple advertising platforms
+| Includes templates, deployment, sync, and performance tracking
+| Requires authentication and organization context
+*/
+Route::prefix('orchestration')->middleware(['auth:sanctum', 'rls.context'])->name('orchestration.')->group(function () {
+    // Campaign Templates
+    Route::get('/templates', [\App\Http\Controllers\Api\OrchestrationController::class, 'getTemplates'])
+        ->name('templates.index');
+    Route::post('/templates', [\App\Http\Controllers\Api\OrchestrationController::class, 'createTemplate'])
+        ->name('templates.create');
+
+    // Orchestrations
+    Route::get('/', [\App\Http\Controllers\Api\OrchestrationController::class, 'index'])
+        ->name('index');
+    Route::post('/from-template', [\App\Http\Controllers\Api\OrchestrationController::class, 'createFromTemplate'])
+        ->name('create.from-template');
+    Route::get('/{orchestrationId}', [\App\Http\Controllers\Api\OrchestrationController::class, 'show'])
+        ->name('show');
+
+    // Orchestration Actions
+    Route::post('/{orchestrationId}/deploy', [\App\Http\Controllers\Api\OrchestrationController::class, 'deploy'])
+        ->name('deploy');
+    Route::post('/{orchestrationId}/sync', [\App\Http\Controllers\Api\OrchestrationController::class, 'sync'])
+        ->name('sync');
+    Route::post('/{orchestrationId}/pause', [\App\Http\Controllers\Api\OrchestrationController::class, 'pause'])
+        ->name('pause');
+    Route::post('/{orchestrationId}/resume', [\App\Http\Controllers\Api\OrchestrationController::class, 'resume'])
+        ->name('resume');
+    Route::put('/{orchestrationId}/budget', [\App\Http\Controllers\Api\OrchestrationController::class, 'updateBudget'])
+        ->name('budget.update');
+
+    // Performance
+    Route::get('/{orchestrationId}/performance', [\App\Http\Controllers\Api\OrchestrationController::class, 'getPerformance'])
+        ->name('performance');
+});
