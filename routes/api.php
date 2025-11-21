@@ -1574,6 +1574,33 @@ Route::middleware(['auth:sanctum'])->prefix('orgs/{org_id}/analytics')->name('an
         Route::post('/{alert_id}/resolve', [App\Http\Controllers\Analytics\AlertsController::class, 'resolve'])->name('resolve');
         Route::post('/{alert_id}/snooze', [App\Http\Controllers\Analytics\AlertsController::class, 'snooze'])->name('snooze');
     });
+
+    // Data Export & API Integration (Phase 14)
+    Route::prefix('exports')->name('exports.')->group(function () {
+        // Export Configurations
+        Route::get('/configs', [App\Http\Controllers\Analytics\DataExportsController::class, 'index'])->name('configs.index');
+        Route::post('/configs', [App\Http\Controllers\Analytics\DataExportsController::class, 'store'])->name('configs.store');
+        Route::get('/configs/{config_id}', [App\Http\Controllers\Analytics\DataExportsController::class, 'show'])->name('configs.show');
+        Route::put('/configs/{config_id}', [App\Http\Controllers\Analytics\DataExportsController::class, 'update'])->name('configs.update');
+        Route::delete('/configs/{config_id}', [App\Http\Controllers\Analytics\DataExportsController::class, 'destroy'])->name('configs.destroy');
+
+        // Export Execution
+        Route::post('/execute', [App\Http\Controllers\Analytics\DataExportsController::class, 'execute'])->name('execute');
+
+        // Export Logs
+        Route::get('/logs', [App\Http\Controllers\Analytics\DataExportsController::class, 'logs'])->name('logs');
+        Route::get('/download/{log_id}', [App\Http\Controllers\Analytics\DataExportsController::class, 'download'])->name('download');
+
+        // Statistics
+        Route::get('/stats', [App\Http\Controllers\Analytics\DataExportsController::class, 'stats'])->name('stats');
+    });
+
+    // API Token Management (Phase 14)
+    Route::prefix('api-tokens')->name('api-tokens.')->group(function () {
+        Route::get('/', [App\Http\Controllers\Analytics\DataExportsController::class, 'tokens'])->name('index');
+        Route::post('/', [App\Http\Controllers\Analytics\DataExportsController::class, 'createToken'])->name('store');
+        Route::delete('/{token_id}', [App\Http\Controllers\Analytics\DataExportsController::class, 'revokeToken'])->name('revoke');
+    });
 });
 
 // Alert Templates (Global) (Phase 13)
