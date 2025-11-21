@@ -7,6 +7,14 @@ use Illuminate\Support\Facades\Auth;
 
 class NotificationController extends Controller
 {
+    /**
+     * Constructor - Apply authentication middleware
+     */
+    public function __construct()
+    {
+        $this->middleware('auth:sanctum');
+    }
+
     public function index()
     {
         $user = Auth::user();

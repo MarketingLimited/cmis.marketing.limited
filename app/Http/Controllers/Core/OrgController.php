@@ -12,6 +12,14 @@ use Illuminate\Support\Facades\Validator;
 class OrgController extends Controller
 {
     /**
+     * Constructor - Apply authentication middleware
+     */
+    public function __construct()
+    {
+        $this->middleware('auth:sanctum');
+    }
+
+    /**
      * قائمة شركات المستخدم الحالي
      */
     public function listUserOrgs(Request $request)
