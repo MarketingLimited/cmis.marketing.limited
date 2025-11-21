@@ -163,26 +163,314 @@
         </div>
     </div>
 
-    {{-- AI Content Generation Helper --}}
-    <div class="bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-lg p-4">
-        <div class="flex items-start">
-            <svg class="w-6 h-6 text-purple-600 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
-            </svg>
-            <div class="flex-1">
-                <h4 class="text-sm font-medium text-purple-900 mb-1">
-                    {{ __('campaigns.wizard.creative.ai_helper_title') }}
-                </h4>
-                <p class="text-sm text-purple-700 mb-3">
-                    {{ __('campaigns.wizard.creative.ai_helper_description') }}
-                </p>
-                <button type="button" @click="openAiHelper"
-                        class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-purple-700 bg-purple-100 hover:bg-purple-200">
-                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+    {{-- AI Content Generation & Boost Post Options --}}
+    <div class="grid md:grid-cols-2 gap-4">
+        {{-- AI Content Generation --}}
+        <div class="bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-lg p-4">
+            <div class="flex items-start">
+                <svg class="w-6 h-6 text-purple-600 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                </svg>
+                <div class="flex-1">
+                    <h4 class="text-sm font-medium text-purple-900 mb-1">
+                        {{ __('campaigns.wizard.creative.ai_helper_title') }}
+                    </h4>
+                    <p class="text-sm text-purple-700 mb-3">
+                        {{ __('campaigns.wizard.creative.ai_helper_description') }}
+                    </p>
+                    <button type="button" @click="openAiGenerationModal"
+                            class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-purple-700 bg-purple-100 hover:bg-purple-200">
+                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                        </svg>
+                        {{ __('campaigns.generate_with_ai') }}
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        {{-- Boost Existing Post --}}
+        <div class="bg-gradient-to-r from-green-50 to-teal-50 border border-green-200 rounded-lg p-4">
+            <div class="flex items-start">
+                <svg class="w-6 h-6 text-green-600 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                <div class="flex-1">
+                    <h4 class="text-sm font-medium text-green-900 mb-1">
+                        Boost Existing Post
+                    </h4>
+                    <p class="text-sm text-green-700 mb-3">
+                        Turn your best-performing organic posts into ads
+                    </p>
+                    <button type="button" @click="openBoostPostModal"
+                            class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-green-700 bg-green-100 hover:bg-green-200">
+                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                        </svg>
+                        Browse Posts
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- AI Generation Modal --}}
+    <div x-show="showAiModal" x-cloak
+         class="fixed inset-0 z-50 overflow-y-auto"
+         x-transition:enter="ease-out duration-300"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="ease-in duration-200"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0">
+        <div class="flex items-center justify-center min-h-screen px-4">
+            <div class="fixed inset-0 bg-gray-500 bg-opacity-75" @click="closeAiModal"></div>
+
+            <div class="relative bg-white rounded-lg max-w-2xl w-full p-6 shadow-xl">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-medium text-gray-900">AI Content Generator</h3>
+                    <button @click="closeAiModal" class="text-gray-400 hover:text-gray-500">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+
+                <div class="space-y-4">
+                    {{-- Generation Type Tabs --}}
+                    <div class="border-b border-gray-200">
+                        <nav class="-mb-px flex space-x-8">
+                            <button @click="aiGenType = 'copy'" type="button"
+                                    :class="aiGenType === 'copy' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+                                    class="whitespace-nowrap pb-4 px-1 border-b-2 font-medium text-sm">
+                                Ad Copy
+                            </button>
+                            <button @click="aiGenType = 'design'" type="button"
+                                    :class="aiGenType === 'design' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+                                    class="whitespace-nowrap pb-4 px-1 border-b-2 font-medium text-sm">
+                                Ad Design
+                            </button>
+                        </nav>
+                    </div>
+
+                    {{-- Ad Copy Generation --}}
+                    <div x-show="aiGenType === 'copy'" class="space-y-3">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Product/Service Description</label>
+                            <textarea x-model="aiPrompt" rows="3" required
+                                      class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                      placeholder="Describe your product or service..."></textarea>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Target Audience</label>
+                            <input type="text" x-model="aiTargetAudience"
+                                   class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                   placeholder="e.g., Young professionals aged 25-35">
+                        </div>
+
+                        <button @click="generateAdCopy" type="button"
+                                :disabled="aiGenerating"
+                                class="w-full inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50">
+                            <span x-show="!aiGenerating">Generate Ad Copy</span>
+                            <span x-show="aiGenerating">
+                                <svg class="animate-spin h-5 w-5 text-white mr-2" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                Generating...
+                            </span>
+                        </button>
+
+                        {{-- Generated Results --}}
+                        <div x-show="generatedCopy" class="mt-4 space-y-3 bg-gray-50 rounded-lg p-4">
+                            <div>
+                                <p class="text-xs font-medium text-gray-700 mb-1">Headlines:</p>
+                                <template x-for="(headline, index) in generatedCopy?.headlines || []" :key="index">
+                                    <div class="flex items-start justify-between p-2 bg-white rounded mb-1">
+                                        <p class="text-sm" x-text="headline"></p>
+                                        <button @click="applyHeadline(headline)" type="button" class="text-blue-600 hover:text-blue-700 text-xs ml-2">Use</button>
+                                    </div>
+                                </template>
+                            </div>
+
+                            <div>
+                                <p class="text-xs font-medium text-gray-700 mb-1">Primary Text:</p>
+                                <div class="p-2 bg-white rounded">
+                                    <p class="text-sm" x-text="generatedCopy?.primary_text"></p>
+                                    <button @click="applyPrimaryText(generatedCopy?.primary_text)" type="button"
+                                            class="mt-2 text-blue-600 hover:text-blue-700 text-xs">Use this text</button>
+                                </div>
+                            </div>
+
+                            <div>
+                                <p class="text-xs font-medium text-gray-700 mb-1">CTAs:</p>
+                                <template x-for="(cta, index) in generatedCopy?.call_to_actions || []" :key="index">
+                                    <span class="inline-block px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded mr-2 mb-1" x-text="cta"></span>
+                                </template>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Ad Design Generation --}}
+                    <div x-show="aiGenType === 'design'" class="space-y-3">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Brand Guidelines</label>
+                            <textarea x-model="aiBrandGuidelines" rows="2"
+                                      class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                      placeholder="e.g., Modern, minimalist, blue color scheme"></textarea>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Design Requirements</label>
+                            <input type="text" x-model="aiDesignRequirement1"
+                                   class="w-full mb-2 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                   placeholder="e.g., Include product mockup">
+                            <input type="text" x-model="aiDesignRequirement2"
+                                   class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                   placeholder="e.g., Vibrant gradient background">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Variations</label>
+                            <select x-model="aiVariations" class="w-full rounded-md border-gray-300 shadow-sm">
+                                <option value="2">2 variations</option>
+                                <option value="3" selected>3 variations</option>
+                                <option value="4">4 variations</option>
+                            </select>
+                        </div>
+
+                        <button @click="generateAdDesign" type="button"
+                                :disabled="aiGenerating"
+                                class="w-full inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50">
+                            <span x-show="!aiGenerating">Generate Designs</span>
+                            <span x-show="aiGenerating">
+                                <svg class="animate-spin h-5 w-5 text-white mr-2" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                Generating designs...
+                            </span>
+                        </button>
+
+                        {{-- Generated Designs --}}
+                        <div x-show="generatedDesigns?.length" class="mt-4 grid grid-cols-3 gap-2">
+                            <template x-for="(design, index) in generatedDesigns" :key="index">
+                                <div class="relative group">
+                                    <img :src="design.url" :alt="'Design ' + (index + 1)" class="w-full h-32 object-cover rounded">
+                                    <button @click="useDesign(design)" type="button"
+                                            class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 text-white text-xs font-medium rounded">
+                                        Use This
+                                    </button>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- Boost Post Modal --}}
+    <div x-show="showBoostModal" x-cloak
+         class="fixed inset-0 z-50 overflow-y-auto"
+         x-transition:enter="ease-out duration-300"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="ease-in duration-200"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0">
+        <div class="flex items-center justify-center min-h-screen px-4">
+            <div class="fixed inset-0 bg-gray-500 bg-opacity-75" @click="closeBoostModal"></div>
+
+            <div class="relative bg-white rounded-lg max-w-4xl w-full p-6 shadow-xl max-h-[90vh] overflow-y-auto">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-medium text-gray-900">Boost Existing Post</h3>
+                    <button @click="closeBoostModal" class="text-gray-400 hover:text-gray-500">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+
+                {{-- Platform Filter --}}
+                <div class="mb-4 flex gap-2">
+                    <button @click="fetchPosts('all')" type="button"
+                            :class="postsPlatform === 'all' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-700'"
+                            class="px-3 py-1 rounded-md text-sm font-medium">
+                        All Posts
+                    </button>
+                    <button @click="fetchPosts('facebook')" type="button"
+                            :class="postsPlatform === 'facebook' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-700'"
+                            class="px-3 py-1 rounded-md text-sm font-medium">
+                        Facebook
+                    </button>
+                    <button @click="fetchPosts('instagram')" type="button"
+                            :class="postsPlatform === 'instagram' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-700'"
+                            class="px-3 py-1 rounded-md text-sm font-medium">
+                        Instagram
+                    </button>
+                </div>
+
+                {{-- Loading State --}}
+                <div x-show="postsLoading" class="text-center py-8">
+                    <svg class="animate-spin h-8 w-8 text-blue-600 mx-auto" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
-                    {{ __('campaigns.generate_with_ai') }}
-                </button>
+                    <p class="text-gray-600 mt-2">Loading posts...</p>
+                </div>
+
+                {{-- Posts Grid --}}
+                <div x-show="!postsLoading" class="grid md:grid-cols-2 gap-4">
+                    <template x-for="post in availablePosts" :key="post.id">
+                        <div class="border rounded-lg p-4 hover:border-blue-500 cursor-pointer transition"
+                             @click="selectPost(post)">
+                            {{-- Post Media --}}
+                            <div x-show="post.media_url" class="aspect-video bg-gray-100 rounded mb-3 overflow-hidden">
+                                <img :src="post.media_url" :alt="post.message" class="w-full h-full object-cover">
+                            </div>
+
+                            {{-- Post Content --}}
+                            <p class="text-sm text-gray-900 mb-2 line-clamp-3" x-text="post.message"></p>
+
+                            {{-- Engagement Stats --}}
+                            <div class="flex items-center gap-4 text-xs text-gray-500">
+                                <span class="flex items-center">
+                                    <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M2 10.5a1.5 1.5 0 113 0v6a1.5 1.5 0 01-3 0v-6zM6 10.333v5.43a2 2 0 001.106 1.79l.05.025A4 4 0 008.943 18h5.416a2 2 0 001.962-1.608l1.2-6A2 2 0 0015.56 8H12V4a2 2 0 00-2-2 1 1 0 00-1 1v.667a4 4 0 01-.8 2.4L6.8 7.933a4 4 0 00-.8 2.4z"/>
+                                    </svg>
+                                    <span x-text="post.engagement.likes"></span>
+                                </span>
+                                <span class="flex items-center">
+                                    <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.338-3.123C2.493 12.767 2 11.434 2 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM7 9H5v2h2V9zm8 0h-2v2h2V9zM9 9h2v2H9V9z" clip-rule="evenodd"/>
+                                    </svg>
+                                    <span x-text="post.engagement.comments"></span>
+                                </span>
+                                <span class="flex items-center">
+                                    <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M15 8a3 3 0 10-2.977-2.63l-4.94 2.47a3 3 0 100 4.319l4.94 2.47a3 3 0 10.895-1.789l-4.94-2.47a3.027 3.027 0 000-.74l4.94-2.47C13.456 7.68 14.19 8 15 8z"/>
+                                    </svg>
+                                    <span x-text="post.engagement.shares || 0"></span>
+                                </span>
+                            </div>
+
+                            {{-- Platform Badge --}}
+                            <div class="mt-2">
+                                <span :class="post.platform === 'facebook' ? 'bg-blue-100 text-blue-800' : 'bg-pink-100 text-pink-800'"
+                                      class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium capitalize">
+                                    <span x-text="post.platform"></span>
+                                </span>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+
+                {{-- No Posts Message --}}
+                <div x-show="!postsLoading && availablePosts.length === 0" class="text-center py-8">
+                    <p class="text-gray-600">No posts found. Connect your Facebook or Instagram account first.</p>
+                </div>
             </div>
         </div>
     </div>
@@ -210,6 +498,25 @@ function creativeStep() {
         primaryText: '{{ old('primary_text', $session['data']['primary_text'] ?? '') }}',
         uploadedFiles: [],
 
+        // AI Generation Modal
+        showAiModal: false,
+        aiGenType: 'copy',
+        aiGenerating: false,
+        aiPrompt: '',
+        aiTargetAudience: '',
+        aiBrandGuidelines: '',
+        aiDesignRequirement1: '',
+        aiDesignRequirement2: '',
+        aiVariations: 3,
+        generatedCopy: null,
+        generatedDesigns: [],
+
+        // Boost Post Modal
+        showBoostModal: false,
+        postsLoading: false,
+        postsPlatform: 'all',
+        availablePosts: [],
+
         updateCharCount() {
             // Character count is handled by x-model
         },
@@ -235,10 +542,177 @@ function creativeStep() {
             this.uploadedFiles.splice(index, 1);
         },
 
-        openAiHelper() {
-            // This would open a modal or navigate to AI content generation
-            alert('{{ __('campaigns.wizard.creative.ai_helper_coming_soon') }}');
-            // In production, this would call: window.location.href = '/ai/generate?context=campaign';
+        // AI Generation Functions
+        openAiGenerationModal() {
+            this.showAiModal = true;
+            this.aiGenType = 'copy';
+        },
+
+        closeAiModal() {
+            this.showAiModal = false;
+        },
+
+        async generateAdCopy() {
+            if (!this.aiPrompt || !this.aiTargetAudience) {
+                alert('Please fill in all required fields');
+                return;
+            }
+
+            this.aiGenerating = true;
+            this.generatedCopy = null;
+
+            try {
+                const response = await fetch('/api/ai/generate-ad-copy', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+                    },
+                    body: JSON.stringify({
+                        objective: '{{ $session['data']['objective'] ?? 'awareness' }}',
+                        target_audience: this.aiTargetAudience,
+                        product_description: this.aiPrompt,
+                        requirements: []
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    this.generatedCopy = data.ad_copy;
+                } else {
+                    alert(data.message || 'Failed to generate ad copy');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to generate ad copy. Please try again.');
+            } finally {
+                this.aiGenerating = false;
+            }
+        },
+
+        async generateAdDesign() {
+            if (!this.aiBrandGuidelines) {
+                alert('Please provide brand guidelines');
+                return;
+            }
+
+            this.aiGenerating = true;
+            this.generatedDesigns = [];
+
+            const requirements = [this.aiDesignRequirement1, this.aiDesignRequirement2].filter(r => r);
+
+            try {
+                const response = await fetch('/api/ai/generate-ad-design', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+                    },
+                    body: JSON.stringify({
+                        objective: '{{ $session['data']['objective'] ?? 'awareness' }}',
+                        brand_guidelines: this.aiBrandGuidelines,
+                        design_requirements: requirements,
+                        variation_count: parseInt(this.aiVariations),
+                        resolution: 'high'
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    this.generatedDesigns = data.designs;
+                } else {
+                    alert(data.message || 'Failed to generate designs');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to generate designs. Please try again.');
+            } finally {
+                this.aiGenerating = false;
+            }
+        },
+
+        applyHeadline(headline) {
+            document.getElementById('headline').value = headline;
+            this.closeAiModal();
+        },
+
+        applyPrimaryText(text) {
+            this.primaryText = text;
+            document.getElementById('primary_text').value = text;
+            this.closeAiModal();
+        },
+
+        useDesign(design) {
+            // Add design URL to media URLs
+            const mediaUrlsField = document.getElementById('media_urls_text');
+            const currentUrls = mediaUrlsField.value ? mediaUrlsField.value.split('\n') : [];
+            currentUrls.push(design.url);
+            mediaUrlsField.value = currentUrls.join('\n');
+            this.closeAiModal();
+            alert('Design added to media!');
+        },
+
+        // Boost Post Functions
+        openBoostPostModal() {
+            this.showBoostModal = true;
+            this.fetchPosts('all');
+        },
+
+        closeBoostModal() {
+            this.showBoostModal = false;
+        },
+
+        async fetchPosts(platform) {
+            this.postsPlatform = platform;
+            this.postsLoading = true;
+            this.availablePosts = [];
+
+            try {
+                const response = await fetch(`/api/meta-posts?platform=${platform}`, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // Combine Facebook and Instagram posts
+                    const allPosts = [
+                        ...(data.posts.facebook || []),
+                        ...(data.posts.instagram || [])
+                    ];
+                    this.availablePosts = allPosts;
+                } else {
+                    console.error('Failed to fetch posts:', data);
+                }
+            } catch (error) {
+                console.error('Error fetching posts:', error);
+            } finally {
+                this.postsLoading = false;
+            }
+        },
+
+        selectPost(post) {
+            // Fill form with post content
+            this.primaryText = post.message;
+            document.getElementById('primary_text').value = post.message;
+
+            // Add post media to URLs
+            if (post.media_url) {
+                const mediaUrlsField = document.getElementById('media_urls_text');
+                const currentUrls = mediaUrlsField.value ? mediaUrlsField.value.split('\n') : [];
+                currentUrls.push(post.media_url);
+                mediaUrlsField.value = currentUrls.join('\n');
+            }
+
+            this.closeBoostModal();
+            alert('Post content loaded! Configure your targeting and budget to boost this post.');
         }
     }
 }
