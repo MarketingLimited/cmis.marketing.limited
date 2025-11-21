@@ -26,6 +26,7 @@ class CampaignAnalyticsController extends Controller
 
     public function __construct(CampaignAnalyticsService $analyticsService)
     {
+        $this->middleware('auth:sanctum');
         $this->analyticsService = $analyticsService;
     }
 

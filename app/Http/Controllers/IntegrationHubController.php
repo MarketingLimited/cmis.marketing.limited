@@ -19,6 +19,7 @@ class IntegrationHubController extends Controller
 
     public function __construct(IntegrationHubService $integrationService)
     {
+        $this->middleware('auth:sanctum');
         $this->integrationService = $integrationService;
     }
 

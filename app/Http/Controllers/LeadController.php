@@ -16,6 +16,14 @@ use Illuminate\Support\Facades\Validator;
 class LeadController extends Controller
 {
     /**
+     * Constructor - Apply authentication middleware
+     */
+    public function __construct()
+    {
+        $this->middleware('auth:sanctum');
+    }
+
+    /**
      * List leads
      *
      * @param Request $request
