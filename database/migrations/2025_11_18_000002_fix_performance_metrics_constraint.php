@@ -20,12 +20,20 @@ return new class extends Migration
         // Drop the restrictive check constraint
         DB::statement('ALTER TABLE cmis.performance_metrics DROP CONSTRAINT IF EXISTS performance_score_range');
 
-        // Add a more reasonable constraint - just ensure non-negative values
-        DB::statement('
-            ALTER TABLE cmis.performance_metrics
-            ADD CONSTRAINT performance_metrics_observed_non_negative
-            CHECK (observed IS NULL OR observed >= 0)
-        ');
+        // Add a more reasonable constraint - just ensure non-negative values (if not exists)
+        $constraintExists = DB::select("
+            SELECT 1 FROM pg_constraint
+            WHERE conname = 'performance_metrics_observed_non_negative'
+            AND connamespace = 'cmis'::regnamespace
+        ");
+
+        if (empty($constraintExists)) {
+            DB::statement('
+                ALTER TABLE cmis.performance_metrics
+                ADD CONSTRAINT performance_metrics_observed_non_negative
+                CHECK (observed IS NULL OR observed >= 0)
+            ');
+        }
 
         echo "✓ Fixed performance_metrics constraints\n";
     }
