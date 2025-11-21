@@ -363,4 +363,49 @@ trait MocksExternalAPIs
         $this->mockLinkedInAPI('success');
         $this->mockSnapchatAPI('success');
     }
+
+    /**
+     * Mock Google API responses
+     */
+    protected function mockGoogleAPI($type = 'success', $data = [])
+    {
+        \Http::fake([
+            'https://ads.google.com/*' => \Http::response(array_merge([
+                'results' => [[
+                    'campaign' => [
+                        'id' => 'google_' . uniqid(),
+                        'name' => 'Test Campaign',
+                        'status' => 'ENABLED'
+                    ]
+                ]]
+            ], $data), 200),
+        ]);
+    }
+
+    /**
+     * Mock Twilio API responses
+     */
+    protected function mockTwilioAPI($type = 'success', $data = [])
+    {
+        \Http::fake([
+            'https://api.twilio.com/*' => \Http::response(array_merge([
+                'sid' => 'SM' . uniqid(),
+                'status' => 'sent',
+                'to' => '+1234567890'
+            ], $data), 200),
+        ]);
+    }
+
+    /**
+     * Mock Pinterest API responses
+     */
+    protected function mockPinterestAPI($type = 'success', $data = [])
+    {
+        \Http::fake([
+            'https://api.pinterest.com/*' => \Http::response(array_merge([
+                'id' => 'pin_' . uniqid(),
+                'url' => 'https://pinterest.com/pin/' . uniqid()
+            ], $data), 200),
+        ]);
+    }
 }

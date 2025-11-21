@@ -5,9 +5,9 @@ namespace App\Services\Social;
 use Illuminate\Support\Facades\Log;
 
 /**
- * Google Business API Integration Service
+ * Google Business Profile API Integration Service
  *
- * Handles publishing and interaction with Google Business Profile (Google My Business)
+ * Handles publishing and interaction with Google Business Profile
  * Note: Stub implementation - full API integration pending
  */
 class GoogleBusinessService
@@ -18,36 +18,53 @@ class GoogleBusinessService
     }
 
     /**
-     * Publish a post to Google Business Profile
+     * Create a local post on Google Business Profile
      *
-     * @param array $data Post data (title, text, media, call-to-action, etc.)
+     * @param array $data Post data (text, media, CTA, etc.)
      * @return array Result with post_id
      */
-    public function publishPost(array $data): array
+    public function createLocalPost(array $data): array
     {
-        Log::info('GoogleBusinessService::publishPost called (stub)', ['data' => $data]);
+        Log::info('GoogleBusinessService::createLocalPost called (stub)', ['data' => $data]);
         return [
             'success' => true,
-            'post_id' => 'gbs_post_stub_' . uniqid(),
+            'post_id' => 'gbp_post_' . uniqid(),
+            'post_name' => $data['text'] ?? 'Local Post',
             'stub' => true
         ];
     }
 
     /**
-     * Get post metrics/insights
+     * Update business information
      *
-     * @param string $postId Google Business post ID
-     * @return array Metrics data
+     * @param string $locationId Google Business Profile location ID
+     * @param array $data Updated business data
+     * @return array Result
      */
-    public function getMetrics(string $postId): array
+    public function updateBusiness(string $locationId, array $data): array
     {
-        Log::info('GoogleBusinessService::getMetrics called (stub)', ['post_id' => $postId]);
+        Log::info('GoogleBusinessService::updateBusiness called (stub)', ['location_id' => $locationId, 'data' => $data]);
         return [
-            'post_id' => $postId,
-            'views' => 0,
-            'clicks' => 0,
-            'actions' => 0,
-            'impressions' => 0,
+            'success' => true,
+            'location_id' => $locationId,
+            'stub' => true
+        ];
+    }
+
+    /**
+     * Get business insights/metrics
+     *
+     * @param string $locationId Google Business Profile location ID
+     * @return array Insights data
+     */
+    public function getInsights(string $locationId): array
+    {
+        Log::info('GoogleBusinessService::getInsights called (stub)', ['location_id' => $locationId]);
+        return [
+            'location_id' => $locationId,
+            'views' => 1000,
+            'searches' => 500,
+            'actions' => 100,
             'stub' => true
         ];
     }
@@ -60,7 +77,6 @@ class GoogleBusinessService
     public function validateCredentials(): bool
     {
         Log::info('GoogleBusinessService::validateCredentials called (stub)');
-        // Stub always returns false to indicate not yet implemented
         return false;
     }
 }

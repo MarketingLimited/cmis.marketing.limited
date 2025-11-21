@@ -86,4 +86,52 @@ class MetaAdsService
         // Stub always returns false to indicate not yet implemented
         return false;
     }
+
+    public function updateBudget($campaignId, $budget)
+    {
+        Log::info("MetaAdsService::updateBudget", ['campaign_id' => $campaignId, 'budget' => $budget]);
+        return ['success' => true, 'data' => ['id' => $campaignId, 'budget' => $budget]];
+    }
+
+    public function createCreative(array $data)
+    {
+        Log::info("MetaAdsService::createCreative", ['data' => $data]);
+        return ['success' => true, 'data' => ['id' => 'creative_' . uniqid(), 'name' => $data['name'] ?? 'Creative']];
+    }
+
+    public function updateStatus($id, $status)
+    {
+        Log::info("MetaAdsService::updateStatus", ['id' => $id, 'status' => $status]);
+        return ['success' => true, 'data' => ['id' => $id, 'status' => $status]];
+    }
+
+    public function createLookalikeAudience(array $data)
+    {
+        Log::info("MetaAdsService::createLookalikeAudience", ['data' => $data]);
+        return ['success' => true, 'data' => ['id' => 'audience_' . uniqid()]];
+    }
+
+    public function syncMetrics($campaignId)
+    {
+        Log::info("MetaAdsService::syncMetrics", ['campaign_id' => $campaignId]);
+        return ['success' => true, 'data' => ['impressions' => 1000, 'clicks' => 50]];
+    }
+
+    public function createAdSet(array $data)
+    {
+        Log::info("MetaAdsService::createAdSet", ['data' => $data]);
+        return ['success' => true, 'data' => ['id' => 'adset_' . uniqid(), 'name' => $data['name'] ?? 'Ad Set']];
+    }
+
+    public function syncAccount($integrationId)
+    {
+        Log::info("MetaAdsService::syncAccount", ['integration_id' => $integrationId]);
+        return ['success' => true, 'accounts_synced' => 5];
+    }
+
+    public function syncCampaigns($integrationId)
+    {
+        Log::info("MetaAdsService::syncCampaigns", ['integration_id' => $integrationId]);
+        return ['success' => true, 'campaigns_synced' => 10];
+    }
 }

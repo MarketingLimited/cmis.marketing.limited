@@ -27,4 +27,21 @@ class SetRLSContext
 
         return $response;
     }
+
+    /**
+     * Perform cleanup tasks after the response is sent.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @param \Illuminate\Http\Response $response
+     * @return void
+     */
+    public function terminate(Request $request, $response): void
+    {
+        // Ensure context is cleared even if handle() cleanup didn't execute
+        try {
+            DB::statement('SELECT cmis.clear_transaction_context()');
+        } catch (\Exception $e) {
+            // Silently fail - database might already be cleaned up
+        }
+    }
 }

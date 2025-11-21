@@ -26,9 +26,13 @@ return new class extends Migration
                     r RECORD;
                 BEGIN
                     FOR r IN (SELECT sequencename FROM pg_sequences WHERE schemaname = '{$schema}') LOOP
-                        IF NOT (r.sequencename = 'migrations_id_seq' AND '{$schema}' = 'cmis') THEN
-                            EXECUTE 'DROP SEQUENCE IF EXISTS {$schema}.' || quote_ident(r.sequencename) || ' CASCADE';
+                        -- Skip Laravel's migrations sequence in any schema to prevent breaking migration tracking
+                        IF r.sequencename = 'migrations_id_seq' THEN
+                            RAISE NOTICE 'Skipping migrations_id_seq in schema %', '{$schema}';
+                            CONTINUE;
                         END IF;
+
+                        EXECUTE 'DROP SEQUENCE IF EXISTS {$schema}.' || quote_ident(r.sequencename) || ' CASCADE';
                     END LOOP;
                 END $$;
             ");

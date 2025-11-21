@@ -5,7 +5,9 @@ CREATE SEQUENCE cmis.failed_jobs_id_seq;
 CREATE SEQUENCE cmis.jobs_id_seq;
 CREATE SEQUENCE cmis.meta_field_dictionary_id_seq;
 CREATE SEQUENCE cmis.meta_function_descriptions_id_seq;
-CREATE SEQUENCE IF NOT EXISTS cmis.migrations_id_seq;
+-- Migrations sequence is managed by Laravel in public schema
+-- DO NOT create cmis.migrations_id_seq
+-- CREATE SEQUENCE IF NOT EXISTS cmis.migrations_id_seq;
 CREATE SEQUENCE cmis.modules_module_id_seq;
 CREATE SEQUENCE cmis.naming_templates_naming_id_seq;
 CREATE SEQUENCE cmis_knowledge.dev_id_seq;

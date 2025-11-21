@@ -103,4 +103,9 @@ class Campaign extends Model
         return $this->hasMany(AdCampaign::class, 'campaign_id', 'campaign_id');
     }
 
+    public function creativeAssets(): HasMany
+    {
+        return $this->hasMany(\App\Models\CreativeAsset::class, 'campaign_id', 'campaign_id');
+    }
+
 }

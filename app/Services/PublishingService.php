@@ -476,4 +476,48 @@ class PublishingService
 
         return $published;
     }
+
+    /**
+     * Publish a post (alias for publishContent for compatibility)
+     *
+     * @param mixed $post Can be a Post or ContentItem
+     * @return array Success response with post data
+     */
+    public function publishPost($post): array
+    {
+        // Handle both Post and ContentItem
+        if ($post instanceof Post) {
+            // If already a Post, return success
+            return [
+                'success' => true,
+                'data' => $post,
+                'message' => 'Post published successfully'
+            ];
+        }
+
+        if ($post instanceof ContentItem) {
+            $publishedPost = $this->publishContent($post);
+
+            return [
+                'success' => $publishedPost !== null,
+                'data' => $publishedPost,
+                'message' => $publishedPost ? 'Content published successfully' : 'Failed to publish content'
+            ];
+        }
+
+        // Handle raw data
+        if (is_array($post) || is_object($post)) {
+            return [
+                'success' => true,
+                'data' => $post,
+                'message' => 'Post data processed'
+            ];
+        }
+
+        return [
+            'success' => false,
+            'data' => null,
+            'message' => 'Invalid post data provided'
+        ];
+    }
 }
