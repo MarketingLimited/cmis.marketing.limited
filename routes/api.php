@@ -1416,6 +1416,36 @@ Route::middleware(['auth:sanctum', 'validate.org.access', 'set.db.context'])
             Route::post('/campaigns/{campaign_id}/duplicate', [App\Http\Controllers\Automation\CampaignOrchestrationController::class, 'duplicateCampaign'])->name('campaigns.duplicate');
         });
 
+        // Enterprise Features & Scale Optimization (Phase 5)
+        Route::prefix('enterprise')->name('enterprise.')->group(function () {
+            // Performance Monitoring & Alerting
+            Route::post('/monitor/campaign/{campaign_id}', [App\Http\Controllers\Enterprise\EnterpriseController::class, 'monitorCampaign'])->name('monitor.campaign');
+            Route::post('/monitor/organization', [App\Http\Controllers\Enterprise\EnterpriseController::class, 'monitorOrganization'])->name('monitor.organization');
+            Route::get('/alerts', [App\Http\Controllers\Enterprise\EnterpriseController::class, 'getAlerts'])->name('alerts.index');
+            Route::post('/alerts/{alert_id}/acknowledge', [App\Http\Controllers\Enterprise\EnterpriseController::class, 'acknowledgeAlert'])->name('alerts.acknowledge');
+            Route::post('/alerts/{alert_id}/resolve', [App\Http\Controllers\Enterprise\EnterpriseController::class, 'resolveAlert'])->name('alerts.resolve');
+            Route::get('/alerts/statistics', [App\Http\Controllers\Enterprise\EnterpriseController::class, 'getAlertStatistics'])->name('alerts.statistics');
+
+            // Advanced Reporting & Export
+            Route::post('/reports/campaign/{campaign_id}', [App\Http\Controllers\Enterprise\EnterpriseController::class, 'generateCampaignReport'])->name('reports.campaign');
+            Route::post('/reports/organization', [App\Http\Controllers\Enterprise\EnterpriseController::class, 'generateOrganizationReport'])->name('reports.organization');
+            Route::post('/reports/schedule', [App\Http\Controllers\Enterprise\EnterpriseController::class, 'scheduleReport'])->name('reports.schedule');
+            Route::get('/reports/schedules', [App\Http\Controllers\Enterprise\EnterpriseController::class, 'getScheduledReports'])->name('reports.schedules');
+            Route::delete('/reports/schedules/{schedule_id}', [App\Http\Controllers\Enterprise\EnterpriseController::class, 'deleteScheduledReport'])->name('reports.schedules.delete');
+            Route::get('/reports/history', [App\Http\Controllers\Enterprise\EnterpriseController::class, 'getReportHistory'])->name('reports.history');
+            Route::get('/reports/{report_id}/download', [App\Http\Controllers\Enterprise\EnterpriseController::class, 'downloadReport'])->name('reports.download');
+
+            // Webhook Management
+            Route::post('/webhooks', [App\Http\Controllers\Enterprise\EnterpriseController::class, 'registerWebhook'])->name('webhooks.register');
+            Route::get('/webhooks', [App\Http\Controllers\Enterprise\EnterpriseController::class, 'getWebhooks'])->name('webhooks.index');
+            Route::put('/webhooks/{webhook_id}', [App\Http\Controllers\Enterprise\EnterpriseController::class, 'updateWebhook'])->name('webhooks.update');
+            Route::delete('/webhooks/{webhook_id}', [App\Http\Controllers\Enterprise\EnterpriseController::class, 'deleteWebhook'])->name('webhooks.delete');
+            Route::post('/webhooks/trigger', [App\Http\Controllers\Enterprise\EnterpriseController::class, 'triggerWebhook'])->name('webhooks.trigger');
+            Route::get('/webhooks/{webhook_id}/deliveries', [App\Http\Controllers\Enterprise\EnterpriseController::class, 'getWebhookDeliveries'])->name('webhooks.deliveries');
+            Route::get('/webhooks/{webhook_id}/statistics', [App\Http\Controllers\Enterprise\EnterpriseController::class, 'getWebhookStatistics'])->name('webhooks.statistics');
+            Route::post('/webhooks/deliveries/{delivery_id}/retry', [App\Http\Controllers\Enterprise\EnterpriseController::class, 'retryWebhookDelivery'])->name('webhooks.deliveries.retry');
+        });
+
         // Knowledge Learning System (من Phase 5C)
         Route::prefix('knowledge')->name('knowledge.')->group(function () {
             Route::get('/learn', [App\Http\Controllers\API\KnowledgeLearningController::class, 'learnFromHistory'])->name('learn');
