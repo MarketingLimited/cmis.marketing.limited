@@ -37,18 +37,32 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // Register middleware aliases
         $middleware->alias([
+            // Multi-Tenancy & Organization Context (Phase 1 - Consolidated)
+            'org.context' => \App\Http\Middleware\SetOrganizationContext::class,
+
+            // Deprecated middleware (use 'org.context' instead)
+            // These are kept for backward compatibility but will be removed in future
             'set.db.context' => \App\Http\Middleware\SetDatabaseContext::class,
+            'set.rls.context' => \App\Http\Middleware\SetRLSContext::class,
+            'set.org.context' => \App\Http\Middleware\SetOrgContextMiddleware::class,
+
+            // Access Control & Permissions
             'validate.org.access' => \App\Http\Middleware\ValidateOrgAccess::class,
             'permission' => \App\Http\Middleware\CheckPermission::class,
+            'admin' => \App\Http\Middleware\AdminOnly::class,
+
+            // Security & Authentication
             'refresh.tokens' => \App\Http\Middleware\RefreshExpiredTokens::class,
             'verify.webhook' => \App\Http\Middleware\VerifyWebhookSignature::class,
             'security.headers' => \App\Http\Middleware\SecurityHeaders::class,
+
+            // Rate Limiting & Throttling
             'throttle.ai' => \App\Http\Middleware\ThrottleAI::class,
-            'throttle.platform' => \App\Http\Middleware\ThrottlePlatformRequests::class, // NEW: Week 2
-            'feature.platform' => \App\Http\Middleware\CheckPlatformFeatureEnabled::class, // NEW: Feature Toggles
-            'admin' => \App\Http\Middleware\AdminOnly::class, // NEW: Admin access control
-            // Phase 1B: AI Quota & Rate Limiting (2025-11-21)
+            'throttle.platform' => \App\Http\Middleware\ThrottlePlatformRequests::class,
             'ai.rate.limit' => \App\Http\Middleware\AiRateLimitMiddleware::class,
+
+            // Feature Toggles & Quotas
+            'feature.platform' => \App\Http\Middleware\CheckPlatformFeatureEnabled::class,
             'check.ai.quota' => \App\Http\Middleware\CheckAiQuotaMiddleware::class,
         ]);
     })
