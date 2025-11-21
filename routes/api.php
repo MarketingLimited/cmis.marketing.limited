@@ -938,6 +938,40 @@ Route::middleware(['auth:sanctum', 'validate.org.access', 'set.db.context'])
 
     /*
     |----------------------------------------------------------------------
+    | Twitter/X Ads Integration - Phase 16 (NEW)
+    |----------------------------------------------------------------------
+    | Fetch and manage Twitter/X Ads campaigns
+    */
+    Route::prefix('twitter-ads')->name('twitter-ads.')->group(function () {
+        // Campaigns
+        Route::get('/campaigns', [App\Http\Controllers\Api\TwitterAdsController::class, 'getCampaigns'])->name('campaigns.index');
+        Route::post('/campaigns', [App\Http\Controllers\Api\TwitterAdsController::class, 'createCampaign'])->name('campaigns.create');
+        Route::get('/campaigns/{campaign_id}', [App\Http\Controllers\Api\TwitterAdsController::class, 'getCampaignDetails'])->name('campaigns.show');
+        Route::get('/campaigns/{campaign_id}/metrics', [App\Http\Controllers\Api\TwitterAdsController::class, 'getCampaignMetrics'])->name('campaigns.metrics');
+
+        // Cache Management
+        Route::post('/refresh-cache', [App\Http\Controllers\Api\TwitterAdsController::class, 'refreshCache'])->name('refresh-cache');
+    });
+
+    /*
+    |----------------------------------------------------------------------
+    | Snapchat Ads Integration - Phase 16 (NEW)
+    |----------------------------------------------------------------------
+    | Fetch and manage Snapchat Ads campaigns
+    */
+    Route::prefix('snapchat-ads')->name('snapchat-ads.')->group(function () {
+        // Campaigns
+        Route::get('/campaigns', [App\Http\Controllers\Api\SnapchatAdsController::class, 'getCampaigns'])->name('campaigns.index');
+        Route::post('/campaigns', [App\Http\Controllers\Api\SnapchatAdsController::class, 'createCampaign'])->name('campaigns.create');
+        Route::get('/campaigns/{campaign_id}', [App\Http\Controllers\Api\SnapchatAdsController::class, 'getCampaignDetails'])->name('campaigns.show');
+        Route::get('/campaigns/{campaign_id}/metrics', [App\Http\Controllers\Api\SnapchatAdsController::class, 'getCampaignMetrics'])->name('campaigns.metrics');
+
+        // Cache Management
+        Route::post('/refresh-cache', [App\Http\Controllers\Api\SnapchatAdsController::class, 'refreshCache'])->name('refresh-cache');
+    });
+
+    /*
+    |----------------------------------------------------------------------
     | Campaign Automation - Phase 12 (NEW)
     |----------------------------------------------------------------------
     | AI-powered campaign optimization and automation rules
