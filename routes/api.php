@@ -1626,6 +1626,38 @@ Route::middleware(['auth:sanctum'])->prefix('orgs/{org_id}/analytics')->name('an
         Route::get('/{experiment_id}/results', [App\Http\Controllers\Analytics\ExperimentsController::class, 'results'])->name('results');
         Route::post('/{experiment_id}/events', [App\Http\Controllers\Analytics\ExperimentsController::class, 'recordEvent'])->name('events.store');
     });
+
+    // ===== Predictive Analytics Routes (Phase 16) =====
+    Route::prefix('analytics')->name('analytics.')->group(function () {
+        // Forecasting
+        Route::post('/forecasts', [App\Http\Controllers\Analytics\PredictiveAnalyticsController::class, 'generateForecast'])->name('forecasts.generate');
+        Route::get('/forecasts', [App\Http\Controllers\Analytics\PredictiveAnalyticsController::class, 'listForecasts'])->name('forecasts.index');
+        Route::get('/forecasts/{forecast_id}', [App\Http\Controllers\Analytics\PredictiveAnalyticsController::class, 'getForecast'])->name('forecasts.show');
+        Route::put('/forecasts/{forecast_id}', [App\Http\Controllers\Analytics\PredictiveAnalyticsController::class, 'updateForecast'])->name('forecasts.update');
+
+        // Anomaly Detection
+        Route::post('/anomalies/detect', [App\Http\Controllers\Analytics\PredictiveAnalyticsController::class, 'detectAnomalies'])->name('anomalies.detect');
+        Route::get('/anomalies', [App\Http\Controllers\Analytics\PredictiveAnalyticsController::class, 'listAnomalies'])->name('anomalies.index');
+        Route::get('/anomalies/{anomaly_id}', [App\Http\Controllers\Analytics\PredictiveAnalyticsController::class, 'getAnomaly'])->name('anomalies.show');
+        Route::post('/anomalies/{anomaly_id}/acknowledge', [App\Http\Controllers\Analytics\PredictiveAnalyticsController::class, 'acknowledgeAnomaly'])->name('anomalies.acknowledge');
+        Route::post('/anomalies/{anomaly_id}/resolve', [App\Http\Controllers\Analytics\PredictiveAnalyticsController::class, 'resolveAnomaly'])->name('anomalies.resolve');
+        Route::post('/anomalies/{anomaly_id}/false-positive', [App\Http\Controllers\Analytics\PredictiveAnalyticsController::class, 'markFalsePositive'])->name('anomalies.false_positive');
+
+        // Trend Analysis
+        Route::post('/trends', [App\Http\Controllers\Analytics\PredictiveAnalyticsController::class, 'analyzeTrends'])->name('trends.analyze');
+        Route::get('/trends', [App\Http\Controllers\Analytics\PredictiveAnalyticsController::class, 'listTrends'])->name('trends.index');
+
+        // Recommendations
+        Route::post('/recommendations/generate', [App\Http\Controllers\Analytics\PredictiveAnalyticsController::class, 'generateRecommendations'])->name('recommendations.generate');
+        Route::get('/recommendations', [App\Http\Controllers\Analytics\PredictiveAnalyticsController::class, 'listRecommendations'])->name('recommendations.index');
+        Route::get('/recommendations/{recommendation_id}', [App\Http\Controllers\Analytics\PredictiveAnalyticsController::class, 'getRecommendation'])->name('recommendations.show');
+        Route::post('/recommendations/{recommendation_id}/accept', [App\Http\Controllers\Analytics\PredictiveAnalyticsController::class, 'acceptRecommendation'])->name('recommendations.accept');
+        Route::post('/recommendations/{recommendation_id}/reject', [App\Http\Controllers\Analytics\PredictiveAnalyticsController::class, 'rejectRecommendation'])->name('recommendations.reject');
+        Route::post('/recommendations/{recommendation_id}/implement', [App\Http\Controllers\Analytics\PredictiveAnalyticsController::class, 'implementRecommendation'])->name('recommendations.implement');
+
+        // Statistics
+        Route::get('/stats', [App\Http\Controllers\Analytics\PredictiveAnalyticsController::class, 'stats'])->name('stats');
+    });
 });
 
 // Alert Templates (Global) (Phase 13)
