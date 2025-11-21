@@ -86,7 +86,7 @@ if [ -n "$FILTER" ]; then
 fi
 
 # Add common options
-CMD="$CMD --colors --stop-on-failure"
+CMD="$CMD --colors --no-coverage"
 
 echo -e "${GREEN}Command: ${CMD}${NC}"
 echo ""

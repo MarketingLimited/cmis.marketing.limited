@@ -12,10 +12,11 @@ use App\Models\Core\Role;
 use App\Models\Core\UserOrg;
 use Illuminate\Support\Str;
 use Tests\Traits\OptimizesTestPerformance;
+use Tests\ParallelTestCase;
 
 abstract class TestCase extends BaseTestCase
 {
-    use OptimizesTestPerformance;
+    use OptimizesTestPerformance, ParallelTestCase;
     /**
      * Indicates whether the default seeder should run before each test.
      *
@@ -29,6 +30,9 @@ abstract class TestCase extends BaseTestCase
     protected function setUp(): void
     {
         parent::setUp();
+
+        // Set up parallel testing database support
+        $this->setUpParallelDatabase();
 
         // Initialize test logging
         $this->initializeTestLogging();
