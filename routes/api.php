@@ -139,6 +139,14 @@ Route::middleware('auth:sanctum')->group(function () {
         ->name('user.switch-organization');
     Route::get('/user/active-organization', [\App\Http\Controllers\Core\OrgSwitcherController::class, 'getActiveOrganization'])
         ->name('user.active-organization');
+
+    // Async Job Status (Phase 1 Week 2 - Queue Infrastructure)
+    Route::prefix('jobs')->name('api.jobs.')->group(function () {
+        Route::get('/{job_id}/status', [\App\Http\Controllers\API\JobStatusController::class, 'status'])->name('status');
+        Route::get('/{job_id}/result', [\App\Http\Controllers\API\JobStatusController::class, 'result'])->name('result');
+        Route::get('/{job_id}/embedding-status', [\App\Http\Controllers\API\JobStatusController::class, 'embeddingStatus'])->name('embedding-status');
+        Route::get('/{job_id}/embedding-result', [\App\Http\Controllers\API\JobStatusController::class, 'embeddingResult'])->name('embedding-result');
+    });
 });
 
 /*

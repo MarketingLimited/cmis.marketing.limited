@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Traits\HandlesAsyncJobs;
+use App\Jobs\AI\GenerateContentJob;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -13,11 +15,17 @@ use Illuminate\Support\Facades\Validator;
  *
  * Provides AI-powered content generation and analysis endpoints
  * using Gemini AI API
+ *
+ * Supports async processing for generation methods (default: async=true)
  */
 class AIAssistantController extends Controller
 {
+    use HandlesAsyncJobs;
+
     /**
      * Generate content suggestions based on a prompt
+     *
+     * Supports async processing with async=true (default)
      *
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
@@ -27,6 +35,7 @@ class AIAssistantController extends Controller
         $validator = Validator::make($request->all(), [
             'prompt' => 'required|string|max:5000',
             'context' => 'nullable|string|max:2000',
+            'async' => 'nullable|boolean',
         ]);
 
         if ($validator->fails()) {
@@ -36,11 +45,36 @@ class AIAssistantController extends Controller
             ], 422);
         }
 
-        try {
-            $result = $this->callGeminiAPI(
-                'Generate 5 creative marketing suggestions based on this prompt: ' . $request->prompt .
-                ($request->context ? ' Context: ' . $request->context : '')
+        $prompt = 'Generate 5 creative marketing suggestions based on this prompt: ' . $request->prompt .
+                  ($request->context ? ' Context: ' . $request->context : '');
+
+        // Check if async processing is requested (default: true)
+        if ($this->shouldProcessAsync($request, true)) {
+            $user = $request->user();
+            $orgId = $user->current_org_id ?? $user->org_id;
+
+            $job = new GenerateContentJob(
+                $orgId,
+                $user->user_id,
+                $prompt,
+                'suggestions',
+                [
+                    'original_prompt' => $request->prompt,
+                    'context' => $request->context,
+                ]
             );
+
+            dispatch($job);
+
+            return $this->asyncJobAccepted(
+                $job->getJobId(),
+                'Suggestions generation started'
+            );
+        }
+
+        // Synchronous processing (backward compatibility)
+        try {
+            $result = $this->callGeminiAPI($prompt);
 
             return response()->json([
                 'data' => [
@@ -59,6 +93,8 @@ class AIAssistantController extends Controller
     /**
      * Generate a campaign brief
      *
+     * Supports async processing with async=true (default)
+     *
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
@@ -68,6 +104,7 @@ class AIAssistantController extends Controller
             'product_description' => 'required|string|max:2000',
             'target_audience' => 'required|string|max:500',
             'campaign_goal' => 'required|string|max:500',
+            'async' => 'nullable|boolean',
         ]);
 
         if ($validator->fails()) {
@@ -77,12 +114,38 @@ class AIAssistantController extends Controller
             ], 422);
         }
 
-        try {
-            $prompt = "Create a comprehensive marketing campaign brief for:\n" .
-                      "Product: {$request->product_description}\n" .
-                      "Target Audience: {$request->target_audience}\n" .
-                      "Campaign Goal: {$request->campaign_goal}";
+        $prompt = "Create a comprehensive marketing campaign brief for:\n" .
+                  "Product: {$request->product_description}\n" .
+                  "Target Audience: {$request->target_audience}\n" .
+                  "Campaign Goal: {$request->campaign_goal}";
 
+        // Check if async processing is requested (default: true)
+        if ($this->shouldProcessAsync($request, true)) {
+            $user = $request->user();
+            $orgId = $user->current_org_id ?? $user->org_id;
+
+            $job = new GenerateContentJob(
+                $orgId,
+                $user->user_id,
+                $prompt,
+                'brief',
+                [
+                    'product_description' => $request->product_description,
+                    'target_audience' => $request->target_audience,
+                    'campaign_goal' => $request->campaign_goal,
+                ]
+            );
+
+            dispatch($job);
+
+            return $this->asyncJobAccepted(
+                $job->getJobId(),
+                'Campaign brief generation started'
+            );
+        }
+
+        // Synchronous processing (backward compatibility)
+        try {
             $result = $this->callGeminiAPI($prompt);
 
             return response()->json([
