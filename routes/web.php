@@ -208,6 +208,13 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/integrations', [App\Http\Controllers\Settings\SettingsController::class, 'integrations'])->name('integrations');
     });
 
+    // ==================== Subscription ====================
+    Route::prefix('subscription')->name('subscription.')->group(function () {
+        Route::get('/plans', function () { return view('subscription.plans'); })->name('plans');
+        Route::get('/upgrade', function () { return view('subscription.upgrade'); })->name('upgrade');
+        Route::post('/upgrade', function () { return redirect()->back()->with('info', 'Subscription upgrades coming soon'); })->name('upgrade.process');
+    });
+
     // ==================== Profile ====================
     Route::get('/profile', [App\Http\Controllers\ProfileController::class, 'show'])->name('profile');
 
