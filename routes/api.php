@@ -1498,6 +1498,46 @@ Route::middleware(['auth:sanctum'])->prefix('optimization')->name('optimization.
     });
 });
 
+// Advanced Analytics & Business Intelligence (Phase 7)
+Route::middleware(['auth:sanctum'])->prefix('orgs/{org_id}/analytics')->name('analytics.')->group(function () {
+    // Real-Time Analytics
+    Route::prefix('realtime')->name('realtime.')->group(function () {
+        Route::get('/{entity_type}/{entity_id}/metrics', [App\Http\Controllers\Analytics\AnalyticsController::class, 'getRealtimeMetrics'])->name('metrics');
+        Route::get('/{entity_type}/{entity_id}/timeseries', [App\Http\Controllers\Analytics\AnalyticsController::class, 'getTimeSeries'])->name('timeseries');
+        Route::get('/dashboard', [App\Http\Controllers\Analytics\AnalyticsController::class, 'getRealtimeDashboard'])->name('dashboard');
+        Route::get('/{entity_type}/{entity_id}/anomalies/{metric}', [App\Http\Controllers\Analytics\AnalyticsController::class, 'detectAnomalies'])->name('anomalies');
+    });
+
+    // Custom Metrics & KPIs
+    Route::prefix('metrics')->name('metrics.')->group(function () {
+        Route::post('/custom', [App\Http\Controllers\Analytics\AnalyticsController::class, 'createMetric'])->name('create');
+        Route::post('/custom/{metric_id}/calculate', [App\Http\Controllers\Analytics\AnalyticsController::class, 'calculateMetric'])->name('calculate');
+        Route::delete('/custom/{metric_id}', [App\Http\Controllers\Analytics\AnalyticsController::class, 'deleteMetric'])->name('delete');
+    });
+
+    Route::prefix('kpis')->name('kpis.')->group(function () {
+        Route::post('/', [App\Http\Controllers\Analytics\AnalyticsController::class, 'createKPI'])->name('create');
+        Route::post('/{kpi_id}/evaluate', [App\Http\Controllers\Analytics\AnalyticsController::class, 'evaluateKPI'])->name('evaluate');
+        Route::get('/dashboard', [App\Http\Controllers\Analytics\AnalyticsController::class, 'getKPIDashboard'])->name('dashboard');
+        Route::delete('/{kpi_id}', [App\Http\Controllers\Analytics\AnalyticsController::class, 'deleteKPI'])->name('delete');
+    });
+
+    // ROI Calculation
+    Route::prefix('roi')->name('roi.')->group(function () {
+        Route::post('/campaigns/{campaign_id}', [App\Http\Controllers\Analytics\AnalyticsController::class, 'calculateCampaignROI'])->name('campaign');
+        Route::post('/organization', [App\Http\Controllers\Analytics\AnalyticsController::class, 'calculateOrganizationROI'])->name('organization');
+        Route::get('/campaigns/{campaign_id}/ltv', [App\Http\Controllers\Analytics\AnalyticsController::class, 'calculateLifetimeValue'])->name('ltv');
+        Route::post('/campaigns/{campaign_id}/project', [App\Http\Controllers\Analytics\AnalyticsController::class, 'projectROI'])->name('project');
+    });
+
+    // Attribution Modeling
+    Route::prefix('attribution')->name('attribution.')->group(function () {
+        Route::post('/campaigns/{campaign_id}', [App\Http\Controllers\Analytics\AnalyticsController::class, 'attributeConversions'])->name('conversions');
+        Route::post('/campaigns/{campaign_id}/compare', [App\Http\Controllers\Analytics\AnalyticsController::class, 'compareAttributionModels'])->name('compare');
+        Route::post('/campaigns/{campaign_id}/insights', [App\Http\Controllers\Analytics\AnalyticsController::class, 'getAttributionInsights'])->name('insights');
+    });
+});
+
 // Cache Statistics (Global)
 Route::get('/cache/stats', [App\Http\Controllers\API\CacheController::class, 'stats'])->name('cache.stats');
 
