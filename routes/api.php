@@ -2108,3 +2108,83 @@ Route::prefix('social/publishing')->middleware(['auth:sanctum', 'rls.context'])-
     Route::get('/stats', [\App\Http\Controllers\Api\SocialPublishingController::class, 'getStats'])
         ->name('stats');
 });
+
+/*
+|--------------------------------------------------------------------------
+| Phase 23: Social Listening & Brand Monitoring
+|--------------------------------------------------------------------------
+| Comprehensive social listening, sentiment analysis, competitor monitoring,
+| trend detection, and conversation management
+| Requires authentication and organization context
+*/
+Route::prefix('social/listening')->middleware(['auth:sanctum', 'rls.context'])->name('social.listening.')->group(function () {
+    // Monitoring Keywords
+    Route::get('/keywords', [\App\Http\Controllers\Api\SocialListeningController::class, 'keywords'])
+        ->name('keywords.index');
+    Route::post('/keywords', [\App\Http\Controllers\Api\SocialListeningController::class, 'createKeyword'])
+        ->name('keywords.store');
+    Route::put('/keywords/{keywordId}', [\App\Http\Controllers\Api\SocialListeningController::class, 'updateKeyword'])
+        ->name('keywords.update');
+    Route::delete('/keywords/{keywordId}', [\App\Http\Controllers\Api\SocialListeningController::class, 'deleteKeyword'])
+        ->name('keywords.destroy');
+
+    // Social Mentions
+    Route::get('/mentions', [\App\Http\Controllers\Api\SocialListeningController::class, 'mentions'])
+        ->name('mentions.index');
+    Route::get('/mentions/{mentionId}', [\App\Http\Controllers\Api\SocialListeningController::class, 'mentionDetails'])
+        ->name('mentions.show');
+    Route::post('/mentions/search', [\App\Http\Controllers\Api\SocialListeningController::class, 'searchMentions'])
+        ->name('mentions.search');
+    Route::put('/mentions/{mentionId}', [\App\Http\Controllers\Api\SocialListeningController::class, 'updateMention'])
+        ->name('mentions.update');
+
+    // Statistics & Analytics
+    Route::get('/statistics', [\App\Http\Controllers\Api\SocialListeningController::class, 'statistics'])
+        ->name('statistics');
+    Route::get('/sentiment-timeline', [\App\Http\Controllers\Api\SocialListeningController::class, 'sentimentTimeline'])
+        ->name('sentiment.timeline');
+    Route::get('/top-authors', [\App\Http\Controllers\Api\SocialListeningController::class, 'topAuthors'])
+        ->name('authors.top');
+
+    // Trending Topics
+    Route::get('/trends', [\App\Http\Controllers\Api\SocialListeningController::class, 'trends'])
+        ->name('trends.index');
+    Route::get('/trends/{trendId}', [\App\Http\Controllers\Api\SocialListeningController::class, 'trendDetails'])
+        ->name('trends.show');
+    Route::post('/trends/detect', [\App\Http\Controllers\Api\SocialListeningController::class, 'detectTrends'])
+        ->name('trends.detect');
+
+    // Competitor Monitoring
+    Route::get('/competitors', [\App\Http\Controllers\Api\SocialListeningController::class, 'competitors'])
+        ->name('competitors.index');
+    Route::post('/competitors', [\App\Http\Controllers\Api\SocialListeningController::class, 'createCompetitor'])
+        ->name('competitors.store');
+    Route::post('/competitors/{competitorId}/analyze', [\App\Http\Controllers\Api\SocialListeningController::class, 'analyzeCompetitor'])
+        ->name('competitors.analyze');
+    Route::post('/competitors/compare', [\App\Http\Controllers\Api\SocialListeningController::class, 'compareCompetitors'])
+        ->name('competitors.compare');
+
+    // Alerts
+    Route::get('/alerts', [\App\Http\Controllers\Api\SocialListeningController::class, 'alerts'])
+        ->name('alerts.index');
+    Route::post('/alerts', [\App\Http\Controllers\Api\SocialListeningController::class, 'createAlert'])
+        ->name('alerts.store');
+
+    // Conversations
+    Route::get('/conversations', [\App\Http\Controllers\Api\SocialListeningController::class, 'conversations'])
+        ->name('conversations.index');
+    Route::get('/conversations/{conversationId}', [\App\Http\Controllers\Api\SocialListeningController::class, 'conversationDetails'])
+        ->name('conversations.show');
+    Route::post('/conversations/{conversationId}/respond', [\App\Http\Controllers\Api\SocialListeningController::class, 'respondToConversation'])
+        ->name('conversations.respond');
+    Route::post('/conversations/{conversationId}/assign', [\App\Http\Controllers\Api\SocialListeningController::class, 'assignConversation'])
+        ->name('conversations.assign');
+    Route::get('/conversations/stats', [\App\Http\Controllers\Api\SocialListeningController::class, 'conversationStats'])
+        ->name('conversations.stats');
+
+    // Response Templates
+    Route::get('/templates', [\App\Http\Controllers\Api\SocialListeningController::class, 'templates'])
+        ->name('templates.index');
+    Route::post('/templates', [\App\Http\Controllers\Api\SocialListeningController::class, 'createTemplate'])
+        ->name('templates.store');
+});
