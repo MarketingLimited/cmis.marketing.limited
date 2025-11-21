@@ -1397,6 +1397,25 @@ Route::middleware(['auth:sanctum', 'validate.org.access', 'set.db.context'])
             Route::get('/optimal-times', [App\Http\Controllers\AI\AIRecommendationsController::class, 'getOptimalPostingTimes'])->name('optimal-times');
         });
 
+        // Campaign Orchestration & Automation (Phase 4)
+        Route::prefix('orchestration')->name('orchestration.')->group(function () {
+            // Lifecycle Management
+            Route::post('/process-lifecycle', [App\Http\Controllers\Automation\CampaignOrchestrationController::class, 'processLifecycle'])->name('process-lifecycle');
+            Route::get('/lifecycle-stats', [App\Http\Controllers\Automation\CampaignOrchestrationController::class, 'getLifecycleStats'])->name('lifecycle-stats');
+
+            // Budget Allocation
+            Route::post('/reallocate-budget', [App\Http\Controllers\Automation\CampaignOrchestrationController::class, 'reallocateBudget'])->name('reallocate-budget');
+            Route::post('/simulate-budget', [App\Http\Controllers\Automation\CampaignOrchestrationController::class, 'simulateBudget'])->name('simulate-budget');
+            Route::get('/budget-history', [App\Http\Controllers\Automation\CampaignOrchestrationController::class, 'getBudgetHistory'])->name('budget-history');
+
+            // Multi-Platform Orchestration
+            Route::post('/create-campaign', [App\Http\Controllers\Automation\CampaignOrchestrationController::class, 'createMultiPlatformCampaign'])->name('create-campaign');
+            Route::post('/campaigns/{campaign_id}/pause', [App\Http\Controllers\Automation\CampaignOrchestrationController::class, 'pauseCampaign'])->name('campaigns.pause');
+            Route::post('/campaigns/{campaign_id}/resume', [App\Http\Controllers\Automation\CampaignOrchestrationController::class, 'resumeCampaign'])->name('campaigns.resume');
+            Route::post('/campaigns/{campaign_id}/sync', [App\Http\Controllers\Automation\CampaignOrchestrationController::class, 'syncCampaign'])->name('campaigns.sync');
+            Route::post('/campaigns/{campaign_id}/duplicate', [App\Http\Controllers\Automation\CampaignOrchestrationController::class, 'duplicateCampaign'])->name('campaigns.duplicate');
+        });
+
         // Knowledge Learning System (من Phase 5C)
         Route::prefix('knowledge')->name('knowledge.')->group(function () {
             Route::get('/learn', [App\Http\Controllers\API\KnowledgeLearningController::class, 'learnFromHistory'])->name('learn');
