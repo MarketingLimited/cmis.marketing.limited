@@ -1556,6 +1556,29 @@ Route::middleware(['auth:sanctum'])->prefix('orgs/{org_id}/analytics')->name('an
 
     // One-time Report Sending (Phase 12)
     Route::post('/send-report', [App\Http\Controllers\Analytics\ScheduledReportsController::class, 'sendOneTime'])->name('send-report');
+
+    // Real-Time Alerts & Notifications (Phase 13)
+    Route::prefix('alerts')->name('alerts.')->group(function () {
+        // Alert Rules
+        Route::get('/rules', [App\Http\Controllers\Analytics\AlertsController::class, 'index'])->name('rules.index');
+        Route::post('/rules', [App\Http\Controllers\Analytics\AlertsController::class, 'store'])->name('rules.store');
+        Route::get('/rules/{rule_id}', [App\Http\Controllers\Analytics\AlertsController::class, 'show'])->name('rules.show');
+        Route::put('/rules/{rule_id}', [App\Http\Controllers\Analytics\AlertsController::class, 'update'])->name('rules.update');
+        Route::delete('/rules/{rule_id}', [App\Http\Controllers\Analytics\AlertsController::class, 'destroy'])->name('rules.destroy');
+        Route::post('/rules/{rule_id}/test', [App\Http\Controllers\Analytics\AlertsController::class, 'testRule'])->name('rules.test');
+        Route::post('/rules/from-template/{template_id}', [App\Http\Controllers\Analytics\AlertsController::class, 'createFromTemplate'])->name('rules.from-template');
+
+        // Alert History
+        Route::get('/history', [App\Http\Controllers\Analytics\AlertsController::class, 'history'])->name('history');
+        Route::post('/{alert_id}/acknowledge', [App\Http\Controllers\Analytics\AlertsController::class, 'acknowledge'])->name('acknowledge');
+        Route::post('/{alert_id}/resolve', [App\Http\Controllers\Analytics\AlertsController::class, 'resolve'])->name('resolve');
+        Route::post('/{alert_id}/snooze', [App\Http\Controllers\Analytics\AlertsController::class, 'snooze'])->name('snooze');
+    });
+});
+
+// Alert Templates (Global) (Phase 13)
+Route::middleware(['auth:sanctum'])->prefix('alerts/templates')->name('alerts.templates.')->group(function () {
+    Route::get('/', [App\Http\Controllers\Analytics\AlertsController::class, 'templates'])->name('index');
 });
 
 // Cache Statistics (Global)
