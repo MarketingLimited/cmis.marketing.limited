@@ -849,6 +849,29 @@ Route::middleware(['auth:sanctum', 'validate.org.access', 'set.db.context'])
 
     /*
     |----------------------------------------------------------------------
+    | Meta Posts (Facebook & Instagram Organic Posts) - Phase 4
+    |----------------------------------------------------------------------
+    | Fetch existing organic posts and create ad campaigns from them
+    */
+    Route::prefix('meta-posts')->name('meta-posts.')->group(function () {
+        // Fetch all organic posts from connected accounts
+        Route::get('/', [App\Http\Controllers\Platform\MetaPostsController::class, 'index'])->name('index');
+
+        // Get specific post details
+        Route::get('/{post_id}', [App\Http\Controllers\Platform\MetaPostsController::class, 'show'])->name('show');
+
+        // Refresh posts cache
+        Route::post('/refresh', [App\Http\Controllers\Platform\MetaPostsController::class, 'refresh'])->name('refresh');
+
+        // Boost post (create ad campaign from existing post)
+        Route::post('/boost', [App\Http\Controllers\Platform\MetaPostsController::class, 'boostPost'])->name('boost');
+
+        // Get top performing posts for boost suggestions
+        Route::get('/top-performing', [App\Http\Controllers\Platform\MetaPostsController::class, 'topPerforming'])->name('top-performing');
+    });
+
+    /*
+    |----------------------------------------------------------------------
     | المزامنة (Data Sync)
     |----------------------------------------------------------------------
     */
