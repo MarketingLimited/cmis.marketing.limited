@@ -849,6 +849,151 @@ Route::middleware(['auth:sanctum', 'validate.org.access', 'set.db.context'])
 
     /*
     |----------------------------------------------------------------------
+    | Meta Posts (Facebook & Instagram Organic Posts) - Phase 4
+    |----------------------------------------------------------------------
+    | Fetch existing organic posts and create ad campaigns from them
+    */
+    Route::prefix('meta-posts')->name('meta-posts.')->group(function () {
+        // Fetch all organic posts from connected accounts
+        Route::get('/', [App\Http\Controllers\Platform\MetaPostsController::class, 'index'])->name('index');
+
+        // Get specific post details
+        Route::get('/{post_id}', [App\Http\Controllers\Platform\MetaPostsController::class, 'show'])->name('show');
+
+        // Refresh posts cache
+        Route::post('/refresh', [App\Http\Controllers\Platform\MetaPostsController::class, 'refresh'])->name('refresh');
+
+        // Boost post (create ad campaign from existing post)
+        Route::post('/boost', [App\Http\Controllers\Platform\MetaPostsController::class, 'boostPost'])->name('boost');
+
+        // Get top performing posts for boost suggestions
+        Route::get('/top-performing', [App\Http\Controllers\Platform\MetaPostsController::class, 'topPerforming'])->name('top-performing');
+    });
+
+    /*
+    |----------------------------------------------------------------------
+    | Google Ads Integration - Phase 8 (NEW)
+    |----------------------------------------------------------------------
+    | Fetch and manage Google Ads campaigns, ad groups, and ads
+    */
+    Route::prefix('google-ads')->name('google-ads.')->group(function () {
+        // Campaigns
+        Route::get('/campaigns', [App\Http\Controllers\Api\GoogleAdsController::class, 'getCampaigns'])->name('campaigns.index');
+        Route::post('/campaigns', [App\Http\Controllers\Api\GoogleAdsController::class, 'createCampaign'])->name('campaigns.create');
+        Route::get('/campaigns/{campaign_id}', [App\Http\Controllers\Api\GoogleAdsController::class, 'getCampaignDetails'])->name('campaigns.show');
+        Route::get('/campaigns/{campaign_id}/metrics', [App\Http\Controllers\Api\GoogleAdsController::class, 'getCampaignMetrics'])->name('campaigns.metrics');
+
+        // Ad Groups
+        Route::get('/campaigns/{campaign_id}/ad-groups', [App\Http\Controllers\Api\GoogleAdsController::class, 'getAdGroups'])->name('ad-groups.index');
+
+        // Ads
+        Route::get('/ad-groups/{ad_group_id}/ads', [App\Http\Controllers\Api\GoogleAdsController::class, 'getAds'])->name('ads.index');
+
+        // Cache Management
+        Route::post('/refresh-cache', [App\Http\Controllers\Api\GoogleAdsController::class, 'refreshCache'])->name('refresh-cache');
+    });
+
+    /*
+    |----------------------------------------------------------------------
+    | TikTok Ads Integration - Phase 10 (NEW)
+    |----------------------------------------------------------------------
+    | Fetch and manage TikTok Ads campaigns, ad groups, and ads
+    */
+    Route::prefix('tiktok-ads')->name('tiktok-ads.')->group(function () {
+        // Campaigns
+        Route::get('/campaigns', [App\Http\Controllers\Api\TikTokAdsController::class, 'getCampaigns'])->name('campaigns.index');
+        Route::post('/campaigns', [App\Http\Controllers\Api\TikTokAdsController::class, 'createCampaign'])->name('campaigns.create');
+        Route::get('/campaigns/{campaign_id}', [App\Http\Controllers\Api\TikTokAdsController::class, 'getCampaignDetails'])->name('campaigns.show');
+        Route::get('/campaigns/{campaign_id}/metrics', [App\Http\Controllers\Api\TikTokAdsController::class, 'getCampaignMetrics'])->name('campaigns.metrics');
+
+        // Ad Groups
+        Route::get('/campaigns/{campaign_id}/ad-groups', [App\Http\Controllers\Api\TikTokAdsController::class, 'getAdGroups'])->name('ad-groups.index');
+
+        // Ads
+        Route::get('/ad-groups/{ad_group_id}/ads', [App\Http\Controllers\Api\TikTokAdsController::class, 'getAds'])->name('ads.index');
+
+        // Cache Management
+        Route::post('/refresh-cache', [App\Http\Controllers\Api\TikTokAdsController::class, 'refreshCache'])->name('refresh-cache');
+    });
+
+    /*
+    |----------------------------------------------------------------------
+    | LinkedIn Ads Integration - Phase 11 (NEW)
+    |----------------------------------------------------------------------
+    | Fetch and manage LinkedIn Ads campaigns and creatives
+    */
+    Route::prefix('linkedin-ads')->name('linkedin-ads.')->group(function () {
+        // Campaigns
+        Route::get('/campaigns', [App\Http\Controllers\Api\LinkedInAdsController::class, 'getCampaigns'])->name('campaigns.index');
+        Route::post('/campaigns', [App\Http\Controllers\Api\LinkedInAdsController::class, 'createCampaign'])->name('campaigns.create');
+        Route::get('/campaigns/{campaign_id}', [App\Http\Controllers\Api\LinkedInAdsController::class, 'getCampaignDetails'])->name('campaigns.show');
+        Route::get('/campaigns/{campaign_id}/metrics', [App\Http\Controllers\Api\LinkedInAdsController::class, 'getCampaignMetrics'])->name('campaigns.metrics');
+
+        // Creatives
+        Route::get('/campaigns/{campaign_id}/creatives', [App\Http\Controllers\Api\LinkedInAdsController::class, 'getCreatives'])->name('creatives.index');
+
+        // Cache Management
+        Route::post('/refresh-cache', [App\Http\Controllers\Api\LinkedInAdsController::class, 'refreshCache'])->name('refresh-cache');
+    });
+
+    /*
+    |----------------------------------------------------------------------
+    | Twitter/X Ads Integration - Phase 16 (NEW)
+    |----------------------------------------------------------------------
+    | Fetch and manage Twitter/X Ads campaigns
+    */
+    Route::prefix('twitter-ads')->name('twitter-ads.')->group(function () {
+        // Campaigns
+        Route::get('/campaigns', [App\Http\Controllers\Api\TwitterAdsController::class, 'getCampaigns'])->name('campaigns.index');
+        Route::post('/campaigns', [App\Http\Controllers\Api\TwitterAdsController::class, 'createCampaign'])->name('campaigns.create');
+        Route::get('/campaigns/{campaign_id}', [App\Http\Controllers\Api\TwitterAdsController::class, 'getCampaignDetails'])->name('campaigns.show');
+        Route::get('/campaigns/{campaign_id}/metrics', [App\Http\Controllers\Api\TwitterAdsController::class, 'getCampaignMetrics'])->name('campaigns.metrics');
+
+        // Cache Management
+        Route::post('/refresh-cache', [App\Http\Controllers\Api\TwitterAdsController::class, 'refreshCache'])->name('refresh-cache');
+    });
+
+    /*
+    |----------------------------------------------------------------------
+    | Snapchat Ads Integration - Phase 16 (NEW)
+    |----------------------------------------------------------------------
+    | Fetch and manage Snapchat Ads campaigns
+    */
+    Route::prefix('snapchat-ads')->name('snapchat-ads.')->group(function () {
+        // Campaigns
+        Route::get('/campaigns', [App\Http\Controllers\Api\SnapchatAdsController::class, 'getCampaigns'])->name('campaigns.index');
+        Route::post('/campaigns', [App\Http\Controllers\Api\SnapchatAdsController::class, 'createCampaign'])->name('campaigns.create');
+        Route::get('/campaigns/{campaign_id}', [App\Http\Controllers\Api\SnapchatAdsController::class, 'getCampaignDetails'])->name('campaigns.show');
+        Route::get('/campaigns/{campaign_id}/metrics', [App\Http\Controllers\Api\SnapchatAdsController::class, 'getCampaignMetrics'])->name('campaigns.metrics');
+
+        // Cache Management
+        Route::post('/refresh-cache', [App\Http\Controllers\Api\SnapchatAdsController::class, 'refreshCache'])->name('refresh-cache');
+    });
+
+    /*
+    |----------------------------------------------------------------------
+    | Campaign Automation - Phase 12 (NEW)
+    |----------------------------------------------------------------------
+    | AI-powered campaign optimization and automation rules
+    */
+    Route::prefix('automation')->name('automation.')->group(function () {
+        // Automation Rules
+        Route::get('/rules', [App\Http\Controllers\Api\CampaignAutomationController::class, 'getRules'])->name('rules.index');
+        Route::get('/rules/templates', [App\Http\Controllers\Api\CampaignAutomationController::class, 'getRuleTemplates'])->name('rules.templates');
+        Route::post('/rules', [App\Http\Controllers\Api\CampaignAutomationController::class, 'createRule'])->name('rules.create');
+        Route::put('/rules/{rule_id}', [App\Http\Controllers\Api\CampaignAutomationController::class, 'updateRule'])->name('rules.update');
+        Route::delete('/rules/{rule_id}', [App\Http\Controllers\Api\CampaignAutomationController::class, 'deleteRule'])->name('rules.delete');
+
+        // Optimization
+        Route::post('/optimize', [App\Http\Controllers\Api\CampaignAutomationController::class, 'optimizeOrganization'])->name('optimize.organization');
+        Route::post('/optimize/{campaign_id}', [App\Http\Controllers\Api\CampaignAutomationController::class, 'optimizeCampaign'])->name('optimize.campaign');
+
+        // Execution History
+        Route::get('/history', [App\Http\Controllers\Api\CampaignAutomationController::class, 'getExecutionHistory'])->name('history');
+    });
+
+    /*
+    |----------------------------------------------------------------------
     | المزامنة (Data Sync)
     |----------------------------------------------------------------------
     */
@@ -920,6 +1065,37 @@ Route::middleware(['auth:sanctum', 'validate.org.access', 'set.db.context'])
         Route::get('/kpis', [KpiController::class, 'index'])->name('kpis');
         Route::get('/summary', [KpiController::class, 'summary'])->name('summary');
         Route::get('/trends', [KpiController::class, 'trends'])->name('trends');
+
+        /*
+        |------------------------------------------------------------------
+        | AI Analytics - Phase 8 (NEW)
+        |------------------------------------------------------------------
+        | AI usage tracking, quota monitoring, cost analysis
+        */
+        Route::prefix('ai')->name('ai.')->group(function () {
+            // Usage & Summary
+            Route::get('/usage-summary', [App\Http\Controllers\Api\AnalyticsController::class, 'getUsageSummary'])->name('usage-summary');
+            Route::get('/daily-trend', [App\Http\Controllers\Api\AnalyticsController::class, 'getDailyTrend'])->name('daily-trend');
+
+            // Quota & Alerts
+            Route::get('/quota-status', [App\Http\Controllers\Api\AnalyticsController::class, 'getQuotaStatus'])->name('quota-status');
+            Route::get('/quota-alerts', [App\Http\Controllers\Api\AnalyticsController::class, 'getQuotaAlerts'])->name('quota-alerts');
+
+            // Cost Analysis
+            Route::get('/cost-by-campaign', [App\Http\Controllers\Api\AnalyticsController::class, 'getCostByCampaign'])->name('cost-by-campaign');
+            Route::get('/monthly-comparison', [App\Http\Controllers\Api\AnalyticsController::class, 'getMonthlyComparison'])->name('monthly-comparison');
+
+            // Media Stats
+            Route::get('/media-stats', [App\Http\Controllers\Api\AnalyticsController::class, 'getMediaStats'])->name('media-stats');
+            Route::get('/top-performing-media', [App\Http\Controllers\Api\AnalyticsController::class, 'getTopPerformingMedia'])->name('top-performing-media');
+
+            // Dashboard
+            Route::get('/dashboard', [App\Http\Controllers\Api\AnalyticsController::class, 'getDashboard'])->name('dashboard');
+
+            // Export & Cache
+            Route::post('/export', [App\Http\Controllers\Api\AnalyticsController::class, 'exportData'])->name('export');
+            Route::post('/clear-cache', [App\Http\Controllers\Api\AnalyticsController::class, 'clearCache'])->name('clear-cache');
+        });
     });
 
     /*
@@ -1380,4 +1556,47 @@ Route::prefix('gpt')->middleware(['auth:sanctum', 'throttle:60,1'])->group(funct
 
     // Smart Search
     Route::post('/search', [GPTController::class, 'smartSearch'])->name('gpt.search');
+});
+
+/*
+|--------------------------------------------------------------------------
+| AI Content Generation Routes - Phase 1B & Phase 3 Implementation
+|--------------------------------------------------------------------------
+| Handles AI-powered content generation with quota enforcement and rate limiting
+| Phase 3: Added Gemini 3 (image/text) and Veo 3.1 (video) generation
+| Requires authentication and organization context
+*/
+Route::prefix('ai')->middleware(['auth:sanctum', 'rls.context'])->group(function () {
+    // Text Content Generation with quota and rate limiting
+    Route::post('/generate', [App\Http\Controllers\Api\AiContentController::class, 'generate'])
+        ->middleware(['check.ai.quota:gpt,1', 'ai.rate.limit:gpt'])
+        ->name('ai.generate');
+
+    // Batch Content Generation
+    Route::post('/generate-batch', [App\Http\Controllers\Api\AiContentController::class, 'generateBatch'])
+        ->middleware(['check.ai.quota:gpt,5', 'ai.rate.limit:gpt'])
+        ->name('ai.generate-batch');
+
+    // Ad Design Generation (Gemini 3 - Images)
+    Route::post('/generate-ad-design', [App\Http\Controllers\Api\AiContentController::class, 'generateAdDesign'])
+        ->middleware(['check.ai.quota:image,3', 'ai.rate.limit:gemini'])
+        ->name('ai.generate-ad-design');
+
+    // Ad Copy Generation (Gemini 3 - Text)
+    Route::post('/generate-ad-copy', [App\Http\Controllers\Api\AiContentController::class, 'generateAdCopy'])
+        ->middleware(['check.ai.quota:gpt,1', 'ai.rate.limit:gemini'])
+        ->name('ai.generate-ad-copy');
+
+    // Video Ad Generation (Veo 3.1 - Async Job)
+    Route::post('/generate-video', [App\Http\Controllers\Api\AiContentController::class, 'generateVideo'])
+        ->middleware(['check.ai.quota:video,1', 'ai.rate.limit:veo'])
+        ->name('ai.generate-video');
+
+    // Check Video Generation Status
+    Route::get('/video-status/{media}', [App\Http\Controllers\Api\AiContentController::class, 'videoStatus'])
+        ->name('ai.video-status');
+
+    // AI Usage Statistics
+    Route::get('/stats', [App\Http\Controllers\Api\AiContentController::class, 'stats'])
+        ->name('ai.stats');
 });
