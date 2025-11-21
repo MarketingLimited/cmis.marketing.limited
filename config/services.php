@@ -76,6 +76,13 @@ return [
         'client_id' => env('GOOGLE_CLIENT_ID'),
         'client_secret' => env('GOOGLE_CLIENT_SECRET'),
         'redirect_uri' => env('GOOGLE_REDIRECT_URI'),
+
+        // Google AI APIs (Gemini & Veo)
+        'ai_api_key' => env('GOOGLE_AI_API_KEY'),
+        'project_id' => env('GOOGLE_CLOUD_PROJECT'),
+        'credentials_path' => env('GOOGLE_APPLICATION_CREDENTIALS'),
+        'storage_bucket' => env('GOOGLE_STORAGE_BUCKET', 'cmis-video-ads'),
+        'use_org_keys' => env('GOOGLE_USE_ORG_KEYS', false),
     ],
 
     'google_ads' => [
@@ -168,13 +175,25 @@ return [
         'temperature' => env('AI_TEMPERATURE', 0.7),
     ],
 
-    // Google Gemini AI
+    // Google Gemini AI (Legacy - deprecated in favor of google.ai_api_key)
     'gemini' => [
-        'api_key' => env('GEMINI_API_KEY'),
-        'model' => env('GEMINI_MODEL', 'gemini-pro'),
-        'temperature' => env('GEMINI_TEMPERATURE', 0.7),
+        'api_key' => env('GEMINI_API_KEY', env('GOOGLE_AI_API_KEY')),
+        'model' => env('GEMINI_MODEL', 'gemini-3-pro-preview'),
+        'temperature' => env('GEMINI_TEMPERATURE', 1.0),
         'max_tokens' => env('GEMINI_MAX_TOKENS', 2048),
-        'rate_limit' => env('GEMINI_RATE_LIMIT', 10),
+        'rate_limit' => env('GEMINI_RATE_LIMIT', 30), // requests per minute
+        'rate_limit_hour' => env('GEMINI_RATE_LIMIT_HOUR', 500), // requests per hour
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Rate Limits by Service
+    |--------------------------------------------------------------------------
+    */
+    'rate_limits' => [
+        'gemini' => 30, // requests per minute
+        'veo' => 10, // concurrent requests
+        'gpt' => 10, // requests per minute
     ],
 
 ];
