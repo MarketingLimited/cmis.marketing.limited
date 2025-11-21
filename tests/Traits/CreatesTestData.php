@@ -258,4 +258,75 @@ trait CreatesTestData
             'publishing_queue' => $publishingQueue,
         ];
     }
+
+    /**
+     * Create test content/content item for publishing tests.
+     *
+     * @param string $campaignId
+     * @param array $attributes
+     * @return \App\Models\Creative\ContentItem
+     */
+    protected function createTestContent(string $campaignId, array $attributes = [])
+    {
+        $contentItem = \App\Models\Creative\ContentItem::create(array_merge([
+            'content_id' => Str::uuid(),
+            'campaign_id' => $campaignId,
+            'org_id' => \App\Models\Campaign::find($campaignId)->org_id ?? Str::uuid(),
+            'item_type' => $attributes['content_type'] ?? 'post',
+            'platform' => $attributes['platform'] ?? 'facebook',
+            'title' => 'Test Content ' . Str::random(8),
+            'body' => 'Test content body for ' . ($attributes['platform'] ?? 'facebook'),
+            'status' => 'approved',
+            'metadata' => [
+                'content_type' => $attributes['content_type'] ?? 'post',
+                'platform' => $attributes['platform'] ?? 'facebook',
+            ],
+        ], $attributes));
+
+        return $contentItem;
+    }
+
+    /**
+     * Create test social post
+     */
+    protected function createTestSocialPost(string $orgId, array $attributes = [])
+    {
+        return \App\Models\SocialPost::create(array_merge([
+            'post_id' => \Illuminate\Support\Str::uuid(),
+            'org_id' => $orgId,
+            'platform' => 'facebook',
+            'content' => 'Test post content',
+            'status' => 'published',
+            'published_at' => now(),
+        ], $attributes));
+    }
+
+    /**
+     * Create test content plan
+     */
+    protected function createTestContentPlan(string $campaignId, array $attributes = [])
+    {
+        return \App\Models\ContentPlan::create(array_merge([
+            'plan_id' => \Illuminate\Support\Str::uuid(),
+            'campaign_id' => $campaignId,
+            'org_id' => \App\Models\Campaign::find($campaignId)->org_id ?? \Illuminate\Support\Str::uuid(),
+            'name' => 'Test Content Plan',
+            'status' => 'active',
+        ], $attributes));
+    }
+
+    /**
+     * Create test ad account
+     */
+    protected function createTestAdAccount(string $orgId, array $attributes = [])
+    {
+        return \App\Models\AdAccount::create(array_merge([
+            'account_id' => \Illuminate\Support\Str::uuid(),
+            'org_id' => $orgId,
+            'platform' => 'facebook',
+            'external_account_id' => 'act_' . uniqid(),
+            'account_name' => 'Test Ad Account',
+            'status' => 'active',
+        ], $attributes));
+    }
 }

@@ -1009,11 +1009,13 @@ CREATE TABLE cmis.meta_function_descriptions (
     provider text
 );
 
-CREATE TABLE cmis.migrations (
-    id integer NOT NULL,
-    migration character varying(255) NOT NULL,
-    batch integer NOT NULL
-);
+-- Migrations table is managed by Laravel in public schema
+-- DO NOT create cmis.migrations as it conflicts with Laravel's migration tracking
+-- CREATE TABLE cmis.migrations (
+--     id integer NOT NULL,
+--     migration character varying(255) NOT NULL,
+--     batch integer NOT NULL
+-- );
 
 CREATE TABLE cmis.modules (
     module_id integer NOT NULL,

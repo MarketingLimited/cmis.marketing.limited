@@ -64,3 +64,22 @@ class TwitterService
         return false;
     }
 }
+
+    /**
+     * Publish a tweet
+     *
+     * @param string $text Tweet text
+     * @param array $options Additional options (media, reply_to, etc.)
+     * @return array Result with tweet_id
+     */
+    public function publishTweet(string $text, array $options = []): array
+    {
+        \Log::info('TwitterService::publishTweet called (stub)', ['text' => $text, 'options' => $options]);
+        return [
+            'success' => true,
+            'tweet_id' => 'tw_' . uniqid(),
+            'text' => $text,
+            'stub' => true
+        ];
+    }
+}

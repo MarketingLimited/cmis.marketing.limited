@@ -109,7 +109,7 @@ return new class extends Migration
                     title VARCHAR(255) NOT NULL,
                     message TEXT NOT NULL,
                     data JSONB,
-                    is_read BOOLEAN NOT NULL DEFAULT false,
+                    read BOOLEAN NOT NULL DEFAULT false,
                     read_at TIMESTAMP,
                     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
                     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
@@ -145,27 +145,40 @@ return new class extends Migration
 
         // Notifications indexes
         DB::statement('CREATE INDEX IF NOT EXISTS idx_notifications_user_created ON cmis.notifications(user_id, created_at DESC)');
-        DB::statement('CREATE INDEX IF NOT EXISTS idx_notifications_user_unread ON cmis.notifications(user_id, is_read) WHERE is_read = false');
+        DB::statement('CREATE INDEX IF NOT EXISTS idx_notifications_user_unread_new ON cmis.notifications(user_id, read) WHERE read = false');
         DB::statement('CREATE INDEX IF NOT EXISTS idx_notifications_type ON cmis.notifications(type)');
         DB::statement('CREATE INDEX IF NOT EXISTS idx_notifications_org_type ON cmis.notifications(org_id, type, created_at DESC)');
 
         // Additional indexes for existing tables that may benefit from optimization
+        // These are wrapped in checks to ensure tables exist before creating indexes
 
         // Social Posts - for BulkPostService queries
-        DB::statement('CREATE INDEX IF NOT EXISTS idx_social_posts_platform_status ON cmis.social_posts(platform, status) WHERE deleted_at IS NULL');
-        DB::statement('CREATE INDEX IF NOT EXISTS idx_social_posts_engagement ON cmis.social_posts(org_id, engagement_rate DESC NULLS LAST) WHERE status = \'published\' AND deleted_at IS NULL');
+        if (Schema::hasTable('cmis.social_posts') && Schema::hasColumn('cmis.social_posts', 'platform')) {
+            DB::statement('CREATE INDEX IF NOT EXISTS idx_social_posts_platform_status ON cmis.social_posts(platform, status) WHERE deleted_at IS NULL');
+        }
+        if (Schema::hasTable('cmis.social_posts') && Schema::hasColumn('cmis.social_posts', 'engagement_rate')) {
+            DB::statement('CREATE INDEX IF NOT EXISTS idx_social_posts_engagement ON cmis.social_posts(org_id, engagement_rate DESC NULLS LAST) WHERE status = \'published\' AND deleted_at IS NULL');
+        }
 
         // Publishing Queue - for scheduling operations
-        DB::statement('CREATE INDEX IF NOT EXISTS idx_publishing_queue_scheduled ON cmis.publishing_queues(social_account_id, scheduled_for) WHERE status = \'scheduled\'');
-        DB::statement('CREATE INDEX IF NOT EXISTS idx_publishing_queue_status_time ON cmis.publishing_queues(status, scheduled_for)');
+        if (Schema::hasTable('cmis.publishing_queues') && Schema::hasColumns('cmis.publishing_queues', ['status', 'social_account_id', 'scheduled_for'])) {
+            DB::statement('CREATE INDEX IF NOT EXISTS idx_publishing_queue_scheduled ON cmis.publishing_queues(social_account_id, scheduled_for) WHERE status = \'scheduled\'');
+            DB::statement('CREATE INDEX IF NOT EXISTS idx_publishing_queue_status_time ON cmis.publishing_queues(status, scheduled_for)');
+        }
 
         // Integrations - for platform authentication lookups
-        DB::statement('CREATE INDEX IF NOT EXISTS idx_integrations_org_provider ON cmis.integrations(org_id, provider, status) WHERE deleted_at IS NULL');
-        DB::statement('CREATE INDEX IF NOT EXISTS idx_integrations_provider_active ON cmis.integrations(provider, is_active) WHERE is_active = true AND deleted_at IS NULL');
+        if (Schema::hasTable('cmis.integrations') && Schema::hasColumns('cmis.integrations', ['org_id', 'provider', 'status', 'is_active', 'deleted_at'])) {
+            DB::statement('CREATE INDEX IF NOT EXISTS idx_integrations_org_provider ON cmis.integrations(org_id, provider, status) WHERE deleted_at IS NULL');
+            DB::statement('CREATE INDEX IF NOT EXISTS idx_integrations_provider_active ON cmis.integrations(provider, is_active) WHERE is_active = true AND deleted_at IS NULL');
+        }
 
         // User Organizations - for permission checks
-        DB::statement('CREATE INDEX IF NOT EXISTS idx_user_orgs_user_org ON cmis.user_orgs(user_id, org_id)');
-        DB::statement('CREATE INDEX IF NOT EXISTS idx_user_orgs_org_role ON cmis.user_orgs(org_id, role_id) WHERE deleted_at IS NULL');
+        if (Schema::hasTable('cmis.user_orgs') && Schema::hasColumns('cmis.user_orgs', ['user_id', 'org_id'])) {
+            DB::statement('CREATE INDEX IF NOT EXISTS idx_user_orgs_user_org ON cmis.user_orgs(user_id, org_id)');
+        }
+        if (Schema::hasTable('cmis.user_orgs') && Schema::hasColumns('cmis.user_orgs', ['org_id', 'role_id', 'deleted_at'])) {
+            DB::statement('CREATE INDEX IF NOT EXISTS idx_user_orgs_org_role ON cmis.user_orgs(org_id, role_id) WHERE deleted_at IS NULL');
+        }
     }
 
     public function down(): void
@@ -186,7 +199,7 @@ return new class extends Migration
         DB::statement('DROP INDEX IF EXISTS cmis.uniq_sms_templates_org_name');
 
         DB::statement('DROP INDEX IF EXISTS cmis.idx_notifications_user_created');
-        DB::statement('DROP INDEX IF EXISTS cmis.idx_notifications_user_unread');
+        DB::statement('DROP INDEX IF EXISTS cmis.idx_notifications_user_unread_new');
         DB::statement('DROP INDEX IF EXISTS cmis.idx_notifications_type');
         DB::statement('DROP INDEX IF EXISTS cmis.idx_notifications_org_type');
 

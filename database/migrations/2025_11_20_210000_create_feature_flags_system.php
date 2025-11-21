@@ -248,10 +248,13 @@ return new class extends Migration
             EXECUTE FUNCTION cmis.feature_flag_audit_trigger();
         ");
 
-        // Grant permissions
-        DB::statement("GRANT SELECT ON cmis.feature_flags TO cmis_app_role");
-        DB::statement("GRANT SELECT ON cmis.feature_flag_overrides TO cmis_app_role");
-        DB::statement("GRANT SELECT, INSERT ON cmis.feature_flag_audit_log TO cmis_app_role");
+        // Grant permissions (only if role exists)
+        $roleExists = DB::select("SELECT 1 FROM pg_roles WHERE rolname = 'cmis_app_role'");
+        if (!empty($roleExists)) {
+            DB::statement("GRANT SELECT ON cmis.feature_flags TO cmis_app_role");
+            DB::statement("GRANT SELECT ON cmis.feature_flag_overrides TO cmis_app_role");
+            DB::statement("GRANT SELECT, INSERT ON cmis.feature_flag_audit_log TO cmis_app_role");
+        }
     }
 
     /**
