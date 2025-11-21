@@ -229,6 +229,29 @@ Route::middleware(['auth:sanctum', 'validate.org.access', 'set.db.context'])
 
     /*
     |----------------------------------------------------------------------
+    | Enhanced Semantic Search (Phase 1 Week 3 - pgvector powered)
+    |----------------------------------------------------------------------
+    */
+    Route::prefix('search')->name('search.')->middleware('throttle.ai')->group(function () {
+        // Universal semantic search across all entities
+        Route::post('/semantic', [\App\Http\Controllers\SearchController::class, 'semantic'])
+            ->name('semantic');
+
+        // Campaign-specific search
+        Route::post('/campaigns', [\App\Http\Controllers\SearchController::class, 'campaigns'])
+            ->name('campaigns');
+
+        // Find similar entities
+        Route::get('/similar/{entity_type}/{id}', [\App\Http\Controllers\SearchController::class, 'similar'])
+            ->name('similar');
+
+        // Search statistics
+        Route::get('/stats', [\App\Http\Controllers\SearchController::class, 'stats'])
+            ->name('stats');
+    });
+
+    /*
+    |----------------------------------------------------------------------
     | الحملات (Campaigns) - See full definition below in Ad Campaign Management section
     |----------------------------------------------------------------------
     */
