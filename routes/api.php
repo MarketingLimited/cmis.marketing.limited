@@ -1381,3 +1381,26 @@ Route::prefix('gpt')->middleware(['auth:sanctum', 'throttle:60,1'])->group(funct
     // Smart Search
     Route::post('/search', [GPTController::class, 'smartSearch'])->name('gpt.search');
 });
+
+/*
+|--------------------------------------------------------------------------
+| AI Content Generation Routes - Phase 1B Implementation
+|--------------------------------------------------------------------------
+| Handles AI-powered content generation with quota enforcement and rate limiting
+| Requires authentication and organization context
+*/
+Route::prefix('ai')->middleware(['auth:sanctum', 'rls.context'])->group(function () {
+    // Content Generation with quota and rate limiting
+    Route::post('/generate', [App\Http\Controllers\Api\AiContentController::class, 'generate'])
+        ->middleware(['check.ai.quota:gpt,1', 'ai.rate.limit:gpt'])
+        ->name('ai.generate');
+
+    // Batch Content Generation
+    Route::post('/generate-batch', [App\Http\Controllers\Api\AiContentController::class, 'generateBatch'])
+        ->middleware(['check.ai.quota:gpt,5', 'ai.rate.limit:gpt'])
+        ->name('ai.generate-batch');
+
+    // AI Usage Statistics
+    Route::get('/stats', [App\Http\Controllers\Api\AiContentController::class, 'stats'])
+        ->name('ai.stats');
+});
