@@ -938,6 +938,28 @@ Route::middleware(['auth:sanctum', 'validate.org.access', 'set.db.context'])
 
     /*
     |----------------------------------------------------------------------
+    | Campaign Automation - Phase 12 (NEW)
+    |----------------------------------------------------------------------
+    | AI-powered campaign optimization and automation rules
+    */
+    Route::prefix('automation')->name('automation.')->group(function () {
+        // Automation Rules
+        Route::get('/rules', [App\Http\Controllers\Api\CampaignAutomationController::class, 'getRules'])->name('rules.index');
+        Route::get('/rules/templates', [App\Http\Controllers\Api\CampaignAutomationController::class, 'getRuleTemplates'])->name('rules.templates');
+        Route::post('/rules', [App\Http\Controllers\Api\CampaignAutomationController::class, 'createRule'])->name('rules.create');
+        Route::put('/rules/{rule_id}', [App\Http\Controllers\Api\CampaignAutomationController::class, 'updateRule'])->name('rules.update');
+        Route::delete('/rules/{rule_id}', [App\Http\Controllers\Api\CampaignAutomationController::class, 'deleteRule'])->name('rules.delete');
+
+        // Optimization
+        Route::post('/optimize', [App\Http\Controllers\Api\CampaignAutomationController::class, 'optimizeOrganization'])->name('optimize.organization');
+        Route::post('/optimize/{campaign_id}', [App\Http\Controllers\Api\CampaignAutomationController::class, 'optimizeCampaign'])->name('optimize.campaign');
+
+        // Execution History
+        Route::get('/history', [App\Http\Controllers\Api\CampaignAutomationController::class, 'getExecutionHistory'])->name('history');
+    });
+
+    /*
+    |----------------------------------------------------------------------
     | المزامنة (Data Sync)
     |----------------------------------------------------------------------
     */
