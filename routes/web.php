@@ -73,6 +73,28 @@ Route::middleware(['auth'])->group(function () {
             ->name('performance');
     });
 
+    // ==================== Campaign Wizard ====================
+    Route::prefix('campaigns/wizard')->name('campaign.wizard.')->group(function () {
+        Route::get('/create', [App\Http\Controllers\Campaign\CampaignWizardController::class, 'create'])->name('create');
+        Route::get('/{session_id}/step/{step}', [App\Http\Controllers\Campaign\CampaignWizardController::class, 'showStep'])->name('step');
+        Route::post('/{session_id}/step/{step}', [App\Http\Controllers\Campaign\CampaignWizardController::class, 'updateStep'])->name('update');
+        Route::get('/{session_id}/save-draft', [App\Http\Controllers\Campaign\CampaignWizardController::class, 'saveDraft'])->name('save-draft');
+        Route::get('/{session_id}/complete', [App\Http\Controllers\Campaign\CampaignWizardController::class, 'complete'])->name('complete');
+        Route::get('/{session_id}/cancel', [App\Http\Controllers\Campaign\CampaignWizardController::class, 'cancel'])->name('cancel');
+    });
+
+    // ==================== User Onboarding ====================
+    Route::prefix('onboarding')->name('onboarding.')->group(function () {
+        Route::get('/', [App\Http\Controllers\UserOnboardingController::class, 'index'])->name('index');
+        Route::get('/step/{step}', [App\Http\Controllers\UserOnboardingController::class, 'showStep'])->name('step');
+        Route::post('/step/{step}/complete', [App\Http\Controllers\UserOnboardingController::class, 'completeStep'])->name('complete-step');
+        Route::post('/step/{step}/skip', [App\Http\Controllers\UserOnboardingController::class, 'skipStep'])->name('skip-step');
+        Route::post('/reset', [App\Http\Controllers\UserOnboardingController::class, 'reset'])->name('reset');
+        Route::post('/dismiss', [App\Http\Controllers\UserOnboardingController::class, 'dismiss'])->name('dismiss');
+        Route::get('/progress', [App\Http\Controllers\UserOnboardingController::class, 'getProgress'])->name('progress');
+        Route::get('/tips', [App\Http\Controllers\UserOnboardingController::class, 'getTips'])->name('tips');
+    });
+
     // ==================== Organizations ====================
     Route::prefix('orgs')->name('orgs.')->group(function () {
         Route::get('/', [OrgController::class, 'index'])->name('index');
@@ -184,6 +206,13 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/notifications', [App\Http\Controllers\Settings\SettingsController::class, 'notifications'])->name('notifications');
         Route::get('/security', [App\Http\Controllers\Settings\SettingsController::class, 'security'])->name('security');
         Route::get('/integrations', [App\Http\Controllers\Settings\SettingsController::class, 'integrations'])->name('integrations');
+    });
+
+    // ==================== Subscription ====================
+    Route::prefix('subscription')->name('subscription.')->group(function () {
+        Route::get('/plans', function () { return view('subscription.plans'); })->name('plans');
+        Route::get('/upgrade', function () { return view('subscription.upgrade'); })->name('upgrade');
+        Route::post('/upgrade', function () { return redirect()->back()->with('info', 'Subscription upgrades coming soon'); })->name('upgrade.process');
     });
 
     // ==================== Profile ====================

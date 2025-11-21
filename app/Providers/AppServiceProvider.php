@@ -186,6 +186,20 @@ class AppServiceProvider extends ServiceProvider
 
         // Configure Rate Limiters
         $this->configureRateLimiters();
+
+        // Register Blade Components (Phase 1B - 2025-11-21)
+        $this->registerBladeComponents();
+    }
+
+    /**
+     * Register custom Blade components
+     */
+    protected function registerBladeComponents(): void
+    {
+        \Illuminate\Support\Facades\Blade::component(
+            'ai-quota-widget',
+            \App\View\Components\AiQuotaWidget::class
+        );
     }
 
     /**
