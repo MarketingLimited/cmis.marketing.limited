@@ -24,6 +24,11 @@ return Application::configure(basePath: dirname(__DIR__))
             // Feature Toggle Routes (API & Admin)
             Route::middleware(['web'])
                 ->group(base_path('routes/features.php'));
+
+            // AI Quota Management Routes (Phase 1B - 2025-11-21)
+            Route::middleware(['api'])
+                ->prefix('api')
+                ->group(base_path('routes/api-ai-quota.php'));
         }
     )
     ->withMiddleware(function (Middleware $middleware): void {
@@ -42,6 +47,9 @@ return Application::configure(basePath: dirname(__DIR__))
             'throttle.platform' => \App\Http\Middleware\ThrottlePlatformRequests::class, // NEW: Week 2
             'feature.platform' => \App\Http\Middleware\CheckPlatformFeatureEnabled::class, // NEW: Feature Toggles
             'admin' => \App\Http\Middleware\AdminOnly::class, // NEW: Admin access control
+            // Phase 1B: AI Quota & Rate Limiting (2025-11-21)
+            'ai.rate.limit' => \App\Http\Middleware\AiRateLimitMiddleware::class,
+            'check.ai.quota' => \App\Http\Middleware\CheckAiQuotaMiddleware::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
