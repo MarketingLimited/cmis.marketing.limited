@@ -895,6 +895,49 @@ Route::middleware(['auth:sanctum', 'validate.org.access', 'set.db.context'])
 
     /*
     |----------------------------------------------------------------------
+    | TikTok Ads Integration - Phase 10 (NEW)
+    |----------------------------------------------------------------------
+    | Fetch and manage TikTok Ads campaigns, ad groups, and ads
+    */
+    Route::prefix('tiktok-ads')->name('tiktok-ads.')->group(function () {
+        // Campaigns
+        Route::get('/campaigns', [App\Http\Controllers\Api\TikTokAdsController::class, 'getCampaigns'])->name('campaigns.index');
+        Route::post('/campaigns', [App\Http\Controllers\Api\TikTokAdsController::class, 'createCampaign'])->name('campaigns.create');
+        Route::get('/campaigns/{campaign_id}', [App\Http\Controllers\Api\TikTokAdsController::class, 'getCampaignDetails'])->name('campaigns.show');
+        Route::get('/campaigns/{campaign_id}/metrics', [App\Http\Controllers\Api\TikTokAdsController::class, 'getCampaignMetrics'])->name('campaigns.metrics');
+
+        // Ad Groups
+        Route::get('/campaigns/{campaign_id}/ad-groups', [App\Http\Controllers\Api\TikTokAdsController::class, 'getAdGroups'])->name('ad-groups.index');
+
+        // Ads
+        Route::get('/ad-groups/{ad_group_id}/ads', [App\Http\Controllers\Api\TikTokAdsController::class, 'getAds'])->name('ads.index');
+
+        // Cache Management
+        Route::post('/refresh-cache', [App\Http\Controllers\Api\TikTokAdsController::class, 'refreshCache'])->name('refresh-cache');
+    });
+
+    /*
+    |----------------------------------------------------------------------
+    | LinkedIn Ads Integration - Phase 11 (NEW)
+    |----------------------------------------------------------------------
+    | Fetch and manage LinkedIn Ads campaigns and creatives
+    */
+    Route::prefix('linkedin-ads')->name('linkedin-ads.')->group(function () {
+        // Campaigns
+        Route::get('/campaigns', [App\Http\Controllers\Api\LinkedInAdsController::class, 'getCampaigns'])->name('campaigns.index');
+        Route::post('/campaigns', [App\Http\Controllers\Api\LinkedInAdsController::class, 'createCampaign'])->name('campaigns.create');
+        Route::get('/campaigns/{campaign_id}', [App\Http\Controllers\Api\LinkedInAdsController::class, 'getCampaignDetails'])->name('campaigns.show');
+        Route::get('/campaigns/{campaign_id}/metrics', [App\Http\Controllers\Api\LinkedInAdsController::class, 'getCampaignMetrics'])->name('campaigns.metrics');
+
+        // Creatives
+        Route::get('/campaigns/{campaign_id}/creatives', [App\Http\Controllers\Api\LinkedInAdsController::class, 'getCreatives'])->name('creatives.index');
+
+        // Cache Management
+        Route::post('/refresh-cache', [App\Http\Controllers\Api\LinkedInAdsController::class, 'refreshCache'])->name('refresh-cache');
+    });
+
+    /*
+    |----------------------------------------------------------------------
     | المزامنة (Data Sync)
     |----------------------------------------------------------------------
     */
