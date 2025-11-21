@@ -22,6 +22,9 @@ return new class extends Migration
      */
     public function up()
     {
+        // Create cmis_ai schema if it doesn't exist
+        DB::statement('CREATE SCHEMA IF NOT EXISTS cmis_ai');
+
         // 1. Create usage quotas table
         Schema::create('cmis_ai.usage_quotas', function (Blueprint $table) {
             $table->uuid('id')->primary();
