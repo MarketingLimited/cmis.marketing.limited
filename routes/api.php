@@ -184,18 +184,28 @@ Route::middleware(['auth:sanctum', 'validate.org.access', 'set.db.context'])
 
     /*
     |----------------------------------------------------------------------
-    | إدارة المستخدمين (User Management)
+    | إدارة المستخدمين (User Management) - Phase 2 Option 4
     |----------------------------------------------------------------------
     */
     Route::prefix('users')->name('users.')->group(function () {
-        Route::get('/', [UserController::class, 'index'])->name('index');
-        Route::post('/invite', [UserController::class, 'inviteUser'])->name('invite');
-        Route::get('/{user_id}', [UserController::class, 'show'])->name('show');
-        Route::put('/{user_id}/role', [UserController::class, 'updateRole'])->name('updateRole');
-        Route::post('/{user_id}/deactivate', [UserController::class, 'deactivate'])->name('deactivate');
-        Route::delete('/{user_id}', [UserController::class, 'remove'])->name('remove');
+        // User listing and details
+        Route::get('/', [\App\Http\Controllers\Core\UserManagementController::class, 'index'])->name('index');
+        Route::get('/{user_id}', [\App\Http\Controllers\Core\UserManagementController::class, 'show'])->name('show');
 
-        // User Activities & Permissions
+        // User invitations
+        Route::post('/invite', [\App\Http\Controllers\Core\UserManagementController::class, 'inviteUser'])->name('invite');
+        Route::get('/invitations', [\App\Http\Controllers\Core\UserManagementController::class, 'getInvitations'])->name('invitations');
+        Route::delete('/invitations/{invitation_id}', [\App\Http\Controllers\Core\UserManagementController::class, 'cancelInvitation'])->name('invitations.cancel');
+
+        // User management
+        Route::put('/{user_id}/role', [\App\Http\Controllers\Core\UserManagementController::class, 'updateRole'])->name('updateRole');
+        Route::put('/{user_id}/status', [\App\Http\Controllers\Core\UserManagementController::class, 'updateStatus'])->name('updateStatus');
+        Route::delete('/{user_id}', [\App\Http\Controllers\Core\UserManagementController::class, 'removeUser'])->name('remove');
+
+        // User activity log
+        Route::get('/{user_id}/activity', [\App\Http\Controllers\Core\UserManagementController::class, 'getActivity'])->name('activity');
+
+        // Legacy support (keeping these for backward compatibility)
         Route::get('/{user_id}/activities', [UserController::class, 'activities'])->name('activities');
         Route::get('/{user_id}/permissions', [UserController::class, 'permissions'])->name('permissions');
     });
