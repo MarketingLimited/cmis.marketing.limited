@@ -1,5 +1,5 @@
 /**
- * CMIS Alpine.js Components Index (Phase 8-11)
+ * CMIS Alpine.js Components Index (Phase 8-12)
  *
  * Central export file for all dashboard and analytics components
  */
@@ -9,6 +9,7 @@ import campaignAnalytics from './campaignAnalytics.js';
 import kpiDashboard from './kpiDashboard.js';
 import notificationCenter from './notificationCenter.js';
 import campaignComparison from './campaignComparison.js';
+import scheduledReports from './scheduledReports.js';
 
 // Export all components
 export {
@@ -16,7 +17,8 @@ export {
     campaignAnalytics,
     kpiDashboard,
     notificationCenter,
-    campaignComparison
+    campaignComparison,
+    scheduledReports
 };
 
 // Register components globally with Alpine.js
@@ -26,6 +28,7 @@ if (window.Alpine) {
     window.Alpine.data('kpiDashboard', kpiDashboard);
     window.Alpine.data('notificationCenter', notificationCenter);
     window.Alpine.data('campaignComparison', campaignComparison);
+    window.Alpine.data('scheduledReports', scheduledReports);
 }
 
 export default {
@@ -33,5 +36,6 @@ export default {
     campaignAnalytics,
     kpiDashboard,
     notificationCenter,
-    campaignComparison
+    campaignComparison,
+    scheduledReports
 };
