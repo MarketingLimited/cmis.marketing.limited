@@ -1536,6 +1536,26 @@ Route::middleware(['auth:sanctum'])->prefix('orgs/{org_id}/analytics')->name('an
         Route::post('/campaigns/{campaign_id}/compare', [App\Http\Controllers\Analytics\AnalyticsController::class, 'compareAttributionModels'])->name('compare');
         Route::post('/campaigns/{campaign_id}/insights', [App\Http\Controllers\Analytics\AnalyticsController::class, 'getAttributionInsights'])->name('insights');
     });
+
+    // Advanced Analytics Features (Phase 11)
+    Route::get('/campaigns/{campaign_id}/insights', [App\Http\Controllers\Analytics\AdvancedAnalyticsController::class, 'getCampaignInsights'])->name('campaigns.insights');
+    Route::post('/campaigns/{campaign_id}/export', [App\Http\Controllers\Analytics\AdvancedAnalyticsController::class, 'exportCampaignReport'])->name('campaigns.export');
+    Route::post('/export', [App\Http\Controllers\Analytics\AdvancedAnalyticsController::class, 'exportOrganizationReport'])->name('export');
+    Route::post('/compare', [App\Http\Controllers\Analytics\AdvancedAnalyticsController::class, 'compareCampaigns'])->name('compare');
+
+    // Scheduled Reports (Phase 12)
+    Route::prefix('scheduled-reports')->name('scheduled-reports.')->group(function () {
+        Route::get('/', [App\Http\Controllers\Analytics\ScheduledReportsController::class, 'index'])->name('index');
+        Route::post('/', [App\Http\Controllers\Analytics\ScheduledReportsController::class, 'store'])->name('store');
+        Route::get('/{schedule_id}', [App\Http\Controllers\Analytics\ScheduledReportsController::class, 'show'])->name('show');
+        Route::put('/{schedule_id}', [App\Http\Controllers\Analytics\ScheduledReportsController::class, 'update'])->name('update');
+        Route::delete('/{schedule_id}', [App\Http\Controllers\Analytics\ScheduledReportsController::class, 'destroy'])->name('destroy');
+        Route::get('/{schedule_id}/history', [App\Http\Controllers\Analytics\ScheduledReportsController::class, 'history'])->name('history');
+        Route::post('/from-template/{template_id}', [App\Http\Controllers\Analytics\ScheduledReportsController::class, 'createFromTemplate'])->name('from-template');
+    });
+
+    // One-time Report Sending (Phase 12)
+    Route::post('/send-report', [App\Http\Controllers\Analytics\ScheduledReportsController::class, 'sendOneTime'])->name('send-report');
 });
 
 // Cache Statistics (Global)
@@ -1666,6 +1686,20 @@ Route::middleware(['auth:sanctum'])->prefix('analytics')->name('analytics.')->gr
     Route::get('/funnel/{campaign_id}', [App\Http\Controllers\API\AnalyticsController::class, 'getFunnelAnalytics'])->name('funnel');
     Route::get('/demographics', [App\Http\Controllers\API\AnalyticsController::class, 'getAudienceDemographics'])->name('demographics');
     Route::post('/export', [App\Http\Controllers\API\AnalyticsController::class, 'exportReport'])->name('export');
+
+    // User Dashboard Customization (Phase 11)
+    Route::prefix('user')->name('user.')->group(function () {
+        Route::get('/dashboard/{dashboard_type}/config', [App\Http\Controllers\Analytics\AdvancedAnalyticsController::class, 'getDashboardConfig'])->name('dashboard.config.get');
+        Route::put('/dashboard/{dashboard_type}/config', [App\Http\Controllers\Analytics\AdvancedAnalyticsController::class, 'saveDashboardConfig'])->name('dashboard.config.save');
+        Route::get('/filters/{context}', [App\Http\Controllers\Analytics\AdvancedAnalyticsController::class, 'getSavedFilters'])->name('filters.get');
+        Route::post('/filters/{context}', [App\Http\Controllers\Analytics\AdvancedAnalyticsController::class, 'saveFilter'])->name('filters.save');
+    });
+
+    // Report Templates (Phase 12)
+    Route::prefix('report-templates')->name('templates.')->group(function () {
+        Route::get('/', [App\Http\Controllers\Analytics\ScheduledReportsController::class, 'templates'])->name('index');
+        Route::post('/', [App\Http\Controllers\Analytics\ScheduledReportsController::class, 'createTemplate'])->name('create');
+    });
 });
 
 /*
