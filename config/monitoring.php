@@ -20,7 +20,7 @@ return [
     'memory_threshold_mb' => env('MONITORING_MEMORY_THRESHOLD_MB', 128),
 
     // Enable query logging (disable in production for performance)
-    'enable_query_logging' => env('MONITORING_ENABLE_QUERY_LOG', !app()->isProduction()),
+    'enable_query_logging' => env('MONITORING_ENABLE_QUERY_LOG', env('APP_ENV') !== 'production'),
 
     // Performance headers in responses
     'add_performance_headers' => env('MONITORING_PERFORMANCE_HEADERS', true),

@@ -135,8 +135,10 @@ return new class extends Migration
             });
         }
 
-        if (Schema::hasColumn('users', function (Blueprint $table) {
-            $table->dropColumn('role');
-        });
+        if (Schema::hasColumn('users', 'role')) {
+            Schema::table('users', function (Blueprint $table) {
+                $table->dropColumn('role');
+            });
+        }
     }
 };
