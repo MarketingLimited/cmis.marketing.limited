@@ -872,6 +872,29 @@ Route::middleware(['auth:sanctum', 'validate.org.access', 'set.db.context'])
 
     /*
     |----------------------------------------------------------------------
+    | Google Ads Integration - Phase 8 (NEW)
+    |----------------------------------------------------------------------
+    | Fetch and manage Google Ads campaigns, ad groups, and ads
+    */
+    Route::prefix('google-ads')->name('google-ads.')->group(function () {
+        // Campaigns
+        Route::get('/campaigns', [App\Http\Controllers\Api\GoogleAdsController::class, 'getCampaigns'])->name('campaigns.index');
+        Route::post('/campaigns', [App\Http\Controllers\Api\GoogleAdsController::class, 'createCampaign'])->name('campaigns.create');
+        Route::get('/campaigns/{campaign_id}', [App\Http\Controllers\Api\GoogleAdsController::class, 'getCampaignDetails'])->name('campaigns.show');
+        Route::get('/campaigns/{campaign_id}/metrics', [App\Http\Controllers\Api\GoogleAdsController::class, 'getCampaignMetrics'])->name('campaigns.metrics');
+
+        // Ad Groups
+        Route::get('/campaigns/{campaign_id}/ad-groups', [App\Http\Controllers\Api\GoogleAdsController::class, 'getAdGroups'])->name('ad-groups.index');
+
+        // Ads
+        Route::get('/ad-groups/{ad_group_id}/ads', [App\Http\Controllers\Api\GoogleAdsController::class, 'getAds'])->name('ads.index');
+
+        // Cache Management
+        Route::post('/refresh-cache', [App\Http\Controllers\Api\GoogleAdsController::class, 'refreshCache'])->name('refresh-cache');
+    });
+
+    /*
+    |----------------------------------------------------------------------
     | المزامنة (Data Sync)
     |----------------------------------------------------------------------
     */
@@ -943,6 +966,37 @@ Route::middleware(['auth:sanctum', 'validate.org.access', 'set.db.context'])
         Route::get('/kpis', [KpiController::class, 'index'])->name('kpis');
         Route::get('/summary', [KpiController::class, 'summary'])->name('summary');
         Route::get('/trends', [KpiController::class, 'trends'])->name('trends');
+
+        /*
+        |------------------------------------------------------------------
+        | AI Analytics - Phase 8 (NEW)
+        |------------------------------------------------------------------
+        | AI usage tracking, quota monitoring, cost analysis
+        */
+        Route::prefix('ai')->name('ai.')->group(function () {
+            // Usage & Summary
+            Route::get('/usage-summary', [App\Http\Controllers\Api\AnalyticsController::class, 'getUsageSummary'])->name('usage-summary');
+            Route::get('/daily-trend', [App\Http\Controllers\Api\AnalyticsController::class, 'getDailyTrend'])->name('daily-trend');
+
+            // Quota & Alerts
+            Route::get('/quota-status', [App\Http\Controllers\Api\AnalyticsController::class, 'getQuotaStatus'])->name('quota-status');
+            Route::get('/quota-alerts', [App\Http\Controllers\Api\AnalyticsController::class, 'getQuotaAlerts'])->name('quota-alerts');
+
+            // Cost Analysis
+            Route::get('/cost-by-campaign', [App\Http\Controllers\Api\AnalyticsController::class, 'getCostByCampaign'])->name('cost-by-campaign');
+            Route::get('/monthly-comparison', [App\Http\Controllers\Api\AnalyticsController::class, 'getMonthlyComparison'])->name('monthly-comparison');
+
+            // Media Stats
+            Route::get('/media-stats', [App\Http\Controllers\Api\AnalyticsController::class, 'getMediaStats'])->name('media-stats');
+            Route::get('/top-performing-media', [App\Http\Controllers\Api\AnalyticsController::class, 'getTopPerformingMedia'])->name('top-performing-media');
+
+            // Dashboard
+            Route::get('/dashboard', [App\Http\Controllers\Api\AnalyticsController::class, 'getDashboard'])->name('dashboard');
+
+            // Export & Cache
+            Route::post('/export', [App\Http\Controllers\Api\AnalyticsController::class, 'exportData'])->name('export');
+            Route::post('/clear-cache', [App\Http\Controllers\Api\AnalyticsController::class, 'clearCache'])->name('clear-cache');
+        });
     });
 
     /*
