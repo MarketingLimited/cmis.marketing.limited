@@ -1,0 +1,99 @@
+<?php
+
+return [
+
+    /*
+    |--------------------------------------------------------------------------
+    | Subscription Language Lines (Arabic)
+    |--------------------------------------------------------------------------
+    |
+    | Arabic translations for subscription and pricing
+    |
+    */
+
+    // Plans
+    'pricing_plans' => 'خطط الأسعار',
+    'choose_your_plan' => 'اختر خطتك',
+    'plan_description' => 'اختر الخطة المثالية لاحتياجاتك التسويقية. يمكنك الترقية أو التخفيض في أي وقت.',
+    'free' => 'مجاني',
+    'pro' => 'احترافي',
+    'enterprise' => 'مؤسسات',
+    'month' => 'شهر',
+    'custom' => 'مخصص',
+
+    // Plan Descriptions
+    'free_description' => 'مثالي للبدء',
+    'pro_description' => 'للشركات النامية',
+    'enterprise_description' => 'للمؤسسات الكبيرة',
+
+    // Actions
+    'current_plan' => 'الخطة الحالية',
+    'upgrade_now' => 'ترقية الآن',
+    'contact_sales' => 'اتصل بالمبيعات',
+    'upgrade_to_pro' => 'الترقية إلى احترافي',
+    'upgrade_to' => 'الترقية إلى',
+
+    // Features
+    'includes' => 'يتضمن',
+    'everything_in_free_plus' => 'كل ما في المجاني، بالإضافة إلى',
+    'everything_in_pro_plus' => 'كل ما في الاحترافي، بالإضافة إلى',
+    'popular' => 'الأكثر شعبية',
+    'recommended' => 'موصى به',
+
+    'features' => [
+        // Free Plan
+        'free' => [
+            'ai_requests' => ':count طلب ذكاء اصطناعي/يوم',
+            'campaigns' => ':count حملات نشطة',
+        ],
+        'basic_analytics' => 'تحليلات أساسية',
+        'meta_integration' => 'تكامل مع منصة Meta',
+
+        // Pro Plan
+        'pro' => [
+            'ai_requests' => ':count طلب ذكاء اصطناعي/يوم',
+        ],
+        'unlimited_campaigns' => 'حملات غير محدودة',
+        'advanced_analytics' => 'تحليلات متقدمة',
+        'team_members' => ':count أعضاء فريق',
+        'priority_support' => 'دعم ذو أولوية',
+
+        // Enterprise Plan
+        'unlimited_ai' => 'طلبات ذكاء اصطناعي غير محدودة',
+        'unlimited_team' => 'أعضاء فريق غير محدودين',
+        'dedicated_support' => 'مدير حساب مخصص',
+        'custom_integrations' => 'تكاملات مخصصة',
+        'sla_guarantee' => 'ضمان اتفاقية مستوى الخدمة',
+    ],
+
+    // Upgrade Page
+    'unlock_full_potential' => 'أطلق العنان لإمكاناتك الكاملة',
+    'upgrade_description' => 'قم بالترقية إلى Pro واحصل على حملات غير محدودة وتحليلات متقدمة ودعم ذو أولوية.',
+    'ai_requests_per_day' => 'طلب ذكاء اصطناعي في اليوم',
+    'active_campaigns' => 'حملات نشطة',
+    'team_collaboration' => 'تعاون الفريق',
+    'cancel_anytime' => 'إلغاء في أي وقت. بدون أسئلة.',
+
+    // Benefits
+    'why_upgrade' => 'لماذا الترقية إلى احترافي؟',
+    'benefit_ai_title' => 'المزيد من قوة الذكاء الاصطناعي',
+    'benefit_ai_description' => 'قم بإنشاء محتوى ذكاء اصطناعي غير محدود واحصل على نتائج أفضل بشكل أسرع.',
+    'benefit_analytics_title' => 'تحليلات متقدمة',
+    'benefit_analytics_description' => 'رؤى عميقة حول أداء حملتك مع تقارير مخصصة.',
+    'benefit_team_title' => 'تعاون الفريق',
+    'benefit_team_description' => 'ادع أعضاء الفريق وتعاون على الحملات معاً.',
+
+    // Guarantee
+    'money_back_guarantee' => 'ضمان استرداد الأموال لمدة 30 يوماً',
+    'money_back_description' => 'غير راضٍ؟ احصل على استرداد كامل للأموال خلال 30 يوماً، بدون أسئلة.',
+
+    // FAQ
+    'faq' => 'الأسئلة الشائعة',
+    'faq_change_plan' => 'هل يمكنني تغيير خطتي في أي وقت؟',
+    'faq_change_plan_answer' => 'نعم! يمكنك الترقية أو التخفيض في أي وقت. تسري التغييرات فوراً.',
+    'faq_cancel' => 'ماذا يحدث إذا قمت بالإلغاء؟',
+    'faq_cancel_answer' => 'يمكنك الإلغاء في أي وقت. سيبقى حسابك نشطاً حتى نهاية فترة الفوترة.',
+    'faq_payment' => 'ما طرق الدفع التي تقبلونها؟',
+    'faq_payment_answer' => 'نقبل جميع بطاقات الائتمان الرئيسية، PayPal، والتحويل البنكي لخطط المؤسسات.',
+
+];
