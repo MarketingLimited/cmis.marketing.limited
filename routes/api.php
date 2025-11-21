@@ -1952,3 +1952,63 @@ Route::prefix('ai')->middleware(['auth:sanctum', 'rls.context'])->group(function
     Route::get('/stats', [App\Http\Controllers\Api\AiContentController::class, 'stats'])
         ->name('ai.stats');
 });
+
+/*
+|--------------------------------------------------------------------------
+| Optimization Engine Routes - Phase 20 Implementation
+|--------------------------------------------------------------------------
+| AI-powered campaign optimization with ML-based recommendations
+| Includes budget allocation, audience overlap, attribution, creative analysis
+| Requires authentication and organization context
+*/
+Route::prefix('optimization')->middleware(['auth:sanctum', 'rls.context'])->name('optimization.')->group(function () {
+    // Budget Optimization
+    Route::post('/budget/optimize', [\App\Http\Controllers\Api\OptimizationController::class, 'optimizeBudget'])
+        ->name('budget.optimize');
+    Route::get('/budget/allocations', [\App\Http\Controllers\Api\OptimizationController::class, 'getBudgetAllocations'])
+        ->name('budget.allocations');
+    Route::post('/budget/allocations/{allocationId}/apply', [\App\Http\Controllers\Api\OptimizationController::class, 'applyBudgetAllocation'])
+        ->name('budget.apply');
+
+    // Audience Overlap Detection
+    Route::post('/audience/detect-overlaps', [\App\Http\Controllers\Api\OptimizationController::class, 'detectOverlaps'])
+        ->name('audience.detect');
+    Route::get('/audience/overlaps', [\App\Http\Controllers\Api\OptimizationController::class, 'getOverlaps'])
+        ->name('audience.overlaps');
+    Route::post('/audience/overlaps/{overlapId}/resolve', [\App\Http\Controllers\Api\OptimizationController::class, 'resolveOverlap'])
+        ->name('audience.resolve');
+
+    // Attribution Modeling
+    Route::post('/attribution/calculate', [\App\Http\Controllers\Api\OptimizationController::class, 'calculateAttribution'])
+        ->name('attribution.calculate');
+    Route::get('/attribution/report', [\App\Http\Controllers\Api\OptimizationController::class, 'getAttributionReport'])
+        ->name('attribution.report');
+
+    // Creative Performance Analysis
+    Route::post('/creative/analyze', [\App\Http\Controllers\Api\OptimizationController::class, 'analyzeCreatives'])
+        ->name('creative.analyze');
+    Route::get('/creative/report', [\App\Http\Controllers\Api\OptimizationController::class, 'getCreativeReport'])
+        ->name('creative.report');
+
+    // Optimization Insights
+    Route::post('/insights/generate', [\App\Http\Controllers\Api\OptimizationController::class, 'generateInsights'])
+        ->name('insights.generate');
+    Route::get('/insights', [\App\Http\Controllers\Api\OptimizationController::class, 'getInsights'])
+        ->name('insights.index');
+    Route::post('/insights/{insightId}/acknowledge', [\App\Http\Controllers\Api\OptimizationController::class, 'acknowledgeInsight'])
+        ->name('insights.acknowledge');
+    Route::post('/insights/{insightId}/apply', [\App\Http\Controllers\Api\OptimizationController::class, 'applyInsight'])
+        ->name('insights.apply');
+    Route::post('/insights/{insightId}/dismiss', [\App\Http\Controllers\Api\OptimizationController::class, 'dismissInsight'])
+        ->name('insights.dismiss');
+
+    // Optimization Runs
+    Route::get('/runs', [\App\Http\Controllers\Api\OptimizationController::class, 'getOptimizationRuns'])
+        ->name('runs.index');
+    Route::get('/runs/{runId}', [\App\Http\Controllers\Api\OptimizationController::class, 'getOptimizationRun'])
+        ->name('runs.show');
+
+    // Optimization Models
+    Route::get('/models', [\App\Http\Controllers\Api\OptimizationController::class, 'getOptimizationModels'])
+        ->name('models.index');
+});
