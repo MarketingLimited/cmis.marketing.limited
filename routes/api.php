@@ -1384,13 +1384,14 @@ Route::prefix('gpt')->middleware(['auth:sanctum', 'throttle:60,1'])->group(funct
 
 /*
 |--------------------------------------------------------------------------
-| AI Content Generation Routes - Phase 1B Implementation
+| AI Content Generation Routes - Phase 1B & Phase 3 Implementation
 |--------------------------------------------------------------------------
 | Handles AI-powered content generation with quota enforcement and rate limiting
+| Phase 3: Added Gemini 3 (image/text) and Veo 3.1 (video) generation
 | Requires authentication and organization context
 */
 Route::prefix('ai')->middleware(['auth:sanctum', 'rls.context'])->group(function () {
-    // Content Generation with quota and rate limiting
+    // Text Content Generation with quota and rate limiting
     Route::post('/generate', [App\Http\Controllers\Api\AiContentController::class, 'generate'])
         ->middleware(['check.ai.quota:gpt,1', 'ai.rate.limit:gpt'])
         ->name('ai.generate');
@@ -1399,6 +1400,25 @@ Route::prefix('ai')->middleware(['auth:sanctum', 'rls.context'])->group(function
     Route::post('/generate-batch', [App\Http\Controllers\Api\AiContentController::class, 'generateBatch'])
         ->middleware(['check.ai.quota:gpt,5', 'ai.rate.limit:gpt'])
         ->name('ai.generate-batch');
+
+    // Ad Design Generation (Gemini 3 - Images)
+    Route::post('/generate-ad-design', [App\Http\Controllers\Api\AiContentController::class, 'generateAdDesign'])
+        ->middleware(['check.ai.quota:image,3', 'ai.rate.limit:gemini'])
+        ->name('ai.generate-ad-design');
+
+    // Ad Copy Generation (Gemini 3 - Text)
+    Route::post('/generate-ad-copy', [App\Http\Controllers\Api\AiContentController::class, 'generateAdCopy'])
+        ->middleware(['check.ai.quota:gpt,1', 'ai.rate.limit:gemini'])
+        ->name('ai.generate-ad-copy');
+
+    // Video Ad Generation (Veo 3.1 - Async Job)
+    Route::post('/generate-video', [App\Http\Controllers\Api\AiContentController::class, 'generateVideo'])
+        ->middleware(['check.ai.quota:video,1', 'ai.rate.limit:veo'])
+        ->name('ai.generate-video');
+
+    // Check Video Generation Status
+    Route::get('/video-status/{media}', [App\Http\Controllers\Api\AiContentController::class, 'videoStatus'])
+        ->name('ai.video-status');
 
     // AI Usage Statistics
     Route::get('/stats', [App\Http\Controllers\Api\AiContentController::class, 'stats'])
