@@ -202,18 +202,22 @@ Route::middleware(['auth:sanctum', 'validate.org.access', 'set.db.context'])
 
     /*
     |----------------------------------------------------------------------
-    | CMIS AI & Embeddings (الموجود حالياً)
+    | CMIS AI & Embeddings (with rate limiting)
     |----------------------------------------------------------------------
     */
-    Route::prefix('cmis')->name('cmis.')->group(function () {
-        Route::post('/search', [CMISEmbeddingController::class, 'search'])->name('search');
-        Route::post('/knowledge/{id}/process', [CMISEmbeddingController::class, 'processKnowledge'])->name('knowledge.process');
-        Route::get('/knowledge/{id}/similar', [CMISEmbeddingController::class, 'findSimilar'])->name('knowledge.similar');
-        Route::get('/status', [CMISEmbeddingController::class, 'status'])->name('status');
-    });
+    Route::prefix('cmis')->name('cmis.')
+        ->middleware('throttle.ai')
+        ->group(function () {
+            Route::post('/search', [CMISEmbeddingController::class, 'search'])->name('search');
+            Route::post('/knowledge/{id}/process', [CMISEmbeddingController::class, 'processKnowledge'])->name('knowledge.process');
+            Route::get('/knowledge/{id}/similar', [CMISEmbeddingController::class, 'findSimilar'])->name('knowledge.similar');
+            Route::get('/status', [CMISEmbeddingController::class, 'status'])->name('status');
+        });
 
-    // Semantic Search
-    Route::post('/semantic-search', [SemanticSearchController::class, 'search'])->name('semantic.search');
+    // Semantic Search (with rate limiting)
+    Route::post('/semantic-search', [SemanticSearchController::class, 'search'])
+        ->middleware('throttle.ai')
+        ->name('semantic.search');
 
     /*
     |----------------------------------------------------------------------
@@ -236,7 +240,9 @@ Route::middleware(['auth:sanctum', 'validate.org.access', 'set.db.context'])
         Route::apiResource('content-plans', ContentPlanController::class)->parameters([
             'content-plans' => 'plan_id'
         ]);
-        Route::post('content-plans/{plan_id}/generate', [ContentPlanController::class, 'generateContent'])->name('content-plans.generate');
+        Route::post('content-plans/{plan_id}/generate', [ContentPlanController::class, 'generateContent'])
+            ->middleware('throttle.ai')
+            ->name('content-plans.generate');
         Route::post('content-plans/{plan_id}/approve', [ContentPlanController::class, 'approve'])->name('content-plans.approve');
         Route::post('content-plans/{plan_id}/reject', [ContentPlanController::class, 'reject'])->name('content-plans.reject');
         Route::post('content-plans/{plan_id}/publish', [ContentPlanController::class, 'publish'])->name('content-plans.publish');
@@ -438,7 +444,9 @@ Route::middleware(['auth:sanctum', 'validate.org.access', 'set.db.context'])
 
         // Generate Reports
         Route::post('/performance', [App\Http\Controllers\ReportsController::class, 'generatePerformanceReport'])->name('performance');
-        Route::post('/ai-insights', [App\Http\Controllers\ReportsController::class, 'generateAIInsightsReport'])->name('ai-insights');
+        Route::post('/ai-insights', [App\Http\Controllers\ReportsController::class, 'generateAIInsightsReport'])
+            ->middleware('throttle.ai')
+            ->name('ai-insights');
         Route::post('/organization', [App\Http\Controllers\ReportsController::class, 'generateOrgReport'])->name('organization');
         Route::post('/content-analysis', [App\Http\Controllers\ReportsController::class, 'generateContentAnalysisReport'])->name('content-analysis');
 
@@ -481,7 +489,9 @@ Route::middleware(['auth:sanctum', 'validate.org.access', 'set.db.context'])
         Route::get('/', [App\Http\Controllers\AdCreativeController::class, 'index'])->name('index');
         Route::post('/', [App\Http\Controllers\AdCreativeController::class, 'create'])->name('create');
         Route::get('/templates', [App\Http\Controllers\AdCreativeController::class, 'templates'])->name('templates');
-        Route::post('/ai-generate', [App\Http\Controllers\AdCreativeController::class, 'generateAI'])->name('ai-generate');
+        Route::post('/ai-generate', [App\Http\Controllers\AdCreativeController::class, 'generateAI'])
+            ->middleware('throttle.ai')
+            ->name('ai-generate');
         Route::get('/{creative_id}', [App\Http\Controllers\AdCreativeController::class, 'show'])->name('show');
         Route::put('/{creative_id}', [App\Http\Controllers\AdCreativeController::class, 'update'])->name('update');
         Route::delete('/{creative_id}', [App\Http\Controllers\AdCreativeController::class, 'destroy'])->name('destroy');
@@ -1463,7 +1473,7 @@ Route::middleware(['auth:sanctum'])->prefix('analytics')->name('analytics.')->gr
 | Rate Limited: 10 requests per minute per user
 |--------------------------------------------------------------------------
 */
-Route::prefix('ai')->middleware(['auth:sanctum'])->group(function () {
+Route::prefix('ai')->middleware(['auth:sanctum', 'throttle.ai'])->group(function () {
     // Content Suggestions & Generation
     Route::post('/generate-suggestions', [App\Http\Controllers\API\AIAssistantController::class, 'generateSuggestions']);
     Route::post('/generate-brief', [App\Http\Controllers\API\AIAssistantController::class, 'generateBrief']);
