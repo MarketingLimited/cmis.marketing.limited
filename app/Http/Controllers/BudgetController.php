@@ -19,6 +19,7 @@ class BudgetController extends Controller
 
     public function __construct(BudgetBiddingService $budgetService)
     {
+        $this->middleware('auth:sanctum');
         $this->budgetService = $budgetService;
     }
 

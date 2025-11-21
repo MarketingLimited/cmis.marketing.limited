@@ -18,6 +18,14 @@ use Illuminate\Support\Facades\Log;
 class OrgSwitcherController extends Controller
 {
     /**
+     * Constructor - Apply authentication middleware
+     */
+    public function __construct()
+    {
+        $this->middleware('auth:sanctum');
+    }
+
+    /**
      * Get list of organizations the current user belongs to
      *
      * @return \Illuminate\Http\JsonResponse
