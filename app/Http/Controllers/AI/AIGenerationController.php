@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\AI;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Traits\HandlesAsyncJobs;
+use App\Jobs\AI\GenerateContentJob;
 use App\Models\AiGeneratedCampaign;
 use App\Models\AiRecommendation;
 use App\Models\CMIS\KnowledgeItem;
@@ -20,6 +22,8 @@ use Illuminate\Support\Str;
 
 class AIGenerationController extends Controller
 {
+    use HandlesAsyncJobs;
+
     protected KnowledgeRepository $knowledgeRepo;
     protected EmbeddingRepository $embeddingRepo;
 
@@ -119,6 +123,9 @@ class AIGenerationController extends Controller
 
     /**
      * Generate AI content
+     *
+     * Supports both synchronous and asynchronous generation.
+     * Use async=true for queued processing (recommended for production).
      */
     public function generate(Request $request, string $orgId)
     {
@@ -133,6 +140,7 @@ class AIGenerationController extends Controller
             'model' => 'nullable|string|in:' . implode(',', array_keys(self::AI_MODELS)),
             'max_tokens' => 'nullable|integer|min:100|max:4000',
             'context' => 'nullable|string|max:2000',
+            'async' => 'nullable|boolean',
         ]);
 
         if ($validator->fails()) {
@@ -142,20 +150,51 @@ class AIGenerationController extends Controller
             ], 422);
         }
 
+        $contentType = $request->input('content_type');
+        $topic = $request->input('topic');
+        $objective = $request->input('objective', '');
+        $language = $request->input('language', 'ar');
+        $tone = $request->input('tone', 'professional');
+        $model = $request->input('model', 'gemini-pro');
+        $maxTokens = $request->input('max_tokens', 1000);
+        $context = $request->input('context', '');
+
+        // Build prompt based on content type
+        $prompt = $this->buildPrompt($contentType, $topic, $objective, $language, $tone, $context);
+
+        // Check if async processing is requested (default: true for rate limiting)
+        if ($this->shouldProcessAsync($request, true)) {
+            // Dispatch job for async processing
+            $job = new GenerateContentJob(
+                $orgId,
+                $request->user()->user_id,
+                $prompt,
+                $contentType,
+                [
+                    'topic' => $topic,
+                    'objective' => $objective,
+                    'language' => $language,
+                    'tone' => $tone,
+                    'model' => $model,
+                    'max_tokens' => $maxTokens,
+                    'context' => $context,
+                ]
+            );
+
+            dispatch($job);
+
+            return $this->asyncJobAccepted(
+                $job->getJobId(),
+                'AI content generation started',
+                [
+                    'content_type' => $contentType,
+                    'model' => $model,
+                ]
+            );
+        }
+
+        // Synchronous generation (for backward compatibility)
         try {
-            $contentType = $request->input('content_type');
-            $topic = $request->input('topic');
-            $objective = $request->input('objective', '');
-            $language = $request->input('language', 'ar');
-            $tone = $request->input('tone', 'professional');
-            $model = $request->input('model', 'gemini-pro');
-            $maxTokens = $request->input('max_tokens', 1000);
-            $context = $request->input('context', '');
-
-            // Build prompt based on content type
-            $prompt = $this->buildPrompt($contentType, $topic, $objective, $language, $tone, $context);
-
-            // Generate content using selected AI model
             $generatedContent = $this->callAIModel($model, $prompt, $maxTokens);
 
             if (!$generatedContent) {
