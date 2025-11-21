@@ -408,4 +408,28 @@ trait MocksExternalAPIs
             ], $data), 200),
         ]);
     }
+
+    /**
+     * Mock SMS Provider API responses (Twilio, Vonage, etc.)
+     */
+    protected function mockSMSProvider($type = 'success', $data = [])
+    {
+        \Http::fake([
+            'https://api.twilio.com/*' => \Http::response(array_merge([
+                'sid' => 'SM' . uniqid(),
+                'status' => $type === 'success' ? 'sent' : 'failed',
+                'to' => '+1234567890',
+                'from' => '+0987654321',
+                'body' => 'Test SMS message',
+                'date_sent' => now()->toIso8601String()
+            ], $data), $type === 'success' ? 200 : 400),
+            'https://rest.nexmo.com/*' => \Http::response(array_merge([
+                'message-id' => uniqid(),
+                'status' => $type === 'success' ? '0' : '1',
+                'to' => '1234567890',
+                'from' => 'CMIS',
+                'text' => 'Test SMS message'
+            ], $data), $type === 'success' ? 200 : 400),
+        ]);
+    }
 }

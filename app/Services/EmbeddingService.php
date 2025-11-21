@@ -15,7 +15,7 @@ class EmbeddingService
     public function batchGenerateEmbeddings(array $items)
     {
         \Log::info("EmbeddingService::batchGenerateEmbeddings", ['count' => count($items)]);
-        
+
         $results = [];
         foreach ($items as $item) {
             $results[] = [
@@ -23,10 +23,9 @@ class EmbeddingService
                 'embedding' => array_fill(0, 768, 0.1)
             ];
         }
-        
+
         return $results;
     }
-}
 
     public function generateEmbedding($text)
     {
