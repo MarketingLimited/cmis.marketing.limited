@@ -63,7 +63,6 @@ class TwitterService
         // Stub always returns false to indicate not yet implemented
         return false;
     }
-}
 
     /**
      * Publish a tweet
