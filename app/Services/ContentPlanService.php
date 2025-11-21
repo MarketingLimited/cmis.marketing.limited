@@ -334,24 +334,25 @@ class ContentPlanService
     }
 
     /**
-     * Get content plan statistics
+     * Get content plan statistics (automatically filtered by RLS)
      */
-    public function getStats(string $orgId): array
+    public function getStats(): array
     {
-        $cacheKey = "org:{$orgId}:content_plan_stats";
+        // Use user ID for cache key since RLS filters by current org context
+        $cacheKey = "user:" . auth()->id() . ":content_plan_stats";
 
         return $this->cache->remember(
             $cacheKey,
             CacheService::TTL_MEDIUM,
-            function () use ($orgId) {
+            function () {
                 return [
-                    'total' => ContentPlan::where('org_id', $orgId)->count(),
-                    'by_status' => ContentPlan::where('org_id', $orgId)
+                    'total' => ContentPlan::count(),
+                    'by_status' => ContentPlan::query()
                         ->select('status', \DB::raw('COUNT(*) as count'))
                         ->groupBy('status')
                         ->pluck('count', 'status')
                         ->toArray(),
-                    'by_type' => ContentPlan::where('org_id', $orgId)
+                    'by_type' => ContentPlan::query()
                         ->select('content_type', \DB::raw('COUNT(*) as count'))
                         ->groupBy('content_type')
                         ->pluck('count', 'content_type')

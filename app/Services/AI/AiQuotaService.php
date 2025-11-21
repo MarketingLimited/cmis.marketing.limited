@@ -34,9 +34,8 @@ class AiQuotaService
     ];
 
     /**
-     * Check if user/org has quota available
+     * Check if user/org has quota available (org_id from auth context)
      *
-     * @param string $orgId
      * @param string|null $userId
      * @param string $aiService 'gpt', 'embeddings', 'image_gen'
      * @param int $requestedAmount Default 1 request
@@ -44,11 +43,13 @@ class AiQuotaService
      * @throws QuotaExceededException
      */
     public function checkQuota(
-        string $orgId,
         ?string $userId,
         string $aiService,
         int $requestedAmount = 1
     ): bool {
+        // Get org_id from authenticated user
+        $orgId = auth()->user()->org_id ?? auth()->user()->current_org_id;
+
         // Get quota for this org/user
         $quota = $this->getOrCreateQuota($orgId, $userId, $aiService);
 
@@ -83,9 +84,8 @@ class AiQuotaService
     }
 
     /**
-     * Record AI usage
+     * Record AI usage (org_id from auth context)
      *
-     * @param string $orgId
      * @param string|null $userId
      * @param string $aiService
      * @param string $operation
@@ -93,12 +93,14 @@ class AiQuotaService
      * @return void
      */
     public function recordUsage(
-        string $orgId,
         ?string $userId,
         string $aiService,
         string $operation,
         array $details = []
     ): void {
+        // Get org_id from authenticated user
+        $orgId = auth()->user()->org_id ?? auth()->user()->current_org_id;
+
         try {
             // 1. Insert tracking record
             $trackingId = \Illuminate\Support\Str::uuid();

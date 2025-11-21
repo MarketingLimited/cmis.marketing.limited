@@ -471,16 +471,14 @@ class CampaignService
     }
 
     /**
-     * Get top performing campaigns for an organization
+     * Get top performing campaigns (automatically filtered by RLS)
      *
-     * @param string $orgId
      * @param string $metric 'impressions', 'clicks', 'conversions', 'roi'
      * @param int $limit
      * @param array $dateRange
      * @return array
      */
     public function getTopPerformingCampaigns(
-        string $orgId,
         string $metric = 'conversions',
         int $limit = 10,
         array $dateRange = null
@@ -494,9 +492,8 @@ class CampaignService
                 ];
             }
 
-            // Get all campaigns for the org
-            $campaigns = Campaign::where('org_id', $orgId)
-                ->where('status', '!=', 'archived')
+            // Get all campaigns (RLS handles org filtering)
+            $campaigns = Campaign::where('status', '!=', 'archived')
                 ->pluck('campaign_id', 'name');
 
             $campaignPerformances = [];
@@ -521,7 +518,6 @@ class CampaignService
             });
 
             return [
-                'org_id' => $orgId,
                 'metric' => $metric,
                 'top_campaigns' => array_slice($campaignPerformances, 0, $limit),
                 'total_campaigns' => count($campaignPerformances),
@@ -529,7 +525,6 @@ class CampaignService
 
         } catch (\Exception $e) {
             Log::error('Failed to get top performing campaigns', [
-                'org_id' => $orgId,
                 'error' => $e->getMessage()
             ]);
             throw $e;
