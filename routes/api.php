@@ -2052,3 +2052,59 @@ Route::prefix('orchestration')->middleware(['auth:sanctum', 'rls.context'])->nam
     Route::get('/{orchestrationId}/performance', [\App\Http\Controllers\Api\OrchestrationController::class, 'getPerformance'])
         ->name('performance');
 });
+
+/*
+|--------------------------------------------------------------------------
+| Social Media Publishing & Scheduling Routes - Phase 22 Implementation
+|--------------------------------------------------------------------------
+| Comprehensive social media publishing and scheduling system
+| Includes content calendar, best time recommendations, and approval workflow
+| Requires authentication and organization context
+*/
+Route::prefix('social/publishing')->middleware(['auth:sanctum', 'rls.context'])->name('social.publishing.')->group(function () {
+    // Scheduled Posts
+    Route::get('/', [\App\Http\Controllers\Api\SocialPublishingController::class, 'index'])
+        ->name('index');
+    Route::post('/', [\App\Http\Controllers\Api\SocialPublishingController::class, 'store'])
+        ->name('store');
+    Route::get('/{postId}', [\App\Http\Controllers\Api\SocialPublishingController::class, 'show'])
+        ->name('show');
+    Route::put('/{postId}', [\App\Http\Controllers\Api\SocialPublishingController::class, 'update'])
+        ->name('update');
+
+    // Post Actions
+    Route::post('/{postId}/reschedule', [\App\Http\Controllers\Api\SocialPublishingController::class, 'reschedule'])
+        ->name('reschedule');
+    Route::post('/{postId}/cancel', [\App\Http\Controllers\Api\SocialPublishingController::class, 'cancel'])
+        ->name('cancel');
+    Route::post('/{postId}/publish', [\App\Http\Controllers\Api\SocialPublishingController::class, 'publish'])
+        ->name('publish');
+
+    // Approval Workflow
+    Route::post('/{postId}/approve', [\App\Http\Controllers\Api\SocialPublishingController::class, 'approve'])
+        ->name('approve');
+    Route::post('/{postId}/reject', [\App\Http\Controllers\Api\SocialPublishingController::class, 'reject'])
+        ->name('reject');
+
+    // Content Calendar
+    Route::get('/calendar/view', [\App\Http\Controllers\Api\SocialPublishingController::class, 'getCalendar'])
+        ->name('calendar.view');
+    Route::get('/calendar/monthly', [\App\Http\Controllers\Api\SocialPublishingController::class, 'getMonthlyOverview'])
+        ->name('calendar.monthly');
+
+    // Content Library
+    Route::get('/library', [\App\Http\Controllers\Api\SocialPublishingController::class, 'getContentLibrary'])
+        ->name('library.index');
+    Route::post('/library', [\App\Http\Controllers\Api\SocialPublishingController::class, 'addToLibrary'])
+        ->name('library.store');
+
+    // Best Time Recommendations
+    Route::get('/best-times', [\App\Http\Controllers\Api\SocialPublishingController::class, 'getBestTimes'])
+        ->name('best-times');
+    Route::get('/suggest-time', [\App\Http\Controllers\Api\SocialPublishingController::class, 'suggestTime'])
+        ->name('suggest-time');
+
+    // Stats
+    Route::get('/stats', [\App\Http\Controllers\Api\SocialPublishingController::class, 'getStats'])
+        ->name('stats');
+});
