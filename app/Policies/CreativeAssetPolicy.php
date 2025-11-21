@@ -22,10 +22,8 @@ class CreativeAssetPolicy
 
     public function view(User $user, CreativeAsset $asset): bool
     {
-        if (!$this->permissionService->check($user, 'cmis.creative_assets.view')) {
-            return false;
-        }
-        return $asset->org_id === session('current_org_id');
+        // RLS ensures org isolation at database level
+        return $this->permissionService->check($user, 'cmis.creative_assets.view');
     }
 
     public function create(User $user): bool
@@ -35,26 +33,20 @@ class CreativeAssetPolicy
 
     public function update(User $user, CreativeAsset $asset): bool
     {
-        if (!$this->permissionService->check($user, 'cmis.creative_assets.update')) {
-            return false;
-        }
-        return $asset->org_id === session('current_org_id');
+        // RLS ensures org isolation at database level
+        return $this->permissionService->check($user, 'cmis.creative_assets.update');
     }
 
     public function delete(User $user, CreativeAsset $asset): bool
     {
-        if (!$this->permissionService->check($user, 'cmis.creative_assets.delete')) {
-            return false;
-        }
-        return $asset->org_id === session('current_org_id');
+        // RLS ensures org isolation at database level
+        return $this->permissionService->check($user, 'cmis.creative_assets.delete');
     }
 
     public function download(User $user, CreativeAsset $asset): bool
     {
-        if (!$this->permissionService->check($user, 'cmis.creative_assets.download')) {
-            return false;
-        }
-        return $asset->org_id === session('current_org_id');
+        // RLS ensures org isolation at database level
+        return $this->permissionService->check($user, 'cmis.creative_assets.download');
     }
 
     public function approve(User $user, CreativeAsset $asset): bool
