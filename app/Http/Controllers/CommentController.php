@@ -26,6 +26,7 @@ class CommentController extends Controller
 
     public function __construct(CommentService $commentService)
     {
+        $this->middleware('auth:sanctum');
         $this->commentService = $commentService;
     }
 

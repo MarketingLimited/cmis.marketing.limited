@@ -19,6 +19,7 @@ class AdCreativeController extends Controller
 
     public function __construct(AdCreativeService $creativeService)
     {
+        $this->middleware('auth:sanctum');
         $this->creativeService = $creativeService;
     }
 

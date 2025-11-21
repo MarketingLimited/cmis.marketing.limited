@@ -19,6 +19,7 @@ class PerformanceController extends Controller
 
     public function __construct(PerformanceOptimizationService $performanceService)
     {
+        $this->middleware('auth:sanctum');
         $this->performanceService = $performanceService;
     }
 
