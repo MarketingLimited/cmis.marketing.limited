@@ -1,0 +1,68 @@
+parameters:
+    # Start at level 5, gradually increase to 8
+    level: 5
+
+    paths:
+        - app
+        - tests
+
+    # Exclude problematic files during refactoring
+    excludePaths:
+        # Old stub files - DELETE THESE
+        - app/Services/AdPlatform/LinkedInAdsService.php
+        - app/Services/AdPlatform/TwitterAdsService.php
+        - app/Services/AdPlatform/GoogleAdsService.php
+        - app/Services/AdPlatform/TikTokAdsService.php
+        - app/Services/AdPlatform/SnapchatAdsService.php
+
+        # God classes being refactored - add during refactoring
+        # - app/Services/AdPlatforms/Google/GoogleAdsPlatform.php
+
+    # Bootstrap file for Laravel
+    bootstrapFiles:
+        - vendor/autoload.php
+
+    # Ignore errors in vendor
+    scanDirectories:
+        - vendor
+
+    # Check for missing return types
+    checkMissingReturnTypes: true
+
+    # Check method/function return types are not too wide
+    checkTooWideReturnTypesInProtectedAndPublicMethods: true
+
+    # Always check for unused parameters
+    checkUnusedParameters: true
+
+    # Report possibly undefined variables
+    reportMaybeVariablesAssignedBeforeUse: true
+
+    # Stricter analysis
+    treatPhpDocTypesAsCertain: false
+
+    # Custom rules to enforce
+    rules:
+        # Enforce return types on all methods
+        - PHPStan\Rules\Methods\MissingReturnTypeRule
+
+        # No unused private properties/methods
+        - PHPStan\Rules\Classes\UnusedPrivatePropertyRule
+        - PHPStan\Rules\Classes\UnusedPrivateMethodRule
+
+    # Ignore specific errors temporarily (remove these as you fix issues)
+    ignoreErrors:
+        # Example: Ignore missing types on legacy code
+        # - '#Parameter .* has no type specified#'
+
+        # Example: Ignore specific files
+        # -
+        #     message: '#.*#'
+        #     path: app/Services/Legacy/*.php
+
+    # Custom error formatting
+    errorFormat: table
+
+    # Baseline file (optional - generate with: vendor/bin/phpstan analyse --generate-baseline)
+    # includes:
+    #     - phpstan-baseline.neon
