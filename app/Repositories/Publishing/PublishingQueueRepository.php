@@ -10,11 +10,11 @@ use Illuminate\Support\Facades\Log;
 class PublishingQueueRepository implements PublishingQueueRepositoryInterface
 {
     /**
-     * Get all publishing queues for an organization
+     * Get all publishing queues (automatically filtered by RLS)
      */
-    public function getForOrg(string $orgId, bool $activeOnly = false): Collection
+    public function getAll(bool $activeOnly = false): Collection
     {
-        $query = PublishingQueue::where('org_id', $orgId);
+        $query = PublishingQueue::query();
 
         if ($activeOnly) {
             $query->where('is_active', true);

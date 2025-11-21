@@ -73,20 +73,18 @@ class AnalyticsRepository implements AnalyticsRepositoryInterface
     }
 
     /**
-     * Get organization overview analytics
+     * Get organization overview analytics (automatically filtered by RLS)
      *
-     * @param string $orgId Organization UUID
      * @param array $params Optional parameters (date_from, date_to, etc.)
      * @return Collection
      */
-    public function getOrgOverview(string $orgId, array $params = []): Collection
+    public function getOrgOverview(array $params = []): Collection
     {
         $dateFrom = $params['date_from'] ?? now()->subDays(30)->toDateString();
         $dateTo = $params['date_to'] ?? now()->toDateString();
 
-        // Get campaign counts
+        // Get campaign counts (RLS handles org filtering)
         $campaignStats = DB::table('cmis.campaigns')
-            ->where('org_id', $orgId)
             ->whereNull('deleted_at')
             ->selectRaw('
                 COUNT(*) as total_campaigns,
@@ -97,10 +95,9 @@ class AnalyticsRepository implements AnalyticsRepositoryInterface
             ')
             ->first();
 
-        // Get performance metrics
+        // Get performance metrics (RLS handles org filtering)
         $performanceStats = DB::table('cmis.performance_metrics as pm')
             ->join('cmis.campaigns as c', 'pm.campaign_id', '=', 'c.campaign_id')
-            ->where('c.org_id', $orgId)
             ->whereBetween('pm.collected_at', [$dateFrom, $dateTo])
             ->whereNull('c.deleted_at')
             ->selectRaw('
@@ -114,9 +111,8 @@ class AnalyticsRepository implements AnalyticsRepositoryInterface
             ')
             ->first();
 
-        // Get social posts count
+        // Get social posts count (RLS handles org filtering)
         $socialPosts = DB::table('cmis.scheduled_social_posts')
-            ->where('org_id', $orgId)
             ->whereNull('deleted_at')
             ->selectRaw('
                 COUNT(*) as total_posts,
@@ -159,19 +155,17 @@ class AnalyticsRepository implements AnalyticsRepositoryInterface
     }
 
     /**
-     * Get real-time analytics data
+     * Get real-time analytics data (automatically filtered by RLS)
      *
-     * @param string $orgId Organization UUID
      * @return Collection
      */
-    public function getRealTimeAnalytics(string $orgId): Collection
+    public function getRealTimeAnalytics(): Collection
     {
         // Get metrics from last hour
         $oneHourAgo = now()->subHour();
 
         $realtimeMetrics = DB::table('cmis.performance_metrics as pm')
             ->join('cmis.campaigns as c', 'pm.campaign_id', '=', 'c.campaign_id')
-            ->where('c.org_id', $orgId)
             ->where('pm.collected_at', '>=', $oneHourAgo)
             ->whereNull('c.deleted_at')
             ->selectRaw('
@@ -182,9 +176,8 @@ class AnalyticsRepository implements AnalyticsRepositoryInterface
             ')
             ->first();
 
-        // Get active campaigns count
+        // Get active campaigns count (RLS handles org filtering)
         $activeCampaigns = DB::table('cmis.campaigns')
-            ->where('org_id', $orgId)
             ->where('status', 'active')
             ->whereNull('deleted_at')
             ->count();
@@ -203,21 +196,19 @@ class AnalyticsRepository implements AnalyticsRepositoryInterface
     }
 
     /**
-     * Get platform-specific analytics
+     * Get platform-specific analytics (automatically filtered by RLS)
      *
-     * @param string $orgId Organization UUID
      * @param string $platform Platform name (meta, google, tiktok, etc.)
      * @param array $params Optional parameters
      * @return Collection
      */
-    public function getPlatformAnalytics(string $orgId, string $platform, array $params = []): Collection
+    public function getPlatformAnalytics(string $platform, array $params = []): Collection
     {
         $dateFrom = $params['date_from'] ?? now()->subDays(30)->toDateString();
         $dateTo = $params['date_to'] ?? now()->toDateString();
 
-        // Get campaigns for this platform
+        // Get campaigns for this platform (RLS handles org filtering)
         $campaignStats = DB::table('cmis.campaigns')
-            ->where('org_id', $orgId)
             ->where('platform', 'ILIKE', "%{$platform}%")
             ->whereNull('deleted_at')
             ->selectRaw('
@@ -227,10 +218,9 @@ class AnalyticsRepository implements AnalyticsRepositoryInterface
             ')
             ->first();
 
-        // Get performance metrics for platform campaigns
+        // Get performance metrics for platform campaigns (RLS handles org filtering)
         $performanceStats = DB::table('cmis.performance_metrics as pm')
             ->join('cmis.campaigns as c', 'pm.campaign_id', '=', 'c.campaign_id')
-            ->where('c.org_id', $orgId)
             ->where('c.platform', 'ILIKE', "%{$platform}%")
             ->whereBetween('pm.collected_at', [$dateFrom, $dateTo])
             ->whereNull('c.deleted_at')
@@ -270,21 +260,19 @@ class AnalyticsRepository implements AnalyticsRepositoryInterface
     }
 
     /**
-     * Get engagement metrics
+     * Get engagement metrics (automatically filtered by RLS)
      *
-     * @param string $orgId Organization UUID
      * @param array $params Optional parameters
      * @return Collection
      */
-    public function getEngagementMetrics(string $orgId, array $params = []): Collection
+    public function getEngagementMetrics(array $params = []): Collection
     {
         $dateFrom = $params['date_from'] ?? now()->subDays(30)->toDateString();
         $dateTo = $params['date_to'] ?? now()->toDateString();
 
-        // Get social engagement metrics
+        // Get social engagement metrics (RLS handles org filtering)
         $engagementStats = DB::table('cmis.performance_metrics as pm')
             ->join('cmis.campaigns as c', 'pm.campaign_id', '=', 'c.campaign_id')
-            ->where('c.org_id', $orgId)
             ->whereBetween('pm.collected_at', [$dateFrom, $dateTo])
             ->whereNull('c.deleted_at')
             ->selectRaw('
@@ -317,18 +305,16 @@ class AnalyticsRepository implements AnalyticsRepositoryInterface
     }
 
     /**
-     * Get conversion funnel data
+     * Get conversion funnel data (automatically filtered by RLS)
      *
-     * @param string $orgId Organization UUID
      * @param string $campaignId Campaign UUID
      * @return Collection
      */
-    public function getConversionFunnel(string $orgId, string $campaignId): Collection
+    public function getConversionFunnel(string $campaignId): Collection
     {
-        // Verify campaign belongs to org
+        // Get campaign (RLS verifies org access)
         $campaign = DB::table('cmis.campaigns')
             ->where('campaign_id', $campaignId)
-            ->where('org_id', $orgId)
             ->whereNull('deleted_at')
             ->first();
 
@@ -378,21 +364,19 @@ class AnalyticsRepository implements AnalyticsRepositoryInterface
     }
 
     /**
-     * Get channel attribution data
+     * Get channel attribution data (automatically filtered by RLS)
      *
-     * @param string $orgId Organization UUID
      * @param array $params Optional parameters
      * @return Collection
      */
-    public function getChannelAttribution(string $orgId, array $params = []): Collection
+    public function getChannelAttribution(array $params = []): Collection
     {
         $dateFrom = $params['date_from'] ?? now()->subDays(30)->toDateString();
         $dateTo = $params['date_to'] ?? now()->toDateString();
 
-        // Get attribution by platform/channel
+        // Get attribution by platform/channel (RLS handles org filtering)
         $attributionData = DB::table('cmis.campaigns as c')
             ->join('cmis.performance_metrics as pm', 'c.campaign_id', '=', 'pm.campaign_id')
-            ->where('c.org_id', $orgId)
             ->whereBetween('pm.collected_at', [$dateFrom, $dateTo])
             ->whereNull('c.deleted_at')
             ->groupBy('c.platform')
@@ -439,22 +423,20 @@ class AnalyticsRepository implements AnalyticsRepositoryInterface
     }
 
     /**
-     * Get campaign analytics
+     * Get campaign analytics (automatically filtered by RLS)
      *
-     * @param string $orgId Organization UUID
      * @param string $campaignId Campaign UUID
      * @param array $params Optional parameters
      * @return Collection
      */
-    public function getCampaignAnalytics(string $orgId, string $campaignId, array $params = []): Collection
+    public function getCampaignAnalytics(string $campaignId, array $params = []): Collection
     {
         $dateFrom = $params['date_from'] ?? now()->subDays(30)->toDateString();
         $dateTo = $params['date_to'] ?? now()->toDateString();
 
-        // Get campaign details
+        // Get campaign details (RLS verifies org access)
         $campaign = DB::table('cmis.campaigns')
             ->where('campaign_id', $campaignId)
-            ->where('org_id', $orgId)
             ->whereNull('deleted_at')
             ->first();
 
@@ -510,13 +492,12 @@ class AnalyticsRepository implements AnalyticsRepositoryInterface
     }
 
     /**
-     * Get audience demographics
+     * Get audience demographics (automatically filtered by RLS)
      *
-     * @param string $orgId Organization UUID
      * @param array $params Optional parameters
      * @return Collection
      */
-    public function getAudienceDemographics(string $orgId, array $params = []): Collection
+    public function getAudienceDemographics(array $params = []): Collection
     {
         // Note: Demographics data would typically come from platform-specific tables
         // For now, return structure with sample distribution
@@ -540,14 +521,13 @@ class AnalyticsRepository implements AnalyticsRepositoryInterface
     }
 
     /**
-     * Compare campaigns
+     * Compare campaigns (automatically filtered by RLS)
      *
-     * @param string $orgId Organization UUID
      * @param array $campaignIds Array of campaign UUIDs
      * @param array $params Optional parameters
      * @return Collection
      */
-    public function compareCampaigns(string $orgId, array $campaignIds, array $params = []): Collection
+    public function compareCampaigns(array $campaignIds, array $params = []): Collection
     {
         $dateFrom = $params['date_from'] ?? now()->subDays(30)->toDateString();
         $dateTo = $params['date_to'] ?? now()->toDateString();
@@ -556,13 +536,12 @@ class AnalyticsRepository implements AnalyticsRepositoryInterface
             return collect(['error' => 'No campaign IDs provided']);
         }
 
-        // Get campaigns and their metrics
+        // Get campaigns and their metrics (RLS handles org filtering)
         $campaignsData = DB::table('cmis.campaigns as c')
             ->leftJoin('cmis.performance_metrics as pm', function ($join) use ($dateFrom, $dateTo) {
                 $join->on('c.campaign_id', '=', 'pm.campaign_id')
                      ->whereBetween('pm.collected_at', [$dateFrom, $dateTo]);
             })
-            ->where('c.org_id', $orgId)
             ->whereIn('c.campaign_id', $campaignIds)
             ->whereNull('c.deleted_at')
             ->groupBy('c.campaign_id', 'c.name', 'c.status', 'c.platform', 'c.budget')
