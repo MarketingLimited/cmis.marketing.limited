@@ -1,0 +1,497 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites>
+  <testsuite name="Tests\Feature\Controllers\AI\AIRecommendationsTest" file="/home/user/cmis.marketing.limited/tests/Feature/Controllers/AI/AIRecommendationsTest.php" tests="12" assertions="0" errors="12" failures="0" skipped="0" time="0.000000">
+    <testcase name="it_respects_multi_tenancy_for_similar_content" file="/home/user/cmis.marketing.limited/tests/Feature/Controllers/AI/AIRecommendationsTest.php" line="399" class="Tests\Feature\Controllers\AI\AIRecommendationsTest" classname="Tests.Feature.Controllers.AI.AIRecommendationsTest" assertions="0" time="0.000000">
+      <error type="Illuminate\Database\QueryException">Tests\Feature\Controllers\AI\AIRecommendationsTest::it_respects_multi_tenancy_for_similar_content
+Illuminate\Database\QueryException: SQLSTATE[08006] [7] connection to server at "127.0.0.1", port 5432 failed: Connection refused
+	Is the server running on that host and accepting TCP/IP connections? (Connection: pgsql, SQL: select exists (select 1 from pg_class c, pg_namespace n where n.nspname = current_schema() and c.relname = 'migrations' and c.relkind in ('r', 'p') and n.oid = c.relnamespace))
+
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Connection.php:824
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Connection.php:778
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Connection.php:397
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Connection.php:343
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Connection.php:360
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Schema/Builder.php:174
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Migrations/DatabaseMigrationRepository.php:185
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Migrations/Migrator.php:753
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Console/Migrations/FreshCommand.php:67
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Migrations/Migrator.php:666
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Console/Migrations/FreshCommand.php:66
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php:36
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Container/Util.php:43
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php:96
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php:35
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Container/Container.php:836
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Console/Command.php:211
+/home/user/cmis.marketing.limited/vendor/symfony/console/Command/Command.php:318
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Console/Command.php:180
+/home/user/cmis.marketing.limited/vendor/symfony/console/Application.php:1055
+/home/user/cmis.marketing.limited/vendor/symfony/console/Application.php:356
+/home/user/cmis.marketing.limited/vendor/symfony/console/Application.php:195
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Console/Application.php:165
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Foundation/Console/Kernel.php:426
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Testing/PendingCommand.php:451
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Testing/PendingCommand.php:675
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/InteractsWithConsole.php:87
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Foundation/Testing/RefreshDatabase.php:101
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Foundation/Testing/RefreshDatabase.php:84
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Foundation/Testing/RefreshDatabase.php:25
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/InteractsWithTestCaseLifecycle.php:209
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/InteractsWithTestCaseLifecycle.php:97
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Foundation/Testing/TestCase.php:63
+/home/user/cmis.marketing.limited/tests/TestCase.php:32
+/home/user/cmis.marketing.limited/tests/Feature/Controllers/AI/AIRecommendationsTest.php:37</error>
+    </testcase>
+    <testcase name="it_validates_optimal_posting_times_request" file="/home/user/cmis.marketing.limited/tests/Feature/Controllers/AI/AIRecommendationsTest.php" line="328" class="Tests\Feature\Controllers\AI\AIRecommendationsTest" classname="Tests.Feature.Controllers.AI.AIRecommendationsTest" assertions="0" time="0.000000">
+      <error type="Illuminate\Database\QueryException">Tests\Feature\Controllers\AI\AIRecommendationsTest::it_validates_optimal_posting_times_request
+Illuminate\Database\QueryException: SQLSTATE[08006] [7] connection to server at "127.0.0.1", port 5432 failed: Connection refused
+	Is the server running on that host and accepting TCP/IP connections? (Connection: pgsql, SQL: select exists (select 1 from pg_class c, pg_namespace n where n.nspname = current_schema() and c.relname = 'migrations' and c.relkind in ('r', 'p') and n.oid = c.relnamespace))
+
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Connection.php:824
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Connection.php:778
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Connection.php:397
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Connection.php:343
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Connection.php:360
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Schema/Builder.php:174
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Migrations/DatabaseMigrationRepository.php:185
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Migrations/Migrator.php:753
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Console/Migrations/FreshCommand.php:67
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Migrations/Migrator.php:666
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Console/Migrations/FreshCommand.php:66
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php:36
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Container/Util.php:43
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php:96
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php:35
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Container/Container.php:836
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Console/Command.php:211
+/home/user/cmis.marketing.limited/vendor/symfony/console/Command/Command.php:318
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Console/Command.php:180
+/home/user/cmis.marketing.limited/vendor/symfony/console/Application.php:1055
+/home/user/cmis.marketing.limited/vendor/symfony/console/Application.php:356
+/home/user/cmis.marketing.limited/vendor/symfony/console/Application.php:195
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Console/Application.php:165
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Foundation/Console/Kernel.php:426
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Testing/PendingCommand.php:451
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Testing/PendingCommand.php:675
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/InteractsWithConsole.php:87
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Foundation/Testing/RefreshDatabase.php:101
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Foundation/Testing/RefreshDatabase.php:84
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Foundation/Testing/RefreshDatabase.php:25
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/InteractsWithTestCaseLifecycle.php:209
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/InteractsWithTestCaseLifecycle.php:97
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Foundation/Testing/TestCase.php:63
+/home/user/cmis.marketing.limited/tests/TestCase.php:32
+/home/user/cmis.marketing.limited/tests/Feature/Controllers/AI/AIRecommendationsTest.php:37</error>
+    </testcase>
+    <testcase name="it_can_get_best_performing_content" file="/home/user/cmis.marketing.limited/tests/Feature/Controllers/AI/AIRecommendationsTest.php" line="224" class="Tests\Feature\Controllers\AI\AIRecommendationsTest" classname="Tests.Feature.Controllers.AI.AIRecommendationsTest" assertions="0" time="0.000000">
+      <error type="Illuminate\Database\QueryException">Tests\Feature\Controllers\AI\AIRecommendationsTest::it_can_get_best_performing_content
+Illuminate\Database\QueryException: SQLSTATE[08006] [7] connection to server at "127.0.0.1", port 5432 failed: Connection refused
+	Is the server running on that host and accepting TCP/IP connections? (Connection: pgsql, SQL: select exists (select 1 from pg_class c, pg_namespace n where n.nspname = current_schema() and c.relname = 'migrations' and c.relkind in ('r', 'p') and n.oid = c.relnamespace))
+
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Connection.php:824
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Connection.php:778
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Connection.php:397
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Connection.php:343
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Connection.php:360
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Schema/Builder.php:174
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Migrations/DatabaseMigrationRepository.php:185
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Migrations/Migrator.php:753
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Console/Migrations/FreshCommand.php:67
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Migrations/Migrator.php:666
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Console/Migrations/FreshCommand.php:66
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php:36
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Container/Util.php:43
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php:96
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php:35
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Container/Container.php:836
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Console/Command.php:211
+/home/user/cmis.marketing.limited/vendor/symfony/console/Command/Command.php:318
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Console/Command.php:180
+/home/user/cmis.marketing.limited/vendor/symfony/console/Application.php:1055
+/home/user/cmis.marketing.limited/vendor/symfony/console/Application.php:356
+/home/user/cmis.marketing.limited/vendor/symfony/console/Application.php:195
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Console/Application.php:165
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Foundation/Console/Kernel.php:426
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Testing/PendingCommand.php:451
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Testing/PendingCommand.php:675
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/InteractsWithConsole.php:87
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Foundation/Testing/RefreshDatabase.php:101
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Foundation/Testing/RefreshDatabase.php:84
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Foundation/Testing/RefreshDatabase.php:25
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/InteractsWithTestCaseLifecycle.php:209
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/InteractsWithTestCaseLifecycle.php:97
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Foundation/Testing/TestCase.php:63
+/home/user/cmis.marketing.limited/tests/TestCase.php:32
+/home/user/cmis.marketing.limited/tests/Feature/Controllers/AI/AIRecommendationsTest.php:37</error>
+    </testcase>
+    <testcase name="it_requires_authentication" file="/home/user/cmis.marketing.limited/tests/Feature/Controllers/AI/AIRecommendationsTest.php" line="67" class="Tests\Feature\Controllers\AI\AIRecommendationsTest" classname="Tests.Feature.Controllers.AI.AIRecommendationsTest" assertions="0" time="0.000000">
+      <error type="Illuminate\Database\QueryException">Tests\Feature\Controllers\AI\AIRecommendationsTest::it_requires_authentication
+Illuminate\Database\QueryException: SQLSTATE[08006] [7] connection to server at "127.0.0.1", port 5432 failed: Connection refused
+	Is the server running on that host and accepting TCP/IP connections? (Connection: pgsql, SQL: select exists (select 1 from pg_class c, pg_namespace n where n.nspname = current_schema() and c.relname = 'migrations' and c.relkind in ('r', 'p') and n.oid = c.relnamespace))
+
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Connection.php:824
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Connection.php:778
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Connection.php:397
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Connection.php:343
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Connection.php:360
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Schema/Builder.php:174
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Migrations/DatabaseMigrationRepository.php:185
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Migrations/Migrator.php:753
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Console/Migrations/FreshCommand.php:67
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Migrations/Migrator.php:666
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Console/Migrations/FreshCommand.php:66
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php:36
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Container/Util.php:43
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php:96
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php:35
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Container/Container.php:836
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Console/Command.php:211
+/home/user/cmis.marketing.limited/vendor/symfony/console/Command/Command.php:318
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Console/Command.php:180
+/home/user/cmis.marketing.limited/vendor/symfony/console/Application.php:1055
+/home/user/cmis.marketing.limited/vendor/symfony/console/Application.php:356
+/home/user/cmis.marketing.limited/vendor/symfony/console/Application.php:195
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Console/Application.php:165
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Foundation/Console/Kernel.php:426
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Testing/PendingCommand.php:451
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Testing/PendingCommand.php:675
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/InteractsWithConsole.php:87
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Foundation/Testing/RefreshDatabase.php:101
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Foundation/Testing/RefreshDatabase.php:84
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Foundation/Testing/RefreshDatabase.php:25
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/InteractsWithTestCaseLifecycle.php:209
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/InteractsWithTestCaseLifecycle.php:97
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Foundation/Testing/TestCase.php:63
+/home/user/cmis.marketing.limited/tests/TestCase.php:32
+/home/user/cmis.marketing.limited/tests/Feature/Controllers/AI/AIRecommendationsTest.php:37</error>
+    </testcase>
+    <testcase name="it_can_get_optimal_posting_times" file="/home/user/cmis.marketing.limited/tests/Feature/Controllers/AI/AIRecommendationsTest.php" line="289" class="Tests\Feature\Controllers\AI\AIRecommendationsTest" classname="Tests.Feature.Controllers.AI.AIRecommendationsTest" assertions="0" time="0.000000">
+      <error type="Illuminate\Database\QueryException">Tests\Feature\Controllers\AI\AIRecommendationsTest::it_can_get_optimal_posting_times
+Illuminate\Database\QueryException: SQLSTATE[08006] [7] connection to server at "127.0.0.1", port 5432 failed: Connection refused
+	Is the server running on that host and accepting TCP/IP connections? (Connection: pgsql, SQL: select exists (select 1 from pg_class c, pg_namespace n where n.nspname = current_schema() and c.relname = 'migrations' and c.relkind in ('r', 'p') and n.oid = c.relnamespace))
+
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Connection.php:824
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Connection.php:778
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Connection.php:397
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Connection.php:343
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Connection.php:360
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Schema/Builder.php:174
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Migrations/DatabaseMigrationRepository.php:185
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Migrations/Migrator.php:753
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Console/Migrations/FreshCommand.php:67
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Migrations/Migrator.php:666
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Console/Migrations/FreshCommand.php:66
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php:36
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Container/Util.php:43
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php:96
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php:35
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Container/Container.php:836
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Console/Command.php:211
+/home/user/cmis.marketing.limited/vendor/symfony/console/Command/Command.php:318
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Console/Command.php:180
+/home/user/cmis.marketing.limited/vendor/symfony/console/Application.php:1055
+/home/user/cmis.marketing.limited/vendor/symfony/console/Application.php:356
+/home/user/cmis.marketing.limited/vendor/symfony/console/Application.php:195
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Console/Application.php:165
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Foundation/Console/Kernel.php:426
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Testing/PendingCommand.php:451
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Testing/PendingCommand.php:675
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/InteractsWithConsole.php:87
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Foundation/Testing/RefreshDatabase.php:101
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Foundation/Testing/RefreshDatabase.php:84
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Foundation/Testing/RefreshDatabase.php:25
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/InteractsWithTestCaseLifecycle.php:209
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/InteractsWithTestCaseLifecycle.php:97
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Foundation/Testing/TestCase.php:63
+/home/user/cmis.marketing.limited/tests/TestCase.php:32
+/home/user/cmis.marketing.limited/tests/Feature/Controllers/AI/AIRecommendationsTest.php:37</error>
+    </testcase>
+    <testcase name="it_validates_similar_content_request" file="/home/user/cmis.marketing.limited/tests/Feature/Controllers/AI/AIRecommendationsTest.php" line="128" class="Tests\Feature\Controllers\AI\AIRecommendationsTest" classname="Tests.Feature.Controllers.AI.AIRecommendationsTest" assertions="0" time="0.000000">
+      <error type="Illuminate\Database\QueryException">Tests\Feature\Controllers\AI\AIRecommendationsTest::it_validates_similar_content_request
+Illuminate\Database\QueryException: SQLSTATE[08006] [7] connection to server at "127.0.0.1", port 5432 failed: Connection refused
+	Is the server running on that host and accepting TCP/IP connections? (Connection: pgsql, SQL: select exists (select 1 from pg_class c, pg_namespace n where n.nspname = current_schema() and c.relname = 'migrations' and c.relkind in ('r', 'p') and n.oid = c.relnamespace))
+
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Connection.php:824
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Connection.php:778
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Connection.php:397
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Connection.php:343
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Connection.php:360
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Schema/Builder.php:174
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Migrations/DatabaseMigrationRepository.php:185
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Migrations/Migrator.php:753
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Console/Migrations/FreshCommand.php:67
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Migrations/Migrator.php:666
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Console/Migrations/FreshCommand.php:66
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php:36
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Container/Util.php:43
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php:96
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php:35
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Container/Container.php:836
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Console/Command.php:211
+/home/user/cmis.marketing.limited/vendor/symfony/console/Command/Command.php:318
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Console/Command.php:180
+/home/user/cmis.marketing.limited/vendor/symfony/console/Application.php:1055
+/home/user/cmis.marketing.limited/vendor/symfony/console/Application.php:356
+/home/user/cmis.marketing.limited/vendor/symfony/console/Application.php:195
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Console/Application.php:165
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Foundation/Console/Kernel.php:426
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Testing/PendingCommand.php:451
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Testing/PendingCommand.php:675
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/InteractsWithConsole.php:87
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Foundation/Testing/RefreshDatabase.php:101
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Foundation/Testing/RefreshDatabase.php:84
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Foundation/Testing/RefreshDatabase.php:25
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/InteractsWithTestCaseLifecycle.php:209
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/InteractsWithTestCaseLifecycle.php:97
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Foundation/Testing/TestCase.php:63
+/home/user/cmis.marketing.limited/tests/TestCase.php:32
+/home/user/cmis.marketing.limited/tests/Feature/Controllers/AI/AIRecommendationsTest.php:37</error>
+    </testcase>
+    <testcase name="it_validates_best_performing_content_request" file="/home/user/cmis.marketing.limited/tests/Feature/Controllers/AI/AIRecommendationsTest.php" line="271" class="Tests\Feature\Controllers\AI\AIRecommendationsTest" classname="Tests.Feature.Controllers.AI.AIRecommendationsTest" assertions="0" time="0.000000">
+      <error type="Illuminate\Database\QueryException">Tests\Feature\Controllers\AI\AIRecommendationsTest::it_validates_best_performing_content_request
+Illuminate\Database\QueryException: SQLSTATE[08006] [7] connection to server at "127.0.0.1", port 5432 failed: Connection refused
+	Is the server running on that host and accepting TCP/IP connections? (Connection: pgsql, SQL: select exists (select 1 from pg_class c, pg_namespace n where n.nspname = current_schema() and c.relname = 'migrations' and c.relkind in ('r', 'p') and n.oid = c.relnamespace))
+
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Connection.php:824
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Connection.php:778
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Connection.php:397
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Connection.php:343
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Connection.php:360
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Schema/Builder.php:174
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Migrations/DatabaseMigrationRepository.php:185
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Migrations/Migrator.php:753
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Console/Migrations/FreshCommand.php:67
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Migrations/Migrator.php:666
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Console/Migrations/FreshCommand.php:66
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php:36
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Container/Util.php:43
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php:96
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php:35
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Container/Container.php:836
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Console/Command.php:211
+/home/user/cmis.marketing.limited/vendor/symfony/console/Command/Command.php:318
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Console/Command.php:180
+/home/user/cmis.marketing.limited/vendor/symfony/console/Application.php:1055
+/home/user/cmis.marketing.limited/vendor/symfony/console/Application.php:356
+/home/user/cmis.marketing.limited/vendor/symfony/console/Application.php:195
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Console/Application.php:165
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Foundation/Console/Kernel.php:426
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Testing/PendingCommand.php:451
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Testing/PendingCommand.php:675
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/InteractsWithConsole.php:87
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Foundation/Testing/RefreshDatabase.php:101
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Foundation/Testing/RefreshDatabase.php:84
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Foundation/Testing/RefreshDatabase.php:25
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/InteractsWithTestCaseLifecycle.php:209
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/InteractsWithTestCaseLifecycle.php:97
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Foundation/Testing/TestCase.php:63
+/home/user/cmis.marketing.limited/tests/TestCase.php:32
+/home/user/cmis.marketing.limited/tests/Feature/Controllers/AI/AIRecommendationsTest.php:37</error>
+    </testcase>
+    <testcase name="it_validates_campaign_content_recommendations_request" file="/home/user/cmis.marketing.limited/tests/Feature/Controllers/AI/AIRecommendationsTest.php" line="206" class="Tests\Feature\Controllers\AI\AIRecommendationsTest" classname="Tests.Feature.Controllers.AI.AIRecommendationsTest" assertions="0" time="0.000000">
+      <error type="Illuminate\Database\QueryException">Tests\Feature\Controllers\AI\AIRecommendationsTest::it_validates_campaign_content_recommendations_request
+Illuminate\Database\QueryException: SQLSTATE[08006] [7] connection to server at "127.0.0.1", port 5432 failed: Connection refused
+	Is the server running on that host and accepting TCP/IP connections? (Connection: pgsql, SQL: select exists (select 1 from pg_class c, pg_namespace n where n.nspname = current_schema() and c.relname = 'migrations' and c.relkind in ('r', 'p') and n.oid = c.relnamespace))
+
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Connection.php:824
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Connection.php:778
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Connection.php:397
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Connection.php:343
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Connection.php:360
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Schema/Builder.php:174
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Migrations/DatabaseMigrationRepository.php:185
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Migrations/Migrator.php:753
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Console/Migrations/FreshCommand.php:67
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Migrations/Migrator.php:666
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Console/Migrations/FreshCommand.php:66
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php:36
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Container/Util.php:43
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php:96
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php:35
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Container/Container.php:836
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Console/Command.php:211
+/home/user/cmis.marketing.limited/vendor/symfony/console/Command/Command.php:318
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Console/Command.php:180
+/home/user/cmis.marketing.limited/vendor/symfony/console/Application.php:1055
+/home/user/cmis.marketing.limited/vendor/symfony/console/Application.php:356
+/home/user/cmis.marketing.limited/vendor/symfony/console/Application.php:195
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Console/Application.php:165
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Foundation/Console/Kernel.php:426
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Testing/PendingCommand.php:451
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Testing/PendingCommand.php:675
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/InteractsWithConsole.php:87
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Foundation/Testing/RefreshDatabase.php:101
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Foundation/Testing/RefreshDatabase.php:84
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Foundation/Testing/RefreshDatabase.php:25
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/InteractsWithTestCaseLifecycle.php:209
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/InteractsWithTestCaseLifecycle.php:97
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Foundation/Testing/TestCase.php:63
+/home/user/cmis.marketing.limited/tests/TestCase.php:32
+/home/user/cmis.marketing.limited/tests/Feature/Controllers/AI/AIRecommendationsTest.php:37</error>
+    </testcase>
+    <testcase name="it_can_get_audience_recommendations" file="/home/user/cmis.marketing.limited/tests/Feature/Controllers/AI/AIRecommendationsTest.php" line="337" class="Tests\Feature\Controllers\AI\AIRecommendationsTest" classname="Tests.Feature.Controllers.AI.AIRecommendationsTest" assertions="0" time="0.000000">
+      <error type="Illuminate\Database\QueryException">Tests\Feature\Controllers\AI\AIRecommendationsTest::it_can_get_audience_recommendations
+Illuminate\Database\QueryException: SQLSTATE[08006] [7] connection to server at "127.0.0.1", port 5432 failed: Connection refused
+	Is the server running on that host and accepting TCP/IP connections? (Connection: pgsql, SQL: select exists (select 1 from pg_class c, pg_namespace n where n.nspname = current_schema() and c.relname = 'migrations' and c.relkind in ('r', 'p') and n.oid = c.relnamespace))
+
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Connection.php:824
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Connection.php:778
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Connection.php:397
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Connection.php:343
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Connection.php:360
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Schema/Builder.php:174
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Migrations/DatabaseMigrationRepository.php:185
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Migrations/Migrator.php:753
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Console/Migrations/FreshCommand.php:67
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Migrations/Migrator.php:666
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Console/Migrations/FreshCommand.php:66
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php:36
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Container/Util.php:43
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php:96
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php:35
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Container/Container.php:836
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Console/Command.php:211
+/home/user/cmis.marketing.limited/vendor/symfony/console/Command/Command.php:318
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Console/Command.php:180
+/home/user/cmis.marketing.limited/vendor/symfony/console/Application.php:1055
+/home/user/cmis.marketing.limited/vendor/symfony/console/Application.php:356
+/home/user/cmis.marketing.limited/vendor/symfony/console/Application.php:195
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Console/Application.php:165
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Foundation/Console/Kernel.php:426
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Testing/PendingCommand.php:451
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Testing/PendingCommand.php:675
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/InteractsWithConsole.php:87
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Foundation/Testing/RefreshDatabase.php:101
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Foundation/Testing/RefreshDatabase.php:84
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Foundation/Testing/RefreshDatabase.php:25
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/InteractsWithTestCaseLifecycle.php:209
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/InteractsWithTestCaseLifecycle.php:97
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Foundation/Testing/TestCase.php:63
+/home/user/cmis.marketing.limited/tests/TestCase.php:32
+/home/user/cmis.marketing.limited/tests/Feature/Controllers/AI/AIRecommendationsTest.php:37</error>
+    </testcase>
+    <testcase name="it_can_get_similar_content" file="/home/user/cmis.marketing.limited/tests/Feature/Controllers/AI/AIRecommendationsTest.php" line="80" class="Tests\Feature\Controllers\AI\AIRecommendationsTest" classname="Tests.Feature.Controllers.AI.AIRecommendationsTest" assertions="0" time="0.000000">
+      <error type="Illuminate\Database\QueryException">Tests\Feature\Controllers\AI\AIRecommendationsTest::it_can_get_similar_content
+Illuminate\Database\QueryException: SQLSTATE[08006] [7] connection to server at "127.0.0.1", port 5432 failed: Connection refused
+	Is the server running on that host and accepting TCP/IP connections? (Connection: pgsql, SQL: select exists (select 1 from pg_class c, pg_namespace n where n.nspname = current_schema() and c.relname = 'migrations' and c.relkind in ('r', 'p') and n.oid = c.relnamespace))
+
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Connection.php:824
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Connection.php:778
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Connection.php:397
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Connection.php:343
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Connection.php:360
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Schema/Builder.php:174
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Migrations/DatabaseMigrationRepository.php:185
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Migrations/Migrator.php:753
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Console/Migrations/FreshCommand.php:67
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Migrations/Migrator.php:666
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Console/Migrations/FreshCommand.php:66
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php:36
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Container/Util.php:43
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php:96
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php:35
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Container/Container.php:836
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Console/Command.php:211
+/home/user/cmis.marketing.limited/vendor/symfony/console/Command/Command.php:318
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Console/Command.php:180
+/home/user/cmis.marketing.limited/vendor/symfony/console/Application.php:1055
+/home/user/cmis.marketing.limited/vendor/symfony/console/Application.php:356
+/home/user/cmis.marketing.limited/vendor/symfony/console/Application.php:195
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Console/Application.php:165
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Foundation/Console/Kernel.php:426
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Testing/PendingCommand.php:451
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Testing/PendingCommand.php:675
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/InteractsWithConsole.php:87
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Foundation/Testing/RefreshDatabase.php:101
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Foundation/Testing/RefreshDatabase.php:84
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Foundation/Testing/RefreshDatabase.php:25
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/InteractsWithTestCaseLifecycle.php:209
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/InteractsWithTestCaseLifecycle.php:97
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Foundation/Testing/TestCase.php:63
+/home/user/cmis.marketing.limited/tests/TestCase.php:32
+/home/user/cmis.marketing.limited/tests/Feature/Controllers/AI/AIRecommendationsTest.php:37</error>
+    </testcase>
+    <testcase name="it_enforces_rate_limiting_on_ai_endpoints" file="/home/user/cmis.marketing.limited/tests/Feature/Controllers/AI/AIRecommendationsTest.php" line="372" class="Tests\Feature\Controllers\AI\AIRecommendationsTest" classname="Tests.Feature.Controllers.AI.AIRecommendationsTest" assertions="0" time="0.000000">
+      <error type="Illuminate\Database\QueryException">Tests\Feature\Controllers\AI\AIRecommendationsTest::it_enforces_rate_limiting_on_ai_endpoints
+Illuminate\Database\QueryException: SQLSTATE[08006] [7] connection to server at "127.0.0.1", port 5432 failed: Connection refused
+	Is the server running on that host and accepting TCP/IP connections? (Connection: pgsql, SQL: select exists (select 1 from pg_class c, pg_namespace n where n.nspname = current_schema() and c.relname = 'migrations' and c.relkind in ('r', 'p') and n.oid = c.relnamespace))
+
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Connection.php:824
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Connection.php:778
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Connection.php:397
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Connection.php:343
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Connection.php:360
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Schema/Builder.php:174
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Migrations/DatabaseMigrationRepository.php:185
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Migrations/Migrator.php:753
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Console/Migrations/FreshCommand.php:67
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Migrations/Migrator.php:666
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Console/Migrations/FreshCommand.php:66
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php:36
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Container/Util.php:43
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php:96
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php:35
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Container/Container.php:836
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Console/Command.php:211
+/home/user/cmis.marketing.limited/vendor/symfony/console/Command/Command.php:318
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Console/Command.php:180
+/home/user/cmis.marketing.limited/vendor/symfony/console/Application.php:1055
+/home/user/cmis.marketing.limited/vendor/symfony/console/Application.php:356
+/home/user/cmis.marketing.limited/vendor/symfony/console/Application.php:195
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Console/Application.php:165
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Foundation/Console/Kernel.php:426
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Testing/PendingCommand.php:451
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Testing/PendingCommand.php:675
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/InteractsWithConsole.php:87
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Foundation/Testing/RefreshDatabase.php:101
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Foundation/Testing/RefreshDatabase.php:84
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Foundation/Testing/RefreshDatabase.php:25
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/InteractsWithTestCaseLifecycle.php:209
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/InteractsWithTestCaseLifecycle.php:97
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Foundation/Testing/TestCase.php:63
+/home/user/cmis.marketing.limited/tests/TestCase.php:32
+/home/user/cmis.marketing.limited/tests/Feature/Controllers/AI/AIRecommendationsTest.php:37</error>
+    </testcase>
+    <testcase name="it_can_get_campaign_content_recommendations" file="/home/user/cmis.marketing.limited/tests/Feature/Controllers/AI/AIRecommendationsTest.php" line="164" class="Tests\Feature\Controllers\AI\AIRecommendationsTest" classname="Tests.Feature.Controllers.AI.AIRecommendationsTest" assertions="0" time="0.000000">
+      <error type="Illuminate\Database\QueryException">Tests\Feature\Controllers\AI\AIRecommendationsTest::it_can_get_campaign_content_recommendations
+Illuminate\Database\QueryException: SQLSTATE[08006] [7] connection to server at "127.0.0.1", port 5432 failed: Connection refused
+	Is the server running on that host and accepting TCP/IP connections? (Connection: pgsql, SQL: select exists (select 1 from pg_class c, pg_namespace n where n.nspname = current_schema() and c.relname = 'migrations' and c.relkind in ('r', 'p') and n.oid = c.relnamespace))
+
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Connection.php:824
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Connection.php:778
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Connection.php:397
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Connection.php:343
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Connection.php:360
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Schema/Builder.php:174
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Migrations/DatabaseMigrationRepository.php:185
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Migrations/Migrator.php:753
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Console/Migrations/FreshCommand.php:67
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Migrations/Migrator.php:666
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Database/Console/Migrations/FreshCommand.php:66
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php:36
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Container/Util.php:43
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php:96
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php:35
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Container/Container.php:836
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Console/Command.php:211
+/home/user/cmis.marketing.limited/vendor/symfony/console/Command/Command.php:318
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Console/Command.php:180
+/home/user/cmis.marketing.limited/vendor/symfony/console/Application.php:1055
+/home/user/cmis.marketing.limited/vendor/symfony/console/Application.php:356
+/home/user/cmis.marketing.limited/vendor/symfony/console/Application.php:195
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Console/Application.php:165
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Foundation/Console/Kernel.php:426
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Testing/PendingCommand.php:451
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Testing/PendingCommand.php:675
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/InteractsWithConsole.php:87
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Foundation/Testing/RefreshDatabase.php:101
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Foundation/Testing/RefreshDatabase.php:84
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Foundation/Testing/RefreshDatabase.php:25
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/InteractsWithTestCaseLifecycle.php:209
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/InteractsWithTestCaseLifecycle.php:97
+/home/user/cmis.marketing.limited/vendor/laravel/framework/src/Illuminate/Foundation/Testing/TestCase.php:63
+/home/user/cmis.marketing.limited/tests/TestCase.php:32
+/home/user/cmis.marketing.limited/tests/Feature/Controllers/AI/AIRecommendationsTest.php:37</error>
+    </testcase>
+  </testsuite>
+</testsuites>

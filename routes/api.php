@@ -739,6 +739,21 @@ Route::middleware(['auth:sanctum', 'validate.org.access', 'set.db.context'])
 
     /*
     |----------------------------------------------------------------------
+    | AI Recommendations (Phase 3 - Advanced AI Analytics)
+    | Rate Limited: 10 requests per minute per user
+    |----------------------------------------------------------------------
+    */
+    Route::prefix('ai/recommendations')->name('ai.recommendations.')->middleware('throttle.ai')->group(function () {
+        // Similar Content Discovery
+        Route::post('/similar', [App\Http\Controllers\AI\AIRecommendationsController::class, 'getSimilarContent'])->name('similar');
+
+        // Campaign-Specific Recommendations
+        Route::get('/campaign/{campaign_id}/content', [App\Http\Controllers\AI\AIRecommendationsController::class, 'getCampaignContentRecommendations'])->name('campaign.content');
+        Route::get('/campaign/{campaign_id}/audience', [App\Http\Controllers\AI\AIRecommendationsController::class, 'getAudienceRecommendations'])->name('campaign.audience');
+    });
+
+    /*
+    |----------------------------------------------------------------------
     | الجدولة المتقدمة (Advanced Scheduling) - Sprint 6.3
     |----------------------------------------------------------------------
     */
@@ -1374,6 +1389,12 @@ Route::middleware(['auth:sanctum', 'validate.org.access', 'set.db.context'])
             Route::get('/campaigns/{campaign}/forecast', [App\Http\Controllers\API\PredictiveAnalyticsController::class, 'forecastCampaign'])->name('forecast-campaign');
             Route::post('/campaigns/{campaign}/scenarios', [App\Http\Controllers\API\PredictiveAnalyticsController::class, 'compareScenarios'])->name('compare-scenarios');
             Route::get('/campaigns/{campaign}/trends', [App\Http\Controllers\API\PredictiveAnalyticsController::class, 'analyzeTrends'])->name('analyze-trends');
+        });
+
+        // AI Recommendations (Phase 3 - Advanced AI Analytics)
+        Route::prefix('ai/recommendations')->name('ai.recommendations.')->middleware('throttle.ai')->group(function () {
+            Route::get('/best-performing', [App\Http\Controllers\AI\AIRecommendationsController::class, 'getBestPerformingContent'])->name('best-performing');
+            Route::get('/optimal-times', [App\Http\Controllers\AI\AIRecommendationsController::class, 'getOptimalPostingTimes'])->name('optimal-times');
         });
 
         // Knowledge Learning System (من Phase 5C)

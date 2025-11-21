@@ -1,14 +1,14 @@
-Semantic Search Service (Tests\Unit\Services\CMIS\SemanticSearchService)
- [ ] It can perform semantic search
- [ ] It can generate embeddings for text
- [ ] It caches embeddings for same text
- [ ] It can find similar content
- [ ] It filters search by content type
- [ ] It respects org isolation
- [ ] It handles empty search results
- [ ] It can index new content
- [ ] It handles api errors gracefully
-
-Veo Video Service (Tests\Unit\Services\AI\VeoVideoService)
- [ ] It supports different aspect ratios
+AIRecommendations (Tests\Feature\Controllers\AI\AIRecommendations)
+ [ ] It requires authentication
+ [ ] It can get similar content
+ [ ] It validates similar content request
+ [ ] It can get campaign content recommendations
+ [ ] It validates campaign content recommendations request
+ [ ] It can get best performing content
+ [ ] It validates best performing content request
+ [ ] It can get optimal posting times
+ [ ] It validates optimal posting times request
+ [ ] It can get audience recommendations
+ [ ] It enforces rate limiting on ai endpoints
+ [ ] It respects multi tenancy for similar content
 
