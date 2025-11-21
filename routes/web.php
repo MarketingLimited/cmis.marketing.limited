@@ -6,6 +6,7 @@ use App\Http\Controllers\Campaigns\CampaignController;
 use App\Http\Controllers\Creative\CreativeAssetController;
 use App\Http\Controllers\Creative\OverviewController as CreativeOverviewController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\EnterpriseAnalyticsController;
 use App\Http\Controllers\Offerings\BundleController;
 use App\Http\Controllers\Offerings\OverviewController as OfferingsOverviewController;
 use App\Http\Controllers\Offerings\ProductController;
@@ -132,11 +133,32 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/bundles', [BundleController::class, 'index'])->name('offerings.bundles');
 
-    // ==================== Analytics ====================
-    Route::get('/analytics', [AnalyticsOverviewController::class, 'index'])->name('analytics.index');
-    Route::get('/kpis', [AnalyticsOverviewController::class, 'index'])->name('analytics.kpis');
+    // ==================== Analytics (Legacy) ====================
+    Route::get('/analytics/legacy', [AnalyticsOverviewController::class, 'index'])->name('analytics.legacy');
     Route::get('/reports', [AnalyticsOverviewController::class, 'index'])->name('analytics.reports');
     Route::get('/metrics', [AnalyticsOverviewController::class, 'index'])->name('analytics.metrics');
+
+    // ==================== Enterprise Analytics (Phase 9) ====================
+    Route::prefix('analytics')->name('analytics.')->group(function () {
+        // Enterprise Hub - Unified dashboard
+        Route::get('/enterprise', [EnterpriseAnalyticsController::class, 'enterprise'])->name('enterprise');
+
+        // Real-Time Dashboard
+        Route::get('/realtime', [EnterpriseAnalyticsController::class, 'realtime'])->name('realtime');
+
+        // Campaign Analytics
+        Route::get('/campaigns', [EnterpriseAnalyticsController::class, 'campaigns'])->name('campaigns');
+        Route::get('/campaign/{campaign_id}', [EnterpriseAnalyticsController::class, 'campaign'])->name('campaign');
+
+        // KPI Dashboard
+        Route::get('/kpis', [EnterpriseAnalyticsController::class, 'kpis'])->name('kpis');
+        Route::get('/kpis/{entity_type}/{entity_id}', [EnterpriseAnalyticsController::class, 'kpis'])->name('kpis.entity');
+
+        // Default route - redirect to enterprise hub
+        Route::get('/', function () {
+            return redirect()->route('analytics.enterprise');
+        })->name('index');
+    });
 
     // ==================== Creative ====================
     Route::get('/creative', [CreativeOverviewController::class, 'index'])->name('creative.index');

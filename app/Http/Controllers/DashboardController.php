@@ -158,21 +158,15 @@ class DashboardController extends Controller
     }
 
     /**
-     * Get dashboard statistics
+     * Get dashboard statistics (automatically filtered by RLS)
      */
     public function stats(Request $request)
     {
-        $orgId = $this->resolveOrgId($request);
-
-        if (!$orgId) {
-            return response()->json(['error' => 'No active organization found'], 404);
-        }
-
         $stats = [
-            'total_campaigns' => Campaign::where('org_id', $orgId)->count(),
-            'active_campaigns' => Campaign::where('org_id', $orgId)->where('status', 'active')->count(),
-            'total_content' => DB::table('cmis.content_items')->where('org_id', $orgId)->count(),
-            'total_assets' => CreativeAsset::where('org_id', $orgId)->count(),
+            'total_campaigns' => Campaign::count(),
+            'active_campaigns' => Campaign::where('status', 'active')->count(),
+            'total_content' => DB::table('cmis.content_items')->count(),
+            'total_assets' => CreativeAsset::count(),
         ];
 
         return response()->json(['data' => $stats]);
@@ -195,21 +189,15 @@ class DashboardController extends Controller
     }
 
     /**
-     * Get campaigns summary
+     * Get campaigns summary (automatically filtered by RLS)
      */
     public function campaignsSummary(Request $request)
     {
-        $orgId = $this->resolveOrgId($request);
-
-        if (!$orgId) {
-            return response()->json(['error' => 'No active organization found'], 404);
-        }
-
         $summary = [
-            'total' => Campaign::where('org_id', $orgId)->count(),
-            'active' => Campaign::where('org_id', $orgId)->where('status', 'active')->count(),
-            'completed' => Campaign::where('org_id', $orgId)->where('status', 'completed')->count(),
-            'draft' => Campaign::where('org_id', $orgId)->where('status', 'draft')->count(),
+            'total' => Campaign::count(),
+            'active' => Campaign::where('status', 'active')->count(),
+            'completed' => Campaign::where('status', 'completed')->count(),
+            'draft' => Campaign::where('status', 'draft')->count(),
         ];
 
         return response()->json(['data' => $summary]);
@@ -237,18 +225,11 @@ class DashboardController extends Controller
     }
 
     /**
-     * Get upcoming social media posts
+     * Get upcoming social media posts (automatically filtered by RLS)
      */
     public function upcomingPosts(Request $request)
     {
-        $orgId = $this->resolveOrgId($request);
-
-        if (!$orgId) {
-            return response()->json(['error' => 'No active organization found'], 404);
-        }
-
         $posts = DB::table('cmis.scheduled_social_posts')
-            ->where('org_id', $orgId)
             ->where('status', 'scheduled')
             ->where('scheduled_at', '>', now())
             ->orderBy('scheduled_at')
@@ -307,18 +288,11 @@ class DashboardController extends Controller
     }
 
     /**
-     * Get top performing campaigns
+     * Get top performing campaigns (automatically filtered by RLS)
      */
     public function topCampaigns(Request $request)
     {
-        $orgId = $this->resolveOrgId($request);
-
-        if (!$orgId) {
-            return response()->json(['error' => 'No active organization found'], 404);
-        }
-
-        $campaigns = Campaign::where('org_id', $orgId)
-            ->where('status', 'active')
+        $campaigns = Campaign::where('status', 'active')
             ->orderBy('created_at', 'desc')
             ->limit(5)
             ->get(['campaign_id', 'name', 'status', 'budget', 'start_date', 'end_date']);
@@ -327,18 +301,11 @@ class DashboardController extends Controller
     }
 
     /**
-     * Get budget summary
+     * Get budget summary (automatically filtered by RLS)
      */
     public function budgetSummary(Request $request)
     {
-        $orgId = $this->resolveOrgId($request);
-
-        if (!$orgId) {
-            return response()->json(['error' => 'No active organization found'], 404);
-        }
-
-        $totalBudget = Campaign::where('org_id', $orgId)
-            ->sum('budget') ?? 0;
+        $totalBudget = Campaign::sum('budget') ?? 0;
 
         $summary = [
             'total_budget' => $totalBudget,
@@ -381,15 +348,14 @@ class DashboardController extends Controller
     }
 
     /**
-     * Get campaigns data for organization
+     * Get campaigns data (automatically filtered by RLS)
      */
     private function getCampaignsData(string $orgId): array
     {
         return [
-            'total' => Campaign::where('org_id', $orgId)->count(),
-            'active' => Campaign::where('org_id', $orgId)->where('status', 'active')->count(),
-            'recent' => Campaign::where('org_id', $orgId)
-                ->orderBy('created_at', 'desc')
+            'total' => Campaign::count(),
+            'active' => Campaign::where('status', 'active')->count(),
+            'recent' => Campaign::orderBy('created_at', 'desc')
                 ->limit(5)
                 ->get(['campaign_id', 'name', 'status', 'created_at']),
         ];

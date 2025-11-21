@@ -22,10 +22,9 @@ class CampaignPolicy
 
     public function view(User $user, Campaign $campaign): bool
     {
-        if (!$this->permissionService->check($user, 'cmis.campaigns.view')) {
-            return false;
-        }
-        return $campaign->org_id === session('current_org_id');
+        // RLS ensures org isolation at database level
+        // Only check permission here
+        return $this->permissionService->check($user, 'cmis.campaigns.view');
     }
 
     public function create(User $user): bool
@@ -35,18 +34,14 @@ class CampaignPolicy
 
     public function update(User $user, Campaign $campaign): bool
     {
-        if (!$this->permissionService->check($user, 'cmis.campaigns.update')) {
-            return false;
-        }
-        return $campaign->org_id === session('current_org_id');
+        // RLS ensures org isolation at database level
+        return $this->permissionService->check($user, 'cmis.campaigns.update');
     }
 
     public function delete(User $user, Campaign $campaign): bool
     {
-        if (!$this->permissionService->check($user, 'cmis.campaigns.delete')) {
-            return false;
-        }
-        return $campaign->org_id === session('current_org_id');
+        // RLS ensures org isolation at database level
+        return $this->permissionService->check($user, 'cmis.campaigns.delete');
     }
 
     public function restore(User $user, Campaign $campaign): bool
@@ -61,17 +56,13 @@ class CampaignPolicy
 
     public function publish(User $user, Campaign $campaign): bool
     {
-        if (!$this->permissionService->check($user, 'cmis.campaigns.publish')) {
-            return false;
-        }
-        return $campaign->org_id === session('current_org_id');
+        // RLS ensures org isolation at database level
+        return $this->permissionService->check($user, 'cmis.campaigns.publish');
     }
 
     public function viewAnalytics(User $user, Campaign $campaign): bool
     {
-        if (!$this->permissionService->check($user, 'cmis.campaigns.view_analytics')) {
-            return false;
-        }
-        return $campaign->org_id === session('current_org_id');
+        // RLS ensures org isolation at database level
+        return $this->permissionService->check($user, 'cmis.campaigns.view_analytics');
     }
 }

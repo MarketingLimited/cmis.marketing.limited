@@ -8,16 +8,15 @@ use Carbon\Carbon;
 class AiAnalyticsRepository
 {
     /**
-     * Get AI usage summary for organization
+     * Get AI usage summary (automatically filtered by RLS)
      */
-    public function getUsageSummary(string $orgId, ?string $startDate = null, ?string $endDate = null): array
+    public function getUsageSummary(?string $startDate = null, ?string $endDate = null): array
     {
         $start = $startDate ? Carbon::parse($startDate) : Carbon::now()->subDays(30);
         $end = $endDate ? Carbon::parse($endDate) : Carbon::now();
 
-        // Get usage by type
+        // Get usage by type (RLS handles org filtering)
         $usageByType = DB::table('cmis_ai.ai_usage_logs')
-            ->where('org_id', $orgId)
             ->whereBetween('created_at', [$start, $end])
             ->select(
                 'generation_type',
@@ -28,9 +27,8 @@ class AiAnalyticsRepository
             ->groupBy('generation_type')
             ->get();
 
-        // Get total usage
+        // Get total usage (RLS handles org filtering)
         $totalUsage = DB::table('cmis_ai.ai_usage_logs')
-            ->where('org_id', $orgId)
             ->whereBetween('created_at', [$start, $end])
             ->select(
                 DB::raw('COUNT(*) as total_requests'),
@@ -62,14 +60,13 @@ class AiAnalyticsRepository
     }
 
     /**
-     * Get daily usage trend
+     * Get daily usage trend (automatically filtered by RLS)
      */
-    public function getDailyTrend(string $orgId, int $days = 30): array
+    public function getDailyTrend(int $days = 30): array
     {
         $startDate = Carbon::now()->subDays($days);
 
         $trend = DB::table('cmis_ai.ai_usage_logs')
-            ->where('org_id', $orgId)
             ->where('created_at', '>=', $startDate)
             ->select(
                 DB::raw('DATE(created_at) as date'),
@@ -92,12 +89,11 @@ class AiAnalyticsRepository
     }
 
     /**
-     * Get current quota status
+     * Get current quota status (automatically filtered by RLS)
      */
-    public function getQuotaStatus(string $orgId): array
+    public function getQuotaStatus(): array
     {
         $quota = DB::table('cmis.ai_usage_quotas')
-            ->where('org_id', $orgId)
             ->first();
 
         if (!$quota) {
@@ -140,16 +136,15 @@ class AiAnalyticsRepository
     }
 
     /**
-     * Get cost breakdown by campaign
+     * Get cost breakdown by campaign (automatically filtered by RLS)
      */
-    public function getCostByCampaign(string $orgId, ?string $startDate = null, ?string $endDate = null): array
+    public function getCostByCampaign(?string $startDate = null, ?string $endDate = null): array
     {
         $start = $startDate ? Carbon::parse($startDate) : Carbon::now()->subDays(30);
         $end = $endDate ? Carbon::parse($endDate) : Carbon::now();
 
         $costs = DB::table('cmis_ai.generated_media as gm')
             ->leftJoin('cmis.campaigns as c', 'gm.campaign_id', '=', 'c.id')
-            ->where('gm.org_id', $orgId)
             ->whereBetween('gm.created_at', [$start, $end])
             ->select(
                 'c.id as campaign_id',
@@ -175,16 +170,15 @@ class AiAnalyticsRepository
     }
 
     /**
-     * Get generated media statistics
+     * Get generated media statistics (automatically filtered by RLS)
      */
-    public function getGeneratedMediaStats(string $orgId, ?string $startDate = null, ?string $endDate = null): array
+    public function getGeneratedMediaStats(?string $startDate = null, ?string $endDate = null): array
     {
         $start = $startDate ? Carbon::parse($startDate) : Carbon::now()->subDays(30);
         $end = $endDate ? Carbon::parse($endDate) : Carbon::now();
 
-        // By media type
+        // By media type (RLS handles org filtering)
         $byType = DB::table('cmis_ai.generated_media')
-            ->where('org_id', $orgId)
             ->whereBetween('created_at', [$start, $end])
             ->select(
                 'media_type',
@@ -194,9 +188,8 @@ class AiAnalyticsRepository
             ->groupBy('media_type', 'status')
             ->get();
 
-        // By AI model
+        // By AI model (RLS handles org filtering)
         $byModel = DB::table('cmis_ai.generated_media')
-            ->where('org_id', $orgId)
             ->whereBetween('created_at', [$start, $end])
             ->where('status', 'completed')
             ->select(
@@ -269,9 +262,9 @@ class AiAnalyticsRepository
     }
 
     /**
-     * Get monthly cost comparison
+     * Get monthly cost comparison (automatically filtered by RLS)
      */
-    public function getMonthlyCostComparison(string $orgId, int $months = 6): array
+    public function getMonthlyCostComparison(int $months = 6): array
     {
         $results = [];
 
@@ -280,7 +273,6 @@ class AiAnalyticsRepository
             $monthEnd = Carbon::now()->subMonths($i)->endOfMonth();
 
             $cost = DB::table('cmis_ai.ai_usage_logs')
-                ->where('org_id', $orgId)
                 ->whereBetween('created_at', [$monthStart, $monthEnd])
                 ->sum('cost_usd');
 

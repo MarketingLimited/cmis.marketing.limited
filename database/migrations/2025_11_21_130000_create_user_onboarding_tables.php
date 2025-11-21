@@ -40,7 +40,7 @@ return new class extends Migration
 
             // Foreign key
             $table->foreign('user_id')
-                ->references('id')
+                ->references('user_id')
                 ->on('cmis.users')
                 ->onDelete('cascade');
 

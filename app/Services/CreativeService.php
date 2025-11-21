@@ -309,7 +309,7 @@ class CreativeService
     }
 
     /**
-     * Search assets
+     * Search assets (automatically filtered by RLS)
      */
     public function searchAssets(array $criteria): array
     {
@@ -324,9 +324,7 @@ class CreativeService
                 $query->where('status', $criteria['status']);
             }
 
-            if (isset($criteria['org_id'])) {
-                $query->where('org_id', $criteria['org_id']);
-            }
+            // Note: org_id filtering removed - RLS handles this automatically
 
             if (isset($criteria['search'])) {
                 $query->where('asset_name', 'like', '%' . $criteria['search'] . '%');

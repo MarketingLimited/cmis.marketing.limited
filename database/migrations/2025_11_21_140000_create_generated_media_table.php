@@ -17,8 +17,8 @@ return new class extends Migration
             CREATE TABLE IF NOT EXISTS cmis_ai.generated_media (
                 id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
                 org_id UUID NOT NULL,
-                campaign_id UUID REFERENCES cmis.campaigns(id) ON DELETE SET NULL,
-                user_id UUID REFERENCES cmis.users(id) ON DELETE SET NULL,
+                campaign_id UUID,
+                user_id UUID,
                 media_type VARCHAR(20) NOT NULL CHECK (media_type IN ('image', 'video')),
                 ai_model VARCHAR(100) NOT NULL,
                 prompt_text TEXT NOT NULL,
@@ -74,12 +74,20 @@ return new class extends Migration
             USING (org_id = current_setting('app.current_org_id')::uuid);
         ");
 
-        // Add foreign key constraint to organizations
-        DB::statement("
-            ALTER TABLE cmis_ai.generated_media
-            ADD CONSTRAINT fk_generated_media_org
-            FOREIGN KEY (org_id) REFERENCES cmis.organizations(id) ON DELETE CASCADE;
+        // Add foreign key constraint to orgs (if table has primary key)
+        $orgPkExists = DB::select("
+            SELECT 1 FROM information_schema.table_constraints
+            WHERE table_schema = 'cmis' AND table_name = 'orgs'
+            AND constraint_type = 'PRIMARY KEY'
         ");
+
+        if (!empty($orgPkExists)) {
+            DB::statement("
+                ALTER TABLE cmis_ai.generated_media
+                ADD CONSTRAINT fk_generated_media_org
+                FOREIGN KEY (org_id) REFERENCES cmis.orgs(org_id) ON DELETE CASCADE;
+            ");
+        }
 
         // Create updated_at trigger
         DB::statement("

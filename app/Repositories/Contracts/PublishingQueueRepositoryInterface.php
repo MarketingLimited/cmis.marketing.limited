@@ -8,9 +8,9 @@ use Illuminate\Support\Collection;
 interface PublishingQueueRepositoryInterface
 {
     /**
-     * Get all publishing queues for an organization
+     * Get all publishing queues (automatically filtered by RLS)
      */
-    public function getForOrg(string $orgId, bool $activeOnly = false): Collection;
+    public function getAll(bool $activeOnly = false): Collection;
 
     /**
      * Get queue by ID

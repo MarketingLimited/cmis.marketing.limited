@@ -14,7 +14,7 @@ return new class extends Migration
     {
         // Add image and video quota columns to ai_usage_quotas table
         DB::statement("
-            ALTER TABLE cmis.ai_usage_quotas
+            ALTER TABLE cmis_ai.usage_quotas
             ADD COLUMN IF NOT EXISTS image_quota_daily INTEGER DEFAULT 5,
             ADD COLUMN IF NOT EXISTS image_quota_monthly INTEGER DEFAULT 50,
             ADD COLUMN IF NOT EXISTS image_used_daily INTEGER DEFAULT 0,
@@ -30,9 +30,9 @@ return new class extends Migration
             UPDATE cmis.ai_usage_quotas
             SET
                 image_quota_daily = CASE
-                    WHEN quota_type = 'free' THEN 5
-                    WHEN quota_type = 'pro' THEN 50
-                    WHEN quota_type = 'enterprise' THEN -1
+                    WHEN tier = 'free' THEN 5
+                    WHEN tier = 'pro' THEN 50
+                    WHEN tier = 'enterprise' THEN -1
                     ELSE 5
                 END,
                 image_quota_monthly = CASE
@@ -53,7 +53,7 @@ return new class extends Migration
                     WHEN quota_type = 'enterprise' THEN -1
                     ELSE 0
                 END
-            WHERE quota_type IS NOT NULL;
+            WHERE tier IS NOT NULL;
         ");
 
         // Add columns to ai_usage_logs for tracking media generation
@@ -96,7 +96,7 @@ return new class extends Migration
         ");
 
         DB::statement("
-            ALTER TABLE cmis.ai_usage_quotas
+            ALTER TABLE cmis_ai.usage_quotas
             DROP COLUMN IF EXISTS image_quota_daily,
             DROP COLUMN IF EXISTS image_quota_monthly,
             DROP COLUMN IF EXISTS image_used_daily,

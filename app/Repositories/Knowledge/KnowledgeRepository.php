@@ -31,15 +31,20 @@ class KnowledgeRepository
         int $tier = 2,
         array $keywords = []
     ): string {
+        // Security: Use JSON binding instead of raw SQL string concatenation
+        $keywordsJson = json_encode($keywords);
+
         $result = DB::select(
-            'SELECT cmis_knowledge.register_knowledge(?, ?, ?, ?, ?, ?) as knowledge_id',
+            'SELECT cmis_knowledge.register_knowledge(?, ?, ?, ?, ?,
+                ARRAY(SELECT jsonb_array_elements_text(?::jsonb))
+            ) as knowledge_id',
             [
                 $domain,
                 $category,
                 $topic,
                 $content,
                 $tier,
-                DB::raw("ARRAY['" . implode("','", $keywords) . "']")
+                $keywordsJson
             ]
         );
 

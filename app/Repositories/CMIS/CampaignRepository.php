@@ -34,9 +34,15 @@ class CampaignRepository implements CampaignRepositoryInterface
         string $tone,
         array $tags
     ): Collection {
+        // Security: Use JSON binding instead of raw SQL string concatenation
+        // Convert tags array to PostgreSQL array using json_array_elements
+        $tagsJson = json_encode($tags);
+
         $results = DB::select(
-            'SELECT * FROM cmis.create_campaign_and_context_safe(?, ?, ?, ?, ?, ?, ?)',
-            [$orgId, $offeringId, $segmentId, $campaignName, $framework, $tone, DB::raw("ARRAY['" . implode("','", $tags) . "']")]
+            'SELECT * FROM cmis.create_campaign_and_context_safe(?, ?, ?, ?, ?, ?,
+                ARRAY(SELECT jsonb_array_elements_text(?::jsonb))
+            )',
+            [$orgId, $offeringId, $segmentId, $campaignName, $framework, $tone, $tagsJson]
         );
 
         return collect($results);
@@ -132,15 +138,13 @@ class CampaignRepository implements CampaignRepositoryInterface
     }
 
     /**
-     * Get all campaigns for an organization
+     * Get all campaigns (automatically filtered by RLS)
      *
-     * @param string $orgId Organization UUID
-     * @return Collection Collection of campaigns
+     * @return Collection Collection of campaigns for current organization
      */
-    public function getCampaignsForOrg(string $orgId): Collection
+    public function getAllCampaigns(): Collection
     {
         $results = DB::table('cmis.campaigns')
-            ->where('org_id', $orgId)
             ->whereNull('deleted_at')
             ->get();
 

@@ -168,7 +168,7 @@ class AiContentGenerationTest extends TestCase
         $media = GeneratedMedia::first();
         $this->assertEquals($this->org->id, $media->org_id);
         $this->assertEquals('image', $media->media_type);
-        $this->assertEquals('completed', $media->status');
+        $this->assertEquals('completed', $media->status);
         $this->assertNotNull($media->media_url);
     }
 
