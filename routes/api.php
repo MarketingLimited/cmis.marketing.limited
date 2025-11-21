@@ -1456,6 +1456,48 @@ Route::middleware(['auth:sanctum', 'validate.org.access', 'set.db.context'])
         });
     });
 
+// Production Readiness & Optimization (Phase 6)
+// Health Check Endpoints (Public - Kubernetes Probes)
+Route::prefix('health')->name('health.')->group(function () {
+    Route::get('/live', [App\Http\Controllers\Optimization\OptimizationController::class, 'liveness'])->name('live');
+    Route::get('/ready', [App\Http\Controllers\Optimization\OptimizationController::class, 'readiness'])->name('ready');
+    Route::get('/', [App\Http\Controllers\Optimization\OptimizationController::class, 'health'])->name('check');
+});
+
+// Optimization Endpoints (Authenticated)
+Route::middleware(['auth:sanctum'])->prefix('optimization')->name('optimization.')->group(function () {
+    // General
+    Route::get('/diagnostics', [App\Http\Controllers\Optimization\OptimizationController::class, 'diagnostics'])->name('diagnostics');
+
+    // Database Optimization
+    Route::post('/analyze-query', [App\Http\Controllers\Optimization\OptimizationController::class, 'analyzeQuery'])->name('analyze-query');
+    Route::get('/missing-indexes/{table}', [App\Http\Controllers\Optimization\OptimizationController::class, 'getMissingIndexes'])->name('missing-indexes');
+    Route::get('/database-stats', [App\Http\Controllers\Optimization\OptimizationController::class, 'getDatabaseStatistics'])->name('database-stats');
+    Route::post('/optimize-table/{table}', [App\Http\Controllers\Optimization\OptimizationController::class, 'optimizeTable'])->name('optimize-table');
+
+    // Cache Management
+    Route::prefix('cache')->name('cache.')->group(function () {
+        Route::get('/statistics', [App\Http\Controllers\Optimization\OptimizationController::class, 'getCacheStatistics'])->name('statistics');
+        Route::post('/invalidate/organization/{org_id}', [App\Http\Controllers\Optimization\OptimizationController::class, 'invalidateOrganizationCache'])->name('invalidate.organization');
+        Route::post('/invalidate/campaign/{campaign_id}', [App\Http\Controllers\Optimization\OptimizationController::class, 'invalidateCampaignCache'])->name('invalidate.campaign');
+        Route::post('/invalidate-pattern', [App\Http\Controllers\Optimization\OptimizationController::class, 'invalidateCachePattern'])->name('invalidate.pattern');
+        Route::post('/warmup/{org_id}', [App\Http\Controllers\Optimization\OptimizationController::class, 'warmupCache'])->name('warmup');
+        Route::get('/health', [App\Http\Controllers\Optimization\OptimizationController::class, 'getCacheHealth'])->name('health');
+        Route::get('/top-keys', [App\Http\Controllers\Optimization\OptimizationController::class, 'getTopCachedKeys'])->name('top-keys');
+        Route::post('/flush', [App\Http\Controllers\Optimization\OptimizationController::class, 'flushCache'])->name('flush');
+    });
+
+    // Performance Profiling
+    Route::prefix('performance')->name('performance.')->group(function () {
+        Route::get('/profiles', [App\Http\Controllers\Optimization\OptimizationController::class, 'getPerformanceProfiles'])->name('profiles');
+        Route::get('/summary', [App\Http\Controllers\Optimization\OptimizationController::class, 'getPerformanceSummary'])->name('summary');
+        Route::get('/resources', [App\Http\Controllers\Optimization\OptimizationController::class, 'getSystemResources'])->name('resources');
+        Route::get('/slow-queries', [App\Http\Controllers\Optimization\OptimizationController::class, 'getSlowQueries'])->name('slow-queries');
+        Route::get('/health-metrics', [App\Http\Controllers\Optimization\OptimizationController::class, 'getHealthMetrics'])->name('health-metrics');
+        Route::post('/clear', [App\Http\Controllers\Optimization\OptimizationController::class, 'clearPerformanceData'])->name('clear');
+    });
+});
+
 // Cache Statistics (Global)
 Route::get('/cache/stats', [App\Http\Controllers\API\CacheController::class, 'stats'])->name('cache.stats');
 
