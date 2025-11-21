@@ -17,6 +17,14 @@ use Illuminate\Support\Facades\Storage;
 class AssetController extends Controller
 {
     /**
+     * Constructor - Apply authentication middleware
+     */
+    public function __construct()
+    {
+        $this->middleware('auth:sanctum');
+    }
+
+    /**
      * List creative assets
      *
      * @param Request $request

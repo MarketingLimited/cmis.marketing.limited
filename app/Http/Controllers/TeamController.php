@@ -25,6 +25,7 @@ class TeamController extends Controller
 
     public function __construct(TeamManagementService $teamService)
     {
+        $this->middleware('auth:sanctum');
         $this->teamService = $teamService;
     }
 

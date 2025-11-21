@@ -139,6 +139,22 @@ Route::middleware('auth:sanctum')->group(function () {
         ->name('user.switch-organization');
     Route::get('/user/active-organization', [\App\Http\Controllers\Core\OrgSwitcherController::class, 'getActiveOrganization'])
         ->name('user.active-organization');
+
+    // Context API (Phase 2 - Option 2: Context System UI)
+    Route::prefix('context')->name('context.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Core\ContextController::class, 'getCurrentContext'])->name('current');
+        Route::get('/organizations', [\App\Http\Controllers\Core\ContextController::class, 'getAvailableOrganizations'])->name('organizations');
+        Route::post('/switch', [\App\Http\Controllers\Core\ContextController::class, 'switchContext'])->name('switch');
+        Route::post('/refresh', [\App\Http\Controllers\Core\ContextController::class, 'refreshContext'])->name('refresh');
+    });
+
+    // Async Job Status (Phase 1 Week 2 - Queue Infrastructure)
+    Route::prefix('jobs')->name('api.jobs.')->group(function () {
+        Route::get('/{job_id}/status', [\App\Http\Controllers\API\JobStatusController::class, 'status'])->name('status');
+        Route::get('/{job_id}/result', [\App\Http\Controllers\API\JobStatusController::class, 'result'])->name('result');
+        Route::get('/{job_id}/embedding-status', [\App\Http\Controllers\API\JobStatusController::class, 'embeddingStatus'])->name('embedding-status');
+        Route::get('/{job_id}/embedding-result', [\App\Http\Controllers\API\JobStatusController::class, 'embeddingResult'])->name('embedding-result');
+    });
 });
 
 /*
@@ -168,18 +184,28 @@ Route::middleware(['auth:sanctum', 'validate.org.access', 'set.db.context'])
 
     /*
     |----------------------------------------------------------------------
-    | إدارة المستخدمين (User Management)
+    | إدارة المستخدمين (User Management) - Phase 2 Option 4
     |----------------------------------------------------------------------
     */
     Route::prefix('users')->name('users.')->group(function () {
-        Route::get('/', [UserController::class, 'index'])->name('index');
-        Route::post('/invite', [UserController::class, 'inviteUser'])->name('invite');
-        Route::get('/{user_id}', [UserController::class, 'show'])->name('show');
-        Route::put('/{user_id}/role', [UserController::class, 'updateRole'])->name('updateRole');
-        Route::post('/{user_id}/deactivate', [UserController::class, 'deactivate'])->name('deactivate');
-        Route::delete('/{user_id}', [UserController::class, 'remove'])->name('remove');
+        // User listing and details
+        Route::get('/', [\App\Http\Controllers\Core\UserManagementController::class, 'index'])->name('index');
+        Route::get('/{user_id}', [\App\Http\Controllers\Core\UserManagementController::class, 'show'])->name('show');
 
-        // User Activities & Permissions
+        // User invitations
+        Route::post('/invite', [\App\Http\Controllers\Core\UserManagementController::class, 'inviteUser'])->name('invite');
+        Route::get('/invitations', [\App\Http\Controllers\Core\UserManagementController::class, 'getInvitations'])->name('invitations');
+        Route::delete('/invitations/{invitation_id}', [\App\Http\Controllers\Core\UserManagementController::class, 'cancelInvitation'])->name('invitations.cancel');
+
+        // User management
+        Route::put('/{user_id}/role', [\App\Http\Controllers\Core\UserManagementController::class, 'updateRole'])->name('updateRole');
+        Route::put('/{user_id}/status', [\App\Http\Controllers\Core\UserManagementController::class, 'updateStatus'])->name('updateStatus');
+        Route::delete('/{user_id}', [\App\Http\Controllers\Core\UserManagementController::class, 'removeUser'])->name('remove');
+
+        // User activity log
+        Route::get('/{user_id}/activity', [\App\Http\Controllers\Core\UserManagementController::class, 'getActivity'])->name('activity');
+
+        // Legacy support (keeping these for backward compatibility)
         Route::get('/{user_id}/activities', [UserController::class, 'activities'])->name('activities');
         Route::get('/{user_id}/permissions', [UserController::class, 'permissions'])->name('permissions');
     });
@@ -202,18 +228,45 @@ Route::middleware(['auth:sanctum', 'validate.org.access', 'set.db.context'])
 
     /*
     |----------------------------------------------------------------------
-    | CMIS AI & Embeddings (الموجود حالياً)
+    | CMIS AI & Embeddings (with rate limiting)
     |----------------------------------------------------------------------
     */
-    Route::prefix('cmis')->name('cmis.')->group(function () {
-        Route::post('/search', [CMISEmbeddingController::class, 'search'])->name('search');
-        Route::post('/knowledge/{id}/process', [CMISEmbeddingController::class, 'processKnowledge'])->name('knowledge.process');
-        Route::get('/knowledge/{id}/similar', [CMISEmbeddingController::class, 'findSimilar'])->name('knowledge.similar');
-        Route::get('/status', [CMISEmbeddingController::class, 'status'])->name('status');
-    });
+    Route::prefix('cmis')->name('cmis.')
+        ->middleware('throttle.ai')
+        ->group(function () {
+            Route::post('/search', [CMISEmbeddingController::class, 'search'])->name('search');
+            Route::post('/knowledge/{id}/process', [CMISEmbeddingController::class, 'processKnowledge'])->name('knowledge.process');
+            Route::get('/knowledge/{id}/similar', [CMISEmbeddingController::class, 'findSimilar'])->name('knowledge.similar');
+            Route::get('/status', [CMISEmbeddingController::class, 'status'])->name('status');
+        });
 
-    // Semantic Search
-    Route::post('/semantic-search', [SemanticSearchController::class, 'search'])->name('semantic.search');
+    // Semantic Search (with rate limiting)
+    Route::post('/semantic-search', [SemanticSearchController::class, 'search'])
+        ->middleware('throttle.ai')
+        ->name('semantic.search');
+
+    /*
+    |----------------------------------------------------------------------
+    | Enhanced Semantic Search (Phase 1 Week 3 - pgvector powered)
+    |----------------------------------------------------------------------
+    */
+    Route::prefix('search')->name('search.')->middleware('throttle.ai')->group(function () {
+        // Universal semantic search across all entities
+        Route::post('/semantic', [\App\Http\Controllers\SearchController::class, 'semantic'])
+            ->name('semantic');
+
+        // Campaign-specific search
+        Route::post('/campaigns', [\App\Http\Controllers\SearchController::class, 'campaigns'])
+            ->name('campaigns');
+
+        // Find similar entities
+        Route::get('/similar/{entity_type}/{id}', [\App\Http\Controllers\SearchController::class, 'similar'])
+            ->name('similar');
+
+        // Search statistics
+        Route::get('/stats', [\App\Http\Controllers\SearchController::class, 'stats'])
+            ->name('stats');
+    });
 
     /*
     |----------------------------------------------------------------------
@@ -236,7 +289,9 @@ Route::middleware(['auth:sanctum', 'validate.org.access', 'set.db.context'])
         Route::apiResource('content-plans', ContentPlanController::class)->parameters([
             'content-plans' => 'plan_id'
         ]);
-        Route::post('content-plans/{plan_id}/generate', [ContentPlanController::class, 'generateContent'])->name('content-plans.generate');
+        Route::post('content-plans/{plan_id}/generate', [ContentPlanController::class, 'generateContent'])
+            ->middleware('throttle.ai')
+            ->name('content-plans.generate');
         Route::post('content-plans/{plan_id}/approve', [ContentPlanController::class, 'approve'])->name('content-plans.approve');
         Route::post('content-plans/{plan_id}/reject', [ContentPlanController::class, 'reject'])->name('content-plans.reject');
         Route::post('content-plans/{plan_id}/publish', [ContentPlanController::class, 'publish'])->name('content-plans.publish');
@@ -438,7 +493,9 @@ Route::middleware(['auth:sanctum', 'validate.org.access', 'set.db.context'])
 
         // Generate Reports
         Route::post('/performance', [App\Http\Controllers\ReportsController::class, 'generatePerformanceReport'])->name('performance');
-        Route::post('/ai-insights', [App\Http\Controllers\ReportsController::class, 'generateAIInsightsReport'])->name('ai-insights');
+        Route::post('/ai-insights', [App\Http\Controllers\ReportsController::class, 'generateAIInsightsReport'])
+            ->middleware('throttle.ai')
+            ->name('ai-insights');
         Route::post('/organization', [App\Http\Controllers\ReportsController::class, 'generateOrgReport'])->name('organization');
         Route::post('/content-analysis', [App\Http\Controllers\ReportsController::class, 'generateContentAnalysisReport'])->name('content-analysis');
 
@@ -481,7 +538,9 @@ Route::middleware(['auth:sanctum', 'validate.org.access', 'set.db.context'])
         Route::get('/', [App\Http\Controllers\AdCreativeController::class, 'index'])->name('index');
         Route::post('/', [App\Http\Controllers\AdCreativeController::class, 'create'])->name('create');
         Route::get('/templates', [App\Http\Controllers\AdCreativeController::class, 'templates'])->name('templates');
-        Route::post('/ai-generate', [App\Http\Controllers\AdCreativeController::class, 'generateAI'])->name('ai-generate');
+        Route::post('/ai-generate', [App\Http\Controllers\AdCreativeController::class, 'generateAI'])
+            ->middleware('throttle.ai')
+            ->name('ai-generate');
         Route::get('/{creative_id}', [App\Http\Controllers\AdCreativeController::class, 'show'])->name('show');
         Route::put('/{creative_id}', [App\Http\Controllers\AdCreativeController::class, 'update'])->name('update');
         Route::delete('/{creative_id}', [App\Http\Controllers\AdCreativeController::class, 'destroy'])->name('destroy');
@@ -676,6 +735,21 @@ Route::middleware(['auth:sanctum', 'validate.org.access', 'set.db.context'])
         // Automation Rules
         Route::get('/automation-rules', [App\Http\Controllers\AIAutomationController::class, 'getAutomationRules'])->name('automation-rules.index');
         Route::post('/automation-rules', [App\Http\Controllers\AIAutomationController::class, 'createAutomationRule'])->name('automation-rules.create');
+    });
+
+    /*
+    |----------------------------------------------------------------------
+    | AI Recommendations (Phase 3 - Advanced AI Analytics)
+    | Rate Limited: 10 requests per minute per user
+    |----------------------------------------------------------------------
+    */
+    Route::prefix('ai/recommendations')->name('ai.recommendations.')->middleware('throttle.ai')->group(function () {
+        // Similar Content Discovery
+        Route::post('/similar', [App\Http\Controllers\AI\AIRecommendationsController::class, 'getSimilarContent'])->name('similar');
+
+        // Campaign-Specific Recommendations
+        Route::get('/campaign/{campaign_id}/content', [App\Http\Controllers\AI\AIRecommendationsController::class, 'getCampaignContentRecommendations'])->name('campaign.content');
+        Route::get('/campaign/{campaign_id}/audience', [App\Http\Controllers\AI\AIRecommendationsController::class, 'getAudienceRecommendations'])->name('campaign.audience');
     });
 
     /*
@@ -1317,6 +1391,61 @@ Route::middleware(['auth:sanctum', 'validate.org.access', 'set.db.context'])
             Route::get('/campaigns/{campaign}/trends', [App\Http\Controllers\API\PredictiveAnalyticsController::class, 'analyzeTrends'])->name('analyze-trends');
         });
 
+        // AI Recommendations (Phase 3 - Advanced AI Analytics)
+        Route::prefix('ai/recommendations')->name('ai.recommendations.')->middleware('throttle.ai')->group(function () {
+            Route::get('/best-performing', [App\Http\Controllers\AI\AIRecommendationsController::class, 'getBestPerformingContent'])->name('best-performing');
+            Route::get('/optimal-times', [App\Http\Controllers\AI\AIRecommendationsController::class, 'getOptimalPostingTimes'])->name('optimal-times');
+        });
+
+        // Campaign Orchestration & Automation (Phase 4)
+        Route::prefix('orchestration')->name('orchestration.')->group(function () {
+            // Lifecycle Management
+            Route::post('/process-lifecycle', [App\Http\Controllers\Automation\CampaignOrchestrationController::class, 'processLifecycle'])->name('process-lifecycle');
+            Route::get('/lifecycle-stats', [App\Http\Controllers\Automation\CampaignOrchestrationController::class, 'getLifecycleStats'])->name('lifecycle-stats');
+
+            // Budget Allocation
+            Route::post('/reallocate-budget', [App\Http\Controllers\Automation\CampaignOrchestrationController::class, 'reallocateBudget'])->name('reallocate-budget');
+            Route::post('/simulate-budget', [App\Http\Controllers\Automation\CampaignOrchestrationController::class, 'simulateBudget'])->name('simulate-budget');
+            Route::get('/budget-history', [App\Http\Controllers\Automation\CampaignOrchestrationController::class, 'getBudgetHistory'])->name('budget-history');
+
+            // Multi-Platform Orchestration
+            Route::post('/create-campaign', [App\Http\Controllers\Automation\CampaignOrchestrationController::class, 'createMultiPlatformCampaign'])->name('create-campaign');
+            Route::post('/campaigns/{campaign_id}/pause', [App\Http\Controllers\Automation\CampaignOrchestrationController::class, 'pauseCampaign'])->name('campaigns.pause');
+            Route::post('/campaigns/{campaign_id}/resume', [App\Http\Controllers\Automation\CampaignOrchestrationController::class, 'resumeCampaign'])->name('campaigns.resume');
+            Route::post('/campaigns/{campaign_id}/sync', [App\Http\Controllers\Automation\CampaignOrchestrationController::class, 'syncCampaign'])->name('campaigns.sync');
+            Route::post('/campaigns/{campaign_id}/duplicate', [App\Http\Controllers\Automation\CampaignOrchestrationController::class, 'duplicateCampaign'])->name('campaigns.duplicate');
+        });
+
+        // Enterprise Features & Scale Optimization (Phase 5)
+        Route::prefix('enterprise')->name('enterprise.')->group(function () {
+            // Performance Monitoring & Alerting
+            Route::post('/monitor/campaign/{campaign_id}', [App\Http\Controllers\Enterprise\EnterpriseController::class, 'monitorCampaign'])->name('monitor.campaign');
+            Route::post('/monitor/organization', [App\Http\Controllers\Enterprise\EnterpriseController::class, 'monitorOrganization'])->name('monitor.organization');
+            Route::get('/alerts', [App\Http\Controllers\Enterprise\EnterpriseController::class, 'getAlerts'])->name('alerts.index');
+            Route::post('/alerts/{alert_id}/acknowledge', [App\Http\Controllers\Enterprise\EnterpriseController::class, 'acknowledgeAlert'])->name('alerts.acknowledge');
+            Route::post('/alerts/{alert_id}/resolve', [App\Http\Controllers\Enterprise\EnterpriseController::class, 'resolveAlert'])->name('alerts.resolve');
+            Route::get('/alerts/statistics', [App\Http\Controllers\Enterprise\EnterpriseController::class, 'getAlertStatistics'])->name('alerts.statistics');
+
+            // Advanced Reporting & Export
+            Route::post('/reports/campaign/{campaign_id}', [App\Http\Controllers\Enterprise\EnterpriseController::class, 'generateCampaignReport'])->name('reports.campaign');
+            Route::post('/reports/organization', [App\Http\Controllers\Enterprise\EnterpriseController::class, 'generateOrganizationReport'])->name('reports.organization');
+            Route::post('/reports/schedule', [App\Http\Controllers\Enterprise\EnterpriseController::class, 'scheduleReport'])->name('reports.schedule');
+            Route::get('/reports/schedules', [App\Http\Controllers\Enterprise\EnterpriseController::class, 'getScheduledReports'])->name('reports.schedules');
+            Route::delete('/reports/schedules/{schedule_id}', [App\Http\Controllers\Enterprise\EnterpriseController::class, 'deleteScheduledReport'])->name('reports.schedules.delete');
+            Route::get('/reports/history', [App\Http\Controllers\Enterprise\EnterpriseController::class, 'getReportHistory'])->name('reports.history');
+            Route::get('/reports/{report_id}/download', [App\Http\Controllers\Enterprise\EnterpriseController::class, 'downloadReport'])->name('reports.download');
+
+            // Webhook Management
+            Route::post('/webhooks', [App\Http\Controllers\Enterprise\EnterpriseController::class, 'registerWebhook'])->name('webhooks.register');
+            Route::get('/webhooks', [App\Http\Controllers\Enterprise\EnterpriseController::class, 'getWebhooks'])->name('webhooks.index');
+            Route::put('/webhooks/{webhook_id}', [App\Http\Controllers\Enterprise\EnterpriseController::class, 'updateWebhook'])->name('webhooks.update');
+            Route::delete('/webhooks/{webhook_id}', [App\Http\Controllers\Enterprise\EnterpriseController::class, 'deleteWebhook'])->name('webhooks.delete');
+            Route::post('/webhooks/trigger', [App\Http\Controllers\Enterprise\EnterpriseController::class, 'triggerWebhook'])->name('webhooks.trigger');
+            Route::get('/webhooks/{webhook_id}/deliveries', [App\Http\Controllers\Enterprise\EnterpriseController::class, 'getWebhookDeliveries'])->name('webhooks.deliveries');
+            Route::get('/webhooks/{webhook_id}/statistics', [App\Http\Controllers\Enterprise\EnterpriseController::class, 'getWebhookStatistics'])->name('webhooks.statistics');
+            Route::post('/webhooks/deliveries/{delivery_id}/retry', [App\Http\Controllers\Enterprise\EnterpriseController::class, 'retryWebhookDelivery'])->name('webhooks.deliveries.retry');
+        });
+
         // Knowledge Learning System (من Phase 5C)
         Route::prefix('knowledge')->name('knowledge.')->group(function () {
             Route::get('/learn', [App\Http\Controllers\API\KnowledgeLearningController::class, 'learnFromHistory'])->name('learn');
@@ -1326,6 +1455,215 @@ Route::middleware(['auth:sanctum', 'validate.org.access', 'set.db.context'])
             Route::get('/failure-patterns', [App\Http\Controllers\API\KnowledgeLearningController::class, 'getFailurePatterns'])->name('failure-patterns');
         });
     });
+
+// Production Readiness & Optimization (Phase 6)
+// Health Check Endpoints (Public - Kubernetes Probes)
+Route::prefix('health')->name('health.')->group(function () {
+    Route::get('/live', [App\Http\Controllers\Optimization\OptimizationController::class, 'liveness'])->name('live');
+    Route::get('/ready', [App\Http\Controllers\Optimization\OptimizationController::class, 'readiness'])->name('ready');
+    Route::get('/', [App\Http\Controllers\Optimization\OptimizationController::class, 'health'])->name('check');
+});
+
+// Optimization Endpoints (Authenticated)
+Route::middleware(['auth:sanctum'])->prefix('optimization')->name('optimization.')->group(function () {
+    // General
+    Route::get('/diagnostics', [App\Http\Controllers\Optimization\OptimizationController::class, 'diagnostics'])->name('diagnostics');
+
+    // Database Optimization
+    Route::post('/analyze-query', [App\Http\Controllers\Optimization\OptimizationController::class, 'analyzeQuery'])->name('analyze-query');
+    Route::get('/missing-indexes/{table}', [App\Http\Controllers\Optimization\OptimizationController::class, 'getMissingIndexes'])->name('missing-indexes');
+    Route::get('/database-stats', [App\Http\Controllers\Optimization\OptimizationController::class, 'getDatabaseStatistics'])->name('database-stats');
+    Route::post('/optimize-table/{table}', [App\Http\Controllers\Optimization\OptimizationController::class, 'optimizeTable'])->name('optimize-table');
+
+    // Cache Management
+    Route::prefix('cache')->name('cache.')->group(function () {
+        Route::get('/statistics', [App\Http\Controllers\Optimization\OptimizationController::class, 'getCacheStatistics'])->name('statistics');
+        Route::post('/invalidate/organization/{org_id}', [App\Http\Controllers\Optimization\OptimizationController::class, 'invalidateOrganizationCache'])->name('invalidate.organization');
+        Route::post('/invalidate/campaign/{campaign_id}', [App\Http\Controllers\Optimization\OptimizationController::class, 'invalidateCampaignCache'])->name('invalidate.campaign');
+        Route::post('/invalidate-pattern', [App\Http\Controllers\Optimization\OptimizationController::class, 'invalidateCachePattern'])->name('invalidate.pattern');
+        Route::post('/warmup/{org_id}', [App\Http\Controllers\Optimization\OptimizationController::class, 'warmupCache'])->name('warmup');
+        Route::get('/health', [App\Http\Controllers\Optimization\OptimizationController::class, 'getCacheHealth'])->name('health');
+        Route::get('/top-keys', [App\Http\Controllers\Optimization\OptimizationController::class, 'getTopCachedKeys'])->name('top-keys');
+        Route::post('/flush', [App\Http\Controllers\Optimization\OptimizationController::class, 'flushCache'])->name('flush');
+    });
+
+    // Performance Profiling
+    Route::prefix('performance')->name('performance.')->group(function () {
+        Route::get('/profiles', [App\Http\Controllers\Optimization\OptimizationController::class, 'getPerformanceProfiles'])->name('profiles');
+        Route::get('/summary', [App\Http\Controllers\Optimization\OptimizationController::class, 'getPerformanceSummary'])->name('summary');
+        Route::get('/resources', [App\Http\Controllers\Optimization\OptimizationController::class, 'getSystemResources'])->name('resources');
+        Route::get('/slow-queries', [App\Http\Controllers\Optimization\OptimizationController::class, 'getSlowQueries'])->name('slow-queries');
+        Route::get('/health-metrics', [App\Http\Controllers\Optimization\OptimizationController::class, 'getHealthMetrics'])->name('health-metrics');
+        Route::post('/clear', [App\Http\Controllers\Optimization\OptimizationController::class, 'clearPerformanceData'])->name('clear');
+    });
+});
+
+// Advanced Analytics & Business Intelligence (Phase 7)
+Route::middleware(['auth:sanctum'])->prefix('orgs/{org_id}/analytics')->name('analytics.')->group(function () {
+    // Real-Time Analytics
+    Route::prefix('realtime')->name('realtime.')->group(function () {
+        Route::get('/{entity_type}/{entity_id}/metrics', [App\Http\Controllers\Analytics\AnalyticsController::class, 'getRealtimeMetrics'])->name('metrics');
+        Route::get('/{entity_type}/{entity_id}/timeseries', [App\Http\Controllers\Analytics\AnalyticsController::class, 'getTimeSeries'])->name('timeseries');
+        Route::get('/dashboard', [App\Http\Controllers\Analytics\AnalyticsController::class, 'getRealtimeDashboard'])->name('dashboard');
+        Route::get('/{entity_type}/{entity_id}/anomalies/{metric}', [App\Http\Controllers\Analytics\AnalyticsController::class, 'detectAnomalies'])->name('anomalies');
+    });
+
+    // Custom Metrics & KPIs
+    Route::prefix('metrics')->name('metrics.')->group(function () {
+        Route::post('/custom', [App\Http\Controllers\Analytics\AnalyticsController::class, 'createMetric'])->name('create');
+        Route::post('/custom/{metric_id}/calculate', [App\Http\Controllers\Analytics\AnalyticsController::class, 'calculateMetric'])->name('calculate');
+        Route::delete('/custom/{metric_id}', [App\Http\Controllers\Analytics\AnalyticsController::class, 'deleteMetric'])->name('delete');
+    });
+
+    Route::prefix('kpis')->name('kpis.')->group(function () {
+        Route::post('/', [App\Http\Controllers\Analytics\AnalyticsController::class, 'createKPI'])->name('create');
+        Route::post('/{kpi_id}/evaluate', [App\Http\Controllers\Analytics\AnalyticsController::class, 'evaluateKPI'])->name('evaluate');
+        Route::get('/dashboard', [App\Http\Controllers\Analytics\AnalyticsController::class, 'getKPIDashboard'])->name('dashboard');
+        Route::delete('/{kpi_id}', [App\Http\Controllers\Analytics\AnalyticsController::class, 'deleteKPI'])->name('delete');
+    });
+
+    // ROI Calculation
+    Route::prefix('roi')->name('roi.')->group(function () {
+        Route::post('/campaigns/{campaign_id}', [App\Http\Controllers\Analytics\AnalyticsController::class, 'calculateCampaignROI'])->name('campaign');
+        Route::post('/organization', [App\Http\Controllers\Analytics\AnalyticsController::class, 'calculateOrganizationROI'])->name('organization');
+        Route::get('/campaigns/{campaign_id}/ltv', [App\Http\Controllers\Analytics\AnalyticsController::class, 'calculateLifetimeValue'])->name('ltv');
+        Route::post('/campaigns/{campaign_id}/project', [App\Http\Controllers\Analytics\AnalyticsController::class, 'projectROI'])->name('project');
+    });
+
+    // Attribution Modeling
+    Route::prefix('attribution')->name('attribution.')->group(function () {
+        Route::post('/campaigns/{campaign_id}', [App\Http\Controllers\Analytics\AnalyticsController::class, 'attributeConversions'])->name('conversions');
+        Route::post('/campaigns/{campaign_id}/compare', [App\Http\Controllers\Analytics\AnalyticsController::class, 'compareAttributionModels'])->name('compare');
+        Route::post('/campaigns/{campaign_id}/insights', [App\Http\Controllers\Analytics\AnalyticsController::class, 'getAttributionInsights'])->name('insights');
+    });
+
+    // Advanced Analytics Features (Phase 11)
+    Route::get('/campaigns/{campaign_id}/insights', [App\Http\Controllers\Analytics\AdvancedAnalyticsController::class, 'getCampaignInsights'])->name('campaigns.insights');
+    Route::post('/campaigns/{campaign_id}/export', [App\Http\Controllers\Analytics\AdvancedAnalyticsController::class, 'exportCampaignReport'])->name('campaigns.export');
+    Route::post('/export', [App\Http\Controllers\Analytics\AdvancedAnalyticsController::class, 'exportOrganizationReport'])->name('export');
+    Route::post('/compare', [App\Http\Controllers\Analytics\AdvancedAnalyticsController::class, 'compareCampaigns'])->name('compare');
+
+    // Scheduled Reports (Phase 12)
+    Route::prefix('scheduled-reports')->name('scheduled-reports.')->group(function () {
+        Route::get('/', [App\Http\Controllers\Analytics\ScheduledReportsController::class, 'index'])->name('index');
+        Route::post('/', [App\Http\Controllers\Analytics\ScheduledReportsController::class, 'store'])->name('store');
+        Route::get('/{schedule_id}', [App\Http\Controllers\Analytics\ScheduledReportsController::class, 'show'])->name('show');
+        Route::put('/{schedule_id}', [App\Http\Controllers\Analytics\ScheduledReportsController::class, 'update'])->name('update');
+        Route::delete('/{schedule_id}', [App\Http\Controllers\Analytics\ScheduledReportsController::class, 'destroy'])->name('destroy');
+        Route::get('/{schedule_id}/history', [App\Http\Controllers\Analytics\ScheduledReportsController::class, 'history'])->name('history');
+        Route::post('/from-template/{template_id}', [App\Http\Controllers\Analytics\ScheduledReportsController::class, 'createFromTemplate'])->name('from-template');
+    });
+
+    // One-time Report Sending (Phase 12)
+    Route::post('/send-report', [App\Http\Controllers\Analytics\ScheduledReportsController::class, 'sendOneTime'])->name('send-report');
+
+    // Real-Time Alerts & Notifications (Phase 13)
+    Route::prefix('alerts')->name('alerts.')->group(function () {
+        // Alert Rules
+        Route::get('/rules', [App\Http\Controllers\Analytics\AlertsController::class, 'index'])->name('rules.index');
+        Route::post('/rules', [App\Http\Controllers\Analytics\AlertsController::class, 'store'])->name('rules.store');
+        Route::get('/rules/{rule_id}', [App\Http\Controllers\Analytics\AlertsController::class, 'show'])->name('rules.show');
+        Route::put('/rules/{rule_id}', [App\Http\Controllers\Analytics\AlertsController::class, 'update'])->name('rules.update');
+        Route::delete('/rules/{rule_id}', [App\Http\Controllers\Analytics\AlertsController::class, 'destroy'])->name('rules.destroy');
+        Route::post('/rules/{rule_id}/test', [App\Http\Controllers\Analytics\AlertsController::class, 'testRule'])->name('rules.test');
+        Route::post('/rules/from-template/{template_id}', [App\Http\Controllers\Analytics\AlertsController::class, 'createFromTemplate'])->name('rules.from-template');
+
+        // Alert History
+        Route::get('/history', [App\Http\Controllers\Analytics\AlertsController::class, 'history'])->name('history');
+        Route::post('/{alert_id}/acknowledge', [App\Http\Controllers\Analytics\AlertsController::class, 'acknowledge'])->name('acknowledge');
+        Route::post('/{alert_id}/resolve', [App\Http\Controllers\Analytics\AlertsController::class, 'resolve'])->name('resolve');
+        Route::post('/{alert_id}/snooze', [App\Http\Controllers\Analytics\AlertsController::class, 'snooze'])->name('snooze');
+    });
+
+    // Data Export & API Integration (Phase 14)
+    Route::prefix('exports')->name('exports.')->group(function () {
+        // Export Configurations
+        Route::get('/configs', [App\Http\Controllers\Analytics\DataExportsController::class, 'index'])->name('configs.index');
+        Route::post('/configs', [App\Http\Controllers\Analytics\DataExportsController::class, 'store'])->name('configs.store');
+        Route::get('/configs/{config_id}', [App\Http\Controllers\Analytics\DataExportsController::class, 'show'])->name('configs.show');
+        Route::put('/configs/{config_id}', [App\Http\Controllers\Analytics\DataExportsController::class, 'update'])->name('configs.update');
+        Route::delete('/configs/{config_id}', [App\Http\Controllers\Analytics\DataExportsController::class, 'destroy'])->name('configs.destroy');
+
+        // Export Execution
+        Route::post('/execute', [App\Http\Controllers\Analytics\DataExportsController::class, 'execute'])->name('execute');
+
+        // Export Logs
+        Route::get('/logs', [App\Http\Controllers\Analytics\DataExportsController::class, 'logs'])->name('logs');
+        Route::get('/download/{log_id}', [App\Http\Controllers\Analytics\DataExportsController::class, 'download'])->name('download');
+
+        // Statistics
+        Route::get('/stats', [App\Http\Controllers\Analytics\DataExportsController::class, 'stats'])->name('stats');
+    });
+
+    // API Token Management (Phase 14)
+    Route::prefix('api-tokens')->name('api-tokens.')->group(function () {
+        Route::get('/', [App\Http\Controllers\Analytics\DataExportsController::class, 'tokens'])->name('index');
+        Route::post('/', [App\Http\Controllers\Analytics\DataExportsController::class, 'createToken'])->name('store');
+        Route::delete('/{token_id}', [App\Http\Controllers\Analytics\DataExportsController::class, 'revokeToken'])->name('revoke');
+    });
+
+    // A/B Testing & Experimentation (Phase 15)
+    Route::prefix('experiments')->name('experiments.')->group(function () {
+        // Experiment Management
+        Route::get('/', [App\Http\Controllers\Analytics\ExperimentsController::class, 'index'])->name('index');
+        Route::post('/', [App\Http\Controllers\Analytics\ExperimentsController::class, 'store'])->name('store');
+        Route::get('/stats', [App\Http\Controllers\Analytics\ExperimentsController::class, 'stats'])->name('stats');
+        Route::get('/{experiment_id}', [App\Http\Controllers\Analytics\ExperimentsController::class, 'show'])->name('show');
+        Route::put('/{experiment_id}', [App\Http\Controllers\Analytics\ExperimentsController::class, 'update'])->name('update');
+        Route::delete('/{experiment_id}', [App\Http\Controllers\Analytics\ExperimentsController::class, 'destroy'])->name('destroy');
+
+        // Experiment Actions
+        Route::post('/{experiment_id}/start', [App\Http\Controllers\Analytics\ExperimentsController::class, 'start'])->name('start');
+        Route::post('/{experiment_id}/pause', [App\Http\Controllers\Analytics\ExperimentsController::class, 'pause'])->name('pause');
+        Route::post('/{experiment_id}/resume', [App\Http\Controllers\Analytics\ExperimentsController::class, 'resume'])->name('resume');
+        Route::post('/{experiment_id}/complete', [App\Http\Controllers\Analytics\ExperimentsController::class, 'complete'])->name('complete');
+
+        // Variant Management
+        Route::post('/{experiment_id}/variants', [App\Http\Controllers\Analytics\ExperimentsController::class, 'addVariant'])->name('variants.store');
+        Route::put('/{experiment_id}/variants/{variant_id}', [App\Http\Controllers\Analytics\ExperimentsController::class, 'updateVariant'])->name('variants.update');
+
+        // Results & Events
+        Route::get('/{experiment_id}/results', [App\Http\Controllers\Analytics\ExperimentsController::class, 'results'])->name('results');
+        Route::post('/{experiment_id}/events', [App\Http\Controllers\Analytics\ExperimentsController::class, 'recordEvent'])->name('events.store');
+    });
+
+    // ===== Predictive Analytics Routes (Phase 16) =====
+    Route::prefix('analytics')->name('analytics.')->group(function () {
+        // Forecasting
+        Route::post('/forecasts', [App\Http\Controllers\Analytics\PredictiveAnalyticsController::class, 'generateForecast'])->name('forecasts.generate');
+        Route::get('/forecasts', [App\Http\Controllers\Analytics\PredictiveAnalyticsController::class, 'listForecasts'])->name('forecasts.index');
+        Route::get('/forecasts/{forecast_id}', [App\Http\Controllers\Analytics\PredictiveAnalyticsController::class, 'getForecast'])->name('forecasts.show');
+        Route::put('/forecasts/{forecast_id}', [App\Http\Controllers\Analytics\PredictiveAnalyticsController::class, 'updateForecast'])->name('forecasts.update');
+
+        // Anomaly Detection
+        Route::post('/anomalies/detect', [App\Http\Controllers\Analytics\PredictiveAnalyticsController::class, 'detectAnomalies'])->name('anomalies.detect');
+        Route::get('/anomalies', [App\Http\Controllers\Analytics\PredictiveAnalyticsController::class, 'listAnomalies'])->name('anomalies.index');
+        Route::get('/anomalies/{anomaly_id}', [App\Http\Controllers\Analytics\PredictiveAnalyticsController::class, 'getAnomaly'])->name('anomalies.show');
+        Route::post('/anomalies/{anomaly_id}/acknowledge', [App\Http\Controllers\Analytics\PredictiveAnalyticsController::class, 'acknowledgeAnomaly'])->name('anomalies.acknowledge');
+        Route::post('/anomalies/{anomaly_id}/resolve', [App\Http\Controllers\Analytics\PredictiveAnalyticsController::class, 'resolveAnomaly'])->name('anomalies.resolve');
+        Route::post('/anomalies/{anomaly_id}/false-positive', [App\Http\Controllers\Analytics\PredictiveAnalyticsController::class, 'markFalsePositive'])->name('anomalies.false_positive');
+
+        // Trend Analysis
+        Route::post('/trends', [App\Http\Controllers\Analytics\PredictiveAnalyticsController::class, 'analyzeTrends'])->name('trends.analyze');
+        Route::get('/trends', [App\Http\Controllers\Analytics\PredictiveAnalyticsController::class, 'listTrends'])->name('trends.index');
+
+        // Recommendations
+        Route::post('/recommendations/generate', [App\Http\Controllers\Analytics\PredictiveAnalyticsController::class, 'generateRecommendations'])->name('recommendations.generate');
+        Route::get('/recommendations', [App\Http\Controllers\Analytics\PredictiveAnalyticsController::class, 'listRecommendations'])->name('recommendations.index');
+        Route::get('/recommendations/{recommendation_id}', [App\Http\Controllers\Analytics\PredictiveAnalyticsController::class, 'getRecommendation'])->name('recommendations.show');
+        Route::post('/recommendations/{recommendation_id}/accept', [App\Http\Controllers\Analytics\PredictiveAnalyticsController::class, 'acceptRecommendation'])->name('recommendations.accept');
+        Route::post('/recommendations/{recommendation_id}/reject', [App\Http\Controllers\Analytics\PredictiveAnalyticsController::class, 'rejectRecommendation'])->name('recommendations.reject');
+        Route::post('/recommendations/{recommendation_id}/implement', [App\Http\Controllers\Analytics\PredictiveAnalyticsController::class, 'implementRecommendation'])->name('recommendations.implement');
+
+        // Statistics
+        Route::get('/stats', [App\Http\Controllers\Analytics\PredictiveAnalyticsController::class, 'stats'])->name('stats');
+    });
+});
+
+// Alert Templates (Global) (Phase 13)
+Route::middleware(['auth:sanctum'])->prefix('alerts/templates')->name('alerts.templates.')->group(function () {
+    Route::get('/', [App\Http\Controllers\Analytics\AlertsController::class, 'templates'])->name('index');
+});
 
 // Cache Statistics (Global)
 Route::get('/cache/stats', [App\Http\Controllers\API\CacheController::class, 'stats'])->name('cache.stats');
@@ -1455,6 +1793,20 @@ Route::middleware(['auth:sanctum'])->prefix('analytics')->name('analytics.')->gr
     Route::get('/funnel/{campaign_id}', [App\Http\Controllers\API\AnalyticsController::class, 'getFunnelAnalytics'])->name('funnel');
     Route::get('/demographics', [App\Http\Controllers\API\AnalyticsController::class, 'getAudienceDemographics'])->name('demographics');
     Route::post('/export', [App\Http\Controllers\API\AnalyticsController::class, 'exportReport'])->name('export');
+
+    // User Dashboard Customization (Phase 11)
+    Route::prefix('user')->name('user.')->group(function () {
+        Route::get('/dashboard/{dashboard_type}/config', [App\Http\Controllers\Analytics\AdvancedAnalyticsController::class, 'getDashboardConfig'])->name('dashboard.config.get');
+        Route::put('/dashboard/{dashboard_type}/config', [App\Http\Controllers\Analytics\AdvancedAnalyticsController::class, 'saveDashboardConfig'])->name('dashboard.config.save');
+        Route::get('/filters/{context}', [App\Http\Controllers\Analytics\AdvancedAnalyticsController::class, 'getSavedFilters'])->name('filters.get');
+        Route::post('/filters/{context}', [App\Http\Controllers\Analytics\AdvancedAnalyticsController::class, 'saveFilter'])->name('filters.save');
+    });
+
+    // Report Templates (Phase 12)
+    Route::prefix('report-templates')->name('templates.')->group(function () {
+        Route::get('/', [App\Http\Controllers\Analytics\ScheduledReportsController::class, 'templates'])->name('index');
+        Route::post('/', [App\Http\Controllers\Analytics\ScheduledReportsController::class, 'createTemplate'])->name('create');
+    });
 });
 
 /*
@@ -1463,7 +1815,7 @@ Route::middleware(['auth:sanctum'])->prefix('analytics')->name('analytics.')->gr
 | Rate Limited: 10 requests per minute per user
 |--------------------------------------------------------------------------
 */
-Route::prefix('ai')->middleware(['auth:sanctum'])->group(function () {
+Route::prefix('ai')->middleware(['auth:sanctum', 'throttle.ai'])->group(function () {
     // Content Suggestions & Generation
     Route::post('/generate-suggestions', [App\Http\Controllers\API\AIAssistantController::class, 'generateSuggestions']);
     Route::post('/generate-brief', [App\Http\Controllers\API\AIAssistantController::class, 'generateBrief']);
@@ -1599,4 +1951,240 @@ Route::prefix('ai')->middleware(['auth:sanctum', 'rls.context'])->group(function
     // AI Usage Statistics
     Route::get('/stats', [App\Http\Controllers\Api\AiContentController::class, 'stats'])
         ->name('ai.stats');
+});
+
+/*
+|--------------------------------------------------------------------------
+| Optimization Engine Routes - Phase 20 Implementation
+|--------------------------------------------------------------------------
+| AI-powered campaign optimization with ML-based recommendations
+| Includes budget allocation, audience overlap, attribution, creative analysis
+| Requires authentication and organization context
+*/
+Route::prefix('optimization')->middleware(['auth:sanctum', 'rls.context'])->name('optimization.')->group(function () {
+    // Budget Optimization
+    Route::post('/budget/optimize', [\App\Http\Controllers\Api\OptimizationController::class, 'optimizeBudget'])
+        ->name('budget.optimize');
+    Route::get('/budget/allocations', [\App\Http\Controllers\Api\OptimizationController::class, 'getBudgetAllocations'])
+        ->name('budget.allocations');
+    Route::post('/budget/allocations/{allocationId}/apply', [\App\Http\Controllers\Api\OptimizationController::class, 'applyBudgetAllocation'])
+        ->name('budget.apply');
+
+    // Audience Overlap Detection
+    Route::post('/audience/detect-overlaps', [\App\Http\Controllers\Api\OptimizationController::class, 'detectOverlaps'])
+        ->name('audience.detect');
+    Route::get('/audience/overlaps', [\App\Http\Controllers\Api\OptimizationController::class, 'getOverlaps'])
+        ->name('audience.overlaps');
+    Route::post('/audience/overlaps/{overlapId}/resolve', [\App\Http\Controllers\Api\OptimizationController::class, 'resolveOverlap'])
+        ->name('audience.resolve');
+
+    // Attribution Modeling
+    Route::post('/attribution/calculate', [\App\Http\Controllers\Api\OptimizationController::class, 'calculateAttribution'])
+        ->name('attribution.calculate');
+    Route::get('/attribution/report', [\App\Http\Controllers\Api\OptimizationController::class, 'getAttributionReport'])
+        ->name('attribution.report');
+
+    // Creative Performance Analysis
+    Route::post('/creative/analyze', [\App\Http\Controllers\Api\OptimizationController::class, 'analyzeCreatives'])
+        ->name('creative.analyze');
+    Route::get('/creative/report', [\App\Http\Controllers\Api\OptimizationController::class, 'getCreativeReport'])
+        ->name('creative.report');
+
+    // Optimization Insights
+    Route::post('/insights/generate', [\App\Http\Controllers\Api\OptimizationController::class, 'generateInsights'])
+        ->name('insights.generate');
+    Route::get('/insights', [\App\Http\Controllers\Api\OptimizationController::class, 'getInsights'])
+        ->name('insights.index');
+    Route::post('/insights/{insightId}/acknowledge', [\App\Http\Controllers\Api\OptimizationController::class, 'acknowledgeInsight'])
+        ->name('insights.acknowledge');
+    Route::post('/insights/{insightId}/apply', [\App\Http\Controllers\Api\OptimizationController::class, 'applyInsight'])
+        ->name('insights.apply');
+    Route::post('/insights/{insightId}/dismiss', [\App\Http\Controllers\Api\OptimizationController::class, 'dismissInsight'])
+        ->name('insights.dismiss');
+
+    // Optimization Runs
+    Route::get('/runs', [\App\Http\Controllers\Api\OptimizationController::class, 'getOptimizationRuns'])
+        ->name('runs.index');
+    Route::get('/runs/{runId}', [\App\Http\Controllers\Api\OptimizationController::class, 'getOptimizationRun'])
+        ->name('runs.show');
+
+    // Optimization Models
+    Route::get('/models', [\App\Http\Controllers\Api\OptimizationController::class, 'getOptimizationModels'])
+        ->name('models.index');
+});
+
+/*
+|--------------------------------------------------------------------------
+| Cross-Platform Campaign Orchestration Routes - Phase 21 Implementation
+|--------------------------------------------------------------------------
+| Unified campaign management across multiple advertising platforms
+| Includes templates, deployment, sync, and performance tracking
+| Requires authentication and organization context
+*/
+Route::prefix('orchestration')->middleware(['auth:sanctum', 'rls.context'])->name('orchestration.')->group(function () {
+    // Campaign Templates
+    Route::get('/templates', [\App\Http\Controllers\Api\OrchestrationController::class, 'getTemplates'])
+        ->name('templates.index');
+    Route::post('/templates', [\App\Http\Controllers\Api\OrchestrationController::class, 'createTemplate'])
+        ->name('templates.create');
+
+    // Orchestrations
+    Route::get('/', [\App\Http\Controllers\Api\OrchestrationController::class, 'index'])
+        ->name('index');
+    Route::post('/from-template', [\App\Http\Controllers\Api\OrchestrationController::class, 'createFromTemplate'])
+        ->name('create.from-template');
+    Route::get('/{orchestrationId}', [\App\Http\Controllers\Api\OrchestrationController::class, 'show'])
+        ->name('show');
+
+    // Orchestration Actions
+    Route::post('/{orchestrationId}/deploy', [\App\Http\Controllers\Api\OrchestrationController::class, 'deploy'])
+        ->name('deploy');
+    Route::post('/{orchestrationId}/sync', [\App\Http\Controllers\Api\OrchestrationController::class, 'sync'])
+        ->name('sync');
+    Route::post('/{orchestrationId}/pause', [\App\Http\Controllers\Api\OrchestrationController::class, 'pause'])
+        ->name('pause');
+    Route::post('/{orchestrationId}/resume', [\App\Http\Controllers\Api\OrchestrationController::class, 'resume'])
+        ->name('resume');
+    Route::put('/{orchestrationId}/budget', [\App\Http\Controllers\Api\OrchestrationController::class, 'updateBudget'])
+        ->name('budget.update');
+
+    // Performance
+    Route::get('/{orchestrationId}/performance', [\App\Http\Controllers\Api\OrchestrationController::class, 'getPerformance'])
+        ->name('performance');
+});
+
+/*
+|--------------------------------------------------------------------------
+| Social Media Publishing & Scheduling Routes - Phase 22 Implementation
+|--------------------------------------------------------------------------
+| Comprehensive social media publishing and scheduling system
+| Includes content calendar, best time recommendations, and approval workflow
+| Requires authentication and organization context
+*/
+Route::prefix('social/publishing')->middleware(['auth:sanctum', 'rls.context'])->name('social.publishing.')->group(function () {
+    // Scheduled Posts
+    Route::get('/', [\App\Http\Controllers\Api\SocialPublishingController::class, 'index'])
+        ->name('index');
+    Route::post('/', [\App\Http\Controllers\Api\SocialPublishingController::class, 'store'])
+        ->name('store');
+    Route::get('/{postId}', [\App\Http\Controllers\Api\SocialPublishingController::class, 'show'])
+        ->name('show');
+    Route::put('/{postId}', [\App\Http\Controllers\Api\SocialPublishingController::class, 'update'])
+        ->name('update');
+
+    // Post Actions
+    Route::post('/{postId}/reschedule', [\App\Http\Controllers\Api\SocialPublishingController::class, 'reschedule'])
+        ->name('reschedule');
+    Route::post('/{postId}/cancel', [\App\Http\Controllers\Api\SocialPublishingController::class, 'cancel'])
+        ->name('cancel');
+    Route::post('/{postId}/publish', [\App\Http\Controllers\Api\SocialPublishingController::class, 'publish'])
+        ->name('publish');
+
+    // Approval Workflow
+    Route::post('/{postId}/approve', [\App\Http\Controllers\Api\SocialPublishingController::class, 'approve'])
+        ->name('approve');
+    Route::post('/{postId}/reject', [\App\Http\Controllers\Api\SocialPublishingController::class, 'reject'])
+        ->name('reject');
+
+    // Content Calendar
+    Route::get('/calendar/view', [\App\Http\Controllers\Api\SocialPublishingController::class, 'getCalendar'])
+        ->name('calendar.view');
+    Route::get('/calendar/monthly', [\App\Http\Controllers\Api\SocialPublishingController::class, 'getMonthlyOverview'])
+        ->name('calendar.monthly');
+
+    // Content Library
+    Route::get('/library', [\App\Http\Controllers\Api\SocialPublishingController::class, 'getContentLibrary'])
+        ->name('library.index');
+    Route::post('/library', [\App\Http\Controllers\Api\SocialPublishingController::class, 'addToLibrary'])
+        ->name('library.store');
+
+    // Best Time Recommendations
+    Route::get('/best-times', [\App\Http\Controllers\Api\SocialPublishingController::class, 'getBestTimes'])
+        ->name('best-times');
+    Route::get('/suggest-time', [\App\Http\Controllers\Api\SocialPublishingController::class, 'suggestTime'])
+        ->name('suggest-time');
+
+    // Stats
+    Route::get('/stats', [\App\Http\Controllers\Api\SocialPublishingController::class, 'getStats'])
+        ->name('stats');
+});
+
+/*
+|--------------------------------------------------------------------------
+| Phase 23: Social Listening & Brand Monitoring
+|--------------------------------------------------------------------------
+| Comprehensive social listening, sentiment analysis, competitor monitoring,
+| trend detection, and conversation management
+| Requires authentication and organization context
+*/
+Route::prefix('social/listening')->middleware(['auth:sanctum', 'rls.context'])->name('social.listening.')->group(function () {
+    // Monitoring Keywords
+    Route::get('/keywords', [\App\Http\Controllers\Api\SocialListeningController::class, 'keywords'])
+        ->name('keywords.index');
+    Route::post('/keywords', [\App\Http\Controllers\Api\SocialListeningController::class, 'createKeyword'])
+        ->name('keywords.store');
+    Route::put('/keywords/{keywordId}', [\App\Http\Controllers\Api\SocialListeningController::class, 'updateKeyword'])
+        ->name('keywords.update');
+    Route::delete('/keywords/{keywordId}', [\App\Http\Controllers\Api\SocialListeningController::class, 'deleteKeyword'])
+        ->name('keywords.destroy');
+
+    // Social Mentions
+    Route::get('/mentions', [\App\Http\Controllers\Api\SocialListeningController::class, 'mentions'])
+        ->name('mentions.index');
+    Route::get('/mentions/{mentionId}', [\App\Http\Controllers\Api\SocialListeningController::class, 'mentionDetails'])
+        ->name('mentions.show');
+    Route::post('/mentions/search', [\App\Http\Controllers\Api\SocialListeningController::class, 'searchMentions'])
+        ->name('mentions.search');
+    Route::put('/mentions/{mentionId}', [\App\Http\Controllers\Api\SocialListeningController::class, 'updateMention'])
+        ->name('mentions.update');
+
+    // Statistics & Analytics
+    Route::get('/statistics', [\App\Http\Controllers\Api\SocialListeningController::class, 'statistics'])
+        ->name('statistics');
+    Route::get('/sentiment-timeline', [\App\Http\Controllers\Api\SocialListeningController::class, 'sentimentTimeline'])
+        ->name('sentiment.timeline');
+    Route::get('/top-authors', [\App\Http\Controllers\Api\SocialListeningController::class, 'topAuthors'])
+        ->name('authors.top');
+
+    // Trending Topics
+    Route::get('/trends', [\App\Http\Controllers\Api\SocialListeningController::class, 'trends'])
+        ->name('trends.index');
+    Route::get('/trends/{trendId}', [\App\Http\Controllers\Api\SocialListeningController::class, 'trendDetails'])
+        ->name('trends.show');
+    Route::post('/trends/detect', [\App\Http\Controllers\Api\SocialListeningController::class, 'detectTrends'])
+        ->name('trends.detect');
+
+    // Competitor Monitoring
+    Route::get('/competitors', [\App\Http\Controllers\Api\SocialListeningController::class, 'competitors'])
+        ->name('competitors.index');
+    Route::post('/competitors', [\App\Http\Controllers\Api\SocialListeningController::class, 'createCompetitor'])
+        ->name('competitors.store');
+    Route::post('/competitors/{competitorId}/analyze', [\App\Http\Controllers\Api\SocialListeningController::class, 'analyzeCompetitor'])
+        ->name('competitors.analyze');
+    Route::post('/competitors/compare', [\App\Http\Controllers\Api\SocialListeningController::class, 'compareCompetitors'])
+        ->name('competitors.compare');
+
+    // Alerts
+    Route::get('/alerts', [\App\Http\Controllers\Api\SocialListeningController::class, 'alerts'])
+        ->name('alerts.index');
+    Route::post('/alerts', [\App\Http\Controllers\Api\SocialListeningController::class, 'createAlert'])
+        ->name('alerts.store');
+
+    // Conversations
+    Route::get('/conversations', [\App\Http\Controllers\Api\SocialListeningController::class, 'conversations'])
+        ->name('conversations.index');
+    Route::get('/conversations/{conversationId}', [\App\Http\Controllers\Api\SocialListeningController::class, 'conversationDetails'])
+        ->name('conversations.show');
+    Route::post('/conversations/{conversationId}/respond', [\App\Http\Controllers\Api\SocialListeningController::class, 'respondToConversation'])
+        ->name('conversations.respond');
+    Route::post('/conversations/{conversationId}/assign', [\App\Http\Controllers\Api\SocialListeningController::class, 'assignConversation'])
+        ->name('conversations.assign');
+    Route::get('/conversations/stats', [\App\Http\Controllers\Api\SocialListeningController::class, 'conversationStats'])
+        ->name('conversations.stats');
+
+    // Response Templates
+    Route::get('/templates', [\App\Http\Controllers\Api\SocialListeningController::class, 'templates'])
+        ->name('templates.index');
+    Route::post('/templates', [\App\Http\Controllers\Api\SocialListeningController::class, 'createTemplate'])
+        ->name('templates.store');
 });

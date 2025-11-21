@@ -9,6 +9,14 @@ use Illuminate\Validation\Rules\Password;
 class SettingsController extends Controller
 {
     /**
+     * Constructor - Apply authentication middleware
+     */
+    public function __construct()
+    {
+        $this->middleware('auth:sanctum');
+    }
+
+    /**
      * Display settings page
      */
     public function index()

@@ -26,6 +26,7 @@ class AnalyticsDashboardController extends Controller
 
     public function __construct(DashboardService $dashboardService)
     {
+        $this->middleware('auth:sanctum');
         $this->dashboardService = $dashboardService;
     }
 

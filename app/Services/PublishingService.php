@@ -218,14 +218,13 @@ class PublishingService
             return null;
         }
 
-        $integration = Integration::where('org_id', $post->org_id)
-            ->where('platform', $channel->platform)
+        // RLS handles org filtering - just query by platform and status
+        $integration = Integration::where('platform', $channel->platform)
             ->where('status', 'active')
             ->first();
 
         if (!$integration) {
             Log::error('No active integration found', [
-                'org_id' => $post->org_id,
                 'platform' => $channel->platform,
             ]);
 

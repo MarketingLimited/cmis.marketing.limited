@@ -19,6 +19,7 @@ class ContentLibraryController extends Controller
 
     public function __construct(ContentLibraryService $libraryService)
     {
+        $this->middleware('auth:sanctum');
         $this->libraryService = $libraryService;
     }
 

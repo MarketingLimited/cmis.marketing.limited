@@ -133,10 +133,10 @@ class CampaignRepositoryTest extends TestCase
         // Create campaign in org2
         $campaign2 = $this->createTestCampaign($setup2['org']->org_id);
 
-        // Verify org2 user can only see their own campaign
-        $campaigns = $this->repository->getCampaignsForOrg($setup2['org']->org_id);
+        // Verify org2 user can only see their own campaign (RLS handles filtering)
+        $campaigns = $this->repository->getAllCampaigns();
 
-        $campaignIds = array_column($campaigns, 'campaign_id');
+        $campaignIds = array_column($campaigns->toArray(), 'campaign_id');
 
         $this->assertContains($campaign2->campaign_id, $campaignIds);
         $this->assertNotContains($campaign1->campaign_id, $campaignIds);

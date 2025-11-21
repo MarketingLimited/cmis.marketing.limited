@@ -22,10 +22,8 @@ class ContentPolicy
 
     public function view(User $user, ContentItem $content): bool
     {
-        if (!$this->permissionService->check($user, 'cmis.content.view')) {
-            return false;
-        }
-        return $content->org_id === session('current_org_id');
+        // RLS ensures org isolation at database level
+        return $this->permissionService->check($user, 'cmis.content.view');
     }
 
     public function create(User $user): bool
@@ -35,26 +33,20 @@ class ContentPolicy
 
     public function update(User $user, ContentItem $content): bool
     {
-        if (!$this->permissionService->check($user, 'cmis.content.update')) {
-            return false;
-        }
-        return $content->org_id === session('current_org_id');
+        // RLS ensures org isolation at database level
+        return $this->permissionService->check($user, 'cmis.content.update');
     }
 
     public function delete(User $user, ContentItem $content): bool
     {
-        if (!$this->permissionService->check($user, 'cmis.content.delete')) {
-            return false;
-        }
-        return $content->org_id === session('current_org_id');
+        // RLS ensures org isolation at database level
+        return $this->permissionService->check($user, 'cmis.content.delete');
     }
 
     public function publish(User $user, ContentItem $content): bool
     {
-        if (!$this->permissionService->check($user, 'cmis.content.publish')) {
-            return false;
-        }
-        return $content->org_id === session('current_org_id');
+        // RLS ensures org isolation at database level
+        return $this->permissionService->check($user, 'cmis.content.publish');
     }
 
     public function schedule(User $user, ContentItem $content): bool

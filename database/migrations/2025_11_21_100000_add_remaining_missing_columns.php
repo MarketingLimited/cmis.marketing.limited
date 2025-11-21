@@ -109,17 +109,20 @@ return new class extends Migration
 
         // Fix markets.created_at (14 test failures)
         // First add created_at and updated_at to the public.markets source table
-        if (!Schema::hasColumn('public.markets', 'created_at')) {
-            Schema::table('public.markets', function (Blueprint $table) {
+        Schema::table('public.markets', function (Blueprint $table) {
+            if (!Schema::hasColumn('public.markets', 'created_at')) {
                 $table->timestamp('created_at')->nullable()->default(DB::raw('CURRENT_TIMESTAMP'));
+            }
+            if (!Schema::hasColumn('public.markets', 'updated_at')) {
                 $table->timestamp('updated_at')->nullable()->default(DB::raw('CURRENT_TIMESTAMP'));
-            });
-            echo "✓ Added created_at and updated_at to public.markets\n";
-        }
+            }
+        });
+        echo "✓ Added timestamp columns to public.markets\n";
 
         // Then recreate the cmis.markets view to include these columns
+        DB::statement("DROP VIEW IF EXISTS cmis.markets");
         DB::statement("
-            CREATE OR REPLACE VIEW cmis.markets AS
+            CREATE VIEW cmis.markets AS
             SELECT
                 market_id,
                 market_name,
