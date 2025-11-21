@@ -140,6 +140,14 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user/active-organization', [\App\Http\Controllers\Core\OrgSwitcherController::class, 'getActiveOrganization'])
         ->name('user.active-organization');
 
+    // Context API (Phase 2 - Option 2: Context System UI)
+    Route::prefix('context')->name('context.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Core\ContextController::class, 'getCurrentContext'])->name('current');
+        Route::get('/organizations', [\App\Http\Controllers\Core\ContextController::class, 'getAvailableOrganizations'])->name('organizations');
+        Route::post('/switch', [\App\Http\Controllers\Core\ContextController::class, 'switchContext'])->name('switch');
+        Route::post('/refresh', [\App\Http\Controllers\Core\ContextController::class, 'refreshContext'])->name('refresh');
+    });
+
     // Async Job Status (Phase 1 Week 2 - Queue Infrastructure)
     Route::prefix('jobs')->name('api.jobs.')->group(function () {
         Route::get('/{job_id}/status', [\App\Http\Controllers\API\JobStatusController::class, 'status'])->name('status');
