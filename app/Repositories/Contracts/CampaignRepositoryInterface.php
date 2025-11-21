@@ -43,4 +43,9 @@ interface CampaignRepositoryInterface
      * Match campaigns to offerings
      */
     public function matchCampaignsToOfferings(string $orgId, int $limit = 10): Collection;
+
+    /**
+     * Get all campaigns (automatically filtered by RLS)
+     */
+    public function getAllCampaigns(): Collection;
 }

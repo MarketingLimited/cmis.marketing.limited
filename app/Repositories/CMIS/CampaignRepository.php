@@ -138,15 +138,13 @@ class CampaignRepository implements CampaignRepositoryInterface
     }
 
     /**
-     * Get all campaigns for an organization
+     * Get all campaigns (automatically filtered by RLS)
      *
-     * @param string $orgId Organization UUID
-     * @return Collection Collection of campaigns
+     * @return Collection Collection of campaigns for current organization
      */
-    public function getCampaignsForOrg(string $orgId): Collection
+    public function getAllCampaigns(): Collection
     {
         $results = DB::table('cmis.campaigns')
-            ->where('org_id', $orgId)
             ->whereNull('deleted_at')
             ->get();
 

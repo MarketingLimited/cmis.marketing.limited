@@ -16,11 +16,11 @@ class QueueService
     }
 
     /**
-     * Get all queues for an organization
+     * Get all queues (automatically filtered by RLS)
      */
-    public function getOrgQueues(string $orgId, bool $activeOnly = false): Collection
+    public function getAllQueues(bool $activeOnly = false): Collection
     {
-        return $this->queueRepo->getForOrg($orgId, $activeOnly);
+        return $this->queueRepo->getAll($activeOnly);
     }
 
     /**
