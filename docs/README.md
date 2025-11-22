@@ -21,10 +21,12 @@ Welcome to the CMIS (Campaign Management & Intelligence System) documentation. T
 4. [API Documentation](#api-documentation)
 5. [Platform Integrations](#platform-integrations)
 6. [Development](#development)
-7. [Deployment](#deployment)
-8. [Reference](#reference)
-9. [Reports & Analysis](#reports--analysis)
-10. [Historical Documentation](#historical-documentation)
+7. [Testing](#testing)
+8. [Implementation Phases](#implementation-phases)
+9. [Deployment](#deployment)
+10. [Reference](#reference)
+11. [Reports & Analysis](#reports--analysis)
+12. [Historical Documentation](#historical-documentation)
 
 ---
 
@@ -141,9 +143,6 @@ Connect CMIS with social media and advertising platforms:
 Guides for developers working on CMIS:
 
 - **[Development Setup](development/)** - Local development environment
-- **[Testing Guide](../TESTING.md)** - How to write and run tests
-- **[E2E Testing](../E2E_TESTING.md)** - End-to-end testing guide
-- **[Test Framework](../TEST_FRAMEWORK_SUMMARY.md)** - Testing framework overview
 - **[Code Style](development/)** - Coding standards and conventions
 - **[Git Workflow](development/)** - Git branching and workflow
 - **[Contributing](development/)** - How to contribute to CMIS
@@ -152,6 +151,59 @@ Guides for developers working on CMIS:
 - **[Repository Pattern Guide](../app/Repositories/README.md)** - Repository pattern usage
 - **[AI Agent Guide](../app/Repositories/AI_AGENT_GUIDE.md)** - Working with AI agents
 - **[Quick Reference](../app/Repositories/QUICK_REFERENCE.md)** - Development quick reference
+
+---
+
+## Testing
+
+**Location:** [`docs/testing/`](testing/)
+
+Comprehensive testing documentation:
+
+- **[Testing Hub](testing/)** - Complete testing documentation hub
+- **[Current Test Status](testing/current/)** - Latest test suite status (201 tests, 33.4% pass rate)
+- **[Testing Guides](testing/guides/)** - How to write and run tests
+  - Testing framework overview
+  - Parallel testing guide
+  - Multi-tenancy testing
+  - E2E testing strategies
+- **[Test History](testing/history/)** - Historical test reports and improvements
+
+**Quick Commands:**
+- `/test` - Run test suite via slash command
+- `vendor/bin/phpunit` - Run PHPUnit tests
+
+---
+
+## Implementation Phases
+
+**Location:** [`docs/phases/`](phases/)
+
+All CMIS implementation phases organized by status:
+
+### Completed Phases (0-8)
+- **[Phase 0](phases/completed/phase-0/)** - Emergency Security Fixes ✅
+- **[Phases 1-2](archive/phases/)** - Foundation & Core Features ✅
+- **[Phases 3-8](phases/completed/)** - Code Quality Initiative (~13,100 lines saved) ✅
+  - Phase 3: BaseModel Conversion (282+ models)
+  - Phase 4: Platform Services Abstraction
+  - Phase 5: Social Models Consolidation
+  - Phase 6: Content Plans Consolidation
+  - Phase 7: Controller Enhancement (111 controllers)
+  - Phase 8: Documentation & Cleanup
+
+**See:** [Comprehensive Duplication Elimination Report](phases/completed/duplication-elimination/)
+
+### In Progress (Current)
+- **[Platform Integration & AI Features](phases/in-progress/)** - Phase 2-3 (55-60% complete) 🔄
+
+### Planned Phases (11-26)
+- **[Analytics](phases/planned/analytics/)** - Phases 11-16, 26
+- **[Automation](phases/planned/automation/)** - Phases 17, 25
+- **[Platform Extensions](phases/planned/platform/)** - Phase 18
+- **[Advanced Features](phases/planned/)** - Phases 19-24
+
+**See:** [Phase Documentation Hub](phases/) for complete phase roadmap
 
 ---
 
@@ -300,9 +352,9 @@ Historical documentation for reference:
 - [Maintenance Checklist](devops_maintenance_checklist.md)
 
 ### For QA Engineers
-- [Testing Guide](../TESTING.md)
-- [E2E Testing](../E2E_TESTING.md)
-- [Test Framework](../TEST_FRAMEWORK_SUMMARY.md)
+- [Testing Hub](testing/) - Complete testing documentation
+- [Current Test Status](testing/current/) - Latest test results
+- [Testing Guides](testing/guides/) - How to write tests
 
 ---
 
@@ -357,17 +409,25 @@ To contribute to documentation:
 
 ---
 
-**Last Updated:** 2025-11-20 ✅
-**Version:** 2.0.0
+**Last Updated:** 2025-11-22 ✅
+**Version:** 2.1.0
 **Maintained by:** CMIS Development Team
 
-### Recent Documentation Updates (2025-11-20)
+### Recent Documentation Updates (2025-11-22)
 
+**Major Restructure:**
+- ✅ Created consolidated [Phase Documentation Hub](phases/) - All 26 phases organized
+- ✅ Created consolidated [Testing Documentation Hub](testing/) - 39 test files organized
+- ✅ Fixed documentation issues (wrong dates, duplicates, misplaced files)
+- ✅ Moved 40+ PHASE files into structured hierarchy (completed/in-progress/planned)
+- ✅ Moved 39 test-related files into organized testing structure
+- ✅ Removed empty directories and cleaned up root-level docs
+
+**Previous Updates (2025-11-20):**
 - ✅ Updated all statistics (197 tables, 26 agents)
 - ✅ Archived 19 old files from root directory
 - ✅ Updated 147 TODO items with accurate status
 - ✅ Documented 63 broken links with fix plan
 - ✅ Consolidated 16 reports → 8 active reports
-- ✅ Created comprehensive documentation index
 
-See [Documentation Update Complete](active/DOCUMENTATION_UPDATE_COMPLETE_2025-11-20.md) for full details.
+See [Documentation Update Complete](active/DOCUMENTATION_UPDATE_COMPLETE_2025-11-20.md) for previous update details.
