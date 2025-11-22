@@ -150,6 +150,100 @@ class GPTController extends Controller
     }
 
     /**
+     * Publish campaign (Issue #57)
+     * Complete workflow: Validation → Approval → Platform API submission
+     *
+     * @param Request $request
+     * @param string $campaignId
+     * @return JsonResponse
+     */
+    public function publishCampaign(Request $request, string $campaignId): JsonResponse
+    {
+        try {
+            $campaign = Campaign::with(['contentPlans', 'adAccounts', 'integrations'])->findOrFail($campaignId);
+            $this->authorize('update', $campaign);
+
+            // Step 1: Validate campaign is ready to publish
+            $validationErrors = $this->campaignService->validateForPublish($campaign);
+            if (!empty($validationErrors)) {
+                return $this->error(
+                    'Campaign cannot be published. Please fix the following issues:',
+                    422,
+                    ['validation_errors' => $validationErrors],
+                    'CAMPAIGN_VALIDATION_FAILED'
+                );
+            }
+
+            // Step 2: Check platform integrations are connected
+            if ($campaign->integrations->isEmpty()) {
+                return $this->error(
+                    'No platform integrations connected. Please connect at least one platform (Meta, Google, TikTok, etc.) before publishing.',
+                    400,
+                    null,
+                    'NO_PLATFORMS_CONNECTED'
+                );
+            }
+
+            // Step 3: Publish to all connected platforms
+            $publishResults = [];
+            $failures = [];
+
+            foreach ($campaign->integrations as $integration) {
+                try {
+                    $connector = \App\Services\Connectors\ConnectorFactory::make($integration->platform);
+                    $result = $connector->publishCampaign($campaign, $integration);
+                    $publishResults[$integration->platform] = [
+                        'status' => 'success',
+                        'platform_campaign_id' => $result['campaign_id'] ?? null,
+                    ];
+                } catch (\Exception $e) {
+                    \Log::error("Failed to publish campaign {$campaignId} to {$integration->platform}: {$e->getMessage()}");
+                    $failures[$integration->platform] = $e->getMessage();
+                    $publishResults[$integration->platform] = [
+                        'status' => 'failed',
+                        'error' => $e->getMessage(),
+                    ];
+                }
+            }
+
+            // Step 4: Update campaign status
+            if (empty($failures)) {
+                // All platforms succeeded
+                $campaign->update([
+                    'status' => 'active',
+                    'published_at' => now(),
+                ]);
+
+                return $this->success([
+                    'campaign' => $this->formatCampaign($campaign),
+                    'publish_results' => $publishResults,
+                    'status' => 'published',
+                ], 'Campaign published successfully to all platforms');
+            } else {
+                // Some platforms failed
+                $campaign->update([
+                    'status' => 'partially_published',
+                    'published_at' => now(),
+                ]);
+
+                $successCount = count($publishResults) - count($failures);
+                return $this->error(
+                    "Campaign published to {$successCount} platform(s), but failed on " . count($failures) . " platform(s). See details below.",
+                    207, // 207 Multi-Status
+                    [
+                        'publish_results' => $publishResults,
+                        'failures' => $failures,
+                    ],
+                    'PARTIAL_PUBLISH_SUCCESS'
+                );
+            }
+        } catch (\Exception $e) {
+            \Log::error("Campaign publish workflow failed for {$campaignId}: {$e->getMessage()}");
+            return $this->serverError('Failed to publish campaign. Please try again or contact support.');
+        }
+    }
+
+    /**
      * Get campaign analytics
      */
     public function getCampaignAnalytics(Request $request, string $campaignId): JsonResponse
@@ -159,14 +253,18 @@ class GPTController extends Controller
 
         $startDate = $request->query('start_date');
         $endDate = $request->query('end_date');
+        $realtime = $request->boolean('realtime', false);
 
-        $metrics = $this->analyticsService->getMetrics($campaignId, $startDate, $endDate);
+        // If real-time is requested, bypass cache
+        $metrics = $realtime
+            ? $this->analyticsService->getRealTimeMetrics($campaignId)
+            : $this->analyticsService->getMetrics($campaignId, $startDate, $endDate);
 
         if (empty($metrics)) {
             return $this->error('Analytics not available');
         }
 
-        return $this->success([
+        $response = [
             'impressions' => $metrics['impressions'] ?? 0,
             'clicks' => $metrics['clicks'] ?? 0,
             'conversions' => $metrics['conversions'] ?? 0,
@@ -176,7 +274,57 @@ class GPTController extends Controller
             'cpa' => $metrics['cpa'] ?? 0,
             'conversion_rate' => $metrics['conversion_rate'] ?? 0,
             'roas' => $metrics['roas'] ?? 0,
-        ]);
+        ];
+
+        // Add data freshness information
+        if ($realtime) {
+            $response['data_freshness'] = 'real-time';
+            $response['last_updated'] = now()->toIso8601String();
+        } else {
+            $response['data_freshness'] = 'cached';
+            $response['last_updated'] = $metrics['cached_at'] ?? null;
+        }
+
+        return $this->success($response);
+    }
+
+    /**
+     * Get real-time analytics for today (Issue #58)
+     *
+     * Provides fresh analytics data for GPT conversations without cache.
+     */
+    public function getRealTimeAnalytics(Request $request, string $campaignId): JsonResponse
+    {
+        $campaign = Campaign::findOrFail($campaignId);
+        $this->authorize('view', $campaign);
+
+        // Fetch real-time metrics directly from platforms
+        $realTimeMetrics = $this->analyticsService->getRealTimeMetrics($campaignId);
+
+        $response = [
+            'campaign_id' => $campaignId,
+            'campaign_name' => $campaign->name,
+            'data_freshness' => 'real-time',
+            'last_updated' => now()->toIso8601String(),
+            'metrics' => [
+                'today' => [
+                    'impressions' => $realTimeMetrics['impressions'] ?? 0,
+                    'clicks' => $realTimeMetrics['clicks'] ?? 0,
+                    'conversions' => $realTimeMetrics['conversions'] ?? 0,
+                    'spend' => $realTimeMetrics['spend'] ?? 0,
+                ],
+                'performance' => [
+                    'ctr' => $realTimeMetrics['ctr'] ?? 0,
+                    'cpc' => $realTimeMetrics['cpc'] ?? 0,
+                    'cpa' => $realTimeMetrics['cpa'] ?? 0,
+                    'conversion_rate' => $realTimeMetrics['conversion_rate'] ?? 0,
+                    'roas' => $realTimeMetrics['roas'] ?? 0,
+                ],
+            ],
+            'platform_breakdown' => $realTimeMetrics['by_platform'] ?? [],
+        ];
+
+        return $this->success($response, 'Real-time analytics retrieved successfully');
     }
 
     /**
@@ -546,10 +694,27 @@ class GPTController extends Controller
             'resource_type' => 'required|in:content_plans,campaigns',
             'resource_ids' => 'required|array|min:1|max:50',
             'reason' => 'sometimes|required_if:operation,reject|string',
+            'confirmed' => 'sometimes|boolean',
         ]);
 
         if ($validator->fails()) {
             return $this->error('Validation failed', $validator->errors(), 422);
+        }
+
+        // SAFETY CHECK: Require explicit confirmation for operations affecting >10 items
+        $resourceCount = count($request->input('resource_ids'));
+        $confirmed = $request->input('confirmed', false);
+
+        if ($resourceCount > 10 && !$confirmed) {
+            return response()->json([
+                'success' => false,
+                'confirmation_required' => true,
+                'message' => "This operation will affect {$resourceCount} resources. Please confirm by setting 'confirmed' to true.",
+                'operation' => $request->input('operation'),
+                'resource_type' => $request->input('resource_type'),
+                'resource_count' => $resourceCount,
+                'warning' => 'This action cannot be easily undone. Please verify the resource IDs before confirming.'
+            ], 422);
         }
 
         try {

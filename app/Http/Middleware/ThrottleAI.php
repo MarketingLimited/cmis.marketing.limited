@@ -30,7 +30,7 @@ class ThrottleAI
     public function handle(Request $request, Closure $next): Response
     {
         $key = $this->resolveRequestSignature($request);
-        $maxAttempts = config('services.ai.rate_limit', 10); // 10 requests per minute
+        $maxAttempts = $this->getMaxAttemptsForUser($request);
         $decayMinutes = 1; // 1 minute window
 
         // Check if too many attempts
@@ -80,5 +80,42 @@ class ThrottleAI
         }
 
         return 'ai-throttle:ip:' . $request->ip();
+    }
+
+    /**
+     * Get maximum AI requests allowed per minute based on user's subscription plan.
+     *
+     * Rate limits by plan:
+     * - Starter: 10 requests/minute
+     * - Professional: 30 requests/minute
+     * - Enterprise: 100 requests/minute
+     * - Unauthenticated: 5 requests/minute
+     */
+    protected function getMaxAttemptsForUser(Request $request): int
+    {
+        // Check for custom override in config
+        $configLimit = config('services.ai.rate_limit');
+        if ($configLimit !== null && $configLimit > 0) {
+            // Allow config override for testing or special cases
+            return (int) $configLimit;
+        }
+
+        // Get user's organization subscription plan
+        $user = $request->user();
+
+        if (!$user || !$user->organization) {
+            // Unauthenticated or no organization - use minimal limit
+            return 5;
+        }
+
+        $plan = $user->organization->subscription_plan ?? 'starter';
+
+        // Return rate limit based on plan
+        return match (strtolower($plan)) {
+            'professional' => 30,
+            'enterprise' => 100,
+            'starter' => 10,
+            default => 10, // Default to starter limits
+        };
     }
 }
