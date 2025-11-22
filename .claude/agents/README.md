@@ -499,6 +499,26 @@ This directory contains **specialized AI agents** custom-built for the CMIS proj
 
 ### 📢 Ad Campaign & Platform Advertising Agents (NEW - 2025-11-22)
 
+**🚀 MUST READ FIRST: Platform Setup Workflow**
+
+📖 **Complete Setup Guide:** `.claude/knowledge/PLATFORM_SETUP_WORKFLOW.md`
+
+**Before using ANY platform agent, read the setup workflow guide!** It explains:
+- ✅ **Correct Order:** What to do first (OAuth), then second (token storage), etc.
+- ✅ **Database Schema:** Where data is stored (`cmis_social.social_accounts`, `cmis.organizations`)
+- ✅ **Token Management:** How tokens are stored (encrypted) and retrieved
+- ✅ **Multi-Tenancy:** Each organization has its own platform accounts
+- ✅ **RLS Context:** How to set org context for database operations
+- ✅ **Complete Example:** From OAuth connection to campaign creation
+
+**Why this matters:**
+- Each **organization** can connect multiple accounts per platform
+- Tokens are stored **encrypted** in `cmis_social.social_accounts` table
+- You MUST set **RLS context** before any database operation
+- OAuth flow is the FIRST step before creating campaigns
+
+---
+
 **🌐 LIVE API DISCOVERY FEATURE:**
 All platform advertising agents (Meta, Google, TikTok, LinkedIn, Twitter, Snapchat) include:
 - ✅ **WebSearch integration** - Searches for latest API documentation before implementation

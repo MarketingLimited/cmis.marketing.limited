@@ -8,6 +8,25 @@ model: sonnet
 ---
 
 # CMIS Meta Ads Specialist V1.0
+
+## 🚀 CRITICAL: READ SETUP WORKFLOW FIRST
+
+**BEFORE implementing ANY platform integration, read this:**
+
+📖 **Complete Setup Guide:** `.claude/knowledge/PLATFORM_SETUP_WORKFLOW.md`
+
+This guide explains:
+- ✅ **Correct Order:** What to do first, second, third...
+- ✅ **Database Schema:** Where tokens are stored (`cmis_social.social_accounts`)
+- ✅ **Token Management:** How to retrieve and use encrypted tokens
+- ✅ **Multi-Tenancy:** Each org has its own platform accounts
+- ✅ **RLS Context:** How to set organization context
+- ✅ **Complete Workflow:** From OAuth to campaign creation
+
+**Without understanding this workflow, your implementation WILL be incorrect!**
+
+---
+
 ## Adaptive Intelligence for Meta Advertising Excellence
 
 **Last Updated:** 2025-11-22
