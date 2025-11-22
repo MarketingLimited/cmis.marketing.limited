@@ -3,7 +3,7 @@
 
 **Last Updated:** 2025-11-22
 **Project:** CMIS - Campaign Management & Integration System
-**Version:** 2.3 - Enterprise & Content Agents Added
+**Version:** 3.0 - Complete Coverage (100%)
 
 ---
 
@@ -21,7 +21,7 @@ This directory contains **specialized AI agents** custom-built for the CMIS proj
 - 244 Models across 51 business domains
 - 201 test suite with continuous improvements
 
-**Total Agents:** 34 specialized agents
+**Total Agents:** 37 specialized agents
 **Project Knowledge Base:** `.claude/CMIS_PROJECT_KNOWLEDGE.md`
 
 ---
@@ -220,7 +220,7 @@ This directory contains **specialized AI agents** custom-built for the CMIS proj
 #### 4. **cmis-platform-integration** - Platform Integration Expert
 **File:** `cmis-platform-integration.md`
 
-**Purpose:** Expert in integrating Meta, Google, TikTok, LinkedIn, Twitter, Snapchat.
+**Purpose:** Expert in integrating Meta, Google, TikTok, LinkedIn, Twitter, Snapchat, and e-commerce platforms.
 
 **Use when:**
 - OAuth flow issues
@@ -228,17 +228,26 @@ This directory contains **specialized AI agents** custom-built for the CMIS proj
 - Token refresh failing
 - Adding new platform
 - Sync job problems
+- E-commerce integration (Shopify, WooCommerce)
 
 **Handles:**
 - AdPlatformFactory pattern
 - Webhook signature verification
 - Token management
 - Data synchronization
+- E-commerce product catalog sync
+- Inventory management integration
 
 **Example:**
 ```
 "Meta webhook verification failing"
 → Diagnoses signature verification, provides fix
+
+"How do I integrate Shopify for product sync?"
+→ OAuth flow for Shopify API
+→ Product catalog synchronization
+→ Inventory update handling
+→ Multi-tenant isolation for e-commerce data
 ```
 
 ---
@@ -341,7 +350,80 @@ This directory contains **specialized AI agents** custom-built for the CMIS proj
 
 ---
 
-#### 8. **cmis-marketing-automation** - Marketing Automation Expert V2.1 🤖
+#### 8. **cmis-experimentation** - A/B Testing & Experimentation Expert V2.1 🧪
+**File:** `cmis-experimentation.md`
+
+**Purpose:** Specialist in A/B testing, multivariate testing, and statistical analysis.
+
+**Use when:**
+- Implementing A/B testing features
+- Designing experiment frameworks
+- Creating variant assignment logic
+- Calculating statistical significance
+- Building winner determination logic
+- Setting up feature flagging
+
+**Handles:**
+- A/B testing (2 variants)
+- Multivariate testing
+- Variant assignment algorithms
+- Statistical significance testing
+- Sample size calculation
+- Experiment lifecycle management
+- Feature flag integration
+
+**Example:**
+```
+"How do I implement A/B testing for ad creatives?"
+→ Provides experiment design pattern
+→ Shows variant assignment logic
+→ Includes statistical significance calculation
+→ Winner determination criteria
+→ Integration with feature flags
+```
+
+**References:** Phase 15 (A/B Testing) specification
+
+---
+
+#### 9. **cmis-crm-specialist** - CRM & Lead Management Expert V2.1 📇
+**File:** `cmis-crm-specialist.md`
+
+**Purpose:** Specialist in contact management, lead tracking, scoring, and pipeline management.
+
+**Use when:**
+- Building CRM features
+- Implementing lead scoring
+- Creating pipeline management
+- Designing contact databases
+- Setting up lead nurturing
+- Integrating with CRMs (Salesforce, HubSpot)
+
+**Handles:**
+- Contact management
+- Lead lifecycle tracking
+- Lead scoring algorithms
+- MQL/SQL qualification
+- Pipeline stage management
+- Deal tracking
+- Customer segmentation
+- CRM integrations
+
+**Example:**
+```
+"How do I implement lead scoring?"
+→ Provides scoring algorithm design
+→ Shows demographic + behavioral scoring
+→ Includes score decay logic
+→ Threshold-based qualification
+→ Testing patterns for scoring
+```
+
+**References:** Contact models, LeadController
+
+---
+
+#### 10. **cmis-marketing-automation** - Marketing Automation Expert V2.1 🤖
 **File:** `cmis-marketing-automation.md`
 
 **Purpose:** Specialist in workflow automation, trigger-based campaigns, and marketing automation rules.
@@ -387,7 +469,7 @@ This directory contains **specialized AI agents** custom-built for the CMIS proj
 
 ---
 
-#### 9. **cmis-ui-frontend** - UI/UX & Frontend Specialist
+#### 11. **cmis-ui-frontend** - UI/UX & Frontend Specialist
 **File:** `cmis-ui-frontend.md`
 
 **Purpose:** Expert in Alpine.js, Tailwind CSS, Chart.js, and Blade templates.
@@ -413,7 +495,7 @@ This directory contains **specialized AI agents** custom-built for the CMIS proj
 
 ---
 
-#### 10. **cmis-social-publishing** - Social Media & Publishing Expert
+#### 12. **cmis-social-publishing** - Social Media & Publishing Expert
 **File:** `cmis-social-publishing.md`
 
 **Purpose:** Expert in social media scheduling, publishing, and engagement tracking.
@@ -440,7 +522,7 @@ This directory contains **specialized AI agents** custom-built for the CMIS proj
 
 ---
 
-#### 11. **cmis-content-manager** - Content Management Expert V2.1 📝
+#### 13. **cmis-content-manager** - Content Management Expert V2.1 📝
 **File:** `cmis-content-manager.md`
 
 **Purpose:** Specialist in content planning, creative asset management, template systems, and approval workflows.
@@ -484,7 +566,7 @@ This directory contains **specialized AI agents** custom-built for the CMIS proj
 
 ---
 
-#### 12. **cmis-enterprise-features** - Enterprise Features Expert V2.1 🏢
+#### 14. **cmis-enterprise-features** - Enterprise Features Expert V2.1 🏢
 **File:** `cmis-enterprise-features.md`
 
 **Purpose:** Specialist in performance monitoring, enterprise alerts, advanced reporting, and production operations.
@@ -527,7 +609,7 @@ This directory contains **specialized AI agents** custom-built for the CMIS proj
 
 ---
 
-#### 13. **cmis-rbac-specialist** - RBAC & Authorization Expert V2.1 🔐
+#### 15. **cmis-rbac-specialist** - RBAC & Authorization Expert V2.1 🔐
 **File:** `cmis-rbac-specialist.md`
 
 **Purpose:** Specialist in role-based access control, permissions, Laravel policies, and authorization flows.
@@ -569,9 +651,49 @@ This directory contains **specialized AI agents** custom-built for the CMIS proj
 
 ---
 
+### 🔐 Security & Compliance Agents
+
+#### 16. **cmis-compliance-security** - Compliance & Security Auditing Expert V2.1 🔒
+**File:** `cmis-compliance-security.md`
+
+**Purpose:** Specialist in GDPR compliance, data privacy, security auditing, and regulatory requirements.
+
+**Use when:**
+- Implementing GDPR compliance features
+- Creating audit trail systems
+- Designing data retention policies
+- Implementing right to be forgotten
+- Building consent management
+- Conducting security audits
+- Creating privacy controls
+
+**Handles:**
+- GDPR/CCPA compliance
+- Audit trail implementation
+- Data retention and cleanup
+- User data deletion workflows
+- Data export (portability)
+- Consent tracking
+- Security vulnerability scanning
+- Privacy by design
+
+**Example:**
+```
+"How do I implement GDPR right to be forgotten?"
+→ Provides user data identification strategy
+→ Shows cascading deletion logic
+→ Includes verification and reporting
+→ Soft delete vs hard delete guidance
+→ Compliance documentation requirements
+```
+
+**References:** GDPR requirements, Laravel security best practices
+
+---
+
 ### 🎨 Code Quality & Standardization Agents (NEW - 2025-11-22)
 
-#### 14. **cmis-model-architect** - Model Architecture Specialist
+#### 17. **cmis-model-architect** - Model Architecture Specialist
 **File:** `cmis-model-architect.md`
 
 **Purpose:** Ensures all models follow BaseModel pattern and standardized trait composition.
@@ -606,7 +728,7 @@ This directory contains **specialized AI agents** custom-built for the CMIS proj
 
 ---
 
-#### 15. **cmis-data-consolidation** - Data Structure Consolidation Specialist
+#### 18. **cmis-data-consolidation** - Data Structure Consolidation Specialist
 **File:** `cmis-data-consolidation.md`
 
 **Purpose:** Identifies and eliminates duplicate data structures, preventing table proliferation.
@@ -642,7 +764,7 @@ This directory contains **specialized AI agents** custom-built for the CMIS proj
 
 ---
 
-#### 16. **laravel-controller-standardization** - Controller Response Standardization Specialist
+#### 19. **laravel-controller-standardization** - Controller Response Standardization Specialist
 **File:** `laravel-controller-standardization.md`
 
 **Purpose:** Drives ApiResponse trait adoption from 75% to 100%, ensuring API consistency.
@@ -681,7 +803,7 @@ This directory contains **specialized AI agents** custom-built for the CMIS proj
 
 ### 🏗️ Updated Laravel Agents (CMIS-Aware)
 
-#### 17. **laravel-architect** - CMIS-Updated
+#### 20. **laravel-architect** - CMIS-Updated
 **Purpose:** High-level architecture review with CMIS context
 
 **Now includes:**
@@ -691,7 +813,7 @@ This directory contains **specialized AI agents** custom-built for the CMIS proj
 
 ---
 
-#### 18. **laravel-tech-lead** - CMIS-Updated
+#### 21. **laravel-tech-lead** - CMIS-Updated
 **Purpose:** Code review and implementation guidance
 
 **Now includes:**
@@ -701,7 +823,7 @@ This directory contains **specialized AI agents** custom-built for the CMIS proj
 
 ---
 
-#### 19. **laravel-code-quality** - CMIS-Updated
+#### 22. **laravel-code-quality** - CMIS-Updated
 **Purpose:** Code quality and refactoring
 
 **Now includes:**
@@ -711,7 +833,7 @@ This directory contains **specialized AI agents** custom-built for the CMIS proj
 
 ---
 
-#### 20. **laravel-security** - CMIS-Updated
+#### 23. **laravel-security** - CMIS-Updated
 **Purpose:** Security audit and compliance
 
 **Now includes:**
@@ -721,7 +843,7 @@ This directory contains **specialized AI agents** custom-built for the CMIS proj
 
 ---
 
-#### 21. **laravel-performance** - CMIS-Updated
+#### 24. **laravel-performance** - CMIS-Updated
 **Purpose:** Performance optimization
 
 **Now includes:**
@@ -731,7 +853,7 @@ This directory contains **specialized AI agents** custom-built for the CMIS proj
 
 ---
 
-#### 22. **laravel-db-architect** - Already CMIS-Specific
+#### 25. **laravel-db-architect** - Already CMIS-Specific
 **Purpose:** Database architecture and migrations
 
 **Specializes in:**
@@ -741,7 +863,7 @@ This directory contains **specialized AI agents** custom-built for the CMIS proj
 
 ---
 
-#### 23. **laravel-testing** - CMIS-Updated
+#### 26. **laravel-testing** - CMIS-Updated
 **Purpose:** Testing strategy and coverage
 
 **Now includes:**
@@ -751,7 +873,7 @@ This directory contains **specialized AI agents** custom-built for the CMIS proj
 
 ---
 
-#### 24. **laravel-devops** - CMIS-Updated
+#### 27. **laravel-devops** - CMIS-Updated
 **Purpose:** DevOps and CI/CD
 
 **Now includes:**
@@ -761,7 +883,7 @@ This directory contains **specialized AI agents** custom-built for the CMIS proj
 
 ---
 
-#### 25. **laravel-api-design** - CMIS-Updated
+#### 28. **laravel-api-design** - CMIS-Updated
 **Purpose:** API design and consistency
 
 **Now includes:**
@@ -771,7 +893,7 @@ This directory contains **specialized AI agents** custom-built for the CMIS proj
 
 ---
 
-#### 26. **laravel-auditor** - CMIS-Updated
+#### 29. **laravel-auditor** - CMIS-Updated
 **Purpose:** Comprehensive system audit
 
 **Now includes:**
@@ -781,7 +903,7 @@ This directory contains **specialized AI agents** custom-built for the CMIS proj
 
 ---
 
-#### 27. **laravel-documentation** - CMIS-Updated
+#### 30. **laravel-documentation** - CMIS-Updated
 **Purpose:** Documentation and knowledge base
 
 **Now includes:**
