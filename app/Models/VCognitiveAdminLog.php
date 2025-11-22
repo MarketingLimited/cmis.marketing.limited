@@ -2,13 +2,11 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 
-class VCognitiveAdminLog extends Model
+class VCognitiveAdminLog extends BaseModel
 {
     protected $table = 'cmis_system_health.v_cognitive_admin_log';
     protected $guarded = ['*'];
-    public $incrementing = false;
-
     public $timestamps = false;
 }

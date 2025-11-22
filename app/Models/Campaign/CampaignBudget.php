@@ -2,29 +2,17 @@
 
 namespace App\Models\Campaign;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Support\Str;
+use App\Models\Concerns\HasOrganization;
 
-class CampaignBudget extends Model
+use App\Models\BaseModel;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+class CampaignBudget extends BaseModel
 {
     use HasFactory;
+    use HasOrganization;
 
-    protected $connection = 'pgsql';
     protected $table = 'cmis.campaign_budgets';
     protected $primaryKey = 'budget_id';
-    public $incrementing = false;
-    protected $keyType = 'string';
-
-    protected static function boot()
-    {
-        parent::boot();
-        static::creating(function ($model) {
-            if (empty($model->{$model->getKeyName()})) {
-                $model->{$model->getKeyName()} = (string) Str::uuid();
-            }
-        });
-    }
 
     protected $fillable = [
         'budget_id', 'campaign_id', 'org_id', 'amount', 'currency', 'period'

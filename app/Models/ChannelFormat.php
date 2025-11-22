@@ -2,18 +2,14 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class ChannelFormat extends Model
+class ChannelFormat extends BaseModel
 {
-    protected $connection = 'pgsql';
-
     protected $table = 'cmis.channel_formats';
 
     protected $primaryKey = 'format_id';
-
-    public $incrementing = false;
 
     protected $keyType = 'int';
 
@@ -35,5 +31,4 @@ class ChannelFormat extends Model
     public function channel(): BelongsTo
     {
         return $this->belongsTo(Channel::class, 'channel_id', 'channel_id');
-    }
 }

@@ -2,16 +2,12 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 
-class SocialAccountMetric extends Model
+class SocialAccountMetric extends BaseModel
 {
-    protected $connection = 'pgsql';
-
     protected $table = 'cmis.social_account_metrics';
     protected $primaryKey = 'integration_id';
-
-    public $incrementing = false;
 
     public $timestamps = false;
 

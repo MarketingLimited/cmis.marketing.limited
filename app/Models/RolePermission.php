@@ -3,19 +3,15 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
-class RolePermission extends Model
+class RolePermission extends BaseModel
 {
     use HasFactory, HasUuids;
 
     protected $table = 'cmis.role_permissions';
     protected $primaryKey = 'id';
-    protected $connection = 'pgsql';
-    public $incrementing = false;
-    protected $keyType = 'string';
-
     protected $fillable = [
         'id',
         'role_id',
@@ -40,7 +36,6 @@ class RolePermission extends Model
     public function role()
     {
         return $this->belongsTo(\App\Models\Core\Role::class, 'role_id', 'role_id');
-    }
 
     /**
      * Get the permission
@@ -48,7 +43,6 @@ class RolePermission extends Model
     public function permission()
     {
         return $this->belongsTo(Permission::class, 'permission_id', 'permission_id');
-    }
 
     /**
      * Get the user who granted this permission
@@ -56,5 +50,4 @@ class RolePermission extends Model
     public function grantedBy()
     {
         return $this->belongsTo(User::class, 'granted_by', 'user_id');
-    }
 }

@@ -2,21 +2,20 @@
 
 namespace App\Models\Creative;
 
+use App\Models\Concerns\HasOrganization;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
-class CreativeBrief extends Model
+class CreativeBrief extends BaseModel
 {
     use HasFactory, SoftDeletes, HasUuids;
+    use HasOrganization;
 
     protected $table = 'cmis.creative_briefs';
     protected $primaryKey = 'brief_id';
-    protected $connection = 'pgsql';
-    public $incrementing = false;
-    protected $keyType = 'string';
-
     protected $fillable = [
         'brief_id',
         'org_id',
@@ -39,13 +38,7 @@ class CreativeBrief extends Model
         'deleted_at' => 'datetime',
     ];
 
-    /**
-     * Get the organization
-     */
-    public function org()
-    {
-        return $this->belongsTo(\App\Models\Core\Org::class, 'org_id', 'org_id');
-    }
+    
 
     /**
      * Get the campaign
@@ -53,7 +46,6 @@ class CreativeBrief extends Model
     public function campaign()
     {
         return $this->belongsTo(\App\Models\Campaign::class, 'campaign_id', 'campaign_id');
-    }
 
     /**
      * Get the creator
@@ -61,7 +53,6 @@ class CreativeBrief extends Model
     public function creator()
     {
         return $this->belongsTo(\App\Models\User::class, 'created_by', 'user_id');
-    }
 
     /**
      * Get the approver
@@ -69,7 +60,6 @@ class CreativeBrief extends Model
     public function approver()
     {
         return $this->belongsTo(\App\Models\User::class, 'approved_by', 'user_id');
-    }
 
     /**
      * Get creative assets using this brief
@@ -77,7 +67,6 @@ class CreativeBrief extends Model
     public function creativeAssets()
     {
         return $this->hasMany(\App\Models\CreativeAsset::class, 'brief_id', 'brief_id');
-    }
 
     /**
      * Scope approved briefs
@@ -85,7 +74,6 @@ class CreativeBrief extends Model
     public function scopeApproved($query)
     {
         return $query->where('status', 'approved')->whereNotNull('approved_at');
-    }
 
     /**
      * Scope pending briefs
@@ -93,7 +81,6 @@ class CreativeBrief extends Model
     public function scopePending($query)
     {
         return $query->where('status', 'pending');
-    }
 
     /**
      * Validate brief structure using DB function
@@ -104,7 +91,6 @@ class CreativeBrief extends Model
             $result = \DB::selectOne(
                 'SELECT cmis.validate_brief_structure(?::jsonb) as is_valid',
                 [json_encode($this->brief_data)]
-            );
 
             return (bool) $result->is_valid;
         } catch (\Exception $e) {
@@ -113,6 +99,4 @@ class CreativeBrief extends Model
                 'error' => $e->getMessage()
             ]);
             return false;
-        }
-    }
 }

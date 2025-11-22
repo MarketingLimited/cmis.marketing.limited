@@ -2,21 +2,20 @@
 
 namespace App\Models\Creative;
 
+use App\Models\Concerns\HasOrganization;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
-class CreativeOutput extends Model
+class CreativeOutput extends BaseModel
 {
     use HasFactory, SoftDeletes, HasUuids;
+    use HasOrganization;
 
     protected $table = 'cmis.creative_outputs';
     protected $primaryKey = 'output_id';
-    protected $connection = 'pgsql';
-    public $incrementing = false;
-    protected $keyType = 'string';
-
     protected $fillable = [
         'output_id',
         'org_id',
@@ -47,13 +46,7 @@ class CreativeOutput extends Model
         'data' => 'array',
     ];
 
-    /**
-     * Get the organization
-     */
-    public function org()
-    {
-        return $this->belongsTo(\App\Models\Core\Org::class, 'org_id', 'org_id');
-    }
+    
 
     /**
      * Get the campaign
@@ -61,7 +54,6 @@ class CreativeOutput extends Model
     public function campaign()
     {
         return $this->belongsTo(\App\Models\Campaign::class, 'campaign_id', 'campaign_id');
-    }
 
     /**
      * Get the creative asset
@@ -69,7 +61,6 @@ class CreativeOutput extends Model
     public function asset()
     {
         return $this->belongsTo(\App\Models\CreativeAsset::class, 'asset_id', 'asset_id');
-    }
 
     /**
      * Get the AI model used
@@ -77,7 +68,6 @@ class CreativeOutput extends Model
     public function aiModel()
     {
         return $this->belongsTo(\App\Models\AiModel::class, 'ai_model_id', 'model_id');
-    }
 
     /**
      * Get performance metrics
@@ -85,7 +75,6 @@ class CreativeOutput extends Model
     public function performanceMetrics()
     {
         return $this->hasMany(\App\Models\PerformanceMetric::class, 'output_id', 'output_id');
-    }
 
     /**
      * Scope published outputs
@@ -93,7 +82,6 @@ class CreativeOutput extends Model
     public function scopePublished($query)
     {
         return $query->where('status', 'published')->whereNotNull('published_at');
-    }
 
     /**
      * Scope by output type
@@ -101,5 +89,4 @@ class CreativeOutput extends Model
     public function scopeOfType($query, string $type)
     {
         return $query->where('output_type', $type);
-    }
 }

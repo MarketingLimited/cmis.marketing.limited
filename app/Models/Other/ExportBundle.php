@@ -2,25 +2,22 @@
 
 namespace App\Models\Other;
 
+use App\Models\Concerns\HasOrganization;
+
 use App\Models\Core\Org;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
-class ExportBundle extends Model
+class ExportBundle extends BaseModel
 {
     use HasFactory, SoftDeletes, HasUuids;
-
-    protected $connection = 'pgsql';
+    use HasOrganization;
 
     protected $table = 'cmis.export_bundles';
 
     protected $primaryKey = 'bundle_id';
-
-    public $incrementing = false;
-
-    protected $keyType = 'string';
 
     public $timestamps = true;
 
@@ -40,13 +37,7 @@ class ExportBundle extends Model
         'deleted_at' => 'datetime',
     ];
 
-    /**
-     * Get the organization
-     */
-    public function org()
-    {
-        return $this->belongsTo(Org::class, 'org_id', 'org_id');
-    }
+    
 
     /**
      * Get the bundle items
@@ -54,7 +45,6 @@ class ExportBundle extends Model
     public function items()
     {
         return $this->hasMany(ExportBundleItem::class, 'bundle_id', 'bundle_id');
-    }
 
     /**
      * Scope to get bundles for a specific org
@@ -62,5 +52,4 @@ class ExportBundle extends Model
     public function scopeForOrg($query, string $orgId)
     {
         return $query->where('org_id', $orgId);
-    }
 }

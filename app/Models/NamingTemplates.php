@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 
-class NamingTemplates extends Model
+class NamingTemplates extends BaseModel
 {
     protected $table = 'public.naming_templates';
 

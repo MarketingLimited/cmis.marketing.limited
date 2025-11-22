@@ -4,18 +4,15 @@ namespace App\Models\Analytics;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class ExperimentResult extends Model
+class ExperimentResult extends BaseModel
 {
     use HasFactory, HasUuids;
 
     protected $table = 'cmis.experiment_results';
     protected $primaryKey = 'result_id';
-    public $incrementing = false;
-    protected $keyType = 'string';
-
     protected $fillable = [
         'experiment_id', 'variant_id', 'date', 'impressions', 'clicks',
         'conversions', 'spend', 'revenue', 'ctr', 'cpc',
@@ -41,12 +38,10 @@ class ExperimentResult extends Model
     public function experiment(): BelongsTo
     {
         return $this->belongsTo(Experiment::class, 'experiment_id', 'experiment_id');
-    }
 
     public function variant(): BelongsTo
     {
         return $this->belongsTo(ExperimentVariant::class, 'variant_id', 'variant_id');
-    }
 
     /**
      * Calculate derived metrics
@@ -64,7 +59,6 @@ class ExperimentResult extends Model
             'conversion_rate' => $conversionRate,
             'roi' => $roi
         ]);
-    }
 
     /**
      * Scope: Recent results
@@ -72,7 +66,6 @@ class ExperimentResult extends Model
     public function scopeRecent($query, int $days = 7)
     {
         return $query->where('date', '>=', now()->subDays($days));
-    }
 
     /**
      * Scope: By date range
@@ -80,5 +73,4 @@ class ExperimentResult extends Model
     public function scopeDateRange($query, $startDate, $endDate)
     {
         return $query->whereBetween('date', [$startDate, $endDate]);
-    }
 }

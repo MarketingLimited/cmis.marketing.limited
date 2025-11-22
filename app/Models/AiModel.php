@@ -2,21 +2,16 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Models\Concerns\HasOrganization;
 
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
-class AiModel extends Model
+use App\Models\BaseModel;
+
+class AiModel extends BaseModel
 {
-    use HasUuids;
-    protected $connection = 'pgsql';
-
+    
     protected $table = 'cmis_refactored.ai_models';
 
     protected $primaryKey = 'model_id';
-
-    public $incrementing = false;
-
-    protected $keyType = 'string';
 
     public $timestamps = false;
 

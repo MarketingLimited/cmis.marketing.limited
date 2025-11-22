@@ -20,18 +20,14 @@ class OrgScope implements Scope
         // Skip if no org context (e.g., system operations)
         if (!$orgId) {
             return;
-        }
 
         // Skip for certain tables that don't have org_id
         $excludedTables = ['orgs', 'users', 'roles', 'permissions'];
 
         if (in_array($model->getTable(), $excludedTables)) {
             return;
-        }
 
         // Apply org filter
         if ($model->hasOrgIdColumn()) {
             $builder->where($model->getTable() . '.org_id', $orgId);
-        }
-    }
 }

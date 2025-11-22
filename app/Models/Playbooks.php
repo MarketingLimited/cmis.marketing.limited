@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 
-class Playbooks extends Model
+class Playbooks extends BaseModel
 {
     protected $table = 'cmis.playbooks';
 

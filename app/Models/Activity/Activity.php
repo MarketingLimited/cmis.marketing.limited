@@ -2,29 +2,17 @@
 
 namespace App\Models\Activity;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Support\Str;
+use App\Models\Concerns\HasOrganization;
 
-class Activity extends Model
+use App\Models\BaseModel;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+class Activity extends BaseModel
 {
     use HasFactory;
+    use HasOrganization;
 
-    protected $connection = 'pgsql';
     protected $table = 'cmis.activities';
     protected $primaryKey = 'activity_id';
-    public $incrementing = false;
-    protected $keyType = 'string';
-
-    protected static function boot()
-    {
-        parent::boot();
-        static::creating(function ($model) {
-            if (empty($model->{$model->getKeyName()})) {
-                $model->{$model->getKeyName()} = (string) Str::uuid();
-            }
-        });
-    }
 
     protected $fillable = [
         'activity_id',

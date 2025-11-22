@@ -2,18 +2,18 @@
 
 namespace App\Models\Market;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\Concerns\HasOrganization;
 
-class OrgMarket extends Model
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\BaseModel;
+
+class OrgMarket extends BaseModel
 {
     use HasFactory;
+    use HasOrganization;
 
     protected $table = 'cmis.org_markets';
     protected $primaryKey = 'market_id';
-    protected $connection = 'pgsql';
-    public $incrementing = false;
-
     protected $fillable = [
         'org_id',
         'market_id',
@@ -39,13 +39,7 @@ class OrgMarket extends Model
         'is_default' => 'boolean',
     ];
 
-    /**
-     * Get the organization
-     */
-    public function org()
-    {
-        return $this->belongsTo(\App\Models\Core\Org::class, 'org_id', 'org_id');
-    }
+    
 
     /**
      * Get the market
@@ -53,7 +47,6 @@ class OrgMarket extends Model
     public function market()
     {
         return $this->belongsTo(Market::class, 'market_id', 'market_id');
-    }
 
     /**
      * Scope primary markets
@@ -61,7 +54,6 @@ class OrgMarket extends Model
     public function scopePrimary($query)
     {
         return $query->where('is_primary_market', true);
-    }
 
     /**
      * Scope by status
@@ -69,7 +61,6 @@ class OrgMarket extends Model
     public function scopeByStatus($query, string $status)
     {
         return $query->where('status', $status);
-    }
 
     /**
      * Scope active markets
@@ -77,7 +68,6 @@ class OrgMarket extends Model
     public function scopeActive($query)
     {
         return $query->where('status', 'active');
-    }
 
     /**
      * Scope by priority
@@ -85,7 +75,6 @@ class OrgMarket extends Model
     public function scopeHighPriority($query, int $threshold = 7)
     {
         return $query->where('priority_level', '>=', $threshold);
-    }
 
     /**
      * Get ROI
@@ -94,12 +83,9 @@ class OrgMarket extends Model
     {
         if (!$this->investment_budget || $this->investment_budget == 0) {
             return null;
-        }
 
         if ($revenue === null) {
             return null;
-        }
 
         return (($revenue - $this->investment_budget) / $this->investment_budget) * 100;
-    }
 }

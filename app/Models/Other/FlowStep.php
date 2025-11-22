@@ -3,23 +3,17 @@
 namespace App\Models\Other;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
-class FlowStep extends Model
+class FlowStep extends BaseModel
 {
     use HasFactory, SoftDeletes, HasUuids;
-
-    protected $connection = 'pgsql';
 
     protected $table = 'cmis.flow_steps';
 
     protected $primaryKey = 'step_id';
-
-    public $incrementing = false;
-
-    protected $keyType = 'string';
 
     public $timestamps = false;
 
@@ -53,7 +47,6 @@ class FlowStep extends Model
     public function flow()
     {
         return $this->belongsTo(Flow::class, 'flow_id', 'flow_id');
-    }
 
     /**
      * Scope to get steps for a specific flow
@@ -61,7 +54,6 @@ class FlowStep extends Model
     public function scopeForFlow($query, string $flowId)
     {
         return $query->where('flow_id', $flowId);
-    }
 
     /**
      * Scope to filter by type
@@ -69,5 +61,4 @@ class FlowStep extends Model
     public function scopeOfType($query, string $type)
     {
         return $query->where('type', $type);
-    }
 }

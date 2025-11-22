@@ -2,25 +2,21 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Models\Concerns\HasOrganization;
+
+use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
-class SocialAccount extends Model
+class SocialAccount extends BaseModel
 {
     use SoftDeletes, HasUuids;
-
-    protected $connection = 'pgsql';
 
     protected $table = 'cmis.social_accounts';
 
     protected $primaryKey = 'id';
-
-    public $incrementing = false;
-
-    protected $keyType = 'string';
 
     public $timestamps = true;
 
@@ -54,13 +50,7 @@ class SocialAccount extends Model
         'deleted_at' => 'datetime',
     ];
 
-    /**
-     * Get the organization that owns this social account.
-     */
-    public function org(): BelongsTo
-    {
-        return $this->belongsTo(\App\Models\Core\Org::class, 'org_id', 'org_id');
-    }
+    
 
     /**
      * Get the integration that this account belongs to.
@@ -68,7 +58,6 @@ class SocialAccount extends Model
     public function integration(): BelongsTo
     {
         return $this->belongsTo(\App\Models\Core\Integration::class, 'integration_id', 'integration_id');
-    }
 
     /**
      * Get all posts for this social account.
@@ -76,7 +65,6 @@ class SocialAccount extends Model
     public function posts(): HasMany
     {
         return $this->hasMany(SocialPost::class, 'integration_id', 'integration_id');
-    }
 
     /**
      * Get all metrics for this social account.
@@ -84,5 +72,4 @@ class SocialAccount extends Model
     public function metrics(): HasMany
     {
         return $this->hasMany(SocialAccountMetric::class, 'account_id', 'id');
-    }
 }

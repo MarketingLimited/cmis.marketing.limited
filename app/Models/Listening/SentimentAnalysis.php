@@ -2,14 +2,17 @@
 
 namespace App\Models\Listening;
 
+use App\Models\Concerns\HasOrganization;
+
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class SentimentAnalysis extends Model
+class SentimentAnalysis extends BaseModel
 {
     use HasFactory, HasUuids;
+    use HasOrganization;
 
     protected $table = 'cmis.sentiment_analysis';
     protected $primaryKey = 'analysis_id';
@@ -53,7 +56,6 @@ class SentimentAnalysis extends Model
     public function mention(): BelongsTo
     {
         return $this->belongsTo(SocialMention::class, 'mention_id', 'mention_id');
-    }
 
     /**
      * Sentiment Helpers
@@ -62,27 +64,22 @@ class SentimentAnalysis extends Model
     public function isPositive(): bool
     {
         return $this->overall_sentiment === 'positive';
-    }
 
     public function isNegative(): bool
     {
         return $this->overall_sentiment === 'negative';
-    }
 
     public function isNeutral(): bool
     {
         return $this->overall_sentiment === 'neutral';
-    }
 
     public function isMixed(): bool
     {
         return $this->overall_sentiment === 'mixed';
-    }
 
     public function isHighConfidence(): bool
     {
         return $this->confidence >= 80;
-    }
 
     public function getConfidenceLabel(): string
     {
@@ -91,7 +88,6 @@ class SentimentAnalysis extends Model
         if ($this->confidence >= 70) return 'Medium';
         if ($this->confidence >= 60) return 'Low';
         return 'Very Low';
-    }
 
     /**
      * Emotion Analysis
@@ -101,11 +97,9 @@ class SentimentAnalysis extends Model
     {
         if ($this->primary_emotion) {
             return $this->primary_emotion;
-        }
 
         if (empty($this->emotions)) {
             return null;
-        }
 
         // Find emotion with highest score
         $maxScore = 0;
@@ -115,21 +109,16 @@ class SentimentAnalysis extends Model
             if ($score > $maxScore) {
                 $maxScore = $score;
                 $primaryEmotion = $emotion;
-            }
-        }
 
         return $primaryEmotion;
-    }
 
     public function getEmotionScore(string $emotion): float
     {
         return $this->emotions[$emotion] ?? 0.0;
-    }
 
     public function hasEmotion(string $emotion, float $threshold = 0.5): bool
     {
         return ($this->emotions[$emotion] ?? 0) >= $threshold;
-    }
 
     /**
      * Entity Extraction
@@ -141,30 +130,23 @@ class SentimentAnalysis extends Model
         foreach ($this->entities as $entity) {
             if (isset($entity['type']) && $entity['type'] === $type) {
                 $entities[] = $entity;
-            }
-        }
         return $entities;
-    }
 
     public function hasPerson(): bool
     {
         return !empty($this->getEntitiesByType('PERSON'));
-    }
 
     public function hasOrganization(): bool
     {
         return !empty($this->getEntitiesByType('ORGANIZATION'));
-    }
 
     public function hasProduct(): bool
     {
         return !empty($this->getEntitiesByType('PRODUCT'));
-    }
 
     public function hasLocation(): bool
     {
         return !empty($this->getEntitiesByType('LOCATION'));
-    }
 
     /**
      * Topic Analysis
@@ -173,12 +155,10 @@ class SentimentAnalysis extends Model
     public function hasTopic(string $topic): bool
     {
         return in_array($topic, $this->topics);
-    }
 
     public function getTopicsString(): string
     {
         return implode(', ', $this->topics);
-    }
 
     /**
      * Key Phrases
@@ -187,7 +167,6 @@ class SentimentAnalysis extends Model
     public function getTopKeyPhrases(int $limit = 5): array
     {
         return array_slice($this->key_phrases, 0, $limit);
-    }
 
     /**
      * Sentiment Score Interpretation
@@ -202,7 +181,6 @@ class SentimentAnalysis extends Model
         if ($absScore >= 0.4) return 'Moderate';
         if ($absScore >= 0.2) return 'Slight';
         return 'Weak';
-    }
 
     public function getSentimentDescription(): string
     {
@@ -219,20 +197,16 @@ class SentimentAnalysis extends Model
     public function scopeWithSentiment($query, string $sentiment)
     {
         return $query->where('overall_sentiment', $sentiment);
-    }
 
     public function scopeHighConfidence($query)
     {
         return $query->where('confidence', '>=', 80);
-    }
 
     public function scopeWithEmotion($query, string $emotion, float $threshold = 0.5)
     {
         return $query->whereRaw("(emotions->>'$emotion')::float >= ?", [$threshold]);
-    }
 
     public function scopeAnalyzedBy($query, string $model)
     {
         return $query->where('model_used', $model);
-    }
 }

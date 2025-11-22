@@ -2,23 +2,18 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use App\Models\Concerns\HasOrganization;
+
+use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class ScheduledSocialPost extends Model
+class ScheduledSocialPost extends BaseModel
 {
-    use HasUuids;
-
-    protected $connection = 'pgsql';
+    
 
     protected $table = 'cmis.scheduled_social_posts';
 
     protected $primaryKey = 'id';
-
-    public $incrementing = false;
-
-    protected $keyType = 'string';
 
     protected $fillable = [
         'id',
@@ -59,23 +54,7 @@ class ScheduledSocialPost extends Model
         'publish_results' => 'array',
     ];
 
-    /**
-     * Valid status values
-     */
-    const STATUS_DRAFT = 'draft';
-    const STATUS_SCHEDULED = 'scheduled';
-    const STATUS_PUBLISHING = 'publishing';
-    const STATUS_PUBLISHED = 'published';
-    const STATUS_PARTIALLY_PUBLISHED = 'partially_published'; // NEW: Social Publishing Fix
-    const STATUS_FAILED = 'failed';
-
-    /**
-     * Get the organization that owns the scheduled post
-     */
-    public function org(): BelongsTo
-    {
-        return $this->belongsTo(Core\Org::class, 'org_id', 'org_id');
-    }
+    
 
     /**
      * Get the user who created the scheduled post
@@ -83,7 +62,6 @@ class ScheduledSocialPost extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id', 'id');
-    }
 
     /**
      * Get the campaign associated with the scheduled post
@@ -91,7 +69,6 @@ class ScheduledSocialPost extends Model
     public function campaign(): BelongsTo
     {
         return $this->belongsTo(Campaign::class, 'campaign_id', 'campaign_id');
-    }
 
     /**
      * Scope to get only scheduled posts
@@ -99,7 +76,6 @@ class ScheduledSocialPost extends Model
     public function scopeScheduled($query)
     {
         return $query->where('status', self::STATUS_SCHEDULED);
-    }
 
     /**
      * Scope to get only draft posts
@@ -107,7 +83,6 @@ class ScheduledSocialPost extends Model
     public function scopeDrafts($query)
     {
         return $query->where('status', self::STATUS_DRAFT);
-    }
 
     /**
      * Scope to get only published posts
@@ -115,7 +90,6 @@ class ScheduledSocialPost extends Model
     public function scopePublished($query)
     {
         return $query->where('status', self::STATUS_PUBLISHED);
-    }
 
     /**
      * Scope to filter by organization
@@ -123,7 +97,6 @@ class ScheduledSocialPost extends Model
     public function scopeForOrg($query, string $orgId)
     {
         return $query->where('org_id', $orgId);
-    }
 
     /**
      * Check if post is ready to publish
@@ -133,7 +106,6 @@ class ScheduledSocialPost extends Model
         return $this->status === self::STATUS_SCHEDULED
             && $this->scheduled_at
             && $this->scheduled_at->isPast();
-    }
 
     /**
      * Mark post as publishing
@@ -141,7 +113,6 @@ class ScheduledSocialPost extends Model
     public function markAsPublishing(): void
     {
         $this->update(['status' => self::STATUS_PUBLISHING]);
-    }
 
     /**
      * Mark post as published
@@ -153,7 +124,6 @@ class ScheduledSocialPost extends Model
             'published_at' => now(),
             'published_ids' => $publishedIds,
         ]);
-    }
 
     /**
      * Mark post as failed
@@ -164,7 +134,6 @@ class ScheduledSocialPost extends Model
             'status' => self::STATUS_FAILED,
             'error_message' => $errorMessage,
         ]);
-    }
 
     /**
      * Get integrations for this post (NEW: Social Publishing Fix)
@@ -173,12 +142,10 @@ class ScheduledSocialPost extends Model
     {
         if (empty($this->integration_ids)) {
             return collect([]);
-        }
 
         return \Illuminate\Support\Facades\DB::table('cmis.integrations')
             ->whereIn('integration_id', $this->integration_ids)
             ->where('org_id', $this->org_id)
             ->where('is_active', true)
             ->get();
-    }
 }

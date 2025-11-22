@@ -2,33 +2,21 @@
 
 namespace App\Models\Optimization;
 
+use App\Models\Concerns\HasOrganization;
+
 use App\Models\Core\Org;
 use App\Models\Core\User;
 use App\Models\Campaign\Campaign;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Support\Str;
-
-class AttributionModel extends Model
+class AttributionModel extends BaseModel
 {
     use HasFactory;
+    use HasOrganization;
 
-    protected $connection = 'pgsql';
     protected $table = 'cmis.attribution_models';
     protected $primaryKey = 'attribution_id';
-    public $incrementing = false;
-    protected $keyType = 'string';
-
-    protected static function boot()
-    {
-        parent::boot();
-        static::creating(function ($model) {
-            if (empty($model->{$model->getKeyName()})) {
-                $model->{$model->getKeyName()} = (string) Str::uuid();
-            }
-        });
-    }
 
     protected $fillable = [
         'attribution_id',
@@ -76,30 +64,23 @@ class AttributionModel extends Model
 
     // ===== Relationships =====
 
-    public function org(): BelongsTo
-    {
-        return $this->belongsTo(Org::class, 'org_id', 'org_id');
-    }
+    
 
     public function campaign(): BelongsTo
     {
         return $this->belongsTo(Campaign::class, 'campaign_id', 'campaign_id');
-    }
 
     public function firstTouchCampaign(): BelongsTo
     {
         return $this->belongsTo(Campaign::class, 'first_touch_campaign_id', 'campaign_id');
-    }
 
     public function lastTouchCampaign(): BelongsTo
     {
         return $this->belongsTo(Campaign::class, 'last_touch_campaign_id', 'campaign_id');
-    }
 
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by', 'user_id');
-    }
 
     // ===== Attribution Helpers =====
 
@@ -114,99 +95,80 @@ class AttributionModel extends Model
             'data_driven' => 'Data-Driven (Algorithmic)',
             default => ucfirst(str_replace('_', ' ', $this->model_type))
         };
-    }
 
     public function getAttributionForCampaign(string $campaignId): ?float
     {
         if (!$this->attribution_weights || !is_array($this->attribution_weights)) {
             return null;
-        }
 
         return $this->attribution_weights[$campaignId] ?? null;
-    }
 
     public function getShapleyValue(string $campaignId): ?float
     {
         if (!$this->shapley_values || !is_array($this->shapley_values)) {
             return null;
-        }
 
         return $this->shapley_values[$campaignId] ?? null;
-    }
 
     public function getMarkovContribution(string $campaignId): ?float
     {
         if (!$this->markov_contribution || !is_array($this->markov_contribution)) {
             return null;
-        }
 
         return $this->markov_contribution[$campaignId] ?? null;
-    }
 
     public function getTouchpointPath(): string
     {
         if (!$this->touchpoints || !is_array($this->touchpoints)) {
             return 'N/A';
-        }
 
         $channels = array_column($this->touchpoints, 'channel');
         return implode(' → ', $channels);
-    }
 
     public function getAverageTimeToConversion(): ?float
     {
         if (!$this->touchpoints || !is_array($this->touchpoints) || count($this->touchpoints) === 0) {
             return null;
-        }
 
         $firstTouchpoint = reset($this->touchpoints);
         $lastTouchpoint = end($this->touchpoints);
 
         if (!isset($firstTouchpoint['timestamp']) || !isset($lastTouchpoint['timestamp'])) {
             return null;
-        }
 
         $firstTime = strtotime($firstTouchpoint['timestamp']);
         $lastTime = strtotime($lastTouchpoint['timestamp']);
 
         $daysDifference = ($lastTime - $firstTime) / 86400; // Convert seconds to days
         return round($daysDifference, 2);
-    }
 
     public function isMultiTouch(): bool
     {
         return $this->touchpoint_count > 1;
-    }
 
     public function isDataDriven(): bool
     {
         return $this->model_type === 'data_driven';
-    }
 
     // ===== Scopes =====
 
     public function scopeForModelType($query, string $modelType)
     {
         return $query->where('model_type', $modelType);
-    }
 
     public function scopeMultiTouch($query)
     {
         return $query->where('touchpoint_count', '>', 1);
-    }
 
     public function scopeDataDriven($query)
     {
         return $query->where('model_type', 'data_driven');
-    }
 
     public function scopeHighValue($query, float $threshold = 100)
     {
         return $query->where('conversion_value', '>=', $threshold);
-    }
 
     public function scopeWithinLookback($query, int $days)
     {
         return $query->where('conversion_date', '>=', now()->subDays($days));
-    }
 }

@@ -3,23 +3,17 @@
 namespace App\Models\Operations;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
-class LogsMigration extends Model
+class LogsMigration extends BaseModel
 {
     use HasFactory, SoftDeletes, HasUuids;
-
-    protected $connection = 'pgsql';
 
     protected $table = 'cmis.logs_migration';
 
     protected $primaryKey = 'log_id';
-
-    public $incrementing = false;
-
-    protected $keyType = 'string';
 
     public $timestamps = false;
 
@@ -43,7 +37,6 @@ class LogsMigration extends Model
     public function scopeByPhase($query, string $phase)
     {
         return $query->where('phase', $phase);
-    }
 
     /**
      * Scope to filter by status
@@ -51,7 +44,6 @@ class LogsMigration extends Model
     public function scopeByStatus($query, string $status)
     {
         return $query->where('status', $status);
-    }
 
     /**
      * Scope to get recent logs
@@ -59,5 +51,4 @@ class LogsMigration extends Model
     public function scopeRecent($query, int $hours = 24)
     {
         return $query->where('executed_at', '>=', now()->subHours($hours));
-    }
 }

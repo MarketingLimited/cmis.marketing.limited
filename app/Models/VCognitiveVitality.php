@@ -2,13 +2,11 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 
-class VCognitiveVitality extends Model
+class VCognitiveVitality extends BaseModel
 {
     protected $table = 'cmis_knowledge.v_cognitive_vitality';
     protected $guarded = ['*'];
-    public $incrementing = false;
-
     public $timestamps = false;
 }

@@ -2,13 +2,11 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 
-class VSystemMonitoring extends Model
+class VSystemMonitoring extends BaseModel
 {
     protected $table = 'cmis.v_system_monitoring';
     protected $guarded = ['*'];
-    public $incrementing = false;
-
     public $timestamps = false;
 }

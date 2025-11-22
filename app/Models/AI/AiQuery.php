@@ -2,87 +2,17 @@
 
 namespace App\Models\AI;
 
+use App\Models\Concerns\HasOrganization;
+
 use App\Models\Core\Org;
 use App\Models\User;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
-class AiQuery extends Model
+class AiQuery extends BaseModel
 {
-    use HasUuids;
-    /**
-     * The table associated with the model.
-     *
-     * @var string
-     */
-    protected $table = 'cmis.ai_queries';
-
-    /**
-     * The primary key associated with the table.
-     *
-     * @var string
-     */
-    protected $primaryKey = 'query_id';
-
-    /**
-     * Indicates if the model's ID is auto-incrementing.
-     *
-     * @var bool
-     */
-    public $incrementing = false;
-
-    /**
-     * The data type of the primary key.
-     *
-     * @var string
-     */
-    protected $keyType = 'string';
-
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<string>
-     */
-    protected $fillable = [
-        'org_id',
-        'user_id',
-        'query_type',
-        'query_text',
-        'response_text',
-        'model_used',
-        'tokens_used',
-        'execution_time_ms',
-        'status',
-        'error_message',
-        'metadata',
-    ];
-
-    /**
-     * The attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
-    protected function casts(): array
-    {
-        return [
-            'query_id' => 'string',
-            'org_id' => 'string',
-            'user_id' => 'string',
-            'tokens_used' => 'integer',
-            'execution_time_ms' => 'integer',
-            'metadata' => 'array',
-            'created_at' => 'datetime',
-        ];
-    }
-
-    /**
-     * Get the organization that owns the AI query.
-     */
-    public function org(): BelongsTo
-    {
-        return $this->belongsTo(Org::class, 'org_id', 'org_id');
-    }
+    
+    
 
     /**
      * Get the user that made the query.
@@ -90,7 +20,6 @@ class AiQuery extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id', 'user_id');
-    }
 
     /**
      * Log an AI query.
@@ -131,7 +60,6 @@ class AiQuery extends Model
             'error_message' => $errorMessage,
             'metadata' => $metadata,
         ]);
-    }
 
     /**
      * Scope successful queries.
@@ -142,7 +70,6 @@ class AiQuery extends Model
     public function scopeSuccessful($query)
     {
         return $query->where('status', 'success');
-    }
 
     /**
      * Scope failed queries.
@@ -153,7 +80,6 @@ class AiQuery extends Model
     public function scopeFailed($query)
     {
         return $query->where('status', 'failed');
-    }
 
     /**
      * Scope queries by type.
@@ -165,7 +91,6 @@ class AiQuery extends Model
     public function scopeByType($query, string $type)
     {
         return $query->where('query_type', $type);
-    }
 
     /**
      * Scope queries by model.
@@ -177,7 +102,6 @@ class AiQuery extends Model
     public function scopeByModel($query, string $model)
     {
         return $query->where('model_used', $model);
-    }
 
     /**
      * Get total tokens used for an organization in a time period.
@@ -194,8 +118,6 @@ class AiQuery extends Model
 
         if ($startDate && $endDate) {
             $query->whereBetween('created_at', [$startDate, $endDate]);
-        }
 
         return $query->sum('tokens_used') ?? 0;
-    }
 }

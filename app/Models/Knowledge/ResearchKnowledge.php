@@ -3,19 +3,15 @@
 namespace App\Models\Knowledge;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
-class ResearchKnowledge extends Model
+class ResearchKnowledge extends BaseModel
 {
     use HasFactory, HasUuids;
 
     protected $table = 'cmis.research_knowledge';
     protected $primaryKey = 'research_id';
-    protected $connection = 'pgsql';
-    public $incrementing = false;
-    protected $keyType = 'string';
-
     protected $fillable = [
         'title',
         'abstract',
@@ -59,7 +55,6 @@ class ResearchKnowledge extends Model
     {
         return KnowledgeIndex::where('source_type', 'research_knowledge')
             ->where('source_id', $this->research_id);
-    }
 
     /**
      * Scope peer-reviewed only
@@ -67,7 +62,6 @@ class ResearchKnowledge extends Model
     public function scopePeerReviewed($query)
     {
         return $query->where('peer_reviewed', true);
-    }
 
     /**
      * Scope by field of study
@@ -75,7 +69,6 @@ class ResearchKnowledge extends Model
     public function scopeByField($query, string $field)
     {
         return $query->where('field_of_study', $field);
-    }
 
     /**
      * Scope by research type
@@ -83,7 +76,6 @@ class ResearchKnowledge extends Model
     public function scopeByType($query, string $type)
     {
         return $query->where('research_type', $type);
-    }
 
     /**
      * Scope high impact
@@ -92,7 +84,6 @@ class ResearchKnowledge extends Model
     {
         return $query->where('impact_factor', '>=', $threshold)
             ->orderBy('impact_factor', 'desc');
-    }
 
     /**
      * Scope highly cited
@@ -101,5 +92,4 @@ class ResearchKnowledge extends Model
     {
         return $query->where('citations_count', '>=', $threshold)
             ->orderBy('citations_count', 'desc');
-    }
 }

@@ -2,20 +2,20 @@
 
 namespace App\Models\Marketing;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Models\Concerns\HasOrganization;
+
+use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-class VideoScenario extends Model
+class VideoScenario extends BaseModel
 {
     use HasFactory, HasUuids, SoftDeletes;
+    use HasOrganization;
 
     protected $table = 'cmis_marketing.video_scenarios';
     protected $primaryKey = 'scenario_id';
-    public $incrementing = false;
-    protected $keyType = 'string';
-
     protected $fillable = [
         'scenario_id',
         'task_id',
@@ -43,22 +43,18 @@ class VideoScenario extends Model
     public function organization()
     {
         return $this->belongsTo(\App\Models\Organization::class, 'org_id', 'org_id');
-    }
 
     public function campaign()
     {
         return $this->belongsTo(\App\Models\Campaign::class, 'campaign_id', 'campaign_id');
-    }
 
     public function scopeByStatus($query, $status)
     {
         return $query->where('status', $status);
-    }
 
     public function getDurationFormatted()
     {
         $minutes = floor($this->duration_seconds / 60);
         $seconds = $this->duration_seconds % 60;
         return sprintf('%d:%02d', $minutes, $seconds);
-    }
 }

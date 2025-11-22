@@ -2,17 +2,13 @@
 
 namespace App\Models\Channel;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
-class ChannelMetric extends Model
+class ChannelMetric extends BaseModel
 {
-    use HasUuids;
+    
     protected $table = 'cmis.channel_metrics';
     protected $primaryKey = 'metric_id';
-    protected $connection = 'pgsql';
-    public $incrementing = false;
-    protected $keyType = 'string';
     public $timestamps = false;
 
     protected $fillable = [
@@ -58,7 +54,6 @@ class ChannelMetric extends Model
     public function channel()
     {
         return $this->belongsTo(\App\Models\Channel::class, 'channel_id', 'channel_id');
-    }
 
     /**
      * Scope by date range
@@ -66,7 +61,6 @@ class ChannelMetric extends Model
     public function scopeDateRange($query, $startDate, $endDate)
     {
         return $query->whereBetween('date', [$startDate, $endDate]);
-    }
 
     /**
      * Scope recent metrics
@@ -74,7 +68,6 @@ class ChannelMetric extends Model
     public function scopeRecent($query, int $days = 30)
     {
         return $query->where('date', '>=', now()->subDays($days));
-    }
 
     /**
      * Get follower growth
@@ -88,7 +81,6 @@ class ChannelMetric extends Model
 
         if ($metrics->count() < 2) {
             return ['growth' => 0, 'percentage' => 0];
-        }
 
         $first = $metrics->first();
         $last = $metrics->last();
@@ -102,5 +94,4 @@ class ChannelMetric extends Model
             'growth' => $growth,
             'percentage' => round($percentage, 2),
         ];
-    }
 }

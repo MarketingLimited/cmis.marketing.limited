@@ -2,20 +2,19 @@
 
 namespace App\Models\Compliance;
 
+use App\Models\Concerns\HasOrganization;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
-class ComplianceAudit extends Model
+class ComplianceAudit extends BaseModel
 {
     use HasFactory, HasUuids;
+    use HasOrganization;
 
     protected $table = 'cmis.compliance_audits';
     protected $primaryKey = 'audit_id';
-    protected $connection = 'pgsql';
-    public $incrementing = false;
-    protected $keyType = 'string';
-
     protected $fillable = [
         'audit_id',
         'asset_id',
@@ -43,13 +42,7 @@ class ComplianceAudit extends Model
         'updated_at' => 'datetime',
     ];
 
-    /**
-     * Get the organization
-     */
-    public function org()
-    {
-        return $this->belongsTo(\App\Models\Core\Org::class, 'org_id', 'org_id');
-    }
+    
 
     /**
      * Get the compliance rule
@@ -57,7 +50,6 @@ class ComplianceAudit extends Model
     public function rule()
     {
         return $this->belongsTo(ComplianceRule::class, 'rule_id', 'rule_id');
-    }
 
     /**
      * Get the creative asset
@@ -65,7 +57,6 @@ class ComplianceAudit extends Model
     public function asset()
     {
         return $this->belongsTo(\App\Models\CreativeAsset::class, 'asset_id', 'asset_id');
-    }
 
     /**
      * Get the reviewer
@@ -73,7 +64,6 @@ class ComplianceAudit extends Model
     public function reviewer()
     {
         return $this->belongsTo(\App\Models\User::class, 'reviewed_by', 'user_id');
-    }
 
     /**
      * Scope passed audits
@@ -81,7 +71,6 @@ class ComplianceAudit extends Model
     public function scopePassed($query)
     {
         return $query->where('audit_result', 'pass');
-    }
 
     /**
      * Scope failed audits
@@ -89,7 +78,6 @@ class ComplianceAudit extends Model
     public function scopeFailed($query)
     {
         return $query->where('audit_result', 'fail');
-    }
 
     /**
      * Scope pending review
@@ -97,5 +85,4 @@ class ComplianceAudit extends Model
     public function scopePendingReview($query)
     {
         return $query->where('status', 'pending')->whereNull('reviewed_at');
-    }
 }

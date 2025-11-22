@@ -2,13 +2,11 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 
-class VKpiSummary extends Model
+class VKpiSummary extends BaseModel
 {
     protected $table = 'cmis_ai_analytics.v_kpi_summary';
     protected $guarded = ['*'];
-    public $incrementing = false;
-
     public $timestamps = false;
 }

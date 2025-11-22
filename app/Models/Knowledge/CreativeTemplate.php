@@ -2,21 +2,20 @@
 
 namespace App\Models\Knowledge;
 
+use App\Models\Concerns\HasOrganization;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
-class CreativeTemplate extends Model
+class CreativeTemplate extends BaseModel
 {
     use HasFactory, SoftDeletes, HasUuids;
+    use HasOrganization;
 
     protected $table = 'cmis.creative_templates';
     protected $primaryKey = 'template_id';
-    protected $connection = 'pgsql';
-    public $incrementing = false;
-    protected $keyType = 'string';
-
     protected $fillable = [
         'org_id',
         'template_name',
@@ -53,13 +52,7 @@ class CreativeTemplate extends Model
         'deleted_at' => 'datetime',
     ];
 
-    /**
-     * Get the organization
-     */
-    public function org()
-    {
-        return $this->belongsTo(\App\Models\Core\Org::class, 'org_id', 'org_id');
-    }
+    
 
     /**
      * Get the channel
@@ -67,7 +60,6 @@ class CreativeTemplate extends Model
     public function channel()
     {
         return $this->belongsTo(\App\Models\Channel::class, 'channel_id', 'channel_id');
-    }
 
     /**
      * Get the creator
@@ -75,7 +67,6 @@ class CreativeTemplate extends Model
     public function creator()
     {
         return $this->belongsTo(\App\Models\User::class, 'created_by', 'user_id');
-    }
 
     /**
      * Scope by template type
@@ -83,7 +74,6 @@ class CreativeTemplate extends Model
     public function scopeByType($query, string $type)
     {
         return $query->where('template_type', $type);
-    }
 
     /**
      * Scope by category
@@ -91,7 +81,6 @@ class CreativeTemplate extends Model
     public function scopeByCategory($query, string $category)
     {
         return $query->where('category', $category);
-    }
 
     /**
      * Scope public templates
@@ -99,7 +88,6 @@ class CreativeTemplate extends Model
     public function scopePublic($query)
     {
         return $query->where('is_public', true);
-    }
 
     /**
      * Scope high performing
@@ -108,7 +96,6 @@ class CreativeTemplate extends Model
     {
         return $query->where('performance_score', '>=', $threshold)
             ->orderBy('performance_score', 'desc');
-    }
 
     /**
      * Increment usage count
@@ -116,7 +103,6 @@ class CreativeTemplate extends Model
     public function incrementUsage(): void
     {
         $this->increment('usage_count');
-    }
 
     /**
      * Render template with variables
@@ -127,10 +113,8 @@ class CreativeTemplate extends Model
 
         foreach ($this->structure as $key => $template) {
             $rendered[$key] = $this->replaceVariables($template, $data);
-        }
 
         return $rendered;
-    }
 
     /**
      * Replace variables in template string
@@ -142,5 +126,4 @@ class CreativeTemplate extends Model
         }
 
         return $template;
-    }
 }

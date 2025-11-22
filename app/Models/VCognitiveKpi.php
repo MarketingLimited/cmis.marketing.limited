@@ -2,13 +2,11 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 
-class VCognitiveKpi extends Model
+class VCognitiveKpi extends BaseModel
 {
     protected $table = 'cmis_system_health.v_cognitive_kpi';
     protected $guarded = ['*'];
-    public $incrementing = false;
-
     public $timestamps = false;
 }

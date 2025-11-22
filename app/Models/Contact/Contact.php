@@ -2,30 +2,18 @@
 
 namespace App\Models\Contact;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Models\Concerns\HasOrganization;
+
+use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Support\Str;
-
-class Contact extends Model
+class Contact extends BaseModel
 {
     use HasFactory, SoftDeletes;
+    use HasOrganization;
 
-    protected $connection = 'pgsql';
     protected $table = 'cmis.contacts';
     protected $primaryKey = 'contact_id';
-    public $incrementing = false;
-    protected $keyType = 'string';
-
-    protected static function boot()
-    {
-        parent::boot();
-        static::creating(function ($model) {
-            if (empty($model->{$model->getKeyName()})) {
-                $model->{$model->getKeyName()} = (string) Str::uuid();
-            }
-        });
-    }
 
     protected $fillable = [
         'contact_id',

@@ -2,25 +2,22 @@
 
 namespace App\Models\Other;
 
+use App\Models\Concerns\HasOrganization;
+
 use App\Models\Core\Org;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
-class Flow extends Model
+class Flow extends BaseModel
 {
     use HasFactory, SoftDeletes, HasUuids;
-
-    protected $connection = 'pgsql';
+    use HasOrganization;
 
     protected $table = 'cmis.flows';
 
     protected $primaryKey = 'flow_id';
-
-    public $incrementing = false;
-
-    protected $keyType = 'string';
 
     public $timestamps = false;
 
@@ -43,13 +40,7 @@ class Flow extends Model
         'deleted_at' => 'datetime',
     ];
 
-    /**
-     * Get the organization
-     */
-    public function org()
-    {
-        return $this->belongsTo(Org::class, 'org_id', 'org_id');
-    }
+    
 
     /**
      * Get the flow steps
@@ -57,7 +48,6 @@ class Flow extends Model
     public function steps()
     {
         return $this->hasMany(FlowStep::class, 'flow_id', 'flow_id')->orderBy('ord');
-    }
 
     /**
      * Scope to get enabled flows
@@ -65,7 +55,6 @@ class Flow extends Model
     public function scopeEnabled($query)
     {
         return $query->where('enabled', true);
-    }
 
     /**
      * Scope to get flows for a specific org
@@ -73,5 +62,4 @@ class Flow extends Model
     public function scopeForOrg($query, string $orgId)
     {
         return $query->where('org_id', $orgId);
-    }
 }

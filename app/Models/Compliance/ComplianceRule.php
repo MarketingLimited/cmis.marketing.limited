@@ -2,20 +2,19 @@
 
 namespace App\Models\Compliance;
 
+use App\Models\Concerns\HasOrganization;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
-class ComplianceRule extends Model
+class ComplianceRule extends BaseModel
 {
     use HasFactory, HasUuids;
+    use HasOrganization;
 
     protected $table = 'cmis.compliance_rules';
     protected $primaryKey = 'rule_id';
-    protected $connection = 'pgsql';
-    public $incrementing = false;
-    protected $keyType = 'string';
-
     protected $fillable = [
         'rule_id',
         'code',
@@ -41,13 +40,7 @@ class ComplianceRule extends Model
         'params' => 'array',
     ];
 
-    /**
-     * Get the organization
-     */
-    public function org()
-    {
-        return $this->belongsTo(\App\Models\Core\Org::class, 'org_id', 'org_id');
-    }
+    
 
     /**
      * Get compliance audits
@@ -55,7 +48,6 @@ class ComplianceRule extends Model
     public function audits()
     {
         return $this->hasMany(ComplianceAudit::class, 'rule_id', 'rule_id');
-    }
 
     /**
      * Get rule-channel associations
@@ -67,8 +59,6 @@ class ComplianceRule extends Model
             'cmis.compliance_rule_channels',
             'rule_id',
             'channel_id'
-        );
-    }
 
     /**
      * Scope active rules
@@ -76,7 +66,6 @@ class ComplianceRule extends Model
     public function scopeActive($query)
     {
         return $query->where('is_active', true);
-    }
 
     /**
      * Scope by rule type
@@ -84,7 +73,6 @@ class ComplianceRule extends Model
     public function scopeOfType($query, string $type)
     {
         return $query->where('rule_type', $type);
-    }
 
     /**
      * Scope by severity
@@ -92,5 +80,4 @@ class ComplianceRule extends Model
     public function scopeBySeverity($query, string $severity)
     {
         return $query->where('severity', $severity);
-    }
 }

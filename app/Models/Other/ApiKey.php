@@ -3,23 +3,17 @@
 namespace App\Models\Other;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
-class ApiKey extends Model
+class ApiKey extends BaseModel
 {
     use HasFactory, SoftDeletes, HasUuids;
-
-    protected $connection = 'pgsql';
 
     protected $table = 'cmis.api_keys';
 
     protected $primaryKey = 'key_id';
-
-    public $incrementing = false;
-
-    protected $keyType = 'string';
 
     public $timestamps = true;
 
@@ -46,7 +40,6 @@ class ApiKey extends Model
     public function scopeActive($query)
     {
         return $query->where('is_active', true);
-    }
 
     /**
      * Scope to find by service code
@@ -54,5 +47,4 @@ class ApiKey extends Model
     public function scopeByServiceCode($query, string $serviceCode)
     {
         return $query->where('service_code', $serviceCode);
-    }
 }

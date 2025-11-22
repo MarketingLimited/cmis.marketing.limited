@@ -2,17 +2,13 @@
 
 namespace App\Models\Knowledge;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
-class SemanticSearchResultCache extends Model
+class SemanticSearchResultCache extends BaseModel
 {
-    use HasUuids;
+    
     protected $table = 'cmis.semantic_search_result_cache';
     protected $primaryKey = 'cache_id';
-    protected $connection = 'pgsql';
-    public $incrementing = false;
-    protected $keyType = 'string';
     public $timestamps = false;
 
     protected $fillable = [
@@ -49,10 +45,8 @@ class SemanticSearchResultCache extends Model
 
         if ($filtersHash) {
             $query->where('filters_hash', $filtersHash);
-        }
 
         return $query->where('expires_at', '>', now())->first();
-    }
 
     /**
      * Check if cache is valid
@@ -60,7 +54,6 @@ class SemanticSearchResultCache extends Model
     public function isValid(): bool
     {
         return $this->expires_at && $this->expires_at->isFuture();
-    }
 
     /**
      * Record cache hit
@@ -69,7 +62,6 @@ class SemanticSearchResultCache extends Model
     {
         $this->increment('hit_count');
         $this->update(['last_hit' => now()]);
-    }
 
     /**
      * Scope valid caches
@@ -77,7 +69,6 @@ class SemanticSearchResultCache extends Model
     public function scopeValid($query)
     {
         return $query->where('expires_at', '>', now());
-    }
 
     /**
      * Scope expired caches
@@ -85,7 +76,6 @@ class SemanticSearchResultCache extends Model
     public function scopeExpired($query)
     {
         return $query->where('expires_at', '<=', now());
-    }
 
     /**
      * Scope by hit count
@@ -94,5 +84,4 @@ class SemanticSearchResultCache extends Model
     {
         return $query->where('hit_count', '>=', $threshold)
             ->orderBy('hit_count', 'desc');
-    }
 }

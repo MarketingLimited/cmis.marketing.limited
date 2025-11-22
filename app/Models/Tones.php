@@ -2,16 +2,14 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 
-class Tones extends Model
+class Tones extends BaseModel
 {
     protected $table = 'cmis.tones';
 
     protected $fillable = [
         'tone',
     ];
-    public $incrementing = false;
-
     public $timestamps = false;
 }

@@ -2,13 +2,11 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 
-class VPredictiveCognitiveHorizon extends Model
+class VPredictiveCognitiveHorizon extends BaseModel
 {
     protected $table = 'cmis_knowledge.v_predictive_cognitive_horizon';
     protected $guarded = ['*'];
-    public $incrementing = false;
-
     public $timestamps = false;
 }

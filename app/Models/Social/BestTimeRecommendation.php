@@ -2,31 +2,19 @@
 
 namespace App\Models\Social;
 
+use App\Models\Concerns\HasOrganization;
+
 use App\Models\Core\Org;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Support\Str;
-
-class BestTimeRecommendation extends Model
+class BestTimeRecommendation extends BaseModel
 {
     use HasFactory;
+    use HasOrganization;
 
-    protected $connection = 'pgsql';
     protected $table = 'cmis.best_time_recommendations';
     protected $primaryKey = 'recommendation_id';
-    public $incrementing = false;
-    protected $keyType = 'string';
-
-    protected static function boot()
-    {
-        parent::boot();
-        static::creating(function ($model) {
-            if (empty($model->{$model->getKeyName()})) {
-                $model->{$model->getKeyName()} = (string) Str::uuid();
-            }
-        });
-    }
 
     protected $fillable = [
         'recommendation_id',
@@ -54,10 +42,7 @@ class BestTimeRecommendation extends Model
 
     // ===== Relationships =====
 
-    public function org(): BelongsTo
-    {
-        return $this->belongsTo(Org::class, 'org_id', 'org_id');
-    }
+    
 
     // ===== Recommendation Helpers =====
 
@@ -70,12 +55,10 @@ class BestTimeRecommendation extends Model
     public function getDayLabel(): string
     {
         return ucfirst($this->day_of_week);
-    }
 
     public function isHighEngagement(): bool
     {
         return $this->engagement_score >= 70;
-    }
 
     public function getScoreColor(): string
     {
@@ -83,24 +66,19 @@ class BestTimeRecommendation extends Model
             return 'green';
         } elseif ($this->engagement_score >= 60) {
             return 'yellow';
-        }
         return 'red';
-    }
 
     // ===== Scopes =====
 
     public function scopeForPlatform($query, string $platform)
     {
         return $query->where('platform', $platform);
-    }
 
     public function scopeForDay($query, string $dayOfWeek)
     {
         return $query->where('day_of_week', $dayOfWeek);
-    }
 
     public function scopeTopTimes($query, int $limit = 5)
     {
         return $query->orderByDesc('engagement_score')->limit($limit);
-    }
 }

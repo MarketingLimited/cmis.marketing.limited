@@ -3,22 +3,16 @@
 namespace App\Models\Other;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
-class CacheMetadata extends Model
+class CacheMetadata extends BaseModel
 {
     use HasFactory, HasUuids;
-
-    protected $connection = 'pgsql';
 
     protected $table = 'cmis.cache_metadata';
 
     protected $primaryKey = 'cache_name';
-
-    public $incrementing = false;
-
-    protected $keyType = 'string';
 
     public $timestamps = false;
 
@@ -49,5 +43,4 @@ class CacheMetadata extends Model
     public function scopeAutoRefresh($query)
     {
         return $query->where('auto_refresh', true);
-    }
 }

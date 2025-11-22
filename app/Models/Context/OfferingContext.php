@@ -2,21 +2,20 @@
 
 namespace App\Models\Context;
 
+use App\Models\Concerns\HasOrganization;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
-class OfferingContext extends Model
+class OfferingContext extends BaseModel
 {
     use HasFactory, SoftDeletes, HasUuids;
+    use HasOrganization;
 
     protected $table = 'cmis.contexts_offering';
     protected $primaryKey = 'context_id';
-    protected $connection = 'pgsql';
-    public $incrementing = false;
-    protected $keyType = 'string';
-
     protected $fillable = [
         'context_id',
         'offering_details',
@@ -48,21 +47,7 @@ class OfferingContext extends Model
         'features' => 'array',
     ];
 
-    /**
-     * Get the base context
-     */
-    public function contextBase()
-    {
-        return $this->belongsTo(ContextBase::class, 'context_id', 'id');
-    }
-
-    /**
-     * Get the organization
-     */
-    public function org()
-    {
-        return $this->belongsTo(\App\Models\Core\Org::class, 'org_id', 'org_id');
-    }
+    
 
     /**
      * Get the offering
@@ -70,7 +55,6 @@ class OfferingContext extends Model
     public function offering()
     {
         return $this->belongsTo(\App\Models\Offering::class, 'offering_id', 'offering_id');
-    }
 
     /**
      * Get the creator
@@ -78,7 +62,6 @@ class OfferingContext extends Model
     public function creator()
     {
         return $this->belongsTo(\App\Models\User::class, 'created_by', 'user_id');
-    }
 
     /**
      * Scope active contexts
@@ -86,5 +69,4 @@ class OfferingContext extends Model
     public function scopeActive($query)
     {
         return $query->where('is_active', true)->whereNull('deleted_at');
-    }
 }

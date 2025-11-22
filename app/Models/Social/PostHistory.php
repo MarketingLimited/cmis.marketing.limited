@@ -24,5 +24,4 @@ class PostHistory extends BaseModel
 
     public function post() {
         return $this->belongsTo(SocialPost::class, 'post_id');
-    }
 }

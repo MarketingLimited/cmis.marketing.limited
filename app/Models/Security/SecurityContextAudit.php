@@ -2,26 +2,23 @@
 
 namespace App\Models\Security;
 
+use App\Models\Concerns\HasOrganization;
+
 use App\Models\Core\Org;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
-class SecurityContextAudit extends Model
+class SecurityContextAudit extends BaseModel
 {
     use HasFactory, SoftDeletes, HasUuids;
-
-    protected $connection = 'pgsql';
+    use HasOrganization;
 
     protected $table = 'cmis.security_context_audit';
 
     protected $primaryKey = 'id';
-
-    public $incrementing = false;
-
-    protected $keyType = 'string';
 
     public $timestamps = true;
 
@@ -44,21 +41,7 @@ class SecurityContextAudit extends Model
         'deleted_at' => 'datetime',
     ];
 
-    /**
-     * Get the user
-     */
-    public function user()
-    {
-        return $this->belongsTo(User::class, 'user_id', 'user_id');
-    }
-
-    /**
-     * Get the organization
-     */
-    public function org()
-    {
-        return $this->belongsTo(Org::class, 'org_id', 'org_id');
-    }
+    
 
     /**
      * Scope to get audits for a specific user
@@ -66,7 +49,6 @@ class SecurityContextAudit extends Model
     public function scopeForUser($query, string $userId)
     {
         return $query->where('user_id', $userId);
-    }
 
     /**
      * Scope to get audits for a specific org
@@ -74,7 +56,6 @@ class SecurityContextAudit extends Model
     public function scopeForOrg($query, string $orgId)
     {
         return $query->where('org_id', $orgId);
-    }
 
     /**
      * Scope to get successful audits
@@ -82,7 +63,6 @@ class SecurityContextAudit extends Model
     public function scopeSuccessful($query)
     {
         return $query->where('success', true);
-    }
 
     /**
      * Scope to get failed audits
@@ -90,5 +70,4 @@ class SecurityContextAudit extends Model
     public function scopeFailed($query)
     {
         return $query->where('success', false);
-    }
 }

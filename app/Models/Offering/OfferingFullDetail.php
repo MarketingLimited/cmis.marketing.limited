@@ -3,20 +3,16 @@
 namespace App\Models\Offering;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
-class OfferingFullDetail extends Model
+class OfferingFullDetail extends BaseModel
 {
     use HasFactory, SoftDeletes, HasUuids;
 
     protected $table = 'cmis.offering_full_details';
     protected $primaryKey = 'detail_id';
-    protected $connection = 'pgsql';
-    public $incrementing = false;
-    protected $keyType = 'string';
-
     protected $fillable = [
         'offering_id',
         'detailed_description',
@@ -67,7 +63,6 @@ class OfferingFullDetail extends Model
     public function offering()
     {
         return $this->belongsTo(\App\Models\Offering::class, 'offering_id', 'offering_id');
-    }
 
     /**
      * Get feature by key
@@ -77,11 +72,8 @@ class OfferingFullDetail extends Model
         foreach ($this->features ?? [] as $feature) {
             if (isset($feature['key']) && $feature['key'] === $featureKey) {
                 return $feature;
-            }
-        }
 
         return null;
-    }
 
     /**
      * Get pricing tier
@@ -91,11 +83,8 @@ class OfferingFullDetail extends Model
         foreach ($this->pricing_tiers ?? [] as $tier) {
             if (isset($tier['name']) && $tier['name'] === $tierName) {
                 return $tier;
-            }
-        }
 
         return null;
-    }
 
     /**
      * Get use case by category
@@ -104,8 +93,6 @@ class OfferingFullDetail extends Model
     {
         return array_filter($this->use_cases ?? [], function ($useCase) use ($category) {
             return isset($useCase['category']) && $useCase['category'] === $category;
-        });
-    }
 
     /**
      * Get testimonials by rating
@@ -114,6 +101,4 @@ class OfferingFullDetail extends Model
     {
         return array_filter($this->testimonials ?? [], function ($testimonial) use ($minRating) {
             return isset($testimonial['rating']) && $testimonial['rating'] >= $minRating;
-        });
-    }
 }

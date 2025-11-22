@@ -2,22 +2,22 @@
 
 namespace App\Models\Analytics;
 
+use App\Models\Concerns\HasOrganization;
+
 use App\Models\Core\Org;
 use App\Models\Core\User;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class Recommendation extends Model
+class Recommendation extends BaseModel
 {
     use HasFactory, HasUuids;
+    use HasOrganization;
 
     protected $table = 'cmis.recommendations';
     protected $primaryKey = 'recommendation_id';
-    public $incrementing = false;
-    protected $keyType = 'string';
-
     protected $fillable = [
         'org_id', 'entity_type', 'entity_id', 'recommendation_type', 'category',
         'priority', 'confidence_score', 'potential_impact', 'impact_metric',
@@ -36,15 +36,11 @@ class Recommendation extends Model
         'updated_at' => 'datetime'
     ];
 
-    public function org(): BelongsTo
-    {
-        return $this->belongsTo(Org::class, 'org_id', 'org_id');
-    }
+    
 
     public function actionedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'actioned_by', 'user_id');
-    }
 
     public function accept(string $userId, ?string $notes = null): void
     {
@@ -54,7 +50,6 @@ class Recommendation extends Model
             'actioned_at' => now(),
             'action_notes' => $notes
         ]);
-    }
 
     public function reject(string $userId, string $reason): void
     {
@@ -64,7 +59,6 @@ class Recommendation extends Model
             'actioned_at' => now(),
             'action_notes' => $reason
         ]);
-    }
 
     public function implement(string $userId, string $notes): void
     {
@@ -74,12 +68,10 @@ class Recommendation extends Model
             'actioned_at' => now(),
             'action_notes' => $notes
         ]);
-    }
 
     public function isExpired(): bool
     {
         return $this->expires_at && $this->expires_at->isPast();
-    }
 
     public function scopePending($query)
     {
@@ -87,16 +79,12 @@ class Recommendation extends Model
                      ->where(function($q) {
                          $q->whereNull('expires_at')
                            ->orWhere('expires_at', '>', now());
-                     });
-    }
 
     public function scopeHighPriority($query)
     {
         return $query->whereIn('priority', ['critical', 'high']);
-    }
 
     public function scopeByCategory($query, string $category)
     {
         return $query->where('category', $category);
-    }
 }

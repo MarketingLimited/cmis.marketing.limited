@@ -2,21 +2,20 @@
 
 namespace App\Models\AdPlatform;
 
+use App\Models\Concerns\HasOrganization;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
-class AdEntity extends Model
+class AdEntity extends BaseModel
 {
     use HasFactory, SoftDeletes, HasUuids;
+    use HasOrganization;
 
     protected $table = 'cmis.ad_entities';
     protected $primaryKey = 'id';
-    protected $connection = 'pgsql';
-    public $incrementing = false;
-    protected $keyType = 'string';
-
     protected $fillable = [
         'id',
         'org_id',
@@ -43,13 +42,7 @@ class AdEntity extends Model
         'deleted_at' => 'datetime',
     ];
 
-    /**
-     * Get the organization
-     */
-    public function org()
-    {
-        return $this->belongsTo(\App\Models\Core\Org::class, 'org_id', 'org_id');
-    }
+    
 
     /**
      * Get the integration
@@ -57,7 +50,6 @@ class AdEntity extends Model
     public function integration()
     {
         return $this->belongsTo(\App\Models\Core\Integration::class, 'integration_id', 'integration_id');
-    }
 
     /**
      * Get the ad set
@@ -65,7 +57,6 @@ class AdEntity extends Model
     public function adSet()
     {
         return $this->belongsTo(AdSet::class, 'adset_external_id', 'adset_external_id');
-    }
 
     /**
      * Get the creative asset
@@ -73,7 +64,6 @@ class AdEntity extends Model
     public function creative()
     {
         return $this->belongsTo(\App\Models\Core\Creative::class, 'creative_id', 'creative_id');
-    }
 
     /**
      * Get metrics
@@ -82,7 +72,6 @@ class AdEntity extends Model
     {
         return $this->hasMany(AdMetric::class, 'entity_external_id', 'ad_external_id')
             ->where('entity_level', 'ad');
-    }
 
     /**
      * Scope active ads
@@ -90,7 +79,6 @@ class AdEntity extends Model
     public function scopeActive($query)
     {
         return $query->where('ad_status', 'active');
-    }
 
     /**
      * Scope by platform
@@ -98,7 +86,6 @@ class AdEntity extends Model
     public function scopeByPlatform($query, string $platform)
     {
         return $query->where('platform', $platform);
-    }
 
     /**
      * Scope by ad type
@@ -106,7 +93,6 @@ class AdEntity extends Model
     public function scopeByType($query, string $type)
     {
         return $query->where('ad_type', $type);
-    }
 
     /**
      * Scope by status
@@ -114,7 +100,6 @@ class AdEntity extends Model
     public function scopeByStatus($query, string $status)
     {
         return $query->where('ad_status', $status);
-    }
 
     /**
      * Get latest metrics
@@ -124,7 +109,6 @@ class AdEntity extends Model
         return $this->metrics()
             ->orderBy('metric_date', 'desc')
             ->first();
-    }
 
     /**
      * Get performance summary
@@ -142,5 +126,4 @@ class AdEntity extends Model
             'avg_cpc' => $metrics->avg('cpc'),
             'avg_cpa' => $metrics->avg('cpa'),
         ];
-    }
 }

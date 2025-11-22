@@ -2,20 +2,20 @@
 
 namespace App\Models\Marketing;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Models\Concerns\HasOrganization;
+
+use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-class VisualScenario extends Model
+class VisualScenario extends BaseModel
 {
     use HasFactory, HasUuids, SoftDeletes;
+    use HasOrganization;
 
     protected $table = 'cmis_marketing.visual_scenarios';
     protected $primaryKey = 'scenario_id';
-    public $incrementing = false;
-    protected $keyType = 'string';
-
     protected $fillable = [
         'scenario_id',
         'creative_id',
@@ -44,25 +44,20 @@ class VisualScenario extends Model
     public function organization()
     {
         return $this->belongsTo(\App\Models\Organization::class, 'org_id', 'org_id');
-    }
 
     public function campaign()
     {
         return $this->belongsTo(\App\Models\Campaign::class, 'campaign_id', 'campaign_id');
-    }
 
     public function concept()
     {
         return $this->belongsTo(VisualConcept::class, 'concept_id', 'concept_id');
-    }
 
     public function scopeByStatus($query, $status)
     {
         return $query->where('status', $status);
-    }
 
     public function getTotalScenes()
     {
         return is_array($this->scenes) ? count($this->scenes) : 0;
-    }
 }

@@ -2,18 +2,13 @@
 
 namespace App\Models\Knowledge;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
-class PurposeMapping extends Model
+class PurposeMapping extends BaseModel
 {
-    use HasUuids;
+    
     protected $table = 'cmis.purpose_mappings';
     protected $primaryKey = 'purpose_id';
-    protected $connection = 'pgsql';
-    public $incrementing = false;
-    protected $keyType = 'string';
-
     protected $fillable = [
         'purpose_code',
         'purpose_label',
@@ -46,7 +41,6 @@ class PurposeMapping extends Model
     public function scopeActive($query)
     {
         return $query->where('is_active', true);
-    }
 
     /**
      * Scope by category
@@ -54,7 +48,6 @@ class PurposeMapping extends Model
     public function scopeByCategory($query, string $category)
     {
         return $query->where('category', $category);
-    }
 
     /**
      * Find by purpose code
@@ -62,5 +55,4 @@ class PurposeMapping extends Model
     public static function findByCode(string $code)
     {
         return self::where('purpose_code', $code)->first();
-    }
 }

@@ -2,13 +2,11 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 
-class VDeletedRecords extends Model
+class VDeletedRecords extends BaseModel
 {
     protected $table = 'cmis.v_deleted_records';
     protected $guarded = ['*'];
-    public $incrementing = false;
-
     public $timestamps = false;
 }

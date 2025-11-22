@@ -2,21 +2,20 @@
 
 namespace App\Models\Creative;
 
+use App\Models\Concerns\HasOrganization;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
-class ContentItem extends Model
+class ContentItem extends BaseModel
 {
     use HasFactory, SoftDeletes, HasUuids;
+    use HasOrganization;
 
     protected $table = 'cmis.content_items';
     protected $primaryKey = 'item_id';
-    protected $connection = 'pgsql';
-    public $incrementing = false;
-    protected $keyType = 'string';
-
     protected $fillable = [
         'item_id',
         'plan_id',
@@ -54,13 +53,7 @@ class ContentItem extends Model
         'brief' => 'array',
     ];
 
-    /**
-     * Get the organization
-     */
-    public function org()
-    {
-        return $this->belongsTo(\App\Models\Core\Org::class, 'org_id', 'org_id');
-    }
+    
 
     /**
      * Get the content plan
@@ -68,7 +61,6 @@ class ContentItem extends Model
     public function plan()
     {
         return $this->belongsTo(ContentPlan::class, 'plan_id', 'plan_id');
-    }
 
     /**
      * Get the creative asset
@@ -76,7 +68,6 @@ class ContentItem extends Model
     public function asset()
     {
         return $this->belongsTo(\App\Models\CreativeAsset::class, 'asset_id', 'asset_id');
-    }
 
     /**
      * Get the channel
@@ -84,7 +75,6 @@ class ContentItem extends Model
     public function channel()
     {
         return $this->belongsTo(\App\Models\Channel::class, 'channel_id', 'channel_id');
-    }
 
     /**
      * Get the creator
@@ -92,7 +82,6 @@ class ContentItem extends Model
     public function creator()
     {
         return $this->belongsTo(\App\Models\User::class, 'created_by', 'user_id');
-    }
 
     /**
      * Scope scheduled items
@@ -100,7 +89,6 @@ class ContentItem extends Model
     public function scopeScheduled($query)
     {
         return $query->where('status', 'scheduled')->whereNotNull('scheduled_for');
-    }
 
     /**
      * Scope published items
@@ -108,7 +96,6 @@ class ContentItem extends Model
     public function scopePublished($query)
     {
         return $query->where('status', 'published')->whereNotNull('published_at');
-    }
 
     /**
      * Scope by item type
@@ -116,5 +103,4 @@ class ContentItem extends Model
     public function scopeOfType($query, string $type)
     {
         return $query->where('item_type', $type);
-    }
 }

@@ -2,42 +2,24 @@
 
 namespace App\Models\Core;
 
+use App\Models\Concerns\HasOrganization;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Support\Str;
-
-class Org extends Model
+class Org extends BaseModel
 {
     use HasFactory, SoftDeletes;
-
-    protected $connection = 'pgsql';
+    use HasOrganization;
 
     protected $table = 'cmis.orgs';
 
     protected $primaryKey = 'org_id';
 
-    public $incrementing = false;
-
-    protected $keyType = 'string';
-
     public $timestamps = true;
 
-    /**
-     * Boot function to auto-generate UUID
-     */
-    protected static function boot()
-    {
-        parent::boot();
-
-        static::creating(function ($model) {
-            if (empty($model->{$model->getKeyName()})) {
-                $model->{$model->getKeyName()} = (string) Str::uuid();
-            }
-        });
-    }
 
     protected $fillable = [
         'org_id',
@@ -69,7 +51,6 @@ class Org extends Model
         ->withPivot(['role_id', 'is_active', 'joined_at', 'invited_by', 'last_accessed'])
         ->wherePivot('is_active', true)
         ->wherePivotNull('deleted_at');
-    }
 
     /**
      * Get all roles for this organization.
@@ -79,22 +60,18 @@ class Org extends Model
     public function roles(): HasMany
     {
         return $this->hasMany(Role::class, 'org_id', 'org_id');
-    }
 
     public function campaigns(): HasMany
     {
         return $this->hasMany(\App\Models\Campaign::class, 'org_id', 'org_id');
-    }
 
     public function offerings(): HasMany
     {
         return $this->hasMany(\App\Models\Offering::class, 'org_id', 'org_id');
-    }
 
     public function creativeAssets(): HasMany
     {
         return $this->hasMany(\App\Models\CreativeAsset::class, 'org_id', 'org_id');
-    }
 
     /**
      * Get all integrations for this organization.
@@ -104,5 +81,4 @@ class Org extends Model
     public function integrations(): HasMany
     {
         return $this->hasMany(Integration::class, 'org_id', 'org_id');
-    }
 }
