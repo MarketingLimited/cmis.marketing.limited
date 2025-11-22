@@ -8,6 +8,10 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\Response;
 
+/**
+ * @deprecated This middleware is deprecated. Use SetOrganizationContext ('org.context') instead.
+ *             Kept for backward compatibility only.
+ */
 class SetDatabaseContext
 {
     /**
@@ -20,6 +24,17 @@ class SetDatabaseContext
      */
     public function handle(Request $request, Closure $next): Response
     {
+        Log::warning(
+            '⚠️  DEPRECATED MIDDLEWARE IN USE: SetDatabaseContext is deprecated. ' .
+            'Please update your routes to use org.context middleware instead. ' .
+            'Using multiple context middleware can cause race conditions and data leakage.',
+            [
+                'route' => $request->path(),
+                'middleware' => 'SetDatabaseContext',
+                'replacement' => 'SetOrganizationContext (alias: org.context)'
+            ]
+        );
+
         $user = $request->user();
 
         if (!$user) {

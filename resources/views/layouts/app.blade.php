@@ -132,6 +132,30 @@
                             <p class="text-sm text-gray-500">@yield('page-subtitle', 'مرحباً بك في نظام إدارة المحتوى والحملات')</p>
                         </div>
 
+                        <!-- Organization Context Indicator (Issue #1) -->
+                        @auth
+                        @if(Auth::user()->currentOrg)
+                        <div class="hidden lg:flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-indigo-50 to-purple-50 border border-indigo-200 rounded-xl transition-all hover:shadow-md"
+                             x-data="{ justSwitched: false }"
+                             :class="{ 'animate-pulse': justSwitched }"
+                             x-on:org-switched.window="justSwitched = true; setTimeout(() => justSwitched = false, 2000)"
+                        >
+                            <div class="bg-indigo-100 rounded-lg p-2">
+                                <i class="fas fa-building text-indigo-600"></i>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-xs text-indigo-600 font-medium">المنظمة الحالية</p>
+                                <p class="text-sm font-bold text-indigo-900">{{ Auth::user()->currentOrg->name ?? 'غير محدد' }}</p>
+                            </div>
+                            <button @click="$dispatch('open-modal', 'org-switcher-modal')"
+                                    class="mr-2 text-indigo-600 hover:text-indigo-800 transition"
+                                    title="تبديل المنظمة">
+                                <i class="fas fa-exchange-alt text-sm"></i>
+                            </button>
+                        </div>
+                        @endif
+                        @endauth
+
                         <!-- Right Actions -->
                         <div class="flex items-center gap-3">
                             <!-- Search -->
@@ -253,6 +277,55 @@
 
     <!-- Overlay for Mobile -->
     <div x-show="sidebarOpen" @click="sidebarOpen = false" class="fixed inset-0 bg-black/50 z-30 md:hidden" x-transition x-cloak></div>
+
+    <!-- Delete Confirmation Modal (Issue #7) -->
+    <x-delete-confirmation-modal />
+
+    <!-- Toast Notification System -->
+    <div x-data="{
+        show: false,
+        message: '',
+        type: 'success',
+        showToast(detail) {
+            this.message = detail.message;
+            this.type = detail.type || 'success';
+            this.show = true;
+            setTimeout(() => this.show = false, 5000);
+        }
+    }"
+    x-on:show-toast.window="showToast($event.detail)"
+    x-show="show"
+    x-transition:enter="transform ease-out duration-300 transition"
+    x-transition:enter-start="translate-y-2 opacity-0 sm:translate-y-0 sm:translate-x-2"
+    x-transition:enter-end="translate-y-0 opacity-100 sm:translate-x-0"
+    x-transition:leave="transition ease-in duration-100"
+    x-transition:leave-start="opacity-100"
+    x-transition:leave-end="opacity-0"
+    class="fixed top-4 left-4 z-50 pointer-events-none"
+    style="display: none;"
+    >
+        <div class="max-w-sm w-full bg-white shadow-lg rounded-lg pointer-events-auto ring-1 ring-black ring-opacity-5 overflow-hidden">
+            <div class="p-4">
+                <div class="flex items-start">
+                    <div class="flex-shrink-0">
+                        <i :class="{
+                            'fas fa-check-circle text-green-400': type === 'success',
+                            'fas fa-exclamation-circle text-red-400': type === 'error',
+                            'fas fa-info-circle text-blue-400': type === 'info'
+                        }" class="text-xl"></i>
+                    </div>
+                    <div class="mr-3 w-0 flex-1 pt-0.5">
+                        <p class="text-sm font-medium text-gray-900" x-text="message"></p>
+                    </div>
+                    <div class="mr-4 flex-shrink-0 flex">
+                        <button @click="show = false" class="bg-white rounded-md inline-flex text-gray-400 hover:text-gray-500 focus:outline-none">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     @stack('scripts')
 </body>
