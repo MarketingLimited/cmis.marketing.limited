@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Core;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Concerns\ApiResponse;
 use App\Models\Security\SessionContext;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -37,9 +38,7 @@ class OrgSwitcherController extends Controller
         $user = Auth::user();
 
         if (!$user) {
-            return response()->json([
-                'error' => 'Unauthenticated',
-            ], 401);
+            return $this->unauthorized('You must be authenticated to access this resource');
         }
 
         // Get all organizations the user belongs to
@@ -52,10 +51,10 @@ class OrgSwitcherController extends Controller
         $sessionContext = SessionContext::where('session_id', session()->getId())->first();
         $activeOrgId = $sessionContext?->active_org_id ?? $user->org_id;
 
-        return response()->json([
+        return $this->success([
             'organizations' => $organizations,
             'active_org_id' => $activeOrgId,
-        ]);
+        ], 'Organizations retrieved successfully');
     }
 
     /**
@@ -80,10 +79,10 @@ class OrgSwitcherController extends Controller
                 'attempted_org_id' => $newOrgId,
             ]);
 
-            return response()->json([
-                'error' => 'Unauthorized',
-                'message' => 'You do not have access to this organization',
-            ], 403);
+            return $this->forbidden(
+                'You do not have access to this organization',
+                'ORG_ACCESS_DENIED'
+            );
         }
 
         try {
@@ -106,6 +105,9 @@ class OrgSwitcherController extends Controller
             // Update user's default org_id (optional - keeps last selected org)
             $user->update(['org_id' => $newOrgId]);
 
+            // Sync to Redis for cross-interface org context (Issue #63)
+            \Cache::put('user:' . $user->user_id . ':active_org', $newOrgId, now()->addDays(7));
+
             Log::info('User switched organization', [
                 'user_id' => $user->user_id,
                 'old_org_id' => $sessionContext->getOriginal('active_org_id'),
@@ -115,15 +117,13 @@ class OrgSwitcherController extends Controller
             // Get the new org details
             $newOrg = $user->orgs()->where('cmis.orgs.org_id', $newOrgId)->first();
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Organization switched successfully',
+            return $this->success([
                 'active_org' => [
                     'org_id' => $newOrg->org_id,
                     'name' => $newOrg->name,
                     'slug' => $newOrg->slug,
                 ],
-            ]);
+            ], 'Organization switched successfully');
 
         } catch (\Exception $e) {
             Log::error('Failed to switch organization', [
@@ -132,10 +132,7 @@ class OrgSwitcherController extends Controller
                 'error' => $e->getMessage(),
             ]);
 
-            return response()->json([
-                'error' => 'Server Error',
-                'message' => 'Failed to switch organization. Please try again.',
-            ], 500);
+            return $this->serverError('Failed to switch organization. Please try again.');
         }
     }
 
@@ -149,13 +146,14 @@ class OrgSwitcherController extends Controller
         $user = Auth::user();
 
         if (!$user) {
-            return response()->json([
-                'error' => 'Unauthenticated',
-            ], 401);
+            return $this->unauthorized('You must be authenticated to access this resource');
         }
 
+        // Check Redis cache first for cross-interface consistency (Issue #63)
+        $cachedOrgId = \Cache::get('user:' . $user->user_id . ':active_org');
+
         $sessionContext = SessionContext::where('session_id', session()->getId())->first();
-        $activeOrgId = $sessionContext?->active_org_id ?? $user->org_id;
+        $activeOrgId = $cachedOrgId ?? $sessionContext?->active_org_id ?? $user->org_id;
 
         $activeOrg = $user->orgs()->where('cmis.orgs.org_id', $activeOrgId)->first();
 
@@ -164,12 +162,12 @@ class OrgSwitcherController extends Controller
             $activeOrg = $user->org;
         }
 
-        return response()->json([
+        return $this->success([
             'active_org' => [
                 'org_id' => $activeOrg->org_id,
                 'name' => $activeOrg->name,
                 'slug' => $activeOrg->slug ?? null,
             ],
-        ]);
+        ], 'Active organization retrieved successfully');
     }
 }

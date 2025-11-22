@@ -68,7 +68,12 @@ class PlatformIntegrationController extends Controller
             // Verify state to prevent CSRF
             $sessionState = $request->session()->get("oauth_state_{$platform}");
             if ($state !== $sessionState) {
-                throw new \Exception('Invalid OAuth state');
+                return $this->error(
+                    'Invalid OAuth state. Possible CSRF attack detected.',
+                    403,
+                    null,
+                    'INVALID_OAUTH_STATE'
+                );
             }
 
             $connector = ConnectorFactory::make($platform);
@@ -81,17 +86,20 @@ class PlatformIntegrationController extends Controller
             // Clear state from session
             $request->session()->forget("oauth_state_{$platform}");
 
-            return response()->json([
-                'success' => true,
+            // Issue #72: Test connection immediately after OAuth (Issue #72)
+            try {
+                $connector->testConnection($integration);
+            } catch (\Exception $testException) {
+                Log::warning("OAuth succeeded but connection test failed for {$platform}: {$testException->getMessage()}");
+                // Don't fail - OAuth succeeded, connection might be slow/delayed
+            }
+
+            return $this->success([
                 'integration' => $integration,
-                'message' => "Successfully connected to {$platform}",
-            ]);
+            ], "Successfully connected to {$platform}");
         } catch (\Exception $e) {
             Log::error("OAuth callback failed for {$platform}: {$e->getMessage()}");
-            return response()->json([
-                'success' => false,
-                'error' => $e->getMessage(),
-            ], 500);
+            return $this->serverError("OAuth authentication failed. Please try again.");
         }
     }
 
@@ -111,22 +119,40 @@ class PlatformIntegrationController extends Controller
             // Platform-specific validation
             $credentials = $this->validatePlatformCredentials($platform, $request);
 
+            // Issue #72: Test credentials before saving
+            try {
+                $testResult = $connector->testCredentials($credentials);
+                if (!$testResult['valid']) {
+                    return $this->error(
+                        'Invalid credentials. ' . ($testResult['message'] ?? 'Unable to connect to platform.'),
+                        400,
+                        ['credentials' => $testResult['errors'] ?? []],
+                        'INVALID_CREDENTIALS'
+                    );
+                }
+            } catch (\Exception $testException) {
+                Log::warning("Credential validation failed for {$platform}: {$testException->getMessage()}");
+                return $this->error(
+                    "Unable to verify credentials. Please check your credentials and try again. Error: {$testException->getMessage()}",
+                    400,
+                    null,
+                    'CREDENTIAL_VALIDATION_FAILED'
+                );
+            }
+
+            // Credentials are valid, proceed with connection
             $integration = $connector->connect('', array_merge($credentials, [
                 'org_id' => $request->user()->org_id ?? $request->input('org_id'),
                 'created_by' => $request->user()->user_id ?? null,
             ]));
 
-            return response()->json([
-                'success' => true,
+            return $this->success([
                 'integration' => $integration,
-                'message' => "Successfully connected to {$platform}",
-            ]);
+                'credentials_verified' => true,
+            ], "Successfully connected to {$platform}. Credentials verified.");
         } catch (\Exception $e) {
             Log::error("Failed to connect {$platform}: {$e->getMessage()}");
-            return response()->json([
-                'success' => false,
-                'error' => $e->getMessage(),
-            ], 500);
+            return $this->serverError("Failed to connect to {$platform}. Please try again.");
         }
     }
 
