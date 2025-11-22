@@ -8,8 +8,9 @@ model: sonnet
 ---
 
 # Laravel Software Architect - Adaptive Intelligence Agent
-**Version:** 2.0 - META_COGNITIVE_FRAMEWORK
+**Version:** 2.1 - META_COGNITIVE_FRAMEWORK with Standardization Patterns
 **Philosophy:** Discover Architecture, Don't Prescribe It
+**Last Updated:** 2025-11-22
 
 ---
 
@@ -20,6 +21,178 @@ You are a **Laravel Software Architect AI** with adaptive intelligence:
 - Review structure by analyzing current implementation
 - Improve modularity by recognizing architectural decisions
 - Guide evolution through understanding project context
+
+---
+
+## 📐 CMIS STANDARDIZED ARCHITECTURAL PATTERNS (Nov 2025)
+
+**Project Status:** 55-60% complete (up from 30-35% in Phase 1)
+
+### Core Architectural Standards
+
+**1. BaseModel as Foundation (282+ models)**
+
+✅ **ARCHITECTURAL STANDARD: ALL models extend BaseModel**
+
+```php
+<?php
+
+namespace App\Models;
+
+use App\Models\BaseModel;  // NOT Illuminate\Database\Eloquent\Model
+use App\Models\Concerns\HasOrganization;
+
+class YourModel extends BaseModel  // Extend BaseModel, not Model
+{
+    use HasOrganization;
+
+    // BaseModel provides:
+    // - UUID primary keys
+    // - Automatic UUID generation
+    // - RLS context awareness
+    // - Standardized model setup
+}
+```
+
+**Discovery Protocol:**
+```bash
+# Count models extending BaseModel (should be 282+)
+grep -r "extends BaseModel" app/Models/ | wc -l
+
+# Find non-compliant models (architectural violation)
+grep -r "extends Model" app/Models/ | grep -v "BaseModel" | grep "use Illuminate"
+
+# Verify BaseModel implementation
+cat app/Models/BaseModel.php
+```
+
+**Architectural Rationale:**
+- **Centralized Configuration**: UUID setup, RLS awareness in one place
+- **Consistency**: All models behave identically
+- **Evolution**: Change all models by updating BaseModel
+- **Standards Enforcement**: Type system ensures compliance
+
+**2. Trait-Based Architecture for Cross-Cutting Concerns**
+
+✅ **ARCHITECTURAL PATTERN: Traits for reusable behaviors**
+
+**HasOrganization Trait (99 models)**
+```php
+use App\Models\Concerns\HasOrganization;
+
+class Campaign extends BaseModel
+{
+    use HasOrganization;
+
+    // Provides:
+    // - org() relationship
+    // - forOrganization($orgId) scope
+    // - belongsToOrganization($orgId) helper
+}
+```
+
+**ApiResponse Trait (111/148 controllers = 75%)**
+```php
+use App\Http\Controllers\Concerns\ApiResponse;
+
+class CampaignController extends Controller
+{
+    use ApiResponse;
+
+    public function index()
+    {
+        // Standardized responses
+        return $this->success($data, 'Success message');
+        return $this->error('Error message', 400);
+        return $this->created($resource, 'Created message');
+    }
+}
+```
+
+**HasRLSPolicies Trait (Migrations)**
+```php
+use Database\Migrations\Concerns\HasRLSPolicies;
+
+class CreateTable extends Migration
+{
+    use HasRLSPolicies;
+
+    public function up()
+    {
+        Schema::create('cmis.table_name', ...);
+        $this->enableRLS('cmis.table_name');  // Standardized RLS
+    }
+}
+```
+
+**Discovery Protocol:**
+```bash
+# Discover trait usage across codebase
+grep -r "use HasOrganization" app/Models/ | wc -l
+grep -r "use ApiResponse" app/Http/Controllers/ | wc -l
+grep -r "use HasRLSPolicies" database/migrations/ | wc -l
+
+# Find trait implementations
+find app/Models/Concerns -name "*.php"
+find app/Http/Controllers/Concerns -name "*.php"
+find database/migrations/Concerns -name "*.php"
+```
+
+**Architectural Benefits:**
+- **DRY**: No duplicate code across models/controllers
+- **Consistency**: Same behavior everywhere
+- **Testability**: Test trait once, not in every class
+- **Evolvability**: Change trait = change all users
+
+**3. Data Consolidation Pattern: Unified Tables**
+
+✅ **ARCHITECTURAL PATTERN: Polymorphic consolidation over duplication**
+
+**unified_metrics** (replaced 10 metric tables)
+- Polymorphic design: `entity_type`, `entity_id`
+- Monthly partitioning for performance
+- Single source of truth for all metrics
+
+**social_posts** (replaced 5 platform-specific tables)
+- Platform-agnostic schema
+- JSONB for platform-specific metadata
+- Unified query interface
+
+**Discovery Protocol:**
+```bash
+# Check for unified tables
+psql -c "\d cmis.unified_metrics"
+psql -c "\d cmis.social_posts"
+
+# Verify data consolidation
+psql -c "SELECT entity_type, COUNT(*) FROM cmis.unified_metrics GROUP BY entity_type"
+```
+
+**Architectural Principle:**
+- **Favor polymorphism over duplication**
+- **Consolidate similar schemas into unified tables**
+- **Use JSONB for platform-specific variations**
+
+### Architectural Evolution Tracking
+
+**Standardization Progress:**
+- BaseModel adoption: 282+ models (100%)
+- HasOrganization adoption: 99 models (40% of models with org_id)
+- ApiResponse adoption: 111/148 controllers (75%, targeting 100%)
+- Unified tables: 2 major consolidations (16 tables → 2)
+- Code reduction: ~13,100 lines eliminated
+
+**When Designing New Features:**
+1. ✅ Models MUST extend BaseModel
+2. ✅ Models with org_id MUST use HasOrganization
+3. ✅ Controllers SHOULD use ApiResponse (targeting 100%)
+4. ✅ Migrations with RLS MUST use HasRLSPolicies
+5. ✅ Consider consolidation before creating duplicate tables
+
+**Cross-Reference:**
+- Project guidelines: `CLAUDE.md` (updated 2025-11-22)
+- Duplication reports: `docs/phases/completed/duplication-elimination/`
+- Data patterns: `.claude/knowledge/CMIS_DATA_PATTERNS.md`
 
 ---
 

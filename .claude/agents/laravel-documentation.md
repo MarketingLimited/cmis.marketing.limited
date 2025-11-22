@@ -739,6 +739,322 @@ Created:
 
 ---
 
+## 🆕 Trait Documentation Guidelines (Nov 2025)
+
+Standardized traits are core to the CMIS codebase. When documenting models and controllers, always reference their traits.
+
+### Model Documentation Template
+
+When documenting Eloquent models, follow this pattern:
+
+```php
+/**
+ * Campaign Model
+ *
+ * Represents a marketing campaign within an organization.
+ * Utilizes standardized CMIS patterns for consistency and multi-tenancy.
+ *
+ * @extends BaseModel (provides UUID primary keys and RLS awareness)
+ * @uses HasOrganization (provides org() relationship and scopes)
+ *
+ * @property string $id UUID primary key
+ * @property string $org_id Foreign key to organizations table
+ * @property string $name Campaign name
+ * @property string $description Campaign description
+ * @property string $status (draft|active|paused|completed)
+ * @property decimal $budget Campaign budget
+ * @property timestamp $created_at
+ * @property timestamp $updated_at
+ * @property-read Organization $org The associated organization
+ *
+ * @method static Builder forOrganization(string $orgId) Scoped query for organization
+ * @method bool belongsToOrganization(string $orgId) Check ownership
+ * @method string getOrganizationId() Get organization ID
+ *
+ * @example
+ * // Create campaign
+ * $campaign = Campaign::create([
+ *     'org_id' => auth()->user()->org_id,
+ *     'name' => 'Summer Campaign 2025',
+ *     'status' => 'draft',
+ *     'budget' => 5000
+ * ]);
+ *
+ * // Access organization
+ * $org = $campaign->org; // Uses HasOrganization trait
+ *
+ * // Org-scoped queries (RLS enforced)
+ * $campaigns = Campaign::forOrganization($orgId)->where('status', 'active')->get();
+ */
+class Campaign extends BaseModel {
+    use HasOrganization;
+
+    protected $fillable = ['name', 'description', 'status', 'budget'];
+    protected $casts = ['budget' => 'decimal:2'];
+}
+```
+
+### Controller Documentation Template
+
+When documenting API controllers, reference the ApiResponse trait:
+
+```php
+/**
+ * Campaign API Controller
+ *
+ * Manages CRUD operations for marketing campaigns.
+ * All responses use standardized ApiResponse format for consistency.
+ * Multi-tenancy is enforced via RLS policies.
+ *
+ * @uses ApiResponse (standardized JSON responses)
+ *
+ * Response Format:
+ * - Success: { success: true, message: string, data: object }
+ * - Error: { success: false, message: string, errors?: object }
+ *
+ * @see app/Http/Controllers/Concerns/ApiResponse.php
+ * @see docs/api/campaigns-endpoints.md for detailed endpoint documentation
+ */
+class CampaignController extends Controller {
+    use ApiResponse;
+
+    /**
+     * List all campaigns for current organization.
+     *
+     * @return JsonResponse { success: true, message: string, data: Campaign[] }
+     *
+     * @example
+     * GET /api/campaigns
+     * Response: { success: true, message: "Campaigns retrieved", data: [...] }
+     */
+    public function index() {
+        $campaigns = Campaign::forOrganization(auth()->user()->org_id)->get();
+        return $this->success($campaigns, 'Campaigns retrieved successfully');
+    }
+
+    /**
+     * Create new campaign.
+     *
+     * @param StoreCampaignRequest $request Validated request data
+     * @return JsonResponse { success: true, message: string, data: Campaign }
+     *
+     * @throws ValidationException If request fails validation
+     */
+    public function store(StoreCampaignRequest $request) {
+        $campaign = Campaign::create($request->validated());
+        return $this->created($campaign, 'Campaign created successfully');
+    }
+
+    /**
+     * Update campaign.
+     *
+     * @param Campaign $campaign Campaign to update
+     * @param UpdateCampaignRequest $request Validated request data
+     * @return JsonResponse { success: true, message: string, data: Campaign }
+     *
+     * @throws AuthorizationException If user doesn't own campaign
+     */
+    public function update(Campaign $campaign, UpdateCampaignRequest $request) {
+        $this->authorize('update', $campaign); // Verify ownership (RLS also enforces)
+
+        $campaign->update($request->validated());
+        return $this->success($campaign, 'Campaign updated successfully');
+    }
+
+    /**
+     * Delete campaign.
+     *
+     * @param Campaign $campaign Campaign to delete
+     * @return JsonResponse { success: true, message: string }
+     *
+     * @throws AuthorizationException If user doesn't own campaign
+     */
+    public function destroy(Campaign $campaign) {
+        $this->authorize('delete', $campaign);
+        $campaign->delete();
+        return $this->deleted('Campaign deleted successfully');
+    }
+}
+```
+
+### Service Documentation Template
+
+When documenting services, explain how they use injected repositories and traits:
+
+```php
+/**
+ * Campaign Service
+ *
+ * Business logic for campaign management.
+ * Uses Repository pattern for data access and respects multi-tenancy.
+ *
+ * @see CampaignRepository for data access
+ * @see Campaign (uses BaseModel and HasOrganization)
+ */
+class CampaignService {
+    public function __construct(
+        protected CampaignRepository $campaigns,
+        protected NotificationService $notifications
+    ) {}
+
+    /**
+     * Create campaign with validation.
+     *
+     * @param string $orgId Organization ID (enforced by HasOrganization)
+     * @param array $data Campaign data
+     * @return Campaign Created campaign
+     *
+     * @throws ValidationException
+     */
+    public function create(string $orgId, array $data): Campaign {
+        // Repository respects RLS via HasOrganization trait
+        $campaign = $this->campaigns->create([
+            'org_id' => $orgId,
+            ...$data
+        ]);
+
+        // Trigger notifications
+        $this->notifications->send('campaign.created', $campaign);
+
+        return $campaign;
+    }
+}
+```
+
+### Trait Reference Documentation
+
+Create document at `docs/reference/models/eloquent-traits.md`:
+
+```markdown
+# CMIS Eloquent Traits
+
+## BaseModel
+
+**Location:** `app/Models/BaseModel.php`
+
+**Purpose:** Foundation class for all models. Provides UUID primary keys and RLS awareness.
+
+**Automatically Provided:**
+- UUID generation in `creating` event
+- String primary key configuration
+- Non-incrementing keys
+- RLS context awareness
+
+**Usage:**
+```php
+class YourModel extends BaseModel {
+    // All models should extend this, not Model directly
+}
+```
+
+---
+
+## HasOrganization Trait
+
+**Location:** `app/Models/Concerns/HasOrganization.php`
+
+**Purpose:** Standardizes organization relationships across 99+ models.
+
+**Provides:**
+- `org()` - BelongsTo relationship to Organization
+- `forOrganization($orgId)` - Query scope for organization filtering
+- `belongsToOrganization($orgId)` - Ownership verification
+- `getOrganizationId()` - Get organization ID
+
+**When to Use:**
+- Every model with multi-tenant data (has `org_id` column)
+- All tables in `cmis_*` schemas except system tables
+
+**Usage:**
+```php
+use HasOrganization;
+
+class Campaign extends BaseModel {
+    use HasOrganization;
+}
+```
+
+---
+
+## ApiResponse Trait
+
+**Location:** `app/Http/Controllers/Concerns/ApiResponse.php`
+
+**Purpose:** Standardizes JSON API responses across all controllers.
+
+**Provides Response Methods:**
+- `success($data, $message, $code = 200)`
+- `created($data, $message)`
+- `deleted($message)`
+- `error($message, $code, $errors)`
+- `notFound($message)`
+- `unauthorized($message)`
+- `forbidden($message)`
+- `validationError($errors, $message)`
+- `serverError($message)`
+- `paginated($paginator, $message)`
+
+**When to Use:**
+- All API controllers (target: 100%)
+- Any controller returning JSON
+
+**Usage:**
+```php
+use ApiResponse;
+
+class CampaignController extends Controller {
+    use ApiResponse;
+
+    public function index() {
+        return $this->success($data, 'Retrieved successfully');
+    }
+}
+```
+
+---
+
+## HasRLSPolicies Trait
+
+**Location:** `database/Migrations/Concerns/HasRLSPolicies.php`
+
+**Purpose:** Standardizes Row-Level Security policy creation in migrations.
+
+**Provides Methods:**
+- `enableRLS($tableName)` - Standard org-based RLS
+- `enableCustomRLS($tableName, $expression)` - Custom expression
+- `enablePublicRLS($tableName)` - For public/shared data
+- `disableRLS($tableName)` - Remove policies
+
+**When to Use:**
+- All migrations creating tenant-aware tables
+- Every table in `cmis_*` schemas
+
+**Usage:**
+```php
+use HasRLSPolicies;
+
+class CreateCampaignTable extends Migration {
+    use HasRLSPolicies;
+
+    public function up() {
+        Schema::create('cmis.campaigns', function (Blueprint $table) {
+            // ...
+        });
+
+        $this->enableRLS('cmis.campaigns');
+    }
+}
+```
+```
+
+---
+
+**Version:** 2.0 - META_COGNITIVE_FRAMEWORK
+**Last Updated:** 2025-11-22
+**Approach:** Discover → Analyze → Prioritize → Generate → Maintain
+
+---
+
 ## 📝 DOCUMENTATION OUTPUT GUIDELINES
 
 ### ⚠️ CRITICAL: Organized Documentation Only
