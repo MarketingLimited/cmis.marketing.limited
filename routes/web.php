@@ -255,9 +255,11 @@ Route::middleware(['auth'])->group(function () {
 
     // ==================== Subscription ====================
     Route::prefix('subscription')->name('subscription.')->group(function () {
-        Route::get('/plans', function () { return view('subscription.plans'); })->name('plans');
-        Route::get('/upgrade', function () { return view('subscription.upgrade'); })->name('upgrade');
-        Route::post('/upgrade', function () { return redirect()->back()->with('info', 'Subscription upgrades coming soon'); })->name('upgrade.process');
+        Route::get('/plans', [App\Http\Controllers\SubscriptionController::class, 'plans'])->name('plans');
+        Route::get('/status', [App\Http\Controllers\SubscriptionController::class, 'status'])->name('status');
+        Route::get('/upgrade', [App\Http\Controllers\SubscriptionController::class, 'upgrade'])->name('upgrade');
+        Route::post('/upgrade', [App\Http\Controllers\SubscriptionController::class, 'processUpgrade'])->name('upgrade.process');
+        Route::post('/cancel', [App\Http\Controllers\SubscriptionController::class, 'cancel'])->name('cancel');
     });
 
     // ==================== Profile ====================

@@ -7,8 +7,10 @@ use App\Models\Creative\CreativeOutput;
 use App\Models\Knowledge\DirectionMapping;
 use App\Models\Knowledge\IntentMapping;
 use App\Models\Knowledge\PurposeMapping;
+use App\Exceptions\AIServiceUnavailableException;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Cache;
 
 class AIService
 {
@@ -378,12 +380,42 @@ class AIService
     }
 
     /**
-     * Call AI API
+     * Check if AI service is available
+     */
+    protected function isAIAvailable(): bool
+    {
+        // Check if AI is marked as down in cache (circuit breaker pattern)
+        return !Cache::get('ai_service_unavailable', false);
+    }
+
+    /**
+     * Mark AI service as unavailable (circuit breaker)
+     */
+    protected function markAIUnavailable(int $ttl = 300): void
+    {
+        Cache::put('ai_service_unavailable', true, $ttl);
+        Log::warning('AI service marked as unavailable', ['ttl' => $ttl]);
+    }
+
+    /**
+     * Call AI API with graceful degradation
      */
     protected function callAIAPI(string $prompt, array $options = []): ?array
     {
-        // This is a placeholder - implement actual API calls
-        // For OpenAI, Anthropic, etc.
+        // Check circuit breaker
+        if (!$this->isAIAvailable()) {
+            Log::info('AI service currently unavailable (circuit breaker open)');
+
+            if ($options['throw_on_unavailable'] ?? false) {
+                throw new AIServiceUnavailableException(
+                    'AI service is temporarily unavailable. Please try again in a few minutes.',
+                    'OpenAI',
+                    'You can create content manually or wait for the AI service to recover.'
+                );
+            }
+
+            return null;
+        }
 
         try {
             // Example for OpenAI
@@ -408,9 +440,62 @@ class AIService
                 ];
             }
 
+            // Handle specific error codes
+            $statusCode = $response->status();
+
+            if ($statusCode === 429) {
+                Log::warning('AI API rate limit exceeded');
+                throw new AIServiceUnavailableException(
+                    'AI service rate limit exceeded. Please try again in a moment.',
+                    'OpenAI',
+                    'Wait a few seconds before retrying your request.'
+                );
+            }
+
+            if ($statusCode >= 500) {
+                Log::error('AI API server error', ['status' => $statusCode]);
+                $this->markAIUnavailable(300); // Circuit breaker: 5 minutes
+
+                throw new AIServiceUnavailableException(
+                    'AI service is experiencing technical difficulties.',
+                    'OpenAI',
+                    'The AI service provider is temporarily down. You can create content manually or try again later.'
+                );
+            }
+
+            Log::warning('AI API returned non-successful status', [
+                'status' => $statusCode,
+                'body' => $response->body()
+            ]);
+
             return null;
+
+        } catch (AIServiceUnavailableException $e) {
+            // Re-throw AIServiceUnavailableException
+            throw $e;
+        } catch (\Illuminate\Http\Client\ConnectionException $e) {
+            Log::error('AI API connection failed', ['error' => $e->getMessage()]);
+            $this->markAIUnavailable(300); // Circuit breaker: 5 minutes
+
+            throw new AIServiceUnavailableException(
+                'Unable to connect to AI service.',
+                'OpenAI',
+                'The AI service is unreachable. Please check your internet connection or try again later.'
+            );
         } catch (\Exception $e) {
-            Log::error('AI API call failed', ['error' => $e->getMessage()]);
+            Log::error('AI API call failed', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            if ($options['throw_on_unavailable'] ?? false) {
+                throw new AIServiceUnavailableException(
+                    'AI request failed: ' . $e->getMessage(),
+                    'OpenAI',
+                    'An unexpected error occurred. Please try again or create content manually.'
+                );
+            }
+
             return null;
         }
     }

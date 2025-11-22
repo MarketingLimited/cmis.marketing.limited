@@ -39,6 +39,29 @@ class SetOrganizationContext
     {
         $user = $request->user();
 
+        // RACE CONDITION DETECTION: Check if context was already set by another middleware
+        try {
+            $existingContext = DB::selectOne(
+                "SELECT current_setting('app.current_org_id', true) as org_id"
+            );
+
+            if ($existingContext && $existingContext->org_id) {
+                Log::warning('SetOrganizationContext: Context already set by another middleware - RACE CONDITION DETECTED', [
+                    'existing_org_id' => $existingContext->org_id,
+                    'route' => $request->path(),
+                    'middleware_stack' => get_class($this)
+                ]);
+
+                // Return error to prevent data leakage
+                return response()->json([
+                    'error' => 'Multiple context middleware detected',
+                    'message' => 'A race condition was detected. Please use only org.context middleware.'
+                ], 500);
+            }
+        } catch (\Exception $e) {
+            // Context not set yet - this is expected
+        }
+
         // Skip context setup if no authenticated user
         if (!$user) {
             Log::debug('SetOrganizationContext: No authenticated user, skipping context setup');

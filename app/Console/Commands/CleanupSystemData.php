@@ -22,6 +22,7 @@ class CleanupSystemData extends Command
                             {--old-data : Archive old campaign data}
                             {--days=90 : Days to keep (older data will be archived)}
                             {--dry-run : Show what would be cleaned without actually doing it}
+                            {--force : Required for production environment}
                             {--all : Run all cleanup tasks}';
 
     /**
@@ -41,12 +42,40 @@ class CleanupSystemData extends Command
         $dryRun = $this->option('dry-run');
         $days = $this->option('days');
         $cutoffDate = Carbon::now()->subDays($days);
+        $all = $this->option('all');
+        $environment = app()->environment();
+
+        // Production safety checks
+        if ($environment === 'production' && !$dryRun) {
+            if (!$this->option('force')) {
+                $this->error('❌ Cannot run cleanup in production without --force flag');
+                $this->warn('💡 Use --dry-run to preview what would be deleted, or add --force to proceed');
+                return Command::FAILURE;
+            }
+
+            // Show preview of what will be affected
+            $this->warn('⚠️  PRODUCTION ENVIRONMENT DETECTED');
+            $this->warn('This operation will:');
+            $this->showPreview($cutoffDate, $all);
+            $this->newLine();
+
+            // Require explicit confirmation phrase
+            $confirmation = $this->ask('Type "DELETE PRODUCTION DATA" to confirm (or anything else to cancel)');
+
+            if ($confirmation !== 'DELETE PRODUCTION DATA') {
+                $this->info('❌ Cleanup cancelled - confirmation phrase did not match');
+                return Command::FAILURE;
+            }
+
+            $this->warn('⚠️  Proceeding with production data cleanup...');
+            $this->newLine();
+        }
 
         if ($dryRun) {
             $this->warn('🔍 DRY RUN MODE - No changes will be made');
+            $this->showPreview($cutoffDate, $all);
+            $this->newLine();
         }
-
-        $all = $this->option('all');
 
         try {
             $totalCleaned = 0;
@@ -225,6 +254,52 @@ class CleanupSystemData extends Command
             $this->line("  • Database optimized");
         } catch (\Exception $e) {
             $this->error("  ❌ Failed to optimize database: " . $e->getMessage());
+        }
+    }
+
+    /**
+     * Show preview of what will be affected
+     */
+    private function showPreview($cutoffDate, $all): void
+    {
+        try {
+            if ($all || $this->option('logs')) {
+                $aiLogsCount = DB::table('cmis_ai.ai_actions')
+                    ->where('created_at', '<', $cutoffDate)
+                    ->where('status', 'success')
+                    ->count();
+
+                $auditLogsCount = DB::table('cmis_operations.ops_audit')
+                    ->where('created_at', '<', $cutoffDate)
+                    ->count();
+
+                $this->line("  - Delete {$aiLogsCount} AI action logs older than {$cutoffDate->format('Y-m-d')}");
+                $this->line("  - Delete {$auditLogsCount} audit logs older than {$cutoffDate->format('Y-m-d')}");
+            }
+
+            if ($all || $this->option('temp')) {
+                $tempFilesCount = count(Storage::disk('local')->files('temp'));
+                $this->line("  - Delete {$tempFilesCount} temporary files");
+            }
+
+            if ($all || $this->option('cache')) {
+                $this->line("  - Clear all application caches (view, route, config)");
+            }
+
+            if ($all || $this->option('old-data')) {
+                $campaignsCount = DB::table('cmis.campaigns')
+                    ->where('end_date', '<', $cutoffDate)
+                    ->where('status', 'completed')
+                    ->count();
+
+                $this->line("  - Archive {$campaignsCount} completed campaigns older than {$cutoffDate->format('Y-m-d')}");
+            }
+
+            if (!$this->option('dry-run') && ($all || $this->option('logs') || $this->option('old-data'))) {
+                $this->line("  - Run VACUUM ANALYZE to optimize database");
+            }
+        } catch (\Exception $e) {
+            $this->error("  ❌ Failed to generate preview: " . $e->getMessage());
         }
     }
 }

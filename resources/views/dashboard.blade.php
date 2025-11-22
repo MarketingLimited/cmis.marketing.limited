@@ -194,6 +194,10 @@ function dashboardData(initialStats = null, initialCampaignStatus = null, initia
         recentActivity: [],
         statusChart: null,
         orgChart: null,
+        autoRefreshEnabled: localStorage.getItem('dashboard_auto_refresh') === 'true',
+        autoRefreshInterval: null,
+        lastUpdated: null,
+        isLoading: false,
 
         async init() {
             // If we have initial data, render charts immediately
@@ -204,13 +208,35 @@ function dashboardData(initialStats = null, initialCampaignStatus = null, initia
             // Fetch fresh data from API
             await this.fetchDashboardData();
 
-            // Auto-refresh every 30 seconds
-            setInterval(() => {
-                this.fetchDashboardData();
-            }, 30000);
+            // Auto-refresh only if enabled (opt-in)
+            this.setupAutoRefresh();
+        },
+
+        setupAutoRefresh() {
+            if (this.autoRefreshInterval) {
+                clearInterval(this.autoRefreshInterval);
+            }
+
+            if (this.autoRefreshEnabled) {
+                this.autoRefreshInterval = setInterval(() => {
+                    this.fetchDashboardData();
+                }, 30000); // 30 seconds
+            }
+        },
+
+        toggleAutoRefresh() {
+            this.autoRefreshEnabled = !this.autoRefreshEnabled;
+            localStorage.setItem('dashboard_auto_refresh', this.autoRefreshEnabled);
+            this.setupAutoRefresh();
+        },
+
+        manualRefresh() {
+            this.fetchDashboardData();
         },
 
         async fetchDashboardData() {
+            this.isLoading = true;
+
             try {
                 // Fetch real data from Laravel backend
                 const response = await fetch('/dashboard/data');
@@ -225,6 +251,9 @@ function dashboardData(initialStats = null, initialCampaignStatus = null, initia
                 this.stats = data.stats;
                 this.campaignStatus = data.campaignStatus;
                 this.campaignsByOrg = data.campaignsByOrg;
+
+                // Update last updated timestamp
+                this.lastUpdated = new Date();
 
                 // Generate weekly metrics (can be enhanced with real API data)
                 this.weeklyMetrics = [
@@ -261,7 +290,21 @@ function dashboardData(initialStats = null, initialCampaignStatus = null, initia
             } catch (error) {
                 console.error('Error fetching dashboard data:', error);
                 window.notify('فشل تحميل بيانات لوحة التحكم', 'error');
+            } finally {
+                this.isLoading = false;
             }
+        },
+
+        getRelativeTime() {
+            if (!this.lastUpdated) return '';
+
+            const seconds = Math.floor((new Date() - this.lastUpdated) / 1000);
+
+            if (seconds < 60) return `منذ ${seconds} ثانية`;
+            const minutes = Math.floor(seconds / 60);
+            if (minutes < 60) return `منذ ${minutes} دقيقة`;
+            const hours = Math.floor(minutes / 60);
+            return `منذ ${hours} ساعة`;
         },
 
         detectActivityType(message) {
