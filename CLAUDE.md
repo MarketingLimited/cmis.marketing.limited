@@ -1,6 +1,6 @@
 # CMIS Project Guidelines for Claude Code
 
-**Last Updated:** 2025-11-22
+**Last Updated:** 2025-11-22 (Documentation Restructure)
 **Project:** CMIS - Cognitive Marketing Information System
 **Framework Version:** 3.2 - Post Duplication Elimination (13,100 lines saved)
 
@@ -369,10 +369,17 @@ SELECT * FROM cmis.campaigns; -- Should only show this org's data
 
 ## 📚 Essential Documentation
 
+### Core Guidelines
 - **Project Knowledge:** `.claude/CMIS_PROJECT_KNOWLEDGE.md`
 - **Multi-Tenancy:** `.claude/knowledge/MULTI_TENANCY_PATTERNS.md`
 - **Data Patterns:** `.claude/knowledge/CMIS_DATA_PATTERNS.md`
 - **Agent Guide:** `.claude/agents/README.md`
+
+### Documentation Hubs
+- **Main Documentation:** `docs/README.md` - Complete documentation index
+- **Phase Documentation:** `docs/phases/README.md` - All 26 implementation phases
+- **Testing Documentation:** `docs/testing/README.md` - Complete testing guides
+- **Active Analysis:** `docs/active/analysis/` - Current project analysis reports
 
 ---
 
@@ -473,8 +480,9 @@ A comprehensive 8-phase initiative systematically eliminated duplicate code:
 - ✅ 0 breaking changes
 
 **Documentation:**
-- See `docs/active/guides/COMPREHENSIVE-DUPLICATION-ELIMINATION-FINAL-REPORT.md`
-- Individual phase summaries in `docs/active/guides/PHASE-*-SUMMARY.md`
+- See `docs/phases/completed/duplication-elimination/COMPREHENSIVE-DUPLICATION-ELIMINATION-FINAL-REPORT.md`
+- Phase summaries in `docs/phases/completed/phase-*/`
+- All phases organized in `docs/phases/` (completed/in-progress/planned)
 
 ---
 
