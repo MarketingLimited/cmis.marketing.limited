@@ -47,6 +47,7 @@ class PublishingQueue extends BaseModel
     public function scheduledPost(): BelongsTo
     {
         return $this->belongsTo(ScheduledPost::class, 'scheduled_post_id', 'post_id');
+    }
 
     // ===== Queue Management =====
 
@@ -56,6 +57,7 @@ class PublishingQueue extends BaseModel
             'status' => 'processing',
         ]);
         $this->increment('attempts');
+    }
 
     public function markAsCompleted(): void
     {
@@ -63,6 +65,7 @@ class PublishingQueue extends BaseModel
             'status' => 'completed',
             'processed_at' => now(),
         ]);
+    }
 
     public function markAsFailed(string $errorMessage): void
     {
@@ -71,27 +74,33 @@ class PublishingQueue extends BaseModel
             'error_message' => $errorMessage,
             'processed_at' => now(),
         ]);
+    }
 
     public function canRetry(): bool
     {
         return $this->attempts < $this->max_attempts;
+    }
 
     public function isDue(): bool
     {
         return now()->isAfter($this->scheduled_for);
+    }
 
     // ===== Scopes =====
 
     public function scopePending($query)
     {
         return $query->where('status', 'pending');
+    }
 
     public function scopeDue($query)
     {
         return $query->where('status', 'pending')
                      ->where('scheduled_for', '<=', now());
+    }
 
     public function scopeForPlatform($query, string $platform)
     {
         return $query->where('platform', $platform);
+    }
 }

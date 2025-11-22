@@ -57,12 +57,14 @@ class PlatformPost extends BaseModel
     public function scheduledPost(): BelongsTo
     {
         return $this->belongsTo(ScheduledPost::class, 'scheduled_post_id', 'post_id');
+    }
 
     // ===== Status Management =====
 
     public function markAsPublishing(): void
     {
         $this->update(['status' => 'publishing']);
+    }
 
     public function markAsPublished(string $externalId, string $url): void
     {
@@ -72,6 +74,7 @@ class PlatformPost extends BaseModel
             'platform_url' => $url,
             'published_at' => now(),
         ]);
+    }
 
     public function markAsFailed(string $errorMessage): void
     {
@@ -79,6 +82,7 @@ class PlatformPost extends BaseModel
             'status' => 'failed',
             'error_message' => $errorMessage,
         ]);
+    }
 
     // ===== Metrics Management =====
 
@@ -95,18 +99,22 @@ class PlatformPost extends BaseModel
 
         // Recalculate engagement rate
         $this->updateEngagementRate();
+    }
 
     protected function calculateEngagement(array $metrics): int
     {
         return ($metrics['likes'] ?? 0) +
                ($metrics['comments'] ?? 0) +
                ($metrics['shares'] ?? 0);
+    }
 
     public function updateEngagementRate(): void
     {
         if ($this->views > 0) {
             $rate = ($this->engagement / $this->views) * 100;
             $this->update(['engagement_rate' => round($rate, 2)]);
+        }
+    }
 
     // ===== Platform Helpers =====
 
@@ -122,18 +130,22 @@ class PlatformPost extends BaseModel
             'snapchat' => 'Snapchat',
             default => ucfirst($this->platform)
         };
+    }
 
     public function isPublished(): bool
     {
         return $this->status === 'published';
+    }
 
     // ===== Scopes =====
 
     public function scopePublished($query)
     {
         return $query->where('status', 'published');
+    }
 
     public function scopeForPlatform($query, string $platform)
     {
         return $query->where('platform', $platform);
+    }
 }
