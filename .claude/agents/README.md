@@ -3,7 +3,7 @@
 
 **Last Updated:** 2025-11-22
 **Project:** CMIS - Campaign Management & Integration System
-**Version:** 2.2 - Analytics & Automation Agents Added
+**Version:** 2.3 - Enterprise & Content Agents Added
 
 ---
 
@@ -21,7 +21,7 @@ This directory contains **specialized AI agents** custom-built for the CMIS proj
 - 244 Models across 51 business domains
 - 201 test suite with continuous improvements
 
-**Total Agents:** 31 specialized agents
+**Total Agents:** 34 specialized agents
 **Project Knowledge Base:** `.claude/CMIS_PROJECT_KNOWLEDGE.md`
 
 ---
@@ -440,9 +440,138 @@ This directory contains **specialized AI agents** custom-built for the CMIS proj
 
 ---
 
+#### 11. **cmis-content-manager** - Content Management Expert V2.1 📝
+**File:** `cmis-content-manager.md`
+
+**Purpose:** Specialist in content planning, creative asset management, template systems, and approval workflows.
+
+**Use when:**
+- Building content planning features
+- Implementing asset management systems
+- Creating template systems
+- Designing approval workflows
+- Managing content calendars
+- Organizing creative assets
+- Implementing version control for content
+
+**Handles:**
+- Content calendar design and management
+- Asset library organization and search
+- Template inheritance and rendering
+- Multi-step approval workflows
+- Version control and revision tracking
+- Media optimization
+- Content recycling and repurposing
+
+**Key Features:**
+- Editorial calendar patterns
+- Approval state machine design
+- Template variable substitution
+- Asset metadata management
+- Multi-tenant content isolation
+
+**Example:**
+```
+"How do I implement a multi-step approval workflow?"
+→ Provides state machine design (draft → review → approved → published)
+→ Shows role-based approval logic
+→ Includes notification integration
+→ Database schema for approval tracking
+→ Frontend UI patterns for approval interface
+```
+
+**References:** `ContentPlanService`, `ContentLibraryService`, Phase 6 docs
+
+---
+
+#### 12. **cmis-enterprise-features** - Enterprise Features Expert V2.1 🏢
+**File:** `cmis-enterprise-features.md`
+
+**Purpose:** Specialist in performance monitoring, enterprise alerts, advanced reporting, and production operations.
+
+**Use when:**
+- Implementing performance monitoring
+- Setting up enterprise alert systems
+- Building advanced reporting features
+- Creating monitoring dashboards
+- Designing report scheduling
+- Implementing notification systems
+
+**Handles:**
+- Performance metric collection and analysis
+- Alert rule design and evaluation
+- Scheduled report generation
+- Email/Slack notification integration
+- Real-time monitoring dashboards
+- Multi-tenant monitoring
+- Alert lifecycle management
+
+**Key Features:**
+- Alert rule engine implementation
+- Report generation pipelines
+- Dashboard real-time updates
+- Notification routing logic
+- Performance profiling techniques
+
+**Example:**
+```
+"How do I create CPU usage alerts?"
+→ Provides alert rule definition pattern
+→ Shows threshold-based evaluation logic
+→ Includes severity classification
+→ Notification delivery workflow
+→ Alert acknowledgment tracking
+```
+
+**References:** Phase 13 (Real-Time Alerts), Phase 12 (Scheduled Reports)
+
+---
+
+#### 13. **cmis-rbac-specialist** - RBAC & Authorization Expert V2.1 🔐
+**File:** `cmis-rbac-specialist.md`
+
+**Purpose:** Specialist in role-based access control, permissions, Laravel policies, and authorization flows.
+
+**Use when:**
+- Implementing RBAC features
+- Creating Laravel policies
+- Designing permission systems
+- Building authorization flows
+- Implementing permission caching
+- Debugging authorization issues
+
+**Handles:**
+- 2-level permission system (org + user)
+- Laravel policy implementation
+- Permission caching strategies
+- Authorization middleware
+- Role hierarchy design
+- Multi-tenant authorization
+
+**Key Features:**
+- Policy implementation patterns
+- Permission checking optimization
+- Cache invalidation strategies
+- Multi-tenant permission isolation
+- Role assignment workflows
+
+**Example:**
+```
+"How do I implement a policy for campaign updates?"
+→ Provides BasePolicy extension pattern
+→ Shows ownership and org verification
+→ Includes permission checking logic
+→ Caching integration
+→ Testing patterns for policies
+```
+
+**References:** 12 Laravel policies, Permission/Role models, TODO report (95% complete)
+
+---
+
 ### 🎨 Code Quality & Standardization Agents (NEW - 2025-11-22)
 
-#### 11. **cmis-model-architect** - Model Architecture Specialist
+#### 14. **cmis-model-architect** - Model Architecture Specialist
 **File:** `cmis-model-architect.md`
 
 **Purpose:** Ensures all models follow BaseModel pattern and standardized trait composition.
@@ -477,7 +606,7 @@ This directory contains **specialized AI agents** custom-built for the CMIS proj
 
 ---
 
-#### 12. **cmis-data-consolidation** - Data Structure Consolidation Specialist
+#### 15. **cmis-data-consolidation** - Data Structure Consolidation Specialist
 **File:** `cmis-data-consolidation.md`
 
 **Purpose:** Identifies and eliminates duplicate data structures, preventing table proliferation.
@@ -513,7 +642,7 @@ This directory contains **specialized AI agents** custom-built for the CMIS proj
 
 ---
 
-#### 13. **laravel-controller-standardization** - Controller Response Standardization Specialist
+#### 16. **laravel-controller-standardization** - Controller Response Standardization Specialist
 **File:** `laravel-controller-standardization.md`
 
 **Purpose:** Drives ApiResponse trait adoption from 75% to 100%, ensuring API consistency.
@@ -552,7 +681,7 @@ This directory contains **specialized AI agents** custom-built for the CMIS proj
 
 ### 🏗️ Updated Laravel Agents (CMIS-Aware)
 
-#### 14. **laravel-architect** - CMIS-Updated
+#### 17. **laravel-architect** - CMIS-Updated
 **Purpose:** High-level architecture review with CMIS context
 
 **Now includes:**
@@ -562,7 +691,7 @@ This directory contains **specialized AI agents** custom-built for the CMIS proj
 
 ---
 
-#### 15. **laravel-tech-lead** - CMIS-Updated
+#### 18. **laravel-tech-lead** - CMIS-Updated
 **Purpose:** Code review and implementation guidance
 
 **Now includes:**
@@ -572,7 +701,7 @@ This directory contains **specialized AI agents** custom-built for the CMIS proj
 
 ---
 
-#### 16. **laravel-code-quality** - CMIS-Updated
+#### 19. **laravel-code-quality** - CMIS-Updated
 **Purpose:** Code quality and refactoring
 
 **Now includes:**
@@ -582,7 +711,7 @@ This directory contains **specialized AI agents** custom-built for the CMIS proj
 
 ---
 
-#### 17. **laravel-security** - CMIS-Updated
+#### 20. **laravel-security** - CMIS-Updated
 **Purpose:** Security audit and compliance
 
 **Now includes:**
@@ -592,7 +721,7 @@ This directory contains **specialized AI agents** custom-built for the CMIS proj
 
 ---
 
-#### 18. **laravel-performance** - CMIS-Updated
+#### 21. **laravel-performance** - CMIS-Updated
 **Purpose:** Performance optimization
 
 **Now includes:**
@@ -602,7 +731,7 @@ This directory contains **specialized AI agents** custom-built for the CMIS proj
 
 ---
 
-#### 19. **laravel-db-architect** - Already CMIS-Specific
+#### 22. **laravel-db-architect** - Already CMIS-Specific
 **Purpose:** Database architecture and migrations
 
 **Specializes in:**
@@ -612,7 +741,7 @@ This directory contains **specialized AI agents** custom-built for the CMIS proj
 
 ---
 
-#### 20. **laravel-testing** - CMIS-Updated
+#### 23. **laravel-testing** - CMIS-Updated
 **Purpose:** Testing strategy and coverage
 
 **Now includes:**
@@ -622,7 +751,7 @@ This directory contains **specialized AI agents** custom-built for the CMIS proj
 
 ---
 
-#### 21. **laravel-devops** - CMIS-Updated
+#### 24. **laravel-devops** - CMIS-Updated
 **Purpose:** DevOps and CI/CD
 
 **Now includes:**
@@ -632,7 +761,7 @@ This directory contains **specialized AI agents** custom-built for the CMIS proj
 
 ---
 
-#### 22. **laravel-api-design** - CMIS-Updated
+#### 25. **laravel-api-design** - CMIS-Updated
 **Purpose:** API design and consistency
 
 **Now includes:**
@@ -642,7 +771,7 @@ This directory contains **specialized AI agents** custom-built for the CMIS proj
 
 ---
 
-#### 23. **laravel-auditor** - CMIS-Updated
+#### 26. **laravel-auditor** - CMIS-Updated
 **Purpose:** Comprehensive system audit
 
 **Now includes:**
@@ -652,7 +781,7 @@ This directory contains **specialized AI agents** custom-built for the CMIS proj
 
 ---
 
-#### 24. **laravel-documentation** - CMIS-Updated
+#### 27. **laravel-documentation** - CMIS-Updated
 **Purpose:** Documentation and knowledge base
 
 **Now includes:**
