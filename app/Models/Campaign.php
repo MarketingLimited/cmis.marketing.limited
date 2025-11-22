@@ -59,6 +59,7 @@ class Campaign extends BaseModel
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by', 'user_id');
+    }
 
     public function offerings(): BelongsToMany
     {
@@ -67,16 +68,21 @@ class Campaign extends BaseModel
             'cmis.campaign_offerings',
             'campaign_id',
             'offering_id'
+        );
+    }
 
     public function performanceMetrics(): HasMany
     {
         return $this->hasMany(CampaignPerformanceMetric::class, 'campaign_id', 'campaign_id');
+    }
 
     public function adCampaigns(): HasMany
     {
         return $this->hasMany(AdCampaign::class, 'campaign_id', 'campaign_id');
+    }
 
     public function creativeAssets(): HasMany
     {
         return $this->hasMany(\App\Models\CreativeAsset::class, 'campaign_id', 'campaign_id');
+    }
 }
