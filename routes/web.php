@@ -16,6 +16,8 @@ use App\Http\Controllers\Web\ChannelController as WebChannelController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\InvitationController;
+use App\Http\Controllers\UnifiedInboxController;
+use App\Http\Controllers\UnifiedCommentsController;
 use Illuminate\Support\Facades\Route;
 
 /*
