@@ -2,21 +2,20 @@
 
 namespace App\Models\Experiment;
 
+use App\Models\Concerns\HasOrganization;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
-class Experiment extends Model
+class Experiment extends BaseModel
 {
     use HasFactory, SoftDeletes, HasUuids;
+    use HasOrganization;
 
     protected $table = 'cmis.experiments';
     protected $primaryKey = 'exp_id';
-    protected $connection = 'pgsql';
-    public $incrementing = false;
-    protected $keyType = 'string';
-
     protected $fillable = [
         'exp_id',
         'org_id',
@@ -46,13 +45,7 @@ class Experiment extends Model
         'deleted_at' => 'datetime',
     ];
 
-    /**
-     * Get the organization
-     */
-    public function org()
-    {
-        return $this->belongsTo(\App\Models\Core\Org::class, 'org_id', 'org_id');
-    }
+    
 
     /**
      * Get the campaign
@@ -60,7 +53,6 @@ class Experiment extends Model
     public function campaign()
     {
         return $this->belongsTo(\App\Models\Campaign::class, 'campaign_id', 'campaign_id');
-    }
 
     /**
      * Get the experiment variants
@@ -68,7 +60,6 @@ class Experiment extends Model
     public function variants()
     {
         return $this->hasMany(ExperimentVariant::class, 'exp_id', 'exp_id');
-    }
 
     /**
      * Get the creator
@@ -76,7 +67,6 @@ class Experiment extends Model
     public function creator()
     {
         return $this->belongsTo(\App\Models\User::class, 'created_by', 'user_id');
-    }
 
     /**
      * Scope active experiments
@@ -88,8 +78,6 @@ class Experiment extends Model
             ->where(function ($q) {
                 $q->whereNull('end_date')
                     ->orWhere('end_date', '>=', now());
-            });
-    }
 
     /**
      * Scope completed experiments
@@ -97,5 +85,4 @@ class Experiment extends Model
     public function scopeCompleted($query)
     {
         return $query->where('status', 'completed');
-    }
 }

@@ -2,93 +2,17 @@
 
 namespace App\Models\Operations;
 
+use App\Models\Concerns\HasOrganization;
+
 use App\Models\Core\Integration;
 use App\Models\Core\Org;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
-class SyncLog extends Model
+class SyncLog extends BaseModel
 {
-    use HasUuids;
-    /**
-     * The table associated with the model.
-     *
-     * @var string
-     */
-    protected $table = 'cmis.sync_logs';
-
-    /**
-     * The primary key associated with the table.
-     *
-     * @var string
-     */
-    protected $primaryKey = 'id';
-
-    /**
-     * Indicates if the model's ID is auto-incrementing.
-     *
-     * @var bool
-     */
-    public $incrementing = false;
-
-    /**
-     * The data type of the primary key.
-     *
-     * @var string
-     */
-    protected $keyType = 'string';
-
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<string>
-     */
-    protected $fillable = [
-        'id',
-        'org_id',
-        'integration_id',
-        'platform',
-        'synced_at',
-        'status',
-        'items',
-        'level_counts',
-        'provider',
-    ];
-
-    protected $casts = [
-        'level_counts' => 'array',
-    ];
-
-    /**
-     * The attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
-    protected function casts(): array
-    {
-        return [
-            'sync_log_id' => 'string',
-            'org_id' => 'string',
-            'integration_id' => 'string',
-            'started_at' => 'datetime',
-            'completed_at' => 'datetime',
-            'records_fetched' => 'integer',
-            'records_created' => 'integer',
-            'records_updated' => 'integer',
-            'records_failed' => 'integer',
-            'metadata' => 'array',
-            'created_at' => 'datetime',
-        ];
-    }
-
-    /**
-     * Get the organization that owns the sync log.
-     */
-    public function org(): BelongsTo
-    {
-        return $this->belongsTo(Org::class, 'org_id', 'org_id');
-    }
+    
+    
 
     /**
      * Get the integration that this sync log belongs to.
@@ -96,7 +20,6 @@ class SyncLog extends Model
     public function integration(): BelongsTo
     {
         return $this->belongsTo(Integration::class, 'integration_id', 'integration_id');
-    }
 
     /**
      * Start a new sync log.
@@ -126,7 +49,6 @@ class SyncLog extends Model
             'records_failed' => 0,
             'metadata' => $metadata,
         ]);
-    }
 
     /**
      * Mark the sync as completed successfully.
@@ -147,7 +69,6 @@ class SyncLog extends Model
             'records_updated' => $updated,
             'records_failed' => $failed,
         ]);
-    }
 
     /**
      * Mark the sync as failed.
@@ -162,7 +83,6 @@ class SyncLog extends Model
             'completed_at' => now(),
             'error_message' => $errorMessage,
         ]);
-    }
 
     /**
      * Scope successful syncs.
@@ -173,7 +93,6 @@ class SyncLog extends Model
     public function scopeSuccessful($query)
     {
         return $query->where('status', 'completed')->where('records_failed', 0);
-    }
 
     /**
      * Scope failed syncs.
@@ -184,7 +103,6 @@ class SyncLog extends Model
     public function scopeFailed($query)
     {
         return $query->where('status', 'failed');
-    }
 
     /**
      * Scope syncs by type.
@@ -196,7 +114,6 @@ class SyncLog extends Model
     public function scopeByType($query, string $type)
     {
         return $query->where('sync_type', $type);
-    }
 
     /**
      * Get the duration of the sync in seconds.
@@ -207,8 +124,6 @@ class SyncLog extends Model
     {
         if (!$this->started_at || !$this->completed_at) {
             return null;
-        }
 
         return $this->completed_at->diffInSeconds($this->started_at);
-    }
 }

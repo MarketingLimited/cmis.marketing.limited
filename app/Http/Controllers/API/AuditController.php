@@ -7,9 +7,12 @@ use App\Policies\AuditPolicy;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\JsonResponse;
+use App\Http\Controllers\Concerns\ApiResponse;
 
 class AuditController extends Controller
 {
+    use ApiResponse;
+
     /**
      * Get realtime audit status
      *
@@ -20,10 +23,7 @@ class AuditController extends Controller
         // Check permission
         $policy = new AuditPolicy();
         if (!$policy->viewRealtimeStatus($request->user())) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Unauthorized: You do not have permission to view realtime status'
-            ], 403);
+            return $this->error('Unauthorized: You do not have permission to view realtime status', 403);
         }
 
         try {
@@ -69,10 +69,7 @@ class AuditController extends Controller
         // Check permission
         $policy = new AuditPolicy();
         if (!$policy->viewReports($request->user())) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Unauthorized: You do not have permission to view reports'
-            ], 403);
+            return $this->error('Unauthorized: You do not have permission to view reports', 403);
         }
 
         try {
@@ -112,10 +109,7 @@ class AuditController extends Controller
         // Check permission
         $policy = new AuditPolicy();
         if (!$policy->viewReports($request->user())) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Unauthorized: You do not have permission to view reports'
-            ], 403);
+            return $this->error('Unauthorized: You do not have permission to view reports', 403);
         }
 
         try {
@@ -152,10 +146,7 @@ class AuditController extends Controller
         // Check permission
         $policy = new AuditPolicy();
         if (!$policy->viewReports($request->user())) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Unauthorized: You do not have permission to view reports'
-            ], 403);
+            return $this->error('Unauthorized: You do not have permission to view reports', 403);
         }
 
         try {
@@ -187,10 +178,7 @@ class AuditController extends Controller
         // Check permission
         $policy = new AuditPolicy();
         if (!$policy->viewActivityLog($request->user())) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Unauthorized: You do not have permission to view activity log'
-            ], 403);
+            return $this->error('Unauthorized: You do not have permission to view activity log', 403);
         }
 
         try {
@@ -285,10 +273,7 @@ class AuditController extends Controller
         // Check permission
         $policy = new AuditPolicy();
         if (!$policy->logEvent($request->user())) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Unauthorized: You do not have permission to log events'
-            ], 403);
+            return $this->error('Unauthorized: You do not have permission to log events', 403);
         }
 
         try {
@@ -337,10 +322,7 @@ class AuditController extends Controller
         // Check permission
         $policy = new AuditPolicy();
         if (!$policy->viewAlerts($request->user())) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Unauthorized: You do not have permission to view alerts'
-            ], 403);
+            return $this->error('Unauthorized: You do not have permission to view alerts', 403);
         }
 
         try {
@@ -376,10 +358,7 @@ class AuditController extends Controller
         // Check permission
         $policy = new AuditPolicy();
         if (!$policy->exportReports($request->user())) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Unauthorized: You do not have permission to export reports'
-            ], 403);
+            return $this->error('Unauthorized: You do not have permission to export reports', 403);
         }
 
         try {
@@ -429,10 +408,7 @@ class AuditController extends Controller
         // Check permission
         $policy = new AuditPolicy();
         if (!$policy->viewDashboard($request->user())) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Unauthorized: You do not have permission to view audit dashboard'
-            ], 403);
+            return $this->error('Unauthorized: You do not have permission to view audit dashboard', 403);
         }
 
         try {

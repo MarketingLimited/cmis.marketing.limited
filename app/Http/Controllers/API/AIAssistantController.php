@@ -20,7 +20,7 @@ use Illuminate\Support\Facades\Validator;
  */
 class AIAssistantController extends Controller
 {
-    use HandlesAsyncJobs;
+    use HandlesAsyncJobs, ApiResponse;
 
     /**
      * Generate content suggestions based on a prompt

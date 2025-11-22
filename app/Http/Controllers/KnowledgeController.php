@@ -5,9 +5,12 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Http\Controllers\Concerns\ApiResponse;
 
 class KnowledgeController extends Controller
 {
+    use ApiResponse;
+
     public function __construct()
     {
         $this->middleware('auth');

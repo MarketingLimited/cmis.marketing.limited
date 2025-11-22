@@ -2,25 +2,22 @@
 
 namespace App\Models\Core;
 
+use App\Models\Concerns\HasOrganization;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
-class UserOrg extends Model
+class UserOrg extends BaseModel
 {
     use HasFactory, SoftDeletes, HasUuids;
-
-    protected $connection = 'pgsql';
+    use HasOrganization;
 
     protected $table = 'cmis.user_orgs';
 
     protected $primaryKey = 'id';
-
-    public $incrementing = false;
-
-    protected $keyType = 'string';
 
     public $timestamps = true;
 
@@ -48,25 +45,7 @@ class UserOrg extends Model
         'deleted_at' => 'datetime',
     ];
 
-    /**
-     * Get the user that belongs to the organization.
-     *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
-     */
-    public function user(): BelongsTo
-    {
-        return $this->belongsTo(\App\Models\User::class, 'user_id', 'user_id');
-    }
-
-    /**
-     * Get the organization that the user belongs to.
-     *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
-     */
-    public function org(): BelongsTo
-    {
-        return $this->belongsTo(Org::class, 'org_id', 'org_id');
-    }
+    
 
     /**
      * Get the role for this user-org relationship.
@@ -76,7 +55,6 @@ class UserOrg extends Model
     public function role(): BelongsTo
     {
         return $this->belongsTo(Role::class, 'role_id', 'role_id');
-    }
 
     /**
      * Get the user who invited this user to the organization.
@@ -86,5 +64,4 @@ class UserOrg extends Model
     public function inviter(): BelongsTo
     {
         return $this->belongsTo(\App\Models\User::class, 'invited_by', 'user_id');
-    }
 }

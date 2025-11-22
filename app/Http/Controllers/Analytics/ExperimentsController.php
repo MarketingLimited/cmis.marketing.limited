@@ -17,6 +17,8 @@ use Illuminate\Support\Facades\DB;
  */
 class ExperimentsController extends Controller
 {
+    use ApiResponse;
+
     public function __construct(protected ExperimentService $experimentService)
     {
         $this->middleware('auth:sanctum');
@@ -148,10 +150,7 @@ class ExperimentsController extends Controller
         $experiment = Experiment::findOrFail($experimentId);
 
         if ($experiment->status !== 'draft') {
-            return response()->json([
-                'success' => false,
-                'message' => 'Can only update draft experiments'
-            ], 422);
+            return $this->error('Can only update draft experiments', 422);
         }
 
         $experiment->update($validated);
@@ -179,10 +178,7 @@ class ExperimentsController extends Controller
         $experiment = Experiment::findOrFail($experimentId);
 
         if ($experiment->status === 'running') {
-            return response()->json([
-                'success' => false,
-                'message' => 'Cannot delete running experiment. Pause or complete it first.'
-            ], 422);
+            return $this->error('Cannot delete running experiment. Pause or complete it first.', 422);
         }
 
         $experiment->delete();

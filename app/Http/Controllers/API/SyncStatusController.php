@@ -17,6 +17,8 @@ use Carbon\Carbon;
  */
 class SyncStatusController extends Controller
 {
+    use ApiResponse;
+
     /**
      * Get organization sync status
      *

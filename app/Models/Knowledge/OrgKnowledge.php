@@ -2,21 +2,20 @@
 
 namespace App\Models\Knowledge;
 
+use App\Models\Concerns\HasOrganization;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
-class OrgKnowledge extends Model
+class OrgKnowledge extends BaseModel
 {
     use HasFactory, SoftDeletes, HasUuids;
+    use HasOrganization;
 
     protected $table = 'cmis.org_knowledge';
     protected $primaryKey = 'org_knowledge_id';
-    protected $connection = 'pgsql';
-    public $incrementing = false;
-    protected $keyType = 'string';
-
     protected $fillable = [
         'org_id',
         'title',
@@ -50,13 +49,7 @@ class OrgKnowledge extends Model
         'deleted_at' => 'datetime',
     ];
 
-    /**
-     * Get the organization
-     */
-    public function org()
-    {
-        return $this->belongsTo(\App\Models\Core\Org::class, 'org_id', 'org_id');
-    }
+    
 
     /**
      * Get the creator
@@ -64,7 +57,6 @@ class OrgKnowledge extends Model
     public function creator()
     {
         return $this->belongsTo(\App\Models\User::class, 'created_by', 'user_id');
-    }
 
     /**
      * Get the last modifier
@@ -72,7 +64,6 @@ class OrgKnowledge extends Model
     public function lastModifier()
     {
         return $this->belongsTo(\App\Models\User::class, 'last_modified_by', 'user_id');
-    }
 
     /**
      * Get related knowledge index entries
@@ -81,7 +72,6 @@ class OrgKnowledge extends Model
     {
         return KnowledgeIndex::where('source_type', 'org_knowledge')
             ->where('source_id', $this->org_knowledge_id);
-    }
 
     /**
      * Scope by knowledge type
@@ -89,7 +79,6 @@ class OrgKnowledge extends Model
     public function scopeByType($query, string $type)
     {
         return $query->where('knowledge_type', $type);
-    }
 
     /**
      * Scope by category
@@ -97,7 +86,6 @@ class OrgKnowledge extends Model
     public function scopeByCategory($query, string $category)
     {
         return $query->where('category', $category);
-    }
 
     /**
      * Scope by visibility
@@ -105,7 +93,6 @@ class OrgKnowledge extends Model
     public function scopeByVisibility($query, string $visibility)
     {
         return $query->where('visibility', $visibility);
-    }
 
     /**
      * Scope non-confidential
@@ -113,7 +100,6 @@ class OrgKnowledge extends Model
     public function scopePublic($query)
     {
         return $query->where('is_confidential', false);
-    }
 
     /**
      * Scope non-expired
@@ -123,8 +109,6 @@ class OrgKnowledge extends Model
         return $query->where(function ($q) {
             $q->whereNull('expiry_date')
                 ->orWhere('expiry_date', '>=', now());
-        });
-    }
 
     /**
      * Check if knowledge has expired
@@ -133,8 +117,6 @@ class OrgKnowledge extends Model
     {
         if (!$this->expiry_date) {
             return false;
-        }
 
         return $this->expiry_date->isPast();
-    }
 }

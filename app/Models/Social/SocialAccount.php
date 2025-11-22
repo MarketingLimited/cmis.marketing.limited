@@ -2,30 +2,21 @@
 
 namespace App\Models\Social;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
+use App\Models\Concerns\HasOrganization;
+use App\Models\Core\Integration;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Support\Str;
 
-class SocialAccount extends Model
+class SocialAccount extends BaseModel
 {
     use HasFactory, SoftDeletes;
+    use HasOrganization;
 
-    protected $connection = 'pgsql';
     protected $table = 'cmis.social_accounts';
     protected $primaryKey = 'id';
-    public $incrementing = false;
-    protected $keyType = 'string';
-
-    protected static function boot()
-    {
-        parent::boot();
-        static::creating(function ($model) {
-            if (empty($model->{$model->getKeyName()})) {
-                $model->{$model->getKeyName()} = (string) Str::uuid();
-            }
-        });
-    }
 
     protected $fillable = [
         'id',
@@ -59,26 +50,76 @@ class SocialAccount extends Model
     ];
 
     /**
-     * Get the organization that owns this social account.
-     */
-    public function org()
-    {
-        return $this->belongsTo(\App\Models\Core\Org::class, 'org_id', 'org_id');
-    }
-
-    /**
      * Get the integration that this account belongs to.
      */
-    public function integration()
+    public function integration(): BelongsTo
     {
-        return $this->belongsTo(\App\Models\Integration::class, 'integration_id', 'integration_id');
+        return $this->belongsTo(Integration::class, 'integration_id', 'integration_id');
     }
 
     /**
      * Get all posts for this social account.
      */
-    public function posts()
+    public function posts(): HasMany
     {
         return $this->hasMany(SocialPost::class, 'integration_id', 'integration_id');
+    }
+
+    /**
+     * Get all metrics for this social account.
+     */
+    public function metrics(): HasMany
+    {
+        return $this->hasMany(SocialAccountMetric::class, 'account_id', 'id');
+    }
+
+    /**
+     * Scope to filter by provider/platform
+     */
+    public function scopeByProvider($query, string $provider)
+    {
+        return $query->where('provider', $provider);
+    }
+
+    /**
+     * Scope to filter by integration
+     */
+    public function scopeForIntegration($query, string $integrationId)
+    {
+        return $query->where('integration_id', $integrationId);
+    }
+
+    /**
+     * Get the account's follower growth rate
+     */
+    public function getFollowerGrowthRate(int $days = 30): float
+    {
+        $metrics = $this->metrics()
+            ->where('created_at', '>=', now()->subDays($days))
+            ->orderBy('created_at')
+            ->get(['followers_count', 'created_at']);
+
+        if ($metrics->count() < 2) {
+            return 0.0;
+        }
+
+        $first = $metrics->first();
+        $last = $metrics->last();
+
+        if ($first->followers_count == 0) {
+            return 0.0;
+        }
+
+        return (($last->followers_count - $first->followers_count) / $first->followers_count) * 100;
+    }
+
+    /**
+     * Check if the account is verified (if supported by platform)
+     */
+    public function isVerified(): bool
+    {
+        // This would typically come from platform-specific data
+        // For now, return false - can be extended based on provider
+        return false;
     }
 }

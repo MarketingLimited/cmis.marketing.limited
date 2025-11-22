@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 
-class AuditSummary extends Model
+class AuditSummary extends BaseModel
 {
     protected $table = 'operations.audit_summary';
     protected $guarded = ['*'];

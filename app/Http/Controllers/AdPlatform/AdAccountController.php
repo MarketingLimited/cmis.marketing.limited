@@ -15,6 +15,8 @@ use Illuminate\Support\Facades\Log;
  */
 class AdAccountController extends Controller
 {
+    use ApiResponse;
+
     /**
      * Display a listing of ad accounts with filtering and pagination
      *

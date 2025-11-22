@@ -3,17 +3,13 @@
 namespace App\Models\Knowledge;
 
 use App\Casts\VectorCast;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
-class EmbeddingsCache extends Model
+class EmbeddingsCache extends BaseModel
 {
-    use HasUuids;
+    
     protected $table = 'cmis.embeddings_cache';
     protected $primaryKey = 'cache_id';
-    protected $connection = 'pgsql';
-    public $incrementing = false;
-    protected $keyType = 'string';
     public $timestamps = false;
 
     protected $fillable = [
@@ -48,10 +44,8 @@ class EmbeddingsCache extends Model
 
         if ($modelName) {
             $query->where('model_name', $modelName);
-        }
 
         return $query->first();
-    }
 
     /**
      * Get or create cache entry
@@ -64,10 +58,8 @@ class EmbeddingsCache extends Model
         if ($cached) {
             $cached->recordAccess();
             return $cached;
-        }
 
         return null; // Caller should generate embedding
-    }
 
     /**
      * Record access
@@ -76,7 +68,6 @@ class EmbeddingsCache extends Model
     {
         $this->increment('access_count');
         $this->update(['last_accessed' => now()]);
-    }
 
     /**
      * Scope by content type
@@ -84,7 +75,6 @@ class EmbeddingsCache extends Model
     public function scopeByContentType($query, string $contentType)
     {
         return $query->where('content_type', $contentType);
-    }
 
     /**
      * Scope by model name
@@ -92,7 +82,6 @@ class EmbeddingsCache extends Model
     public function scopeByModel($query, string $modelName)
     {
         return $query->where('model_name', $modelName);
-    }
 
     /**
      * Scope stale entries (not accessed in X days)
@@ -100,5 +89,4 @@ class EmbeddingsCache extends Model
     public function scopeStale($query, int $days = 30)
     {
         return $query->where('last_accessed', '<', now()->subDays($days));
-    }
 }

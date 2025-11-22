@@ -22,6 +22,8 @@ use Illuminate\Support\Facades\Validator;
  */
 class AdCampaignController extends Controller
 {
+    use ApiResponse;
+
     protected AdCampaignService $campaignService;
 
     public function __construct(AdCampaignService $campaignService)
@@ -368,10 +370,7 @@ class AdCampaignController extends Controller
                 ]);
             }
 
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to delete campaign'
-            ], 500);
+            return $this->error('Failed to delete campaign', 500);
 
         } catch (\Exception $e) {
             return response()->json([
@@ -472,10 +471,8 @@ class AdCampaignController extends Controller
                 ]
             ];
 
-            return response()->json([
-                'success' => true,
-                'data' => $statistics
-            ]);
+            return $this->success($statistics
+            );
 
         } catch (\Exception $e) {
             return response()->json([

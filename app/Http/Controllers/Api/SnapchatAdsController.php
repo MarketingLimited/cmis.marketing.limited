@@ -8,9 +8,12 @@ use App\Models\Platform\PlatformIntegration;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use App\Http\Controllers\Concerns\ApiResponse;
 
 class SnapchatAdsController extends Controller
 {
+    use ApiResponse;
+
     private SnapchatAdsService $snapchatAdsService;
 
     public function __construct(SnapchatAdsService $snapchatAdsService)
@@ -43,10 +46,7 @@ class SnapchatAdsController extends Controller
                 ->first();
 
             if (!$integration) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Snapchat Ads integration not found'
-                ], 404);
+                return $this->error('Snapchat Ads integration not found', 404);
             }
 
             $result = $this->snapchatAdsService->fetchCampaigns(
@@ -100,10 +100,7 @@ class SnapchatAdsController extends Controller
                 ->first();
 
             if (!$integration) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Snapchat Ads integration not found'
-                ], 404);
+                return $this->error('Snapchat Ads integration not found', 404);
             }
 
             $campaignData = [
@@ -161,10 +158,7 @@ class SnapchatAdsController extends Controller
                 ->first();
 
             if (!$integration) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Snapchat Ads integration not found'
-                ], 404);
+                return $this->error('Snapchat Ads integration not found', 404);
             }
 
             $result = $this->snapchatAdsService->getCampaignDetails(
@@ -215,10 +209,7 @@ class SnapchatAdsController extends Controller
                 ->first();
 
             if (!$integration) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Snapchat Ads integration not found'
-                ], 404);
+                return $this->error('Snapchat Ads integration not found', 404);
             }
 
             $metrics = $this->snapchatAdsService->getCampaignMetrics(
@@ -270,10 +261,7 @@ class SnapchatAdsController extends Controller
                 ->first();
 
             if (!$integration) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Snapchat Ads integration not found'
-                ], 404);
+                return $this->error('Snapchat Ads integration not found', 404);
             }
 
             $this->snapchatAdsService->clearCache($integration->platform_account_id);

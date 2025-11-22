@@ -3,14 +3,12 @@
 namespace App\Models\AdPlatform;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class MetaFunctionDescription extends Model
+class MetaFunctionDescription extends BaseModel
 {
     use HasFactory, SoftDeletes;
-
-    protected $connection = 'pgsql';
 
     protected $table = 'cmis.meta_function_descriptions';
 
@@ -38,7 +36,6 @@ class MetaFunctionDescription extends Model
     public function scopeByRoutineName($query, string $routineName)
     {
         return $query->where('routine_name', $routineName);
-    }
 
     /**
      * Scope to find by schema
@@ -46,7 +43,6 @@ class MetaFunctionDescription extends Model
     public function scopeBySchema($query, string $schema)
     {
         return $query->where('routine_schema', $schema);
-    }
 
     /**
      * Scope to filter by category
@@ -54,5 +50,4 @@ class MetaFunctionDescription extends Model
     public function scopeByCategory($query, string $category)
     {
         return $query->where('cognitive_category', $category);
-    }
 }

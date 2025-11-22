@@ -2,20 +2,20 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasOrganization;
+
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 
-class UserActivity extends Model
+class UserActivity extends BaseModel
 {
     use HasFactory, HasUuids;
+    use HasOrganization;
 
     protected $table = 'cmis.user_activities';
     protected $primaryKey = 'activity_id';
-    public $incrementing = false;
-    protected $keyType = 'string';
-
-    const UPDATED_AT = null; // user_activities table doesn't have updated_at
+            const UPDATED_AT = null; // user_activities table doesn't have updated_at
 
     protected $fillable = [
         'user_id',
@@ -41,7 +41,6 @@ class UserActivity extends Model
     public function user()
     {
         return $this->belongsTo(User::class, 'user_id', 'user_id');
-    }
 
     /**
      * Get the organization associated with the activity
@@ -49,7 +48,6 @@ class UserActivity extends Model
     public function organization()
     {
         return $this->belongsTo(Core\Org::class, 'org_id', 'org_id');
-    }
 
     /**
      * Scope to get activities for a specific user
@@ -57,7 +55,6 @@ class UserActivity extends Model
     public function scopeForUser($query, $userId)
     {
         return $query->where('user_id', $userId);
-    }
 
     /**
      * Scope to get activities for a specific org
@@ -65,7 +62,6 @@ class UserActivity extends Model
     public function scopeForOrg($query, $orgId)
     {
         return $query->where('org_id', $orgId);
-    }
 
     /**
      * Scope to get recent activities
@@ -73,7 +69,6 @@ class UserActivity extends Model
     public function scopeRecent($query, $limit = 10)
     {
         return $query->orderBy('created_at', 'desc')->limit($limit);
-    }
 
     /**
      * Get formatted activity description
@@ -94,7 +89,6 @@ class UserActivity extends Model
         ];
 
         return $descriptions[$action] ?? $action;
-    }
 
     /**
      * Get activity type for icons
@@ -114,7 +108,6 @@ class UserActivity extends Model
         ];
 
         return $types[$action] ?? 'access';
-    }
 
     /**
      * Create activity log entry
@@ -136,5 +129,4 @@ class UserActivity extends Model
             'details' => $details,
             'ip_address' => request()->ip(),
         ]);
-    }
 }

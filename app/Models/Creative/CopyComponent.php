@@ -2,20 +2,19 @@
 
 namespace App\Models\Creative;
 
+use App\Models\Concerns\HasOrganization;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
-class CopyComponent extends Model
+class CopyComponent extends BaseModel
 {
     use HasFactory, HasUuids;
+    use HasOrganization;
 
     protected $table = 'cmis.copy_components';
     protected $primaryKey = 'component_id';
-    protected $connection = 'pgsql';
-    public $incrementing = false;
-    protected $keyType = 'string';
-
     protected $fillable = [
         'component_id',
         'type_code',
@@ -53,13 +52,7 @@ class CopyComponent extends Model
         'visual_prompt' => 'array',
     ];
 
-    /**
-     * Get the organization
-     */
-    public function org()
-    {
-        return $this->belongsTo(\App\Models\Core\Org::class, 'org_id', 'org_id');
-    }
+    
 
     /**
      * Get the campaign
@@ -67,7 +60,6 @@ class CopyComponent extends Model
     public function campaign()
     {
         return $this->belongsTo(\App\Models\Campaign::class, 'campaign_id', 'campaign_id');
-    }
 
     /**
      * Get the channel
@@ -75,7 +67,6 @@ class CopyComponent extends Model
     public function channel()
     {
         return $this->belongsTo(\App\Models\Channel::class, 'channel_id', 'channel_id');
-    }
 
     /**
      * Get the creator
@@ -83,7 +74,6 @@ class CopyComponent extends Model
     public function creator()
     {
         return $this->belongsTo(\App\Models\User::class, 'created_by', 'user_id');
-    }
 
     /**
      * Scope by type
@@ -91,7 +81,6 @@ class CopyComponent extends Model
     public function scopeOfType($query, string $type)
     {
         return $query->where('type_code', $type);
-    }
 
     /**
      * Scope by tone
@@ -99,7 +88,6 @@ class CopyComponent extends Model
     public function scopeWithTone($query, string $tone)
     {
         return $query->where('tone', $tone);
-    }
 
     /**
      * Scope high performing
@@ -108,7 +96,6 @@ class CopyComponent extends Model
     {
         return $query->where('performance_score', '>=', $threshold)
             ->orderBy('performance_score', 'desc');
-    }
 
     /**
      * Increment usage count
@@ -116,5 +103,4 @@ class CopyComponent extends Model
     public function incrementUsage()
     {
         $this->increment('usage_count');
-    }
 }

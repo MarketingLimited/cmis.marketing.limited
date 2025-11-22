@@ -23,6 +23,8 @@ use Illuminate\Support\Facades\Validator;
  */
 class ContentAnalyticsController extends Controller
 {
+    use ApiResponse;
+
     protected ContentAnalyticsService $analyticsService;
 
     public function __construct(ContentAnalyticsService $analyticsService)

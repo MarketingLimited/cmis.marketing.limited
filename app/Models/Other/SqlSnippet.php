@@ -3,23 +3,17 @@
 namespace App\Models\Other;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
-class SqlSnippet extends Model
+class SqlSnippet extends BaseModel
 {
     use HasFactory, SoftDeletes, HasUuids;
-
-    protected $connection = 'pgsql';
 
     protected $table = 'cmis.sql_snippets';
 
     protected $primaryKey = 'snippet_id';
-
-    public $incrementing = false;
-
-    protected $keyType = 'string';
 
     public $timestamps = false;
 
@@ -46,8 +40,6 @@ class SqlSnippet extends Model
             'cmis.prompt_template_presql',
             'snippet_id',
             'prompt_id'
-        );
-    }
 
     /**
      * Scope to find by name
@@ -55,5 +47,4 @@ class SqlSnippet extends Model
     public function scopeByName($query, string $name)
     {
         return $query->where('name', $name);
-    }
 }

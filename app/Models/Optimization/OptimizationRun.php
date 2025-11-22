@@ -2,34 +2,22 @@
 
 namespace App\Models\Optimization;
 
+use App\Models\Concerns\HasOrganization;
+
 use App\Models\Core\Org;
 use App\Models\Core\User;
 use App\Models\Campaign\Campaign;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Support\Str;
-
-class OptimizationRun extends Model
+class OptimizationRun extends BaseModel
 {
     use HasFactory;
+    use HasOrganization;
 
-    protected $connection = 'pgsql';
     protected $table = 'cmis.optimization_runs';
     protected $primaryKey = 'run_id';
-    public $incrementing = false;
-    protected $keyType = 'string';
-
-    protected static function boot()
-    {
-        parent::boot();
-        static::creating(function ($model) {
-            if (empty($model->{$model->getKeyName()})) {
-                $model->{$model->getKeyName()} = (string) Str::uuid();
-            }
-        });
-    }
 
     protected $fillable = [
         'run_id',
@@ -82,40 +70,31 @@ class OptimizationRun extends Model
 
     // ===== Relationships =====
 
-    public function org(): BelongsTo
-    {
-        return $this->belongsTo(Org::class, 'org_id', 'org_id');
-    }
+    
 
     public function model(): BelongsTo
     {
         return $this->belongsTo(OptimizationModel::class, 'model_id', 'model_id');
-    }
 
     public function executor(): BelongsTo
     {
         return $this->belongsTo(User::class, 'executed_by', 'user_id');
-    }
 
     public function applier(): BelongsTo
     {
         return $this->belongsTo(User::class, 'applied_by', 'user_id');
-    }
 
     public function campaign(): BelongsTo
     {
         return $this->belongsTo(Campaign::class, 'target_entity_id', 'campaign_id');
-    }
 
     public function budgetAllocations(): HasMany
     {
         return $this->hasMany(BudgetAllocation::class, 'optimization_run_id', 'run_id');
-    }
 
     public function insights(): HasMany
     {
         return $this->hasMany(OptimizationInsight::class, 'optimization_run_id', 'run_id');
-    }
 
     // ===== Execution Status Management =====
 
@@ -125,7 +104,6 @@ class OptimizationRun extends Model
             'status' => 'running',
             'started_at' => now(),
         ]);
-    }
 
     public function markAsCompleted(array $results): void
     {
@@ -144,7 +122,6 @@ class OptimizationRun extends Model
             'confidence_score' => $results['confidence_score'] ?? null,
             'iterations' => $results['iterations'] ?? null,
         ]);
-    }
 
     public function markAsFailed(string $errorMessage): void
     {
@@ -156,7 +133,6 @@ class OptimizationRun extends Model
             'duration_seconds' => $duration,
             'error_message' => $errorMessage,
         ]);
-    }
 
     public function markAsApplied(string $userId): void
     {
@@ -165,29 +141,24 @@ class OptimizationRun extends Model
             'applied_at' => now(),
             'applied_by' => $userId,
         ]);
-    }
 
     // ===== Performance Helpers =====
 
     public function isSuccessful(): bool
     {
         return in_array($this->status, ['completed', 'applied']);
-    }
 
     public function hasImprovement(): bool
     {
         return $this->improvement_percentage > 0;
-    }
 
     public function getImprovementLabel(): string
     {
         if (!$this->improvement_percentage) {
             return 'N/A';
-        }
 
         $sign = $this->improvement_percentage > 0 ? '+' : '';
         return $sign . number_format($this->improvement_percentage, 2) . '%';
-    }
 
     public function getOptimizationTypeLabel(): string
     {
@@ -198,7 +169,6 @@ class OptimizationRun extends Model
             'creative_optimization' => 'Creative Optimization',
             default => ucfirst(str_replace('_', ' ', $this->optimization_type))
         };
-    }
 
     public function getObjectiveLabel(): string
     {
@@ -210,27 +180,22 @@ class OptimizationRun extends Model
             'maximize_reach' => 'Maximize Reach',
             default => ucfirst(str_replace('_', ' ', $this->objective))
         };
-    }
 
     // ===== Scopes =====
 
     public function scopeCompleted($query)
     {
         return $query->where('status', 'completed');
-    }
 
     public function scopeApplied($query)
     {
         return $query->where('status', 'applied');
-    }
 
     public function scopeForOptimizationType($query, string $type)
     {
         return $query->where('optimization_type', $type);
-    }
 
     public function scopeWithImprovement($query)
     {
         return $query->where('improvement_percentage', '>', 0);
-    }
 }

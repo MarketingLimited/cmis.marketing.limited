@@ -6,9 +6,12 @@ use App\Models\Campaign;
 use App\Services\ReportService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use App\Http\Controllers\Concerns\ApiResponse;
 
 class ReportController extends Controller
 {
+    use ApiResponse;
+
     protected $reportService;
 
     public function __construct(ReportService $reportService)

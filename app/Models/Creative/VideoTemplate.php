@@ -2,20 +2,19 @@
 
 namespace App\Models\Creative;
 
+use App\Models\Concerns\HasOrganization;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
-class VideoTemplate extends Model
+class VideoTemplate extends BaseModel
 {
     use HasFactory, HasUuids;
+    use HasOrganization;
 
     protected $table = 'cmis.video_templates';
     protected $primaryKey = 'vtpl_id';
-    protected $connection = 'pgsql';
-    public $incrementing = false;
-    protected $keyType = 'string';
-
     protected $fillable = [
         'vtpl_id',
         'org_id',
@@ -41,13 +40,7 @@ class VideoTemplate extends Model
         'steps' => 'array',
     ];
 
-    /**
-     * Get the organization
-     */
-    public function org()
-    {
-        return $this->belongsTo(\App\Models\Core\Org::class, 'org_id', 'org_id');
-    }
+    
 
     /**
      * Get the video scenes
@@ -55,7 +48,6 @@ class VideoTemplate extends Model
     public function scenes()
     {
         return $this->hasMany(VideoScene::class, 'template_id', 'template_id');
-    }
 
     /**
      * Get the creator
@@ -63,7 +55,6 @@ class VideoTemplate extends Model
     public function creator()
     {
         return $this->belongsTo(\App\Models\User::class, 'created_by', 'user_id');
-    }
 
     /**
      * Scope active templates
@@ -71,7 +62,6 @@ class VideoTemplate extends Model
     public function scopeActive($query)
     {
         return $query->where('is_active', true);
-    }
 
     /**
      * Scope by style
@@ -79,5 +69,4 @@ class VideoTemplate extends Model
     public function scopeWithStyle($query, string $style)
     {
         return $query->where('style', $style);
-    }
 }

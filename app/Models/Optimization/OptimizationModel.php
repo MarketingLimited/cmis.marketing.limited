@@ -2,33 +2,21 @@
 
 namespace App\Models\Optimization;
 
+use App\Models\Concerns\HasOrganization;
+
 use App\Models\Core\Org;
 use App\Models\Core\User;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Support\Str;
-
-class OptimizationModel extends Model
+class OptimizationModel extends BaseModel
 {
     use HasFactory;
+    use HasOrganization;
 
-    protected $connection = 'pgsql';
     protected $table = 'cmis.optimization_models';
     protected $primaryKey = 'model_id';
-    public $incrementing = false;
-    protected $keyType = 'string';
-
-    protected static function boot()
-    {
-        parent::boot();
-        static::creating(function ($model) {
-            if (empty($model->{$model->getKeyName()})) {
-                $model->{$model->getKeyName()} = (string) Str::uuid();
-            }
-        });
-    }
 
     protected $fillable = [
         'model_id',
@@ -85,20 +73,15 @@ class OptimizationModel extends Model
 
     // ===== Relationships =====
 
-    public function org(): BelongsTo
-    {
-        return $this->belongsTo(Org::class, 'org_id', 'org_id');
-    }
+    
 
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by', 'user_id');
-    }
 
     public function runs(): HasMany
     {
         return $this->hasMany(OptimizationRun::class, 'model_id', 'model_id');
-    }
 
     // ===== Model Status Management =====
 
@@ -115,7 +98,6 @@ class OptimizationModel extends Model
             'r_squared' => $metrics['r_squared'] ?? null,
             'trained_at' => now(),
         ]);
-    }
 
     public function deploy(): void
     {
@@ -123,23 +105,19 @@ class OptimizationModel extends Model
             'status' => 'deployed',
             'deployed_at' => now(),
         ]);
-    }
 
     public function recordUsage(): void
     {
         $this->increment('usage_count');
         $this->update(['last_used_at' => now()]);
-    }
 
     public function isDeployed(): bool
     {
         return $this->status === 'deployed';
-    }
 
     public function isTrained(): bool
     {
         return in_array($this->status, ['trained', 'deployed']);
-    }
 
     // ===== Model Performance Helpers =====
 
@@ -150,20 +128,15 @@ class OptimizationModel extends Model
 
         if ($this->accuracy_score !== null) {
             $scores[] = $this->accuracy_score;
-        }
         if ($this->f1_score !== null) {
             $scores[] = $this->f1_score;
-        }
         if ($this->r_squared !== null) {
             $scores[] = $this->r_squared;
-        }
 
         if (empty($scores)) {
             return 0.0;
-        }
 
         return round(array_sum($scores) / count($scores), 4);
-    }
 
     public function getModelTypeLabel(): string
     {
@@ -175,7 +148,6 @@ class OptimizationModel extends Model
             'performance_prediction' => 'Performance Prediction',
             default => ucfirst(str_replace('_', ' ', $this->model_type))
         };
-    }
 
     public function getAlgorithmLabel(): string
     {
@@ -188,22 +160,18 @@ class OptimizationModel extends Model
             'neural_network' => 'Neural Network',
             default => ucfirst(str_replace('_', ' ', $this->algorithm))
         };
-    }
 
     // ===== Scopes =====
 
     public function scopeDeployed($query)
     {
         return $query->where('status', 'deployed');
-    }
 
     public function scopeForModelType($query, string $modelType)
     {
         return $query->where('model_type', $modelType);
-    }
 
     public function scopeByAlgorithm($query, string $algorithm)
     {
         return $query->where('algorithm', $algorithm);
-    }
 }

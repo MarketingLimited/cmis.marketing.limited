@@ -6,7 +6,7 @@ use Tests\TestCase;
 use Tests\Traits\CreatesTestData;
 use Tests\Traits\MocksExternalAPIs;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use App\Models\ScheduledSocialPost;
+use App\Models\Social\ScheduledSocialPost;
 use App\Jobs\PublishToInstagramJob;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Str;

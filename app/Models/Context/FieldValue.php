@@ -3,19 +3,15 @@
 namespace App\Models\Context;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
-class FieldValue extends Model
+class FieldValue extends BaseModel
 {
     use HasFactory, HasUuids;
 
     protected $table = 'cmis.field_values';
     protected $primaryKey = 'value_id';
-    protected $connection = 'pgsql';
-    public $incrementing = false;
-    protected $keyType = 'string';
-
     protected $fillable = [
         'value_id',
         'field_id',
@@ -45,7 +41,6 @@ class FieldValue extends Model
     public function field()
     {
         return $this->belongsTo(FieldDefinition::class, 'field_id', 'field_id');
-    }
 
     /**
      * Get the context (value context)
@@ -53,7 +48,6 @@ class FieldValue extends Model
     public function context()
     {
         return $this->belongsTo(ValueContext::class, 'context_id', 'context_id');
-    }
 
     /**
      * Get the creator
@@ -61,7 +55,6 @@ class FieldValue extends Model
     public function creator()
     {
         return $this->belongsTo(\App\Models\User::class, 'created_by', 'user_id');
-    }
 
     /**
      * Scope by context
@@ -69,7 +62,6 @@ class FieldValue extends Model
     public function scopeForContext($query, string $contextId)
     {
         return $query->where('context_id', $contextId);
-    }
 
     /**
      * Scope by field
@@ -77,7 +69,6 @@ class FieldValue extends Model
     public function scopeForField($query, string $fieldId)
     {
         return $query->where('field_id', $fieldId);
-    }
 
     /**
      * Get the scalar value if it's a simple type
@@ -86,8 +77,6 @@ class FieldValue extends Model
     {
         if (is_array($this->value) && count($this->value) === 1) {
             return reset($this->value);
-        }
 
         return $this->value;
-    }
 }

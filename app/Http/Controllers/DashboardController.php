@@ -22,6 +22,8 @@ use Illuminate\Support\Facades\DB;
  */
 class DashboardController extends Controller
 {
+    use ApiResponse;
+
     public function index()
     {
         // Anyone authenticated can view dashboard
@@ -116,7 +118,7 @@ class DashboardController extends Controller
             $user = $request->user();
 
             if (!$user) {
-                return response()->json(['success' => false, 'message' => 'Unauthorized'], 401);
+                return $this->error('Unauthorized', 401);
             }
 
             $notification = Notification::where('notification_id', $notificationId)
@@ -124,7 +126,7 @@ class DashboardController extends Controller
                 ->first();
 
             if (!$notification) {
-                return response()->json(['success' => false, 'message' => 'Notification not found'], 404);
+                return $this->error('Notification not found', 404);
             }
 
             $notification->markAsRead();
@@ -132,7 +134,7 @@ class DashboardController extends Controller
             return response()->json(['success' => true, 'message' => 'Notification marked as read']);
         } catch (\Exception $e) {
             \Log::error('Failed to mark notification as read: ' . $e->getMessage());
-            return response()->json(['success' => false, 'message' => 'Failed to mark as read'], 500);
+            return $this->error('Failed to mark as read', 500);
         }
     }
 

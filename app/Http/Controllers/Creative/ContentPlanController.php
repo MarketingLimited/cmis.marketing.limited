@@ -9,9 +9,12 @@ use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
+use App\Http\Controllers\Concerns\ApiResponse;
 
 class ContentPlanController extends Controller
 {
+    use ApiResponse;
+
     public function __construct(
         protected ContentPlanService $contentPlanService
     ) {
@@ -135,11 +138,8 @@ class ContentPlanController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Validation failed',
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors()
+            , 'Validation failed');
         }
 
         $data = $validator->validated();
@@ -170,10 +170,8 @@ class ContentPlanController extends Controller
         // Check authorization for viewing this content plan
         $this->authorize('view', $contentPlan);
 
-        return response()->json([
-            'success' => true,
-            'data' => $contentPlan
-        ]);
+        return $this->success($contentPlan
+        );
     }
 
     /**
@@ -241,11 +239,8 @@ class ContentPlanController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Validation failed',
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors()
+            , 'Validation failed');
         }
 
         $contentPlan->update($validator->validated());
@@ -293,11 +288,8 @@ class ContentPlanController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Validation failed',
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors()
+            , 'Validation failed');
         }
 
         $async = $request->get('async', true);
@@ -359,11 +351,8 @@ class ContentPlanController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Validation failed',
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors()
+            , 'Validation failed');
         }
 
         $contentPlan = ContentPlan::where('plan_id', $plan_id)
@@ -404,9 +393,7 @@ class ContentPlanController extends Controller
     {
         $stats = $this->contentPlanService->getStats($request->user()->current_org_id);
 
-        return response()->json([
-            'success' => true,
-            'data' => $stats
-        ]);
+        return $this->success($stats
+        );
     }
 }

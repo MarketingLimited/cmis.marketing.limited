@@ -14,6 +14,8 @@ use Illuminate\Support\Facades\Log;
  */
 class ServiceController extends Controller
 {
+    use ApiResponse;
+
     /**
      * Display a listing of services with filtering and pagination
      *

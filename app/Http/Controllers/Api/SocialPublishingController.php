@@ -13,9 +13,12 @@ use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Validator;
 use Carbon\Carbon;
+use App\Http\Controllers\Concerns\ApiResponse;
 
 class SocialPublishingController extends Controller
 {
+    use ApiResponse;
+
     public function __construct(
         protected SchedulingService $schedulingService,
         protected PublishingService $publishingService,

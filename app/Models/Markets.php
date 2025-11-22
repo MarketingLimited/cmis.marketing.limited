@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 
-class Markets extends Model
+class Markets extends BaseModel
 {
     protected $table = 'cmis.markets';
 

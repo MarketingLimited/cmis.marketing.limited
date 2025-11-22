@@ -15,6 +15,8 @@ use Illuminate\Support\Facades\Log;
  */
 class ExperimentController extends Controller
 {
+    use ApiResponse;
+
     /**
      * Display a listing of experiments with filtering and pagination
      *

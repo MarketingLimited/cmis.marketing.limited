@@ -3,13 +3,16 @@
 namespace App\Http\Controllers\Content;
 
 use App\Http\Controllers\Controller;
-use App\Models\Content\ContentPlanItem;
+use App\Models\Creative\ContentItem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use App\Http\Controllers\Concerns\ApiResponse;
 
 class ContentController extends Controller
 {
+    use ApiResponse;
+
     /**
      * Display a listing of content items.
      */
@@ -32,7 +35,7 @@ class ContentController extends Controller
                 'per_page' => ['sometimes', 'integer', 'min:1', 'max:100'],
             ]);
 
-            $query = ContentPlanItem::where('org_id', $orgId);
+            $query = ContentItem::where('org_id', $orgId);
 
             // Apply filters
             if (!empty($validated['status'])) {
@@ -113,7 +116,7 @@ class ContentController extends Controller
 
             // If no plan_id provided, create a default plan for this content
             if (!isset($validated['plan_id'])) {
-                $defaultPlan = \App\Models\Content\ContentPlan::firstOrCreate(
+                $defaultPlan = \App\Models\Creative\ContentPlan::firstOrCreate(
                     [
                         'org_id' => $orgId,
                         'name' => 'Default Content Plan',
@@ -127,7 +130,7 @@ class ContentController extends Controller
                 $validated['plan_id'] = $defaultPlan->plan_id;
             }
 
-            $content = ContentPlanItem::create($validated);
+            $content = ContentItem::create($validated);
 
             return response()->json([
                 'data' => $content,
@@ -170,13 +173,13 @@ class ContentController extends Controller
                 ], 400);
             }
 
-            $content = ContentPlanItem::where('org_id', $orgId)
+            $content = ContentItem::where('org_id', $orgId)
                 ->where('item_id', $contentId)
                 ->first();
 
             if (!$content) {
                 // Check if content exists in another org
-                $existsInOtherOrg = ContentPlanItem::where('item_id', $contentId)->exists();
+                $existsInOtherOrg = ContentItem::where('item_id', $contentId)->exists();
 
                 if ($existsInOtherOrg) {
                     return response()->json([
@@ -225,13 +228,13 @@ class ContentController extends Controller
                 ], 400);
             }
 
-            $content = ContentPlanItem::where('org_id', $orgId)
+            $content = ContentItem::where('org_id', $orgId)
                 ->where('item_id', $contentId)
                 ->first();
 
             if (!$content) {
                 // Check if content exists in another org
-                $existsInOtherOrg = ContentPlanItem::where('item_id', $contentId)->exists();
+                $existsInOtherOrg = ContentItem::where('item_id', $contentId)->exists();
 
                 if ($existsInOtherOrg) {
                     return response()->json([
@@ -299,13 +302,13 @@ class ContentController extends Controller
                 ], 400);
             }
 
-            $content = ContentPlanItem::where('org_id', $orgId)
+            $content = ContentItem::where('org_id', $orgId)
                 ->where('item_id', $contentId)
                 ->first();
 
             if (!$content) {
                 // Check if content exists in another org
-                $existsInOtherOrg = ContentPlanItem::where('item_id', $contentId)->exists();
+                $existsInOtherOrg = ContentItem::where('item_id', $contentId)->exists();
 
                 if ($existsInOtherOrg) {
                     return response()->json([
@@ -357,13 +360,13 @@ class ContentController extends Controller
                 ], 400);
             }
 
-            $content = ContentPlanItem::where('org_id', $orgId)
+            $content = ContentItem::where('org_id', $orgId)
                 ->where('item_id', $contentId)
                 ->first();
 
             if (!$content) {
                 // Check if content exists in another org
-                $existsInOtherOrg = ContentPlanItem::where('item_id', $contentId)->exists();
+                $existsInOtherOrg = ContentItem::where('item_id', $contentId)->exists();
 
                 if ($existsInOtherOrg) {
                     return response()->json([

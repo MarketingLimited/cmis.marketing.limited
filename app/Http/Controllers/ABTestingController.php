@@ -22,6 +22,8 @@ use Illuminate\Support\Facades\Validator;
  */
 class ABTestingController extends Controller
 {
+    use ApiResponse;
+
     protected ABTestingService $abTestingService;
 
     public function __construct(ABTestingService $abTestingService)

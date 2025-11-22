@@ -3,14 +3,12 @@
 namespace App\Models\Other;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class NamingTemplate extends Model
+class NamingTemplate extends BaseModel
 {
     use HasFactory, SoftDeletes;
-
-    protected $connection = 'pgsql';
 
     protected $table = 'cmis.naming_templates';
 
@@ -35,5 +33,4 @@ class NamingTemplate extends Model
     public function scopeByScope($query, string $scope)
     {
         return $query->where('scope', $scope);
-    }
 }

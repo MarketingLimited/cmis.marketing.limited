@@ -23,6 +23,8 @@ use Illuminate\Support\Facades\Validator;
  */
 class GPTController extends Controller
 {
+    use ApiResponse;
+
     public function __construct(
         private CampaignService $campaignService,
         private ContentPlanService $contentPlanService,

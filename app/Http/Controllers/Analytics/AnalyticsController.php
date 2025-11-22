@@ -17,6 +17,8 @@ use Illuminate\Support\Facades\Validator;
  */
 class AnalyticsController extends Controller
 {
+    use ApiResponse;
+
     protected RealTimeAnalyticsService $realtime;
     protected CustomMetricsService $customMetrics;
     protected ROICalculationEngine $roiEngine;

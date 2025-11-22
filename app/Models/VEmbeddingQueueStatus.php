@@ -2,13 +2,11 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 
-class VEmbeddingQueueStatus extends Model
+class VEmbeddingQueueStatus extends BaseModel
 {
     protected $table = 'cmis_knowledge.v_embedding_queue_status';
     protected $guarded = ['*'];
-    public $incrementing = false;
-
     public $timestamps = false;
 }

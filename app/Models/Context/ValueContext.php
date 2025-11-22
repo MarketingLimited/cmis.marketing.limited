@@ -2,21 +2,20 @@
 
 namespace App\Models\Context;
 
+use App\Models\Concerns\HasOrganization;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
-class ValueContext extends Model
+class ValueContext extends BaseModel
 {
     use HasFactory, SoftDeletes, HasUuids;
+    use HasOrganization;
 
     protected $table = 'cmis.value_contexts';
     protected $primaryKey = 'context_id';
-    protected $connection = 'pgsql';
-    public $incrementing = false;
-    protected $keyType = 'string';
-
     protected $fillable = [
         'context_id',
         'org_id',
@@ -63,21 +62,7 @@ class ValueContext extends Model
         'deleted_at' => 'datetime',
     ];
 
-    /**
-     * Get the base context
-     */
-    public function contextBase()
-    {
-        return $this->belongsTo(ContextBase::class, 'context_id', 'id');
-    }
-
-    /**
-     * Get the organization
-     */
-    public function org()
-    {
-        return $this->belongsTo(\App\Models\Core\Org::class, 'org_id', 'org_id');
-    }
+    
 
     /**
      * Get the offering
@@ -85,7 +70,6 @@ class ValueContext extends Model
     public function offering()
     {
         return $this->belongsTo(\App\Models\Offering::class, 'offering_id', 'offering_id');
-    }
 
     /**
      * Get the campaign
@@ -93,7 +77,6 @@ class ValueContext extends Model
     public function campaign()
     {
         return $this->belongsTo(\App\Models\Campaign::class, 'campaign_id', 'campaign_id');
-    }
 
     /**
      * Get the channel
@@ -101,7 +84,6 @@ class ValueContext extends Model
     public function channel()
     {
         return $this->belongsTo(\App\Models\Channel::class, 'channel_id', 'channel_id');
-    }
 
     /**
      * Get the creator
@@ -109,7 +91,6 @@ class ValueContext extends Model
     public function creator()
     {
         return $this->belongsTo(\App\Models\User::class, 'created_by', 'user_id');
-    }
 
     /**
      * Scope active contexts
@@ -117,7 +98,6 @@ class ValueContext extends Model
     public function scopeActive($query)
     {
         return $query->where('is_active', true)->whereNull('deleted_at');
-    }
 
     /**
      * Scope by framework
@@ -125,7 +105,6 @@ class ValueContext extends Model
     public function scopeByFramework($query, string $framework)
     {
         return $query->where('framework', $framework);
-    }
 
     /**
      * Scope by awareness stage
@@ -133,5 +112,4 @@ class ValueContext extends Model
     public function scopeByAwarenessStage($query, string $stage)
     {
         return $query->where('awareness_stage', $stage);
-    }
 }

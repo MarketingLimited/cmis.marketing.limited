@@ -2,87 +2,17 @@
 
 namespace App\Models\Operations;
 
+use App\Models\Concerns\HasOrganization;
+
 use App\Models\Core\Org;
 use App\Models\User;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
-class AuditLog extends Model
+class AuditLog extends BaseModel
 {
-    use HasUuids;
-    /**
-     * The table associated with the model.
-     *
-     * @var string
-     */
-    protected $table = 'cmis.audit_logs';
-
-    /**
-     * The primary key associated with the table.
-     *
-     * @var string
-     */
-    protected $primaryKey = 'log_id';
-
-    /**
-     * Indicates if the model's ID is auto-incrementing.
-     *
-     * @var bool
-     */
-    public $incrementing = false;
-
-    /**
-     * The data type of the primary key.
-     *
-     * @var string
-     */
-    protected $keyType = 'string';
-
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<string>
-     */
-    protected $fillable = [
-        'org_id',
-        'user_id',
-        'action',
-        'entity_type',
-        'entity_id',
-        'old_values',
-        'new_values',
-        'ip_address',
-        'user_agent',
-        'metadata',
-    ];
-
-    /**
-     * The attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
-    protected function casts(): array
-    {
-        return [
-            'log_id' => 'string',
-            'org_id' => 'string',
-            'user_id' => 'string',
-            'entity_id' => 'string',
-            'old_values' => 'array',
-            'new_values' => 'array',
-            'metadata' => 'array',
-            'created_at' => 'datetime',
-        ];
-    }
-
-    /**
-     * Get the organization that owns the audit log.
-     */
-    public function org(): BelongsTo
-    {
-        return $this->belongsTo(Org::class, 'org_id', 'org_id');
-    }
+    
+    
 
     /**
      * Get the user that performed the action.
@@ -90,7 +20,6 @@ class AuditLog extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id', 'user_id');
-    }
 
     /**
      * Log an action.
@@ -124,5 +53,4 @@ class AuditLog extends Model
             'user_agent' => request()->userAgent(),
             'metadata' => $metadata,
         ]);
-    }
 }

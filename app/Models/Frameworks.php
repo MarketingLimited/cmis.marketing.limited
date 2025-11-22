@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 
-class Frameworks extends Model
+class Frameworks extends BaseModel
 {
     protected $table = 'cmis.frameworks';
 

@@ -2,26 +2,23 @@
 
 namespace App\Models\Context;
 
+use App\Models\Concerns\HasOrganization;
+
 use App\Models\Core\Org;
 use App\Models\Campaign;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
-class Context extends Model
+class Context extends BaseModel
 {
     use HasFactory, SoftDeletes, HasUuids;
-
-    protected $connection = 'pgsql';
+    use HasOrganization;
 
     protected $table = 'cmis.contexts';
 
     protected $primaryKey = 'context_id';
-
-    public $incrementing = false;
-
-    protected $keyType = 'string';
 
     public $timestamps = true;
 
@@ -46,13 +43,7 @@ class Context extends Model
         'deleted_at' => 'datetime',
     ];
 
-    /**
-     * Get the organization
-     */
-    public function org()
-    {
-        return $this->belongsTo(Org::class, 'org_id', 'org_id');
-    }
+    
 
     /**
      * Get the campaign
@@ -60,7 +51,6 @@ class Context extends Model
     public function campaign()
     {
         return $this->belongsTo(Campaign::class, 'campaign_id', 'campaign_id');
-    }
 
     /**
      * Scope to filter by type
@@ -68,7 +58,6 @@ class Context extends Model
     public function scopeOfType($query, string $type)
     {
         return $query->where('type', $type);
-    }
 
     /**
      * Scope to get contexts for a specific org
@@ -76,7 +65,6 @@ class Context extends Model
     public function scopeForOrg($query, string $orgId)
     {
         return $query->where('org_id', $orgId);
-    }
 
     /**
      * Scope to get contexts for a specific campaign
@@ -84,5 +72,4 @@ class Context extends Model
     public function scopeForCampaign($query, string $campaignId)
     {
         return $query->where('campaign_id', $campaignId);
-    }
 }

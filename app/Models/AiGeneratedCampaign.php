@@ -2,21 +2,16 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Models\Concerns\HasOrganization;
 
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
-class AiGeneratedCampaign extends Model
+use App\Models\BaseModel;
+
+class AiGeneratedCampaign extends BaseModel
 {
-    use HasUuids;
-    protected $connection = 'pgsql';
-
+    
     protected $table = 'cmis.ai_generated_campaigns';
 
     protected $primaryKey = 'campaign_id';
-
-    public $incrementing = false;
-
-    protected $keyType = 'string';
 
     public $timestamps = false;
 

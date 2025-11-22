@@ -198,11 +198,11 @@ return new class extends Migration
             $table->integer('total_engagement')->default(0);
             $table->integer('clicks')->default(0);
             $table->integer('conversions')->default(0);
-            $table->decimal('conversion_value', 12, 2')->default(0);
+            $table->decimal('conversion_value', 12, 2)->default(0);
             $table->decimal('roi', 8, 2)->default(0);
             $table->decimal('cpe', 8, 2)->default(0); // Cost per engagement
             $table->decimal('cpc', 8, 2)->default(0); // Cost per click
-            $table->decimal('cpa', 8, 2')->default(0); // Cost per acquisition
+            $table->decimal('cpa', 8, 2)->default(0); // Cost per acquisition
 
             // Status
             $table->string('status', 50)->default('draft'); // draft, active, in_review, completed, cancelled

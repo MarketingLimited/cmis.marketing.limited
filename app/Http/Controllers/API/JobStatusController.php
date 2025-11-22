@@ -15,7 +15,7 @@ use Illuminate\Http\Request;
  */
 class JobStatusController extends Controller
 {
-    use HandlesAsyncJobs;
+    use HandlesAsyncJobs, ApiResponse;
 
     /**
      * Get status of an AI generation job

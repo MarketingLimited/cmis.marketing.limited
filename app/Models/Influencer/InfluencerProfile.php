@@ -2,12 +2,13 @@
 
 namespace App\Models\Influencer;
 
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\Concerns\HasOrganization;
+
+use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class InfluencerProfile extends Model {
-    use HasUuids;
+class InfluencerProfile extends BaseModel {
+    
     protected $table = "cmis.influencer_profiles";
     protected $primaryKey = "influencer_id";
     protected $fillable = ["org_id","added_by","full_name","email","phone","bio","profile_image","location","languages","social_accounts","total_followers","avg_engagement_rate","niches","content_types","tier","audience_demographics","audience_quality_score","authenticity_score","reliability_score","completed_campaigns","total_campaigns","avg_roi","rates","available_for_partnerships","preferred_collaboration_type","exclusive_partnership","blacklisted_brands","preferred_brands","status","tags","internal_notes","source","last_contacted_at","last_campaign_at"];

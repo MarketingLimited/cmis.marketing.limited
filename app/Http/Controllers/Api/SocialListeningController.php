@@ -19,9 +19,12 @@ use App\Services\Listening\ConversationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Concerns\ApiResponse;
 
 class SocialListeningController extends Controller
 {
+    use ApiResponse;
+
     public function __construct(
         protected SocialListeningService $listeningService,
         protected SentimentAnalysisService $sentimentService,

@@ -19,10 +19,11 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
+use App\Http\Controllers\Concerns\ApiResponse;
 
 class AIGenerationController extends Controller
 {
-    use HandlesAsyncJobs;
+    use HandlesAsyncJobs, ApiResponse;
 
     protected KnowledgeRepository $knowledgeRepo;
     protected EmbeddingRepository $embeddingRepo;

@@ -28,8 +28,6 @@ class User extends Authenticatable
             if (empty($model->{$model->getKeyName()})) {
                 $model->{$model->getKeyName()} = (string) Str::uuid();
             }
-        });
-    }
 
     /**
      * The table associated with the model.
@@ -96,7 +94,6 @@ class User extends Authenticatable
             'deleted_at' => 'datetime',
             'password' => 'hashed',
         ];
-    }
 
     /**
      * Get the organizations that the user belongs to.
@@ -115,7 +112,6 @@ class User extends Authenticatable
         ->withTimestamps()
         ->wherePivot('is_active', true)
         ->wherePivotNull('deleted_at');
-    }
 
     /**
      * Check if user has a specific role in an organization.
@@ -132,7 +128,6 @@ class User extends Authenticatable
                 $query->where('role_code', $roleCode);
             })
             ->exists();
-    }
 
     /**
      * Check if user belongs to an organization.
@@ -143,7 +138,6 @@ class User extends Authenticatable
     public function belongsToOrg(string $orgId): bool
     {
         return $this->orgs()->where('cmis.orgs.org_id', $orgId)->exists();
-    }
 
     /**
      * Get the user's direct permissions.
@@ -160,7 +154,6 @@ class User extends Authenticatable
         )
             ->withPivot('is_granted', 'expires_at', 'granted_by')
             ->withTimestamps();
-    }
 
     /**
      * Check if user has a specific permission using DB function.
@@ -173,13 +166,11 @@ class User extends Authenticatable
         $orgId = session('current_org_id');
         if (!$orgId) {
             return false;
-        }
 
         try {
             $result = \DB::selectOne(
                 'SELECT cmis.check_permission(?, ?, ?) as has_permission',
                 [$this->id, $orgId, $permissionCode]
-            );
 
             return (bool) $result->has_permission;
         } catch (\Exception $e) {
@@ -190,8 +181,6 @@ class User extends Authenticatable
                 'error' => $e->getMessage()
             ]);
             return false;
-        }
-    }
 
     /**
      * Check if user can perform an action (integrate with Laravel's Gate).
@@ -205,9 +194,7 @@ class User extends Authenticatable
         // If it's a CMIS permission, use the DB function
         if (str_starts_with($ability, 'cmis.')) {
             return $this->hasPermission($ability);
-        }
 
         // Otherwise, use Laravel's default authorization
         return parent::can($ability, $arguments);
-    }
 }

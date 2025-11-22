@@ -2,23 +2,22 @@
 
 namespace App\Models\Context;
 
+use App\Models\Concerns\HasOrganization;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Models\Core\Org;
 use App\Models\User;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
-class ContextBase extends Model
+class ContextBase extends BaseModel
 {
     use HasFactory, SoftDeletes, HasUuids;
+    use HasOrganization;
 
     protected $table = 'cmis.contexts_base';
     protected $primaryKey = 'id';
-    protected $connection = 'pgsql';
-    public $incrementing = false;
-    protected $keyType = 'string';
-
     protected $fillable = [
         'id',
         'context_type',
@@ -39,13 +38,7 @@ class ContextBase extends Model
         'deleted_at' => 'datetime',
     ];
 
-    /**
-     * Get the organization that owns this context
-     */
-    public function org()
-    {
-        return $this->belongsTo(Org::class, 'org_id', 'org_id');
-    }
+    
 
     /**
      * Get the user who created this context
@@ -53,7 +46,6 @@ class ContextBase extends Model
     public function creator()
     {
         return $this->belongsTo(User::class, 'created_by', 'user_id');
-    }
 
     /**
      * Scope to get active contexts
@@ -61,7 +53,6 @@ class ContextBase extends Model
     public function scopeActive($query)
     {
         return $query->where('is_active', true)->whereNull('deleted_at');
-    }
 
     /**
      * Scope by context type
@@ -69,7 +60,6 @@ class ContextBase extends Model
     public function scopeOfType($query, string $type)
     {
         return $query->where('context_type', $type);
-    }
 
     /**
      * Scope by organization
@@ -77,5 +67,4 @@ class ContextBase extends Model
     public function scopeForOrg($query, string $orgId)
     {
         return $query->where('org_id', $orgId);
-    }
 }

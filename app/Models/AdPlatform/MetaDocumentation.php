@@ -3,23 +3,17 @@
 namespace App\Models\AdPlatform;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
-class MetaDocumentation extends Model
+class MetaDocumentation extends BaseModel
 {
     use HasFactory, SoftDeletes, HasUuids;
-
-    protected $connection = 'pgsql';
 
     protected $table = 'cmis.meta_documentation';
 
     protected $primaryKey = 'doc_id';
-
-    public $incrementing = false;
-
-    protected $keyType = 'string';
 
     public $timestamps = true;
 
@@ -43,7 +37,6 @@ class MetaDocumentation extends Model
     public function scopeByKey($query, string $key)
     {
         return $query->where('meta_key', $key);
-    }
 
     /**
      * Scope to find by updated by
@@ -51,5 +44,4 @@ class MetaDocumentation extends Model
     public function scopeUpdatedBy($query, string $updatedBy)
     {
         return $query->where('updated_by', $updatedBy);
-    }
 }

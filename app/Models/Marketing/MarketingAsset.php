@@ -2,20 +2,20 @@
 
 namespace App\Models\Marketing;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Models\Concerns\HasOrganization;
+
+use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-class MarketingAsset extends Model
+class MarketingAsset extends BaseModel
 {
     use HasFactory, HasUuids, SoftDeletes;
+    use HasOrganization;
 
     protected $table = 'cmis_marketing.assets';
     protected $primaryKey = 'asset_id';
-    public $incrementing = false;
-    protected $keyType = 'string';
-
     protected $fillable = [
         'asset_id',
         'task_id',
@@ -40,20 +40,16 @@ class MarketingAsset extends Model
     public function organization()
     {
         return $this->belongsTo(\App\Models\Organization::class, 'org_id', 'org_id');
-    }
 
     public function campaign()
     {
         return $this->belongsTo(\App\Models\Campaign::class, 'campaign_id', 'campaign_id');
-    }
 
     public function scopeByType($query, $type)
     {
         return $query->where('asset_type', $type);
-    }
 
     public function scopeActive($query)
     {
         return $query->where('status', 'active');
-    }
 }

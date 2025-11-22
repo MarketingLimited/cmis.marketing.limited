@@ -2,17 +2,20 @@
 
 namespace App\Models\AI;
 
+use App\Models\Concerns\HasOrganization;
+
 use App\Models\Campaign\Campaign;
 use App\Models\Core\User;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class GeneratedMedia extends Model
+class GeneratedMedia extends BaseModel
 {
     use HasFactory, HasUuids, SoftDeletes;
+    use HasOrganization;
 
     /**
      * The table associated with the model.
@@ -89,7 +92,6 @@ class GeneratedMedia extends Model
     public function campaign(): BelongsTo
     {
         return $this->belongsTo(Campaign::class, 'campaign_id');
-    }
 
     /**
      * Get the user who generated the media.
@@ -97,7 +99,6 @@ class GeneratedMedia extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');
-    }
 
     /**
      * Scope a query to only include images.
@@ -105,7 +106,6 @@ class GeneratedMedia extends Model
     public function scopeImages($query)
     {
         return $query->where('media_type', self::TYPE_IMAGE);
-    }
 
     /**
      * Scope a query to only include videos.
@@ -113,7 +113,6 @@ class GeneratedMedia extends Model
     public function scopeVideos($query)
     {
         return $query->where('media_type', self::TYPE_VIDEO);
-    }
 
     /**
      * Scope a query to only include completed media.
@@ -121,7 +120,6 @@ class GeneratedMedia extends Model
     public function scopeCompleted($query)
     {
         return $query->where('status', self::STATUS_COMPLETED);
-    }
 
     /**
      * Scope a query to only include failed media.
@@ -129,7 +127,6 @@ class GeneratedMedia extends Model
     public function scopeFailed($query)
     {
         return $query->where('status', self::STATUS_FAILED);
-    }
 
     /**
      * Scope a query to filter by campaign.
@@ -137,7 +134,6 @@ class GeneratedMedia extends Model
     public function scopeForCampaign($query, string $campaignId)
     {
         return $query->where('campaign_id', $campaignId);
-    }
 
     /**
      * Check if media is an image.
@@ -145,7 +141,6 @@ class GeneratedMedia extends Model
     public function isImage(): bool
     {
         return $this->media_type === self::TYPE_IMAGE;
-    }
 
     /**
      * Check if media is a video.
@@ -153,7 +148,6 @@ class GeneratedMedia extends Model
     public function isVideo(): bool
     {
         return $this->media_type === self::TYPE_VIDEO;
-    }
 
     /**
      * Check if generation is completed.
@@ -161,7 +155,6 @@ class GeneratedMedia extends Model
     public function isCompleted(): bool
     {
         return $this->status === self::STATUS_COMPLETED;
-    }
 
     /**
      * Check if generation failed.
@@ -169,7 +162,6 @@ class GeneratedMedia extends Model
     public function isFailed(): bool
     {
         return $this->status === self::STATUS_FAILED;
-    }
 
     /**
      * Check if generation is in progress.
@@ -177,7 +169,6 @@ class GeneratedMedia extends Model
     public function isProcessing(): bool
     {
         return $this->status === self::STATUS_PROCESSING;
-    }
 
     /**
      * Mark media as processing.
@@ -185,7 +176,6 @@ class GeneratedMedia extends Model
     public function markAsProcessing(): bool
     {
         return $this->update(['status' => self::STATUS_PROCESSING]);
-    }
 
     /**
      * Mark media as completed.
@@ -197,7 +187,6 @@ class GeneratedMedia extends Model
             'media_url' => $mediaUrl,
             'file_size_bytes' => $fileSize,
         ]);
-    }
 
     /**
      * Mark media as failed.
@@ -208,7 +197,6 @@ class GeneratedMedia extends Model
             'status' => self::STATUS_FAILED,
             'error_message' => $errorMessage,
         ]);
-    }
 
     /**
      * Get formatted file size.
@@ -217,7 +205,6 @@ class GeneratedMedia extends Model
     {
         if (!$this->file_size_bytes) {
             return null;
-        }
 
         $units = ['B', 'KB', 'MB', 'GB'];
         $size = $this->file_size_bytes;
@@ -226,10 +213,8 @@ class GeneratedMedia extends Model
         while ($size >= 1024 && $unitIndex < count($units) - 1) {
             $size /= 1024;
             $unitIndex++;
-        }
 
         return round($size, 2) . ' ' . $units[$unitIndex];
-    }
 
     /**
      * Get model display name.
@@ -243,7 +228,6 @@ class GeneratedMedia extends Model
             self::MODEL_VEO_31_FAST => 'Veo 3.1 Fast',
             default => $this->ai_model,
         };
-    }
 
     /**
      * Get status badge color.
@@ -257,5 +241,4 @@ class GeneratedMedia extends Model
             self::STATUS_FAILED => 'red',
             default => 'gray',
         };
-    }
 }

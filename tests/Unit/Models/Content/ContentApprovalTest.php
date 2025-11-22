@@ -6,7 +6,7 @@ use Tests\TestCase;
 use App\Models\Core\Org;
 use App\Models\User;
 use App\Models\Content\ContentApproval;
-use App\Models\Content\ContentPlanItem;
+use App\Models\Creative\ContentItem;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 

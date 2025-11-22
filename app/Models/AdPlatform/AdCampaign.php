@@ -2,20 +2,18 @@
 
 namespace App\Models\AdPlatform;
 
+use App\Models\Concerns\HasOrganization;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
-class AdCampaign extends Model
+class AdCampaign extends BaseModel
 {
-    use HasFactory, SoftDeletes, HasUuids;
+    use HasFactory, SoftDeletes;
+    use HasOrganization;
 
     protected $table = 'cmis.ad_campaigns';
     protected $primaryKey = 'id';
-    protected $connection = 'pgsql';
-    public $incrementing = false;
-    protected $keyType = 'string';
 
     protected $fillable = [
         'id',
@@ -48,14 +46,6 @@ class AdCampaign extends Model
         'updated_at' => 'datetime',
         'deleted_at' => 'datetime',
     ];
-
-    /**
-     * Get the organization
-     */
-    public function org()
-    {
-        return $this->belongsTo(\App\Models\Core\Org::class, 'org_id', 'org_id');
-    }
 
     /**
      * Get the integration (platform connection)

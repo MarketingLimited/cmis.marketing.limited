@@ -14,6 +14,8 @@ use Illuminate\Http\{JsonResponse, Request};
  */
 class KnowledgeLearningController extends Controller
 {
+    use ApiResponse;
+
     public function __construct(
         private KnowledgeLearningService $knowledge
     ) {}

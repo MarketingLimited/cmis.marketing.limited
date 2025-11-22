@@ -2,33 +2,21 @@
 
 namespace App\Models\Platform;
 
+use App\Models\Concerns\HasOrganization;
+
 use App\Models\Core\Org;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Crypt;
-use Illuminate\Support\Str;
-
-class PlatformConnection extends Model
+class PlatformConnection extends BaseModel
 {
     use HasFactory;
+    use HasOrganization;
 
-    protected $connection = 'pgsql';
     protected $table = 'cmis.platform_connections';
     protected $primaryKey = 'connection_id';
-    public $incrementing = false;
-    protected $keyType = 'string';
-
-    protected static function boot()
-    {
-        parent::boot();
-        static::creating(function ($model) {
-            if (empty($model->{$model->getKeyName()})) {
-                $model->{$model->getKeyName()} = (string) Str::uuid();
-            }
-        });
-    }
 
     protected $fillable = [
         'connection_id',
@@ -72,50 +60,39 @@ class PlatformConnection extends Model
 
     // ===== Relationships =====
 
-    public function org(): BelongsTo
-    {
-        return $this->belongsTo(Org::class, 'org_id', 'org_id');
-    }
+    
 
     // ===== Token Management =====
 
     public function setAccessTokenAttribute($value): void
     {
         $this->attributes['access_token'] = $value ? Crypt::encryptString($value) : null;
-    }
 
     public function getAccessTokenAttribute($value): ?string
     {
         return $value ? Crypt::decryptString($value) : null;
-    }
 
     public function setRefreshTokenAttribute($value): void
     {
         $this->attributes['refresh_token'] = $value ? Crypt::encryptString($value) : null;
-    }
 
     public function getRefreshTokenAttribute($value): ?string
     {
         return $value ? Crypt::decryptString($value) : null;
-    }
 
     public function isTokenExpired(): bool
     {
         $expiresAt = $this->token_expires_at ?? $this->expires_at;
         if (!$expiresAt) {
             return false;
-        }
         return now()->isAfter($expiresAt);
-    }
 
     public function isTokenExpiringSoon(int $minutes = 10): bool
     {
         $expiresAt = $this->token_expires_at ?? $this->expires_at;
         if (!$expiresAt) {
             return false;
-        }
         return now()->addMinutes($minutes)->isAfter($expiresAt);
-    }
 
     // ===== Connection Status =====
 
@@ -127,7 +104,6 @@ class PlatformConnection extends Model
             'last_error_at' => null,
             'last_error_message' => null
         ]);
-    }
 
     public function markAsExpired(): void
     {
@@ -135,7 +111,6 @@ class PlatformConnection extends Model
             'status' => 'expired',
             'is_active' => false
         ]);
-    }
 
     public function markAsError(string $errorMessage): void
     {
@@ -144,36 +119,30 @@ class PlatformConnection extends Model
             'last_error_at' => now(),
             'last_error_message' => $errorMessage
         ]);
-    }
 
     public function isActive(): bool
     {
         $status = $this->status ?? ($this->is_active ? 'active' : 'inactive');
         return $status === 'active' && !$this->isTokenExpired();
-    }
 
     // ===== Sync Management =====
 
     public function markSynced(): void
     {
         $this->update(['last_sync_at' => now()]);
-    }
 
     public function shouldSync(): bool
     {
         $autoSync = $this->auto_sync ?? true;
         if (!$autoSync || !$this->isActive()) {
             return false;
-        }
 
         if (!$this->last_sync_at) {
             return true;
-        }
 
         $frequency = $this->sync_frequency_minutes ?? 15;
         $nextSync = $this->last_sync_at->addMinutes($frequency);
         return now()->isAfter($nextSync);
-    }
 
     // ===== Platform Helpers =====
 
@@ -188,7 +157,6 @@ class PlatformConnection extends Model
             'snapchat' => 'Snapchat Ads',
             default => ucfirst($this->platform)
         };
-    }
 
     // ===== Scopes =====
 
@@ -197,11 +165,8 @@ class PlatformConnection extends Model
         return $query->where(function ($q) {
             $q->where('status', 'active')
               ->orWhere('is_active', true);
-        });
-    }
 
     public function scopeForPlatform($query, string $platform)
     {
         return $query->where('platform', $platform);
-    }
 }

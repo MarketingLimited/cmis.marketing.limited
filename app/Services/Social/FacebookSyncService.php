@@ -2,7 +2,8 @@
 
 namespace App\Services\Social;
 
-use App\Models\{SocialAccount, SocialPost};
+use App\Models\Social\SocialAccount;
+use App\Models\Social\SocialPost;
 use Carbon\Carbon;
 
 class FacebookSyncService extends AbstractSocialService

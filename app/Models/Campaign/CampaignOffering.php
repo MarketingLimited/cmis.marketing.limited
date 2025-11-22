@@ -4,21 +4,17 @@ namespace App\Models\Campaign;
 
 use App\Models\Campaign;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class CampaignOffering extends Model
+class CampaignOffering extends BaseModel
 {
     use HasFactory, SoftDeletes;
-
-    protected $connection = 'pgsql';
 
     protected $table = 'cmis.campaign_offerings';
     protected $primaryKey = 'offering_id';
 
     public $timestamps = false;
-
-    public $incrementing = false;
 
     protected $fillable = [
         'campaign_id',
@@ -38,7 +34,6 @@ class CampaignOffering extends Model
     public function campaign()
     {
         return $this->belongsTo(Campaign::class, 'campaign_id', 'campaign_id');
-    }
 
     /**
      * Scope to get offerings for a specific campaign
@@ -46,7 +41,6 @@ class CampaignOffering extends Model
     public function scopeForCampaign($query, string $campaignId)
     {
         return $query->where('campaign_id', $campaignId);
-    }
 
     /**
      * Scope to get campaigns for a specific offering
@@ -54,5 +48,4 @@ class CampaignOffering extends Model
     public function scopeForOffering($query, string $offeringId)
     {
         return $query->where('offering_id', $offeringId);
-    }
 }

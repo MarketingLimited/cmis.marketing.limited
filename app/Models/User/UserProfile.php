@@ -3,20 +3,16 @@
 namespace App\Models\User;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
-class UserProfile extends Model
+class UserProfile extends BaseModel
 {
     use HasFactory, SoftDeletes, HasUuids;
 
     protected $table = 'cmis.user_profiles';
     protected $primaryKey = 'profile_id';
-    protected $connection = 'pgsql';
-    public $incrementing = false;
-    protected $keyType = 'string';
-
     protected $fillable = [
         'user_id',
         'bio',
@@ -55,7 +51,6 @@ class UserProfile extends Model
     public function user()
     {
         return $this->belongsTo(\App\Models\User::class, 'user_id', 'user_id');
-    }
 
     /**
      * Check if notifications are enabled
@@ -63,7 +58,6 @@ class UserProfile extends Model
     public function isNotificationEnabled(string $type): bool
     {
         return $this->notification_preferences[$type] ?? true;
-    }
 
     /**
      * Get social link
@@ -71,5 +65,4 @@ class UserProfile extends Model
     public function getSocialLink(string $platform): ?string
     {
         return $this->social_links[$platform] ?? null;
-    }
 }

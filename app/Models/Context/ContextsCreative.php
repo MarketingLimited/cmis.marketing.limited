@@ -3,23 +3,17 @@
 namespace App\Models\Context;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
-class ContextsCreative extends Model
+class ContextsCreative extends BaseModel
 {
     use HasFactory, SoftDeletes, HasUuids;
-
-    protected $connection = 'pgsql';
 
     protected $table = 'cmis.contexts_creative';
 
     protected $primaryKey = 'context_id';
-
-    public $incrementing = false;
-
-    protected $keyType = 'string';
 
     public $timestamps = false;
 
@@ -43,5 +37,4 @@ class ContextsCreative extends Model
     public function contextBase()
     {
         return $this->belongsTo(ContextBase::class, 'context_id', 'id');
-    }
 }

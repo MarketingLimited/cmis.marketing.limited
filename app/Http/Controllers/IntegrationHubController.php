@@ -15,6 +15,8 @@ use Illuminate\Support\Facades\Validator;
  */
 class IntegrationHubController extends Controller
 {
+    use ApiResponse;
+
     protected IntegrationHubService $integrationService;
 
     public function __construct(IntegrationHubService $integrationService)
@@ -67,7 +69,7 @@ class IntegrationHubController extends Controller
         try {
             $userId = $request->user()->user_id ?? null;
             if (!$userId) {
-                return response()->json(['success' => false, 'message' => 'Authentication required'], 401);
+                return $this->error('Authentication required', 401);
             }
 
             $data = $request->all();
@@ -117,7 +119,7 @@ class IntegrationHubController extends Controller
         try {
             $userId = $request->user()->user_id ?? null;
             if (!$userId) {
-                return response()->json(['success' => false, 'message' => 'Authentication required'], 401);
+                return $this->error('Authentication required', 401);
             }
 
             $data = $request->all();
@@ -151,7 +153,7 @@ class IntegrationHubController extends Controller
         try {
             $userId = $request->user()->user_id ?? null;
             if (!$userId) {
-                return response()->json(['success' => false, 'message' => 'Authentication required'], 401);
+                return $this->error('Authentication required', 401);
             }
 
             $data = $request->all();

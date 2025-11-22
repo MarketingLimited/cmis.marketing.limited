@@ -2,16 +2,14 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 
-class ComponentTypes extends Model
+class ComponentTypes extends BaseModel
 {
     protected $table = 'cmis.component_types';
 
     protected $fillable = [
         'type_code',
     ];
-    public $incrementing = false;
-
     public $timestamps = false;
 }

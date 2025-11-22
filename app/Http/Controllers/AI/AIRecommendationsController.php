@@ -20,6 +20,8 @@ use Illuminate\Support\Facades\Validator;
  */
 class AIRecommendationsController extends Controller
 {
+    use ApiResponse;
+
     protected AIRecommendationService $recommendationService;
 
     public function __construct(AIRecommendationService $recommendationService)

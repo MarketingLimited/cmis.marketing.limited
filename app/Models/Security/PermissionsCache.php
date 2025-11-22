@@ -3,7 +3,7 @@
 namespace App\Models\Security;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 /**
@@ -13,17 +13,13 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
  * mapping permission_code to permission_id and category.
  * It is NOT a user-specific cache.
  */
-class PermissionsCache extends Model
+class PermissionsCache extends BaseModel
 {
     use HasFactory, HasUuids;
 
     protected $table = 'cmis.permissions_cache';
     protected $primaryKey = 'permission_id';
-    protected $connection = 'pgsql';
     public $timestamps = false;
-    public $incrementing = false;
-    protected $keyType = 'string';
-
     protected $fillable = [
         'permission_code',
         'permission_id',
@@ -42,7 +38,6 @@ class PermissionsCache extends Model
     public static function getByCode(string $permissionCode): ?self
     {
         return static::where('permission_code', $permissionCode)->first();
-    }
 
     /**
      * Get permission by category
@@ -50,7 +45,6 @@ class PermissionsCache extends Model
     public function scopeByCategory($query, string $category)
     {
         return $query->where('category', $category);
-    }
 
     /**
      * Scope to get recently used permissions
@@ -58,7 +52,6 @@ class PermissionsCache extends Model
     public function scopeRecentlyUsed($query, int $minutes = 60)
     {
         return $query->where('last_used', '>=', now()->subMinutes($minutes));
-    }
 
     /**
      * Scope to get stale cache entries
@@ -66,7 +59,6 @@ class PermissionsCache extends Model
     public function scopeStale($query, int $hours = 24)
     {
         return $query->where('last_used', '<', now()->subHours($hours));
-    }
 
     /**
      * Update last used timestamp
@@ -75,10 +67,8 @@ class PermissionsCache extends Model
     {
         if ($attribute === null) {
             return $this->update(['last_used' => now()]);
-        }
 
         return parent::touch($attribute);
-    }
 
     /**
      * Update or create permission cache entry
@@ -92,8 +82,6 @@ class PermissionsCache extends Model
                 'category' => $category,
                 'last_used' => now(),
             ]
-        );
-    }
 
     /**
      * Clean up stale entries
@@ -101,5 +89,4 @@ class PermissionsCache extends Model
     public static function cleanupStale(int $hours = 24): int
     {
         return static::where('last_used', '<', now()->subHours($hours))->delete();
-    }
 }

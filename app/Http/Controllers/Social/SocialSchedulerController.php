@@ -3,16 +3,19 @@
 namespace App\Http\Controllers\Social;
 
 use App\Http\Controllers\Controller;
-use App\Models\ScheduledSocialPost;
-use App\Models\SocialAccount;
+use App\Models\Social\ScheduledSocialPost;
+use App\Models\Social\SocialAccount;
 use App\Models\Channel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Concerns\ApiResponse;
 
 class SocialSchedulerController extends Controller
 {
+    use ApiResponse;
+
     /**
      * Constructor - Apply authentication middleware
      */

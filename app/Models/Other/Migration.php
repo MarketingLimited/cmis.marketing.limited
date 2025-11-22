@@ -3,14 +3,12 @@
 namespace App\Models\Other;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Migration extends Model
+class Migration extends BaseModel
 {
     use HasFactory, SoftDeletes;
-
-    protected $connection = 'pgsql';
 
     protected $table = 'cmis.migrations';
 
@@ -34,5 +32,4 @@ class Migration extends Model
     public function scopeForBatch($query, int $batch)
     {
         return $query->where('batch', $batch);
-    }
 }

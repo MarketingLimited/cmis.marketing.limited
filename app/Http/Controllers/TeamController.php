@@ -21,6 +21,8 @@ use Illuminate\Support\Facades\Validator;
  */
 class TeamController extends Controller
 {
+    use ApiResponse;
+
     protected TeamManagementService $teamService;
 
     public function __construct(TeamManagementService $teamService)
@@ -98,10 +100,7 @@ class TeamController extends Controller
             $userId = $request->user()->user_id ?? null;
 
             if (!$userId) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'User must be authenticated to accept invitation'
-                ], 401);
+                return $this->error('User must be authenticated to accept invitation', 401);
             }
 
             $result = $this->teamService->acceptInvitation($token, $userId);

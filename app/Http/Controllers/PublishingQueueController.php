@@ -21,6 +21,8 @@ use Illuminate\Support\Facades\Auth;
  */
 class PublishingQueueController extends Controller
 {
+    use ApiResponse;
+
     protected PublishingQueueService $queueService;
 
     public function __construct(PublishingQueueService $queueService)
@@ -41,16 +43,11 @@ class PublishingQueueController extends Controller
         $queue = $this->queueService->getQueue($socialAccountId);
 
         if (!$queue) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Queue not configured for this account'
-            ], 404);
+            return $this->error('Queue not configured for this account', 404);
         }
 
-        return response()->json([
-            'success' => true,
-            'data' => $queue
-        ]);
+        return $this->success($queue
+        );
     }
 
     /**
@@ -94,11 +91,8 @@ class PublishingQueueController extends Controller
                 ]
             );
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Publishing queue configured successfully',
-                'data' => $queue
-            ], 201);
+            return $this->created($queue
+            , 'Publishing queue configured successfully');
         } catch (\InvalidArgumentException $e) {
             return response()->json([
                 'success' => false,
@@ -177,20 +171,14 @@ class PublishingQueueController extends Controller
             try {
                 $afterTime = new \DateTime($request->input('after'));
             } catch (\Exception $e) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Invalid date format for after parameter'
-                ], 422);
+                return $this->error('Invalid date format for after parameter', 422);
             }
         }
 
         $nextSlot = $this->queueService->getNextAvailableSlot($socialAccountId, $afterTime);
 
         if (!$nextSlot) {
-            return response()->json([
-                'success' => false,
-                'message' => 'No available slots found. Please configure queue first.'
-            ], 404);
+            return $this->error('No available slots found. Please configure queue first.', 404);
         }
 
         return response()->json([
@@ -248,10 +236,7 @@ class PublishingQueueController extends Controller
             try {
                 $scheduledFor = new \DateTime($validated['scheduled_for']);
             } catch (\Exception $e) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Invalid date format'
-                ], 422);
+                return $this->error('Invalid date format', 422);
             }
         }
 
@@ -262,10 +247,7 @@ class PublishingQueueController extends Controller
         );
 
         if (!$success) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to schedule post. Check if queue is configured and has available slots.'
-            ], 400);
+            return $this->error('Failed to schedule post. Check if queue is configured and has available slots.', 400);
         }
 
         // Get the actual scheduled time
@@ -295,10 +277,7 @@ class PublishingQueueController extends Controller
         $success = $this->queueService->removeFromQueue($postId);
 
         if (!$success) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to remove post from queue'
-            ], 400);
+            return $this->error('Failed to remove post from queue', 400);
         }
 
         return response()->json([
@@ -319,9 +298,7 @@ class PublishingQueueController extends Controller
     {
         $stats = $this->queueService->getQueueStatistics($socialAccountId);
 
-        return response()->json([
-            'success' => true,
-            'data' => $stats
-        ]);
+        return $this->success($stats
+        );
     }
 }

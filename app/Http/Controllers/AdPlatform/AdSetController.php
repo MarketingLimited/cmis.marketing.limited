@@ -15,6 +15,8 @@ use Illuminate\Support\Facades\Log;
  */
 class AdSetController extends Controller
 {
+    use ApiResponse;
+
     /**
      * Display a listing of ad sets with filtering and pagination
      *

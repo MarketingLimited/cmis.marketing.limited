@@ -2,96 +2,15 @@
 
 namespace App\Models\Analytics;
 
+use App\Models\Concerns\HasOrganization;
+
 use App\Models\Core\Org;
 use App\Models\Core\User;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-
-/**
- * Alert History Model (Phase 13)
- *
- * Records of triggered alerts with status tracking
- *
- * @property string $alert_id
- * @property string $rule_id
- * @property string $org_id
- * @property \Carbon\Carbon $triggered_at
- * @property string $entity_type
- * @property string|null $entity_id
- * @property string $metric
- * @property float $actual_value
- * @property float $threshold_value
- * @property string $condition
- * @property string $severity
- * @property string $message
- * @property array|null $metadata
- * @property string $status
- * @property string|null $acknowledged_by
- * @property \Carbon\Carbon|null $acknowledged_at
- * @property \Carbon\Carbon|null $resolved_at
- * @property \Carbon\Carbon|null $snoozed_until
- * @property string|null $resolution_notes
- */
-class AlertHistory extends Model
-{
-    use HasFactory, HasUuids;
-
-    protected $table = 'cmis.alert_history';
-    protected $primaryKey = 'alert_id';
-    public $incrementing = false;
-    protected $keyType = 'string';
-
-    protected $fillable = [
-        'rule_id',
-        'org_id',
-        'triggered_at',
-        'entity_type',
-        'entity_id',
-        'metric',
-        'actual_value',
-        'threshold_value',
-        'condition',
-        'severity',
-        'message',
-        'metadata',
-        'status',
-        'acknowledged_by',
-        'acknowledged_at',
-        'resolved_at',
-        'snoozed_until',
-        'resolution_notes'
-    ];
-
-    protected $casts = [
-        'triggered_at' => 'datetime',
-        'actual_value' => 'float',
-        'threshold_value' => 'float',
-        'metadata' => 'array',
-        'acknowledged_at' => 'datetime',
-        'resolved_at' => 'datetime',
-        'snoozed_until' => 'datetime',
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime'
-    ];
-
-    /**
-     * Get the alert rule
-     */
-    public function rule(): BelongsTo
-    {
-        return $this->belongsTo(AlertRule::class, 'rule_id', 'rule_id');
-    }
-
-    /**
-     * Get the organization
-     */
-    public function org(): BelongsTo
-    {
-        return $this->belongsTo(Org::class, 'org_id', 'org_id');
-    }
 
     /**
      * Get the user who acknowledged the alert
@@ -99,7 +18,6 @@ class AlertHistory extends Model
     public function acknowledger(): BelongsTo
     {
         return $this->belongsTo(User::class, 'acknowledged_by', 'user_id');
-    }
 
     /**
      * Get notifications for this alert
@@ -107,7 +25,6 @@ class AlertHistory extends Model
     public function notifications(): HasMany
     {
         return $this->hasMany(AlertNotification::class, 'alert_id', 'alert_id');
-    }
 
     /**
      * Scope: New alerts
@@ -115,7 +32,6 @@ class AlertHistory extends Model
     public function scopeNew($query)
     {
         return $query->where('status', 'new');
-    }
 
     /**
      * Scope: Active alerts (not resolved)
@@ -123,7 +39,6 @@ class AlertHistory extends Model
     public function scopeActive($query)
     {
         return $query->whereIn('status', ['new', 'acknowledged', 'snoozed']);
-    }
 
     /**
      * Scope: By severity
@@ -131,7 +46,6 @@ class AlertHistory extends Model
     public function scopeBySeverity($query, string $severity)
     {
         return $query->where('severity', $severity);
-    }
 
     /**
      * Scope: Critical alerts
@@ -139,7 +53,6 @@ class AlertHistory extends Model
     public function scopeCritical($query)
     {
         return $query->where('severity', 'critical');
-    }
 
     /**
      * Scope: Recent alerts
@@ -147,7 +60,6 @@ class AlertHistory extends Model
     public function scopeRecent($query, int $days = 7)
     {
         return $query->where('triggered_at', '>=', now()->subDays($days));
-    }
 
     /**
      * Scope: Snoozed alerts that should be unsnoozed
@@ -156,7 +68,6 @@ class AlertHistory extends Model
     {
         return $query->where('status', 'snoozed')
             ->where('snoozed_until', '<=', now());
-    }
 
     /**
      * Acknowledge alert
@@ -169,7 +80,6 @@ class AlertHistory extends Model
             'acknowledged_at' => now(),
             'resolution_notes' => $notes
         ]);
-    }
 
     /**
      * Resolve alert
@@ -182,7 +92,6 @@ class AlertHistory extends Model
             'resolved_at' => now(),
             'resolution_notes' => $notes
         ]);
-    }
 
     /**
      * Snooze alert
@@ -193,7 +102,6 @@ class AlertHistory extends Model
             'status' => 'snoozed',
             'snoozed_until' => now()->addMinutes($minutes)
         ]);
-    }
 
     /**
      * Unsnooze alert
@@ -204,7 +112,6 @@ class AlertHistory extends Model
             'status' => 'new',
             'snoozed_until' => null
         ]);
-    }
 
     /**
      * Check if alert is snoozed
@@ -214,7 +121,6 @@ class AlertHistory extends Model
         return $this->status === 'snoozed' &&
                $this->snoozed_until &&
                $this->snoozed_until->isFuture();
-    }
 
     /**
      * Check if alert requires attention
@@ -223,5 +129,4 @@ class AlertHistory extends Model
     {
         return in_array($this->status, ['new', 'acknowledged']) &&
                in_array($this->severity, ['critical', 'high']);
-    }
 }

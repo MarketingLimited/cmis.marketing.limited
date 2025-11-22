@@ -2,26 +2,23 @@
 
 namespace App\Models\Analytics;
 
+use App\Models\Concerns\HasOrganization;
+
 use App\Models\Core\Org;
 use App\Models\Campaign;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
-class AnalyticsIntegration extends Model
+class AnalyticsIntegration extends BaseModel
 {
     use HasFactory, SoftDeletes, HasUuids;
-
-    protected $connection = 'pgsql';
+    use HasOrganization;
 
     protected $table = 'cmis.analytics_integrations';
 
     protected $primaryKey = 'integration_id';
-
-    public $incrementing = false;
-
-    protected $keyType = 'string';
 
     public $timestamps = true;
 
@@ -48,13 +45,7 @@ class AnalyticsIntegration extends Model
         'deleted_at' => 'datetime',
     ];
 
-    /**
-     * Get the organization
-     */
-    public function org()
-    {
-        return $this->belongsTo(Org::class, 'org_id', 'org_id');
-    }
+    
 
     /**
      * Get the campaign
@@ -62,7 +53,6 @@ class AnalyticsIntegration extends Model
     public function campaign()
     {
         return $this->belongsTo(Campaign::class, 'campaign_id', 'campaign_id');
-    }
 
     /**
      * Scope to get integrations for a specific org
@@ -70,7 +60,6 @@ class AnalyticsIntegration extends Model
     public function scopeForOrg($query, string $orgId)
     {
         return $query->where('org_id', $orgId);
-    }
 
     /**
      * Scope to get integrations for a specific campaign
@@ -78,7 +67,6 @@ class AnalyticsIntegration extends Model
     public function scopeForCampaign($query, string $campaignId)
     {
         return $query->where('campaign_id', $campaignId);
-    }
 
     /**
      * Scope to filter by platform
@@ -86,5 +74,4 @@ class AnalyticsIntegration extends Model
     public function scopeByPlatform($query, string $platform)
     {
         return $query->where('platform', $platform);
-    }
 }

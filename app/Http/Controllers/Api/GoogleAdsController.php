@@ -8,9 +8,12 @@ use App\Models\Platform\PlatformIntegration;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use App\Http\Controllers\Concerns\ApiResponse;
 
 class GoogleAdsController extends Controller
 {
+    use ApiResponse;
+
     private GoogleAdsService $googleAdsService;
 
     public function __construct(GoogleAdsService $googleAdsService)
@@ -46,10 +49,7 @@ class GoogleAdsController extends Controller
                 ->first();
 
             if (!$integration) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Google Ads integration not found'
-                ], 404);
+                return $this->error('Google Ads integration not found', 404);
             }
 
             $campaigns = $this->googleAdsService->fetchCampaigns(
@@ -103,10 +103,7 @@ class GoogleAdsController extends Controller
                 ->first();
 
             if (!$integration) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Google Ads integration not found'
-                ], 404);
+                return $this->error('Google Ads integration not found', 404);
             }
 
             $campaign = $this->googleAdsService->getCampaignDetails(
@@ -158,10 +155,7 @@ class GoogleAdsController extends Controller
                 ->first();
 
             if (!$integration) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Google Ads integration not found'
-                ], 404);
+                return $this->error('Google Ads integration not found', 404);
             }
 
             $adGroups = $this->googleAdsService->fetchAdGroups(
@@ -212,10 +206,7 @@ class GoogleAdsController extends Controller
                 ->first();
 
             if (!$integration) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Google Ads integration not found'
-                ], 404);
+                return $this->error('Google Ads integration not found', 404);
             }
 
             $ads = $this->googleAdsService->fetchAds(
@@ -271,10 +262,7 @@ class GoogleAdsController extends Controller
                 ->first();
 
             if (!$integration) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Google Ads integration not found'
-                ], 404);
+                return $this->error('Google Ads integration not found', 404);
             }
 
             // Step 1: Create campaign budget
@@ -347,10 +335,7 @@ class GoogleAdsController extends Controller
                 ->first();
 
             if (!$integration) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Google Ads integration not found'
-                ], 404);
+                return $this->error('Google Ads integration not found', 404);
             }
 
             $metrics = $this->googleAdsService->getCampaignMetrics(
@@ -405,10 +390,7 @@ class GoogleAdsController extends Controller
                 ->first();
 
             if (!$integration) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Google Ads integration not found'
-                ], 404);
+                return $this->error('Google Ads integration not found', 404);
             }
 
             $this->googleAdsService->clearCache($integration->platform_account_id);

@@ -3,14 +3,12 @@
 namespace App\Models\Other;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Module extends Model
+class Module extends BaseModel
 {
     use HasFactory, SoftDeletes;
-
-    protected $connection = 'pgsql';
 
     protected $table = 'cmis.modules';
 
@@ -35,7 +33,6 @@ class Module extends Model
     public function anchors()
     {
         return $this->hasMany(Anchor::class, 'module_id', 'module_id');
-    }
 
     /**
      * Scope to find by code
@@ -43,5 +40,4 @@ class Module extends Model
     public function scopeByCode($query, string $code)
     {
         return $query->where('code', $code);
-    }
 }
