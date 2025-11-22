@@ -3,19 +3,18 @@
 namespace App\Models\AdPlatform;
 
 use App\Models\Concerns\HasOrganization;
-
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
 class AdCampaign extends BaseModel
 {
-    use HasFactory, SoftDeletes, HasUuids;
+    use HasFactory, SoftDeletes;
     use HasOrganization;
 
     protected $table = 'cmis.ad_campaigns';
     protected $primaryKey = 'id';
+
     protected $fillable = [
         'id',
         'org_id',
@@ -48,14 +47,13 @@ class AdCampaign extends BaseModel
         'deleted_at' => 'datetime',
     ];
 
-    
-
     /**
      * Get the integration (platform connection)
      */
     public function integration()
     {
         return $this->belongsTo(\App\Models\Core\Integration::class, 'integration_id', 'integration_id');
+    }
 
     /**
      * Scope active campaigns
@@ -66,6 +64,8 @@ class AdCampaign extends BaseModel
             ->where(function ($q) {
                 $q->whereNull('end_date')
                     ->orWhere('end_date', '>=', now());
+            });
+    }
 
     /**
      * Scope by objective
@@ -73,6 +73,7 @@ class AdCampaign extends BaseModel
     public function scopeByObjective($query, string $objective)
     {
         return $query->where('objective', $objective);
+    }
 
     /**
      * Scope by status
@@ -80,6 +81,7 @@ class AdCampaign extends BaseModel
     public function scopeByStatus($query, string $status)
     {
         return $query->where('status', $status);
+    }
 
     /**
      * Get ad sets for this campaign
@@ -87,6 +89,7 @@ class AdCampaign extends BaseModel
     public function adSets()
     {
         return $this->hasMany(AdSet::class, 'campaign_external_id', 'campaign_external_id');
+    }
 
     /**
      * Get ad account
@@ -100,6 +103,8 @@ class AdCampaign extends BaseModel
             'integration_id',
             'integration_id',
             'integration_id'
+        );
+    }
 
     /**
      * Get metrics for this campaign
@@ -108,6 +113,7 @@ class AdCampaign extends BaseModel
     {
         return $this->hasMany(AdMetric::class, 'entity_external_id', 'campaign_external_id')
             ->where('entity_level', 'campaign');
+    }
 
     /**
      * Scope by organization
@@ -115,6 +121,7 @@ class AdCampaign extends BaseModel
     public function scopeForOrg($query, string $orgId)
     {
         return $query->where('org_id', $orgId);
+    }
 
     /**
      * Scope by integration
@@ -122,6 +129,7 @@ class AdCampaign extends BaseModel
     public function scopeForIntegration($query, string $integrationId)
     {
         return $query->where('integration_id', $integrationId);
+    }
 
     /**
      * Scope by provider/platform
@@ -129,6 +137,7 @@ class AdCampaign extends BaseModel
     public function scopeByProvider($query, string $provider)
     {
         return $query->where('provider', $provider);
+    }
 
     /**
      * Scope running campaigns
@@ -143,6 +152,8 @@ class AdCampaign extends BaseModel
             ->where(function ($q) {
                 $q->whereNull('end_date')
                     ->orWhere('end_date', '>=', now());
+            });
+    }
 
     /**
      * Check if campaign is running
@@ -151,14 +162,18 @@ class AdCampaign extends BaseModel
     {
         if ($this->status !== 'active') {
             return false;
+        }
 
         if ($this->start_date && $this->start_date->isFuture()) {
             return false;
+        }
 
         if ($this->end_date && $this->end_date->isPast()) {
             return false;
+        }
 
         return true;
+    }
 
     /**
      * Get performance summary
@@ -181,6 +196,7 @@ class AdCampaign extends BaseModel
                 'ctr' => 0,
                 'cpc' => 0,
             ];
+        }
 
         $ctr = $metrics->total_impressions > 0
             ? ($metrics->total_clicks / $metrics->total_impressions) * 100
@@ -197,4 +213,5 @@ class AdCampaign extends BaseModel
             'ctr' => round($ctr, 2),
             'cpc' => round($cpc, 2),
         ];
+    }
 }
