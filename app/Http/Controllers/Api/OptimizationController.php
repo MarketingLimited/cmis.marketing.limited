@@ -19,9 +19,12 @@ use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Log;
+use App\Http\Controllers\Concerns\ApiResponse;
 
 class OptimizationController extends Controller
 {
+    use ApiResponse;
+
     public function __construct(
         protected BudgetOptimizer $budgetOptimizer,
         protected AudienceAnalyzer $audienceAnalyzer,

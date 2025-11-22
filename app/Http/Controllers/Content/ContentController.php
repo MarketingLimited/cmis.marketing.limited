@@ -7,9 +7,12 @@ use App\Models\Creative\ContentItem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use App\Http\Controllers\Concerns\ApiResponse;
 
 class ContentController extends Controller
 {
+    use ApiResponse;
+
     /**
      * Display a listing of content items.
      */

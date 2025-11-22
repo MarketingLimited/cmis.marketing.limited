@@ -7,9 +7,12 @@ use App\Http\Controllers\Controller;
 use App\Services\CMIS\SemanticSearchService;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Gate;
+use App\Http\Controllers\Concerns\ApiResponse;
 
 class SemanticSearchController extends Controller
 {
+    use ApiResponse;
+
     /**
      * تنفيذ البحث الدلالي عبر API.
      */

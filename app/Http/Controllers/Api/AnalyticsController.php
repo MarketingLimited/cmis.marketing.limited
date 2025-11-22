@@ -7,9 +7,12 @@ use App\Services\Analytics\AiAnalyticsService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use App\Http\Controllers\Concerns\ApiResponse;
 
 class AnalyticsController extends Controller
 {
+    use ApiResponse;
+
     private AiAnalyticsService $analyticsService;
 
     public function __construct(AiAnalyticsService $analyticsService)

@@ -8,9 +8,12 @@ use App\Repositories\Analytics\AnalyticsRepository;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
+use App\Http\Controllers\Concerns\ApiResponse;
 
 class KpiController extends Controller
 {
+    use ApiResponse;
+
     protected AnalyticsRepository $analyticsRepo;
 
     public function __construct(AnalyticsRepository $analyticsRepo)

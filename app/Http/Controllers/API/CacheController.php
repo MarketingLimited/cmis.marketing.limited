@@ -14,6 +14,8 @@ use Illuminate\Http\{Request, JsonResponse};
  */
 class CacheController extends Controller
 {
+    use ApiResponse;
+
     public function __construct(
         private CacheService $cacheService
     ) {}

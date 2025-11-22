@@ -16,6 +16,8 @@ use Illuminate\Support\Facades\Storage;
  */
 class AssetController extends Controller
 {
+    use ApiResponse;
+
     /**
      * Constructor - Apply authentication middleware
      */
@@ -223,10 +225,7 @@ class AssetController extends Controller
                 'variation_tag',
             ]));
 
-            return response()->json([
-                'data' => $asset,
-                'message' => 'Asset updated successfully'
-            ]);
+            return $this->success($asset, 'Asset updated successfully');
         } catch (\Exception $e) {
             Log::error("Failed to update asset: {$e->getMessage()}");
             return response()->json([

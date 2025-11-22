@@ -10,9 +10,12 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use App\Http\Controllers\Concerns\ApiResponse;
 
 class IntegrationController extends Controller
 {
+    use ApiResponse;
+
     /**
      * Constructor - Apply authentication middleware
      */

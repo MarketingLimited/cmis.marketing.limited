@@ -15,6 +15,8 @@ use Illuminate\Support\Facades\Validator;
  */
 class BestTimeController extends Controller
 {
+    use ApiResponse;
+
     protected BestTimeAnalyzerService $analyzer;
 
     public function __construct(BestTimeAnalyzerService $analyzer)
@@ -70,10 +72,8 @@ class BestTimeController extends Controller
 
         $recommendations = $this->analyzer->getRecommendations($socialAccountId, $lookbackDays);
 
-        return response()->json([
-            'success' => true,
-            'data' => $recommendations
-        ]);
+        return $this->success($recommendations
+        );
     }
 
     /**
@@ -123,9 +123,7 @@ class BestTimeController extends Controller
     {
         $patterns = $this->analyzer->getAudienceActivityPatterns($socialAccountId);
 
-        return response()->json([
-            'success' => true,
-            'data' => $patterns
-        ]);
+        return $this->success($patterns
+        );
     }
 }

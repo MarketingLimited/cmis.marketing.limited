@@ -15,6 +15,8 @@ use Illuminate\Support\Facades\Validator;
  */
 class ContentLibraryController extends Controller
 {
+    use ApiResponse;
+
     protected ContentLibraryService $libraryService;
 
     public function __construct(ContentLibraryService $libraryService)
@@ -46,7 +48,7 @@ class ContentLibraryController extends Controller
         try {
             $userId = $request->user()->user_id ?? null;
             if (!$userId) {
-                return response()->json(['success' => false, 'message' => 'Authentication required'], 401);
+                return $this->error('Authentication required', 401);
             }
 
             $result = $this->libraryService->uploadAsset($orgId, [
@@ -171,7 +173,7 @@ class ContentLibraryController extends Controller
         try {
             $userId = $request->user()->user_id ?? null;
             if (!$userId) {
-                return response()->json(['success' => false, 'message' => 'Authentication required'], 401);
+                return $this->error('Authentication required', 401);
             }
 
             $result = $this->libraryService->createFolder($orgId, [

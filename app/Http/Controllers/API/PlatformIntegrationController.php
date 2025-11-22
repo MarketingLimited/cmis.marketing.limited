@@ -16,6 +16,8 @@ use Illuminate\Support\Facades\Log;
  */
 class PlatformIntegrationController extends Controller
 {
+    use ApiResponse;
+
     /**
      * Get OAuth authorization URL for a platform
      *

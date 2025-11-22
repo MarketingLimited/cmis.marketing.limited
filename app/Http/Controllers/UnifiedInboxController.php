@@ -5,9 +5,12 @@ namespace App\Http\Controllers;
 use App\Services\UnifiedInboxService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use App\Http\Controllers\Concerns\ApiResponse;
 
 class UnifiedInboxController extends Controller
 {
+    use ApiResponse;
+
     protected $inboxService;
 
     public function __construct()

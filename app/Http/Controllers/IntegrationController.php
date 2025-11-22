@@ -16,6 +16,8 @@ use Carbon\Carbon;
  */
 class IntegrationController extends Controller
 {
+    use ApiResponse;
+
     /**
      * Get list of user's platform integrations
      *
@@ -191,10 +193,7 @@ class IntegrationController extends Controller
 
             $integration->update($request->only(['name', 'is_active']));
 
-            return response()->json([
-                'data' => $integration,
-                'message' => 'Integration updated successfully'
-            ]);
+            return $this->success($integration, 'Integration updated successfully');
         } catch (\Exception $e) {
             Log::error("Failed to update integration: {$e->getMessage()}");
             return response()->json([
@@ -279,10 +278,7 @@ class IntegrationController extends Controller
                 'sync_status' => 'success'
             ]);
 
-            return response()->json([
-                'data' => $integration,
-                'message' => 'Token refreshed successfully'
-            ]);
+            return $this->success($integration, 'Token refreshed successfully');
         } catch (\Exception $e) {
             Log::error("Failed to refresh token: {$e->getMessage()}");
             return response()->json([

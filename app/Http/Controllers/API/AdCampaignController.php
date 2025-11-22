@@ -16,6 +16,8 @@ use Illuminate\Support\Facades\Log;
  */
 class AdCampaignController extends Controller
 {
+    use ApiResponse;
+
     protected AdCampaignManagerService $adCampaignService;
 
     public function __construct(AdCampaignManagerService $adCampaignService)

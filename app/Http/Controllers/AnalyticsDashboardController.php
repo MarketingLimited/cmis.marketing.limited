@@ -22,6 +22,8 @@ use Illuminate\Support\Facades\Validator;
  */
 class AnalyticsDashboardController extends Controller
 {
+    use ApiResponse;
+
     protected DashboardService $dashboardService;
 
     public function __construct(DashboardService $dashboardService)
@@ -64,10 +66,8 @@ class AnalyticsDashboardController extends Controller
         try {
             $dashboard = $this->dashboardService->getAccountDashboard($socialAccountId, $filters);
 
-            return response()->json([
-                'success' => true,
-                'data' => $dashboard
-            ]);
+            return $this->success($dashboard
+            );
 
         } catch (\Exception $e) {
             return response()->json([
@@ -109,10 +109,8 @@ class AnalyticsDashboardController extends Controller
         try {
             $overview = $this->dashboardService->getOrgOverview($orgId, $filters);
 
-            return response()->json([
-                'success' => true,
-                'data' => $overview
-            ]);
+            return $this->success($overview
+            );
 
         } catch (\Exception $e) {
             return response()->json([
@@ -155,10 +153,8 @@ class AnalyticsDashboardController extends Controller
         try {
             $performance = $this->dashboardService->getContentPerformance($socialAccountId, $filters);
 
-            return response()->json([
-                'success' => true,
-                'data' => $performance
-            ]);
+            return $this->success($performance
+            );
 
         } catch (\Exception $e) {
             return response()->json([
@@ -200,10 +196,8 @@ class AnalyticsDashboardController extends Controller
         try {
             $comparison = $this->dashboardService->getPlatformComparison($orgId, $filters);
 
-            return response()->json([
-                'success' => true,
-                'data' => $comparison
-            ]);
+            return $this->success($comparison
+            );
 
         } catch (\Exception $e) {
             return response()->json([

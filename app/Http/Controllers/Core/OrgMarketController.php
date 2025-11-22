@@ -9,9 +9,12 @@ use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
+use App\Http\Controllers\Concerns\ApiResponse;
 
 class OrgMarketController extends Controller
 {
+    use ApiResponse;
+
     /**
      * Display a listing of organization markets.
      */
@@ -78,11 +81,8 @@ class OrgMarketController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Validation failed',
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors()
+            , 'Validation failed');
         }
 
         // Check if market already exists for this org
@@ -91,10 +91,7 @@ class OrgMarketController extends Controller
             ->exists();
 
         if ($exists) {
-            return response()->json([
-                'success' => false,
-                'message' => 'This market is already added to your organization'
-            ], 422);
+            return $this->error('This market is already added to your organization', 422);
         }
 
         $data = $validator->validated();
@@ -119,10 +116,8 @@ class OrgMarketController extends Controller
             ->where('org_id', $request->user()->current_org_id)
             ->firstOrFail();
 
-        return response()->json([
-            'success' => true,
-            'data' => $orgMarket
-        ]);
+        return $this->success($orgMarket
+        );
     }
 
     /**
@@ -149,11 +144,8 @@ class OrgMarketController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Validation failed',
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors()
+            , 'Validation failed');
         }
 
         $orgMarket->update($validator->validated());
@@ -194,10 +186,8 @@ class OrgMarketController extends Controller
             ->orderBy('name')
             ->get();
 
-        return response()->json([
-            'success' => true,
-            'data' => $markets
-        ]);
+        return $this->success($markets
+        );
     }
 
     /**
@@ -220,10 +210,8 @@ class OrgMarketController extends Controller
             'avg_priority' => OrgMarket::where('org_id', $orgId)->avg('priority_level'),
         ];
 
-        return response()->json([
-            'success' => true,
-            'data' => $stats
-        ]);
+        return $this->success($stats
+        );
     }
 
     /**
@@ -240,11 +228,8 @@ class OrgMarketController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Validation failed',
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors()
+            , 'Validation failed');
         }
 
         $roi = $orgMarket->calculateRoi($request->revenue);

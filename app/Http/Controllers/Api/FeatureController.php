@@ -11,6 +11,8 @@ use Illuminate\Http\JsonResponse;
  */
 class FeatureController extends Controller
 {
+    use ApiResponse;
+
     public function __construct(
         protected FeatureFlagService $featureFlags
     ) {}

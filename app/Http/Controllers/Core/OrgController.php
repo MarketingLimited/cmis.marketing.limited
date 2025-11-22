@@ -8,9 +8,12 @@ use App\Models\Core\{Org, UserOrg, Role};
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use App\Http\Controllers\Concerns\ApiResponse;
 
 class OrgController extends Controller
 {
+    use ApiResponse;
+
     /**
      * Constructor - Apply authentication middleware
      */

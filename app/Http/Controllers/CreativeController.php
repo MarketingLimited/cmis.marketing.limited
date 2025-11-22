@@ -10,9 +10,12 @@ use App\Http\Resources\Creative\CreativeAssetResource;
 use App\Models\CreativeAsset;
 use App\Services\CreativeService;
 use Illuminate\Http\Request;
+use App\Http\Controllers\Concerns\ApiResponse;
 
 class CreativeController extends Controller
 {
+    use ApiResponse;
+
     protected CreativeService $creativeService;
 
     public function __construct(CreativeService $creativeService)

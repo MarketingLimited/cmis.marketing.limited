@@ -13,9 +13,12 @@ use App\Services\CampaignService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use App\Http\Controllers\Concerns\ApiResponse;
 
 class CampaignController extends Controller
 {
+    use ApiResponse;
+
     protected CampaignService $campaignService;
 
     public function __construct(CampaignService $campaignService)

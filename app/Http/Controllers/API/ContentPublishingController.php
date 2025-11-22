@@ -18,6 +18,8 @@ use App\Jobs\PublishScheduledPost;
  */
 class ContentPublishingController extends Controller
 {
+    use ApiResponse;
+
     /**
      * Publish content immediately to one or more platforms
      *

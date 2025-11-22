@@ -14,6 +14,8 @@ use Illuminate\Support\Facades\Log;
  */
 class BundleController extends Controller
 {
+    use ApiResponse;
+
     /**
      * Display a listing of bundles with filtering and pagination
      *
