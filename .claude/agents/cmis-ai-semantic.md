@@ -207,6 +207,174 @@ grep -r "ProcessBatch.*Embedding\|batch.*embedding" app/Jobs/
 
 ---
 
+## 🆕 STANDARDIZED PATTERNS (CMIS 2025-11-22)
+
+**ALWAYS use these standardized patterns in AI/semantic search code:**
+
+### Embedding Models: BaseModel + HasOrganization
+
+```php
+use App\Models\BaseModel;
+use App\Models\Concerns\HasOrganization;
+
+class KnowledgeItem extends BaseModel  // ✅ NOT Model
+{
+    use HasOrganization;  // ✅ Automatic org() relationship
+
+    protected $table = 'cmis_knowledge.knowledge_items';
+
+    protected $fillable = [
+        'org_id',
+        'title',
+        'content',
+        'embedding',  // vector column
+        'embedded_at',
+    ];
+
+    protected $casts = [
+        'embedded_at' => 'datetime',
+        'embedding' => 'array',  // Auto JSON encode/decode
+    ];
+
+    // Method required for batch embedding
+    public function getEmbeddableText(): string
+    {
+        return $this->title . ' ' . $this->content;
+    }
+
+    // BaseModel provides UUID handling
+    // HasOrganization provides org() relationship
+}
+```
+
+### Semantic Search Controllers: ApiResponse Trait
+
+```php
+use App\Http\Controllers\Controller;
+use App\Http\Controllers\Concerns\ApiResponse;
+use App\Services\AI\SemanticSearchService;
+
+class SemanticSearchController extends Controller
+{
+    use ApiResponse;  // ✅ Standardized JSON responses
+
+    protected $searchService;
+
+    public function __construct(SemanticSearchService $searchService)
+    {
+        $this->searchService = $searchService;
+    }
+
+    public function search(Request $request)
+    {
+        $validated = $request->validate([
+            'query' => 'required|string|max:1000',
+            'limit' => 'sometimes|integer|min:1|max:50',
+            'min_similarity' => 'sometimes|numeric|min:0|max:1',
+        ]);
+
+        try {
+            $results = $this->searchService->search(
+                query: $validated['query'],
+                table: 'cmis_knowledge.knowledge_items',
+                limit: $validated['limit'] ?? 10,
+                minSimilarity: $validated['min_similarity'] ?? 0.7
+            );
+
+            // ✅ Use trait method for success response
+            return $this->success([
+                'results' => $results,
+                'count' => count($results),
+                'query' => $validated['query'],
+            ], 'Semantic search completed successfully');
+
+        } catch (\Exception $e) {
+            // ✅ Use trait method for error response
+            return $this->error('Semantic search failed: ' . $e->getMessage(), 500);
+        }
+    }
+
+    public function findSimilar(Request $request, string $id)
+    {
+        $item = KnowledgeItem::findOrFail($id);
+
+        try {
+            $similar = $this->searchService->findSimilar(
+                item: $item,
+                table: 'cmis_knowledge.knowledge_items',
+                limit: $request->input('limit', 5)
+            );
+
+            return $this->success([
+                'item' => $item,
+                'similar_items' => $similar,
+                'count' => count($similar),
+            ], 'Similar items found successfully');
+
+        } catch (\Exception $e) {
+            return $this->error('Failed to find similar items: ' . $e->getMessage(), 500);
+        }
+    }
+}
+```
+
+### AI Jobs: Queue + BaseModel Integration
+
+```php
+use App\Jobs\Job;
+use Illuminate\Queue\SerializesModels;
+use Illuminate\Queue\InteractsWithQueue;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use App\Services\AI\EmbeddingService;
+
+class GenerateEmbeddingsJob implements ShouldQueue
+{
+    use InteractsWithQueue, SerializesModels;
+
+    public $tries = 3;
+    public $backoff = [60, 300, 900];
+
+    protected $modelClass;
+    protected $modelId;
+
+    public function __construct(string $modelClass, string $modelId)
+    {
+        $this->modelClass = $modelClass;
+        $this->modelId = $modelId;
+    }
+
+    public function handle(EmbeddingService $embeddingService): void
+    {
+        $model = $this->modelClass::find($this->modelId);
+
+        if (!$model) {
+            Log::warning("Model not found for embedding generation", [
+                'class' => $this->modelClass,
+                'id' => $this->modelId,
+            ]);
+            return;
+        }
+
+        // Generate embedding
+        $text = $model->getEmbeddableText();
+        $embedding = $embeddingService->embed($text);
+
+        // Update model (BaseModel handles UUID, org context)
+        $model->update([
+            'embedding' => json_encode($embedding),
+            'embedded_at' => now(),
+        ]);
+
+        Log::info("Embedding generated successfully", [
+            'class' => $this->modelClass,
+            'id' => $this->modelId,
+        ]);
+    }
+}
+```
+
+---
+
 ## 🏗️ AI & SEMANTIC SEARCH PATTERNS
 
 ### Pattern 1: Embedding Generation Service
@@ -1003,8 +1171,8 @@ SELECT * FROM items ORDER BY embedding <=> query_vector LIMIT 10; -- Fast!
 
 ---
 
-**Version:** 2.0 - Adaptive AI Intelligence
-**Last Updated:** 2025-11-18
+**Version:** 2.1 - Adaptive AI Intelligence with Standardized Patterns
+**Last Updated:** 2025-11-22
 **Framework:** META_COGNITIVE_FRAMEWORK
 **Specialty:** Vector Embeddings, Semantic Search, pgvector, AI Recommendations
 

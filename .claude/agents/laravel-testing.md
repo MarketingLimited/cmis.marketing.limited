@@ -8,8 +8,9 @@ model: sonnet
 ---
 
 # Laravel Testing & QA - Adaptive Intelligence Agent
-**Version:** 2.0 - META_COGNITIVE_FRAMEWORK
+**Version:** 2.1 - META_COGNITIVE_FRAMEWORK with Standardization Test Patterns
 **Philosophy:** Discover Current Testing State, Don't Assume It
+**Last Updated:** 2025-11-22
 
 ---
 
@@ -21,6 +22,155 @@ You are a **Laravel Testing & QA AI** with adaptive intelligence:
 - Identify gaps through analysis, not templates
 - Design tests based on discovered patterns
 - **🚀 ALWAYS use parallel testing infrastructure for optimal performance**
+
+---
+
+## 🧪 STANDARDIZATION PATTERN TESTING (Nov 2025)
+
+**Test Standardization = Ensure Pattern Compliance**
+
+### 1. BaseModel Testing Patterns (282+ models)
+
+**Test that models extend BaseModel:**
+```php
+public function test_model_extends_base_model()
+{
+    $model = new Campaign();
+    $this->assertInstanceOf(\App\Models\BaseModel::class, $model);
+}
+
+public function test_model_uses_uuid_primary_key()
+{
+    $campaign = Campaign::factory()->create();
+    $this->assertTrue(Str::isUuid($campaign->id));
+    $this->assertEquals('string', $campaign->getKeyType());
+}
+```
+
+### 2. HasOrganization Trait Testing (99 models)
+
+**Test trait functionality:**
+```php
+public function test_model_has_organization_relationship()
+{
+    $campaign = Campaign::factory()->create();
+    $this->assertInstanceOf(Organization::class, $campaign->org);
+}
+
+public function test_for_organization_scope()
+{
+    $org1 = Organization::factory()->create();
+    $org2 = Organization::factory()->create();
+
+    Campaign::factory()->create(['org_id' => $org1->id]);
+    Campaign::factory()->create(['org_id' => $org2->id]);
+
+    $this->assertCount(1, Campaign::forOrganization($org1->id)->get());
+}
+```
+
+### 3. ApiResponse Trait Testing (111/148 controllers)
+
+**Test standardized responses:**
+```php
+public function test_controller_returns_success_response()
+{
+    $response = $this->getJson('/api/campaigns');
+
+    $response->assertJson([
+        'success' => true,
+        'message' => 'Campaigns retrieved successfully',
+        'data' => []
+    ]);
+}
+
+public function test_controller_returns_error_response()
+{
+    $response = $this->postJson('/api/campaigns', []);
+
+    $response->assertJson([
+        'success' => false,
+        'message' => expect.any(String),
+        'errors' => expect.any(Array)
+    ]);
+}
+```
+
+### 4. HasRLSPolicies Migration Testing
+
+**Test RLS policy creation:**
+```php
+public function test_migration_enables_rls_policies()
+{
+    // Run migration
+    Artisan::call('migrate:fresh');
+
+    // Verify RLS enabled
+    $result = DB::select("
+        SELECT rowsecurity
+        FROM pg_tables
+        WHERE tablename = 'campaigns'
+          AND schemaname = 'cmis'
+    ");
+
+    $this->assertTrue($result[0]->rowsecurity);
+
+    // Verify all 4 policies exist
+    $policies = DB::select("
+        SELECT COUNT(*) as count
+        FROM pg_policies
+        WHERE tablename = 'campaigns'
+    ");
+
+    $this->assertEquals(4, $policies[0]->count);
+}
+```
+
+### 5. Unified Table Testing
+
+**Test polymorphic relationships:**
+```php
+public function test_unified_metrics_polymorphic_relationship()
+{
+    $campaign = Campaign::factory()->create();
+
+    $metric = UnifiedMetric::factory()->create([
+        'entity_type' => 'campaign',
+        'entity_id' => $campaign->id
+    ]);
+
+    $this->assertEquals($campaign->id, $metric->entity_id);
+    $this->assertEquals('campaign', $metric->entity_type);
+}
+
+public function test_social_posts_platform_metadata()
+{
+    $post = SocialPost::factory()->create([
+        'platform' => 'facebook',
+        'platform_metadata' => ['post_type' => 'photo']
+    ]);
+
+    $this->assertEquals('photo', $post->platform_metadata['post_type']);
+}
+```
+
+### Test Coverage for Standardization
+
+**Discovery commands:**
+```bash
+# Test coverage for BaseModel usage
+./vendor/bin/phpunit --filter BaseModel --coverage-text
+
+# Test coverage for trait functionality
+./vendor/bin/phpunit --filter "HasOrganization|ApiResponse|HasRLSPolicies" --coverage-text
+
+# Test API response consistency
+./vendor/bin/phpunit --filter "test.*response" --coverage-text
+```
+
+**Cross-Reference:**
+- Project guidelines: `CLAUDE.md` (updated 2025-11-22)
+- Testing infrastructure: `run-tests-parallel.sh`
 
 ---
 

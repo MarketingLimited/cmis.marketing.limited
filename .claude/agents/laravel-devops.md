@@ -921,6 +921,198 @@ systemctl status nginx
 
 ---
 
+## 🆕 Standardization Pattern Validation (Nov 2025)
+
+When preparing code for deployment, validate that standardization patterns have been applied. This ensures consistency and reduces defects.
+
+### Pre-Deployment Checks for Standardization
+
+**Check BaseModel Adoption:**
+
+```bash
+# Find all models
+models_total=$(find app/Models -name "*.php" -type f | wc -l)
+
+# Count BaseModel adoption
+basemodel=$(grep -r "extends BaseModel" app/Models/ | wc -l)
+
+# Calculate percentage
+adoption=$((basemodel * 100 / models_total))
+
+echo "BaseModel Adoption: $basemodel/$models_total ($adoption%)"
+
+# Fail deployment if <95% adoption
+if [ $adoption -lt 95 ]; then
+    echo "ERROR: BaseModel adoption below 95%"
+    echo "Found $(($models_total - $basemodel)) models still using old pattern"
+    exit 1
+fi
+```
+
+**Check ApiResponse Adoption (Controllers):**
+
+```bash
+# Find all API controllers
+controllers=$(find app/Http/Controllers/API -name "*.php" -type f | wc -l)
+
+# Count ApiResponse trait usage
+apiresponse=$(grep -r "use ApiResponse" app/Http/Controllers/API/ | wc -l)
+
+# Calculate percentage
+adoption=$((apiresponse * 100 / controllers))
+
+echo "ApiResponse Adoption: $apiresponse/$controllers ($adoption%)"
+
+# Warn if below 95%
+if [ $adoption -lt 95 ]; then
+    echo "WARNING: ApiResponse adoption below 95%"
+    echo "Found $(($controllers - $apiresponse)) controllers with manual response building"
+fi
+```
+
+**Check HasOrganization Trait:**
+
+```bash
+# Count models with organization relationships
+org_models=$(grep -r "belongsTo(Organization" app/Models/ | wc -l)
+
+# Count HasOrganization trait usage
+has_org=$(grep -r "use HasOrganization" app/Models/ | wc -l)
+
+echo "HasOrganization Trait: $has_org/$org_models"
+
+if [ $has_org -lt $org_models ]; then
+    echo "WARNING: $(($org_models - $has_org)) models have org relationship but no trait"
+fi
+```
+
+**Check RLS Policy Implementation:**
+
+```bash
+# Count migrations
+migrations=$(find database/migrations -name "*.php" -type f | wc -l)
+
+# Count HasRLSPolicies usage
+has_rls=$(grep -r "use HasRLSPolicies\|enableRLS" database/migrations/ | wc -l)
+
+echo "RLS Policies: $has_rls/$migrations migrations with RLS"
+
+# Verify no manual DB::statement for RLS
+manual_rls=$(grep -r "CREATE POLICY\|ALTER TABLE.*ENABLE ROW LEVEL" database/migrations/ | wc -l)
+
+if [ $manual_rls -gt 0 ]; then
+    echo "WARNING: Found $manual_rls manual RLS statements (should use HasRLSPolicies trait)"
+fi
+```
+
+### Deployment Validation Script
+
+Create `scripts/validate-standardization.sh`:
+
+```bash
+#!/bin/bash
+
+echo "=== CMIS Standardization Pattern Validation ==="
+echo ""
+
+# Set thresholds
+BASEMODEL_THRESHOLD=95
+APIRESPONSE_THRESHOLD=90
+WARNING_COUNT=0
+ERROR_COUNT=0
+
+# Check BaseModel
+echo "1. Checking BaseModel adoption..."
+models_total=$(find app/Models -name "*.php" -type f | wc -l)
+basemodel=$(grep -r "extends BaseModel" app/Models/ | wc -l)
+adoption=$((basemodel * 100 / models_total))
+
+if [ $adoption -lt $BASEMODEL_THRESHOLD ]; then
+    echo "   ❌ ERROR: BaseModel adoption $adoption% (threshold: $BASEMODEL_THRESHOLD%)"
+    ERROR_COUNT=$((ERROR_COUNT + 1))
+else
+    echo "   ✅ BaseModel: $adoption% adoption"
+fi
+
+# Check ApiResponse
+echo "2. Checking ApiResponse adoption..."
+controllers=$(find app/Http/Controllers/API -name "*.php" -type f 2>/dev/null | wc -l)
+if [ $controllers -gt 0 ]; then
+    apiresponse=$(grep -r "use ApiResponse" app/Http/Controllers/API/ | wc -l)
+    adoption=$((apiresponse * 100 / controllers))
+
+    if [ $adoption -lt $APIRESPONSE_THRESHOLD ]; then
+        echo "   ⚠️  WARNING: ApiResponse adoption $adoption% (threshold: $APIRESPONSE_THRESHOLD%)"
+        WARNING_COUNT=$((WARNING_COUNT + 1))
+    else
+        echo "   ✅ ApiResponse: $adoption% adoption"
+    fi
+fi
+
+# Check HasOrganization
+echo "3. Checking HasOrganization trait..."
+org_models=$(grep -r "belongsTo(Organization" app/Models/ | wc -l)
+has_org=$(grep -r "use HasOrganization" app/Models/ | wc -l)
+
+if [ $has_org -lt $org_models ]; then
+    echo "   ⚠️  WARNING: $has_org/$org_models models using trait"
+    WARNING_COUNT=$((WARNING_COUNT + 1))
+else
+    echo "   ✅ HasOrganization: All $org_models models using trait"
+fi
+
+# Check RLS Policies
+echo "4. Checking RLS policy implementation..."
+manual_rls=$(grep -r "CREATE POLICY\|ALTER TABLE.*ENABLE ROW LEVEL" database/migrations/ | wc -l)
+
+if [ $manual_rls -gt 0 ]; then
+    echo "   ⚠️  WARNING: Found $manual_rls manual RLS statements (should use trait)"
+    WARNING_COUNT=$((WARNING_COUNT + 1))
+else
+    echo "   ✅ RLS Policies: Using standardized HasRLSPolicies trait"
+fi
+
+echo ""
+echo "=== Summary ==="
+echo "Errors: $ERROR_COUNT"
+echo "Warnings: $WARNING_COUNT"
+
+if [ $ERROR_COUNT -gt 0 ]; then
+    echo ""
+    echo "❌ DEPLOYMENT BLOCKED: Critical standardization issues found"
+    exit 1
+fi
+
+if [ $WARNING_COUNT -gt 0 ]; then
+    echo ""
+    echo "⚠️  DEPLOYMENT WARNING: Address warnings before going to production"
+    exit 0
+fi
+
+echo ""
+echo "✅ DEPLOYMENT APPROVED: All standardization checks passed"
+exit 0
+```
+
+### CI/CD Integration
+
+Add to `.github/workflows/deploy.yml`:
+
+```yaml
+- name: Validate standardization patterns
+  run: bash scripts/validate-standardization.sh
+
+- name: Block deployment on critical errors
+  if: failure()
+  run: exit 1
+```
+
+---
+
+**Version:** 2.0 - META_COGNITIVE_FRAMEWORK
+**Last Updated:** 2025-11-22
+**Approach:** Discover → Analyze → Prioritize → Configure → Verify
+
 ---
 
 ## 📝 DOCUMENTATION OUTPUT GUIDELINES

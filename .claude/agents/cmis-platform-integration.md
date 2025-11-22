@@ -273,6 +273,95 @@ grep -A 10 "retry\|backoff" app/Services/AdPlatforms/
 
 ## 🏗️ PLATFORM INTEGRATION PATTERNS
 
+### 🆕 Standardized Patterns (CMIS 2025-11-22)
+
+**ALWAYS use these standardized patterns in platform integration code:**
+
+#### Integration Model: BaseModel + HasOrganization
+```php
+use App\Models\BaseModel;
+use App\Models\Concerns\HasOrganization;
+
+class Integration extends BaseModel  // ✅ NOT Model
+{
+    use HasOrganization;  // ✅ Automatic org() relationship
+
+    protected $table = 'cmis.integrations';
+
+    protected $fillable = [
+        'org_id',
+        'platform',
+        'access_token',
+        'refresh_token',
+        'expires_at',
+        'scopes',
+        'is_active',
+    ];
+
+    protected $casts = [
+        'expires_at' => 'datetime',
+        'is_active' => 'boolean',
+        'scopes' => 'array',
+    ];
+
+    // BaseModel provides UUID handling
+    // HasOrganization provides org() relationship automatically
+}
+```
+
+#### Platform Controllers: ApiResponse Trait
+```php
+use App\Http\Controllers\Controller;
+use App\Http\Controllers\Concerns\ApiResponse;
+
+class PlatformIntegrationController extends Controller
+{
+    use ApiResponse;  // ✅ Standardized JSON responses
+
+    public function index()
+    {
+        $integrations = Integration::all();
+        return $this->success($integrations, 'Integrations retrieved successfully');
+    }
+
+    public function store(Request $request)
+    {
+        $integration = Integration::create($request->validated());
+        return $this->created($integration, 'Integration created successfully');
+    }
+
+    public function destroy($id)
+    {
+        Integration::findOrFail($id)->delete();
+        return $this->deleted('Integration deleted successfully');
+    }
+}
+```
+
+#### Webhook Controllers: ApiResponse + Validation
+```php
+use App\Http\Controllers\Controller;
+use App\Http\Controllers\Concerns\ApiResponse;
+
+class WebhookController extends Controller
+{
+    use ApiResponse;
+
+    public function handlePlatformWebhook(Request $request, string $platform)
+    {
+        if (!$this->verifySignature($request, $platform)) {
+            return $this->unauthorized('Invalid webhook signature');
+        }
+
+        // Process webhook...
+
+        return $this->success(null, 'Webhook processed successfully');
+    }
+}
+```
+
+---
+
 ### Pattern 1: Platform Connector Interface
 
 **Discover existing interface first:**
@@ -380,11 +469,16 @@ class AdPlatformFactory
 grep -A 10 "meta\|oauth" config/services.php
 ```
 
-Then implement OAuth controller:
+Then implement OAuth controller with **ApiResponse trait**:
 
 ```php
+use App\Http\Controllers\Controller;
+use App\Http\Controllers\Concerns\ApiResponse;  // ✅ Standardized responses
+
 class PlatformIntegrationController extends Controller
 {
+    use ApiResponse;  // ✅ Use trait for consistent JSON responses
+
     public function initiateOAuth(Request $request, string $platform): JsonResponse
     {
         $validated = $request->validate([
@@ -393,7 +487,8 @@ class PlatformIntegrationController extends Controller
 
         // Verify platform is supported
         if (!AdPlatformFactory::isSupported($platform)) {
-            abort(422, "Platform '{$platform}' is not supported");
+            // ✅ Use trait method instead of abort()
+            return $this->error("Platform '{$platform}' is not supported", 422);
         }
 
         $connector = AdPlatformFactory::make($platform);
@@ -414,10 +509,11 @@ class PlatformIntegrationController extends Controller
             'scope' => $this->getScopesForPlatform($platform),
         ]);
 
-        return response()->json([
+        // ✅ Use trait method for success response
+        return $this->success([
             'auth_url' => $authUrl,
             'state' => $state,
-        ]);
+        ], 'Authorization URL generated successfully');
     }
 
     public function handleCallback(Request $request, string $platform): RedirectResponse
@@ -1082,8 +1178,8 @@ public function handle() {
 
 ---
 
-**Version:** 2.0 - Adaptive Platform Integration Intelligence
-**Last Updated:** 2025-11-18
+**Version:** 2.1 - Adaptive Platform Integration Intelligence with Standardized Patterns
+**Last Updated:** 2025-11-22
 **Framework:** META_COGNITIVE_FRAMEWORK
 **Specialty:** OAuth Flows, Webhook Handling, Data Synchronization, Token Management
 
