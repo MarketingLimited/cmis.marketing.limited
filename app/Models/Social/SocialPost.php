@@ -2,83 +2,71 @@
 
 namespace App\Models\Social;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\BaseModel;
+use App\Models\Concerns\HasOrganization;
+use App\Models\Integration;
+use App\Models\Campaign;
+use App\Models\Analytics\Metric;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Support\Str;
 
-class SocialPost extends Model
+/**
+ * SocialPost Model
+ * 
+ * Unified social post model consolidating 5 previous tables.
+ * Handles draft → scheduled → published workflow.
+ */
+class SocialPost extends BaseModel
 {
-    use HasFactory, SoftDeletes;
+    use HasOrganization, SoftDeletes;
 
-    protected $connection = 'pgsql';
     protected $table = 'cmis.social_posts';
-    protected $primaryKey = 'id';
-    public $incrementing = false;
-    protected $keyType = 'string';
-
-    protected static function boot()
-    {
-        parent::boot();
-        static::creating(function ($model) {
-            if (empty($model->{$model->getKeyName()})) {
-                $model->{$model->getKeyName()} = (string) Str::uuid();
-            }
-        });
-    }
 
     protected $fillable = [
-        'id',
-        'org_id',
-        'integration_id',
-        'post_external_id',
-        'caption',
-        'media_url',
-        'permalink',
-        'media_type',
-        'posted_at',
-        'metrics',
-        'fetched_at',
-        'video_url',
-        'thumbnail_url',
-        'children_media',
-        'provider',
+        'org_id', 'integration_id', 'platform', 'account_id', 'account_username',
+        'post_external_id', 'permalink', 'content', 'media', 'post_type',
+        'targeting', 'options', 'status', 'scheduled_at', 'published_at',
+        'failed_at', 'error_message', 'requires_approval', 'created_by',
+        'approved_by', 'approved_at', 'approval_notes', 'campaign_id',
+        'tags', 'impressions_cache', 'engagement_cache', 'metrics_updated_at',
+        'metadata', 'retry_count',
     ];
 
     protected $casts = [
-        'id' => 'string',
-        'org_id' => 'string',
-        'integration_id' => 'string',
-        'metrics' => 'array',
-        'children_media' => 'array',
-        'posted_at' => 'datetime',
-        'fetched_at' => 'datetime',
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime',
-        'deleted_at' => 'datetime',
+        'media' => 'array',
+        'targeting' => 'array',
+        'options' => 'array',
+        'tags' => 'array',
+        'metadata' => 'array',
+        'scheduled_at' => 'datetime',
+        'published_at' => 'datetime',
+        'failed_at' => 'datetime',
+        'approved_at' => 'datetime',
+        'metrics_updated_at' => 'datetime',
+        'requires_approval' => 'boolean',
+        'impressions_cache' => 'integer',
+        'engagement_cache' => 'integer',
+        'retry_count' => 'integer',
     ];
 
-    /**
-     * Get the organization that owns this post.
-     */
-    public function org()
-    {
-        return $this->belongsTo(\App\Models\Core\Org::class, 'org_id', 'org_id');
-    }
+    // Status constants
+    const STATUS_DRAFT = 'draft';
+    const STATUS_PENDING_APPROVAL = 'pending_approval';
+    const STATUS_APPROVED = 'approved';
+    const STATUS_SCHEDULED = 'scheduled';
+    const STATUS_PUBLISHING = 'publishing';
+    const STATUS_PUBLISHED = 'published';
+    const STATUS_FAILED = 'failed';
+    const STATUS_CANCELLED = 'cancelled';
 
-    /**
-     * Get the integration (social account) that this post belongs to.
-     */
-    public function integration()
-    {
-        return $this->belongsTo(\App\Models\Integration::class, 'integration_id', 'integration_id');
-    }
+    // Relationships
+    public function integration() { return $this->belongsTo(Integration::class, 'integration_id'); }
+    public function campaign() { return $this->belongsTo(Campaign::class); }
+    public function metrics() { return $this->morphMany(Metric::class, 'entity'); }
+    public function history() { return $this->hasMany(PostHistory::class, 'post_id'); }
 
-    /**
-     * Get the social account for this post.
-     */
-    public function socialAccount()
-    {
-        return $this->belongsTo(SocialAccount::class, 'integration_id', 'integration_id');
-    }
+    // Scopes
+    public function scopePublished($q) { return $q->where('status', self::STATUS_PUBLISHED); }
+    public function scopeScheduled($q) { return $q->where('status', self::STATUS_SCHEDULED); }
+    public function scopeDraft($q) { return $q->where('status', self::STATUS_DRAFT); }
+    public function scopePlatform($q, $platform) { return $q->where('platform', $platform); }
 }
