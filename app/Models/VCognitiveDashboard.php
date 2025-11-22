@@ -2,13 +2,11 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 
-class VCognitiveDashboard extends Model
+class VCognitiveDashboard extends BaseModel
 {
     protected $table = 'cmis_system_health.v_cognitive_dashboard';
     protected $guarded = ['*'];
-    public $incrementing = false;
-
     public $timestamps = false;
 }

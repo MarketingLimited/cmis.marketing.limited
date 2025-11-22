@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 
-class Modules extends Model
+class Modules extends BaseModel
 {
     protected $table = 'public.modules';
 

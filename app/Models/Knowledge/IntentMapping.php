@@ -2,18 +2,13 @@
 
 namespace App\Models\Knowledge;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
-class IntentMapping extends Model
+class IntentMapping extends BaseModel
 {
-    use HasUuids;
+    
     protected $table = 'cmis.intent_mappings';
     protected $primaryKey = 'intent_id';
-    protected $connection = 'pgsql';
-    public $incrementing = false;
-    protected $keyType = 'string';
-
     protected $fillable = [
         'intent_code',
         'intent_label',
@@ -44,7 +39,6 @@ class IntentMapping extends Model
     public function scopeActive($query)
     {
         return $query->where('is_active', true);
-    }
 
     /**
      * Scope by category
@@ -52,7 +46,6 @@ class IntentMapping extends Model
     public function scopeByCategory($query, string $category)
     {
         return $query->where('category', $category);
-    }
 
     /**
      * Find by intent code
@@ -60,5 +53,4 @@ class IntentMapping extends Model
     public static function findByCode(string $code)
     {
         return self::where('intent_code', $code)->first();
-    }
 }

@@ -2,25 +2,22 @@
 
 namespace App\Models\AI;
 
+use App\Models\Concerns\HasOrganization;
+
 use App\Models\Core\Org;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
-class AiModel extends Model
+class AiModel extends BaseModel
 {
     use HasFactory, SoftDeletes, HasUuids;
-
-    protected $connection = 'pgsql';
+    use HasOrganization;
 
     protected $table = 'cmis.ai_models';
 
     protected $primaryKey = 'model_id';
-
-    public $incrementing = false;
-
-    protected $keyType = 'string';
 
     public $timestamps = true;
 
@@ -48,13 +45,7 @@ class AiModel extends Model
         'deleted_at' => 'datetime',
     ];
 
-    /**
-     * Get the organization
-     */
-    public function org()
-    {
-        return $this->belongsTo(Org::class, 'org_id', 'org_id');
-    }
+    
 
     /**
      * Scope to get models for a specific org
@@ -62,7 +53,6 @@ class AiModel extends Model
     public function scopeForOrg($query, string $orgId)
     {
         return $query->where('org_id', $orgId);
-    }
 
     /**
      * Scope to filter by status
@@ -70,7 +60,6 @@ class AiModel extends Model
     public function scopeWithStatus($query, string $status)
     {
         return $query->where('status', $status);
-    }
 
     /**
      * Scope to filter by provider
@@ -78,5 +67,4 @@ class AiModel extends Model
     public function scopeByProvider($query, string $provider)
     {
         return $query->where('provider', $provider);
-    }
 }

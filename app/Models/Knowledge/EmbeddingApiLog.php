@@ -2,17 +2,13 @@
 
 namespace App\Models\Knowledge;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
-class EmbeddingApiLog extends Model
+class EmbeddingApiLog extends BaseModel
 {
-    use HasUuids;
+    
     protected $table = 'cmis.embedding_api_log';
     protected $primaryKey = 'log_id';
-    protected $connection = 'pgsql';
-    public $incrementing = false;
-    protected $keyType = 'string';
     public $timestamps = false;
 
     protected $fillable = [
@@ -45,7 +41,6 @@ class EmbeddingApiLog extends Model
     public function config()
     {
         return $this->belongsTo(EmbeddingApiConfig::class, 'config_id', 'config_id');
-    }
 
     /**
      * Scope successful requests
@@ -53,7 +48,6 @@ class EmbeddingApiLog extends Model
     public function scopeSuccessful($query)
     {
         return $query->whereBetween('status_code', [200, 299]);
-    }
 
     /**
      * Scope failed requests
@@ -63,8 +57,6 @@ class EmbeddingApiLog extends Model
         return $query->where(function ($q) {
             $q->where('status_code', '<', 200)
                 ->orWhere('status_code', '>=', 300);
-        });
-    }
 
     /**
      * Scope slow requests
@@ -72,7 +64,6 @@ class EmbeddingApiLog extends Model
     public function scopeSlow($query, int $thresholdMs = 1000)
     {
         return $query->where('response_time_ms', '>', $thresholdMs);
-    }
 
     /**
      * Scope by request type
@@ -80,7 +71,6 @@ class EmbeddingApiLog extends Model
     public function scopeByType($query, string $type)
     {
         return $query->where('request_type', $type);
-    }
 
     /**
      * Scope recent logs
@@ -88,7 +78,6 @@ class EmbeddingApiLog extends Model
     public function scopeRecent($query, int $days = 7)
     {
         return $query->where('logged_at', '>=', now()->subDays($days));
-    }
 
     /**
      * Check if request was successful
@@ -96,5 +85,4 @@ class EmbeddingApiLog extends Model
     public function wasSuccessful(): bool
     {
         return $this->status_code >= 200 && $this->status_code < 300;
-    }
 }

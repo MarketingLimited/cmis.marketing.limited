@@ -2,20 +2,20 @@
 
 namespace App\Models\Operations;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Models\Concerns\HasOrganization;
+
+use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-class OpsEtlLog extends Model
+class OpsEtlLog extends BaseModel
 {
     use HasFactory, HasUuids;
+    use HasOrganization;
 
     protected $table = 'cmis.ops_etl_log';
     protected $primaryKey = 'log_id';
-    public $incrementing = false;
-    protected $keyType = 'string';
-
-    const UPDATED_AT = null; // No updated_at column
+            const UPDATED_AT = null; // No updated_at column
 
     protected $fillable = [
         'log_id',
@@ -44,33 +44,27 @@ class OpsEtlLog extends Model
     public function organization()
     {
         return $this->belongsTo(\App\Models\Organization::class, 'org_id', 'org_id');
-    }
 
     // Scopes
     public function scopeByOrg($query, $orgId)
     {
         return $query->where('org_id', $orgId);
-    }
 
     public function scopeByType($query, $type)
     {
         return $query->where('job_type', $type);
-    }
 
     public function scopeSuccessful($query)
     {
         return $query->where('status', 'completed');
-    }
 
     public function scopeFailed($query)
     {
         return $query->where('status', 'failed');
-    }
 
     public function scopeRecent($query, $days = 7)
     {
         return $query->where('created_at', '>=', now()->subDays($days));
-    }
 
     // Helpers
     public static function start($orgId, $jobName, $jobType, $source, $destination)
@@ -87,7 +81,6 @@ class OpsEtlLog extends Model
             'records_succeeded' => 0,
             'records_failed' => 0,
         ]);
-    }
 
     public function complete($recordsProcessed, $recordsSucceeded, $recordsFailed = 0)
     {
@@ -99,7 +92,6 @@ class OpsEtlLog extends Model
             'completed_at' => now(),
             'duration_seconds' => now()->diffInSeconds($this->started_at),
         ]);
-    }
 
     public function fail($errorDetails = null)
     {
@@ -109,14 +101,11 @@ class OpsEtlLog extends Model
             'duration_seconds' => now()->diffInSeconds($this->started_at),
             'error_details' => $errorDetails,
         ]);
-    }
 
     public function getSuccessRate()
     {
         if ($this->records_processed == 0) {
             return 0;
-        }
 
         return round(($this->records_succeeded / $this->records_processed) * 100, 2);
-    }
 }

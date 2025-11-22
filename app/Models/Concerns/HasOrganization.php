@@ -2,7 +2,7 @@
 
 namespace App\Models\Concerns;
 
-use App\Models\Organization;
+use App\Models\Core\Org;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
@@ -16,7 +16,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  *
  * Usage:
  * ```php
- * class Campaign extends Model
+ * class Campaign extends BaseModel
  * {
  *     use HasOrganization;
  *
@@ -35,7 +35,7 @@ trait HasOrganization
      */
     public function org(): BelongsTo
     {
-        return $this->belongsTo(Organization::class, 'org_id');
+        return $this->belongsTo(Org::class, 'org_id');
     }
 
     /**

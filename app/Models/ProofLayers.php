@@ -2,16 +2,14 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 
-class ProofLayers extends Model
+class ProofLayers extends BaseModel
 {
     protected $table = 'cmis.proof_layers';
 
     protected $fillable = [
         'level',
     ];
-    public $incrementing = false;
-
     public $timestamps = false;
 }

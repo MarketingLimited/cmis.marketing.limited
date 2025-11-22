@@ -2,29 +2,17 @@
 
 namespace App\Models\Activity;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Support\Str;
+use App\Models\Concerns\HasOrganization;
 
-class ActivityLog extends Model
+use App\Models\BaseModel;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+class ActivityLog extends BaseModel
 {
     use HasFactory;
+    use HasOrganization;
 
-    protected $connection = 'pgsql';
     protected $table = 'cmis.activity_logs';
     protected $primaryKey = 'log_id';
-    public $incrementing = false;
-    protected $keyType = 'string';
-
-    protected static function boot()
-    {
-        parent::boot();
-        static::creating(function ($model) {
-            if (empty($model->{$model->getKeyName()})) {
-                $model->{$model->getKeyName()} = (string) Str::uuid();
-            }
-        });
-    }
 
     protected $fillable = [
         'log_id', 'user_id', 'org_id', 'activity_type', 'description', 'metadata'

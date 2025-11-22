@@ -3,23 +3,17 @@
 namespace App\Models\Other;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
-class OfferingsFullDetail extends Model
+class OfferingsFullDetail extends BaseModel
 {
     use HasFactory, SoftDeletes, HasUuids;
-
-    protected $connection = 'pgsql';
 
     protected $table = 'cmis.offerings_full_details';
 
     protected $primaryKey = 'detail_id';
-
-    public $incrementing = false;
-
-    protected $keyType = 'string';
 
     public $timestamps = true;
 
@@ -45,5 +39,4 @@ class OfferingsFullDetail extends Model
     public function scopeForOffering($query, string $offeringId)
     {
         return $query->where('offering_id', $offeringId);
-    }
 }

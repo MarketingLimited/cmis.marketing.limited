@@ -2,23 +2,22 @@
 
 namespace App\Models\Security;
 
+use App\Models\Concerns\HasOrganization;
+
 use App\Models\Core\Org;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
-class SessionContext extends Model
+class SessionContext extends BaseModel
 {
     use HasFactory, SoftDeletes, HasUuids;
+    use HasOrganization;
 
     protected $table = 'cmis.session_context';
-    protected $connection = 'pgsql';
     protected $primaryKey = 'session_id';
-    public $incrementing = false;
-    protected $keyType = 'string';
-
-    // Timestamps
+            // Timestamps
     const CREATED_AT = 'switched_at';
     const UPDATED_AT = null;
 
@@ -42,7 +41,6 @@ class SessionContext extends Model
     public function activeOrg()
     {
         return $this->belongsTo(Org::class, 'active_org_id', 'org_id');
-    }
 
     /**
      * Scope to get active sessions
@@ -50,7 +48,6 @@ class SessionContext extends Model
     public function scopeActive($query)
     {
         return $query->whereNull('deleted_at');
-    }
 
     /**
      * Scope to get sessions for a specific org
@@ -58,7 +55,6 @@ class SessionContext extends Model
     public function scopeForOrg($query, string $orgId)
     {
         return $query->where('active_org_id', $orgId);
-    }
 
     /**
      * Scope to get recently switched sessions
@@ -66,7 +62,6 @@ class SessionContext extends Model
     public function scopeRecentlySwitched($query, int $minutes = 60)
     {
         return $query->where('switched_at', '>=', now()->subMinutes($minutes));
-    }
 
     /**
      * Switch to a different organization
@@ -77,7 +72,6 @@ class SessionContext extends Model
             'active_org_id' => $newOrgId,
             'switched_at' => now(),
         ]);
-    }
 
     /**
      * Get or create session context
@@ -91,8 +85,6 @@ class SessionContext extends Model
                 'provider' => $provider,
                 'switched_at' => now(),
             ]
-        );
-    }
 
     /**
      * Clean up old sessions
@@ -100,5 +92,4 @@ class SessionContext extends Model
     public static function cleanupOldSessions(int $days = 30): int
     {
         return static::where('switched_at', '<', now()->subDays($days))->delete();
-    }
 }

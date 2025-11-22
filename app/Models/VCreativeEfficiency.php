@@ -2,13 +2,11 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 
-class VCreativeEfficiency extends Model
+class VCreativeEfficiency extends BaseModel
 {
     protected $table = 'cmis_ai_analytics.v_creative_efficiency';
     protected $guarded = ['*'];
-    public $incrementing = false;
-
     public $timestamps = false;
 }

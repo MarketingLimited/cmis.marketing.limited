@@ -3,23 +3,17 @@
 namespace App\Models\Other;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
-class FeedItem extends Model
+class FeedItem extends BaseModel
 {
     use HasFactory, SoftDeletes, HasUuids;
-
-    protected $connection = 'pgsql';
 
     protected $table = 'cmis.feed_items';
 
     protected $primaryKey = 'item_id';
-
-    public $incrementing = false;
-
-    protected $keyType = 'string';
 
     public $timestamps = false;
 
@@ -48,7 +42,6 @@ class FeedItem extends Model
     public function dataFeed()
     {
         return $this->belongsTo(DataFeed::class, 'feed_id', 'feed_id');
-    }
 
     /**
      * Scope to get items for a specific feed
@@ -56,7 +49,6 @@ class FeedItem extends Model
     public function scopeForFeed($query, string $feedId)
     {
         return $query->where('feed_id', $feedId);
-    }
 
     /**
      * Scope to get valid items
@@ -67,6 +59,4 @@ class FeedItem extends Model
             ->where(function ($q) {
                 $q->whereNull('valid_to')
                     ->orWhere('valid_to', '>=', now());
-            });
-    }
 }

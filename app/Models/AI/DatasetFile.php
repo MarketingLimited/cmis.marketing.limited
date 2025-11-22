@@ -2,20 +2,17 @@
 
 namespace App\Models\AI;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-class DatasetFile extends Model
+class DatasetFile extends BaseModel
 {
     use HasFactory, HasUuids, SoftDeletes;
 
     protected $table = 'cmis.dataset_files';
     protected $primaryKey = 'file_id';
-    public $incrementing = false;
-    protected $keyType = 'string';
-
     protected $fillable = [
         'file_id',
         'pkg_id',
@@ -39,7 +36,6 @@ class DatasetFile extends Model
     public function package()
     {
         return $this->belongsTo(DatasetPackage::class, 'package_id', 'package_id');
-    }
 
     // Helpers
     public function getSizeFormatted()
@@ -49,18 +45,14 @@ class DatasetFile extends Model
 
         for ($i = 0; $bytes > 1024; $i++) {
             $bytes /= 1024;
-        }
 
         return round($bytes, 2) . ' ' . $units[$i];
-    }
 
     public function verifyChecksum()
     {
         if (!file_exists(storage_path($this->file_path))) {
             return false;
-        }
 
         $actualChecksum = hash_file('sha256', storage_path($this->file_path));
         return $actualChecksum === $this->checksum;
-    }
 }

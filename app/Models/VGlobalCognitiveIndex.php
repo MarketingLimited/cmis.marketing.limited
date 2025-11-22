@@ -2,13 +2,11 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 
-class VGlobalCognitiveIndex extends Model
+class VGlobalCognitiveIndex extends BaseModel
 {
     protected $table = 'cmis_knowledge.v_global_cognitive_index';
     protected $guarded = ['*'];
-    public $incrementing = false;
-
     public $timestamps = false;
 }

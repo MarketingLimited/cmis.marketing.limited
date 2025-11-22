@@ -2,30 +2,18 @@
 
 namespace App\Models\Social;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Models\Concerns\HasOrganization;
+
+use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Support\Str;
-
-class SocialAccount extends Model
+class SocialAccount extends BaseModel
 {
     use HasFactory, SoftDeletes;
+    use HasOrganization;
 
-    protected $connection = 'pgsql';
     protected $table = 'cmis.social_accounts';
     protected $primaryKey = 'id';
-    public $incrementing = false;
-    protected $keyType = 'string';
-
-    protected static function boot()
-    {
-        parent::boot();
-        static::creating(function ($model) {
-            if (empty($model->{$model->getKeyName()})) {
-                $model->{$model->getKeyName()} = (string) Str::uuid();
-            }
-        });
-    }
 
     protected $fillable = [
         'id',
@@ -58,13 +46,7 @@ class SocialAccount extends Model
         'deleted_at' => 'datetime',
     ];
 
-    /**
-     * Get the organization that owns this social account.
-     */
-    public function org()
-    {
-        return $this->belongsTo(\App\Models\Core\Org::class, 'org_id', 'org_id');
-    }
+    
 
     /**
      * Get the integration that this account belongs to.
@@ -72,7 +54,6 @@ class SocialAccount extends Model
     public function integration()
     {
         return $this->belongsTo(\App\Models\Integration::class, 'integration_id', 'integration_id');
-    }
 
     /**
      * Get all posts for this social account.
@@ -80,5 +61,4 @@ class SocialAccount extends Model
     public function posts()
     {
         return $this->hasMany(SocialPost::class, 'integration_id', 'integration_id');
-    }
 }

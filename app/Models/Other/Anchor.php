@@ -3,23 +3,17 @@
 namespace App\Models\Other;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
-class Anchor extends Model
+class Anchor extends BaseModel
 {
     use HasFactory, SoftDeletes, HasUuids;
-
-    protected $connection = 'pgsql';
 
     protected $table = 'cmis.anchors';
 
     protected $primaryKey = 'anchor_id';
-
-    public $incrementing = false;
-
-    protected $keyType = 'string';
 
     public $timestamps = false;
 
@@ -45,5 +39,4 @@ class Anchor extends Model
     public function module()
     {
         return $this->belongsTo(Module::class, 'module_id', 'module_id');
-    }
 }

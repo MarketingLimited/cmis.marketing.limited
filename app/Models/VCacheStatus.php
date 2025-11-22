@@ -2,13 +2,11 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 
-class VCacheStatus extends Model
+class VCacheStatus extends BaseModel
 {
     protected $table = 'cmis.v_cache_status';
     protected $guarded = ['*'];
-    public $incrementing = false;
-
     public $timestamps = false;
 }

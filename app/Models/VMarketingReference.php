@@ -2,13 +2,11 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 
-class VMarketingReference extends Model
+class VMarketingReference extends BaseModel
 {
     protected $table = 'cmis.v_marketing_reference';
     protected $guarded = ['*'];
-    public $incrementing = false;
-
     public $timestamps = false;
 }

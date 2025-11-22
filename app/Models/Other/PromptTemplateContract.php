@@ -3,21 +3,17 @@
 namespace App\Models\Other;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class PromptTemplateContract extends Model
+class PromptTemplateContract extends BaseModel
 {
     use HasFactory, SoftDeletes;
-
-    protected $connection = 'pgsql';
 
     protected $table = 'cmis.prompt_template_contracts';
     protected $primaryKey = 'prompt_id';
 
     public $timestamps = false;
-
-    public $incrementing = false;
 
     protected $fillable = [
         'prompt_id',
@@ -37,7 +33,6 @@ class PromptTemplateContract extends Model
     public function promptTemplate()
     {
         return $this->belongsTo(PromptTemplate::class, 'prompt_id', 'prompt_id');
-    }
 
     /**
      * Get the output contract
@@ -45,5 +40,4 @@ class PromptTemplateContract extends Model
     public function outputContract()
     {
         return $this->belongsTo(OutputContract::class, 'contract_id', 'contract_id');
-    }
 }

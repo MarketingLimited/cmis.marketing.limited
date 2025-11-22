@@ -2,20 +2,20 @@
 
 namespace App\Models\Operations;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Models\Concerns\HasOrganization;
+
+use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-class OpsAudit extends Model
+class OpsAudit extends BaseModel
 {
     use HasFactory, HasUuids;
+    use HasOrganization;
 
     protected $table = 'cmis.ops_audit';
     protected $primaryKey = 'audit_id';
-    public $incrementing = false;
-    protected $keyType = 'string';
-
-    const UPDATED_AT = null; // No updated_at column
+            const UPDATED_AT = null; // No updated_at column
 
     protected $fillable = [
         'audit_id',
@@ -39,18 +39,15 @@ class OpsAudit extends Model
     public function user()
     {
         return $this->belongsTo(\App\Models\User::class, 'user_id', 'user_id');
-    }
 
     public function organization()
     {
         return $this->belongsTo(\App\Models\Organization::class, 'org_id', 'org_id');
-    }
 
     // Scopes
     public function scopeByType($query, $type)
     {
         return $query->where('operation_type', $type);
-    }
 
     public function scopeByEntity($query, $entityType, $entityId = null)
     {
@@ -58,25 +55,20 @@ class OpsAudit extends Model
 
         if ($entityId) {
             $query->where('entity_id', $entityId);
-        }
 
         return $query;
-    }
 
     public function scopeByUser($query, $userId)
     {
         return $query->where('user_id', $userId);
-    }
 
     public function scopeSuccessful($query)
     {
         return $query->where('status', 'success');
-    }
 
     public function scopeFailed($query)
     {
         return $query->where('status', 'failed');
-    }
 
     // Helpers
     public static function log($operationType, $operationName, $userId, $orgId, $entityType, $entityId, $oldValues = null, $newValues = null)
@@ -90,9 +82,6 @@ class OpsAudit extends Model
                         'old' => $oldValues[$key] ?? null,
                         'new' => $value,
                     ];
-                }
-            }
-        }
 
         return static::create([
             'operation_type' => $operationType,
@@ -108,5 +97,4 @@ class OpsAudit extends Model
             'user_agent' => request()->userAgent(),
             'status' => 'success',
         ]);
-    }
 }

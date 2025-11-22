@@ -2,16 +2,15 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Models\Concerns\HasOrganization;
 
-class PermissionsCache extends Model
+use App\Models\BaseModel;
+
+class PermissionsCache extends BaseModel
 {
     protected $table = 'cmis.permissions_cache';
     protected $primaryKey = 'permission_id';
-    protected $connection = 'pgsql';
     public $timestamps = false;
-    public $incrementing = false;
-
     protected $fillable = [
         'permission_code',
         'permission_id',
@@ -33,7 +32,6 @@ class PermissionsCache extends Model
     {
         return $query->where('user_id', $userId)
             ->where('org_id', $orgId);
-    }
 
     /**
      * Scope to get old cache entries
@@ -41,5 +39,4 @@ class PermissionsCache extends Model
     public function scopeOld($query, int $days = 30)
     {
         return $query->where('last_used', '<', now()->subDays($days));
-    }
 }

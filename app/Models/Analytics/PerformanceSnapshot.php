@@ -2,85 +2,17 @@
 
 namespace App\Models\Analytics;
 
+use App\Models\Concerns\HasOrganization;
+
 use App\Models\Campaign;
 use App\Models\Core\Org;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
-class PerformanceSnapshot extends Model
+class PerformanceSnapshot extends BaseModel
 {
-    use HasUuids;
-    /**
-     * The table associated with the model.
-     *
-     * @var string
-     */
-    protected $table = 'cmis.performance_snapshots';
-
-    /**
-     * The primary key associated with the table.
-     *
-     * @var string
-     */
-    protected $primaryKey = 'snapshot_id';
-
-    /**
-     * Indicates if the model's ID is auto-incrementing.
-     *
-     * @var bool
-     */
-    public $incrementing = false;
-
-    /**
-     * The data type of the primary key.
-     *
-     * @var string
-     */
-    protected $keyType = 'string';
-
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<string>
-     */
-    protected $fillable = [
-        'org_id',
-        'campaign_id',
-        'snapshot_date',
-        'snapshot_type',
-        'metrics',
-        'aggregated_data',
-        'comparison_data',
-    ];
-
-    /**
-     * The attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
-    protected function casts(): array
-    {
-        return [
-            'snapshot_id' => 'string',
-            'org_id' => 'string',
-            'campaign_id' => 'string',
-            'snapshot_date' => 'date',
-            'metrics' => 'array',
-            'aggregated_data' => 'array',
-            'comparison_data' => 'array',
-            'created_at' => 'datetime',
-            'updated_at' => 'datetime',
-        ];
-    }
-
-    /**
-     * Get the organization that owns the snapshot.
-     */
-    public function org(): BelongsTo
-    {
-        return $this->belongsTo(Org::class, 'org_id', 'org_id');
-    }
+    
+    
 
     /**
      * Get the campaign that this snapshot belongs to.
@@ -88,7 +20,6 @@ class PerformanceSnapshot extends Model
     public function campaign(): BelongsTo
     {
         return $this->belongsTo(Campaign::class, 'campaign_id', 'campaign_id');
-    }
 
     /**
      * Create a performance snapshot.
@@ -119,7 +50,6 @@ class PerformanceSnapshot extends Model
             'aggregated_data' => $aggregatedData,
             'comparison_data' => $comparisonData,
         ]);
-    }
 
     /**
      * Scope snapshots by date range.
@@ -132,7 +62,6 @@ class PerformanceSnapshot extends Model
     public function scopeDateRange($query, string $startDate, string $endDate)
     {
         return $query->whereBetween('snapshot_date', [$startDate, $endDate]);
-    }
 
     /**
      * Scope snapshots by type.
@@ -144,7 +73,6 @@ class PerformanceSnapshot extends Model
     public function scopeByType($query, string $type)
     {
         return $query->where('snapshot_type', $type);
-    }
 
     /**
      * Scope snapshots by campaign.
@@ -156,7 +84,6 @@ class PerformanceSnapshot extends Model
     public function scopeByCampaign($query, string $campaignId)
     {
         return $query->where('campaign_id', $campaignId);
-    }
 
     /**
      * Get the latest snapshot for an organization.
@@ -172,14 +99,11 @@ class PerformanceSnapshot extends Model
 
         if ($campaignId) {
             $query->where('campaign_id', $campaignId);
-        }
 
         if ($type) {
             $query->where('snapshot_type', $type);
-        }
 
         return $query->orderBy('snapshot_date', 'desc')
             ->orderBy('created_at', 'desc')
             ->first();
-    }
 }

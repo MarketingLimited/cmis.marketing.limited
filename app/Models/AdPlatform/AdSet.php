@@ -2,21 +2,20 @@
 
 namespace App\Models\AdPlatform;
 
+use App\Models\Concerns\HasOrganization;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
-class AdSet extends Model
+class AdSet extends BaseModel
 {
     use HasFactory, SoftDeletes, HasUuids;
+    use HasOrganization;
 
     protected $table = 'cmis.ad_sets';
     protected $primaryKey = 'id';
-    protected $connection = 'pgsql';
-    public $incrementing = false;
-    protected $keyType = 'string';
-
     protected $fillable = [
         'id',
         'org_id',
@@ -52,13 +51,7 @@ class AdSet extends Model
         'deleted_at' => 'datetime',
     ];
 
-    /**
-     * Get the organization
-     */
-    public function org()
-    {
-        return $this->belongsTo(\App\Models\Core\Org::class, 'org_id', 'org_id');
-    }
+    
 
     /**
      * Get the integration
@@ -66,7 +59,6 @@ class AdSet extends Model
     public function integration()
     {
         return $this->belongsTo(\App\Models\Core\Integration::class, 'integration_id', 'integration_id');
-    }
 
     /**
      * Get the ad campaign
@@ -74,7 +66,6 @@ class AdSet extends Model
     public function adCampaign()
     {
         return $this->belongsTo(AdCampaign::class, 'campaign_external_id', 'campaign_external_id');
-    }
 
     /**
      * Get ad entities (ads)
@@ -82,7 +73,6 @@ class AdSet extends Model
     public function ads()
     {
         return $this->hasMany(AdEntity::class, 'adset_external_id', 'adset_external_id');
-    }
 
     /**
      * Get metrics
@@ -91,7 +81,6 @@ class AdSet extends Model
     {
         return $this->hasMany(AdMetric::class, 'entity_external_id', 'adset_external_id')
             ->where('entity_level', 'adset');
-    }
 
     /**
      * Scope active ad sets
@@ -102,8 +91,6 @@ class AdSet extends Model
             ->where(function ($q) {
                 $q->whereNull('end_time')
                     ->orWhere('end_time', '>=', now());
-            });
-    }
 
     /**
      * Scope by platform
@@ -111,7 +98,6 @@ class AdSet extends Model
     public function scopeByPlatform($query, string $platform)
     {
         return $query->where('platform', $platform);
-    }
 
     /**
      * Scope by status
@@ -119,7 +105,6 @@ class AdSet extends Model
     public function scopeByStatus($query, string $status)
     {
         return $query->where('ad_set_status', $status);
-    }
 
     /**
      * Check if ad set is running
@@ -128,18 +113,14 @@ class AdSet extends Model
     {
         if ($this->ad_set_status !== 'active') {
             return false;
-        }
 
         if ($this->start_time && $this->start_time->isFuture()) {
             return false;
-        }
 
         if ($this->end_time && $this->end_time->isPast()) {
             return false;
-        }
 
         return true;
-    }
 
     /**
      * Get total spend
@@ -147,5 +128,4 @@ class AdSet extends Model
     public function getTotalSpend(): float
     {
         return $this->metrics()->sum('spend');
-    }
 }

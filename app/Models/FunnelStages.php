@@ -2,16 +2,14 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 
-class FunnelStages extends Model
+class FunnelStages extends BaseModel
 {
     protected $table = 'cmis.funnel_stages';
 
     protected $fillable = [
         'stage',
     ];
-    public $incrementing = false;
-
     public $timestamps = false;
 }

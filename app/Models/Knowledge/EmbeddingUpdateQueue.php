@@ -2,17 +2,13 @@
 
 namespace App\Models\Knowledge;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
-class EmbeddingUpdateQueue extends Model
+class EmbeddingUpdateQueue extends BaseModel
 {
-    use HasUuids;
+    
     protected $table = 'cmis.embedding_update_queue';
     protected $primaryKey = 'queue_id';
-    protected $connection = 'pgsql';
-    public $incrementing = false;
-    protected $keyType = 'string';
     public $timestamps = false;
 
     protected $fillable = [
@@ -49,7 +45,6 @@ class EmbeddingUpdateQueue extends Model
         return $query->where('status', 'pending')
             ->orderBy('priority', 'desc')
             ->orderBy('queued_at', 'asc');
-    }
 
     /**
      * Scope processing items
@@ -57,7 +52,6 @@ class EmbeddingUpdateQueue extends Model
     public function scopeProcessing($query)
     {
         return $query->where('status', 'processing');
-    }
 
     /**
      * Scope failed items
@@ -65,7 +59,6 @@ class EmbeddingUpdateQueue extends Model
     public function scopeFailed($query)
     {
         return $query->where('status', 'failed');
-    }
 
     /**
      * Scope by priority
@@ -73,7 +66,6 @@ class EmbeddingUpdateQueue extends Model
     public function scopeHighPriority($query, int $threshold = 5)
     {
         return $query->where('priority', '>=', $threshold);
-    }
 
     /**
      * Mark as processing
@@ -84,7 +76,6 @@ class EmbeddingUpdateQueue extends Model
             'status' => 'processing',
             'processing_started_at' => now(),
         ]);
-    }
 
     /**
      * Mark as completed
@@ -95,7 +86,6 @@ class EmbeddingUpdateQueue extends Model
             'status' => 'completed',
             'completed_at' => now(),
         ]);
-    }
 
     /**
      * Mark as failed
@@ -107,7 +97,6 @@ class EmbeddingUpdateQueue extends Model
             'last_error' => $error,
             'retry_count' => $this->retry_count + 1,
         ]);
-    }
 
     /**
      * Reset for retry
@@ -118,5 +107,4 @@ class EmbeddingUpdateQueue extends Model
             'status' => 'pending',
             'processing_started_at' => null,
         ]);
-    }
 }

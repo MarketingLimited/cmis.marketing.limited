@@ -61,7 +61,6 @@ class MetricDefinition extends BaseModel
     public function metrics()
     {
         return $this->hasMany(Metric::class, 'metric_name', 'metric_name');
-    }
 
     /**
      * Scope for active metrics only
@@ -69,7 +68,6 @@ class MetricDefinition extends BaseModel
     public function scopeActive($query)
     {
         return $query->where('is_active', true);
-    }
 
     /**
      * Scope by category
@@ -77,5 +75,4 @@ class MetricDefinition extends BaseModel
     public function scopeCategory($query, string $category)
     {
         return $query->where('metric_category', $category);
-    }
 }

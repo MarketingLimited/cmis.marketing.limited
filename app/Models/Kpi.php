@@ -2,21 +2,14 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
-class Kpi extends Model
+class Kpi extends BaseModel
 {
-    use HasUuids;
-    protected $connection = 'pgsql';
-
+    
     protected $table = 'cmis.kpis';
 
     protected $primaryKey = 'kpi';
-
-    public $incrementing = false;
-
-    protected $keyType = 'string';
 
     public $timestamps = false;
 

@@ -2,18 +2,15 @@
 
 namespace App\Models\Knowledge;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Models\Concerns\HasOrganization;
 
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
-class CognitiveManifest extends Model
+use App\Models\BaseModel;
+
+class CognitiveManifest extends BaseModel
 {
-    use HasUuids;
+    
     protected $table = 'cmis.cognitive_manifest';
     protected $primaryKey = 'manifest_id';
-    protected $connection = 'pgsql';
-    public $incrementing = false;
-    protected $keyType = 'string';
-
     protected $fillable = [
         'org_id',
         'manifest_version',
@@ -54,13 +51,7 @@ class CognitiveManifest extends Model
         'updated_at' => 'datetime',
     ];
 
-    /**
-     * Get the organization
-     */
-    public function org()
-    {
-        return $this->belongsTo(\App\Models\Core\Org::class, 'org_id', 'org_id');
-    }
+    
 
     /**
      * Scope active manifests
@@ -68,7 +59,6 @@ class CognitiveManifest extends Model
     public function scopeActive($query)
     {
         return $query->where('is_active', true);
-    }
 
     /**
      * Scope latest version
@@ -76,7 +66,6 @@ class CognitiveManifest extends Model
     public function scopeLatestVersion($query)
     {
         return $query->orderBy('manifest_version', 'desc');
-    }
 
     /**
      * Check if feature is enabled
@@ -84,7 +73,6 @@ class CognitiveManifest extends Model
     public function isFeatureEnabled(string $feature): bool
     {
         return in_array($feature, $this->enabled_features ?? []);
-    }
 
     /**
      * Get quality threshold for metric
@@ -92,7 +80,6 @@ class CognitiveManifest extends Model
     public function getQualityThreshold(string $metric): ?float
     {
         return $this->quality_thresholds[$metric] ?? null;
-    }
 
     /**
      * Get model configuration
@@ -100,5 +87,4 @@ class CognitiveManifest extends Model
     public function getModelConfig(string $modelType): ?array
     {
         return $this->model_configurations[$modelType] ?? null;
-    }
 }

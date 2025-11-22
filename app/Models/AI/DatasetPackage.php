@@ -2,20 +2,17 @@
 
 namespace App\Models\AI;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-class DatasetPackage extends Model
+class DatasetPackage extends BaseModel
 {
     use HasFactory, HasUuids, SoftDeletes;
 
     protected $table = 'cmis.dataset_packages';
     protected $primaryKey = 'pkg_id';
-    public $incrementing = false;
-    protected $keyType = 'string';
-
     protected $fillable = [
         'pkg_id',
         'code',
@@ -41,30 +38,25 @@ class DatasetPackage extends Model
     public function files()
     {
         return $this->hasMany(DatasetFile::class, 'package_id', 'package_id');
-    }
 
     // Scopes
     public function scopePublic($query)
     {
         return $query->where('is_public', true);
-    }
 
     public function scopeByType($query, $type)
     {
         return $query->where('package_type', $type);
-    }
 
     public function scopePopular($query, $minDownloads = 10)
     {
         return $query->where('download_count', '>=', $minDownloads)
             ->orderByDesc('download_count');
-    }
 
     // Helpers
     public function incrementDownloads()
     {
         $this->increment('download_count');
-    }
 
     public function getSizeFormatted()
     {
@@ -73,8 +65,6 @@ class DatasetPackage extends Model
 
         for ($i = 0; $bytes > 1024; $i++) {
             $bytes /= 1024;
-        }
 
         return round($bytes, 2) . ' ' . $units[$i];
-    }
 }

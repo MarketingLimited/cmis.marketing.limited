@@ -3,21 +3,17 @@
 namespace App\Models\Other;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class PromptTemplatePresql extends Model
+class PromptTemplatePresql extends BaseModel
 {
     use HasFactory, SoftDeletes;
-
-    protected $connection = 'pgsql';
 
     protected $table = 'cmis.prompt_template_presql';
     protected $primaryKey = 'prompt_id';
 
     public $timestamps = false;
-
-    public $incrementing = false;
 
     protected $fillable = [
         'prompt_id',
@@ -37,7 +33,6 @@ class PromptTemplatePresql extends Model
     public function promptTemplate()
     {
         return $this->belongsTo(PromptTemplate::class, 'prompt_id', 'prompt_id');
-    }
 
     /**
      * Get the SQL snippet
@@ -45,5 +40,4 @@ class PromptTemplatePresql extends Model
     public function sqlSnippet()
     {
         return $this->belongsTo(SqlSnippet::class, 'snippet_id', 'snippet_id');
-    }
 }

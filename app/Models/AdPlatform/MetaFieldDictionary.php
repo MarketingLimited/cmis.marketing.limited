@@ -3,14 +3,12 @@
 namespace App\Models\AdPlatform;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class MetaFieldDictionary extends Model
+class MetaFieldDictionary extends BaseModel
 {
     use HasFactory, SoftDeletes;
-
-    protected $connection = 'pgsql';
 
     protected $table = 'cmis.meta_field_dictionary';
 
@@ -38,7 +36,6 @@ class MetaFieldDictionary extends Model
     public function scopeByFieldName($query, string $fieldName)
     {
         return $query->where('field_name', $fieldName);
-    }
 
     /**
      * Scope to find by unified alias
@@ -46,5 +43,4 @@ class MetaFieldDictionary extends Model
     public function scopeByUnifiedAlias($query, string $alias)
     {
         return $query->where('unified_alias', $alias);
-    }
 }

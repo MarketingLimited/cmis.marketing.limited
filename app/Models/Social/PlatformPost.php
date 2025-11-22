@@ -2,31 +2,19 @@
 
 namespace App\Models\Social;
 
+use App\Models\Concerns\HasOrganization;
+
 use App\Models\Core\Org;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Support\Str;
-
-class PlatformPost extends Model
+class PlatformPost extends BaseModel
 {
     use HasFactory;
+    use HasOrganization;
 
-    protected $connection = 'pgsql';
     protected $table = 'cmis.platform_posts';
     protected $primaryKey = 'platform_post_id';
-    public $incrementing = false;
-    protected $keyType = 'string';
-
-    protected static function boot()
-    {
-        parent::boot();
-        static::creating(function ($model) {
-            if (empty($model->{$model->getKeyName()})) {
-                $model->{$model->getKeyName()} = (string) Str::uuid();
-            }
-        });
-    }
 
     protected $fillable = [
         'platform_post_id',
@@ -64,22 +52,17 @@ class PlatformPost extends Model
 
     // ===== Relationships =====
 
-    public function org(): BelongsTo
-    {
-        return $this->belongsTo(Org::class, 'org_id', 'org_id');
-    }
+    
 
     public function scheduledPost(): BelongsTo
     {
         return $this->belongsTo(ScheduledPost::class, 'scheduled_post_id', 'post_id');
-    }
 
     // ===== Status Management =====
 
     public function markAsPublishing(): void
     {
         $this->update(['status' => 'publishing']);
-    }
 
     public function markAsPublished(string $externalId, string $url): void
     {
@@ -89,7 +72,6 @@ class PlatformPost extends Model
             'platform_url' => $url,
             'published_at' => now(),
         ]);
-    }
 
     public function markAsFailed(string $errorMessage): void
     {
@@ -97,7 +79,6 @@ class PlatformPost extends Model
             'status' => 'failed',
             'error_message' => $errorMessage,
         ]);
-    }
 
     // ===== Metrics Management =====
 
@@ -114,22 +95,18 @@ class PlatformPost extends Model
 
         // Recalculate engagement rate
         $this->updateEngagementRate();
-    }
 
     protected function calculateEngagement(array $metrics): int
     {
         return ($metrics['likes'] ?? 0) +
                ($metrics['comments'] ?? 0) +
                ($metrics['shares'] ?? 0);
-    }
 
     public function updateEngagementRate(): void
     {
         if ($this->views > 0) {
             $rate = ($this->engagement / $this->views) * 100;
             $this->update(['engagement_rate' => round($rate, 2)]);
-        }
-    }
 
     // ===== Platform Helpers =====
 
@@ -145,22 +122,18 @@ class PlatformPost extends Model
             'snapchat' => 'Snapchat',
             default => ucfirst($this->platform)
         };
-    }
 
     public function isPublished(): bool
     {
         return $this->status === 'published';
-    }
 
     // ===== Scopes =====
 
     public function scopePublished($query)
     {
         return $query->where('status', 'published');
-    }
 
     public function scopeForPlatform($query, string $platform)
     {
         return $query->where('platform', $platform);
-    }
 }

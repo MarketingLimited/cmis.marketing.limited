@@ -3,19 +3,15 @@
 namespace App\Models\Knowledge;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
-class DevKnowledge extends Model
+class DevKnowledge extends BaseModel
 {
     use HasFactory, HasUuids;
 
     protected $table = 'cmis.dev_knowledge';
     protected $primaryKey = 'dev_id';
-    protected $connection = 'pgsql';
-    public $incrementing = false;
-    protected $keyType = 'string';
-
     protected $fillable = [
         'topic',
         'category',
@@ -50,7 +46,6 @@ class DevKnowledge extends Model
     {
         return KnowledgeIndex::where('source_type', 'dev_knowledge')
             ->where('source_id', $this->dev_id);
-    }
 
     /**
      * Scope by category
@@ -58,7 +53,6 @@ class DevKnowledge extends Model
     public function scopeByCategory($query, string $category)
     {
         return $query->where('category', $category);
-    }
 
     /**
      * Scope by language
@@ -66,7 +60,6 @@ class DevKnowledge extends Model
     public function scopeByLanguage($query, string $language)
     {
         return $query->where('language', $language);
-    }
 
     /**
      * Scope by framework
@@ -74,7 +67,6 @@ class DevKnowledge extends Model
     public function scopeByFramework($query, string $framework)
     {
         return $query->where('framework', $framework);
-    }
 
     /**
      * Scope active (non-deprecated)
@@ -82,7 +74,6 @@ class DevKnowledge extends Model
     public function scopeActive($query)
     {
         return $query->where('is_deprecated', false);
-    }
 
     /**
      * Scope by difficulty level
@@ -90,5 +81,4 @@ class DevKnowledge extends Model
     public function scopeByDifficulty($query, string $level)
     {
         return $query->where('difficulty_level', $level);
-    }
 }

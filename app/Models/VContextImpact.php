@@ -2,13 +2,11 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 
-class VContextImpact extends Model
+class VContextImpact extends BaseModel
 {
     protected $table = 'cmis_ai_analytics.v_context_impact';
     protected $guarded = ['*'];
-    public $incrementing = false;
-
     public $timestamps = false;
 }

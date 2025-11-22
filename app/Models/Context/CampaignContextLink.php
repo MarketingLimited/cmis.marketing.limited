@@ -3,20 +3,16 @@
 namespace App\Models\Context;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 use App\Models\Campaign;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
-class CampaignContextLink extends Model
+class CampaignContextLink extends BaseModel
 {
     use HasFactory, HasUuids;
 
     protected $table = 'cmis.campaign_context_links';
     protected $primaryKey = 'id';
-    protected $connection = 'pgsql';
-    public $incrementing = false;
-    protected $keyType = 'string';
-
     protected $fillable = [
         'id',
         'campaign_id',
@@ -55,7 +51,6 @@ class CampaignContextLink extends Model
     public function campaign()
     {
         return $this->belongsTo(Campaign::class, 'campaign_id', 'campaign_id');
-    }
 
     /**
      * Get the context (polymorphic-like)
@@ -72,8 +67,6 @@ class CampaignContextLink extends Model
                 return $this->belongsTo(OfferingContext::class, 'context_id', 'context_id');
             default:
                 return $this->belongsTo(ContextBase::class, 'context_id', 'id');
-        }
-    }
 
     /**
      * Get the creator
@@ -81,7 +74,6 @@ class CampaignContextLink extends Model
     public function creator()
     {
         return $this->belongsTo(\App\Models\User::class, 'created_by', 'user_id');
-    }
 
     /**
      * Scope active links
@@ -96,8 +88,6 @@ class CampaignContextLink extends Model
             ->where(function ($q) {
                 $q->whereNull('effective_to')
                     ->orWhere('effective_to', '>=', now());
-            });
-    }
 
     /**
      * Scope by link type
@@ -105,7 +95,6 @@ class CampaignContextLink extends Model
     public function scopeOfType($query, string $type)
     {
         return $query->where('link_type', $type);
-    }
 
     /**
      * Scope primary links
@@ -113,5 +102,4 @@ class CampaignContextLink extends Model
     public function scopePrimary($query)
     {
         return $query->where('link_type', 'primary');
-    }
 }

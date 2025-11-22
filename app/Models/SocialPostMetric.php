@@ -2,15 +2,13 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Models\Concerns\HasOrganization;
 
-class SocialPostMetric extends Model
+use App\Models\BaseModel;
+
+class SocialPostMetric extends BaseModel
 {
-    protected $connection = 'pgsql';
-
     protected $table = 'cmis.social_post_metrics';
-
-    public $incrementing = false;
 
     public $timestamps = false;
 

@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 
-class Channels extends Model
+class Channels extends BaseModel
 {
     protected $table = 'cmis.channels';
 

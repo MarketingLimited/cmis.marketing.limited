@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 
-class ContextsUnified extends Model
+class ContextsUnified extends BaseModel
 {
     protected $table = 'cmis.contexts_unified';
     protected $guarded = ['*'];

@@ -2,41 +2,22 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasOrganization;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Support\Str;
-
-class Campaign extends Model
+class Campaign extends BaseModel
 {
     use HasFactory, SoftDeletes;
-
-    protected $connection = 'pgsql';
+    use HasOrganization;
 
     protected $table = 'cmis.campaigns';
 
     protected $primaryKey = 'campaign_id';
-
-    public $incrementing = false;
-
-    protected $keyType = 'string';
-
-    /**
-     * Boot function to auto-generate UUID
-     */
-    protected static function boot()
-    {
-        parent::boot();
-
-        static::creating(function ($model) {
-            if (empty($model->{$model->getKeyName()})) {
-                $model->{$model->getKeyName()} = (string) Str::uuid();
-            }
-        });
-    }
 
     protected $fillable = [
         'campaign_id',
@@ -73,15 +54,11 @@ class Campaign extends Model
         'deleted_at' => 'datetime',
     ];
 
-    public function org(): BelongsTo
-    {
-        return $this->belongsTo(\App\Models\Core\Org::class, 'org_id', 'org_id');
-    }
+    
 
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by', 'user_id');
-    }
 
     public function offerings(): BelongsToMany
     {
@@ -90,22 +67,16 @@ class Campaign extends Model
             'cmis.campaign_offerings',
             'campaign_id',
             'offering_id'
-        );
-    }
 
     public function performanceMetrics(): HasMany
     {
         return $this->hasMany(CampaignPerformanceMetric::class, 'campaign_id', 'campaign_id');
-    }
 
     public function adCampaigns(): HasMany
     {
         return $this->hasMany(AdCampaign::class, 'campaign_id', 'campaign_id');
-    }
 
     public function creativeAssets(): HasMany
     {
         return $this->hasMany(\App\Models\CreativeAsset::class, 'campaign_id', 'campaign_id');
-    }
-
 }

@@ -2,21 +2,20 @@
 
 namespace App\Models\AdPlatform;
 
+use App\Models\Concerns\HasOrganization;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
-class AdAudience extends Model
+class AdAudience extends BaseModel
 {
     use HasFactory, SoftDeletes, HasUuids;
+    use HasOrganization;
 
     protected $table = 'cmis.ad_audiences';
     protected $primaryKey = 'id';
-    protected $connection = 'pgsql';
-    public $incrementing = false;
-    protected $keyType = 'string';
-
     protected $fillable = [
         'id',
         'org_id',
@@ -53,13 +52,7 @@ class AdAudience extends Model
         'deleted_at' => 'datetime',
     ];
 
-    /**
-     * Get the organization
-     */
-    public function org()
-    {
-        return $this->belongsTo(\App\Models\Core\Org::class, 'org_id', 'org_id');
-    }
+    
 
     /**
      * Get the integration
@@ -67,7 +60,6 @@ class AdAudience extends Model
     public function integration()
     {
         return $this->belongsTo(\App\Models\Core\Integration::class, 'integration_id', 'integration_id');
-    }
 
     /**
      * Scope by platform
@@ -75,7 +67,6 @@ class AdAudience extends Model
     public function scopeByPlatform($query, string $platform)
     {
         return $query->where('platform', $platform);
-    }
 
     /**
      * Scope by audience type
@@ -83,7 +74,6 @@ class AdAudience extends Model
     public function scopeByType($query, string $type)
     {
         return $query->where('audience_type', $type);
-    }
 
     /**
      * Scope custom audiences
@@ -91,7 +81,6 @@ class AdAudience extends Model
     public function scopeCustom($query)
     {
         return $query->where('audience_type', 'custom');
-    }
 
     /**
      * Scope lookalike audiences
@@ -99,7 +88,6 @@ class AdAudience extends Model
     public function scopeLookalike($query)
     {
         return $query->where('audience_type', 'lookalike');
-    }
 
     /**
      * Scope by entity level
@@ -107,5 +95,4 @@ class AdAudience extends Model
     public function scopeByEntityLevel($query, string $level)
     {
         return $query->where('entity_level', $level);
-    }
 }

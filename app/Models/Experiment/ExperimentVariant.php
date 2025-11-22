@@ -3,20 +3,16 @@
 namespace App\Models\Experiment;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
-class ExperimentVariant extends Model
+class ExperimentVariant extends BaseModel
 {
     use HasFactory, SoftDeletes, HasUuids;
 
     protected $table = 'cmis.experiment_variants';
     protected $primaryKey = 'exp_id';
-    protected $connection = 'pgsql';
-    public $incrementing = false;
-    protected $keyType = 'string';
-
     protected $fillable = [
         'exp_id',
         'asset_id',
@@ -45,7 +41,6 @@ class ExperimentVariant extends Model
     public function experiment()
     {
         return $this->belongsTo(Experiment::class, 'exp_id', 'exp_id');
-    }
 
     /**
      * Get the creative asset
@@ -53,7 +48,6 @@ class ExperimentVariant extends Model
     public function asset()
     {
         return $this->belongsTo(\App\Models\CreativeAsset::class, 'asset_id', 'asset_id');
-    }
 
     /**
      * Calculate CTR
@@ -62,10 +56,8 @@ class ExperimentVariant extends Model
     {
         if ($this->impressions === 0) {
             return 0.0;
-        }
 
         return ($this->clicks / $this->impressions) * 100;
-    }
 
     /**
      * Calculate conversion rate
@@ -74,10 +66,8 @@ class ExperimentVariant extends Model
     {
         if ($this->clicks === 0) {
             return 0.0;
-        }
 
         return ($this->conversions / $this->clicks) * 100;
-    }
 
     /**
      * Calculate CPC
@@ -86,8 +76,6 @@ class ExperimentVariant extends Model
     {
         if ($this->clicks === 0) {
             return 0.0;
-        }
 
         return $this->cost / $this->clicks;
-    }
 }

@@ -2,17 +2,13 @@
 
 namespace App\Models\Analytics;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
-class CampaignAnalytics extends Model
+class CampaignAnalytics extends BaseModel
 {
-    use HasUuids;
+    
     protected $table = 'cmis.campaign_analytics';
     protected $primaryKey = 'analytics_id';
-    protected $connection = 'pgsql';
-    public $incrementing = false;
-    protected $keyType = 'string';
     public $timestamps = false;
 
     protected $fillable = [
@@ -68,7 +64,6 @@ class CampaignAnalytics extends Model
     public function campaign()
     {
         return $this->belongsTo(\App\Models\Campaign::class, 'campaign_id', 'campaign_id');
-    }
 
     /**
      * Scope by date range
@@ -76,7 +71,6 @@ class CampaignAnalytics extends Model
     public function scopeDateRange($query, $startDate, $endDate)
     {
         return $query->whereBetween('date', [$startDate, $endDate]);
-    }
 
     /**
      * Scope recent analytics
@@ -84,7 +78,6 @@ class CampaignAnalytics extends Model
     public function scopeRecent($query, int $days = 30)
     {
         return $query->where('date', '>=', now()->subDays($days));
-    }
 
     /**
      * Calculate conversion rate
@@ -93,10 +86,8 @@ class CampaignAnalytics extends Model
     {
         if ($this->clicks === 0) {
             return 0.0;
-        }
 
         return ($this->conversions / $this->clicks) * 100;
-    }
 
     /**
      * Calculate ROI
@@ -105,8 +96,6 @@ class CampaignAnalytics extends Model
     {
         if ($this->spend == 0) {
             return 0.0;
-        }
 
         return (($this->revenue - $this->spend) / $this->spend) * 100;
-    }
 }

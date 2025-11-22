@@ -2,26 +2,23 @@
 
 namespace App\Models\Security;
 
+use App\Models\Concerns\HasOrganization;
+
 use App\Models\Core\Org;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
-class AuditLog extends Model
+class AuditLog extends BaseModel
 {
     use HasFactory, SoftDeletes, HasUuids;
-
-    protected $connection = 'pgsql';
+    use HasOrganization;
 
     protected $table = 'cmis.audit_log';
 
     protected $primaryKey = 'log_id';
-
-    public $incrementing = false;
-
-    protected $keyType = 'string';
 
     public $timestamps = true;
 
@@ -46,13 +43,7 @@ class AuditLog extends Model
         'deleted_by' => 'string',
     ];
 
-    /**
-     * Get the organization
-     */
-    public function org()
-    {
-        return $this->belongsTo(Org::class, 'org_id', 'org_id');
-    }
+    
 
     /**
      * Scope to get logs for a specific organization
@@ -60,7 +51,6 @@ class AuditLog extends Model
     public function scopeForOrg($query, string $orgId)
     {
         return $query->where('org_id', $orgId);
-    }
 
     /**
      * Scope to get logs for a specific actor
@@ -68,7 +58,6 @@ class AuditLog extends Model
     public function scopeByActor($query, string $actor)
     {
         return $query->where('actor', $actor);
-    }
 
     /**
      * Scope to get logs for a specific action
@@ -76,7 +65,6 @@ class AuditLog extends Model
     public function scopeByAction($query, string $action)
     {
         return $query->where('action', $action);
-    }
 
     /**
      * Scope to get recent logs
@@ -84,5 +72,4 @@ class AuditLog extends Model
     public function scopeRecent($query, int $hours = 24)
     {
         return $query->where('ts', '>=', now()->subHours($hours));
-    }
 }

@@ -2,20 +2,19 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasOrganization;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
-class UserPermission extends Model
+class UserPermission extends BaseModel
 {
     use HasFactory, HasUuids;
+    use HasOrganization;
 
     protected $table = 'cmis.user_permissions';
     protected $primaryKey = 'id';
-    protected $connection = 'pgsql';
-    public $incrementing = false;
-    protected $keyType = 'string';
-
     protected $fillable = [
         'id',
         'user_id',
@@ -45,7 +44,6 @@ class UserPermission extends Model
     public function user()
     {
         return $this->belongsTo(User::class, 'user_id', 'user_id');
-    }
 
     /**
      * Get the permission
@@ -53,7 +51,6 @@ class UserPermission extends Model
     public function permission()
     {
         return $this->belongsTo(Permission::class, 'permission_id', 'permission_id');
-    }
 
     /**
      * Get the user who granted this permission
@@ -61,7 +58,6 @@ class UserPermission extends Model
     public function grantedBy()
     {
         return $this->belongsTo(User::class, 'granted_by', 'user_id');
-    }
 
     /**
      * Scope to get active permissions
@@ -72,8 +68,6 @@ class UserPermission extends Model
             ->where(function ($q) {
                 $q->whereNull('expires_at')
                     ->orWhere('expires_at', '>', now());
-            });
-    }
 
     /**
      * Scope to get expired permissions
@@ -81,7 +75,6 @@ class UserPermission extends Model
     public function scopeExpired($query)
     {
         return $query->where('expires_at', '<=', now());
-    }
 
     /**
      * Check if permission is active
@@ -90,12 +83,9 @@ class UserPermission extends Model
     {
         if (!$this->is_granted) {
             return false;
-        }
 
         if ($this->expires_at && $this->expires_at->isPast()) {
             return false;
-        }
 
         return true;
-    }
 }
