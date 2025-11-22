@@ -22,6 +22,8 @@ class PostHistory extends BaseModel
         'created_at' => 'datetime',
     ];
 
+    }
+
     public function post() {
         return $this->belongsTo(SocialPost::class, 'post_id');
 }
