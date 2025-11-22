@@ -69,6 +69,102 @@ Expert in CMIS's **Campaign Management Domain** via adaptive discovery:
 
 ---
 
+## 🆕 UNIFIED METRICS ARCHITECTURE (Updated 2025-11-22)
+
+**CRITICAL:** CMIS consolidated 10 platform-specific metric tables into ONE unified table.
+
+### Old Architecture (DEPRECATED - Do Not Use)
+❌ `cmis.meta_campaign_metrics`
+❌ `cmis.google_campaign_metrics`
+❌ `cmis.tiktok_campaign_metrics`
+❌ `cmis.linkedin_campaign_metrics`
+❌ `cmis.twitter_campaign_metrics`
+❌ `cmis.snapchat_campaign_metrics`
+❌ (+ 4 more deprecated tables)
+
+### New Architecture (CURRENT - Always Use)
+✅ **`cmis.unified_metrics`** - Single source of truth for ALL platform metrics
+
+**Table Structure:**
+```sql
+cmis.unified_metrics:
+  - id (UUID)
+  - org_id (UUID)
+  - entity_type (campaign, ad_set, ad, creative)
+  - entity_id (UUID)
+  - platform (meta, google, tiktok, linkedin, twitter, snapchat)
+  - metric_date (DATE)
+  - metric_data (JSONB) -- All platform-specific metrics
+  - created_at, updated_at
+```
+
+### Discovery Commands
+
+**Always use these to check unified_metrics:**
+
+```sql
+-- Discover campaign metrics by platform
+SELECT
+    entity_type,
+    platform,
+    COUNT(*) as metric_count,
+    MIN(metric_date) as earliest_date,
+    MAX(metric_date) as latest_date
+FROM cmis.unified_metrics
+WHERE entity_type = 'campaign'
+GROUP BY entity_type, platform
+ORDER BY platform;
+
+-- Get specific campaign metrics
+SELECT
+    platform,
+    metric_date,
+    metric_data->>'impressions' as impressions,
+    metric_data->>'clicks' as clicks,
+    metric_data->>'spend' as spend,
+    metric_data->>'conversions' as conversions
+FROM cmis.unified_metrics
+WHERE entity_type = 'campaign'
+  AND entity_id = 'your-campaign-id'
+ORDER BY metric_date DESC;
+
+-- Aggregate metrics across platforms
+SELECT
+    SUM((metric_data->>'impressions')::bigint) as total_impressions,
+    SUM((metric_data->>'clicks')::bigint) as total_clicks,
+    SUM((metric_data->>'spend')::numeric) as total_spend,
+    SUM((metric_data->>'conversions')::bigint) as total_conversions
+FROM cmis.unified_metrics
+WHERE entity_type = 'campaign'
+  AND entity_id = 'your-campaign-id';
+```
+
+### Benefits of Unified Approach
+- ✅ **Single query** for cross-platform analytics
+- ✅ **Reduced duplication** (13,100 lines saved)
+- ✅ **Flexible schema** via JSONB for platform-specific fields
+- ✅ **Easier maintenance** - one table to manage
+- ✅ **Better performance** - monthly partitioning enabled
+
+### Migration Guide
+
+**If you see old metric tables in code:**
+```php
+// ❌ OLD (WRONG)
+$metrics = DB::table('cmis.meta_campaign_metrics')
+    ->where('campaign_id', $id)
+    ->get();
+
+// ✅ NEW (CORRECT)
+$metrics = DB::table('cmis.unified_metrics')
+    ->where('entity_type', 'campaign')
+    ->where('entity_id', $id)
+    ->where('platform', 'meta')
+    ->get();
+```
+
+---
+
 ## 🔍 CAMPAIGN DISCOVERY PROTOCOLS
 
 ### Protocol 1: Discover Campaign Models
@@ -220,14 +316,114 @@ grep -r "analytics" routes/api.php | grep -i campaign
 
 ## 🏗️ CAMPAIGN DOMAIN PATTERNS
 
+### 🆕 Standardized Patterns (CMIS 2025-11-22)
+
+**ALWAYS use these standardized patterns in ALL campaign code:**
+
+#### Models: BaseModel + HasOrganization
+```php
+use App\Models\BaseModel;
+use App\Models\Concerns\HasOrganization;
+
+class Campaign extends BaseModel  // ✅ NOT Model
+{
+    use HasOrganization;  // ✅ Automatic org() relationship
+
+    // BaseModel provides:
+    // - UUID primary keys
+    // - Automatic UUID generation
+    // - RLS context awareness
+
+    // HasOrganization provides:
+    // - org() relationship
+    // - scopeForOrganization($orgId)
+    // - belongsToOrganization($orgId)
+    // - getOrganizationId()
+}
+```
+
+#### Controllers: ApiResponse Trait
+```php
+use App\Http\Controllers\Controller;
+use App\Http\Controllers\Concerns\ApiResponse;
+
+class CampaignController extends Controller
+{
+    use ApiResponse;  // ✅ Standardized JSON responses
+
+    public function index()
+    {
+        $campaigns = Campaign::all();
+        return $this->success($campaigns, 'Campaigns retrieved successfully');
+    }
+
+    public function store(Request $request)
+    {
+        $campaign = Campaign::create($request->validated());
+        return $this->created($campaign, 'Campaign created successfully');
+    }
+
+    public function destroy($id)
+    {
+        Campaign::findOrFail($id)->delete();
+        return $this->deleted('Campaign deleted successfully');
+    }
+
+    // Available methods:
+    // - success($data, $message, $code = 200)
+    // - error($message, $code = 400, $errors = null)
+    // - created($data, $message)
+    // - deleted($message)
+    // - notFound($message)
+    // - unauthorized($message)
+    // - validationError($errors, $message)
+}
+```
+
+#### Migrations: HasRLSPolicies Trait
+```php
+use Database\Migrations\Concerns\HasRLSPolicies;
+
+class CreateCampaignsTable extends Migration
+{
+    use HasRLSPolicies;
+
+    public function up()
+    {
+        Schema::create('cmis.campaigns', function (Blueprint $table) {
+            $table->uuid('id')->primary();
+            $table->uuid('org_id');
+            // ... columns
+        });
+
+        // ✅ Single line RLS setup (replaces manual SQL)
+        $this->enableRLS('cmis.campaigns');
+    }
+
+    public function down()
+    {
+        $this->disableRLS('cmis.campaigns');
+        Schema::dropIfExists('cmis.campaigns');
+    }
+}
+```
+
+---
+
 ### Pattern 1: Campaign Lifecycle State Machine
 
 **When you discover campaign status management:**
 
 ```php
 // Standard pattern for state transitions
-class Campaign extends Model
+// ✅ ALWAYS extend BaseModel (not Model)
+use App\Models\BaseModel;
+use App\Models\Concerns\HasOrganization;
+
+class Campaign extends BaseModel
 {
+    use HasOrganization; // Provides org() relationship automatically
+
     // Discover these from actual code
     const STATUS_DRAFT = 'draft';
     const STATUS_ACTIVE = 'active';
@@ -371,31 +567,32 @@ class CampaignBudgetTracker
 **Discover metrics structure first:**
 
 ```sql
--- Discover available metrics
-SELECT column_name
-FROM information_schema.columns
-WHERE table_schema = 'cmis'
-  AND table_name = 'campaign_metrics'
-ORDER BY ordinal_position;
+-- ✅ NEW: Discover available metrics from unified_metrics
+SELECT
+    DISTINCT jsonb_object_keys(metric_data) as metric_name
+FROM cmis.unified_metrics
+WHERE entity_type = 'campaign'
+LIMIT 50;
 ```
 
-Then implement analytics:
+Then implement analytics using **unified_metrics**:
 
 ```php
 class CampaignAnalyticsService
 {
     public function getPerformanceSummary(Campaign $campaign): array
     {
-        // Discover which metrics table to use
+        // ✅ Use unified_metrics (NOT old platform-specific tables)
         $metrics = DB::select("
             SELECT
-                SUM(impressions) as total_impressions,
-                SUM(clicks) as total_clicks,
-                SUM(conversions) as total_conversions,
-                SUM(spend) as total_spend
-            FROM cmis.campaign_metrics
-            WHERE campaign_id = ?
-        ", [$campaign->campaign_id])[0];
+                SUM((metric_data->>'impressions')::bigint) as total_impressions,
+                SUM((metric_data->>'clicks')::bigint) as total_clicks,
+                SUM((metric_data->>'conversions')::bigint) as total_conversions,
+                SUM((metric_data->>'spend')::numeric) as total_spend
+            FROM cmis.unified_metrics
+            WHERE entity_type = 'campaign'
+              AND entity_id = ?
+        ", [$campaign->id])[0];
 
         return [
             'impressions' => $metrics->total_impressions,
@@ -744,10 +941,10 @@ $campaign->transitionTo($newStatus); // With validation
 
 ---
 
-**Version:** 2.0 - Adaptive Campaign Intelligence
-**Last Updated:** 2025-11-18
+**Version:** 2.1 - Adaptive Campaign Intelligence with Unified Patterns
+**Last Updated:** 2025-11-22
 **Framework:** META_COGNITIVE_FRAMEWORK
-**Specialty:** Campaign Lifecycle, EAV Patterns, Budget Tracking, Analytics
+**Specialty:** Campaign Lifecycle, EAV Patterns, Budget Tracking, Analytics, Unified Metrics
 
 *"Master the campaign domain through continuous discovery - the CMIS way."*
 

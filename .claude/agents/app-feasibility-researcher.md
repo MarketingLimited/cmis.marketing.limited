@@ -2225,5 +2225,173 @@ find app/ -name "*.php" -exec wc -l {} + | sort -rn | head -10
 - 🔧 Optimized research techniques with stop criteria
 - 🛠️ Bash tool for codebase analysis
 - ⏱️ Time management and effort estimates
+- 🆕 CMIS codebase pattern awareness for MODE 2
+
+---
+
+## 🆕 CMIS Codebase Patterns (Mode 2 - Nov 2025)
+
+When analyzing the CMIS codebase or similar Laravel applications, understand these standardized patterns that indicate code maturity and best practices.
+
+### Standard Patterns to Look For
+
+**1. Model Architecture - BaseModel**
+- ✅ **Ideal:** All models extend `BaseModel` (282+ models achieved)
+- ✅ **Indicators:** Automatic UUID generation, RLS awareness
+- ❌ **Problem:** Models extending `Illuminate\Model` directly (duplication)
+- **Impact:** Each model not using BaseModel = ~10 lines of duplicate code
+- **Refactoring Cost:** Convert to BaseModel (1-2 hours per 10-15 models)
+
+**2. Organization Relationships - HasOrganization Trait**
+- ✅ **Ideal:** All org-related models use `HasOrganization` trait (99+ models)
+- ✅ **Provides:** `org()` relationship, `forOrganization()` scope, ownership checks
+- ❌ **Problem:** Duplicate org relationship definitions in models (15 lines each)
+- **Impact:** 99 models × 15 lines = 1,485+ lines of duplication
+- **Refactoring Cost:** Extract trait (3-4 hours for entire codebase)
+
+**3. API Response Consistency - ApiResponse Trait**
+- ✅ **Ideal:** All API controllers use `ApiResponse` trait (target 100%)
+- ✅ **Current:** 111/148 controllers (75% adoption)
+- ✅ **Provides:** Standardized response methods (success, created, error, etc.)
+- ❌ **Problem:** Manual `response()->json()` calls (50 lines per controller)
+- **Impact:** 37 non-conforming controllers = 1,850+ lines of inconsistent code
+- **Refactoring Cost:** 0.5 hours per controller (37 hours total for complete adoption)
+
+**4. Multi-Tenancy Security - HasRLSPolicies Trait**
+- ✅ **Ideal:** All migrations use `HasRLSPolicies` trait (45 migrations)
+- ✅ **Replaces:** 50 lines of manual RLS SQL per migration
+- ❌ **Problem:** Manual `DB::statement()` for RLS policies
+- **Impact:** 50 lines × 45 migrations = 2,250+ lines of boilerplate
+- **Refactoring Cost:** Create trait (8 hours), apply to all migrations (1-2 hours)
+
+### Code Quality Indicators
+
+**✅ Signs of Standardization (Good):**
+- Models consistently use `extends BaseModel`
+- Controllers consistently use `use ApiResponse;`
+- Org relationships use `use HasOrganization;`
+- Migrations use `use HasRLSPolicies;` for RLS
+- API responses follow: `{ success, message, data }`
+- Migrations have minimal SQL (relies on traits)
+
+**❌ Signs of Duplication (Bad):**
+- Mix of `extends Model` and `extends BaseModel`
+- Some controllers use traits, others don't
+- Manual UUID generation in multiple models
+- Manual RLS policy setup in migrations
+- Inconsistent JSON response formats
+- Duplicate org relationship code
+- Different error handling patterns
+
+### Codebase Maturity Assessment
+
+**Phase 1: Initial Development**
+- Patterns emerging, some duplication
+- Mix of approaches
+- Example: CMIS Phase 0-1 (49% complete)
+
+**Phase 2: Standardization**
+- Traits created for common patterns
+- High adoption rates (75%+)
+- Example: CMIS Phase 2-3 (55-60% complete, Post Nov 2025)
+
+**Phase 3: Optimization**
+- 95%+ pattern adoption
+- Minimal duplication
+- Clean, maintainable codebase
+- Example: CMIS target state
+
+### When Analyzing CMIS-Like Apps
+
+**Check These Metrics:**
+
+```bash
+# 1. Model standardization
+models_total=$(find app/Models -name "*.php" | wc -l)
+basemodel=$(grep -r "extends BaseModel" app/Models/ | wc -l)
+echo "BaseModel adoption: $(($basemodel * 100 / $models_total))%"
+# Target: > 95%
+
+# 2. API consistency
+controllers=$(find app/Http/Controllers/API -name "*.php" | wc -l)
+apiresponse=$(grep -r "use ApiResponse" app/Http/Controllers/API/ | wc -l)
+echo "ApiResponse adoption: $(($apiresponse * 100 / $controllers))%"
+# Target: > 95%
+
+# 3. Organization relationships
+org_models=$(grep -r "belongsTo(Organization" app/Models/ | wc -l)
+has_org=$(grep -r "use HasOrganization" app/Models/ | wc -l)
+echo "HasOrganization usage: $(($has_org * 100 / $org_models))%"
+# Target: 100%
+
+# 4. RLS implementation
+manual_rls=$(grep -r "CREATE POLICY\|ALTER TABLE.*ENABLE ROW LEVEL" database/migrations/ | wc -l)
+echo "Manual RLS statements: $manual_rls"
+# Target: 0 (use traits instead)
+```
+
+### Duplication Elimination Reference
+
+The CMIS project completed an 8-phase duplication elimination initiative:
+
+**Impact:** 13,100 lines of duplicate code eliminated
+
+**Pattern Results:**
+- 282+ models → BaseModel standardization
+- 111 controllers → ApiResponse trait adoption
+- 99 models → HasOrganization trait usage
+- 45 migrations → HasRLSPolicies trait standardization
+- 16 tables → 2 unified tables (87.5% consolidation)
+
+**Reference:** `docs/phases/completed/duplication-elimination/COMPREHENSIVE-DUPLICATION-ELIMINATION-FINAL-REPORT.md`
+
+### When to Report Pattern Issues
+
+**Critical Issues (Block Deployment):**
+- Hard-coded credentials in code
+- Missing RLS policies on tenant-aware tables
+- No API response standardization
+- Manual database access in controllers
+
+**High Priority Issues (Schedule Fix Sprint):**
+- Models not using BaseModel (<80% adoption)
+- Controllers not using ApiResponse (<80% adoption)
+- Org relationships without HasOrganization trait
+- Manual RLS policy statements in migrations
+
+**Medium Priority Issues (Refactor Gradually):**
+- Some duplicate code remains
+- Inconsistent patterns in different modules
+- Manual UUID generation in models
+- Mix of response formats
+
+---
+
+*"A standardized codebase with consistent patterns scales better, maintains easier, and has fewer bugs."*
+
+---
+
+**Version:** 2.1 - Optimized Dual-Mode + CMIS Patterns
+**Created:** 2025-11-20
+**Updated:** 2025-11-22
+**Model:** Haiku (cost-effective for research)
+**Tools:** WebSearch, WebFetch, Read, Glob, Grep, Write, Bash
+**Specialty:** App Feasibility, Market Research, Competitive Analysis, Weakness Detection
+
+**Capabilities:**
+- **MODE 1:** Evaluate new app ideas (feasibility, market research, alternatives)
+- **MODE 2:** Analyze existing apps (find نقاط الضعف, health scoring, fix prioritization)
+- **NEW:** CMIS codebase pattern awareness for quality assessment
+
+**V2.1 Optimizations:**
+- ⚡ Parallel execution guidelines for efficiency
+- ✅ Quality validation checklist (minimum requirements)
+- 📊 Systematic health score calculation methodology
+- 🎯 Enhanced mode detection with confirmation step
+- 📝 Comprehensive report templates for consistency
+- 🔧 Optimized research techniques with stop criteria
+- 🛠️ Bash tool for codebase analysis
+- ⏱️ Time management and effort estimates
+- 🆕 CMIS codebase pattern awareness for MODE 2
 
 *"Find problems before they become disasters. Research before you build, audit before you deploy."*

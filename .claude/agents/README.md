@@ -1,9 +1,9 @@
 # CMIS AI Agents Framework
 ## Specialized AI Agents for CMIS (Cognitive Marketing Information System)
 
-**Last Updated:** 2025-11-20
+**Last Updated:** 2025-11-22
 **Project:** CMIS - Campaign Management & Integration System
-**Version:** 2.0 - CMIS-Specific Agents
+**Version:** 2.1 - Code Quality & Standardization Agents Added
 
 ---
 
@@ -21,7 +21,7 @@ This directory contains **specialized AI agents** custom-built for the CMIS proj
 - 244 Models across 51 business domains
 - 201 test suite with continuous improvements
 
-**Total Agents:** 26 specialized agents
+**Total Agents:** 29 specialized agents
 **Project Knowledge Base:** `.claude/CMIS_PROJECT_KNOWLEDGE.md`
 
 ---
@@ -349,9 +349,119 @@ This directory contains **specialized AI agents** custom-built for the CMIS proj
 
 ---
 
+### 🎨 Code Quality & Standardization Agents (NEW - 2025-11-22)
+
+#### 9. **cmis-model-architect** - Model Architecture Specialist
+**File:** `cmis-model-architect.md`
+
+**Purpose:** Ensures all models follow BaseModel pattern and standardized trait composition.
+
+**Use when:**
+- Auditing models for BaseModel compliance
+- Migrating legacy models (Model → BaseModel)
+- Guiding trait composition (HasOrganization, SoftDeletes)
+- Standardizing relationship patterns
+- Detecting model code smells
+
+**Handles:**
+- BaseModel adoption (282+ models, target 100%)
+- HasOrganization trait usage (99+ models)
+- Trait composition guidelines
+- Relationship pattern standardization
+- Model health checks and audits
+
+**Key Achievements:**
+- 282+ models extend BaseModel (100%+ adoption)
+- Zero duplicate UUID generation code
+- Consistent org() relationships via trait
+
+**Example:**
+```
+"Audit all models for BaseModel compliance"
+→ Finds 3 models extending Model directly
+→ Provides migration workflow for each
+→ Reports on HasOrganization trait coverage
+→ Health report: docs/active/analysis/model-architecture-audit.md
+```
+
+---
+
+#### 10. **cmis-data-consolidation** - Data Structure Consolidation Specialist
+**File:** `cmis-data-consolidation.md`
+
+**Purpose:** Identifies and eliminates duplicate data structures, preventing table proliferation.
+
+**Use when:**
+- Detecting duplicate table structures
+- Consolidating similar tables into unified tables
+- Designing polymorphic data patterns
+- Preventing new table duplication
+- Monitoring unified table health
+
+**Handles:**
+- Table consolidation strategies
+- Polymorphic table design (unified_metrics, social_posts)
+- JSONB for platform-specific data
+- Data migration workflows
+- Prevention protocols
+
+**Key Achievements:**
+- 10 metric tables → 1 unified_metrics (90% reduction)
+- 5 social post tables → 1 social_posts (80% reduction)
+- Total: 16 tables → 2 tables (87.5% reduction)
+- Saved 3,500+ lines of duplicate code
+
+**Example:**
+```
+"Analyze tables for consolidation opportunities"
+→ Discovers 8 similar metric tables across platforms
+→ Designs unified_metrics with polymorphic pattern
+→ Provides migration plan and data consolidation workflow
+→ Report: docs/active/analysis/data-consolidation-opportunities.md
+```
+
+---
+
+#### 11. **laravel-controller-standardization** - Controller Response Standardization Specialist
+**File:** `laravel-controller-standardization.md`
+
+**Purpose:** Drives ApiResponse trait adoption from 75% to 100%, ensuring API consistency.
+
+**Use when:**
+- Auditing controllers for ApiResponse usage
+- Migrating controllers to standardized responses
+- Detecting manual response()->json() patterns
+- Standardizing API response messages
+- Enforcing API consistency
+
+**Handles:**
+- ApiResponse trait migration workflows
+- Response pattern standardization
+- Manual response detection and replacement
+- API consistency enforcement
+- Progress tracking to 100%
+
+**Key Achievements:**
+- 111 controllers using ApiResponse (75% adoption)
+- Target: 100% (148 total controllers)
+- Standardized response structure across all APIs
+- Saved 800+ lines of duplicate response code
+
+**Example:**
+```
+"Migrate CampaignController to use ApiResponse trait"
+→ Detects 12 manual response()->json() calls
+→ Adds ApiResponse trait to controller
+→ Replaces all manual responses with trait methods
+→ Standardizes response messages
+→ Tests all endpoints for consistency
+```
+
+---
+
 ### 🏗️ Updated Laravel Agents (CMIS-Aware)
 
-#### 9. **laravel-architect** - CMIS-Updated
+#### 12. **laravel-architect** - CMIS-Updated
 **Purpose:** High-level architecture review with CMIS context
 
 **Now includes:**
@@ -361,7 +471,7 @@ This directory contains **specialized AI agents** custom-built for the CMIS proj
 
 ---
 
-#### 10. **laravel-tech-lead** - CMIS-Updated
+#### 13. **laravel-tech-lead** - CMIS-Updated
 **Purpose:** Code review and implementation guidance
 
 **Now includes:**
@@ -371,7 +481,7 @@ This directory contains **specialized AI agents** custom-built for the CMIS proj
 
 ---
 
-#### 11. **laravel-code-quality** - CMIS-Updated
+#### 14. **laravel-code-quality** - CMIS-Updated
 **Purpose:** Code quality and refactoring
 
 **Now includes:**
@@ -381,7 +491,7 @@ This directory contains **specialized AI agents** custom-built for the CMIS proj
 
 ---
 
-#### 12. **laravel-security** - CMIS-Updated
+#### 15. **laravel-security** - CMIS-Updated
 **Purpose:** Security audit and compliance
 
 **Now includes:**
@@ -391,7 +501,7 @@ This directory contains **specialized AI agents** custom-built for the CMIS proj
 
 ---
 
-#### 13. **laravel-performance** - CMIS-Updated
+#### 16. **laravel-performance** - CMIS-Updated
 **Purpose:** Performance optimization
 
 **Now includes:**
@@ -401,7 +511,7 @@ This directory contains **specialized AI agents** custom-built for the CMIS proj
 
 ---
 
-#### 14. **laravel-db-architect** - Already CMIS-Specific
+#### 17. **laravel-db-architect** - Already CMIS-Specific
 **Purpose:** Database architecture and migrations
 
 **Specializes in:**
@@ -411,7 +521,7 @@ This directory contains **specialized AI agents** custom-built for the CMIS proj
 
 ---
 
-#### 15. **laravel-testing** - CMIS-Updated
+#### 18. **laravel-testing** - CMIS-Updated
 **Purpose:** Testing strategy and coverage
 
 **Now includes:**
@@ -421,7 +531,7 @@ This directory contains **specialized AI agents** custom-built for the CMIS proj
 
 ---
 
-#### 16. **laravel-devops** - CMIS-Updated
+#### 19. **laravel-devops** - CMIS-Updated
 **Purpose:** DevOps and CI/CD
 
 **Now includes:**
@@ -431,7 +541,7 @@ This directory contains **specialized AI agents** custom-built for the CMIS proj
 
 ---
 
-#### 17. **laravel-api-design** - CMIS-Updated
+#### 20. **laravel-api-design** - CMIS-Updated
 **Purpose:** API design and consistency
 
 **Now includes:**
@@ -441,7 +551,7 @@ This directory contains **specialized AI agents** custom-built for the CMIS proj
 
 ---
 
-#### 18. **laravel-auditor** - CMIS-Updated
+#### 21. **laravel-auditor** - CMIS-Updated
 **Purpose:** Comprehensive system audit
 
 **Now includes:**
@@ -451,7 +561,7 @@ This directory contains **specialized AI agents** custom-built for the CMIS proj
 
 ---
 
-#### 19. **laravel-documentation** - CMIS-Updated
+#### 22. **laravel-documentation** - CMIS-Updated
 **Purpose:** Documentation and knowledge base
 
 **Now includes:**
@@ -474,6 +584,11 @@ This directory contains **specialized AI agents** custom-built for the CMIS proj
 | **Campaign Features** | cmis-campaign-expert | cmis-context-awareness |
 | **Frontend/UI** | cmis-ui-frontend | - |
 | **Social Media** | cmis-social-publishing | cmis-platform-integration |
+| **Model Architecture** | cmis-model-architect | laravel-code-quality |
+| **Data Consolidation** | cmis-data-consolidation | laravel-db-architect |
+| **Controller Standardization** | laravel-controller-standardization | laravel-api-design |
+| **Trait Composition** | cmis-model-architect | laravel-code-quality |
+| **API Response Consistency** | laravel-controller-standardization | laravel-api-design |
 | **Architecture Review** | laravel-architect | cmis-context-awareness |
 | **Code Review** | laravel-tech-lead | laravel-code-quality |
 | **Performance** | laravel-performance | cmis-ai-semantic |

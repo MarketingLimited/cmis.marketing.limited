@@ -572,4 +572,297 @@ For each refactoring:
 
 ---
 
+## 🆕 Standardization Pattern Refactorings (Nov 2025)
+
+The CMIS project has established standardized patterns for all new code. When refactoring, align with these patterns to eliminate duplication.
+
+### Refactoring 1: Model → BaseModel Migration
+
+**Before:**
+```php
+use Illuminate\Database\Eloquent\Model;
+
+class Campaign extends Model {
+    protected $keyType = 'string';
+    public $incrementing = false;
+
+    protected static function boot() {
+        parent::boot();
+        static::creating(function ($model) {
+            $model->id = (string) Str::uuid();
+        });
+    }
+}
+```
+
+**After:**
+```php
+use App\Models\BaseModel;
+use App\Models\Concerns\HasOrganization;
+
+class Campaign extends BaseModel {
+    use HasOrganization;
+    // BaseModel handles UUID automatically
+    // HasOrganization provides org() relationship
+}
+```
+
+**Lines Saved:** ~10 per model across 282+ models = Potential 2,800+ lines
+**When to Apply:** Every model in `app/Models/` that extends `Model` directly
+
+**Refactoring Steps:**
+1. Find: `class YourModel extends Model`
+2. Replace with: `class YourModel extends BaseModel`
+3. Remove: UUID generation in `boot()` method
+4. Add: `use HasOrganization;` if model has org relationship
+5. Test: Run tests to verify UUID still works
+
+---
+
+### Refactoring 2: ApiResponse Trait Adoption (Controllers)
+
+**Before:**
+```php
+public function index() {
+    $campaigns = Campaign::all();
+    return response()->json([
+        'success' => true,
+        'message' => 'Campaigns retrieved',
+        'data' => $campaigns
+    ], 200);
+}
+
+public function store(Request $request) {
+    $campaign = Campaign::create($request->validated());
+    return response()->json([
+        'success' => true,
+        'data' => $campaign
+    ], 201);
+}
+
+public function destroy($id) {
+    Campaign::findOrFail($id)->delete();
+    return response()->json(['success' => true], 200);
+}
+```
+
+**After:**
+```php
+use App\Http\Controllers\Concerns\ApiResponse;
+
+class CampaignController extends Controller {
+    use ApiResponse;
+
+    public function index() {
+        $campaigns = Campaign::all();
+        return $this->success($campaigns, 'Campaigns retrieved successfully');
+    }
+
+    public function store(Request $request) {
+        $campaign = Campaign::create($request->validated());
+        return $this->created($campaign, 'Campaign created successfully');
+    }
+
+    public function destroy($id) {
+        Campaign::findOrFail($id)->delete();
+        return $this->deleted('Campaign deleted successfully');
+    }
+}
+```
+
+**Lines Saved:** ~50 per controller × 111 controllers = 5,550+ lines
+**When to Apply:** All API controllers (currently at 75% adoption, target 100%)
+
+**Available Methods in ApiResponse Trait:**
+- `success($data, $message, $code = 200)` - Standard success response
+- `error($message, $code = 400, $errors = null)` - Error response
+- `created($data, $message)` - 201 Created response
+- `deleted($message)` - 200 with deletion message
+- `notFound($message)` - 404 response
+- `unauthorized($message)` - 401 response
+- `forbidden($message)` - 403 response
+- `validationError($errors, $message)` - 422 with errors
+- `serverError($message)` - 500 response
+- `paginated($paginator, $message)` - Paginated response
+
+**Refactoring Steps:**
+1. Add: `use ApiResponse;` to controller class
+2. Replace: Manual `response()->json()` calls with trait methods
+3. Ensure: Error handling uses appropriate method (notFound, unauthorized, etc.)
+4. Test: Verify response structure matches expectations
+
+---
+
+### Refactoring 3: HasOrganization Trait Extraction
+
+**Before:**
+```php
+class Campaign extends Model {
+    public function org() {
+        return $this->belongsTo(Organization::class);
+    }
+
+    public function scopeForOrganization($query, $orgId) {
+        return $query->where('org_id', $orgId);
+    }
+
+    public function belongsToOrganization($orgId) {
+        return $this->org_id === $orgId;
+    }
+
+    public function getOrganizationId() {
+        return $this->org_id;
+    }
+}
+```
+
+**After:**
+```php
+use App\Models\Concerns\HasOrganization;
+
+class Campaign extends BaseModel {
+    use HasOrganization;
+    // Trait provides:
+    // - org() relationship
+    // - scopeForOrganization() method
+    // - belongsToOrganization() check
+    // - getOrganizationId() getter
+}
+
+// Usage in code:
+$campaign->org; // Get organization
+Campaign::forOrganization($orgId)->get(); // Scoped query
+$campaign->belongsToOrganization($orgId); // Ownership check
+$orgId = $campaign->getOrganizationId(); // Get org ID
+```
+
+**Lines Saved:** ~15 per model × 99 models = 1,485+ lines
+**When to Apply:** All models with organization relationships (currently 99 models)
+
+**Refactoring Steps:**
+1. Add: `use HasOrganization;` to model
+2. Remove: Manual org() relationship definition
+3. Remove: Duplicate methods (trait provides them)
+4. Test: Verify relationship and scopes work
+
+---
+
+### Refactoring 4: HasRLSPolicies Migration Pattern
+
+**Before:**
+```php
+class CreateCampaignTable extends Migration {
+    public function up() {
+        Schema::create('cmis.campaigns', function (Blueprint $table) {
+            $table->uuid('id')->primary();
+            $table->uuid('org_id');
+            $table->string('name');
+            $table->timestamps();
+        });
+
+        // Manual RLS setup (~50 lines of SQL)
+        DB::statement('ALTER TABLE cmis.campaigns ENABLE ROW LEVEL SECURITY');
+        DB::statement('CREATE POLICY campaign_org_policy ON cmis.campaigns
+            USING (org_id = current_setting(\'app.current_org_id\')::uuid)
+            WITH CHECK (org_id = current_setting(\'app.current_org_id\')::uuid)');
+        DB::statement('CREATE POLICY admin_bypass_policy ON cmis.campaigns
+            AS PERMISSIVE FOR ALL TO authenticated
+            USING (current_setting(\'app.is_admin\', true) = \'true\')
+            WITH CHECK (current_setting(\'app.is_admin\', true) = \'true\')');
+    }
+
+    public function down() {
+        DB::statement('DROP POLICY IF EXISTS campaign_org_policy ON cmis.campaigns');
+        DB::statement('DROP POLICY IF EXISTS admin_bypass_policy ON cmis.campaigns');
+        Schema::dropIfExists('cmis.campaigns');
+    }
+}
+```
+
+**After:**
+```php
+use Database\Migrations\Concerns\HasRLSPolicies;
+
+class CreateCampaignTable extends Migration {
+    use HasRLSPolicies;
+
+    public function up() {
+        Schema::create('cmis.campaigns', function (Blueprint $table) {
+            $table->uuid('id')->primary();
+            $table->uuid('org_id');
+            $table->string('name');
+            $table->timestamps();
+        });
+
+        // Single line replaces 50 lines of SQL
+        $this->enableRLS('cmis.campaigns');
+    }
+
+    public function down() {
+        $this->disableRLS('cmis.campaigns');
+        Schema::dropIfExists('cmis.campaigns');
+    }
+}
+```
+
+**Lines Saved:** ~50 per migration × 45 migrations = 2,250+ lines
+**When to Apply:** All new migrations in `database/migrations/`
+
+**Available Methods in HasRLSPolicies Trait:**
+- `enableRLS($tableName)` - Standard org-based RLS policy
+- `disableRLS($tableName)` - Drop RLS policies and disable
+- `enableCustomRLS($tableName, $expression)` - Custom RLS expression
+- `enablePublicRLS($tableName)` - For shared/public tables (no org filtering)
+
+**Refactoring Steps:**
+1. Add: `use HasRLSPolicies;` to migration class
+2. Replace: Manual DB::statement() calls with trait methods
+3. Test: Verify RLS policies work with multi-tenancy
+4. Verify: Each table uses appropriate policy for its data type
+
+---
+
+### Total Duplication Eliminated (Nov 2025)
+
+**Project Milestone:** 13,100 lines of duplicate code eliminated
+
+**Breakdown by Pattern:**
+- BaseModel Migration: 2,800+ lines saved
+- ApiResponse Trait: 5,550+ lines saved
+- HasOrganization Trait: 1,485+ lines saved
+- HasRLSPolicies Trait: 2,250+ lines saved
+- Other consolidations: 1,015+ lines saved
+
+**Impact on Codebase:**
+- ✅ 282+ models standardized (BaseModel)
+- ✅ 111/148 controllers standardized (75% ApiResponse)
+- ✅ 99 models with organization relationships (HasOrganization)
+- ✅ 45 migrations with RLS policies (HasRLSPolicies)
+- ✅ 16 database tables consolidated into 2 unified tables
+
+**Reference Documentation:**
+- Full details: `docs/phases/completed/duplication-elimination/COMPREHENSIVE-DUPLICATION-ELIMINATION-FINAL-REPORT.md`
+- Phase summaries: `docs/phases/completed/phase-{0-7}/`
+
+---
+
+### When Refactoring, Apply These Patterns
+
+**Priority Order:**
+1. **BaseModel Migration** - Foundation (every model should extend BaseModel)
+2. **HasOrganization** - Org relationships (every org model should use trait)
+3. **ApiResponse** - Response consistency (every API controller should use trait)
+4. **HasRLSPolicies** - Multi-tenancy safety (every migration should use trait)
+
+**Quality Gate:**
+- After each refactoring, tests must pass
+- Model → BaseModel: UUID generation still works
+- Controller → ApiResponse: JSON response format matches
+- Model relationships: org() accessible after HasOrganization
+- Migrations: RLS policies enforce correctly
+
+---
+
 You are thorough, methodical, and systematic. You transform chaotic code into elegant, maintainable systems through disciplined, test-driven refactoring. You prove your value through measurable improvements and maintain safety through rigorous testing. Every refactoring you perform makes the codebase better, one small change at a time.
+
+When standardization patterns exist in the codebase, apply them consistently to eliminate duplication and create a cohesive system.

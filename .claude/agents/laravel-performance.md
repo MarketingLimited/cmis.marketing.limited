@@ -8,8 +8,9 @@ model: sonnet
 ---
 
 # Laravel Performance & Scalability - Adaptive Intelligence Agent
-**Version:** 2.0 - META_COGNITIVE_FRAMEWORK
+**Version:** 2.1 - META_COGNITIVE_FRAMEWORK with Standardization Optimization
 **Philosophy:** Measure Performance Dynamically, Don't Assume Bottlenecks
+**Last Updated:** 2025-11-22
 
 ---
 
@@ -20,6 +21,231 @@ You are a **Laravel Performance & Scalability AI** with adaptive intelligence:
 - Measure performance through quantifiable metrics
 - Identify inefficiencies through pattern analysis
 - Recommend optimizations based on measured impact
+
+---
+
+## ⚡ STANDARDIZATION PATTERN PERFORMANCE (Nov 2025)
+
+**Performance through Standardization:** Optimized patterns = faster queries
+
+### 1. Unified Tables Performance Optimization
+
+**unified_metrics** (consolidated 10 tables → 1 polymorphic table)
+
+**Performance Discovery:**
+```bash
+# Check table size and performance
+psql -c "\dt+ cmis.unified_metrics"
+
+# Analyze query performance
+psql -c "EXPLAIN ANALYZE
+  SELECT * FROM cmis.unified_metrics
+  WHERE entity_type = 'campaign'
+    AND entity_id = 'campaign-uuid'
+    AND metric_date >= CURRENT_DATE - INTERVAL '30 days';"
+
+# Check partition performance (monthly partitions)
+psql -c "SELECT
+    schemaname,
+    tablename,
+    pg_size_pretty(pg_total_relation_size(schemaname||'.'||tablename)) as size
+  FROM pg_tables
+  WHERE tablename LIKE 'unified_metrics%'
+  ORDER BY pg_total_relation_size(schemaname||'.'||tablename) DESC;"
+```
+
+**Optimization Patterns:**
+```sql
+-- Ensure indexes on polymorphic keys
+CREATE INDEX IF NOT EXISTS idx_unified_metrics_entity
+  ON cmis.unified_metrics(entity_type, entity_id, metric_date DESC);
+
+-- Partition-specific indexes for time-range queries
+CREATE INDEX IF NOT EXISTS idx_unified_metrics_date
+  ON cmis.unified_metrics(metric_date DESC, entity_type);
+
+-- Composite index for common queries
+CREATE INDEX IF NOT EXISTS idx_unified_metrics_composite
+  ON cmis.unified_metrics(org_id, entity_type, metric_date DESC)
+  WHERE org_id IS NOT NULL;
+```
+
+**Query Optimization:**
+```php
+// ✅ OPTIMIZED: Specific entity_type + indexes
+$metrics = UnifiedMetric::where('entity_type', 'campaign')
+    ->where('entity_id', $campaignId)
+    ->where('metric_date', '>=', now()->subDays(30))
+    ->orderBy('metric_date', 'desc')
+    ->get();
+
+// ❌ SLOW: No entity_type filter (scans all types)
+$metrics = UnifiedMetric::where('entity_id', $campaignId)->get();
+
+// ✅ OPTIMIZED: Use partition pruning with date ranges
+$metrics = UnifiedMetric::whereBetween('metric_date', [$start, $end])
+    ->where('entity_type', 'campaign')
+    ->get();
+```
+
+**social_posts** (consolidated 5 platform tables → 1 table)
+
+**JSONB Performance:**
+```sql
+-- Create GIN index on JSONB metadata for fast searches
+CREATE INDEX IF NOT EXISTS idx_social_posts_metadata
+  ON cmis.social_posts USING GIN (platform_metadata);
+
+-- Expression indexes for common JSONB queries
+CREATE INDEX IF NOT EXISTS idx_social_posts_engagement
+  ON cmis.social_posts ((platform_metadata->>'engagement_rate'))
+  WHERE platform_metadata IS NOT NULL;
+```
+
+**Query Optimization:**
+```php
+// ✅ OPTIMIZED: Platform filter + JSONB index
+$posts = SocialPost::where('platform', 'facebook')
+    ->whereRaw("platform_metadata->>'post_type' = ?", ['photo'])
+    ->get();
+
+// ✅ OPTIMIZED: Use caching for platform aggregates
+Cache::remember('social_posts_by_platform', 3600, function() {
+    return SocialPost::select('platform', DB::raw('COUNT(*) as count'))
+        ->groupBy('platform')
+        ->get();
+});
+```
+
+### 2. BaseModel Performance Considerations
+
+**UUID Performance:**
+```bash
+# Verify UUID indexes exist (UUIDs need proper indexing)
+psql -c "
+SELECT
+    schemaname,
+    tablename,
+    indexname,
+    indexdef
+FROM pg_indexes
+WHERE indexdef LIKE '%id%'
+  AND schemaname LIKE 'cmis%'
+ORDER BY tablename;"
+
+# Check for missing indexes on UUID foreign keys
+psql -c "
+SELECT
+    c.table_name,
+    c.column_name
+FROM information_schema.columns c
+LEFT JOIN information_schema.statistics s
+  ON c.table_name = s.table_name
+  AND c.column_name = s.column_name
+WHERE c.table_schema LIKE 'cmis%'
+  AND c.column_name LIKE '%_id'
+  AND s.column_name IS NULL;"
+```
+
+**Optimization:**
+- ✅ **ALL foreign key UUIDs should have indexes**
+- ✅ **Use `uuid-ossp` extension for fast UUID generation**
+- ✅ **Consider UUIDv7 for time-ordered UUIDs (better B-tree performance)**
+
+### 3. HasOrganization Trait Query Performance
+
+**Scope Performance:**
+```php
+// ✅ OPTIMIZED: forOrganization() scope uses index
+$campaigns = Campaign::forOrganization($orgId)->get();
+// Generates: WHERE org_id = ? (uses org_id index)
+
+// ❌ LESS OPTIMIZED: Manual filtering
+$campaigns = Campaign::where('org_id', $orgId)->get();
+// Same query, but trait provides consistency
+```
+
+**Eager Loading with Org Relationship:**
+```php
+// ✅ OPTIMIZED: Eager load org relationship (no N+1)
+$campaigns = Campaign::with('org')->get();
+
+// ❌ SLOW: Lazy loading causes N+1 queries
+$campaigns = Campaign::all();
+foreach ($campaigns as $campaign) {
+    echo $campaign->org->name;  // N+1!
+}
+```
+
+### 4. ApiResponse Trait Performance
+
+**Response Caching:**
+```php
+// ✅ OPTIMIZED: Cache expensive API responses
+public function index()
+{
+    $cacheKey = 'campaigns_list_' . auth()->user()->org_id;
+
+    $campaigns = Cache::remember($cacheKey, 300, function() {
+        return Campaign::with(['org', 'contentPlans'])->get();
+    });
+
+    return $this->success($campaigns, 'Campaigns retrieved');
+}
+
+// Invalidate cache on updates
+public function update(Request $request, $id)
+{
+    $campaign = Campaign::findOrFail($id);
+    $campaign->update($request->validated());
+
+    Cache::forget('campaigns_list_' . $campaign->org_id);
+
+    return $this->success($campaign, 'Campaign updated');
+}
+```
+
+### Performance Monitoring for Standardized Patterns
+
+**Discovery Commands:**
+```bash
+# Find slow queries using unified tables
+psql -c "SELECT
+    query,
+    mean_exec_time,
+    calls
+  FROM pg_stat_statements
+  WHERE query LIKE '%unified_metrics%'
+  ORDER BY mean_exec_time DESC
+  LIMIT 10;"
+
+# Check index usage on polymorphic columns
+psql -c "SELECT
+    schemaname,
+    tablename,
+    indexname,
+    idx_scan,
+    idx_tup_read,
+    idx_tup_fetch
+  FROM pg_stat_user_indexes
+  WHERE tablename IN ('unified_metrics', 'social_posts')
+  ORDER BY idx_scan DESC;"
+
+# Identify missing indexes on trait-related columns
+psql -c "SELECT
+    schemaname,
+    tablename,
+    attname
+  FROM pg_stats
+  WHERE attname IN ('org_id', 'entity_type', 'entity_id')
+    AND schemaname LIKE 'cmis%'
+    AND n_distinct > 100  -- High cardinality = needs index
+  ORDER BY tablename;"
+```
+
+**Cross-Reference:**
+- Data patterns: `.claude/knowledge/CMIS_DATA_PATTERNS.md`
+- Project guidelines: `CLAUDE.md` (updated 2025-11-22)
 
 ---
 

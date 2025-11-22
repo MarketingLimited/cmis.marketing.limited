@@ -215,6 +215,325 @@ grep -c "use App" app/Http/Controllers/Target.php
 
 ---
 
+## 🆕 CODE REVIEW CHECKLIST - TRAIT USAGE (Updated 2025-11-22)
+
+**Mandatory checks for ALL pull requests in CMIS project.**
+
+### Models Review Checklist
+
+When reviewing model files, ensure:
+
+- [ ] ✅ **Extends BaseModel** (not `Model` directly)
+  ```bash
+  # Check if model extends BaseModel
+  grep "extends BaseModel" app/Models/YourModel.php
+  # ❌ REJECT if: extends Model
+  ```
+
+- [ ] ✅ **Uses HasOrganization** (if has `org_id` column)
+  ```bash
+  # Check for HasOrganization trait
+  grep "use HasOrganization" app/Models/YourModel.php
+  # ❌ REJECT if: has org_id but no trait
+  ```
+
+- [ ] ✅ **No duplicate UUID generation** (BaseModel handles this)
+  ```bash
+  # Should NOT have boot() method with UUID generation
+  grep -A 5 "boot()" app/Models/YourModel.php | grep "Str::uuid()"
+  # ❌ REJECT if: manual UUID generation found
+  ```
+
+- [ ] ✅ **No manual org() relationships** (HasOrganization provides this)
+  ```bash
+  # Should NOT have manual org() method
+  grep "function org()" app/Models/YourModel.php
+  # ❌ REJECT if: manual org() method found
+  ```
+
+**Example review comment:**
+```
+❌ This model should extend BaseModel instead of Model.
+
+**Current:**
+```php
+class Campaign extends Model
+{
+    protected $keyType = 'string';
+    public $incrementing = false;
+
+    protected static function boot()
+    {
+        parent::boot();
+        static::creating(function ($model) {
+            $model->id = Str::uuid();
+        });
+    }
+}
+```
+
+**Should be:**
+```php
+use App\Models\BaseModel;
+use App\Models\Concerns\HasOrganization;
+
+class Campaign extends BaseModel
+{
+    use HasOrganization;
+
+    // BaseModel handles UUID automatically
+    // HasOrganization provides org() relationship
+}
+```
+
+**Benefits:**
+- Removes 15 lines of duplicate code
+- Consistent UUID handling across all models
+- Automatic org() relationship
+```
+
+---
+
+### Controllers Review Checklist (API)
+
+When reviewing API controller files, ensure:
+
+- [ ] ✅ **Uses ApiResponse trait**
+  ```bash
+  # Check for ApiResponse trait
+  grep "use ApiResponse" app/Http/Controllers/API/YourController.php
+  # ❌ REJECT if: API controller without trait
+  ```
+
+- [ ] ✅ **No manual response()->json()** calls
+  ```bash
+  # Should use trait methods instead
+  grep "response()->json\|response\(\)->json" app/Http/Controllers/API/YourController.php
+  # ❌ REJECT if: manual JSON responses found
+  ```
+
+- [ ] ✅ **Consistent response messages**
+  ```bash
+  # Should use trait methods: success(), error(), created(), etc.
+  grep "return \$this->" app/Http/Controllers/API/YourController.php | \
+    grep -E "success|error|created|deleted|notFound"
+  # ✅ APPROVE if: using trait methods
+  ```
+
+- [ ] ✅ **Proper HTTP status codes** (via trait methods)
+  ```bash
+  # Trait handles status codes automatically
+  # ❌ REJECT if: hardcoded status codes like 200, 201, 404
+  ```
+
+**Example review comment:**
+```
+❌ This controller should use the ApiResponse trait for consistent responses.
+
+**Current:**
+```php
+public function index()
+{
+    $campaigns = Campaign::all();
+    return response()->json([
+        'success' => true,
+        'data' => $campaigns
+    ], 200);
+}
+
+public function store(Request $request)
+{
+    $campaign = Campaign::create($request->all());
+    return response()->json([
+        'success' => true,
+        'message' => 'Created',
+        'data' => $campaign
+    ], 201);
+}
+```
+
+**Should be:**
+```php
+use App\Http\Controllers\Concerns\ApiResponse;
+
+class CampaignController extends Controller
+{
+    use ApiResponse;
+
+    public function index()
+    {
+        $campaigns = Campaign::all();
+        return $this->success($campaigns, 'Campaigns retrieved successfully');
+    }
+
+    public function store(Request $request)
+    {
+        $campaign = Campaign::create($request->validated());
+        return $this->created($campaign, 'Campaign created successfully');
+    }
+}
+```
+
+**Benefits:**
+- Consistent response format across ALL endpoints
+- Automatic HTTP status codes
+- Reduced boilerplate code
+- Easier to test and maintain
+```
+
+---
+
+### Migrations Review Checklist
+
+When reviewing migration files, ensure:
+
+- [ ] ✅ **Uses HasRLSPolicies trait** (for tables with org_id)
+  ```bash
+  # Check for HasRLSPolicies trait
+  grep "use HasRLSPolicies" database/migrations/YYYY_MM_DD_*.php
+  # ❌ REJECT if: creates org-scoped table without trait
+  ```
+
+- [ ] ✅ **No manual CREATE POLICY SQL**
+  ```bash
+  # Should use enableRLS() method
+  grep "CREATE POLICY\|ALTER TABLE.*ENABLE ROW" database/migrations/YYYY_MM_DD_*.php
+  # ❌ REJECT if: manual RLS SQL found
+  ```
+
+- [ ] ✅ **Proper down() method** with disableRLS()
+  ```bash
+  # Check down() method has RLS cleanup
+  grep "disableRLS" database/migrations/YYYY_MM_DD_*.php
+  # ❌ REJECT if: enableRLS in up() but no disableRLS in down()
+  ```
+
+**Example review comment:**
+```
+❌ This migration should use HasRLSPolicies trait instead of manual RLS SQL.
+
+**Current:**
+```php
+public function up()
+{
+    Schema::create('cmis.campaigns', function (Blueprint $table) {
+        $table->uuid('id')->primary();
+        $table->uuid('org_id');
+        // ...
+    });
+
+    DB::statement("ALTER TABLE cmis.campaigns ENABLE ROW LEVEL SECURITY");
+    DB::statement("
+        CREATE POLICY campaigns_isolation ON cmis.campaigns
+        USING (org_id = current_setting('app.current_org_id')::uuid)
+    ");
+}
+
+public function down()
+{
+    Schema::dropIfExists('cmis.campaigns');
+}
+```
+
+**Should be:**
+```php
+use Database\Migrations\Concerns\HasRLSPolicies;
+
+class CreateCampaignsTable extends Migration
+{
+    use HasRLSPolicies;
+
+    public function up()
+    {
+        Schema::create('cmis.campaigns', function (Blueprint $table) {
+            $table->uuid('id')->primary();
+            $table->uuid('org_id');
+            // ...
+        });
+
+        $this->enableRLS('cmis.campaigns');
+    }
+
+    public function down()
+    {
+        $this->disableRLS('cmis.campaigns');
+        Schema::dropIfExists('cmis.campaigns');
+    }
+}
+```
+
+**Benefits:**
+- Consistent RLS policies across all tables
+- Automatic policy creation/cleanup
+- Reduced SQL boilerplate
+- Proper cleanup in down() method
+```
+
+---
+
+### Pull Request Rejection Criteria
+
+**MUST reject PR if:**
+
+❌ Model extends `Model` directly (should be `BaseModel`)
+❌ API controller without `ApiResponse` trait
+❌ Model with `org_id` but no `HasOrganization` trait
+❌ Manual RLS SQL in migration (should use `HasRLSPolicies`)
+❌ Manual `org()` relationship method (duplicate)
+❌ Manual UUID generation in `boot()` (duplicate)
+❌ Inconsistent JSON response formats
+
+**MAY approve with comments if:**
+
+⚠️ Legacy code not yet refactored (but flag for future cleanup)
+⚠️ Special case requiring custom implementation (with justification)
+⚠️ Test/experimental code (clearly marked)
+
+---
+
+### Code Review Template
+
+Use this template when reviewing PRs:
+
+```markdown
+## Code Review: [PR Title]
+
+### ✅ Trait Usage Compliance
+
+**Models:**
+- [ ] All models extend BaseModel
+- [ ] Models with org_id use HasOrganization
+- [ ] No duplicate UUID generation
+- [ ] No manual org() relationships
+
+**Controllers (API):**
+- [ ] All API controllers use ApiResponse
+- [ ] No manual response()->json() calls
+- [ ] Consistent response formats
+- [ ] Proper HTTP status codes
+
+**Migrations:**
+- [ ] Tables with org_id use HasRLSPolicies
+- [ ] No manual CREATE POLICY SQL
+- [ ] Proper down() method cleanup
+
+### Issues Found
+
+[List any trait-related issues]
+
+### Recommendation
+
+- [ ] ✅ **APPROVE** - All patterns followed
+- [ ] ⚠️ **APPROVE with comments** - Minor issues noted
+- [ ] ❌ **REQUEST CHANGES** - Pattern violations must be fixed
+
+### Next Steps
+
+[Specific actions required to fix issues]
+```
+
+---
+
 ## 🏗️ IMPLEMENTATION GUIDANCE
 
 ### Feature Design Through Discovery
@@ -668,6 +987,7 @@ docs/
 
 **Remember:** You're not just reviewing code—you're teaching through discovery, ensuring consistency, and building team knowledge through pattern recognition.
 
-**Version:** 2.0 - Adaptive Intelligence Tech Lead
+**Version:** 2.1 - Adaptive Intelligence Tech Lead with Standardized Patterns
+**Last Updated:** 2025-11-22
 **Framework:** META_COGNITIVE_FRAMEWORK
 **Approach:** Discover → Analyze → Guide → Verify
