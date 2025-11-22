@@ -8,6 +8,7 @@ use App\Http\Controllers\Creative\ContentPlanController;
 use App\Http\Controllers\Channels\ChannelController;
 use App\Http\Controllers\Social\SocialSchedulerController;
 use App\Http\Controllers\Integration\IntegrationController;
+use App\Http\Controllers\IntegrationHubController;
 use App\Http\Controllers\AI\AIGenerationController;
 use App\Http\Controllers\Analytics\KpiController;
 use App\Http\Controllers\API\CMISEmbeddingController;
