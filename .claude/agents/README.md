@@ -21,8 +21,10 @@ This directory contains **specialized AI agents** custom-built for the CMIS proj
 - 244 Models across 51 business domains
 - 201 test suite with continuous improvements
 
-**Total Agents:** 37 specialized agents
+**Total Agents:** 44 specialized agents
 **Project Knowledge Base:** `.claude/CMIS_PROJECT_KNOWLEDGE.md`
+
+**🆕 NEW:** 7 Ad Campaign & Platform Advertising Agents (2025-11-22)
 
 ---
 
@@ -495,7 +497,296 @@ This directory contains **specialized AI agents** custom-built for the CMIS proj
 
 ---
 
-#### 12. **cmis-social-publishing** - Social Media & Publishing Expert
+### 📢 Ad Campaign & Platform Advertising Agents (NEW - 2025-11-22)
+
+**🚀 MUST READ FIRST: Platform Setup Workflow**
+
+📖 **Complete Setup Guide:** `.claude/knowledge/PLATFORM_SETUP_WORKFLOW.md`
+
+**Before using ANY platform agent, read the setup workflow guide!** It explains:
+- ✅ **Correct Order:** What to do first (OAuth), then second (token storage), etc.
+- ✅ **Database Schema:** Where data is stored (`cmis_social.social_accounts`, `cmis.organizations`)
+- ✅ **Token Management:** How tokens are stored (encrypted) and retrieved
+- ✅ **Multi-Tenancy:** Each organization has its own platform accounts
+- ✅ **RLS Context:** How to set org context for database operations
+- ✅ **Complete Example:** From OAuth connection to campaign creation
+
+**Why this matters:**
+- Each **organization** can connect multiple accounts per platform
+- Tokens are stored **encrypted** in `cmis_social.social_accounts` table
+- You MUST set **RLS context** before any database operation
+- OAuth flow is the FIRST step before creating campaigns
+
+---
+
+**🌐 LIVE API DISCOVERY FEATURE:**
+All platform advertising agents (Meta, Google, TikTok, LinkedIn, Twitter, Snapchat) include:
+- ✅ **WebSearch integration** - Searches for latest API documentation before implementation
+- ✅ **WebFetch capability** - Fetches official API docs from platform websites
+- ✅ **Dynamic API version detection** - Never assumes outdated API versions
+- ✅ **Adaptive discovery protocols** - Discovers current implementation patterns from codebase
+- ✅ **Up-to-date guidance** - Always checks for latest platform changes and deprecations
+
+**How it works:**
+1. Agent receives question about platform API
+2. Uses WebSearch to find latest API documentation
+3. Uses WebFetch to read official platform docs
+4. Discovers current implementation in your codebase
+5. Provides guidance based on BOTH latest docs AND your actual code
+6. Never relies on hardcoded/outdated API versions
+
+**Example:**
+```
+User: "How do I create a Meta campaign?"
+Agent:
+  1. WebSearch("Meta Ads API latest version 2024")
+  2. WebFetch("developers.facebook.com/docs/marketing-api")
+  3. Discovers current connector in app/Services/AdPlatforms/MetaConnector.php
+  4. Provides implementation using LATEST API version (not outdated v18.0)
+```
+
+---
+
+#### 12. **cmis-ad-campaign-analyst** - Ad Campaign Analysis Expert 📊
+**File:** `cmis-ad-campaign-analyst.md`
+
+**Purpose:** Specialist in analyzing sponsored ad campaign performance, optimization, A/B testing, and ROI/ROAS analysis across all platforms.
+
+**Use when:**
+- Analyzing campaign performance metrics
+- Providing optimization recommendations
+- Evaluating A/B test results
+- Optimizing budget allocation
+- Analyzing creative performance
+- Audience targeting effectiveness
+- ROI/ROAS calculations
+
+**Handles:**
+- Performance analysis across all platforms
+- Statistical A/B test evaluation
+- Budget optimization algorithms
+- Creative performance insights
+- Audience segment analysis
+- Conversion tracking and attribution
+- Underperforming campaign diagnosis
+
+**Key Features:**
+- Data-driven recommendations (not generic benchmarks)
+- Statistical significance testing for A/B tests
+- Platform-specific performance analysis
+- Unified metrics integration
+- Multi-tenancy aware analytics
+
+**Example:**
+```
+"Analyze performance of my Meta campaigns over the last 30 days"
+→ Discovers actual metrics from unified_metrics table
+→ Compares to platform-specific benchmarks
+→ Identifies underperforming campaigns with specific fixes
+→ Provides budget reallocation recommendations
+```
+
+---
+
+#### 13. **cmis-meta-ads-specialist** - Meta (Facebook/Instagram) Advertising Expert 📱
+**File:** `cmis-meta-ads-specialist.md`
+
+**Purpose:** Expert in Meta Ads Manager API, Facebook/Instagram campaigns, pixel tracking, and audience management.
+
+**Use when:**
+- Creating Meta/Facebook/Instagram ad campaigns
+- Implementing Meta Pixel tracking
+- Managing Meta audiences and lookalikes
+- Dynamic Product Ads (DPA) setup
+- Meta webhook integration
+- Campaign optimization for Meta platforms
+
+**Handles:**
+- Meta Ads Manager API v19.0+
+- Campaign objectives (AWARENESS, CONSIDERATION, CONVERSION, TRAFFIC, ENGAGEMENT)
+- Meta Pixel server-side and client-side tracking
+- Custom Audiences and Lookalike Audiences
+- Dynamic Product Catalogs and feeds
+- Meta webhook signature verification
+- Business Manager setup
+
+**Example:**
+```
+"Set up conversion tracking with Meta Pixel"
+→ Implements PageView, AddToCart, Purchase events
+→ Server-side conversion API integration
+→ Event verification and debugging
+```
+
+---
+
+#### 14. **cmis-google-ads-specialist** - Google Ads Platform Expert 🔍
+**File:** `cmis-google-ads-specialist.md`
+
+**Purpose:** Expert in Google Ads API, Search/Display/Video/Shopping/Performance Max campaigns, and Smart Bidding.
+
+**Use when:**
+- Creating Google Ads campaigns (Search, Display, Video, Shopping)
+- Implementing Google Tag Manager (GTM)
+- Optimizing Quality Score
+- Setting up Smart Bidding strategies
+- Managing Google Shopping feeds
+- Performance Max campaigns
+
+**Handles:**
+- Google Ads API integration
+- 6 campaign types (Search, Display, Video, Shopping, Discovery, Performance Max)
+- Smart Bidding (Target CPA, Target ROAS, Maximize Conversions)
+- Quality Score optimization
+- Keyword research and management
+- Google Shopping feed validation
+- Audience targeting and RLSA
+
+**Example:**
+```
+"Create a Performance Max campaign with asset groups"
+→ Complete setup with headlines, descriptions, images, videos
+→ Audience signals configuration
+→ Budget and bidding strategy
+→ Asset group management
+```
+
+---
+
+#### 15. **cmis-tiktok-ads-specialist** - TikTok Advertising Expert 📹
+**File:** `cmis-tiktok-ads-specialist.md`
+
+**Purpose:** Expert in TikTok Ads Manager API, video ad creation, Spark Ads, and TikTok Pixel implementation.
+
+**Use when:**
+- Creating TikTok ad campaigns
+- Implementing TikTok Pixel tracking
+- Creating video ads with TikTok specifications
+- Setting up Spark Ads (boosting organic content)
+- TikTok Shopping integration
+- Campaign optimization for Gen Z audience
+
+**Handles:**
+- TikTok Ads Manager API
+- Campaign objectives (REACH, TRAFFIC, ENGAGEMENT, APP_PROMOTION, CONVERSION, SALES)
+- Video ad specifications (9:16 vertical, 3-60s duration)
+- TikTok Pixel implementation
+- Spark Ads service
+- TikTok Shopping integration
+- Audience targeting (demographics, interests, lookalikes)
+
+**Example:**
+```
+"Create a TikTok video ad campaign for app installs"
+→ Video specification guidelines (1080x1920, MP4, 15-34s)
+→ App install objective setup
+→ Creative best practices for TikTok
+→ Audience targeting optimization
+```
+
+---
+
+#### 16. **cmis-linkedin-ads-specialist** - LinkedIn B2B Advertising Expert 💼
+**File:** `cmis-linkedin-ads-specialist.md`
+
+**Purpose:** Expert in LinkedIn Marketing API, B2B targeting, Lead Gen Forms, and LinkedIn Insight Tag.
+
+**Use when:**
+- Creating LinkedIn ad campaigns
+- B2B audience targeting (job titles, companies, industries)
+- Implementing LinkedIn Insight Tag
+- Setting up Lead Gen Forms
+- LinkedIn conversion tracking
+- Professional targeting strategies
+
+**Handles:**
+- LinkedIn Marketing API
+- Ad formats (Sponsored Content, Sponsored Messaging, Text Ads, Dynamic Ads)
+- B2B targeting (job titles, seniority, company size, industry)
+- Matched Audiences for retargeting
+- Lead Gen Forms with webhook integration
+- LinkedIn Insight Tag implementation
+- Conversion tracking and attribution
+
+**Example:**
+```
+"Set up a Lead Gen Form for B2B lead capture"
+→ Custom form fields configuration
+→ Webhook integration for real-time leads
+→ Targeting C-level executives in tech industry
+→ Lead data extraction and storage
+```
+
+---
+
+#### 17. **cmis-twitter-ads-specialist** - Twitter/X Advertising Expert 🐦
+**File:** `cmis-twitter-ads-specialist.md`
+
+**Purpose:** Expert in Twitter Ads API (X Ads API), Promoted Tweets/Accounts/Trends, and real-time engagement campaigns.
+
+**Use when:**
+- Creating Twitter/X ad campaigns
+- Promoted Tweets, Accounts, or Trends
+- Implementing Twitter Pixel
+- Conversation targeting
+- Real-time event marketing
+- Twitter Card creation
+
+**Handles:**
+- Twitter Ads API (X Ads API)
+- Campaign types (Promoted Tweets, Accounts, Trends)
+- Twitter Pixel implementation
+- Audience targeting (keywords, followers, interests)
+- Tailored Audiences and lookalikes
+- Twitter Card formats (Summary, Player, App)
+- Video ads on Twitter
+- Real-time engagement metrics
+
+**Example:**
+```
+"Create a Promoted Tweet campaign for product launch"
+→ Tweet engagement objectives
+→ Keyword and interest targeting
+→ Twitter Card with image/video
+→ Real-time metrics tracking
+```
+
+---
+
+#### 18. **cmis-snapchat-ads-specialist** - Snapchat Advertising Expert 👻
+**File:** `cmis-snapchat-ads-specialist.md`
+
+**Purpose:** Expert in Snapchat Marketing API, vertical video ads, AR Lenses, and Gen Z targeting strategies.
+
+**Use when:**
+- Creating Snapchat ad campaigns
+- Implementing Snap Pixel
+- Creating vertical video ads
+- AR Lens and Filter campaigns
+- Instant Forms for lead generation
+- Gen Z audience targeting
+
+**Handles:**
+- Snapchat Marketing API
+- Ad formats (Snap Ads, Story Ads, Collection Ads, AR Lenses, Filters)
+- Snap Pixel implementation
+- Audience targeting (Snap Lifestyle Categories, Custom Audiences, Lookalikes)
+- Instant Forms integration
+- Vertical video best practices (9:16)
+- Campaign objectives (AWARENESS, APP_INSTALLS, TRAFFIC, CONVERSIONS, LEAD_GENERATION)
+
+**Example:**
+```
+"Create a vertical video ad campaign for Gen Z audience"
+→ 9:16 vertical video specifications
+→ Snap Lifestyle Categories targeting
+→ Swipe-Up action tracking
+→ Instant Forms for lead capture
+```
+
+---
+
+#### 19. **cmis-social-publishing** - Social Media & Publishing Expert
 **File:** `cmis-social-publishing.md`
 
 **Purpose:** Expert in social media scheduling, publishing, and engagement tracking.
