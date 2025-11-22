@@ -53,10 +53,12 @@ class ContentLibrary extends BaseModel
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by', 'user_id');
+    }
 
     public function scheduledPosts(): HasMany
     {
         return $this->hasMany(ScheduledPost::class, 'content_library_id', 'library_id');
+    }
 
     // ===== Usage Tracking =====
 
@@ -64,42 +66,52 @@ class ContentLibrary extends BaseModel
     {
         $this->increment('usage_count');
         $this->update(['last_used_at' => now()]);
+    }
 
     public function isTemplate(): bool
     {
         return $this->is_template;
+    }
 
     // ===== Content Helpers =====
 
     public function hasMedia(): bool
     {
         return !empty($this->media_files);
+    }
 
     public function getMediaCount(): int
     {
         return count($this->media_files ?? []);
+    }
 
     public function getTagString(): string
     {
         if (empty($this->tags)) {
             return '';
+        }
         return implode(', ', $this->tags);
+    }
 
     // ===== Scopes =====
 
     public function scopeTemplates($query)
     {
         return $query->where('is_template', true);
+    }
 
     public function scopeForContentType($query, string $type)
     {
         return $query->where('content_type', $type);
+    }
 
     public function scopeForCategory($query, string $category)
     {
         return $query->where('category', $category);
+    }
 
     public function scopePopular($query, int $limit = 10)
     {
         return $query->orderByDesc('usage_count')->limit($limit);
+    }
 }
