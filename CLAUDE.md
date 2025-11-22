@@ -1,8 +1,8 @@
 # CMIS Project Guidelines for Claude Code
 
-**Last Updated:** 2025-11-20
+**Last Updated:** 2025-11-21
 **Project:** CMIS - Cognitive Marketing Information System
-**Framework Version:** 3.0 - Optimized for Claude Code 2025
+**Framework Version:** 3.1 - Optimized for Claude Code 2025 + Duplication Fixes
 
 ---
 
@@ -47,6 +47,14 @@ CMIS is a Laravel-based Campaign Management & Integration System with:
 - ✅ Write tests for ALL business logic
 - ✅ Document complex algorithms
 - ❌ NEVER put business logic in controllers
+
+### Standardized Patterns (NEW - 2025-11-21)
+- ✅ **Controllers:** Use `ApiResponse` trait for all JSON responses
+- ✅ **Models:** Use `HasOrganization` trait for org relationships
+- ✅ **Models:** Extend `BaseModel` for UUID and RLS setup
+- ✅ **Migrations:** Use `HasRLSPolicies` trait for RLS policies
+- ❌ NEVER create duplicate response/relationship patterns
+- ❌ NEVER create stub services (use mocking in tests)
 
 ---
 
@@ -120,23 +128,36 @@ database/
 
 ### Database Migrations
 ```php
-// ALWAYS add RLS policies in migrations
-public function up()
-{
-    // 1. Create table
-    Schema::create('cmis.new_table', function (Blueprint $table) {
-        $table->uuid('id')->primary();
-        $table->uuid('org_id');
-        // ... columns
-    });
+// NEW: Use HasRLSPolicies trait for standardized RLS policies
+use Database\Migrations\Concerns\HasRLSPolicies;
 
-    // 2. Add RLS policy
-    DB::statement("
-        ALTER TABLE cmis.new_table ENABLE ROW LEVEL SECURITY;
-        CREATE POLICY org_isolation ON cmis.new_table
-        USING (org_id = current_setting('app.current_org_id')::uuid);
-    ");
+class CreateNewTable extends Migration
+{
+    use HasRLSPolicies;
+
+    public function up()
+    {
+        // 1. Create table
+        Schema::create('cmis.new_table', function (Blueprint $table) {
+            $table->uuid('id')->primary();
+            $table->uuid('org_id');
+            // ... columns
+        });
+
+        // 2. Enable RLS with single line (replaces manual SQL)
+        $this->enableRLS('cmis.new_table');
+    }
+
+    public function down()
+    {
+        $this->disableRLS('cmis.new_table');
+        Schema::dropIfExists('cmis.new_table');
+    }
 }
+
+// For custom RLS logic:
+// $this->enableCustomRLS('cmis.table_name', 'custom_expression');
+// $this->enablePublicRLS('cmis.public_table'); // For shared tables
 ```
 
 ### Code Review Checklist
@@ -169,6 +190,87 @@ public function up()
 - Store in `resources/js/components/`
 - Use Alpine.js for state management
 - Async data loading via Axios
+
+---
+
+## 🎯 Standardized Traits & Patterns (NEW)
+
+### Controllers: ApiResponse Trait
+```php
+use App\Http\Controllers\Concerns\ApiResponse;
+
+class CampaignController extends Controller
+{
+    use ApiResponse;
+
+    public function index()
+    {
+        $campaigns = Campaign::all();
+        return $this->success($campaigns, 'Campaigns retrieved successfully');
+    }
+
+    public function store(Request $request)
+    {
+        $campaign = Campaign::create($request->validated());
+        return $this->created($campaign, 'Campaign created successfully');
+    }
+
+    public function destroy($id)
+    {
+        Campaign::findOrFail($id)->delete();
+        return $this->deleted('Campaign deleted successfully');
+    }
+}
+
+// Available methods:
+// - success($data, $message, $code = 200)
+// - error($message, $code = 400, $errors = null)
+// - created($data, $message)
+// - deleted($message)
+// - notFound($message)
+// - unauthorized($message)
+// - forbidden($message)
+// - validationError($errors, $message)
+// - serverError($message)
+// - paginated($paginator, $message)
+```
+
+### Models: HasOrganization Trait
+```php
+use App\Models\Concerns\HasOrganization;
+
+class Campaign extends BaseModel
+{
+    use HasOrganization;
+
+    // Now you have:
+    // - org() relationship
+    // - scopeForOrganization($orgId)
+    // - belongsToOrganization($orgId)
+    // - getOrganizationId()
+}
+
+// Usage:
+$campaign->org; // Get organization
+$campaigns = Campaign::forOrganization($orgId)->get();
+```
+
+### Models: BaseModel Pattern
+```php
+// ALWAYS extend BaseModel, not Model directly
+use App\Models\BaseModel;
+
+class YourModel extends BaseModel
+{
+    use HasOrganization;
+
+    // BaseModel handles:
+    // - UUID primary keys
+    // - Automatic UUID generation
+    // - RLS context awareness
+    // - Common model patterns
+}
+```
 
 ---
 
