@@ -62,6 +62,11 @@
                 </a>
                 @endcan
 
+                <a href="{{ route('inbox.index') }}" class="sidebar-item flex items-center gap-3 px-4 py-3 rounded-xl {{ request()->routeIs('inbox.*') ? 'bg-white/20 text-white shadow-lg' : 'text-white/80 hover:bg-white/10' }}">
+                    <i class="fas fa-inbox text-lg w-6"></i>
+                    <span class="font-medium">صندوق الرسائل</span>
+                </a>
+
                 <div class="pt-4 border-t border-white/20 mt-4">
                     <p class="text-white/50 text-xs font-medium px-4 mb-2">الأدوات</p>
 
@@ -71,6 +76,15 @@
                         <span class="font-medium">المستخدمون</span>
                     </a>
                     @endcan
+
+                    @auth
+                    @if(auth()->user()->active_org_id)
+                    <a href="{{ route('orgs.team.index', auth()->user()->active_org_id) }}" class="sidebar-item flex items-center gap-3 px-4 py-3 rounded-xl {{ request()->routeIs('orgs.team.*') ? 'bg-white/20 text-white shadow-lg' : 'text-white/80 hover:bg-white/10' }}">
+                        <i class="fas fa-user-friends text-lg w-6"></i>
+                        <span class="font-medium">إدارة الفريق</span>
+                    </a>
+                    @endif
+                    @endauth
 
                     <a href="{{ route('settings.index') }}" class="sidebar-item flex items-center gap-3 px-4 py-3 rounded-xl {{ request()->routeIs('settings.*') ? 'bg-white/20 text-white shadow-lg' : 'text-white/80 hover:bg-white/10' }}">
                         <i class="fas fa-cog text-lg w-6"></i>

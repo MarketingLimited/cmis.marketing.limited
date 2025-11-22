@@ -121,8 +121,8 @@ Route::middleware(['auth'])->group(function () {
 
         // ==================== Team Management (NEW) ====================
         Route::prefix('{org}/team')->name('team.')->whereUuid('org')->group(function () {
-            Route::get('/', [App\Http\Controllers\TeamController::class, 'index'])->name('index');
-            Route::post('/invite', [App\Http\Controllers\TeamController::class, 'invite'])->name('invite');
+            Route::get('/', [App\Http\Controllers\Web\TeamWebController::class, 'index'])->name('index');
+            Route::post('/invite', [App\Http\Controllers\Web\TeamWebController::class, 'invite'])->name('invite');
         });
     });
 
