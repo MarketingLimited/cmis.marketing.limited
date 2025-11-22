@@ -43,10 +43,18 @@ Route::post('/logout', [LoginController::class, 'destroy'])
     ->middleware('auth')
     ->name('logout');
 
-// Public Routes
+// Public Routes - Home page redirects appropriately
 Route::get('/', function () {
-    return view('welcome');
-});
+    if (auth()->check()) {
+        // If user has active org, go to dashboard; otherwise, choose org
+        $user = auth()->user();
+        if ($user->active_org_id) {
+            return redirect()->route('dashboard.index');
+        }
+        return redirect()->route('orgs.index');
+    }
+    return redirect()->route('login');
+})->name('home');
 
 // Protected Routes - Require Authentication
 Route::middleware(['auth'])->group(function () {
@@ -110,6 +118,12 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/{org}/products', [OrgController::class, 'products'])->whereUuid('org')->name('products');
         Route::post('/{org}/campaigns/export/pdf', [OrgController::class, 'exportComparePdf'])->whereUuid('org')->name('campaigns.export.pdf');
         Route::post('/{org}/campaigns/export/excel', [OrgController::class, 'exportCompareExcel'])->whereUuid('org')->name('campaigns.export.excel');
+
+        // ==================== Team Management (NEW) ====================
+        Route::prefix('{org}/team')->name('team.')->whereUuid('org')->group(function () {
+            Route::get('/', [App\Http\Controllers\TeamController::class, 'index'])->name('index');
+            Route::post('/invite', [App\Http\Controllers\TeamController::class, 'invite'])->name('invite');
+        });
     });
 
     // ==================== Offerings ====================
@@ -211,6 +225,13 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/posts', function () { return view('social.posts'); })->name('posts');
         Route::get('/scheduler', function () { return view('social.scheduler'); })->name('scheduler');
         Route::get('/inbox', function () { return view('social.inbox'); })->name('inbox');
+    });
+
+    // ==================== Unified Inbox / Comments (NEW) ====================
+    Route::prefix('inbox')->name('inbox.')->group(function () {
+        Route::get('/', [UnifiedInboxController::class, 'index'])->name('index');
+        Route::get('/comments', [UnifiedCommentsController::class, 'index'])->name('comments');
+        Route::post('/comments/{comment_id}/reply', [UnifiedCommentsController::class, 'reply'])->name('comments.reply');
     });
 
     // ==================== User Management ====================

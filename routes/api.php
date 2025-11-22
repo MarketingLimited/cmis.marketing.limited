@@ -2188,3 +2188,145 @@ Route::prefix('social/listening')->middleware(['auth:sanctum', 'rls.context'])->
     Route::post('/templates', [\App\Http\Controllers\Api\SocialListeningController::class, 'createTemplate'])
         ->name('templates.store');
 });
+
+/*
+|--------------------------------------------------------------------------
+| Convenience Routes (Auto-resolve Active Organization)
+|--------------------------------------------------------------------------
+| These routes automatically resolve the user's active organization
+| using the 'resolve.active.org' middleware, eliminating the need to
+| pass org_id explicitly in the URL.
+|
+| Usage:
+|   GET /api/integrations/activity
+| Instead of:
+|   GET /api/orgs/{org_id}/integrations/activity
+|
+| The middleware will:
+| 1. Get user's active_org_id from their profile
+| 2. Inject it into the request
+| 3. Set database context for RLS
+|
+| Note: These routes are primarily for frontend convenience.
+| Direct org_id routes remain available for all operations.
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['auth:sanctum', 'resolve.active.org'])
+    ->prefix('convenience')
+    ->name('api.convenience.')
+    ->group(function () {
+
+        // ==================== Dashboard ====================
+        Route::get('/dashboard', [\App\Http\Controllers\DashboardController::class, 'data'])
+            ->name('dashboard');
+
+        // ==================== Campaigns ====================
+        Route::get('/campaigns', [\App\Http\Controllers\Campaigns\CampaignController::class, 'index'])
+            ->name('campaigns.index');
+        Route::get('/campaigns/{campaign}', [\App\Http\Controllers\Campaigns\CampaignController::class, 'show'])
+            ->name('campaigns.show');
+
+        // ==================== Integrations ====================
+        Route::prefix('integrations')->name('integrations.')->group(function () {
+            // Integration activity log
+            Route::get('/activity', [IntegrationHubController::class, 'getIntegrationLogs'])
+                ->name('activity');
+
+            // List integrations
+            Route::get('/', [IntegrationHubController::class, 'index'])
+                ->name('index');
+
+            // Available integrations
+            Route::get('/available', [IntegrationHubController::class, 'available'])
+                ->name('available');
+        });
+
+        // ==================== Analytics ====================
+        Route::prefix('analytics')->name('analytics.')->group(function () {
+            // Summary & Overview
+            Route::get('/summary', [\App\Http\Controllers\API\AnalyticsController::class, 'summary'])
+                ->name('summary');
+
+            Route::get('/kpis', [\App\Http\Controllers\Analytics\KpiController::class, 'index'])
+                ->name('kpis');
+
+            // Export routes
+            Route::post('/export/excel', [\App\Http\Controllers\API\AnalyticsController::class, 'exportReport'])
+                ->defaults('format', 'excel')
+                ->name('export.excel');
+
+            Route::post('/export/pdf', [\App\Http\Controllers\API\AnalyticsController::class, 'exportReport'])
+                ->defaults('format', 'pdf')
+                ->name('export.pdf');
+
+            Route::post('/export', [\App\Http\Controllers\API\AnalyticsController::class, 'exportReport'])
+                ->name('export');
+        });
+
+        // ==================== Content & Creative ====================
+        Route::prefix('content')->name('content.')->group(function () {
+            // Content plans
+            Route::get('/plans', [\App\Http\Controllers\Creative\ContentPlanController::class, 'index'])
+                ->name('plans.index');
+
+            // Creative assets
+            Route::get('/assets', [CreativeAssetController::class, 'index'])
+                ->name('assets.index');
+        });
+
+        // ==================== Social Media ====================
+        Route::prefix('social')->name('social.')->group(function () {
+            // Posts
+            Route::get('/posts/scheduled', [SocialSchedulerController::class, 'scheduled'])
+                ->name('posts.scheduled');
+
+            Route::get('/posts/published', [SocialSchedulerController::class, 'published'])
+                ->name('posts.published');
+
+            // Dashboard
+            Route::get('/dashboard', [SocialSchedulerController::class, 'dashboard'])
+                ->name('dashboard');
+        });
+
+        // ==================== AI & Insights ====================
+        Route::prefix('ai')->name('ai.')->middleware('throttle.ai')->group(function () {
+            // Content generation
+            Route::post('/generate', [AIGenerationController::class, 'generateContent'])
+                ->name('generate');
+
+            // Generation history
+            Route::get('/history', [AIGenerationController::class, 'getHistory'])
+                ->name('history');
+
+            // Insights (if available)
+            Route::get('/insights', [\App\Http\Controllers\AIInsightsController::class, 'index'])
+                ->name('insights');
+        });
+
+        // ==================== Leads & Audiences (Placeholder) ====================
+        Route::prefix('leads')->name('leads.')->group(function () {
+            // Placeholder for future lead management features
+            Route::get('/', function () {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Lead management feature coming soon',
+                    'data' => []
+                ]);
+            })->name('index');
+        });
+
+        // ==================== Experiments (Placeholder) ====================
+        Route::prefix('experiments')->name('experiments.')->group(function () {
+            Route::get('/stats', function () {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Experiments feature coming soon',
+                    'stats' => [
+                        'total' => 0,
+                        'active' => 0,
+                        'completed' => 0
+                    ]
+                ]);
+            })->name('stats');
+        });
+    });
