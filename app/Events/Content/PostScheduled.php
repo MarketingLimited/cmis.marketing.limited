@@ -2,7 +2,7 @@
 
 namespace App\Events\Content;
 
-use App\Models\SocialPost;
+use App\Models\Social\SocialPost;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
