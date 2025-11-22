@@ -17,6 +17,8 @@ use Illuminate\Support\Facades\Validator;
  */
 class UnifiedCampaignController extends Controller
 {
+    use ApiResponse;
+
     public function __construct(
         private UnifiedCampaignService $campaignService
     ) {}

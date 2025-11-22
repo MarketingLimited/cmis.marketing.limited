@@ -2,20 +2,19 @@
 
 namespace App\Models\Creative;
 
+use App\Models\Concerns\HasOrganization;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
-class VariationPolicy extends Model
+class VariationPolicy extends BaseModel
 {
     use HasFactory, HasUuids;
+    use HasOrganization;
 
     protected $table = 'cmis.variation_policies';
     protected $primaryKey = 'policy_id';
-    protected $connection = 'pgsql';
-    public $incrementing = false;
-    protected $keyType = 'string';
-
     protected $fillable = [
         'policy_id',
         'org_id',
@@ -40,13 +39,7 @@ class VariationPolicy extends Model
         'dco_enabled' => 'boolean',
     ];
 
-    /**
-     * Get the organization
-     */
-    public function org()
-    {
-        return $this->belongsTo(\App\Models\Core\Org::class, 'org_id', 'org_id');
-    }
+    
 
     /**
      * Get the creator
@@ -54,7 +47,6 @@ class VariationPolicy extends Model
     public function creator()
     {
         return $this->belongsTo(\App\Models\User::class, 'created_by', 'user_id');
-    }
 
     /**
      * Scope active policies
@@ -62,5 +54,4 @@ class VariationPolicy extends Model
     public function scopeActive($query)
     {
         return $query->where('is_active', true);
-    }
 }

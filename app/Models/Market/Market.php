@@ -2,20 +2,19 @@
 
 namespace App\Models\Market;
 
+use App\Models\Concerns\HasOrganization;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
-class Market extends Model
+class Market extends BaseModel
 {
     use HasFactory, HasUuids;
+    use HasOrganization;
 
     protected $table = 'cmis.markets';
     protected $primaryKey = 'market_id';
-    protected $connection = 'pgsql';
-    public $incrementing = false;
-    protected $keyType = 'string';
-
     protected $fillable = [
         'market_id',
         'market_name',
@@ -46,7 +45,6 @@ class Market extends Model
             'is_primary_market',
             'status',
         ])->withTimestamps();
-    }
 
     /**
      * Get org markets
@@ -54,7 +52,6 @@ class Market extends Model
     public function orgMarkets()
     {
         return $this->hasMany(OrgMarket::class, 'market_id', 'market_id');
-    }
 
     /**
      * Scope by language
@@ -62,7 +59,6 @@ class Market extends Model
     public function scopeByLanguage($query, string $languageCode)
     {
         return $query->where('language_code', $languageCode);
-    }
 
     /**
      * Scope by currency
@@ -70,7 +66,6 @@ class Market extends Model
     public function scopeByCurrency($query, string $currencyCode)
     {
         return $query->where('currency_code', $currencyCode);
-    }
 
     /**
      * Find by market ID
@@ -78,5 +73,4 @@ class Market extends Model
     public static function findByMarketId(string $marketId)
     {
         return self::where('market_id', $marketId)->first();
-    }
 }

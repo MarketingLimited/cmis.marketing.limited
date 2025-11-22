@@ -2,33 +2,21 @@
 
 namespace App\Models\Orchestration;
 
+use App\Models\Concerns\HasOrganization;
+
 use App\Models\Core\Org;
 use App\Models\Core\User;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Support\Str;
-
-class CampaignTemplate extends Model
+class CampaignTemplate extends BaseModel
 {
     use HasFactory;
+    use HasOrganization;
 
-    protected $connection = 'pgsql';
     protected $table = 'cmis.campaign_templates';
     protected $primaryKey = 'template_id';
-    public $incrementing = false;
-    protected $keyType = 'string';
-
-    protected static function boot()
-    {
-        parent::boot();
-        static::creating(function ($model) {
-            if (empty($model->{$model->getKeyName()})) {
-                $model->{$model->getKeyName()} = (string) Str::uuid();
-            }
-        });
-    }
 
     protected $fillable = [
         'template_id',
@@ -65,47 +53,37 @@ class CampaignTemplate extends Model
 
     // ===== Relationships =====
 
-    public function org(): BelongsTo
-    {
-        return $this->belongsTo(Org::class, 'org_id', 'org_id');
-    }
+    
 
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by', 'user_id');
-    }
 
     public function orchestrations(): HasMany
     {
         return $this->hasMany(CampaignOrchestration::class, 'template_id', 'template_id');
-    }
 
     // ===== Template Management =====
 
     public function incrementUsage(): void
     {
         $this->increment('usage_count');
-    }
 
     public function activate(): void
     {
         $this->update(['is_active' => true]);
-    }
 
     public function deactivate(): void
     {
         $this->update(['is_active' => false]);
-    }
 
     public function isActive(): bool
     {
         return $this->is_active;
-    }
 
     public function isGlobal(): bool
     {
         return $this->is_global;
-    }
 
     // ===== Configuration Helpers =====
 
@@ -115,17 +93,14 @@ class CampaignTemplate extends Model
         $platformSpecific = $this->platform_specific_config[$platform] ?? [];
 
         return array_merge($baseConfig, $platformSpecific);
-    }
 
     public function supportsPlatform(string $platform): bool
     {
         return in_array($platform, $this->platforms ?? []);
-    }
 
     public function getPlatformCount(): int
     {
         return count($this->platforms ?? []);
-    }
 
     public function getCategoryLabel(): string
     {
@@ -136,7 +111,6 @@ class CampaignTemplate extends Model
             'retention' => 'Customer Retention',
             default => ucfirst($this->category)
         };
-    }
 
     public function getObjectiveLabel(): string
     {
@@ -153,7 +127,6 @@ class CampaignTemplate extends Model
             'store_traffic' => 'Store Traffic',
             default => ucfirst(str_replace('_', ' ', $this->objective))
         };
-    }
 
     public function getBudgetDistribution(): array
     {
@@ -167,37 +140,29 @@ class CampaignTemplate extends Model
             $result = [];
             foreach ($this->platforms as $platform) {
                 $result[$platform] = $percentage;
-            }
             return $result;
-        }
 
         return $template['custom_distribution'] ?? [];
-    }
 
     // ===== Scopes =====
 
     public function scopeActive($query)
     {
         return $query->where('is_active', true);
-    }
 
     public function scopeGlobal($query)
     {
         return $query->where('is_global', true);
-    }
 
     public function scopeForCategory($query, string $category)
     {
         return $query->where('category', $category);
-    }
 
     public function scopeForObjective($query, string $objective)
     {
         return $query->where('objective', $objective);
-    }
 
     public function scopeForPlatform($query, string $platform)
     {
         return $query->whereJsonContains('platforms', $platform);
-    }
 }

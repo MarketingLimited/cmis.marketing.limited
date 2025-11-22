@@ -22,6 +22,8 @@ use Illuminate\Support\Facades\Validator;
  */
 class CampaignAnalyticsController extends Controller
 {
+    use ApiResponse;
+
     protected CampaignAnalyticsService $analyticsService;
 
     public function __construct(CampaignAnalyticsService $analyticsService)

@@ -2,17 +2,15 @@
 
 namespace App\Models\Knowledge;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Models\Concerns\HasOrganization;
 
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
-class TemporalAnalytics extends Model
+use App\Models\BaseModel;
+
+class TemporalAnalytics extends BaseModel
 {
-    use HasUuids;
+    
     protected $table = 'cmis.temporal_analytics';
     protected $primaryKey = 'analytics_id';
-    protected $connection = 'pgsql';
-    public $incrementing = false;
-    protected $keyType = 'string';
     public $timestamps = false;
 
     protected $fillable = [
@@ -49,13 +47,7 @@ class TemporalAnalytics extends Model
         'metadata' => 'array',
     ];
 
-    /**
-     * Get the organization
-     */
-    public function org()
-    {
-        return $this->belongsTo(\App\Models\Core\Org::class, 'org_id', 'org_id');
-    }
+    
 
     /**
      * Scope by entity type
@@ -63,7 +55,6 @@ class TemporalAnalytics extends Model
     public function scopeByEntityType($query, string $entityType)
     {
         return $query->where('entity_type', $entityType);
-    }
 
     /**
      * Scope by time period
@@ -71,7 +62,6 @@ class TemporalAnalytics extends Model
     public function scopeByPeriod($query, string $period)
     {
         return $query->where('time_period', $period);
-    }
 
     /**
      * Scope by date range
@@ -80,7 +70,6 @@ class TemporalAnalytics extends Model
     {
         return $query->where('period_start', '>=', $start)
             ->where('period_end', '<=', $end);
-    }
 
     /**
      * Scope with anomalies
@@ -89,7 +78,6 @@ class TemporalAnalytics extends Model
     {
         return $query->whereNotNull('anomalies')
             ->whereRaw("jsonb_array_length(anomalies) > 0");
-    }
 
     /**
      * Scope high confidence
@@ -97,7 +85,6 @@ class TemporalAnalytics extends Model
     public function scopeHighConfidence($query, float $threshold = 0.8)
     {
         return $query->whereRaw("(confidence_scores->>'overall')::float >= ?", [$threshold]);
-    }
 
     /**
      * Scope good data quality
@@ -105,7 +92,6 @@ class TemporalAnalytics extends Model
     public function scopeGoodQuality($query, float $threshold = 0.7)
     {
         return $query->where('data_quality', '>=', $threshold);
-    }
 
     /**
      * Scope recent analytics
@@ -113,7 +99,6 @@ class TemporalAnalytics extends Model
     public function scopeRecent($query, int $days = 30)
     {
         return $query->where('computed_at', '>=', now()->subDays($days));
-    }
 
     /**
      * Get metric value
@@ -121,7 +106,6 @@ class TemporalAnalytics extends Model
     public function getMetric(string $metricName)
     {
         return $this->metrics[$metricName] ?? null;
-    }
 
     /**
      * Get trend for metric
@@ -129,7 +113,6 @@ class TemporalAnalytics extends Model
     public function getTrend(string $metricName): ?array
     {
         return $this->trends[$metricName] ?? null;
-    }
 
     /**
      * Has anomalies
@@ -137,5 +120,4 @@ class TemporalAnalytics extends Model
     public function hasAnomalies(): bool
     {
         return !empty($this->anomalies);
-    }
 }

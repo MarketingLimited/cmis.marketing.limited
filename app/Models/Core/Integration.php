@@ -2,27 +2,24 @@
 
 namespace App\Models\Core;
 
+use App\Models\Concerns\HasOrganization;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
-class Integration extends Model
+class Integration extends BaseModel
 {
     use HasFactory, SoftDeletes, HasUuids;
-
-    protected $connection = 'pgsql';
+    use HasOrganization;
 
     protected $table = 'cmis.integrations';
 
     protected $primaryKey = 'integration_id';
-
-    public $incrementing = false;
-
-    protected $keyType = 'string';
 
     public $timestamps = true;
 
@@ -68,15 +65,7 @@ class Integration extends Model
         'deleted_at' => 'datetime',
     ];
 
-    /**
-     * Get the organization that owns this integration.
-     *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
-     */
-    public function org(): BelongsTo
-    {
-        return $this->belongsTo(Org::class, 'org_id', 'org_id');
-    }
+    
 
     /**
      * Get the user who created this integration.
@@ -86,7 +75,6 @@ class Integration extends Model
     public function creator(): BelongsTo
     {
         return $this->belongsTo(\App\Models\User::class, 'created_by', 'user_id');
-    }
 
     /**
      * Get ad campaigns associated with this integration
@@ -96,7 +84,6 @@ class Integration extends Model
     public function adCampaigns()
     {
         return $this->hasMany(\App\Models\AdPlatform\AdCampaign::class, 'integration_id', 'integration_id');
-    }
 
     /**
      * Get ad accounts associated with this integration
@@ -106,7 +93,6 @@ class Integration extends Model
     public function adAccounts()
     {
         return $this->hasMany(\App\Models\AdPlatform\AdAccount::class, 'integration_id', 'integration_id');
-    }
 
     /**
      * Get ad sets associated with this integration
@@ -116,7 +102,6 @@ class Integration extends Model
     public function adSets()
     {
         return $this->hasMany(\App\Models\AdPlatform\AdSet::class, 'integration_id', 'integration_id');
-    }
 
     /**
      * Get ad entities associated with this integration
@@ -126,7 +111,6 @@ class Integration extends Model
     public function adEntities()
     {
         return $this->hasMany(\App\Models\AdPlatform\AdEntity::class, 'integration_id', 'integration_id');
-    }
 
     /**
      * Check if the access token is expired or about to expire
@@ -138,10 +122,8 @@ class Integration extends Model
     {
         if (!$this->token_expires_at) {
             return false; // If no expiration set, assume token is valid
-        }
 
         return $this->token_expires_at->subMinutes($minutesBuffer)->isPast();
-    }
 
     /**
      * Check if token needs refresh (expired or about to expire)
@@ -151,7 +133,6 @@ class Integration extends Model
     public function needsTokenRefresh(): bool
     {
         return $this->isTokenExpired(10); // Refresh if less than 10 minutes remaining
-    }
 
     /**
      * Refresh the access token using the refresh token
@@ -164,7 +145,6 @@ class Integration extends Model
         if (!$this->refresh_token) {
             Log::warning("No refresh token available for integration {$this->integration_id}");
             return false;
-        }
 
         try {
             // Platform-specific token refresh logic
@@ -172,7 +152,6 @@ class Integration extends Model
 
             if (!$tokenData) {
                 throw new \Exception("Token refresh failed");
-            }
 
             // Update the integration with new tokens
             $this->update([
@@ -196,8 +175,6 @@ class Integration extends Model
             ]);
 
             return false;
-        }
-    }
 
     /**
      * Perform platform-specific token refresh
@@ -220,7 +197,6 @@ class Integration extends Model
         if (!$url) {
             Log::warning("No refresh URL configured for provider: {$this->provider}");
             return null;
-        }
 
         // Platform-specific request parameters
         $params = $this->getRefreshTokenParams();
@@ -230,10 +206,8 @@ class Integration extends Model
         if ($response->failed()) {
             Log::error("Token refresh HTTP request failed: " . $response->body());
             return null;
-        }
 
         return $response->json();
-    }
 
     /**
      * Get platform-specific parameters for token refresh
@@ -253,10 +227,8 @@ class Integration extends Model
         if ($platformConfig) {
             $baseParams['client_id'] = $platformConfig['client_id'] ?? null;
             $baseParams['client_secret'] = $platformConfig['client_secret'] ?? null;
-        }
 
         return array_filter($baseParams); // Remove null values
-    }
 
     /**
      * Update sync status
@@ -273,5 +245,4 @@ class Integration extends Model
             'last_synced_at' => $status === 'success' ? now() : $this->last_synced_at,
             'sync_retry_count' => $status === 'failed' ? $this->sync_retry_count + 1 : 0,
         ]);
-    }
 }

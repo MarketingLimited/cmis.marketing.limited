@@ -2,13 +2,11 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 
-class VTemporalDashboard extends Model
+class VTemporalDashboard extends BaseModel
 {
     protected $table = 'cmis_knowledge.v_temporal_dashboard';
     protected $guarded = ['*'];
-    public $incrementing = false;
-
     public $timestamps = false;
 }

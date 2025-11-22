@@ -2,29 +2,17 @@
 
 namespace App\Models\Schedule;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Support\Str;
+use App\Models\Concerns\HasOrganization;
 
-class Schedule extends Model
+use App\Models\BaseModel;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+class Schedule extends BaseModel
 {
     use HasFactory;
+    use HasOrganization;
 
-    protected $connection = 'pgsql';
     protected $table = 'cmis.schedules';
     protected $primaryKey = 'schedule_id';
-    public $incrementing = false;
-    protected $keyType = 'string';
-
-    protected static function boot()
-    {
-        parent::boot();
-        static::creating(function ($model) {
-            if (empty($model->{$model->getKeyName()})) {
-                $model->{$model->getKeyName()} = (string) Str::uuid();
-            }
-        });
-    }
 
     protected $fillable = [
         'schedule_id', 'org_id', 'entity_type', 'entity_id', 'scheduled_at', 'status'

@@ -2,18 +2,13 @@
 
 namespace App\Models\Knowledge;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
-class DirectionMapping extends Model
+class DirectionMapping extends BaseModel
 {
-    use HasUuids;
+    
     protected $table = 'cmis.direction_mappings';
     protected $primaryKey = 'direction_id';
-    protected $connection = 'pgsql';
-    public $incrementing = false;
-    protected $keyType = 'string';
-
     protected $fillable = [
         'direction_code',
         'direction_label',
@@ -45,7 +40,6 @@ class DirectionMapping extends Model
     public function scopeActive($query)
     {
         return $query->where('is_active', true);
-    }
 
     /**
      * Scope by category
@@ -53,7 +47,6 @@ class DirectionMapping extends Model
     public function scopeByCategory($query, string $category)
     {
         return $query->where('category', $category);
-    }
 
     /**
      * Find by direction code
@@ -61,7 +54,6 @@ class DirectionMapping extends Model
     public static function findByCode(string $code)
     {
         return self::where('direction_code', $code)->first();
-    }
 
     /**
      * Render prompt with parameters
@@ -75,5 +67,4 @@ class DirectionMapping extends Model
         }
 
         return $template;
-    }
 }

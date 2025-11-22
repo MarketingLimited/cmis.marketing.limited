@@ -4,7 +4,7 @@ namespace Database\Factories\Creative;
 
 use App\Models\Creative\ContentItem;
 use App\Models\Core\Org;
-use App\Models\Content\ContentPlan;
+use App\Models\Creative\ContentPlan;
 use App\Models\CreativeAsset;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;

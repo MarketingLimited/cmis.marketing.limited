@@ -2,22 +2,21 @@
 
 namespace App\Models\Knowledge;
 
+use App\Models\Concerns\HasOrganization;
+
 use App\Casts\VectorCast;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
-class KnowledgeIndex extends Model
+class KnowledgeIndex extends BaseModel
 {
     use HasFactory, SoftDeletes, HasUuids;
+    use HasOrganization;
 
     protected $table = 'cmis.knowledge_index';
     protected $primaryKey = 'index_id';
-    protected $connection = 'pgsql';
-    public $incrementing = false;
-    protected $keyType = 'string';
-
     protected $fillable = [
         'org_id',
         'source_type',
@@ -60,13 +59,7 @@ class KnowledgeIndex extends Model
         'deleted_at' => 'datetime',
     ];
 
-    /**
-     * Get the organization
-     */
-    public function org()
-    {
-        return $this->belongsTo(\App\Models\Core\Org::class, 'org_id', 'org_id');
-    }
+    
 
     /**
      * Get the verifier
@@ -74,7 +67,6 @@ class KnowledgeIndex extends Model
     public function verifier()
     {
         return $this->belongsTo(\App\Models\User::class, 'verified_by', 'user_id');
-    }
 
     /**
      * Increment access count
@@ -83,7 +75,6 @@ class KnowledgeIndex extends Model
     {
         $this->increment('access_count');
         $this->update(['last_accessed' => now()]);
-    }
 
     /**
      * Scope verified knowledge only
@@ -91,7 +82,6 @@ class KnowledgeIndex extends Model
     public function scopeVerified($query)
     {
         return $query->where('is_verified', true);
-    }
 
     /**
      * Scope by category
@@ -99,7 +89,6 @@ class KnowledgeIndex extends Model
     public function scopeByCategory($query, string $category)
     {
         return $query->where('category', $category);
-    }
 
     /**
      * Scope by source type
@@ -107,7 +96,6 @@ class KnowledgeIndex extends Model
     public function scopeBySourceType($query, string $sourceType)
     {
         return $query->where('source_type', $sourceType);
-    }
 
     /**
      * Scope high relevance
@@ -115,7 +103,6 @@ class KnowledgeIndex extends Model
     public function scopeHighRelevance($query, float $threshold = 0.7)
     {
         return $query->where('relevance_score', '>=', $threshold);
-    }
 
     /**
      * Perform semantic search using vector similarity
@@ -130,8 +117,6 @@ class KnowledgeIndex extends Model
 
         if ($orgId) {
             $query->where('org_id', $orgId);
-        }
 
         return $query->limit($limit)->get();
-    }
 }

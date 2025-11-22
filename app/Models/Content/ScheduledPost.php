@@ -2,23 +2,18 @@
 
 namespace App\Models\Content;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use App\Models\Concerns\HasOrganization;
+
+use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class ScheduledPost extends Model
+class ScheduledPost extends BaseModel
 {
-    use HasUuids;
-
-    protected $connection = 'pgsql';
+    
 
     protected $table = 'cmis.scheduled_posts';
 
     protected $primaryKey = 'post_id';
-
-    public $incrementing = false;
-
-    protected $keyType = 'string';
 
     protected $fillable = [
         'post_id',
@@ -39,9 +34,4 @@ class ScheduledPost extends Model
         'processed_at' => 'datetime',
         'payload' => 'array',
     ];
-
-    public function org(): BelongsTo
-    {
-        return $this->belongsTo(\App\Models\Core\Org::class, 'org_id', 'org_id');
-    }
 }

@@ -2,13 +2,11 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 
-class VChronoEvolution extends Model
+class VChronoEvolution extends BaseModel
 {
     protected $table = 'cmis_knowledge.v_chrono_evolution';
     protected $guarded = ['*'];
-    public $incrementing = false;
-
     public $timestamps = false;
 }

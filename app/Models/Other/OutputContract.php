@@ -3,23 +3,17 @@
 namespace App\Models\Other;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
-class OutputContract extends Model
+class OutputContract extends BaseModel
 {
     use HasFactory, SoftDeletes, HasUuids;
-
-    protected $connection = 'pgsql';
 
     protected $table = 'cmis.output_contracts';
 
     protected $primaryKey = 'contract_id';
-
-    public $incrementing = false;
-
-    protected $keyType = 'string';
 
     public $timestamps = false;
 
@@ -47,8 +41,6 @@ class OutputContract extends Model
             'cmis.prompt_template_contracts',
             'contract_id',
             'prompt_id'
-        );
-    }
 
     /**
      * Scope to find by code
@@ -56,5 +48,4 @@ class OutputContract extends Model
     public function scopeByCode($query, string $code)
     {
         return $query->where('code', $code);
-    }
 }

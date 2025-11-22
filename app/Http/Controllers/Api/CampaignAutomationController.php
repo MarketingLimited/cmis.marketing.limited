@@ -8,9 +8,12 @@ use App\Services\Automation\AutomationRulesEngine;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use App\Http\Controllers\Concerns\ApiResponse;
 
 class CampaignAutomationController extends Controller
 {
+    use ApiResponse;
+
     private CampaignOptimizationService $optimizationService;
     private AutomationRulesEngine $rulesEngine;
 

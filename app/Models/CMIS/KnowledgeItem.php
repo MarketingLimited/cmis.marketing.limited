@@ -2,18 +2,13 @@
 
 namespace App\Models\CMIS;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
-class KnowledgeItem extends Model
+class KnowledgeItem extends BaseModel
 {
-    use HasUuids;
-    protected $connection = 'pgsql';
+    
     protected $table = 'cmis_knowledge.index';
     protected $primaryKey = 'knowledge_id';
-    public $incrementing = false;
-    protected $keyType = 'string';
-    
     protected $fillable = [
         'knowledge_id',
         'domain',
@@ -68,7 +63,6 @@ class KnowledgeItem extends Model
         
         if (!isset($tables[$category])) {
             return null;
-        }
         
         $result = \DB::connection($this->connection)
             ->table($tables[$category])
@@ -76,7 +70,6 @@ class KnowledgeItem extends Model
             ->first();
             
         return $result ? $result->content : null;
-    }
     
     /**
      * Scope for pending embeddings
@@ -87,5 +80,4 @@ class KnowledgeItem extends Model
                     ->where('is_deprecated', false)
                     ->orderBy('tier', 'asc')
                     ->orderBy('last_verified_at', 'desc');
-    }
 }

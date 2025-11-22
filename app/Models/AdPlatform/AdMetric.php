@@ -2,17 +2,15 @@
 
 namespace App\Models\AdPlatform;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Models\Concerns\HasOrganization;
 
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
-class AdMetric extends Model
+use App\Models\BaseModel;
+
+class AdMetric extends BaseModel
 {
-    use HasUuids;
+    
     protected $table = 'cmis.ad_metrics';
     protected $primaryKey = 'id';
-    protected $connection = 'pgsql';
-    public $incrementing = false;
-    protected $keyType = 'string';
     public $timestamps = false;
 
     protected $fillable = [
@@ -69,10 +67,8 @@ class AdMetric extends Model
 
         if (!$modelClass) {
             return null;
-        }
 
         return $modelClass::find($this->entity_id);
-    }
 
     /**
      * Scope by entity type
@@ -80,7 +76,6 @@ class AdMetric extends Model
     public function scopeByEntityType($query, string $entityType)
     {
         return $query->where('entity_type', $entityType);
-    }
 
     /**
      * Scope by platform
@@ -88,7 +83,6 @@ class AdMetric extends Model
     public function scopeByPlatform($query, string $platform)
     {
         return $query->where('platform', $platform);
-    }
 
     /**
      * Scope by date range
@@ -96,7 +90,6 @@ class AdMetric extends Model
     public function scopeDateRange($query, $startDate, $endDate)
     {
         return $query->whereBetween('metric_date', [$startDate, $endDate]);
-    }
 
     /**
      * Scope recent metrics
@@ -104,7 +97,6 @@ class AdMetric extends Model
     public function scopeRecent($query, int $days = 30)
     {
         return $query->where('metric_date', '>=', now()->subDays($days));
-    }
 
     /**
      * Scope by metric date
@@ -112,7 +104,6 @@ class AdMetric extends Model
     public function scopeForDate($query, $date)
     {
         return $query->where('metric_date', $date);
-    }
 
     /**
      * Calculate CTR if not set
@@ -121,10 +112,8 @@ class AdMetric extends Model
     {
         if ($this->impressions === 0) {
             return 0.0;
-        }
 
         return ($this->clicks / $this->impressions) * 100;
-    }
 
     /**
      * Calculate CPC if not set
@@ -133,10 +122,8 @@ class AdMetric extends Model
     {
         if ($this->clicks === 0) {
             return 0.0;
-        }
 
         return $this->spend / $this->clicks;
-    }
 
     /**
      * Calculate CPA if not set
@@ -145,10 +132,8 @@ class AdMetric extends Model
     {
         if ($this->conversions === 0) {
             return 0.0;
-        }
 
         return $this->spend / $this->conversions;
-    }
 
     /**
      * Calculate ROAS if not set
@@ -157,10 +142,8 @@ class AdMetric extends Model
     {
         if ($this->spend == 0) {
             return 0.0;
-        }
 
         return $this->revenue / $this->spend;
-    }
 
     /**
      * Get conversion rate
@@ -169,8 +152,6 @@ class AdMetric extends Model
     {
         if ($this->clicks === 0) {
             return 0.0;
-        }
 
         return ($this->conversions / $this->clicks) * 100;
-    }
 }

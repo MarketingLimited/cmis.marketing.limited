@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 
-class VUnifiedAdTargeting extends Model
+class VUnifiedAdTargeting extends BaseModel
 {
     protected $table = 'cmis.v_unified_ad_targeting';
     protected $guarded = ['*'];
@@ -18,7 +18,5 @@ class VUnifiedAdTargeting extends Model
         'lookalike_audience' => 'array',
         'advantage_plus' => 'array',
     ];
-    public $incrementing = false;
-
     public $timestamps = false;
 }

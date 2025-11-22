@@ -3,19 +3,15 @@
 namespace App\Models\Knowledge;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
-class MarketingKnowledge extends Model
+class MarketingKnowledge extends BaseModel
 {
     use HasFactory, HasUuids;
 
     protected $table = 'cmis.marketing_knowledge';
     protected $primaryKey = 'marketing_id';
-    protected $connection = 'pgsql';
-    public $incrementing = false;
-    protected $keyType = 'string';
-
     protected $fillable = [
         'topic',
         'category',
@@ -54,7 +50,6 @@ class MarketingKnowledge extends Model
     {
         return KnowledgeIndex::where('source_type', 'marketing_knowledge')
             ->where('source_id', $this->marketing_id);
-    }
 
     /**
      * Scope by category
@@ -62,7 +57,6 @@ class MarketingKnowledge extends Model
     public function scopeByCategory($query, string $category)
     {
         return $query->where('category', $category);
-    }
 
     /**
      * Scope by industry
@@ -70,7 +64,6 @@ class MarketingKnowledge extends Model
     public function scopeByIndustry($query, string $industry)
     {
         return $query->where('industry', $industry);
-    }
 
     /**
      * Scope by market segment
@@ -78,7 +71,6 @@ class MarketingKnowledge extends Model
     public function scopeBySegment($query, string $segment)
     {
         return $query->where('market_segment', $segment);
-    }
 
     /**
      * Scope high effectiveness
@@ -87,5 +79,4 @@ class MarketingKnowledge extends Model
     {
         return $query->where('effectiveness_score', '>=', $threshold)
             ->orderBy('effectiveness_score', 'desc');
-    }
 }

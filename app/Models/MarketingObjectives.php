@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 
-class MarketingObjectives extends Model
+class MarketingObjectives extends BaseModel
 {
     protected $table = 'cmis.marketing_objectives';
     protected $guarded = ['*'];

@@ -5,7 +5,7 @@ namespace App\Models\Analytics;
 use App\Models\Core\User;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
@@ -24,15 +24,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property bool $is_system
  * @property int $usage_count
  */
-class ReportTemplate extends Model
+class ReportTemplate extends BaseModel
 {
     use HasFactory, HasUuids;
 
     protected $table = 'cmis.report_templates';
     protected $primaryKey = 'template_id';
-    public $incrementing = false;
-    protected $keyType = 'string';
-
     protected $fillable = [
         'created_by',
         'name',
@@ -60,7 +57,6 @@ class ReportTemplate extends Model
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by', 'user_id');
-    }
 
     /**
      * Scope: Public templates
@@ -68,7 +64,6 @@ class ReportTemplate extends Model
     public function scopePublic($query)
     {
         return $query->where('is_public', true);
-    }
 
     /**
      * Scope: System templates
@@ -76,7 +71,6 @@ class ReportTemplate extends Model
     public function scopeSystem($query)
     {
         return $query->where('is_system', true);
-    }
 
     /**
      * Scope: By category
@@ -84,7 +78,6 @@ class ReportTemplate extends Model
     public function scopeCategory($query, string $category)
     {
         return $query->where('category', $category);
-    }
 
     /**
      * Scope: By report type
@@ -92,7 +85,6 @@ class ReportTemplate extends Model
     public function scopeType($query, string $reportType)
     {
         return $query->where('report_type', $reportType);
-    }
 
     /**
      * Increment usage counter
@@ -100,5 +92,4 @@ class ReportTemplate extends Model
     public function incrementUsage(): void
     {
         $this->increment('usage_count');
-    }
 }

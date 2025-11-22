@@ -2,20 +2,19 @@
 
 namespace App\Models\Creative;
 
+use App\Models\Concerns\HasOrganization;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
-class AudioTemplate extends Model
+class AudioTemplate extends BaseModel
 {
     use HasFactory, HasUuids;
+    use HasOrganization;
 
     protected $table = 'cmis.audio_templates';
     protected $primaryKey = 'atpl_id';
-    protected $connection = 'pgsql';
-    public $incrementing = false;
-    protected $keyType = 'string';
-
     protected $fillable = [
         'atpl_id',
         'org_id',
@@ -41,13 +40,7 @@ class AudioTemplate extends Model
         'sfx_pack' => 'array',
     ];
 
-    /**
-     * Get the organization
-     */
-    public function org()
-    {
-        return $this->belongsTo(\App\Models\Core\Org::class, 'org_id', 'org_id');
-    }
+    
 
     /**
      * Get the creator
@@ -55,7 +48,6 @@ class AudioTemplate extends Model
     public function creator()
     {
         return $this->belongsTo(\App\Models\User::class, 'created_by', 'user_id');
-    }
 
     /**
      * Scope active templates
@@ -63,5 +55,4 @@ class AudioTemplate extends Model
     public function scopeActive($query)
     {
         return $query->where('is_active', true);
-    }
 }

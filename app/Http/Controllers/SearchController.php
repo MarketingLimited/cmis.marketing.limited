@@ -20,6 +20,8 @@ use Illuminate\Support\Facades\Log;
  */
 class SearchController extends Controller
 {
+    use ApiResponse;
+
     protected SemanticSearchService $searchService;
 
     public function __construct(SemanticSearchService $searchService)

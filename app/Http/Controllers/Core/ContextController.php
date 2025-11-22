@@ -26,6 +26,8 @@ use Illuminate\Support\Facades\Validator;
  */
 class ContextController extends Controller
 {
+    use ApiResponse;
+
     /**
      * Constructor - Apply authentication middleware
      */
@@ -50,10 +52,7 @@ class ContextController extends Controller
             $user = Auth::user();
 
             if (!$user) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'User not authenticated'
-                ], 401);
+                return $this->error('User not authenticated', 401);
             }
 
             // Get session context
@@ -123,10 +122,7 @@ class ContextController extends Controller
             $user = Auth::user();
 
             if (!$user) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'User not authenticated'
-                ], 401);
+                return $this->error('User not authenticated', 401);
             }
 
             // Get all organizations for this user with role information
@@ -230,10 +226,7 @@ class ContextController extends Controller
                     'attempted_org_id' => $newOrgId,
                 ]);
 
-                return response()->json([
-                    'success' => false,
-                    'message' => 'You do not have access to this organization'
-                ], 403);
+                return $this->error('You do not have access to this organization', 403);
             }
 
             // Get or create session context

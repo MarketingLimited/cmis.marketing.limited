@@ -20,6 +20,8 @@ use Illuminate\Support\Facades\Storage;
  */
 class DataExportsController extends Controller
 {
+    use ApiResponse;
+
     public function __construct()
     {
         $this->middleware('auth:sanctum');
@@ -336,10 +338,7 @@ class DataExportsController extends Controller
             ->firstOrFail();
 
         if (!$log->file_path || !Storage::exists($log->file_path)) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Export file not found or has been deleted'
-            ], 404);
+            return $this->error('Export file not found or has been deleted', 404);
         }
 
         return Storage::download($log->file_path, basename($log->file_path));

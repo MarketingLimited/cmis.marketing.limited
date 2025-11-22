@@ -2,21 +2,21 @@
 
 namespace App\Models\Analytics;
 
+use App\Models\Concerns\HasOrganization;
+
 use App\Models\Core\Org;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class DataExportLog extends Model
+class DataExportLog extends BaseModel
 {
     use HasFactory, HasUuids;
+    use HasOrganization;
 
     protected $table = 'cmis.data_export_logs';
     protected $primaryKey = 'log_id';
-    public $incrementing = false;
-    protected $keyType = 'string';
-
     protected $fillable = [
         'config_id', 'org_id', 'started_at', 'completed_at', 'status',
         'format', 'records_count', 'file_size', 'file_path', 'file_url',
@@ -37,27 +37,20 @@ class DataExportLog extends Model
     public function config(): BelongsTo
     {
         return $this->belongsTo(DataExportConfig::class, 'config_id', 'config_id');
-    }
 
-    public function org(): BelongsTo
-    {
-        return $this->belongsTo(Org::class, 'org_id', 'org_id');
-    }
+    
 
     public function scopeCompleted($query)
     {
         return $query->where('status', 'completed');
-    }
 
     public function scopeFailed($query)
     {
         return $query->where('status', 'failed');
-    }
 
     public function scopeRecent($query, int $days = 30)
     {
         return $query->where('started_at', '>=', now()->subDays($days));
-    }
 
     public function markCompleted(int $recordsCount, int $fileSize, string $filePath): void
     {
@@ -69,7 +62,6 @@ class DataExportLog extends Model
             'file_path' => $filePath,
             'execution_time_ms' => (int) (now()->diffInMilliseconds($this->started_at))
         ]);
-    }
 
     public function markFailed(string $error): void
     {
@@ -79,5 +71,4 @@ class DataExportLog extends Model
             'error_message' => $error,
             'execution_time_ms' => (int) (now()->diffInMilliseconds($this->started_at))
         ]);
-    }
 }

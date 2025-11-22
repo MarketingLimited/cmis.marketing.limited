@@ -3,19 +3,15 @@
 namespace App\Models\Creative;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
-class VideoScene extends Model
+class VideoScene extends BaseModel
 {
     use HasFactory, HasUuids;
 
     protected $table = 'cmis.video_scenes';
     protected $primaryKey = 'scene_id';
-    protected $connection = 'pgsql';
-    public $incrementing = false;
-    protected $keyType = 'string';
-
     protected $fillable = [
         'scene_id',
         'asset_id',
@@ -50,7 +46,6 @@ class VideoScene extends Model
     public function template()
     {
         return $this->belongsTo(VideoTemplate::class, 'template_id', 'template_id');
-    }
 
     /**
      * Get the creative asset
@@ -58,7 +53,6 @@ class VideoScene extends Model
     public function asset()
     {
         return $this->belongsTo(\App\Models\CreativeAsset::class, 'asset_id', 'asset_id');
-    }
 
     /**
      * Scope by scene type
@@ -66,7 +60,6 @@ class VideoScene extends Model
     public function scopeOfType($query, string $type)
     {
         return $query->where('scene_type', $type);
-    }
 
     /**
      * Scope ordered by scene number
@@ -74,5 +67,4 @@ class VideoScene extends Model
     public function scopeOrdered($query)
     {
         return $query->orderBy('scene_number');
-    }
 }

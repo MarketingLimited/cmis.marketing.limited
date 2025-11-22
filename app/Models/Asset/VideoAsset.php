@@ -2,21 +2,20 @@
 
 namespace App\Models\Asset;
 
+use App\Models\Concerns\HasOrganization;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
-class VideoAsset extends Model
+class VideoAsset extends BaseModel
 {
     use HasFactory, SoftDeletes, HasUuids;
+    use HasOrganization;
 
     protected $table = 'cmis.video_assets';
     protected $primaryKey = 'video_id';
-    protected $connection = 'pgsql';
-    public $incrementing = false;
-    protected $keyType = 'string';
-
     protected $fillable = [
         'asset_id',
         'org_id',
@@ -62,7 +61,6 @@ class VideoAsset extends Model
     public function asset()
     {
         return $this->belongsTo(\App\Models\CreativeAsset::class, 'asset_id', 'asset_id');
-    }
 
     /**
      * Get formatted duration
@@ -73,7 +71,6 @@ class VideoAsset extends Model
         $seconds = $this->duration % 60;
 
         return sprintf('%d:%02d', $minutes, $seconds);
-    }
 
     /**
      * Get aspect ratio
@@ -82,7 +79,6 @@ class VideoAsset extends Model
     {
         if (!$this->width || !$this->height) {
             return null;
-        }
 
         $gcd = function($a, $b) use (&$gcd) {
             return $b ? $gcd($b, $a % $b) : $a;
@@ -91,7 +87,6 @@ class VideoAsset extends Model
         $divisor = $gcd($this->width, $this->height);
 
         return ($this->width / $divisor) . ':' . ($this->height / $divisor);
-    }
 
     /**
      * Check if short form (< 60 seconds)
@@ -99,7 +94,6 @@ class VideoAsset extends Model
     public function isShortForm(): bool
     {
         return $this->duration < 60;
-    }
 
     /**
      * Check if long form (> 10 minutes)
@@ -107,5 +101,4 @@ class VideoAsset extends Model
     public function isLongForm(): bool
     {
         return $this->duration > 600;
-    }
 }

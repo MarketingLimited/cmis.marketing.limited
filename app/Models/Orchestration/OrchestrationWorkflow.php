@@ -2,31 +2,19 @@
 
 namespace App\Models\Orchestration;
 
+use App\Models\Concerns\HasOrganization;
+
 use App\Models\Core\Org;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Support\Str;
-
-class OrchestrationWorkflow extends Model
+class OrchestrationWorkflow extends BaseModel
 {
     use HasFactory;
+    use HasOrganization;
 
-    protected $connection = 'pgsql';
     protected $table = 'cmis.orchestration_workflows';
     protected $primaryKey = 'workflow_id';
-    public $incrementing = false;
-    protected $keyType = 'string';
-
-    protected static function boot()
-    {
-        parent::boot();
-        static::creating(function ($model) {
-            if (empty($model->{$model->getKeyName()})) {
-                $model->{$model->getKeyName()} = (string) Str::uuid();
-            }
-        });
-    }
 
     protected $fillable = [
         'workflow_id',
@@ -60,15 +48,11 @@ class OrchestrationWorkflow extends Model
 
     // ===== Relationships =====
 
-    public function org(): BelongsTo
-    {
-        return $this->belongsTo(Org::class, 'org_id', 'org_id');
-    }
+    
 
     public function orchestration(): BelongsTo
     {
         return $this->belongsTo(CampaignOrchestration::class, 'orchestration_id', 'orchestration_id');
-    }
 
     // ===== Workflow Execution =====
 
@@ -79,12 +63,10 @@ class OrchestrationWorkflow extends Model
             'started_at' => now(),
             'current_step' => 0,
         ]);
-    }
 
     public function advanceStep(): void
     {
         $this->increment('current_step');
-    }
 
     public function logStep(string $stepName, string $status, ?array $details = null): void
     {
@@ -98,7 +80,6 @@ class OrchestrationWorkflow extends Model
         ];
 
         $this->update(['execution_log' => $log]);
-    }
 
     public function complete(): void
     {
@@ -110,7 +91,6 @@ class OrchestrationWorkflow extends Model
             'duration_seconds' => $duration,
             'current_step' => $this->total_steps,
         ]);
-    }
 
     public function fail(string $errorMessage): void
     {
@@ -122,46 +102,37 @@ class OrchestrationWorkflow extends Model
             'duration_seconds' => $duration,
             'error_message' => $errorMessage,
         ]);
-    }
 
     public function getProgress(): float
     {
         if ($this->total_steps === 0) {
             return 0;
-        }
 
         return ($this->current_step / $this->total_steps) * 100;
-    }
 
     public function isRunning(): bool
     {
         return $this->status === 'running';
-    }
 
     public function isCompleted(): bool
     {
         return $this->status === 'completed';
-    }
 
     public function isFailed(): bool
     {
         return $this->status === 'failed';
-    }
 
     // ===== Scopes =====
 
     public function scopeRunning($query)
     {
         return $query->where('status', 'running');
-    }
 
     public function scopeCompleted($query)
     {
         return $query->where('status', 'completed');
-    }
 
     public function scopeForType($query, string $type)
     {
         return $query->where('workflow_type', $type);
-    }
 }

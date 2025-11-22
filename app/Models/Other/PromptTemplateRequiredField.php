@@ -4,21 +4,17 @@ namespace App\Models\Other;
 
 use App\Models\Context\FieldDefinition;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class PromptTemplateRequiredField extends Model
+class PromptTemplateRequiredField extends BaseModel
 {
     use HasFactory, SoftDeletes;
-
-    protected $connection = 'pgsql';
 
     protected $table = 'cmis.prompt_template_required_fields';
     protected $primaryKey = 'prompt_id';
 
     public $timestamps = false;
-
-    public $incrementing = false;
 
     protected $fillable = [
         'prompt_id',
@@ -38,7 +34,6 @@ class PromptTemplateRequiredField extends Model
     public function promptTemplate()
     {
         return $this->belongsTo(PromptTemplate::class, 'prompt_id', 'prompt_id');
-    }
 
     /**
      * Get the field definition
@@ -46,5 +41,4 @@ class PromptTemplateRequiredField extends Model
     public function fieldDefinition()
     {
         return $this->belongsTo(FieldDefinition::class, 'field_id', 'field_id');
-    }
 }

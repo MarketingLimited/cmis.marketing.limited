@@ -14,6 +14,8 @@ use App\Services\AI\AiQuotaService;
  */
 class AiQuotaController extends Controller
 {
+    use ApiResponse;
+
     /**
      * AI Quota Service
      *

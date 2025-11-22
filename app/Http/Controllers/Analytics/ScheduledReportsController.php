@@ -18,6 +18,8 @@ use Illuminate\Support\Facades\DB;
  */
 class ScheduledReportsController extends Controller
 {
+    use ApiResponse;
+
     protected EmailReportService $emailService;
 
     public function __construct(EmailReportService $emailService)

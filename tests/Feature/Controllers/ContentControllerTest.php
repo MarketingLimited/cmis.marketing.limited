@@ -5,8 +5,8 @@ namespace Tests\Feature\Controllers;
 use Tests\TestCase;
 use Tests\Traits\CreatesTestData;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use App\Models\Content\ContentPlanItem;
-use App\Models\Content\ContentPlan;
+use App\Models\Creative\ContentPlanItem;
+use App\Models\Creative\ContentPlan;
 use Illuminate\Support\Str;
 
 use PHPUnit\Framework\Attributes\Test;

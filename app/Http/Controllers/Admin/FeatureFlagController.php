@@ -13,6 +13,8 @@ use Illuminate\View\View;
  */
 class FeatureFlagController extends Controller
 {
+    use ApiResponse;
+
     public function __construct(
         protected FeatureFlagService $featureFlags
     ) {

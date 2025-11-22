@@ -2,21 +2,20 @@
 
 namespace App\Models\AdPlatform;
 
+use App\Models\Concerns\HasOrganization;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
-class AdAccount extends Model
+class AdAccount extends BaseModel
 {
     use HasFactory, SoftDeletes, HasUuids;
+    use HasOrganization;
 
     protected $table = 'cmis.ad_accounts';
     protected $primaryKey = 'id';
-    protected $connection = 'pgsql';
-    public $incrementing = false;
-    protected $keyType = 'string';
-
     protected $fillable = [
         'id',
         'org_id',
@@ -40,13 +39,7 @@ class AdAccount extends Model
         'deleted_at' => 'datetime',
     ];
 
-    /**
-     * Get the organization
-     */
-    public function org()
-    {
-        return $this->belongsTo(\App\Models\Core\Org::class, 'org_id', 'org_id');
-    }
+    
 
     /**
      * Get the integration
@@ -54,8 +47,6 @@ class AdAccount extends Model
     public function integration()
     {
         return $this->belongsTo(\App\Models\Core\Integration::class, 'integration_id', 'integration_id');
-    }
-
 
     /**
      * Scope active accounts
@@ -63,7 +54,6 @@ class AdAccount extends Model
     public function scopeActive($query)
     {
         return $query->where('status', 'active');
-    }
 
     /**
      * Scope by provider
@@ -71,5 +61,4 @@ class AdAccount extends Model
     public function scopeByProvider($query, string $provider)
     {
         return $query->where('provider', $provider);
-    }
 }

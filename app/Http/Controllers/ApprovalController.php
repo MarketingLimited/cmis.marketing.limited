@@ -15,6 +15,8 @@ use Illuminate\Support\Facades\Validator;
  */
 class ApprovalController extends Controller
 {
+    use ApiResponse;
+
     protected ApprovalWorkflowService $approvalService;
 
     public function __construct(ApprovalWorkflowService $approvalService)
@@ -58,11 +60,8 @@ class ApprovalController extends Controller
                 $request->input('assigned_to')
             );
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Approval requested successfully',
-                'data' => $approval
-            ], 201);
+            return $this->created($approval
+            , 'Approval requested successfully');
 
         } catch (\Exception $e) {
             return response()->json([
@@ -114,10 +113,7 @@ class ApprovalController extends Controller
             ]);
         }
 
-        return response()->json([
-            'success' => false,
-            'message' => 'Failed to approve post'
-        ], 400);
+        return $this->error('Failed to approve post', 400);
     }
 
     /**
@@ -142,11 +138,8 @@ class ApprovalController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Rejection reason is required',
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors()
+            , 'Rejection reason is required');
         }
 
         $success = $this->approvalService->reject(
@@ -162,10 +155,7 @@ class ApprovalController extends Controller
             ]);
         }
 
-        return response()->json([
-            'success' => false,
-            'message' => 'Failed to reject post'
-        ], 400);
+        return $this->error('Failed to reject post', 400);
     }
 
     /**
@@ -208,10 +198,7 @@ class ApprovalController extends Controller
             ]);
         }
 
-        return response()->json([
-            'success' => false,
-            'message' => 'Failed to reassign approval'
-        ], 400);
+        return $this->error('Failed to reassign approval', 400);
     }
 
     /**
@@ -291,9 +278,7 @@ class ApprovalController extends Controller
 
         $stats = $this->approvalService->getApprovalStats($orgId, $dateRange);
 
-        return response()->json([
-            'success' => true,
-            'data' => $stats
-        ]);
+        return $this->success($stats
+        );
     }
 }

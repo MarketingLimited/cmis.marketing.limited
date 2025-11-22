@@ -2,17 +2,13 @@
 
 namespace App\Models\Cache;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
-class RequiredFieldsCache extends Model
+class RequiredFieldsCache extends BaseModel
 {
-    use HasUuids;
+    
     protected $table = 'cmis.required_fields_cache';
     protected $primaryKey = 'module_scope';
-    protected $connection = 'pgsql';
-    public $incrementing = false;
-    protected $keyType = 'string';
     public $timestamps = false;
 
     protected $fillable = [
@@ -35,7 +31,6 @@ class RequiredFieldsCache extends Model
     public function scopeForModule($query, string $moduleId)
     {
         return $query->where('module_id', $moduleId);
-    }
 
     /**
      * Scope required fields only
@@ -43,5 +38,4 @@ class RequiredFieldsCache extends Model
     public function scopeRequired($query)
     {
         return $query->where('is_required', true);
-    }
 }

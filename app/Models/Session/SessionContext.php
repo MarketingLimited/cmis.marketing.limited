@@ -2,14 +2,12 @@
 
 namespace App\Models\Session;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 
-class SessionContext extends Model
+class SessionContext extends BaseModel
 {
     protected $table = 'cmis.session_context';
     protected $primaryKey = 'session_id';
-    protected $connection = 'pgsql';
-    public $incrementing = false;
     public $timestamps = false;
 
     protected $fillable = [
@@ -33,7 +31,6 @@ class SessionContext extends Model
     public function session()
     {
         return $this->belongsTo(UserSession::class, 'session_id', 'session_id');
-    }
 
     /**
      * Scope by context key
@@ -41,7 +38,6 @@ class SessionContext extends Model
     public function scopeByKey($query, string $key)
     {
         return $query->where('context_key', $key);
-    }
 
     /**
      * Scope by context type
@@ -49,7 +45,6 @@ class SessionContext extends Model
     public function scopeByType($query, string $type)
     {
         return $query->where('context_type', $type);
-    }
 
     /**
      * Scope valid contexts (not expired)
@@ -59,8 +54,6 @@ class SessionContext extends Model
         return $query->where(function ($q) {
             $q->whereNull('expires_at')
                 ->orWhere('expires_at', '>', now());
-        });
-    }
 
     /**
      * Scope expired contexts
@@ -69,7 +62,6 @@ class SessionContext extends Model
     {
         return $query->whereNotNull('expires_at')
             ->where('expires_at', '<=', now());
-    }
 
     /**
      * Check if context is valid
@@ -78,10 +70,8 @@ class SessionContext extends Model
     {
         if (!$this->expires_at) {
             return true;
-        }
 
         return $this->expires_at->isFuture();
-    }
 
     /**
      * Check if context has expired
@@ -90,10 +80,8 @@ class SessionContext extends Model
     {
         if (!$this->expires_at) {
             return false;
-        }
 
         return $this->expires_at->isPast();
-    }
 
     /**
      * Get or set context value
@@ -106,7 +94,6 @@ class SessionContext extends Model
             ->first();
 
         return $context ? $context->context_value : $default;
-    }
 
     /**
      * Set context value
@@ -124,6 +111,4 @@ class SessionContext extends Model
                 'set_at' => now(),
                 'expires_at' => $expiresAt,
             ]
-        );
-    }
 }

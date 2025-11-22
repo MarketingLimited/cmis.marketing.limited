@@ -3,19 +3,15 @@
 namespace App\Models\Context;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
-class FieldDefinition extends Model
+class FieldDefinition extends BaseModel
 {
     use HasFactory, HasUuids;
 
     protected $table = 'cmis.field_definitions';
     protected $primaryKey = 'field_id';
-    protected $connection = 'pgsql';
-    public $incrementing = false;
-    protected $keyType = 'string';
-
     protected $fillable = [
         'field_id',
         'module_id',
@@ -54,7 +50,6 @@ class FieldDefinition extends Model
     public function values()
     {
         return $this->hasMany(FieldValue::class, 'field_id', 'field_id');
-    }
 
     /**
      * Get field aliases
@@ -62,7 +57,6 @@ class FieldDefinition extends Model
     public function aliases()
     {
         return $this->hasMany(FieldAlias::class, 'field_id', 'field_id');
-    }
 
     /**
      * Scope required fields
@@ -70,7 +64,6 @@ class FieldDefinition extends Model
     public function scopeRequired($query)
     {
         return $query->where('is_required', true);
-    }
 
     /**
      * Scope active fields
@@ -78,7 +71,6 @@ class FieldDefinition extends Model
     public function scopeActive($query)
     {
         return $query->where('is_active', true);
-    }
 
     /**
      * Scope by module
@@ -86,7 +78,6 @@ class FieldDefinition extends Model
     public function scopeForModule($query, string $moduleId)
     {
         return $query->where('module_id', $moduleId);
-    }
 
     /**
      * Get formatted validation rules
@@ -95,8 +86,6 @@ class FieldDefinition extends Model
     {
         if (!$this->validation_rules) {
             return '';
-        }
 
         return implode('|', $this->validation_rules);
-    }
 }

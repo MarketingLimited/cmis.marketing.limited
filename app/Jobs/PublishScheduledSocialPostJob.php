@@ -2,7 +2,7 @@
 
 namespace App\Jobs;
 
-use App\Models\ScheduledSocialPost;
+use App\Models\Social\ScheduledSocialPost;
 use App\Services\Connectors\ConnectorFactory;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;

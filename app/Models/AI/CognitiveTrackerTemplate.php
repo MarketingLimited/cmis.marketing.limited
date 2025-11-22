@@ -2,19 +2,19 @@
 
 namespace App\Models\AI;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Models\Concerns\HasOrganization;
+
+use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-class CognitiveTrackerTemplate extends Model
+class CognitiveTrackerTemplate extends BaseModel
 {
     use HasFactory, HasUuids;
+    use HasOrganization;
 
     protected $table = 'cmis.cognitive_tracker_template';
     protected $primaryKey = 'tracker_id';
-    public $incrementing = false;
-    protected $keyType = 'string';
-
     protected $fillable = [
         'tracker_id',
         'org_id',
@@ -44,23 +44,19 @@ class CognitiveTrackerTemplate extends Model
     public function scopeActive($query)
     {
         return $query->where('is_active', true);
-    }
 
     public function scopeByCategory($query, $category)
     {
         return $query->where('category', $category);
-    }
 
     // Helpers
     public function activate()
     {
         $this->is_active = true;
         return $this->save();
-    }
 
     public function deactivate()
     {
         $this->is_active = false;
         return $this->save();
-    }
 }

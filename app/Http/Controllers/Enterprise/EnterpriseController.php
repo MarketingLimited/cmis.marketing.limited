@@ -16,6 +16,8 @@ use Illuminate\Support\Facades\Validator;
  */
 class EnterpriseController extends Controller
 {
+    use ApiResponse;
+
     protected PerformanceMonitoringService $monitoring;
     protected AdvancedReportingService $reporting;
     protected WebhookManagementService $webhooks;

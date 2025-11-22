@@ -25,6 +25,8 @@ use Illuminate\Support\Facades\DB;
  */
 class AiContentController extends Controller
 {
+    use ApiResponse;
+
     public function __construct(
         private AiQuotaService $quotaService,
         private GeminiService $geminiService,

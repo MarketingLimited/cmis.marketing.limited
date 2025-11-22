@@ -5,20 +5,16 @@ namespace App\Models\Security;
 use App\Models\Core\Role;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
-class Permission extends Model
+class Permission extends BaseModel
 {
     use HasFactory, SoftDeletes, HasUuids;
 
     protected $table = 'cmis.permissions';
     protected $primaryKey = 'permission_id';
-    protected $connection = 'pgsql';
-    public $incrementing = false;
-    protected $keyType = 'string';
-
     protected $fillable = [
         'permission_id',
         'permission_code',
@@ -48,7 +44,6 @@ class Permission extends Model
             'permission_id', 'role_id')
             ->withPivot('granted_by', 'granted_at')
             ->withTimestamps();
-    }
 
     /**
      * Get users that have this permission directly assigned
@@ -59,7 +54,6 @@ class Permission extends Model
             'permission_id', 'user_id')
             ->withPivot('is_granted', 'expires_at', 'granted_by', 'granted_at')
             ->withTimestamps();
-    }
 
     /**
      * Scope to get system permissions
@@ -67,7 +61,6 @@ class Permission extends Model
     public function scopeSystem($query)
     {
         return $query->where('is_system', true);
-    }
 
     /**
      * Scope to get custom permissions
@@ -75,7 +68,6 @@ class Permission extends Model
     public function scopeCustom($query)
     {
         return $query->where('is_system', false);
-    }
 
     /**
      * Scope to filter by module
@@ -83,7 +75,6 @@ class Permission extends Model
     public function scopeForModule($query, string $module)
     {
         return $query->where('module', $module);
-    }
 
     /**
      * Scope to filter by resource
@@ -91,7 +82,6 @@ class Permission extends Model
     public function scopeForResource($query, string $resource)
     {
         return $query->where('resource', $resource);
-    }
 
     /**
      * Get full permission string (module.resource.action)
@@ -107,5 +97,4 @@ class Permission extends Model
     public function requiresOrgContext(): bool
     {
         return $this->requires_org_context ?? true;
-    }
 }

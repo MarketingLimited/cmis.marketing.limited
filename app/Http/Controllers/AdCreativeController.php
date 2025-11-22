@@ -15,6 +15,8 @@ use Illuminate\Support\Facades\Validator;
  */
 class AdCreativeController extends Controller
 {
+    use ApiResponse;
+
     protected AdCreativeService $creativeService;
 
     public function __construct(AdCreativeService $creativeService)

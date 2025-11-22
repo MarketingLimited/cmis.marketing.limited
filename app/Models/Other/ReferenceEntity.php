@@ -3,23 +3,17 @@
 namespace App\Models\Other;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
-class ReferenceEntity extends Model
+class ReferenceEntity extends BaseModel
 {
     use HasFactory, SoftDeletes, HasUuids;
-
-    protected $connection = 'pgsql';
 
     protected $table = 'cmis.reference_entities';
 
     protected $primaryKey = 'ref_id';
-
-    public $incrementing = false;
-
-    protected $keyType = 'string';
 
     public $timestamps = true;
 
@@ -48,7 +42,6 @@ class ReferenceEntity extends Model
     public function scopeByCategory($query, string $category)
     {
         return $query->where('category', $category);
-    }
 
     /**
      * Scope to find by code
@@ -56,5 +49,4 @@ class ReferenceEntity extends Model
     public function scopeByCode($query, string $code)
     {
         return $query->where('code', $code);
-    }
 }

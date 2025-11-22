@@ -2,34 +2,23 @@
 
 namespace App\Models\Team;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Models\Concerns\HasOrganization;
+
+use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 
-class TeamMember extends Model
+class TeamMember extends BaseModel
 {
     use HasFactory, SoftDeletes;
+    use HasOrganization;
 
-    protected $connection = 'pgsql';
     protected $table = 'cmis.team_members';
     protected $primaryKey = 'team_member_id';
-    public $incrementing = false;
-    protected $keyType = 'string';
-
-    protected static function boot()
-    {
-        parent::boot();
-        static::creating(function ($model) {
-            if (empty($model->{$model->getKeyName()})) {
-                $model->{$model->getKeyName()} = (string) Str::uuid();
-            }
-            // Also generate member_id (database primary key)
+                    // Also generate member_id (database primary key)
             if (empty($model->member_id)) {
                 $model->member_id = (string) Str::uuid();
-            }
-        });
-    }
 
     protected $fillable = [
         'member_id',

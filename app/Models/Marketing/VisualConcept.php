@@ -2,20 +2,20 @@
 
 namespace App\Models\Marketing;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Models\Concerns\HasOrganization;
+
+use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-class VisualConcept extends Model
+class VisualConcept extends BaseModel
 {
     use HasFactory, HasUuids, SoftDeletes;
+    use HasOrganization;
 
     protected $table = 'cmis_marketing.visual_concepts';
     protected $primaryKey = 'concept_id';
-    public $incrementing = false;
-    protected $keyType = 'string';
-
     protected $fillable = [
         'concept_id',
         'asset_id',
@@ -41,22 +41,18 @@ class VisualConcept extends Model
     public function organization()
     {
         return $this->belongsTo(\App\Models\Organization::class, 'org_id', 'org_id');
-    }
 
     public function scopePopular($query, $minUsage = 5)
     {
         return $query->where('usage_count', '>=', $minUsage)
             ->orderByDesc('usage_count');
-    }
 
     public function scopeHighPerformance($query, $threshold = 0.7)
     {
         return $query->where('performance_score', '>=', $threshold)
             ->orderByDesc('performance_score');
-    }
 
     public function incrementUsage()
     {
         $this->increment('usage_count');
-    }
 }

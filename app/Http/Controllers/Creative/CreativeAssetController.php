@@ -6,9 +6,12 @@ use App\Http\Controllers\Controller;
 use App\Models\CreativeAsset;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use App\Http\Controllers\Concerns\ApiResponse;
 
 class CreativeAssetController extends Controller
 {
+    use ApiResponse;
+
     /**
      * Constructor - Apply authentication middleware
      */

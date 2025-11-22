@@ -2,29 +2,17 @@
 
 namespace App\Models\Social;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Support\Str;
+use App\Models\Concerns\HasOrganization;
 
-class ScheduledSocialPost extends Model
+use App\Models\BaseModel;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+class ScheduledSocialPost extends BaseModel
 {
     use HasFactory;
+    use HasOrganization;
 
-    protected $connection = 'pgsql';
     protected $table = 'cmis.scheduled_social_posts_v2';
     protected $primaryKey = 'scheduled_post_id';
-    public $incrementing = false;
-    protected $keyType = 'string';
-
-    protected static function boot()
-    {
-        parent::boot();
-        static::creating(function ($model) {
-            if (empty($model->{$model->getKeyName()})) {
-                $model->{$model->getKeyName()} = (string) Str::uuid();
-            }
-        });
-    }
 
     protected $fillable = [
         'scheduled_post_id', 'social_post_id', 'org_id', 'scheduled_at', 'status'

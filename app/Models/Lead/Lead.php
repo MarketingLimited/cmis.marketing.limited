@@ -2,30 +2,18 @@
 
 namespace App\Models\Lead;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Models\Concerns\HasOrganization;
+
+use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Support\Str;
-
-class Lead extends Model
+class Lead extends BaseModel
 {
     use HasFactory, SoftDeletes;
+    use HasOrganization;
 
-    protected $connection = 'pgsql';
     protected $table = 'cmis.leads';
     protected $primaryKey = 'lead_id';
-    public $incrementing = false;
-    protected $keyType = 'string';
-
-    protected static function boot()
-    {
-        parent::boot();
-        static::creating(function ($model) {
-            if (empty($model->{$model->getKeyName()})) {
-                $model->{$model->getKeyName()} = (string) Str::uuid();
-            }
-        });
-    }
 
     protected $fillable = [
         'lead_id',

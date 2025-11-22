@@ -2,21 +2,20 @@
 
 namespace App\Models\Asset;
 
+use App\Models\Concerns\HasOrganization;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
-class ImageAsset extends Model
+class ImageAsset extends BaseModel
 {
     use HasFactory, SoftDeletes, HasUuids;
+    use HasOrganization;
 
     protected $table = 'cmis.image_assets';
     protected $primaryKey = 'image_id';
-    protected $connection = 'pgsql';
-    public $incrementing = false;
-    protected $keyType = 'string';
-
     protected $fillable = [
         'asset_id',
         'org_id',
@@ -58,7 +57,6 @@ class ImageAsset extends Model
     public function asset()
     {
         return $this->belongsTo(\App\Models\CreativeAsset::class, 'asset_id', 'asset_id');
-    }
 
     /**
      * Get aspect ratio
@@ -67,7 +65,6 @@ class ImageAsset extends Model
     {
         if (!$this->width || !$this->height) {
             return null;
-        }
 
         $gcd = function($a, $b) use (&$gcd) {
             return $b ? $gcd($b, $a % $b) : $a;
@@ -76,7 +73,6 @@ class ImageAsset extends Model
         $divisor = $gcd($this->width, $this->height);
 
         return ($this->width / $divisor) . ':' . ($this->height / $divisor);
-    }
 
     /**
      * Check if portrait
@@ -84,7 +80,6 @@ class ImageAsset extends Model
     public function isPortrait(): bool
     {
         return $this->height > $this->width;
-    }
 
     /**
      * Check if landscape
@@ -92,7 +87,6 @@ class ImageAsset extends Model
     public function isLandscape(): bool
     {
         return $this->width > $this->height;
-    }
 
     /**
      * Check if square
@@ -100,5 +94,4 @@ class ImageAsset extends Model
     public function isSquare(): bool
     {
         return $this->width === $this->height;
-    }
 }

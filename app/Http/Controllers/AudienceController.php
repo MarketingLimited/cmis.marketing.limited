@@ -22,6 +22,8 @@ use Illuminate\Support\Facades\Validator;
  */
 class AudienceController extends Controller
 {
+    use ApiResponse;
+
     protected AudienceTargetingService $audienceService;
 
     public function __construct(AudienceTargetingService $audienceService)
@@ -263,10 +265,7 @@ class AudienceController extends Controller
                 ]);
             }
 
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to delete audience'
-            ], 500);
+            return $this->error('Failed to delete audience', 500);
 
         } catch (\Exception $e) {
             return response()->json([

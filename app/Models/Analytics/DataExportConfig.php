@@ -2,23 +2,23 @@
 
 namespace App\Models\Analytics;
 
+use App\Models\Concerns\HasOrganization;
+
 use App\Models\Core\Org;
 use App\Models\Core\User;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class DataExportConfig extends Model
+class DataExportConfig extends BaseModel
 {
     use HasFactory, HasUuids;
+    use HasOrganization;
 
     protected $table = 'cmis.data_export_configs';
     protected $primaryKey = 'config_id';
-    public $incrementing = false;
-    protected $keyType = 'string';
-
     protected $fillable = [
         'org_id', 'created_by', 'name', 'description', 'export_type',
         'format', 'delivery_method', 'data_config', 'delivery_config',
@@ -36,30 +36,23 @@ class DataExportConfig extends Model
         'updated_at' => 'datetime'
     ];
 
-    public function org(): BelongsTo
-    {
-        return $this->belongsTo(Org::class, 'org_id', 'org_id');
-    }
+    
 
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by', 'user_id');
-    }
 
     public function logs(): HasMany
     {
         return $this->hasMany(DataExportLog::class, 'config_id', 'config_id');
-    }
 
     public function scopeActive($query)
     {
         return $query->where('is_active', true);
-    }
 
     public function scopeScheduled($query)
     {
         return $query->whereNotNull('schedule');
-    }
 
     public function markExported(): void
     {
@@ -67,5 +60,4 @@ class DataExportConfig extends Model
             'last_export_at' => now(),
             'export_count' => $this->export_count + 1
         ]);
-    }
 }

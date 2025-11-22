@@ -2,17 +2,15 @@
 
 namespace App\Models\Session;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Models\Concerns\HasOrganization;
 
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
-class UserSession extends Model
+use App\Models\BaseModel;
+
+class UserSession extends BaseModel
 {
-    use HasUuids;
+    
     protected $table = 'cmis.user_sessions';
     protected $primaryKey = 'session_id';
-    protected $connection = 'pgsql';
-    public $incrementing = false;
-    protected $keyType = 'string';
     public $timestamps = false;
 
     protected $fillable = [
@@ -40,21 +38,7 @@ class UserSession extends Model
         'metadata' => 'array',
     ];
 
-    /**
-     * Get the user
-     */
-    public function user()
-    {
-        return $this->belongsTo(\App\Models\User::class, 'user_id', 'user_id');
-    }
-
-    /**
-     * Get the organization
-     */
-    public function org()
-    {
-        return $this->belongsTo(\App\Models\Core\Org::class, 'org_id', 'org_id');
-    }
+    
 
     /**
      * Get session contexts
@@ -62,7 +46,6 @@ class UserSession extends Model
     public function contexts()
     {
         return $this->hasMany(SessionContext::class, 'session_id', 'session_id');
-    }
 
     /**
      * Scope active sessions
@@ -71,7 +54,6 @@ class UserSession extends Model
     {
         return $query->where('is_active', true)
             ->whereNull('ended_at');
-    }
 
     /**
      * Scope by device type
@@ -79,7 +61,6 @@ class UserSession extends Model
     public function scopeByDeviceType($query, string $deviceType)
     {
         return $query->where('device_type', $deviceType);
-    }
 
     /**
      * Scope by browser
@@ -87,7 +68,6 @@ class UserSession extends Model
     public function scopeByBrowser($query, string $browser)
     {
         return $query->where('browser', $browser);
-    }
 
     /**
      * Scope recent sessions
@@ -95,7 +75,6 @@ class UserSession extends Model
     public function scopeRecent($query, int $hours = 24)
     {
         return $query->where('started_at', '>=', now()->subHours($hours));
-    }
 
     /**
      * Scope long sessions
@@ -103,7 +82,6 @@ class UserSession extends Model
     public function scopeLongSessions($query, int $minutes = 30)
     {
         return $query->where('session_duration', '>=', $minutes * 60);
-    }
 
     /**
      * Update last activity
@@ -114,10 +92,8 @@ class UserSession extends Model
 
         if ($this->started_at) {
             $this->session_duration = $this->started_at->diffInSeconds(now());
-        }
 
         $this->save();
-    }
 
     /**
      * End session
@@ -129,10 +105,8 @@ class UserSession extends Model
 
         if ($this->started_at) {
             $this->session_duration = $this->started_at->diffInSeconds(now());
-        }
 
         $this->save();
-    }
 
     /**
      * Check if session is expired
@@ -141,14 +115,11 @@ class UserSession extends Model
     {
         if (!$this->is_active) {
             return true;
-        }
 
         if (!$this->last_activity) {
             return false;
-        }
 
         return $this->last_activity->diffInMinutes(now()) > $maxInactiveMinutes;
-    }
 
     /**
      * Get session duration in minutes
@@ -157,8 +128,6 @@ class UserSession extends Model
     {
         if (!$this->session_duration) {
             return 0;
-        }
 
         return (int) ceil($this->session_duration / 60);
-    }
 }

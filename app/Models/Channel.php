@@ -2,18 +2,14 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class Channel extends Model
+class Channel extends BaseModel
 {
-    protected $connection = 'pgsql';
-
     protected $table = 'cmis.channels';
 
     protected $primaryKey = 'channel_id';
-
-    public $incrementing = false;
 
     protected $keyType = 'int';
 
@@ -34,5 +30,4 @@ class Channel extends Model
     public function formats(): HasMany
     {
         return $this->hasMany(ChannelFormat::class, 'channel_id', 'channel_id');
-    }
 }

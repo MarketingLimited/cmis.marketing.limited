@@ -2,16 +2,14 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 
-class AwarenessStages extends Model
+class AwarenessStages extends BaseModel
 {
     protected $table = 'cmis.awareness_stages';
 
     protected $fillable = [
         'stage',
     ];
-    public $incrementing = false;
-
     public $timestamps = false;
 }

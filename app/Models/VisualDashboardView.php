@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 
-class VisualDashboardView extends Model
+class VisualDashboardView extends BaseModel
 {
     protected $table = 'public.visual_dashboard_view';
     protected $guarded = ['*'];

@@ -2,13 +2,11 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 
-class VSearchPerformance extends Model
+class VSearchPerformance extends BaseModel
 {
     protected $table = 'cmis_knowledge.v_search_performance';
     protected $guarded = ['*'];
-    public $incrementing = false;
-
     public $timestamps = false;
 }

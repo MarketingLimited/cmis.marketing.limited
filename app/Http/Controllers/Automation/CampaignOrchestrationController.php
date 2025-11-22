@@ -16,6 +16,8 @@ use Illuminate\Support\Facades\Validator;
  */
 class CampaignOrchestrationController extends Controller
 {
+    use ApiResponse;
+
     protected CampaignLifecycleManager $lifecycleManager;
     protected AutomatedBudgetAllocator $budgetAllocator;
     protected CampaignOrchestratorService $orchestrator;

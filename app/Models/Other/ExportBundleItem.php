@@ -3,21 +3,17 @@
 namespace App\Models\Other;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class ExportBundleItem extends Model
+class ExportBundleItem extends BaseModel
 {
     use HasFactory, SoftDeletes;
-
-    protected $connection = 'pgsql';
 
     protected $table = 'cmis.export_bundle_items';
     protected $primaryKey = 'bundle_id';
 
     public $timestamps = false;
-
-    public $incrementing = false;
 
     protected $fillable = [
         'bundle_id',
@@ -37,7 +33,6 @@ class ExportBundleItem extends Model
     public function bundle()
     {
         return $this->belongsTo(ExportBundle::class, 'bundle_id', 'bundle_id');
-    }
 
     /**
      * Scope to get items for a specific bundle
@@ -45,5 +40,4 @@ class ExportBundleItem extends Model
     public function scopeForBundle($query, string $bundleId)
     {
         return $query->where('bundle_id', $bundleId);
-    }
 }

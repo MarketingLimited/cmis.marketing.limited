@@ -15,6 +15,8 @@ use Illuminate\Support\Facades\Validator;
  */
 class LeadController extends Controller
 {
+    use ApiResponse;
+
     /**
      * Constructor - Apply authentication middleware
      */
@@ -231,10 +233,7 @@ class LeadController extends Controller
                 'metadata',
             ]));
 
-            return response()->json([
-                'data' => $lead,
-                'message' => 'Lead updated successfully'
-            ]);
+            return $this->success($lead, 'Lead updated successfully');
         } catch (\Exception $e) {
             Log::error("Failed to update lead: {$e->getMessage()}");
             return response()->json([
@@ -364,10 +363,7 @@ class LeadController extends Controller
 
             $lead->update(['status' => $request->input('status')]);
 
-            return response()->json([
-                'data' => $lead,
-                'message' => 'Lead status updated successfully'
-            ]);
+            return $this->success($lead, 'Lead status updated successfully');
         } catch (\Exception $e) {
             Log::error("Failed to update lead status: {$e->getMessage()}");
             return response()->json([

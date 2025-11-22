@@ -15,6 +15,8 @@ use Illuminate\Support\Facades\Log;
  */
 class VideoAssetController extends Controller
 {
+    use ApiResponse;
+
     /**
      * Display a listing of video assets with filtering and pagination
      *

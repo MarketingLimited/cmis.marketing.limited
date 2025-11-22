@@ -15,6 +15,8 @@ use Illuminate\Support\Facades\Log;
  */
 class KpiTargetController extends Controller
 {
+    use ApiResponse;
+
     /**
      * Display a listing of KPI targets with filtering and pagination
      *

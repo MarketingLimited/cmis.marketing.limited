@@ -2,22 +2,17 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Models\Concerns\HasOrganization;
+
+use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
-class CampaignPerformanceMetric extends Model
+class CampaignPerformanceMetric extends BaseModel
 {
-    use HasUuids;
-    protected $connection = 'pgsql';
-
+    
     protected $table = 'cmis.campaign_performance_dashboard';
 
     protected $primaryKey = 'dashboard_id';
-
-    public $incrementing = false;
-
-    protected $keyType = 'string';
 
     public $timestamps = false;
 
@@ -47,10 +42,4 @@ class CampaignPerformanceMetric extends Model
     public function campaign(): BelongsTo
     {
         return $this->belongsTo(Campaign::class, 'campaign_id', 'campaign_id');
-    }
-
-    public function org(): BelongsTo
-    {
-        return $this->belongsTo(Org::class, 'org_id', 'org_id');
-    }
 }

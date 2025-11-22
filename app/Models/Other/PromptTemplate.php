@@ -3,23 +3,17 @@
 namespace App\Models\Other;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
-class PromptTemplate extends Model
+class PromptTemplate extends BaseModel
 {
     use HasFactory, SoftDeletes, HasUuids;
-
-    protected $connection = 'pgsql';
 
     protected $table = 'cmis.prompt_templates';
 
     protected $primaryKey = 'prompt_id';
-
-    public $incrementing = false;
-
-    protected $keyType = 'string';
 
     public $timestamps = false;
 
@@ -45,7 +39,6 @@ class PromptTemplate extends Model
     public function module()
     {
         return $this->belongsTo(Module::class, 'module_id', 'module_id');
-    }
 
     /**
      * Get output contracts
@@ -57,8 +50,6 @@ class PromptTemplate extends Model
             'cmis.prompt_template_contracts',
             'prompt_id',
             'contract_id'
-        );
-    }
 
     /**
      * Get SQL snippets
@@ -70,8 +61,6 @@ class PromptTemplate extends Model
             'cmis.prompt_template_presql',
             'prompt_id',
             'snippet_id'
-        );
-    }
 
     /**
      * Scope to get templates for a specific module
@@ -79,5 +68,4 @@ class PromptTemplate extends Model
     public function scopeForModule($query, int $moduleId)
     {
         return $query->where('module_id', $moduleId);
-    }
 }

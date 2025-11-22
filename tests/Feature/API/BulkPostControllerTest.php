@@ -7,7 +7,7 @@ use Tests\Traits\CreatesTestData;
 use Tests\Traits\InteractsWithRLS;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
-use App\Models\SocialAccount;
+use App\Models\Social\SocialAccount;
 use App\Models\Social\SocialPost;
 use PHPUnit\Framework\Attributes\Test;
 

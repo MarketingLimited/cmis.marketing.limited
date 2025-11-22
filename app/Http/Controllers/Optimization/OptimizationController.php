@@ -17,6 +17,8 @@ use Illuminate\Support\Facades\Validator;
  */
 class OptimizationController extends Controller
 {
+    use ApiResponse;
+
     protected DatabaseQueryOptimizer $queryOptimizer;
     protected MultiLayerCacheService $cacheService;
     protected PerformanceProfiler $profiler;
@@ -391,10 +393,7 @@ class OptimizationController extends Controller
                 ]);
             }
 
-            return response()->json([
-                'success' => false,
-                'message' => 'Cache flush failed'
-            ], 500);
+            return $this->error('Cache flush failed', 500);
 
         } catch (\Exception $e) {
             return response()->json([
@@ -549,10 +548,7 @@ class OptimizationController extends Controller
                 ]);
             }
 
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to clear performance data'
-            ], 500);
+            return $this->error('Failed to clear performance data', 500);
 
         } catch (\Exception $e) {
             return response()->json([

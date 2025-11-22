@@ -3,18 +3,15 @@
 namespace App\Models\Context;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
-class FieldAlias extends Model
+class FieldAlias extends BaseModel
 {
     use HasFactory, HasUuids;
 
     protected $table = 'cmis.field_aliases';
     protected $primaryKey = 'field_id';
-    protected $connection = 'pgsql';
-    public $incrementing = false;
-    protected $keyType = 'string';
     public $timestamps = false;
 
     protected $fillable = [
@@ -35,7 +32,6 @@ class FieldAlias extends Model
     public function field()
     {
         return $this->belongsTo(FieldDefinition::class, 'field_id', 'field_id');
-    }
 
     /**
      * Scope active aliases
@@ -43,7 +39,6 @@ class FieldAlias extends Model
     public function scopeActive($query)
     {
         return $query->where('is_active', true);
-    }
 
     /**
      * Scope by alias type
@@ -51,5 +46,4 @@ class FieldAlias extends Model
     public function scopeOfType($query, string $type)
     {
         return $query->where('alias_type', $type);
-    }
 }

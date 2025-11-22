@@ -2,13 +2,11 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 
-class VSecurityContextSummary extends Model
+class VSecurityContextSummary extends BaseModel
 {
     protected $table = 'cmis.v_security_context_summary';
     protected $guarded = ['*'];
-    public $incrementing = false;
-
     public $timestamps = false;
 }

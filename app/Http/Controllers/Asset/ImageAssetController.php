@@ -15,6 +15,8 @@ use Illuminate\Support\Facades\Log;
  */
 class ImageAssetController extends Controller
 {
+    use ApiResponse;
+
     /**
      * Display a listing of image assets with filtering and pagination
      *

@@ -2,21 +2,20 @@
 
 namespace App\Models\Context;
 
+use App\Models\Concerns\HasOrganization;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
-class CreativeContext extends Model
+class CreativeContext extends BaseModel
 {
     use HasFactory, SoftDeletes, HasUuids;
+    use HasOrganization;
 
     protected $table = 'cmis.creative_contexts';
     protected $primaryKey = 'context_id';
-    protected $connection = 'pgsql';
-    public $incrementing = false;
-    protected $keyType = 'string';
-
     protected $fillable = [
         'context_id',
         'org_id',
@@ -46,21 +45,7 @@ class CreativeContext extends Model
         'creative_brief' => 'array',
     ];
 
-    /**
-     * Get the base context
-     */
-    public function contextBase()
-    {
-        return $this->belongsTo(ContextBase::class, 'context_id', 'id');
-    }
-
-    /**
-     * Get the organization
-     */
-    public function org()
-    {
-        return $this->belongsTo(\App\Models\Core\Org::class, 'org_id', 'org_id');
-    }
+    
 
     /**
      * Get the creator
@@ -68,7 +53,6 @@ class CreativeContext extends Model
     public function creator()
     {
         return $this->belongsTo(\App\Models\User::class, 'created_by', 'user_id');
-    }
 
     /**
      * Scope active contexts
@@ -76,5 +60,4 @@ class CreativeContext extends Model
     public function scopeActive($query)
     {
         return $query->where('is_active', true)->whereNull('deleted_at');
-    }
 }

@@ -15,6 +15,8 @@ use Illuminate\Support\Facades\Validator;
  */
 class BudgetController extends Controller
 {
+    use ApiResponse;
+
     protected BudgetBiddingService $budgetService;
 
     public function __construct(BudgetBiddingService $budgetService)

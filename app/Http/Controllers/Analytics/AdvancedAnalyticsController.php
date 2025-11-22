@@ -20,6 +20,8 @@ use Illuminate\Http\Request;
  */
 class AdvancedAnalyticsController extends Controller
 {
+    use ApiResponse;
+
     protected AIInsightsService $insightsService;
     protected ReportGeneratorService $reportService;
     protected DashboardCustomizationService $customizationService;
