@@ -47,6 +47,27 @@ CMIS (Cognitive Marketing Information System) is an advanced, AI-powered marketi
 - **Cognitive Framework**: Advanced marketing frameworks, playbooks, and strategic planning tools
 - **Real-Time Analytics**: Comprehensive dashboards with KPI tracking and performance visualization
 
+### 🆕 Recent Updates (2025-11-22)
+
+#### Route Architecture Improvements
+- ✅ **Convenience API Routes**: Added `/api/convenience/*` routes that auto-resolve user's active organization
+- ✅ **ResolveActiveOrg Middleware**: New middleware automatically injects org_id from user's active organization
+- ✅ **Team Management Routes**: Added web routes for team member management and invitations
+- ✅ **Unified Inbox Routes**: Added routes for centralized comment/message management
+- ✅ **Home Page Fix**: Resolved route conflict - now properly redirects to dashboard or org selection
+
+#### Documentation
+- 📚 **Comprehensive Routes Analysis**: Complete analysis document at `docs/analysis/COMPREHENSIVE_ROUTES_ANALYSIS.md`
+- 📚 **Routes Reference Guide**: Detailed API and Web routes reference at `docs/api/ROUTES_REFERENCE.md`
+- 📚 **Gap Analysis**: Identified and documented missing features and placeholder routes
+
+#### API Enhancements
+- 🔌 **140+ Convenience Routes**: Simplified frontend integration without explicit org_id
+- 🔌 **Placeholder Routes**: Added coming-soon endpoints for leads and experiments features
+- 🔌 **Export Routes**: Standardized Excel/PDF export endpoints
+
+**See:** `docs/analysis/COMPREHENSIVE_ROUTES_ANALYSIS.md` for complete details
+
 ---
 
 ## ✨ Features
