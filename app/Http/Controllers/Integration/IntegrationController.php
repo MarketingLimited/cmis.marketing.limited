@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Integration;
 
 use App\Http\Controllers\Controller;
 use App\Models\Core\Integration;
-use App\Models\SocialAccount;
+use App\Models\Social\SocialAccount;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;

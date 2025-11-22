@@ -9,7 +9,7 @@ use App\Models\SocialAccount;
 use App\Models\Core\Integration;
 use App\Models\AdPlatform\AdCampaign;
 use App\Models\Publishing\PublishingQueue;
-use App\Models\ScheduledSocialPost;
+use App\Models\Social\ScheduledSocialPost;
 use Illuminate\Support\Str;
 
 /**

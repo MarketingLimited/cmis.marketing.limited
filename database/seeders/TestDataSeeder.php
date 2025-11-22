@@ -12,7 +12,7 @@ use App\Models\Campaign;
 use App\Models\Content\ContentPlan;
 use App\Models\Creative\ContentItem;
 use App\Models\Core\Integration;
-use App\Models\SocialAccount;
+use App\Models\Social\SocialAccount;
 use App\Models\Social\SocialPost;
 use App\Models\Social\ScheduledSocialPost;
 use App\Models\AdPlatform\AdCampaign;

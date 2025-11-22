@@ -6,7 +6,7 @@ use Tests\TestCase;
 use Tests\Traits\CreatesTestData;
 use Tests\Traits\MocksExternalAPIs;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use App\Models\ScheduledSocialPost;
+use App\Models\Social\ScheduledSocialPost;
 use App\Jobs\PublishToFacebookJob;
 use App\Jobs\PublishToTikTokJob;
 use App\Jobs\PublishToYouTubeJob;
