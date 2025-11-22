@@ -811,8 +811,83 @@ renderChart() {
 
 ---
 
+## 🆕 API Response Format (Updated 2025-11-22)
+
+All CMIS APIs now use standardized ApiResponse format. Frontend should expect consistent response structure from all endpoints.
+
+### Success Response Format
+
+```json
+{
+  "success": true,
+  "message": "Data retrieved successfully",
+  "data": [...]
+}
+```
+
+### Error Response Format
+
+```json
+{
+  "success": false,
+  "message": "Error message",
+  "errors": {
+    "field": ["Validation error message"]
+  }
+}
+```
+
+### Common Response Methods
+
+Controllers using `ApiResponse` trait provide:
+- **GET endpoints:** `success($data, $message)`
+- **POST endpoints:** `created($data, $message)` - Returns 201
+- **PUT/PATCH endpoints:** `success($data, $message)`
+- **DELETE endpoints:** `deleted($message)`
+- **Error handling:**
+  - `notFound($message)` - 404
+  - `unauthorized($message)` - 401
+  - `forbidden($message)` - 403
+  - `validationError($errors, $message)` - 422
+  - `serverError($message)` - 500
+
+### Frontend Integration Pattern
+
+```javascript
+// All API calls now use this consistent structure
+async loadData() {
+    try {
+        const response = await axios.get('/api/campaigns');
+
+        // Response has structure: { success, message, data }
+        if (response.data.success) {
+            this.campaigns = response.data.data;
+        } else {
+            this.error = response.data.message;
+        }
+    } catch (error) {
+        // Axios error or server error
+        this.error = error.response?.data?.message || 'Unknown error';
+    }
+}
+```
+
+### Expected Data Structures
+
+**Unified Metrics Table:**
+- Instead of separate metric tables (impressions, clicks, conversions)
+- Use: `cmis_analytics.unified_metrics` with polymorphic design
+- Fields: `metric_type`, `value`, `metadata` (JSONB)
+
+**Social Posts:**
+- Instead of platform-specific post tables
+- Use: `cmis_social.social_posts` with JSONB metadata
+- Fields: `platform`, `external_id`, `content`, `metadata`
+
+---
+
 **Version:** 2.0 - Adaptive Frontend Intelligence
-**Last Updated:** 2025-11-18
+**Last Updated:** 2025-11-22
 **Framework:** META_COGNITIVE_FRAMEWORK
 **Specialty:** Alpine.js, Tailwind CSS, Chart.js, Blade Templates
 

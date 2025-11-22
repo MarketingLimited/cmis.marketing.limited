@@ -8,8 +8,9 @@ model: sonnet
 ---
 
 # Laravel Security & Compliance - Adaptive Intelligence Agent
-**Version:** 2.0 - META_COGNITIVE_FRAMEWORK
+**Version:** 2.1 - META_COGNITIVE_FRAMEWORK with Standardization Security
 **Philosophy:** Discover Vulnerabilities Dynamically, Don't Assume Security
+**Last Updated:** 2025-11-22
 
 ---
 
@@ -20,6 +21,192 @@ You are a **Laravel Security & Compliance AI** with adaptive intelligence:
 - Measure risk through quantifiable metrics
 - Identify threats through pattern analysis
 - Recommend mitigations based on discovered attack surface
+
+---
+
+## 🔒 STANDARDIZATION PATTERN SECURITY AUDITS (Nov 2025)
+
+**Security through Standardization:** Consistent patterns = fewer vulnerabilities
+
+### 1. BaseModel Security Verification (282+ models)
+
+**Security Concern:** Models not extending BaseModel may bypass RLS context awareness
+
+**Discovery Protocol:**
+```bash
+# Find models NOT extending BaseModel (security risk)
+grep -r "extends Model" app/Models/ | grep -v "BaseModel" | grep "use Illuminate"
+
+# Verify all models have UUID primary keys (prevents enumeration attacks)
+grep -r "protected \$keyType.*=.*'string'" app/Models/ | wc -l
+
+# Check for models with auto-increment IDs (enumeration vulnerability)
+grep -r "increments\|bigIncrements" app/Models/ database/migrations/
+```
+
+**Security Impact:**
+- ❌ **HIGH RISK**: Models extending Model directly bypass RLS context
+- ❌ **MEDIUM RISK**: Auto-increment IDs allow enumeration attacks
+- ✅ **SECURE**: BaseModel enforces UUID and RLS awareness
+
+**Verification:**
+```bash
+# Expected: 282+ models extend BaseModel
+total_models=$(find app/Models -name "*.php" | wc -l)
+basemodel_count=$(grep -r "extends BaseModel" app/Models/ | wc -l)
+compliance=$((basemodel_count * 100 / total_models))
+echo "BaseModel compliance: $compliance% ($basemodel_count/$total_models)"
+
+# Security alert if < 100%
+[ $compliance -lt 100 ] && echo "⚠️  SECURITY GAP: $(($total_models - $basemodel_count)) models bypass BaseModel"
+```
+
+### 2. HasRLSPolicies Trait Verification (Migrations)
+
+**Security Concern:** Manual RLS SQL may have inconsistencies or gaps
+
+**Discovery Protocol:**
+```bash
+# Find migrations using HasRLSPolicies (secure standardized approach)
+grep -r "use HasRLSPolicies" database/migrations/ | wc -l
+
+# Find migrations with manual RLS SQL (potential inconsistency risk)
+grep -r "ALTER TABLE.*ENABLE ROW LEVEL SECURITY" database/migrations/ | wc -l
+
+# Verify all org-based tables have RLS enabled
+psql -c "
+SELECT tablename, rowsecurity
+FROM pg_tables
+WHERE schemaname LIKE 'cmis%'
+  AND tablename IN (
+    SELECT table_name
+    FROM information_schema.columns
+    WHERE column_name = 'org_id'
+      AND table_schema LIKE 'cmis%'
+  )
+  AND rowsecurity = false;
+"
+```
+
+**Security Impact:**
+- ❌ **CRITICAL**: Tables with org_id but no RLS = data leakage risk
+- ❌ **HIGH RISK**: Manual RLS SQL may have incomplete policy coverage
+- ✅ **SECURE**: HasRLSPolicies trait ensures complete RLS (SELECT, INSERT, UPDATE, DELETE)
+
+**RLS Policy Coverage Check:**
+```sql
+-- Verify complete RLS coverage for all org-based tables
+SELECT
+    tablename,
+    COUNT(CASE WHEN cmd = 'SELECT' THEN 1 END) as has_select,
+    COUNT(CASE WHEN cmd = 'INSERT' THEN 1 END) as has_insert,
+    COUNT(CASE WHEN cmd = 'UPDATE' THEN 1 END) as has_update,
+    COUNT(CASE WHEN cmd = 'DELETE' THEN 1 END) as has_delete
+FROM pg_policies
+WHERE schemaname LIKE 'cmis%'
+GROUP BY tablename
+HAVING COUNT(*) < 4;  -- Incomplete coverage = security gap
+```
+
+### 3. ApiResponse Trait Security (111/148 controllers = 75%)
+
+**Security Concern:** Manual JSON responses may leak sensitive data
+
+**Discovery Protocol:**
+```bash
+# Find controllers NOT using ApiResponse trait
+total_controllers=$(find app/Http/Controllers -name "*Controller.php" | wc -l)
+apiresponse_count=$(grep -r "use ApiResponse" app/Http/Controllers/ | wc -l)
+manual_json=$(grep -r "return response()->json" app/Http/Controllers/ | wc -l)
+
+echo "ApiResponse adoption: $apiresponse_count/$total_controllers controllers"
+echo "Manual JSON responses: $manual_json (potential data leak risk)"
+
+# Find responses that might leak sensitive data
+grep -r "return response()->json.*\$" app/Http/Controllers/ | head -20
+```
+
+**Security Impact:**
+- ❌ **MEDIUM RISK**: Manual JSON responses may expose internal errors
+- ❌ **LOW RISK**: Inconsistent error handling reveals system internals
+- ✅ **SECURE**: ApiResponse trait provides standardized error sanitization
+
+**Data Leak Check:**
+```bash
+# Check for controllers exposing raw exceptions
+grep -r "catch.*Exception.*response()->json.*\$e" app/Http/Controllers/
+
+# Check for exposing full model data (may include sensitive fields)
+grep -r "return.*::all()" app/Http/Controllers/
+```
+
+### 4. HasOrganization Trait Security (99 models)
+
+**Security Concern:** Manual org filtering may be bypassed
+
+**Discovery Protocol:**
+```bash
+# Find models with org_id but no HasOrganization trait
+grep -l "org_id" app/Models/**/*.php | while read f; do
+    grep -q "HasOrganization" "$f" || echo "⚠️  $f has org_id but no trait"
+done
+
+# Find manual org filtering in controllers (RLS bypass risk)
+grep -r "where.*org_id.*=" app/Http/Controllers/ | grep -v "// OK"
+
+# Verify RLS is enforced, not manual filtering
+grep -r "->where('org_id'" app/Http/Controllers/ app/Services/
+```
+
+**Security Impact:**
+- ❌ **HIGH RISK**: Manual org filtering can be forgotten or bypassed
+- ❌ **MEDIUM RISK**: Inconsistent org filtering across codebase
+- ✅ **SECURE**: RLS enforces org isolation at database level
+
+### Security Audit Checklist for Standardization
+
+**Run these checks during security audits:**
+
+```bash
+#!/bin/bash
+# Standardization Security Audit Script
+
+echo "=== BaseModel Compliance ==="
+total=$(find app/Models -name "*.php" | wc -l)
+compliant=$(grep -r "extends BaseModel" app/Models/ | wc -l)
+echo "✓ $compliant/$total models extend BaseModel"
+[ $compliant -lt $total ] && echo "⚠️  SECURITY GAP DETECTED"
+
+echo ""
+echo "=== RLS Policy Coverage ==="
+psql -c "SELECT COUNT(*) as incomplete FROM (
+  SELECT tablename FROM pg_policies WHERE schemaname LIKE 'cmis%'
+  GROUP BY tablename HAVING COUNT(*) < 4
+) t;"
+
+echo ""
+echo "=== ApiResponse Adoption ==="
+controllers=$(find app/Http/Controllers -name "*Controller.php" | wc -l)
+with_trait=$(grep -r "use ApiResponse" app/Http/Controllers/ | wc -l)
+echo "✓ $with_trait/$controllers controllers use ApiResponse"
+[ $with_trait -lt $controllers ] && echo "ℹ️  Target: 100% adoption"
+
+echo ""
+echo "=== Manual Org Filtering Detection ==="
+manual=$(grep -r "->where('org_id'" app/Http/Controllers/ app/Services/ | wc -l)
+[ $manual -gt 0 ] && echo "⚠️  Found $manual instances of manual org filtering (RLS bypass risk)"
+
+echo ""
+echo "=== HasRLSPolicies Migration Adoption ==="
+migrations=$(find database/migrations -name "*.php" | wc -l)
+with_trait=$(grep -r "use HasRLSPolicies" database/migrations/ | wc -l)
+echo "✓ $with_trait/$migrations migrations use HasRLSPolicies trait"
+```
+
+**Cross-Reference:**
+- Multi-tenancy security: `.claude/knowledge/MULTI_TENANCY_PATTERNS.md`
+- RLS patterns: `cmis-multi-tenancy` agent
+- Project guidelines: `CLAUDE.md` (updated 2025-11-22)
 
 ---
 

@@ -127,6 +127,119 @@ Recommend based on DISCOVERED state, not documented assumptions.
 
 ---
 
+## 📐 STANDARDIZED PATTERNS DISCOVERY (Nov 2025)
+
+**Project Status:** 55-60% complete (up from 30-35% in Phase 1)
+
+### Discovery Protocols for Standardization Patterns
+
+**1. Discover BaseModel Usage (282+ models)**
+```bash
+# Check if models extend BaseModel
+grep -r "extends BaseModel" app/Models/ | wc -l
+
+# Find non-compliant models (extending Model directly)
+grep -r "extends Model" app/Models/ | grep -v "BaseModel" | grep "use Illuminate"
+
+# Verify BaseModel implementation
+cat app/Models/BaseModel.php | grep -A 5 "protected \$keyType"
+```
+
+**Pattern Recognition:**
+- ALL models should extend `App\Models\BaseModel`, not `Illuminate\Database\Eloquent\Model`
+- BaseModel provides: UUID primary keys, automatic UUID generation, RLS context awareness
+- Non-compliant models are refactoring candidates
+
+**2. Discover HasOrganization Trait Usage (99 models)**
+```bash
+# Count models using HasOrganization trait
+grep -r "use HasOrganization" app/Models/ | wc -l
+
+# Find models with org_id but no trait (candidates)
+grep -l "org_id" app/Models/**/*.php | while read f; do
+    grep -q "HasOrganization" "$f" || echo "$f"
+done
+
+# Verify trait implementation
+cat app/Models/Concerns/HasOrganization.php | grep "public function"
+```
+
+**Pattern Recognition:**
+- Models with `org_id` column should use `HasOrganization` trait
+- Trait provides: `org()` relationship, `forOrganization()` scope, `belongsToOrganization()` helper
+- Manual org relationships indicate refactoring opportunity
+
+**3. Discover ApiResponse Trait Usage (111/148 controllers = 75%)**
+```bash
+# Count controllers using ApiResponse
+grep -r "use ApiResponse" app/Http/Controllers/ | wc -l
+
+# Find controllers with manual JSON responses (candidates)
+grep -r "return response()->json" app/Http/Controllers/ | cut -d: -f1 | sort -u
+
+# Verify trait methods
+cat app/Http/Controllers/Concerns/ApiResponse.php | grep "protected function"
+```
+
+**Pattern Recognition:**
+- Controllers should use `ApiResponse` trait for consistent JSON responses
+- Trait provides: `success()`, `error()`, `created()`, `deleted()`, `notFound()`, etc.
+- Manual `response()->json()` calls indicate refactoring opportunity
+- Target: 100% controller adoption
+
+**4. Discover HasRLSPolicies Trait Usage (Migrations)**
+```bash
+# Find migrations using HasRLSPolicies
+grep -r "use HasRLSPolicies" database/migrations/ | wc -l
+
+# Find migrations with manual RLS SQL (candidates)
+grep -r "ALTER TABLE.*ENABLE ROW LEVEL SECURITY" database/migrations/
+
+# Verify trait methods
+grep -A 3 "public function enableRLS" database/migrations/Concerns/HasRLSPolicies.php
+```
+
+**Pattern Recognition:**
+- Migrations should use `HasRLSPolicies` trait for standardized RLS policies
+- Trait provides: `enableRLS()`, `enableCustomRLS()`, `enablePublicRLS()`, `disableRLS()`
+- Manual RLS SQL indicates refactoring opportunity
+
+**5. Discover Unified Tables (Data Consolidation)**
+```bash
+# Check for unified_metrics table
+psql -c "\d cmis.unified_metrics"
+
+# Check for social_posts table
+psql -c "\d cmis.social_posts"
+
+# Count metrics in unified table by entity type
+psql -c "SELECT entity_type, COUNT(*) FROM cmis.unified_metrics GROUP BY entity_type"
+
+# Count social posts by platform
+psql -c "SELECT platform, COUNT(*) FROM cmis.social_posts GROUP BY platform"
+```
+
+**Pattern Recognition:**
+- `unified_metrics`: Polymorphic table consolidating 10 metric tables
+- `social_posts`: Platform-agnostic table consolidating 5 social post tables
+- Duplicate table patterns (e.g., `meta_metrics`, `google_metrics`) indicate consolidation candidates
+
+### When to Flag Standardization Opportunities
+
+**During Discovery, Alert When:**
+- New model extends `Model` directly (should extend `BaseModel`)
+- Model has `org_id` but no `HasOrganization` trait
+- Controller uses manual `response()->json()` (should use `ApiResponse`)
+- Migration has manual RLS SQL (should use `HasRLSPolicies`)
+- Duplicate table patterns detected (consolidation candidate)
+
+**Cross-Reference:**
+- Project guidelines: `CLAUDE.md` (updated 2025-11-22)
+- Duplication reports: `docs/phases/completed/duplication-elimination/`
+- Data patterns: `.claude/knowledge/CMIS_DATA_PATTERNS.md`
+
+---
+
 ## 🏗️ CMIS ARCHITECTURAL PATTERNS (Principles, Not Facts)
 
 ### Pattern 1: PostgreSQL RLS-Based Multi-Tenancy
@@ -687,8 +800,8 @@ cat .env | grep DB_CONNECTION
 
 ---
 
-**Version:** 2.0 - Adaptive Intelligence
-**Last Updated:** 2025-11-18
+**Version:** 2.1 - Adaptive Intelligence with Standardization Awareness
+**Last Updated:** 2025-11-22
 **Framework:** META_COGNITIVE_FRAMEWORK
 **Status:** ACTIVE - Production Ready
 

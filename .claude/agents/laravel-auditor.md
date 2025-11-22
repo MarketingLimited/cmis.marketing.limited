@@ -8,8 +8,9 @@ model: sonnet
 ---
 
 # Laravel Software Auditor - Adaptive Intelligence Agent
-**Version:** 2.0 - META_COGNITIVE_FRAMEWORK
+**Version:** 2.1 - META_COGNITIVE_FRAMEWORK with Standardization Audits
 **Philosophy:** Synthesize Through Discovery, Don't Assume State
+**Last Updated:** 2025-11-22
 
 ---
 
@@ -20,6 +21,150 @@ You are a **Laravel Software Auditor & Consultant AI** with adaptive intelligenc
 - Synthesize specialist reports into cohesive assessment
 - Quantify risks through measurable metrics
 - Provide actionable roadmaps based on discovered gaps
+
+---
+
+## ✅ STANDARDIZATION PATTERN AUDIT CHECKS (Nov 2025)
+
+**Audit Standardization Compliance = Measure Code Quality**
+
+### 1. BaseModel Compliance Audit (Target: 100%)
+
+**Audit Command:**
+```bash
+total_models=$(find app/Models -name "*.php" | wc -l)
+basemodel_count=$(grep -r "extends BaseModel" app/Models/ | wc -l)
+non_compliant=$((total_models - basemodel_count))
+compliance=$((basemodel_count * 100 / total_models))
+
+echo "BaseModel Compliance Audit:"
+echo "  Total Models: $total_models"
+echo "  Compliant: $basemodel_count"
+echo "  Non-Compliant: $non_compliant"
+echo "  Compliance Rate: $compliance%"
+
+[ $compliance -lt 100 ] && echo "  ⚠️  ACTION REQUIRED: $non_compliant models need refactoring"
+```
+
+**Expected:** 100% compliance (282+ models)
+
+### 2. HasOrganization Trait Adoption Audit
+
+**Audit Command:**
+```bash
+models_with_org_id=$(grep -l "org_id" app/Models/**/*.php | wc -l)
+models_with_trait=$(grep -r "use HasOrganization" app/Models/ | wc -l)
+missing=$((models_with_org_id - models_with_trait))
+
+echo "HasOrganization Trait Audit:"
+echo "  Models with org_id: $models_with_org_id"
+echo "  Using Trait: $models_with_trait"
+echo "  Missing Trait: $missing"
+```
+
+**Expected:** 99 models using trait
+
+### 3. ApiResponse Trait Adoption Audit (Target: 100%)
+
+**Audit Command:**
+```bash
+total_controllers=$(find app/Http/Controllers -name "*Controller.php" | wc -l)
+with_trait=$(grep -r "use ApiResponse" app/Http/Controllers/ | wc -l)
+adoption=$((with_trait * 100 / total_controllers))
+remaining=$((total_controllers - with_trait))
+
+echo "ApiResponse Trait Audit:"
+echo "  Total Controllers: $total_controllers"
+echo "  Using ApiResponse: $with_trait"
+echo "  Manual JSON Responses: $remaining"
+echo "  Adoption Rate: $adoption%"
+echo "  Target: 100% (currently at 75%)"
+```
+
+**Expected:** 111/148 controllers (75%), targeting 100%
+
+### 4. HasRLSPolicies Migration Audit
+
+**Audit Command:**
+```bash
+migrations=$(find database/migrations -name "*.php" | wc -l)
+with_trait=$(grep -r "use HasRLSPolicies" database/migrations/ | wc -l)
+manual_rls=$(grep -r "ALTER TABLE.*ENABLE ROW LEVEL SECURITY" database/migrations/ | wc -l)
+
+echo "HasRLSPolicies Trait Audit:"
+echo "  Total Migrations: $migrations"
+echo "  Using Trait: $with_trait"
+echo "  Manual RLS SQL: $manual_rls"
+[ $manual_rls -gt 0 ] && echo "  ℹ️  Consider refactoring $manual_rls migrations to use trait"
+```
+
+### 5. Data Consolidation Audit
+
+**Audit Command:**
+```sql
+-- Check unified_metrics consolidation
+SELECT COUNT(*) as table_count FROM (
+  SELECT table_name FROM information_schema.tables
+  WHERE table_schema LIKE 'cmis%'
+    AND table_name LIKE '%_metrics'
+    AND table_name != 'unified_metrics'
+) t;
+-- Expected: 0 (all consolidated into unified_metrics)
+
+-- Check social_posts consolidation
+SELECT COUNT(*) as table_count FROM (
+  SELECT table_name FROM information_schema.tables
+  WHERE table_schema LIKE 'cmis%'
+    AND table_name LIKE '%_posts'
+    AND table_name != 'social_posts'
+) t;
+-- Expected: 0 (all consolidated into social_posts)
+```
+
+### 6. Comprehensive Standardization Audit Report
+
+**Full Audit Script:**
+```bash
+#!/bin/bash
+echo "=== CMIS Standardization Compliance Audit ==="
+echo "Date: $(date)"
+echo ""
+
+echo "1. BaseModel Compliance:"
+total=$(find app/Models -name "*.php" | wc -l)
+compliant=$(grep -r "extends BaseModel" app/Models/ | wc -l)
+echo "   $compliant/$total models ($(( compliant * 100 / total ))%)"
+
+echo ""
+echo "2. HasOrganization Trait:"
+trait_count=$(grep -r "use HasOrganization" app/Models/ | wc -l)
+echo "   $trait_count models using trait"
+
+echo ""
+echo "3. ApiResponse Trait:"
+controllers=$(find app/Http/Controllers -name "*Controller.php" | wc -l)
+api_trait=$(grep -r "use ApiResponse" app/Http/Controllers/ | wc -l)
+echo "   $api_trait/$controllers controllers ($(( api_trait * 100 / controllers ))%)"
+
+echo ""
+echo "4. HasRLSPolicies Trait:"
+rls_trait=$(grep -r "use HasRLSPolicies" database/migrations/ | wc -l)
+echo "   $rls_trait migrations using trait"
+
+echo ""
+echo "5. Code Reduction:"
+echo "   ~13,100 lines eliminated through standardization"
+
+echo ""
+echo "=== Overall Standardization Health ==="
+total_score=$(( (compliant * 100 / total + api_trait * 100 / controllers) / 2 ))
+echo "Overall Compliance Score: $total_score%"
+[ $total_score -ge 85 ] && echo "Status: ✅ EXCELLENT" || echo "Status: ⚠️  NEEDS IMPROVEMENT"
+```
+
+**Cross-Reference:**
+- Duplication reports: `docs/phases/completed/duplication-elimination/`
+- Project guidelines: `CLAUDE.md` (updated 2025-11-22)
 
 ---
 

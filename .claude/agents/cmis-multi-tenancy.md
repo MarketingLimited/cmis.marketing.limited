@@ -170,9 +170,71 @@ auth:sanctum → validate.org.access → set.db.context → controller
 
 ## 🏗️ CMIS RLS PATTERNS
 
-### Pattern 1: Standard RLS Policy Template
+### Pattern 1: HasRLSPolicies Trait (PREFERRED - Nov 2025)
 
-**When you discover a table needs RLS:**
+**✅ MODERN APPROACH: Use HasRLSPolicies trait in migrations**
+
+```php
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+use Database\Migrations\Concerns\HasRLSPolicies;
+
+class CreateTableName extends Migration
+{
+    use HasRLSPolicies;
+
+    public function up()
+    {
+        // 1. Create table
+        Schema::create('cmis.table_name', function (Blueprint $table) {
+            $table->uuid('id')->primary();
+            $table->uuid('org_id');
+            $table->timestamps();
+
+            $table->foreign('org_id')->references('id')->on('cmis.organizations');
+        });
+
+        // 2. Enable RLS with single line (replaces 20+ lines of manual SQL)
+        $this->enableRLS('cmis.table_name');
+    }
+
+    public function down()
+    {
+        $this->disableRLS('cmis.table_name');
+        Schema::dropIfExists('cmis.table_name');
+    }
+}
+```
+
+**Discovery Protocol for HasRLSPolicies:**
+```bash
+# Check how many migrations use HasRLSPolicies
+grep -r "use HasRLSPolicies" database/migrations/ | wc -l
+
+# Find migrations with manual RLS SQL (refactoring candidates)
+grep -r "ALTER TABLE.*ENABLE ROW LEVEL SECURITY" database/migrations/ | cut -d: -f1
+
+# Verify trait implementation
+cat database/migrations/Concerns/HasRLSPolicies.php | grep "public function"
+```
+
+**Trait Methods Available:**
+- `enableRLS($tableName)` - Standard org_id-based RLS (4 policies: SELECT, INSERT, UPDATE, DELETE)
+- `enableCustomRLS($tableName, $expression)` - Custom RLS expression
+- `enablePublicRLS($tableName)` - For shared/public tables (no org filtering)
+- `disableRLS($tableName)` - Remove all RLS policies and disable RLS
+
+**When to Use Each:**
+- **Standard org isolation** → `enableRLS('cmis.campaigns')`
+- **Custom filtering** → `enableCustomRLS('cmis.table', 'user_id = cmis.get_current_user_id()')`
+- **Public shared data** → `enablePublicRLS('cmis.channels')`
+
+### Pattern 2: Manual RLS SQL (LEGACY - Refactor to HasRLSPolicies)
+
+**❌ OLD APPROACH: Manual SQL in migrations (DO NOT USE for new tables)**
 
 ```sql
 -- Enable RLS
@@ -200,7 +262,9 @@ FOR DELETE
 USING (org_id = cmis.get_current_org_id());
 ```
 
-### Pattern 2: Permission-Based RLS
+**⚠️ This approach is deprecated. Use HasRLSPolicies trait instead.**
+
+### Pattern 3: Permission-Based RLS
 
 **For tables requiring granular permissions:**
 
@@ -218,7 +282,7 @@ USING (
 );
 ```
 
-### Pattern 3: Middleware Context Setting
+### Pattern 4: Middleware Context Setting
 
 **Discover and explain middleware pattern:**
 
@@ -390,8 +454,8 @@ cat routes/api.php | grep middleware | grep -E "set.db.context|SetDatabaseContex
 
 ---
 
-**Version:** 2.0 - Adaptive RLS Intelligence
-**Last Updated:** 2025-11-18
+**Version:** 2.1 - Adaptive RLS Intelligence with HasRLSPolicies Awareness
+**Last Updated:** 2025-11-22
 **Framework:** META_COGNITIVE_FRAMEWORK
 **Specialty:** Database-Level Multi-Tenancy via PostgreSQL RLS
 

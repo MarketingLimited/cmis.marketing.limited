@@ -153,6 +153,244 @@ grep -roh '"[^"]*"' app/ | sort | uniq -c | sort -nr | head -20
 
 ---
 
+## 🆕 TRAIT ADOPTION QUALITY METRICS (Updated 2025-11-22)
+
+**CMIS Standardization Initiative:** Measure code quality through trait adoption patterns.
+
+### Quality Indicators Based on Trait Usage
+
+#### 1. BaseModel Adoption (Target: 100%)
+
+**What to measure:**
+- Models extending `BaseModel` vs `Model` directly
+- Proper UUID setup via BaseModel
+- No duplicate boot() methods
+
+**Discovery commands:**
+```bash
+# Find total models
+total_models=$(find app/Models -name "*.php" | wc -l)
+
+# Find models extending Model directly (code smell)
+direct_model=$(grep -r "extends Model" app/Models/ | grep -v "BaseModel\|/Concerns/" | wc -l)
+
+# Find models extending BaseModel (good)
+base_model=$(grep -r "extends BaseModel" app/Models/ | wc -l)
+
+# Calculate adoption rate
+echo "BaseModel adoption: $base_model / $total_models = $(($base_model * 100 / $total_models))%"
+
+# List offending files
+echo "Models NOT using BaseModel:"
+grep -r "extends Model" app/Models/ | grep -v "BaseModel\|/Concerns/" | cut -d: -f1
+```
+
+**Quality assessment:**
+- ✅ **Excellent:** 95-100% adoption
+- ⚠️ **Warning:** 80-94% adoption
+- ❌ **Poor:** <80% adoption
+
+**Code smells to detect:**
+```bash
+# Find duplicate UUID generation (should be in BaseModel)
+grep -r "boot()" app/Models/ | wc -l
+grep -r "Str::uuid()" app/Models/ | grep -v BaseModel
+
+# Find manual primary key setup (should be in BaseModel)
+grep -r "incrementing.*=.*false" app/Models/ | wc -l
+grep -r "keyType.*=.*'string'" app/Models/ | wc -l
+```
+
+---
+
+#### 2. ApiResponse Adoption (Target: 100% of API controllers)
+
+**What to measure:**
+- API controllers using `ApiResponse` trait
+- Manual response()->json() usage (code smell)
+- Consistent response formats
+
+**Discovery commands:**
+```bash
+# Find total API controllers
+total_controllers=$(find app/Http/Controllers/API -name "*Controller.php" 2>/dev/null | wc -l)
+
+# Find controllers using ApiResponse trait
+with_trait=$(grep -r "use ApiResponse" app/Http/Controllers/API/ 2>/dev/null | wc -l)
+
+# Calculate adoption rate
+echo "ApiResponse adoption: $with_trait / $total_controllers = $(($with_trait * 100 / $total_controllers))%"
+
+# Find manual JSON responses (code smell)
+echo "Controllers with manual JSON responses:"
+grep -r "response()->json\|response\(\)->json" app/Http/Controllers/API/ 2>/dev/null | cut -d: -f1 | sort | uniq
+
+# Find inconsistent response patterns
+grep -r "return \['success'\|return \['error'\|return \['data'" app/Http/Controllers/API/ | wc -l
+```
+
+**Quality assessment:**
+- ✅ **Excellent:** 95-100% adoption (current: 75%)
+- ⚠️ **Warning:** 75-94% adoption
+- ❌ **Poor:** <75% adoption
+
+**Code smells to detect:**
+```bash
+# Inconsistent response structures
+grep -r "response()->json" app/Http/Controllers/API/ | head -10
+
+# Missing HTTP status codes
+grep -r "response()->json" app/Http/Controllers/API/ | grep -v ", 2[0-9][0-9])"
+
+# Duplicate response formatting logic
+grep -A 3 "return.*json" app/Http/Controllers/API/ | grep -E "success|message|data" | wc -l
+```
+
+---
+
+#### 3. HasOrganization Adoption (Target: 100% of org-scoped models)
+
+**What to measure:**
+- Models with `org_id` using `HasOrganization` trait
+- Manual org() relationships (duplication)
+- Inconsistent organization scoping
+
+**Discovery commands:**
+```bash
+# Find models with org_id column
+models_with_org=$(grep -r "org_id" app/Models/ | grep protected | cut -d: -f1 | sort | uniq | wc -l)
+
+# Find models using HasOrganization trait
+with_trait=$(grep -r "use HasOrganization" app/Models/ | wc -l)
+
+# Calculate adoption rate
+echo "HasOrganization adoption: $with_trait / $models_with_org"
+
+# Find manual org() relationships (duplication)
+echo "Models with manual org() methods:"
+grep -A 5 "function org()" app/Models/ | grep -B 5 "belongsTo.*Organization" | grep "^app"
+
+# Find duplicate org relationship code
+grep -r "belongsTo.*Organization" app/Models/ | grep -v "use HasOrganization" | wc -l
+```
+
+**Quality assessment:**
+- ✅ **Excellent:** 95-100% adoption (current: 99/99 models)
+- ⚠️ **Warning:** 80-94% adoption
+- ❌ **Poor:** <80% adoption
+
+**Code smells to detect:**
+```bash
+# Duplicate org() relationship methods
+find app/Models -name "*.php" -exec grep -l "function org()" {} \; | \
+  xargs grep -L "use HasOrganization"
+
+# Manual scopeForOrganization methods
+grep -r "scopeForOrganization" app/Models/ | grep -v "HasOrganization.php"
+```
+
+---
+
+#### 4. HasRLSPolicies Adoption in Migrations (Target: 100%)
+
+**What to measure:**
+- Migrations using `HasRLSPolicies` trait
+- Manual RLS SQL (code smell)
+- Consistent RLS policy patterns
+
+**Discovery commands:**
+```bash
+# Find migrations creating tables
+total_migrations=$(grep -r "Schema::create" database/migrations/ | wc -l)
+
+# Find migrations using HasRLSPolicies
+with_trait=$(grep -r "use HasRLSPolicies" database/migrations/ | wc -l)
+
+# Calculate adoption rate
+echo "HasRLSPolicies adoption: $with_trait / $total_migrations"
+
+# Find manual RLS SQL (code smell)
+echo "Migrations with manual RLS SQL:"
+grep -r "CREATE POLICY\|ALTER TABLE.*ENABLE ROW" database/migrations/ | cut -d: -f1 | sort | uniq
+
+# Count manual RLS statements
+manual_rls=$(grep -r "CREATE POLICY\|ENABLE ROW LEVEL SECURITY" database/migrations/ | wc -l)
+echo "Manual RLS statements found: $manual_rls (should be 0)"
+```
+
+**Quality assessment:**
+- ✅ **Excellent:** 100% adoption (all new migrations)
+- ⚠️ **Warning:** Old migrations not yet refactored
+- ❌ **Poor:** New migrations not using trait
+
+**Code smells to detect:**
+```bash
+# Duplicate RLS SQL patterns
+grep -A 10 "CREATE POLICY" database/migrations/ | grep "org_id = current_setting" | wc -l
+
+# Missing down() RLS cleanup
+grep -r "enableRLS\|CREATE POLICY" database/migrations/ | cut -d: -f1 | \
+  xargs grep -L "disableRLS\|DROP POLICY"
+```
+
+---
+
+### Quality Report Section Template
+
+Add this to quality reports:
+
+```markdown
+## Trait Adoption Metrics
+
+### BaseModel Adoption
+- **Total models:** [count]
+- **Using BaseModel:** [count] ([percentage]%)
+- **Using Model directly:** [count] ❌
+- **Assessment:** [Excellent/Warning/Poor]
+
+**Issues found:**
+- [ ] `app/Models/Legacy/OldModel.php` - extends Model directly
+- [ ] Duplicate boot() methods: [count] files
+- [ ] Manual UUID generation: [count] files
+
+### ApiResponse Adoption
+- **Total API controllers:** [count]
+- **Using ApiResponse:** [count] ([percentage]%)
+- **Manual JSON responses:** [count] ❌
+- **Assessment:** [Excellent/Warning/Poor]
+
+**Issues found:**
+- [ ] `app/Http/Controllers/API/LegacyController.php` - no trait
+- [ ] Inconsistent response formats: [count] files
+- [ ] Missing HTTP status codes: [count] responses
+
+### HasOrganization Adoption
+- **Models with org_id:** [count]
+- **Using HasOrganization:** [count] ([percentage]%)
+- **Manual org() methods:** [count] ❌
+- **Assessment:** [Excellent/Warning/Poor]
+
+### HasRLSPolicies Adoption
+- **Total table migrations:** [count]
+- **Using HasRLSPolicies:** [count] ([percentage]%)
+- **Manual RLS SQL:** [count] ❌
+- **Assessment:** [Excellent/Warning/Poor]
+
+### Recommendations
+
+**High Priority:**
+1. Refactor [count] models to extend BaseModel
+2. Add ApiResponse trait to [count] API controllers
+3. Apply HasOrganization to [count] models with org_id
+
+**Medium Priority:**
+1. Refactor old migrations to use HasRLSPolicies (optional)
+2. Remove duplicate boot() methods: [count] files
+3. Standardize response formats: [count] controllers
+```
+
+---
+
 ## 🔬 STATIC ANALYSIS DISCOVERY
 
 ### Quality Tool Configuration Check
@@ -771,6 +1009,7 @@ docs/
 
 **Remember:** You're not judging code—you're measuring quality through metrics, discovering patterns through analysis, and prioritizing improvements through evidence.
 
-**Version:** 2.0 - Adaptive Intelligence Quality Engineer
+**Version:** 2.1 - Adaptive Intelligence Quality Engineer with Trait Metrics
+**Last Updated:** 2025-11-22
 **Framework:** META_COGNITIVE_FRAMEWORK
 **Approach:** Measure → Analyze → Prioritize → Refactor
