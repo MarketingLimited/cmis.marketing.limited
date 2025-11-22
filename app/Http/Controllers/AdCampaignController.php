@@ -77,31 +77,20 @@ class AdCampaignController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors());
         }
 
         try {
             $result = $this->campaignService->createCampaign($request->all());
 
             if (!$result['success']) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Failed to create campaign',
-                    'error' => $result['error']
-                ], 500);
+                return $this->serverError($result['error'] ?? 'Failed to create campaign');
             }
 
-            return response()->json($result, 201);
+            return $this->created($result, 'Campaign created successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to create campaign',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to create campaign: ' . $e->getMessage());
         }
     }
 
@@ -122,21 +111,13 @@ class AdCampaignController extends Controller
             $result = $this->campaignService->getCampaign($campaignId, $includeMetrics);
 
             if (!$result['success']) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Campaign not found',
-                    'error' => $result['error']
-                ], 404);
+                return $this->notFound($result['error'] ?? 'Campaign not found');
             }
 
-            return response()->json($result);
+            return $this->success($result, 'Campaign retrieved successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to get campaign',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to get campaign: ' . $e->getMessage());
         }
     }
 
@@ -165,23 +146,16 @@ class AdCampaignController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors());
         }
 
         try {
             $result = $this->campaignService->listCampaigns($request->all());
 
-            return response()->json($result);
+            return $this->success($result, 'Campaigns retrieved successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to list campaigns',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to list campaigns: ' . $e->getMessage());
         }
     }
 
@@ -215,31 +189,20 @@ class AdCampaignController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors());
         }
 
         try {
             $result = $this->campaignService->updateCampaign($campaignId, $request->all());
 
             if (!$result['success']) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Failed to update campaign',
-                    'error' => $result['error']
-                ], 500);
+                return $this->serverError($result['error'] ?? 'Failed to update campaign');
             }
 
-            return response()->json($result);
+            return $this->success($result, 'Campaign updated successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to update campaign',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to update campaign: ' . $e->getMessage());
         }
     }
 
@@ -265,31 +228,20 @@ class AdCampaignController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors());
         }
 
         try {
             $result = $this->campaignService->updateCampaignStatus($campaignId, $request->input('status'));
 
             if (!$result['success']) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Failed to update campaign status',
-                    'error' => $result['error']
-                ], 500);
+                return $this->serverError($result['error'] ?? 'Failed to update campaign status');
             }
 
-            return response()->json($result);
+            return $this->success($result, 'Campaign status updated successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to update campaign status',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to update campaign status: ' . $e->getMessage());
         }
     }
 
@@ -319,31 +271,20 @@ class AdCampaignController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors());
         }
 
         try {
             $result = $this->campaignService->duplicateCampaign($campaignId, $request->all());
 
             if (!$result['success']) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Failed to duplicate campaign',
-                    'error' => $result['error']
-                ], 500);
+                return $this->serverError($result['error'] ?? 'Failed to duplicate campaign');
             }
 
-            return response()->json($result, 201);
+            return $this->created($result, 'Campaign duplicated successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to duplicate campaign',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to duplicate campaign: ' . $e->getMessage());
         }
     }
 
@@ -364,20 +305,13 @@ class AdCampaignController extends Controller
             $success = $this->campaignService->deleteCampaign($campaignId, $permanent);
 
             if ($success) {
-                return response()->json([
-                    'success' => true,
-                    'message' => 'Campaign deleted successfully'
-                ]);
+                return $this->deleted('Campaign deleted successfully');
             }
 
-            return $this->error('Failed to delete campaign', 500);
+            return $this->serverError('Failed to delete campaign');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to delete campaign',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to delete campaign: ' . $e->getMessage());
         }
     }
 
@@ -405,10 +339,7 @@ class AdCampaignController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors());
         }
 
         try {
@@ -417,14 +348,10 @@ class AdCampaignController extends Controller
                 $request->input('status')
             );
 
-            return response()->json($result);
+            return $this->success($result, 'Campaign statuses updated successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to bulk update campaign statuses',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to bulk update campaign statuses: ' . $e->getMessage());
         }
     }
 
@@ -444,7 +371,7 @@ class AdCampaignController extends Controller
             $result = $this->campaignService->listCampaigns($filters);
 
             if (!$result['success']) {
-                return response()->json($result, 500);
+                return $this->serverError('Failed to retrieve campaigns for statistics');
             }
 
             $campaigns = collect($result['data']);
@@ -471,15 +398,10 @@ class AdCampaignController extends Controller
                 ]
             ];
 
-            return $this->success($statistics
-            );
+            return $this->success($statistics, 'Campaign statistics retrieved successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to get campaign statistics',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to get campaign statistics: ' . $e->getMessage());
         }
     }
 }

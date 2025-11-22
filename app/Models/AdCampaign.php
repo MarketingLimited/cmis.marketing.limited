@@ -15,11 +15,24 @@ class AdCampaign extends BaseModel
     protected $primaryKey = 'ad_campaign_id';
 
     protected $fillable = [
-        'ad_campaign_id', 'org_id', 'name', 'status'
+        'ad_campaign_id', 'org_id', 'campaign_id', 'name', 'status'
     ];
 
     protected $casts = [
+        'ad_campaign_id' => 'string',
+        'org_id' => 'string',
+        'campaign_id' => 'string',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
+
+    /**
+     * Get the parent campaign this ad campaign belongs to
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function campaign()
+    {
+        return $this->belongsTo(Campaign::class, 'campaign_id', 'campaign_id');
+    }
 }

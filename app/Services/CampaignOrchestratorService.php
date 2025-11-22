@@ -77,9 +77,10 @@ class CampaignOrchestratorService
                         continue;
                     }
 
-                    // Create ad campaign record
+                    // Create ad campaign record linked to parent campaign
                     $adCampaign = AdCampaign::create([
                         'org_id' => $orgId,
+                        'campaign_id' => $campaign->campaign_id,
                         'name' => $campaignData['name'] . " ({$platform})",
                         'status' => 'draft',
                     ]);
@@ -145,8 +146,11 @@ class CampaignOrchestratorService
         $results = [];
         $platformStatuses = [];
 
-        // Get all ad campaigns for this campaign
-        $adCampaigns = AdCampaign::where('org_id', $campaign->org_id)->get();
+        // Get all ad campaigns for this specific campaign
+        // Using both org_id (for RLS/multi-tenancy) and campaign_id (for specificity)
+        $adCampaigns = AdCampaign::where('org_id', $campaign->org_id)
+            ->where('campaign_id', $campaignId)
+            ->get();
 
         foreach ($adCampaigns as $adCampaign) {
             $platformStatuses[] = $adCampaign->status;
@@ -198,8 +202,11 @@ class CampaignOrchestratorService
             // Update main campaign status
             $campaign->update(['status' => 'paused']);
 
-            // Pause all associated ad campaigns
-            $adCampaigns = AdCampaign::where('org_id', $campaign->org_id)->get();
+            // Pause all associated ad campaigns for this specific campaign
+            // Using both org_id (for RLS/multi-tenancy) and campaign_id (for specificity)
+            $adCampaigns = AdCampaign::where('org_id', $campaign->org_id)
+                ->where('campaign_id', $campaignId)
+                ->get();
 
             foreach ($adCampaigns as $adCampaign) {
                 $adCampaign->update(['status' => 'paused']);
@@ -264,8 +271,10 @@ class CampaignOrchestratorService
             // Update main campaign status
             $campaign->update(['status' => 'active']);
 
-            // Resume all associated ad campaigns
+            // Resume all associated ad campaigns for this specific campaign
+            // Using both org_id (for RLS/multi-tenancy) and campaign_id (for specificity)
             $adCampaigns = AdCampaign::where('org_id', $campaign->org_id)
+                ->where('campaign_id', $campaignId)
                 ->where('status', 'paused')
                 ->get();
 
@@ -409,8 +418,10 @@ class CampaignOrchestratorService
 
             $campaign->update(['status' => 'active']);
 
-            // Activate associated ad campaigns
+            // Activate associated ad campaigns for this specific campaign
+            // Using both org_id (for RLS/multi-tenancy) and campaign_id (for specificity)
             AdCampaign::where('org_id', $campaign->org_id)
+                ->where('campaign_id', $campaignId)
                 ->update(['status' => 'active']);
 
             Log::info("Campaign activated", [
@@ -451,8 +462,10 @@ class CampaignOrchestratorService
                 'end_date' => now(),
             ]);
 
-            // Complete associated ad campaigns
+            // Complete associated ad campaigns for this specific campaign
+            // Using both org_id (for RLS/multi-tenancy) and campaign_id (for specificity)
             AdCampaign::where('org_id', $campaign->org_id)
+                ->where('campaign_id', $campaignId)
                 ->update(['status' => 'completed']);
 
             Log::info("Campaign completed", [
