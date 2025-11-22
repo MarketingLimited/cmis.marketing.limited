@@ -9,7 +9,7 @@ use App\Models\Core\Org;
 use App\Models\Core\Role;
 use App\Models\Core\UserOrg;
 use App\Models\Campaign;
-use App\Models\Content\ContentPlan;
+use App\Models\Creative\ContentPlan;
 use App\Models\Creative\ContentItem;
 use App\Models\Core\Integration;
 use App\Models\Social\SocialAccount;

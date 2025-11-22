@@ -5,8 +5,8 @@ namespace Tests\Unit\Models\Content;
 use Tests\TestCase;
 use App\Models\Core\Org;
 use App\Models\Core\Campaign;
-use App\Models\Content\ContentPlan;
-use App\Models\Content\ContentPlanItem;
+use App\Models\Creative\ContentPlan;
+use App\Models\Creative\ContentPlanItem;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 

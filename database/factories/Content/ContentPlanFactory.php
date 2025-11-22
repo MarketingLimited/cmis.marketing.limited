@@ -2,7 +2,7 @@
 
 namespace Database\Factories\Content;
 
-use App\Models\Content\ContentPlan;
+use App\Models\Creative\ContentPlan;
 use App\Models\Core\Org;
 use App\Models\Campaign\Campaign;
 use Illuminate\Database\Eloquent\Factories\Factory;
