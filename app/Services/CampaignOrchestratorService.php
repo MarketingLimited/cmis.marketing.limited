@@ -145,6 +145,10 @@ class CampaignOrchestratorService
         $results = [];
         $platformStatuses = [];
 
+        // FIXME: Critical Bug - This query retrieves ALL ad campaigns for the organization,
+        // not just those related to this specific campaign. The AdCampaign model needs a
+        // campaign_id foreign key to properly link ad campaigns to their parent campaign.
+        // Current behavior: Syncing one campaign affects the status of ALL campaigns in the org.
         // Get all ad campaigns for this campaign
         $adCampaigns = AdCampaign::where('org_id', $campaign->org_id)->get();
 
@@ -198,6 +202,8 @@ class CampaignOrchestratorService
             // Update main campaign status
             $campaign->update(['status' => 'paused']);
 
+            // FIXME: Critical Bug - This pauses ALL ad campaigns in the organization,
+            // not just those related to this specific campaign. Need campaign_id foreign key.
             // Pause all associated ad campaigns
             $adCampaigns = AdCampaign::where('org_id', $campaign->org_id)->get();
 
@@ -264,6 +270,8 @@ class CampaignOrchestratorService
             // Update main campaign status
             $campaign->update(['status' => 'active']);
 
+            // FIXME: Critical Bug - This resumes ALL paused ad campaigns in the organization,
+            // not just those related to this specific campaign. Need campaign_id foreign key.
             // Resume all associated ad campaigns
             $adCampaigns = AdCampaign::where('org_id', $campaign->org_id)
                 ->where('status', 'paused')
@@ -409,6 +417,8 @@ class CampaignOrchestratorService
 
             $campaign->update(['status' => 'active']);
 
+            // FIXME: Critical Bug - This activates ALL ad campaigns in the organization,
+            // not just those related to this specific campaign. Need campaign_id foreign key.
             // Activate associated ad campaigns
             AdCampaign::where('org_id', $campaign->org_id)
                 ->update(['status' => 'active']);
@@ -451,6 +461,8 @@ class CampaignOrchestratorService
                 'end_date' => now(),
             ]);
 
+            // FIXME: Critical Bug - This completes ALL ad campaigns in the organization,
+            // not just those related to this specific campaign. Need campaign_id foreign key.
             // Complete associated ad campaigns
             AdCampaign::where('org_id', $campaign->org_id)
                 ->update(['status' => 'completed']);
