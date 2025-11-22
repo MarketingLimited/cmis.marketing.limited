@@ -50,23 +50,20 @@ class CampaignAnalyticsController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors());
         }
 
         try {
             $result = $this->analyticsService->getCampaignAnalytics($campaignId, $request->all());
 
-            return response()->json($result, $result['success'] ? 200 : 404);
+            if (!isset($result['success']) || !$result['success']) {
+                return $this->notFound('Campaign analytics not found');
+            }
+
+            return $this->success($result, 'Campaign analytics retrieved successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to get campaign analytics',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to get campaign analytics: ' . $e->getMessage());
         }
     }
 
@@ -96,10 +93,7 @@ class CampaignAnalyticsController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors());
         }
 
         try {
@@ -108,14 +102,10 @@ class CampaignAnalyticsController extends Controller
                 $request->only(['start_date', 'end_date'])
             );
 
-            return response()->json($result);
+            return $this->success($result, 'Campaigns compared successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to compare campaigns',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to compare campaigns: ' . $e->getMessage());
         }
     }
 
@@ -137,23 +127,20 @@ class CampaignAnalyticsController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors());
         }
 
         try {
             $result = $this->analyticsService->getFunnelAnalytics($campaignId, $request->all());
 
-            return response()->json($result, $result['success'] ? 200 : 404);
+            if (!isset($result['success']) || !$result['success']) {
+                return $this->notFound('Funnel analytics not found');
+            }
+
+            return $this->success($result, 'Funnel analytics retrieved successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to get funnel analytics',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to get funnel analytics: ' . $e->getMessage());
         }
     }
 
@@ -175,23 +162,20 @@ class CampaignAnalyticsController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors());
         }
 
         try {
             $result = $this->analyticsService->getAttributionAnalysis($campaignId, $request->all());
 
-            return response()->json($result, $result['success'] ? 200 : 404);
+            if (!isset($result['success']) || !$result['success']) {
+                return $this->notFound('Attribution analysis not found');
+            }
+
+            return $this->success($result, 'Attribution analysis retrieved successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to get attribution analysis',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to get attribution analysis: ' . $e->getMessage());
         }
     }
 
@@ -213,23 +197,20 @@ class CampaignAnalyticsController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors());
         }
 
         try {
             $result = $this->analyticsService->getAdSetBreakdown($campaignId, $request->all());
 
-            return response()->json($result, $result['success'] ? 200 : 404);
+            if (!isset($result['success']) || !$result['success']) {
+                return $this->notFound('Ad set breakdown not found');
+            }
+
+            return $this->success($result, 'Ad set breakdown retrieved successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to get ad set breakdown',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to get ad set breakdown: ' . $e->getMessage());
         }
     }
 
@@ -251,23 +232,20 @@ class CampaignAnalyticsController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors());
         }
 
         try {
             $result = $this->analyticsService->getCreativeBreakdown($campaignId, $request->all());
 
-            return response()->json($result, $result['success'] ? 200 : 404);
+            if (!isset($result['success']) || !$result['success']) {
+                return $this->notFound('Creative breakdown not found');
+            }
+
+            return $this->success($result, 'Creative breakdown retrieved successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to get creative breakdown',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to get creative breakdown: ' . $e->getMessage());
         }
     }
 }
