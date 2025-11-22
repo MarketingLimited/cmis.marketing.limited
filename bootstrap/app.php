@@ -39,6 +39,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             // Multi-Tenancy & Organization Context (Phase 1 - Consolidated)
             'org.context' => \App\Http\Middleware\SetOrganizationContext::class,
+            'resolve.active.org' => \App\Http\Middleware\ResolveActiveOrg::class, // NEW: Auto-resolve user's active org
 
             // Deprecated middleware (use 'org.context' instead)
             // These are kept for backward compatibility but will be removed in future
