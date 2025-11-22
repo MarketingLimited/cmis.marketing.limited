@@ -8,9 +8,12 @@ use App\Models\Platform\PlatformIntegration;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use App\Http\Controllers\Concerns\ApiResponse;
 
 class TwitterAdsController extends Controller
 {
+    use ApiResponse;
+
     private TwitterAdsService $twitterAdsService;
 
     public function __construct(TwitterAdsService $twitterAdsService)
@@ -44,10 +47,7 @@ class TwitterAdsController extends Controller
                 ->first();
 
             if (!$integration) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Twitter Ads integration not found'
-                ], 404);
+                return $this->error('Twitter Ads integration not found', 404);
             }
 
             $result = $this->twitterAdsService->fetchCampaigns(
@@ -103,10 +103,7 @@ class TwitterAdsController extends Controller
                 ->first();
 
             if (!$integration) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Twitter Ads integration not found'
-                ], 404);
+                return $this->error('Twitter Ads integration not found', 404);
             }
 
             $campaignData = [
@@ -165,10 +162,7 @@ class TwitterAdsController extends Controller
                 ->first();
 
             if (!$integration) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Twitter Ads integration not found'
-                ], 404);
+                return $this->error('Twitter Ads integration not found', 404);
             }
 
             $result = $this->twitterAdsService->getCampaignDetails(
@@ -219,10 +213,7 @@ class TwitterAdsController extends Controller
                 ->first();
 
             if (!$integration) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Twitter Ads integration not found'
-                ], 404);
+                return $this->error('Twitter Ads integration not found', 404);
             }
 
             $metrics = $this->twitterAdsService->getCampaignMetrics(
@@ -274,10 +265,7 @@ class TwitterAdsController extends Controller
                 ->first();
 
             if (!$integration) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Twitter Ads integration not found'
-                ], 404);
+                return $this->error('Twitter Ads integration not found', 404);
             }
 
             $this->twitterAdsService->clearCache($integration->platform_account_id);

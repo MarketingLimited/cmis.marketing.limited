@@ -8,9 +8,12 @@ use App\Models\Platform\PlatformIntegration;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use App\Http\Controllers\Concerns\ApiResponse;
 
 class TikTokAdsController extends Controller
 {
+    use ApiResponse;
+
     private TikTokAdsService $tiktokAdsService;
 
     public function __construct(TikTokAdsService $tiktokAdsService)
@@ -44,10 +47,7 @@ class TikTokAdsController extends Controller
                 ->first();
 
             if (!$integration) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'TikTok Ads integration not found'
-                ], 404);
+                return $this->error('TikTok Ads integration not found', 404);
             }
 
             $result = $this->tiktokAdsService->fetchCampaigns(
@@ -98,10 +98,7 @@ class TikTokAdsController extends Controller
                 ->first();
 
             if (!$integration) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'TikTok Ads integration not found'
-                ], 404);
+                return $this->error('TikTok Ads integration not found', 404);
             }
 
             $campaign = $this->tiktokAdsService->getCampaignDetails(
@@ -149,10 +146,7 @@ class TikTokAdsController extends Controller
                 ->first();
 
             if (!$integration) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'TikTok Ads integration not found'
-                ], 404);
+                return $this->error('TikTok Ads integration not found', 404);
             }
 
             $adGroups = $this->tiktokAdsService->fetchAdGroups(
@@ -199,10 +193,7 @@ class TikTokAdsController extends Controller
                 ->first();
 
             if (!$integration) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'TikTok Ads integration not found'
-                ], 404);
+                return $this->error('TikTok Ads integration not found', 404);
             }
 
             $ads = $this->tiktokAdsService->fetchAds(
@@ -254,10 +245,7 @@ class TikTokAdsController extends Controller
                 ->first();
 
             if (!$integration) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'TikTok Ads integration not found'
-                ], 404);
+                return $this->error('TikTok Ads integration not found', 404);
             }
 
             $campaignData = [
@@ -314,10 +302,7 @@ class TikTokAdsController extends Controller
                 ->first();
 
             if (!$integration) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'TikTok Ads integration not found'
-                ], 404);
+                return $this->error('TikTok Ads integration not found', 404);
             }
 
             $metrics = $this->tiktokAdsService->getCampaignMetrics(
@@ -369,10 +354,7 @@ class TikTokAdsController extends Controller
                 ->first();
 
             if (!$integration) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'TikTok Ads integration not found'
-                ], 404);
+                return $this->error('TikTok Ads integration not found', 404);
             }
 
             $this->tiktokAdsService->clearCache($integration->platform_account_id);

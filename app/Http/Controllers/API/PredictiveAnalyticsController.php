@@ -15,6 +15,8 @@ use Illuminate\Validation\Rule;
  */
 class PredictiveAnalyticsController extends Controller
 {
+    use ApiResponse;
+
     public function __construct(
         private PredictiveAnalyticsService $predictive
     ) {}

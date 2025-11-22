@@ -6,9 +6,12 @@ use App\Services\UnifiedCommentsService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
+use App\Http\Controllers\Concerns\ApiResponse;
 
 class UnifiedCommentsController extends Controller
 {
+    use ApiResponse;
+
     protected $commentsService;
 
     public function __construct()

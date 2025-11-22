@@ -33,6 +33,8 @@ use Carbon\Carbon;
  */
 class UserManagementController extends Controller
 {
+    use ApiResponse;
+
     /**
      * Constructor - Apply authentication middleware
      */
@@ -193,10 +195,7 @@ class UserManagementController extends Controller
                 ->first();
 
             if (!$user) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'User not found'
-                ], 404);
+                return $this->error('User not found', 404);
             }
 
             return response()->json([
@@ -264,10 +263,7 @@ class UserManagementController extends Controller
                 ->exists();
 
             if ($existingUser) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'User already exists in this organization'
-                ], 400);
+                return $this->error('User already exists in this organization', 400);
             }
 
             // Check for pending invitation
@@ -279,10 +275,7 @@ class UserManagementController extends Controller
                 ->exists();
 
             if ($pendingInvitation) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'An invitation is already pending for this email'
-                ], 400);
+                return $this->error('An invitation is already pending for this email', 400);
             }
 
             // Create invitation
@@ -383,10 +376,7 @@ class UserManagementController extends Controller
                 ]);
 
             if (!$updated) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'User not found in organization'
-                ], 404);
+                return $this->error('User not found in organization', 404);
             }
 
             // Log the change
@@ -449,10 +439,7 @@ class UserManagementController extends Controller
 
             // Prevent self-deactivation
             if ($userId === $currentUser->user_id && !$request->input('is_active')) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'You cannot deactivate yourself'
-                ], 400);
+                return $this->error('You cannot deactivate yourself', 400);
             }
 
             // Update status
@@ -465,10 +452,7 @@ class UserManagementController extends Controller
                 ]);
 
             if (!$updated) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'User not found in organization'
-                ], 404);
+                return $this->error('User not found in organization', 404);
             }
 
             // Log the change
@@ -514,10 +498,7 @@ class UserManagementController extends Controller
 
             // Prevent self-removal
             if ($userId === $currentUser->user_id) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'You cannot remove yourself from the organization'
-                ], 400);
+                return $this->error('You cannot remove yourself from the organization', 400);
             }
 
             // Soft delete by setting is_active to false and marking deleted_at
@@ -531,10 +512,7 @@ class UserManagementController extends Controller
                 ]);
 
             if (!$updated) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'User not found in organization'
-                ], 404);
+                return $this->error('User not found in organization', 404);
             }
 
             // Log the removal
@@ -717,10 +695,7 @@ class UserManagementController extends Controller
                 ]);
 
             if (!$updated) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Invitation not found'
-                ], 404);
+                return $this->error('Invitation not found', 404);
             }
 
             return response()->json([

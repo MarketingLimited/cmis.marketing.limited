@@ -15,6 +15,8 @@ use Illuminate\Http\{Request, JsonResponse};
  */
 class AIOptimizationController extends Controller
 {
+    use ApiResponse;
+
     public function __construct(
         private CampaignOptimizationService $optimizationService
     ) {}

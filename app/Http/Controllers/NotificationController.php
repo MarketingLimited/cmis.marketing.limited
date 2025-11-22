@@ -4,9 +4,12 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Http\Controllers\Concerns\ApiResponse;
 
 class NotificationController extends Controller
 {
+    use ApiResponse;
+
     /**
      * Constructor - Apply authentication middleware
      */

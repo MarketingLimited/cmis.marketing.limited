@@ -14,6 +14,8 @@ use Illuminate\Support\Facades\Log;
  */
 class OfferingController extends Controller
 {
+    use ApiResponse;
+
     /**
      * Display a listing of offerings with filtering and pagination
      *

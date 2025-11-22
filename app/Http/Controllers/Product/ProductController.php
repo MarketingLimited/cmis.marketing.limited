@@ -14,6 +14,8 @@ use Illuminate\Support\Facades\Log;
  */
 class ProductController extends Controller
 {
+    use ApiResponse;
+
     /**
      * Display a listing of products with filtering and pagination
      *

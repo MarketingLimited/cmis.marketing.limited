@@ -8,9 +8,12 @@ use App\Models\Platform\PlatformIntegration;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use App\Http\Controllers\Concerns\ApiResponse;
 
 class LinkedInAdsController extends Controller
 {
+    use ApiResponse;
+
     private LinkedInAdsService $linkedInAdsService;
 
     public function __construct(LinkedInAdsService $linkedInAdsService)
@@ -44,10 +47,7 @@ class LinkedInAdsController extends Controller
                 ->first();
 
             if (!$integration) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'LinkedIn Ads integration not found'
-                ], 404);
+                return $this->error('LinkedIn Ads integration not found', 404);
             }
 
             $result = $this->linkedInAdsService->fetchCampaigns(
@@ -98,10 +98,7 @@ class LinkedInAdsController extends Controller
                 ->first();
 
             if (!$integration) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'LinkedIn Ads integration not found'
-                ], 404);
+                return $this->error('LinkedIn Ads integration not found', 404);
             }
 
             $campaign = $this->linkedInAdsService->getCampaignDetails(
@@ -149,10 +146,7 @@ class LinkedInAdsController extends Controller
                 ->first();
 
             if (!$integration) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'LinkedIn Ads integration not found'
-                ], 404);
+                return $this->error('LinkedIn Ads integration not found', 404);
             }
 
             $creatives = $this->linkedInAdsService->fetchCreatives(
@@ -207,10 +201,7 @@ class LinkedInAdsController extends Controller
                 ->first();
 
             if (!$integration) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'LinkedIn Ads integration not found'
-                ], 404);
+                return $this->error('LinkedIn Ads integration not found', 404);
             }
 
             $campaignData = [
@@ -270,10 +261,7 @@ class LinkedInAdsController extends Controller
                 ->first();
 
             if (!$integration) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'LinkedIn Ads integration not found'
-                ], 404);
+                return $this->error('LinkedIn Ads integration not found', 404);
             }
 
             $metrics = $this->linkedInAdsService->getCampaignMetrics(
@@ -325,10 +313,7 @@ class LinkedInAdsController extends Controller
                 ->first();
 
             if (!$integration) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'LinkedIn Ads integration not found'
-                ], 404);
+                return $this->error('LinkedIn Ads integration not found', 404);
             }
 
             $this->linkedInAdsService->clearCache($integration->platform_account_id);

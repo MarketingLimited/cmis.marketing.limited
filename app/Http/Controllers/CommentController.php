@@ -22,6 +22,8 @@ use Illuminate\Support\Facades\Validator;
  */
 class CommentController extends Controller
 {
+    use ApiResponse;
+
     protected CommentService $commentService;
 
     public function __construct(CommentService $commentService)
@@ -65,10 +67,7 @@ class CommentController extends Controller
             $userId = $request->user()->user_id ?? null;
 
             if (!$userId) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'User must be authenticated'
-                ], 401);
+                return $this->error('User must be authenticated', 401);
             }
 
             $result = $this->commentService->addComment([
@@ -121,10 +120,7 @@ class CommentController extends Controller
             $userId = $request->user()->user_id ?? null;
 
             if (!$userId) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'User must be authenticated'
-                ], 401);
+                return $this->error('User must be authenticated', 401);
             }
 
             $result = $this->commentService->replyToComment($commentId, [
@@ -175,10 +171,7 @@ class CommentController extends Controller
             $userId = $request->user()->user_id ?? null;
 
             if (!$userId) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'User must be authenticated'
-                ], 401);
+                return $this->error('User must be authenticated', 401);
             }
 
             $result = $this->commentService->updateComment(
@@ -214,10 +207,7 @@ class CommentController extends Controller
             $userId = $request->user()->user_id ?? null;
 
             if (!$userId) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'User must be authenticated'
-                ], 401);
+                return $this->error('User must be authenticated', 401);
             }
 
             $result = $this->commentService->deleteComment($commentId, $userId);
@@ -309,10 +299,7 @@ class CommentController extends Controller
             $userId = $request->user()->user_id ?? null;
 
             if (!$userId) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'User must be authenticated'
-                ], 401);
+                return $this->error('User must be authenticated', 401);
             }
 
             $result = $this->commentService->addReaction(
@@ -348,10 +335,7 @@ class CommentController extends Controller
             $userId = $request->user()->user_id ?? null;
 
             if (!$userId) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'User must be authenticated'
-                ], 401);
+                return $this->error('User must be authenticated', 401);
             }
 
             $result = $this->commentService->removeReaction($commentId, $userId);

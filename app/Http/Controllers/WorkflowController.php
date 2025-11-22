@@ -6,9 +6,12 @@ use Illuminate\Http\Request;
 use App\Services\WorkflowService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use App\Http\Controllers\Concerns\ApiResponse;
 
 class WorkflowController extends Controller
 {
+    use ApiResponse;
+
     protected $workflowService;
 
     public function __construct(WorkflowService $workflowService)

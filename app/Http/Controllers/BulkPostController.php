@@ -22,6 +22,8 @@ use Illuminate\Support\Facades\Validator;
  */
 class BulkPostController extends Controller
 {
+    use ApiResponse;
+
     protected BulkPostService $bulkPostService;
 
     public function __construct(BulkPostService $bulkPostService)
@@ -73,11 +75,8 @@ class BulkPostController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Validation error',
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors()
+            , 'Validation error');
         }
 
         try {
@@ -139,11 +138,8 @@ class BulkPostController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Validation error',
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors()
+            , 'Validation error');
         }
 
         try {
@@ -198,11 +194,8 @@ class BulkPostController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Validation error',
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors()
+            , 'Validation error');
         }
 
         try {
@@ -263,11 +256,8 @@ class BulkPostController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Validation error',
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors()
+            , 'Validation error');
         }
 
         try {
@@ -308,11 +298,8 @@ class BulkPostController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Validation error',
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors()
+            , 'Validation error');
         }
 
         try {

@@ -17,6 +17,8 @@ use Illuminate\Support\Facades\Log;
  */
 class OrgSwitcherController extends Controller
 {
+    use ApiResponse;
+
     /**
      * Constructor - Apply authentication middleware
      */

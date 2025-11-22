@@ -23,6 +23,8 @@ use Illuminate\Support\Facades\Validator;
  */
 class ReportsController extends Controller
 {
+    use ApiResponse;
+
     protected ReportGenerationService $reportService;
 
     public function __construct(ReportGenerationService $reportService)
@@ -381,10 +383,7 @@ class ReportsController extends Controller
                 ]);
             }
 
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to cancel report schedule or schedule not found'
-            ], 404);
+            return $this->error('Failed to cancel report schedule or schedule not found', 404);
 
         } catch (\Exception $e) {
             return response()->json([
@@ -440,9 +439,7 @@ class ReportsController extends Controller
             ]
         ];
 
-        return response()->json([
-            'success' => true,
-            'data' => $reportTypes
-        ]);
+        return $this->success($reportTypes
+        );
     }
 }

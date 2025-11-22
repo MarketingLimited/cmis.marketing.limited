@@ -15,6 +15,8 @@ use Illuminate\Support\Facades\Log;
  */
 class AdAudienceController extends Controller
 {
+    use ApiResponse;
+
     /**
      * Display a listing of ad audiences with filtering and pagination
      *

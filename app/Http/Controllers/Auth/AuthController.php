@@ -13,9 +13,12 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
+use App\Http\Controllers\Concerns\ApiResponse;
 
 class AuthController extends Controller
 {
+    use ApiResponse;
+
     /**
      * Register a new user.
      *
@@ -135,10 +138,7 @@ class AuthController extends Controller
 
         // Check if user account is active
         if ($user->status !== 'active') {
-            return response()->json([
-                'success' => false,
-                'message' => 'Your account is not active. Please contact support.'
-            ], 403);
+            return $this->error('Your account is not active. Please contact support.', 403);
         }
 
         // Create token

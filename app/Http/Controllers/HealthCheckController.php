@@ -15,6 +15,8 @@ use Illuminate\Support\Facades\Storage;
  */
 class HealthCheckController extends Controller
 {
+    use ApiResponse;
+
     /**
      * Basic health check (fast, for load balancers)
      *

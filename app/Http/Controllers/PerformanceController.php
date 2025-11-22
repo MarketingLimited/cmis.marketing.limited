@@ -15,6 +15,8 @@ use Illuminate\Support\Facades\Validator;
  */
 class PerformanceController extends Controller
 {
+    use ApiResponse;
+
     protected PerformanceOptimizationService $performanceService;
 
     public function __construct(PerformanceOptimizationService $performanceService)

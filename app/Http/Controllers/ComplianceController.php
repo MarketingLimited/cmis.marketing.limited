@@ -8,9 +8,12 @@ use App\Models\ComplianceRule;
 use App\Services\ComplianceService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use App\Http\Controllers\Concerns\ApiResponse;
 
 class ComplianceController extends Controller
 {
+    use ApiResponse;
+
     protected $complianceService;
 
     public function __construct(ComplianceService $complianceService)

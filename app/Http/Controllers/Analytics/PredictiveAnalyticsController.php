@@ -20,6 +20,8 @@ use Illuminate\Support\Facades\DB;
  */
 class PredictiveAnalyticsController extends Controller
 {
+    use ApiResponse;
+
     public function __construct(protected ForecastingService $forecastingService)
     {
         $this->middleware('auth:sanctum');

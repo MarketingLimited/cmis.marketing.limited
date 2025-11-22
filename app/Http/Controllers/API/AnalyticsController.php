@@ -16,6 +16,8 @@ use Carbon\Carbon;
  */
 class AnalyticsController extends Controller
 {
+    use ApiResponse;
+
     /**
      * Constructor - Apply authentication middleware
      */

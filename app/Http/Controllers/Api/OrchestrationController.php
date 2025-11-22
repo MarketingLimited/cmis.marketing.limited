@@ -11,9 +11,12 @@ use App\Models\Orchestration\OrchestrationPlatform;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Validator;
+use App\Http\Controllers\Concerns\ApiResponse;
 
 class OrchestrationController extends Controller
 {
+    use ApiResponse;
+
     public function __construct(
         protected CampaignOrchestrationService $orchestrationService,
         protected WorkflowEngine $workflowEngine

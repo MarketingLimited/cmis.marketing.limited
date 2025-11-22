@@ -17,6 +17,8 @@ use Illuminate\Support\Facades\DB;
  */
 class UserOnboardingController extends Controller
 {
+    use ApiResponse;
+
     public function __construct(
         private UserOnboardingService $onboardingService
     ) {}

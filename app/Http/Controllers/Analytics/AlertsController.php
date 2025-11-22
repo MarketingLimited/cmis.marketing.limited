@@ -18,6 +18,8 @@ use Illuminate\Support\Facades\DB;
  */
 class AlertsController extends Controller
 {
+    use ApiResponse;
+
     public function __construct()
     {
         $this->middleware('auth:sanctum');

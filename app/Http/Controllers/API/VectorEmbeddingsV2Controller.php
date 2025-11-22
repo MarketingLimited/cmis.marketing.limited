@@ -17,6 +17,8 @@ use Illuminate\Support\Facades\Validator;
  */
 class VectorEmbeddingsV2Controller extends Controller
 {
+    use ApiResponse;
+
     /**
      * البحث الدلالي المتقدم مع النوايا والمقاصد والاتجاهات
      *

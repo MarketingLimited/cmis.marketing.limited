@@ -23,6 +23,8 @@ use Illuminate\Support\Facades\Validator;
  */
 class AIInsightsController extends Controller
 {
+    use ApiResponse;
+
     protected AIInsightsService $insightsService;
 
     public function __construct(AIInsightsService $insightsService)
@@ -113,10 +115,7 @@ class AIInsightsController extends Controller
             $insights = $this->insightsService->getAccountInsights($socialAccountId, $filters);
 
             if (!$insights['success']) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Failed to generate recommendations'
-                ], 500);
+                return $this->error('Failed to generate recommendations', 500);
             }
 
             return response()->json([
@@ -167,10 +166,7 @@ class AIInsightsController extends Controller
             $insights = $this->insightsService->getAccountInsights($socialAccountId, $filters);
 
             if (!$insights['success']) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Failed to detect anomalies'
-                ], 500);
+                return $this->error('Failed to detect anomalies', 500);
             }
 
             return response()->json([
@@ -205,10 +201,7 @@ class AIInsightsController extends Controller
             $insights = $this->insightsService->getAccountInsights($socialAccountId, []);
 
             if (!$insights['success']) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Failed to generate predictions'
-                ], 500);
+                return $this->error('Failed to generate predictions', 500);
             }
 
             return response()->json([
@@ -259,10 +252,7 @@ class AIInsightsController extends Controller
             $insights = $this->insightsService->getAccountInsights($socialAccountId, $filters);
 
             if (!$insights['success']) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Failed to generate observations'
-                ], 500);
+                return $this->error('Failed to generate observations', 500);
             }
 
             return response()->json([
@@ -313,10 +303,7 @@ class AIInsightsController extends Controller
             $insights = $this->insightsService->getAccountInsights($socialAccountId, $filters);
 
             if (!$insights['success']) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Failed to identify opportunities'
-                ], 500);
+                return $this->error('Failed to identify opportunities', 500);
             }
 
             return response()->json([
@@ -379,10 +366,7 @@ class AIInsightsController extends Controller
             $insights = $this->insightsService->getAccountInsights($socialAccountId, []);
 
             if (!$insights['success']) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Failed to generate insights summary'
-                ], 500);
+                return $this->error('Failed to generate insights summary', 500);
             }
 
             // Extract top priority items from each category

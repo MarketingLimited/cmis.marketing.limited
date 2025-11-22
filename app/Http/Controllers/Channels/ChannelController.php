@@ -5,9 +5,12 @@ namespace App\Http\Controllers\Channels;
 use App\Http\Controllers\Controller;
 use App\Models\Channel;
 use Illuminate\Http\Request;
+use App\Http\Controllers\Concerns\ApiResponse;
 
 class ChannelController extends Controller
 {
+    use ApiResponse;
+
     public function index(Request $request, string $orgId)
     {
         $this->authorize('viewAny', Channel::class);

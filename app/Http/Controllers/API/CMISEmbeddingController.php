@@ -8,9 +8,12 @@ use App\Services\CMIS\KnowledgeEmbeddingProcessor;
 use App\Services\CMIS\SemanticSearchService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Gate;
+use App\Http\Controllers\Concerns\ApiResponse;
 
 class CMISEmbeddingController extends Controller
 {
+    use ApiResponse;
+
     private KnowledgeEmbeddingProcessor $processor;
     private SemanticSearchService $searchService;
 

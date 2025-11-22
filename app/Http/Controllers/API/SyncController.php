@@ -18,6 +18,8 @@ use App\Jobs\SyncPlatformCampaigns;
  */
 class SyncController extends Controller
 {
+    use ApiResponse;
+
     /**
      * Trigger manual sync for an integration
      *

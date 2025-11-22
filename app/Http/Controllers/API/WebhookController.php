@@ -15,6 +15,8 @@ use Illuminate\Support\Facades\Log;
  */
 class WebhookController extends Controller
 {
+    use ApiResponse;
+
     /**
      * Handle Meta (Facebook & Instagram) webhooks
      *
