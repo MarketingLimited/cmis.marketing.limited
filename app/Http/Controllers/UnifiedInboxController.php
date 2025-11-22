@@ -23,6 +23,11 @@ class UnifiedInboxController extends Controller
      */
     public function index(Request $request)
     {
+        // If it's a web request (not API), return the view
+        if (!$request->expectsJson()) {
+            return view('inbox.index');
+        }
+
         $orgId = $request->route('org_id');
         $this->inboxService = new UnifiedInboxService($orgId);
 

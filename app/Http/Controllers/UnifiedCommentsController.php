@@ -22,8 +22,13 @@ class UnifiedCommentsController extends Controller
     /**
      * Get unified comments from all platforms
      */
-    public function index(Request $request, $orgId)
+    public function index(Request $request, $orgId = null)
     {
+        // If it's a web request (not API), return the view
+        if (!$request->expectsJson()) {
+            return view('inbox.comments');
+        }
+
         $this->commentsService = new UnifiedCommentsService($orgId);
 
         try {
