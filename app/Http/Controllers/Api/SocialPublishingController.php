@@ -47,10 +47,7 @@ class SocialPublishingController extends Controller
 
         $posts = $query->orderByDesc('scheduled_at')->get();
 
-        return response()->json([
-            'success' => true,
-            'posts' => $posts,
-        ]);
+        return $this->success(['posts' => $posts], 'Scheduled posts retrieved successfully');
     }
 
     /**
@@ -69,7 +66,7 @@ class SocialPublishingController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
+            return $this->validationError($validator->errors());
         }
 
         try {
@@ -79,16 +76,13 @@ class SocialPublishingController extends Controller
                 $request->all()
             );
 
-            return response()->json([
-                'success' => true,
-                'post' => $post->load(['platformPosts', 'queueItems']),
-            ], 201);
+            return $this->created(
+                ['post' => $post->load(['platformPosts', 'queueItems'])],
+                'Post scheduled successfully'
+            );
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => $e->getMessage(),
-            ], 500);
+            return $this->serverError('Failed to schedule post: ' . $e->getMessage());
         }
     }
 
@@ -99,15 +93,17 @@ class SocialPublishingController extends Controller
     {
         $orgId = $request->user()->org_id;
 
-        $post = ScheduledPost::where('org_id', $orgId)
-            ->where('post_id', $postId)
-            ->with(['creator', 'platformPosts', 'queueItems', 'contentLibrary'])
-            ->firstOrFail();
+        try {
+            $post = ScheduledPost::where('org_id', $orgId)
+                ->where('post_id', $postId)
+                ->with(['creator', 'platformPosts', 'queueItems', 'contentLibrary'])
+                ->firstOrFail();
 
-        return response()->json([
-            'success' => true,
-            'post' => $post,
-        ]);
+            return $this->success(['post' => $post], 'Post retrieved successfully');
+
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return $this->notFound('Post not found');
+        }
     }
 
     /**
@@ -117,23 +113,22 @@ class SocialPublishingController extends Controller
     {
         $orgId = $request->user()->org_id;
 
-        $post = ScheduledPost::where('org_id', $orgId)
-            ->where('post_id', $postId)
-            ->firstOrFail();
+        try {
+            $post = ScheduledPost::where('org_id', $orgId)
+                ->where('post_id', $postId)
+                ->firstOrFail();
 
-        if ($post->isPublished()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Cannot update published post',
-            ], 422);
+            if ($post->isPublished()) {
+                return $this->error('Cannot update published post', 422);
+            }
+
+            $post->update($request->all());
+
+            return $this->success(['post' => $post], 'Post updated successfully');
+
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return $this->notFound('Post not found');
         }
-
-        $post->update($request->all());
-
-        return response()->json([
-            'success' => true,
-            'post' => $post,
-        ]);
     }
 
     /**
@@ -146,29 +141,27 @@ class SocialPublishingController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
+            return $this->validationError($validator->errors());
         }
 
         $orgId = $request->user()->org_id;
 
-        $post = ScheduledPost::where('org_id', $orgId)
-            ->where('post_id', $postId)
-            ->firstOrFail();
-
         try {
+            $post = ScheduledPost::where('org_id', $orgId)
+                ->where('post_id', $postId)
+                ->firstOrFail();
+
             $this->schedulingService->reschedulePost($post, $request->scheduled_at);
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Post rescheduled successfully',
-                'post' => $post->fresh(),
-            ]);
+            return $this->success(
+                ['post' => $post->fresh()],
+                'Post rescheduled successfully'
+            );
 
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return $this->notFound('Post not found');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => $e->getMessage(),
-            ], 500);
+            return $this->serverError('Failed to reschedule post: ' . $e->getMessage());
         }
     }
 
@@ -179,23 +172,19 @@ class SocialPublishingController extends Controller
     {
         $orgId = $request->user()->org_id;
 
-        $post = ScheduledPost::where('org_id', $orgId)
-            ->where('post_id', $postId)
-            ->firstOrFail();
-
         try {
+            $post = ScheduledPost::where('org_id', $orgId)
+                ->where('post_id', $postId)
+                ->firstOrFail();
+
             $this->schedulingService->cancelPost($post);
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Post cancelled successfully',
-            ]);
+            return $this->deleted('Post cancelled successfully');
 
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return $this->notFound('Post not found');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => $e->getMessage(),
-            ], 500);
+            return $this->serverError('Failed to cancel post: ' . $e->getMessage());
         }
     }
 
@@ -206,24 +195,22 @@ class SocialPublishingController extends Controller
     {
         $orgId = $request->user()->org_id;
 
-        $post = ScheduledPost::where('org_id', $orgId)
-            ->where('post_id', $postId)
-            ->firstOrFail();
-
         try {
+            $post = ScheduledPost::where('org_id', $orgId)
+                ->where('post_id', $postId)
+                ->firstOrFail();
+
             $results = $this->publishingService->publishPost($post);
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Post published',
-                'results' => $results,
-            ]);
+            return $this->success(
+                ['results' => $results],
+                'Post published successfully'
+            );
 
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return $this->notFound('Post not found');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => $e->getMessage(),
-            ], 500);
+            return $this->serverError('Failed to publish post: ' . $e->getMessage());
         }
     }
 
@@ -237,17 +224,21 @@ class SocialPublishingController extends Controller
         $orgId = $request->user()->org_id;
         $userId = $request->user()->user_id;
 
-        $post = ScheduledPost::where('org_id', $orgId)
-            ->where('post_id', $postId)
-            ->firstOrFail();
+        try {
+            $post = ScheduledPost::where('org_id', $orgId)
+                ->where('post_id', $postId)
+                ->firstOrFail();
 
-        $post->approve($userId);
+            $post->approve($userId);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Post approved',
-            'post' => $post,
-        ]);
+            return $this->success(
+                ['post' => $post],
+                'Post approved successfully'
+            );
+
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return $this->notFound('Post not found');
+        }
     }
 
     /**
@@ -257,16 +248,18 @@ class SocialPublishingController extends Controller
     {
         $orgId = $request->user()->org_id;
 
-        $post = ScheduledPost::where('org_id', $orgId)
-            ->where('post_id', $postId)
-            ->firstOrFail();
+        try {
+            $post = ScheduledPost::where('org_id', $orgId)
+                ->where('post_id', $postId)
+                ->firstOrFail();
 
-        $post->reject();
+            $post->reject();
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Post rejected',
-        ]);
+            return $this->success(null, 'Post rejected successfully');
+
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return $this->notFound('Post not found');
+        }
     }
 
     // ===== Content Calendar =====
@@ -345,7 +338,7 @@ class SocialPublishingController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
+            return $this->validationError($validator->errors());
         }
 
         $contentItem = ContentLibrary::create(array_merge($request->all(), [
@@ -353,10 +346,10 @@ class SocialPublishingController extends Controller
             'created_by' => $request->user()->user_id,
         ]));
 
-        return response()->json([
-            'success' => true,
-            'content' => $contentItem,
-        ], 201);
+        return $this->created(
+            ['content' => $contentItem],
+            'Content added to library successfully'
+        );
     }
 
     // ===== Best Time Recommendations =====

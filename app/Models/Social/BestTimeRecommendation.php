@@ -55,10 +55,12 @@ class BestTimeRecommendation extends BaseModel
     public function getDayLabel(): string
     {
         return ucfirst($this->day_of_week);
+    }
 
     public function isHighEngagement(): bool
     {
         return $this->engagement_score >= 70;
+    }
 
     public function getScoreColor(): string
     {
@@ -66,19 +68,24 @@ class BestTimeRecommendation extends BaseModel
             return 'green';
         } elseif ($this->engagement_score >= 60) {
             return 'yellow';
+        }
         return 'red';
+    }
 
     // ===== Scopes =====
 
     public function scopeForPlatform($query, string $platform)
     {
         return $query->where('platform', $platform);
+    }
 
     public function scopeForDay($query, string $dayOfWeek)
     {
         return $query->where('day_of_week', $dayOfWeek);
+    }
 
     public function scopeTopTimes($query, int $limit = 5)
     {
         return $query->orderByDesc('engagement_score')->limit($limit);
+    }
 }
