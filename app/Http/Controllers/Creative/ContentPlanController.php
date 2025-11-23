@@ -61,16 +61,7 @@ class ContentPlanController extends Controller
         $perPage = min($request->get('per_page', 15), 100);
         $plans = $query->latest()->paginate($perPage);
 
-        return response()->json([
-            'success' => true,
-            'data' => $plans->items(),
-            'meta' => [
-                'current_page' => $plans->currentPage(),
-                'last_page' => $plans->lastPage(),
-                'per_page' => $plans->perPage(),
-                'total' => $plans->total(),
-            ]
-        ]);
+        return $this->paginated($plans, 'Content plans retrieved successfully');
     }
 
     /**
@@ -79,40 +70,39 @@ class ContentPlanController extends Controller
     public function create(Request $request): JsonResponse
     {
         // Return metadata for creating content plan
-        return response()->json([
-            'success' => true,
-            'data' => [
-                'content_types' => [
-                    'social_post' => 'Social Media Post',
-                    'blog_article' => 'Blog Article',
-                    'ad_copy' => 'Advertisement Copy',
-                    'email' => 'Email Campaign',
-                    'video_script' => 'Video Script',
-                ],
-                'platforms' => [
-                    'facebook' => 'Facebook',
-                    'instagram' => 'Instagram',
-                    'twitter' => 'Twitter',
-                    'linkedin' => 'LinkedIn',
-                    'youtube' => 'YouTube',
-                    'tiktok' => 'TikTok',
-                ],
-                'tones' => [
-                    'professional' => 'Professional',
-                    'casual' => 'Casual',
-                    'friendly' => 'Friendly',
-                    'authoritative' => 'Authoritative',
-                    'playful' => 'Playful',
-                    'inspirational' => 'Inspirational',
-                ],
-                'statuses' => [
-                    'draft' => 'Draft',
-                    'active' => 'Active',
-                    'completed' => 'Completed',
-                    'archived' => 'Archived',
-                ],
-            ]
-        ]);
+        $metadata = [
+            'content_types' => [
+                'social_post' => 'Social Media Post',
+                'blog_article' => 'Blog Article',
+                'ad_copy' => 'Advertisement Copy',
+                'email' => 'Email Campaign',
+                'video_script' => 'Video Script',
+            ],
+            'platforms' => [
+                'facebook' => 'Facebook',
+                'instagram' => 'Instagram',
+                'twitter' => 'Twitter',
+                'linkedin' => 'LinkedIn',
+                'youtube' => 'YouTube',
+                'tiktok' => 'TikTok',
+            ],
+            'tones' => [
+                'professional' => 'Professional',
+                'casual' => 'Casual',
+                'friendly' => 'Friendly',
+                'authoritative' => 'Authoritative',
+                'playful' => 'Playful',
+                'inspirational' => 'Inspirational',
+            ],
+            'statuses' => [
+                'draft' => 'Draft',
+                'active' => 'Active',
+                'completed' => 'Completed',
+                'archived' => 'Archived',
+            ],
+        ];
+
+        return $this->success($metadata, 'Content plan metadata retrieved successfully');
     }
 
     /**
@@ -150,11 +140,10 @@ class ContentPlanController extends Controller
 
         $contentPlan = ContentPlan::create($data);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Content plan created successfully',
-            'data' => $contentPlan->load(['campaign', 'creator'])
-        ], 201);
+        return $this->created(
+            $contentPlan->load(['campaign', 'creator']),
+            'Content plan created successfully'
+        );
     }
 
     /**
@@ -187,28 +176,27 @@ class ContentPlanController extends Controller
         $this->authorize('update', $contentPlan);
 
         // Return plan data along with options
-        return response()->json([
-            'success' => true,
-            'data' => [
-                'plan' => $contentPlan,
-                'options' => [
-                    'platforms' => [
-                        'facebook' => 'Facebook',
-                        'instagram' => 'Instagram',
-                        'twitter' => 'Twitter',
-                        'linkedin' => 'LinkedIn',
-                        'youtube' => 'YouTube',
-                        'tiktok' => 'TikTok',
-                    ],
-                    'statuses' => [
-                        'draft' => 'Draft',
-                        'active' => 'Active',
-                        'completed' => 'Completed',
-                        'archived' => 'Archived',
-                    ],
-                ]
+        $data = [
+            'plan' => $contentPlan,
+            'options' => [
+                'platforms' => [
+                    'facebook' => 'Facebook',
+                    'instagram' => 'Instagram',
+                    'twitter' => 'Twitter',
+                    'linkedin' => 'LinkedIn',
+                    'youtube' => 'YouTube',
+                    'tiktok' => 'TikTok',
+                ],
+                'statuses' => [
+                    'draft' => 'Draft',
+                    'active' => 'Active',
+                    'completed' => 'Completed',
+                    'archived' => 'Archived',
+                ],
             ]
-        ]);
+        ];
+
+        return $this->success($data, 'Content plan edit data retrieved successfully');
     }
 
     /**
@@ -245,11 +233,10 @@ class ContentPlanController extends Controller
 
         $contentPlan->update($validator->validated());
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Content plan updated successfully',
-            'data' => $contentPlan->fresh()->load(['campaign', 'creator'])
-        ]);
+        return $this->success(
+            $contentPlan->fresh()->load(['campaign', 'creator']),
+            'Content plan updated successfully'
+        );
     }
 
     /**
@@ -266,10 +253,7 @@ class ContentPlanController extends Controller
 
         $contentPlan->delete();
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Content plan deleted successfully'
-        ]);
+        return $this->deleted('Content plan deleted successfully');
     }
 
     /**
@@ -316,11 +300,10 @@ class ContentPlanController extends Controller
             ];
         }
 
-        return response()->json([
-            'success' => true,
-            'message' => $async ? 'Content generation started' : 'Content generated',
-            'data' => $result
-        ]);
+        return $this->success(
+            $result,
+            $async ? 'Content generation started' : 'Content generated'
+        );
     }
 
     /**
@@ -334,11 +317,7 @@ class ContentPlanController extends Controller
 
         $contentPlan = $this->contentPlanService->approve($contentPlan);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Content plan approved',
-            'data' => $contentPlan
-        ]);
+        return $this->success($contentPlan, 'Content plan approved');
     }
 
     /**
@@ -361,11 +340,7 @@ class ContentPlanController extends Controller
 
         $contentPlan = $this->contentPlanService->reject($contentPlan, $request->input('reason'));
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Content plan rejected',
-            'data' => $contentPlan
-        ]);
+        return $this->success($contentPlan, 'Content plan rejected');
     }
 
     /**
@@ -379,11 +354,7 @@ class ContentPlanController extends Controller
 
         $contentPlan = $this->contentPlanService->publish($contentPlan);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Content plan published',
-            'data' => $contentPlan
-        ]);
+        return $this->success($contentPlan, 'Content plan published');
     }
 
     /**

@@ -43,10 +43,10 @@ class CreativeAssetController extends Controller
 
             $assets = $query->orderBy('created_at', 'desc')->paginate($perPage);
 
-            return response()->json($assets);
+            return $this->paginated($assets, 'Assets retrieved successfully');
 
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Failed to fetch assets', 'message' => $e->getMessage()], 500);
+            return $this->serverError('Failed to fetch assets: ' . $e->getMessage());
         }
     }
 
@@ -66,7 +66,7 @@ class CreativeAssetController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['error' => 'Validation Error', 'errors' => $validator->errors()], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         try {
@@ -82,10 +82,10 @@ class CreativeAssetController extends Controller
                 'status' => $request->status ?? 'draft',
             ]);
 
-            return response()->json(['message' => 'Asset created', 'asset' => $asset->fresh()], 201);
+            return $this->created($asset->fresh(), 'Asset created successfully');
 
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Failed to create asset', 'message' => $e->getMessage()], 500);
+            return $this->serverError('Failed to create asset: ' . $e->getMessage());
         }
     }
 
@@ -94,9 +94,9 @@ class CreativeAssetController extends Controller
         try {
             $asset = CreativeAsset::where('org_id', $orgId)->findOrFail($assetId);
             $this->authorize('view', $asset);
-            return response()->json(['asset' => $asset]);
+            return $this->success($asset, 'Asset retrieved successfully');
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Asset not found'], 404);
+            return $this->notFound('Asset not found');
         }
     }
 
@@ -118,7 +118,7 @@ class CreativeAssetController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['error' => 'Validation Error', 'errors' => $validator->errors()], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         try {
@@ -126,11 +126,11 @@ class CreativeAssetController extends Controller
                 'campaign_id', 'channel_id', 'format_id', 'variation_tag',
                 'copy_block', 'strategy', 'art_direction', 'final_copy', 'status'
             ]));
-            return response()->json(['message' => 'Asset updated', 'asset' => $asset->fresh()]);
+            return $this->success($asset->fresh(), 'Asset updated successfully');
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            return response()->json(['error' => 'Asset not found'], 404);
+            return $this->notFound('Asset not found');
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Failed to update', 'message' => $e->getMessage()], 500);
+            return $this->serverError('Failed to update: ' . $e->getMessage());
         }
     }
 
@@ -140,9 +140,9 @@ class CreativeAssetController extends Controller
             $asset = CreativeAsset::where('org_id', $orgId)->findOrFail($assetId);
             $this->authorize('delete', $asset);
             $asset->delete();
-            return response()->json(['message' => 'Asset deleted']);
+            return $this->deleted('Asset deleted successfully');
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Failed to delete'], 500);
+            return $this->serverError('Failed to delete asset');
         }
     }
 }
