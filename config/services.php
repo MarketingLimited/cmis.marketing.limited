@@ -105,7 +105,10 @@ return [
         'client_secret' => env('TIKTOK_CLIENT_SECRET'),
         'redirect_uri' => env('TIKTOK_REDIRECT_URI'),
         'api_version' => env('TIKTOK_API_VERSION', 'v1.3'),
+        'base_url' => env('TIKTOK_API_BASE_URL', 'https://business-api.tiktok.com'),
         'rate_limit' => env('TIKTOK_RATE_LIMIT', 100),
+        // Webhook security
+        'webhook_verify_token' => env('TIKTOK_WEBHOOK_VERIFY_TOKEN'),
     ],
 
     // Snapchat
