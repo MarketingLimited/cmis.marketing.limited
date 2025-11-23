@@ -99,6 +99,24 @@ return new class extends Migration
                     continue;
                 }
 
+                // Check column type compatibility before attempting FK creation
+                if ($fk['table'] === 'sessions') {
+                    $columnType = DB::selectOne("
+                        SELECT data_type
+                        FROM information_schema.columns
+                        WHERE table_schema = 'cmis'
+                        AND table_name = 'sessions'
+                        AND column_name = 'user_id'
+                    ");
+
+                    if ($columnType && $columnType->data_type !== 'uuid') {
+                        echo "⏭️  Skipping FK for cmis.sessions.user_id - column type is {$columnType->data_type}, not uuid\n";
+                        echo "   Run the fix_public_sessions_user_id_type migration first\n";
+                        $skipped++;
+                        continue;
+                    }
+                }
+
                 // Delete orphaned records that don't have matching users
                 // Skip for sessions table due to type mismatch in older records
                 if ($fk['table'] !== 'sessions') {
