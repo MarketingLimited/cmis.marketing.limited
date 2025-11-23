@@ -34,14 +34,29 @@ class PermissionService
             return false;
         }
 
+        // Validate user belongs to organization
+        if (!$user->belongsToOrg($orgId)) {
+            Log::warning('Permission check for user not in organization', [
+                'user_id' => $user->user_id,
+                'org_id' => $orgId,
+                'permission' => $permissionCode
+            ]);
+            return false;
+        }
+
         // Check cache first
         $cacheKey = "permission:{$user->user_id}:{$orgId}:{$permissionCode}";
         $cached = Cache::remember($cacheKey, now()->addMinutes(10), function () use ($user, $orgId, $permissionCode) {
             try {
-                $hasPermission = $this->permissionRepo->canAccessCampaign($user->user_id, $orgId);
+                // Use the correct repository method to check permission
+                $hasPermission = $this->permissionRepo->checkPermission(
+                    $user->user_id,
+                    $orgId,
+                    $permissionCode
+                );
 
                 // Update permission cache metadata if it exists
-                $permissionCache = PermissionsCache::getByCode($permissionCode);
+                $permissionCache = PermissionsCache::where('permission_code', $permissionCode)->first();
                 if ($permissionCache) {
                     $permissionCache->touch();
                 }
@@ -224,17 +239,35 @@ class PermissionService
     public function clearCacheForUser(User $user, ?string $orgId = null): void
     {
         if ($orgId) {
+            // Clear aggregated permissions cache
             Cache::forget("user_permissions:{$user->user_id}:{$orgId}");
-            // Clear all permission caches for this user/org combination
-            Cache::forget("permission:{$user->user_id}:{$orgId}:*");
+
+            // Clear individual permission caches for this user/org
+            // Note: Cache::forget() doesn't support wildcards, so we clear all known permissions
+            $permissions = Permission::pluck('permission_code');
+            foreach ($permissions as $code) {
+                Cache::forget("permission:{$user->user_id}:{$orgId}:{$code}");
+            }
         } else {
+            // Clear for all organizations
             $user->orgs->each(function ($org) use ($user) {
                 Cache::forget("user_permissions:{$user->user_id}:{$org->org_id}");
-                Cache::forget("permission:{$user->user_id}:{$org->org_id}:*");
+
+                // Clear individual permission caches
+                $permissions = Permission::pluck('permission_code');
+                foreach ($permissions as $code) {
+                    Cache::forget("permission:{$user->user_id}:{$org->org_id}:{$code}");
+                }
             });
         }
 
-        Cache::tags("user_permissions:{$user->user_id}")->flush();
+        // Use cache tags if available (requires Redis/Memcached)
+        try {
+            Cache::tags(["user_permissions:{$user->user_id}"])->flush();
+        } catch (\Exception $e) {
+            // Tags not supported with file/database cache driver
+            Log::debug('Cache tags not supported', ['driver' => config('cache.default')]);
+        }
     }
 
     /**
@@ -246,9 +279,23 @@ class PermissionService
             ->where('role_id', $role->role_id)
             ->get(['user_id', 'org_id']);
 
+        $permissions = Permission::pluck('permission_code');
+
         foreach ($userOrgs as $userOrg) {
+            // Clear aggregated permissions
             Cache::forget("user_permissions:{$userOrg->user_id}:{$userOrg->org_id}");
-            Cache::forget("permission:{$userOrg->user_id}:{$userOrg->org_id}:*");
+
+            // Clear individual permission caches
+            foreach ($permissions as $code) {
+                Cache::forget("permission:{$userOrg->user_id}:{$userOrg->org_id}:{$code}");
+            }
+
+            // Clear cache tags if available
+            try {
+                Cache::tags(["user_permissions:{$userOrg->user_id}"])->flush();
+            } catch (\Exception $e) {
+                // Tags not supported
+            }
         }
     }
 

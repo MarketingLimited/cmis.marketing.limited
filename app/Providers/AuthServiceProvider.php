@@ -21,6 +21,7 @@ use App\Policies\OfferingPolicy;
 use App\Policies\OrganizationPolicy;
 use App\Policies\UserPolicy;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 
 class AuthServiceProvider extends ServiceProvider
@@ -76,21 +77,35 @@ class AuthServiceProvider extends ServiceProvider
         Gate::define('ai.manage_prompts', [AIPolicy::class, 'managePrompts']);
         Gate::define('ai.view_insights', [AIPolicy::class, 'viewInsights']);
 
-        // Super admin gate
+        // Super admin/owner gate - bypass all authorization checks
         Gate::before(function ($user, $ability) {
-            // Check if user has super admin role
+            // Check if user has super admin or owner role in current organization
             $currentOrgId = session('current_org_id');
-            if ($currentOrgId) {
-                $userOrg = $user->orgs()
-                    ->where('cmis.orgs.org_id', $currentOrgId)
-                    ->first();
-
-                if ($userOrg && $userOrg->pivot && $userOrg->pivot->role) {
-                    if ($userOrg->pivot->role->role_code === 'super_admin') {
-                        return true; // Super admin bypasses all checks
-                    }
-                }
+            if (!$currentOrgId) {
+                return null; // No org context, continue with normal authorization
             }
+
+            // Get user-org relationship
+            $userOrg = DB::table('cmis.user_orgs')
+                ->where('user_id', $user->user_id)
+                ->where('org_id', $currentOrgId)
+                ->where('is_active', true)
+                ->whereNull('deleted_at')
+                ->first();
+
+            if (!$userOrg || !$userOrg->role_id) {
+                return null; // No role, continue with normal authorization
+            }
+
+            // Get the role
+            $role = \App\Models\Core\Role::find($userOrg->role_id);
+
+            // Super admin and owner bypass all checks
+            if ($role && in_array($role->role_code, ['super_admin', 'owner'])) {
+                return true; // Bypass all authorization checks
+            }
+
+            return null; // Continue with normal authorization
         });
     }
 }
