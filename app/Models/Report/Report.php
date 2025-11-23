@@ -9,9 +9,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Report extends BaseModel
 {
-    
-
-    protected $table = 'cmis.reports';
+    use HasOrganization;
+protected $table = 'cmis.reports';
 
     protected $primaryKey = 'report_id';
 

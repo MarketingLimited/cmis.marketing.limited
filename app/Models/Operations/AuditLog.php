@@ -11,10 +11,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class AuditLog extends BaseModel
 {
-    
-    
-
-    /**
+    use HasOrganization;
+/**
      * Get the user that performed the action.
      */
     public function user(): BelongsTo

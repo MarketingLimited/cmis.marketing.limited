@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class CampaignBudget extends BaseModel
 {
-    use HasFactory, HasOrganization;
+    use HasOrganization, HasFactory;
 
     protected $table = 'cmis.campaign_budgets';
     protected $primaryKey = 'budget_id';

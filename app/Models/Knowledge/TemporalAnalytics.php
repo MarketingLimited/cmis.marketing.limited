@@ -8,8 +8,8 @@ use App\Models\BaseModel;
 
 class TemporalAnalytics extends BaseModel
 {
-    
-    protected $table = 'cmis.temporal_analytics';
+    use HasOrganization;
+protected $table = 'cmis.temporal_analytics';
     protected $primaryKey = 'analytics_id';
     public $timestamps = false;
 

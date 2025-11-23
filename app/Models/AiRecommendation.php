@@ -8,8 +8,8 @@ use App\Models\BaseModel;
 
 class AiRecommendation extends BaseModel
 {
-    
-    protected $table = 'cmis.predictive_visual_engine';
+    use HasOrganization;
+protected $table = 'cmis.predictive_visual_engine';
 
     protected $primaryKey = 'prediction_id';
 

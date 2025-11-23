@@ -11,10 +11,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class SyncLog extends BaseModel
 {
-    
-    
-
-    /**
+    use HasOrganization;
+/**
      * Get the integration that this sync log belongs to.
      */
     public function integration(): BelongsTo

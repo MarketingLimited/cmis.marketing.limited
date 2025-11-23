@@ -9,7 +9,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class CampaignPerformanceMetric extends BaseModel
 {
-    
+    use HasOrganization;
+
     protected $table = 'cmis.campaign_performance_dashboard';
 
     protected $primaryKey = 'dashboard_id';
