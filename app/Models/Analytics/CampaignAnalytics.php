@@ -3,10 +3,12 @@
 namespace App\Models\Analytics;
 
 use App\Models\BaseModel;
+use App\Models\Concerns\HasOrganization;
 
 class CampaignAnalytics extends BaseModel
 {
-    
+    use HasOrganization;
+
     protected $table = 'cmis.campaign_analytics';
     protected $primaryKey = 'analytics_id';
     public $timestamps = false;
@@ -64,6 +66,7 @@ class CampaignAnalytics extends BaseModel
     public function campaign()
     {
         return $this->belongsTo(\App\Models\Campaign::class, 'campaign_id', 'campaign_id');
+    }
 
     /**
      * Scope by date range
@@ -71,6 +74,7 @@ class CampaignAnalytics extends BaseModel
     public function scopeDateRange($query, $startDate, $endDate)
     {
         return $query->whereBetween('date', [$startDate, $endDate]);
+    }
 
     /**
      * Scope recent analytics
@@ -78,6 +82,7 @@ class CampaignAnalytics extends BaseModel
     public function scopeRecent($query, int $days = 30)
     {
         return $query->where('date', '>=', now()->subDays($days));
+    }
 
     /**
      * Calculate conversion rate
@@ -86,8 +91,10 @@ class CampaignAnalytics extends BaseModel
     {
         if ($this->clicks === 0) {
             return 0.0;
+        }
 
         return ($this->conversions / $this->clicks) * 100;
+    }
 
     /**
      * Calculate ROI
@@ -96,6 +103,8 @@ class CampaignAnalytics extends BaseModel
     {
         if ($this->spend == 0) {
             return 0.0;
+        }
 
         return (($this->revenue - $this->spend) / $this->spend) * 100;
+    }
 }
