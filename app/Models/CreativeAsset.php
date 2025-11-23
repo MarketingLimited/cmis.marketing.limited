@@ -9,10 +9,9 @@ use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
 class CreativeAsset extends BaseModel
 {
-    use HasFactory, SoftDeletes, HasUuids;
+    use HasFactory, SoftDeletes;
     use HasOrganization;
 
     protected $table = 'cmis.creative_assets';
