@@ -20,7 +20,7 @@ use App\Http\Controllers\API\PlatformIntegrationController;
 use App\Http\Controllers\API\SyncController;
 use App\Http\Controllers\API\ContentPublishingController;
 use App\Http\Controllers\API\WebhookController;
-use App\Http\Controllers\API\Webhooks\TikTokWebhookController;
+use App\Http\Controllers\Webhooks\TikTokWebhookController;
 use App\Http\Controllers\Webhooks\LinkedInWebhookController;
 use App\Http\Controllers\API\AnalyticsController;
 use App\Http\Controllers\API\AdCampaignController as APIAdCampaignController;
