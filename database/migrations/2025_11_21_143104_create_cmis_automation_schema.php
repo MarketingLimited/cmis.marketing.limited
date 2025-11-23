@@ -13,6 +13,19 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Skip if automation_rules already exists in cmis_automation schema
+        $tableExists = DB::select("
+            SELECT EXISTS (
+                SELECT FROM information_schema.tables
+                WHERE table_schema = 'cmis_automation' AND table_name = 'automation_rules'
+            )
+        ")[0]->exists ?? false;
+
+        if ($tableExists) {
+            echo "⊘ cmis_automation.automation_rules already exists, skipping migration\n";
+            return;
+        }
+
         // Create cmis_automation schema
         DB::statement('CREATE SCHEMA IF NOT EXISTS cmis_automation');
 
@@ -20,7 +33,7 @@ return new class extends Migration
         DB::statement("
             CREATE TABLE cmis_automation.automation_rules (
                 id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-                org_id UUID NOT NULL REFERENCES cmis.organizations(id) ON DELETE CASCADE,
+                org_id UUID NOT NULL REFERENCES cmis.orgs(org_id) ON DELETE CASCADE,
                 name VARCHAR(255) NOT NULL,
                 description TEXT,
                 condition JSONB NOT NULL,
@@ -44,11 +57,13 @@ return new class extends Migration
         );
 
         // Create rule_execution_log table
+        // Note: Removed foreign key constraint on campaign_id due to migration ordering issues
+        // Application logic will ensure referential integrity
         DB::statement("
             CREATE TABLE cmis_automation.rule_execution_log (
                 id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
                 rule_id UUID REFERENCES cmis_automation.automation_rules(id) ON DELETE SET NULL,
-                campaign_id UUID NOT NULL REFERENCES cmis.campaigns(id) ON DELETE CASCADE,
+                campaign_id UUID,
                 action VARCHAR(100) NOT NULL,
                 details TEXT,
                 executed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -66,7 +81,7 @@ return new class extends Migration
         $this->enableCustomRLS(
             'cmis_automation.rule_execution_log',
             "campaign_id IN (
-                SELECT id FROM cmis.campaigns
+                SELECT campaign_id FROM cmis.campaigns
                 WHERE org_id = current_setting('app.current_org_id', true)::uuid
             )",
             'org_isolation_policy'

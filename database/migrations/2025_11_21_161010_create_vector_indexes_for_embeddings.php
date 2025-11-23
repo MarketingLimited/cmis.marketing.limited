@@ -81,6 +81,7 @@ return new class extends Migration
 
         // Create indexes for any additional vector columns
         // Check if there are other tables with vector columns
+        // Filter to only actual tables (relkind = 'r'), not indexes or views
         $additionalVectorColumns = DB::select("
             SELECT
                 n.nspname as schema_name,
@@ -91,6 +92,7 @@ return new class extends Migration
             JOIN pg_namespace n ON c.relnamespace = n.oid
             JOIN pg_type t ON a.atttypid = t.oid
             WHERE t.typname = 'vector'
+            AND c.relkind = 'r'
             AND n.nspname IN ('cmis', 'cmis_ai', 'cmis_knowledge')
             AND a.attnum > 0
             AND NOT a.attisdropped

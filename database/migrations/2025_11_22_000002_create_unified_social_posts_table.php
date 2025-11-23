@@ -37,6 +37,12 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Skip if social_posts table already exists
+        if (Schema::hasTable('cmis.social_posts')) {
+            echo "⊘ cmis.social_posts already exists, skipping migration\n";
+            return;
+        }
+
         Schema::create('cmis.social_posts', function (Blueprint $table) {
             // ==================================================================
             // Primary & Organization

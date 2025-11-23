@@ -95,6 +95,11 @@ return new class extends Migration
             $$ LANGUAGE plpgsql;
         ");
 
+        // Drop trigger if exists to make idempotent
+        DB::statement("
+            DROP TRIGGER IF EXISTS set_generated_media_timestamp ON cmis_ai.generated_media;
+        ");
+
         DB::statement("
             CREATE TRIGGER set_generated_media_timestamp
             BEFORE UPDATE ON cmis_ai.generated_media

@@ -42,6 +42,12 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Skip if metrics table already exists
+        if (Schema::hasTable('cmis.metrics')) {
+            echo "⊘ cmis.metrics already exists, skipping migration\n";
+            return;
+        }
+
         // ==================================================================
         // 1. Create Unified Metrics Table (Partitioned)
         // ==================================================================

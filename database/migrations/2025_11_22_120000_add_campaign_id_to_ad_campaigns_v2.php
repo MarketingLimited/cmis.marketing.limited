@@ -19,6 +19,12 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Check if column already exists
+        if (Schema::hasColumn('cmis.ad_campaigns_v2', 'campaign_id')) {
+            echo "⊘ campaign_id column already exists in ad_campaigns_v2, skipping migration\n";
+            return;
+        }
+
         // Add campaign_id column to ad_campaigns_v2
         Schema::table('cmis.ad_campaigns_v2', function (Blueprint $table) {
             $table->uuid('campaign_id')->nullable()->after('org_id');

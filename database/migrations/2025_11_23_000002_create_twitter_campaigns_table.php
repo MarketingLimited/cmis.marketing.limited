@@ -16,6 +16,12 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Skip if campaigns table already exists
+        if (Schema::hasTable('cmis_twitter.campaigns')) {
+            echo "⊘ cmis_twitter.campaigns already exists, skipping migration\n";
+            return;
+        }
+
         Schema::create('cmis_twitter.campaigns', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->uuid('org_id')->index();
@@ -56,7 +62,7 @@ return new class extends Migration
             // Foreign keys
             $table->foreign('org_id')
                 ->references('org_id')
-                ->on('cmis.organizations')
+                ->on('cmis.orgs')
                 ->onDelete('cascade');
 
             $table->foreign('integration_id')

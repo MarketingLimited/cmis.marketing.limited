@@ -25,6 +25,11 @@ return new class extends Migration
      */
     public function up()
     {
+        // Skip if usage_quotas already exists (created by earlier migration)
+        if (Schema::hasTable('cmis_ai.usage_quotas')) {
+            return;
+        }
+
         // Create cmis_ai schema if it doesn't exist
         DB::statement('CREATE SCHEMA IF NOT EXISTS cmis_ai');
 
