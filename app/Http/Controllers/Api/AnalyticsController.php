@@ -35,10 +35,7 @@ class AnalyticsController extends Controller
             ]);
 
             if ($validator->fails()) {
-                return response()->json([
-                    'success' => false,
-                    'errors' => $validator->errors()
-                ], 422);
+                return $this->validationError($validator->errors(), 'Validation failed');
             }
 
             $orgId = auth()->user()->org_id;
@@ -49,16 +46,9 @@ class AnalyticsController extends Controller
                 $request->input('end_date')
             );
 
-            return response()->json([
-                'success' => true,
-                'summary' => $summary
-            ]);
+            return $this->success(['summary' => $summary], 'Usage summary retrieved successfully');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to fetch usage summary',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to fetch usage summary: ' . $e->getMessage());
         }
     }
 
@@ -76,10 +66,7 @@ class AnalyticsController extends Controller
             ]);
 
             if ($validator->fails()) {
-                return response()->json([
-                    'success' => false,
-                    'errors' => $validator->errors()
-                ], 422);
+                return $this->validationError($validator->errors(), 'Validation failed');
             }
 
             $orgId = auth()->user()->org_id;
@@ -87,17 +74,12 @@ class AnalyticsController extends Controller
 
             $trend = $this->analyticsService->getDailyTrend($orgId, $days);
 
-            return response()->json([
-                'success' => true,
+            return $this->success([
                 'trend' => $trend,
                 'period' => $days
-            ]);
+            ], 'Daily trend retrieved successfully');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to fetch daily trend',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to fetch daily trend: ' . $e->getMessage());
         }
     }
 
@@ -113,16 +95,9 @@ class AnalyticsController extends Controller
 
             $quota = $this->analyticsService->getQuotaStatus($orgId);
 
-            return response()->json([
-                'success' => true,
-                'quota' => $quota
-            ]);
+            return $this->success(['quota' => $quota], 'Quota status retrieved successfully');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to fetch quota status',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to fetch quota status: ' . $e->getMessage());
         }
     }
 
@@ -141,10 +116,7 @@ class AnalyticsController extends Controller
             ]);
 
             if ($validator->fails()) {
-                return response()->json([
-                    'success' => false,
-                    'errors' => $validator->errors()
-                ], 422);
+                return $this->validationError($validator->errors(), 'Validation failed');
             }
 
             $orgId = auth()->user()->org_id;
@@ -155,16 +127,9 @@ class AnalyticsController extends Controller
                 $request->input('end_date')
             );
 
-            return response()->json([
-                'success' => true,
-                'campaigns' => $costs
-            ]);
+            return $this->success(['campaigns' => $costs], 'Campaign costs retrieved successfully');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to fetch campaign costs',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to fetch campaign costs: ' . $e->getMessage());
         }
     }
 
@@ -183,10 +148,7 @@ class AnalyticsController extends Controller
             ]);
 
             if ($validator->fails()) {
-                return response()->json([
-                    'success' => false,
-                    'errors' => $validator->errors()
-                ], 422);
+                return $this->validationError($validator->errors(), 'Validation failed');
             }
 
             $orgId = auth()->user()->org_id;
@@ -197,16 +159,9 @@ class AnalyticsController extends Controller
                 $request->input('end_date')
             );
 
-            return response()->json([
-                'success' => true,
-                'stats' => $stats
-            ]);
+            return $this->success(['stats' => $stats], 'Media statistics retrieved successfully');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to fetch media statistics',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to fetch media statistics: ' . $e->getMessage());
         }
     }
 
@@ -224,10 +179,7 @@ class AnalyticsController extends Controller
             ]);
 
             if ($validator->fails()) {
-                return response()->json([
-                    'success' => false,
-                    'errors' => $validator->errors()
-                ], 422);
+                return $this->validationError($validator->errors(), 'Validation failed');
             }
 
             $orgId = auth()->user()->org_id;
@@ -235,16 +187,9 @@ class AnalyticsController extends Controller
 
             $media = $this->analyticsService->getTopPerformingMedia($orgId, $limit);
 
-            return response()->json([
-                'success' => true,
-                'media' => $media
-            ]);
+            return $this->success(['media' => $media], 'Top performing media retrieved successfully');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to fetch top performing media',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to fetch top performing media: ' . $e->getMessage());
         }
     }
 
@@ -262,10 +207,7 @@ class AnalyticsController extends Controller
             ]);
 
             if ($validator->fails()) {
-                return response()->json([
-                    'success' => false,
-                    'errors' => $validator->errors()
-                ], 422);
+                return $this->validationError($validator->errors(), 'Validation failed');
             }
 
             $orgId = auth()->user()->org_id;
@@ -273,17 +215,12 @@ class AnalyticsController extends Controller
 
             $comparison = $this->analyticsService->getMonthlyCostComparison($orgId, $months);
 
-            return response()->json([
-                'success' => true,
+            return $this->success([
                 'comparison' => $comparison,
                 'period' => $months
-            ]);
+            ], 'Monthly comparison retrieved successfully');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to fetch monthly comparison',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to fetch monthly comparison: ' . $e->getMessage());
         }
     }
 
@@ -299,16 +236,9 @@ class AnalyticsController extends Controller
 
             $dashboard = $this->analyticsService->getDashboardData($orgId);
 
-            return response()->json([
-                'success' => true,
-                'dashboard' => $dashboard
-            ]);
+            return $this->success(['dashboard' => $dashboard], 'Dashboard data retrieved successfully');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to fetch dashboard data',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to fetch dashboard data: ' . $e->getMessage());
         }
     }
 
@@ -324,17 +254,12 @@ class AnalyticsController extends Controller
 
             $alerts = $this->analyticsService->getQuotaAlerts($orgId);
 
-            return response()->json([
-                'success' => true,
+            return $this->success([
                 'alerts' => $alerts,
                 'count' => count($alerts)
-            ]);
+            ], 'Quota alerts retrieved successfully');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to fetch quota alerts',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to fetch quota alerts: ' . $e->getMessage());
         }
     }
 
@@ -354,10 +279,7 @@ class AnalyticsController extends Controller
             ]);
 
             if ($validator->fails()) {
-                return response()->json([
-                    'success' => false,
-                    'errors' => $validator->errors()
-                ], 422);
+                return $this->validationError($validator->errors(), 'Validation failed');
             }
 
             $orgId = auth()->user()->org_id;
@@ -369,17 +291,12 @@ class AnalyticsController extends Controller
                 $request->input('end_date')
             );
 
-            return response()->json([
-                'success' => true,
+            return $this->success([
                 'data' => $data,
                 'export_type' => $request->input('type')
-            ]);
+            ], 'Data exported successfully');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to export data',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to export data: ' . $e->getMessage());
         }
     }
 
@@ -395,16 +312,9 @@ class AnalyticsController extends Controller
 
             $this->analyticsService->clearCache($orgId);
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Analytics cache cleared successfully'
-            ]);
+            return $this->success([], 'Analytics cache cleared successfully');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to clear cache',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to clear cache: ' . $e->getMessage());
         }
     }
 }

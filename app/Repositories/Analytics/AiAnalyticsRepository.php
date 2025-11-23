@@ -223,11 +223,13 @@ class AiAnalyticsRepository
 
     /**
      * Get top performing generated media
+     *
+     * Note: RLS automatically filters by org_id - no manual filtering needed
      */
     public function getTopPerformingMedia(string $orgId, int $limit = 10): array
     {
+        // RLS handles org_id filtering automatically
         return DB::table('cmis_ai.generated_media')
-            ->where('org_id', $orgId)
             ->where('status', 'completed')
             ->orderBy('created_at', 'desc')
             ->limit($limit)
