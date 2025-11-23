@@ -76,7 +76,8 @@ ALTER TABLE public.markets OWNER TO begin;
 ALTER TABLE cmis.meta_documentation OWNER TO begin;
 ALTER TABLE cmis.meta_field_dictionary OWNER TO begin;
 ALTER TABLE cmis.meta_function_descriptions OWNER TO begin;
-ALTER TABLE cmis.migrations OWNER TO begin;
+-- cmis.migrations table is commented out in complete_tables.sql (Laravel manages migrations)
+-- ALTER TABLE cmis.migrations OWNER TO begin;
 ALTER TABLE cmis.modules OWNER TO begin;
 ALTER TABLE cmis.naming_templates OWNER TO begin;
 ALTER TABLE cmis.offerings_full_details OWNER TO begin;
