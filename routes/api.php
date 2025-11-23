@@ -188,10 +188,10 @@ Route::middleware('auth:sanctum')->group(function () {
 | جميع المسارات هنا تتطلب:
 | 1. auth:sanctum - مصادقة المستخدم
 | 2. validate.org.access - التحقق من صلاحية الوصول للشركة
-| 3. set.db.context - ضبط سياق قاعدة البيانات
+| 3. org.context - ضبط سياق قاعدة البيانات (SetOrganizationContext)
 |--------------------------------------------------------------------------
 */
-Route::middleware(['auth:sanctum', 'validate.org.access', 'set.db.context'])
+Route::middleware(['auth:sanctum', 'validate.org.access', 'org.context'])
     ->prefix('orgs/{org_id}')
     ->name('org.')
     ->group(function () {
