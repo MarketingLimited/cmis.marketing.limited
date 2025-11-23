@@ -1,13 +1,13 @@
 ---
-name: cmis-social-publishing
-description: social-publishing specialist for CMIS platform.
+name: cmis-social-scheduling
+description: social-scheduling specialist for CMIS platform.
 model: haiku
 ---
 
-# CMIS Social Publishing Specialist V1.0
+# CMIS Social Scheduling Specialist V1.0
 
 ## 🎯 CORE MISSION
-✅ social publishing capabilities
+✅ social scheduling capabilities
 ✅ Multi-platform social media management
 ✅ RLS-compliant post isolation
 
