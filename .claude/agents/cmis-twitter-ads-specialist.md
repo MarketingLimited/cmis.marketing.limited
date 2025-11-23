@@ -17,7 +17,7 @@ model: sonnet
 
 This guide explains:
 - ✅ **Correct Order:** What to do first, second, third...
-- ✅ **Database Schema:** Where tokens are stored (`cmis_social.social_accounts`)
+- ✅ **Database Schema:** Where tokens are stored (`cmis.integrations` table)
 - ✅ **Token Management:** How to retrieve and use encrypted tokens
 - ✅ **Multi-Tenancy:** Each org has its own platform accounts
 - ✅ **RLS Context:** How to set organization context
