@@ -56,10 +56,7 @@ class AlertsController extends Controller
         $rules = $query->orderBy('created_at', 'desc')
             ->paginate($request->input('per_page', 15));
 
-        return response()->json([
-            'success' => true,
-            'rules' => $rules
-        ]);
+        return $this->paginated($rules, 'Alert rules retrieved successfully');
     }
 
     /**
@@ -98,11 +95,7 @@ class AlertsController extends Controller
             ...$validated
         ]);
 
-        return response()->json([
-            'success' => true,
-            'rule' => $rule->load('creator'),
-            'message' => 'Alert rule created successfully'
-        ], 201);
+        return $this->created($rule->load('creator'), 'Alert rule created successfully');
     }
 
     /**
@@ -121,10 +114,7 @@ class AlertsController extends Controller
         $rule = AlertRule::with(['creator', 'recentAlerts'])
             ->findOrFail($ruleId);
 
-        return response()->json([
-            'success' => true,
-            'rule' => $rule
-        ]);
+        return $this->success($rule, 'Alert rule retrieved successfully');
     }
 
     /**
@@ -157,11 +147,7 @@ class AlertsController extends Controller
         $rule = AlertRule::findOrFail($ruleId);
         $rule->update($validated);
 
-        return response()->json([
-            'success' => true,
-            'rule' => $rule->fresh(['creator']),
-            'message' => 'Alert rule updated successfully'
-        ]);
+        return $this->success($rule->fresh(['creator']), 'Alert rule updated successfully');
     }
 
     /**
@@ -180,10 +166,7 @@ class AlertsController extends Controller
         $rule = AlertRule::findOrFail($ruleId);
         $rule->delete();
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Alert rule deleted successfully'
-        ]);
+        return $this->deleted('Alert rule deleted successfully');
     }
 
     /**
@@ -221,10 +204,7 @@ class AlertsController extends Controller
         $alerts = $query->latest('triggered_at')
             ->paginate($request->input('per_page', 20));
 
-        return response()->json([
-            'success' => true,
-            'alerts' => $alerts
-        ]);
+        return $this->paginated($alerts, 'Alert history retrieved successfully');
     }
 
     /**
@@ -247,11 +227,7 @@ class AlertsController extends Controller
         $alert = AlertHistory::findOrFail($alertId);
         $alert->acknowledge($user->user_id, $validated['notes'] ?? null);
 
-        return response()->json([
-            'success' => true,
-            'alert' => $alert->fresh(),
-            'message' => 'Alert acknowledged'
-        ]);
+        return $this->success($alert->fresh(), 'Alert acknowledged successfully');
     }
 
     /**
@@ -274,11 +250,7 @@ class AlertsController extends Controller
         $alert = AlertHistory::findOrFail($alertId);
         $alert->resolve($user->user_id, $validated['notes'] ?? null);
 
-        return response()->json([
-            'success' => true,
-            'alert' => $alert->fresh(),
-            'message' => 'Alert resolved'
-        ]);
+        return $this->success($alert->fresh(), 'Alert resolved successfully');
     }
 
     /**
@@ -301,11 +273,7 @@ class AlertsController extends Controller
         $alert = AlertHistory::findOrFail($alertId);
         $alert->snooze($validated['minutes']);
 
-        return response()->json([
-            'success' => true,
-            'alert' => $alert->fresh(),
-            'message' => "Alert snoozed for {$validated['minutes']} minutes"
-        ]);
+        return $this->success($alert->fresh(), "Alert snoozed for {$validated['minutes']} minutes");
     }
 
     /**
@@ -326,10 +294,7 @@ class AlertsController extends Controller
         // Dispatch evaluation job
         ProcessAlertsJob::dispatch('rule', ['rule_id' => $ruleId]);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Alert rule evaluation queued'
-        ]);
+        return $this->success(null, 'Alert rule evaluation queued');
     }
 
     /**
@@ -355,10 +320,7 @@ class AlertsController extends Controller
 
         $templates = $query->orderBy('usage_count', 'desc')->get();
 
-        return response()->json([
-            'success' => true,
-            'templates' => $templates
-        ]);
+        return $this->success($templates, 'Alert templates retrieved successfully');
     }
 
     /**
@@ -397,10 +359,6 @@ class AlertsController extends Controller
             ...$config
         ]);
 
-        return response()->json([
-            'success' => true,
-            'rule' => $rule->load('creator'),
-            'message' => 'Alert rule created from template'
-        ], 201);
+        return $this->created($rule->load('creator'), 'Alert rule created from template successfully');
     }
 }

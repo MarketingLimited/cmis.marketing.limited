@@ -2,16 +2,76 @@
 
 namespace App\Models\Analytics;
 
-use App\Models\Concerns\HasOrganization;
-
-use App\Models\Core\Org;
-use App\Models\Core\User;
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use App\Models\BaseModel;
+use App\Models\Concerns\HasOrganization;
+use App\Models\Core\User;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+
+/**
+ * Alert Rule Model (Phase 13)
+ *
+ * Defines real-time monitoring rules for campaigns, ads, and other entities
+ *
+ * @property string $rule_id
+ * @property string $org_id
+ * @property string $created_by
+ * @property string $name
+ * @property string|null $description
+ * @property string $entity_type
+ * @property string|null $entity_id
+ * @property string $metric
+ * @property string $condition
+ * @property float $threshold
+ * @property int $time_window_minutes
+ * @property string $severity
+ * @property array $notification_channels
+ * @property array $notification_config
+ * @property int $cooldown_minutes
+ * @property bool $is_active
+ * @property \Carbon\Carbon|null $last_triggered_at
+ * @property int $trigger_count
+ */
+class AlertRule extends BaseModel
+{
+    use HasFactory, HasOrganization, SoftDeletes;
+
+    protected $table = 'cmis.alert_rules';
+    protected $primaryKey = 'rule_id';
+
+    protected $fillable = [
+        'org_id',
+        'created_by',
+        'name',
+        'description',
+        'entity_type',
+        'entity_id',
+        'metric',
+        'condition',
+        'threshold',
+        'time_window_minutes',
+        'severity',
+        'notification_channels',
+        'notification_config',
+        'cooldown_minutes',
+        'is_active',
+    ];
+
+    protected $casts = [
+        'threshold' => 'decimal:4',
+        'time_window_minutes' => 'integer',
+        'cooldown_minutes' => 'integer',
+        'is_active' => 'boolean',
+        'notification_channels' => 'array',
+        'notification_config' => 'array',
+        'last_triggered_at' => 'datetime',
+        'trigger_count' => 'integer',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+        'deleted_at' => 'datetime',
+    ];
 
     /**
      * Get the user who created the rule
@@ -19,6 +79,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by', 'user_id');
+    }
 
     /**
      * Get triggered alerts for this rule
@@ -26,6 +87,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
     public function alerts(): HasMany
     {
         return $this->hasMany(AlertHistory::class, 'rule_id', 'rule_id');
+    }
 
     /**
      * Get recent triggered alerts
@@ -35,6 +97,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
         return $this->alerts()
             ->where('triggered_at', '>=', now()->subDays(30))
             ->latest('triggered_at');
+    }
 
     /**
      * Scope: Active rules only
@@ -42,6 +105,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
     public function scopeActive($query)
     {
         return $query->where('is_active', true);
+    }
 
     /**
      * Scope: By entity type
@@ -54,8 +118,11 @@ use Illuminate\Database\Eloquent\SoftDeletes;
             $query->where(function ($q) use ($entityId) {
                 $q->where('entity_id', $entityId)
                   ->orWhereNull('entity_id');
+            });
+        }
 
         return $query;
+    }
 
     /**
      * Scope: By severity
@@ -63,6 +130,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
     public function scopeBySeverity($query, string $severity)
     {
         return $query->where('severity', $severity);
+    }
 
     /**
      * Scope: Due for evaluation (cooldown period expired)
@@ -73,6 +141,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
             ->where(function ($q) {
                 $q->whereNull('last_triggered_at')
                   ->orWhereRaw('last_triggered_at <= NOW() - INTERVAL \'1 minute\' * cooldown_minutes');
+            });
+    }
 
     /**
      * Check if rule is in cooldown period
@@ -81,9 +151,11 @@ use Illuminate\Database\Eloquent\SoftDeletes;
     {
         if (!$this->last_triggered_at) {
             return false;
+        }
 
         $cooldownEnd = $this->last_triggered_at->addMinutes($this->cooldown_minutes);
         return now()->lt($cooldownEnd);
+    }
 
     /**
      * Evaluate condition against actual value
@@ -99,6 +171,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
             'ne' => abs($actualValue - $this->threshold) >= 0.0001,
             default => false
         };
+    }
 
     /**
      * Get human-readable condition text
@@ -115,6 +188,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
             'change_pct' => 'changes by',
             default => 'unknown'
         };
+    }
 
     /**
      * Mark as triggered
@@ -125,4 +199,5 @@ use Illuminate\Database\Eloquent\SoftDeletes;
             'last_triggered_at' => now(),
             'trigger_count' => $this->trigger_count + 1
         ]);
+    }
 }
