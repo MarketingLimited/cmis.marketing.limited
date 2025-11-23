@@ -68,9 +68,67 @@ class LinkedInConnector extends AbstractConnector
         return true;
     }
 
+    /**
+     * Refresh LinkedIn OAuth access token
+     * FIXED: LinkedIn DOES support refresh tokens (60-day validity)
+     */
     public function refreshToken(Integration $integration): Integration
     {
-        return $integration; // LinkedIn tokens don't have refresh
+        try {
+            $refreshToken = $integration->metadata['refresh_token'] ?? '';
+
+            if (empty($refreshToken)) {
+                Log::warning('No refresh token available for LinkedIn', [
+                    'integration_id' => $integration->integration_id,
+                ]);
+                return $integration;
+            }
+
+            $response = \Http::asForm()->post('https://www.linkedin.com/oauth/v2/accessToken', [
+                'grant_type' => 'refresh_token',
+                'refresh_token' => $refreshToken,
+                'client_id' => config('services.linkedin.client_id'),
+                'client_secret' => config('services.linkedin.client_secret'),
+            ]);
+
+            if ($response->failed()) {
+                Log::error('LinkedIn token refresh failed', [
+                    'error' => $response->json('error_description'),
+                    'integration_id' => $integration->integration_id,
+                ]);
+                return $integration;
+            }
+
+            $tokens = $response->json();
+
+            // Update integration with new encrypted token
+            $metadata = $integration->metadata ?? [];
+
+            // Update refresh token if provided (rolling refresh)
+            if (isset($tokens['refresh_token'])) {
+                $metadata['refresh_token'] = $tokens['refresh_token'];
+            }
+
+            $metadata['token_refreshed_at'] = now()->toDateTimeString();
+
+            $integration->update([
+                'access_token' => encrypt($tokens['access_token']),
+                'token_expires_at' => now()->addSeconds($tokens['expires_in']),
+                'metadata' => $metadata,
+            ]);
+
+            Log::info('LinkedIn token refreshed successfully', [
+                'integration_id' => $integration->integration_id,
+            ]);
+
+            return $integration->fresh();
+        } catch (\Exception $e) {
+            Log::error('LinkedIn refreshToken exception', [
+                'error' => $e->getMessage(),
+                'integration_id' => $integration->integration_id,
+            ]);
+            return $integration;
+        }
     }
 
     public function syncCampaigns(Integration $integration, array $options = []): Collection

@@ -39,28 +39,34 @@ class AutomationWorkflow extends BaseModel
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by', 'user_id');
+    }
 
     // ===== Workflow Management =====
 
     public function activate(): void
     {
         $this->update(['status' => 'active']);
+    }
 
     public function archive(): void
     {
         $this->update(['status' => 'archived']);
+    }
 
     public function incrementUsage(): void
     {
         $this->increment('usage_count');
+    }
 
     public function isGlobalTemplate(): bool
     {
         return $this->is_template && $this->org_id === null;
+    }
 
     public function isOrgTemplate(): bool
     {
         return $this->is_template && $this->org_id !== null;
+    }
 
     // ===== Rule Helpers =====
 
@@ -69,6 +75,7 @@ class AutomationWorkflow extends BaseModel
         $rules = $this->rules ?? [];
         $rules[] = $rule;
         $this->update(['rules' => $rules]);
+    }
 
     public function removeRule(int $index): void
     {
@@ -76,30 +83,38 @@ class AutomationWorkflow extends BaseModel
         if (isset($rules[$index])) {
             unset($rules[$index]);
             $this->update(['rules' => array_values($rules)]);
+        }
+    }
 
     public function getRuleCount(): int
     {
         return count($this->rules ?? []);
+    }
 
     // ===== Scopes =====
 
     public function scopeActive($query)
     {
         return $query->where('status', 'active');
+    }
 
     public function scopeTemplates($query)
     {
         return $query->where('is_template', true);
+    }
 
     public function scopeGlobalTemplates($query)
     {
         return $query->where('is_template', true)->whereNull('org_id');
+    }
 
     public function scopeOrgTemplates($query, string $orgId)
     {
         return $query->where('is_template', true)->where('org_id', $orgId);
+    }
 
     public function scopeOfCategory($query, string $category)
     {
         return $query->where('category', $category);
+    }
 }
