@@ -20,6 +20,7 @@ use App\Http\Controllers\API\PlatformIntegrationController;
 use App\Http\Controllers\API\SyncController;
 use App\Http\Controllers\API\ContentPublishingController;
 use App\Http\Controllers\API\WebhookController;
+use App\Http\Controllers\API\Webhooks\TikTokWebhookController;
 use App\Http\Controllers\API\AnalyticsController;
 use App\Http\Controllers\API\AdCampaignController as APIAdCampaignController;
 
@@ -72,8 +73,7 @@ Route::prefix('webhooks')->name('webhooks.')
             ->middleware('verify.webhook:google')
             ->name('google');
 
-        Route::post('/tiktok', [WebhookController::class, 'handleTikTokWebhook'])
-            ->middleware('verify.webhook:tiktok')
+        Route::post('/tiktok', [TikTokWebhookController::class, 'handle'])
             ->name('tiktok');
 
         Route::post('/twitter', [WebhookController::class, 'handleTwitterWebhook'])

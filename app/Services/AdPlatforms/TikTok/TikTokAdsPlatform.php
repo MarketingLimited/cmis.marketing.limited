@@ -17,12 +17,13 @@ use Illuminate\Support\Facades\Log;
 class TikTokAdsPlatform extends AbstractAdPlatform
 {
     protected string $advertiserId;
+    protected string $accessToken;
 
     protected function getConfig(): array
     {
         return [
-            'api_version' => 'v1.3',
-            'api_base_url' => 'https://business-api.tiktok.com',
+            'api_version' => config('services.tiktok.api_version', 'v1.3'),
+            'api_base_url' => config('services.tiktok.base_url', 'https://business-api.tiktok.com'),
         ];
     }
 
@@ -37,7 +38,51 @@ class TikTokAdsPlatform extends AbstractAdPlatform
     public function __construct(\App\Models\Core\Integration $integration)
     {
         parent::__construct($integration);
-        $this->advertiserId = $integration->metadata['advertiser_id'] ?? '';
+
+        // Validate and extract advertiser ID
+        if (empty($integration->metadata['advertiser_id'])) {
+            throw new \InvalidArgumentException('TikTok advertiser_id not configured in integration metadata');
+        }
+        $this->advertiserId = $integration->metadata['advertiser_id'];
+
+        // Extract and decrypt access token
+        if (empty($integration->access_token)) {
+            throw new \InvalidArgumentException('TikTok integration not authenticated');
+        }
+        $this->accessToken = decrypt($integration->access_token);
+
+        // Check token expiration and refresh if needed
+        $this->ensureValidToken();
+    }
+
+    /**
+     * Override to add TikTok-specific Access-Token header
+     */
+    protected function getDefaultHeaders(): array
+    {
+        return array_merge(parent::getDefaultHeaders(), [
+            'Access-Token' => $this->accessToken,
+        ]);
+    }
+
+    /**
+     * Ensure token is valid, refresh if expired
+     */
+    protected function ensureValidToken(): void
+    {
+        if ($this->integration->token_expires_at &&
+            $this->integration->token_expires_at->isPast()) {
+            Log::info('TikTok token expired, refreshing', [
+                'integration_id' => $this->integration->integration_id,
+            ]);
+
+            $result = $this->refreshAccessToken();
+            if ($result['success']) {
+                $this->accessToken = $result['access_token'];
+            } else {
+                throw new \Exception('Failed to refresh TikTok access token: ' . ($result['error'] ?? 'Unknown error'));
+            }
+        }
     }
 
     /**
@@ -709,36 +754,47 @@ class TikTokAdsPlatform extends AbstractAdPlatform
     public function refreshAccessToken(): array
     {
         try {
-            $refreshToken = $this->integration->metadata['refresh_token'] ?? '';
-
-            if (empty($refreshToken)) {
+            // Get encrypted refresh token from integration
+            if (empty($this->integration->refresh_token)) {
                 return [
                     'success' => false,
                     'error' => 'No refresh token available',
                 ];
             }
 
+            $refreshToken = decrypt($this->integration->refresh_token);
             $url = 'https://business-api.tiktok.com/open_api/v1.3/oauth2/refresh_token/';
 
-            $response = $this->makeRequest('POST', $url, [
-                'app_id' => config('services.tiktok.app_id'),
-                'secret' => config('services.tiktok.app_secret'),
+            // Use Http facade directly (not makeRequest) to avoid circular dependency
+            $response = Http::asForm()->post($url, [
+                'app_id' => config('services.tiktok.client_key'),
+                'secret' => config('services.tiktok.client_secret'),
                 'refresh_token' => $refreshToken,
             ]);
 
-            if (isset($response['code']) && $response['code'] == 0) {
-                $newAccessToken = $response['data']['access_token'];
-                $newRefreshToken = $response['data']['refresh_token'];
-                $expiresIn = $response['data']['expires_in'];
+            if ($response->failed()) {
+                throw new \Exception('Token refresh request failed: ' . $response->body());
+            }
 
-                // Update integration with new tokens
-                $metadata = $this->integration->metadata;
-                $metadata['access_token'] = $newAccessToken;
-                $metadata['refresh_token'] = $newRefreshToken;
-                $metadata['expires_at'] = now()->addSeconds($expiresIn)->toDateTimeString();
+            $data = $response->json();
 
-                $this->integration->update(['metadata' => $metadata]);
-                $this->accessToken = $newAccessToken;
+            if (isset($data['code']) && $data['code'] == 0) {
+                $newAccessToken = $data['data']['access_token'];
+                $newRefreshToken = $data['data']['refresh_token'];
+                $expiresIn = $data['data']['expires_in'];
+
+                // Update integration with new encrypted tokens
+                $this->integration->update([
+                    'access_token' => encrypt($newAccessToken),
+                    'refresh_token' => encrypt($newRefreshToken),
+                    'token_expires_at' => now()->addSeconds($expiresIn),
+                    'token_refreshed_at' => now(),
+                ]);
+
+                Log::info('TikTok token refreshed successfully', [
+                    'integration_id' => $this->integration->integration_id,
+                    'expires_at' => now()->addSeconds($expiresIn),
+                ]);
 
                 return [
                     'success' => true,
@@ -749,11 +805,12 @@ class TikTokAdsPlatform extends AbstractAdPlatform
 
             return [
                 'success' => false,
-                'error' => $response['message'] ?? 'Failed to refresh token',
+                'error' => $data['message'] ?? 'Failed to refresh token',
             ];
         } catch (\Exception $e) {
             Log::error('TikTok refreshAccessToken failed', [
                 'error' => $e->getMessage(),
+                'integration_id' => $this->integration->integration_id,
             ]);
 
             return [
