@@ -51,6 +51,7 @@ return [
         // Webhook security (CRITICAL: Required for webhook signature verification)
         'app_secret' => env('META_APP_SECRET', env('META_CLIENT_SECRET')), // Fallback to client_secret
         'webhook_verify_token' => env('META_WEBHOOK_VERIFY_TOKEN'),
+        'webhook_secret' => env('META_WEBHOOK_SECRET'),
     ],
 
     'facebook' => [
@@ -83,6 +84,9 @@ return [
         'credentials_path' => env('GOOGLE_APPLICATION_CREDENTIALS'),
         'storage_bucket' => env('GOOGLE_STORAGE_BUCKET', 'cmis-video-ads'),
         'use_org_keys' => env('GOOGLE_USE_ORG_KEYS', false),
+
+        // Webhook security
+        'webhook_secret' => env('GOOGLE_WEBHOOK_SECRET'),
     ],
 
     'google_ads' => [
@@ -109,6 +113,7 @@ return [
         'rate_limit' => env('TIKTOK_RATE_LIMIT', 100),
         // Webhook security
         'webhook_verify_token' => env('TIKTOK_WEBHOOK_VERIFY_TOKEN'),
+        'webhook_secret' => env('TIKTOK_WEBHOOK_SECRET'),
     ],
 
     // Snapchat
@@ -117,6 +122,8 @@ return [
         'client_secret' => env('SNAPCHAT_CLIENT_SECRET'),
         'redirect_uri' => env('SNAPCHAT_REDIRECT_URI'),
         'rate_limit' => env('SNAPCHAT_RATE_LIMIT', 100),
+        // Webhook security
+        'webhook_secret' => env('SNAPCHAT_WEBHOOK_SECRET'),
     ],
 
     // Twitter/X
@@ -129,6 +136,8 @@ return [
         'redirect_uri' => env('TWITTER_REDIRECT_URI'),
         'api_version' => env('TWITTER_API_VERSION', '2'),
         'rate_limit' => env('TWITTER_RATE_LIMIT', 300),
+        // Webhook security
+        'webhook_secret' => env('TWITTER_WEBHOOK_SECRET'),
     ],
 
     // LinkedIn
@@ -138,6 +147,8 @@ return [
         'redirect_uri' => env('LINKEDIN_REDIRECT_URI'),
         'api_version' => env('LINKEDIN_API_VERSION', '202401'),
         'rate_limit' => env('LINKEDIN_RATE_LIMIT', 100),
+        // Webhook security
+        'webhook_secret' => env('LINKEDIN_WEBHOOK_SECRET'),
     ],
 
     // WhatsApp Business
