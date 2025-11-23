@@ -14,7 +14,7 @@ class SemanticSearchController extends Controller
     use ApiResponse;
 
     /**
-     * تنفيذ البحث الدلالي عبر API.
+     * Execute semantic search via API.
      */
     public function search(Request $request, SemanticSearchService $service)
     {
@@ -23,27 +23,25 @@ class SemanticSearchController extends Controller
         $query = $request->input('q');
 
         if (!$query) {
-            return response()->json([
-                'error' => 'Missing query parameter (q)'
-            ], 400);
+            return $this->validationError(
+                ['q' => ['The query parameter is required']],
+                'Missing query parameter'
+            );
         }
 
         try {
             $results = $service->search($query);
             Log::info('Semantic search executed', ['query' => $query, 'count' => count($results)]);
 
-            return response()->json([
-                'data' => $results,
+            return $this->success([
+                'results' => $results,
                 'count' => count($results),
                 'timestamp' => now()->toDateTimeString()
-            ], 200);
+            ], 'Semantic search completed successfully');
 
         } catch (\Throwable $e) {
             Log::error('Semantic search failed', ['error' => $e->getMessage()]);
-            return response()->json([
-                'error' => 'Internal server error',
-                'message' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Semantic search failed: ' . $e->getMessage());
         }
     }
 }

@@ -26,41 +26,91 @@ class GeminiProvider implements EmbeddingProviderInterface
     }
 
     /**
-     * Generate embedding for a single text
+     * Generate embedding for a single text with retry logic
      */
     public function generateEmbedding(string $text, string $taskType = 'RETRIEVAL_DOCUMENT'): array
     {
-        try {
-            $this->checkRateLimit();
+        $retryAttempts = $this->config['retry_attempts'] ?? 3;
+        $lastException = null;
 
-            $url = $this->baseUrl . $this->modelName . ':embedContent';
+        for ($attempt = 1; $attempt <= $retryAttempts; $attempt++) {
+            try {
+                $this->checkRateLimit();
 
-            $response = Http::timeout($this->config['timeout_seconds'] ?? 30)
-                ->withHeaders(['Content-Type' => 'application/json'])
-                ->post($url . '?key=' . $this->apiKey, [
-                    'model' => $this->modelName,
-                    'content' => [
-                        'parts' => [['text' => $text]],
-                    ],
-                    'taskType' => $taskType,
-                ]);
+                $url = $this->baseUrl . $this->modelName . ':embedContent';
 
-            if (!$response->successful()) {
-                throw new Exception('Gemini API error: ' . $response->body());
+                $response = Http::timeout($this->config['timeout_seconds'] ?? 30)
+                    ->withHeaders(['Content-Type' => 'application/json'])
+                    ->post($url . '?key=' . $this->apiKey, [
+                        'model' => $this->modelName,
+                        'content' => [
+                            'parts' => [['text' => $text]],
+                        ],
+                        'taskType' => $taskType,
+                    ]);
+
+                if (!$response->successful()) {
+                    $errorBody = $response->body();
+                    $statusCode = $response->status();
+
+                    // Check if error is retryable
+                    if ($this->isRetryableError($statusCode) && $attempt < $retryAttempts) {
+                        $backoffSeconds = pow(2, $attempt - 1); // Exponential backoff: 1, 2, 4 seconds
+                        Log::warning('Gemini API error (retryable), backing off', [
+                            'attempt' => $attempt,
+                            'status_code' => $statusCode,
+                            'backoff_seconds' => $backoffSeconds,
+                            'text_length' => strlen($text)
+                        ]);
+                        sleep($backoffSeconds);
+                        continue;
+                    }
+
+                    throw new Exception("Gemini API error (HTTP {$statusCode}): {$errorBody}");
+                }
+
+                $this->requestCount++;
+                $data = $response->json();
+                $embedding = $data['embedding']['values'] ?? [];
+
+                if (empty($embedding)) {
+                    throw new Exception('Gemini API returned empty embedding');
+                }
+
+                return $this->normalizeVector($embedding);
+
+            } catch (Exception $e) {
+                $lastException = $e;
+
+                if ($attempt < $retryAttempts) {
+                    $backoffSeconds = pow(2, $attempt - 1);
+                    Log::warning('Embedding generation failed (retrying)', [
+                        'attempt' => $attempt,
+                        'error' => $e->getMessage(),
+                        'backoff_seconds' => $backoffSeconds,
+                        'text_length' => strlen($text)
+                    ]);
+                    sleep($backoffSeconds);
+                } else {
+                    Log::error('Gemini embedding generation failed after retries', [
+                        'attempts' => $retryAttempts,
+                        'error' => $e->getMessage(),
+                        'text_length' => strlen($text)
+                    ]);
+                }
             }
-
-            $this->requestCount++;
-            $data = $response->json();
-            $embedding = $data['embedding']['values'] ?? [];
-
-            return $this->normalizeVector($embedding);
-        } catch (Exception $e) {
-            Log::error('Gemini embedding generation failed', [
-                'error' => $e->getMessage(),
-                'text_length' => strlen($text)
-            ]);
-            throw $e;
         }
+
+        throw $lastException;
+    }
+
+    /**
+     * Check if HTTP status code indicates a retryable error
+     */
+    private function isRetryableError(int $statusCode): bool
+    {
+        // Retry on rate limits, server errors, and timeouts
+        return in_array($statusCode, [429, 500, 502, 503, 504]);
     }
 
     /**

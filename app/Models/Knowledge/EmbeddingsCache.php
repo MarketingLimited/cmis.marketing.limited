@@ -44,8 +44,10 @@ class EmbeddingsCache extends BaseModel
 
         if ($modelName) {
             $query->where('model_name', $modelName);
+        }
 
         return $query->first();
+    }
 
     /**
      * Get or create cache entry
@@ -58,8 +60,10 @@ class EmbeddingsCache extends BaseModel
         if ($cached) {
             $cached->recordAccess();
             return $cached;
+        }
 
         return null; // Caller should generate embedding
+    }
 
     /**
      * Record access
@@ -68,6 +72,7 @@ class EmbeddingsCache extends BaseModel
     {
         $this->increment('access_count');
         $this->update(['last_accessed' => now()]);
+    }
 
     /**
      * Scope by content type
@@ -75,6 +80,7 @@ class EmbeddingsCache extends BaseModel
     public function scopeByContentType($query, string $contentType)
     {
         return $query->where('content_type', $contentType);
+    }
 
     /**
      * Scope by model name
@@ -82,6 +88,7 @@ class EmbeddingsCache extends BaseModel
     public function scopeByModel($query, string $modelName)
     {
         return $query->where('model_name', $modelName);
+    }
 
     /**
      * Scope stale entries (not accessed in X days)
@@ -89,4 +96,5 @@ class EmbeddingsCache extends BaseModel
     public function scopeStale($query, int $days = 30)
     {
         return $query->where('last_accessed', '<', now()->subDays($days));
+    }
 }
