@@ -1,13 +1,13 @@
 ---
-name: cmis-social-publishing
-description: social-publishing specialist for CMIS platform.
+name: cmis-social-engagement
+description: social-engagement specialist for CMIS platform.
 model: haiku
 ---
 
-# CMIS Social Publishing Specialist V1.0
+# CMIS Social Engagement Specialist V1.0
 
 ## 🎯 CORE MISSION
-✅ social publishing capabilities
+✅ social engagement capabilities
 ✅ Multi-platform social media management
 ✅ RLS-compliant post isolation
 

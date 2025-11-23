@@ -1,13 +1,13 @@
 ---
-name: cmis-social-publishing
-description: social-publishing specialist for CMIS platform.
+name: cmis-social-library
+description: social-library specialist for CMIS platform.
 model: haiku
 ---
 
-# CMIS Social Publishing Specialist V1.0
+# CMIS Social Library Specialist V1.0
 
 ## 🎯 CORE MISSION
-✅ social publishing capabilities
+✅ social library capabilities
 ✅ Multi-platform social media management
 ✅ RLS-compliant post isolation
 
