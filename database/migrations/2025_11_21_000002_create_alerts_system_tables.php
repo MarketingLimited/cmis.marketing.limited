@@ -1,12 +1,14 @@
 <?php
 
+use Database\Migrations\Concerns\HasRLSPolicies;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
+    use HasRLSPolicies;
+
     /**
      * Run the migrations.
      */
@@ -54,14 +56,8 @@ return new class extends Migration
                 ->onDelete('cascade');
         });
 
-        // Enable RLS
-        DB::statement('ALTER TABLE cmis.alert_rules ENABLE ROW LEVEL SECURITY');
-
-        // Create RLS policy
-        DB::statement("
-            CREATE POLICY org_isolation ON cmis.alert_rules
-            USING (org_id = current_setting('app.current_org_id')::uuid)
-        ");
+        // Enable RLS for alert_rules
+        $this->enableRLS('cmis.alert_rules');
 
         // Create alert_history table (triggered alerts)
         Schema::create('cmis.alert_history', function (Blueprint $table) {
@@ -113,13 +109,7 @@ return new class extends Migration
         });
 
         // Enable RLS for alert_history
-        DB::statement('ALTER TABLE cmis.alert_history ENABLE ROW LEVEL SECURITY');
-
-        // Create RLS policy for alert_history
-        DB::statement("
-            CREATE POLICY org_isolation ON cmis.alert_history
-            USING (org_id = current_setting('app.current_org_id')::uuid)
-        ");
+        $this->enableRLS('cmis.alert_history');
 
         // Create alert_notifications table (delivery tracking)
         Schema::create('cmis.alert_notifications', function (Blueprint $table) {
@@ -156,13 +146,7 @@ return new class extends Migration
         });
 
         // Enable RLS for alert_notifications
-        DB::statement('ALTER TABLE cmis.alert_notifications ENABLE ROW LEVEL SECURITY');
-
-        // Create RLS policy for alert_notifications
-        DB::statement("
-            CREATE POLICY org_isolation ON cmis.alert_notifications
-            USING (org_id = current_setting('app.current_org_id')::uuid)
-        ");
+        $this->enableRLS('cmis.alert_notifications');
 
         // Create alert_templates table (pre-built alert configurations)
         Schema::create('cmis.alert_templates', function (Blueprint $table) {
@@ -183,6 +167,9 @@ return new class extends Migration
             $table->index('entity_type');
             $table->index('is_public');
         });
+
+        // Alert templates are public/shared across orgs, so use public RLS
+        $this->enablePublicRLS('cmis.alert_templates');
 
         // Create escalation_policies table
         Schema::create('cmis.escalation_policies', function (Blueprint $table) {
@@ -206,13 +193,7 @@ return new class extends Migration
         });
 
         // Enable RLS for escalation_policies
-        DB::statement('ALTER TABLE cmis.escalation_policies ENABLE ROW LEVEL SECURITY');
-
-        // Create RLS policy for escalation_policies
-        DB::statement("
-            CREATE POLICY org_isolation ON cmis.escalation_policies
-            USING (org_id = current_setting('app.current_org_id')::uuid)
-        ");
+        $this->enableRLS('cmis.escalation_policies');
     }
 
     /**
@@ -220,17 +201,20 @@ return new class extends Migration
      */
     public function down(): void
     {
-        // Drop RLS policies first
-        DB::statement('DROP POLICY IF EXISTS org_isolation ON cmis.escalation_policies');
-        DB::statement('DROP POLICY IF EXISTS org_isolation ON cmis.alert_notifications');
-        DB::statement('DROP POLICY IF EXISTS org_isolation ON cmis.alert_history');
-        DB::statement('DROP POLICY IF EXISTS org_isolation ON cmis.alert_rules');
-
-        // Drop tables
+        // Disable RLS and drop tables
+        $this->disableRLS('cmis.escalation_policies');
         Schema::dropIfExists('cmis.escalation_policies');
+
+        $this->disableRLS('cmis.alert_templates', ['allow_all']);
         Schema::dropIfExists('cmis.alert_templates');
+
+        $this->disableRLS('cmis.alert_notifications');
         Schema::dropIfExists('cmis.alert_notifications');
+
+        $this->disableRLS('cmis.alert_history');
         Schema::dropIfExists('cmis.alert_history');
+
+        $this->disableRLS('cmis.alert_rules');
         Schema::dropIfExists('cmis.alert_rules');
     }
 };
