@@ -3,15 +3,15 @@
 namespace Tests\Browser;
 
 use App\Models\User;
-use App\Models\Core\Organization;
-use Illuminate\Foundation\Testing\DatabaseMigrations;
+use App\Models\Core\Org;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Dusk\Browser;
 use Tests\Browser\Pages\OrganizationIndexPage;
 use Tests\DuskTestCase;
 
 class OrganizationManagementTest extends DuskTestCase
 {
-    use DatabaseMigrations;
+    use RefreshDatabase;
 
     protected User $user;
 
@@ -27,7 +27,7 @@ class OrganizationManagementTest extends DuskTestCase
      */
     public function test_user_can_view_organizations_list(): void
     {
-        Organization::factory()->count(3)->create();
+        Org::factory()->count(3)->create();
 
         $this->browse(function (Browser $browser) {
             $browser->loginAs($this->user)
@@ -63,7 +63,7 @@ class OrganizationManagementTest extends DuskTestCase
      */
     public function test_user_can_select_organization(): void
     {
-        $org = Organization::factory()->create();
+        $org = Org::factory()->create();
 
         $this->browse(function (Browser $browser) use ($org) {
             $browser->loginAs($this->user)
@@ -80,7 +80,7 @@ class OrganizationManagementTest extends DuskTestCase
      */
     public function test_user_can_view_organization_details(): void
     {
-        $org = Organization::factory()->create([
+        $org = Org::factory()->create([
             'name' => 'View Test Org',
         ]);
 
@@ -98,7 +98,7 @@ class OrganizationManagementTest extends DuskTestCase
      */
     public function test_user_can_edit_organization(): void
     {
-        $org = Organization::factory()->create();
+        $org = Org::factory()->create();
 
         $this->browse(function (Browser $browser) use ($org) {
             $browser->loginAs($this->user)
@@ -121,7 +121,7 @@ class OrganizationManagementTest extends DuskTestCase
      */
     public function test_user_can_view_organization_campaigns(): void
     {
-        $org = Organization::factory()->create();
+        $org = Org::factory()->create();
 
         $this->browse(function (Browser $browser) use ($org) {
             $browser->loginAs($this->user)
@@ -137,7 +137,7 @@ class OrganizationManagementTest extends DuskTestCase
      */
     public function test_user_can_invite_team_member(): void
     {
-        $org = Organization::factory()->create();
+        $org = Org::factory()->create();
 
         $this->browse(function (Browser $browser) use ($org) {
             $browser->loginAs($this->user)
@@ -158,8 +158,8 @@ class OrganizationManagementTest extends DuskTestCase
      */
     public function test_organization_switcher(): void
     {
-        $org1 = Organization::factory()->create(['name' => 'Org 1']);
-        $org2 = Organization::factory()->create(['name' => 'Org 2']);
+        $org1 = Org::factory()->create(['name' => 'Org 1']);
+        $org2 = Org::factory()->create(['name' => 'Org 2']);
 
         $this->browse(function (Browser $browser) use ($org1, $org2) {
             $browser->loginAs($this->user)
@@ -177,7 +177,7 @@ class OrganizationManagementTest extends DuskTestCase
      */
     public function test_organization_campaign_comparison_export(): void
     {
-        $org = Organization::factory()->create();
+        $org = Org::factory()->create();
 
         $this->browse(function (Browser $browser) use ($org) {
             $browser->loginAs($this->user)

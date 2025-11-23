@@ -3,7 +3,7 @@
 namespace Tests\Browser;
 
 use App\Models\User;
-use Illuminate\Foundation\Testing\DatabaseMigrations;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Dusk\Browser;
 use Tests\Browser\Pages\LoginPage;
 use Tests\Browser\Pages\RegisterPage;
@@ -12,7 +12,7 @@ use Tests\DuskTestCase;
 
 class AuthenticationTest extends DuskTestCase
 {
-    use DatabaseMigrations;
+    use RefreshDatabase;
 
     /**
      * Test that a user can view the login page.
@@ -21,7 +21,7 @@ class AuthenticationTest extends DuskTestCase
     {
         $this->browse(function (Browser $browser) {
             $browser->visit(new LoginPage)
-                ->assertSee('Login')
+                ->assertSee('Sign in to your account')
                 ->assertPresent('@email')
                 ->assertPresent('@password')
                 ->assertPresent('@submit');
@@ -96,7 +96,7 @@ class AuthenticationTest extends DuskTestCase
     {
         $this->browse(function (Browser $browser) {
             $browser->visit(new RegisterPage)
-                ->assertSee('Register')
+                ->assertSee('Create your account')
                 ->assertPresent('@name')
                 ->assertPresent('@email')
                 ->assertPresent('@password')

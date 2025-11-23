@@ -3,15 +3,15 @@
 namespace Tests\Browser;
 
 use App\Models\User;
-use App\Models\Core\Organization;
-use Illuminate\Foundation\Testing\DatabaseMigrations;
+use App\Models\Core\Org;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 use Laravel\Dusk\Browser;
 use Tests\DuskTestCase;
 
 class InvitationFlowTest extends DuskTestCase
 {
-    use DatabaseMigrations;
+    use RefreshDatabase;
 
     protected User $inviter;
     protected Organization $org;
@@ -20,7 +20,7 @@ class InvitationFlowTest extends DuskTestCase
     {
         parent::setUp();
 
-        $this->org = Organization::factory()->create();
+        $this->org = Org::factory()->create();
         $this->inviter = User::factory()->create([
             'active_org_id' => $this->org->id,
         ]);

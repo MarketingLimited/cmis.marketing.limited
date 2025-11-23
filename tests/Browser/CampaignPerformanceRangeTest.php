@@ -3,15 +3,15 @@
 namespace Tests\Browser;
 
 use App\Models\User;
-use App\Models\Core\Organization;
+use App\Models\Core\Org;
 use App\Models\Campaign\Campaign;
-use Illuminate\Foundation\Testing\DatabaseMigrations;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Dusk\Browser;
 use Tests\DuskTestCase;
 
 class CampaignPerformanceRangeTest extends DuskTestCase
 {
-    use DatabaseMigrations;
+    use RefreshDatabase;
 
     protected User $user;
     protected Organization $org;
@@ -21,7 +21,7 @@ class CampaignPerformanceRangeTest extends DuskTestCase
     {
         parent::setUp();
 
-        $this->org = Organization::factory()->create();
+        $this->org = Org::factory()->create();
         $this->user = User::factory()->create([
             'active_org_id' => $this->org->id,
         ]);
