@@ -33,25 +33,35 @@ class AdminOnly
         }
 
         $user = Auth::user();
+        $orgId = session('current_org_id');
 
-        // Check if user is admin (multiple ways to determine admin)
-        $isAdmin = $user->is_admin
-                   ?? $user->role === 'admin'
-                   ?? $user->hasRole('admin')
-                   ?? false;
+        // Require organization context for admin checks
+        if (!$orgId) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'error' => 'Forbidden',
+                    'message' => 'No organization context available',
+                ], 403);
+            }
+
+            abort(403, 'No organization context available.');
+        }
+
+        // Check if user has admin or owner role in current organization
+        $isAdmin = $user->hasRoleInOrg($orgId, 'admin') || $user->hasRoleInOrg($orgId, 'owner');
 
         if (!$isAdmin) {
             if ($request->expectsJson()) {
                 return response()->json([
                     'error' => 'Forbidden',
-                    'message' => 'You do not have permission to access this resource',
+                    'message' => 'Admin privileges required for this resource',
                 ], 403);
             }
 
             abort(403, 'Access denied. Admin privileges required.');
         }
 
-        // Set admin context for database operations (RLS bypass)
+        // Set admin context for database operations (RLS bypass for admin operations)
         try {
             \DB::statement("SET LOCAL app.is_admin = true");
         } catch (\Exception $e) {
