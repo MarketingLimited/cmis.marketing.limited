@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Analytics;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Concerns\ApiResponse;
 use App\Models\Analytics\Forecast;
 use App\Models\Analytics\Anomaly;
 use App\Models\Analytics\Recommendation;
