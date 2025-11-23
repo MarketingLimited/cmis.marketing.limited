@@ -451,6 +451,28 @@ grep -l "$keyword" .claude/agents/*.md
   - "Mock platform API responses"
   - "Improve test coverage"
 
+**Code Refactoring & Modularization:**
+- **Keywords:** refactor, monolithic, fat controller, god class, SRP, extract service, modularize, split file, code smell, long method, duplicate code
+- **Agent:** `laravel-refactor-specialist`
+- **When:** Refactoring large files (>300 lines), applying Single Responsibility Principle, extracting service layers, breaking down monolithic code
+- **Examples:**
+  - "My controller is 500+ lines, help refactor it"
+  - "Extract service layer from fat controller"
+  - "Split monolithic class into smaller modules"
+  - "Refactor God class into cohesive components"
+  - "Apply SRP to improve maintainability"
+
+**Traits & Code Patterns:**
+- **Keywords:** trait, HasOrganization, BaseModel, SoftDeletes, code duplication, mixin, composition, standardization, pattern implementation
+- **Agent:** `cmis-trait-specialist`
+- **When:** Implementing traits, migrating to standardized patterns, eliminating code duplication, applying CMIS standardization patterns
+- **Examples:**
+  - "How do I create a new trait for CMIS models?"
+  - "Migrate models to use HasOrganization trait"
+  - "Standardize code patterns across models"
+  - "Implement BaseModel pattern for new model"
+  - "Apply HasRLSPolicies trait to migrations"
+
 **UI & Frontend:**
 - **Keywords:** frontend, ui, alpine, tailwind, javascript, component, responsive, design
 - **Agent:** `cmis-ui-frontend`
@@ -706,8 +728,8 @@ Your job:
 ---
 
 **Version:** 3.0 - Adaptive Coordination with Complete 100% Coverage
-**Last Updated:** 2025-11-22
-**Total Agents:** 37 specialized agents
+**Last Updated:** 2025-11-23
+**Total Agents:** 45 specialized agents
 **Framework:** META_COGNITIVE_FRAMEWORK + Coordination Patterns
 **Status:** ACTIVE
 
