@@ -2,11 +2,14 @@
 
 namespace App\Models\Session;
 
+use App\Models\Concerns\HasOrganization;
+
 use App\Models\BaseModel;
 
 class SessionContext extends BaseModel
 {
-    protected $table = 'cmis.session_context';
+    use HasOrganization;
+protected $table = 'cmis.session_context';
     protected $primaryKey = 'session_id';
     public $timestamps = false;
 

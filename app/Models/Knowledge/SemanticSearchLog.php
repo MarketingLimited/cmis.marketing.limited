@@ -8,7 +8,8 @@ use App\Models\BaseModel;
 
 class SemanticSearchLog extends BaseModel
 {
-    
+    use HasOrganization;
+
     protected $table = 'cmis.semantic_search_log';
     protected $primaryKey = 'search_id';
     public $timestamps = false;

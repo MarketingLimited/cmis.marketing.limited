@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Experiment extends BaseModel
 {
-    use HasFactory, SoftDeletes, HasOrganization;
+    use HasOrganization, HasFactory, SoftDeletes;
 
     protected $table = 'cmis.experiments';
     protected $primaryKey = 'experiment_id';

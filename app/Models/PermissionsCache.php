@@ -8,6 +8,8 @@ use App\Models\BaseModel;
 
 class PermissionsCache extends BaseModel
 {
+    use HasOrganization;
+
     protected $table = 'cmis.permissions_cache';
     protected $primaryKey = 'permission_id';
     public $timestamps = false;
@@ -32,6 +34,7 @@ class PermissionsCache extends BaseModel
     {
         return $query->where('user_id', $userId)
             ->where('org_id', $orgId);
+    }
 
     /**
      * Scope to get old cache entries
@@ -39,4 +42,5 @@ class PermissionsCache extends BaseModel
     public function scopeOld($query, int $days = 30)
     {
         return $query->where('last_used', '<', now()->subDays($days));
+    }
 }
