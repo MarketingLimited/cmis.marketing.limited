@@ -3,7 +3,6 @@
 namespace App\Models\Analytics;
 
 use App\Models\Concerns\HasOrganization;
-
 use App\Models\Core\Org;
 use App\Models\Core\User;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
@@ -13,12 +12,64 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+class ScheduledReport extends BaseModel
+{
+    use HasFactory, SoftDeletes, HasUuids;
+    use HasOrganization;
+
+    protected $table = 'cmis_analytics.scheduled_reports';
+
+    protected $primaryKey = 'schedule_id';
+
+    protected $fillable = [
+        'schedule_id',
+        'org_id',
+        'user_id',
+        'report_type',
+        'name',
+        'description',
+        'frequency',
+        'day_of_week',
+        'day_of_month',
+        'delivery_time',
+        'timezone',
+        'recipients',
+        'format',
+        'filters',
+        'is_active',
+        'last_run_at',
+        'next_run_at',
+        'run_count',
+    ];
+
+    protected $casts = [
+        'schedule_id' => 'string',
+        'org_id' => 'string',
+        'user_id' => 'string',
+        'recipients' => 'array',
+        'filters' => 'array',
+        'is_active' => 'boolean',
+        'last_run_at' => 'datetime',
+        'next_run_at' => 'datetime',
+        'run_count' => 'integer',
+        'deleted_at' => 'datetime',
+    ];
+
+    /**
+     * Get the organization this schedule belongs to
+     */
+    public function organization(): BelongsTo
+    {
+        return $this->belongsTo(Org::class, 'org_id', 'org_id');
+    }
+
     /**
      * Get the user who created the schedule
      */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id', 'user_id');
+    }
 
     /**
      * Get execution logs for this schedule
@@ -26,6 +77,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
     public function executionLogs(): HasMany
     {
         return $this->hasMany(ReportExecutionLog::class, 'schedule_id', 'schedule_id');
+    }
 
     /**
      * Get the latest execution log
@@ -33,6 +85,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
     public function latestExecution(): HasMany
     {
         return $this->executionLogs()->latest('executed_at')->limit(1);
+    }
 
     /**
      * Scope: Active schedules only
@@ -40,6 +93,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
     public function scopeActive($query)
     {
         return $query->where('is_active', true);
+    }
 
     /**
      * Scope: Due for execution
@@ -49,6 +103,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
         return $query->active()
             ->where('next_run_at', '<=', now())
             ->orWhereNull('next_run_at');
+    }
 
     /**
      * Scope: By frequency
@@ -56,6 +111,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
     public function scopeFrequency($query, string $frequency)
     {
         return $query->where('frequency', $frequency);
+    }
 
     /**
      * Calculate next run time based on frequency
@@ -71,6 +127,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
                     ->setTime($deliveryTime->hour, $deliveryTime->minute, 0);
                 if ($next->isPast()) {
                     $next->addDay();
+                }
                 break;
 
             case 'weekly':
@@ -85,6 +142,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
                     ->setTime($deliveryTime->hour, $deliveryTime->minute, 0);
                 if ($next->isPast()) {
                     $next->addMonth();
+                }
                 break;
 
             case 'quarterly':
@@ -96,8 +154,10 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
             default:
                 $next = $now->copy()->addDay();
+        }
 
         return $next;
+    }
 
     /**
      * Mark as executed and update next run time
@@ -109,6 +169,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
             'next_run_at' => $this->calculateNextRunAt(),
             'run_count' => $this->run_count + 1
         ]);
+    }
 
     /**
      * Check if schedule is due for execution
@@ -117,4 +178,5 @@ use Illuminate\Database\Eloquent\SoftDeletes;
     {
         return $this->is_active &&
                ($this->next_run_at === null || $this->next_run_at->isPast());
+    }
 }
