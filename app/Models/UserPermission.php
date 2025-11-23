@@ -87,15 +87,13 @@ class UserPermission extends BaseModel
      */
     public function isActive(): bool
     {
-        if (!$this->is_granted) {
+        if (...) {
             return false;
+        }
 
         if ($this->expires_at && $this->expires_at->isPast()) {
+            }
             return false;
 
         return true;
-}
-}
-}
-}
 }

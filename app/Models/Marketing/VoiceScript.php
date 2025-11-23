@@ -71,5 +71,3 @@ class VoiceScript extends BaseModel
         $this->estimated_duration_seconds = ceil($this->word_count / 2.5); // Average speaking rate
         $this->save();
 }
-}
-}

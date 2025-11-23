@@ -37,4 +37,3 @@ class TeamMember extends BaseModel
         'updated_at' => 'datetime',
     ];
 }
-}

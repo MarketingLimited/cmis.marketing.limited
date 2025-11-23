@@ -36,12 +36,15 @@ class IntegrationHubController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         try {
             $result = $this->integrationService->getAvailableIntegrations($request->all());
-            return response()->json($result, $result['success'] ? 200 : 500);
+            if (!$result['success']) {
+            return $this->serverError($result['message'] ?? 'Operation failed');
+        }
+        return $this->success($result['data'] ?? $result, $result['message'] ?? 'Operation completed successfully');
 
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => 'Failed to get integrations', 'error' => $e->getMessage()], 500);
@@ -63,7 +66,7 @@ class IntegrationHubController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         try {
@@ -76,7 +79,10 @@ class IntegrationHubController extends Controller
             $data['created_by'] = $userId;
 
             $result = $this->integrationService->createIntegration($orgId, $data);
-            return response()->json($result, $result['success'] ? 201 : 500);
+            if (!$result['success']) {
+            return $this->serverError($result['message'] ?? 'Operation failed');
+        }
+        return $this->created($result['data'] ?? $result, $result['message'] ?? 'Operation completed successfully');
 
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => 'Failed to create integration', 'error' => $e->getMessage()], 500);
@@ -91,7 +97,10 @@ class IntegrationHubController extends Controller
     {
         try {
             $result = $this->integrationService->testIntegration($integrationId);
-            return response()->json($result, $result['success'] ? 200 : 500);
+            if (!$result['success']) {
+            return $this->serverError($result['message'] ?? 'Operation failed');
+        }
+        return $this->success($result['data'] ?? $result, $result['message'] ?? 'Operation completed successfully');
 
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => 'Test failed', 'error' => $e->getMessage()], 500);
@@ -113,7 +122,7 @@ class IntegrationHubController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         try {
@@ -126,7 +135,10 @@ class IntegrationHubController extends Controller
             $data['created_by'] = $userId;
 
             $result = $this->integrationService->createWebhook($orgId, $data);
-            return response()->json($result, $result['success'] ? 201 : 500);
+            if (!$result['success']) {
+            return $this->serverError($result['message'] ?? 'Operation failed');
+        }
+        return $this->created($result['data'] ?? $result, $result['message'] ?? 'Operation completed successfully');
 
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => 'Failed to create webhook', 'error' => $e->getMessage()], 500);
@@ -147,7 +159,7 @@ class IntegrationHubController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         try {
@@ -160,7 +172,10 @@ class IntegrationHubController extends Controller
             $data['created_by'] = $userId;
 
             $result = $this->integrationService->generateAPIKey($orgId, $data);
-            return response()->json($result, $result['success'] ? 201 : 500);
+            if (!$result['success']) {
+            return $this->serverError($result['message'] ?? 'Operation failed');
+        }
+        return $this->created($result['data'] ?? $result, $result['message'] ?? 'Operation completed successfully');
 
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => 'Failed to generate API key', 'error' => $e->getMessage()], 500);
@@ -175,7 +190,10 @@ class IntegrationHubController extends Controller
     {
         try {
             $result = $this->integrationService->listAPIKeys($orgId);
-            return response()->json($result, $result['success'] ? 200 : 500);
+            if (!$result['success']) {
+            return $this->serverError($result['message'] ?? 'Operation failed');
+        }
+        return $this->success($result['data'] ?? $result, $result['message'] ?? 'Operation completed successfully');
 
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => 'Failed to list API keys', 'error' => $e->getMessage()], 500);
@@ -190,7 +208,10 @@ class IntegrationHubController extends Controller
     {
         try {
             $result = $this->integrationService->revokeAPIKey($apiKeyId);
-            return response()->json($result, $result['success'] ? 200 : 500);
+            if (!$result['success']) {
+            return $this->serverError($result['message'] ?? 'Operation failed');
+        }
+        return $this->success($result['data'] ?? $result, $result['message'] ?? 'Operation completed successfully');
 
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => 'Failed to revoke API key', 'error' => $e->getMessage()], 500);
@@ -210,12 +231,15 @@ class IntegrationHubController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         try {
             $result = $this->integrationService->getIntegrationLogs($orgId, $request->all());
-            return response()->json($result, $result['success'] ? 200 : 500);
+            if (!$result['success']) {
+            return $this->serverError($result['message'] ?? 'Operation failed');
+        }
+        return $this->success($result['data'] ?? $result, $result['message'] ?? 'Operation completed successfully');
 
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => 'Failed to get logs', 'error' => $e->getMessage()], 500);

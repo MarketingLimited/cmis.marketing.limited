@@ -96,24 +96,25 @@ class AdSet extends BaseModel
             ->where(function ($q) {
                 $q->whereNull('end_time')
                     ->orWhere('end_time', '>=', now());
-
+            });
     }
+
     /**
      * Scope by platform
      */
     public function scopeByPlatform($query, string $platform): Builder
     {
         return $query->where('platform', $platform);
-
     }
+
     /**
      * Scope by status
      */
     public function scopeByStatus($query, string $status): Builder
     {
         return $query->where('ad_set_status', $status);
-
     }
+
     /**
      * Check if ad set is running
      */
@@ -121,25 +122,21 @@ class AdSet extends BaseModel
     {
         if ($this->ad_set_status !== 'active') {
             return false;
-
+        }
         if ($this->start_time && $this->start_time->isFuture()) {
             return false;
-
+        }
         if ($this->end_time && $this->end_time->isPast()) {
             return false;
-
+        }
         return true;
-
     }
+
     /**
      * Get total spend
      */
     public function getTotalSpend(): float
     {
         return $this->metrics()->sum('spend');
-}
-}
-}
-}
-}
+    }
 }

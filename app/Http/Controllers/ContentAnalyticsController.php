@@ -53,7 +53,7 @@ class ContentAnalyticsController extends Controller
                 ], 404);
             }
 
-            return response()->json($analytics);
+            return $this->success($analytics, 'Retrieved successfully');
 
         } catch (\Exception $e) {
             return response()->json([
@@ -83,10 +83,7 @@ class ContentAnalyticsController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         $filters = [
@@ -97,7 +94,7 @@ class ContentAnalyticsController extends Controller
 
         try {
             $analytics = $this->analyticsService->getHashtagAnalytics($socialAccountId, $filters);
-            return response()->json($analytics);
+            return $this->success($analytics, 'Retrieved successfully');
 
         } catch (\Exception $e) {
             return response()->json([
@@ -124,7 +121,7 @@ class ContentAnalyticsController extends Controller
             $filters = $request->only(['start_date', 'end_date']);
             $demographics = $this->analyticsService->getAudienceDemographics($socialAccountId, $filters);
 
-            return response()->json($demographics);
+            return $this->success($demographics, 'Retrieved successfully');
 
         } catch (\Exception $e) {
             return response()->json([
@@ -153,10 +150,7 @@ class ContentAnalyticsController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         $filters = [
@@ -166,7 +160,7 @@ class ContentAnalyticsController extends Controller
 
         try {
             $patterns = $this->analyticsService->getEngagementPatterns($socialAccountId, $filters);
-            return response()->json($patterns);
+            return $this->success($patterns, 'Retrieved successfully');
 
         } catch (\Exception $e) {
             return response()->json([
@@ -195,10 +189,7 @@ class ContentAnalyticsController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         $filters = [
@@ -208,7 +199,7 @@ class ContentAnalyticsController extends Controller
 
         try {
             $performance = $this->analyticsService->getContentTypePerformance($socialAccountId, $filters);
-            return response()->json($performance);
+            return $this->success($performance, 'Retrieved successfully');
 
         } catch (\Exception $e) {
             return response()->json([
@@ -239,10 +230,7 @@ class ContentAnalyticsController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         $filters = [
@@ -254,7 +242,7 @@ class ContentAnalyticsController extends Controller
 
         try {
             $topPosts = $this->analyticsService->getTopPosts($socialAccountId, $filters);
-            return response()->json($topPosts);
+            return $this->success($topPosts, 'Retrieved successfully');
 
         } catch (\Exception $e) {
             return response()->json([
@@ -285,10 +273,7 @@ class ContentAnalyticsController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         $filters = [

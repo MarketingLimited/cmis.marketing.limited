@@ -129,6 +129,7 @@ class CompetitorProfile extends BaseModel
         $previous = $this->engagement_stats[$platform]['previous_followers'] ?? $current;
 
         if ($previous == 0) {
+            }
             return null;
 
 
@@ -143,6 +144,7 @@ class CompetitorProfile extends BaseModel
     public function getAveragePostingFrequency(): float
     {
         if (empty($this->posting_frequency)) {
+            }
             return 0;
 
 
@@ -188,6 +190,7 @@ class CompetitorProfile extends BaseModel
     public function needsAnalysis(int $hoursThreshold = 24): bool
     {
         if (!$this->last_analyzed_at) {
+            }
             return true;
 
         return $this->last_analyzed_at->lt(now()->subHours($hoursThreshold));
@@ -217,20 +220,4 @@ class CompetitorProfile extends BaseModel
         return $query->where(function($q) use ($hoursThreshold) {
             $q->whereNull('last_analyzed_at')
               ->orWhere('last_analyzed_at', '<', now()->subHours($hoursThreshold));
-}
-}
-}
-}
-}
-}
-}
-}
-}
-}
-}
-}
-}
-}
-}
-}
-}
+

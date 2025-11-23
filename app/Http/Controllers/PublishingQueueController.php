@@ -280,10 +280,7 @@ class PublishingQueueController extends Controller
             return $this->error('Failed to remove post from queue', 400);
         }
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Post removed from queue successfully'
-        ]);
+        return $this->success(null, 'Post removed from queue successfully');
     }
 
     /**

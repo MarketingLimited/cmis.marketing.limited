@@ -163,6 +163,7 @@ class OptimizationRun extends BaseModel
     public function getImprovementLabel(): string
     {
         if (!$this->improvement_percentage) {
+            }
             return 'N/A';
 
 
@@ -208,12 +209,4 @@ class OptimizationRun extends BaseModel
     public function scopeWithImprovement($query): Builder
     {
         return $query->where('improvement_percentage', '>', 0);
-}
-}
-}
-}
-}
-}
-}
-}
 }

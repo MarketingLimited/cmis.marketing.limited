@@ -192,7 +192,7 @@ class ContentLibraryController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         try {
@@ -208,7 +208,10 @@ class ContentLibraryController extends Controller
                 'created_by' => $userId
             ]);
 
-            return response()->json($result, $result['success'] ? 201 : 500);
+            if (!$result['success']) {
+            return $this->serverError($result['message'] ?? 'Operation failed');
+        }
+        return $this->created($result['data'] ?? $result, $result['message'] ?? 'Operation completed successfully');
 
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => 'Failed to create folder', 'error' => $e->getMessage()], 500);
@@ -224,7 +227,10 @@ class ContentLibraryController extends Controller
         try {
             $parentFolderId = $request->input('parent_folder_id');
             $result = $this->libraryService->getFolders($orgId, $parentFolderId);
-            return response()->json($result, $result['success'] ? 200 : 500);
+            if (!$result['success']) {
+            return $this->serverError($result['message'] ?? 'Operation failed');
+        }
+        return $this->success($result['data'] ?? $result, $result['message'] ?? 'Operation completed successfully');
 
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => 'Failed to list folders', 'error' => $e->getMessage()], 500);
@@ -242,12 +248,15 @@ class ContentLibraryController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         try {
             $result = $this->libraryService->searchAssets($orgId, $request->input('q'), $request->except('q'));
-            return response()->json($result, $result['success'] ? 200 : 500);
+            if (!$result['success']) {
+            return $this->serverError($result['message'] ?? 'Operation failed');
+        }
+        return $this->success($result['data'] ?? $result, $result['message'] ?? 'Operation completed successfully');
 
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => 'Search failed', 'error' => $e->getMessage()], 500);
@@ -266,7 +275,7 @@ class ContentLibraryController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         try {
@@ -276,7 +285,10 @@ class ContentLibraryController extends Controller
                 'used_by' => $request->user()->user_id ?? null
             ]);
 
-            return response()->json($result, $result['success'] ? 200 : 500);
+            if (!$result['success']) {
+            return $this->serverError($result['message'] ?? 'Operation failed');
+        }
+        return $this->success($result['data'] ?? $result, $result['message'] ?? 'Operation completed successfully');
 
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => 'Failed to track usage', 'error' => $e->getMessage()], 500);

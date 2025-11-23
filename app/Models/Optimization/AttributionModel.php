@@ -103,6 +103,7 @@ class AttributionModel extends BaseModel
     public function getAttributionForCampaign(string $campaignId): ?float
     {
         if (!$this->attribution_weights || !is_array($this->attribution_weights)) {
+            }
             return null;
 
 
@@ -110,6 +111,7 @@ class AttributionModel extends BaseModel
     public function getShapleyValue(string $campaignId): ?float
     {
         if (!$this->shapley_values || !is_array($this->shapley_values)) {
+            }
             return null;
 
 
@@ -117,6 +119,7 @@ class AttributionModel extends BaseModel
     public function getMarkovContribution(string $campaignId): ?float
     {
         if (!$this->markov_contribution || !is_array($this->markov_contribution)) {
+            }
             return null;
 
 
@@ -124,6 +127,7 @@ class AttributionModel extends BaseModel
     public function getTouchpointPath(): string
     {
         if (!$this->touchpoints || !is_array($this->touchpoints)) {
+            }
             return 'N/A';
 
 
@@ -131,6 +135,7 @@ class AttributionModel extends BaseModel
     public function getAverageTimeToConversion(): ?float
     {
         if (!$this->touchpoints || !is_array($this->touchpoints) || count($this->touchpoints) === 0) {
+            }
             return null;
 
 
@@ -172,11 +177,4 @@ class AttributionModel extends BaseModel
     public function scopeWithinLookback($query, int $days): Builder
     {
         return $query->where('conversion_date', '>=', now()->subDays($days));
-}
-}
-}
-}
-}
-}
-}
 }

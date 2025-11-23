@@ -89,7 +89,7 @@ class AdvancedAnalyticsController extends Controller
         try {
             $report = $this->reportService->generateCampaignReport($campaignId, $validated);
 
-            return response()->json($report);
+            return $this->success($report, 'Retrieved successfully');
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -119,7 +119,7 @@ class AdvancedAnalyticsController extends Controller
         try {
             $report = $this->reportService->generateOrganizationReport($orgId, $validated);
 
-            return response()->json($report);
+            return $this->success($report, 'Retrieved successfully');
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -155,7 +155,7 @@ class AdvancedAnalyticsController extends Controller
                 ]
             );
 
-            return response()->json($report);
+            return $this->success($report, 'Retrieved successfully');
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,

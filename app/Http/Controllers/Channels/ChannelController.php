@@ -21,10 +21,10 @@ class ChannelController extends Controller
                 ->orderBy('created_at', 'desc')
                 ->paginate(20);
 
-            return response()->json($channels);
+            return $this->success($channels, 'Retrieved successfully');
 
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Failed to fetch channels'], 500);
+            return $this->serverError('Failed to fetch channels');
         }
     }
 
@@ -41,7 +41,7 @@ class ChannelController extends Controller
             return response()->json(['message' => 'Channel created', 'channel' => $channel], 201);
 
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Failed to create channel'], 500);
+            return $this->serverError('Failed to create channel');
         }
     }
 
@@ -52,7 +52,7 @@ class ChannelController extends Controller
             $this->authorize('view', $channel);
             return response()->json(['channel' => $channel]);
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Channel not found'], 404);
+            return $this->notFound('Channel not found');
         }
     }
 
@@ -64,7 +64,7 @@ class ChannelController extends Controller
             $channel->update($request->all());
             return response()->json(['message' => 'Channel updated', 'channel' => $channel]);
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Failed to update'], 500);
+            return $this->serverError('Failed to update');
         }
     }
 
@@ -76,7 +76,7 @@ class ChannelController extends Controller
             $channel->delete();
             return response()->json(['message' => 'Channel deleted']);
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Failed to delete'], 500);
+            return $this->serverError('Failed to delete');
         }
     }
 }

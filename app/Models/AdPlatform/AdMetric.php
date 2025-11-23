@@ -119,10 +119,10 @@ protected $table = 'cmis.ad_metrics';
     {
         if ($this->impressions === 0) {
             return 0.0;
-
+        }
         return ($this->clicks / $this->impressions) * 100;
-
     }
+
     /**
      * Calculate CPC if not set
      */
@@ -130,10 +130,10 @@ protected $table = 'cmis.ad_metrics';
     {
         if ($this->clicks === 0) {
             return 0.0;
-
+        }
         return $this->spend / $this->clicks;
-
     }
+
     /**
      * Calculate CPA if not set
      */
@@ -141,10 +141,10 @@ protected $table = 'cmis.ad_metrics';
     {
         if ($this->conversions === 0) {
             return 0.0;
-
+        }
         return $this->spend / $this->conversions;
-
     }
+
     /**
      * Calculate ROAS if not set
      */
@@ -152,10 +152,10 @@ protected $table = 'cmis.ad_metrics';
     {
         if ($this->spend == 0) {
             return 0.0;
-
+        }
         return $this->revenue / $this->spend;
-
     }
+
     /**
      * Get conversion rate
      */
@@ -163,12 +163,7 @@ protected $table = 'cmis.ad_metrics';
     {
         if ($this->clicks === 0) {
             return 0.0;
-
+        }
         return ($this->conversions / $this->clicks) * 100;
-}
-}
-}
-}
-}
-}
+    }
 }

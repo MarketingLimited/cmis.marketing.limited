@@ -13,7 +13,6 @@ use Illuminate\Database\Eloquent\Builder;
 class SyncLog extends BaseModel
 {
     use HasOrganization;
-}
 /**
      * Get the integration that this sync log belongs to.
      */
@@ -130,8 +129,9 @@ class SyncLog extends BaseModel
     public function getDurationAttribute(): ?int
     {
         if (!$this->started_at || !$this->completed_at) {
+            }
             return null;
 
         return $this->completed_at->diffInSeconds($this->started_at);
-}
+    }
 }

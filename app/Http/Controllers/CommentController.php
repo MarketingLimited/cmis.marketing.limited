@@ -57,10 +57,7 @@ class CommentController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         try {
@@ -77,7 +74,10 @@ class CommentController extends Controller
                 'comment_text' => $request->input('comment_text')
             ]);
 
-            return response()->json($result, $result['success'] ? 201 : 500);
+            if (!$result['success']) {
+            return $this->serverError($result['message'] ?? 'Operation failed');
+        }
+        return $this->created($result['data'] ?? $result, $result['message'] ?? 'Operation completed successfully');
 
         } catch (\Exception $e) {
             return response()->json([
@@ -110,10 +110,7 @@ class CommentController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         try {
@@ -128,7 +125,10 @@ class CommentController extends Controller
                 'comment_text' => $request->input('comment_text')
             ]);
 
-            return response()->json($result, $result['success'] ? 201 : 400);
+            if (!$result['success']) {
+            return $this->serverError($result['message'] ?? 'Operation failed');
+        }
+        return $this->created($result['data'] ?? $result, $result['message'] ?? 'Operation completed successfully');
 
         } catch (\Exception $e) {
             return response()->json([
@@ -161,10 +161,7 @@ class CommentController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         try {
@@ -180,7 +177,10 @@ class CommentController extends Controller
                 $request->input('comment_text')
             );
 
-            return response()->json($result, $result['success'] ? 200 : 400);
+            if (!$result['success']) {
+            return $this->serverError($result['message'] ?? 'Operation failed');
+        }
+        return $this->success($result['data'] ?? $result, $result['message'] ?? 'Operation completed successfully');
 
         } catch (\Exception $e) {
             return response()->json([
@@ -212,7 +212,10 @@ class CommentController extends Controller
 
             $result = $this->commentService->deleteComment($commentId, $userId);
 
-            return response()->json($result, $result['success'] ? 200 : 400);
+            if (!$result['success']) {
+            return $this->serverError($result['message'] ?? 'Operation failed');
+        }
+        return $this->success($result['data'] ?? $result, $result['message'] ?? 'Operation completed successfully');
 
         } catch (\Exception $e) {
             return response()->json([
@@ -243,10 +246,7 @@ class CommentController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         try {
@@ -256,7 +256,10 @@ class CommentController extends Controller
                 $request->only(['top_level_only', 'sort_by', 'sort_order'])
             );
 
-            return response()->json($result, $result['success'] ? 200 : 500);
+            if (!$result['success']) {
+            return $this->serverError($result['message'] ?? 'Operation failed');
+        }
+        return $this->success($result['data'] ?? $result, $result['message'] ?? 'Operation completed successfully');
 
         } catch (\Exception $e) {
             return response()->json([
@@ -289,10 +292,7 @@ class CommentController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         try {
@@ -308,7 +308,10 @@ class CommentController extends Controller
                 $request->input('reaction_type')
             );
 
-            return response()->json($result, $result['success'] ? 200 : 400);
+            if (!$result['success']) {
+            return $this->serverError($result['message'] ?? 'Operation failed');
+        }
+        return $this->success($result['data'] ?? $result, $result['message'] ?? 'Operation completed successfully');
 
         } catch (\Exception $e) {
             return response()->json([
@@ -340,7 +343,10 @@ class CommentController extends Controller
 
             $result = $this->commentService->removeReaction($commentId, $userId);
 
-            return response()->json($result, $result['success'] ? 200 : 400);
+            if (!$result['success']) {
+            return $this->serverError($result['message'] ?? 'Operation failed');
+        }
+        return $this->success($result['data'] ?? $result, $result['message'] ?? 'Operation completed successfully');
 
         } catch (\Exception $e) {
             return response()->json([
@@ -373,16 +379,16 @@ class CommentController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         try {
             $result = $this->commentService->getActivityFeed($orgId, $request->all());
 
-            return response()->json($result, $result['success'] ? 200 : 500);
+            if (!$result['success']) {
+            return $this->serverError($result['message'] ?? 'Operation failed');
+        }
+        return $this->success($result['data'] ?? $result, $result['message'] ?? 'Operation completed successfully');
 
         } catch (\Exception $e) {
             return response()->json([

@@ -38,25 +38,23 @@ class DataExportLog extends BaseModel
     public function config(): BelongsTo
     {
         return $this->belongsTo(DataExportConfig::class, 'config_id', 'config_id');
+    }
 
-    
-
-        }
     public function scopeCompleted($query): Builder
     {
         return $query->where('status', 'completed');
+    }
 
-        }
     public function scopeFailed($query): Builder
     {
         return $query->where('status', 'failed');
+    }
 
-        }
     public function scopeRecent($query, int $days = 30): Builder
     {
         return $query->where('started_at', '>=', now()->subDays($days));
+    }
 
-        }
     public function markCompleted(int $recordsCount, int $fileSize, string $filePath): void
     {
         $this->update([
@@ -67,8 +65,8 @@ class DataExportLog extends BaseModel
             'file_path' => $filePath,
             'execution_time_ms' => (int) (now()->diffInMilliseconds($this->started_at))
         ]);
+    }
 
-        }
     public function markFailed(string $error): void
     {
         $this->update([
@@ -77,6 +75,5 @@ class DataExportLog extends BaseModel
             'error_message' => $error,
             'execution_time_ms' => (int) (now()->diffInMilliseconds($this->started_at))
         ]);
-}
-}
+    }
 }

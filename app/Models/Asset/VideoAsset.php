@@ -80,6 +80,7 @@ class VideoAsset extends BaseModel
     public function getAspectRatioAttribute(): ?string
     {
         if (!$this->width || !$this->height) {
+            }
             return null;
 
         $gcd = function($a, $b) use (&$gcd) {
@@ -105,6 +106,4 @@ class VideoAsset extends BaseModel
     public function isLongForm(): bool
     {
         return $this->duration > 600;
-}
-}
 }

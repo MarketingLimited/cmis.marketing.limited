@@ -9,7 +9,7 @@ use App\Models\BaseModel;
 class UserSession extends BaseModel
 {
     use HasOrganization;
-protected $table = 'cmis.user_sessions';
+    protected $table = 'cmis.user_sessions';
     protected $primaryKey = 'session_id';
     public $timestamps = false;
 
@@ -38,7 +38,7 @@ protected $table = 'cmis.user_sessions';
         'metadata' => 'array',
     ];
 
-    
+
 
     /**
      * Get session contexts
@@ -46,8 +46,8 @@ protected $table = 'cmis.user_sessions';
     public function contexts(): HasMany
     {
         return $this->hasMany(SessionContext::class, 'session_id', 'session_id');
-
     }
+
     /**
      * Scope active sessions
      */
@@ -55,40 +55,40 @@ protected $table = 'cmis.user_sessions';
     {
         return $query->where('is_active', true)
             ->whereNull('ended_at');
-
     }
+
     /**
      * Scope by device type
      */
     public function scopeByDeviceType($query, string $deviceType): Builder
     {
         return $query->where('device_type', $deviceType);
-
     }
+
     /**
      * Scope by browser
      */
     public function scopeByBrowser($query, string $browser): Builder
     {
         return $query->where('browser', $browser);
-
     }
+
     /**
      * Scope recent sessions
      */
     public function scopeRecent($query, int $hours = 24): Builder
     {
         return $query->where('started_at', '>=', now()->subHours($hours));
-
     }
+
     /**
      * Scope long sessions
      */
     public function scopeLongSessions($query, int $minutes = 30): Builder
     {
         return $query->where('session_duration', '>=', $minutes * 60);
-
     }
+
     /**
      * Update last activity
      */
@@ -98,10 +98,11 @@ protected $table = 'cmis.user_sessions';
 
         if ($this->started_at) {
             $this->session_duration = $this->started_at->diffInSeconds(now());
+        }
 
         $this->save();
-
     }
+
     /**
      * End session
      */
@@ -112,10 +113,11 @@ protected $table = 'cmis.user_sessions';
 
         if ($this->started_at) {
             $this->session_duration = $this->started_at->diffInSeconds(now());
+        }
 
         $this->save();
-
     }
+
     /**
      * Check if session is expired
      */
@@ -123,13 +125,15 @@ protected $table = 'cmis.user_sessions';
     {
         if (!$this->is_active) {
             return true;
+        }
 
         if (!$this->last_activity) {
             return false;
+        }
 
         return $this->last_activity->diffInMinutes(now()) > $maxInactiveMinutes;
-
     }
+
     /**
      * Get session duration in minutes
      */
@@ -137,12 +141,8 @@ protected $table = 'cmis.user_sessions';
     {
         if (!$this->session_duration) {
             return 0;
+        }
 
         return (int) ceil($this->session_duration / 60);
-}
-}
-}
-}
-}
-}
+    }
 }

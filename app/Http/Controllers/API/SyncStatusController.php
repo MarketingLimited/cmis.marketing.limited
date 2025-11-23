@@ -118,7 +118,7 @@ class SyncStatusController extends Controller
     {
         // Verify integration belongs to org
         if ($integration->org_id !== $org->org_id) {
-            return response()->json(['error' => 'Integration not found'], 404);
+            return $this->notFound('Integration not found');
         }
 
         return response()->json([
@@ -169,7 +169,7 @@ class SyncStatusController extends Controller
 
         // Validate data type
         if (!in_array($dataType, ['all', 'campaigns', 'metrics', 'posts'])) {
-            return response()->json(['error' => 'Invalid data type'], 400);
+            return $this->error('Invalid data type', 400);
         }
 
         // Get active integrations
@@ -178,7 +178,7 @@ class SyncStatusController extends Controller
             ->get();
 
         if ($integrations->isEmpty()) {
-            return response()->json(['error' => 'No active integrations found'], 404);
+            return $this->notFound('No active integrations found');
         }
 
         // Dispatch sync jobs
@@ -232,18 +232,18 @@ class SyncStatusController extends Controller
     {
         // Verify integration belongs to org
         if ($integration->org_id !== $org->org_id) {
-            return response()->json(['error' => 'Integration not found'], 404);
+            return $this->notFound('Integration not found');
         }
 
         if (!$integration->is_active) {
-            return response()->json(['error' => 'Integration is not active'], 400);
+            return $this->error('Integration is not active', 400);
         }
 
         $dataType = $request->input('data_type', 'all');
 
         // Validate data type
         if (!in_array($dataType, ['all', 'campaigns', 'metrics', 'posts'])) {
-            return response()->json(['error' => 'Invalid data type'], 400);
+            return $this->error('Invalid data type', 400);
         }
 
         // Dispatch sync job
@@ -372,6 +372,6 @@ class SyncStatusController extends Controller
             'newest_sync' => $integrations->max('last_synced_at'),
         ];
 
-        return response()->json($stats);
+        return $this->success($stats, 'Retrieved successfully');
     }
 }

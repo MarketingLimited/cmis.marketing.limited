@@ -42,29 +42,28 @@ class DataExportConfig extends BaseModel
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by', 'user_id');
+    }
 
-        }
     public function logs(): HasMany
     {
         return $this->hasMany(DataExportLog::class, 'config_id', 'config_id');
+    }
 
-        }
     public function scopeActive($query): Builder
     {
         return $query->where('is_active', true);
+    }
 
-        }
     public function scopeScheduled($query): Builder
     {
         return $query->whereNotNull('schedule');
+    }
 
-        }
     public function markExported(): void
     {
         $this->update([
             'last_export_at' => now(),
             'export_count' => $this->export_count + 1
         ]);
-}
-}
+    }
 }

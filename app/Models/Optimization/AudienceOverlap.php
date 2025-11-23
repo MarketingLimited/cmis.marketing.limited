@@ -75,6 +75,7 @@ class AudienceOverlap extends BaseModel
     public function getSeverityLevel(): string
     {
         if ($this->overlap_percentage >= 75) {
+            }
             return 'critical';
 
             }
@@ -105,6 +106,7 @@ class AudienceOverlap extends BaseModel
     {
         // Jaccard Index = Intersection / Union
         if ($this->audience_a_size === 0 && $this->audience_b_size === 0) {
+            }
             return 0.0;
 
 
@@ -155,11 +157,4 @@ class AudienceOverlap extends BaseModel
         return $query->where(function ($q) use ($campaignId) {
             $q->where('campaign_a_id', $campaignId)
               ->orWhere('campaign_b_id', $campaignId);
-}
-}
-}
-}
-}
-}
-}
-}
+

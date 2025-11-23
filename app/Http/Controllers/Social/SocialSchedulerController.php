@@ -83,7 +83,7 @@ class SocialSchedulerController extends Controller
                 ->orderBy('scheduled_at', 'asc')
                 ->paginate($perPage);
 
-            return response()->json($posts);
+            return $this->success($posts, 'Retrieved successfully');
 
         } catch (\Exception $e) {
             return response()->json([
@@ -114,7 +114,7 @@ class SocialSchedulerController extends Controller
 
             $posts = $query->paginate($perPage);
 
-            return response()->json($posts);
+            return $this->success($posts, 'Retrieved successfully');
 
         } catch (\Exception $e) {
             return response()->json([
@@ -137,7 +137,7 @@ class SocialSchedulerController extends Controller
                 ->orderBy('updated_at', 'desc')
                 ->get();
 
-            return response()->json($posts);
+            return $this->success($posts, 'Retrieved successfully');
 
         } catch (\Exception $e) {
             return response()->json([
@@ -266,7 +266,7 @@ class SocialSchedulerController extends Controller
             ]);
 
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            return response()->json(['error' => 'Post not found'], 404);
+            return $this->notFound('Post not found');
         } catch (\Exception $e) {
             return response()->json([
                 'error' => 'Failed to update post',
@@ -303,7 +303,7 @@ class SocialSchedulerController extends Controller
             return response()->json(['message' => 'Post deleted successfully']);
 
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            return response()->json(['error' => 'Post not found'], 404);
+            return $this->notFound('Post not found');
         } catch (\Exception $e) {
             return response()->json([
                 'error' => 'Failed to delete post',
@@ -362,7 +362,7 @@ class SocialSchedulerController extends Controller
             ]);
 
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            return response()->json(['error' => 'Post not found'], 404);
+            return $this->notFound('Post not found');
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\Log::error('Failed to queue post for publishing', [
                 'post_id' => $postId,
@@ -422,7 +422,7 @@ class SocialSchedulerController extends Controller
             ]);
 
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            return response()->json(['error' => 'Post not found'], 404);
+            return $this->notFound('Post not found');
         } catch (\Exception $e) {
             return response()->json([
                 'error' => 'Failed to reschedule post',
@@ -445,7 +445,7 @@ class SocialSchedulerController extends Controller
             return response()->json(['post' => $post]);
 
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            return response()->json(['error' => 'Post not found'], 404);
+            return $this->notFound('Post not found');
         } catch (\Exception $e) {
             return response()->json([
                 'error' => 'Failed to fetch post',

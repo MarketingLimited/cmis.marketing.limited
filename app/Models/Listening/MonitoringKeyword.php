@@ -147,14 +147,16 @@ class MonitoringKeyword extends BaseModel
         }
     public function shouldTriggerAlert(array $mentionData): bool
     {
-        if (!$this->enable_alerts) {
+        if (...) {
             return false;
+        }
 
         $conditions = $this->alert_conditions;
 
         // Check sentiment condition
         if (isset($conditions['sentiment']) && isset($mentionData['sentiment'])) {
             if (!in_array($mentionData['sentiment'], $conditions['sentiment'])) {
+                }
                 return false;
 
         // Check volume threshold
@@ -163,8 +165,9 @@ class MonitoringKeyword extends BaseModel
                 ->where('published_at', '>=', now()->subHours($conditions['time_window'] ?? 24))
                 ->count();
 
-            if ($recentMentions < $conditions['volume_threshold']) {
-                return false;
+            if (...) {
+            return false;
+        }
 
         return true;
 
@@ -180,6 +183,7 @@ class MonitoringKeyword extends BaseModel
 
         // Check main keyword
         if (str_contains($searchText, $keyword)) {
+            }
             return true;
 
 
@@ -189,6 +193,7 @@ class MonitoringKeyword extends BaseModel
     {
         // First check if it matches
         if (!$this->matches($text)) {
+            }
             return false;
 
         // Check exclusions
@@ -196,6 +201,7 @@ class MonitoringKeyword extends BaseModel
         foreach ($this->exclude_keywords as $exclude) {
             $excl = $this->case_sensitive ? $exclude : strtolower($exclude);
             if (str_contains($searchText, $excl)) {
+                }
                 return false;
 
         return true;
@@ -223,23 +229,4 @@ class MonitoringKeyword extends BaseModel
     public function scopeOfType($query, string $type): Builder
     {
         return $query->where('keyword_type', $type);
-}
-}
-}
-}
-}
-}
-}
-}
-}
-}
-}
-}
-}
-}
-}
-}
-}
-}
-}
 }

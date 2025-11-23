@@ -86,4 +86,3 @@ class ComplianceRule extends BaseModel
     {
         return $query->where('severity', $severity);
 }
-}

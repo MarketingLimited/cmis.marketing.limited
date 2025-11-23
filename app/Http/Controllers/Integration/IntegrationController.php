@@ -135,7 +135,7 @@ class IntegrationController extends Controller
 
         try {
             if (!isset(self::PLATFORMS[$platform])) {
-                return response()->json(['error' => 'Unsupported platform'], 400);
+                return $this->error('Unsupported platform', 400);
             }
 
             $config = self::PLATFORMS[$platform];
@@ -335,7 +335,7 @@ class IntegrationController extends Controller
             ]);
 
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            return response()->json(['error' => 'Integration not found'], 404);
+            return $this->notFound('Integration not found');
         } catch (\Exception $e) {
             return response()->json([
                 'error' => 'Failed to disconnect integration',
@@ -373,7 +373,7 @@ class IntegrationController extends Controller
             ]);
 
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            return response()->json(['error' => 'Integration not found'], 404);
+            return $this->notFound('Integration not found');
         } catch (\Exception $e) {
             return response()->json([
                 'error' => 'Failed to sync integration',
@@ -448,7 +448,7 @@ class IntegrationController extends Controller
             return response()->json(['history' => $history]);
 
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            return response()->json(['error' => 'Integration not found'], 404);
+            return $this->notFound('Integration not found');
         } catch (\Exception $e) {
             return response()->json([
                 'error' => 'Failed to fetch sync history',
@@ -487,7 +487,7 @@ class IntegrationController extends Controller
             ]);
 
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            return response()->json(['error' => 'Integration not found'], 404);
+            return $this->notFound('Integration not found');
         } catch (\Exception $e) {
             return response()->json([
                 'error' => 'Failed to fetch settings',
@@ -521,7 +521,7 @@ class IntegrationController extends Controller
             ]);
 
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            return response()->json(['error' => 'Integration not found'], 404);
+            return $this->notFound('Integration not found');
         } catch (\Exception $e) {
             return response()->json([
                 'error' => 'Failed to update settings',
@@ -605,7 +605,7 @@ class IntegrationController extends Controller
             ]);
 
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            return response()->json(['error' => 'Integration not found'], 404);
+            return $this->notFound('Integration not found');
         } catch (\Exception $e) {
             return response()->json([
                 'error' => 'Connection test failed',

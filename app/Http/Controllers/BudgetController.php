@@ -35,7 +35,12 @@ class BudgetController extends Controller
     public function updateCampaignBudget(string $orgId, string $campaignId, UpdateCampaignBudgetRequest $request): JsonResponse
     {
         $result = $this->budgetService->updateCampaignBudget($campaignId, $request->validated());
-        return response()->json($result, $result['success'] ? 200 : 500);
+
+        if (!$result['success']) {
+            return $this->serverError($result['message'] ?? 'Failed to update campaign budget');
+        }
+
+        return $this->success($result['data'] ?? $result, $result['message'] ?? 'Campaign budget updated successfully');
     }
 
     /**
@@ -45,7 +50,12 @@ class BudgetController extends Controller
     public function updateBidStrategy(string $orgId, string $campaignId, UpdateBidStrategyRequest $request): JsonResponse
     {
         $result = $this->budgetService->updateBidStrategy($campaignId, $request->validated());
-        return response()->json($result, $result['success'] ? 200 : 500);
+
+        if (!$result['success']) {
+            return $this->serverError($result['message'] ?? 'Failed to update bid strategy');
+        }
+
+        return $this->success($result['data'] ?? $result, $result['message'] ?? 'Bid strategy updated successfully');
     }
 
     /**
@@ -55,7 +65,12 @@ class BudgetController extends Controller
     public function getSpendTracking(string $orgId, string $campaignId): JsonResponse
     {
         $result = $this->budgetService->getSpendTracking($campaignId);
-        return response()->json($result, $result['success'] ? 200 : 404);
+
+        if (!$result['success']) {
+            return $this->notFound($result['message'] ?? 'Spend tracking not found');
+        }
+
+        return $this->success($result['data'] ?? $result, $result['message'] ?? 'Spend tracking retrieved successfully');
     }
 
     /**
@@ -65,7 +80,12 @@ class BudgetController extends Controller
     public function calculateROI(string $orgId, string $campaignId): JsonResponse
     {
         $result = $this->budgetService->calculateROI($campaignId);
-        return response()->json($result, $result['success'] ? 200 : 404);
+
+        if (!$result['success']) {
+            return $this->notFound($result['message'] ?? 'ROI data not found');
+        }
+
+        return $this->success($result['data'] ?? $result, $result['message'] ?? 'ROI calculated successfully');
     }
 
     /**
@@ -75,7 +95,12 @@ class BudgetController extends Controller
     public function getBudgetRecommendations(string $orgId, string $campaignId): JsonResponse
     {
         $result = $this->budgetService->getBudgetRecommendations($campaignId);
-        return response()->json($result, $result['success'] ? 200 : 404);
+
+        if (!$result['success']) {
+            return $this->notFound($result['message'] ?? 'Budget recommendations not found');
+        }
+
+        return $this->success($result['data'] ?? $result, $result['message'] ?? 'Budget recommendations retrieved successfully');
     }
 
     /**
@@ -91,6 +116,10 @@ class BudgetController extends Controller
             collect($validated)->only(['total_budget', 'goal'])->toArray()
         );
 
-        return response()->json($result, $result['success'] ? 200 : 500);
+        if (!$result['success']) {
+            return $this->serverError($result['message'] ?? 'Failed to optimize budget allocation');
+        }
+
+        return $this->success($result['data'] ?? $result, $result['message'] ?? 'Budget allocation optimized successfully');
     }
 }

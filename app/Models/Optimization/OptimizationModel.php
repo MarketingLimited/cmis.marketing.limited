@@ -137,6 +137,7 @@ class OptimizationModel extends BaseModel
             $scores[] = $this->r_squared;
 
         if (empty($scores)) {
+            }
             return 0.0;
 
 
@@ -179,14 +180,4 @@ class OptimizationModel extends BaseModel
     public function scopeByAlgorithm($query, string $algorithm): Builder
     {
         return $query->where('algorithm', $algorithm);
-}
-}
-}
-}
-}
-}
-}
-}
-}
-}
 }

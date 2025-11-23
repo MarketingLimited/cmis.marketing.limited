@@ -83,5 +83,3 @@ class GeneratedCreative extends BaseModel
             'approved_at' => now(),
         ]);
 }
-}
-}

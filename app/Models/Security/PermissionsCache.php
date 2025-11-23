@@ -7,7 +7,6 @@ use Illuminate\Database\Eloquent\Builder;
 use App\Models\BaseModel;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
-}
 /**
  * PermissionsCache - Permission code lookup table
  *
@@ -40,32 +39,32 @@ class PermissionsCache extends BaseModel
     public static function getByCode(string $permissionCode): ?self
     {
         return static::where('permission_code', $permissionCode)->first();
-
     }
+
     /**
      * Get permission by category
      */
     public function scopeByCategory($query, string $category): Builder
     {
         return $query->where('category', $category);
-
     }
+
     /**
      * Scope to get recently used permissions
      */
     public function scopeRecentlyUsed($query, int $minutes = 60): Builder
     {
         return $query->where('last_used', '>=', now()->subMinutes($minutes));
-
     }
+
     /**
      * Scope to get stale cache entries
      */
     public function scopeStale($query, int $hours = 24): Builder
     {
         return $query->where('last_used', '<', now()->subHours($hours));
-
     }
+
     /**
      * Update last used timestamp
      */
@@ -73,10 +72,11 @@ class PermissionsCache extends BaseModel
     {
         if ($attribute === null) {
             return $this->update(['last_used' => now()]);
+        }
 
         return parent::touch($attribute);
-
     }
+
     /**
      * Update or create permission cache entry
      */
@@ -89,13 +89,14 @@ class PermissionsCache extends BaseModel
                 'category' => $category,
                 'last_used' => now(),
             ]
-
+        );
     }
+
     /**
      * Clean up stale entries
      */
     public static function cleanupStale(int $hours = 24): int
     {
         return static::where('last_used', '<', now()->subHours($hours))->delete();
-}
+    }
 }

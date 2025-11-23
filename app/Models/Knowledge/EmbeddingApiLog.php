@@ -92,5 +92,3 @@ class EmbeddingApiLog extends BaseModel
     {
         return $this->status_code >= 200 && $this->status_code < 300;
 }
-}
-}

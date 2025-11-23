@@ -47,10 +47,10 @@ class KpiTarget extends BaseModel
             $this->status = 'at_risk';
         } else {
             $this->status = 'behind';
-
+        }
         return $this->save();
-
     }
+
     /**
      * Get the progress percentage.
      *
@@ -60,10 +60,10 @@ class KpiTarget extends BaseModel
     {
         if ($this->target_value <= 0) {
             return 0;
-
+        }
         return min(100, ($this->current_value / $this->target_value) * 100);
-
     }
+
     /**
      * Scope active KPIs.
      *
@@ -74,8 +74,8 @@ class KpiTarget extends BaseModel
     {
         return $query->where('status', '!=', 'achieved')
             ->whereDate('end_date', '>=', now());
-
     }
+
     /**
      * Scope achieved KPIs.
      *
@@ -85,7 +85,5 @@ class KpiTarget extends BaseModel
     public function scopeAchieved($query): Builder
     {
         return $query->where('status', 'achieved');
-}
-}
-}
+    }
 }

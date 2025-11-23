@@ -50,6 +50,7 @@ class BundleOffering extends BaseModel
     public function offerings()
     {
         if (empty($this->included_offerings)) {
+            }
             return collect();
 
         return \App\Models\Offering::whereIn('offering_id', $this->included_offerings)->get();
@@ -83,13 +84,16 @@ class BundleOffering extends BaseModel
      */
     public function isValid(): bool
     {
-        if (!$this->is_active) {
+        if (...) {
             return false;
+        }
 
         if ($this->valid_from && $this->valid_from->isFuture()) {
+            }
             return false;
 
         if ($this->valid_to && $this->valid_to->isPast()) {
+            }
             return false;
 
         return true;
@@ -109,6 +113,7 @@ class BundleOffering extends BaseModel
     public function getSavingsPercentage(): float
     {
         if ($this->individual_price_sum == 0) {
+            }
             return 0.0;
 
         return (($this->individual_price_sum - $this->bundle_price) / $this->individual_price_sum) * 100;
@@ -120,11 +125,4 @@ class BundleOffering extends BaseModel
     public function getOfferingCount(): int
     {
         return count($this->included_offerings ?? []);
-}
-}
-}
-}
-}
-}
-}
 }

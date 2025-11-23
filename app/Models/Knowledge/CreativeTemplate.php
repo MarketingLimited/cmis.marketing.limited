@@ -136,5 +136,3 @@ class CreativeTemplate extends BaseModel
 
         return $template;
 }
-}
-}

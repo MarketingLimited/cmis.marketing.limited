@@ -100,9 +100,7 @@ class PredictiveAnalyticsController extends Controller
     {
         // Validate campaign belongs to org
         if ($campaign->org_id !== $org->org_id) {
-            return response()->json([
-                'error' => 'Campaign not found in organization'
-            ], 404);
+            return $this->notFound('Campaign not found in organization');
         }
 
         $validated = $request->validate([
@@ -113,7 +111,7 @@ class PredictiveAnalyticsController extends Controller
 
         $forecast = $this->predictive->forecastCampaign($campaign, $days);
 
-        return response()->json($forecast);
+        return $this->success($forecast, 'Retrieved successfully');
     }
 
     /**
@@ -170,7 +168,7 @@ class PredictiveAnalyticsController extends Controller
             unset($forecast['campaign_forecasts']);
         }
 
-        return response()->json($forecast);
+        return $this->success($forecast, 'Retrieved successfully');
     }
 
     /**
@@ -220,9 +218,7 @@ class PredictiveAnalyticsController extends Controller
     {
         // Validate campaign belongs to org
         if ($campaign->org_id !== $org->org_id) {
-            return response()->json([
-                'error' => 'Campaign not found in organization'
-            ], 404);
+            return $this->notFound('Campaign not found in organization');
         }
 
         $validated = $request->validate([
@@ -332,9 +328,7 @@ class PredictiveAnalyticsController extends Controller
     {
         // Validate campaign belongs to org
         if ($campaign->org_id !== $org->org_id) {
-            return response()->json([
-                'error' => 'Campaign not found in organization'
-            ], 404);
+            return $this->notFound('Campaign not found in organization');
         }
 
         $validated = $request->validate([

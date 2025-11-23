@@ -58,6 +58,3 @@ class VisualConcept extends BaseModel
     {
         $this->increment('usage_count');
 }
-}
-}
-}

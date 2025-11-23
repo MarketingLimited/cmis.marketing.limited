@@ -168,10 +168,7 @@ class OrgMarketController extends Controller
 
         $orgMarket->delete();
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Market removed successfully'
-        ]);
+        return $this->success(null, 'Market removed successfully');
     }
 
     /**

@@ -127,6 +127,7 @@ class TrendingTopic extends BaseModel
     public function getTopPlatform(): ?string
     {
         if (empty($this->platform_distribution)) {
+            }
             return null;
 
 
@@ -134,6 +135,7 @@ class TrendingTopic extends BaseModel
     public function getPlatformPercentage(string $platform): float
     {
         if ($this->mention_count == 0) {
+            }
             return 0;
 
         $platformCount = $this->platform_distribution[$platform] ?? 0;
@@ -235,6 +237,7 @@ class TrendingTopic extends BaseModel
     public function getTimeSincePeak(): ?int
     {
         if (!$this->peak_at) {
+            }
             return null;
 
         return $this->peak_at->diffInHours(now());
@@ -287,27 +290,4 @@ class TrendingTopic extends BaseModel
     public function scopeByRelevance($query): Builder
     {
         return $query->orderBy('relevance_score', 'desc');
-}
-}
-}
-}
-}
-}
-}
-}
-}
-}
-}
-}
-}
-}
-}
-}
-}
-}
-}
-}
-}
-}
-}
 }

@@ -31,11 +31,11 @@ class KpiController extends Controller
                 ->orderBy('created_at', 'desc')
                 ->paginate(50);
 
-            return response()->json($kpis);
+            return $this->success($kpis, 'Retrieved successfully');
 
         } catch (\Exception $e) {
             Log::error('فشل جلب مؤشرات الأداء: ' . $e->getMessage());
-            return response()->json(['error' => 'فشل جلب مؤشرات الأداء'], 500);
+            return $this->serverError('فشل جلب مؤشرات الأداء');
         }
     }
 
@@ -55,11 +55,11 @@ class KpiController extends Controller
                 'performance_metrics' => $performanceData,
             ];
 
-            return response()->json($summary);
+            return $this->success($summary, 'Retrieved successfully');
 
         } catch (\Exception $e) {
             Log::error('فشل جلب الملخص: ' . $e->getMessage());
-            return response()->json(['error' => 'فشل جلب الملخص'], 500);
+            return $this->serverError('فشل جلب الملخص');
         }
     }
 
@@ -86,7 +86,7 @@ class KpiController extends Controller
 
         } catch (\Exception $e) {
             Log::error('فشل جلب الاتجاهات: ' . $e->getMessage());
-            return response()->json(['error' => 'فشل جلب الاتجاهات'], 500);
+            return $this->serverError('فشل جلب الاتجاهات');
         }
     }
 
@@ -107,7 +107,7 @@ class KpiController extends Controller
 
         } catch (\Exception $e) {
             Log::error('فشل جلب تقارير الهجرة: ' . $e->getMessage());
-            return response()->json(['error' => 'فشل جلب تقارير الهجرة'], 500);
+            return $this->serverError('فشل جلب تقارير الهجرة');
         }
     }
 
@@ -132,7 +132,7 @@ class KpiController extends Controller
 
         } catch (\Exception $e) {
             Log::error('فشل تنفيذ استعلام الذكاء الاصطناعي: ' . $e->getMessage());
-            return response()->json(['error' => 'فشل تنفيذ استعلام الذكاء الاصطناعي'], 500);
+            return $this->serverError('فشل تنفيذ استعلام الذكاء الاصطناعي');
         }
     }
 }

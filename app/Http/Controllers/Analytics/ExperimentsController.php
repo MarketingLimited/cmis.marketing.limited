@@ -184,10 +184,7 @@ class ExperimentsController extends Controller
 
         $experiment->delete();
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Experiment deleted successfully'
-        ]);
+        return $this->success(null, 'Experiment deleted successfully');
     }
 
     /**

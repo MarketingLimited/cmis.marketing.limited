@@ -88,6 +88,7 @@ class BudgetAllocation extends BaseModel
     public function getChangeDirection(): string
     {
         if ($this->budget_change > 0) {
+            }
             return 'increase';
 
             }
@@ -106,6 +107,7 @@ class BudgetAllocation extends BaseModel
     public function getExpectedROIIncrease(): ?float
     {
         if (!$this->expected_revenue || !$this->recommended_budget) {
+            }
             return null;
 
 
@@ -148,9 +150,4 @@ class BudgetAllocation extends BaseModel
     public function scopeHighConfidence($query): Builder
     {
         return $query->where('confidence_level', '>=', 0.8);
-}
-}
-}
-}
-}
 }

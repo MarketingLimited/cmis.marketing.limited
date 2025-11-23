@@ -47,7 +47,7 @@ class AnalyticsController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         $result = $this->realtime->getRealtimeMetrics(
@@ -57,7 +57,7 @@ class AnalyticsController extends Controller
             $request->input('window', '5m')
         );
 
-        return response()->json($result);
+        return $this->success($result, 'Operation completed successfully');
     }
 
     public function getTimeSeries(Request $request, string $orgId, string $entityType, string $entityId): JsonResponse
@@ -69,7 +69,7 @@ class AnalyticsController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         $result = $this->realtime->getTimeSeries(
@@ -80,7 +80,7 @@ class AnalyticsController extends Controller
             $request->input('points', 12)
         );
 
-        return response()->json($result);
+        return $this->success($result, 'Operation completed successfully');
     }
 
     public function getRealtimeDashboard(Request $request, string $orgId): JsonResponse
@@ -90,7 +90,7 @@ class AnalyticsController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         $result = $this->realtime->getOrganizationDashboard(
@@ -98,13 +98,13 @@ class AnalyticsController extends Controller
             $request->input('window', '5m')
         );
 
-        return response()->json($result);
+        return $this->success($result, 'Operation completed successfully');
     }
 
     public function detectAnomalies(string $orgId, string $entityType, string $entityId, string $metric): JsonResponse
     {
         $result = $this->realtime->detectAnomalies($entityType, $entityId, $metric);
-        return response()->json($result);
+        return $this->success($result, 'Operation completed successfully');
     }
 
     // CUSTOM METRICS & KPIS
@@ -121,13 +121,16 @@ class AnalyticsController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         $definition = array_merge($request->all(), ['org_id' => $orgId]);
         $result = $this->customMetrics->createMetric($definition);
 
-        return response()->json($result, $result['success'] ? 201 : 400);
+        if (!$result['success']) {
+            return $this->error($result['message'] ?? 'Operation failed', 400);
+        }
+        return $this->created($result['data'] ?? $result, $result['message'] ?? 'Created successfully');
     }
 
     public function calculateMetric(Request $request, string $orgId, string $metricId): JsonResponse
@@ -141,7 +144,7 @@ class AnalyticsController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         $result = $this->customMetrics->calculateMetric(
@@ -151,7 +154,7 @@ class AnalyticsController extends Controller
             $request->input('date_range', [])
         );
 
-        return response()->json($result);
+        return $this->success($result, 'Operation completed successfully');
     }
 
     public function createKPI(Request $request, string $orgId): JsonResponse
@@ -168,13 +171,16 @@ class AnalyticsController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         $definition = array_merge($request->all(), ['org_id' => $orgId]);
         $result = $this->customMetrics->createKPI($definition);
 
-        return response()->json($result, $result['success'] ? 201 : 400);
+        if (!$result['success']) {
+            return $this->error($result['message'] ?? 'Operation failed', 400);
+        }
+        return $this->created($result['data'] ?? $result, $result['message'] ?? 'Created successfully');
     }
 
     public function evaluateKPI(Request $request, string $orgId, string $kpiId): JsonResponse
@@ -185,7 +191,7 @@ class AnalyticsController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         $result = $this->customMetrics->evaluateKPI(
@@ -194,7 +200,7 @@ class AnalyticsController extends Controller
             $request->input('entity_id')
         );
 
-        return response()->json($result);
+        return $this->success($result, 'Operation completed successfully');
     }
 
     public function getKPIDashboard(Request $request, string $orgId): JsonResponse
@@ -205,7 +211,7 @@ class AnalyticsController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         $result = $this->customMetrics->getKPIDashboard(
@@ -214,7 +220,7 @@ class AnalyticsController extends Controller
             $request->input('entity_id')
         );
 
-        return response()->json($result);
+        return $this->success($result, 'Operation completed successfully');
     }
 
     // ROI CALCULATION
@@ -227,7 +233,7 @@ class AnalyticsController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         $result = $this->roiEngine->calculateCampaignROI(
@@ -235,7 +241,7 @@ class AnalyticsController extends Controller
             $request->input('date_range', [])
         );
 
-        return response()->json($result);
+        return $this->success($result, 'Operation completed successfully');
     }
 
     public function calculateOrganizationROI(Request $request, string $orgId): JsonResponse
@@ -247,7 +253,7 @@ class AnalyticsController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         $result = $this->roiEngine->calculateOrganizationROI(
@@ -255,13 +261,13 @@ class AnalyticsController extends Controller
             $request->input('date_range', [])
         );
 
-        return response()->json($result);
+        return $this->success($result, 'Operation completed successfully');
     }
 
     public function calculateLifetimeValue(string $orgId, string $campaignId): JsonResponse
     {
         $result = $this->roiEngine->calculateLifetimeValue($campaignId);
-        return response()->json($result);
+        return $this->success($result, 'Operation completed successfully');
     }
 
     public function projectROI(Request $request, string $orgId, string $campaignId): JsonResponse
@@ -271,7 +277,7 @@ class AnalyticsController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         $result = $this->roiEngine->projectROI(
@@ -279,7 +285,7 @@ class AnalyticsController extends Controller
             $request->input('days_to_project', 30)
         );
 
-        return response()->json($result);
+        return $this->success($result, 'Operation completed successfully');
     }
 
     // ATTRIBUTION MODELING
@@ -293,7 +299,7 @@ class AnalyticsController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         $result = $this->attribution->attributeConversions(
@@ -302,7 +308,7 @@ class AnalyticsController extends Controller
             $request->input('date_range', [])
         );
 
-        return response()->json($result);
+        return $this->success($result, 'Operation completed successfully');
     }
 
     public function compareAttributionModels(Request $request, string $orgId, string $campaignId): JsonResponse
@@ -314,7 +320,7 @@ class AnalyticsController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         $result = $this->attribution->compareAttributionModels(
@@ -322,7 +328,7 @@ class AnalyticsController extends Controller
             $request->input('date_range', [])
         );
 
-        return response()->json($result);
+        return $this->success($result, 'Operation completed successfully');
     }
 
     public function getAttributionInsights(Request $request, string $orgId, string $campaignId): JsonResponse
@@ -335,7 +341,7 @@ class AnalyticsController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         $result = $this->attribution->getAttributionInsights(
@@ -344,18 +350,18 @@ class AnalyticsController extends Controller
             $request->input('date_range', [])
         );
 
-        return response()->json($result);
+        return $this->success($result, 'Operation completed successfully');
     }
 
     public function deleteMetric(string $orgId, string $metricId): JsonResponse
     {
         $result = $this->customMetrics->deleteMetric($metricId);
-        return response()->json($result);
+        return $this->success($result, 'Operation completed successfully');
     }
 
     public function deleteKPI(string $orgId, string $kpiId): JsonResponse
     {
         $result = $this->customMetrics->deleteKPI($kpiId);
-        return response()->json($result);
+        return $this->success($result, 'Operation completed successfully');
     }
 }

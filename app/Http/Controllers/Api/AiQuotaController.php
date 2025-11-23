@@ -51,7 +51,7 @@ class AiQuotaController extends Controller
             $user->id
         );
 
-        return response()->json($status);
+        return $this->success($status, 'Retrieved successfully');
     }
 
     /**

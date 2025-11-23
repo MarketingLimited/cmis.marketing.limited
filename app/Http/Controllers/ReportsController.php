@@ -62,10 +62,7 @@ class ReportsController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         try {
@@ -82,7 +79,7 @@ class ReportsController extends Controller
                 ], 500);
             }
 
-            return response()->json($report);
+            return $this->success($report, 'Retrieved successfully');
 
         } catch (\Exception $e) {
             return response()->json([
@@ -120,10 +117,7 @@ class ReportsController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         try {
@@ -140,7 +134,7 @@ class ReportsController extends Controller
                 ], 500);
             }
 
-            return response()->json($report);
+            return $this->success($report, 'Retrieved successfully');
 
         } catch (\Exception $e) {
             return response()->json([
@@ -176,10 +170,7 @@ class ReportsController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         try {
@@ -196,7 +187,7 @@ class ReportsController extends Controller
                 ], 500);
             }
 
-            return response()->json($report);
+            return $this->success($report, 'Retrieved successfully');
 
         } catch (\Exception $e) {
             return response()->json([
@@ -238,10 +229,7 @@ class ReportsController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         try {
@@ -258,7 +246,7 @@ class ReportsController extends Controller
                 ], 500);
             }
 
-            return response()->json($report);
+            return $this->success($report, 'Retrieved successfully');
 
         } catch (\Exception $e) {
             return response()->json([
@@ -303,10 +291,7 @@ class ReportsController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         try {
@@ -324,7 +309,7 @@ class ReportsController extends Controller
                 ], 500);
             }
 
-            return response()->json($schedule, 201);
+            return $this->created($schedule, 'Created successfully');
 
         } catch (\Exception $e) {
             return response()->json([
@@ -351,7 +336,7 @@ class ReportsController extends Controller
 
             $schedules = $this->reportService->getScheduledReports($entityId);
 
-            return response()->json($schedules);
+            return $this->success($schedules, 'Retrieved successfully');
 
         } catch (\Exception $e) {
             return response()->json([
@@ -377,10 +362,7 @@ class ReportsController extends Controller
             $success = $this->reportService->cancelScheduledReport($scheduleId);
 
             if ($success) {
-                return response()->json([
-                    'success' => true,
-                    'message' => 'Report schedule cancelled successfully'
-                ]);
+                return $this->success(null, 'Report schedule cancelled successfully');
             }
 
             return $this->error('Failed to cancel report schedule or schedule not found', 404);

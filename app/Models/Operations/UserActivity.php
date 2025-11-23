@@ -13,7 +13,6 @@ use Illuminate\Database\Eloquent\Builder;
 class UserActivity extends BaseModel
 {
     use HasOrganization;
-}
 /**
      * Get the user that performed the activity.
      */
@@ -80,5 +79,4 @@ class UserActivity extends BaseModel
             $query->where('entity_id', $entityId);
 
         return $query;
-}
 }

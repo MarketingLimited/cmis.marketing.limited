@@ -69,16 +69,17 @@ class CampaignContextLink extends BaseModel
                 return $this->belongsTo(OfferingContext::class, 'context_id', 'context_id');
             default:
                 return $this->belongsTo(ContextBase::class, 'context_id', 'id');
-
+        }
     }
+
     /**
      * Get the creator
      */
     public function creator(): BelongsTo
     {
         return $this->belongsTo(\App\Models\User::class, 'created_by', 'user_id');
-
     }
+
     /**
      * Scope active links
      */
@@ -92,23 +93,22 @@ class CampaignContextLink extends BaseModel
             ->where(function ($q) {
                 $q->whereNull('effective_to')
                     ->orWhere('effective_to', '>=', now());
-
+            });
     }
+
     /**
      * Scope by link type
      */
     public function scopeOfType($query, string $type): Builder
     {
         return $query->where('link_type', $type);
-
     }
+
     /**
      * Scope primary links
      */
     public function scopePrimary($query): Builder
     {
         return $query->where('link_type', 'primary');
-}
-}
-}
+    }
 }

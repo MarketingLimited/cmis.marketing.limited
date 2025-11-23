@@ -106,11 +106,9 @@ class Notification extends BaseModel
      */
     public function isExpired(): bool
     {
-        if (!$this->expires_at) {
+        if (...) {
             return false;
+        }
 
         return $this->expires_at->isPast();
-}
-}
-}
 }

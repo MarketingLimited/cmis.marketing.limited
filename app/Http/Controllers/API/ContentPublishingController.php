@@ -269,10 +269,7 @@ class ContentPublishingController extends Controller
                 ->first();
 
             if (!$scheduled) {
-                return response()->json([
-                    'success' => false,
-                    'error' => 'Scheduled post not found or already published',
-                ], 404);
+                return $this->notFound('Scheduled post not found or already published');
             }
 
             // Update scheduled_at if provided
@@ -331,10 +328,7 @@ class ContentPublishingController extends Controller
                 ]);
 
             if ($updated === 0) {
-                return response()->json([
-                    'success' => false,
-                    'error' => 'Scheduled post not found or already processed',
-                ], 404);
+                return $this->notFound('Scheduled post not found or already processed');
             }
 
             return response()->json([

@@ -116,20 +116,20 @@ class UserPermission extends BaseModel
     {
         if (!$this->is_granted) {
             return false;
+        }
 
         if ($this->expires_at && $this->expires_at->isPast()) {
             return false;
+        }
 
         return true;
-
     }
+
     /**
      * Check if permission has expired
      */
     public function hasExpired(): bool
     {
         return $this->expires_at && $this->expires_at->isPast();
-}
-}
-}
+    }
 }

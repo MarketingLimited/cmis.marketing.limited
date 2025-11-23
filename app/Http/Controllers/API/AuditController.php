@@ -44,11 +44,7 @@ class AuditController extends Controller
                 ]);
             }
 
-            return response()->json([
-                'success' => true,
-                'data' => $status,
-                'message' => 'Realtime status retrieved successfully'
-            ]);
+            return $this->success($status, 'Realtime status retrieved successfully');
 
         } catch (\Exception $e) {
             return response()->json([
@@ -83,11 +79,7 @@ class AuditController extends Controller
                 ]);
             }
 
-            return response()->json([
-                'success' => true,
-                'data' => $summary,
-                'message' => 'Daily summary retrieved successfully'
-            ]);
+            return $this->success($summary, 'Daily summary retrieved successfully');
 
         } catch (\Exception $e) {
             return response()->json([
@@ -152,11 +144,7 @@ class AuditController extends Controller
         try {
             $summary = DB::select("SELECT * FROM cmis_audit.audit_summary");
 
-            return response()->json([
-                'success' => true,
-                'data' => $summary,
-                'message' => 'Audit summary retrieved successfully'
-            ]);
+            return $this->success($summary, 'Audit summary retrieved successfully');
 
         } catch (\Exception $e) {
             return response()->json([

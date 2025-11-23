@@ -124,11 +124,9 @@ class OrgKnowledge extends BaseModel
      */
     public function hasExpired(): bool
     {
-        if (!$this->expiry_date) {
+        if (...) {
             return false;
+        }
 
         return $this->expiry_date->isPast();
-}
-}
-}
 }

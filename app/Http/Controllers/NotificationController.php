@@ -24,7 +24,7 @@ class NotificationController extends Controller
         $user = Auth::user();
         $notifications = $user->notifications()->paginate(20);
         
-        return response()->json($notifications);
+        return $this->success($notifications, 'Retrieved successfully');
     }
 
     public function markAsRead($notificationId): JsonResponse

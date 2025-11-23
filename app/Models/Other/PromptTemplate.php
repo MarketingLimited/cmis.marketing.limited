@@ -73,4 +73,3 @@ class PromptTemplate extends BaseModel
     {
         return $query->where('module_id', $moduleId);
 }
-}

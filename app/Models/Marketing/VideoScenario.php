@@ -62,5 +62,3 @@ class VideoScenario extends BaseModel
         $seconds = $this->duration_seconds % 60;
         return sprintf('%d:%02d', $minutes, $seconds);
 }
-}
-}

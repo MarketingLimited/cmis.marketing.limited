@@ -130,7 +130,7 @@ class KnowledgeLearningController extends Controller
     {
         $learnings = $this->knowledge->learnOrganizationPatterns($org);
 
-        return response()->json($learnings);
+        return $this->success($learnings, 'Retrieved successfully');
     }
 
     /**
@@ -163,9 +163,7 @@ class KnowledgeLearningController extends Controller
     {
         // Validate campaign belongs to org
         if ($campaign->org_id !== $org->org_id) {
-            return response()->json([
-                'error' => 'Campaign not found in organization'
-            ], 404);
+            return $this->notFound('Campaign not found in organization');
         }
 
         $validated = $request->validate([
@@ -178,7 +176,7 @@ class KnowledgeLearningController extends Controller
 
         $support = $this->knowledge->getDecisionSupport($campaign, $decisionType, $options);
 
-        return response()->json($support);
+        return $this->success($support, 'Retrieved successfully');
     }
 
     /**
@@ -313,4 +311,3 @@ class KnowledgeLearningController extends Controller
             'failure_patterns' => $learnings['failure_patterns'],
         ]);
     }
-}

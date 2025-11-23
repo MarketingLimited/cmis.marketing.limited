@@ -69,11 +69,7 @@ class KnowledgeController extends Controller
             ]);
         } catch (\Exception $e) {
             Log::error('Knowledge search error: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'error' => 'خطأ في البحث',
-                'message' => $e->getMessage()
-            ], 500);
+            return $this->serverError('خطأ في البحث' . ': ' . $e->getMessage());
         }
     }
 
@@ -110,11 +106,7 @@ class KnowledgeController extends Controller
             ]);
         } catch (\Exception $e) {
             Log::error('Knowledge store error: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'error' => 'فشل تسجيل المعرفة',
-                'message' => $e->getMessage()
-            ], 500);
+            return $this->serverError('فشل تسجيل المعرفة' . ': ' . $e->getMessage());
         }
     }
 

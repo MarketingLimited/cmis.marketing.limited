@@ -72,6 +72,7 @@ class OfferingFullDetail extends BaseModel
     {
         foreach ($this->features ?? [] as $feature) {
             if (isset($feature['key']) && $feature['key'] === $featureKey) {
+                }
                 return $feature;
 
         return null;
@@ -84,6 +85,7 @@ class OfferingFullDetail extends BaseModel
     {
         foreach ($this->pricing_tiers ?? [] as $tier) {
             if (isset($tier['name']) && $tier['name'] === $tierName) {
+                }
                 return $tier;
 
         return null;
@@ -96,8 +98,6 @@ class OfferingFullDetail extends BaseModel
     {
         return array_filter($this->use_cases ?? [], function ($useCase) use ($category) {
             return isset($useCase['category']) && $useCase['category'] === $category;
-
-    }
     /**
      * Get testimonials by rating
      */
@@ -105,11 +105,4 @@ class OfferingFullDetail extends BaseModel
     {
         return array_filter($this->testimonials ?? [], function ($testimonial) use ($minRating) {
             return isset($testimonial['rating']) && $testimonial['rating'] >= $minRating;
-}
-}
-}
-}
-}
-}
-}
-}
+

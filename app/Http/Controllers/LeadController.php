@@ -37,7 +37,7 @@ class LeadController extends Controller
             $orgId = $this->resolveOrgId($request);
 
             if (!$orgId) {
-                return response()->json(['error' => 'No active organization found'], 404);
+                return $this->notFound('No active organization found');
             }
 
             $query = Lead::where('org_id', $orgId);
@@ -121,7 +121,7 @@ class LeadController extends Controller
             $user = $request->user();
 
             if (!$orgId) {
-                return response()->json(['error' => 'No active organization found'], 404);
+                return $this->notFound('No active organization found');
             }
 
             // Initialize RLS context
@@ -142,10 +142,7 @@ class LeadController extends Controller
                 'metadata' => $request->input('metadata', []),
             ]);
 
-            return response()->json([
-                'data' => $lead,
-                'message' => 'Lead created successfully'
-            ], 201);
+            return $this->created($lead, 'Lead created successfully');
         } catch (\Exception $e) {
             Log::error("Failed to create lead: {$e->getMessage()}");
             return response()->json([
@@ -167,14 +164,14 @@ class LeadController extends Controller
             $orgId = $this->resolveOrgId($request);
 
             if (!$orgId) {
-                return response()->json(['error' => 'No active organization found'], 404);
+                return $this->notFound('No active organization found');
             }
 
             $lead = Lead::where('lead_id', $id)
                 ->where('org_id', $orgId)
                 ->firstOrFail();
 
-            return response()->json(['data' => $lead]);
+            return $this->success($lead, 'Retrieved successfully');
         } catch (\Exception $e) {
             Log::error("Failed to get lead: {$e->getMessage()}");
             return response()->json([
@@ -197,7 +194,7 @@ class LeadController extends Controller
             $user = $request->user();
 
             if (!$orgId) {
-                return response()->json(['error' => 'No active organization found'], 404);
+                return $this->notFound('No active organization found');
             }
 
             // Initialize RLS context
@@ -256,7 +253,7 @@ class LeadController extends Controller
             $user = $request->user();
 
             if (!$orgId) {
-                return response()->json(['error' => 'No active organization found'], 404);
+                return $this->notFound('No active organization found');
             }
 
             // Initialize RLS context
@@ -296,7 +293,7 @@ class LeadController extends Controller
             $orgId = $this->resolveOrgId($request);
 
             if (!$orgId) {
-                return response()->json(['error' => 'No active organization found'], 404);
+                return $this->notFound('No active organization found');
             }
 
             $lead = Lead::where('lead_id', $id)
@@ -348,7 +345,7 @@ class LeadController extends Controller
             $user = $request->user();
 
             if (!$orgId) {
-                return response()->json(['error' => 'No active organization found'], 404);
+                return $this->notFound('No active organization found');
             }
 
             // Initialize RLS context

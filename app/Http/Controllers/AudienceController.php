@@ -82,10 +82,7 @@ class AudienceController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         try {
@@ -99,7 +96,7 @@ class AudienceController extends Controller
                 ], 500);
             }
 
-            return response()->json($result, 201);
+            return $this->created($result, 'Created successfully');
 
         } catch (\Exception $e) {
             return response()->json([
@@ -134,7 +131,7 @@ class AudienceController extends Controller
                 ], 404);
             }
 
-            return response()->json($result);
+            return $this->success($result, 'Operation completed successfully');
 
         } catch (\Exception $e) {
             return response()->json([
@@ -168,16 +165,13 @@ class AudienceController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         try {
             $result = $this->audienceService->listAudiences($request->all());
 
-            return response()->json($result);
+            return $this->success($result, 'Operation completed successfully');
 
         } catch (\Exception $e) {
             return response()->json([
@@ -214,10 +208,7 @@ class AudienceController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         try {
@@ -231,7 +222,7 @@ class AudienceController extends Controller
                 ], 500);
             }
 
-            return response()->json($result);
+            return $this->success($result, 'Operation completed successfully');
 
         } catch (\Exception $e) {
             return response()->json([
@@ -259,10 +250,7 @@ class AudienceController extends Controller
             $success = $this->audienceService->deleteAudience($audienceId, $permanent);
 
             if ($success) {
-                return response()->json([
-                    'success' => true,
-                    'message' => 'Audience deleted successfully'
-                ]);
+                return $this->success(null, 'Audience deleted successfully');
             }
 
             return $this->error('Failed to delete audience', 500);
@@ -304,10 +292,7 @@ class AudienceController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         try {
@@ -321,7 +306,7 @@ class AudienceController extends Controller
                 ], 500);
             }
 
-            return response()->json($result, 201);
+            return $this->created($result, 'Created successfully');
 
         } catch (\Exception $e) {
             return response()->json([
@@ -363,10 +348,7 @@ class AudienceController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         try {
@@ -413,10 +395,7 @@ class AudienceController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         try {
@@ -425,7 +404,7 @@ class AudienceController extends Controller
                 $request->input('platform')
             );
 
-            return response()->json($result);
+            return $this->success($result, 'Operation completed successfully');
 
         } catch (\Exception $e) {
             return response()->json([

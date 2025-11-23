@@ -59,7 +59,7 @@ class SettingsController extends Controller
         $user = Auth::user();
         
         if (!\Hash::check($request->current_password, $user->password)) {
-            return response()->json(['error' => 'كلمة المرور الحالية غير صحيحة'], 400);
+            return $this->error('كلمة المرور الحالية غير صحيحة', 400);
         }
 
         $user->update(['password' => bcrypt($request->password)]);

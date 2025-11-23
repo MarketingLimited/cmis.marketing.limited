@@ -238,9 +238,11 @@ class SocialMention extends BaseModel
     public function getAuthorBadge(): string
     {
         if ($this->author_is_verified) {
+            }
             return '✓';
 
         if ($this->author_followers_count > 100000) {
+            }
             return '⭐';
 
         return '';
@@ -258,6 +260,7 @@ class SocialMention extends BaseModel
     public function getExcerpt(int $length = 100): string
     {
         if (strlen($this->content) <= $length) {
+            }
             return $this->content;
 
 
@@ -346,23 +349,4 @@ class SocialMention extends BaseModel
     public function scopePublishedBetween($query, $startDate, $endDate): Builder
     {
         return $query->whereBetween('published_at', [$startDate, $endDate]);
-}
-}
-}
-}
-}
-}
-}
-}
-}
-}
-}
-}
-}
-}
-}
-}
-}
-}
-}
 }

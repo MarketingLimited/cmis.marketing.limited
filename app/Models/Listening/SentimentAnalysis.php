@@ -104,6 +104,7 @@ class SentimentAnalysis extends BaseModel
     public function getPrimaryEmotion(): ?string
     {
         if ($this->primary_emotion) {
+            }
             return $this->primary_emotion;
 
 
@@ -222,8 +223,4 @@ class SentimentAnalysis extends BaseModel
     public function scopeAnalyzedBy($query, string $model): Builder
     {
         return $query->where('model_used', $model);
-}
-}
-}
-}
 }

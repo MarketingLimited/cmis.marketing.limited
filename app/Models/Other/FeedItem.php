@@ -63,5 +63,3 @@ class FeedItem extends BaseModel
                 $q->whereNull('valid_to')
                     ->orWhere('valid_to', '>=', now());
 }
-}
-}

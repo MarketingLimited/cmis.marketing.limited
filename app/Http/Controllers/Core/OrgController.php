@@ -145,7 +145,7 @@ class OrgController extends Controller
             return response()->json(['org' => $org]);
 
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            return response()->json(['error' => 'Organization not found'], 404);
+            return $this->notFound('Organization not found');
         } catch (\Exception $e) {
             return response()->json([
                 'error' => 'Failed to fetch organization',
@@ -171,7 +171,7 @@ class OrgController extends Controller
             ]);
 
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            return response()->json(['error' => 'Organization not found'], 404);
+            return $this->notFound('Organization not found');
         } catch (\Exception $e) {
             return response()->json([
                 'error' => 'Failed to update organization',
@@ -194,7 +194,7 @@ class OrgController extends Controller
             return response()->json(['message' => 'Organization deleted successfully']);
 
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            return response()->json(['error' => 'Organization not found'], 404);
+            return $this->notFound('Organization not found');
         } catch (\Exception $e) {
             return response()->json([
                 'error' => 'Failed to delete organization',

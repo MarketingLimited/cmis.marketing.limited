@@ -278,10 +278,7 @@ class SyncController extends Controller
                 'recent_syncs' => $syncLogs,
             ]);
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'error' => 'Integration not found',
-            ], 404);
+            return $this->notFound('Integration not found');
         }
     }
 

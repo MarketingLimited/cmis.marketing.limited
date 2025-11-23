@@ -57,11 +57,7 @@ class UnifiedInboxController extends Controller
             ]);
         } catch (\Exception $e) {
             Log::error('Failed to get inbox messages: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'error' => 'فشل في جلب الرسائل',
-                'message' => $e->getMessage()
-            ], 500);
+            return $this->serverError('فشل في جلب الرسائل' . ': ' . $e->getMessage());
         }
     }
 
@@ -82,10 +78,7 @@ class UnifiedInboxController extends Controller
             ]);
         } catch (\Exception $e) {
             Log::error('Failed to get conversation: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'error' => 'فشل في جلب المحادثة'
-            ], 500);
+            return $this->serverError('فشل في جلب المحادثة');
         }
     }
 
@@ -114,11 +107,7 @@ class UnifiedInboxController extends Controller
             ]);
         } catch (\Exception $e) {
             Log::error('Failed to send reply: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'error' => 'فشل في إرسال الرد',
-                'message' => $e->getMessage()
-            ], 500);
+            return $this->serverError('فشل في إرسال الرد' . ': ' . $e->getMessage());
         }
     }
 
@@ -137,16 +126,10 @@ class UnifiedInboxController extends Controller
         try {
             $this->inboxService->markAsRead($validated['message_ids']);
 
-            return response()->json([
-                'success' => true,
-                'message' => 'تم تحديث حالة الرسائل'
-            ]);
+            return $this->success(null, 'تم تحديث حالة الرسائل');
         } catch (\Exception $e) {
             Log::error('Failed to mark messages as read: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'error' => 'فشل في تحديث الرسائل'
-            ], 500);
+            return $this->serverError('فشل في تحديث الرسائل');
         }
     }
 
@@ -164,16 +147,10 @@ class UnifiedInboxController extends Controller
         try {
             $this->inboxService->assignToUser($messageId, $validated['user_id']);
 
-            return response()->json([
-                'success' => true,
-                'message' => 'تم تعيين الرسالة بنجاح'
-            ]);
+            return $this->success(null, 'تم تعيين الرسالة بنجاح');
         } catch (\Exception $e) {
             Log::error('Failed to assign message: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'error' => 'فشل في تعيين الرسالة'
-            ], 500);
+            return $this->serverError('فشل في تعيين الرسالة');
         }
     }
 
@@ -202,10 +179,7 @@ class UnifiedInboxController extends Controller
             ]);
         } catch (\Exception $e) {
             Log::error('Failed to add note: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'error' => 'فشل في إضافة الملاحظة'
-            ], 500);
+            return $this->serverError('فشل في إضافة الملاحظة');
         }
     }
 
@@ -225,10 +199,7 @@ class UnifiedInboxController extends Controller
             ]);
         } catch (\Exception $e) {
             Log::error('Failed to get saved replies: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'error' => 'فشل في جلب الردود المحفوظة'
-            ], 500);
+            return $this->serverError('فشل في جلب الردود المحفوظة');
         }
     }
 
@@ -259,10 +230,7 @@ class UnifiedInboxController extends Controller
             ]);
         } catch (\Exception $e) {
             Log::error('Failed to create saved reply: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'error' => 'فشل في حفظ الرد'
-            ], 500);
+            return $this->serverError('فشل في حفظ الرد');
         }
     }
 
@@ -282,10 +250,7 @@ class UnifiedInboxController extends Controller
             ]);
         } catch (\Exception $e) {
             Log::error('Failed to get inbox statistics: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'error' => 'فشل في جلب الإحصائيات'
-            ], 500);
+            return $this->serverError('فشل في جلب الإحصائيات');
         }
     }
 }

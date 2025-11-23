@@ -47,10 +47,7 @@ class ApprovalController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         try {
@@ -94,10 +91,7 @@ class ApprovalController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         $success = $this->approvalService->approve(
@@ -107,10 +101,7 @@ class ApprovalController extends Controller
         );
 
         if ($success) {
-            return response()->json([
-                'success' => true,
-                'message' => 'Post approved successfully'
-            ]);
+            return $this->success(null, 'Post approved successfully');
         }
 
         return $this->error('Failed to approve post', 400);
@@ -149,10 +140,7 @@ class ApprovalController extends Controller
         );
 
         if ($success) {
-            return response()->json([
-                'success' => true,
-                'message' => 'Post rejected successfully'
-            ]);
+            return $this->success(null, 'Post rejected successfully');
         }
 
         return $this->error('Failed to reject post', 400);
@@ -180,10 +168,7 @@ class ApprovalController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         $success = $this->approvalService->reassign(
@@ -192,10 +177,7 @@ class ApprovalController extends Controller
         );
 
         if ($success) {
-            return response()->json([
-                'success' => true,
-                'message' => 'Approval reassigned successfully'
-            ]);
+            return $this->success(null, 'Approval reassigned successfully');
         }
 
         return $this->error('Failed to reassign approval', 400);
@@ -264,10 +246,7 @@ class ApprovalController extends Controller
             ]);
 
             if ($validator->fails()) {
-                return response()->json([
-                    'success' => false,
-                    'errors' => $validator->errors()
-                ], 422);
+                return $this->validationError($validator->errors(), 'Validation failed');
             }
 
             $dateRange = [

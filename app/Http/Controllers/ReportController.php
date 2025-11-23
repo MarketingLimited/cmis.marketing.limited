@@ -57,7 +57,7 @@ class ReportController extends Controller
             return response()->download(storage_path('app/reports/' . $filename));
         }
 
-        return response()->json($reportData);
+        return $this->success($reportData, 'Retrieved successfully');
     }
 
     /**
@@ -74,7 +74,7 @@ class ReportController extends Controller
 
         $reportData = $this->reportService->generateOrgReport($orgId, $validated);
 
-        return response()->json($reportData);
+        return $this->success($reportData, 'Retrieved successfully');
     }
 
     /**
@@ -99,7 +99,7 @@ class ReportController extends Controller
 
         $stats = $this->reportService->getReportStats($orgId, $dateRange);
 
-        return response()->json($stats);
+        return $this->success($stats, 'Retrieved successfully');
     }
 
     /**
@@ -123,7 +123,7 @@ class ReportController extends Controller
         switch ($validated['type']) {
             case 'campaign':
                 if (!isset($validated['entity_id'])) {
-                    return response()->json(['error' => 'Campaign ID required'], 400);
+                    return $this->error('Campaign ID required', 400);
                 }
                 $reportData = $this->reportService->generateCampaignReport(
                     $validated['entity_id'],
@@ -133,7 +133,7 @@ class ReportController extends Controller
 
             case 'organization':
                 if (!isset($validated['entity_id'])) {
-                    return response()->json(['error' => 'Organization ID required'], 400);
+                    return $this->error('Organization ID required', 400);
                 }
                 $reportData = $this->reportService->generateOrgReport($validated['entity_id']);
                 break;
@@ -150,7 +150,7 @@ class ReportController extends Controller
             return response()->download(storage_path('app/reports/' . $filename));
         }
 
-        return response()->json(['error' => 'Invalid format'], 400);
+        return $this->error('Invalid format', 400);
     }
 
     /**

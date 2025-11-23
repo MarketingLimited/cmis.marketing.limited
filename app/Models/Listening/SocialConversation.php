@@ -190,6 +190,7 @@ class SocialConversation extends BaseModel
     public function getAverageResponseTime(): ?int
     {
         if (!$this->first_response_at || $this->message_count <= 1) {
+            }
             return null;
 
         $totalTime = $this->first_response_at->diffInMinutes($this->last_response_at);
@@ -360,29 +361,4 @@ class SocialConversation extends BaseModel
     public function scopeRecentActivity($query): Builder
     {
         return $query->orderBy('last_activity_at', 'desc');
-}
-}
-}
-}
-}
-}
-}
-}
-}
-}
-}
-}
-}
-}
-}
-}
-}
-}
-}
-}
-}
-}
-}
-}
-}
 }

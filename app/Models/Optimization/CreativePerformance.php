@@ -180,6 +180,7 @@ class CreativePerformance extends BaseModel
     public function getVisualFeatureSummary(): string
     {
         if (!$this->visual_features || !is_array($this->visual_features)) {
+            }
             return 'N/A';
 
 
@@ -188,6 +189,7 @@ class CreativePerformance extends BaseModel
     public function getTextFeatureSummary(): string
     {
         if (!$this->text_features || !is_array($this->text_features)) {
+            }
             return 'N/A';
 
 
@@ -214,17 +216,4 @@ class CreativePerformance extends BaseModel
         return $query->where(function ($q) {
             $q->where('fatigue_score', '>', 0.7)
               ->orWhere('freshness_days', '>', 60);
-}
-}
-}
-}
-}
-}
-}
-}
-}
-}
-}
-}
-}
 }

@@ -47,46 +47,51 @@ class OrchestrationRule extends BaseModel
 
     // ===== Relationships =====
 
-    
+
 
     public function orchestration(): BelongsTo
     {
         return $this->belongsTo(CampaignOrchestration::class, 'orchestration_id', 'orchestration_id');
+    }
 
-
-        }
     public function enable(): void
     {
         $this->update(['enabled' => true]);
+    }
 
     public function disable(): void
     {
         $this->update(['enabled' => false]);
+    }
 
     public function recordExecution(bool $success): void
     {
         $this->increment('execution_count');
         if ($success) {
             $this->increment('success_count');
+        }
         $this->update(['last_executed_at' => now()]);
+    }
 
     public function getSuccessRate(): float
     {
         if ($this->execution_count === 0) {
             return 0.0;
+        }
 
+        return ($this->success_count / $this->execution_count) * 100;
+    }
 
-            }
     public function isEnabled(): bool
     {
         return $this->enabled;
+    }
 
-        }
     public function isGlobal(): bool
     {
         return $this->orchestration_id === null;
+    }
 
-        }
     public function getRuleTypeLabel(): string
     {
         return match($this->rule_type) {
@@ -96,6 +101,7 @@ class OrchestrationRule extends BaseModel
             'creative_rotation' => 'Creative Rotation',
             default => ucfirst(str_replace('_', ' ', $this->rule_type))
         };
+    }
 
     public function getPriorityLevel(): int
     {
@@ -106,29 +112,30 @@ class OrchestrationRule extends BaseModel
             'low' => 4,
             default => 5
         };
+    }
 
     // ===== Scopes =====
 
     public function scopeEnabled($query): Builder
     {
         return $query->where('enabled', true);
+    }
 
-        }
     public function scopeGlobal($query): Builder
     {
         return $query->whereNull('orchestration_id');
+    }
 
-        }
     public function scopeForOrchestration($query, string $orchestrationId): Builder
     {
         return $query->where('orchestration_id', $orchestrationId);
+    }
 
-        }
     public function scopeForType($query, string $type): Builder
     {
         return $query->where('rule_type', $type);
+    }
 
-        }
     public function scopeByPriority($query): Builder
     {
         return $query->orderByRaw("
@@ -140,12 +147,5 @@ class OrchestrationRule extends BaseModel
                 ELSE 5
             END
         ");
-}
-}
-}
-}
-}
-}
-}
-}
+    }
 }

@@ -90,5 +90,3 @@ class SemanticSearchResultCache extends BaseModel
         return $query->where('hit_count', '>=', $threshold)
             ->orderBy('hit_count', 'desc');
 }
-}
-}

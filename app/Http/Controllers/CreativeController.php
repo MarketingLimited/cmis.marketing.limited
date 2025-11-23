@@ -60,11 +60,7 @@ class CreativeController extends Controller
             return new CreativeAssetCollection($assets);
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'error' => 'فشل جلب المواد الإبداعية',
-                'message' => $e->getMessage()
-            ], 500);
+            return $this->serverError('فشل جلب المواد الإبداعية' . ': ' . $e->getMessage());
         }
     }
 
@@ -88,11 +84,7 @@ class CreativeController extends Controller
                 ->setStatusCode(201);
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'error' => 'فشل رفع المادة الإبداعية',
-                'message' => $e->getMessage()
-            ], 500);
+            return $this->serverError('فشل رفع المادة الإبداعية' . ': ' . $e->getMessage());
         }
     }
 
@@ -116,16 +108,9 @@ class CreativeController extends Controller
                 ]);
 
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            return response()->json([
-                'success' => false,
-                'error' => 'لم يتم العثور على المادة الإبداعية'
-            ], 404);
+            return $this->notFound('لم يتم العثور على المادة الإبداعية');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'error' => 'فشل جلب المادة الإبداعية',
-                'message' => $e->getMessage()
-            ], 500);
+            return $this->serverError('فشل جلب المادة الإبداعية' . ': ' . $e->getMessage());
         }
     }
 
@@ -152,16 +137,9 @@ class CreativeController extends Controller
                 ]);
 
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            return response()->json([
-                'success' => false,
-                'error' => 'لم يتم العثور على المادة الإبداعية'
-            ], 404);
+            return $this->notFound('لم يتم العثور على المادة الإبداعية');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'error' => 'فشل التحديث',
-                'message' => $e->getMessage()
-            ], 500);
+            return $this->serverError('فشل التحديث' . ': ' . $e->getMessage());
         }
     }
 
@@ -174,28 +152,15 @@ class CreativeController extends Controller
             $deleted = $this->creativeService->deleteAsset($assetId);
 
             if ($deleted) {
-                return response()->json([
-                    'success' => true,
-                    'message' => 'تم حذف المادة الإبداعية بنجاح'
-                ]);
+                return $this->success(null, 'تم حذف المادة الإبداعية بنجاح');
             }
 
-            return response()->json([
-                'success' => false,
-                'error' => 'فشل حذف المادة الإبداعية'
-            ], 500);
+            return $this->serverError('فشل حذف المادة الإبداعية');
 
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            return response()->json([
-                'success' => false,
-                'error' => 'لم يتم العثور على المادة الإبداعية'
-            ], 404);
+            return $this->notFound('لم يتم العثور على المادة الإبداعية');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'error' => 'فشل الحذف',
-                'message' => $e->getMessage()
-            ], 500);
+            return $this->serverError('فشل الحذف' . ': ' . $e->getMessage());
         }
     }
 
@@ -217,17 +182,10 @@ class CreativeController extends Controller
                     ]);
             }
 
-            return response()->json([
-                'success' => false,
-                'error' => 'فشل اعتماد المادة الإبداعية'
-            ], 500);
+            return $this->serverError('فشل اعتماد المادة الإبداعية');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'error' => 'فشل اعتماد المادة الإبداعية',
-                'message' => $e->getMessage()
-            ], 500);
+            return $this->serverError('فشل اعتماد المادة الإبداعية' . ': ' . $e->getMessage());
         }
     }
 
@@ -253,17 +211,10 @@ class CreativeController extends Controller
                     ]);
             }
 
-            return response()->json([
-                'success' => false,
-                'error' => 'فشل رفض المادة الإبداعية'
-            ], 500);
+            return $this->serverError('فشل رفض المادة الإبداعية');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'error' => 'فشل رفض المادة الإبداعية',
-                'message' => $e->getMessage()
-            ], 500);
+            return $this->serverError('فشل رفض المادة الإبداعية' . ': ' . $e->getMessage());
         }
     }
 }

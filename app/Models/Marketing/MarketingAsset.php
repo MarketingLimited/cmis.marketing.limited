@@ -57,5 +57,3 @@ class MarketingAsset extends BaseModel
     {
         return $query->where('status', 'active');
 }
-}
-}

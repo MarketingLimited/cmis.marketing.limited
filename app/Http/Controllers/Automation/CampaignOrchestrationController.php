@@ -69,10 +69,7 @@ class CampaignOrchestrationController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         $days = $request->input('days', 30);
@@ -107,10 +104,7 @@ class CampaignOrchestrationController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         try {
@@ -121,7 +115,7 @@ class CampaignOrchestrationController extends Controller
                 $request->input('constraints', [])
             );
 
-            return response()->json($result);
+            return $this->success($result, 'Operation completed successfully');
 
         } catch (\Exception $e) {
             return response()->json([
@@ -144,10 +138,7 @@ class CampaignOrchestrationController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         try {
@@ -157,7 +148,7 @@ class CampaignOrchestrationController extends Controller
                 $request->input('strategy', 'performance_weighted')
             );
 
-            return response()->json($result);
+            return $this->success($result, 'Operation completed successfully');
 
         } catch (\Exception $e) {
             return response()->json([
@@ -179,10 +170,7 @@ class CampaignOrchestrationController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         try {
@@ -223,10 +211,7 @@ class CampaignOrchestrationController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         try {
@@ -256,7 +241,7 @@ class CampaignOrchestrationController extends Controller
         try {
             $result = $this->orchestrator->pauseCampaign($campaignId);
 
-            return response()->json($result);
+            return $this->success($result, 'Operation completed successfully');
 
         } catch (\Exception $e) {
             return response()->json([
@@ -276,7 +261,7 @@ class CampaignOrchestrationController extends Controller
         try {
             $result = $this->orchestrator->resumeCampaign($campaignId);
 
-            return response()->json($result);
+            return $this->success($result, 'Operation completed successfully');
 
         } catch (\Exception $e) {
             return response()->json([
@@ -296,7 +281,7 @@ class CampaignOrchestrationController extends Controller
         try {
             $result = $this->orchestrator->syncCampaignStatus($campaignId);
 
-            return response()->json($result);
+            return $this->success($result, 'Operation completed successfully');
 
         } catch (\Exception $e) {
             return response()->json([

@@ -97,7 +97,7 @@ class DashboardController extends Controller
     {
         $dashboard = $this->dashboardService->getOrgDashboard($org);
 
-        return response()->json($dashboard);
+        return $this->success($dashboard, 'Retrieved successfully');
     }
 
     /**

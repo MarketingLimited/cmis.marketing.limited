@@ -50,4 +50,3 @@ class SqlSnippet extends BaseModel
     {
         return $query->where('name', $name);
 }
-}

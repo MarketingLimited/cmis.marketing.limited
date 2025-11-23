@@ -56,7 +56,7 @@ class SwaggerController extends Controller
     {
         $spec = $this->generateOpenApiSpec();
 
-        return response()->json($spec);
+        return $this->success($spec, 'Retrieved successfully');
     }
 
     /**

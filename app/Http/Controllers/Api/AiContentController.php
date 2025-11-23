@@ -547,10 +547,7 @@ class AiContentController extends Controller
 
             // Ensure user owns this media
             if ($media->user_id !== $user->id) {
-                return response()->json([
-                    'success' => false,
-                    'error' => 'unauthorized'
-                ], 403);
+                return $this->forbidden('unauthorized');
             }
 
             $response = [
@@ -569,13 +566,10 @@ class AiContentController extends Controller
                 $response['error_message'] = $media->error_message;
             }
 
-            return response()->json($response);
+            return $this->success($response, 'Retrieved successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'error' => 'not_found'
-            ], 404);
+            return $this->notFound('not_found');
         }
     }
 

@@ -182,10 +182,7 @@ class DataExportsController extends Controller
         $config = DataExportConfig::findOrFail($configId);
         $config->delete();
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Export configuration deleted successfully'
-        ]);
+        return $this->success(null, 'Export configuration deleted successfully');
     }
 
     /**
@@ -438,10 +435,7 @@ class DataExportsController extends Controller
 
         $token->update(['is_active' => false]);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'API token revoked successfully'
-        ]);
+        return $this->success(null, 'API token revoked successfully');
     }
 
     /**

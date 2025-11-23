@@ -59,10 +59,7 @@ class TeamController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         try {
@@ -74,7 +71,10 @@ class TeamController extends Controller
                 'invited_by' => $request->user()->user_id ?? null
             ]);
 
-            return response()->json($result, $result['success'] ? 201 : 400);
+            if (!$result['success']) {
+            return $this->serverError($result['message'] ?? 'Operation failed');
+        }
+        return $this->created($result['data'] ?? $result, $result['message'] ?? 'Operation completed successfully');
 
         } catch (\Exception $e) {
             return response()->json([
@@ -105,7 +105,10 @@ class TeamController extends Controller
 
             $result = $this->teamService->acceptInvitation($token, $userId);
 
-            return response()->json($result, $result['success'] ? 200 : 400);
+            if (!$result['success']) {
+            return $this->serverError($result['message'] ?? 'Operation failed');
+        }
+        return $this->success($result['data'] ?? $result, $result['message'] ?? 'Operation completed successfully');
 
         } catch (\Exception $e) {
             return response()->json([
@@ -135,16 +138,16 @@ class TeamController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         try {
             $result = $this->teamService->listTeamMembers($orgId, $request->all());
 
-            return response()->json($result, $result['success'] ? 200 : 500);
+            if (!$result['success']) {
+            return $this->serverError($result['message'] ?? 'Operation failed');
+        }
+        return $this->success($result['data'] ?? $result, $result['message'] ?? 'Operation completed successfully');
 
         } catch (\Exception $e) {
             return response()->json([
@@ -169,7 +172,10 @@ class TeamController extends Controller
         try {
             $result = $this->teamService->removeTeamMember($orgId, $userId);
 
-            return response()->json($result, $result['success'] ? 200 : 400);
+            if (!$result['success']) {
+            return $this->serverError($result['message'] ?? 'Operation failed');
+        }
+        return $this->success($result['data'] ?? $result, $result['message'] ?? 'Operation completed successfully');
 
         } catch (\Exception $e) {
             return response()->json([
@@ -202,10 +208,7 @@ class TeamController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         try {
@@ -215,7 +218,10 @@ class TeamController extends Controller
                 $request->input('role')
             );
 
-            return response()->json($result, $result['success'] ? 200 : 400);
+            if (!$result['success']) {
+            return $this->serverError($result['message'] ?? 'Operation failed');
+        }
+        return $this->success($result['data'] ?? $result, $result['message'] ?? 'Operation completed successfully');
 
         } catch (\Exception $e) {
             return response()->json([
@@ -239,7 +245,10 @@ class TeamController extends Controller
         try {
             $result = $this->teamService->getRolePermissions($role);
 
-            return response()->json($result, $result['success'] ? 200 : 404);
+            if (!$result['success']) {
+            return $this->notFound($result['message'] ?? 'Operation failed');
+        }
+        return $this->success($result['data'] ?? $result, $result['message'] ?? 'Operation completed successfully');
 
         } catch (\Exception $e) {
             return response()->json([
@@ -262,7 +271,10 @@ class TeamController extends Controller
         try {
             $result = $this->teamService->getAllRoles();
 
-            return response()->json($result, $result['success'] ? 200 : 500);
+            if (!$result['success']) {
+            return $this->serverError($result['message'] ?? 'Operation failed');
+        }
+        return $this->success($result['data'] ?? $result, $result['message'] ?? 'Operation completed successfully');
 
         } catch (\Exception $e) {
             return response()->json([
@@ -296,10 +308,7 @@ class TeamController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         try {
@@ -309,7 +318,10 @@ class TeamController extends Controller
                 $request->input('account_ids')
             );
 
-            return response()->json($result, $result['success'] ? 200 : 400);
+            if (!$result['success']) {
+            return $this->serverError($result['message'] ?? 'Operation failed');
+        }
+        return $this->success($result['data'] ?? $result, $result['message'] ?? 'Operation completed successfully');
 
         } catch (\Exception $e) {
             return response()->json([
@@ -333,7 +345,10 @@ class TeamController extends Controller
         try {
             $result = $this->teamService->listInvitations($orgId);
 
-            return response()->json($result, $result['success'] ? 200 : 500);
+            if (!$result['success']) {
+            return $this->serverError($result['message'] ?? 'Operation failed');
+        }
+        return $this->success($result['data'] ?? $result, $result['message'] ?? 'Operation completed successfully');
 
         } catch (\Exception $e) {
             return response()->json([
@@ -358,7 +373,10 @@ class TeamController extends Controller
         try {
             $result = $this->teamService->cancelInvitation($invitationId);
 
-            return response()->json($result, $result['success'] ? 200 : 400);
+            if (!$result['success']) {
+            return $this->serverError($result['message'] ?? 'Operation failed');
+        }
+        return $this->success($result['data'] ?? $result, $result['message'] ?? 'Operation completed successfully');
 
         } catch (\Exception $e) {
             return response()->json([

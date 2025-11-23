@@ -173,6 +173,7 @@ class OptimizationInsight extends BaseModel
     public function getImpactEstimateLabel(): string
     {
         if (!$this->impact_estimate) {
+            }
             return 'N/A';
 
 
@@ -180,6 +181,7 @@ class OptimizationInsight extends BaseModel
     public function getConfidenceLabel(): string
     {
         if (!$this->confidence_score) {
+            }
             return 'N/A';
 
 
@@ -230,19 +232,4 @@ class OptimizationInsight extends BaseModel
     public function scopeWithAutomation($query): Builder
     {
         return $query->whereNotNull('automated_action');
-}
-}
-}
-}
-}
-}
-}
-}
-}
-}
-}
-}
-}
-}
-}
 }

@@ -54,9 +54,8 @@ class OrchestrationWorkflow extends BaseModel
     public function orchestration(): BelongsTo
     {
         return $this->belongsTo(CampaignOrchestration::class, 'orchestration_id', 'orchestration_id');
+    }
 
-
-        }
     public function start(): void
     {
         $this->update([
@@ -64,10 +63,12 @@ class OrchestrationWorkflow extends BaseModel
             'started_at' => now(),
             'current_step' => 0,
         ]);
+    }
 
     public function advanceStep(): void
     {
         $this->increment('current_step');
+    }
 
     public function logStep(string $stepName, string $status, ?array $details = null): void
     {
@@ -81,6 +82,7 @@ class OrchestrationWorkflow extends BaseModel
         ];
 
         $this->update(['execution_log' => $log]);
+    }
 
     public function complete(): void
     {
@@ -92,6 +94,7 @@ class OrchestrationWorkflow extends BaseModel
             'duration_seconds' => $duration,
             'current_step' => $this->total_steps,
         ]);
+    }
 
     public function fail(string $errorMessage): void
     {
@@ -103,48 +106,44 @@ class OrchestrationWorkflow extends BaseModel
             'duration_seconds' => $duration,
             'error_message' => $errorMessage,
         ]);
+    }
 
     public function getProgress(): float
     {
         if ($this->total_steps === 0) {
             return 0;
+        }
 
+        return ($this->current_step / $this->total_steps) * 100;
+    }
 
-            }
     public function isRunning(): bool
     {
         return $this->status === 'running';
+    }
 
-        }
     public function isCompleted(): bool
     {
         return $this->status === 'completed';
+    }
 
-        }
     public function isFailed(): bool
     {
         return $this->status === 'failed';
+    }
 
-
-        }
     public function scopeRunning($query): Builder
     {
         return $query->where('status', 'running');
+    }
 
-        }
     public function scopeCompleted($query): Builder
     {
         return $query->where('status', 'completed');
+    }
 
-        }
     public function scopeForType($query, string $type): Builder
     {
         return $query->where('workflow_type', $type);
-}
-}
-}
-}
-}
-}
-}
+    }
 }

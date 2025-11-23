@@ -57,10 +57,7 @@ class AIInsightsController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         $filters = [
@@ -71,7 +68,7 @@ class AIInsightsController extends Controller
         try {
             $insights = $this->insightsService->getAccountInsights($socialAccountId, $filters);
 
-            return response()->json($insights);
+            return $this->success($insights, 'Retrieved successfully');
 
         } catch (\Exception $e) {
             return response()->json([
@@ -100,10 +97,7 @@ class AIInsightsController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         $filters = [
@@ -151,10 +145,7 @@ class AIInsightsController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         $filters = [
@@ -237,10 +228,7 @@ class AIInsightsController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         $filters = [
@@ -288,10 +276,7 @@ class AIInsightsController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         $filters = [
@@ -337,7 +322,7 @@ class AIInsightsController extends Controller
             $filters = $request->only(['start_date', 'end_date']);
             $insights = $this->insightsService->getCompetitiveInsights($socialAccountId, $filters);
 
-            return response()->json($insights);
+            return $this->success($insights, 'Retrieved successfully');
 
         } catch (\Exception $e) {
             return response()->json([

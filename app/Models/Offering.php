@@ -43,5 +43,6 @@ class Offering extends BaseModel
             'cmis.campaign_offerings',
             'offering_id',
             'campaign_id'
-}
+        );
+    }
 }

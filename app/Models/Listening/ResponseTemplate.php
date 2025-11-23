@@ -196,6 +196,7 @@ class ResponseTemplate extends BaseModel
 
         foreach ($this->suggested_triggers as $trigger) {
             if (str_contains($text, strtolower($trigger))) {
+                }
                 return true;
 
 
@@ -285,24 +286,4 @@ class ResponseTemplate extends BaseModel
     {
         return $query->where('last_used_at', '>=', now()->subDays($days))
                      ->orderBy('last_used_at', 'desc');
-}
-}
-}
-}
-}
-}
-}
-}
-}
-}
-}
-}
-}
-}
-}
-}
-}
-}
-}
-}
 }

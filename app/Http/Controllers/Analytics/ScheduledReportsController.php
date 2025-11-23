@@ -215,10 +215,7 @@ class ScheduledReportsController extends Controller
         $schedule = ScheduledReport::findOrFail($scheduleId);
         $schedule->delete();
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Scheduled report deleted successfully'
-        ]);
+        return $this->success(null, 'Scheduled report deleted successfully');
     }
 
     /**
@@ -274,7 +271,7 @@ class ScheduledReportsController extends Controller
             $validated['recipients']
         );
 
-        return response()->json($result);
+        return $this->success($result, 'Operation completed successfully');
     }
 
     /**

@@ -120,7 +120,7 @@ class ComplianceController extends Controller
 
         $rules = $query->orderBy('created_at', 'desc')->paginate(20);
 
-        return response()->json($rules);
+        return $this->success($rules, 'Retrieved successfully');
     }
 
     /**
@@ -237,6 +237,6 @@ class ComplianceController extends Controller
 
         $audits = $query->orderBy('audited_at', 'desc')->paginate(20);
 
-        return response()->json($audits);
+        return $this->success($audits, 'Retrieved successfully');
     }
 }

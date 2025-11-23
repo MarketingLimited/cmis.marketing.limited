@@ -38,7 +38,7 @@ class AssetController extends Controller
             $orgId = $this->resolveOrgId($request);
 
             if (!$orgId) {
-                return response()->json(['error' => 'No active organization found'], 404);
+                return $this->notFound('No active organization found');
             }
 
             $query = CreativeAsset::where('org_id', $orgId);
@@ -108,7 +108,7 @@ class AssetController extends Controller
             $user = $request->user();
 
             if (!$orgId) {
-                return response()->json(['error' => 'No active organization found'], 404);
+                return $this->notFound('No active organization found');
             }
 
             // Initialize RLS context
@@ -136,10 +136,7 @@ class AssetController extends Controller
 
             $asset = CreativeAsset::create($data);
 
-            return response()->json([
-                'data' => $asset,
-                'message' => 'Asset created successfully'
-            ], 201);
+            return $this->created($asset, 'Asset created successfully');
         } catch (\Exception $e) {
             Log::error("Failed to create asset: {$e->getMessage()}");
             return response()->json([
@@ -161,14 +158,14 @@ class AssetController extends Controller
             $orgId = $this->resolveOrgId($request);
 
             if (!$orgId) {
-                return response()->json(['error' => 'No active organization found'], 404);
+                return $this->notFound('No active organization found');
             }
 
             $asset = CreativeAsset::where('asset_id', $id)
                 ->where('org_id', $orgId)
                 ->firstOrFail();
 
-            return response()->json(['data' => $asset]);
+            return $this->success($asset, 'Retrieved successfully');
         } catch (\Exception $e) {
             Log::error("Failed to get asset: {$e->getMessage()}");
             return response()->json([
@@ -191,7 +188,7 @@ class AssetController extends Controller
             $user = $request->user();
 
             if (!$orgId) {
-                return response()->json(['error' => 'No active organization found'], 404);
+                return $this->notFound('No active organization found');
             }
 
             // Initialize RLS context
@@ -248,7 +245,7 @@ class AssetController extends Controller
             $user = $request->user();
 
             if (!$orgId) {
-                return response()->json(['error' => 'No active organization found'], 404);
+                return $this->notFound('No active organization found');
             }
 
             // Initialize RLS context
@@ -290,7 +287,7 @@ class AssetController extends Controller
             $orgId = $this->resolveOrgId($request);
 
             if (!$orgId) {
-                return response()->json(['error' => 'No active organization found'], 404);
+                return $this->notFound('No active organization found');
             }
 
             $asset = CreativeAsset::where('asset_id', $id)
@@ -298,16 +295,12 @@ class AssetController extends Controller
                 ->firstOrFail();
 
             if (!$asset->provider) {
-                return response()->json([
-                    'error' => 'No file associated with this asset'
-                ], 404);
+                return $this->notFound('No file associated with this asset');
             }
 
             // Check if file exists
             if (!Storage::disk('public')->exists($asset->provider)) {
-                return response()->json([
-                    'error' => 'File not found'
-                ], 404);
+                return $this->notFound('File not found');
             }
 
             return Storage::disk('public')->download($asset->provider);

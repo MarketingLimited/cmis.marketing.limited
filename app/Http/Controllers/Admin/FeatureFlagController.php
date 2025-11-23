@@ -72,10 +72,7 @@ class FeatureFlagController extends Controller
             ]);
         }
 
-        return response()->json([
-            'success' => false,
-            'message' => 'Failed to update feature flag',
-        ], 500);
+        return $this->serverError('Failed to update feature flag');
     }
 
     /**
@@ -257,9 +254,6 @@ class FeatureFlagController extends Controller
             ]);
         }
 
-        return response()->json([
-            'success' => false,
-            'message' => 'Failed to create override',
-        ], 500);
+        return $this->serverError('Failed to create override');
     }
 }

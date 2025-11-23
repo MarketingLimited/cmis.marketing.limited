@@ -191,7 +191,7 @@ class UnifiedCampaignController extends Controller
     public function show(Org $org, Campaign $campaign): JsonResponse
     {
         if ($campaign->org_id !== $org->org_id) {
-            return response()->json(['error' => 'Campaign not found'], 404);
+            return $this->notFound('Campaign not found');
         }
 
         return response()->json(
@@ -238,6 +238,6 @@ class UnifiedCampaignController extends Controller
             ->orderBy('created_at', 'desc')
             ->paginate($request->per_page ?? 20);
 
-        return response()->json($campaigns);
+        return $this->success($campaigns, 'Retrieved successfully');
     }
 }
