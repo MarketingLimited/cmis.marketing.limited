@@ -43,14 +43,17 @@ class ExperimentVariant extends BaseModel
     public function experiment(): BelongsTo
     {
         return $this->belongsTo(Experiment::class, 'experiment_id', 'experiment_id');
+    }
 
     public function results(): HasMany
     {
         return $this->hasMany(ExperimentResult::class, 'variant_id', 'variant_id');
+    }
 
     public function events(): HasMany
     {
         return $this->hasMany(ExperimentEvent::class, 'variant_id', 'variant_id');
+    }
 
     /**
      * Calculate and update conversion rate
@@ -60,6 +63,8 @@ class ExperimentVariant extends BaseModel
         if ($this->impressions > 0) {
             $rate = ($this->conversions / $this->impressions) * 100;
             $this->update(['conversion_rate' => $rate]);
+        }
+    }
 
     /**
      * Calculate CTR (Click-Through Rate)
@@ -68,7 +73,9 @@ class ExperimentVariant extends BaseModel
     {
         if ($this->impressions > 0) {
             return ($this->clicks / $this->impressions) * 100;
+        }
         return 0;
+    }
 
     /**
      * Calculate CPC (Cost Per Click)
@@ -77,7 +84,9 @@ class ExperimentVariant extends BaseModel
     {
         if ($this->clicks > 0) {
             return $this->spend / $this->clicks;
+        }
         return 0;
+    }
 
     /**
      * Calculate CPA (Cost Per Acquisition)
@@ -86,7 +95,9 @@ class ExperimentVariant extends BaseModel
     {
         if ($this->conversions > 0) {
             return $this->spend / $this->conversions;
+        }
         return 0;
+    }
 
     /**
      * Calculate ROI
@@ -95,7 +106,9 @@ class ExperimentVariant extends BaseModel
     {
         if ($this->spend > 0) {
             return (($this->revenue - $this->spend) / $this->spend) * 100;
+        }
         return 0;
+    }
 
     /**
      * Update metrics from aggregated data
@@ -111,6 +124,7 @@ class ExperimentVariant extends BaseModel
         ]);
 
         $this->calculateConversionRate();
+    }
 
     /**
      * Check if variant is winning
@@ -121,15 +135,18 @@ class ExperimentVariant extends BaseModel
 
         if (!$experiment || $this->is_control) {
             return false;
+        }
 
         $control = $experiment->controlVariant();
 
         if (!$control) {
             return false;
+        }
 
         // Check if improvement is positive and significant
         return $this->improvement_over_control > 0
             && $this->improvement_over_control >= $experiment->minimum_detectable_effect;
+    }
 
     /**
      * Get performance summary
@@ -150,6 +167,7 @@ class ExperimentVariant extends BaseModel
             'improvement_over_control' => (float) $this->improvement_over_control,
             'is_winning' => $this->isWinning()
         ];
+    }
 
     /**
      * Scope: Active variants
@@ -157,6 +175,7 @@ class ExperimentVariant extends BaseModel
     public function scopeActive($query)
     {
         return $query->where('status', 'active');
+    }
 
     /**
      * Scope: Control variants
@@ -164,6 +183,7 @@ class ExperimentVariant extends BaseModel
     public function scopeControl($query)
     {
         return $query->where('is_control', true);
+    }
 
     /**
      * Scope: Test variants (non-control)
@@ -171,4 +191,5 @@ class ExperimentVariant extends BaseModel
     public function scopeTestVariants($query)
     {
         return $query->where('is_control', false);
+    }
 }

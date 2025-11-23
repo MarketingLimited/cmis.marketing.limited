@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Analytics;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Concerns\ApiResponse;
 use App\Models\Analytics\Experiment;
 use App\Models\Analytics\ExperimentVariant;
 use App\Services\Analytics\ExperimentService;

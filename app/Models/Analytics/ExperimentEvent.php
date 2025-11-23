@@ -29,10 +29,12 @@ class ExperimentEvent extends BaseModel
     public function experiment(): BelongsTo
     {
         return $this->belongsTo(Experiment::class, 'experiment_id', 'experiment_id');
+    }
 
     public function variant(): BelongsTo
     {
         return $this->belongsTo(ExperimentVariant::class, 'variant_id', 'variant_id');
+    }
 
     /**
      * Scope: By event type
@@ -40,6 +42,7 @@ class ExperimentEvent extends BaseModel
     public function scopeOfType($query, string $type)
     {
         return $query->where('event_type', $type);
+    }
 
     /**
      * Scope: Recent events
@@ -47,6 +50,7 @@ class ExperimentEvent extends BaseModel
     public function scopeRecent($query, int $hours = 24)
     {
         return $query->where('occurred_at', '>=', now()->subHours($hours));
+    }
 
     /**
      * Scope: By date range
@@ -54,6 +58,7 @@ class ExperimentEvent extends BaseModel
     public function scopeDateRange($query, $startDate, $endDate)
     {
         return $query->whereBetween('occurred_at', [$startDate, $endDate]);
+    }
 
     /**
      * Scope: Conversions only
@@ -61,4 +66,5 @@ class ExperimentEvent extends BaseModel
     public function scopeConversions($query)
     {
         return $query->where('event_type', 'conversion');
+    }
 }
