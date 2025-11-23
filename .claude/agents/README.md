@@ -389,13 +389,13 @@ This directory contains **specialized AI agents** custom-built for the CMIS proj
 
 ---
 
-#### 9. **cmis-predictive-analytics** - Predictive Analytics Expert 🔮
+#### 9. **cmis-predictive-analytics** - Predictive Analytics Expert 🔮 (v1.1 Enhanced)
 **File:** `cmis-predictive-analytics.md`
 
-**Purpose:** Master of machine learning forecasting, time series analysis, predictive modeling, and trend detection.
+**Purpose:** Master of machine learning forecasting, time series analysis, predictive modeling, and trend detection with intelligent library discovery and zero-dependency fallbacks.
 
 **Use when:**
-- Implementing ML-based forecasting (ARIMA, Prophet, LSTM)
+- Implementing ML-based forecasting (ARIMA, Prophet, LSTM) OR statistical forecasting
 - Building campaign performance prediction models
 - Creating trend detection and seasonality analysis
 - Designing anomaly detection with ML algorithms
@@ -403,33 +403,44 @@ This directory contains **specialized AI agents** custom-built for the CMIS proj
 - Calculating confidence scoring and prediction intervals
 
 **Handles:**
-- Time series forecasting (ARIMA, Prophet, LSTM neural networks)
+- Time series forecasting (ARIMA, Prophet, LSTM neural networks, Statistical methods)
 - Campaign performance prediction
 - Trend analysis (linear regression, seasonality detection)
-- Anomaly detection (statistical, isolation forest, seasonal)
+- Anomaly detection (Z-score, isolation forest, seasonal)
 - Budget optimization predictions
 - Creative performance forecasting
 - Adaptive traffic allocation (Thompson Sampling)
+- **NEW:** Statistical forecasting (no external libraries required)
+- **NEW:** ML library discovery and installation guidance
 
-**Key Features:**
-- Prophet-based forecasting with seasonality
-- ARIMA time series models
-- LSTM neural network predictions
-- Multi-method anomaly detection
-- Confidence interval calculations
-- Multi-tenant prediction isolation with RLS
+**Key Features (v1.1):**
+- ✅ **Intelligent library discovery** - Checks what's installed before suggesting
+- ✅ **Zero-dependency statistical forecasting** - Works WITHOUT external ML libraries
+- ✅ **4 forecasting patterns**: Prophet, ARIMA, LSTM, Statistical (recommended)
+- ✅ **Library installation guidance** - Clear prerequisites for each pattern
+- ✅ **Decision tree** - Guides choice between ML vs. statistical approaches
+- ✅ Multi-method anomaly detection with library-aware recommendations
+- ✅ Confidence interval calculations for all forecasting methods
+- ✅ Multi-tenant prediction isolation with RLS
 
 **Example:**
 ```
 "Forecast campaign performance for next 30 days"
-→ Discovers historical data from unified_metrics
-→ Applies Prophet forecasting with weekly seasonality
+→ Discovers installed ML libraries (none found)
+→ Recommends Pattern 4: Statistical Forecasting (zero dependencies)
+→ Uses Linear Regression or Moving Average
 → Provides predictions with 95% confidence intervals
-→ Includes trend decomposition and seasonal patterns
+→ Suggests Prophet installation for advanced seasonality (optional)
 → Generates actionable recommendations
 ```
 
-**References:** `app/Services/Analytics/`, unified_metrics table
+**Recommendation Priority:**
+1. ✅ **Statistical Forecasting** - Start here (90% of use cases, zero dependencies)
+2. ✅ **Prophet** - If installed and complex seasonality needed
+3. ⚠️ **ARIMA** - If statistical patterns insufficient
+4. ⚠️ **LSTM** - Only for advanced multi-variate forecasting
+
+**References:** `app/Services/Analytics/`, unified_metrics table, composer.json (library discovery)
 
 ---
 
