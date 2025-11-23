@@ -24,10 +24,10 @@ class HealthCheckController extends Controller
      */
     public function index(): JsonResponse
     {
-        return response()->json([
+        return $this->success([
             'status' => 'healthy',
             'timestamp' => now()->toIso8601String(),
-        ]);
+        ], 'System is healthy');
     }
 
     /**
@@ -46,7 +46,7 @@ class HealthCheckController extends Controller
 
         $allHealthy = collect($checks)->every(fn($check) => $check['healthy']);
 
-        return response()->json([
+        $data = [
             'status' => $allHealthy ? 'healthy' : 'degraded',
             'timestamp' => now()->toIso8601String(),
             'checks' => $checks,
@@ -56,7 +56,11 @@ class HealthCheckController extends Controller
                 'environment' => app()->environment(),
                 'debug_mode' => config('app.debug'),
             ],
-        ], $allHealthy ? 200 : 503);
+        ];
+
+        return $allHealthy
+            ? $this->success($data, 'All systems healthy')
+            : $this->error('System degraded', 503, $data);
     }
 
     /**
@@ -183,9 +187,9 @@ class HealthCheckController extends Controller
         // Application is ready when migrations are up to date
         try {
             DB::connection()->getPdo();
-            return response()->json(['ready' => true]);
+            return $this->success(['ready' => true], 'Application ready');
         } catch (\Exception $e) {
-            return response()->json(['ready' => false], 503);
+            return $this->error('Application not ready', 503, ['ready' => false]);
         }
     }
 
@@ -195,6 +199,6 @@ class HealthCheckController extends Controller
     public function live(): JsonResponse
     {
         // Application is alive if PHP is running
-        return response()->json(['alive' => true]);
+        return $this->success(['alive' => true], 'Application alive');
     }
 }

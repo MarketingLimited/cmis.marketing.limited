@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\ApiResponse;
 use App\Services\AIAutomationService;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
@@ -32,10 +33,13 @@ class AIAutomationController extends Controller
     {
         try {
             $result = $this->aiService->getOptimalPostingTimes($accountId);
-            return response()->json($result, $result['success'] ? 200 : 500);
+
+            return $result['success']
+                ? $this->success($result, 'Optimal posting times retrieved successfully')
+                : $this->serverError('Failed to get optimal times');
 
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => 'Failed to get optimal times', 'error' => $e->getMessage()], 500);
+            return $this->serverError('Failed to get optimal times: ' . $e->getMessage());
         }
     }
 
@@ -47,10 +51,13 @@ class AIAutomationController extends Controller
     {
         try {
             $result = $this->aiService->autoSchedulePost($accountId, $request->all());
-            return response()->json($result, $result['success'] ? 200 : 500);
+
+            return $result['success']
+                ? $this->success($result, 'Post auto-scheduled successfully')
+                : $this->serverError('Failed to auto-schedule post');
 
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => 'Failed to auto-schedule', 'error' => $e->getMessage()], 500);
+            return $this->serverError('Failed to auto-schedule: ' . $e->getMessage());
         }
     }
 
@@ -67,7 +74,7 @@ class AIAutomationController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
+            return $this->validationError($validator->errors(), 'Invalid input data');
         }
 
         try {
@@ -77,10 +84,12 @@ class AIAutomationController extends Controller
                 $request->only('account_id')
             );
 
-            return response()->json($result, $result['success'] ? 200 : 500);
+            return $result['success']
+                ? $this->success($result, 'Hashtags generated successfully')
+                : $this->serverError('Failed to generate hashtags');
 
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => 'Failed to generate hashtags', 'error' => $e->getMessage()], 500);
+            return $this->serverError('Failed to generate hashtags: ' . $e->getMessage());
         }
     }
 
@@ -98,15 +107,18 @@ class AIAutomationController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
+            return $this->validationError($validator->errors(), 'Invalid input data');
         }
 
         try {
             $result = $this->aiService->generateCaptionSuggestions($request->all());
-            return response()->json($result, $result['success'] ? 200 : 500);
+
+            return $result['success']
+                ? $this->success($result, 'Captions generated successfully')
+                : $this->serverError('Failed to generate captions');
 
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => 'Failed to generate captions', 'error' => $e->getMessage()], 500);
+            return $this->serverError('Failed to generate captions: ' . $e->getMessage());
         }
     }
 
@@ -122,15 +134,18 @@ class AIAutomationController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
+            return $this->validationError($validator->errors(), 'Invalid budget data');
         }
 
         try {
             $result = $this->aiService->optimizeCampaignBudget($adAccountId, $request->all());
-            return response()->json($result, $result['success'] ? 200 : 500);
+
+            return $result['success']
+                ? $this->success($result, 'Budget optimized successfully')
+                : $this->serverError('Failed to optimize budget');
 
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => 'Failed to optimize budget', 'error' => $e->getMessage()], 500);
+            return $this->serverError('Failed to optimize budget: ' . $e->getMessage());
         }
     }
 
@@ -142,10 +157,13 @@ class AIAutomationController extends Controller
     {
         try {
             $result = $this->aiService->getAutomationRules($orgId);
-            return response()->json($result, $result['success'] ? 200 : 500);
+
+            return $result['success']
+                ? $this->success($result, 'Automation rules retrieved successfully')
+                : $this->serverError('Failed to get automation rules');
 
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => 'Failed to get rules', 'error' => $e->getMessage()], 500);
+            return $this->serverError('Failed to get rules: ' . $e->getMessage());
         }
     }
 
@@ -164,23 +182,26 @@ class AIAutomationController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
+            return $this->validationError($validator->errors(), 'Invalid rule data');
         }
 
         try {
             $userId = $request->user()->user_id ?? null;
             if (!$userId) {
-                return $this->error('Authentication required', 401);
+                return $this->unauthorized('Authentication required');
             }
 
             $data = $request->all();
             $data['created_by'] = $userId;
 
             $result = $this->aiService->createAutomationRule($orgId, $data);
-            return response()->json($result, $result['success'] ? 201 : 500);
+
+            return $result['success']
+                ? $this->created($result, 'Automation rule created successfully')
+                : $this->serverError('Failed to create automation rule');
 
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => 'Failed to create rule', 'error' => $e->getMessage()], 500);
+            return $this->serverError('Failed to create rule: ' . $e->getMessage());
         }
     }
 }
