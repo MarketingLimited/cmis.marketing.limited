@@ -66,13 +66,13 @@ class UserPermission extends BaseModel
     /**
      * Scope to get active permissions
      */
-    public function scopeActive($query)
-    : \Illuminate\Database\Eloquent\Builder {
+    public function scopeActive($query): Builder
+    {
         return $query->where('is_granted', true)
             ->where(function ($q) {
                 $q->whereNull('expires_at')
                     ->orWhere('expires_at', '>', now());
-
+            });
     }
     /**
      * Scope to get expired permissions
@@ -87,13 +87,14 @@ class UserPermission extends BaseModel
      */
     public function isActive(): bool
     {
-        if (...) {
+        if (!$this->is_granted) {
             return false;
         }
 
         if ($this->expires_at && $this->expires_at->isPast()) {
-            }
             return false;
+        }
 
         return true;
+    }
 }

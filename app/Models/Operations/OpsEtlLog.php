@@ -73,7 +73,7 @@ class OpsEtlLog extends BaseModel
 
         }
     public static function start($orgId, $jobName, $jobType, $source, $destination)
-    : \Illuminate\Database\Eloquent\Relations\Relation {
+    {
         return static::create([
             'org_id' => $orgId,
             'job_name' => $jobName,
@@ -86,9 +86,10 @@ class OpsEtlLog extends BaseModel
             'records_succeeded' => 0,
             'records_failed' => 0,
         ]);
+    }
 
     public function complete($recordsProcessed, $recordsSucceeded, $recordsFailed = 0)
-    : \Illuminate\Database\Eloquent\Relations\Relation {
+    {
         $this->update([
             'status' => 'completed',
             'records_processed' => $recordsProcessed,
@@ -98,7 +99,10 @@ class OpsEtlLog extends BaseModel
             'duration_seconds' => now()->diffInSeconds($this->started_at),
         ]);
 
-    public function fail($errorDetails = null): int
+        return $this;
+    }
+
+    public function fail($errorDetails = null)
     {
         $this->update([
             'status' => 'failed',
@@ -107,15 +111,15 @@ class OpsEtlLog extends BaseModel
             'error_details' => $errorDetails,
         ]);
 
-    public function getSuccessRate(): int
+        return $this;
+    }
+
+    public function getSuccessRate(): float
     {
         if ($this->records_processed == 0) {
             return 0;
+        }
 
         return round(($this->records_succeeded / $this->records_processed) * 100, 2);
-}
-}
-}
-}
-}
+    }
 }

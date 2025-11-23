@@ -100,9 +100,7 @@ class AudienceController extends Controller
             return $this->created($result, 'Created successfully');
 
         } catch (\Exception $e) {
-            return $this->serverError('Failed to create audience',
-                'error' => $e->getMessage()
-            );
+            return $this->serverError('Failed to create audience' . ': ' . $e->getMessage());
         }
     }
 
@@ -133,9 +131,7 @@ class AudienceController extends Controller
             return $this->success($result, 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return $this->serverError('Failed to get audience',
-                'error' => $e->getMessage()
-            );
+            return $this->serverError('Failed to get audience' . ': ' . $e->getMessage());
         }
     }
 
@@ -171,9 +167,7 @@ class AudienceController extends Controller
             return $this->success($result, 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return $this->serverError('Failed to list audiences',
-                'error' => $e->getMessage()
-            );
+            return $this->serverError('Failed to list audiences' . ': ' . $e->getMessage());
         }
     }
 
@@ -220,9 +214,7 @@ class AudienceController extends Controller
             return $this->success($result, 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return $this->serverError('Failed to update audience',
-                'error' => $e->getMessage()
-            );
+            return $this->serverError('Failed to update audience' . ': ' . $e->getMessage());
         }
     }
 
@@ -249,9 +241,7 @@ class AudienceController extends Controller
             return $this->error('Failed to delete audience', 500);
 
         } catch (\Exception $e) {
-            return $this->serverError('Failed to delete audience',
-                'error' => $e->getMessage()
-            );
+            return $this->serverError('Failed to delete audience' . ': ' . $e->getMessage());
         }
     }
 
@@ -300,9 +290,7 @@ class AudienceController extends Controller
             return $this->created($result, 'Created successfully');
 
         } catch (\Exception $e) {
-            return $this->serverError('Failed to create lookalike audience',
-                'error' => $e->getMessage()
-            );
+            return $this->serverError('Failed to create lookalike audience' . ': ' . $e->getMessage());
         }
     }
 
@@ -359,9 +347,7 @@ class AudienceController extends Controller
             ]);
 
         } catch (\Exception $e) {
-            return $this->serverError('Failed to estimate audience size',
-                'error' => $e->getMessage()
-            );
+            return $this->serverError('Failed to estimate audience size' . ': ' . $e->getMessage());
         }
     }
 
@@ -394,9 +380,7 @@ class AudienceController extends Controller
             return $this->success($result, 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return $this->serverError('Failed to get targeting suggestions',
-                'error' => $e->getMessage()
-            );
+            return $this->serverError('Failed to get targeting suggestions' . ': ' . $e->getMessage());
         }
     }
 }

@@ -57,9 +57,7 @@ class ContentAnalyticsController extends Controller
             return $this->success($analytics, 'Retrieved successfully');
 
         } catch (\Exception $e) {
-            return $this->serverError('Failed to load post analytics',
-                'error' => $e->getMessage()
-            );
+            return $this->serverError('Failed to load post analytics: ' . $e->getMessage());
         }
     }
 
@@ -96,9 +94,7 @@ class ContentAnalyticsController extends Controller
             return $this->success($analytics, 'Retrieved successfully');
 
         } catch (\Exception $e) {
-            return $this->serverError('Failed to load hashtag analytics',
-                'error' => $e->getMessage()
-            );
+            return $this->serverError('Failed to load hashtag analytics: ' . $e->getMessage());
         }
     }
 
@@ -121,9 +117,7 @@ class ContentAnalyticsController extends Controller
             return $this->success($demographics, 'Retrieved successfully');
 
         } catch (\Exception $e) {
-            return $this->serverError('Failed to load audience demographics',
-                'error' => $e->getMessage()
-            );
+            return $this->serverError('Failed to load audience demographics: ' . $e->getMessage());
         }
     }
 
@@ -158,9 +152,7 @@ class ContentAnalyticsController extends Controller
             return $this->success($patterns, 'Retrieved successfully');
 
         } catch (\Exception $e) {
-            return $this->serverError('Failed to load engagement patterns',
-                'error' => $e->getMessage()
-            );
+            return $this->serverError('Failed to load engagement patterns: ' . $e->getMessage());
         }
     }
 
@@ -195,9 +187,7 @@ class ContentAnalyticsController extends Controller
             return $this->success($performance, 'Retrieved successfully');
 
         } catch (\Exception $e) {
-            return $this->serverError('Failed to load content type performance',
-                'error' => $e->getMessage()
-            );
+            return $this->serverError('Failed to load content type performance: ' . $e->getMessage());
         }
     }
 
@@ -236,9 +226,7 @@ class ContentAnalyticsController extends Controller
             return $this->success($topPosts, 'Retrieved successfully');
 
         } catch (\Exception $e) {
-            return $this->serverError('Failed to load top posts',
-                'error' => $e->getMessage()
-            );
+            return $this->serverError('Failed to load top posts: ' . $e->getMessage());
         }
     }
 
@@ -292,9 +280,7 @@ class ContentAnalyticsController extends Controller
             ]);
 
         } catch (\Exception $e) {
-            return $this->serverError('Failed to load comprehensive analysis',
-                'error' => $e->getMessage()
-            );
+            return $this->serverError('Failed to load comprehensive analysis: ' . $e->getMessage());
         }
     }
 }

@@ -88,7 +88,7 @@ class Notification extends BaseModel
         return $query->where(function ($q) {
             $q->whereNull('expires_at')
                 ->orWhere('expires_at', '>', now());
-
+        });
     }
     /**
      * Mark as read
@@ -102,13 +102,14 @@ class Notification extends BaseModel
 
     }
     /**
-     * Check if expired
+          * Check if expired
      */
     public function isExpired(): bool
     {
-        if (...) {
+        if (!$this->expires_at) {
             return false;
         }
 
         return $this->expires_at->isPast();
+    }
 }

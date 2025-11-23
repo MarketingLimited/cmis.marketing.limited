@@ -58,13 +58,10 @@ class ApprovalController extends Controller
                 $request->input('assigned_to')
             );
 
-            return $this->created($approval
-            , 'Approval requested successfully');
+            return $this->created($approval, 'Approval requested successfully');
 
         } catch (\Exception $e) {
-            return $this->serverError('Failed to request approval',
-                'error' => $e->getMessage()
-            );
+            return $this->serverError('Failed to request approval: ' . $e->getMessage());
         }
     }
 

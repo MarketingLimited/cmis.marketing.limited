@@ -77,12 +77,13 @@ class LeadController extends Controller
             $leads = $query->orderBy('created_at', 'desc')
                 ->paginate($perPage);
 
-            return $this->success($leads->items(),
+            return $this->success([
+                'data' => $leads->items(),
                 'total' => $leads->total(),
                 'per_page' => $leads->perPage(),
                 'current_page' => $leads->currentPage(),
                 'last_page' => $leads->lastPage(),
-            , 'Operation completed successfully');
+            ], 'Operation completed successfully');
         } catch (\Exception $e) {
             Log::error("Failed to list leads: {$e->getMessage()}");
             return response()->json([

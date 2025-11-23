@@ -16,9 +16,6 @@ class TeamMember extends BaseModel
 
     protected $table = 'cmis.team_members';
     protected $primaryKey = 'team_member_id';
-                    // Also generate member_id (database primary key)
-            if (empty($model->member_id)) {
-                $model->member_id = (string) Str::uuid();
 
     protected $fillable = [
         'member_id',

@@ -59,7 +59,7 @@ class EmbeddingApiLog extends BaseModel
         return $query->where(function ($q) {
             $q->where('status_code', '<', 200)
                 ->orWhere('status_code', '>=', 300);
-
+        });
     }
     /**
      * Scope slow requests
@@ -91,4 +91,5 @@ class EmbeddingApiLog extends BaseModel
     public function wasSuccessful(): bool
     {
         return $this->status_code >= 200 && $this->status_code < 300;
+    }
 }

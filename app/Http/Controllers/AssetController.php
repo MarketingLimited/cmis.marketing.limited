@@ -64,12 +64,13 @@ class AssetController extends Controller
             $assets = $query->orderBy('created_at', 'desc')
                 ->paginate($perPage);
 
-            return $this->success($assets->items(),
+            return $this->success([
+                'data' => $assets->items(),
                 'total' => $assets->total(),
                 'per_page' => $assets->perPage(),
                 'current_page' => $assets->currentPage(),
                 'last_page' => $assets->lastPage(),
-            , 'Operation completed successfully');
+            ], 'Operation completed successfully');
         } catch (\Exception $e) {
             Log::error("Failed to list assets: {$e->getMessage()}");
             return response()->json([

@@ -49,7 +49,7 @@ class PerformanceController extends Controller
         return $this->success($result['data'] ?? $result, $result['message'] ?? 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return ->serverError('Failed to get metrics' . ': ' . ->getMessage());
+            return $this->serverError('Failed to get metrics: ' . $e->getMessage());
         }
     }
 
@@ -76,7 +76,7 @@ class PerformanceController extends Controller
         return $this->success($result['data'] ?? $result, $result['message'] ?? 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return ->serverError('Failed to clear cache' . ': ' . ->getMessage());
+            return $this->serverError('Failed to clear cache: ' . $e->getMessage());
         }
     }
 
@@ -94,7 +94,7 @@ class PerformanceController extends Controller
         return $this->success($result['data'] ?? $result, $result['message'] ?? 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return ->serverError('Failed to warm up cache' . ': ' . ->getMessage());
+            return $this->serverError('Failed to warm up cache: ' . $e->getMessage());
         }
     }
 
@@ -112,7 +112,7 @@ class PerformanceController extends Controller
         return $this->success($result['data'] ?? $result, $result['message'] ?? 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return ->serverError('Failed to optimize database' . ': ' . ->getMessage());
+            return $this->serverError('Failed to optimize database: ' . $e->getMessage());
         }
     }
 
@@ -139,7 +139,7 @@ class PerformanceController extends Controller
         return $this->success($result['data'] ?? $result, $result['message'] ?? 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return ->serverError('Failed to get slow queries' . ': ' . ->getMessage());
+            return $this->serverError('Failed to get slow queries' . ': ' . $e->getMessage());
         }
     }
 }

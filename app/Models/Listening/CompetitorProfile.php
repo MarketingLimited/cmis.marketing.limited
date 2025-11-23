@@ -129,11 +129,11 @@ class CompetitorProfile extends BaseModel
         $previous = $this->engagement_stats[$platform]['previous_followers'] ?? $current;
 
         if ($previous == 0) {
-            }
             return null;
+        }
 
-
-            }
+        return (($current - $previous) / $previous) * 100;
+    }
     public function updatePostingFrequency(string $platform, float $postsPerDay): void
     {
         $frequency = $this->posting_frequency;
@@ -144,11 +144,11 @@ class CompetitorProfile extends BaseModel
     public function getAveragePostingFrequency(): float
     {
         if (empty($this->posting_frequency)) {
-            }
             return 0;
+        }
 
-
-            }
+        return array_sum($this->posting_frequency) / count($this->posting_frequency);
+    }
     public function updateEngagementStats(string $platform, array $stats): void
     {
         $engagement = $this->engagement_stats;
@@ -171,8 +171,8 @@ class CompetitorProfile extends BaseModel
         if (!in_array($theme, $themes)) {
             $themes[] = $theme;
             $this->update(['content_themes' => $themes]);
-
-            }
+        }
+    }
     public function getTopThemes(int $limit = 5): array
     {
         return array_slice($this->content_themes, 0, $limit);
@@ -190,11 +190,10 @@ class CompetitorProfile extends BaseModel
     public function needsAnalysis(int $hoursThreshold = 24): bool
     {
         if (!$this->last_analyzed_at) {
-            }
             return true;
+        }
 
         return $this->last_analyzed_at->lt(now()->subHours($hoursThreshold));
-
     }
     /**
      * Scopes
@@ -220,4 +219,6 @@ class CompetitorProfile extends BaseModel
         return $query->where(function($q) use ($hoursThreshold) {
             $q->whereNull('last_analyzed_at')
               ->orWhere('last_analyzed_at', '<', now()->subHours($hoursThreshold));
-
+        });
+    }
+}

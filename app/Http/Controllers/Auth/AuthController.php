@@ -96,9 +96,7 @@ class AuthController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
 
-            return $this->serverError('Registration failed',
-                'error' => config('app.debug') ? $e->getMessage() : 'Internal server error'
-            );
+            return $this->serverError('Registration failed: ' . (config('app.debug') ? $e->getMessage() : 'Internal server error'));
         }
     }
 
@@ -201,9 +199,7 @@ class AuthController extends Controller
             ]);
 
         } catch (\Exception $e) {
-            return $this->serverError('Failed to update profile',
-                'error' => config('app.debug') ? $e->getMessage() : 'Internal server error'
-            );
+            return $this->serverError('Failed to update profile: ' . (config('app.debug') ? $e->getMessage() : 'Internal server error'));
         }
     }
 

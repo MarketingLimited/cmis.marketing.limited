@@ -56,9 +56,10 @@ class VideoScenario extends BaseModel
         return $query->where('status', $status);
 
         }
-    public function getDurationFormatted()
-    : \Illuminate\Database\Eloquent\Relations\Relation {
+    public function getDurationFormatted(): string
+    {
         $minutes = floor($this->duration_seconds / 60);
         $seconds = $this->duration_seconds % 60;
         return sprintf('%d:%02d', $minutes, $seconds);
+    }
 }

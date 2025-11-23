@@ -99,9 +99,7 @@ class ContextController extends Controller
                 'trace' => $e->getTraceAsString()
             ]);
 
-            return $this->serverError('Failed to retrieve context',
-                'error' => $e->getMessage()
-            );
+            return $this->serverError('Failed to retrieve context' . ': ' . $e->getMessage());
         }
     }
 
@@ -174,9 +172,7 @@ class ContextController extends Controller
                 'error' => $e->getMessage()
             ]);
 
-            return $this->serverError('Failed to retrieve organizations',
-                'error' => $e->getMessage()
-            );
+            return $this->serverError('Failed to retrieve organizations' . ': ' . $e->getMessage());
         }
     }
 
@@ -281,9 +277,7 @@ class ContextController extends Controller
                 'error' => $e->getMessage(),
             ]);
 
-            return $this->serverError('Failed to switch organization. Please try again.',
-                'error' => $e->getMessage()
-            );
+            return $this->serverError('Failed to switch organization. Please try again.' . ': ' . $e->getMessage());
         }
     }
 
@@ -319,9 +313,7 @@ class ContextController extends Controller
                 'error' => $e->getMessage()
             ]);
 
-            return $this->serverError('Failed to refresh context',
-                'error' => $e->getMessage()
-            );
+            return $this->serverError('Failed to refresh context' . ': ' . $e->getMessage());
         }
     }
 }

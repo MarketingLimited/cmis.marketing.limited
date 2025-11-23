@@ -45,9 +45,9 @@ class SemanticSearchResultCache extends BaseModel
 
         if ($filtersHash) {
             $query->where('filters_hash', $filtersHash);
+        }
 
         return $query->where('expires_at', '>', now())->first();
-
     }
     /**
      * Check if cache is valid
@@ -89,4 +89,5 @@ class SemanticSearchResultCache extends BaseModel
     {
         return $query->where('hit_count', '>=', $threshold)
             ->orderBy('hit_count', 'desc');
+    }
 }

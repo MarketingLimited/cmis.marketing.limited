@@ -61,9 +61,7 @@ class LinkedInAdsController extends Controller
                 'count' => count($result['campaigns'])
             ]);
         } catch (\Exception $e) {
-            return $this->serverError('Failed to fetch LinkedIn Ads campaigns',
-                'error' => $e->getMessage()
-            );
+            return $this->serverError('Failed to fetch LinkedIn Ads campaigns: ' . $e->getMessage());
         }
     }
 
@@ -103,9 +101,7 @@ class LinkedInAdsController extends Controller
 
             return $this->success(['campaign' => $campaign], 'Operation completed successfully');
         } catch (\Exception $e) {
-            return $this->serverError('Failed to fetch campaign details',
-                'error' => $e->getMessage()
-            );
+            return $this->serverError('Failed to fetch campaign details: ' . $e->getMessage());
         }
     }
 
@@ -142,9 +138,7 @@ class LinkedInAdsController extends Controller
             return $this->success(['creatives' => $creatives,
                 'count' => count($creatives)], 'Operation completed successfully');
         } catch (\Exception $e) {
-            return $this->serverError('Failed to fetch creatives',
-                'error' => $e->getMessage()
-            );
+            return $this->serverError('Failed to fetch creatives: ' . $e->getMessage());
         }
     }
 
@@ -203,9 +197,7 @@ class LinkedInAdsController extends Controller
                 'campaign' => $result
             ], 201);
         } catch (\Exception $e) {
-            return $this->serverError('Failed to create LinkedIn Ads campaign',
-                'error' => $e->getMessage()
-            );
+            return $this->serverError('Failed to create LinkedIn Ads campaign: ' . $e->getMessage());
         }
     }
 
@@ -252,9 +244,7 @@ class LinkedInAdsController extends Controller
                 ]
             ]);
         } catch (\Exception $e) {
-            return $this->serverError('Failed to fetch campaign metrics',
-                'error' => $e->getMessage()
-            );
+            return $this->serverError('Failed to fetch campaign metrics: ' . $e->getMessage());
         }
     }
 
@@ -286,9 +276,7 @@ class LinkedInAdsController extends Controller
 
             return $this->success(null, 'LinkedIn Ads cache cleared successfully');
         } catch (\Exception $e) {
-            return $this->serverError('Failed to refresh cache',
-                'error' => $e->getMessage()
-            );
+            return $this->serverError('Failed to refresh cache: ' . $e->getMessage());
         }
     }
 }

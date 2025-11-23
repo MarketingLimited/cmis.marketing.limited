@@ -70,10 +70,12 @@ class SocialConversation extends BaseModel
     public function open(): void
     {
         $this->update(['status' => 'open']);
+    }
 
     public function startProgress(): void
     {
         $this->update(['status' => 'in_progress']);
+    }
 
     public function resolve(): void
     {
@@ -84,10 +86,12 @@ class SocialConversation extends BaseModel
             'status' => 'resolved',
             'resolution_time_minutes' => $resolutionTime,
         ]);
+    }
 
     public function close(): void
     {
         $this->update(['status' => 'closed']);
+    }
 
     public function isOpen(): bool
     {
@@ -106,15 +110,16 @@ class SocialConversation extends BaseModel
     public function assignTo(string $userId): void
     {
         $this->update(['assigned_to' => $userId]);
+    }
 
     public function unassign(): void
     {
         $this->update(['assigned_to' => null]);
+    }
 
     public function isAssigned(): bool
     {
         return $this->assigned_to !== null;
-
     }
     /**
      * Priority Management
@@ -123,14 +128,17 @@ class SocialConversation extends BaseModel
     public function setPriority(string $priority): void
     {
         $this->update(['priority' => $priority]);
+    }
 
     public function markAsUrgent(): void
     {
         $this->update(['priority' => 'urgent']);
+    }
 
     public function markAsHigh(): void
     {
         $this->update(['priority' => 'high']);
+    }
 
     public function isUrgent(): bool
     {
@@ -150,19 +158,21 @@ class SocialConversation extends BaseModel
     {
         $this->increment('message_count');
         $this->update(['last_activity_at' => now()]);
+    }
 
     public function incrementUnreadCount(): void
     {
         $this->increment('unread_count');
+    }
 
     public function markAsRead(): void
     {
         $this->update(['unread_count' => 0]);
+    }
 
     public function hasUnreadMessages(): bool
     {
         return $this->unread_count > 0;
-
     }
     /**
      * Response Tracking
@@ -179,23 +189,24 @@ class SocialConversation extends BaseModel
         if (!$this->first_response_at) {
             $data['first_response_at'] = $now;
             $data['response_time_minutes'] = $this->created_at->diffInMinutes($now);
+        }
 
         $this->update($data);
+    }
 
     public function hasResponded(): bool
     {
         return $this->first_response_at !== null;
+    }
 
-        }
     public function getAverageResponseTime(): ?int
     {
         if (!$this->first_response_at || $this->message_count <= 1) {
-            }
             return null;
+        }
 
         $totalTime = $this->first_response_at->diffInMinutes($this->last_response_at);
         return (int) ($totalTime / ($this->message_count - 1));
-
     }
     /**
      * Participant Management
@@ -207,12 +218,13 @@ class SocialConversation extends BaseModel
         if (!in_array($username, $participants)) {
             $participants[] = $username;
             $this->update(['participants' => $participants]);
+        }
+    }
 
     public function getParticipantCount(): int
     {
         return count($this->participants);
-
-        }
+    }
     public function getParticipantsString(): string
     {
         return implode(', ', $this->participants);
@@ -228,11 +240,11 @@ class SocialConversation extends BaseModel
             'requires_escalation' => true,
             'priority' => 'urgent',
         ]);
+    }
 
     public function resolveEscalation(): void
     {
         $this->update(['requires_escalation' => false]);
-
     }
     /**
      * Sentiment & Topics
@@ -241,6 +253,7 @@ class SocialConversation extends BaseModel
     public function updateSentiment(string $sentiment): void
     {
         $this->update(['overall_sentiment' => $sentiment]);
+    }
 
     public function addTopic(string $topic): void
     {
@@ -248,7 +261,7 @@ class SocialConversation extends BaseModel
         if (!in_array($topic, $topics)) {
             $topics[] = $topic;
             $this->update(['topics' => $topics]);
-
+        }
     }
     /**
      * Tags
@@ -260,16 +273,18 @@ class SocialConversation extends BaseModel
         if (!in_array($tag, $tags)) {
             $tags[] = $tag;
             $this->update(['tags' => $tags]);
+        }
+    }
 
     public function removeTag(string $tag): void
     {
         $tags = array_filter($this->tags, fn($t) => $t !== $tag);
         $this->update(['tags' => array_values($tags)]);
+    }
 
     public function hasTag(string $tag): bool
     {
         return in_array($tag, $this->tags);
-
     }
     /**
      * Notes
@@ -293,11 +308,11 @@ class SocialConversation extends BaseModel
     public function updateActivity(): void
     {
         $this->update(['last_activity_at' => now()]);
+    }
 
     public function isStale(int $hoursThreshold = 48): bool
     {
         return $this->last_activity_at->lt(now()->subHours($hoursThreshold));
-
     }
     /**
      * Scopes
@@ -361,4 +376,5 @@ class SocialConversation extends BaseModel
     public function scopeRecentActivity($query): Builder
     {
         return $query->orderBy('last_activity_at', 'desc');
+    }
 }

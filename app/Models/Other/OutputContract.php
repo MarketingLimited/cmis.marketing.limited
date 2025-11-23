@@ -36,13 +36,13 @@ class OutputContract extends BaseModel
      * Get prompt templates using this contract
      */
     public function promptTemplates()
-    : \Illuminate\Database\Eloquent\Relations\Relation {
+    {
         return $this->belongsToMany(
             PromptTemplate::class,
             'cmis.prompt_template_contracts',
             'contract_id',
             'prompt_id'
-
+        );
     }
     /**
      * Scope to find by code

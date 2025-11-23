@@ -214,7 +214,7 @@ class ContentLibraryController extends Controller
         return $this->created($result['data'] ?? $result, $result['message'] ?? 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return ->serverError('Failed to create folder' . ': ' . ->getMessage());
+            return $this->serverError('Failed to create folder: ' . $e->getMessage());
         }
     }
 
@@ -233,7 +233,7 @@ class ContentLibraryController extends Controller
         return $this->success($result['data'] ?? $result, $result['message'] ?? 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return ->serverError('Failed to list folders' . ': ' . ->getMessage());
+            return $this->serverError('Failed to list folders: ' . $e->getMessage());
         }
     }
 
@@ -259,7 +259,7 @@ class ContentLibraryController extends Controller
         return $this->success($result['data'] ?? $result, $result['message'] ?? 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return ->serverError('Search failed' . ': ' . ->getMessage());
+            return $this->serverError('Search failed: ' . $e->getMessage());
         }
     }
 
@@ -291,7 +291,7 @@ class ContentLibraryController extends Controller
         return $this->success($result['data'] ?? $result, $result['message'] ?? 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return ->serverError('Failed to track usage' . ': ' . ->getMessage());
+            return $this->serverError('Failed to track usage: ' . $e->getMessage());
         }
     }
 }

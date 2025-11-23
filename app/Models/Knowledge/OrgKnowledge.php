@@ -117,16 +117,17 @@ class OrgKnowledge extends BaseModel
         return $query->where(function ($q) {
             $q->whereNull('expiry_date')
                 ->orWhere('expiry_date', '>=', now());
-
+        });
     }
     /**
      * Check if knowledge has expired
      */
     public function hasExpired(): bool
     {
-        if (...) {
+        if (!$this->expiry_date) {
             return false;
         }
 
         return $this->expiry_date->isPast();
+    }
 }

@@ -102,6 +102,7 @@ class SocialMention extends BaseModel
     public function markAsReviewed(): void
     {
         $this->update(['status' => 'reviewed']);
+    }
 
     public function markAsResponded(): void
     {
@@ -110,14 +111,17 @@ class SocialMention extends BaseModel
             'responded_at' => now(),
             'requires_response' => false,
         ]);
+    }
 
     public function archive(): void
     {
         $this->update(['status' => 'archived']);
+    }
 
     public function flag(): void
     {
         $this->update(['status' => 'flagged']);
+    }
 
     public function isNew(): bool
     {
@@ -136,11 +140,11 @@ class SocialMention extends BaseModel
     public function assignTo(string $userId): void
     {
         $this->update(['assigned_to' => $userId]);
+    }
 
     public function unassign(): void
     {
         $this->update(['assigned_to' => null]);
-
     }
     /**
      * Sentiment Methods
@@ -153,6 +157,7 @@ class SocialMention extends BaseModel
             'sentiment_score' => $score,
             'sentiment_confidence' => $confidence,
         ]);
+    }
 
     public function isPositive(): bool
     {
@@ -178,6 +183,7 @@ class SocialMention extends BaseModel
             'mixed' => '🤔 Mixed',
             default => '❓ Unknown'
         };
+    }
 
     public function getSentimentColor(): string
     {
@@ -188,7 +194,6 @@ class SocialMention extends BaseModel
             'mixed' => 'yellow',
             default => 'gray'
         };
-
     }
     /**
      * Engagement Methods
@@ -208,8 +213,10 @@ class SocialMention extends BaseModel
         $totalEngagement = $data['likes_count'] + $data['comments_count'] + $data['shares_count'];
         if ($data['views_count'] > 0) {
             $data['engagement_rate'] = ($totalEngagement / $data['views_count']) * 100;
+        }
 
         $this->update($data);
+    }
 
     public function getTotalEngagement(): int
     {
@@ -238,15 +245,14 @@ class SocialMention extends BaseModel
     public function getAuthorBadge(): string
     {
         if ($this->author_is_verified) {
-            }
             return '✓';
+        }
 
         if ($this->author_followers_count > 100000) {
-            }
             return '⭐';
+        }
 
         return '';
-
     }
     /**
      * Content Methods
@@ -260,11 +266,11 @@ class SocialMention extends BaseModel
     public function getExcerpt(int $length = 100): string
     {
         if (strlen($this->content) <= $length) {
-            }
             return $this->content;
+        }
 
-
-            }
+        return substr($this->content, 0, $length) . '...';
+    }
     public function getHashtagsString(): string
     {
         return implode(' ', array_map(fn($tag) => "#{$tag}", $this->hashtags));
@@ -280,6 +286,8 @@ class SocialMention extends BaseModel
         if (!in_array($topic, $topics)) {
             $topics[] = $topic;
             $this->update(['detected_topics' => $topics]);
+        }
+    }
 
     public function addEntity(string $entityType, string $entityValue): void
     {
@@ -289,7 +297,7 @@ class SocialMention extends BaseModel
         if (!in_array($entityValue, $entities[$entityType])) {
             $entities[$entityType][] = $entityValue;
             $this->update(['detected_entities' => $entities]);
-
+        }
     }
     /**
      * Scopes
@@ -310,10 +318,11 @@ class SocialMention extends BaseModel
         return $query->where('sentiment', $sentiment);
 
         }
-    public function scopeNeedsResponse($query)
-    : \Illuminate\Database\Eloquent\Builder {
+    public function scopeNeedsResponse($query): Builder
+    {
         return $query->where('requires_response', true)
                      ->whereNull('responded_at');
+    }
 
     public function scopeByStatus($query, string $status): Builder
     {
@@ -345,8 +354,11 @@ class SocialMention extends BaseModel
         return $query->where(function($q) {
             $q->where('author_followers_count', '>', 10000)
               ->orWhere('author_is_verified', true);
+        });
+    }
 
     public function scopePublishedBetween($query, $startDate, $endDate): Builder
     {
         return $query->whereBetween('published_at', [$startDate, $endDate]);
+    }
 }

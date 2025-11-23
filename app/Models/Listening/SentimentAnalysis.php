@@ -104,19 +104,21 @@ class SentimentAnalysis extends BaseModel
     public function getPrimaryEmotion(): ?string
     {
         if ($this->primary_emotion) {
-            }
             return $this->primary_emotion;
+        }
 
+        // Find emotion with highest score
+        if (empty($this->emotions)) {
+            return null;
+        }
 
+        return array_search(max($this->emotions), $this->emotions);
+    }
 
-
-
-            }
     public function getEmotionScore(string $emotion): float
     {
         return $this->emotions[$emotion] ?? 0.0;
-
-        }
+    }
     public function hasEmotion(string $emotion, float $threshold = 0.5): bool
     {
         return ($this->emotions[$emotion] ?? 0) >= $threshold;
@@ -132,9 +134,10 @@ class SentimentAnalysis extends BaseModel
         foreach ($this->entities as $entity) {
             if (isset($entity['type']) && $entity['type'] === $type) {
                 $entities[] = $entity;
-        return $entities;
-
+            }
         }
+        return $entities;
+    }
     public function hasPerson(): bool
     {
         return !empty($this->getEntitiesByType('PERSON'));
@@ -223,4 +226,5 @@ class SentimentAnalysis extends BaseModel
     public function scopeAnalyzedBy($query, string $model): Builder
     {
         return $query->where('model_used', $model);
+    }
 }

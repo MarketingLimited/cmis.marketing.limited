@@ -121,9 +121,9 @@ class CreativeTemplate extends BaseModel
 
         foreach ($this->structure as $key => $template) {
             $rendered[$key] = $this->replaceVariables($template, $data);
+        }
 
         return $rendered;
-
     }
     /**
      * Replace variables in template string
@@ -135,4 +135,5 @@ class CreativeTemplate extends BaseModel
         }
 
         return $template;
+    }
 }

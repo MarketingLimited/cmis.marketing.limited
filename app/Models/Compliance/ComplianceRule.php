@@ -55,13 +55,13 @@ class ComplianceRule extends BaseModel
      * Get rule-channel associations
      */
     public function channels()
-    : \Illuminate\Database\Eloquent\Relations\Relation {
+    {
         return $this->belongsToMany(
             \App\Models\Channel::class,
             'cmis.compliance_rule_channels',
             'rule_id',
             'channel_id'
-
+        );
     }
     /**
      * Scope active rules
@@ -81,8 +81,9 @@ class ComplianceRule extends BaseModel
     }
     /**
      * Scope by severity
-     */
+          */
     public function scopeBySeverity($query, string $severity): Builder
     {
         return $query->where('severity', $severity);
+    }
 }

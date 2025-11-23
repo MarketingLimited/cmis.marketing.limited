@@ -46,25 +46,25 @@ class PromptTemplate extends BaseModel
      * Get output contracts
      */
     public function outputContracts()
-    : \Illuminate\Database\Eloquent\Relations\Relation {
+    {
         return $this->belongsToMany(
             OutputContract::class,
             'cmis.prompt_template_contracts',
             'prompt_id',
             'contract_id'
-
+        );
     }
     /**
      * Get SQL snippets
      */
     public function sqlSnippets()
-    : \Illuminate\Database\Eloquent\Relations\Relation {
+    {
         return $this->belongsToMany(
             SqlSnippet::class,
             'cmis.prompt_template_presql',
             'prompt_id',
             'snippet_id'
-
+        );
     }
     /**
      * Scope to get templates for a specific module
@@ -72,4 +72,5 @@ class PromptTemplate extends BaseModel
     public function scopeForModule($query, int $moduleId): Builder
     {
         return $query->where('module_id', $moduleId);
+    }
 }

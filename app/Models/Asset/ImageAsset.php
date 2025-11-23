@@ -66,6 +66,7 @@ class ImageAsset extends BaseModel
     {
         if (!$this->width || !$this->height) {
             return null;
+        }
 
         $gcd = function($a, $b) use (&$gcd) {
             return $b ? $gcd($b, $a % $b) : $a;
@@ -74,7 +75,6 @@ class ImageAsset extends BaseModel
         $divisor = $gcd($this->width, $this->height);
 
         return ($this->width / $divisor) . ':' . ($this->height / $divisor);
-
     }
     /**
      * Check if portrait
@@ -98,6 +98,5 @@ class ImageAsset extends BaseModel
     public function isSquare(): bool
     {
         return $this->width === $this->height;
-}
-}
+    }
 }

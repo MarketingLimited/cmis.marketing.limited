@@ -59,9 +59,7 @@ class GoogleAdsController extends Controller
             return $this->success(['campaigns' => $campaigns,
                 'count' => count($campaigns)], 'Operation completed successfully');
         } catch (\Exception $e) {
-            return $this->serverError('Failed to fetch Google Ads campaigns',
-                'error' => $e->getMessage()
-            );
+            return $this->serverError('Failed to fetch Google Ads campaigns' . ': ' . $e->getMessage());
         }
     }
 
@@ -105,9 +103,7 @@ class GoogleAdsController extends Controller
 
             return $this->success(['campaign' => $campaign], 'Operation completed successfully');
         } catch (\Exception $e) {
-            return $this->serverError('Failed to fetch campaign details',
-                'error' => $e->getMessage()
-            );
+            return $this->serverError('Failed to fetch campaign details' . ': ' . $e->getMessage());
         }
     }
 
@@ -148,9 +144,7 @@ class GoogleAdsController extends Controller
             return $this->success(['ad_groups' => $adGroups,
                 'count' => count($adGroups)], 'Operation completed successfully');
         } catch (\Exception $e) {
-            return $this->serverError('Failed to fetch ad groups',
-                'error' => $e->getMessage()
-            );
+            return $this->serverError('Failed to fetch ad groups' . ': ' . $e->getMessage());
         }
     }
 
@@ -191,9 +185,7 @@ class GoogleAdsController extends Controller
             return $this->success(['ads' => $ads,
                 'count' => count($ads)], 'Operation completed successfully');
         } catch (\Exception $e) {
-            return $this->serverError('Failed to fetch ads',
-                'error' => $e->getMessage()
-            );
+            return $this->serverError('Failed to fetch ads' . ': ' . $e->getMessage());
         }
     }
 
@@ -262,9 +254,7 @@ class GoogleAdsController extends Controller
                 'campaign' => $result
             ], 201);
         } catch (\Exception $e) {
-            return $this->serverError('Failed to create Google Ads campaign',
-                'error' => $e->getMessage()
-            );
+            return $this->serverError('Failed to create Google Ads campaign' . ': ' . $e->getMessage());
         }
     }
 
@@ -315,9 +305,7 @@ class GoogleAdsController extends Controller
                 ]
             ]);
         } catch (\Exception $e) {
-            return $this->serverError('Failed to fetch campaign metrics',
-                'error' => $e->getMessage()
-            );
+            return $this->serverError('Failed to fetch campaign metrics' . ': ' . $e->getMessage());
         }
     }
 
@@ -352,9 +340,7 @@ class GoogleAdsController extends Controller
 
             return $this->success(null, 'Google Ads cache cleared successfully');
         } catch (\Exception $e) {
-            return $this->serverError('Failed to refresh cache',
-                'error' => $e->getMessage()
-            );
+            return $this->serverError('Failed to refresh cache' . ': ' . $e->getMessage());
         }
     }
 }

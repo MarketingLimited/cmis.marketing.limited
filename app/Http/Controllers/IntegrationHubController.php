@@ -48,7 +48,7 @@ class IntegrationHubController extends Controller
         return $this->success($result['data'] ?? $result, $result['message'] ?? 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return ->serverError('Failed to get integrations' . ': ' . ->getMessage());
+            return $this->serverError('Failed to get integrations: ' . $e->getMessage());
         }
     }
 
@@ -86,7 +86,7 @@ class IntegrationHubController extends Controller
         return $this->created($result['data'] ?? $result, $result['message'] ?? 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return ->serverError('Failed to create integration' . ': ' . ->getMessage());
+            return $this->serverError('Failed to create integration: ' . $e->getMessage());
         }
     }
 
@@ -104,7 +104,7 @@ class IntegrationHubController extends Controller
         return $this->success($result['data'] ?? $result, $result['message'] ?? 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return ->serverError('Test failed' . ': ' . ->getMessage());
+            return $this->serverError('Test failed: ' . $e->getMessage());
         }
     }
 
@@ -142,7 +142,7 @@ class IntegrationHubController extends Controller
         return $this->created($result['data'] ?? $result, $result['message'] ?? 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return ->serverError('Failed to create webhook' . ': ' . ->getMessage());
+            return $this->serverError('Failed to create webhook: ' . $e->getMessage());
         }
     }
 
@@ -179,7 +179,7 @@ class IntegrationHubController extends Controller
         return $this->created($result['data'] ?? $result, $result['message'] ?? 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return ->serverError('Failed to generate API key' . ': ' . ->getMessage());
+            return $this->serverError('Failed to generate API key: ' . $e->getMessage());
         }
     }
 
@@ -197,7 +197,7 @@ class IntegrationHubController extends Controller
         return $this->success($result['data'] ?? $result, $result['message'] ?? 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return ->serverError('Failed to list API keys' . ': ' . ->getMessage());
+            return $this->serverError('Failed to list API keys: ' . $e->getMessage());
         }
     }
 
@@ -215,7 +215,7 @@ class IntegrationHubController extends Controller
         return $this->success($result['data'] ?? $result, $result['message'] ?? 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return ->serverError('Failed to revoke API key' . ': ' . ->getMessage());
+            return $this->serverError('Failed to revoke API key: ' . $e->getMessage());
         }
     }
 
@@ -243,7 +243,7 @@ class IntegrationHubController extends Controller
         return $this->success($result['data'] ?? $result, $result['message'] ?? 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return ->serverError('Failed to get logs' . ': ' . ->getMessage());
+            return $this->serverError('Failed to get logs: ' . $e->getMessage());
         }
     }
 }

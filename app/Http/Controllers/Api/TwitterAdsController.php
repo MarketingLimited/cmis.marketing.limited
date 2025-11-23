@@ -61,9 +61,7 @@ class TwitterAdsController extends Controller
                 'total_count' => $result['total_count']
             ]);
         } catch (\Exception $e) {
-            return $this->serverError('Failed to fetch Twitter Ads campaigns',
-                'error' => $e->getMessage()
-            );
+            return $this->serverError('Failed to fetch Twitter Ads campaigns' . ': ' . $e->getMessage());
         }
     }
 
@@ -120,9 +118,7 @@ class TwitterAdsController extends Controller
                 'campaign' => $result
             ], 201);
         } catch (\Exception $e) {
-            return $this->serverError('Failed to create Twitter Ads campaign',
-                'error' => $e->getMessage()
-            );
+            return $this->serverError('Failed to create Twitter Ads campaign' . ': ' . $e->getMessage());
         }
     }
 
@@ -166,9 +162,7 @@ class TwitterAdsController extends Controller
                 'metrics' => $result['metrics']
             ]);
         } catch (\Exception $e) {
-            return $this->serverError('Failed to fetch campaign details',
-                'error' => $e->getMessage()
-            );
+            return $this->serverError('Failed to fetch campaign details' . ': ' . $e->getMessage());
         }
     }
 
@@ -215,9 +209,7 @@ class TwitterAdsController extends Controller
                 ]
             ]);
         } catch (\Exception $e) {
-            return $this->serverError('Failed to fetch campaign metrics',
-                'error' => $e->getMessage()
-            );
+            return $this->serverError('Failed to fetch campaign metrics' . ': ' . $e->getMessage());
         }
     }
 
@@ -249,9 +241,7 @@ class TwitterAdsController extends Controller
 
             return $this->success(null, 'Twitter Ads cache cleared successfully');
         } catch (\Exception $e) {
-            return $this->serverError('Failed to refresh cache',
-                'error' => $e->getMessage()
-            );
+            return $this->serverError('Failed to refresh cache' . ': ' . $e->getMessage());
         }
     }
 }

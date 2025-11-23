@@ -115,8 +115,8 @@ class MonitoringKeyword extends BaseModel
         if (!in_array($platform, $platforms)) {
             $platforms[] = $platform;
             $this->update(['platforms' => $platforms]);
-
-            }
+        }
+    }
     public function disablePlatform(string $platform): void
     {
         $platforms = array_filter($this->platforms, fn($p) => $p !== $platform);
@@ -147,7 +147,7 @@ class MonitoringKeyword extends BaseModel
         }
     public function shouldTriggerAlert(array $mentionData): bool
     {
-        if (...) {
+        if (!$this->enable_alerts) {
             return false;
         }
 
@@ -156,8 +156,9 @@ class MonitoringKeyword extends BaseModel
         // Check sentiment condition
         if (isset($conditions['sentiment']) && isset($mentionData['sentiment'])) {
             if (!in_array($mentionData['sentiment'], $conditions['sentiment'])) {
-                }
                 return false;
+            }
+        }
 
         // Check volume threshold
         if (isset($conditions['volume_threshold'])) {
@@ -165,12 +166,12 @@ class MonitoringKeyword extends BaseModel
                 ->where('published_at', '>=', now()->subHours($conditions['time_window'] ?? 24))
                 ->count();
 
-            if (...) {
-            return false;
+            if ($recentMentions < $conditions['volume_threshold']) {
+                return false;
+            }
         }
 
         return true;
-
     }
     /**
      * Keyword Matching
@@ -183,29 +184,36 @@ class MonitoringKeyword extends BaseModel
 
         // Check main keyword
         if (str_contains($searchText, $keyword)) {
-            }
             return true;
+        }
 
-
-
+        // Check variations
+        foreach ($this->variations as $variation) {
+            $var = $this->case_sensitive ? $variation : strtolower($variation);
+            if (str_contains($searchText, $var)) {
+                return true;
             }
+        }
+
+        return false;
+    }
     public function matchesWithExclusions(string $text): bool
     {
         // First check if it matches
         if (!$this->matches($text)) {
-            }
             return false;
+        }
 
         // Check exclusions
         $searchText = $this->case_sensitive ? $text : strtolower($text);
         foreach ($this->exclude_keywords as $exclude) {
             $excl = $this->case_sensitive ? $exclude : strtolower($exclude);
             if (str_contains($searchText, $excl)) {
-                }
                 return false;
+            }
+        }
 
         return true;
-
     }
     /**
      * Scopes
@@ -229,4 +237,5 @@ class MonitoringKeyword extends BaseModel
     public function scopeOfType($query, string $type): Builder
     {
         return $query->where('keyword_type', $type);
+    }
 }

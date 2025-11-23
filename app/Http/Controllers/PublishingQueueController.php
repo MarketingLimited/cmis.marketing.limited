@@ -47,8 +47,7 @@ class PublishingQueueController extends Controller
             return $this->error('Queue not configured for this account', 404);
         }
 
-        return $this->success($queue
-        );
+        return $this->success($queue, 'Queue retrieved successfully');
     }
 
     /**
@@ -92,8 +91,7 @@ class PublishingQueueController extends Controller
                 ]
             );
 
-            return $this->created($queue
-            , 'Publishing queue configured successfully');
+            return $this->created($queue, 'Publishing queue configured successfully');
         } catch (\InvalidArgumentException $e) {
             return response()->json([
                 'success' => false,
@@ -101,9 +99,7 @@ class PublishingQueueController extends Controller
                 'error' => $e->getMessage()
             ], 422);
         } catch (\Exception $e) {
-            return $this->serverError('Failed to configure queue',
-                'error' => $e->getMessage()
-            );
+            return $this->serverError('Failed to configure queue: ' . $e->getMessage());
         }
     }
 
@@ -141,9 +137,7 @@ class PublishingQueueController extends Controller
 
             return $this->success($queue, 'Operation completed successfully');
         } catch (\Exception $e) {
-            return $this->serverError('Failed to update queue',
-                'error' => $e->getMessage()
-            );
+            return $this->serverError('Failed to update queue: ' . $e->getMessage());
         }
     }
 
@@ -284,7 +278,6 @@ class PublishingQueueController extends Controller
     {
         $stats = $this->queueService->getQueueStatistics($socialAccountId);
 
-        return $this->success($stats
-        );
+        return $this->success($stats, 'Statistics retrieved successfully');
     }
 }

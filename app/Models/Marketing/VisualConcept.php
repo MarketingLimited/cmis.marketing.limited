@@ -48,13 +48,16 @@ class VisualConcept extends BaseModel
     {
         return $query->where('usage_count', '>=', $minUsage)
             ->orderByDesc('usage_count');
+    }
 
     public function scopeHighPerformance($query, $threshold = 0.7): Builder
     {
         return $query->where('performance_score', '>=', $threshold)
             ->orderByDesc('performance_score');
+    }
 
-    public function incrementUsage()
-    : \Illuminate\Database\Eloquent\Relations\Relation {
+    public function incrementUsage(): void
+    {
         $this->increment('usage_count');
+    }
 }

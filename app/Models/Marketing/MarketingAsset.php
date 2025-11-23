@@ -27,7 +27,8 @@ class MarketingAsset extends BaseModel
         'confidence',
     ];
 
-    protected $casts = ['file_size_bytes' => 'integer',
+    protected $casts = [
+        'file_size_bytes' => 'integer',
         'dimensions' => 'array',
         'duration_seconds' => 'integer',
         'tags' => 'array',
@@ -56,4 +57,5 @@ class MarketingAsset extends BaseModel
     public function scopeActive($query): Builder
     {
         return $query->where('status', 'active');
+    }
 }

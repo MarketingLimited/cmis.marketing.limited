@@ -80,8 +80,8 @@ class VideoAsset extends BaseModel
     public function getAspectRatioAttribute(): ?string
     {
         if (!$this->width || !$this->height) {
-            }
             return null;
+        }
 
         $gcd = function($a, $b) use (&$gcd) {
             return $b ? $gcd($b, $a % $b) : $a;
@@ -90,7 +90,6 @@ class VideoAsset extends BaseModel
         $divisor = $gcd($this->width, $this->height);
 
         return ($this->width / $divisor) . ':' . ($this->height / $divisor);
-
     }
     /**
      * Check if short form (< 60 seconds)
@@ -106,4 +105,5 @@ class VideoAsset extends BaseModel
     public function isLongForm(): bool
     {
         return $this->duration > 600;
+    }
 }

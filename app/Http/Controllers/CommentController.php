@@ -81,9 +81,7 @@ class CommentController extends Controller
         return $this->created($result['data'] ?? $result, $result['message'] ?? 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return $this->serverError('Failed to add comment',
-                'error' => $e->getMessage()
-            );
+            return $this->serverError('Failed to add comment: ' . $e->getMessage());
         }
     }
 
@@ -130,9 +128,7 @@ class CommentController extends Controller
         return $this->created($result['data'] ?? $result, $result['message'] ?? 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return $this->serverError('Failed to add reply',
-                'error' => $e->getMessage()
-            );
+            return $this->serverError('Failed to add reply: ' . $e->getMessage());
         }
     }
 
@@ -180,9 +176,7 @@ class CommentController extends Controller
         return $this->success($result['data'] ?? $result, $result['message'] ?? 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return $this->serverError('Failed to update comment',
-                'error' => $e->getMessage()
-            );
+            return $this->serverError('Failed to update comment: ' . $e->getMessage());
         }
     }
 
@@ -213,9 +207,7 @@ class CommentController extends Controller
         return $this->success($result['data'] ?? $result, $result['message'] ?? 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return $this->serverError('Failed to delete comment',
-                'error' => $e->getMessage()
-            );
+            return $this->serverError('Failed to delete comment: ' . $e->getMessage());
         }
     }
 
@@ -255,9 +247,7 @@ class CommentController extends Controller
         return $this->success($result['data'] ?? $result, $result['message'] ?? 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return $this->serverError('Failed to get comments',
-                'error' => $e->getMessage()
-            );
+            return $this->serverError('Failed to get comments: ' . $e->getMessage());
         }
     }
 
@@ -305,9 +295,7 @@ class CommentController extends Controller
         return $this->success($result['data'] ?? $result, $result['message'] ?? 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return $this->serverError('Failed to add reaction',
-                'error' => $e->getMessage()
-            );
+            return $this->serverError('Failed to add reaction: ' . $e->getMessage());
         }
     }
 
@@ -338,9 +326,7 @@ class CommentController extends Controller
         return $this->success($result['data'] ?? $result, $result['message'] ?? 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return $this->serverError('Failed to remove reaction',
-                'error' => $e->getMessage()
-            );
+            return $this->serverError('Failed to remove reaction: ' . $e->getMessage());
         }
     }
 
@@ -378,9 +364,7 @@ class CommentController extends Controller
         return $this->success($result['data'] ?? $result, $result['message'] ?? 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return $this->serverError('Failed to get activity feed',
-                'error' => $e->getMessage()
-            );
+            return $this->serverError('Failed to get activity feed: ' . $e->getMessage());
         }
     }
 }

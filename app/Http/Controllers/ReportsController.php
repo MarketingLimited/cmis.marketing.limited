@@ -83,9 +83,7 @@ class ReportsController extends Controller
             return $this->success($report, 'Retrieved successfully');
 
         } catch (\Exception $e) {
-            return $this->serverError('Failed to generate performance report',
-                'error' => $e->getMessage()
-            );
+            return $this->serverError('Failed to generate performance report: ' . $e->getMessage());
         }
     }
 
@@ -136,9 +134,7 @@ class ReportsController extends Controller
             return $this->success($report, 'Retrieved successfully');
 
         } catch (\Exception $e) {
-            return $this->serverError('Failed to generate AI insights report',
-                'error' => $e->getMessage()
-            );
+            return $this->serverError('Failed to generate AI insights report: ' . $e->getMessage());
         }
     }
 
@@ -187,9 +183,7 @@ class ReportsController extends Controller
             return $this->success($report, 'Retrieved successfully');
 
         } catch (\Exception $e) {
-            return $this->serverError('Failed to generate organization report',
-                'error' => $e->getMessage()
-            );
+            return $this->serverError('Failed to generate organization report: ' . $e->getMessage());
         }
     }
 
@@ -244,9 +238,7 @@ class ReportsController extends Controller
             return $this->success($report, 'Retrieved successfully');
 
         } catch (\Exception $e) {
-            return $this->serverError('Failed to generate content analysis report',
-                'error' => $e->getMessage()
-            );
+            return $this->serverError('Failed to generate content analysis report: ' . $e->getMessage());
         }
     }
 
@@ -305,9 +297,7 @@ class ReportsController extends Controller
             return $this->created($schedule, 'Created successfully');
 
         } catch (\Exception $e) {
-            return $this->serverError('Failed to schedule report',
-                'error' => $e->getMessage()
-            );
+            return $this->serverError('Failed to schedule report: ' . $e->getMessage());
         }
     }
 
@@ -330,9 +320,7 @@ class ReportsController extends Controller
             return $this->success($schedules, 'Retrieved successfully');
 
         } catch (\Exception $e) {
-            return $this->serverError('Failed to get scheduled reports',
-                'error' => $e->getMessage()
-            );
+            return $this->serverError('Failed to get scheduled reports: ' . $e->getMessage());
         }
     }
 
@@ -357,9 +345,7 @@ class ReportsController extends Controller
             return $this->error('Failed to cancel report schedule or schedule not found', 404);
 
         } catch (\Exception $e) {
-            return $this->serverError('Failed to cancel scheduled report',
-                'error' => $e->getMessage()
-            );
+            return $this->serverError('Failed to cancel scheduled report: ' . $e->getMessage());
         }
     }
 

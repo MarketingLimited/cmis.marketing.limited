@@ -35,13 +35,13 @@ class SqlSnippet extends BaseModel
      * Get prompt templates using this snippet
      */
     public function promptTemplates()
-    : \Illuminate\Database\Eloquent\Relations\Relation {
+    {
         return $this->belongsToMany(
             PromptTemplate::class,
             'cmis.prompt_template_presql',
             'snippet_id',
             'prompt_id'
-
+        );
     }
     /**
      * Scope to find by name
@@ -49,4 +49,5 @@ class SqlSnippet extends BaseModel
     public function scopeByName($query, string $name): Builder
     {
         return $query->where('name', $name);
+    }
 }

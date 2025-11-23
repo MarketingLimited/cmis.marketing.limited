@@ -266,8 +266,7 @@ class ExperimentsController extends Controller
             return $this->success(['experiment' => $experiment->fresh(),
                 'message' => 'Experiment started successfully'], 'Operation completed successfully');
         } catch (\Exception $e) {
-            return $this->validationError(, $e->getMessage()
-            );
+            return $this->validationError([], $e->getMessage());
         }
     }
 
@@ -292,8 +291,7 @@ class ExperimentsController extends Controller
             return $this->success(['experiment' => $experiment->fresh(),
                 'message' => 'Experiment paused successfully'], 'Operation completed successfully');
         } catch (\Exception $e) {
-            return $this->validationError(, $e->getMessage()
-            );
+            return $this->validationError([], $e->getMessage());
         }
     }
 
@@ -318,8 +316,7 @@ class ExperimentsController extends Controller
             return $this->success(['experiment' => $experiment->fresh(),
                 'message' => 'Experiment resumed successfully'], 'Operation completed successfully');
         } catch (\Exception $e) {
-            return $this->validationError(, $e->getMessage()
-            );
+            return $this->validationError([], $e->getMessage());
         }
     }
 

@@ -66,8 +66,7 @@ class PredictiveAnalyticsController extends Controller
                 'message' => 'Forecasts generated successfully'
             ], 201);
         } catch (\RuntimeException $e) {
-            return $this->validationError(, $e->getMessage()
-            );
+            return $this->validationError([], $e->getMessage());
         }
     }
 
@@ -374,8 +373,7 @@ class PredictiveAnalyticsController extends Controller
                 'message' => 'Trend analysis completed'
             ], 201);
         } catch (\RuntimeException $e) {
-            return $this->validationError(, $e->getMessage()
-            );
+            return $this->validationError([], $e->getMessage());
         }
     }
 

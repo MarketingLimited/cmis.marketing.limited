@@ -312,3 +312,4 @@ class KnowledgeLearningController extends Controller
             'failure_patterns' => $learnings['failure_patterns'],
         ]);
     }
+}

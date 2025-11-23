@@ -75,11 +75,12 @@ class GeneratedCreative extends BaseModel
         return $query->where('quality_score', '>=', $threshold);
 
         }
-    public function approve($userId)
-    : \Illuminate\Database\Eloquent\Relations\Relation {
+    public function approve($userId): void
+    {
         $this->update([
             'is_approved' => true,
             'approved_by' => $userId,
             'approved_at' => now(),
         ]);
+    }
 }

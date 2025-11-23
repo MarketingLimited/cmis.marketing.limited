@@ -77,6 +77,8 @@ class UserActivity extends BaseModel
 
         if ($entityId) {
             $query->where('entity_id', $entityId);
+        }
 
         return $query;
+    }
 }

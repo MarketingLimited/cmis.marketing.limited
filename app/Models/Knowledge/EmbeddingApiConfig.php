@@ -97,9 +97,9 @@ class EmbeddingApiConfig extends BaseModel
 
         if (!$success) {
             $this->increment('failed_requests');
+        }
 
         $this->update(['last_used' => now()]);
-
     }
     /**
      * Get success rate
@@ -108,10 +108,9 @@ class EmbeddingApiConfig extends BaseModel
     {
         if ($this->total_requests === 0) {
             return 0.0;
+        }
 
         $successfulRequests = $this->total_requests - $this->failed_requests;
         return ($successfulRequests / $this->total_requests) * 100;
-}
-}
-}
+    }
 }

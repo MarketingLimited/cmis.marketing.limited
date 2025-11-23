@@ -76,8 +76,7 @@ class BulkPostController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return $this->validationError($validator->errors()
-            , 'Validation error');
+            return $this->validationError($validator->errors(), 'Validation error');
         }
 
         try {
@@ -95,9 +94,7 @@ class BulkPostController extends Controller
             ], 201);
 
         } catch (\Exception $e) {
-            return $this->serverError('Failed to create bulk posts',
-                'error' => $e->getMessage()
-            );
+            return $this->serverError('Failed to create bulk posts' . ': ' . $e->getMessage());
         }
     }
 
@@ -137,8 +134,7 @@ class BulkPostController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return $this->validationError($validator->errors()
-            , 'Validation error');
+            return $this->validationError($validator->errors(), 'Validation error');
         }
 
         try {
@@ -154,9 +150,7 @@ class BulkPostController extends Controller
             ], 201);
 
         } catch (\Exception $e) {
-            return $this->serverError('Failed to import CSV',
-                'error' => $e->getMessage()
-            );
+            return $this->serverError('Failed to import CSV' . ': ' . $e->getMessage());
         }
     }
 
@@ -191,8 +185,7 @@ class BulkPostController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return $this->validationError($validator->errors()
-            , 'Validation error');
+            return $this->validationError($validator->errors(), 'Validation error');
         }
 
         try {
@@ -216,13 +209,10 @@ class BulkPostController extends Controller
                 $updates
             );
 
-            return $this->success($result
-            , "Successfully updated {$result['updated']} posts");
+            return $this->success($result, "Successfully updated {$result['updated']} posts");
 
         } catch (\Exception $e) {
-            return $this->serverError('Failed to update posts',
-                'error' => $e->getMessage()
-            );
+            return $this->serverError('Failed to update posts' . ': ' . $e->getMessage());
         }
     }
 
@@ -248,8 +238,7 @@ class BulkPostController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return $this->validationError($validator->errors()
-            , 'Validation error');
+            return $this->validationError($validator->errors(), 'Validation error');
         }
 
         try {
@@ -257,13 +246,10 @@ class BulkPostController extends Controller
                 $request->input('post_ids')
             );
 
-            return $this->success($result
-            , "Successfully deleted {$result['deleted']} posts");
+            return $this->success($result, "Successfully deleted {$result['deleted']} posts");
 
         } catch (\Exception $e) {
-            return $this->serverError('Failed to delete posts',
-                'error' => $e->getMessage()
-            );
+            return $this->serverError('Failed to delete posts' . ': ' . $e->getMessage());
         }
     }
 
@@ -285,8 +271,7 @@ class BulkPostController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return $this->validationError($validator->errors()
-            , 'Validation error');
+            return $this->validationError($validator->errors(), 'Validation error');
         }
 
         try {
@@ -299,9 +284,7 @@ class BulkPostController extends Controller
             return $this->success($suggestions, 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return $this->serverError('Failed to get suggestions',
-                'error' => $e->getMessage()
-            );
+            return $this->serverError('Failed to get suggestions' . ': ' . $e->getMessage());
         }
     }
 }

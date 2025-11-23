@@ -168,9 +168,7 @@ class ContentController extends Controller
                 return $this->notFound('Content not found');
             }
 
-            return $this->success($content,
-                'success' => true,
-            , 'Operation completed successfully');
+            return $this->success($content, 'Content retrieved successfully');
 
         } catch (\Exception $e) {
             \Log::error('Content show error', [
@@ -221,10 +219,7 @@ class ContentController extends Controller
 
             $content->update($validated);
 
-            return $this->success($content->fresh(),
-                'success' => true,
-                'message' => 'Content updated successfully',
-            , 'Operation completed successfully');
+            return $this->success($content->fresh(), 'Content updated successfully');
 
         } catch (\Illuminate\Validation\ValidationException $e) {
             return $this->validationError($e->errors(), 'Validation failed');
@@ -268,7 +263,7 @@ class ContentController extends Controller
             // Soft delete the content
             $content->delete();
 
-            return $this->success(['message' => 'Content deleted successfully',], 'Operation completed successfully');
+            return $this->success(['message' => 'Content deleted successfully'], 'Content deleted successfully');
 
         } catch (\Exception $e) {
             \Log::error('Content delete error', [
@@ -317,10 +312,7 @@ class ContentController extends Controller
                 'status' => 'scheduled',
             ]);
 
-            return $this->success($content->fresh(),
-                'success' => true,
-                'message' => 'Content scheduled successfully',
-            , 'Operation completed successfully');
+            return $this->success($content->fresh(), 'Content scheduled successfully');
 
         } catch (\Illuminate\Validation\ValidationException $e) {
             return $this->validationError($e->errors(), 'Validation failed');

@@ -147,9 +147,7 @@ class UserManagementController extends Controller
                 'error' => $e->getMessage(),
             ]);
 
-            return $this->serverError('Failed to retrieve users',
-                'error' => $e->getMessage()
-            );
+            return $this->serverError('Failed to retrieve users' . ': ' . $e->getMessage());
         }
     }
 
@@ -203,9 +201,7 @@ class UserManagementController extends Controller
                 'error' => $e->getMessage(),
             ]);
 
-            return $this->serverError('Failed to retrieve user details',
-                'error' => $e->getMessage()
-            );
+            return $this->serverError('Failed to retrieve user details' . ': ' . $e->getMessage());
         }
     }
 
@@ -314,9 +310,7 @@ class UserManagementController extends Controller
                 'error' => $e->getMessage(),
             ]);
 
-            return $this->serverError('Failed to send invitation',
-                'error' => $e->getMessage()
-            );
+            return $this->serverError('Failed to send invitation' . ': ' . $e->getMessage());
         }
     }
 
@@ -377,9 +371,7 @@ class UserManagementController extends Controller
                 'error' => $e->getMessage(),
             ]);
 
-            return $this->serverError('Failed to update user role',
-                'error' => $e->getMessage()
-            );
+            return $this->serverError('Failed to update user role' . ': ' . $e->getMessage());
         }
     }
 
@@ -445,9 +437,7 @@ class UserManagementController extends Controller
                 'error' => $e->getMessage(),
             ]);
 
-            return $this->serverError('Failed to update user status',
-                'error' => $e->getMessage()
-            );
+            return $this->serverError('Failed to update user status' . ': ' . $e->getMessage());
         }
     }
 
@@ -499,9 +489,7 @@ class UserManagementController extends Controller
                 'error' => $e->getMessage(),
             ]);
 
-            return $this->serverError('Failed to remove user',
-                'error' => $e->getMessage()
-            );
+            return $this->serverError('Failed to remove user' . ': ' . $e->getMessage());
         }
     }
 
@@ -569,9 +557,7 @@ class UserManagementController extends Controller
                 'error' => $e->getMessage(),
             ]);
 
-            return $this->serverError('Failed to retrieve user activity',
-                'error' => $e->getMessage()
-            );
+            return $this->serverError('Failed to retrieve user activity' . ': ' . $e->getMessage());
         }
     }
 
@@ -617,9 +603,7 @@ class UserManagementController extends Controller
                 'error' => $e->getMessage(),
             ]);
 
-            return $this->serverError('Failed to retrieve invitations',
-                'error' => $e->getMessage()
-            );
+            return $this->serverError('Failed to retrieve invitations' . ': ' . $e->getMessage());
         }
     }
 
@@ -659,9 +643,7 @@ class UserManagementController extends Controller
                 'error' => $e->getMessage(),
             ]);
 
-            return $this->serverError('Failed to cancel invitation',
-                'error' => $e->getMessage()
-            );
+            return $this->serverError('Failed to cancel invitation' . ': ' . $e->getMessage());
         }
     }
 
