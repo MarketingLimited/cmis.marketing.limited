@@ -4,6 +4,8 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
@@ -68,20 +70,48 @@ class ResolveActiveOrg
         $request->attributes->set('org_id', $activeOrgId);
         $request->attributes->set('resolved_org_id', true); // Flag to indicate auto-resolved
 
-        // Set database context for RLS (if needed by your app)
+        // Set database context for RLS using proper PostgreSQL function
         // This ensures Row Level Security works correctly
-        if (function_exists('init_transaction_context')) {
-            init_transaction_context($activeOrgId);
-        } else {
-            // Alternative: Call DB raw query
-            try {
-                \DB::statement("SELECT set_config('app.current_org_id', ?, false)", [$activeOrgId]);
-            } catch (\Exception $e) {
-                // Log but don't fail - RLS might not be enabled
-                \Log::debug("Could not set RLS context: " . $e->getMessage());
-            }
+        try {
+            \DB::statement('SELECT cmis.init_transaction_context(?, ?)', [
+                $user->id,
+                $activeOrgId
+            ]);
+
+            \Log::debug('ResolveActiveOrg: RLS context set successfully', [
+                'user_id' => $user->id,
+                'org_id' => $activeOrgId
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('ResolveActiveOrg: Failed to set RLS context', [
+                'user_id' => $user->id,
+                'org_id' => $activeOrgId,
+                'error' => $e->getMessage()
+            ]);
+
+            return response()->json([
+                'error' => 'Failed to initialize context',
+                'message' => 'An error occurred while setting up your organization context.'
+            ], 500);
         }
 
         return $next($request);
+    }
+
+    /**
+     * Handle tasks after the response has been sent to the browser.
+     *
+     * Clean up the database context after the request is complete.
+     */
+    public function terminate(Request $request, Response $response): void
+    {
+        try {
+            \DB::statement('SELECT cmis.clear_transaction_context()');
+            \Log::debug('ResolveActiveOrg: Context cleared in terminate()');
+        } catch (\Exception $e) {
+            \Log::debug('ResolveActiveOrg: Could not clear context in terminate()', [
+                'error' => $e->getMessage()
+            ]);
+        }
     }
 }
