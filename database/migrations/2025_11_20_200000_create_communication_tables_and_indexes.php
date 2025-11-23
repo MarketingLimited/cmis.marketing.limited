@@ -110,9 +110,8 @@ return new class extends Migration
                 )
             ");
 
-            // Add RLS policy
-            
-            $this->enableRLS('cmis.notifications');
+            // Note: RLS policy already enabled in 2025_11_18_000003_create_notifications_table.php
+            // Removed duplicate enableRLS('cmis.notifications') call to prevent policy conflicts
         }
 
         // Create Performance Indexes
