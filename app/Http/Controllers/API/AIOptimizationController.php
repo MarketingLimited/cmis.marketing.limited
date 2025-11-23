@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Concerns\ApiResponse;
 use App\Models\Core\Org;
 use App\Models\AdPlatform\AdCampaign;
 use App\Services\AI\CampaignOptimizationService;
@@ -77,12 +78,12 @@ class AIOptimizationController extends Controller
     {
         // Verify campaign belongs to org
         if ($campaign->org_id !== $org->org_id) {
-            return response()->json(['error' => 'Campaign not found'], 404);
+            return $this->notFound('Campaign not found');
         }
 
         $analysis = $this->optimizationService->analyzeCampaign($campaign);
 
-        return response()->json($analysis);
+        return $this->success($analysis, 'Campaign analyzed successfully');
     }
 
     /**
@@ -169,14 +170,14 @@ class AIOptimizationController extends Controller
             return ($priorities[$b['priority']] ?? 0) - ($priorities[$a['priority']] ?? 0);
         });
 
-        return response()->json([
+        return $this->success([
             'org_id' => $org->org_id,
             'total_campaigns' => $campaigns->count(),
             'analyzed' => count($analyses),
             'avg_performance_score' => count($analyses) > 0 ? round($totalScore / count($analyses)) : 0,
             'campaigns' => $analyses,
             'top_recommendations' => array_slice($topRecommendations, 0, 10),
-        ]);
+        ], 'All campaigns analyzed successfully');
     }
 
     /**
