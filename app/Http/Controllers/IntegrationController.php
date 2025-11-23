@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\ApiResponse;
 use App\Models\Integration\Integration;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
@@ -30,7 +31,7 @@ class IntegrationController extends Controller
             $orgId = $this->resolveOrgId($request);
 
             if (!$orgId) {
-                return response()->json(['error' => 'No active organization found'], 404);
+                return $this->notFound('No active organization found');
             }
 
             $integrations = Integration::where('org_id', $orgId)
@@ -48,15 +49,13 @@ class IntegrationController extends Controller
                 ->orderBy('created_at', 'desc')
                 ->get();
 
-            return response()->json([
+            return $this->success([
                 'data' => $integrations,
                 'total' => $integrations->count()
-            ]);
+            ], 'Integrations retrieved successfully');
         } catch (\Exception $e) {
             Log::error("Failed to list integrations: {$e->getMessage()}");
-            return response()->json([
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError($e->getMessage());
         }
     }
 
@@ -78,17 +77,14 @@ class IntegrationController extends Controller
             ]);
 
             if ($validator->fails()) {
-                return response()->json([
-                    'error' => 'Validation failed',
-                    'messages' => $validator->errors()
-                ], 422);
+                return $this->validationError($validator->errors(), 'Validation failed');
             }
 
             $orgId = $this->resolveOrgId($request);
             $user = $request->user();
 
             if (!$orgId) {
-                return response()->json(['error' => 'No active organization found'], 404);
+                return $this->notFound('No active organization found');
             }
 
             // Initialize RLS context
@@ -108,15 +104,10 @@ class IntegrationController extends Controller
                 'sync_status' => 'pending',
             ]);
 
-            return response()->json([
-                'data' => $integration,
-                'message' => 'Integration connected successfully'
-            ], 201);
+            return $this->created($integration, 'Integration connected successfully');
         } catch (\Exception $e) {
             Log::error("Failed to create integration: {$e->getMessage()}");
-            return response()->json([
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError($e->getMessage());
         }
     }
 
@@ -133,7 +124,7 @@ class IntegrationController extends Controller
             $orgId = $this->resolveOrgId($request);
 
             if (!$orgId) {
-                return response()->json(['error' => 'No active organization found'], 404);
+                return $this->notFound('No active organization found');
             }
 
             $integration = Integration::where('integration_id', $id)
@@ -143,12 +134,10 @@ class IntegrationController extends Controller
             // Hide sensitive data
             $integration->makeHidden(['access_token', 'credentials']);
 
-            return response()->json(['data' => $integration]);
+            return $this->success($integration, 'Integration retrieved successfully');
         } catch (\Exception $e) {
             Log::error("Failed to get integration: {$e->getMessage()}");
-            return response()->json([
-                'error' => $e->getMessage()
-            ], 404);
+            return $this->notFound('Integration not found');
         }
     }
 
@@ -166,7 +155,7 @@ class IntegrationController extends Controller
             $user = $request->user();
 
             if (!$orgId) {
-                return response()->json(['error' => 'No active organization found'], 404);
+                return $this->notFound('No active organization found');
             }
 
             // Initialize RLS context
@@ -185,10 +174,7 @@ class IntegrationController extends Controller
             ]);
 
             if ($validator->fails()) {
-                return response()->json([
-                    'error' => 'Validation failed',
-                    'messages' => $validator->errors()
-                ], 422);
+                return $this->validationError($validator->errors(), 'Validation failed');
             }
 
             $integration->update($request->only(['name', 'is_active']));
@@ -196,9 +182,7 @@ class IntegrationController extends Controller
             return $this->success($integration, 'Integration updated successfully');
         } catch (\Exception $e) {
             Log::error("Failed to update integration: {$e->getMessage()}");
-            return response()->json([
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError($e->getMessage());
         }
     }
 
@@ -216,7 +200,7 @@ class IntegrationController extends Controller
             $user = $request->user();
 
             if (!$orgId) {
-                return response()->json(['error' => 'No active organization found'], 404);
+                return $this->notFound('No active organization found');
             }
 
             // Initialize RLS context
@@ -232,14 +216,10 @@ class IntegrationController extends Controller
             // Soft delete or mark as inactive
             $integration->update(['is_active' => false]);
 
-            return response()->json([
-                'message' => 'Integration disconnected successfully'
-            ]);
+            return $this->deleted('Integration disconnected successfully');
         } catch (\Exception $e) {
             Log::error("Failed to delete integration: {$e->getMessage()}");
-            return response()->json([
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError($e->getMessage());
         }
     }
 
@@ -257,7 +237,7 @@ class IntegrationController extends Controller
             $user = $request->user();
 
             if (!$orgId) {
-                return response()->json(['error' => 'No active organization found'], 404);
+                return $this->notFound('No active organization found');
             }
 
             // Initialize RLS context
@@ -281,9 +261,7 @@ class IntegrationController extends Controller
             return $this->success($integration, 'Token refreshed successfully');
         } catch (\Exception $e) {
             Log::error("Failed to refresh token: {$e->getMessage()}");
-            return response()->json([
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError($e->getMessage());
         }
     }
 
@@ -300,7 +278,7 @@ class IntegrationController extends Controller
             $orgId = $this->resolveOrgId($request);
 
             if (!$orgId) {
-                return response()->json(['error' => 'No active organization found'], 404);
+                return $this->notFound('No active organization found');
             }
 
             $integration = Integration::where('integration_id', $id)
@@ -325,22 +303,18 @@ class IntegrationController extends Controller
                 $status = 'inactive';
             }
 
-            return response()->json([
-                'data' => [
-                    'integration_id' => $integration->integration_id,
-                    'platform' => $integration->platform,
-                    'status' => $status,
-                    'is_active' => $integration->is_active,
-                    'last_synced_at' => $integration->last_synced_at,
-                    'last_synced_minutes_ago' => $lastSyncedMinutes,
-                    'sync_status' => $integration->sync_status,
-                ]
-            ]);
+            return $this->success([
+                'integration_id' => $integration->integration_id,
+                'platform' => $integration->platform,
+                'status' => $status,
+                'is_active' => $integration->is_active,
+                'last_synced_at' => $integration->last_synced_at,
+                'last_synced_minutes_ago' => $lastSyncedMinutes,
+                'sync_status' => $integration->sync_status,
+            ], 'Integration status retrieved successfully');
         } catch (\Exception $e) {
             Log::error("Failed to get integration status: {$e->getMessage()}");
-            return response()->json([
-                'error' => $e->getMessage()
-            ], 404);
+            return $this->notFound('Integration not found');
         }
     }
 

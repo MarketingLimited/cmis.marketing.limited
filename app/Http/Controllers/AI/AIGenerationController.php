@@ -569,7 +569,7 @@ Create 10 compelling headline variations that capture attention and drive action
      */
     protected function callGemini(string $endpoint, string $prompt, int $maxTokens): ?string
     {
-        $apiKey = env('GEMINI_API_KEY');
+        $apiKey = config('services.gemini.api_key');
         if (!$apiKey) {
             return 'SIMULATED: ' . substr($prompt, 0, 200) . '... [Gemini API key not configured]';
         }
@@ -603,7 +603,7 @@ Create 10 compelling headline variations that capture attention and drive action
      */
     protected function callOpenAI(string $endpoint, string $model, string $prompt, int $maxTokens): ?string
     {
-        $apiKey = env('OPENAI_API_KEY');
+        $apiKey = config('services.ai.openai_key');
         if (!$apiKey) {
             return 'SIMULATED: ' . substr($prompt, 0, 200) . '... [OpenAI API key not configured]';
         }
@@ -637,9 +637,9 @@ Create 10 compelling headline variations that capture attention and drive action
     protected function isModelAvailable(string $model): bool
     {
         if (str_starts_with($model, 'gemini')) {
-            return !empty(env('GEMINI_API_KEY'));
+            return !empty(config('services.gemini.api_key'));
         } elseif (str_starts_with($model, 'gpt')) {
-            return !empty(env('OPENAI_API_KEY'));
+            return !empty(config('services.ai.openai_key'));
         }
 
         return false;

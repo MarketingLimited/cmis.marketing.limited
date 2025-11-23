@@ -40,7 +40,7 @@ class DashboardController extends Controller
         // Stub implementation - Proper authorization policy not yet implemented
         // $this->authorize('viewAny', Campaign::class);
 
-        return response()->json($this->resolveDashboardMetrics());
+        return $this->success($this->resolveDashboardMetrics(), 'Dashboard metrics retrieved successfully');
     }
 
     public function latest(Request $request)
@@ -52,7 +52,7 @@ class DashboardController extends Controller
             $user = $request->user();
 
             if (!$user) {
-                return response()->json(['notifications' => []], 401);
+                return $this->unauthorized('User not authenticated');
             }
 
             // Get latest notifications for the user (last 20)
@@ -72,7 +72,7 @@ class DashboardController extends Controller
                     ];
                 });
 
-            return response()->json(['notifications' => $notifications]);
+            return $this->success(['notifications' => $notifications], 'Notifications retrieved successfully');
         } catch (\Exception $e) {
             // Fallback to sample data if database is not ready
             \Log::error('Failed to load notifications: ' . $e->getMessage());
@@ -108,7 +108,7 @@ class DashboardController extends Controller
                 ],
             ];
 
-            return response()->json(['notifications' => $notifications]);
+            return $this->success(['notifications' => $notifications], 'Fallback notifications retrieved');
         }
     }
 
@@ -131,7 +131,7 @@ class DashboardController extends Controller
 
             $notification->markAsRead();
 
-            return response()->json(['success' => true, 'message' => 'Notification marked as read']);
+            return $this->success(null, 'Notification marked as read');
         } catch (\Exception $e) {
             \Log::error('Failed to mark notification as read: ' . $e->getMessage());
             return $this->error('Failed to mark as read', 500);
@@ -147,7 +147,7 @@ class DashboardController extends Controller
         $orgId = $this->resolveOrgId($request);
 
         if (!$orgId) {
-            return response()->json(['error' => 'No active organization found'], 404);
+            return $this->notFound('No active organization found');
         }
 
         $data = [
@@ -156,7 +156,7 @@ class DashboardController extends Controller
             'recent_activity' => $this->getRecentActivity($orgId),
         ];
 
-        return response()->json(['data' => $data]);
+        return $this->success($data, 'Overview retrieved successfully');
     }
 
     /**
@@ -171,7 +171,7 @@ class DashboardController extends Controller
             'total_assets' => CreativeAsset::count(),
         ];
 
-        return response()->json(['data' => $stats]);
+        return $this->success($stats, 'Statistics retrieved successfully');
     }
 
     /**
@@ -182,12 +182,12 @@ class DashboardController extends Controller
         $orgId = $this->resolveOrgId($request);
 
         if (!$orgId) {
-            return response()->json(['error' => 'No active organization found'], 404);
+            return $this->notFound('No active organization found');
         }
 
         $activities = $this->getRecentActivity($orgId);
 
-        return response()->json(['data' => $activities]);
+        return $this->success($activities, 'Recent activity retrieved successfully');
     }
 
     /**
@@ -202,7 +202,7 @@ class DashboardController extends Controller
             'draft' => Campaign::where('status', 'draft')->count(),
         ];
 
-        return response()->json(['data' => $summary]);
+        return $this->success($summary, 'Campaigns summary retrieved successfully');
     }
 
     /**
@@ -213,7 +213,7 @@ class DashboardController extends Controller
         $orgId = $this->resolveOrgId($request);
 
         if (!$orgId) {
-            return response()->json(['error' => 'No active organization found'], 404);
+            return $this->notFound('No active organization found');
         }
 
         $overview = [
@@ -223,7 +223,7 @@ class DashboardController extends Controller
             'ctr' => 0,
         ];
 
-        return response()->json(['data' => $overview]);
+        return $this->success($overview, 'Analytics overview retrieved successfully');
     }
 
     /**
@@ -238,7 +238,7 @@ class DashboardController extends Controller
             ->limit(10)
             ->get();
 
-        return response()->json(['data' => $posts]);
+        return $this->success($posts, 'Upcoming posts retrieved successfully');
     }
 
     /**
@@ -249,7 +249,7 @@ class DashboardController extends Controller
         $orgId = $this->resolveOrgId($request);
 
         if (!$orgId) {
-            return response()->json(['error' => 'No active organization found'], 404);
+            return $this->notFound('No active organization found');
         }
 
         $performance = [
@@ -262,7 +262,7 @@ class DashboardController extends Controller
             ],
         ];
 
-        return response()->json(['data' => $performance]);
+        return $this->success($performance, 'Campaigns performance retrieved successfully');
     }
 
     /**
@@ -273,7 +273,7 @@ class DashboardController extends Controller
         $orgId = $this->resolveOrgId($request);
 
         if (!$orgId) {
-            return response()->json(['error' => 'No active organization found'], 404);
+            return $this->notFound('No active organization found');
         }
 
         $engagement = [
@@ -286,7 +286,7 @@ class DashboardController extends Controller
             ],
         ];
 
-        return response()->json(['data' => $engagement]);
+        return $this->success($engagement, 'Engagement data retrieved successfully');
     }
 
     /**
@@ -299,7 +299,7 @@ class DashboardController extends Controller
             ->limit(5)
             ->get(['campaign_id', 'name', 'status', 'budget', 'start_date', 'end_date']);
 
-        return response()->json(['data' => $campaigns]);
+        return $this->success($campaigns, 'Top campaigns retrieved successfully');
     }
 
     /**
@@ -316,7 +316,7 @@ class DashboardController extends Controller
             'allocated' => $totalBudget,
         ];
 
-        return response()->json(['data' => $summary]);
+        return $this->success($summary, 'Budget summary retrieved successfully');
     }
 
     /**

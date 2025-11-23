@@ -11,7 +11,7 @@ class VerifyWebhookSignature
 {
     /**
      * Platform-specific webhook secrets
-     * In production, these should be in .env
+     * Loaded from config/services.php for better configuration management
      *
      * @var array
      */
@@ -20,12 +20,12 @@ class VerifyWebhookSignature
     public function __construct()
     {
         $this->secrets = [
-            'meta' => env('META_WEBHOOK_SECRET'),
-            'google' => env('GOOGLE_WEBHOOK_SECRET'),
-            'tiktok' => env('TIKTOK_WEBHOOK_SECRET'),
-            'linkedin' => env('LINKEDIN_WEBHOOK_SECRET'),
-            'twitter' => env('TWITTER_WEBHOOK_SECRET'),
-            'snapchat' => env('SNAPCHAT_WEBHOOK_SECRET'),
+            'meta' => config('services.meta.webhook_secret'),
+            'google' => config('services.google.webhook_secret'),
+            'tiktok' => config('services.tiktok.webhook_secret'),
+            'linkedin' => config('services.linkedin.webhook_secret'),
+            'twitter' => config('services.twitter.webhook_secret'),
+            'snapchat' => config('services.snapchat.webhook_secret'),
         ];
     }
 
