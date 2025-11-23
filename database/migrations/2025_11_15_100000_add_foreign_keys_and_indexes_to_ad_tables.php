@@ -12,71 +12,101 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Ensure the orgs table has its primary key constraint
-        // This might be missing during fresh migrations
-        $pkExists = DB::selectOne("
-            SELECT COUNT(*) as count
-            FROM information_schema.table_constraints
-            WHERE table_schema = 'cmis'
-            AND table_name = 'orgs'
-            AND constraint_type = 'PRIMARY KEY'
-        ");
+        // Primary key constraints are already added by migration 2025_11_14_000005_create_all_alters_and_constraints
+        // Skip adding them again to avoid "multiple primary keys" errors
 
-        if ($pkExists->count == 0) {
-            DB::statement('ALTER TABLE cmis.orgs ADD CONSTRAINT orgs_pkey PRIMARY KEY (org_id)');
+        // Check and add orgs primary key only if truly missing (defensive check)
+        try {
+            $constraintExists = DB::selectOne("
+                SELECT constraint_name
+                FROM information_schema.table_constraints
+                WHERE constraint_schema = 'cmis'
+                AND table_name = 'orgs'
+                AND constraint_type = 'PRIMARY KEY'
+                LIMIT 1
+            ");
+
+            if (!$constraintExists) {
+                DB::statement('ALTER TABLE cmis.orgs ADD CONSTRAINT orgs_pkey PRIMARY KEY (org_id)');
+            }
+        } catch (\Exception $e) {
+            // If constraint already exists, ignore
+            if (!str_contains($e->getMessage(), 'already exists') &&
+                !str_contains($e->getMessage(), 'multiple primary keys')) {
+                throw $e;
+            }
         }
 
-        // Ensure integrations table has its primary key constraint
-        $pkExists = DB::selectOne("
-            SELECT COUNT(*) as count
-            FROM information_schema.table_constraints
-            WHERE table_schema = 'cmis'
-            AND table_name = 'integrations'
-            AND constraint_type = 'PRIMARY KEY'
-        ");
+        // Check and add integrations primary key only if truly missing (defensive check)
+        try {
+            $constraintExists = DB::selectOne("
+                SELECT constraint_name
+                FROM information_schema.table_constraints
+                WHERE constraint_schema = 'cmis'
+                AND table_name = 'integrations'
+                AND constraint_type = 'PRIMARY KEY'
+                LIMIT 1
+            ");
 
-        if ($pkExists->count == 0) {
-            DB::statement('ALTER TABLE cmis.integrations ADD CONSTRAINT integrations_pkey PRIMARY KEY (integration_id)');
+            if (!$constraintExists) {
+                DB::statement('ALTER TABLE cmis.integrations ADD CONSTRAINT integrations_pkey PRIMARY KEY (integration_id)');
+            }
+        } catch (\Exception $e) {
+            // If constraint already exists, ignore
+            if (!str_contains($e->getMessage(), 'already exists') &&
+                !str_contains($e->getMessage(), 'multiple primary keys')) {
+                throw $e;
+            }
         }
 
-        // Ensure ad_campaigns table has its primary key on campaign_external_id
-        $pkExists = DB::selectOne("
-            SELECT COUNT(*) as count
-            FROM information_schema.key_column_usage
-            WHERE table_schema = 'cmis'
-            AND table_name = 'ad_campaigns'
-            AND column_name = 'campaign_external_id'
-            AND constraint_name IN (
-                SELECT constraint_name FROM information_schema.table_constraints
-                WHERE table_schema = 'cmis'
-                AND table_name = 'ad_campaigns'
-                AND constraint_type IN ('PRIMARY KEY', 'UNIQUE')
-            )
-        ");
+        // Ensure ad_campaigns table has constraint on campaign_external_id (for foreign key relationships)
+        try {
+            $constraintExists = DB::selectOne("
+                SELECT kcu.constraint_name
+                FROM information_schema.key_column_usage kcu
+                JOIN information_schema.table_constraints tc
+                    ON kcu.constraint_name = tc.constraint_name
+                    AND kcu.constraint_schema = tc.constraint_schema
+                WHERE kcu.constraint_schema = 'cmis'
+                AND kcu.table_name = 'ad_campaigns'
+                AND kcu.column_name = 'campaign_external_id'
+                AND tc.constraint_type IN ('PRIMARY KEY', 'UNIQUE')
+                LIMIT 1
+            ");
 
-        if ($pkExists->count == 0) {
-            // Add a unique constraint on campaign_external_id if it doesn't exist
-            DB::statement('ALTER TABLE cmis.ad_campaigns ADD CONSTRAINT ad_campaigns_campaign_external_id_key UNIQUE (campaign_external_id)');
+            if (!$constraintExists) {
+                DB::statement('ALTER TABLE cmis.ad_campaigns ADD CONSTRAINT ad_campaigns_campaign_external_id_key UNIQUE (campaign_external_id)');
+            }
+        } catch (\Exception $e) {
+            // If constraint already exists, ignore
+            if (!str_contains($e->getMessage(), 'already exists')) {
+                throw $e;
+            }
         }
 
-        // Ensure ad_sets table has constraint on adset_external_id
-        $pkExists = DB::selectOne("
-            SELECT COUNT(*) as count
-            FROM information_schema.key_column_usage
-            WHERE table_schema = 'cmis'
-            AND table_name = 'ad_sets'
-            AND column_name = 'adset_external_id'
-            AND constraint_name IN (
-                SELECT constraint_name FROM information_schema.table_constraints
-                WHERE table_schema = 'cmis'
-                AND table_name = 'ad_sets'
-                AND constraint_type IN ('PRIMARY KEY', 'UNIQUE')
-            )
-        ");
+        // Ensure ad_sets table has constraint on adset_external_id (for foreign key relationships)
+        try {
+            $constraintExists = DB::selectOne("
+                SELECT kcu.constraint_name
+                FROM information_schema.key_column_usage kcu
+                JOIN information_schema.table_constraints tc
+                    ON kcu.constraint_name = tc.constraint_name
+                    AND kcu.constraint_schema = tc.constraint_schema
+                WHERE kcu.constraint_schema = 'cmis'
+                AND kcu.table_name = 'ad_sets'
+                AND kcu.column_name = 'adset_external_id'
+                AND tc.constraint_type IN ('PRIMARY KEY', 'UNIQUE')
+                LIMIT 1
+            ");
 
-        if ($pkExists->count == 0) {
-            // Add a unique constraint on adset_external_id if it doesn't exist
-            DB::statement('ALTER TABLE cmis.ad_sets ADD CONSTRAINT ad_sets_adset_external_id_key UNIQUE (adset_external_id)');
+            if (!$constraintExists) {
+                DB::statement('ALTER TABLE cmis.ad_sets ADD CONSTRAINT ad_sets_adset_external_id_key UNIQUE (adset_external_id)');
+            }
+        } catch (\Exception $e) {
+            // If constraint already exists, ignore
+            if (!str_contains($e->getMessage(), 'already exists')) {
+                throw $e;
+            }
         }
 
         // Add Foreign Key Constraints

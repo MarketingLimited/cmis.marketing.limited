@@ -87,6 +87,16 @@ return new class extends Migration
         $isParallelTest = env('TEST_TOKEN') !== null;
 
         if (!$isParallelTest) {
+            // Ensure Laravel migrations table exists in public schema BEFORE dropping tables
+            // This prevents PostgreSQL from creating it in the wrong schema (cmis)
+            DB::unprepared("
+                CREATE TABLE IF NOT EXISTS public.migrations (
+                    id SERIAL PRIMARY KEY,
+                    migration VARCHAR(255) NOT NULL,
+                    batch INTEGER NOT NULL
+                )
+            ");
+
             // Only drop tables in non-parallel environments
             // Exclude 'migrations' table as Laravel manages it
             $schemas = ['public', 'cmis', 'cmis_ai_analytics', 'cmis_analytics', 'cmis_audit', 'cmis_dev',
@@ -110,6 +120,10 @@ return new class extends Migration
                     // Ignore errors during drop (tables may not exist)
                 }
             }
+
+            // Drop cmis.migrations if it exists (wrong schema)
+            // Laravel should only use public.migrations
+            DB::unprepared("DROP TABLE IF EXISTS cmis.migrations CASCADE");
         }
 
         $sql = file_get_contents(database_path('sql/complete_tables.sql'));

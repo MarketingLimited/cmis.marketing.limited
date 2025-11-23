@@ -7,6 +7,12 @@ use Illuminate\Support\Str;
 return new class extends Migration
 {
     /**
+     * Disable automatic transactions for this migration
+     * We handle transactions manually for better control
+     */
+    public $withinTransaction = false;
+
+    /**
      * Run the migrations.
      *
      * ⚠️ CRITICAL WARNING ⚠️
@@ -31,29 +37,28 @@ return new class extends Migration
         echo "Press Ctrl+C within 10 seconds to abort...\n\n";
         sleep(10);
 
+        echo "Step 1/10: Checking current schema...\n";
+        $currentType = DB::selectOne("
+            SELECT data_type
+            FROM information_schema.columns
+            WHERE table_schema = 'cmis'
+            AND table_name = 'users'
+            AND column_name = 'user_id'
+        ");
+
+        if (!$currentType) {
+            echo "✗ Cannot find users.user_id column. Migration cannot proceed.\n";
+            return;
+        }
+
+        if ($currentType->data_type === 'uuid') {
+            echo "✓ Users table already uses UUID. Skipping migration.\n";
+            return;
+        }
+
         DB::beginTransaction();
 
         try {
-            echo "Step 1/10: Checking current schema...\n";
-            $currentType = DB::selectOne("
-                SELECT data_type
-                FROM information_schema.columns
-                WHERE table_schema = 'cmis'
-                AND table_name = 'users'
-                AND column_name = 'user_id'
-            ");
-
-            if (!$currentType) {
-                echo "✗ Cannot find users.user_id column. Migration cannot proceed.\n";
-                DB::rollback();
-                return;
-            }
-
-            if ($currentType->data_type === 'uuid') {
-                echo "✓ Users table already uses UUID. Skipping migration.\n";
-                DB::commit();
-                return;
-            }
 
             echo "Current type: {$currentType->data_type}\n";
 

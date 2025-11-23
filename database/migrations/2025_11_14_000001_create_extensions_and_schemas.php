@@ -16,6 +16,16 @@ return new class extends Migration
 {
     public function up(): void
     {
+        // CRITICAL: Ensure public.migrations exists BEFORE creating other schemas
+        // This prevents PostgreSQL from creating migrations table in wrong schema
+        DB::unprepared("
+            CREATE TABLE IF NOT EXISTS public.migrations (
+                id SERIAL PRIMARY KEY,
+                migration VARCHAR(255) NOT NULL,
+                batch INTEGER NOT NULL
+            )
+        ");
+
         // PostgreSQL Extensions
         DB::unprepared('CREATE EXTENSION IF NOT EXISTS "uuid-ossp"');
         DB::unprepared('CREATE EXTENSION IF NOT EXISTS pgcrypto');
@@ -46,6 +56,9 @@ return new class extends Migration
         foreach ($schemas as $schema) {
             DB::unprepared("CREATE SCHEMA IF NOT EXISTS {$schema}");
         }
+
+        // Set search_path explicitly to ensure migrations table is found
+        DB::unprepared("SET search_path TO public,cmis,cmis_refactored,cmis_analytics,cmis_ai_analytics,cmis_ops");
     }
 
     public function down(): void
