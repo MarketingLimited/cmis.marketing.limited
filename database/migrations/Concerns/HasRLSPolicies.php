@@ -60,6 +60,9 @@ trait HasRLSPolicies
         // Enable Row-Level Security
         DB::statement("ALTER TABLE {$tableName} ENABLE ROW LEVEL SECURITY");
 
+        // Drop existing policy if it exists to make this idempotent
+        DB::statement("DROP POLICY IF EXISTS {$policyName} ON {$tableName}");
+
         // Create organization isolation policy
         DB::statement("
             CREATE POLICY {$policyName} ON {$tableName}
@@ -83,6 +86,9 @@ trait HasRLSPolicies
         string $policyName = 'custom_policy'
     ): void {
         DB::statement("ALTER TABLE {$tableName} ENABLE ROW LEVEL SECURITY");
+
+        // Drop existing policy if it exists to make this idempotent
+        DB::statement("DROP POLICY IF EXISTS {$policyName} ON {$tableName}");
 
         DB::statement("
             CREATE POLICY {$policyName} ON {$tableName}
@@ -108,6 +114,10 @@ trait HasRLSPolicies
         string $orgColumn = 'org_id'
     ): void {
         DB::statement("ALTER TABLE {$tableName} ENABLE ROW LEVEL SECURITY");
+
+        // Drop existing policies if they exist to make this idempotent
+        DB::statement("DROP POLICY IF EXISTS org_select_policy ON {$tableName}");
+        DB::statement("DROP POLICY IF EXISTS org_modify_policy ON {$tableName}");
 
         // Policy for SELECT operations
         DB::statement("
@@ -166,6 +176,9 @@ trait HasRLSPolicies
     {
         DB::statement("ALTER TABLE {$tableName} ENABLE ROW LEVEL SECURITY");
 
+        // Drop existing policy if it exists to make this idempotent
+        DB::statement("DROP POLICY IF EXISTS allow_all ON {$tableName}");
+
         DB::statement("
             CREATE POLICY allow_all ON {$tableName}
             USING (true)
@@ -186,6 +199,9 @@ trait HasRLSPolicies
         string $tableName,
         string $orgColumn = 'org_id'
     ): void {
+        // Drop existing policy if it exists to make this idempotent
+        DB::statement("DROP POLICY IF EXISTS admin_bypass ON {$tableName}");
+
         DB::statement("
             CREATE POLICY admin_bypass ON {$tableName}
             USING (

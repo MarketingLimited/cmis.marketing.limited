@@ -98,13 +98,12 @@ return new class extends Migration
         $this->enableRLS('cmis.automation_workflows');
         $this->enableCustomRLS(
             'cmis.automation_workflows',
-            "org_id IS NULL OR org_id = current_setting('app.current_org_id')::uuid)
-                    ");
-            
-                    // ===== Automation Schedules Table =====
-                    Schema::create('cmis.automation_schedules', function (Blueprint $table) {
-                        $table->uuid('schedule_id')->primary()->default(DB::raw('gen_random_uuid("
+            "org_id IS NULL OR org_id = current_setting('app.current_org_id')::uuid"
         );
+
+        // ===== Automation Schedules Table =====
+        Schema::create('cmis.automation_schedules', function (Blueprint $table) {
+            $table->uuid('schedule_id')->primary()->default(DB::raw('gen_random_uuid()'));
             $table->uuid('org_id')->index();
             $table->uuid('rule_id');
             $table->string('frequency', 50); // once, hourly, daily, weekly, monthly, custom

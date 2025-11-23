@@ -15,6 +15,11 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Skip if platform_connections already exists (created by earlier migration)
+        if (Schema::hasTable('cmis.platform_connections')) {
+            return;
+        }
+
         // ===== Platform Connections Table =====
         Schema::create('cmis.platform_connections', function (Blueprint $table) {
             $table->uuid('connection_id')->primary()->default(DB::raw('gen_random_uuid()'));

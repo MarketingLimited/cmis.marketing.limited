@@ -40,13 +40,12 @@ return new class extends Migration
         $this->enableRLS('cmis.dashboard_templates');
         $this->enableCustomRLS(
             'cmis.dashboard_templates',
-            "org_id IS NULL OR org_id = current_setting('app.current_org_id')::uuid)
-                    ");
-            
-                    // ===== Dashboard Widgets Table =====
-                    Schema::create('cmis.dashboard_widgets', function (Blueprint $table) {
-                        $table->uuid('widget_id')->primary()->default(DB::raw('gen_random_uuid("
+            "org_id IS NULL OR org_id = current_setting('app.current_org_id')::uuid"
         );
+
+        // ===== Dashboard Widgets Table =====
+        Schema::create('cmis.dashboard_widgets', function (Blueprint $table) {
+            $table->uuid('widget_id')->primary()->default(DB::raw('gen_random_uuid()'));
             $table->uuid('org_id')->index();
             $table->uuid('user_id'); // Owner of the widget
             $table->uuid('dashboard_id')->nullable(); // If part of a saved dashboard

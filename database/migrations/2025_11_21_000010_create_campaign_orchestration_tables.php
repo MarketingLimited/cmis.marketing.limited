@@ -43,13 +43,12 @@ return new class extends Migration
         $this->enableRLS('cmis.campaign_templates');
         $this->enableCustomRLS(
             'cmis.campaign_templates',
-            "org_id IS NULL OR org_id = current_setting('app.current_org_id')::uuid)
-                    ");
-            
-                    // ===== Campaign Orchestrations Table =====
-                    Schema::create('cmis.campaign_orchestrations', function (Blueprint $table) {
-                        $table->uuid('orchestration_id')->primary()->default(DB::raw('gen_random_uuid("
+            "org_id IS NULL OR org_id = current_setting('app.current_org_id')::uuid"
         );
+
+        // ===== Campaign Orchestrations Table =====
+        Schema::create('cmis.campaign_orchestrations', function (Blueprint $table) {
+            $table->uuid('orchestration_id')->primary()->default(DB::raw('gen_random_uuid()'));
             $table->uuid('org_id')->index();
             $table->uuid('template_id')->nullable();
             $table->uuid('master_campaign_id')->nullable(); // Link to cmis.campaigns

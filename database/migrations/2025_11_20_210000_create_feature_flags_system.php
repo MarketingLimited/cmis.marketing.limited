@@ -43,8 +43,8 @@ return new class extends Migration
         DB::statement("COMMENT ON COLUMN cmis.feature_flags.scope_type IS 'Level of the flag: system (global), organization (per-tenant), platform (per-integration), user (per-user)'");
         DB::statement("COMMENT ON COLUMN cmis.feature_flags.value IS 'Boolean flag status: true = enabled, false = disabled'");
 
-        // Enable Row-Level Security
-        $this->enableRLS('cmis.feature_flags');
+        // Enable Row-Level Security (without default policy - using custom policies below)
+        DB::statement("ALTER TABLE cmis.feature_flags ENABLE ROW LEVEL SECURITY");
 
         // RLS Policy: System-level flags are visible to all
         DB::statement("
@@ -113,8 +113,8 @@ return new class extends Migration
 
         DB::statement("COMMENT ON TABLE cmis.feature_flag_overrides IS 'User or org-specific overrides for feature flags (beta access, premium features)'");
 
-        // Enable RLS on overrides
-        $this->enableRLS('cmis.feature_flag_overrides');
+        // Enable RLS on overrides (without default policy - using custom policies below)
+        DB::statement("ALTER TABLE cmis.feature_flag_overrides ENABLE ROW LEVEL SECURITY");
 
         // RLS Policy: Users can see their own overrides
         DB::statement("
@@ -169,8 +169,8 @@ return new class extends Migration
 
         DB::statement("COMMENT ON TABLE cmis.feature_flag_audit_log IS 'Audit trail for all feature flag changes (compliance and debugging)'");
 
-        // Enable RLS on audit log
-        $this->enableRLS('cmis.feature_flag_audit_log');
+        // Enable RLS on audit log (without default policy - using custom policies below)
+        DB::statement("ALTER TABLE cmis.feature_flag_audit_log ENABLE ROW LEVEL SECURITY");
 
         // RLS Policy: All authenticated users can read audit logs (for transparency)
         DB::statement("

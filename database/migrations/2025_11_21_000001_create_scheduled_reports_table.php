@@ -15,6 +15,11 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Drop existing tables if they exist (for clean re-runs)
+        Schema::dropIfExists('cmis.report_templates');
+        Schema::dropIfExists('cmis.report_execution_logs');
+        Schema::dropIfExists('cmis.scheduled_reports');
+
         // Create scheduled_reports table
         Schema::create('cmis.scheduled_reports', function (Blueprint $table) {
             $table->uuid('schedule_id')->primary();

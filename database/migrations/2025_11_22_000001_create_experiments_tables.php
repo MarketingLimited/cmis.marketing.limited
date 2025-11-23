@@ -15,6 +15,11 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Skip if experiments table already exists (created by earlier migration)
+        if (Schema::hasTable('cmis.experiments')) {
+            return;
+        }
+
         // Create experiments table
         Schema::create('cmis.experiments', function (Blueprint $table) {
             $table->uuid('experiment_id')->primary();
