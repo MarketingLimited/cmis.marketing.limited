@@ -8,7 +8,8 @@ use App\Models\BaseModel;
 
 class CognitiveManifest extends BaseModel
 {
-    
+    use HasOrganization;
+
     protected $table = 'cmis.cognitive_manifest';
     protected $primaryKey = 'manifest_id';
     protected $fillable = [

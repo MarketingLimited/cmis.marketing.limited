@@ -9,8 +9,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class PerformanceMetric extends BaseModel
 {
-    
-    protected $table = 'cmis.performance_metrics';
+    use HasOrganization;
+protected $table = 'cmis.performance_metrics';
 
     protected $primaryKey = 'metric_id';
 

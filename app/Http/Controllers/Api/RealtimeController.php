@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Concerns\ApiResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Redis;
@@ -18,6 +19,8 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
  */
 class RealtimeController extends Controller
 {
+    use ApiResponse;
+
     /**
      * Stream real-time updates for current organization.
      *

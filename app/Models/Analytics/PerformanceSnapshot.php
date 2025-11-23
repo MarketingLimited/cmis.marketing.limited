@@ -11,8 +11,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class PerformanceSnapshot extends BaseModel
 {
-    
-    
+    use HasOrganization;
 
     /**
      * Get the campaign that this snapshot belongs to.

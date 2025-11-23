@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Concerns\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Route;
@@ -37,6 +38,8 @@ use Illuminate\Support\Facades\Route;
  */
 class SwaggerController extends Controller
 {
+    use ApiResponse;
+
     /**
      * Display Swagger UI for interactive API documentation.
      */

@@ -8,8 +8,8 @@ use App\Models\BaseModel;
 
 class AdMetric extends BaseModel
 {
-    
-    protected $table = 'cmis.ad_metrics';
+    use HasOrganization;
+protected $table = 'cmis.ad_metrics';
     protected $primaryKey = 'id';
     public $timestamps = false;
 

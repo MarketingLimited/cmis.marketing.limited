@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 class Notification extends BaseModel
 {
-    use SoftDeletes, HasUuids;
+    use HasOrganization, SoftDeletes, HasUuids;
 
     protected $table = 'cmis.notifications';
     protected $primaryKey = 'notification_id';

@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ScheduledPost extends BaseModel
 {
-    
+    use HasOrganization;
 
     protected $table = 'cmis.scheduled_posts';
 

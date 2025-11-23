@@ -2,6 +2,8 @@
 
 namespace App\Models\Integration;
 
+use App\Models\Concerns\HasOrganization;
+
 use App\Models\Core\Integration as CoreIntegration;
 
 class Integration extends CoreIntegration

@@ -8,8 +8,8 @@ use App\Models\BaseModel;
 
 class UserSession extends BaseModel
 {
-    
-    protected $table = 'cmis.user_sessions';
+    use HasOrganization;
+protected $table = 'cmis.user_sessions';
     protected $primaryKey = 'session_id';
     public $timestamps = false;
 
