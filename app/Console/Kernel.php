@@ -42,6 +42,9 @@ class Kernel extends ConsoleKernel
         \App\Console\Commands\VectorEmbeddings\ProcessEmbeddingQueueCommand::class,
         \App\Console\Commands\VectorEmbeddings\HybridSearchCommand::class,
         \App\Console\Commands\VectorEmbeddings\SystemStatusCommand::class,
+
+        // Marketing Automation Commands
+        \App\Console\Commands\ProcessAutomationSchedulesCommand::class,
     ];
 
     protected function schedule(Schedule $schedule): void
@@ -159,6 +162,22 @@ class Kernel extends ConsoleKernel
             ->at('04:00')
             ->onSuccess(function () {
                 Log::info('✅ Cache cleanup completed');
+            });
+
+        // ==========================================
+        // 🤖 Marketing Automation (NEW)
+        // ==========================================
+
+        // Process automation schedules every 5 minutes
+        $schedule->command('automation:process-schedules --limit=50')
+            ->everyFiveMinutes()
+            ->withoutOverlapping()
+            ->runInBackground()
+            ->onSuccess(function () {
+                Log::info('✅ Automation schedules processed successfully');
+            })
+            ->onFailure(function () {
+                Log::error('❌ Failed to process automation schedules');
             });
 
         // ==========================================
