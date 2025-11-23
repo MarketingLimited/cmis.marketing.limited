@@ -13,6 +13,8 @@ class OrgsSeeder extends Seeder
      */
     public function run(): void
     {
+        // Bypass RLS for seeding
+        DB::statement('SET LOCAL app.is_admin = true');
         DB::statement('SET CONSTRAINTS ALL DEFERRED');
 
         $orgs = [

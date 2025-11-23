@@ -13,9 +13,18 @@ class RolesSeeder extends Seeder
      */
     public function run(): void
     {
-        // Bypass RLS for seeding system roles (org_id = null)
-        DB::statement('SET LOCAL app.is_admin = true');
         DB::statement('SET CONSTRAINTS ALL DEFERRED');
+
+        // Get PDO for prepared statements
+        $pdo = DB::connection()->getPdo();
+
+        // Set autocommit mode to ensure each statement commits immediately
+        $pdo->setAttribute(\PDO::ATTR_AUTOCOMMIT, 1);
+
+        // Temporarily disable RLS for seeding (system roles have org_id = null)
+        $pdo->exec('ALTER TABLE cmis.roles DISABLE ROW LEVEL SECURITY');
+
+        $now = now()->toDateTimeString();
 
         $roles = [
             // System Roles (org_id = null)
@@ -27,7 +36,7 @@ class RolesSeeder extends Seeder
                 'description' => 'Organization owner with full permissions',
                 'is_system' => true,
                 'is_active' => true,
-                'created_at' => now(),
+                'created_at' => $now,
                 'created_by' => null,
                 'deleted_at' => null,
                 'provider' => null,
@@ -40,7 +49,7 @@ class RolesSeeder extends Seeder
                 'description' => 'Administrator with management permissions',
                 'is_system' => true,
                 'is_active' => true,
-                'created_at' => now(),
+                'created_at' => $now,
                 'created_by' => null,
                 'deleted_at' => null,
                 'provider' => null,
@@ -53,7 +62,7 @@ class RolesSeeder extends Seeder
                 'description' => 'Can manage campaigns, content, and creative assets',
                 'is_system' => true,
                 'is_active' => true,
-                'created_at' => now(),
+                'created_at' => $now,
                 'created_by' => null,
                 'deleted_at' => null,
                 'provider' => null,
@@ -66,7 +75,7 @@ class RolesSeeder extends Seeder
                 'description' => 'Can create and edit content and social posts',
                 'is_system' => true,
                 'is_active' => true,
-                'created_at' => now(),
+                'created_at' => $now,
                 'created_by' => null,
                 'deleted_at' => null,
                 'provider' => null,
@@ -79,7 +88,7 @@ class RolesSeeder extends Seeder
                 'description' => 'Can manage social media accounts and posts',
                 'is_system' => true,
                 'is_active' => true,
-                'created_at' => now(),
+                'created_at' => $now,
                 'created_by' => null,
                 'deleted_at' => null,
                 'provider' => null,
@@ -92,7 +101,7 @@ class RolesSeeder extends Seeder
                 'description' => 'Can view analytics and create reports',
                 'is_system' => true,
                 'is_active' => true,
-                'created_at' => now(),
+                'created_at' => $now,
                 'created_by' => null,
                 'deleted_at' => null,
                 'provider' => null,
@@ -105,16 +114,42 @@ class RolesSeeder extends Seeder
                 'description' => 'Read-only access to campaigns and content',
                 'is_system' => true,
                 'is_active' => true,
-                'created_at' => now(),
+                'created_at' => $now,
                 'created_by' => null,
                 'deleted_at' => null,
                 'provider' => null,
             ],
         ];
 
+        // Use prepared statement for secure insertion
+        $stmt = $pdo->prepare("
+            INSERT INTO cmis.roles (role_id, org_id, role_name, role_code, description, is_system, is_active, created_at, created_by, deleted_at, provider)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ");
+
         foreach ($roles as $role) {
-            DB::table('cmis.roles')->insert($role);
+            $result = $stmt->execute([
+                $role['role_id'],
+                $role['org_id'],
+                $role['role_name'],
+                $role['role_code'],
+                $role['description'],
+                $role['is_system'],
+                $role['is_active'],
+                $role['created_at'],
+                $role['created_by'],
+                $role['deleted_at'],
+                $role['provider'],
+            ]);
+
+            if (!$result) {
+                $error = $stmt->errorInfo();
+                $this->command->error("Failed to insert role {$role['role_name']}: " . $error[2]);
+            }
         }
+
+        // Re-enable RLS after seeding
+        $pdo->exec('ALTER TABLE cmis.roles ENABLE ROW LEVEL SECURITY');
 
         $this->command->info('Roles seeded successfully!');
     }

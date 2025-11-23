@@ -72,6 +72,7 @@ class DemoDataSeeder extends Seeder
         $this->roleIds = DB::table('cmis.roles')->pluck('role_id', 'role_code')->toArray();
         $this->channelIds = DB::table('public.channels')->pluck('channel_id', 'code')->toArray();
 
+
         // Load channel formats
         $formats = DB::table('public.channel_formats')
             ->join('public.channels', 'channel_formats.channel_id', '=', 'channels.channel_id')

@@ -10,6 +10,11 @@ class DatabaseSeeder extends Seeder
     use WithoutModelEvents;
 
     /**
+     * Indicates if the seeder should run in a transaction.
+     */
+    public $withinTransaction = false;
+
+    /**
      * Seed the application's database with reference data and comprehensive demo data.
      *
      * Seeding order follows foreign key dependencies:
@@ -40,8 +45,8 @@ class DatabaseSeeder extends Seeder
         $this->call([
             OrgsSeeder::class,
             PermissionsSeeder::class,
+            UsersSeeder::class, // Users must be seeded before Roles (TRUNCATE CASCADE deletes roles)
             RolesSeeder::class,
-            UsersSeeder::class,
         ]);
 
         $this->command->newLine();

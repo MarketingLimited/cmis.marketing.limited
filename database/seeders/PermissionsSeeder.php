@@ -15,6 +15,9 @@ class PermissionsSeeder extends Seeder
      */
     public function run(): void
     {
+        // Bypass RLS for seeding
+        DB::statement('SET LOCAL app.is_admin = true');
+
         $this->command->info('Seeding CMIS permissions...');
 
         // Define all permissions by category
