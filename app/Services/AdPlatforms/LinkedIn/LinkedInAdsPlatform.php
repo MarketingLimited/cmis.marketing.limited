@@ -5,6 +5,7 @@ namespace App\Services\AdPlatforms\LinkedIn;
 use App\Services\AdPlatforms\AbstractAdPlatform;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 
 /**
  * LinkedIn Ads Platform Service
@@ -12,12 +13,15 @@ use Illuminate\Support\Facades\Log;
  * Complete implementation of LinkedIn Marketing API v2
  * Supports Sponsored Content, Lead Gen Forms, and comprehensive B2B targeting
  *
+ * IMPORTANT: All database operations use RLS context for multi-tenancy
+ *
  * @see https://docs.microsoft.com/en-us/linkedin/marketing/
  */
 class LinkedInAdsPlatform extends AbstractAdPlatform
 {
     protected string $accountId;
     protected string $accountUrn;
+    protected string $accessToken;
 
     protected function getConfig(): array
     {
@@ -40,6 +44,42 @@ class LinkedInAdsPlatform extends AbstractAdPlatform
         parent::__construct($integration);
         $this->accountId = $integration->metadata['account_id'] ?? '';
         $this->accountUrn = 'urn:li:sponsoredAccount:' . $this->accountId;
+
+        // Decrypt access token from integration
+        $this->accessToken = !empty($integration->access_token)
+            ? decrypt($integration->access_token)
+            : ($integration->metadata['access_token'] ?? '');
+    }
+
+    /**
+     * Initialize RLS context for multi-tenancy
+     * CRITICAL: Must be called before any database operations
+     */
+    protected function initRLSContext(): void
+    {
+        DB::statement(
+            'SELECT cmis.init_transaction_context(?, ?)',
+            [auth()->id() ?? config('cmis.system_user_id'), $this->integration->org_id]
+        );
+    }
+
+    /**
+     * Get authorization headers with access token
+     */
+    protected function getAuthHeaders(): array
+    {
+        return [
+            'Authorization' => 'Bearer ' . $this->accessToken,
+            'LinkedIn-Version' => '202401',
+        ];
+    }
+
+    /**
+     * Override parent to add LinkedIn-specific headers
+     */
+    protected function getDefaultHeaders(): array
+    {
+        return array_merge(parent::getDefaultHeaders(), $this->getAuthHeaders());
     }
 
     /**
@@ -778,18 +818,18 @@ class LinkedInAdsPlatform extends AbstractAdPlatform
     /**
      * Get available campaign objectives
      *
-     * @return array List of available objectives
+     * @return array List of available objectives (keys only - use translations for labels)
      */
     public function getAvailableObjectives(): array
     {
         return [
-            'BRAND_AWARENESS' => 'الوعي بالعلامة التجارية',
-            'WEBSITE_VISITS' => 'زيارات الموقع',
-            'ENGAGEMENT' => 'التفاعل',
-            'VIDEO_VIEWS' => 'مشاهدات الفيديو',
-            'LEAD_GENERATION' => 'جذب العملاء المحتملين',
-            'WEBSITE_CONVERSIONS' => 'تحويلات الموقع',
-            'JOB_APPLICANTS' => 'المتقدمين للوظائف',
+            'BRAND_AWARENESS',
+            'WEBSITE_VISITS',
+            'ENGAGEMENT',
+            'VIDEO_VIEWS',
+            'LEAD_GENERATION',
+            'WEBSITE_CONVERSIONS',
+            'JOB_APPLICANTS',
         ];
     }
 
@@ -867,61 +907,90 @@ class LinkedInAdsPlatform extends AbstractAdPlatform
 
     /**
      * Refresh OAuth access token
+     * FIXED: Now properly encrypts tokens and uses RLS context
      *
      * @return array New access token or error
      */
     public function refreshAccessToken(): array
     {
         try {
+            // Initialize RLS context for database operations
+            $this->initRLSContext();
+
             $refreshToken = $this->integration->metadata['refresh_token'] ?? '';
 
             if (empty($refreshToken)) {
+                Log::warning('No refresh token available for LinkedIn integration', [
+                    'integration_id' => $this->integration->integration_id,
+                ]);
+
                 return [
                     'success' => false,
                     'error' => 'No refresh token available',
                 ];
             }
 
-            $url = 'https://www.linkedin.com/oauth/v2/accessToken';
-
-            $response = $this->makeRequest('POST', $url, [
+            // Use form-encoded request for OAuth token endpoint
+            $response = \Http::asForm()->post('https://www.linkedin.com/oauth/v2/accessToken', [
                 'grant_type' => 'refresh_token',
                 'refresh_token' => $refreshToken,
                 'client_id' => config('services.linkedin.client_id'),
                 'client_secret' => config('services.linkedin.client_secret'),
             ]);
 
-            if (isset($response['access_token'])) {
-                $newAccessToken = $response['access_token'];
-                $expiresIn = $response['expires_in'];
-
-                // Update integration with new token
-                $metadata = $this->integration->metadata;
-                $metadata['access_token'] = $newAccessToken;
-
-                if (isset($response['refresh_token'])) {
-                    $metadata['refresh_token'] = $response['refresh_token'];
-                }
-
-                $metadata['expires_at'] = now()->addSeconds($expiresIn)->toDateTimeString();
-
-                $this->integration->update(['metadata' => $metadata]);
-                $this->accessToken = $newAccessToken;
+            if ($response->failed()) {
+                $error = $response->json('error_description') ?? 'Failed to refresh token';
+                Log::error('LinkedIn token refresh failed', [
+                    'error' => $error,
+                    'status' => $response->status(),
+                ]);
 
                 return [
-                    'success' => true,
-                    'access_token' => $newAccessToken,
-                    'expires_in' => $expiresIn,
+                    'success' => false,
+                    'error' => $error,
                 ];
             }
 
+            $data = $response->json();
+            $newAccessToken = $data['access_token'];
+            $expiresIn = $data['expires_in'];
+
+            // Update integration with ENCRYPTED new token
+            $metadata = $this->integration->metadata;
+
+            // Update refresh token if provided (rolling refresh)
+            if (isset($data['refresh_token'])) {
+                $metadata['refresh_token'] = $data['refresh_token'];
+            }
+
+            $metadata['token_refreshed_at'] = now()->toDateTimeString();
+            $metadata['token_expires_at'] = now()->addSeconds($expiresIn)->toDateTimeString();
+
+            // Store encrypted access token in proper column
+            $this->integration->update([
+                'access_token' => encrypt($newAccessToken),
+                'token_expires_at' => now()->addSeconds($expiresIn),
+                'metadata' => $metadata,
+            ]);
+
+            // Update instance variable
+            $this->accessToken = $newAccessToken;
+
+            Log::info('LinkedIn access token refreshed successfully', [
+                'integration_id' => $this->integration->integration_id,
+                'expires_in' => $expiresIn,
+            ]);
+
             return [
-                'success' => false,
-                'error' => $response['error_description'] ?? 'Failed to refresh token',
+                'success' => true,
+                'access_token' => $newAccessToken,
+                'expires_in' => $expiresIn,
+                'expires_at' => now()->addSeconds($expiresIn)->toIso8601String(),
             ];
         } catch (\Exception $e) {
-            Log::error('LinkedIn refreshAccessToken failed', [
+            Log::error('LinkedIn refreshAccessToken exception', [
                 'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
             ]);
 
             return [
