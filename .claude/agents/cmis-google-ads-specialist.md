@@ -17,13 +17,34 @@ model: sonnet
 
 This guide explains:
 - ✅ **Correct Order:** What to do first, second, third...
-- ✅ **Database Schema:** Where tokens are stored (`cmis_social.social_accounts`)
+- ✅ **Database Schema:** Where tokens are stored (`cmis.integrations` table)
 - ✅ **Token Management:** How to retrieve and use encrypted tokens
 - ✅ **Multi-Tenancy:** Each org has its own platform accounts
 - ✅ **RLS Context:** How to set organization context
 - ✅ **Complete Workflow:** From OAuth to campaign creation
 
 **Without understanding this workflow, your implementation WILL be incorrect!**
+
+---
+
+## 🎯 IMPLEMENTATION STATUS
+
+**IMPORTANT:** Google Ads platform service is FULLY IMPLEMENTED in CMIS!
+
+**Current Status:**
+- ✅ **GoogleAdsPlatform service IMPLEMENTED** (`app/Services/AdPlatforms/Google/GoogleAdsPlatform.php` - 2,400+ lines)
+- ✅ **Integration model EXISTS** (`App\Models\Core\Integration` - OAuth tokens, account management)
+- ✅ **AbstractAdPlatform base class** (retry logic, rate limiting, error handling)
+- ✅ **Campaign management** (Search, Display, Shopping, Video, Performance Max, Discovery)
+- ✅ **Ad Groups, Keywords, Ads management** fully implemented
+- ✅ **Unified metrics system** EXISTS for storing campaign data
+
+**Use this agent to:**
+- Understand the EXISTING Google Ads implementation
+- Extend current Google Ads functionality
+- Debug Google Ads API issues
+- Implement additional campaign types or features
+- Follow established patterns for new Ad Platform integrations
 
 ---
 
@@ -121,17 +142,20 @@ grep -r "googleads.googleapis.com\|GoogleAdsServiceClient\|google.*ads.*version"
 ```sql
 -- Discover Google Ads integrations
 SELECT
-    id,
+    integration_id,
+    org_id,
     platform,
-    customer_id,
+    account_id,
     is_active,
-    oauth_token_expires_at,
+    token_expires_at,
+    last_synced_at,
+    sync_status,
     created_at
 FROM cmis.integrations
 WHERE platform = 'google'
 ORDER BY created_at DESC;
 
--- Check API credentials structure
+-- Check integrations table structure
 SELECT column_name, data_type
 FROM information_schema.columns
 WHERE table_schema = 'cmis'
@@ -306,7 +330,7 @@ find app/Jobs -name "*Feed*" | xargs grep -l "google\|shopping"
 SELECT table_name
 FROM information_schema.tables
 WHERE table_schema LIKE 'cmis%'
-  AND table_name LIKE '%feed%' OR table_name LIKE '%product%'
+  AND (table_name LIKE '%feed%' OR table_name LIKE '%product%')
 ORDER BY table_name;
 
 -- Check feed metadata structure
@@ -386,6 +410,29 @@ grep -r "rate.*limit\|throttle\|quota" app/Http/Middleware/ app/Services/AdPlatf
 
 ## 🏗️ GOOGLE ADS DOMAIN PATTERNS
 
+### 🏛️ Platform Integration Architecture
+
+**CMIS Ad Platforms use the `cmis.integrations` table for ALL platform OAuth and account management.**
+
+**Table:** `cmis.integrations`
+**Model:** `App\Models\Core\Integration`
+**Features:**
+- OAuth token storage (encrypted)
+- Multi-tenancy via RLS
+- Platform-agnostic design
+- Sync status tracking
+- Rate limiting via AbstractAdPlatform
+
+**Supported Platforms:**
+- Google Ads (`platform = 'google'`)
+- Meta Ads (`platform = 'meta'`)
+- TikTok Ads (`platform = 'tiktok'`)
+- LinkedIn Ads (`platform = 'linkedin'`)
+- Twitter Ads (`platform = 'twitter'`)
+- Snapchat Ads (`platform = 'snapchat'`)
+
+---
+
 ### 🆕 Standardized Patterns (CMIS 2025-11-22)
 
 **ALWAYS use these standardized patterns in ALL Google Ads code:**
@@ -464,30 +511,59 @@ class CreateGoogleCampaignsTable extends Migration
 
 ### Pattern 1: Google Ads Connector Architecture
 
-**Base Pattern for Google Ads Integration:**
+**ACTUAL IMPLEMENTATION - Extends AbstractAdPlatform:**
 
 ```php
-namespace App\Services\AdPlatforms;
+namespace App\Services\AdPlatforms\Google;
 
-use Google\Ads\GoogleAds\Client as GoogleAdsClient;
-use App\Models\Integration;
+use App\Services\AdPlatforms\AbstractAdPlatform;
+use App\Models\Core\Integration;
+use Carbon\Carbon;
 
-class GoogleConnector extends AbstractAdPlatform
+/**
+ * Google Ads Platform Service - Complete Implementation
+ * File: app/Services/AdPlatforms/Google/GoogleAdsPlatform.php
+ */
+class GoogleAdsPlatform extends AbstractAdPlatform
 {
-    protected GoogleAdsClient $client;
-    protected Integration $integration;
+    protected string $apiVersion = 'v15';
+    protected string $apiBaseUrl = 'https://googleads.googleapis.com';
+    protected string $customerId;
 
+    /**
+     * Initialize Google Ads platform service
+     * AbstractAdPlatform constructor accepts Integration model
+     */
     public function __construct(Integration $integration)
     {
-        $this->integration = $integration;
-        $this->initializeClient();
+        parent::__construct($integration);
+        // Remove dashes from customer ID (123-456-7890 → 1234567890)
+        $this->customerId = str_replace('-', '', $integration->account_id);
     }
 
-    protected function initializeClient(): void
+    protected function getConfig(): array
     {
-        $this->client = new GoogleAdsClient([
-            'credentials' => $this->getDecryptedCredentials(),
+        return [
+            'api_version' => $this->apiVersion,
+            'api_base_url' => $this->apiBaseUrl,
             'developer_token' => config('services.google_ads.developer_token'),
+        ];
+    }
+
+    protected function getPlatformName(): string
+    {
+        return 'google';
+    }
+
+    /**
+     * Get default headers for Google Ads API
+     */
+    protected function getDefaultHeaders(): array
+    {
+        return array_merge(parent::getDefaultHeaders(), [
+            'Authorization' => 'Bearer ' . $this->integration->access_token,
+            'developer-token' => $this->config['developer_token'],
+            'login-customer-id' => $this->customerId,
         ]);
     }
 
@@ -522,26 +598,44 @@ class GoogleConnector extends AbstractAdPlatform
         ];
     }
 
-    public function refreshAccessToken(): string
+    public function refreshAccessToken(): bool
     {
         // Refresh expired access token using refresh token
-        $refreshToken = $this->integration->getDecryptedRefreshToken();
+        if (!$this->integration->refresh_token) {
+            Log::warning("No refresh token available for Google Ads integration {$this->integration->integration_id}");
+            return false;
+        }
 
-        $oauthClient = new \Google\Auth\OAuth2([
-            'clientId' => config('services.google_ads.client_id'),
-            'clientSecret' => config('services.google_ads.client_secret'),
-        ]);
+        try {
+            $response = Http::asForm()->post('https://oauth2.googleapis.com/token', [
+                'refresh_token' => $this->integration->refresh_token,
+                'client_id' => config('services.google_ads.client_id'),
+                'client_secret' => config('services.google_ads.client_secret'),
+                'grant_type' => 'refresh_token',
+            ]);
 
-        $oauthClient->setRefreshToken($refreshToken);
-        $accessToken = $oauthClient->fetchAccessTokenWithRefreshToken();
+            if ($response->failed()) {
+                Log::error("Google Ads token refresh failed: " . $response->body());
+                return false;
+            }
 
-        // Update integration with new token
-        $this->integration->update([
-            'access_token' => $this->encryptToken($accessToken['access_token']),
-            'expires_at' => now()->addSeconds($accessToken['expires_in']),
-        ]);
+            $tokens = $response->json();
 
-        return $accessToken['access_token'];
+            // Update Integration model with new token
+            $this->integration->update([
+                'access_token' => $tokens['access_token'], // Auto-encrypted via model cast
+                'token_expires_at' => now()->addSeconds($tokens['expires_in']),
+                'is_active' => true,
+            ]);
+
+            Log::info("Google Ads token refreshed successfully for integration {$this->integration->integration_id}");
+
+            return true;
+
+        } catch (\Exception $e) {
+            Log::error("Google Ads token refresh exception: {$e->getMessage()}");
+            return false;
+        }
     }
 }
 ```
