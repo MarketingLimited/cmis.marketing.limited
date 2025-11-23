@@ -148,7 +148,7 @@ class IntegrationController extends Controller
             $redirectUri = url("/api/integrations/{$platform}/callback");
 
             $params = http_build_query([
-                'client_id' => env(strtoupper($platform) . '_CLIENT_ID'),
+                'client_id' => config("services.{$platform}.client_id") ?? config("services.{$platform}.client_key"),
                 'redirect_uri' => $redirectUri,
                 'response_type' => 'code',
                 'scope' => implode(' ', $config['scopes']),
@@ -246,8 +246,8 @@ class IntegrationController extends Controller
 
         try {
             $response = Http::asForm()->post($config['token_url'], [
-                'client_id' => env(strtoupper($platform) . '_CLIENT_ID'),
-                'client_secret' => env(strtoupper($platform) . '_CLIENT_SECRET'),
+                'client_id' => config("services.{$platform}.client_id") ?? config("services.{$platform}.client_key"),
+                'client_secret' => config("services.{$platform}.client_secret"),
                 'code' => $code,
                 'redirect_uri' => $redirectUri,
                 'grant_type' => 'authorization_code',
