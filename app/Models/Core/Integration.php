@@ -75,6 +75,7 @@ class Integration extends BaseModel
     public function creator(): BelongsTo
     {
         return $this->belongsTo(\App\Models\User::class, 'created_by', 'user_id');
+    }
 
     /**
      * Get ad campaigns associated with this integration
@@ -84,6 +85,7 @@ class Integration extends BaseModel
     public function adCampaigns()
     {
         return $this->hasMany(\App\Models\AdPlatform\AdCampaign::class, 'integration_id', 'integration_id');
+    }
 
     /**
      * Get ad accounts associated with this integration
@@ -93,6 +95,7 @@ class Integration extends BaseModel
     public function adAccounts()
     {
         return $this->hasMany(\App\Models\AdPlatform\AdAccount::class, 'integration_id', 'integration_id');
+    }
 
     /**
      * Get ad sets associated with this integration
@@ -102,6 +105,7 @@ class Integration extends BaseModel
     public function adSets()
     {
         return $this->hasMany(\App\Models\AdPlatform\AdSet::class, 'integration_id', 'integration_id');
+    }
 
     /**
      * Get ad entities associated with this integration
@@ -111,6 +115,7 @@ class Integration extends BaseModel
     public function adEntities()
     {
         return $this->hasMany(\App\Models\AdPlatform\AdEntity::class, 'integration_id', 'integration_id');
+    }
 
     /**
      * Check if the access token is expired or about to expire
@@ -122,8 +127,10 @@ class Integration extends BaseModel
     {
         if (!$this->token_expires_at) {
             return false; // If no expiration set, assume token is valid
+        }
 
         return $this->token_expires_at->subMinutes($minutesBuffer)->isPast();
+    }
 
     /**
      * Check if token needs refresh (expired or about to expire)
@@ -133,6 +140,7 @@ class Integration extends BaseModel
     public function needsTokenRefresh(): bool
     {
         return $this->isTokenExpired(10); // Refresh if less than 10 minutes remaining
+    }
 
     /**
      * Refresh the access token using the refresh token
@@ -145,6 +153,7 @@ class Integration extends BaseModel
         if (!$this->refresh_token) {
             Log::warning("No refresh token available for integration {$this->integration_id}");
             return false;
+        }
 
         try {
             // Platform-specific token refresh logic
@@ -152,6 +161,7 @@ class Integration extends BaseModel
 
             if (!$tokenData) {
                 throw new \Exception("Token refresh failed");
+            }
 
             // Update the integration with new tokens
             $this->update([
@@ -175,6 +185,8 @@ class Integration extends BaseModel
             ]);
 
             return false;
+        }
+    }
 
     /**
      * Perform platform-specific token refresh
@@ -197,6 +209,7 @@ class Integration extends BaseModel
         if (!$url) {
             Log::warning("No refresh URL configured for provider: {$this->provider}");
             return null;
+        }
 
         // Platform-specific request parameters
         $params = $this->getRefreshTokenParams();
@@ -206,8 +219,10 @@ class Integration extends BaseModel
         if ($response->failed()) {
             Log::error("Token refresh HTTP request failed: " . $response->body());
             return null;
+        }
 
         return $response->json();
+    }
 
     /**
      * Get platform-specific parameters for token refresh
@@ -227,8 +242,10 @@ class Integration extends BaseModel
         if ($platformConfig) {
             $baseParams['client_id'] = $platformConfig['client_id'] ?? null;
             $baseParams['client_secret'] = $platformConfig['client_secret'] ?? null;
+        }
 
         return array_filter($baseParams); // Remove null values
+    }
 
     /**
      * Update sync status
