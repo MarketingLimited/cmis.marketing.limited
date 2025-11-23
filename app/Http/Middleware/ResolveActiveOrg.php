@@ -42,7 +42,7 @@ class ResolveActiveOrg
         }
 
         // Try to get active org from user's preference
-        $activeOrgId = $user->active_org_id;
+        $activeOrgId = $user->current_org_id;
 
         // If no active org set, try to get the first organization the user belongs to
         if (!$activeOrgId) {
@@ -51,7 +51,7 @@ class ResolveActiveOrg
                 $activeOrgId = $firstOrg->id;
 
                 // Optionally update user's active org
-                $user->active_org_id = $activeOrgId;
+                $user->current_org_id = $activeOrgId;
                 $user->save();
             }
         }

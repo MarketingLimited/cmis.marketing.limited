@@ -78,8 +78,8 @@
                     @endcan
 
                     @auth
-                    @if(auth()->user()->active_org_id)
-                    <a href="{{ route('orgs.team.index', auth()->user()->active_org_id) }}" class="sidebar-item flex items-center gap-3 px-4 py-3 rounded-xl {{ request()->routeIs('orgs.team.*') ? 'bg-white/20 text-white shadow-lg' : 'text-white/80 hover:bg-white/10' }}">
+                    @if(auth()->user()->current_org_id)
+                    <a href="{{ route('orgs.team.index', auth()->user()->current_org_id) }}" class="sidebar-item flex items-center gap-3 px-4 py-3 rounded-xl {{ request()->routeIs('orgs.team.*') ? 'bg-white/20 text-white shadow-lg' : 'text-white/80 hover:bg-white/10' }}">
                         <i class="fas fa-user-friends text-lg w-6"></i>
                         <span class="font-medium">إدارة الفريق</span>
                     </a>

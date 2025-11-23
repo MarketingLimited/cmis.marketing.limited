@@ -143,7 +143,7 @@ function orgSwitcher() {
                 this.organizations = data.organizations || [];
 
                 // Find and set active org
-                const activeOrgId = data.active_org_id;
+                const activeOrgId = data.current_org_id;
                 this.activeOrg = this.organizations.find(org => org.org_id === activeOrgId) || this.organizations[0];
 
             } catch (error) {

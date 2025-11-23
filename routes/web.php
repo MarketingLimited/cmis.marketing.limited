@@ -29,9 +29,11 @@ use Illuminate\Support\Facades\Route;
 // ==================== Guest Routes (Authentication) ====================
 Route::middleware('guest')->group(function () {
     Route::get('/login', [LoginController::class, 'create'])->name('login');
-    Route::post('/login', [LoginController::class, 'store']);
+    Route::post('/login', [LoginController::class, 'store'])
+        ->middleware('throttle:5,1'); // 5 login attempts per minute
     Route::get('/register', [RegisterController::class, 'create'])->name('register');
-    Route::post('/register', [RegisterController::class, 'store']);
+    Route::post('/register', [RegisterController::class, 'store'])
+        ->middleware('throttle:3,1'); // 3 registration attempts per minute
 });
 
 // ==================== Invitation Routes ====================
@@ -50,7 +52,7 @@ Route::get('/', function () {
     if (auth()->check()) {
         // If user has active org, go to dashboard; otherwise, choose org
         $user = auth()->user();
-        if ($user->active_org_id) {
+        if ($user->current_org_id) {
             return redirect()->route('dashboard.index');
         }
         return redirect()->route('orgs.index');

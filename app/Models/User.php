@@ -20,8 +20,8 @@ class User extends Authenticatable
     /**
      * Boot function from Laravel.
      */
-    protected static function boot()
-    : \Illuminate\Database\Eloquent\Relations\Relation {
+    protected static function boot(): void
+    {
         parent::boot();
 
         static::creating(function ($model) {
@@ -200,8 +200,8 @@ class User extends Authenticatable
      * @param mixed $arguments
      * @return bool
      */
-    public function can($ability, $arguments = [])
-    : \Illuminate\Database\Eloquent\Relations\Relation {
+    public function can($ability, $arguments = []): bool
+    {
         // If it's a CMIS permission, use the DB function
         if (str_starts_with($ability, 'cmis.')) {
             return $this->hasPermission($ability);

@@ -22,7 +22,7 @@ class InvitationFlowTest extends DuskTestCase
 
         $this->org = Org::factory()->create();
         $this->inviter = User::factory()->create([
-            'active_org_id' => $this->org->id,
+            'current_org_id' => $this->org->id,
         ]);
     }
 

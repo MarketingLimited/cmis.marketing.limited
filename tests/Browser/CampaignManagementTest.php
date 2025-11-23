@@ -24,7 +24,7 @@ class CampaignManagementTest extends DuskTestCase
 
         $this->org = Org::factory()->create();
         $this->user = User::factory()->create([
-            'active_org_id' => $this->org->id,
+            'current_org_id' => $this->org->id,
         ]);
     }
 

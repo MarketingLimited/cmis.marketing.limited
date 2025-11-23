@@ -21,7 +21,7 @@ class UserManagementTest extends DuskTestCase
 
         $this->org = Org::factory()->create();
         $this->admin = User::factory()->create([
-            'active_org_id' => $this->org->id,
+            'current_org_id' => $this->org->id,
             'role' => 'admin',
         ]);
     }
@@ -46,7 +46,7 @@ class UserManagementTest extends DuskTestCase
     public function test_users_list_displays_users(): void
     {
         User::factory()->count(5)->create([
-            'active_org_id' => $this->org->id,
+            'current_org_id' => $this->org->id,
         ]);
 
         $this->browse(function (Browser $browser) {
@@ -130,7 +130,7 @@ class UserManagementTest extends DuskTestCase
     public function test_admin_can_view_user_details(): void
     {
         $user = User::factory()->create([
-            'active_org_id' => $this->org->id,
+            'current_org_id' => $this->org->id,
             'name' => 'Test User Detail',
         ]);
 
@@ -150,7 +150,7 @@ class UserManagementTest extends DuskTestCase
     public function test_admin_can_navigate_to_edit_user(): void
     {
         $user = User::factory()->create([
-            'active_org_id' => $this->org->id,
+            'current_org_id' => $this->org->id,
         ]);
 
         $this->browse(function (Browser $browser) use ($user) {
@@ -169,7 +169,7 @@ class UserManagementTest extends DuskTestCase
     public function test_admin_can_edit_user(): void
     {
         $user = User::factory()->create([
-            'active_org_id' => $this->org->id,
+            'current_org_id' => $this->org->id,
         ]);
 
         $this->browse(function (Browser $browser) use ($user) {
@@ -189,7 +189,7 @@ class UserManagementTest extends DuskTestCase
     public function test_admin_can_change_user_role(): void
     {
         $user = User::factory()->create([
-            'active_org_id' => $this->org->id,
+            'current_org_id' => $this->org->id,
             'role' => 'member',
         ]);
 
@@ -209,7 +209,7 @@ class UserManagementTest extends DuskTestCase
     public function test_admin_can_deactivate_user(): void
     {
         $user = User::factory()->create([
-            'active_org_id' => $this->org->id,
+            'current_org_id' => $this->org->id,
         ]);
 
         $this->browse(function (Browser $browser) use ($user) {
@@ -232,7 +232,7 @@ class UserManagementTest extends DuskTestCase
     public function test_admin_can_search_users(): void
     {
         User::factory()->create([
-            'active_org_id' => $this->org->id,
+            'current_org_id' => $this->org->id,
             'name' => 'Searchable User',
         ]);
 
@@ -267,7 +267,7 @@ class UserManagementTest extends DuskTestCase
     public function test_users_list_pagination(): void
     {
         User::factory()->count(25)->create([
-            'active_org_id' => $this->org->id,
+            'current_org_id' => $this->org->id,
         ]);
 
         $this->browse(function (Browser $browser) {
@@ -284,7 +284,7 @@ class UserManagementTest extends DuskTestCase
     public function test_user_details_shows_activity(): void
     {
         $user = User::factory()->create([
-            'active_org_id' => $this->org->id,
+            'current_org_id' => $this->org->id,
         ]);
 
         $this->browse(function (Browser $browser) use ($user) {
@@ -301,7 +301,7 @@ class UserManagementTest extends DuskTestCase
     public function test_user_details_shows_campaigns(): void
     {
         $user = User::factory()->create([
-            'active_org_id' => $this->org->id,
+            'current_org_id' => $this->org->id,
         ]);
 
         $this->browse(function (Browser $browser) use ($user) {
