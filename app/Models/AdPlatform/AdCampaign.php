@@ -116,6 +116,14 @@ class AdCampaign extends BaseModel
     }
 
     /**
+     * Alias for adMetrics() for consistency
+     */
+    public function metrics()
+    {
+        return $this->adMetrics();
+    }
+
+    /**
      * Scope by organization
      */
     public function scopeForOrg($query, string $orgId)

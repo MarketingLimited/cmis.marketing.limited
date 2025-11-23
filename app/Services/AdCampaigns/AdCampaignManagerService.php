@@ -39,31 +39,31 @@ class AdCampaignManagerService
 
             // Store in database using Model
             $adCampaign = AdCampaign::create([
-                'ad_account_id' => $integration->account_id,
-                'campaign_id' => $campaignData['campaign_id'] ?? null,
-                'platform' => $integration->platform,
-                'campaign_name' => $campaignData['campaign_name'],
+                'org_id' => $integration->org_id,
+                'integration_id' => $integration->integration_id,
                 'campaign_external_id' => $result['campaign_id'],
-                'campaign_status' => $campaignData['status'] ?? 'PAUSED',
+                'name' => $campaignData['campaign_name'],
+                'status' => $campaignData['status'] ?? 'PAUSED',
                 'objective' => $campaignData['objective'],
-                'budget_type' => $campaignData['budget_type'] ?? 'daily',
-                'daily_budget' => $campaignData['daily_budget'] ?? null,
-                'lifetime_budget' => $campaignData['lifetime_budget'] ?? null,
-                'bid_strategy' => $campaignData['bid_strategy'] ?? null,
-                'start_time' => $campaignData['start_date'] ?? null,
-                'end_time' => $campaignData['end_date'] ?? null,
-                'targeting' => $campaignData['targeting'] ?? [],
-                'placements' => $campaignData['placements'] ?? [],
-                'optimization_goal' => $campaignData['optimization_goal'] ?? null,
-                'metadata' => $result['metadata'] ?? [],
-                'last_synced_at' => now(),
+                'budget' => $campaignData['daily_budget'] ?? $campaignData['lifetime_budget'] ?? null,
+                'start_date' => $campaignData['start_date'] ?? null,
+                'end_date' => $campaignData['end_date'] ?? null,
+                'provider' => $integration->platform,
+                'metrics' => [
+                    'targeting' => $campaignData['targeting'] ?? [],
+                    'placements' => $campaignData['placements'] ?? [],
+                    'optimization_goal' => $campaignData['optimization_goal'] ?? null,
+                    'budget_type' => $campaignData['budget_type'] ?? 'daily',
+                    'bid_strategy' => $campaignData['bid_strategy'] ?? null,
+                ],
+                'fetched_at' => now(),
             ]);
 
             DB::commit();
 
             Log::info('Ad campaign created successfully', [
                 'platform' => $integration->platform,
-                'campaign_id' => $adCampaign->ad_campaign_id,
+                'campaign_id' => $adCampaign->id,
                 'external_id' => $result['campaign_id'],
             ]);
 
@@ -125,7 +125,7 @@ class AdCampaignManagerService
 
             Log::info('Ad campaign updated successfully', [
                 'platform' => $integration->platform,
-                'campaign_id' => $adCampaign->ad_campaign_id,
+                'campaign_id' => $adCampaign->id,
             ]);
 
             return [
@@ -137,7 +137,7 @@ class AdCampaignManagerService
             DB::rollBack();
 
             Log::error('Failed to update ad campaign', [
-                'campaign_id' => $adCampaign->ad_campaign_id,
+                'campaign_id' => $adCampaign->id,
                 'error' => $e->getMessage(),
             ]);
 
@@ -172,7 +172,7 @@ class AdCampaignManagerService
 
         } catch (\Exception $e) {
             Log::error('Failed to get campaign metrics', [
-                'campaign_id' => $adCampaign->ad_campaign_id,
+                'campaign_id' => $adCampaign->id,
                 'error' => $e->getMessage(),
             ]);
 
@@ -201,19 +201,19 @@ class AdCampaignManagerService
                 AdCampaign::updateOrCreate(
                     [
                         'campaign_external_id' => $campaignData['id'],
-                        'platform' => $integration->platform,
+                        'provider' => $integration->platform,
                     ],
                     [
-                        'ad_account_id' => $integration->account_id,
-                        'campaign_name' => $campaignData['name'],
-                        'campaign_status' => $campaignData['status'],
+                        'org_id' => $integration->org_id,
+                        'integration_id' => $integration->integration_id,
+                        'name' => $campaignData['name'],
+                        'status' => $campaignData['status'],
                         'objective' => $campaignData['objective'] ?? null,
-                        'daily_budget' => $campaignData['daily_budget'] ?? null,
-                        'lifetime_budget' => $campaignData['lifetime_budget'] ?? null,
-                        'start_time' => $campaignData['start_time'] ?? null,
-                        'end_time' => $campaignData['end_time'] ?? null,
-                        'metadata' => $campaignData['metadata'] ?? [],
-                        'last_synced_at' => now(),
+                        'budget' => $campaignData['daily_budget'] ?? $campaignData['lifetime_budget'] ?? null,
+                        'start_date' => $campaignData['start_time'] ?? null,
+                        'end_date' => $campaignData['end_time'] ?? null,
+                        'metrics' => $campaignData['metadata'] ?? [],
+                        'fetched_at' => now(),
                     ]
                 );
 
@@ -251,8 +251,8 @@ class AdCampaignManagerService
      */
     public function getCampaigns(Integration $integration): Collection
     {
-        return AdCampaign::where('platform', $integration->platform)
-            ->where('ad_account_id', $integration->account_id)
+        return AdCampaign::where('provider', $integration->platform)
+            ->where('integration_id', $integration->integration_id)
             ->orderBy('created_at', 'desc')
             ->get();
     }
@@ -266,8 +266,8 @@ class AdCampaignManagerService
     public function getActiveCampaigns(Integration $integration): Collection
     {
         return AdCampaign::active()
-            ->byPlatform($integration->platform)
-            ->where('ad_account_id', $integration->account_id)
+            ->byProvider($integration->platform)
+            ->where('integration_id', $integration->integration_id)
             ->get();
     }
 
@@ -281,7 +281,7 @@ class AdCampaignManagerService
     public function getCampaignByExternalId(string $externalId, string $platform): ?AdCampaign
     {
         return AdCampaign::where('campaign_external_id', $externalId)
-            ->where('platform', $platform)
+            ->where('provider', $platform)
             ->first();
     }
 }
