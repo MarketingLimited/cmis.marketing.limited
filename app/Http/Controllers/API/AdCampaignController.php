@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Concerns\ApiResponse;
 use App\Models\Core\Integration;
 use App\Models\AdPlatform\AdCampaign;
 use App\Services\AdCampaigns\AdCampaignManagerService;
@@ -102,13 +103,11 @@ class AdCampaignController extends Controller
 
             $orgId = $request->user()->org_id;
 
-            $campaign = AdCampaign::where('ad_campaign_id', $campaignId)
-                ->whereHas('campaign', function ($query) use ($orgId) {
-                    $query->where('org_id', $orgId);
-                })
+            $campaign = AdCampaign::where('id', $campaignId)
+                ->where('org_id', $orgId)
                 ->firstOrFail();
 
-            $integration = Integration::where('integration_id', $campaign->ad_account_id)
+            $integration = Integration::where('integration_id', $campaign->integration_id)
                 ->firstOrFail();
 
             // Update via service
@@ -149,17 +148,15 @@ class AdCampaignController extends Controller
             $status = $request->input('status');
 
             $query = AdCampaign::query()
-                ->with(['campaign', 'adAccount'])
-                ->whereHas('campaign', function ($q) use ($orgId) {
-                    $q->where('org_id', $orgId);
-                });
+                ->with(['integration'])
+                ->where('org_id', $orgId);
 
             if ($platform) {
-                $query->where('platform', $platform);
+                $query->where('provider', $platform);
             }
 
             if ($status) {
-                $query->where('campaign_status', $status);
+                $query->where('status', $status);
             }
 
             $campaigns = $query->orderBy('created_at', 'desc')->get();
@@ -190,11 +187,9 @@ class AdCampaignController extends Controller
         try {
             $orgId = $request->user()->org_id;
 
-            $campaign = AdCampaign::with(['campaign', 'adAccount', 'adSets', 'metrics'])
-                ->where('ad_campaign_id', $campaignId)
-                ->whereHas('campaign', function ($query) use ($orgId) {
-                    $query->where('org_id', $orgId);
-                })
+            $campaign = AdCampaign::with(['integration', 'adSets', 'metrics'])
+                ->where('id', $campaignId)
+                ->where('org_id', $orgId)
                 ->firstOrFail();
 
             return response()->json([
@@ -222,14 +217,12 @@ class AdCampaignController extends Controller
         try {
             $orgId = $request->user()->org_id;
 
-            $campaign = AdCampaign::where('ad_campaign_id', $campaignId)
-                ->whereHas('campaign', function ($query) use ($orgId) {
-                    $query->where('org_id', $orgId);
-                })
+            $campaign = AdCampaign::where('id', $campaignId)
+                ->where('org_id', $orgId)
                 ->firstOrFail();
 
-            $integration = Integration::where('account_id', $campaign->ad_account_id)
-                ->where('platform', $campaign->platform)
+            $integration = Integration::where('integration_id', $campaign->integration_id)
+                ->where('platform', $campaign->provider)
                 ->firstOrFail();
 
             // Get metrics from platform via service
@@ -248,7 +241,7 @@ class AdCampaignController extends Controller
             return response()->json([
                 'success' => true,
                 'campaign_id' => $campaignId,
-                'platform' => $campaign->platform,
+                'platform' => $campaign->provider,
                 'live_metrics' => $liveMetrics,
                 'stored_metrics' => $storedMetrics,
             ]);
@@ -348,19 +341,17 @@ class AdCampaignController extends Controller
         try {
             $orgId = $request->user()->org_id;
 
-            $campaign = AdCampaign::where('ad_campaign_id', $campaignId)
-                ->whereHas('campaign', function ($query) use ($orgId) {
-                    $query->where('org_id', $orgId);
-                })
+            $campaign = AdCampaign::where('id', $campaignId)
+                ->where('org_id', $orgId)
                 ->firstOrFail();
 
-            $integration = Integration::where('account_id', $campaign->ad_account_id)
-                ->where('platform', $campaign->platform)
+            $integration = Integration::where('integration_id', $campaign->integration_id)
+                ->where('platform', $campaign->provider)
                 ->firstOrFail();
 
             // Update via service
             $result = $this->adCampaignService->updateCampaign($campaign, $integration, [
-                'campaign_status' => $status,
+                'status' => $status,
             ]);
 
             if (!$result['success']) {

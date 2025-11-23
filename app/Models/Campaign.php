@@ -153,6 +153,16 @@ class Campaign extends BaseModel
         return $this->hasMany(AdCampaign::class, 'campaign_id', 'campaign_id');
     }
 
+    public function socialPosts(): HasMany
+    {
+        return $this->hasMany(\App\Models\Social\SocialPost::class, 'campaign_id', 'campaign_id');
+    }
+
+    public function metrics(): HasMany
+    {
+        return $this->hasMany(CampaignPerformanceMetric::class, 'campaign_id', 'campaign_id');
+    }
+
     public function creativeAssets(): HasMany
     {
         return $this->hasMany(\App\Models\CreativeAsset::class, 'campaign_id', 'campaign_id');
