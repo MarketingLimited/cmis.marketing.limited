@@ -2,13 +2,68 @@
 
 namespace App\Models\Analytics;
 
-use App\Models\Concerns\HasOrganization;
-
-use App\Models\Core\Org;
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use App\Models\BaseModel;
+use App\Models\Concerns\HasOrganization;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+
+/**
+ * Alert Notification Model (Phase 13)
+ *
+ * Tracks notification delivery for triggered alerts across multiple channels
+ *
+ * @property string $notification_id
+ * @property string $alert_id
+ * @property string $org_id
+ * @property string $channel
+ * @property string $recipient
+ * @property \Carbon\Carbon $sent_at
+ * @property string $status
+ * @property string|null $error_message
+ * @property int $retry_count
+ * @property \Carbon\Carbon|null $delivered_at
+ * @property \Carbon\Carbon|null $read_at
+ * @property array|null $metadata
+ */
+class AlertNotification extends BaseModel
+{
+    use HasFactory, HasOrganization;
+
+    protected $table = 'cmis.alert_notifications';
+    protected $primaryKey = 'notification_id';
+    public $timestamps = true;
+
+    protected $fillable = [
+        'alert_id',
+        'org_id',
+        'channel',
+        'recipient',
+        'sent_at',
+        'status',
+        'error_message',
+        'retry_count',
+        'delivered_at',
+        'read_at',
+        'metadata',
+    ];
+
+    protected $casts = [
+        'sent_at' => 'datetime',
+        'delivered_at' => 'datetime',
+        'read_at' => 'datetime',
+        'retry_count' => 'integer',
+        'metadata' => 'array',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+    ];
+
+    /**
+     * Get the alert this notification belongs to
+     */
+    public function alert(): BelongsTo
+    {
+        return $this->belongsTo(AlertHistory::class, 'alert_id', 'alert_id');
+    }
 
     /**
      * Scope: By channel
@@ -16,6 +71,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
     public function scopeChannel($query, string $channel)
     {
         return $query->where('channel', $channel);
+    }
 
     /**
      * Scope: Pending notifications
@@ -23,6 +79,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
     public function scopePending($query)
     {
         return $query->where('status', 'pending');
+    }
 
     /**
      * Scope: Failed notifications
@@ -30,6 +87,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
     public function scopeFailed($query)
     {
         return $query->where('status', 'failed');
+    }
 
     /**
      * Scope: Successfully delivered
@@ -37,6 +95,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
     public function scopeDelivered($query)
     {
         return $query->whereIn('status', ['delivered', 'read']);
+    }
 
     /**
      * Mark as sent
@@ -47,6 +106,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
             'status' => 'sent',
             'sent_at' => now()
         ]);
+    }
 
     /**
      * Mark as delivered
@@ -57,6 +117,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
             'status' => 'delivered',
             'delivered_at' => now()
         ]);
+    }
 
     /**
      * Mark as read
@@ -67,6 +128,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
             'status' => 'read',
             'read_at' => now()
         ]);
+    }
 
     /**
      * Mark as failed
@@ -78,6 +140,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
             'error_message' => $errorMessage,
             'retry_count' => $this->retry_count + 1
         ]);
+    }
 
     /**
      * Check if notification can be retried
@@ -86,4 +149,5 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
     {
         return $this->status === 'failed' &&
                $this->retry_count < $maxRetries;
+    }
 }
