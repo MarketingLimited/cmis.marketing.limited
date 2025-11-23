@@ -17,14 +17,17 @@
     "require-dev": {
         "brianium/paratest": "^7.8",
         "fakerphp/faker": "^1.23",
+        "friendsofphp/php-cs-fixer": "^3.90",
         "knuckleswtf/scribe": "^5.5",
         "larastan/larastan": "^3.0",
+        "laravel/dusk": "^8.3",
         "laravel/pail": "^1.2.2",
         "laravel/pint": "^1.24",
         "laravel/sail": "^1.41",
         "mockery/mockery": "^1.6",
         "nunomaduro/collision": "^8.6",
-        "phpunit/phpunit": "^11.5.3"
+        "phpunit/phpunit": "^11.5.3",
+        "rector/rector": "^2.2"
     },
     "autoload": {
         "psr-4": {
@@ -57,6 +60,48 @@
         "test": [
             "@php artisan config:clear --ansi",
             "@php artisan test"
+        ],
+        "test:dusk": [
+            "@php artisan dusk"
+        ],
+        "test:parallel": [
+            "./run-tests-parallel.sh"
+        ],
+        "test:unit": [
+            "./run-tests-parallel.sh --unit"
+        ],
+        "test:feature": [
+            "./run-tests-parallel.sh --feature"
+        ],
+        "analyse": [
+            "vendor/bin/phpstan analyse --memory-limit=2G"
+        ],
+        "analyse:baseline": [
+            "vendor/bin/phpstan analyse --memory-limit=2G --generate-baseline"
+        ],
+        "fix": [
+            "vendor/bin/php-cs-fixer fix --config=.php-cs-fixer.php --verbose --show-progress=dots"
+        ],
+        "fix:dry": [
+            "vendor/bin/php-cs-fixer fix --config=.php-cs-fixer.php --verbose --show-progress=dots --dry-run --diff"
+        ],
+        "refactor": [
+            "vendor/bin/rector process"
+        ],
+        "refactor:dry": [
+            "vendor/bin/rector process --dry-run"
+        ],
+        "quality": [
+            "@analyse",
+            "@fix:dry",
+            "@refactor:dry",
+            "@test"
+        ],
+        "quality:fix": [
+            "@fix",
+            "@refactor",
+            "@analyse",
+            "@test"
         ],
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",

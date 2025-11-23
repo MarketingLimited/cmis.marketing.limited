@@ -1,16 +1,27 @@
 ---
 name: laravel-testing
 description: |
-  Laravel Testing & QA Expert with adaptive test discovery.
+  Laravel Testing & QA Expert with comprehensive quality assurance tooling.
+  Integrates PHPUnit, Laravel Dusk, Larastan, PHP CS Fixer, and Rector for complete testing and code quality.
   Uses META_COGNITIVE_FRAMEWORK to discover current test coverage, identify gaps, and design effective test strategies.
-  Never assumes test structure - discovers it dynamically. Use for testing strategy, TDD, and quality assurance.
+  Never assumes test structure - discovers it dynamically. Use for testing strategy, TDD, code quality, and QA.
 model: sonnet
 ---
 
-# Laravel Testing & QA - Adaptive Intelligence Agent
-**Version:** 2.1 - META_COGNITIVE_FRAMEWORK with Standardization Test Patterns
-**Philosophy:** Discover Current Testing State, Don't Assume It
-**Last Updated:** 2025-11-22
+# Laravel Testing & QA - Comprehensive Quality Assurance Agent
+**Version:** 3.0 - Complete Testing & Quality Toolchain
+**Philosophy:** Discover Current State, Test Thoroughly, Fix Automatically
+**Last Updated:** 2025-11-23
+
+## 🎯 INTEGRATED TOOLCHAIN
+
+This agent integrates five powerful quality assurance tools:
+
+1. **PHPUnit/ParaTest** - Unit, Feature, and Integration testing
+2. **Laravel Dusk** - Browser testing and E2E scenarios
+3. **Larastan (PHPStan)** - Static analysis (Level 8)
+4. **PHP CS Fixer** - Code style enforcement and automatic fixing
+5. **Rector** - Automated refactoring and code modernization
 
 ---
 
@@ -785,6 +796,569 @@ jobs:
 
       - name: Run Tests in Parallel
         run: ./run-tests-parallel.sh
+```
+
+---
+
+## 🌐 BROWSER TESTING WITH LARAVEL DUSK
+
+### **Laravel Dusk - End-to-End Browser Testing**
+
+**Dusk provides browser automation for testing JavaScript-heavy applications, user workflows, and visual components.**
+
+#### Quick Start - Dusk Testing
+```bash
+# Run all browser tests
+php artisan dusk
+
+# Run specific browser test
+php artisan dusk --filter=LoginTest
+
+# Run in parallel (if configured)
+php artisan dusk --parallel
+
+# Generate new browser test
+php artisan dusk:make DashboardTest
+```
+
+#### Dusk Test Structure
+```php
+<?php
+
+namespace Tests\Browser;
+
+use Laravel\Dusk\Browser;
+use Tests\DuskTestCase;
+use App\Models\User;
+
+class CampaignDashboardTest extends DuskTestCase
+{
+    /**
+     * Test campaign dashboard loads correctly
+     */
+    public function test_campaign_dashboard_displays_campaigns()
+    {
+        $user = User::factory()->create();
+
+        $this->browse(function (Browser $browser) use ($user) {
+            $browser->loginAs($user)
+                    ->visit('/campaigns')
+                    ->assertSee('Campaigns')
+                    ->assertPresent('@campaign-table')
+                    ->assertVisible('.campaign-row')
+                    ->screenshot('campaigns-dashboard');
+        });
+    }
+
+    /**
+     * Test campaign creation flow
+     */
+    public function test_user_can_create_campaign()
+    {
+        $user = User::factory()->create();
+
+        $this->browse(function (Browser $browser) use ($user) {
+            $browser->loginAs($user)
+                    ->visit('/campaigns/create')
+                    ->type('name', 'Test Campaign')
+                    ->select('platform', 'meta')
+                    ->type('budget', '1000')
+                    ->press('Create Campaign')
+                    ->waitForText('Campaign created successfully')
+                    ->assertPathIs('/campaigns');
+        });
+    }
+}
+```
+
+#### Common Dusk Patterns
+
+**1. Wait for Elements**
+```php
+$browser->waitFor('@loading-spinner')
+        ->waitUntilMissing('@loading-spinner')
+        ->waitForText('Loaded');
+```
+
+**2. JavaScript Interactions**
+```php
+$browser->script('window.scrollTo(0, 500);');
+$browser->waitForReload(function ($browser) {
+    $browser->press('@submit-button');
+});
+```
+
+**3. Form Testing**
+```php
+$browser->type('email', 'user@example.com')
+        ->type('password', 'password')
+        ->check('remember')
+        ->press('Login')
+        ->assertPathIs('/dashboard');
+```
+
+**4. Multi-Browser Testing**
+```php
+public function test_chat_between_users()
+{
+    $this->browse(function (Browser $first, Browser $second) {
+        $first->loginAs($user1)
+              ->visit('/chat');
+
+        $second->loginAs($user2)
+               ->visit('/chat');
+
+        $first->type('message', 'Hello!')
+              ->press('Send');
+
+        $second->waitForText('Hello!');
+    });
+}
+```
+
+#### Dusk Configuration
+
+**Environment Setup (.env.dusk.local):**
+```env
+APP_URL=http://127.0.0.1:8000
+DB_DATABASE=cmis_test_dusk
+```
+
+**Headless Mode (CI/CD):**
+```php
+// tests/DuskTestCase.php
+protected function driver()
+{
+    $options = (new ChromeOptions)->addArguments([
+        '--disable-gpu',
+        '--headless',
+        '--window-size=1920,1080',
+        '--no-sandbox',
+    ]);
+
+    return RemoteWebDriver::create(
+        'http://localhost:9515',
+        DesiredCapabilities::chrome()->setCapability(
+            ChromeOptions::CAPABILITY, $options
+        )
+    );
+}
+```
+
+#### Composer Scripts
+```bash
+# Run Dusk tests
+composer test:dusk
+
+# Run with verbose output
+php artisan dusk --verbose
+
+# Run specific suite
+php artisan dusk tests/Browser/Auth
+```
+
+---
+
+## 📊 STATIC ANALYSIS WITH LARASTAN (PHPStan)
+
+### **Larastan - Laravel-Aware Static Analysis**
+
+**Larastan extends PHPStan with Laravel-specific rules to catch bugs before runtime.**
+
+#### Quick Start - Static Analysis
+```bash
+# Run static analysis (Level 8)
+composer analyse
+
+# Or direct command
+vendor/bin/phpstan analyse --memory-limit=2G
+
+# Generate baseline (ignore existing errors)
+composer analyse:baseline
+
+# Analyze specific paths
+vendor/bin/phpstan analyse app/Models --level=8
+```
+
+#### Configuration (phpstan.neon)
+
+The project is configured with:
+- **Level 8** - Maximum strictness
+- **Parallel processing** - 32 processes for speed
+- **Laravel-specific rules** - Understanding of Eloquent, Facades, etc.
+- **Custom ignores** - For migration/seeder files
+
+#### Common Issues Detected
+
+**1. Type Errors**
+```php
+// ❌ PHPStan Error
+public function getCampaign(string $id): Campaign
+{
+    return Campaign::find($id); // Returns Campaign|null
+}
+
+// ✅ Fixed
+public function getCampaign(string $id): ?Campaign
+{
+    return Campaign::find($id);
+}
+```
+
+**2. Undefined Properties**
+```php
+// ❌ PHPStan Error
+$campaign->unknown_property;
+
+// ✅ Fixed - Add to Model
+/** @property string $unknown_property */
+class Campaign extends Model { }
+```
+
+**3. Method Calls**
+```php
+// ❌ PHPStan Error
+$user->nonExistentMethod();
+
+// ✅ Detected and fixed
+```
+
+#### Integration with CI/CD
+```yaml
+# GitHub Actions
+- name: Static Analysis
+  run: composer analyse
+```
+
+---
+
+## 🔧 CODE STYLE WITH PHP CS FIXER
+
+### **PHP CS Fixer - Automatic Code Formatting**
+
+**Automatically fixes code style issues according to PSR-12, Symfony, and Laravel conventions.**
+
+#### Quick Start - Code Fixing
+```bash
+# Fix all code style issues
+composer fix
+
+# Dry run - see what would be fixed
+composer fix:dry
+
+# Fix specific directory
+vendor/bin/php-cs-fixer fix app/Models
+
+# Fix specific file
+vendor/bin/php-cs-fixer fix app/Models/Campaign.php
+```
+
+#### Configuration (.php-cs-fixer.php)
+
+The project includes comprehensive rules:
+- **PSR-12** - PHP standards
+- **Symfony** - Symfony coding standards
+- **Laravel conventions** - Array syntax, imports, etc.
+- **Custom CMIS rules** - Project-specific formatting
+
+#### Common Fixes Applied
+
+**1. Import Ordering**
+```php
+// Before
+use App\Models\User;
+use Illuminate\Support\Facades\DB;
+use App\Models\Campaign;
+
+// After (alphabetically sorted)
+use App\Models\Campaign;
+use App\Models\User;
+use Illuminate\Support\Facades\DB;
+```
+
+**2. Array Syntax**
+```php
+// Before
+$data = array('key' => 'value');
+
+// After
+$data = ['key' => 'value'];
+```
+
+**3. Trailing Commas**
+```php
+// Before
+$array = [
+    'one',
+    'two'
+];
+
+// After
+$array = [
+    'one',
+    'two',
+];
+```
+
+**4. Unused Imports**
+```php
+// Before
+use App\Models\User;
+use App\Models\Campaign; // Not used in file
+
+// After
+use App\Models\User;
+```
+
+#### CI/CD Integration
+```yaml
+# GitHub Actions
+- name: Check Code Style
+  run: composer fix:dry
+```
+
+---
+
+## 🚀 AUTOMATED REFACTORING WITH RECTOR
+
+### **Rector - Instant Code Upgrades & Refactoring**
+
+**Rector automatically upgrades PHP code and applies refactoring patterns.**
+
+#### Quick Start - Refactoring
+```bash
+# Run all refactoring rules
+composer refactor
+
+# Dry run - see what would change
+composer refactor:dry
+
+# Process specific directory
+vendor/bin/rector process app/Services
+
+# Process with verbose output
+vendor/bin/rector process --debug
+```
+
+#### Configuration (rector.php)
+
+Configured with:
+- **PHP 8.2** - Modern PHP features
+- **Laravel 11** - Latest Laravel patterns
+- **Code Quality Sets** - Dead code removal, type declarations
+- **16 parallel processes** - Fast execution
+
+#### Common Refactorings Applied
+
+**1. Type Declarations**
+```php
+// Before
+public function getCampaigns()
+{
+    return Campaign::all();
+}
+
+// After
+public function getCampaigns(): Collection
+{
+    return Campaign::all();
+}
+```
+
+**2. Constructor Property Promotion**
+```php
+// Before
+class Service
+{
+    private Repository $repo;
+
+    public function __construct(Repository $repo)
+    {
+        $this->repo = $repo;
+    }
+}
+
+// After
+class Service
+{
+    public function __construct(private Repository $repo)
+    {
+    }
+}
+```
+
+**3. Dead Code Removal**
+```php
+// Before
+private function unusedMethod()
+{
+    // This method is never called
+}
+
+// After
+// Method removed automatically
+```
+
+**4. Early Returns**
+```php
+// Before
+public function check($value)
+{
+    if ($value > 10) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+// After
+public function check($value)
+{
+    if ($value > 10) {
+        return true;
+    }
+
+    return false;
+}
+```
+
+#### Safe Refactoring Workflow
+```bash
+# 1. See what would change
+composer refactor:dry
+
+# 2. Review the diff carefully
+# 3. Apply changes
+composer refactor
+
+# 4. Run tests to ensure nothing broke
+composer test
+
+# 5. Run static analysis
+composer analyse
+```
+
+---
+
+## 🎯 INTEGRATED QUALITY WORKFLOW
+
+### **Complete Quality Assurance Pipeline**
+
+#### Pre-Commit Quality Check
+```bash
+# Run all quality tools (dry run)
+composer quality
+
+# This runs:
+# 1. PHPStan analysis
+# 2. PHP CS Fixer (dry run)
+# 3. Rector (dry run)
+# 4. PHPUnit tests
+```
+
+#### Auto-Fix Quality Issues
+```bash
+# Fix all auto-fixable issues
+composer quality:fix
+
+# This runs:
+# 1. PHP CS Fixer (fix mode)
+# 2. Rector (fix mode)
+# 3. PHPStan analysis
+# 4. PHPUnit tests
+```
+
+#### Complete Testing Workflow
+```bash
+# 1. Unit tests (parallel)
+composer test:unit
+
+# 2. Feature tests (parallel)
+composer test:feature
+
+# 3. Browser tests (Dusk)
+composer test:dusk
+
+# 4. Static analysis
+composer analyse
+
+# 5. Code style check
+composer fix:dry
+
+# 6. Refactoring check
+composer refactor:dry
+```
+
+#### CI/CD Pipeline Example
+```yaml
+name: Quality Assurance
+
+on: [push, pull_request]
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: pdo_pgsql, pgsql, pcov
+
+      - name: Install Dependencies
+        run: composer install --no-interaction
+
+      - name: Static Analysis
+        run: composer analyse
+
+      - name: Code Style Check
+        run: composer fix:dry
+
+      - name: Refactoring Check
+        run: composer refactor:dry
+
+      - name: Unit Tests
+        run: composer test:unit
+
+      - name: Feature Tests
+        run: composer test:feature
+
+      - name: Browser Tests
+        run: composer test:dusk
+```
+
+---
+
+## 📋 COMPOSER SCRIPTS REFERENCE
+
+### Quick Reference for All Commands
+
+```bash
+# Testing
+composer test              # Run all PHPUnit tests
+composer test:parallel     # Run tests in parallel (recommended)
+composer test:unit         # Run unit tests only (parallel)
+composer test:feature      # Run feature tests only (parallel)
+composer test:dusk         # Run browser tests (Laravel Dusk)
+
+# Static Analysis
+composer analyse           # Run PHPStan analysis (Level 8)
+composer analyse:baseline  # Generate PHPStan baseline
+
+# Code Style
+composer fix               # Fix all code style issues
+composer fix:dry           # Check code style (dry run)
+
+# Refactoring
+composer refactor          # Apply all refactoring rules
+composer refactor:dry      # Check refactoring (dry run)
+
+# Combined Workflows
+composer quality           # Check all quality metrics (dry run)
+composer quality:fix       # Fix all auto-fixable issues + test
 ```
 
 ---

@@ -25,3 +25,13 @@
 Homestead.json
 Homestead.yaml
 Thumbs.db
+
+# Laravel Dusk
+/tests/Browser/console
+/tests/Browser/screenshots
+
+# PHP CS Fixer
+.php-cs-fixer.cache
+
+# Rector
+.rector-cache
