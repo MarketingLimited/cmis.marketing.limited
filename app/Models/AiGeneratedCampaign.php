@@ -8,8 +8,8 @@ use App\Models\BaseModel;
 
 class AiGeneratedCampaign extends BaseModel
 {
-    
-    protected $table = 'cmis.ai_generated_campaigns';
+    use HasOrganization;
+protected $table = 'cmis.ai_generated_campaigns';
 
     protected $primaryKey = 'campaign_id';
 

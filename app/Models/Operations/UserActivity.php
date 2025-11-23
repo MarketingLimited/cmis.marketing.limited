@@ -11,10 +11,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class UserActivity extends BaseModel
 {
-    
-    
-
-    /**
+    use HasOrganization;
+/**
      * Get the user that performed the activity.
      */
     public function user(): BelongsTo

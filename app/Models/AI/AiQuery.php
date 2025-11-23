@@ -11,10 +11,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class AiQuery extends BaseModel
 {
-    
-    
-
-    /**
+    use HasOrganization;
+/**
      * Get the user that made the query.
      */
     public function user(): BelongsTo
