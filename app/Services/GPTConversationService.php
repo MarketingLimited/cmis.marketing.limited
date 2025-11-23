@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Services\Cache\CacheService;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;

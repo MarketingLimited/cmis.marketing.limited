@@ -11,7 +11,9 @@ use App\Http\Controllers\Offerings\BundleController;
 use App\Http\Controllers\Offerings\OverviewController as OfferingsOverviewController;
 use App\Http\Controllers\Offerings\ProductController;
 use App\Http\Controllers\Offerings\ServiceController;
-use App\Http\Controllers\OrgController;
+use App\Http\Controllers\Orgs\OrgManagementController as OrgController;
+use App\Http\Controllers\Orgs\OrgResourcesController;
+use App\Http\Controllers\Orgs\OrgComparisonController;
 use App\Http\Controllers\Web\ChannelController as WebChannelController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
@@ -116,12 +118,12 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/{org}', [OrgController::class, 'show'])->whereUuid('org')->name('show');
         Route::get('/{org}/edit', [OrgController::class, 'edit'])->whereUuid('org')->name('edit');
         Route::put('/{org}', [OrgController::class, 'update'])->whereUuid('org')->name('update');
-        Route::get('/{org}/campaigns', [OrgController::class, 'campaigns'])->whereUuid('org')->name('campaigns');
-        Route::get('/{org}/campaigns/compare', [OrgController::class, 'compareCampaigns'])->whereUuid('org')->name('campaigns.compare');
-        Route::get('/{org}/services', [OrgController::class, 'services'])->whereUuid('org')->name('services');
-        Route::get('/{org}/products', [OrgController::class, 'products'])->whereUuid('org')->name('products');
-        Route::post('/{org}/campaigns/export/pdf', [OrgController::class, 'exportComparePdf'])->whereUuid('org')->name('campaigns.export.pdf');
-        Route::post('/{org}/campaigns/export/excel', [OrgController::class, 'exportCompareExcel'])->whereUuid('org')->name('campaigns.export.excel');
+        Route::get('/{org}/campaigns', [OrgResourcesController::class, 'campaigns'])->whereUuid('org')->name('campaigns');
+        Route::get('/{org}/campaigns/compare', [OrgComparisonController::class, 'compareCampaigns'])->whereUuid('org')->name('campaigns.compare');
+        Route::get('/{org}/services', [OrgResourcesController::class, 'services'])->whereUuid('org')->name('services');
+        Route::get('/{org}/products', [OrgResourcesController::class, 'products'])->whereUuid('org')->name('products');
+        Route::post('/{org}/campaigns/export/pdf', [OrgComparisonController::class, 'exportComparePdf'])->whereUuid('org')->name('campaigns.export.pdf');
+        Route::post('/{org}/campaigns/export/excel', [OrgComparisonController::class, 'exportCompareExcel'])->whereUuid('org')->name('campaigns.export.excel');
 
         // ==================== Team Management (NEW) ====================
         Route::prefix('{org}/team')->name('team.')->whereUuid('org')->group(function () {

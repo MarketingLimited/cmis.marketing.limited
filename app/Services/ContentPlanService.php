@@ -5,6 +5,8 @@ namespace App\Services;
 use App\Models\Creative\ContentPlan;
 use App\Models\Campaign;
 use App\Jobs\GenerateAIContent;
+use App\Services\AIService;
+use App\Services\Cache\CacheService;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 

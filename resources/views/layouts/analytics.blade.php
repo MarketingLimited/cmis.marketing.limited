@@ -6,8 +6,8 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ config('app.name', 'CMIS') }} - @yield('title', 'Analytics Dashboard')</title>
 
-    <!-- Tailwind CSS (via Vite) -->
-    @vite(['resources/css/app.css'])
+    <!-- Tailwind CSS (via CDN) -->
+    <script src="https://cdn.tailwindcss.com"></script>
 
     <!-- Alpine.js (v3.x) -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>

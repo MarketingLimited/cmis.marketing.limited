@@ -25,7 +25,7 @@ class EnterpriseAnalyticsController extends Controller
     public function __construct()
     {
         $this->middleware('auth:sanctum');
-        $this->middleware('tenant'); // Ensure multi-tenancy context
+        // Multi-tenancy is handled via RLS (Row-Level Security) and OrgScope
     }
 
     /**

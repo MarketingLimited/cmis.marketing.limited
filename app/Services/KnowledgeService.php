@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Knowledge\KnowledgeIndex;
 use App\Models\CMIS\KnowledgeItem;
+use App\Services\Cache\CacheService;
 use App\Services\Embedding\EmbeddingOrchestrator;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;

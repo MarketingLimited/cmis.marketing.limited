@@ -14,24 +14,24 @@ class OrgScope implements Scope
      */
     public function apply(Builder $builder, Model $model): void
     {
-        // Get current org_id from application context
-        $orgId = app('current_org_id');
+        // Get current org_id from application context (only if bound)
+        $orgId = app()->bound('current_org_id') ? app('current_org_id') : null;
 
         // Skip if no org context (e.g., system operations)
         if (!$orgId) {
             return;
+        }
 
         // Skip for certain tables that don't have org_id
         $excludedTables = ['orgs', 'users', 'roles', 'permissions'];
 
         if (in_array($model->getTable(), $excludedTables)) {
             return;
+        }
 
-        // Apply org filter
-        if ($model->hasOrgIdColumn()) {
+        // Apply org filter if model has org_id column
+        if (method_exists($model, 'hasOrgIdColumn') && $model->hasOrgIdColumn()) {
             $builder->where($model->getTable() . '.org_id', $orgId);
-}
-}
-}
-}
+        }
+    }
 }

@@ -50,7 +50,7 @@ abstract class BaseModel extends Model
      */
     protected function getCurrentOrgId(): ?string
     {
-        return app('current_org_id');
+        return app()->bound('current_org_id') ? app('current_org_id') : null;
     }
 
     /**

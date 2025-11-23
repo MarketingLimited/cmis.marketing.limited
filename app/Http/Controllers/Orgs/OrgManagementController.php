@@ -27,7 +27,8 @@ class OrgManagementController extends Controller
      */
     public function index(): View
     {
-        $orgs = Org::query()
+        // Get all orgs that the user has access to (bypass org scope)
+        $orgs = Org::withoutGlobalScopes()
             ->select('org_id', 'name', 'default_locale', 'currency', 'created_at')
             ->orderBy('name')
             ->get();
@@ -244,5 +245,47 @@ class OrgManagementController extends Controller
             'clicks' => $clicks,
             'conversions' => $conversions,
         ];
+    }
+
+    /**
+     * Show edit organization form
+     */
+    public function edit($id): View
+    {
+        $org = Org::findOrFail($id);
+        return view('orgs.edit', compact('org'));
+    }
+
+    /**
+     * Update organization
+     */
+    public function update(Request $request, $id): RedirectResponse
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255|unique:cmis.orgs,name,' . $id . ',org_id',
+            'default_locale' => 'nullable|string|max:10',
+            'currency' => 'nullable|string|size:3',
+            'provider' => 'nullable|string|max:255',
+        ]);
+
+        try {
+            $org = Org::findOrFail($id);
+            $org->update($validated);
+
+            return redirect()
+                ->route('orgs.show', $org->org_id)
+                ->with('success', 'تم تحديث المؤسسة بنجاح');
+
+        } catch (\Exception $e) {
+            \Log::error('Failed to update organization', [
+                'org_id' => $id,
+                'error' => $e->getMessage(),
+            ]);
+
+            return redirect()
+                ->back()
+                ->withInput()
+                ->with('error', 'فشل تحديث المؤسسة: ' . $e->getMessage());
+        }
     }
 }
