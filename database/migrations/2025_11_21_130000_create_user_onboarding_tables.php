@@ -53,8 +53,8 @@ return new class extends Migration
             $table->index('started_at');
         });
 
-        // 2. Enable Row-Level Security
-        $this->enableRLS('cmis.user_onboarding_progress');
+        // 2. Enable Row-Level Security (without default policy - using custom policy below)
+        DB::statement("ALTER TABLE cmis.user_onboarding_progress ENABLE ROW LEVEL SECURITY");
 
         // Users can only see their own onboarding progress
         DB::statement("

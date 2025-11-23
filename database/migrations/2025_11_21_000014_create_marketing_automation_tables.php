@@ -15,6 +15,11 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Skip if automation_rules already exists (created by earlier migration)
+        if (Schema::hasTable('cmis.automation_rules')) {
+            return;
+        }
+
         // 1. Workflow Templates - Reusable workflow definitions
         Schema::create('cmis.workflow_templates', function (Blueprint $table) {
             $table->uuid('template_id')->primary()->default(DB::raw('gen_random_uuid()'));

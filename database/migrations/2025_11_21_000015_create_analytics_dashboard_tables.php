@@ -15,6 +15,11 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Skip if report_schedules already exists (created by earlier migration)
+        if (Schema::hasTable('cmis.report_schedules')) {
+            return;
+        }
+
         // 1. Dashboard Configurations - Custom dashboard layouts
         Schema::create('cmis.dashboard_configs', function (Blueprint $table) {
             $table->uuid('dashboard_id')->primary()->default(DB::raw('gen_random_uuid()'));

@@ -25,57 +25,67 @@ return new class extends Migration
             ADD COLUMN IF NOT EXISTS video_used_monthly INTEGER DEFAULT 0;
         ");
 
-        // Update existing quotas based on subscription tiers
-        DB::statement("
-            UPDATE cmis.ai_usage_quotas
-            SET
-                image_quota_daily = CASE
-                    WHEN tier = 'free' THEN 5
-                    WHEN tier = 'pro' THEN 50
-                    WHEN tier = 'enterprise' THEN -1
-                    ELSE 5
-                END,
-                image_quota_monthly = CASE
-                    WHEN quota_type = 'free' THEN 50
-                    WHEN quota_type = 'pro' THEN 500
-                    WHEN quota_type = 'enterprise' THEN -1
-                    ELSE 50
-                END,
-                video_quota_daily = CASE
-                    WHEN quota_type = 'free' THEN 0
-                    WHEN quota_type = 'pro' THEN 10
-                    WHEN quota_type = 'enterprise' THEN -1
-                    ELSE 0
-                END,
-                video_quota_monthly = CASE
-                    WHEN quota_type = 'free' THEN 0
-                    WHEN quota_type = 'pro' THEN 100
-                    WHEN quota_type = 'enterprise' THEN -1
-                    ELSE 0
-                END
-            WHERE tier IS NOT NULL;
-        ");
+        // Update existing quotas based on subscription tiers (skip if table doesn't exist)
+        $tableExists = DB::select("SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'cmis_ai' AND table_name = 'usage_quotas')")[0]->exists ?? false;
 
-        // Add columns to ai_usage_logs for tracking media generation
-        DB::statement("
-            ALTER TABLE cmis_ai.ai_usage_logs
-            ADD COLUMN IF NOT EXISTS generation_type VARCHAR(20),
-            ADD COLUMN IF NOT EXISTS cost_usd DECIMAL(10,4),
-            ADD COLUMN IF NOT EXISTS media_resolution VARCHAR(20),
-            ADD COLUMN IF NOT EXISTS video_duration INTEGER,
-            ADD COLUMN IF NOT EXISTS generation_metadata JSONB DEFAULT '{}';
-        ");
+        if ($tableExists) {
+            DB::statement("
+                UPDATE cmis_ai.usage_quotas
+                SET
+                    image_quota_daily = CASE
+                        WHEN tier = 'free' THEN 5
+                        WHEN tier = 'pro' THEN 50
+                        WHEN tier = 'enterprise' THEN -1
+                        ELSE 5
+                    END,
+                    image_quota_monthly = CASE
+                        WHEN tier = 'free' THEN 50
+                        WHEN tier = 'pro' THEN 500
+                        WHEN tier = 'enterprise' THEN -1
+                        ELSE 50
+                    END,
+                    video_quota_daily = CASE
+                        WHEN tier = 'free' THEN 0
+                        WHEN tier = 'pro' THEN 10
+                        WHEN tier = 'enterprise' THEN -1
+                        ELSE 0
+                    END,
+                    video_quota_monthly = CASE
+                        WHEN tier = 'free' THEN 0
+                        WHEN tier = 'pro' THEN 100
+                        WHEN tier = 'enterprise' THEN -1
+                        ELSE 0
+                    END
+                WHERE tier IS NOT NULL;
+            ");
+        }
 
-        // Create index for efficient quota queries
-        DB::statement("
-            CREATE INDEX IF NOT EXISTS idx_ai_usage_logs_generation_type
-            ON cmis_ai.ai_usage_logs(generation_type);
-        ");
+        // Add columns to ai_usage_logs for tracking media generation (skip if table doesn't exist)
+        $logsTableExists = DB::select("SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'cmis_ai' AND table_name = 'ai_usage_logs')")[0]->exists ?? false;
 
-        DB::statement("
-            CREATE INDEX IF NOT EXISTS idx_ai_usage_logs_org_created
-            ON cmis_ai.ai_usage_logs(org_id, created_at);
-        ");
+        if ($logsTableExists) {
+            DB::statement("
+                ALTER TABLE cmis_ai.ai_usage_logs
+                ADD COLUMN IF NOT EXISTS generation_type VARCHAR(20),
+                ADD COLUMN IF NOT EXISTS cost_usd DECIMAL(10,4),
+                ADD COLUMN IF NOT EXISTS media_resolution VARCHAR(20),
+                ADD COLUMN IF NOT EXISTS video_duration INTEGER,
+                ADD COLUMN IF NOT EXISTS generation_metadata JSONB DEFAULT '{}';
+            ");
+        }
+
+        // Create index for efficient quota queries (skip if table doesn't exist)
+        if ($logsTableExists) {
+            DB::statement("
+                CREATE INDEX IF NOT EXISTS idx_ai_usage_logs_generation_type
+                ON cmis_ai.ai_usage_logs(generation_type);
+            ");
+
+            DB::statement("
+                CREATE INDEX IF NOT EXISTS idx_ai_usage_logs_org_created
+                ON cmis_ai.ai_usage_logs(org_id, created_at);
+            ");
+        }
     }
 
     /**

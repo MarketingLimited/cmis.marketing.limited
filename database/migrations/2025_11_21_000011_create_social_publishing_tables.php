@@ -15,6 +15,11 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Skip if scheduled_posts already exists (created by legacy_support_tables migration)
+        if (Schema::hasTable('cmis.scheduled_posts')) {
+            return;
+        }
+
         // ===== Scheduled Posts Table =====
         Schema::create('cmis.scheduled_posts', function (Blueprint $table) {
             $table->uuid('post_id')->primary()->default(DB::raw('gen_random_uuid()'));
