@@ -8,6 +8,7 @@ use App\Models\Knowledge\DirectionMapping;
 use App\Models\Knowledge\IntentMapping;
 use App\Models\Knowledge\PurposeMapping;
 use App\Exceptions\AIServiceUnavailableException;
+use App\Services\Embedding\EmbeddingOrchestrator;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Cache;
@@ -15,14 +16,14 @@ use Illuminate\Support\Facades\Cache;
 class AIService
 {
     protected $contextService;
-    protected $embeddingService;
+    protected $embeddingOrchestrator;
 
     public function __construct(
         ContextService $contextService,
-        EmbeddingService $embeddingService
+        EmbeddingOrchestrator $embeddingOrchestrator
     ) {
         $this->contextService = $contextService;
-        $this->embeddingService = $embeddingService;
+        $this->embeddingOrchestrator = $embeddingOrchestrator;
     }
 
     /**
