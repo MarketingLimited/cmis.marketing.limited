@@ -3,6 +3,7 @@
 namespace App\Models\Other;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Builder;
 use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -39,24 +40,28 @@ class FeedItem extends BaseModel
     /**
      * Get the data feed
      */
-    public function dataFeed()
+    public function dataFeed(): BelongsTo
     {
         return $this->belongsTo(DataFeed::class, 'feed_id', 'feed_id');
 
+    }
     /**
      * Scope to get items for a specific feed
      */
-    public function scopeForFeed($query, string $feedId)
+    public function scopeForFeed($query, string $feedId): Builder
     {
         return $query->where('feed_id', $feedId);
 
+    }
     /**
      * Scope to get valid items
      */
-    public function scopeValid($query)
+    public function scopeValid($query): Builder
     {
         return $query->where('valid_from', '<=', now())
             ->where(function ($q) {
                 $q->whereNull('valid_to')
                     ->orWhere('valid_to', '>=', now());
+            });
+    }
 }

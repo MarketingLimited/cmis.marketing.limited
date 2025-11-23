@@ -3,6 +3,7 @@
 namespace App\Models\Other;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Builder;
 use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -36,10 +37,11 @@ class PromptTemplate extends BaseModel
     /**
      * Get the module
      */
-    public function module()
+    public function module(): BelongsTo
     {
         return $this->belongsTo(Module::class, 'module_id', 'module_id');
 
+    }
     /**
      * Get output contracts
      */
@@ -50,7 +52,8 @@ class PromptTemplate extends BaseModel
             'cmis.prompt_template_contracts',
             'prompt_id',
             'contract_id'
-
+        );
+    }
     /**
      * Get SQL snippets
      */
@@ -61,11 +64,13 @@ class PromptTemplate extends BaseModel
             'cmis.prompt_template_presql',
             'prompt_id',
             'snippet_id'
-
+        );
+    }
     /**
      * Scope to get templates for a specific module
      */
-    public function scopeForModule($query, int $moduleId)
+    public function scopeForModule($query, int $moduleId): Builder
     {
         return $query->where('module_id', $moduleId);
+    }
 }

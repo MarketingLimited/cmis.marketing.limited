@@ -1,12 +1,15 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
+use Database\Migrations\Concerns\HasRLSPolicies;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
+    use HasRLSPolicies;
+
     /**
      * Run the migrations (Phase 18: Platform Integration & API Orchestration).
      */
@@ -38,12 +41,7 @@ return new class extends Migration
             $table->index(['platform', 'status']);
         });
 
-        // RLS Policy
-        DB::statement("ALTER TABLE cmis.platform_connections ENABLE ROW LEVEL SECURITY");
-        DB::statement("
-            CREATE POLICY org_isolation ON cmis.platform_connections
-            USING (org_id = current_setting('app.current_org_id')::uuid)
-        ");
+        $this->enableRLS('cmis.platform_connections');
 
         // ===== Platform Sync Logs Table =====
         Schema::create('cmis.platform_sync_logs', function (Blueprint $table) {
@@ -74,12 +72,7 @@ return new class extends Migration
             $table->index('status');
         });
 
-        // RLS Policy
-        DB::statement("ALTER TABLE cmis.platform_sync_logs ENABLE ROW LEVEL SECURITY");
-        DB::statement("
-            CREATE POLICY org_isolation ON cmis.platform_sync_logs
-            USING (org_id = current_setting('app.current_org_id')::uuid)
-        ");
+        $this->enableRLS('cmis.platform_sync_logs');
 
         // ===== Platform API Calls Table =====
         Schema::create('cmis.platform_api_calls', function (Blueprint $table) {
@@ -109,12 +102,7 @@ return new class extends Migration
             $table->index('success');
         });
 
-        // RLS Policy
-        DB::statement("ALTER TABLE cmis.platform_api_calls ENABLE ROW LEVEL SECURITY");
-        DB::statement("
-            CREATE POLICY org_isolation ON cmis.platform_api_calls
-            USING (org_id = current_setting('app.current_org_id')::uuid)
-        ");
+        $this->enableRLS('cmis.platform_api_calls');
 
         // ===== Platform Rate Limits Table =====
         Schema::create('cmis.platform_rate_limits', function (Blueprint $table) {
@@ -137,12 +125,7 @@ return new class extends Migration
             $table->index('resets_at');
         });
 
-        // RLS Policy
-        DB::statement("ALTER TABLE cmis.platform_rate_limits ENABLE ROW LEVEL SECURITY");
-        DB::statement("
-            CREATE POLICY org_isolation ON cmis.platform_rate_limits
-            USING (org_id = current_setting('app.current_org_id')::uuid)
-        ");
+        $this->enableRLS('cmis.platform_rate_limits');
 
         // ===== Platform Webhooks Table =====
         Schema::create('cmis.platform_webhooks', function (Blueprint $table) {
@@ -167,12 +150,7 @@ return new class extends Migration
             $table->index(['platform', 'event_type']);
         });
 
-        // RLS Policy
-        DB::statement("ALTER TABLE cmis.platform_webhooks ENABLE ROW LEVEL SECURITY");
-        DB::statement("
-            CREATE POLICY org_isolation ON cmis.platform_webhooks
-            USING (org_id = current_setting('app.current_org_id')::uuid)
-        ");
+        $this->enableRLS('cmis.platform_webhooks');
 
         // ===== Platform Entity Mappings Table =====
         Schema::create('cmis.platform_entity_mappings', function (Blueprint $table) {
@@ -197,12 +175,7 @@ return new class extends Migration
             $table->index(['cmis_entity_type', 'cmis_entity_id']);
         });
 
-        // RLS Policy
-        DB::statement("ALTER TABLE cmis.platform_entity_mappings ENABLE ROW LEVEL SECURITY");
-        DB::statement("
-            CREATE POLICY org_isolation ON cmis.platform_entity_mappings
-            USING (org_id = current_setting('app.current_org_id')::uuid)
-        ");
+        $this->enableRLS('cmis.platform_entity_mappings');
     }
 
     /**

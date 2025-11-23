@@ -1,12 +1,15 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
+use Database\Migrations\Concerns\HasRLSPolicies;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
+    use HasRLSPolicies;
+
     /**
      * Run the migrations.
      *
@@ -131,26 +134,16 @@ return new class extends Migration
         });
 
         // 4. Enable Row-Level Security on all tables
-        DB::statement("ALTER TABLE cmis_ai.usage_quotas ENABLE ROW LEVEL SECURITY");
-        DB::statement("
-            CREATE POLICY org_isolation ON cmis_ai.usage_quotas
-            USING (
-                org_id = current_setting('app.current_org_id', true)::uuid
-                OR org_id IS NULL
-            )
-        ");
+        // Usage quotas allow NULL org_id for system-level defaults
+        $this->enableCustomRLS(
+            'cmis_ai.usage_quotas',
+            "org_id = current_setting('app.current_org_id', true)::uuid
+                OR org_id IS NULL"
+        );
 
-        DB::statement("ALTER TABLE cmis_ai.usage_tracking ENABLE ROW LEVEL SECURITY");
-        DB::statement("
-            CREATE POLICY org_isolation ON cmis_ai.usage_tracking
-            USING (org_id = current_setting('app.current_org_id', true)::uuid)
-        ");
+        $this->enableRLS('cmis_ai.usage_tracking');
 
-        DB::statement("ALTER TABLE cmis_ai.usage_summary ENABLE ROW LEVEL SECURITY");
-        DB::statement("
-            CREATE POLICY org_isolation ON cmis_ai.usage_summary
-            USING (org_id = current_setting('app.current_org_id', true)::uuid)
-        ");
+        $this->enableRLS('cmis_ai.usage_summary');
 
         // 5. Insert default system-level quotas
         DB::table('cmis_ai.usage_quotas')->insert([

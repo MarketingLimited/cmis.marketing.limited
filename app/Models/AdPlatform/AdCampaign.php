@@ -3,6 +3,7 @@
 namespace App\Models\AdPlatform;
 
 use App\Models\Concerns\HasOrganization;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -50,7 +51,7 @@ class AdCampaign extends BaseModel
     /**
      * Get the integration (platform connection)
      */
-    public function integration()
+    public function integration(): BelongsTo
     {
         return $this->belongsTo(\App\Models\Core\Integration::class, 'integration_id', 'integration_id');
     }
@@ -58,7 +59,7 @@ class AdCampaign extends BaseModel
     /**
      * Scope active campaigns
      */
-    public function scopeActive($query)
+    public function scopeActive($query): Builder
     {
         return $query->where('status', 'active')
             ->where(function ($q) {
@@ -70,7 +71,7 @@ class AdCampaign extends BaseModel
     /**
      * Scope by objective
      */
-    public function scopeByObjective($query, string $objective)
+    public function scopeByObjective($query, string $objective): Builder
     {
         return $query->where('objective', $objective);
     }
@@ -78,7 +79,7 @@ class AdCampaign extends BaseModel
     /**
      * Scope by status
      */
-    public function scopeByStatus($query, string $status)
+    public function scopeByStatus($query, string $status): Builder
     {
         return $query->where('status', $status);
     }
@@ -86,7 +87,7 @@ class AdCampaign extends BaseModel
     /**
      * Get ad sets for this campaign
      */
-    public function adSets()
+    public function adSets(): HasMany
     {
         return $this->hasMany(AdSet::class, 'campaign_external_id', 'campaign_external_id');
     }
@@ -94,7 +95,7 @@ class AdCampaign extends BaseModel
     /**
      * Get ad account
      */
-    public function adAccount()
+    public function adAccount(): HasOneThrough
     {
         return $this->hasOneThrough(
             AdAccount::class,
@@ -109,7 +110,7 @@ class AdCampaign extends BaseModel
     /**
      * Get metrics for this campaign
      */
-    public function adMetrics()
+    public function adMetrics(): HasMany
     {
         return $this->hasMany(AdMetric::class, 'entity_external_id', 'campaign_external_id')
             ->where('entity_level', 'campaign');
@@ -119,22 +120,14 @@ class AdCampaign extends BaseModel
      * Alias for adMetrics() for consistency
      */
     public function metrics()
-    {
+    : \Illuminate\Database\Eloquent\Relations\Relation {
         return $this->adMetrics();
-    }
-
-    /**
-     * Scope by organization
-     */
-    public function scopeForOrg($query, string $orgId)
-    {
-        return $query->where('org_id', $orgId);
     }
 
     /**
      * Scope by integration
      */
-    public function scopeForIntegration($query, string $integrationId)
+    public function scopeForIntegration(Builder $query, string $integrationId): Builder
     {
         return $query->where('integration_id', $integrationId);
     }
@@ -142,7 +135,7 @@ class AdCampaign extends BaseModel
     /**
      * Scope by provider/platform
      */
-    public function scopeByProvider($query, string $provider)
+    public function scopeByProvider($query, string $provider): Builder
     {
         return $query->where('provider', $provider);
     }
@@ -150,7 +143,7 @@ class AdCampaign extends BaseModel
     /**
      * Scope running campaigns
      */
-    public function scopeRunning($query)
+    public function scopeRunning($query): Builder
     {
         return $query->where('status', 'active')
             ->where(function ($q) {

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\ApiResponse;
 use App\Services\AIInsightsService;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
@@ -57,10 +58,7 @@ class AIInsightsController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         $filters = [
@@ -71,14 +69,10 @@ class AIInsightsController extends Controller
         try {
             $insights = $this->insightsService->getAccountInsights($socialAccountId, $filters);
 
-            return response()->json($insights);
+            return $this->success($insights, 'Retrieved successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to load AI insights',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to load AI insights: ' . $e->getMessage());
         }
     }
 
@@ -100,10 +94,7 @@ class AIInsightsController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         $filters = [
@@ -118,18 +109,13 @@ class AIInsightsController extends Controller
                 return $this->error('Failed to generate recommendations', 500);
             }
 
-            return response()->json([
-                'success' => true,
-                'data' => $insights['insights']['content_recommendations'] ?? [],
+            return $this->success([
+                'recommendations' => $insights['insights']['content_recommendations'] ?? [],
                 'generated_at' => $insights['generated_at'] ?? now()->toIso8601String()
-            ]);
+            ], 'Content recommendations retrieved successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to load content recommendations',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to load content recommendations: ' . $e->getMessage());
         }
     }
 
@@ -151,10 +137,7 @@ class AIInsightsController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         $filters = [
@@ -169,19 +152,14 @@ class AIInsightsController extends Controller
                 return $this->error('Failed to detect anomalies', 500);
             }
 
-            return response()->json([
-                'success' => true,
-                'data' => $insights['insights']['anomalies'] ?? [],
+            return $this->success([
+                'anomalies' => $insights['insights']['anomalies'] ?? [],
                 'count' => count($insights['insights']['anomalies'] ?? []),
                 'generated_at' => $insights['generated_at'] ?? now()->toIso8601String()
-            ]);
+            ], 'Anomalies detected successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to detect anomalies',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to detect anomalies: ' . $e->getMessage());
         }
     }
 
@@ -204,18 +182,13 @@ class AIInsightsController extends Controller
                 return $this->error('Failed to generate predictions', 500);
             }
 
-            return response()->json([
-                'success' => true,
-                'data' => $insights['insights']['predictions'] ?? [],
+            return $this->success([
+                'predictions' => $insights['insights']['predictions'] ?? [],
                 'generated_at' => $insights['generated_at'] ?? now()->toIso8601String()
-            ]);
+            ], 'Predictions generated successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to load predictions',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to load predictions: ' . $e->getMessage());
         }
     }
 
@@ -237,10 +210,7 @@ class AIInsightsController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         $filters = [
@@ -255,18 +225,13 @@ class AIInsightsController extends Controller
                 return $this->error('Failed to generate observations', 500);
             }
 
-            return response()->json([
-                'success' => true,
-                'data' => $insights['insights']['observations'] ?? [],
+            return $this->success([
+                'observations' => $insights['insights']['observations'] ?? [],
                 'generated_at' => $insights['generated_at'] ?? now()->toIso8601String()
-            ]);
+            ], 'Observations retrieved successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to load observations',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to load observations: ' . $e->getMessage());
         }
     }
 
@@ -288,10 +253,7 @@ class AIInsightsController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         $filters = [
@@ -306,18 +268,13 @@ class AIInsightsController extends Controller
                 return $this->error('Failed to identify opportunities', 500);
             }
 
-            return response()->json([
-                'success' => true,
-                'data' => $insights['insights']['optimization_opportunities'] ?? [],
+            return $this->success([
+                'opportunities' => $insights['insights']['optimization_opportunities'] ?? [],
                 'generated_at' => $insights['generated_at'] ?? now()->toIso8601String()
-            ]);
+            ], 'Optimization opportunities identified successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to load optimization opportunities',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to load optimization opportunities: ' . $e->getMessage());
         }
     }
 
@@ -337,14 +294,10 @@ class AIInsightsController extends Controller
             $filters = $request->only(['start_date', 'end_date']);
             $insights = $this->insightsService->getCompetitiveInsights($socialAccountId, $filters);
 
-            return response()->json($insights);
+            return $this->success($insights, 'Retrieved successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to load competitive insights',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to load competitive insights: ' . $e->getMessage());
         }
     }
 
@@ -394,18 +347,13 @@ class AIInsightsController extends Controller
                 ]
             ];
 
-            return response()->json([
-                'success' => true,
-                'data' => $summary,
+            return $this->success([
+                'summary' => $summary,
                 'generated_at' => $insights['generated_at'] ?? now()->toIso8601String()
-            ]);
+            ], 'Insights summary retrieved successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to load insights summary',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to load insights summary: ' . $e->getMessage());
         }
     }
 }

@@ -9,6 +9,7 @@ use App\Models\Core\Role;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Illuminate\View\View;
 
 /**
  * Team Web Controller (Frontend UI)
@@ -25,7 +26,7 @@ class TeamWebController extends Controller
     /**
      * Display team members page
      */
-    public function index(string $orgId)
+    public function index(string $orgId): View
     {
         $user = auth()->user();
         $org = Organization::findOrFail($orgId);
@@ -79,7 +80,7 @@ class TeamWebController extends Controller
      * Send invitation
      */
     public function invite(Request $request, string $orgId)
-    {
+    : \Illuminate\Http\JsonResponse {
         $user = auth()->user();
         $org = Organization::findOrFail($orgId);
 

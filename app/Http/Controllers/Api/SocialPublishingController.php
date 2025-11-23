@@ -276,10 +276,7 @@ class SocialPublishingController extends Controller
 
         $calendar = $this->calendarService->getCalendar($orgId, $startDate, $endDate);
 
-        return response()->json([
-            'success' => true,
-            'calendar' => $calendar,
-        ]);
+        return $this->success(['calendar' => $calendar,], 'Operation completed successfully');
     }
 
     /**
@@ -293,10 +290,7 @@ class SocialPublishingController extends Controller
 
         $overview = $this->calendarService->getMonthlyOverview($orgId, $year, $month);
 
-        return response()->json([
-            'success' => true,
-            'overview' => $overview,
-        ]);
+        return $this->success(['overview' => $overview,], 'Operation completed successfully');
     }
 
     // ===== Content Library =====
@@ -320,10 +314,7 @@ class SocialPublishingController extends Controller
 
         $content = $query->orderByDesc('created_at')->get();
 
-        return response()->json([
-            'success' => true,
-            'content' => $content,
-        ]);
+        return $this->success(['content' => $content,], 'Operation completed successfully');
     }
 
     /**
@@ -367,10 +358,7 @@ class SocialPublishingController extends Controller
             ->topTimes(10)
             ->get();
 
-        return response()->json([
-            'success' => true,
-            'best_times' => $bestTimes,
-        ]);
+        return $this->success(['best_times' => $bestTimes,], 'Operation completed successfully');
     }
 
     /**
@@ -386,10 +374,7 @@ class SocialPublishingController extends Controller
 
         $suggestedTime = $this->schedulingService->suggestPostingTime($orgId, $platform, $preferredDate);
 
-        return response()->json([
-            'success' => true,
-            'suggested_time' => $suggestedTime->toISOString(),
-        ]);
+        return $this->success(['suggested_time' => $suggestedTime->toISOString(),], 'Operation completed successfully');
     }
 
     // ===== Analytics & Stats =====
@@ -403,9 +388,6 @@ class SocialPublishingController extends Controller
 
         $stats = $this->calendarService->getSummary($orgId);
 
-        return response()->json([
-            'success' => true,
-            'stats' => $stats,
-        ]);
+        return $this->success(['stats' => $stats,], 'Operation completed successfully');
     }
 }

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Concerns;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 
 trait HandlesPagination
 {
@@ -91,7 +92,7 @@ trait HandlesPagination
      * }
      */
     protected function paginatedResponse(LengthAwarePaginator $paginator, string $message = 'Data retrieved successfully')
-    {
+    : \Illuminate\Http\JsonResponse {
         return response()->json([
             'success' => true,
             'message' => $message,

@@ -5,6 +5,7 @@ namespace App\Models\Compliance;
 use App\Models\Concerns\HasOrganization;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Builder;
 use App\Models\BaseModel;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
@@ -45,10 +46,11 @@ class ComplianceRule extends BaseModel
     /**
      * Get compliance audits
      */
-    public function audits()
+    public function audits(): HasMany
     {
         return $this->hasMany(ComplianceAudit::class, 'rule_id', 'rule_id');
 
+    }
     /**
      * Get rule-channel associations
      */
@@ -59,25 +61,29 @@ class ComplianceRule extends BaseModel
             'cmis.compliance_rule_channels',
             'rule_id',
             'channel_id'
-
+        );
+    }
     /**
      * Scope active rules
      */
-    public function scopeActive($query)
+    public function scopeActive($query): Builder
     {
         return $query->where('is_active', true);
 
+    }
     /**
      * Scope by rule type
      */
-    public function scopeOfType($query, string $type)
+    public function scopeOfType($query, string $type): Builder
     {
         return $query->where('rule_type', $type);
 
+    }
     /**
      * Scope by severity
-     */
-    public function scopeBySeverity($query, string $severity)
+          */
+    public function scopeBySeverity($query, string $severity): Builder
     {
         return $query->where('severity', $severity);
+    }
 }

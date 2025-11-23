@@ -1,12 +1,15 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
+use Database\Migrations\Concerns\HasRLSPolicies;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
+    use HasRLSPolicies;
+
     /**
      * Run the migrations.
      */
@@ -59,11 +62,7 @@ return new class extends Migration
         });
 
         // RLS Policy
-        DB::statement("
-            ALTER TABLE cmis.dashboard_configs ENABLE ROW LEVEL SECURITY;
-            CREATE POLICY org_isolation ON cmis.dashboard_configs
-            USING (org_id = current_setting('app.current_org_id', true)::uuid);
-        ");
+        $this->enableRLS('cmis.dashboard_configs');
 
         // 2. Custom Reports - Saved report configurations
         Schema::create('cmis.custom_reports', function (Blueprint $table) {
@@ -125,11 +124,7 @@ return new class extends Migration
         });
 
         // RLS Policy
-        DB::statement("
-            ALTER TABLE cmis.custom_reports ENABLE ROW LEVEL SECURITY;
-            CREATE POLICY org_isolation ON cmis.custom_reports
-            USING (org_id = current_setting('app.current_org_id', true)::uuid);
-        ");
+        $this->enableRLS('cmis.custom_reports');
 
         // 3. Data Snapshots - Historical data for comparisons
         Schema::create('cmis.data_snapshots', function (Blueprint $table) {
@@ -176,11 +171,7 @@ return new class extends Migration
         });
 
         // RLS Policy
-        DB::statement("
-            ALTER TABLE cmis.data_snapshots ENABLE ROW LEVEL SECURITY;
-            CREATE POLICY org_isolation ON cmis.data_snapshots
-            USING (org_id = current_setting('app.current_org_id', true)::uuid);
-        ");
+        $this->enableRLS('cmis.data_snapshots');
 
         // 4. Analytics Metrics - Real-time aggregated metrics
         Schema::create('cmis.analytics_metrics', function (Blueprint $table) {
@@ -226,11 +217,7 @@ return new class extends Migration
         });
 
         // RLS Policy
-        DB::statement("
-            ALTER TABLE cmis.analytics_metrics ENABLE ROW LEVEL SECURITY;
-            CREATE POLICY org_isolation ON cmis.analytics_metrics
-            USING (org_id = current_setting('app.current_org_id', true)::uuid);
-        ");
+        $this->enableRLS('cmis.analytics_metrics');
 
         // 5. Report Schedules - Automated report generation
         Schema::create('cmis.report_schedules', function (Blueprint $table) {
@@ -280,11 +267,7 @@ return new class extends Migration
         });
 
         // RLS Policy
-        DB::statement("
-            ALTER TABLE cmis.report_schedules ENABLE ROW LEVEL SECURITY;
-            CREATE POLICY org_isolation ON cmis.report_schedules
-            USING (org_id = current_setting('app.current_org_id', true)::uuid);
-        ");
+        $this->enableRLS('cmis.report_schedules');
 
         // 6. Data Exports - Export history and downloads
         Schema::create('cmis.data_exports', function (Blueprint $table) {
@@ -333,11 +316,7 @@ return new class extends Migration
         });
 
         // RLS Policy
-        DB::statement("
-            ALTER TABLE cmis.data_exports ENABLE ROW LEVEL SECURITY;
-            CREATE POLICY org_isolation ON cmis.data_exports
-            USING (org_id = current_setting('app.current_org_id', true)::uuid);
-        ");
+        $this->enableRLS('cmis.data_exports');
 
         // Create Comprehensive Analytics Views
 

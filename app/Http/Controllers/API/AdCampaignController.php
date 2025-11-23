@@ -60,24 +60,16 @@ class AdCampaignController extends Controller
             $result = $this->adCampaignService->createCampaign($integration, $validated);
 
             if (!$result['success']) {
-                return response()->json([
-                    'success' => false,
-                    'error' => $result['error'],
-                ], 400);
+                return $this->error($result['error'], 400);
             }
 
-            return response()->json([
-                'success' => true,
+            return $this->created([
                 'campaign' => $result['campaign'],
                 'platform_campaign_id' => $result['external_id'],
-                'message' => 'تم إنشاء الحملة الإعلانية بنجاح',
-            ]);
+            ], 'تم إنشاء الحملة الإعلانية بنجاح');
         } catch (\Exception $e) {
             Log::error("Failed to create campaign: {$e->getMessage()}");
-            return response()->json([
-                'success' => false,
-                'error' => 'فشل إنشاء الحملة الإعلانية: ' . $e->getMessage(),
-            ], 500);
+            return $this->serverError('فشل إنشاء الحملة الإعلانية: ' . $e->getMessage());
         }
     }
 
@@ -114,23 +106,15 @@ class AdCampaignController extends Controller
             $result = $this->adCampaignService->updateCampaign($campaign, $integration, $validated);
 
             if (!$result['success']) {
-                return response()->json([
-                    'success' => false,
-                    'error' => $result['error'],
-                ], 400);
+                return $this->error($result['error'], 400);
             }
 
-            return response()->json([
-                'success' => true,
+            return $this->success([
                 'campaign' => $result['campaign'],
-                'message' => 'تم تحديث الحملة الإعلانية بنجاح',
-            ]);
+            ], 'تم تحديث الحملة الإعلانية بنجاح');
         } catch (\Exception $e) {
             Log::error("Failed to update campaign: {$e->getMessage()}");
-            return response()->json([
-                'success' => false,
-                'error' => 'فشل تحديث الحملة: ' . $e->getMessage(),
-            ], 500);
+            return $this->serverError('فشل تحديث الحملة: ' . $e->getMessage());
         }
     }
 
@@ -161,17 +145,13 @@ class AdCampaignController extends Controller
 
             $campaigns = $query->orderBy('created_at', 'desc')->get();
 
-            return response()->json([
-                'success' => true,
+            return $this->success([
                 'campaigns' => $campaigns,
                 'total' => $campaigns->count(),
-            ]);
+            ], 'Campaigns retrieved successfully');
         } catch (\Exception $e) {
             Log::error("Failed to get campaigns: {$e->getMessage()}");
-            return response()->json([
-                'success' => false,
-                'error' => 'فشل جلب الحملات: ' . $e->getMessage(),
-            ], 500);
+            return $this->serverError('فشل جلب الحملات: ' . $e->getMessage());
         }
     }
 
@@ -192,16 +172,12 @@ class AdCampaignController extends Controller
                 ->where('org_id', $orgId)
                 ->firstOrFail();
 
-            return response()->json([
-                'success' => true,
+            return $this->success([
                 'campaign' => $campaign,
-            ]);
+            ], 'Campaign retrieved successfully');
         } catch (\Exception $e) {
             Log::error("Failed to get campaign: {$e->getMessage()}");
-            return response()->json([
-                'success' => false,
-                'error' => 'لم يتم العثور على الحملة',
-            ], 404);
+            return $this->notFound('لم يتم العثور على الحملة');
         }
     }
 
@@ -238,19 +214,15 @@ class AdCampaignController extends Controller
                 ->limit(30)
                 ->get();
 
-            return response()->json([
-                'success' => true,
+            return $this->success([
                 'campaign_id' => $campaignId,
                 'platform' => $campaign->provider,
                 'live_metrics' => $liveMetrics,
                 'stored_metrics' => $storedMetrics,
-            ]);
+            ], 'Campaign metrics retrieved successfully');
         } catch (\Exception $e) {
             Log::error("Failed to get campaign metrics: {$e->getMessage()}");
-            return response()->json([
-                'success' => false,
-                'error' => 'فشل جلب مقاييس الحملة: ' . $e->getMessage(),
-            ], 500);
+            return $this->serverError('فشل جلب مقاييس الحملة: ' . $e->getMessage());
         }
     }
 
@@ -276,19 +248,16 @@ class AdCampaignController extends Controller
 
             $result = $this->adCampaignService->syncCampaigns($integration);
 
-            return response()->json([
-                'success' => $result['success'],
+            if (!$result['success']) {
+                return $this->error('فشلت مزامنة الحملات', 400);
+            }
+
+            return $this->success([
                 'synced_count' => $result['synced_count'] ?? 0,
-                'message' => $result['success']
-                    ? 'تمت مزامنة الحملات بنجاح'
-                    : 'فشلت مزامنة الحملات',
-            ]);
+            ], 'تمت مزامنة الحملات بنجاح');
         } catch (\Exception $e) {
             Log::error("Failed to sync campaigns: {$e->getMessage()}");
-            return response()->json([
-                'success' => false,
-                'error' => 'فشلت مزامنة الحملات: ' . $e->getMessage(),
-            ], 500);
+            return $this->serverError('فشلت مزامنة الحملات: ' . $e->getMessage());
         }
     }
 
@@ -355,10 +324,7 @@ class AdCampaignController extends Controller
             ]);
 
             if (!$result['success']) {
-                return response()->json([
-                    'success' => false,
-                    'error' => $result['error'],
-                ], 400);
+                return $this->error($result['error'], 400);
             }
 
             $statusMessages = [
@@ -367,17 +333,12 @@ class AdCampaignController extends Controller
                 'DELETED' => 'تم حذف الحملة بنجاح',
             ];
 
-            return response()->json([
-                'success' => true,
+            return $this->success([
                 'campaign' => $result['campaign'],
-                'message' => $statusMessages[$status] ?? 'تم تحديث الحملة بنجاح',
-            ]);
+            ], $statusMessages[$status] ?? 'تم تحديث الحملة بنجاح');
         } catch (\Exception $e) {
             Log::error("Failed to update campaign status: {$e->getMessage()}");
-            return response()->json([
-                'success' => false,
-                'error' => 'فشل تحديث حالة الحملة: ' . $e->getMessage(),
-            ], 500);
+            return $this->serverError('فشل تحديث حالة الحملة: ' . $e->getMessage());
         }
     }
 
@@ -440,10 +401,9 @@ class AdCampaignController extends Controller
             ],
         ];
 
-        return response()->json([
-            'success' => true,
+        return $this->success([
             'platform' => $platform,
             'objectives' => $objectives[$platform] ?? [],
-        ]);
+        ], 'Campaign objectives retrieved successfully');
     }
 }

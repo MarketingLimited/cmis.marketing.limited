@@ -8,6 +8,7 @@ use App\Models\Core\Integration;
 use App\Models\Core\Org;
 use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Builder;
 
 class SyncLog extends BaseModel
 {
@@ -19,6 +20,7 @@ class SyncLog extends BaseModel
     {
         return $this->belongsTo(Integration::class, 'integration_id', 'integration_id');
 
+    }
     /**
      * Start a new sync log.
      *
@@ -48,6 +50,7 @@ class SyncLog extends BaseModel
             'metadata' => $metadata,
         ]);
 
+    }
     /**
      * Mark the sync as completed successfully.
      *
@@ -68,6 +71,7 @@ class SyncLog extends BaseModel
             'records_failed' => $failed,
         ]);
 
+    }
     /**
      * Mark the sync as failed.
      *
@@ -82,26 +86,29 @@ class SyncLog extends BaseModel
             'error_message' => $errorMessage,
         ]);
 
+    }
     /**
      * Scope successful syncs.
      *
      * @param \Illuminate\Database\Eloquent\Builder $query
      * @return \Illuminate\Database\Eloquent\Builder
      */
-    public function scopeSuccessful($query)
+    public function scopeSuccessful($query): Builder
     {
         return $query->where('status', 'completed')->where('records_failed', 0);
 
+    }
     /**
      * Scope failed syncs.
      *
      * @param \Illuminate\Database\Eloquent\Builder $query
      * @return \Illuminate\Database\Eloquent\Builder
      */
-    public function scopeFailed($query)
+    public function scopeFailed($query): Builder
     {
         return $query->where('status', 'failed');
 
+    }
     /**
      * Scope syncs by type.
      *
@@ -109,10 +116,11 @@ class SyncLog extends BaseModel
      * @param string $type
      * @return \Illuminate\Database\Eloquent\Builder
      */
-    public function scopeByType($query, string $type)
+    public function scopeByType($query, string $type): Builder
     {
         return $query->where('sync_type', $type);
 
+    }
     /**
      * Get the duration of the sync in seconds.
      *
@@ -121,7 +129,9 @@ class SyncLog extends BaseModel
     public function getDurationAttribute(): ?int
     {
         if (!$this->started_at || !$this->completed_at) {
+            }
             return null;
 
         return $this->completed_at->diffInSeconds($this->started_at);
+    }
 }

@@ -7,6 +7,7 @@ use App\Models\Concerns\HasOrganization;
 use App\Models\Core\Org;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Builder;
 use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -187,19 +188,19 @@ class AutomationSchedule extends BaseModel
 
     // ===== Scopes =====
 
-    public function scopeEnabled($query)
+    public function scopeEnabled($query): Builder
     {
         return $query->where('enabled', true);
     }
 
-    public function scopeDue($query)
+    public function scopeDue($query): Builder
     {
         return $query->enabled()
             ->whereNotNull('next_run_at')
             ->where('next_run_at', '<=', now());
     }
 
-    public function scopeActive($query)
+    public function scopeActive($query): Builder
     {
         return $query->enabled()
             ->where(function ($q) {

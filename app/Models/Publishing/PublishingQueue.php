@@ -6,6 +6,7 @@ use App\Models\Concerns\HasOrganization;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use App\Models\BaseModel;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use App\Models\Core\Org;
@@ -48,26 +49,22 @@ class PublishingQueue extends BaseModel
     {
         return $this->belongsTo(SocialAccount::class, 'social_account_id', 'account_id');
 
+    }
     /**
      * Scope to get active queues only
      */
-    public function scopeActive($query)
+    public function scopeActive($query): Builder
     {
         return $query->where('is_active', true);
-
-    /**
-     * Scope by organization
-     */
-    public function scopeForOrg($query, string $orgId)
-    {
-        return $query->where('org_id', $orgId);
+    }
 
     /**
      * Scope by social account
      */
-    public function scopeForAccount($query, string $accountId)
+    public function scopeForAccount($query, string $accountId): Builder
     {
         return $query->where('social_account_id', $accountId);
+    }
 
     /**
      * Check if a specific weekday is enabled
@@ -77,8 +74,10 @@ class PublishingQueue extends BaseModel
         // dayIndex: 0=Monday, 6=Sunday
         if ($dayIndex < 0 || $dayIndex > 6) {
             return false;
+        }
 
         return isset($this->weekdays_enabled[$dayIndex]) && $this->weekdays_enabled[$dayIndex] === '1';
+    }
 
     /**
      * Get enabled time slots for a specific day
@@ -87,9 +86,12 @@ class PublishingQueue extends BaseModel
     {
         if (!$this->isWeekdayEnabled($dayIndex)) {
             return [];
+        }
 
         return array_filter($this->time_slots ?? [], function ($slot) {
             return isset($slot['enabled']) && $slot['enabled'] === true;
+        });
+    }
 
     /**
      * Get all enabled time slots
@@ -98,6 +100,8 @@ class PublishingQueue extends BaseModel
     {
         return array_filter($this->time_slots ?? [], function ($slot) {
             return isset($slot['enabled']) && $slot['enabled'] === true;
+        });
+    }
 
     /**
      * Get next available posting time
@@ -106,14 +110,17 @@ class PublishingQueue extends BaseModel
     {
         if (!$this->is_active) {
             return null;
+        }
 
         $after = $after ?? new \DateTime('now', new \DateTimeZone($this->timezone));
         $enabledSlots = $this->getAllEnabledTimeSlots();
 
         if (empty($enabledSlots)) {
             return null;
+        }
 
         // Find next available slot (implementation would go here)
         // This is a simplified version
         return $after->modify('+1 hour');
+    }
 }

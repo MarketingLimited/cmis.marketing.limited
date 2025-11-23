@@ -39,7 +39,7 @@ class EmbeddingsCache extends BaseModel
      * Find cached embedding by content hash
      */
     public static function findByHash(string $contentHash, ?string $modelName = null)
-    {
+    : mixed {
         $query = self::where('content_hash', $contentHash);
 
         if ($modelName) {
@@ -53,7 +53,7 @@ class EmbeddingsCache extends BaseModel
      * Get or create cache entry
      */
     public static function getOrCreate(string $content, string $contentType, ?string $modelName = null)
-    {
+    : mixed {
         $hash = md5($content);
         $cached = self::findByHash($hash, $modelName);
 
@@ -77,7 +77,7 @@ class EmbeddingsCache extends BaseModel
     /**
      * Scope by content type
      */
-    public function scopeByContentType($query, string $contentType)
+    public function scopeByContentType($query, string $contentType): Builder
     {
         return $query->where('content_type', $contentType);
     }
@@ -85,7 +85,7 @@ class EmbeddingsCache extends BaseModel
     /**
      * Scope by model name
      */
-    public function scopeByModel($query, string $modelName)
+    public function scopeByModel($query, string $modelName): Builder
     {
         return $query->where('model_name', $modelName);
     }
@@ -93,7 +93,7 @@ class EmbeddingsCache extends BaseModel
     /**
      * Scope stale entries (not accessed in X days)
      */
-    public function scopeStale($query, int $days = 30)
+    public function scopeStale($query, int $days = 30): Builder
     {
         return $query->where('last_accessed', '<', now()->subDays($days));
     }

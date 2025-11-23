@@ -34,10 +34,7 @@ class TwitterAdsController extends Controller
             ]);
 
             if ($validator->fails()) {
-                return response()->json([
-                    'success' => false,
-                    'errors' => $validator->errors()
-                ], 422);
+                return $this->validationError($validator->errors(), 'Validation failed');
             }
 
             $orgId = auth()->user()->org_id;
@@ -64,11 +61,7 @@ class TwitterAdsController extends Controller
                 'total_count' => $result['total_count']
             ]);
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to fetch Twitter Ads campaigns',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to fetch Twitter Ads campaigns' . ': ' . $e->getMessage());
         }
     }
 
@@ -90,10 +83,7 @@ class TwitterAdsController extends Controller
             ]);
 
             if ($validator->fails()) {
-                return response()->json([
-                    'success' => false,
-                    'errors' => $validator->errors()
-                ], 422);
+                return $this->validationError($validator->errors(), 'Validation failed');
             }
 
             $orgId = auth()->user()->org_id;
@@ -128,11 +118,7 @@ class TwitterAdsController extends Controller
                 'campaign' => $result
             ], 201);
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to create Twitter Ads campaign',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to create Twitter Ads campaign' . ': ' . $e->getMessage());
         }
     }
 
@@ -149,10 +135,7 @@ class TwitterAdsController extends Controller
             ]);
 
             if ($validator->fails()) {
-                return response()->json([
-                    'success' => false,
-                    'errors' => $validator->errors()
-                ], 422);
+                return $this->validationError($validator->errors(), 'Validation failed');
             }
 
             $orgId = auth()->user()->org_id;
@@ -179,11 +162,7 @@ class TwitterAdsController extends Controller
                 'metrics' => $result['metrics']
             ]);
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to fetch campaign details',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to fetch campaign details' . ': ' . $e->getMessage());
         }
     }
 
@@ -200,10 +179,7 @@ class TwitterAdsController extends Controller
             ]);
 
             if ($validator->fails()) {
-                return response()->json([
-                    'success' => false,
-                    'errors' => $validator->errors()
-                ], 422);
+                return $this->validationError($validator->errors(), 'Validation failed');
             }
 
             $orgId = auth()->user()->org_id;
@@ -233,11 +209,7 @@ class TwitterAdsController extends Controller
                 ]
             ]);
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to fetch campaign metrics',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to fetch campaign metrics' . ': ' . $e->getMessage());
         }
     }
 
@@ -252,10 +224,7 @@ class TwitterAdsController extends Controller
             ]);
 
             if ($validator->fails()) {
-                return response()->json([
-                    'success' => false,
-                    'errors' => $validator->errors()
-                ], 422);
+                return $this->validationError($validator->errors(), 'Validation failed');
             }
 
             $orgId = auth()->user()->org_id;
@@ -270,16 +239,9 @@ class TwitterAdsController extends Controller
 
             $this->twitterAdsService->clearCache($integration->platform_account_id);
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Twitter Ads cache cleared successfully'
-            ]);
+            return $this->success(null, 'Twitter Ads cache cleared successfully');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to refresh cache',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to refresh cache' . ': ' . $e->getMessage());
         }
     }
 }

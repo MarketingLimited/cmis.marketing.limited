@@ -81,7 +81,7 @@ class MetricsRepository
         string $entityType,
         string $entityId,
         string $metricName
-    ) {
+    ): mixed {
         $metric = Metric::forEntity($entityType, $entityId)
             ->metric($metricName)
             ->latest()

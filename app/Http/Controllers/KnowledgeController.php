@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Concerns\ApiResponse;
+use Illuminate\Http\JsonResponse;
+use Illuminate\View\View;
 
 class KnowledgeController extends Controller
 {
@@ -19,7 +21,7 @@ class KnowledgeController extends Controller
     /**
      * Display knowledge base dashboard
      */
-    public function index()
+    public function index(): View
     {
         try {
             $stats = DB::select("
@@ -49,7 +51,7 @@ class KnowledgeController extends Controller
     /**
      * Search knowledge base
      */
-    public function search(Request $request)
+    public function search(Request $request): JsonResponse
     {
         $query = $request->input('q');
         $domain = $request->input('domain');
@@ -60,25 +62,20 @@ class KnowledgeController extends Controller
                 SELECT * FROM cmis_knowledge.semantic_search_advanced(?, ?, ?, NULL, NULL, 20)
             ", [$query, $domain, $category]);
 
-            return response()->json([
-                'success' => true,
+            return $this->success([
                 'results' => $results,
                 'count' => count($results)
-            ]);
+            ], 'Search completed successfully');
         } catch (\Exception $e) {
             Log::error('Knowledge search error: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'error' => 'خطأ في البحث',
-                'message' => $e->getMessage()
-            ], 500);
+            return $this->serverError('خطأ في البحث' . ': ' . $e->getMessage());
         }
     }
 
     /**
      * Register new knowledge
      */
-    public function store(Request $request)
+    public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
             'domain' => 'required|string|max:50',
@@ -101,25 +98,19 @@ class KnowledgeController extends Controller
                 json_encode($validated['keywords'] ?? [])
             ]);
 
-            return response()->json([
-                'success' => true,
-                'knowledge_id' => $result[0]->knowledge_id ?? null,
-                'message' => 'تم تسجيل المعرفة بنجاح'
-            ]);
+            return $this->success([
+                'knowledge_id' => $result[0]->knowledge_id ?? null
+            ], 'تم تسجيل المعرفة بنجاح');
         } catch (\Exception $e) {
             Log::error('Knowledge store error: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'error' => 'فشل تسجيل المعرفة',
-                'message' => $e->getMessage()
-            ], 500);
+            return $this->serverError('فشل تسجيل المعرفة' . ': ' . $e->getMessage());
         }
     }
 
     /**
      * Get domains list
      */
-    public function domains()
+    public function domains(): JsonResponse
     {
         try {
             $domains = DB::select("
@@ -130,22 +121,16 @@ class KnowledgeController extends Controller
                 ORDER BY count DESC
             ");
 
-            return response()->json([
-                'success' => true,
-                'domains' => $domains
-            ]);
+            return $this->success(['domains' => $domains], 'Domains retrieved successfully');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to retrieve domains: ' . $e->getMessage());
         }
     }
 
     /**
      * Get categories by domain
      */
-    public function categories($domain)
+    public function categories($domain): JsonResponse
     {
         try {
             $categories = DB::select("
@@ -156,15 +141,9 @@ class KnowledgeController extends Controller
                 ORDER BY count DESC
             ", [$domain]);
 
-            return response()->json([
-                'success' => true,
-                'categories' => $categories
-            ]);
+            return $this->success(['categories' => $categories], 'Categories retrieved successfully');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to retrieve categories: ' . $e->getMessage());
         }
     }
 }

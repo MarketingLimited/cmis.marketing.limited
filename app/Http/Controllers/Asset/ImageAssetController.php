@@ -1,11 +1,13 @@
 <?php
 
 namespace App\Http\Controllers\Asset;
+use App\Http\Controllers\Concerns\ApiResponse;
 
 use App\Http\Controllers\Controller;
 use App\Models\Asset\ImageAsset;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Http\JsonResponse;
 
 /**
  * Image Asset Controller
@@ -23,7 +25,7 @@ class ImageAssetController extends Controller
      * @param Request $request HTTP request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function index(Request $request)
+    public function index(Request $request): JsonResponse
     {
         Log::info('ImageAssetController::index called (stub)', [
             'filters' => $request->all(),
@@ -42,7 +44,7 @@ class ImageAssetController extends Controller
      * @param Request $request HTTP request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function create(Request $request)
+    public function create(Request $request): JsonResponse
     {
         Log::info('ImageAssetController::create called (stub)');
 
@@ -58,7 +60,7 @@ class ImageAssetController extends Controller
      * @param Request $request HTTP request with image asset data and file upload
      * @return \Illuminate\Http\JsonResponse
      */
-    public function store(Request $request)
+    public function store(Request $request): JsonResponse
     {
         Log::info('ImageAssetController::store called (stub)', [
             'data' => $request->all(),
@@ -78,7 +80,7 @@ class ImageAssetController extends Controller
      * @param string $asset_id Image Asset ID
      * @return \Illuminate\Http\JsonResponse
      */
-    public function show(Request $request, $asset_id)
+    public function show(Request $request, $asset_id): JsonResponse
     {
         Log::info('ImageAssetController::show called (stub)', [
             'asset_id' => $asset_id,
@@ -97,7 +99,7 @@ class ImageAssetController extends Controller
      * @param string $asset_id Image Asset ID
      * @return \Illuminate\Http\JsonResponse
      */
-    public function edit(Request $request, $asset_id)
+    public function edit(Request $request, $asset_id): JsonResponse
     {
         Log::info('ImageAssetController::edit called (stub)', [
             'asset_id' => $asset_id,
@@ -116,7 +118,7 @@ class ImageAssetController extends Controller
      * @param string $asset_id Image Asset ID
      * @return \Illuminate\Http\JsonResponse
      */
-    public function update(Request $request, $asset_id)
+    public function update(Request $request, $asset_id): JsonResponse
     {
         Log::info('ImageAssetController::update called (stub)', [
             'asset_id' => $asset_id,
@@ -137,7 +139,7 @@ class ImageAssetController extends Controller
      * @param string $asset_id Image Asset ID
      * @return \Illuminate\Http\JsonResponse
      */
-    public function destroy(Request $request, $asset_id)
+    public function destroy(Request $request, $asset_id): JsonResponse
     {
         Log::info('ImageAssetController::destroy called (stub)', [
             'asset_id' => $asset_id,

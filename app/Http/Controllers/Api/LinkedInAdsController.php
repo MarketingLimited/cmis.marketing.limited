@@ -34,10 +34,7 @@ class LinkedInAdsController extends Controller
             ]);
 
             if ($validator->fails()) {
-                return response()->json([
-                    'success' => false,
-                    'errors' => $validator->errors()
-                ], 422);
+                return $this->validationError($validator->errors(), 'Validation failed');
             }
 
             $orgId = auth()->user()->org_id;
@@ -64,11 +61,7 @@ class LinkedInAdsController extends Controller
                 'count' => count($result['campaigns'])
             ]);
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to fetch LinkedIn Ads campaigns',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to fetch LinkedIn Ads campaigns: ' . $e->getMessage());
         }
     }
 
@@ -85,10 +78,7 @@ class LinkedInAdsController extends Controller
             ]);
 
             if ($validator->fails()) {
-                return response()->json([
-                    'success' => false,
-                    'errors' => $validator->errors()
-                ], 422);
+                return $this->validationError($validator->errors(), 'Validation failed');
             }
 
             $orgId = auth()->user()->org_id;
@@ -109,16 +99,9 @@ class LinkedInAdsController extends Controller
                 $request->input('end_date')
             );
 
-            return response()->json([
-                'success' => true,
-                'campaign' => $campaign
-            ]);
+            return $this->success(['campaign' => $campaign], 'Operation completed successfully');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to fetch campaign details',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to fetch campaign details: ' . $e->getMessage());
         }
     }
 
@@ -133,10 +116,7 @@ class LinkedInAdsController extends Controller
             ]);
 
             if ($validator->fails()) {
-                return response()->json([
-                    'success' => false,
-                    'errors' => $validator->errors()
-                ], 422);
+                return $this->validationError($validator->errors(), 'Validation failed');
             }
 
             $orgId = auth()->user()->org_id;
@@ -155,17 +135,10 @@ class LinkedInAdsController extends Controller
                 $integration->access_token
             );
 
-            return response()->json([
-                'success' => true,
-                'creatives' => $creatives,
-                'count' => count($creatives)
-            ]);
+            return $this->success(['creatives' => $creatives,
+                'count' => count($creatives)], 'Operation completed successfully');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to fetch creatives',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to fetch creatives: ' . $e->getMessage());
         }
     }
 
@@ -188,10 +161,7 @@ class LinkedInAdsController extends Controller
             ]);
 
             if ($validator->fails()) {
-                return response()->json([
-                    'success' => false,
-                    'errors' => $validator->errors()
-                ], 422);
+                return $this->validationError($validator->errors(), 'Validation failed');
             }
 
             $orgId = auth()->user()->org_id;
@@ -227,11 +197,7 @@ class LinkedInAdsController extends Controller
                 'campaign' => $result
             ], 201);
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to create LinkedIn Ads campaign',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to create LinkedIn Ads campaign: ' . $e->getMessage());
         }
     }
 
@@ -248,10 +214,7 @@ class LinkedInAdsController extends Controller
             ]);
 
             if ($validator->fails()) {
-                return response()->json([
-                    'success' => false,
-                    'errors' => $validator->errors()
-                ], 422);
+                return $this->validationError($validator->errors(), 'Validation failed');
             }
 
             $orgId = auth()->user()->org_id;
@@ -281,11 +244,7 @@ class LinkedInAdsController extends Controller
                 ]
             ]);
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to fetch campaign metrics',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to fetch campaign metrics: ' . $e->getMessage());
         }
     }
 
@@ -300,10 +259,7 @@ class LinkedInAdsController extends Controller
             ]);
 
             if ($validator->fails()) {
-                return response()->json([
-                    'success' => false,
-                    'errors' => $validator->errors()
-                ], 422);
+                return $this->validationError($validator->errors(), 'Validation failed');
             }
 
             $orgId = auth()->user()->org_id;
@@ -318,16 +274,9 @@ class LinkedInAdsController extends Controller
 
             $this->linkedInAdsService->clearCache($integration->platform_account_id);
 
-            return response()->json([
-                'success' => true,
-                'message' => 'LinkedIn Ads cache cleared successfully'
-            ]);
+            return $this->success(null, 'LinkedIn Ads cache cleared successfully');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to refresh cache',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to refresh cache: ' . $e->getMessage());
         }
     }
 }

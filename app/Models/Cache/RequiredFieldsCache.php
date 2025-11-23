@@ -28,14 +28,16 @@ class RequiredFieldsCache extends BaseModel
     /**
      * Scope by module
      */
-    public function scopeForModule($query, string $moduleId)
+    public function scopeForModule($query, string $moduleId): Builder
     {
         return $query->where('module_id', $moduleId);
 
+    }
     /**
      * Scope required fields only
      */
-    public function scopeRequired($query)
+    public function scopeRequired($query): Builder
     {
         return $query->where('is_required', true);
+}
 }

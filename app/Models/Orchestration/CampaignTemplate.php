@@ -10,6 +10,7 @@ use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Builder;
 class CampaignTemplate extends BaseModel
 {
     use HasFactory;
@@ -53,39 +54,42 @@ class CampaignTemplate extends BaseModel
 
     // ===== Relationships =====
 
-    
+
 
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by', 'user_id');
+    }
 
     public function orchestrations(): HasMany
     {
         return $this->hasMany(CampaignOrchestration::class, 'template_id', 'template_id');
-
-    // ===== Template Management =====
+    }
 
     public function incrementUsage(): void
     {
         $this->increment('usage_count');
+    }
 
     public function activate(): void
     {
         $this->update(['is_active' => true]);
+    }
 
     public function deactivate(): void
     {
         $this->update(['is_active' => false]);
+    }
 
     public function isActive(): bool
     {
         return $this->is_active;
+    }
 
     public function isGlobal(): bool
     {
         return $this->is_global;
-
-    // ===== Configuration Helpers =====
+    }
 
     public function getPlatformConfig(string $platform): array
     {
@@ -93,14 +97,17 @@ class CampaignTemplate extends BaseModel
         $platformSpecific = $this->platform_specific_config[$platform] ?? [];
 
         return array_merge($baseConfig, $platformSpecific);
+    }
 
     public function supportsPlatform(string $platform): bool
     {
         return in_array($platform, $this->platforms ?? []);
+    }
 
     public function getPlatformCount(): int
     {
         return count($this->platforms ?? []);
+    }
 
     public function getCategoryLabel(): string
     {
@@ -111,6 +118,7 @@ class CampaignTemplate extends BaseModel
             'retention' => 'Customer Retention',
             default => ucfirst($this->category)
         };
+    }
 
     public function getObjectiveLabel(): string
     {
@@ -127,6 +135,7 @@ class CampaignTemplate extends BaseModel
             'store_traffic' => 'Store Traffic',
             default => ucfirst(str_replace('_', ' ', $this->objective))
         };
+    }
 
     public function getBudgetDistribution(): array
     {
@@ -140,29 +149,35 @@ class CampaignTemplate extends BaseModel
             $result = [];
             foreach ($this->platforms as $platform) {
                 $result[$platform] = $percentage;
+            }
             return $result;
+        }
 
         return $template['custom_distribution'] ?? [];
+    }
 
-    // ===== Scopes =====
-
-    public function scopeActive($query)
+    public function scopeActive($query): Builder
     {
         return $query->where('is_active', true);
+    }
 
-    public function scopeGlobal($query)
+    public function scopeGlobal($query): Builder
     {
         return $query->where('is_global', true);
+    }
 
-    public function scopeForCategory($query, string $category)
+    public function scopeForCategory($query, string $category): Builder
     {
         return $query->where('category', $category);
+    }
 
-    public function scopeForObjective($query, string $objective)
+    public function scopeForObjective($query, string $objective): Builder
     {
         return $query->where('objective', $objective);
+    }
 
-    public function scopeForPlatform($query, string $platform)
+    public function scopeForPlatform($query, string $platform): Builder
     {
         return $query->whereJsonContains('platforms', $platform);
+    }
 }

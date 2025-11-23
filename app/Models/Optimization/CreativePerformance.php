@@ -9,6 +9,7 @@ use App\Models\Campaign\Campaign;
 use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Builder;
 class CreativePerformance extends BaseModel
 {
     use HasFactory;
@@ -82,8 +83,8 @@ class CreativePerformance extends BaseModel
     {
         return $this->belongsTo(Campaign::class, 'campaign_id', 'campaign_id');
 
-    // ===== Performance Analysis =====
 
+        }
     public function calculatePerformanceScore(): float
     {
         $weights = [
@@ -99,22 +100,27 @@ class CreativePerformance extends BaseModel
         // Normalize ROAS (assume good ROAS is 3.0+)
         if ($this->roas !== null) {
             $scores['roas'] = min($this->roas / 3.0, 1.0);
+        }
 
         // CVR is already a percentage
         if ($this->cvr !== null) {
             $scores['cvr'] = min($this->cvr * 10, 1.0); // Assume 10% CVR is excellent
+        }
 
         // CTR is already a percentage
         if ($this->ctr !== null) {
             $scores['ctr'] = min($this->ctr * 5, 1.0); // Assume 20% CTR is excellent
+        }
 
         // Engagement rate
         if ($this->engagement_rate !== null) {
             $scores['engagement_rate'] = min($this->engagement_rate * 5, 1.0);
+        }
 
         // Freshness (inverse of fatigue)
         if ($this->freshness_days !== null) {
             $scores['freshness'] = max(1.0 - ($this->freshness_days / 90), 0); // 90 days = stale
+        }
 
         // Calculate weighted average
         $totalScore = 0;
@@ -124,9 +130,11 @@ class CreativePerformance extends BaseModel
             if (isset($scores[$metric])) {
                 $totalScore += $scores[$metric] * $weight;
                 $totalWeight += $weight;
+            }
+        }
 
         return $totalWeight > 0 ? round($totalScore / $totalWeight, 4) : 0.0;
-
+    }
     public function calculateFatigueScore(): float
     {
         // Higher fatigue = more stale creative
@@ -136,18 +144,22 @@ class CreativePerformance extends BaseModel
 
         return round(($impressionFactor * 0.4) + ($ageFactor * 0.4) + ($performanceDecline * 0.2), 4);
 
+        }
     public function isFatigued(): bool
     {
         return $this->fatigue_score > 0.7;
 
+        }
     public function isHighPerforming(): bool
     {
         return $this->performance_score >= 0.7;
 
+        }
     public function needsRefresh(): bool
     {
         return $this->isFatigued() || ($this->freshness_days !== null && $this->freshness_days > 60);
 
+        }
     public function getCreativeTypeLabel(): string
     {
         return match($this->creative_type) {
@@ -159,6 +171,7 @@ class CreativePerformance extends BaseModel
             'reels' => 'Reels',
             default => ucfirst($this->creative_type)
         };
+    }
 
     public function getRecommendationLabel(): string
     {
@@ -170,54 +183,53 @@ class CreativePerformance extends BaseModel
             'test_variation' => 'Test Variations',
             default => ucfirst(str_replace('_', ' ', $this->recommendation ?? 'none'))
         };
+    }
 
     public function getVisualFeatureSummary(): string
     {
         if (!$this->visual_features || !is_array($this->visual_features)) {
             return 'N/A';
+        }
 
-        $features = [];
-        if (isset($this->visual_features['dominant_color'])) {
-            $features[] = 'Color: ' . $this->visual_features['dominant_color'];
-        if (isset($this->visual_features['has_faces'])) {
-            $features[] = $this->visual_features['has_faces'] ? 'Has Faces' : 'No Faces';
-        if (isset($this->visual_features['has_text'])) {
-            $features[] = $this->visual_features['has_text'] ? 'Has Text Overlay' : 'No Text';
-
-        return implode(', ', $features) ?: 'N/A';
+        $summary = [];
+        foreach ($this->visual_features as $key => $value) {
+            $summary[] = ucfirst($key) . ': ' . $value;
+        }
+        return implode(', ', $summary);
+    }
 
     public function getTextFeatureSummary(): string
     {
         if (!$this->text_features || !is_array($this->text_features)) {
             return 'N/A';
+        }
 
-        $features = [];
-        if (isset($this->text_features['headline_length'])) {
-            $features[] = 'Headline: ' . $this->text_features['headline_length'] . ' chars';
-        if (isset($this->text_features['has_cta'])) {
-            $features[] = $this->text_features['has_cta'] ? 'Has CTA' : 'No CTA';
-        if (isset($this->text_features['sentiment'])) {
-            $features[] = 'Sentiment: ' . ucfirst($this->text_features['sentiment']);
-
-        return implode(', ', $features) ?: 'N/A';
-
-    // ===== Scopes =====
-
-    public function scopeHighPerforming($query)
+        $summary = [];
+        foreach ($this->text_features as $key => $value) {
+            $summary[] = ucfirst($key) . ': ' . $value;
+        }
+        return implode(', ', $summary);
+    }
+    public function scopeHighPerforming($query): Builder
     {
         return $query->where('performance_score', '>=', 0.7);
 
-    public function scopeFatigued($query)
+        }
+    public function scopeFatigued($query): Builder
     {
         return $query->where('fatigue_score', '>', 0.7);
 
-    public function scopeForCreativeType($query, string $type)
+        }
+    public function scopeForCreativeType($query, string $type): Builder
     {
         return $query->where('creative_type', $type);
 
-    public function scopeNeedsRefresh($query)
+        }
+    public function scopeNeedsRefresh($query): Builder
     {
         return $query->where(function ($q) {
             $q->where('fatigue_score', '>', 0.7)
               ->orWhere('freshness_days', '>', 60);
+        });
+    }
 }

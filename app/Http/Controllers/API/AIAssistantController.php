@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Controllers\Concerns\ApiResponse;
 use App\Http\Controllers\Traits\HandlesAsyncJobs;
 use App\Jobs\AI\GenerateContentJob;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -29,9 +30,9 @@ class AIAssistantController extends Controller
      * Supports async processing with async=true (default)
      *
      * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
+     * @return JsonResponse
      */
-    public function generateSuggestions(Request $request)
+    public function generateSuggestions(Request $request): JsonResponse
     {
         $validator = Validator::make($request->all(), [
             'prompt' => 'required|string|max:5000',
@@ -40,10 +41,7 @@ class AIAssistantController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'message' => 'Validation failed',
-                'errors' => $validator->errors(),
-            ], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         $prompt = 'Generate 5 creative marketing suggestions based on this prompt: ' . $request->prompt .
@@ -77,17 +75,12 @@ class AIAssistantController extends Controller
         try {
             $result = $this->callGeminiAPI($prompt);
 
-            return response()->json([
-                'data' => [
-                    'suggestions' => $result,
-                ],
-            ]);
+            return $this->success([
+                'suggestions' => $result,
+            ], 'Suggestions generated successfully');
         } catch (\Exception $e) {
             Log::error('AI API Error in generateSuggestions: ' . $e->getMessage());
-            return response()->json([
-                'message' => 'Failed to generate suggestions',
-                'error' => $e->getMessage(),
-            ], 500);
+            return $this->serverError('Failed to generate suggestions: ' . $e->getMessage());
         }
     }
 
@@ -99,7 +92,7 @@ class AIAssistantController extends Controller
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function generateBrief(Request $request)
+    public function generateBrief(Request $request): JsonResponse
     {
         $validator = Validator::make($request->all(), [
             'product_description' => 'required|string|max:2000',
@@ -109,10 +102,7 @@ class AIAssistantController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'message' => 'Validation failed',
-                'errors' => $validator->errors(),
-            ], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         $prompt = "Create a comprehensive marketing campaign brief for:\n" .
@@ -149,17 +139,12 @@ class AIAssistantController extends Controller
         try {
             $result = $this->callGeminiAPI($prompt);
 
-            return response()->json([
-                'data' => [
-                    'brief' => $result,
-                ],
-            ]);
+            return $this->success([
+                'brief' => $result,
+            ], 'Campaign brief generated successfully');
         } catch (\Exception $e) {
             Log::error('AI API Error in generateBrief: ' . $e->getMessage());
-            return response()->json([
-                'message' => 'Failed to generate brief',
-                'error' => $e->getMessage(),
-            ], 500);
+            return $this->serverError('Failed to generate brief: ' . $e->getMessage());
         }
     }
 
@@ -169,7 +154,7 @@ class AIAssistantController extends Controller
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function generateVisual(Request $request)
+    public function generateVisual(Request $request): JsonResponse
     {
         $validator = Validator::make($request->all(), [
             'product_info' => 'required|string|max:2000',
@@ -177,10 +162,7 @@ class AIAssistantController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'message' => 'Validation failed',
-                'errors' => $validator->errors(),
-            ], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         try {
@@ -190,17 +172,12 @@ class AIAssistantController extends Controller
 
             $result = $this->callGeminiAPI($prompt);
 
-            return response()->json([
-                'data' => [
-                    'description' => $result,
-                ],
-            ]);
+            return $this->success([
+                'description' => $result,
+            ], 'Visual description generated successfully');
         } catch (\Exception $e) {
             Log::error('AI API Error in generateVisual: ' . $e->getMessage());
-            return response()->json([
-                'message' => 'Failed to generate visual description',
-                'error' => $e->getMessage(),
-            ], 500);
+            return $this->serverError('Failed to generate visual description: ' . $e->getMessage());
         }
     }
 
@@ -210,34 +187,26 @@ class AIAssistantController extends Controller
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function extractKeywords(Request $request)
+    public function extractKeywords(Request $request): JsonResponse
     {
         $validator = Validator::make($request->all(), [
             'content' => 'required|string|max:5000',
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'message' => 'Validation failed',
-                'errors' => $validator->errors(),
-            ], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         try {
             $prompt = "Extract the most important keywords from this text: {$request->content}";
             $result = $this->callGeminiAPI($prompt);
 
-            return response()->json([
-                'data' => [
-                    'keywords' => $result,
-                ],
-            ]);
+            return $this->success([
+                'keywords' => $result,
+            ], 'Keywords extracted successfully');
         } catch (\Exception $e) {
             Log::error('AI API Error in extractKeywords: ' . $e->getMessage());
-            return response()->json([
-                'message' => 'Failed to extract keywords',
-                'error' => $e->getMessage(),
-            ], 500);
+            return $this->serverError('Failed to extract keywords: ' . $e->getMessage());
         }
     }
 
@@ -247,7 +216,7 @@ class AIAssistantController extends Controller
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function generateHashtags(Request $request)
+    public function generateHashtags(Request $request): JsonResponse
     {
         $validator = Validator::make($request->all(), [
             'caption' => 'required|string|max:2000',
@@ -255,10 +224,7 @@ class AIAssistantController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'message' => 'Validation failed',
-                'errors' => $validator->errors(),
-            ], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         try {
@@ -266,17 +232,12 @@ class AIAssistantController extends Controller
             $prompt = "Generate relevant hashtags for this {$platform} post: {$request->caption}";
             $result = $this->callGeminiAPI($prompt);
 
-            return response()->json([
-                'data' => [
-                    'hashtags' => $result,
-                ],
-            ]);
+            return $this->success([
+                'hashtags' => $result,
+            ], 'Hashtags generated successfully');
         } catch (\Exception $e) {
             Log::error('AI API Error in generateHashtags: ' . $e->getMessage());
-            return response()->json([
-                'message' => 'Failed to generate hashtags',
-                'error' => $e->getMessage(),
-            ], 500);
+            return $this->serverError('Failed to generate hashtags: ' . $e->getMessage());
         }
     }
 
@@ -286,36 +247,28 @@ class AIAssistantController extends Controller
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function analyzeSentiment(Request $request)
+    public function analyzeSentiment(Request $request): JsonResponse
     {
         $validator = Validator::make($request->all(), [
             'text' => 'required|string|max:5000',
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'message' => 'Validation failed',
-                'errors' => $validator->errors(),
-            ], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         try {
             $prompt = "Analyze the sentiment of this text and provide a sentiment (positive/negative/neutral) and confidence score (0-1): {$request->text}";
             $result = $this->callGeminiAPI($prompt);
 
-            return response()->json([
-                'data' => [
-                    'sentiment' => 'positive', // Parsed from AI response
-                    'score' => 0.85, // Parsed from AI response
-                    'analysis' => $result,
-                ],
-            ]);
+            return $this->success([
+                'sentiment' => 'positive', // Parsed from AI response
+                'score' => 0.85, // Parsed from AI response
+                'analysis' => $result,
+            ], 'Sentiment analyzed successfully');
         } catch (\Exception $e) {
             Log::error('AI API Error in analyzeSentiment: ' . $e->getMessage());
-            return response()->json([
-                'message' => 'Failed to analyze sentiment',
-                'error' => $e->getMessage(),
-            ], 500);
+            return $this->serverError('Failed to analyze sentiment: ' . $e->getMessage());
         }
     }
 
@@ -325,7 +278,7 @@ class AIAssistantController extends Controller
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function translate(Request $request)
+    public function translate(Request $request): JsonResponse
     {
         $validator = Validator::make($request->all(), [
             'text' => 'required|string|max:5000',
@@ -333,27 +286,19 @@ class AIAssistantController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'message' => 'Validation failed',
-                'errors' => $validator->errors(),
-            ], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         try {
             $prompt = "Translate this text to {$request->target_language}: {$request->text}";
             $result = $this->callGeminiAPI($prompt);
 
-            return response()->json([
-                'data' => [
-                    'translated_text' => $result,
-                ],
-            ]);
+            return $this->success([
+                'translated_text' => $result,
+            ], 'Translation completed successfully');
         } catch (\Exception $e) {
             Log::error('AI API Error in translate: ' . $e->getMessage());
-            return response()->json([
-                'message' => 'Failed to translate',
-                'error' => $e->getMessage(),
-            ], 500);
+            return $this->serverError('Failed to translate: ' . $e->getMessage());
         }
     }
 
@@ -363,7 +308,7 @@ class AIAssistantController extends Controller
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function generateVariations(Request $request)
+    public function generateVariations(Request $request): JsonResponse
     {
         $validator = Validator::make($request->all(), [
             'original_content' => 'required|string|max:2000',
@@ -371,10 +316,7 @@ class AIAssistantController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'message' => 'Validation failed',
-                'errors' => $validator->errors(),
-            ], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         try {
@@ -382,17 +324,12 @@ class AIAssistantController extends Controller
             $prompt = "Create {$count} variations of this content, maintaining the same message but with different wording: {$request->original_content}";
             $result = $this->callGeminiAPI($prompt);
 
-            return response()->json([
-                'data' => [
-                    'variations' => $result,
-                ],
-            ]);
+            return $this->success([
+                'variations' => $result,
+            ], 'Variations generated successfully');
         } catch (\Exception $e) {
             Log::error('AI API Error in generateVariations: ' . $e->getMessage());
-            return response()->json([
-                'message' => 'Failed to generate variations',
-                'error' => $e->getMessage(),
-            ], 500);
+            return $this->serverError('Failed to generate variations: ' . $e->getMessage());
         }
     }
 
@@ -402,7 +339,7 @@ class AIAssistantController extends Controller
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function generateCalendar(Request $request)
+    public function generateCalendar(Request $request): JsonResponse
     {
         $validator = Validator::make($request->all(), [
             'campaign_name' => 'required|string|max:200',
@@ -412,10 +349,7 @@ class AIAssistantController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'message' => 'Validation failed',
-                'errors' => $validator->errors(),
-            ], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         try {
@@ -426,17 +360,12 @@ class AIAssistantController extends Controller
                       "Frequency: {$postsPerWeek} posts per week";
             $result = $this->callGeminiAPI($prompt);
 
-            return response()->json([
-                'data' => [
-                    'calendar' => $result,
-                ],
-            ]);
+            return $this->success([
+                'calendar' => $result,
+            ], 'Calendar generated successfully');
         } catch (\Exception $e) {
             Log::error('AI API Error in generateCalendar: ' . $e->getMessage());
-            return response()->json([
-                'message' => 'Failed to generate calendar',
-                'error' => $e->getMessage(),
-            ], 500);
+            return $this->serverError('Failed to generate calendar: ' . $e->getMessage());
         }
     }
 
@@ -446,36 +375,28 @@ class AIAssistantController extends Controller
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function categorize(Request $request)
+    public function categorize(Request $request): JsonResponse
     {
         $validator = Validator::make($request->all(), [
             'content' => 'required|string|max:5000',
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'message' => 'Validation failed',
-                'errors' => $validator->errors(),
-            ], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         try {
             $prompt = "Categorize this content and provide a category name with confidence score (0-1): {$request->content}";
             $result = $this->callGeminiAPI($prompt);
 
-            return response()->json([
-                'data' => [
-                    'category' => 'Marketing Tips', // Parsed from AI response
-                    'confidence' => 0.92, // Parsed from AI response
-                    'analysis' => $result,
-                ],
-            ]);
+            return $this->success([
+                'category' => 'Marketing Tips', // Parsed from AI response
+                'confidence' => 0.92, // Parsed from AI response
+                'analysis' => $result,
+            ], 'Content categorized successfully');
         } catch (\Exception $e) {
             Log::error('AI API Error in categorize: ' . $e->getMessage());
-            return response()->json([
-                'message' => 'Failed to categorize content',
-                'error' => $e->getMessage(),
-            ], 500);
+            return $this->serverError('Failed to categorize content: ' . $e->getMessage());
         }
     }
 
@@ -485,34 +406,26 @@ class AIAssistantController extends Controller
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function generateMeta(Request $request)
+    public function generateMeta(Request $request): JsonResponse
     {
         $validator = Validator::make($request->all(), [
             'content' => 'required|string|max:5000',
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'message' => 'Validation failed',
-                'errors' => $validator->errors(),
-            ], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         try {
             $prompt = "Generate an SEO-optimized meta description (max 160 characters) for this content: {$request->content}";
             $result = $this->callGeminiAPI($prompt);
 
-            return response()->json([
-                'data' => [
-                    'meta_description' => $result,
-                ],
-            ]);
+            return $this->success([
+                'meta_description' => $result,
+            ], 'Meta description generated successfully');
         } catch (\Exception $e) {
             Log::error('AI API Error in generateMeta: ' . $e->getMessage());
-            return response()->json([
-                'message' => 'Failed to generate meta description',
-                'error' => $e->getMessage(),
-            ], 500);
+            return $this->serverError('Failed to generate meta description: ' . $e->getMessage());
         }
     }
 
@@ -522,7 +435,7 @@ class AIAssistantController extends Controller
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function suggestImprovements(Request $request)
+    public function suggestImprovements(Request $request): JsonResponse
     {
         $validator = Validator::make($request->all(), [
             'content' => 'required|string|max:5000',
@@ -530,27 +443,19 @@ class AIAssistantController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'message' => 'Validation failed',
-                'errors' => $validator->errors(),
-            ], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         try {
             $prompt = "Suggest improvements for this {$request->context} content: {$request->content}";
             $result = $this->callGeminiAPI($prompt);
 
-            return response()->json([
-                'data' => [
-                    'suggestions' => $result,
-                ],
-            ]);
+            return $this->success([
+                'suggestions' => $result,
+            ], 'Improvements suggested successfully');
         } catch (\Exception $e) {
             Log::error('AI API Error in suggestImprovements: ' . $e->getMessage());
-            return response()->json([
-                'message' => 'Failed to suggest improvements',
-                'error' => $e->getMessage(),
-            ], 500);
+            return $this->serverError('Failed to suggest improvements: ' . $e->getMessage());
         }
     }
 

@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Builder;
 
 /**
  * ContentPlan Model
@@ -85,7 +86,7 @@ class ContentPlan extends BaseModel
     /**
      * Scope to filter active content plans
      */
-    public function scopeActive($query)
+    public function scopeActive($query): Builder
     {
         return $query->where('status', 'active')
             ->where('start_date', '<=', now())
@@ -98,7 +99,7 @@ class ContentPlan extends BaseModel
     /**
      * Scope to filter by campaign
      */
-    public function scopeForCampaign($query, string $campaignId)
+    public function scopeForCampaign($query, string $campaignId): Builder
     {
         return $query->where('campaign_id', $campaignId);
     }
@@ -106,7 +107,7 @@ class ContentPlan extends BaseModel
     /**
      * Scope to filter by status
      */
-    public function scopeByStatus($query, string $status)
+    public function scopeByStatus($query, string $status): Builder
     {
         return $query->where('status', $status);
     }
@@ -114,7 +115,7 @@ class ContentPlan extends BaseModel
     /**
      * Scope to filter draft plans
      */
-    public function scopeDraft($query)
+    public function scopeDraft($query): Builder
     {
         return $query->where('status', 'draft');
     }
@@ -122,7 +123,7 @@ class ContentPlan extends BaseModel
     /**
      * Scope to filter published plans
      */
-    public function scopePublished($query)
+    public function scopePublished($query): Builder
     {
         return $query->where('status', 'published');
     }

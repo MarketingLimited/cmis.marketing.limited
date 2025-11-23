@@ -6,11 +6,13 @@ use App\Http\Controllers\Controller;
 use App\Models\Core\Integration;
 use App\Models\Social\SocialAccount;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use App\Http\Controllers\Concerns\ApiResponse;
+use Illuminate\Http\RedirectResponse;
 
 class IntegrationController extends Controller
 {
@@ -77,7 +79,7 @@ class IntegrationController extends Controller
     /**
      * List all integrations for an organization
      */
-    public function index(Request $request, string $orgId)
+    public function index(Request $request, string $orgId): JsonResponse
     {
         $this->authorize('viewAny', Integration::class);
 
@@ -127,13 +129,13 @@ class IntegrationController extends Controller
     /**
      * Initiate OAuth connection for a platform
      */
-    public function connect(Request $request, string $orgId, string $platform)
+    public function connect(Request $request, string $orgId, string $platform): JsonResponse
     {
         $this->authorize('create', Integration::class);
 
         try {
             if (!isset(self::PLATFORMS[$platform])) {
-                return response()->json(['error' => 'Unsupported platform'], 400);
+                return $this->error('Unsupported platform', 400);
             }
 
             $config = self::PLATFORMS[$platform];
@@ -157,11 +159,10 @@ class IntegrationController extends Controller
 
             $authUrl = $config['oauth_url'] . '?' . $params;
 
-            return response()->json([
-                'auth_url' => $authUrl,
+            return $this->success(['auth_url' => $authUrl,
                 'redirect_uri' => $redirectUri,
                 'platform' => $platform,
-            ]);
+            ], 'Operation completed successfully');
 
         } catch (\Exception $e) {
             return response()->json([
@@ -174,7 +175,7 @@ class IntegrationController extends Controller
     /**
      * Handle OAuth callback from platform
      */
-    public function callback(Request $request, string $platform)
+    public function callback(Request $request, string $platform): RedirectResponse
     {
         try {
             // Verify state token
@@ -304,7 +305,7 @@ class IntegrationController extends Controller
     /**
      * Disconnect an integration
      */
-    public function disconnect(Request $request, string $orgId, string $integrationId)
+    public function disconnect(Request $request, string $orgId, string $integrationId): JsonResponse
     {
         try {
             $integration = Integration::where('org_id', $orgId)
@@ -327,13 +328,12 @@ class IntegrationController extends Controller
             // Optionally delete it completely
             // $integration->delete();
 
-            return response()->json([
-                'message' => 'Integration disconnected successfully',
+            return $this->success(['message' => 'Integration disconnected successfully',
                 'integration_id' => $integrationId,
-            ]);
+            ], 'Operation completed successfully');
 
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            return response()->json(['error' => 'Integration not found'], 404);
+            return $this->notFound('Integration not found');
         } catch (\Exception $e) {
             return response()->json([
                 'error' => 'Failed to disconnect integration',
@@ -345,7 +345,7 @@ class IntegrationController extends Controller
     /**
      * Trigger manual sync for an integration
      */
-    public function sync(Request $request, string $orgId, string $integrationId)
+    public function sync(Request $request, string $orgId, string $integrationId): JsonResponse
     {
         try {
             $integration = Integration::where('org_id', $orgId)
@@ -364,14 +364,13 @@ class IntegrationController extends Controller
             // Trigger sync
             $result = $this->triggerSync($integration);
 
-            return response()->json([
-                'message' => 'Sync initiated successfully',
+            return $this->success(['message' => 'Sync initiated successfully',
                 'integration_id' => $integrationId,
                 'sync_result' => $result,
-            ]);
+            ], 'Operation completed successfully');
 
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            return response()->json(['error' => 'Integration not found'], 404);
+            return $this->notFound('Integration not found');
         } catch (\Exception $e) {
             return response()->json([
                 'error' => 'Failed to sync integration',
@@ -409,7 +408,7 @@ class IntegrationController extends Controller
     /**
      * Get sync history for an integration
      */
-    public function syncHistory(Request $request, string $orgId, string $integrationId)
+    public function syncHistory(Request $request, string $orgId, string $integrationId): JsonResponse
     {
         try {
             $integration = Integration::where('org_id', $orgId)
@@ -443,10 +442,10 @@ class IntegrationController extends Controller
                 ],
             ];
 
-            return response()->json(['history' => $history]);
+            return $this->success(['history' => $history], 'Operation completed successfully');
 
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            return response()->json(['error' => 'Integration not found'], 404);
+            return $this->notFound('Integration not found');
         } catch (\Exception $e) {
             return response()->json([
                 'error' => 'Failed to fetch sync history',
@@ -458,7 +457,7 @@ class IntegrationController extends Controller
     /**
      * Get integration settings
      */
-    public function getSettings(Request $request, string $orgId, string $integrationId)
+    public function getSettings(Request $request, string $orgId, string $integrationId): JsonResponse
     {
         try {
             $integration = Integration::where('org_id', $orgId)
@@ -479,13 +478,12 @@ class IntegrationController extends Controller
                 'sync_comments' => false,
             ];
 
-            return response()->json([
-                'integration_id' => $integrationId,
+            return $this->success(['integration_id' => $integrationId,
                 'settings' => $settings,
-            ]);
+            ], 'Operation completed successfully');
 
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            return response()->json(['error' => 'Integration not found'], 404);
+            return $this->notFound('Integration not found');
         } catch (\Exception $e) {
             return response()->json([
                 'error' => 'Failed to fetch settings',
@@ -497,7 +495,7 @@ class IntegrationController extends Controller
     /**
      * Update integration settings
      */
-    public function updateSettings(Request $request, string $orgId, string $integrationId)
+    public function updateSettings(Request $request, string $orgId, string $integrationId): JsonResponse
     {
         try {
             $integration = Integration::where('org_id', $orgId)
@@ -513,13 +511,12 @@ class IntegrationController extends Controller
             // Stub implementation - Validate and store settings not yet implemented
             $settings = $request->all();
 
-            return response()->json([
-                'message' => 'Settings updated successfully',
+            return $this->success(['message' => 'Settings updated successfully',
                 'settings' => $settings,
-            ]);
+            ], 'Operation completed successfully');
 
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            return response()->json(['error' => 'Integration not found'], 404);
+            return $this->notFound('Integration not found');
         } catch (\Exception $e) {
             return response()->json([
                 'error' => 'Failed to update settings',
@@ -531,7 +528,7 @@ class IntegrationController extends Controller
     /**
      * Get recent integration activity
      */
-    public function activity(Request $request, string $orgId)
+    public function activity(Request $request, string $orgId): JsonResponse
     {
         $this->authorize('viewAny', Integration::class);
 
@@ -559,7 +556,7 @@ class IntegrationController extends Controller
                 ],
             ];
 
-            return response()->json(['activity' => $activity]);
+            return $this->success(['activity' => $activity], 'Operation completed successfully');
 
         } catch (\Exception $e) {
             return response()->json([
@@ -572,7 +569,7 @@ class IntegrationController extends Controller
     /**
      * Test connection for an integration
      */
-    public function test(Request $request, string $orgId, string $integrationId)
+    public function test(Request $request, string $orgId, string $integrationId): JsonResponse
     {
         try {
             $integration = Integration::where('org_id', $orgId)
@@ -595,15 +592,14 @@ class IntegrationController extends Controller
             // Stub implementation - Test API connection with the platform not yet implemented
             // This would make a simple API call to verify the token is still valid
 
-            return response()->json([
-                'status' => 'success',
+            return $this->success(['status' => 'success',
                 'message' => 'Connection is working properly',
                 'platform' => $integration->platform,
                 'tested_at' => now()->toIso8601String(),
-            ]);
+            ], 'Operation completed successfully');
 
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            return response()->json(['error' => 'Integration not found'], 404);
+            return $this->notFound('Integration not found');
         } catch (\Exception $e) {
             return response()->json([
                 'error' => 'Connection test failed',
@@ -618,7 +614,7 @@ class IntegrationController extends Controller
      * Returns integrations with tokens expiring within specified days
      */
     public function getExpiringTokens(Request $request, string $orgId)
-    {
+    : \Illuminate\Http\JsonResponse {
         $this->authorize('viewAny', Integration::class);
 
         try {
@@ -662,13 +658,12 @@ class IntegrationController extends Controller
                     ];
                 });
 
-            return response()->json([
-                'expiring_tokens' => $expiringTokens,
+            return $this->success(['expiring_tokens' => $expiringTokens,
                 'total_count' => $expiringTokens->count(),
                 'critical_count' => $expiringTokens->where('severity', 'critical')->count(),
                 'urgent_count' => $expiringTokens->where('severity', 'urgent')->count(),
                 'warning_count' => $expiringTokens->where('severity', 'warning')->count(),
-            ]);
+            ], 'Operation completed successfully');
 
         } catch (\Exception $e) {
             return response()->json([

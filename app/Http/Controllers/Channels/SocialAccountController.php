@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Channels;
 use App\Http\Controllers\Controller;
 use App\Models\Channel;
 use Illuminate\Http\Request;
+use Illuminate\View\View;
 
 /**
  * Class SocialAccountController
@@ -15,7 +16,7 @@ class SocialAccountController extends Controller
     /**
      * عرض قائمة الحسابات الاجتماعية.
      */
-    public function index()
+    public function index(): View
     {
         $this->authorize('viewAny', Channel::class);
 

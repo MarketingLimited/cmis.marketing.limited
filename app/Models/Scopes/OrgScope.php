@@ -31,3 +31,7 @@ class OrgScope implements Scope
         if ($model->hasOrgIdColumn()) {
             $builder->where($model->getTable() . '.org_id', $orgId);
 }
+}
+}
+}
+}

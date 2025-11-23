@@ -8,6 +8,7 @@ use App\Models\Core\Org;
 use App\Models\User;
 use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Builder;
 
 class AiQuery extends BaseModel
 {
@@ -18,6 +19,7 @@ class AiQuery extends BaseModel
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id', 'user_id');
+    }
 
     /**
      * Log an AI query.
@@ -58,6 +60,7 @@ class AiQuery extends BaseModel
             'error_message' => $errorMessage,
             'metadata' => $metadata,
         ]);
+    }
 
     /**
      * Scope successful queries.
@@ -65,9 +68,10 @@ class AiQuery extends BaseModel
      * @param \Illuminate\Database\Eloquent\Builder $query
      * @return \Illuminate\Database\Eloquent\Builder
      */
-    public function scopeSuccessful($query)
+    public function scopeSuccessful($query): Builder
     {
         return $query->where('status', 'success');
+    }
 
     /**
      * Scope failed queries.
@@ -75,9 +79,10 @@ class AiQuery extends BaseModel
      * @param \Illuminate\Database\Eloquent\Builder $query
      * @return \Illuminate\Database\Eloquent\Builder
      */
-    public function scopeFailed($query)
+    public function scopeFailed($query): Builder
     {
         return $query->where('status', 'failed');
+    }
 
     /**
      * Scope queries by type.
@@ -86,9 +91,10 @@ class AiQuery extends BaseModel
      * @param string $type
      * @return \Illuminate\Database\Eloquent\Builder
      */
-    public function scopeByType($query, string $type)
+    public function scopeByType($query, string $type): Builder
     {
         return $query->where('query_type', $type);
+    }
 
     /**
      * Scope queries by model.
@@ -97,9 +103,10 @@ class AiQuery extends BaseModel
      * @param string $model
      * @return \Illuminate\Database\Eloquent\Builder
      */
-    public function scopeByModel($query, string $model)
+    public function scopeByModel($query, string $model): Builder
     {
         return $query->where('model_used', $model);
+    }
 
     /**
      * Get total tokens used for an organization in a time period.
@@ -116,6 +123,8 @@ class AiQuery extends BaseModel
 
         if ($startDate && $endDate) {
             $query->whereBetween('created_at', [$startDate, $endDate]);
+        }
 
         return $query->sum('tokens_used') ?? 0;
+    }
 }

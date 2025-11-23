@@ -5,6 +5,7 @@ namespace App\Models\Market;
 use App\Models\Concerns\HasOrganization;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Builder;
 use App\Models\BaseModel;
 
 class OrgMarket extends BaseModel
@@ -44,38 +45,43 @@ class OrgMarket extends BaseModel
     /**
      * Get the market
      */
-    public function market()
+    public function market(): BelongsTo
     {
         return $this->belongsTo(Market::class, 'market_id', 'market_id');
 
+    }
     /**
      * Scope primary markets
      */
-    public function scopePrimary($query)
+    public function scopePrimary($query): Builder
     {
         return $query->where('is_primary_market', true);
 
+    }
     /**
      * Scope by status
      */
-    public function scopeByStatus($query, string $status)
+    public function scopeByStatus($query, string $status): Builder
     {
         return $query->where('status', $status);
 
+    }
     /**
      * Scope active markets
      */
-    public function scopeActive($query)
+    public function scopeActive($query): Builder
     {
         return $query->where('status', 'active');
 
+    }
     /**
      * Scope by priority
      */
-    public function scopeHighPriority($query, int $threshold = 7)
+    public function scopeHighPriority($query, int $threshold = 7): Builder
     {
         return $query->where('priority_level', '>=', $threshold);
 
+    }
     /**
      * Get ROI
      */
@@ -88,4 +94,7 @@ class OrgMarket extends BaseModel
             return null;
 
         return (($revenue - $this->investment_budget) / $this->investment_budget) * 100;
+}
+}
+}
 }

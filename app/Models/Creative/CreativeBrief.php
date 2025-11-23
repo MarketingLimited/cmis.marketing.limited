@@ -5,6 +5,7 @@ namespace App\Models\Creative;
 use App\Models\Concerns\HasOrganization;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Builder;
 use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -42,7 +43,7 @@ class CreativeBrief extends BaseModel
     /**
      * Get the campaign
      */
-    public function campaign()
+    public function campaign(): BelongsTo
     {
         return $this->belongsTo(\App\Models\Campaign::class, 'campaign_id', 'campaign_id');
     }
@@ -50,7 +51,7 @@ class CreativeBrief extends BaseModel
     /**
      * Get the creator
      */
-    public function creator()
+    public function creator(): BelongsTo
     {
         return $this->belongsTo(\App\Models\User::class, 'created_by', 'user_id');
     }
@@ -58,7 +59,7 @@ class CreativeBrief extends BaseModel
     /**
      * Get the approver
      */
-    public function approver()
+    public function approver(): BelongsTo
     {
         return $this->belongsTo(\App\Models\User::class, 'approved_by', 'user_id');
     }
@@ -66,7 +67,7 @@ class CreativeBrief extends BaseModel
     /**
      * Get creative assets using this brief
      */
-    public function creativeAssets()
+    public function creativeAssets(): HasMany
     {
         return $this->hasMany(\App\Models\CreativeAsset::class, 'brief_id', 'brief_id');
     }
@@ -74,7 +75,7 @@ class CreativeBrief extends BaseModel
     /**
      * Scope approved briefs
      */
-    public function scopeApproved($query)
+    public function scopeApproved($query): Builder
     {
         return $query->where('status', 'approved')->whereNotNull('approved_at');
     }
@@ -82,7 +83,7 @@ class CreativeBrief extends BaseModel
     /**
      * Scope pending briefs
      */
-    public function scopePending($query)
+    public function scopePending($query): Builder
     {
         return $query->where('status', 'pending');
     }

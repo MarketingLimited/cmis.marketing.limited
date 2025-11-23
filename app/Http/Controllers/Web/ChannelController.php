@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Web;
 use App\Http\Controllers\Controller;
 use App\Models\Channel;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\View\View;
+use Illuminate\Http\RedirectResponse;
 
 /**
  * ChannelController for Web Routes
@@ -17,7 +19,7 @@ class ChannelController extends Controller
     /**
      * Display a listing of channels for the current organization
      */
-    public function index()
+    public function index(): View
     {
         $this->authorize('viewAny', Channel::class);
 
@@ -55,7 +57,7 @@ class ChannelController extends Controller
     /**
      * Display the specified channel
      */
-    public function show($channelId)
+    public function show($channelId): View
     {
         $orgId = session('current_org_id');
 

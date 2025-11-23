@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use App\Http\Controllers\Concerns\ApiResponse;
+use Illuminate\Http\JsonResponse;
+use Illuminate\View\View;
 
 class UnifiedCommentsController extends Controller
 {
@@ -22,7 +24,7 @@ class UnifiedCommentsController extends Controller
     /**
      * Get unified comments from all platforms
      */
-    public function index(Request $request, $orgId = null)
+    public function index(Request $request, $orgId = null): JsonResponse
     {
         // If it's a web request (not API), return the view
         if (!$request->expectsJson()) {
@@ -59,18 +61,14 @@ class UnifiedCommentsController extends Controller
             ]);
         } catch (\Exception $e) {
             Log::error('Failed to get comments: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'error' => 'فشل في جلب التعليقات',
-                'message' => $e->getMessage()
-            ], 500);
+            return $this->serverError('فشل في جلب التعليقات' . ': ' . $e->getMessage());
         }
     }
 
     /**
      * Reply to comment
      */
-    public function reply(Request $request, $orgId, $commentId)
+    public function reply(Request $request, $orgId, $commentId): JsonResponse
     {
         $this->commentsService = new UnifiedCommentsService($orgId);
 
@@ -79,10 +77,7 @@ class UnifiedCommentsController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         try {
@@ -100,18 +95,14 @@ class UnifiedCommentsController extends Controller
             ]);
         } catch (\Exception $e) {
             Log::error('Failed to reply to comment: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'error' => 'فشل في الرد على التعليق',
-                'message' => $e->getMessage()
-            ], 500);
+            return $this->serverError('فشل في الرد على التعليق' . ': ' . $e->getMessage());
         }
     }
 
     /**
      * Hide comment
      */
-    public function hide(Request $request, $orgId, $commentId)
+    public function hide(Request $request, $orgId, $commentId): JsonResponse
     {
         $this->commentsService = new UnifiedCommentsService($orgId);
 
@@ -119,10 +110,7 @@ class UnifiedCommentsController extends Controller
             $result = $this->commentsService->hideComment($commentId);
 
             if ($result['success']) {
-                return response()->json([
-                    'success' => true,
-                    'message' => 'تم إخفاء التعليق بنجاح'
-                ]);
+                return $this->success(null, 'تم إخفاء التعليق بنجاح');
             } else {
                 return response()->json([
                     'success' => false,
@@ -131,18 +119,14 @@ class UnifiedCommentsController extends Controller
             }
         } catch (\Exception $e) {
             Log::error('Failed to hide comment: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'error' => 'فشل في إخفاء التعليق',
-                'message' => $e->getMessage()
-            ], 500);
+            return $this->serverError('فشل في إخفاء التعليق' . ': ' . $e->getMessage());
         }
     }
 
     /**
      * Delete comment
      */
-    public function delete(Request $request, $orgId, $commentId)
+    public function delete(Request $request, $orgId, $commentId): JsonResponse
     {
         $this->commentsService = new UnifiedCommentsService($orgId);
 
@@ -150,10 +134,7 @@ class UnifiedCommentsController extends Controller
             $result = $this->commentsService->deleteComment($commentId);
 
             if ($result['success']) {
-                return response()->json([
-                    'success' => true,
-                    'message' => 'تم حذف التعليق بنجاح'
-                ]);
+                return $this->success(null, 'تم حذف التعليق بنجاح');
             } else {
                 return response()->json([
                     'success' => false,
@@ -162,18 +143,14 @@ class UnifiedCommentsController extends Controller
             }
         } catch (\Exception $e) {
             Log::error('Failed to delete comment: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'error' => 'فشل في حذف التعليق',
-                'message' => $e->getMessage()
-            ], 500);
+            return $this->serverError('فشل في حذف التعليق' . ': ' . $e->getMessage());
         }
     }
 
     /**
      * Like comment
      */
-    public function like(Request $request, $orgId, $commentId)
+    public function like(Request $request, $orgId, $commentId): JsonResponse
     {
         $this->commentsService = new UnifiedCommentsService($orgId);
 
@@ -181,10 +158,7 @@ class UnifiedCommentsController extends Controller
             $result = $this->commentsService->likeComment($commentId);
 
             if ($result['success']) {
-                return response()->json([
-                    'success' => true,
-                    'message' => 'تم الإعجاب بالتعليق'
-                ]);
+                return $this->success(null, 'تم الإعجاب بالتعليق');
             } else {
                 return response()->json([
                     'success' => false,
@@ -193,18 +167,14 @@ class UnifiedCommentsController extends Controller
             }
         } catch (\Exception $e) {
             Log::error('Failed to like comment: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'error' => 'فشل في الإعجاب بالتعليق',
-                'message' => $e->getMessage()
-            ], 500);
+            return $this->serverError('فشل في الإعجاب بالتعليق' . ': ' . $e->getMessage());
         }
     }
 
     /**
      * Bulk actions on comments
      */
-    public function bulkAction(Request $request, $orgId)
+    public function bulkAction(Request $request, $orgId): JsonResponse
     {
         $this->commentsService = new UnifiedCommentsService($orgId);
 
@@ -215,10 +185,7 @@ class UnifiedCommentsController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         try {
@@ -227,42 +194,28 @@ class UnifiedCommentsController extends Controller
                 $request->input('comment_ids')
             );
 
-            return response()->json([
-                'success' => true,
-                'message' => 'تم تنفيذ العملية الجماعية',
-                'results' => $result
-            ]);
+            return $this->success(['message' => 'تم تنفيذ العملية الجماعية',
+                'results' => $result], 'Operation completed successfully');
         } catch (\Exception $e) {
             Log::error('Failed to execute bulk action: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'error' => 'فشل في تنفيذ العملية الجماعية',
-                'message' => $e->getMessage()
-            ], 500);
+            return $this->serverError('فشل في تنفيذ العملية الجماعية' . ': ' . $e->getMessage());
         }
     }
 
     /**
      * Get comments statistics
      */
-    public function statistics(Request $request, $orgId)
+    public function statistics(Request $request, $orgId): JsonResponse
     {
         $this->commentsService = new UnifiedCommentsService($orgId);
 
         try {
             $stats = $this->commentsService->getStatistics();
 
-            return response()->json([
-                'success' => true,
-                'statistics' => $stats
-            ]);
+            return $this->success(['statistics' => $stats], 'Operation completed successfully');
         } catch (\Exception $e) {
             Log::error('Failed to get comment statistics: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'error' => 'فشل في جلب إحصائيات التعليقات',
-                'message' => $e->getMessage()
-            ], 500);
+            return $this->serverError('فشل في جلب إحصائيات التعليقات' . ': ' . $e->getMessage());
         }
     }
 }

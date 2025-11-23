@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers\Analytics;
+use App\Http\Controllers\Concerns\ApiResponse;
 
 use App\Http\Controllers\Controller;
 use App\Models\Analytics\ReportExecutionLog;
@@ -62,10 +63,7 @@ class ScheduledReportsController extends Controller
         $schedules = $query->orderBy('created_at', 'desc')
             ->paginate($request->input('per_page', 15));
 
-        return response()->json([
-            'success' => true,
-            'schedules' => $schedules
-        ]);
+        return $this->success(['schedules' => $schedules], 'Operation completed successfully');
     }
 
     /**
@@ -144,10 +142,7 @@ class ScheduledReportsController extends Controller
             $query->latest('executed_at')->limit(10);
         }])->findOrFail($scheduleId);
 
-        return response()->json([
-            'success' => true,
-            'schedule' => $schedule
-        ]);
+        return $this->success(['schedule' => $schedule], 'Operation completed successfully');
     }
 
     /**
@@ -191,11 +186,8 @@ class ScheduledReportsController extends Controller
             ]);
         }
 
-        return response()->json([
-            'success' => true,
-            'schedule' => $schedule->fresh(),
-            'message' => 'Scheduled report updated successfully'
-        ]);
+        return $this->success(['schedule' => $schedule->fresh(),
+            'message' => 'Scheduled report updated successfully'], 'Operation completed successfully');
     }
 
     /**
@@ -215,10 +207,7 @@ class ScheduledReportsController extends Controller
         $schedule = ScheduledReport::findOrFail($scheduleId);
         $schedule->delete();
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Scheduled report deleted successfully'
-        ]);
+        return $this->success(null, 'Scheduled report deleted successfully');
     }
 
     /**
@@ -239,10 +228,7 @@ class ScheduledReportsController extends Controller
             ->orderBy('executed_at', 'desc')
             ->paginate($request->input('per_page', 20));
 
-        return response()->json([
-            'success' => true,
-            'history' => $logs
-        ]);
+        return $this->success(['history' => $logs], 'Operation completed successfully');
     }
 
     /**
@@ -274,7 +260,7 @@ class ScheduledReportsController extends Controller
             $validated['recipients']
         );
 
-        return response()->json($result);
+        return $this->success($result, 'Operation completed successfully');
     }
 
     /**
@@ -304,10 +290,7 @@ class ScheduledReportsController extends Controller
             ->orderBy('name')
             ->get();
 
-        return response()->json([
-            'success' => true,
-            'templates' => $templates
-        ]);
+        return $this->success(['templates' => $templates], 'Operation completed successfully');
     }
 
     /**

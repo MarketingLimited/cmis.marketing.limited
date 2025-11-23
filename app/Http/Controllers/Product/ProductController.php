@@ -1,10 +1,12 @@
 <?php
 
 namespace App\Http\Controllers\Product;
+use App\Http\Controllers\Concerns\ApiResponse;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Http\JsonResponse;
 
 /**
  * Product Controller
@@ -22,7 +24,7 @@ class ProductController extends Controller
      * @param Request $request HTTP request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function index(Request $request)
+    public function index(Request $request): JsonResponse
     {
         Log::info('ProductController::index called (stub)', [
             'filters' => $request->all(),
@@ -41,7 +43,7 @@ class ProductController extends Controller
      * @param Request $request HTTP request with product data
      * @return \Illuminate\Http\JsonResponse
      */
-    public function store(Request $request)
+    public function store(Request $request): JsonResponse
     {
         Log::info('ProductController::store called (stub)', [
             'data' => $request->all(),
@@ -61,7 +63,7 @@ class ProductController extends Controller
      * @param string $offering_id Offering ID
      * @return \Illuminate\Http\JsonResponse
      */
-    public function show(Request $request, $offering_id)
+    public function show(Request $request, $offering_id): JsonResponse
     {
         Log::info('ProductController::show called (stub)', [
             'offering_id' => $offering_id,
@@ -80,7 +82,7 @@ class ProductController extends Controller
      * @param string $offering_id Offering ID
      * @return \Illuminate\Http\JsonResponse
      */
-    public function update(Request $request, $offering_id)
+    public function update(Request $request, $offering_id): JsonResponse
     {
         Log::info('ProductController::update called (stub)', [
             'offering_id' => $offering_id,
@@ -101,7 +103,7 @@ class ProductController extends Controller
      * @param string $offering_id Offering ID
      * @return \Illuminate\Http\JsonResponse
      */
-    public function destroy(Request $request, $offering_id)
+    public function destroy(Request $request, $offering_id): JsonResponse
     {
         Log::info('ProductController::destroy called (stub)', [
             'offering_id' => $offering_id,

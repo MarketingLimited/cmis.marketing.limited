@@ -7,6 +7,7 @@ use App\Models\Concerns\HasOrganization;
 use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Builder;
 
 class ExampleSet extends BaseModel
 {
@@ -42,40 +43,47 @@ class ExampleSet extends BaseModel
     ];
 
     // Scopes
-    public function scopeByCategory($query, $category)
+    public function scopeByCategory($query, $category): Builder
     {
         return $query->where('category', $category);
+    }
 
-    public function scopePassed($query)
+    public function scopePassed($query): Builder
     {
         return $query->where('test_status', 'passed');
+    }
 
-    public function scopeFailed($query)
+    public function scopeFailed($query): Builder
     {
         return $query->where('test_status', 'failed');
+    }
 
-    public function scopeHighAccuracy($query, $threshold = 0.8)
+    public function scopeHighAccuracy($query, $threshold = 0.8): Builder
     {
         return $query->where('accuracy_score', '>=', $threshold);
+    }
 
     // Helpers
     public function markAsPassed($actualOutput, $accuracyScore)
-    {
+    : mixed {
         $this->update([
             'test_status' => 'passed',
             'actual_output' => $actualOutput,
             'accuracy_score' => $accuracyScore,
         ]);
+    }
 
     public function markAsFailed($actualOutput, $accuracyScore = 0)
-    {
+    : mixed {
         $this->update([
             'test_status' => 'failed',
             'actual_output' => $actualOutput,
             'accuracy_score' => $accuracyScore,
         ]);
+    }
 
     public function isPassed()
-    {
+    : mixed {
         return $this->test_status === 'passed';
+    }
 }

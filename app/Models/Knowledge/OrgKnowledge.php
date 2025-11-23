@@ -5,6 +5,7 @@ namespace App\Models\Knowledge;
 use App\Models\Concerns\HasOrganization;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Builder;
 use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -54,62 +55,70 @@ class OrgKnowledge extends BaseModel
     /**
      * Get the creator
      */
-    public function creator()
+    public function creator(): BelongsTo
     {
         return $this->belongsTo(\App\Models\User::class, 'created_by', 'user_id');
 
+    }
     /**
      * Get the last modifier
      */
-    public function lastModifier()
+    public function lastModifier(): BelongsTo
     {
         return $this->belongsTo(\App\Models\User::class, 'last_modified_by', 'user_id');
 
+    }
     /**
      * Get related knowledge index entries
      */
     public function knowledgeEntries()
-    {
+    : \Illuminate\Database\Eloquent\Relations\Relation {
         return KnowledgeIndex::where('source_type', 'org_knowledge')
             ->where('source_id', $this->org_knowledge_id);
 
+    }
     /**
      * Scope by knowledge type
      */
-    public function scopeByType($query, string $type)
+    public function scopeByType($query, string $type): Builder
     {
         return $query->where('knowledge_type', $type);
 
+    }
     /**
      * Scope by category
      */
-    public function scopeByCategory($query, string $category)
+    public function scopeByCategory($query, string $category): Builder
     {
         return $query->where('category', $category);
 
+    }
     /**
      * Scope by visibility
      */
-    public function scopeByVisibility($query, string $visibility)
+    public function scopeByVisibility($query, string $visibility): Builder
     {
         return $query->where('visibility', $visibility);
 
+    }
     /**
      * Scope non-confidential
      */
-    public function scopePublic($query)
+    public function scopePublic($query): Builder
     {
         return $query->where('is_confidential', false);
 
+    }
     /**
      * Scope non-expired
      */
-    public function scopeActive($query)
+    public function scopeActive($query): Builder
     {
         return $query->where(function ($q) {
             $q->whereNull('expiry_date')
                 ->orWhere('expiry_date', '>=', now());
-
+        });
+    }
     /**
      * Check if knowledge has expired
      */
@@ -117,6 +126,8 @@ class OrgKnowledge extends BaseModel
     {
         if (!$this->expiry_date) {
             return false;
+        }
 
         return $this->expiry_date->isPast();
+    }
 }

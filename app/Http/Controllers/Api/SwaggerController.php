@@ -7,6 +7,7 @@ use App\Http\Controllers\Concerns\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Route;
+use Illuminate\View\View;
 
 /**
  * @OA\Info(
@@ -43,7 +44,7 @@ class SwaggerController extends Controller
     /**
      * Display Swagger UI for interactive API documentation.
      */
-    public function ui()
+    public function ui(): View
     {
         return view('api.swagger-ui');
     }
@@ -55,14 +56,14 @@ class SwaggerController extends Controller
     {
         $spec = $this->generateOpenApiSpec();
 
-        return response()->json($spec);
+        return $this->success($spec, 'Retrieved successfully');
     }
 
     /**
      * Return OpenAPI specification in YAML format.
      */
     public function yaml()
-    {
+    : \Illuminate\Http\JsonResponse {
         $spec = $this->generateOpenApiSpec();
 
         // Convert to YAML (simple implementation)

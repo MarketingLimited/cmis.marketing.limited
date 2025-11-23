@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
+use App\Http\Controllers\Concerns\ApiResponse;
 
 use App\Services\BulkPostService;
 use Illuminate\Http\Request;
@@ -75,8 +76,7 @@ class BulkPostController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return $this->validationError($validator->errors()
-            , 'Validation error');
+            return $this->validationError($validator->errors(), 'Validation error');
         }
 
         try {
@@ -94,11 +94,7 @@ class BulkPostController extends Controller
             ], 201);
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to create bulk posts',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to create bulk posts' . ': ' . $e->getMessage());
         }
     }
 
@@ -138,8 +134,7 @@ class BulkPostController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return $this->validationError($validator->errors()
-            , 'Validation error');
+            return $this->validationError($validator->errors(), 'Validation error');
         }
 
         try {
@@ -155,11 +150,7 @@ class BulkPostController extends Controller
             ], 201);
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to import CSV',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to import CSV' . ': ' . $e->getMessage());
         }
     }
 
@@ -194,8 +185,7 @@ class BulkPostController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return $this->validationError($validator->errors()
-            , 'Validation error');
+            return $this->validationError($validator->errors(), 'Validation error');
         }
 
         try {
@@ -219,18 +209,10 @@ class BulkPostController extends Controller
                 $updates
             );
 
-            return response()->json([
-                'success' => true,
-                'message' => "Successfully updated {$result['updated']} posts",
-                'data' => $result
-            ]);
+            return $this->success($result, "Successfully updated {$result['updated']} posts");
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to update posts',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to update posts' . ': ' . $e->getMessage());
         }
     }
 
@@ -256,8 +238,7 @@ class BulkPostController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return $this->validationError($validator->errors()
-            , 'Validation error');
+            return $this->validationError($validator->errors(), 'Validation error');
         }
 
         try {
@@ -265,18 +246,10 @@ class BulkPostController extends Controller
                 $request->input('post_ids')
             );
 
-            return response()->json([
-                'success' => true,
-                'message' => "Successfully deleted {$result['deleted']} posts",
-                'data' => $result
-            ]);
+            return $this->success($result, "Successfully deleted {$result['deleted']} posts");
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to delete posts',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to delete posts' . ': ' . $e->getMessage());
         }
     }
 
@@ -298,8 +271,7 @@ class BulkPostController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return $this->validationError($validator->errors()
-            , 'Validation error');
+            return $this->validationError($validator->errors(), 'Validation error');
         }
 
         try {
@@ -309,18 +281,10 @@ class BulkPostController extends Controller
                 $request->input('limit', 5)
             );
 
-            return response()->json([
-                'success' => true,
-                'data' => $suggestions,
-                'count' => $suggestions->count()
-            ]);
+            return $this->success($suggestions, 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to get suggestions',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to get suggestions' . ': ' . $e->getMessage());
         }
     }
 }

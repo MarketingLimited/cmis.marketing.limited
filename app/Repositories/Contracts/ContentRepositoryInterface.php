@@ -4,13 +4,13 @@ namespace App\Repositories\Contracts;
 
 interface ContentRepositoryInterface
 {
-    public function create(array $data);
+    public function create(array $data): mixed;
 
-    public function update(string $id, array $data);
+    public function update(string $id, array $data): mixed;
 
     public function delete(string $id): bool;
 
-    public function find(string $id);
+    public function find(string $id): mixed;
 
-    public function all(array $filters = []);
+    public function all(array $filters = []): mixed;
 }

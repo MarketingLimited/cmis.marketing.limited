@@ -14,6 +14,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use App\Http\Controllers\Concerns\ApiResponse;
+use Illuminate\Http\JsonResponse;
 
 class CampaignController extends Controller
 {
@@ -29,7 +30,7 @@ class CampaignController extends Controller
         $this->middleware('auth:sanctum');
     }
 
-    public function index(Request $request)
+    public function index(Request $request): JsonResponse
     {
         // Check authorization for viewing any campaigns
         $this->authorize('viewAny', Campaign::class);
@@ -38,10 +39,7 @@ class CampaignController extends Controller
             $orgId = $this->resolveOrgId($request);
 
             if (!$orgId) {
-                return response()->json([
-                    'success' => false,
-                    'error' => 'No organization context found',
-                ], 400);
+                return $this->error('No organization context found', 400);
             }
 
             // Get validated data or use defaults
@@ -82,15 +80,7 @@ class CampaignController extends Controller
             // Pagination
             $campaigns = $query->paginate($validated['per_page'] ?? 20);
 
-            return response()->json([
-                'data' => $campaigns->items(),
-                'meta' => [
-                    'current_page' => $campaigns->currentPage(),
-                    'per_page' => $campaigns->perPage(),
-                    'total' => $campaigns->total(),
-                    'last_page' => $campaigns->lastPage(),
-                ],
-            ]);
+            return $this->paginated($campaigns, 'Campaigns retrieved successfully');
 
         } catch (\Exception $e) {
             \Log::error('Campaigns index error', [
@@ -99,15 +89,11 @@ class CampaignController extends Controller
                 'trace' => $e->getTraceAsString()
             ]);
 
-            return response()->json([
-                'success' => false,
-                'error' => 'Failed to retrieve campaigns',
-                'message' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to retrieve campaigns: ' . $e->getMessage());
         }
     }
 
-    public function store(Request $request)
+    public function store(Request $request): JsonResponse
     {
         // Check authorization for creating campaigns
         $this->authorize('create', Campaign::class);
@@ -116,10 +102,7 @@ class CampaignController extends Controller
             $orgId = $this->resolveOrgId($request);
 
             if (!$orgId) {
-                return response()->json([
-                    'success' => false,
-                    'error' => 'No organization context found',
-                ], 400);
+                return $this->error('No organization context found', 400);
             }
 
             // Validate request
@@ -143,42 +126,27 @@ class CampaignController extends Controller
 
             $campaign = Campaign::create($validated);
 
-            return response()->json([
-                'data' => $campaign,
-                'success' => true,
-                'message' => 'Campaign created successfully',
-            ], 201);
+            return $this->created($campaign, 'Campaign created successfully');
 
         } catch (\Illuminate\Validation\ValidationException $e) {
-            return response()->json([
-                'success' => false,
-                'error' => 'Validation failed',
-                'errors' => $e->errors(),
-            ], 422);
+            return $this->validationError($e->errors(), 'Validation failed');
         } catch (\Exception $e) {
             \Log::error('Campaign creation error', [
                 'user_id' => auth()->id(),
                 'error' => $e->getMessage(),
             ]);
 
-            return response()->json([
-                'success' => false,
-                'error' => 'Failed to create campaign',
-                'message' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to create campaign: ' . $e->getMessage());
         }
     }
 
-    public function show(Request $request, string $campaignId)
+    public function show(Request $request, string $campaignId): JsonResponse
     {
         try {
             $orgId = $this->resolveOrgId($request);
 
             if (!$orgId) {
-                return response()->json([
-                    'success' => false,
-                    'error' => 'No organization context found',
-                ], 400);
+                return $this->error('No organization context found', 400);
             }
 
             $campaign = Campaign::where('org_id', $orgId)
@@ -191,25 +159,16 @@ class CampaignController extends Controller
                 $existsInOtherOrg = Campaign::where('campaign_id', $campaignId)->exists();
 
                 if ($existsInOtherOrg) {
-                    return response()->json([
-                        'success' => false,
-                        'error' => 'Unauthorized access to campaign',
-                    ], 403);
+                    return $this->forbidden('Unauthorized access to campaign');
                 }
 
-                return response()->json([
-                    'success' => false,
-                    'error' => 'Campaign not found',
-                ], 404);
+                return $this->notFound('Campaign not found');
             }
 
             // Check authorization for viewing this specific campaign
             $this->authorize('view', $campaign);
 
-            return response()->json([
-                'data' => $campaign,
-                'success' => true,
-            ]);
+            return $this->success($campaign, 'Campaign retrieved successfully');
 
         } catch (\Exception $e) {
             \Log::error('Campaign show error', [
@@ -217,24 +176,17 @@ class CampaignController extends Controller
                 'error' => $e->getMessage(),
             ]);
 
-            return response()->json([
-                'success' => false,
-                'error' => 'Failed to retrieve campaign',
-                'message' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to retrieve campaign: ' . $e->getMessage());
         }
     }
 
-    public function update(Request $request, string $campaignId)
+    public function update(Request $request, string $campaignId): JsonResponse
     {
         try {
             $orgId = $this->resolveOrgId($request);
 
             if (!$orgId) {
-                return response()->json([
-                    'success' => false,
-                    'error' => 'No organization context found',
-                ], 400);
+                return $this->error('No organization context found', 400);
             }
 
             $campaign = Campaign::where('org_id', $orgId)
@@ -246,16 +198,10 @@ class CampaignController extends Controller
                 $existsInOtherOrg = Campaign::where('campaign_id', $campaignId)->exists();
 
                 if ($existsInOtherOrg) {
-                    return response()->json([
-                        'success' => false,
-                        'error' => 'Unauthorized access to campaign',
-                    ], 403);
+                    return $this->forbidden('Unauthorized access to campaign');
                 }
 
-                return response()->json([
-                    'success' => false,
-                    'error' => 'Campaign not found',
-                ], 404);
+                return $this->notFound('Campaign not found');
             }
 
             // Check authorization for updating this campaign
@@ -274,42 +220,27 @@ class CampaignController extends Controller
 
             $campaign->update($validated);
 
-            return response()->json([
-                'data' => $campaign->fresh(),
-                'success' => true,
-                'message' => 'Campaign updated successfully',
-            ]);
+            return $this->success($campaign->fresh(), 'Campaign updated successfully');
 
         } catch (\Illuminate\Validation\ValidationException $e) {
-            return response()->json([
-                'success' => false,
-                'error' => 'Validation failed',
-                'errors' => $e->errors(),
-            ], 422);
+            return $this->validationError($e->errors(), 'Validation failed');
         } catch (\Exception $e) {
             \Log::error('Campaign update error', [
                 'campaign_id' => $campaignId,
                 'error' => $e->getMessage(),
             ]);
 
-            return response()->json([
-                'success' => false,
-                'error' => 'Failed to update campaign',
-                'message' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to update campaign: ' . $e->getMessage());
         }
     }
 
-    public function destroy(Request $request, string $campaignId)
+    public function destroy(Request $request, string $campaignId): JsonResponse
     {
         try {
             $orgId = $this->resolveOrgId($request);
 
             if (!$orgId) {
-                return response()->json([
-                    'success' => false,
-                    'error' => 'No organization context found',
-                ], 400);
+                return $this->error('No organization context found', 400);
             }
 
             $campaign = Campaign::where('org_id', $orgId)
@@ -321,16 +252,10 @@ class CampaignController extends Controller
                 $existsInOtherOrg = Campaign::where('campaign_id', $campaignId)->exists();
 
                 if ($existsInOtherOrg) {
-                    return response()->json([
-                        'success' => false,
-                        'error' => 'Unauthorized access to campaign',
-                    ], 403);
+                    return $this->forbidden('Unauthorized access to campaign');
                 }
 
-                return response()->json([
-                    'success' => false,
-                    'error' => 'Campaign not found',
-                ], 404);
+                return $this->notFound('Campaign not found');
             }
 
             // Check authorization for deleting this campaign
@@ -339,10 +264,7 @@ class CampaignController extends Controller
             // Soft delete the campaign
             $campaign->delete();
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Campaign deleted successfully',
-            ]);
+            return $this->deleted('Campaign deleted successfully');
 
         } catch (\Exception $e) {
             \Log::error('Campaign delete error', [
@@ -350,24 +272,17 @@ class CampaignController extends Controller
                 'error' => $e->getMessage(),
             ]);
 
-            return response()->json([
-                'success' => false,
-                'error' => 'Failed to delete campaign',
-                'message' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to delete campaign: ' . $e->getMessage());
         }
     }
 
-    public function duplicate(Request $request, string $campaignId)
+    public function duplicate(Request $request, string $campaignId): JsonResponse
     {
         try {
             $orgId = $this->resolveOrgId($request);
 
             if (!$orgId) {
-                return response()->json([
-                    'success' => false,
-                    'error' => 'No organization context found',
-                ], 400);
+                return $this->error('No organization context found', 400);
             }
 
             $campaign = Campaign::where('org_id', $orgId)
@@ -379,16 +294,10 @@ class CampaignController extends Controller
                 $existsInOtherOrg = Campaign::where('campaign_id', $campaignId)->exists();
 
                 if ($existsInOtherOrg) {
-                    return response()->json([
-                        'success' => false,
-                        'error' => 'Unauthorized access to campaign',
-                    ], 403);
+                    return $this->forbidden('Unauthorized access to campaign');
                 }
 
-                return response()->json([
-                    'success' => false,
-                    'error' => 'Campaign not found',
-                ], 404);
+                return $this->notFound('Campaign not found');
             }
 
             // Check authorization for viewing (needed to duplicate) and creating
@@ -409,11 +318,7 @@ class CampaignController extends Controller
 
             $duplicate = Campaign::create($duplicateData);
 
-            return response()->json([
-                'data' => $duplicate,
-                'success' => true,
-                'message' => 'Campaign duplicated successfully',
-            ], 201);
+            return $this->created($duplicate, 'Campaign duplicated successfully');
 
         } catch (\Exception $e) {
             \Log::error('Campaign duplicate error', [
@@ -421,24 +326,17 @@ class CampaignController extends Controller
                 'error' => $e->getMessage(),
             ]);
 
-            return response()->json([
-                'success' => false,
-                'error' => 'Failed to duplicate campaign',
-                'message' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to duplicate campaign: ' . $e->getMessage());
         }
     }
 
-    public function analytics(Request $request, string $campaignId)
+    public function analytics(Request $request, string $campaignId): JsonResponse
     {
         try {
             $orgId = $this->resolveOrgId($request);
 
             if (!$orgId) {
-                return response()->json([
-                    'success' => false,
-                    'error' => 'No organization context found',
-                ], 400);
+                return $this->error('No organization context found', 400);
             }
 
             $campaign = Campaign::where('org_id', $orgId)
@@ -450,16 +348,10 @@ class CampaignController extends Controller
                 $existsInOtherOrg = Campaign::where('campaign_id', $campaignId)->exists();
 
                 if ($existsInOtherOrg) {
-                    return response()->json([
-                        'success' => false,
-                        'error' => 'Unauthorized access to campaign',
-                    ], 403);
+                    return $this->forbidden('Unauthorized access to campaign');
                 }
 
-                return response()->json([
-                    'success' => false,
-                    'error' => 'Campaign not found',
-                ], 404);
+                return $this->notFound('Campaign not found');
             }
 
             // Check authorization for viewing campaign analytics
@@ -530,10 +422,7 @@ class CampaignController extends Controller
                 ]);
             }
 
-            return response()->json([
-                'data' => $analytics,
-                'success' => true,
-            ]);
+            return $this->success($analytics, 'Campaign analytics retrieved successfully');
 
         } catch (\Exception $e) {
             \Log::error('Campaign analytics error', [
@@ -541,11 +430,7 @@ class CampaignController extends Controller
                 'error' => $e->getMessage(),
             ]);
 
-            return response()->json([
-                'success' => false,
-                'error' => 'Failed to retrieve campaign analytics',
-                'message' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to retrieve campaign analytics: ' . $e->getMessage());
         }
     }
 
@@ -553,16 +438,13 @@ class CampaignController extends Controller
      * Get comprehensive performance metrics for a campaign
      * NEW: P2 Option 3 - Campaign Performance Dashboard
      */
-    public function performanceMetrics(Request $request, string $campaignId)
+    public function performanceMetrics(Request $request, string $campaignId): JsonResponse
     {
         try {
             $orgId = $this->resolveOrgId($request);
 
             if (!$orgId) {
-                return response()->json([
-                    'success' => false,
-                    'error' => 'No organization context found',
-                ], 400);
+                return $this->error('No organization context found', 400);
             }
 
             // Verify campaign belongs to org and authorize
@@ -571,10 +453,7 @@ class CampaignController extends Controller
                 ->first();
 
             if (!$campaign) {
-                return response()->json([
-                    'success' => false,
-                    'error' => 'Campaign not found',
-                ], 404);
+                return $this->notFound('Campaign not found');
             }
 
             $this->authorize('view', $campaign);
@@ -591,10 +470,7 @@ class CampaignController extends Controller
             // Get metrics from service
             $metrics = $this->campaignService->getPerformanceMetrics($campaignId, $dateRange);
 
-            return response()->json([
-                'success' => true,
-                'data' => $metrics,
-            ]);
+            return $this->success($metrics, 'Performance metrics retrieved successfully');
 
         } catch (\Exception $e) {
             \Log::error('Campaign performance metrics error', [
@@ -602,11 +478,7 @@ class CampaignController extends Controller
                 'error' => $e->getMessage(),
             ]);
 
-            return response()->json([
-                'success' => false,
-                'error' => 'Failed to retrieve performance metrics',
-                'message' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to retrieve performance metrics: ' . $e->getMessage());
         }
     }
 
@@ -614,16 +486,13 @@ class CampaignController extends Controller
      * Compare performance of multiple campaigns
      * NEW: P2 Option 3 - Campaign Performance Dashboard
      */
-    public function compareCampaigns(Request $request)
+    public function compareCampaigns(Request $request): JsonResponse
     {
         try {
             $orgId = $this->resolveOrgId($request);
 
             if (!$orgId) {
-                return response()->json([
-                    'success' => false,
-                    'error' => 'No organization context found',
-                ], 400);
+                return $this->error('No organization context found', 400);
             }
 
             // Validate request
@@ -640,10 +509,7 @@ class CampaignController extends Controller
                 ->get();
 
             if ($campaigns->count() !== count($validated['campaign_ids'])) {
-                return response()->json([
-                    'success' => false,
-                    'error' => 'One or more campaigns not found or unauthorized',
-                ], 404);
+                return $this->notFound('One or more campaigns not found or unauthorized');
             }
 
             // Check authorization for all campaigns
@@ -663,27 +529,16 @@ class CampaignController extends Controller
             // Get comparison from service
             $comparison = $this->campaignService->compareCampaigns($validated['campaign_ids'], $dateRange);
 
-            return response()->json([
-                'success' => true,
-                'data' => $comparison,
-            ]);
+            return $this->success($comparison, 'Campaign comparison retrieved successfully');
 
         } catch (\Illuminate\Validation\ValidationException $e) {
-            return response()->json([
-                'success' => false,
-                'error' => 'Validation failed',
-                'errors' => $e->errors(),
-            ], 422);
+            return $this->validationError($e->errors(), 'Validation failed');
         } catch (\Exception $e) {
             \Log::error('Campaign comparison error', [
                 'error' => $e->getMessage(),
             ]);
 
-            return response()->json([
-                'success' => false,
-                'error' => 'Failed to compare campaigns',
-                'message' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to compare campaigns: ' . $e->getMessage());
         }
     }
 
@@ -691,16 +546,13 @@ class CampaignController extends Controller
      * Get performance trends over time for a campaign
      * NEW: P2 Option 3 - Campaign Performance Dashboard
      */
-    public function performanceTrends(Request $request, string $campaignId)
+    public function performanceTrends(Request $request, string $campaignId): JsonResponse
     {
         try {
             $orgId = $this->resolveOrgId($request);
 
             if (!$orgId) {
-                return response()->json([
-                    'success' => false,
-                    'error' => 'No organization context found',
-                ], 400);
+                return $this->error('No organization context found', 400);
             }
 
             // Verify campaign belongs to org and authorize
@@ -709,10 +561,7 @@ class CampaignController extends Controller
                 ->first();
 
             if (!$campaign) {
-                return response()->json([
-                    'success' => false,
-                    'error' => 'Campaign not found',
-                ], 404);
+                return $this->notFound('Campaign not found');
             }
 
             $this->authorize('view', $campaign);
@@ -729,28 +578,17 @@ class CampaignController extends Controller
             // Get trends from service
             $trends = $this->campaignService->getPerformanceTrends($campaignId, $interval, $periods);
 
-            return response()->json([
-                'success' => true,
-                'data' => $trends,
-            ]);
+            return $this->success($trends, 'Performance trends retrieved successfully');
 
         } catch (\Illuminate\Validation\ValidationException $e) {
-            return response()->json([
-                'success' => false,
-                'error' => 'Validation failed',
-                'errors' => $e->errors(),
-            ], 422);
+            return $this->validationError($e->errors(), 'Validation failed');
         } catch (\Exception $e) {
             \Log::error('Campaign performance trends error', [
                 'campaign_id' => $campaignId,
                 'error' => $e->getMessage(),
             ]);
 
-            return response()->json([
-                'success' => false,
-                'error' => 'Failed to retrieve performance trends',
-                'message' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to retrieve performance trends: ' . $e->getMessage());
         }
     }
 
@@ -758,16 +596,13 @@ class CampaignController extends Controller
      * Get top performing campaigns for the organization
      * NEW: P2 Option 3 - Campaign Performance Dashboard
      */
-    public function topPerforming(Request $request)
+    public function topPerforming(Request $request): JsonResponse
     {
         try {
             $orgId = $this->resolveOrgId($request);
 
             if (!$orgId) {
-                return response()->json([
-                    'success' => false,
-                    'error' => 'No organization context found',
-                ], 400);
+                return $this->error('No organization context found', 400);
             }
 
             // Check authorization for viewing campaigns
@@ -796,27 +631,16 @@ class CampaignController extends Controller
             // Get top performers from service
             $topCampaigns = $this->campaignService->getTopPerformingCampaigns($orgId, $metric, $limit, $dateRange);
 
-            return response()->json([
-                'success' => true,
-                'data' => $topCampaigns,
-            ]);
+            return $this->success($topCampaigns, 'Top performing campaigns retrieved successfully');
 
         } catch (\Illuminate\Validation\ValidationException $e) {
-            return response()->json([
-                'success' => false,
-                'error' => 'Validation failed',
-                'errors' => $e->errors(),
-            ], 422);
+            return $this->validationError($e->errors(), 'Validation failed');
         } catch (\Exception $e) {
             \Log::error('Top performing campaigns error', [
                 'error' => $e->getMessage(),
             ]);
 
-            return response()->json([
-                'success' => false,
-                'error' => 'Failed to retrieve top performing campaigns',
-                'message' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to retrieve top performing campaigns: ' . $e->getMessage());
         }
     }
 

@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Builder;
 
 class WorkflowInstance extends BaseModel
 {
@@ -201,27 +202,27 @@ class WorkflowInstance extends BaseModel
 
     // ===== Scopes =====
 
-    public function scopeRunning($query)
+    public function scopeRunning($query): Builder
     {
         return $query->where('status', 'running');
     }
 
-    public function scopeCompleted($query)
+    public function scopeCompleted($query): Builder
     {
         return $query->where('status', 'completed');
     }
 
-    public function scopeFailed($query)
+    public function scopeFailed($query): Builder
     {
         return $query->where('status', 'failed');
     }
 
-    public function scopeForTemplate($query, string $templateId)
+    public function scopeForTemplate($query, string $templateId): Builder
     {
         return $query->where('template_id', $templateId);
     }
 
-    public function scopeRecent($query, int $days = 7)
+    public function scopeRecent($query, int $days = 7): Builder
     {
         return $query->where('triggered_at', '>=', now()->subDays($days));
     }

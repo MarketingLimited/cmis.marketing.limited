@@ -10,6 +10,7 @@ use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Builder;
 
 class ContentItem extends BaseModel
 {
@@ -99,7 +100,7 @@ class ContentItem extends BaseModel
     /**
      * Scope to filter scheduled items
      */
-    public function scopeScheduled($query)
+    public function scopeScheduled($query): Builder
     {
         return $query->where('status', 'scheduled')
             ->whereNotNull('scheduled_for');
@@ -108,7 +109,7 @@ class ContentItem extends BaseModel
     /**
      * Scope to filter published items
      */
-    public function scopePublished($query)
+    public function scopePublished($query): Builder
     {
         return $query->where('status', 'published')
             ->whereNotNull('published_at');
@@ -117,7 +118,7 @@ class ContentItem extends BaseModel
     /**
      * Scope to filter draft items
      */
-    public function scopeDraft($query)
+    public function scopeDraft($query): Builder
     {
         return $query->where('status', 'draft');
     }
@@ -125,7 +126,7 @@ class ContentItem extends BaseModel
     /**
      * Scope to filter by item type
      */
-    public function scopeOfType($query, string $type)
+    public function scopeOfType($query, string $type): Builder
     {
         return $query->where('item_type', $type);
     }
@@ -133,7 +134,7 @@ class ContentItem extends BaseModel
     /**
      * Scope to filter by content plan
      */
-    public function scopeForPlan($query, string $planId)
+    public function scopeForPlan($query, string $planId): Builder
     {
         return $query->where('plan_id', $planId);
     }

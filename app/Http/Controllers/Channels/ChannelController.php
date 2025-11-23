@@ -6,12 +6,13 @@ use App\Http\Controllers\Controller;
 use App\Models\Channel;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Concerns\ApiResponse;
+use Illuminate\Http\JsonResponse;
 
 class ChannelController extends Controller
 {
     use ApiResponse;
 
-    public function index(Request $request, string $orgId)
+    public function index(Request $request, string $orgId): JsonResponse
     {
         $this->authorize('viewAny', Channel::class);
 
@@ -20,14 +21,14 @@ class ChannelController extends Controller
                 ->orderBy('created_at', 'desc')
                 ->paginate(20);
 
-            return response()->json($channels);
+            return $this->success($channels, 'Retrieved successfully');
 
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Failed to fetch channels'], 500);
+            return $this->serverError('Failed to fetch channels');
         }
     }
 
-    public function store(Request $request, string $orgId)
+    public function store(Request $request, string $orgId): JsonResponse
     {
         $this->authorize('create', Channel::class);
 
@@ -40,42 +41,42 @@ class ChannelController extends Controller
             return response()->json(['message' => 'Channel created', 'channel' => $channel], 201);
 
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Failed to create channel'], 500);
+            return $this->serverError('Failed to create channel');
         }
     }
 
-    public function show(Request $request, string $orgId, string $channelId)
+    public function show(Request $request, string $orgId, string $channelId): JsonResponse
     {
         try {
             $channel = Channel::where('org_id', $orgId)->findOrFail($channelId);
             $this->authorize('view', $channel);
-            return response()->json(['channel' => $channel]);
+            return $this->success(['channel' => $channel], 'Operation completed successfully');
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Channel not found'], 404);
+            return $this->notFound('Channel not found');
         }
     }
 
-    public function update(Request $request, string $orgId, string $channelId)
+    public function update(Request $request, string $orgId, string $channelId): JsonResponse
     {
         try {
             $channel = Channel::where('org_id', $orgId)->findOrFail($channelId);
             $this->authorize('update', $channel);
             $channel->update($request->all());
-            return response()->json(['message' => 'Channel updated', 'channel' => $channel]);
+            return $this->success(['message' => 'Channel updated', 'channel' => $channel], 'Operation completed successfully');
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Failed to update'], 500);
+            return $this->serverError('Failed to update');
         }
     }
 
-    public function destroy(Request $request, string $orgId, string $channelId)
+    public function destroy(Request $request, string $orgId, string $channelId): JsonResponse
     {
         try {
             $channel = Channel::where('org_id', $orgId)->findOrFail($channelId);
             $this->authorize('delete', $channel);
             $channel->delete();
-            return response()->json(['message' => 'Channel deleted']);
+            return $this->success(['message' => 'Channel deleted'], 'Operation completed successfully');
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Failed to delete'], 500);
+            return $this->serverError('Failed to delete');
         }
     }
 }

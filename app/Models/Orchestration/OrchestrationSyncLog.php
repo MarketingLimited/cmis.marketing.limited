@@ -8,6 +8,7 @@ use App\Models\Core\Org;
 use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Builder;
 class OrchestrationSyncLog extends BaseModel
 {
     use HasFactory;
@@ -50,17 +51,17 @@ class OrchestrationSyncLog extends BaseModel
 
     // ===== Relationships =====
 
-    
+
 
     public function orchestration(): BelongsTo
     {
         return $this->belongsTo(CampaignOrchestration::class, 'orchestration_id', 'orchestration_id');
+    }
 
     public function platformMapping(): BelongsTo
     {
         return $this->belongsTo(OrchestrationPlatform::class, 'platform_mapping_id', 'platform_mapping_id');
-
-    // ===== Sync Tracking =====
+    }
 
     public function markAsRunning(): void
     {
@@ -68,6 +69,7 @@ class OrchestrationSyncLog extends BaseModel
             'status' => 'running',
             'started_at' => now(),
         ]);
+    }
 
     public function markAsCompleted(array $results): void
     {
@@ -82,6 +84,7 @@ class OrchestrationSyncLog extends BaseModel
             'entities_synced' => $results['entities_synced'] ?? 0,
             'entities_failed' => $results['entities_failed'] ?? 0,
         ]);
+    }
 
     public function markAsFailed(string $errorMessage, ?array $errorDetails = null): void
     {
@@ -94,14 +97,17 @@ class OrchestrationSyncLog extends BaseModel
             'error_message' => $errorMessage,
             'error_details' => $errorDetails,
         ]);
+    }
 
     public function isSuccessful(): bool
     {
         return $this->status === 'completed' && $this->entities_failed === 0;
+    }
 
     public function hasPartialFailure(): bool
     {
         return $this->status === 'completed' && $this->entities_failed > 0;
+    }
 
     public function getSyncTypeLabel(): string
     {
@@ -113,6 +119,7 @@ class OrchestrationSyncLog extends BaseModel
             'creative' => 'Creative Sync',
             default => ucfirst($this->sync_type)
         };
+    }
 
     public function getDirectionLabel(): string
     {
@@ -122,30 +129,35 @@ class OrchestrationSyncLog extends BaseModel
             'bidirectional' => 'Two-Way Sync',
             default => ucfirst($this->direction)
         };
+    }
 
     public function getSuccessRate(): float
     {
         $total = $this->entities_synced + $this->entities_failed;
         if ($total === 0) {
             return 0;
+        }
 
         return ($this->entities_synced / $total) * 100;
+    }
 
-    // ===== Scopes =====
-
-    public function scopeCompleted($query)
+    public function scopeCompleted($query): Builder
     {
         return $query->where('status', 'completed');
+    }
 
-    public function scopeFailed($query)
+    public function scopeFailed($query): Builder
     {
         return $query->where('status', 'failed');
+    }
 
-    public function scopeForSyncType($query, string $type)
+    public function scopeForSyncType($query, string $type): Builder
     {
         return $query->where('sync_type', $type);
+    }
 
-    public function scopeRecent($query, int $hours = 24)
+    public function scopeRecent($query, int $hours = 24): Builder
     {
         return $query->where('started_at', '>=', now()->subHours($hours));
+    }
 }

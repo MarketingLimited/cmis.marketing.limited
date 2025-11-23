@@ -5,10 +5,11 @@ namespace App\Http\Controllers\Admin;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\View\View;
 
 class MetricsController extends BaseController
 {
-    public function index()
+    public function index(): View
     {
         Gate::authorize('viewInsights', auth()->user());
 

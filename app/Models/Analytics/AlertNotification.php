@@ -6,6 +6,7 @@ use App\Models\BaseModel;
 use App\Models\Concerns\HasOrganization;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Builder;
 
 /**
  * Alert Notification Model (Phase 13)
@@ -68,7 +69,7 @@ class AlertNotification extends BaseModel
     /**
      * Scope: By channel
      */
-    public function scopeChannel($query, string $channel)
+    public function scopeChannel($query, string $channel): Builder
     {
         return $query->where('channel', $channel);
     }
@@ -76,7 +77,7 @@ class AlertNotification extends BaseModel
     /**
      * Scope: Pending notifications
      */
-    public function scopePending($query)
+    public function scopePending($query): Builder
     {
         return $query->where('status', 'pending');
     }
@@ -84,7 +85,7 @@ class AlertNotification extends BaseModel
     /**
      * Scope: Failed notifications
      */
-    public function scopeFailed($query)
+    public function scopeFailed($query): Builder
     {
         return $query->where('status', 'failed');
     }
@@ -92,7 +93,7 @@ class AlertNotification extends BaseModel
     /**
      * Scope: Successfully delivered
      */
-    public function scopeDelivered($query)
+    public function scopeDelivered($query): Builder
     {
         return $query->whereIn('status', ['delivered', 'read']);
     }

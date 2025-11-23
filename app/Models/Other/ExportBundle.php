@@ -7,6 +7,7 @@ use App\Models\Concerns\HasOrganization;
 use App\Models\Core\Org;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use App\Models\BaseModel;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
@@ -42,14 +43,8 @@ class ExportBundle extends BaseModel
     /**
      * Get the bundle items
      */
-    public function items()
+    public function items(): HasMany
     {
         return $this->hasMany(ExportBundleItem::class, 'bundle_id', 'bundle_id');
-
-    /**
-     * Scope to get bundles for a specific org
-     */
-    public function scopeForOrg($query, string $orgId)
-    {
-        return $query->where('org_id', $orgId);
+    }
 }

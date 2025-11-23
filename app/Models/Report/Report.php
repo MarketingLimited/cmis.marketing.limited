@@ -41,3 +41,4 @@ protected $table = 'cmis.reports';
     {
         return $this->belongsTo(\App\Models\User::class, 'user_id', 'user_id');
 }
+}

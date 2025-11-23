@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers\Admin;
+use App\Http\Controllers\Concerns\ApiResponse;
 
 use App\Http\Controllers\Controller;
 use App\Services\FeatureToggle\FeatureFlagService;
@@ -64,18 +65,12 @@ class FeatureFlagController extends Controller
         );
 
         if ($success) {
-            return response()->json([
-                'success' => true,
-                'message' => 'Feature flag updated successfully',
+            return $this->success(['message' => 'Feature flag updated successfully',
                 'feature_key' => $request->input('feature_key'),
-                'enabled' => $request->boolean('enabled'),
-            ]);
+                'enabled' => $request->boolean('enabled'),], 'Operation completed successfully');
         }
 
-        return response()->json([
-            'success' => false,
-            'message' => 'Failed to update feature flag',
-        ], 500);
+        return $this->serverError('Failed to update feature flag');
     }
 
     /**
@@ -110,12 +105,11 @@ class FeatureFlagController extends Controller
             }
         }
 
-        return response()->json([
-            'success' => $failCount === 0,
+        return $this->success(['success' => $failCount === 0,
             'message' => "{$successCount} features updated successfully" . ($failCount > 0 ? ", {$failCount} failed" : ""),
             'success_count' => $successCount,
             'fail_count' => $failCount,
-        ]);
+        ], 'Operation completed successfully');
     }
 
     /**
@@ -142,12 +136,9 @@ class FeatureFlagController extends Controller
             }
         }
 
-        return response()->json([
-            'success' => true,
-            'message' => "Applied preset '{$preset}': {$successCount} features updated",
+        return $this->success(['message' => "Applied preset '{$preset}': {$successCount} features updated",
             'preset' => $preset,
-            'changes_count' => $successCount,
-        ]);
+            'changes_count' => $successCount,], 'Operation completed successfully');
     }
 
     /**
@@ -251,15 +242,9 @@ class FeatureFlagController extends Controller
         );
 
         if ($success) {
-            return response()->json([
-                'success' => true,
-                'message' => 'Override created successfully',
-            ]);
+            return $this->success(['message' => 'Override created successfully',], 'Operation completed successfully');
         }
 
-        return response()->json([
-            'success' => false,
-            'message' => 'Failed to create override',
-        ], 500);
+        return $this->serverError('Failed to create override');
     }
 }

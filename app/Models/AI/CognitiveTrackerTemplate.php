@@ -7,6 +7,7 @@ use App\Models\Concerns\HasOrganization;
 use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Builder;
 
 class CognitiveTrackerTemplate extends BaseModel
 {
@@ -41,22 +42,26 @@ class CognitiveTrackerTemplate extends BaseModel
     ];
 
     // Scopes
-    public function scopeActive($query)
+    public function scopeActive($query): Builder
     {
         return $query->where('is_active', true);
+    }
 
-    public function scopeByCategory($query, $category)
+    public function scopeByCategory($query, $category): Builder
     {
         return $query->where('category', $category);
+    }
 
     // Helpers
     public function activate()
-    {
+    : mixed {
         $this->is_active = true;
         return $this->save();
+    }
 
     public function deactivate()
-    {
+    : mixed {
         $this->is_active = false;
         return $this->save();
+    }
 }

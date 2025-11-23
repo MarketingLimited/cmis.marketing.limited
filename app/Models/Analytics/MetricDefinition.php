@@ -3,6 +3,8 @@
 namespace App\Models\Analytics;
 
 use App\Models\BaseModel;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Builder;
 
 /**
  * MetricDefinition Model
@@ -58,21 +60,24 @@ class MetricDefinition extends BaseModel
     /**
      * Get metrics using this definition
      */
-    public function metrics()
+    public function metrics(): HasMany
     {
         return $this->hasMany(Metric::class, 'metric_name', 'metric_name');
+    }
 
     /**
      * Scope for active metrics only
      */
-    public function scopeActive($query)
+    public function scopeActive($query): Builder
     {
         return $query->where('is_active', true);
+    }
 
     /**
      * Scope by category
      */
-    public function scopeCategory($query, string $category)
+    public function scopeCategory($query, string $category): Builder
     {
         return $query->where('metric_category', $category);
+    }
 }

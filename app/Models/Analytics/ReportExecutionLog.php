@@ -6,6 +6,7 @@ use App\Models\Concerns\HasOrganization;
 use App\Models\Core\Org;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Builder;
 use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -60,7 +61,7 @@ class ReportExecutionLog extends BaseModel
     /**
      * Scope: Successful executions
      */
-    public function scopeSuccessful($query)
+    public function scopeSuccessful($query): Builder
     {
         return $query->where('status', 'success');
     }
@@ -68,7 +69,7 @@ class ReportExecutionLog extends BaseModel
     /**
      * Scope: Failed executions
      */
-    public function scopeFailed($query)
+    public function scopeFailed($query): Builder
     {
         return $query->where('status', 'failed');
     }
@@ -76,7 +77,7 @@ class ReportExecutionLog extends BaseModel
     /**
      * Scope: Recent executions
      */
-    public function scopeRecent($query, int $days = 30)
+    public function scopeRecent($query, int $days = 30): Builder
     {
         return $query->where('executed_at', '>=', now()->subDays($days));
     }

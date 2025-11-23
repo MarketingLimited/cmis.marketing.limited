@@ -44,18 +44,10 @@ class AuditController extends Controller
                 ]);
             }
 
-            return response()->json([
-                'success' => true,
-                'data' => $status,
-                'message' => 'Realtime status retrieved successfully'
-            ]);
+            return $this->success($status, 'Realtime status retrieved successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to retrieve realtime status',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to retrieve realtime status');
         }
     }
 
@@ -76,25 +68,13 @@ class AuditController extends Controller
             $summary = DB::select("SELECT * FROM cmis_audit.daily_summary")[0] ?? null;
 
             if (!$summary) {
-                return response()->json([
-                    'success' => true,
-                    'data' => null,
-                    'message' => 'No data available for daily summary'
-                ]);
+                return $this->success(null, 'No data available for daily summary');
             }
 
-            return response()->json([
-                'success' => true,
-                'data' => $summary,
-                'message' => 'Daily summary retrieved successfully'
-            ]);
+            return $this->success($summary, 'Daily summary retrieved successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to retrieve daily summary',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to retrieve daily summary');
         }
     }
 
@@ -120,19 +100,10 @@ class AuditController extends Controller
                 LIMIT ?
             ", [$limit]);
 
-            return response()->json([
-                'success' => true,
-                'data' => $weeks,
-                'count' => count($weeks),
-                'message' => 'Weekly performance retrieved successfully'
-            ]);
+            return $this->success($weeks, 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to retrieve weekly performance',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to retrieve weekly performance');
         }
     }
 
@@ -152,18 +123,10 @@ class AuditController extends Controller
         try {
             $summary = DB::select("SELECT * FROM cmis_audit.audit_summary");
 
-            return response()->json([
-                'success' => true,
-                'data' => $summary,
-                'message' => 'Audit summary retrieved successfully'
-            ]);
+            return $this->success($summary, 'Audit summary retrieved successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to retrieve audit summary',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to retrieve audit summary');
         }
     }
 
@@ -254,11 +217,7 @@ class AuditController extends Controller
             ]);
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to retrieve activity log',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to retrieve activity log');
         }
     }
 
@@ -304,11 +263,7 @@ class AuditController extends Controller
             ], 201);
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to log event',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to log event');
         }
     }
 
@@ -330,20 +285,10 @@ class AuditController extends Controller
 
             $criticalAlerts = array_filter($alerts, fn($a) => $a->severity === 'critical');
 
-            return response()->json([
-                'success' => true,
-                'data' => $alerts,
-                'has_critical' => !empty($criticalAlerts),
-                'count' => count($alerts),
-                'message' => empty($alerts) ? 'No alerts' : count($alerts) . ' alert(s) found'
-            ]);
+            return $this->success($alerts, 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to check alerts',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to check alerts');
         }
     }
 
@@ -383,18 +328,12 @@ class AuditController extends Controller
                     'message' => $result->message
                 ]);
             } else {
-                return response()->json([
-                    'success' => false,
-                    'message' => $result->message
-                ], 500);
+                return $this->serverError($result->message
+                );
             }
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to export report',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to export report');
         }
     }
 
@@ -428,11 +367,7 @@ class AuditController extends Controller
             ]);
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to retrieve dashboard data',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to retrieve dashboard data');
         }
     }
 }

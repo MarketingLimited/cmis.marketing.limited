@@ -439,7 +439,7 @@ class PublishingService
     /**
      * Get scheduled posts
      */
-    public function getScheduledPosts(?\DateTime $startDate = null, ?\DateTime $endDate = null)
+    public function getScheduledPosts(?\DateTime $startDate = null, ?\DateTime $endDate = null): \Illuminate\Support\Collection
     {
         $query = ContentItem::where('status', 'scheduled');
 

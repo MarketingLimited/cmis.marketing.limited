@@ -6,6 +6,7 @@ use App\Models\BaseModel;
 use App\Models\Concerns\HasOrganization;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Builder;
 
 /**
  * Twitter Pixel Model
@@ -99,7 +100,7 @@ class TwitterPixel extends BaseModel
     /**
      * Scope to get verified pixels
      */
-    public function scopeVerified($query)
+    public function scopeVerified($query): Builder
     {
         return $query->where('is_verified', true);
     }
@@ -107,7 +108,7 @@ class TwitterPixel extends BaseModel
     /**
      * Scope to get active pixels
      */
-    public function scopeActive($query)
+    public function scopeActive($query): Builder
     {
         return $query->where('status', self::STATUS_ACTIVE);
     }

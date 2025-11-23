@@ -9,6 +9,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator;
 use App\Http\Controllers\Concerns\ApiResponse;
 
 /**
@@ -160,10 +161,7 @@ class TikTokAdsController extends Controller
             ]);
 
             if ($validator->fails()) {
-                return response()->json([
-                    'success' => false,
-                    'errors' => $validator->errors()
-                ], 422);
+                return $this->validationError($validator->errors(), 'Validation failed');
             }
 
             $orgId = auth()->user()->org_id;
@@ -182,17 +180,10 @@ class TikTokAdsController extends Controller
                 $integration->access_token
             );
 
-            return response()->json([
-                'success' => true,
-                'ad_groups' => $adGroups,
-                'count' => count($adGroups)
-            ]);
+            return $this->success(['ad_groups' => $adGroups,
+                'count' => count($adGroups)], 'Operation completed successfully');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to fetch ad groups',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to fetch ad groups' . ': ' . $e->getMessage());
         }
     }
 
@@ -207,10 +198,7 @@ class TikTokAdsController extends Controller
             ]);
 
             if ($validator->fails()) {
-                return response()->json([
-                    'success' => false,
-                    'errors' => $validator->errors()
-                ], 422);
+                return $this->validationError($validator->errors(), 'Validation failed');
             }
 
             $orgId = auth()->user()->org_id;
@@ -229,17 +217,10 @@ class TikTokAdsController extends Controller
                 $integration->access_token
             );
 
-            return response()->json([
-                'success' => true,
-                'ads' => $ads,
-                'count' => count($ads)
-            ]);
+            return $this->success(['ads' => $ads,
+                'count' => count($ads)], 'Operation completed successfully');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to fetch ads',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to fetch ads' . ': ' . $e->getMessage());
         }
     }
 
@@ -316,10 +297,7 @@ class TikTokAdsController extends Controller
             ]);
 
             if ($validator->fails()) {
-                return response()->json([
-                    'success' => false,
-                    'errors' => $validator->errors()
-                ], 422);
+                return $this->validationError($validator->errors(), 'Validation failed');
             }
 
             $orgId = auth()->user()->org_id;
@@ -349,11 +327,7 @@ class TikTokAdsController extends Controller
                 ]
             ]);
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to fetch campaign metrics',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to fetch campaign metrics' . ': ' . $e->getMessage());
         }
     }
 
@@ -368,10 +342,7 @@ class TikTokAdsController extends Controller
             ]);
 
             if ($validator->fails()) {
-                return response()->json([
-                    'success' => false,
-                    'errors' => $validator->errors()
-                ], 422);
+                return $this->validationError($validator->errors(), 'Validation failed');
             }
 
             $orgId = auth()->user()->org_id;
@@ -386,16 +357,9 @@ class TikTokAdsController extends Controller
 
             $this->tiktokAdsService->clearCache($integration->platform_account_id);
 
-            return response()->json([
-                'success' => true,
-                'message' => 'TikTok Ads cache cleared successfully'
-            ]);
+            return $this->success(null, 'TikTok Ads cache cleared successfully');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to refresh cache',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to refresh cache' . ': ' . $e->getMessage());
         }
     }
 }

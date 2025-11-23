@@ -36,21 +36,24 @@ class IntentMapping extends BaseModel
     /**
      * Scope active intents
      */
-    public function scopeActive($query)
+    public function scopeActive($query): Builder
     {
         return $query->where('is_active', true);
 
+    }
     /**
      * Scope by category
      */
-    public function scopeByCategory($query, string $category)
+    public function scopeByCategory($query, string $category): Builder
     {
         return $query->where('category', $category);
 
+    }
     /**
      * Find by intent code
      */
     public static function findByCode(string $code)
-    {
+    : mixed {
         return self::where('intent_code', $code)->first();
+}
 }

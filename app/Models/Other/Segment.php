@@ -7,6 +7,7 @@ use App\Models\Concerns\HasOrganization;
 use App\Models\Core\Org;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use App\Models\BaseModel;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
@@ -36,13 +37,4 @@ class Segment extends BaseModel
         'persona' => 'array',
         'deleted_at' => 'datetime',
     ];
-
-    
-
-    /**
-     * Scope to get segments for a specific org
-     */
-    public function scopeForOrg($query, string $orgId)
-    {
-        return $query->where('org_id', $orgId);
 }

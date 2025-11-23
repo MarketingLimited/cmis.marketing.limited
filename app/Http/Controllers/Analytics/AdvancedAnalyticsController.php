@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers\Analytics;
+use App\Http\Controllers\Concerns\ApiResponse;
 
 use App\Http\Controllers\Controller;
 use App\Services\Analytics\AIInsightsService;
@@ -54,15 +55,9 @@ class AdvancedAnalyticsController extends Controller
                 'days' => $request->input('days', 30)
             ]);
 
-            return response()->json([
-                'success' => true,
-                'insights' => $insights
-            ]);
+            return $this->success(['insights' => $insights], 'Operation completed successfully');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Operation failed: ' . $e->getMessage());
         }
     }
 
@@ -89,12 +84,9 @@ class AdvancedAnalyticsController extends Controller
         try {
             $report = $this->reportService->generateCampaignReport($campaignId, $validated);
 
-            return response()->json($report);
+            return $this->success($report, 'Retrieved successfully');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Operation failed: ' . $e->getMessage());
         }
     }
 
@@ -119,12 +111,9 @@ class AdvancedAnalyticsController extends Controller
         try {
             $report = $this->reportService->generateOrganizationReport($orgId, $validated);
 
-            return response()->json($report);
+            return $this->success($report, 'Retrieved successfully');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Operation failed: ' . $e->getMessage());
         }
     }
 
@@ -155,12 +144,9 @@ class AdvancedAnalyticsController extends Controller
                 ]
             );
 
-            return response()->json($report);
+            return $this->success($report, 'Retrieved successfully');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Operation failed: ' . $e->getMessage());
         }
     }
 
@@ -181,15 +167,9 @@ class AdvancedAnalyticsController extends Controller
                 $dashboardType
             );
 
-            return response()->json([
-                'success' => true,
-                'configuration' => $config
-            ]);
+            return $this->success(['configuration' => $config], 'Operation completed successfully');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Operation failed: ' . $e->getMessage());
         }
     }
 
@@ -215,15 +195,11 @@ class AdvancedAnalyticsController extends Controller
                 $validated['configuration']
             );
 
-            return response()->json([
-                'success' => $success,
+            return $this->success(['success' => $success,
                 'message' => 'Dashboard configuration saved successfully'
-            ]);
+            ], 'Operation completed successfully');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Operation failed: ' . $e->getMessage());
         }
     }
 
@@ -244,15 +220,9 @@ class AdvancedAnalyticsController extends Controller
                 $context
             );
 
-            return response()->json([
-                'success' => true,
-                'filters' => $filters
-            ]);
+            return $this->success(['filters' => $filters], 'Operation completed successfully');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Operation failed: ' . $e->getMessage());
         }
     }
 
@@ -280,16 +250,10 @@ class AdvancedAnalyticsController extends Controller
                 $validated['filters']
             );
 
-            return response()->json([
-                'success' => true,
-                'filter_id' => $filterId,
-                'message' => 'Filter saved successfully'
-            ]);
+            return $this->success(['filter_id' => $filterId,
+                'message' => 'Filter saved successfully'], 'Operation completed successfully');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Operation failed: ' . $e->getMessage());
         }
     }
 }

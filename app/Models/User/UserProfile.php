@@ -48,10 +48,11 @@ class UserProfile extends BaseModel
     /**
      * Get the user
      */
-    public function user()
+    public function user(): BelongsTo
     {
         return $this->belongsTo(\App\Models\User::class, 'user_id', 'user_id');
 
+    }
     /**
      * Check if notifications are enabled
      */
@@ -59,10 +60,12 @@ class UserProfile extends BaseModel
     {
         return $this->notification_preferences[$type] ?? true;
 
+    }
     /**
      * Get social link
      */
     public function getSocialLink(string $platform): ?string
     {
         return $this->social_links[$platform] ?? null;
+}
 }

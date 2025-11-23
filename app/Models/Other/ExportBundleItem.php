@@ -3,6 +3,7 @@
 namespace App\Models\Other;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Builder;
 use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -30,14 +31,16 @@ class ExportBundleItem extends BaseModel
     /**
      * Get the bundle
      */
-    public function bundle()
+    public function bundle(): BelongsTo
     {
         return $this->belongsTo(ExportBundle::class, 'bundle_id', 'bundle_id');
 
+    }
     /**
      * Scope to get items for a specific bundle
      */
-    public function scopeForBundle($query, string $bundleId)
+    public function scopeForBundle($query, string $bundleId): Builder
     {
         return $query->where('bundle_id', $bundleId);
+}
 }

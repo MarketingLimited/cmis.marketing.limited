@@ -345,7 +345,7 @@ class WorkflowService
     /**
      * Get entity by type and ID
      */
-    protected function getEntity(string $entityType, string $entityId)
+    protected function getEntity(string $entityType, string $entityId): mixed
     {
         switch ($entityType) {
             case 'campaign':

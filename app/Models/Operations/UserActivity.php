@@ -8,6 +8,7 @@ use App\Models\Core\Org;
 use App\Models\User;
 use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Builder;
 
 class UserActivity extends BaseModel
 {
@@ -19,6 +20,7 @@ class UserActivity extends BaseModel
     {
         return $this->belongsTo(User::class, 'user_id', 'user_id');
 
+    }
     /**
      * Log user activity.
      *
@@ -48,6 +50,7 @@ class UserActivity extends BaseModel
             'metadata' => $metadata,
         ]);
 
+    }
     /**
      * Scope activities by type.
      *
@@ -55,10 +58,11 @@ class UserActivity extends BaseModel
      * @param string $type
      * @return \Illuminate\Database\Eloquent\Builder
      */
-    public function scopeByType($query, string $type)
+    public function scopeByType($query, string $type): Builder
     {
         return $query->where('activity_type', $type);
 
+    }
     /**
      * Scope activities by entity.
      *
@@ -67,12 +71,14 @@ class UserActivity extends BaseModel
      * @param string|null $entityId
      * @return \Illuminate\Database\Eloquent\Builder
      */
-    public function scopeByEntity($query, string $entityType, ?string $entityId = null)
+    public function scopeByEntity($query, string $entityType, ?string $entityId = null): Builder
     {
         $query = $query->where('entity_type', $entityType);
 
         if ($entityId) {
             $query->where('entity_id', $entityId);
+        }
 
         return $query;
+    }
 }

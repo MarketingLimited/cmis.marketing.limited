@@ -8,6 +8,7 @@ use App\Models\Core\Org;
 use App\Models\Core\User;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Builder;
 use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -93,27 +94,27 @@ class AutomationWorkflow extends BaseModel
 
     // ===== Scopes =====
 
-    public function scopeActive($query)
+    public function scopeActive($query): Builder
     {
         return $query->where('status', 'active');
     }
 
-    public function scopeTemplates($query)
+    public function scopeTemplates($query): Builder
     {
         return $query->where('is_template', true);
     }
 
-    public function scopeGlobalTemplates($query)
+    public function scopeGlobalTemplates($query): Builder
     {
         return $query->where('is_template', true)->whereNull('org_id');
     }
 
-    public function scopeOrgTemplates($query, string $orgId)
+    public function scopeOrgTemplates($query, string $orgId): Builder
     {
         return $query->where('is_template', true)->where('org_id', $orgId);
     }
 
-    public function scopeOfCategory($query, string $category)
+    public function scopeOfCategory($query, string $category): Builder
     {
         return $query->where('category', $category);
     }

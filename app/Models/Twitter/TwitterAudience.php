@@ -6,6 +6,7 @@ use App\Models\BaseModel;
 use App\Models\Concerns\HasOrganization;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Builder;
 
 /**
  * Twitter Audience Model
@@ -115,7 +116,7 @@ class TwitterAudience extends BaseModel
     /**
      * Scope to get ready audiences
      */
-    public function scopeReady($query)
+    public function scopeReady($query): Builder
     {
         return $query->where('status', self::STATUS_READY);
     }
@@ -123,7 +124,7 @@ class TwitterAudience extends BaseModel
     /**
      * Scope to get audiences by type
      */
-    public function scopeOfType($query, string $type)
+    public function scopeOfType($query, string $type): Builder
     {
         return $query->where('audience_type', $type);
     }

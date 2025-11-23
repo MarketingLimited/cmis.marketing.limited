@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers\Core;
+use App\Http\Controllers\Concerns\ApiResponse;
 
 use App\Http\Controllers\Controller;
 use App\Models\Core\User;
@@ -70,10 +71,7 @@ class UserManagementController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         try {
@@ -149,11 +147,7 @@ class UserManagementController extends Controller
                 'error' => $e->getMessage(),
             ]);
 
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to retrieve users',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to retrieve users' . ': ' . $e->getMessage());
         }
     }
 
@@ -198,10 +192,7 @@ class UserManagementController extends Controller
                 return $this->error('User not found', 404);
             }
 
-            return response()->json([
-                'success' => true,
-                'user' => $user,
-            ]);
+            return $this->success(['user' => $user,], 'Operation completed successfully');
 
         } catch (\Exception $e) {
             Log::error('Failed to get user details', [
@@ -210,11 +201,7 @@ class UserManagementController extends Controller
                 'error' => $e->getMessage(),
             ]);
 
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to retrieve user details',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to retrieve user details' . ': ' . $e->getMessage());
         }
     }
 
@@ -243,10 +230,7 @@ class UserManagementController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         try {
@@ -326,11 +310,7 @@ class UserManagementController extends Controller
                 'error' => $e->getMessage(),
             ]);
 
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to send invitation',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to send invitation' . ': ' . $e->getMessage());
         }
     }
 
@@ -356,10 +336,7 @@ class UserManagementController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         try {
@@ -385,10 +362,7 @@ class UserManagementController extends Controller
                 'new_role_id' => $request->input('role_id'),
             ]);
 
-            return response()->json([
-                'success' => true,
-                'message' => 'User role updated successfully',
-            ]);
+            return $this->success(['message' => 'User role updated successfully',], 'Operation completed successfully');
 
         } catch (\Exception $e) {
             Log::error('Failed to update user role', [
@@ -397,11 +371,7 @@ class UserManagementController extends Controller
                 'error' => $e->getMessage(),
             ]);
 
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to update user role',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to update user role' . ': ' . $e->getMessage());
         }
     }
 
@@ -427,10 +397,7 @@ class UserManagementController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         try {
@@ -461,10 +428,7 @@ class UserManagementController extends Controller
                 'target_user_id' => $userId,
             ]);
 
-            return response()->json([
-                'success' => true,
-                'message' => 'User status updated successfully',
-            ]);
+            return $this->success(['message' => 'User status updated successfully',], 'Operation completed successfully');
 
         } catch (\Exception $e) {
             Log::error('Failed to update user status', [
@@ -473,11 +437,7 @@ class UserManagementController extends Controller
                 'error' => $e->getMessage(),
             ]);
 
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to update user status',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to update user status' . ': ' . $e->getMessage());
         }
     }
 
@@ -520,10 +480,7 @@ class UserManagementController extends Controller
                 'removed_user_id' => $userId,
             ]);
 
-            return response()->json([
-                'success' => true,
-                'message' => 'User removed from organization successfully',
-            ]);
+            return $this->success(['message' => 'User removed from organization successfully',], 'Operation completed successfully');
 
         } catch (\Exception $e) {
             Log::error('Failed to remove user', [
@@ -532,11 +489,7 @@ class UserManagementController extends Controller
                 'error' => $e->getMessage(),
             ]);
 
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to remove user',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to remove user' . ': ' . $e->getMessage());
         }
     }
 
@@ -566,10 +519,7 @@ class UserManagementController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         try {
@@ -597,11 +547,8 @@ class UserManagementController extends Controller
                 ->limit($limit)
                 ->get();
 
-            return response()->json([
-                'success' => true,
-                'activities' => $activities,
-                'total' => count($activities),
-            ]);
+            return $this->success(['activities' => $activities,
+                'total' => count($activities),], 'Operation completed successfully');
 
         } catch (\Exception $e) {
             Log::error('Failed to get user activity', [
@@ -610,11 +557,7 @@ class UserManagementController extends Controller
                 'error' => $e->getMessage(),
             ]);
 
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to retrieve user activity',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to retrieve user activity' . ': ' . $e->getMessage());
         }
     }
 
@@ -651,11 +594,8 @@ class UserManagementController extends Controller
                 ->orderBy('i.created_at', 'desc')
                 ->get();
 
-            return response()->json([
-                'success' => true,
-                'invitations' => $invitations,
-                'total' => count($invitations),
-            ]);
+            return $this->success(['invitations' => $invitations,
+                'total' => count($invitations),], 'Operation completed successfully');
 
         } catch (\Exception $e) {
             Log::error('Failed to get invitations', [
@@ -663,11 +603,7 @@ class UserManagementController extends Controller
                 'error' => $e->getMessage(),
             ]);
 
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to retrieve invitations',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to retrieve invitations' . ': ' . $e->getMessage());
         }
     }
 
@@ -698,10 +634,7 @@ class UserManagementController extends Controller
                 return $this->error('Invitation not found', 404);
             }
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Invitation cancelled successfully',
-            ]);
+            return $this->success(['message' => 'Invitation cancelled successfully',], 'Operation completed successfully');
 
         } catch (\Exception $e) {
             Log::error('Failed to cancel invitation', [
@@ -710,11 +643,7 @@ class UserManagementController extends Controller
                 'error' => $e->getMessage(),
             ]);
 
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to cancel invitation',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to cancel invitation' . ': ' . $e->getMessage());
         }
     }
 

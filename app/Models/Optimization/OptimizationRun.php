@@ -11,6 +11,7 @@ use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Builder;
 class OptimizationRun extends BaseModel
 {
     use HasFactory;
@@ -76,34 +77,40 @@ class OptimizationRun extends BaseModel
     {
         return $this->belongsTo(OptimizationModel::class, 'model_id', 'model_id');
 
+        }
     public function executor(): BelongsTo
     {
         return $this->belongsTo(User::class, 'executed_by', 'user_id');
 
+        }
     public function applier(): BelongsTo
     {
         return $this->belongsTo(User::class, 'applied_by', 'user_id');
 
+        }
     public function campaign(): BelongsTo
     {
         return $this->belongsTo(Campaign::class, 'target_entity_id', 'campaign_id');
 
+        }
     public function budgetAllocations(): HasMany
     {
         return $this->hasMany(BudgetAllocation::class, 'optimization_run_id', 'run_id');
 
+        }
     public function insights(): HasMany
     {
         return $this->hasMany(OptimizationInsight::class, 'optimization_run_id', 'run_id');
 
-    // ===== Execution Status Management =====
 
+        }
     public function markAsRunning(): void
     {
         $this->update([
             'status' => 'running',
             'started_at' => now(),
         ]);
+    }
 
     public function markAsCompleted(array $results): void
     {
@@ -122,6 +129,7 @@ class OptimizationRun extends BaseModel
             'confidence_score' => $results['confidence_score'] ?? null,
             'iterations' => $results['iterations'] ?? null,
         ]);
+    }
 
     public function markAsFailed(string $errorMessage): void
     {
@@ -133,6 +141,7 @@ class OptimizationRun extends BaseModel
             'duration_seconds' => $duration,
             'error_message' => $errorMessage,
         ]);
+    }
 
     public function markAsApplied(string $userId): void
     {
@@ -141,6 +150,7 @@ class OptimizationRun extends BaseModel
             'applied_at' => now(),
             'applied_by' => $userId,
         ]);
+    }
 
     // ===== Performance Helpers =====
 
@@ -148,18 +158,21 @@ class OptimizationRun extends BaseModel
     {
         return in_array($this->status, ['completed', 'applied']);
 
+        }
     public function hasImprovement(): bool
     {
         return $this->improvement_percentage > 0;
 
+        }
     public function getImprovementLabel(): string
     {
         if (!$this->improvement_percentage) {
             return 'N/A';
+        }
 
         $sign = $this->improvement_percentage > 0 ? '+' : '';
         return $sign . number_format($this->improvement_percentage, 2) . '%';
-
+    }
     public function getOptimizationTypeLabel(): string
     {
         return match($this->optimization_type) {
@@ -169,6 +182,7 @@ class OptimizationRun extends BaseModel
             'creative_optimization' => 'Creative Optimization',
             default => ucfirst(str_replace('_', ' ', $this->optimization_type))
         };
+    }
 
     public function getObjectiveLabel(): string
     {
@@ -180,22 +194,27 @@ class OptimizationRun extends BaseModel
             'maximize_reach' => 'Maximize Reach',
             default => ucfirst(str_replace('_', ' ', $this->objective))
         };
+    }
 
     // ===== Scopes =====
 
-    public function scopeCompleted($query)
+    public function scopeCompleted($query): Builder
     {
         return $query->where('status', 'completed');
 
-    public function scopeApplied($query)
+        }
+    public function scopeApplied($query): Builder
     {
         return $query->where('status', 'applied');
 
-    public function scopeForOptimizationType($query, string $type)
+        }
+    public function scopeForOptimizationType($query, string $type): Builder
     {
         return $query->where('optimization_type', $type);
 
-    public function scopeWithImprovement($query)
+        }
+    public function scopeWithImprovement($query): Builder
     {
         return $query->where('improvement_percentage', '>', 0);
+    }
 }

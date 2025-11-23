@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\View\View;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
 use App\Http\Controllers\Concerns\ApiResponse;
@@ -22,7 +24,7 @@ class SettingsController extends Controller
     /**
      * Display settings page
      */
-    public function index()
+    public function index(): View
     {
         return view('settings.index');
     }
@@ -30,7 +32,7 @@ class SettingsController extends Controller
     /**
      * Update user profile
      */
-    public function updateProfile(Request $request)
+    public function updateProfile(Request $request): JsonResponse
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -43,23 +45,17 @@ class SettingsController extends Controller
             $user = auth()->user();
             $user->update($validated);
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Profile updated successfully',
-                'data' => $user,
-            ]);
+            return $this->success($user, 'Operation completed successfully');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to update profile: ' . $e->getMessage(),
-            ], 500);
+            return $this->serverError('Failed to update profile: ' . $e->getMessage(),
+            );
         }
     }
 
     /**
      * Update password
      */
-    public function updatePassword(Request $request)
+    public function updatePassword(Request $request): JsonResponse
     {
         $validated = $request->validate([
             'current_password' => 'required|string',
@@ -81,22 +77,17 @@ class SettingsController extends Controller
                 'password' => Hash::make($validated['password']),
             ]);
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Password updated successfully',
-            ]);
+            return $this->success(['message' => 'Password updated successfully',], 'Operation completed successfully');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to update password: ' . $e->getMessage(),
-            ], 500);
+            return $this->serverError('Failed to update password: ' . $e->getMessage(),
+            );
         }
     }
 
     /**
      * Update notification settings
      */
-    public function updateNotifications(Request $request)
+    public function updateNotifications(Request $request): JsonResponse
     {
         $validated = $request->validate([
             'email_notifications' => 'required|boolean',
@@ -118,22 +109,17 @@ class SettingsController extends Controller
                 ])
             ]);
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Notification settings updated successfully',
-            ]);
+            return $this->success(['message' => 'Notification settings updated successfully',], 'Operation completed successfully');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to update settings: ' . $e->getMessage(),
-            ], 500);
+            return $this->serverError('Failed to update settings: ' . $e->getMessage(),
+            );
         }
     }
 
     /**
      * Update organization settings
      */
-    public function updateOrganization(Request $request)
+    public function updateOrganization(Request $request): JsonResponse
     {
         $this->authorize('update', auth()->user()->organization);
 
@@ -149,23 +135,17 @@ class SettingsController extends Controller
             $org = auth()->user()->organization;
             $org->update($validated);
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Organization settings updated successfully',
-                'data' => $org,
-            ]);
+            return $this->success($org, 'Operation completed successfully');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to update organization: ' . $e->getMessage(),
-            ], 500);
+            return $this->serverError('Failed to update organization: ' . $e->getMessage(),
+            );
         }
     }
 
     /**
      * Get API keys
      */
-    public function apiKeys()
+    public function apiKeys(): JsonResponse
     {
         // Return user's API keys (you would have an ApiKey model)
         return response()->json([
@@ -186,7 +166,7 @@ class SettingsController extends Controller
     /**
      * Create API key
      */
-    public function createApiKey(Request $request)
+    public function createApiKey(Request $request): JsonResponse
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -207,36 +187,29 @@ class SettingsController extends Controller
                 ],
             ], 201);
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to create API key: ' . $e->getMessage(),
-            ], 500);
+            return $this->serverError('Failed to create API key: ' . $e->getMessage(),
+            );
         }
     }
 
     /**
      * Delete API key
      */
-    public function deleteApiKey(string $keyId)
+    public function deleteApiKey(string $keyId): JsonResponse
     {
         try {
             // Delete API key
-            return response()->json([
-                'success' => true,
-                'message' => 'API key deleted successfully',
-            ]);
+            return $this->success(['message' => 'API key deleted successfully',], 'Operation completed successfully');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to delete API key: ' . $e->getMessage(),
-            ], 500);
+            return $this->serverError('Failed to delete API key: ' . $e->getMessage(),
+            );
         }
     }
 
     /**
      * Get integrations
      */
-    public function integrations()
+    public function integrations(): JsonResponse
     {
         $user = auth()->user();
 
@@ -268,16 +241,13 @@ class SettingsController extends Controller
             ],
         ];
 
-        return response()->json([
-            'success' => true,
-            'data' => $integrations,
-        ]);
+        return $this->success($integrations, 'Operation completed successfully');
     }
 
     /**
      * Export user data
      */
-    public function exportData(Request $request)
+    public function exportData(Request $request): JsonResponse
     {
         $validated = $request->validate([
             'format' => 'required|in:json,csv',
@@ -300,15 +270,10 @@ class SettingsController extends Controller
             }
 
             // CSV export would be implemented here
-            return response()->json([
-                'success' => true,
-                'message' => 'Data export initiated',
-            ]);
+            return $this->success(['message' => 'Data export initiated',], 'Operation completed successfully');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to export data: ' . $e->getMessage(),
-            ], 500);
+            return $this->serverError('Failed to export data: ' . $e->getMessage(),
+            );
         }
     }
 }

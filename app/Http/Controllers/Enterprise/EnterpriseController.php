@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers\Enterprise;
+use App\Http\Controllers\Concerns\ApiResponse;
 
 use App\Http\Controllers\Controller;
 use App\Services\Enterprise\PerformanceMonitoringService;
@@ -8,6 +9,7 @@ use App\Services\Enterprise\AdvancedReportingService;
 use App\Services\Enterprise\WebhookManagementService;
 use Illuminate\Http\{JsonResponse, Request};
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Http\JsonResponse;
 
 /**
  * Enterprise Features Controller (Phase 5)
@@ -47,13 +49,10 @@ class EnterpriseController extends Controller
         try {
             $result = $this->monitoring->monitorCampaignPerformance($campaignId);
 
-            return response()->json($result);
+            return $this->success($result, 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Operation failed: ' . $e->getMessage());
         }
     }
 
@@ -67,13 +66,10 @@ class EnterpriseController extends Controller
         try {
             $result = $this->monitoring->monitorOrganizationPerformance($orgId);
 
-            return response()->json($result);
+            return $this->success($result, 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Operation failed: ' . $e->getMessage());
         }
     }
 
@@ -92,10 +88,7 @@ class EnterpriseController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         try {
@@ -104,17 +97,11 @@ class EnterpriseController extends Controller
 
             $alerts = $this->monitoring->getActiveAlerts($orgId, $filters, $limit);
 
-            return response()->json([
-                'success' => true,
-                'alerts' => $alerts,
-                'count' => count($alerts)
-            ]);
+            return $this->success(['alerts' => $alerts,
+                'count' => count($alerts)], 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Operation failed: ' . $e->getMessage());
         }
     }
 
@@ -131,10 +118,7 @@ class EnterpriseController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         try {
@@ -144,13 +128,10 @@ class EnterpriseController extends Controller
                 $request->input('notes')
             );
 
-            return response()->json($result);
+            return $this->success($result, 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Operation failed: ' . $e->getMessage());
         }
     }
 
@@ -167,10 +148,7 @@ class EnterpriseController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         try {
@@ -180,13 +158,10 @@ class EnterpriseController extends Controller
                 $request->input('resolution_notes')
             );
 
-            return response()->json($result);
+            return $this->success($result, 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Operation failed: ' . $e->getMessage());
         }
     }
 
@@ -202,26 +177,17 @@ class EnterpriseController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         try {
             $days = $request->input('days', 30);
             $stats = $this->monitoring->getAlertStatistics($orgId, $days);
 
-            return response()->json([
-                'success' => true,
-                'statistics' => $stats
-            ]);
+            return $this->success(['statistics' => $stats], 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Operation failed: ' . $e->getMessage());
         }
     }
 
@@ -246,10 +212,7 @@ class EnterpriseController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         try {
@@ -262,13 +225,10 @@ class EnterpriseController extends Controller
 
             $result = $this->reporting->generateCampaignReport($campaignId, $options);
 
-            return response()->json($result);
+            return $this->success($result, 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Operation failed: ' . $e->getMessage());
         }
     }
 
@@ -289,10 +249,7 @@ class EnterpriseController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         try {
@@ -305,13 +262,10 @@ class EnterpriseController extends Controller
 
             $result = $this->reporting->generateOrganizationReport($orgId, $options);
 
-            return response()->json($result);
+            return $this->success($result, 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Operation failed: ' . $e->getMessage());
         }
     }
 
@@ -333,10 +287,7 @@ class EnterpriseController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         try {
@@ -352,13 +303,10 @@ class EnterpriseController extends Controller
 
             $result = $this->reporting->scheduleReport($schedule);
 
-            return response()->json($result, 201);
+            return $this->created($result, 'Created successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Operation failed: ' . $e->getMessage());
         }
     }
 
@@ -372,17 +320,11 @@ class EnterpriseController extends Controller
         try {
             $schedules = $this->reporting->getScheduledReports($orgId);
 
-            return response()->json([
-                'success' => true,
-                'schedules' => $schedules,
-                'count' => count($schedules)
-            ]);
+            return $this->success(['schedules' => $schedules,
+                'count' => count($schedules)], 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Operation failed: ' . $e->getMessage());
         }
     }
 
@@ -396,13 +338,10 @@ class EnterpriseController extends Controller
         try {
             $result = $this->reporting->deleteSchedule($scheduleId);
 
-            return response()->json($result);
+            return $this->success($result, 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Operation failed: ' . $e->getMessage());
         }
     }
 
@@ -419,10 +358,7 @@ class EnterpriseController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         try {
@@ -431,17 +367,11 @@ class EnterpriseController extends Controller
 
             $history = $this->reporting->getReportHistory($orgId, $limit, $reportType);
 
-            return response()->json([
-                'success' => true,
-                'reports' => $history,
-                'count' => count($history)
-            ]);
+            return $this->success(['reports' => $history,
+                'count' => count($history)], 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Operation failed: ' . $e->getMessage());
         }
     }
 
@@ -459,13 +389,10 @@ class EnterpriseController extends Controller
                 return response()->json($result, 404);
             }
 
-            return response()->json($result);
+            return $this->success($result, 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Operation failed: ' . $e->getMessage());
         }
     }
 
@@ -490,10 +417,7 @@ class EnterpriseController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         try {
@@ -508,13 +432,10 @@ class EnterpriseController extends Controller
 
             $result = $this->webhooks->registerWebhook($webhook);
 
-            return response()->json($result, 201);
+            return $this->created($result, 'Created successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Operation failed: ' . $e->getMessage());
         }
     }
 
@@ -528,17 +449,11 @@ class EnterpriseController extends Controller
         try {
             $webhooks = $this->webhooks->getWebhooks($orgId);
 
-            return response()->json([
-                'success' => true,
-                'webhooks' => $webhooks,
-                'count' => count($webhooks)
-            ]);
+            return $this->success(['webhooks' => $webhooks,
+                'count' => count($webhooks)], 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Operation failed: ' . $e->getMessage());
         }
     }
 
@@ -559,23 +474,17 @@ class EnterpriseController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         try {
             $updates = $request->only(['url', 'events', 'secret', 'description', 'active']);
             $result = $this->webhooks->updateWebhook($webhookId, $updates);
 
-            return response()->json($result);
+            return $this->success($result, 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Operation failed: ' . $e->getMessage());
         }
     }
 
@@ -589,13 +498,10 @@ class EnterpriseController extends Controller
         try {
             $result = $this->webhooks->deleteWebhook($webhookId);
 
-            return response()->json($result);
+            return $this->success($result, 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Operation failed: ' . $e->getMessage());
         }
     }
 
@@ -612,10 +518,7 @@ class EnterpriseController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         try {
@@ -625,13 +528,10 @@ class EnterpriseController extends Controller
                 $request->input('data')
             );
 
-            return response()->json($result);
+            return $this->success($result, 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Operation failed: ' . $e->getMessage());
         }
     }
 
@@ -648,10 +548,7 @@ class EnterpriseController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         try {
@@ -660,17 +557,11 @@ class EnterpriseController extends Controller
 
             $deliveries = $this->webhooks->getDeliveries($webhookId, $limit, $status);
 
-            return response()->json([
-                'success' => true,
-                'deliveries' => $deliveries,
-                'count' => count($deliveries)
-            ]);
+            return $this->success(['deliveries' => $deliveries,
+                'count' => count($deliveries)], 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Operation failed: ' . $e->getMessage());
         }
     }
 
@@ -686,26 +577,17 @@ class EnterpriseController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         try {
             $days = $request->input('days', 30);
             $stats = $this->webhooks->getStatistics($webhookId, $days);
 
-            return response()->json([
-                'success' => true,
-                'statistics' => $stats
-            ]);
+            return $this->success(['statistics' => $stats], 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Operation failed: ' . $e->getMessage());
         }
     }
 
@@ -719,13 +601,10 @@ class EnterpriseController extends Controller
         try {
             $result = $this->webhooks->retryDelivery($deliveryId);
 
-            return response()->json($result);
+            return $this->success($result, 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Operation failed: ' . $e->getMessage());
         }
     }
 }

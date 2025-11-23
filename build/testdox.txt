@@ -1,14 +1,112 @@
-AIRecommendations (Tests\Feature\Controllers\AI\AIRecommendations)
- [ ] It requires authentication
- [ ] It can get similar content
- [ ] It validates similar content request
- [ ] It can get campaign content recommendations
- [ ] It validates campaign content recommendations request
- [ ] It can get best performing content
- [ ] It validates best performing content request
- [ ] It can get optimal posting times
- [ ] It validates optimal posting times request
- [ ] It can get audience recommendations
- [ ] It enforces rate limiting on ai endpoints
- [ ] It respects multi tenancy for similar content
+Google Ads Platform (Tests\Unit\Services\AdPlatforms\GoogleAdsPlatform)
+ [ ] It creates campaign successfully
+ [ ] It handles campaign creation failure
+ [ ] It updates campaign successfully
+ [ ] It gets campaign details
+ [ ] It deletes campaign successfully
+ [ ] It fetches campaigns with filters
+ [ ] It gets campaign metrics
+ [ ] It creates ad set successfully
+ [ ] It adds keywords to ad group
+ [ ] It adds negative keywords to campaign
+ [ ] It removes keywords
+ [ ] It gets keywords for ad group
+ [ ] It creates responsive search ad
+ [ ] It adds sitelink extensions
+ [ ] It adds callout extensions
+ [ ] It adds structured snippet extensions
+ [ ] It adds call extensions
+ [ ] It adds price extensions
+ [ ] It adds promotion extensions
+ [ ] It adds image extensions
+ [ ] It adds lead form extensions
+ [ ] It handles extension creation failure
+ [ ] It adds topic targeting
+ [ ] It adds placement targeting
+ [ ] It adds demographic targeting
+ [ ] It adds location targeting
+ [ ] It adds proximity targeting
+ [ ] It adds language targeting
+ [ ] It adds device bid modifiers
+ [ ] It adds ad schedule
+ [ ] It adds parental status targeting
+ [ ] It adds household income targeting
+ [ ] It adds in market audience
+ [ ] It adds affinity audience
+ [ ] It creates custom audience
+ [ ] It adds custom audience to ad group
+ [ ] It creates remarketing list
+ [ ] It uploads customer match data
+ [ ] It adds remarketing audience to ad group
+ [ ] It creates bidding strategy
+ [ ] It assigns bidding strategy to campaign
+ [ ] It creates conversion action
+ [ ] It uploads offline conversions
+ [ ] It gets conversion actions
+ [ ] It gets available objectives
+ [ ] It gets available campaign types
+ [ ] It syncs account successfully
+
+Linked In Ads Platform (Tests\Unit\Services\AdPlatforms\LinkedInAdsPlatform)
+ [ ] It creates campaign successfully
+ [ ] It handles campaign creation failure
+ [ ] It updates campaign successfully
+ [ ] It gets campaign details
+ [ ] It deletes campaign successfully
+ [ ] It fetches campaigns with filters
+ [ ] It gets campaign metrics
+ [ ] It creates ad set successfully
+ [ ] It handles ad set creation failure
+ [ ] It creates ad with existing share
+ [ ] It creates ad with new share content
+ [ ] It handles ad creation with missing content
+ [ ] It handles ad creation failure
+ [ ] It creates lead gen form
+ [ ] It gets lead form responses
+ [ ] It gets available objectives
+ [ ] It gets available placements
+ [ ] It gets available ad formats
+ [ ] It syncs account successfully
+ [ ] It refreshes access token successfully
+ [ ] It handles token refresh failure
+ [ ] It maps objective correctly
+ [ ] It maps cost type correctly
+ [ ] It maps status correctly
+ [ ] It ensures urn format correctly
+ [ ] It extracts id from urn correctly
+ [ ] It builds targeting criteria correctly
+ [ ] It aggregates metrics correctly
+ [ ] It handles http timeout
+ [ ] It handles invalid response format
+ [ ] It handles rate limit error
+
+Tik Tok Ads Platform (Tests\Unit\Services\AdPlatforms\TikTokAdsPlatform)
+ [ ] It creates campaign successfully
+ [ ] It handles campaign creation failure
+ [ ] It updates campaign successfully
+ [ ] It gets campaign details
+ [ ] It deletes campaign successfully
+ [ ] It fetches campaigns with filters
+ [ ] It gets campaign metrics
+ [ ] It creates ad set successfully
+ [ ] It handles ad set creation failure
+ [ ] It creates ad successfully
+ [ ] It handles ad creation failure
+ [ ] It uploads video successfully
+ [ ] It handles video upload missing file
+ [ ] It uploads image successfully
+ [ ] It handles image upload missing file
+ [ ] It gets interest categories
+ [ ] It gets available objectives
+ [ ] It gets available placements
+ [ ] It gets available optimization goals
+ [ ] It gets available bid types
+ [ ] It gets available call to actions
+ [ ] It syncs account successfully
+ [ ] It refreshes access token successfully
+ [ ] It handles token refresh failure
+ [ ] It maps status correctly
+ [ ] It handles constructor missing advertiser id
+ [ ] It handles constructor missing access token
+ [ ] It handles api rate limit
 

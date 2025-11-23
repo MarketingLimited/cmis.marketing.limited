@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers\API;
+use App\Http\Controllers\Concerns\ApiResponse;
 
 use App\Http\Controllers\Controller;
 use App\Models\Core\Org;
@@ -8,6 +9,7 @@ use App\Models\Campaign;
 use App\Services\Campaign\UnifiedCampaignService;
 use Illuminate\Http\{Request, JsonResponse};
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Http\JsonResponse;
 
 /**
  * @group Unified Campaigns
@@ -190,7 +192,7 @@ class UnifiedCampaignController extends Controller
     public function show(Org $org, Campaign $campaign): JsonResponse
     {
         if ($campaign->org_id !== $org->org_id) {
-            return response()->json(['error' => 'Campaign not found'], 404);
+            return $this->notFound('Campaign not found');
         }
 
         return response()->json(
@@ -237,6 +239,6 @@ class UnifiedCampaignController extends Controller
             ->orderBy('created_at', 'desc')
             ->paginate($request->per_page ?? 20);
 
-        return response()->json($campaigns);
+        return $this->success($campaigns, 'Retrieved successfully');
     }
 }

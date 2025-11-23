@@ -82,7 +82,7 @@ class Integration extends BaseModel
      *
      * @return \Illuminate\Database\Eloquent\Relations\HasMany
      */
-    public function adCampaigns()
+    public function adCampaigns(): HasMany
     {
         return $this->hasMany(\App\Models\AdPlatform\AdCampaign::class, 'integration_id', 'integration_id');
     }
@@ -92,7 +92,7 @@ class Integration extends BaseModel
      *
      * @return \Illuminate\Database\Eloquent\Relations\HasMany
      */
-    public function adAccounts()
+    public function adAccounts(): HasMany
     {
         return $this->hasMany(\App\Models\AdPlatform\AdAccount::class, 'integration_id', 'integration_id');
     }
@@ -102,7 +102,7 @@ class Integration extends BaseModel
      *
      * @return \Illuminate\Database\Eloquent\Relations\HasMany
      */
-    public function adSets()
+    public function adSets(): HasMany
     {
         return $this->hasMany(\App\Models\AdPlatform\AdSet::class, 'integration_id', 'integration_id');
     }
@@ -112,7 +112,7 @@ class Integration extends BaseModel
      *
      * @return \Illuminate\Database\Eloquent\Relations\HasMany
      */
-    public function adEntities()
+    public function adEntities(): HasMany
     {
         return $this->hasMany(\App\Models\AdPlatform\AdEntity::class, 'integration_id', 'integration_id');
     }
@@ -262,4 +262,5 @@ class Integration extends BaseModel
             'last_synced_at' => $status === 'success' ? now() : $this->last_synced_at,
             'sync_retry_count' => $status === 'failed' ? $this->sync_retry_count + 1 : 0,
         ]);
+}
 }

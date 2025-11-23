@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
+use App\Http\Controllers\Concerns\ApiResponse;
 
 use App\Services\Onboarding\UserOnboardingService;
 use Illuminate\Http\Request;
@@ -156,10 +157,7 @@ class UserOnboardingController extends Controller
             $this->onboardingService->skipStep($user->id, $step);
         }
 
-        return response()->json([
-            'success' => true,
-            'message' => __('onboarding.dismissed'),
-        ]);
+        return $this->success(['message' => __('onboarding.dismissed'),], 'Operation completed successfully');
     }
 
     /**
@@ -174,10 +172,7 @@ class UserOnboardingController extends Controller
 
         $progress = $this->onboardingService->getProgress($user->id);
 
-        return response()->json([
-            'success' => true,
-            'progress' => $progress,
-        ]);
+        return $this->success(['progress' => $progress,], 'Operation completed successfully');
     }
 
     /**
@@ -193,10 +188,7 @@ class UserOnboardingController extends Controller
 
         $tips = $this->onboardingService->getContextualTips($user->id, $step);
 
-        return response()->json([
-            'success' => true,
-            'tips' => $tips,
-        ]);
+        return $this->success(['tips' => $tips,], 'Operation completed successfully');
     }
 
     /**

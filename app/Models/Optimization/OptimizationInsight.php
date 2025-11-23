@@ -10,6 +10,7 @@ use App\Models\Campaign\Campaign;
 use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Builder;
 class OptimizationInsight extends BaseModel
 {
     use HasFactory;
@@ -66,20 +67,23 @@ class OptimizationInsight extends BaseModel
     {
         return $this->belongsTo(OptimizationRun::class, 'optimization_run_id', 'run_id');
 
+        }
     public function campaign(): BelongsTo
     {
         return $this->belongsTo(Campaign::class, 'campaign_id', 'campaign_id');
 
+        }
     public function acknowledger(): BelongsTo
     {
         return $this->belongsTo(User::class, 'acknowledged_by', 'user_id');
 
+        }
     public function applier(): BelongsTo
     {
         return $this->belongsTo(User::class, 'applied_by', 'user_id');
 
-    // ===== Insight Management =====
 
+        }
     public function acknowledge(string $userId): void
     {
         $this->update([
@@ -87,6 +91,7 @@ class OptimizationInsight extends BaseModel
             'acknowledged_at' => now(),
             'acknowledged_by' => $userId,
         ]);
+    }
 
     public function apply(string $userId, array $actionTaken): void
     {
@@ -96,14 +101,17 @@ class OptimizationInsight extends BaseModel
             'applied_by' => $userId,
             'action_taken' => $actionTaken,
         ]);
+    }
 
     public function dismiss(): void
     {
         $this->update(['status' => 'dismissed']);
+    }
 
     public function markAsExpired(): void
     {
         $this->update(['status' => 'expired']);
+    }
 
     // ===== Insight Analysis =====
 
@@ -112,15 +120,18 @@ class OptimizationInsight extends BaseModel
         return $this->status === 'pending' &&
                $this->confidence_score >= 0.7 &&
                (!$this->expires_at || now()->isBefore($this->expires_at));
+    }
 
     public function isExpired(): bool
     {
         return $this->expires_at && now()->isAfter($this->expires_at);
 
+        }
     public function isHighPriority(): bool
     {
         return $this->priority === 'critical' || $this->priority === 'high';
 
+        }
     public function getPriorityLevel(): int
     {
         return match($this->priority) {
@@ -130,6 +141,7 @@ class OptimizationInsight extends BaseModel
             'low' => 4,
             default => 5
         };
+    }
 
     public function getPriorityColor(): string
     {
@@ -140,6 +152,7 @@ class OptimizationInsight extends BaseModel
             'low' => 'blue',
             default => 'gray'
         };
+    }
 
     public function getCategoryLabel(): string
     {
@@ -152,6 +165,7 @@ class OptimizationInsight extends BaseModel
             'platform' => 'Platform Performance',
             default => ucfirst($this->category)
         };
+    }
 
     public function getInsightTypeLabel(): string
     {
@@ -163,68 +177,71 @@ class OptimizationInsight extends BaseModel
             'recommendation' => 'Recommendation',
             default => ucfirst($this->insight_type)
         };
+    }
 
     public function getImpactEstimateLabel(): string
     {
         if (!$this->impact_estimate) {
             return 'N/A';
+        }
 
-        $sign = $this->impact_estimate > 0 ? '+' : '';
-        return $sign . '$' . number_format($this->impact_estimate, 2);
+        return '$' . number_format($this->impact_estimate, 2);
+    }
 
     public function getConfidenceLabel(): string
     {
         if (!$this->confidence_score) {
             return 'N/A';
+        }
 
-        $percentage = $this->confidence_score * 100;
-
-        if ($percentage >= 90) {
-            return 'Very High (' . number_format($percentage, 0) . '%)';
-        } elseif ($percentage >= 75) {
-            return 'High (' . number_format($percentage, 0) . '%)';
-        } elseif ($percentage >= 60) {
-            return 'Medium (' . number_format($percentage, 0) . '%)';
-
-        return 'Low (' . number_format($percentage, 0) . '%)';
-
+        return number_format($this->confidence_score * 100, 1) . '%';
+    }
     public function hasAutomatedAction(): bool
     {
         return !empty($this->automated_action) && is_array($this->automated_action);
 
+        }
     public function canAutoExecute(): bool
     {
         return $this->hasAutomatedAction() &&
                $this->isActionable() &&
                $this->confidence_score >= 0.85;
+    }
 
     // ===== Scopes =====
 
-    public function scopePending($query)
+    public function scopePending($query): Builder
     {
         return $query->where('status', 'pending');
 
-    public function scopeActionable($query)
+        }
+    public function scopeActionable($query): Builder
     {
         return $query->where('status', 'pending')
                      ->where('confidence_score', '>=', 0.7)
                      ->where(function ($q) {
                          $q->whereNull('expires_at')
                            ->orWhere('expires_at', '>', now());
+                     });
+    }
 
-    public function scopeHighPriority($query)
+    public function scopeHighPriority($query): Builder
     {
         return $query->whereIn('priority', ['critical', 'high']);
 
-    public function scopeForCategory($query, string $category)
+        }
+    public function scopeForCategory($query, string $category): Builder
     {
         return $query->where('category', $category);
 
-    public function scopeForInsightType($query, string $type)
+        }
+    public function scopeForInsightType($query, string $type): Builder
     {
         return $query->where('insight_type', $type);
 
-    public function scopeWithAutomation($query)
+        }
+    public function scopeWithAutomation($query): Builder
     {
         return $query->whereNotNull('automated_action');
+    }
 }

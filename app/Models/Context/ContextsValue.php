@@ -34,7 +34,8 @@ class ContextsValue extends BaseModel
     /**
      * Get the base context
      */
-    public function contextBase()
+    public function contextBase(): BelongsTo
     {
         return $this->belongsTo(ContextBase::class, 'context_id', 'id');
+}
 }

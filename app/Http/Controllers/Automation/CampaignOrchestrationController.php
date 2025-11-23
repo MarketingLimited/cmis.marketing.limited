@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers\Automation;
+use App\Http\Controllers\Concerns\ApiResponse;
 
 use App\Http\Controllers\Controller;
 use App\Services\Automation\CampaignLifecycleManager;
@@ -8,6 +9,7 @@ use App\Services\Automation\AutomatedBudgetAllocator;
 use App\Services\CampaignOrchestratorService;
 use Illuminate\Http\{JsonResponse, Request};
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Http\JsonResponse;
 
 /**
  * Campaign Orchestration Controller (Phase 4 - Advanced Automation)
@@ -43,16 +45,10 @@ class CampaignOrchestrationController extends Controller
         try {
             $results = $this->lifecycleManager->processLifecycleEvents($orgId);
 
-            return response()->json([
-                'success' => true,
-                'results' => $results
-            ]);
+            return $this->success(['results' => $results], 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Operation failed: ' . $e->getMessage());
         }
     }
 
@@ -68,10 +64,7 @@ class CampaignOrchestrationController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         $days = $request->input('days', 30);
@@ -79,16 +72,10 @@ class CampaignOrchestrationController extends Controller
         try {
             $stats = $this->lifecycleManager->getLifecycleStatistics($orgId, $days);
 
-            return response()->json([
-                'success' => true,
-                'statistics' => $stats
-            ]);
+            return $this->success(['statistics' => $stats], 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Operation failed: ' . $e->getMessage());
         }
     }
 
@@ -106,10 +93,7 @@ class CampaignOrchestrationController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         try {
@@ -120,13 +104,10 @@ class CampaignOrchestrationController extends Controller
                 $request->input('constraints', [])
             );
 
-            return response()->json($result);
+            return $this->success($result, 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Operation failed: ' . $e->getMessage());
         }
     }
 
@@ -143,10 +124,7 @@ class CampaignOrchestrationController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         try {
@@ -156,13 +134,10 @@ class CampaignOrchestrationController extends Controller
                 $request->input('strategy', 'performance_weighted')
             );
 
-            return response()->json($result);
+            return $this->success($result, 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Operation failed: ' . $e->getMessage());
         }
     }
 
@@ -178,10 +153,7 @@ class CampaignOrchestrationController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         try {
@@ -190,17 +162,11 @@ class CampaignOrchestrationController extends Controller
                 $request->input('limit', 50)
             );
 
-            return response()->json([
-                'success' => true,
-                'history' => $history,
-                'count' => count($history)
-            ]);
+            return $this->success(['history' => $history,
+                'count' => count($history)], 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Operation failed: ' . $e->getMessage());
         }
     }
 
@@ -222,10 +188,7 @@ class CampaignOrchestrationController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         try {
@@ -238,10 +201,7 @@ class CampaignOrchestrationController extends Controller
             return response()->json($result, $result['success'] ?? false ? 201 : 400);
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Operation failed: ' . $e->getMessage());
         }
     }
 
@@ -255,13 +215,10 @@ class CampaignOrchestrationController extends Controller
         try {
             $result = $this->orchestrator->pauseCampaign($campaignId);
 
-            return response()->json($result);
+            return $this->success($result, 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Operation failed: ' . $e->getMessage());
         }
     }
 
@@ -275,13 +232,10 @@ class CampaignOrchestrationController extends Controller
         try {
             $result = $this->orchestrator->resumeCampaign($campaignId);
 
-            return response()->json($result);
+            return $this->success($result, 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Operation failed: ' . $e->getMessage());
         }
     }
 
@@ -295,13 +249,10 @@ class CampaignOrchestrationController extends Controller
         try {
             $result = $this->orchestrator->syncCampaignStatus($campaignId);
 
-            return response()->json($result);
+            return $this->success($result, 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Operation failed: ' . $e->getMessage());
         }
     }
 
@@ -318,10 +269,7 @@ class CampaignOrchestrationController extends Controller
             return response()->json($result, $result['success'] ?? false ? 201 : 400);
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Operation failed: ' . $e->getMessage());
         }
     }
 }

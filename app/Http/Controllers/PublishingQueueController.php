@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
+use App\Http\Controllers\Concerns\ApiResponse;
 
 use App\Services\PublishingQueueService;
 use Illuminate\Http\Request;
@@ -46,8 +47,7 @@ class PublishingQueueController extends Controller
             return $this->error('Queue not configured for this account', 404);
         }
 
-        return $this->success($queue
-        );
+        return $this->success($queue, 'Queue retrieved successfully');
     }
 
     /**
@@ -91,8 +91,7 @@ class PublishingQueueController extends Controller
                 ]
             );
 
-            return $this->created($queue
-            , 'Publishing queue configured successfully');
+            return $this->created($queue, 'Publishing queue configured successfully');
         } catch (\InvalidArgumentException $e) {
             return response()->json([
                 'success' => false,
@@ -100,11 +99,7 @@ class PublishingQueueController extends Controller
                 'error' => $e->getMessage()
             ], 422);
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to configure queue',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to configure queue: ' . $e->getMessage());
         }
     }
 
@@ -140,17 +135,9 @@ class PublishingQueueController extends Controller
                 ])
             );
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Queue updated successfully',
-                'data' => $queue
-            ]);
+            return $this->success($queue, 'Operation completed successfully');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to update queue',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to update queue: ' . $e->getMessage());
         }
     }
 
@@ -202,11 +189,7 @@ class PublishingQueueController extends Controller
     {
         $posts = $this->queueService->getQueuedPosts($socialAccountId);
 
-        return response()->json([
-            'success' => true,
-            'data' => $posts,
-            'count' => $posts->count()
-        ]);
+        return $this->success($posts, 'Operation completed successfully');
     }
 
     /**
@@ -280,10 +263,7 @@ class PublishingQueueController extends Controller
             return $this->error('Failed to remove post from queue', 400);
         }
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Post removed from queue successfully'
-        ]);
+        return $this->success(null, 'Post removed from queue successfully');
     }
 
     /**
@@ -298,7 +278,6 @@ class PublishingQueueController extends Controller
     {
         $stats = $this->queueService->getQueueStatistics($socialAccountId);
 
-        return $this->success($stats
-        );
+        return $this->success($stats, 'Statistics retrieved successfully');
     }
 }

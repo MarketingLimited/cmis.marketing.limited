@@ -7,6 +7,7 @@ use App\Models\Concerns\HasOrganization;
 use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Builder;
 
 class CognitiveTrend extends BaseModel
 {
@@ -39,33 +40,40 @@ class CognitiveTrend extends BaseModel
     ];
 
     // Scopes
-    public function scopeByDomain($query, $domain)
+    public function scopeByDomain($query, $domain): Builder
     {
         return $query->where('domain', $domain);
+    }
 
-    public function scopeByCategory($query, $category)
+    public function scopeByCategory($query, $category): Builder
     {
         return $query->where('category', $category);
+    }
 
-    public function scopeTrending($query, $threshold = 0.7)
+    public function scopeTrending($query, $threshold = 0.7): Builder
     {
         return $query->where('trend_score', '>=', $threshold)
             ->orderByDesc('trend_score');
+    }
 
-    public function scopeRecent($query, $days = 7)
+    public function scopeRecent($query, $days = 7): Builder
     {
         return $query->where('last_seen', '>=', now()->subDays($days));
+    }
 
     // Helpers
     public function isHot()
-    {
+    : mixed {
         return $this->trend_score >= 0.8;
+    }
 
     public function isGrowing()
-    {
+    : mixed {
         return $this->trend_score > ($this->peak_score * 0.9);
+    }
 
     public function isDeclining()
-    {
+    : mixed {
         return $this->trend_score < ($this->peak_score * 0.5);
+    }
 }

@@ -56,6 +56,7 @@ class UserOrg extends BaseModel
     {
         return $this->belongsTo(Role::class, 'role_id', 'role_id');
 
+    }
     /**
      * Get the user who invited this user to the organization.
      *
@@ -64,4 +65,5 @@ class UserOrg extends BaseModel
     public function inviter(): BelongsTo
     {
         return $this->belongsTo(\App\Models\User::class, 'invited_by', 'user_id');
+}
 }

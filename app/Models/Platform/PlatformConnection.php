@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Crypt;
+use Illuminate\Database\Eloquent\Builder;
 class PlatformConnection extends BaseModel
 {
     use HasFactory;
@@ -177,7 +178,7 @@ class PlatformConnection extends BaseModel
 
     // ===== Scopes =====
 
-    public function scopeActive($query)
+    public function scopeActive($query): Builder
     {
         return $query->where(function ($q) {
             $q->where('status', 'active')
@@ -185,12 +186,12 @@ class PlatformConnection extends BaseModel
         });
     }
 
-    public function scopeForPlatform($query, string $platform)
+    public function scopeForPlatform($query, string $platform): Builder
     {
         return $query->where('platform', $platform);
     }
 
-    public function scopeNeedingSync($query)
+    public function scopeNeedingSync($query): Builder
     {
         return $query->where('auto_sync', true)
             ->where(function ($q) {
@@ -199,7 +200,7 @@ class PlatformConnection extends BaseModel
             });
     }
 
-    public function scopeExpiredTokens($query)
+    public function scopeExpiredTokens($query): Builder
     {
         return $query->where('token_expires_at', '<', now())
             ->whereNotNull('token_expires_at');

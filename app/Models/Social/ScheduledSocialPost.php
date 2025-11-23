@@ -8,6 +8,7 @@ use App\Models\Core\User;
 use App\Models\Campaign;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Builder;
 
 class ScheduledSocialPost extends BaseModel
 {
@@ -64,17 +65,17 @@ class ScheduledSocialPost extends BaseModel
 
     // ===== Scopes =====
 
-    public function scopeScheduled($query)
+    public function scopeScheduled($query): Builder
     {
         return $query->where('status', self::STATUS_SCHEDULED);
     }
 
-    public function scopePublished($query)
+    public function scopePublished($query): Builder
     {
         return $query->where('status', self::STATUS_PUBLISHED);
     }
 
-    public function scopeDrafts($query)
+    public function scopeDrafts($query): Builder
     {
         return $query->where('status', self::STATUS_DRAFT);
     }

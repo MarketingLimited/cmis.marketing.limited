@@ -4,6 +4,7 @@ namespace App\Models\Analytics;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Builder;
 use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -39,7 +40,7 @@ class ExperimentEvent extends BaseModel
     /**
      * Scope: By event type
      */
-    public function scopeOfType($query, string $type)
+    public function scopeOfType($query, string $type): Builder
     {
         return $query->where('event_type', $type);
     }
@@ -47,7 +48,7 @@ class ExperimentEvent extends BaseModel
     /**
      * Scope: Recent events
      */
-    public function scopeRecent($query, int $hours = 24)
+    public function scopeRecent($query, int $hours = 24): Builder
     {
         return $query->where('occurred_at', '>=', now()->subHours($hours));
     }
@@ -55,7 +56,7 @@ class ExperimentEvent extends BaseModel
     /**
      * Scope: By date range
      */
-    public function scopeDateRange($query, $startDate, $endDate)
+    public function scopeDateRange($query, $startDate, $endDate): Builder
     {
         return $query->whereBetween('occurred_at', [$startDate, $endDate]);
     }
@@ -63,7 +64,7 @@ class ExperimentEvent extends BaseModel
     /**
      * Scope: Conversions only
      */
-    public function scopeConversions($query)
+    public function scopeConversions($query): Builder
     {
         return $query->where('event_type', 'conversion');
     }

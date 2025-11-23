@@ -7,6 +7,7 @@ use App\Models\Concerns\HasOrganization;
 use App\Models\Core\Org;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Builder;
 use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -49,6 +50,7 @@ class Forecast extends BaseModel
             'actual_value' => $actualValue,
             'error' => $error
         ]);
+    }
 
     /**
      * Check if forecast is accurate (within confidence interval)
@@ -57,9 +59,10 @@ class Forecast extends BaseModel
     {
         if (!$this->actual_value || !$this->confidence_lower || !$this->confidence_upper) {
             return false;
-
+        }
         return $this->actual_value >= $this->confidence_lower
             && $this->actual_value <= $this->confidence_upper;
+    }
 
     /**
      * Get accuracy percentage
@@ -68,36 +71,41 @@ class Forecast extends BaseModel
     {
         if (!$this->actual_value || $this->predicted_value == 0) {
             return null;
-
+        }
         $accuracy = 100 - (abs($this->actual_value - $this->predicted_value) / $this->predicted_value * 100);
         return max(0, $accuracy);
+    }
 
     /**
      * Scope: Future forecasts
      */
-    public function scopeFuture($query)
+    public function scopeFuture($query): Builder
     {
         return $query->where('forecast_date', '>', now());
+    }
 
     /**
      * Scope: Past forecasts
      */
-    public function scopePast($query)
+    public function scopePast($query): Builder
     {
         return $query->where('forecast_date', '<=', now());
+    }
 
     /**
      * Scope: By entity
      */
-    public function scopeForEntity($query, string $entityType, string $entityId)
+    public function scopeForEntity($query, string $entityType, string $entityId): Builder
     {
         return $query->where('entity_type', $entityType)
                      ->where('entity_id', $entityId);
+    }
 
     /**
      * Scope: By metric
      */
-    public function scopeForMetric($query, string $metric)
+    public function scopeForMetric($query, string $metric): Builder
     {
         return $query->where('metric', $metric);
+    }
 }

@@ -6,6 +6,7 @@ use App\Models\Concerns\HasOrganization;
 
 use App\Casts\VectorCast;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Builder;
 use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -64,10 +65,11 @@ class KnowledgeIndex extends BaseModel
     /**
      * Get the verifier
      */
-    public function verifier()
+    public function verifier(): BelongsTo
     {
         return $this->belongsTo(\App\Models\User::class, 'verified_by', 'user_id');
 
+    }
     /**
      * Increment access count
      */
@@ -76,39 +78,44 @@ class KnowledgeIndex extends BaseModel
         $this->increment('access_count');
         $this->update(['last_accessed' => now()]);
 
+    }
     /**
      * Scope verified knowledge only
      */
-    public function scopeVerified($query)
+    public function scopeVerified($query): Builder
     {
         return $query->where('is_verified', true);
 
+    }
     /**
      * Scope by category
      */
-    public function scopeByCategory($query, string $category)
+    public function scopeByCategory($query, string $category): Builder
     {
         return $query->where('category', $category);
 
+    }
     /**
      * Scope by source type
      */
-    public function scopeBySourceType($query, string $sourceType)
+    public function scopeBySourceType($query, string $sourceType): Builder
     {
         return $query->where('source_type', $sourceType);
 
+    }
     /**
      * Scope high relevance
      */
-    public function scopeHighRelevance($query, float $threshold = 0.7)
+    public function scopeHighRelevance($query, float $threshold = 0.7): Builder
     {
         return $query->where('relevance_score', '>=', $threshold);
 
+    }
     /**
      * Perform semantic search using vector similarity
      */
     public static function semanticSearch(array $queryEmbedding, int $limit = 10, ?string $orgId = null)
-    {
+    : \Illuminate\Database\Eloquent\Relations\Relation {
         $vectorStr = '[' . implode(',', $queryEmbedding) . ']';
 
         $query = self::query()
@@ -119,4 +126,6 @@ class KnowledgeIndex extends BaseModel
             $query->where('org_id', $orgId);
 
         return $query->limit($limit)->get();
+}
+}
 }

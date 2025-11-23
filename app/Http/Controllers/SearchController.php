@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
+use App\Http\Controllers\Concerns\ApiResponse;
 
 use App\Services\CMIS\SemanticSearchService;
 use Illuminate\Http\JsonResponse;
@@ -59,7 +60,7 @@ class SearchController extends Controller
                 $entityTypes
             );
 
-            return response()->json($results);
+            return $this->success($results, 'Retrieved successfully');
 
         } catch (\Exception $e) {
             Log::error('Universal search failed', [
@@ -102,7 +103,7 @@ class SearchController extends Controller
                 ? $this->searchService->searchWithCache($query, $limit, $threshold)
                 : $this->searchService->searchCampaigns($query, $limit, $threshold);
 
-            return response()->json($results);
+            return $this->success($results, 'Retrieved successfully');
 
         } catch (\Exception $e) {
             Log::error('Campaign search failed', [
@@ -150,7 +151,7 @@ class SearchController extends Controller
                 return response()->json($results, 400);
             }
 
-            return response()->json($results);
+            return $this->success($results, 'Retrieved successfully');
 
         } catch (\Exception $e) {
             Log::error('Similar search failed', [
@@ -186,16 +187,10 @@ class SearchController extends Controller
                 'creative_embeddings' => \DB::table('cmis_ai.creative_embeddings')->count(),
             ];
 
-            return response()->json([
-                'success' => true,
-                'stats' => $stats
-            ]);
+            return $this->success(['stats' => $stats], 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'error' => 'Failed to retrieve stats'
-            ], 500);
+            return $this->serverError('Failed to retrieve stats');
         }
     }
 }

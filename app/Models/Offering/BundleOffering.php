@@ -5,6 +5,7 @@ namespace App\Models\Offering;
 use App\Models\Concerns\HasOrganization;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Builder;
 use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -50,13 +51,14 @@ class BundleOffering extends BaseModel
     {
         if (empty($this->included_offerings)) {
             return collect();
+        }
 
         return \App\Models\Offering::whereIn('offering_id', $this->included_offerings)->get();
-
+    }
     /**
      * Scope active bundles
      */
-    public function scopeActive($query)
+    public function scopeActive($query): Builder
     {
         return $query->where('is_active', true)
             ->where(function ($q) {
@@ -66,14 +68,16 @@ class BundleOffering extends BaseModel
             ->where(function ($q) {
                 $q->whereNull('valid_to')
                     ->orWhere('valid_to', '>=', now());
-
+            });
+    }
     /**
      * Scope by bundle type
      */
-    public function scopeByType($query, string $type)
+    public function scopeByType($query, string $type): Builder
     {
         return $query->where('bundle_type', $type);
 
+    }
     /**
      * Check if bundle is valid
      */
@@ -81,15 +85,18 @@ class BundleOffering extends BaseModel
     {
         if (!$this->is_active) {
             return false;
+        }
 
         if ($this->valid_from && $this->valid_from->isFuture()) {
             return false;
+        }
 
         if ($this->valid_to && $this->valid_to->isPast()) {
             return false;
+        }
 
         return true;
-
+    }
     /**
      * Calculate savings amount
      */
@@ -97,6 +104,7 @@ class BundleOffering extends BaseModel
     {
         return $this->individual_price_sum - $this->bundle_price;
 
+    }
     /**
      * Calculate savings percentage
      */
@@ -104,13 +112,15 @@ class BundleOffering extends BaseModel
     {
         if ($this->individual_price_sum == 0) {
             return 0.0;
+        }
 
         return (($this->individual_price_sum - $this->bundle_price) / $this->individual_price_sum) * 100;
-
+    }
     /**
      * Get number of offerings
      */
     public function getOfferingCount(): int
     {
         return count($this->included_offerings ?? []);
+    }
 }

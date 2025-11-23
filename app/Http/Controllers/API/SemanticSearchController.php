@@ -16,7 +16,7 @@ class SemanticSearchController extends Controller
     /**
      * Execute semantic search via API.
      */
-    public function search(Request $request, SemanticSearchService $service)
+    public function search(Request $request, SemanticSearchService $service): JsonResponse
     {
         Gate::authorize('useSemanticSearch', auth()->user());
 

@@ -9,13 +9,15 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
+use Illuminate\View\View;
+use Illuminate\Http\RedirectResponse;
 
 class RegisterController extends Controller
 {
     /**
      * Display the registration view.
      */
-    public function create()
+    public function create(): View
     {
         return view('auth.register');
     }
@@ -23,7 +25,7 @@ class RegisterController extends Controller
     /**
      * Handle an incoming registration request.
      */
-    public function store(Request $request)
+    public function store(Request $request): RedirectResponse
     {
         $request->validate([
             'name' => ['required', 'string', 'max:255'],

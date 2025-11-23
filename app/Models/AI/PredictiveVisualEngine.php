@@ -7,6 +7,7 @@ use App\Models\Concerns\HasOrganization;
 use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Builder;
 
 class PredictiveVisualEngine extends BaseModel
 {
@@ -42,40 +43,49 @@ class PredictiveVisualEngine extends BaseModel
     ];
 
     // Relationships
-    public function organization()
+    public function organization(): BelongsTo
     {
         return $this->belongsTo(\App\Models\Organization::class, 'org_id', 'org_id');
+    }
 
-    public function campaign()
+    public function campaign(): BelongsTo
     {
         return $this->belongsTo(\App\Models\Campaign::class, 'campaign_id', 'campaign_id');
+    }
 
     // Scopes
-    public function scopeHighConfidence($query, $threshold = 0.8)
+    public function scopeHighConfidence($query, $threshold = 0.8): Builder
     {
         return $query->where('confidence_score', '>=', $threshold);
+    }
 
-    public function scopePositivePerformance($query, $threshold = 0.7)
+    public function scopePositivePerformance($query, $threshold = 0.7): Builder
     {
         return $query->where('predicted_performance', '>=', $threshold);
+    }
 
-    public function scopeByOrg($query, $orgId)
+    public function scopeByOrg($query, $orgId): Builder
     {
         return $query->where('org_id', $orgId);
+    }
 
     // Helpers
     public function isHighPerformance()
-    {
+    : \Illuminate\Database\Eloquent\Relations\Relation {
         return $this->predicted_performance >= 0.8 && $this->confidence_score >= 0.75;
+    }
 
     public function getOverallScore()
-    {
+    : \Illuminate\Database\Eloquent\Relations\Relation {
         return ($this->composition_score + $this->emotion_score + $this->attention_score) / 3;
+    }
 
-    public function getTopColors($limit = 5)
+    public function getTopColors($limit = 5): array
     {
         if (!$this->color_palette || !is_array($this->color_palette)) {
             return [];
+        }
 
         return array_slice($this->color_palette, 0, $limit);
+    }
 }

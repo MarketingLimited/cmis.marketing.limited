@@ -7,6 +7,7 @@ use App\Models\BaseModel;
 use App\Models\Lead\Lead;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Builder;
 
 /**
  * Contact Model
@@ -54,7 +55,7 @@ class Contact extends BaseModel
     /**
      * Get all leads associated with this contact
      */
-    public function leads()
+    public function leads(): HasMany
     {
         return $this->hasMany(Lead::class, 'contact_id', 'contact_id');
     }
@@ -76,7 +77,7 @@ class Contact extends BaseModel
     /**
      * Scope for subscribed contacts
      */
-    public function scopeSubscribed($query)
+    public function scopeSubscribed($query): Builder
     {
         return $query->where('is_subscribed', true);
     }
@@ -84,7 +85,7 @@ class Contact extends BaseModel
     /**
      * Scope for contacts with a specific source
      */
-    public function scopeFromSource($query, string $source)
+    public function scopeFromSource($query, string $source): Builder
     {
         return $query->where('source', $source);
     }
@@ -92,7 +93,7 @@ class Contact extends BaseModel
     /**
      * Scope for contacts in a specific segment
      */
-    public function scopeInSegment($query, string $segment)
+    public function scopeInSegment($query, string $segment): Builder
     {
         return $query->whereJsonContains('segments', $segment);
     }

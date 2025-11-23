@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
+use App\Http\Controllers\Concerns\ApiResponse;
 
 use App\Services\ReportGenerationService;
 use Illuminate\Http\Request;
@@ -62,10 +63,7 @@ class ReportsController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         try {
@@ -82,14 +80,10 @@ class ReportsController extends Controller
                 ], 500);
             }
 
-            return response()->json($report);
+            return $this->success($report, 'Retrieved successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to generate performance report',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to generate performance report: ' . $e->getMessage());
         }
     }
 
@@ -120,10 +114,7 @@ class ReportsController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         try {
@@ -140,14 +131,10 @@ class ReportsController extends Controller
                 ], 500);
             }
 
-            return response()->json($report);
+            return $this->success($report, 'Retrieved successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to generate AI insights report',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to generate AI insights report: ' . $e->getMessage());
         }
     }
 
@@ -176,10 +163,7 @@ class ReportsController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         try {
@@ -196,14 +180,10 @@ class ReportsController extends Controller
                 ], 500);
             }
 
-            return response()->json($report);
+            return $this->success($report, 'Retrieved successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to generate organization report',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to generate organization report: ' . $e->getMessage());
         }
     }
 
@@ -238,10 +218,7 @@ class ReportsController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         try {
@@ -258,14 +235,10 @@ class ReportsController extends Controller
                 ], 500);
             }
 
-            return response()->json($report);
+            return $this->success($report, 'Retrieved successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to generate content analysis report',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to generate content analysis report: ' . $e->getMessage());
         }
     }
 
@@ -303,10 +276,7 @@ class ReportsController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         try {
@@ -324,14 +294,10 @@ class ReportsController extends Controller
                 ], 500);
             }
 
-            return response()->json($schedule, 201);
+            return $this->created($schedule, 'Created successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to schedule report',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to schedule report: ' . $e->getMessage());
         }
     }
 
@@ -351,14 +317,10 @@ class ReportsController extends Controller
 
             $schedules = $this->reportService->getScheduledReports($entityId);
 
-            return response()->json($schedules);
+            return $this->success($schedules, 'Retrieved successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to get scheduled reports',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to get scheduled reports: ' . $e->getMessage());
         }
     }
 
@@ -377,20 +339,13 @@ class ReportsController extends Controller
             $success = $this->reportService->cancelScheduledReport($scheduleId);
 
             if ($success) {
-                return response()->json([
-                    'success' => true,
-                    'message' => 'Report schedule cancelled successfully'
-                ]);
+                return $this->success(null, 'Report schedule cancelled successfully');
             }
 
             return $this->error('Failed to cancel report schedule or schedule not found', 404);
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to cancel scheduled report',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to cancel scheduled report: ' . $e->getMessage());
         }
     }
 

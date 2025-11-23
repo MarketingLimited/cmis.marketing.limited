@@ -9,7 +9,7 @@ use App\Models\BaseModel;
 class SessionContext extends BaseModel
 {
     use HasOrganization;
-protected $table = 'cmis.session_context';
+    protected $table = 'cmis.session_context';
     protected $primaryKey = 'session_id';
     public $timestamps = false;
 
@@ -31,40 +31,46 @@ protected $table = 'cmis.session_context';
     /**
      * Get the session
      */
-    public function session()
+    public function session(): BelongsTo
     {
         return $this->belongsTo(UserSession::class, 'session_id', 'session_id');
+    }
 
     /**
      * Scope by context key
      */
-    public function scopeByKey($query, string $key)
+    public function scopeByKey($query, string $key): Builder
     {
         return $query->where('context_key', $key);
+    }
 
     /**
      * Scope by context type
      */
-    public function scopeByType($query, string $type)
+    public function scopeByType($query, string $type): Builder
     {
         return $query->where('context_type', $type);
+    }
 
     /**
      * Scope valid contexts (not expired)
      */
     public function scopeValid($query)
-    {
+    : \Illuminate\Database\Eloquent\Builder {
         return $query->where(function ($q) {
             $q->whereNull('expires_at')
                 ->orWhere('expires_at', '>', now());
+        });
+    }
 
     /**
      * Scope expired contexts
      */
-    public function scopeExpired($query)
+    public function scopeExpired($query): Builder
     {
         return $query->whereNotNull('expires_at')
             ->where('expires_at', '<=', now());
+    }
 
     /**
      * Check if context is valid
@@ -73,8 +79,10 @@ protected $table = 'cmis.session_context';
     {
         if (!$this->expires_at) {
             return true;
+        }
 
         return $this->expires_at->isFuture();
+    }
 
     /**
      * Check if context has expired
@@ -83,20 +91,23 @@ protected $table = 'cmis.session_context';
     {
         if (!$this->expires_at) {
             return false;
+        }
 
         return $this->expires_at->isPast();
+    }
 
     /**
      * Get or set context value
      */
     public static function getContextValue(string $sessionId, string $key, $default = null)
-    {
+    : \Illuminate\Database\Eloquent\Relations\Relation {
         $context = self::where('session_id', $sessionId)
             ->where('context_key', $key)
             ->valid()
             ->first();
 
         return $context ? $context->context_value : $default;
+    }
 
     /**
      * Set context value
@@ -114,4 +125,6 @@ protected $table = 'cmis.session_context';
                 'set_at' => now(),
                 'expires_at' => $expiresAt,
             ]
+        );
+    }
 }

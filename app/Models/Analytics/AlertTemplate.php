@@ -6,6 +6,7 @@ use App\Models\BaseModel;
 use App\Models\Core\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Builder;
 
 /**
  * Alert Template Model (Phase 13)
@@ -62,7 +63,7 @@ class AlertTemplate extends BaseModel
     /**
      * Scope: Public templates
      */
-    public function scopePublic($query)
+    public function scopePublic($query): Builder
     {
         return $query->where('is_public', true);
     }
@@ -70,7 +71,7 @@ class AlertTemplate extends BaseModel
     /**
      * Scope: System templates
      */
-    public function scopeSystem($query)
+    public function scopeSystem($query): Builder
     {
         return $query->where('is_system', true);
     }
@@ -78,7 +79,7 @@ class AlertTemplate extends BaseModel
     /**
      * Scope: By category
      */
-    public function scopeCategory($query, string $category)
+    public function scopeCategory($query, string $category): Builder
     {
         return $query->where('category', $category);
     }
@@ -86,7 +87,7 @@ class AlertTemplate extends BaseModel
     /**
      * Scope: By entity type
      */
-    public function scopeEntityType($query, string $entityType)
+    public function scopeEntityType($query, string $entityType): Builder
     {
         return $query->where('entity_type', $entityType);
     }

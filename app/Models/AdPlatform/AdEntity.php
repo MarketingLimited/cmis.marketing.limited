@@ -5,6 +5,7 @@ namespace App\Models\AdPlatform;
 use App\Models\Concerns\HasOrganization;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Builder;
 use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -47,68 +48,77 @@ class AdEntity extends BaseModel
     /**
      * Get the integration
      */
-    public function integration()
+    public function integration(): BelongsTo
     {
         return $this->belongsTo(\App\Models\Core\Integration::class, 'integration_id', 'integration_id');
+    }
 
     /**
      * Get the ad set
      */
-    public function adSet()
+    public function adSet(): BelongsTo
     {
         return $this->belongsTo(AdSet::class, 'adset_external_id', 'adset_external_id');
+    }
 
     /**
      * Get the creative asset
      */
-    public function creative()
+    public function creative(): BelongsTo
     {
         return $this->belongsTo(\App\Models\Core\Creative::class, 'creative_id', 'creative_id');
+    }
 
     /**
      * Get metrics
      */
-    public function metrics()
+    public function metrics(): HasMany
     {
         return $this->hasMany(AdMetric::class, 'entity_external_id', 'ad_external_id')
             ->where('entity_level', 'ad');
+    }
 
     /**
      * Scope active ads
      */
-    public function scopeActive($query)
+    public function scopeActive($query): Builder
     {
         return $query->where('ad_status', 'active');
+    }
 
     /**
      * Scope by platform
      */
-    public function scopeByPlatform($query, string $platform)
+    public function scopeByPlatform($query, string $platform): Builder
     {
         return $query->where('platform', $platform);
+    }
 
     /**
      * Scope by ad type
      */
-    public function scopeByType($query, string $type)
+    public function scopeByType($query, string $type): Builder
     {
-        return $query->where('ad_type', $type);
+        return $this->where('ad_type', $type);
+    }
 
     /**
      * Scope by status
      */
-    public function scopeByStatus($query, string $status)
+    public function scopeByStatus($query, string $status): Builder
     {
         return $query->where('ad_status', $status);
+    }
 
     /**
      * Get latest metrics
      */
     public function getLatestMetrics()
-    {
+    : \Illuminate\Database\Eloquent\Relations\Relation {
         return $this->metrics()
             ->orderBy('metric_date', 'desc')
             ->first();
+    }
 
     /**
      * Get performance summary
@@ -126,4 +136,5 @@ class AdEntity extends BaseModel
             'avg_cpc' => $metrics->avg('cpc'),
             'avg_cpa' => $metrics->avg('cpa'),
         ];
+    }
 }

@@ -9,6 +9,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use App\Http\Controllers\Concerns\ApiResponse;
+use App\Http\Requests\Core\StoreOrgRequest;
+use App\Http\Requests\Core\UpdateOrgRequest;
+use Illuminate\Http\JsonResponse;
 
 class OrgController extends Controller
 {
@@ -25,7 +28,7 @@ class OrgController extends Controller
     /**
      * قائمة شركات المستخدم الحالي
      */
-    public function listUserOrgs(Request $request)
+    public function listUserOrgs(Request $request): JsonResponse
     {
         try {
             $orgs = $request->user()
@@ -46,10 +49,9 @@ class OrgController extends Controller
                     ];
                 });
 
-            return response()->json([
-                'orgs' => $orgs,
+            return $this->success(['orgs' => $orgs,
                 'total' => $orgs->count()
-            ]);
+            ], 'Operation completed successfully');
 
         } catch (\Exception $e) {
             return response()->json([
@@ -62,22 +64,9 @@ class OrgController extends Controller
     /**
      * إنشاء شركة جديدة
      */
-    public function store(Request $request)
+    public function store(StoreOrgRequest $request): JsonResponse
     {
         $this->authorize('create', Org::class);
-
-        $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
-            'default_locale' => 'nullable|string|max:10',
-            'currency' => 'nullable|string|size:3',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'error' => 'Validation Error',
-                'errors' => $validator->errors()
-            ], 422);
-        }
 
         try {
             DB::beginTransaction();
@@ -133,7 +122,7 @@ class OrgController extends Controller
     /**
      * عرض تفاصيل الشركة
      */
-    public function show(Request $request, string $orgId)
+    public function show(Request $request, string $orgId): JsonResponse
     {
         $org = Org::findOrFail($orgId);
         $this->authorize('view', $org);
@@ -152,10 +141,10 @@ class OrgController extends Controller
                 }
             ])->findOrFail($orgId);
 
-            return response()->json(['org' => $org]);
+            return $this->success(['org' => $org], 'Operation completed successfully');
 
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            return response()->json(['error' => 'Organization not found'], 404);
+            return $this->notFound('Organization not found');
         } catch (\Exception $e) {
             return response()->json([
                 'error' => 'Failed to fetch organization',
@@ -167,34 +156,20 @@ class OrgController extends Controller
     /**
      * تحديث الشركة
      */
-    public function update(Request $request, string $orgId)
+    public function update(UpdateOrgRequest $request, string $orgId): JsonResponse
     {
         $org = Org::findOrFail($orgId);
         $this->authorize('update', $org);
 
-        $validator = Validator::make($request->all(), [
-            'name' => 'sometimes|string|max:255',
-            'default_locale' => 'sometimes|string|max:10',
-            'currency' => 'sometimes|string|size:3',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'error' => 'Validation Error',
-                'errors' => $validator->errors()
-            ], 422);
-        }
-
         try {
             $org->update($request->only(['name', 'default_locale', 'currency']));
 
-            return response()->json([
-                'message' => 'Organization updated successfully',
+            return $this->success(['message' => 'Organization updated successfully',
                 'org' => $org->fresh()
-            ]);
+            ], 'Operation completed successfully');
 
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            return response()->json(['error' => 'Organization not found'], 404);
+            return $this->notFound('Organization not found');
         } catch (\Exception $e) {
             return response()->json([
                 'error' => 'Failed to update organization',
@@ -206,7 +181,7 @@ class OrgController extends Controller
     /**
      * حذف الشركة
      */
-    public function destroy(Request $request, string $orgId)
+    public function destroy(Request $request, string $orgId): JsonResponse
     {
         try {
             $org = Org::findOrFail($orgId);
@@ -214,10 +189,10 @@ class OrgController extends Controller
 
             $org->delete();
 
-            return response()->json(['message' => 'Organization deleted successfully']);
+            return $this->success(['message' => 'Organization deleted successfully'], 'Operation completed successfully');
 
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            return response()->json(['error' => 'Organization not found'], 404);
+            return $this->notFound('Organization not found');
         } catch (\Exception $e) {
             return response()->json([
                 'error' => 'Failed to delete organization',
@@ -229,7 +204,7 @@ class OrgController extends Controller
     /**
      * إحصائيات الشركة
      */
-    public function statistics(Request $request, string $orgId)
+    public function statistics(Request $request, string $orgId): JsonResponse
     {
         try {
             $org = Org::findOrFail($orgId);
@@ -244,10 +219,9 @@ class OrgController extends Controller
                 'created_at' => $org->created_at,
             ];
 
-            return response()->json([
-                'org_id' => $orgId,
+            return $this->success(['org_id' => $orgId,
                 'statistics' => $stats
-            ]);
+            ], 'Operation completed successfully');
 
         } catch (\Exception $e) {
             return response()->json([

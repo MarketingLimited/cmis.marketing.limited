@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
+use App\Http\Controllers\Concerns\ApiResponse;
 
 use App\Services\ContentAnalyticsService;
 use Illuminate\Http\Request;
@@ -53,14 +54,10 @@ class ContentAnalyticsController extends Controller
                 ], 404);
             }
 
-            return response()->json($analytics);
+            return $this->success($analytics, 'Retrieved successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to load post analytics',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to load post analytics: ' . $e->getMessage());
         }
     }
 
@@ -83,10 +80,7 @@ class ContentAnalyticsController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         $filters = [
@@ -97,14 +91,10 @@ class ContentAnalyticsController extends Controller
 
         try {
             $analytics = $this->analyticsService->getHashtagAnalytics($socialAccountId, $filters);
-            return response()->json($analytics);
+            return $this->success($analytics, 'Retrieved successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to load hashtag analytics',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to load hashtag analytics: ' . $e->getMessage());
         }
     }
 
@@ -124,14 +114,10 @@ class ContentAnalyticsController extends Controller
             $filters = $request->only(['start_date', 'end_date']);
             $demographics = $this->analyticsService->getAudienceDemographics($socialAccountId, $filters);
 
-            return response()->json($demographics);
+            return $this->success($demographics, 'Retrieved successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to load audience demographics',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to load audience demographics: ' . $e->getMessage());
         }
     }
 
@@ -153,10 +139,7 @@ class ContentAnalyticsController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         $filters = [
@@ -166,14 +149,10 @@ class ContentAnalyticsController extends Controller
 
         try {
             $patterns = $this->analyticsService->getEngagementPatterns($socialAccountId, $filters);
-            return response()->json($patterns);
+            return $this->success($patterns, 'Retrieved successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to load engagement patterns',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to load engagement patterns: ' . $e->getMessage());
         }
     }
 
@@ -195,10 +174,7 @@ class ContentAnalyticsController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         $filters = [
@@ -208,14 +184,10 @@ class ContentAnalyticsController extends Controller
 
         try {
             $performance = $this->analyticsService->getContentTypePerformance($socialAccountId, $filters);
-            return response()->json($performance);
+            return $this->success($performance, 'Retrieved successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to load content type performance',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to load content type performance: ' . $e->getMessage());
         }
     }
 
@@ -239,10 +211,7 @@ class ContentAnalyticsController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         $filters = [
@@ -254,14 +223,10 @@ class ContentAnalyticsController extends Controller
 
         try {
             $topPosts = $this->analyticsService->getTopPosts($socialAccountId, $filters);
-            return response()->json($topPosts);
+            return $this->success($topPosts, 'Retrieved successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to load top posts',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to load top posts: ' . $e->getMessage());
         }
     }
 
@@ -285,10 +250,7 @@ class ContentAnalyticsController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         $filters = [
@@ -318,11 +280,7 @@ class ContentAnalyticsController extends Controller
             ]);
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to load comprehensive analysis',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to load comprehensive analysis: ' . $e->getMessage());
         }
     }
 }

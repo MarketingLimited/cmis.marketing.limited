@@ -3,6 +3,7 @@
 namespace App\Models\Other;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Builder;
 use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -36,7 +37,8 @@ class OfferingsFullDetail extends BaseModel
     /**
      * Scope to get details for a specific offering
      */
-    public function scopeForOffering($query, string $offeringId)
+    public function scopeForOffering($query, string $offeringId): Builder
     {
         return $query->where('offering_id', $offeringId);
+}
 }

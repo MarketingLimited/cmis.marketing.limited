@@ -30,7 +30,7 @@ class PermissionsCache extends BaseModel
     /**
      * Scope to get cache for user and org
      */
-    public function scopeForUserOrg($query, string $userId, string $orgId)
+    public function scopeForUserOrg($query, string $userId, string $orgId): Builder
     {
         return $query->where('user_id', $userId)
             ->where('org_id', $orgId);
@@ -39,7 +39,7 @@ class PermissionsCache extends BaseModel
     /**
      * Scope to get old cache entries
      */
-    public function scopeOld($query, int $days = 30)
+    public function scopeOld($query, int $days = 30): Builder
     {
         return $query->where('last_used', '<', now()->subDays($days));
     }

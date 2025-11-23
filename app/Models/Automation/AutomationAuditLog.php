@@ -8,6 +8,7 @@ use App\Models\Core\User;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Builder;
 
 class AutomationAuditLog extends BaseModel
 {
@@ -168,27 +169,27 @@ class AutomationAuditLog extends BaseModel
 
     // ===== Scopes =====
 
-    public function scopeForRule($query, string $ruleId)
+    public function scopeForRule($query, string $ruleId): Builder
     {
         return $query->where('rule_id', $ruleId);
     }
 
-    public function scopeForExecution($query, string $executionId)
+    public function scopeForExecution($query, string $executionId): Builder
     {
         return $query->where('execution_id', $executionId);
     }
 
-    public function scopeByUser($query, string $userId)
+    public function scopeByUser($query, string $userId): Builder
     {
         return $query->where('user_id', $userId);
     }
 
-    public function scopeOfAction($query, string $action)
+    public function scopeOfAction($query, string $action): Builder
     {
         return $query->where('action', $action);
     }
 
-    public function scopeForEntity($query, string $entityType, ?string $entityId = null)
+    public function scopeForEntity($query, string $entityType, ?string $entityId = null): Builder
     {
         $query->where('entity_type', $entityType);
 
@@ -199,13 +200,13 @@ class AutomationAuditLog extends BaseModel
         return $query;
     }
 
-    public function scopeRecent($query, int $days = 30)
+    public function scopeRecent($query, int $days = 30): Builder
     {
         return $query->where('created_at', '>=', now()->subDays($days))
             ->orderBy('created_at', 'desc');
     }
 
-    public function scopeBetweenDates($query, $startDate, $endDate)
+    public function scopeBetweenDates($query, $startDate, $endDate): Builder
     {
         return $query->whereBetween('created_at', [$startDate, $endDate]);
     }

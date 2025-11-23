@@ -7,6 +7,7 @@ use App\Models\Concerns\HasOrganization;
 use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Builder;
 
 class OpsAudit extends BaseModel
 {
@@ -39,38 +40,44 @@ class OpsAudit extends BaseModel
     public function user()
     {
         return $this->belongsTo(\App\Models\User::class, 'user_id', 'user_id');
+    }
 
     public function organization()
     {
         return $this->belongsTo(\App\Models\Organization::class, 'org_id', 'org_id');
+    }
 
-    // Scopes
-    public function scopeByType($query, $type)
+    public function scopeByType($query, $type): Builder
     {
         return $query->where('operation_type', $type);
+    }
 
-    public function scopeByEntity($query, $entityType, $entityId = null)
+    public function scopeByEntity($query, $entityType, $entityId = null): Builder
     {
         $query->where('entity_type', $entityType);
 
         if ($entityId) {
             $query->where('entity_id', $entityId);
+        }
 
         return $query;
+    }
 
-    public function scopeByUser($query, $userId)
+    public function scopeByUser($query, $userId): Builder
     {
         return $query->where('user_id', $userId);
+    }
 
-    public function scopeSuccessful($query)
+    public function scopeSuccessful($query): Builder
     {
         return $query->where('status', 'success');
+    }
 
-    public function scopeFailed($query)
+    public function scopeFailed($query): Builder
     {
         return $query->where('status', 'failed');
+    }
 
-    // Helpers
     public static function log($operationType, $operationName, $userId, $orgId, $entityType, $entityId, $oldValues = null, $newValues = null)
     {
         $changes = [];
@@ -82,6 +89,9 @@ class OpsAudit extends BaseModel
                         'old' => $oldValues[$key] ?? null,
                         'new' => $value,
                     ];
+                }
+            }
+        }
 
         return static::create([
             'operation_type' => $operationType,
@@ -97,4 +107,5 @@ class OpsAudit extends BaseModel
             'user_agent' => request()->userAgent(),
             'status' => 'success',
         ]);
+    }
 }

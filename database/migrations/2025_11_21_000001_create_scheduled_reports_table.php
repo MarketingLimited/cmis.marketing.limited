@@ -1,12 +1,15 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
+use Database\Migrations\Concerns\HasRLSPolicies;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
+    use HasRLSPolicies;
+
     /**
      * Run the migrations.
      */
@@ -52,14 +55,8 @@ return new class extends Migration
                 ->onDelete('cascade');
         });
 
-        // Enable RLS
-        DB::statement('ALTER TABLE cmis.scheduled_reports ENABLE ROW LEVEL SECURITY');
-
         // Create RLS policy
-        DB::statement("
-            CREATE POLICY org_isolation ON cmis.scheduled_reports
-            USING (org_id = current_setting('app.current_org_id')::uuid)
-        ");
+        $this->enableRLS('cmis.scheduled_reports');
 
         // Create report execution logs table
         Schema::create('cmis.report_execution_logs', function (Blueprint $table) {
@@ -97,14 +94,8 @@ return new class extends Migration
                 ->onDelete('cascade');
         });
 
-        // Enable RLS for logs
-        DB::statement('ALTER TABLE cmis.report_execution_logs ENABLE ROW LEVEL SECURITY');
-
         // Create RLS policy for logs
-        DB::statement("
-            CREATE POLICY org_isolation ON cmis.report_execution_logs
-            USING (org_id = current_setting('app.current_org_id')::uuid)
-        ");
+        $this->enableRLS('cmis.report_execution_logs');
 
         // Create report templates table (pre-built configurations)
         Schema::create('cmis.report_templates', function (Blueprint $table) {

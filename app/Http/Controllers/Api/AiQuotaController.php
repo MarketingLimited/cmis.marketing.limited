@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers\Api;
+use App\Http\Controllers\Concerns\ApiResponse;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
@@ -51,7 +52,7 @@ class AiQuotaController extends Controller
             $user->id
         );
 
-        return response()->json($status);
+        return $this->success($status, 'Retrieved successfully');
     }
 
     /**
@@ -109,10 +110,9 @@ class AiQuotaController extends Controller
 
         $usage = $query->limit(100)->get();
 
-        return response()->json([
-            'usage' => $usage,
+        return $this->success(['usage' => $usage,
             'period' => "{$days} days",
-        ]);
+        ], 'Operation completed successfully');
     }
 
     /**
@@ -135,10 +135,9 @@ class AiQuotaController extends Controller
             ->limit(30)
             ->get();
 
-        return response()->json([
-            'stats' => $stats,
+        return $this->success(['stats' => $stats,
             'period' => $period,
-        ]);
+        ], 'Operation completed successfully');
     }
 
     /**
@@ -168,11 +167,10 @@ class AiQuotaController extends Controller
                 $amount
             );
 
-            return response()->json([
-                'available' => $available,
+            return $this->success(['available' => $available,
                 'service' => $service,
                 'amount' => $amount,
-            ]);
+            ], 'Operation completed successfully');
 
         } catch (\App\Exceptions\QuotaExceededException $e) {
             return response()->json([
@@ -227,10 +225,9 @@ class AiQuotaController extends Controller
             }
         }
 
-        return response()->json([
-            'recommendations' => $recommendations,
+        return $this->success(['recommendations' => $recommendations,
             'current_tier' => $user->organization->subscription_tier ?? 'free',
-        ]);
+        ], 'Operation completed successfully');
     }
 
     /**

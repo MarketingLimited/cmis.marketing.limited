@@ -4,6 +4,7 @@ namespace App\Models\Analytics;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Builder;
 use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -66,7 +67,7 @@ class ExperimentResult extends BaseModel
     /**
      * Scope: Recent results
      */
-    public function scopeRecent($query, int $days = 7)
+    public function scopeRecent($query, int $days = 7): Builder
     {
         return $query->where('date', '>=', now()->subDays($days));
     }
@@ -74,7 +75,7 @@ class ExperimentResult extends BaseModel
     /**
      * Scope: By date range
      */
-    public function scopeDateRange($query, $startDate, $endDate)
+    public function scopeDateRange($query, $startDate, $endDate): Builder
     {
         return $query->whereBetween('date', [$startDate, $endDate]);
     }

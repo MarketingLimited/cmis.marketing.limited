@@ -3,6 +3,7 @@
 namespace App\Models\AdPlatform;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Builder;
 use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -34,14 +35,16 @@ class MetaDocumentation extends BaseModel
     /**
      * Scope to find by meta key
      */
-    public function scopeByKey($query, string $key)
+    public function scopeByKey($query, string $key): Builder
     {
         return $query->where('meta_key', $key);
 
+    }
     /**
      * Scope to find by updated by
      */
-    public function scopeUpdatedBy($query, string $updatedBy)
+    public function scopeUpdatedBy($query, string $updatedBy): Builder
     {
         return $query->where('updated_by', $updatedBy);
+}
 }

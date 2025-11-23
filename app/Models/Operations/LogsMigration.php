@@ -3,6 +3,7 @@
 namespace App\Models\Operations;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Builder;
 use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -34,21 +35,24 @@ class LogsMigration extends BaseModel
     /**
      * Scope to filter by phase
      */
-    public function scopeByPhase($query, string $phase)
+    public function scopeByPhase($query, string $phase): Builder
     {
         return $query->where('phase', $phase);
 
+    }
     /**
      * Scope to filter by status
      */
-    public function scopeByStatus($query, string $status)
+    public function scopeByStatus($query, string $status): Builder
     {
         return $query->where('status', $status);
 
+    }
     /**
      * Scope to get recent logs
      */
-    public function scopeRecent($query, int $hours = 24)
+    public function scopeRecent($query, int $hours = 24): Builder
     {
         return $query->where('executed_at', '>=', now()->subHours($hours));
+}
 }

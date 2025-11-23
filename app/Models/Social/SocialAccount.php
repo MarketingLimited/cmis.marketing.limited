@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Builder;
 
 class SocialAccount extends BaseModel
 {
@@ -76,7 +77,7 @@ class SocialAccount extends BaseModel
     /**
      * Scope to filter by provider/platform
      */
-    public function scopeByProvider($query, string $provider)
+    public function scopeByProvider($query, string $provider): Builder
     {
         return $query->where('provider', $provider);
     }
@@ -84,7 +85,7 @@ class SocialAccount extends BaseModel
     /**
      * Scope to filter by integration
      */
-    public function scopeForIntegration($query, string $integrationId)
+    public function scopeForIntegration($query, string $integrationId): Builder
     {
         return $query->where('integration_id', $integrationId);
     }

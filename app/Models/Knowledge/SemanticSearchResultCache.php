@@ -40,14 +40,15 @@ class SemanticSearchResultCache extends BaseModel
      * Find by query hash
      */
     public static function findByHash(string $queryHash, ?string $filtersHash = null)
-    {
+    : mixed {
         $query = self::where('query_hash', $queryHash);
 
         if ($filtersHash) {
             $query->where('filters_hash', $filtersHash);
+        }
 
         return $query->where('expires_at', '>', now())->first();
-
+    }
     /**
      * Check if cache is valid
      */
@@ -55,6 +56,7 @@ class SemanticSearchResultCache extends BaseModel
     {
         return $this->expires_at && $this->expires_at->isFuture();
 
+    }
     /**
      * Record cache hit
      */
@@ -63,25 +65,29 @@ class SemanticSearchResultCache extends BaseModel
         $this->increment('hit_count');
         $this->update(['last_hit' => now()]);
 
+    }
     /**
      * Scope valid caches
      */
-    public function scopeValid($query)
+    public function scopeValid($query): Builder
     {
         return $query->where('expires_at', '>', now());
 
+    }
     /**
      * Scope expired caches
      */
-    public function scopeExpired($query)
+    public function scopeExpired($query): Builder
     {
         return $query->where('expires_at', '<=', now());
 
+    }
     /**
      * Scope by hit count
      */
-    public function scopePopular($query, int $threshold = 10)
+    public function scopePopular($query, int $threshold = 10): Builder
     {
         return $query->where('hit_count', '>=', $threshold)
             ->orderBy('hit_count', 'desc');
+    }
 }

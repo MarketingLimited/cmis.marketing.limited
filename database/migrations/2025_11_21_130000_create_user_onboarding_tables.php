@@ -1,12 +1,15 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
+use Database\Migrations\Concerns\HasRLSPolicies;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
+    use HasRLSPolicies;
+
     /**
      * Run the migrations.
      *
@@ -51,7 +54,7 @@ return new class extends Migration
         });
 
         // 2. Enable Row-Level Security
-        DB::statement("ALTER TABLE cmis.user_onboarding_progress ENABLE ROW LEVEL SECURITY");
+        $this->enableRLS('cmis.user_onboarding_progress');
 
         // Users can only see their own onboarding progress
         DB::statement("

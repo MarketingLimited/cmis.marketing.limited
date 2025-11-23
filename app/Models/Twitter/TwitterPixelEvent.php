@@ -5,6 +5,7 @@ namespace App\Models\Twitter;
 use App\Models\BaseModel;
 use App\Models\Concerns\HasOrganization;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Builder;
 
 /**
  * Twitter Pixel Event Model
@@ -66,7 +67,7 @@ class TwitterPixelEvent extends BaseModel
     /**
      * Scope to get events by type
      */
-    public function scopeOfType($query, string $type)
+    public function scopeOfType($query, string $type): Builder
     {
         return $query->where('event_type', $type);
     }
@@ -74,7 +75,7 @@ class TwitterPixelEvent extends BaseModel
     /**
      * Scope to get recent events
      */
-    public function scopeRecent($query, int $days = 7)
+    public function scopeRecent($query, int $days = 7): Builder
     {
         return $query->where('event_timestamp', '>=', now()->subDays($days));
     }

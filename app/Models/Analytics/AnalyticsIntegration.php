@@ -8,6 +8,8 @@ use App\Models\Core\Org;
 use App\Models\Campaign;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use App\Models\BaseModel;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
@@ -50,28 +52,24 @@ class AnalyticsIntegration extends BaseModel
     /**
      * Get the campaign
      */
-    public function campaign()
+    public function campaign(): BelongsTo
     {
         return $this->belongsTo(Campaign::class, 'campaign_id', 'campaign_id');
-
-    /**
-     * Scope to get integrations for a specific org
-     */
-    public function scopeForOrg($query, string $orgId)
-    {
-        return $query->where('org_id', $orgId);
+    }
 
     /**
      * Scope to get integrations for a specific campaign
      */
-    public function scopeForCampaign($query, string $campaignId)
+    public function scopeForCampaign($query, string $campaignId): Builder
     {
         return $query->where('campaign_id', $campaignId);
+    }
 
     /**
      * Scope to filter by platform
      */
-    public function scopeByPlatform($query, string $platform)
+    public function scopeByPlatform($query, string $platform): Builder
     {
         return $query->where('platform', $platform);
+    }
 }

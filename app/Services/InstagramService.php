@@ -8,7 +8,7 @@ use Carbon\Carbon;
 
 class InstagramService
 {
-    public function fetchMedia($integration, array $options = [])
+    public function fetchMedia($integration, array $options = []): array
     {
         $debug = $options['debug'] ?? false;
         $debugFull = $options['debug_full'] ?? false;

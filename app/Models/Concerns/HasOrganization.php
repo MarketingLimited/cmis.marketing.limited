@@ -4,6 +4,7 @@ namespace App\Models\Concerns;
 
 use App\Models\Core\Org;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Builder;
 
 /**
  * HasOrganization Trait
@@ -71,7 +72,7 @@ trait HasOrganization
      * @param string $orgId
      * @return \Illuminate\Database\Eloquent\Builder
      */
-    public function scopeForOrganization($query, string $orgId)
+    public function scopeForOrganization($query, string $orgId): Builder
     {
         // Log warning when this scope is used
         \Illuminate\Support\Facades\Log::warning(

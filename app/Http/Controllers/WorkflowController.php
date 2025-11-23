@@ -7,6 +7,9 @@ use App\Services\WorkflowService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Concerns\ApiResponse;
+use Illuminate\Http\JsonResponse;
+use Illuminate\View\View;
+use Illuminate\Http\RedirectResponse;
 
 class WorkflowController extends Controller
 {
@@ -23,7 +26,7 @@ class WorkflowController extends Controller
     /**
      * Display workflow list
      */
-    public function index()
+    public function index(): View
     {
         try {
             $workflows = \DB::select("
@@ -46,7 +49,7 @@ class WorkflowController extends Controller
     /**
      * Show workflow details
      */
-    public function show($flowId)
+    public function show($flowId): View
     {
         try {
             $status = $this->workflowService->getWorkflowStatus($flowId);
@@ -65,7 +68,7 @@ class WorkflowController extends Controller
     /**
      * Initialize campaign workflow
      */
-    public function initializeCampaign(Request $request)
+    public function initializeCampaign(Request $request): JsonResponse
     {
         $validated = $request->validate([
             'campaign_id' => 'required|uuid',
@@ -79,25 +82,18 @@ class WorkflowController extends Controller
                 Auth::user()->current_org_id
             );
 
-            return response()->json([
-                'success' => true,
-                'flow_id' => $flowId,
-                'message' => 'تم إنشاء سير العمل بنجاح'
-            ]);
+            return $this->success(['flow_id' => $flowId,
+                'message' => 'تم إنشاء سير العمل بنجاح'], 'Operation completed successfully');
         } catch (\Exception $e) {
             Log::error('Workflow initialize error: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'error' => 'فشل إنشاء سير العمل',
-                'message' => $e->getMessage()
-            ], 500);
+            return $this->serverError('فشل إنشاء سير العمل' . ': ' . $e->getMessage());
         }
     }
 
     /**
      * Complete workflow step
      */
-    public function completeStep(Request $request, $flowId, $stepNumber)
+    public function completeStep(Request $request, $flowId, $stepNumber): JsonResponse
     {
         $validated = $request->validate([
             'notes' => 'nullable|string',
@@ -112,24 +108,17 @@ class WorkflowController extends Controller
                 $validated['metadata'] ?? []
             );
 
-            return response()->json([
-                'success' => true,
-                'message' => 'تم إكمال الخطوة بنجاح'
-            ]);
+            return $this->success(null, 'تم إكمال الخطوة بنجاح');
         } catch (\Exception $e) {
             Log::error('Workflow complete step error: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'error' => 'فشل إكمال الخطوة',
-                'message' => $e->getMessage()
-            ], 500);
+            return $this->serverError('فشل إكمال الخطوة' . ': ' . $e->getMessage());
         }
     }
 
     /**
      * Assign step to user
      */
-    public function assignStep(Request $request, $flowId, $stepNumber)
+    public function assignStep(Request $request, $flowId, $stepNumber): JsonResponse
     {
         $validated = $request->validate([
             'user_id' => 'required|uuid',
@@ -142,23 +131,16 @@ class WorkflowController extends Controller
                 $validated['user_id']
             );
 
-            return response()->json([
-                'success' => true,
-                'message' => 'تم تعيين الخطوة بنجاح'
-            ]);
+            return $this->success(null, 'تم تعيين الخطوة بنجاح');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'error' => 'فشل تعيين الخطوة',
-                'message' => $e->getMessage()
-            ], 500);
+            return $this->serverError('فشل تعيين الخطوة' . ': ' . $e->getMessage());
         }
     }
 
     /**
      * Add comment to step
      */
-    public function addComment(Request $request, $flowId, $stepNumber)
+    public function addComment(Request $request, $flowId, $stepNumber): JsonResponse
     {
         $validated = $request->validate([
             'comment' => 'required|string|max:1000',
@@ -172,16 +154,9 @@ class WorkflowController extends Controller
                 $validated['comment']
             );
 
-            return response()->json([
-                'success' => true,
-                'message' => 'تم إضافة التعليق بنجاح'
-            ]);
+            return $this->success(null, 'تم إضافة التعليق بنجاح');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'error' => 'فشل إضافة التعليق',
-                'message' => $e->getMessage()
-            ], 500);
+            return $this->serverError('فشل إضافة التعليق' . ': ' . $e->getMessage());
         }
     }
 }

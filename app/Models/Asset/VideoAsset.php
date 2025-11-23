@@ -58,10 +58,11 @@ class VideoAsset extends BaseModel
     /**
      * Get the creative asset
      */
-    public function asset()
+    public function asset(): BelongsTo
     {
         return $this->belongsTo(\App\Models\CreativeAsset::class, 'asset_id', 'asset_id');
 
+    }
     /**
      * Get formatted duration
      */
@@ -72,6 +73,7 @@ class VideoAsset extends BaseModel
 
         return sprintf('%d:%02d', $minutes, $seconds);
 
+    }
     /**
      * Get aspect ratio
      */
@@ -79,6 +81,7 @@ class VideoAsset extends BaseModel
     {
         if (!$this->width || !$this->height) {
             return null;
+        }
 
         $gcd = function($a, $b) use (&$gcd) {
             return $b ? $gcd($b, $a % $b) : $a;
@@ -87,7 +90,7 @@ class VideoAsset extends BaseModel
         $divisor = $gcd($this->width, $this->height);
 
         return ($this->width / $divisor) . ':' . ($this->height / $divisor);
-
+    }
     /**
      * Check if short form (< 60 seconds)
      */
@@ -95,10 +98,12 @@ class VideoAsset extends BaseModel
     {
         return $this->duration < 60;
 
+    }
     /**
      * Check if long form (> 10 minutes)
      */
     public function isLongForm(): bool
     {
         return $this->duration > 600;
+    }
 }

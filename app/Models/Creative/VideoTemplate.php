@@ -5,6 +5,7 @@ namespace App\Models\Creative;
 use App\Models\Concerns\HasOrganization;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Builder;
 use App\Models\BaseModel;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
@@ -45,28 +46,32 @@ class VideoTemplate extends BaseModel
     /**
      * Get the video scenes
      */
-    public function scenes()
+    public function scenes(): HasMany
     {
         return $this->hasMany(VideoScene::class, 'template_id', 'template_id');
 
+    }
     /**
      * Get the creator
      */
-    public function creator()
+    public function creator(): BelongsTo
     {
         return $this->belongsTo(\App\Models\User::class, 'created_by', 'user_id');
 
+    }
     /**
      * Scope active templates
      */
-    public function scopeActive($query)
+    public function scopeActive($query): Builder
     {
         return $query->where('is_active', true);
 
+    }
     /**
      * Scope by style
      */
-    public function scopeWithStyle($query, string $style)
+    public function scopeWithStyle($query, string $style): Builder
     {
         return $query->where('style', $style);
+}
 }

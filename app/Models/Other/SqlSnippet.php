@@ -3,6 +3,7 @@
 namespace App\Models\Other;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Builder;
 use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -40,11 +41,13 @@ class SqlSnippet extends BaseModel
             'cmis.prompt_template_presql',
             'snippet_id',
             'prompt_id'
-
+        );
+    }
     /**
      * Scope to find by name
      */
-    public function scopeByName($query, string $name)
+    public function scopeByName($query, string $name): Builder
     {
         return $query->where('name', $name);
+    }
 }

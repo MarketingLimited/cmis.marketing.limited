@@ -5,6 +5,7 @@ namespace App\Models\Knowledge;
 use App\Models\Concerns\HasOrganization;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Builder;
 use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -57,46 +58,52 @@ class CreativeTemplate extends BaseModel
     /**
      * Get the channel
      */
-    public function channel()
+    public function channel(): BelongsTo
     {
         return $this->belongsTo(\App\Models\Channel::class, 'channel_id', 'channel_id');
 
+    }
     /**
      * Get the creator
      */
-    public function creator()
+    public function creator(): BelongsTo
     {
         return $this->belongsTo(\App\Models\User::class, 'created_by', 'user_id');
 
+    }
     /**
      * Scope by template type
      */
-    public function scopeByType($query, string $type)
+    public function scopeByType($query, string $type): Builder
     {
         return $query->where('template_type', $type);
 
+    }
     /**
      * Scope by category
      */
-    public function scopeByCategory($query, string $category)
+    public function scopeByCategory($query, string $category): Builder
     {
         return $query->where('category', $category);
 
+    }
     /**
      * Scope public templates
      */
-    public function scopePublic($query)
+    public function scopePublic($query): Builder
     {
         return $query->where('is_public', true);
 
+    }
     /**
      * Scope high performing
      */
-    public function scopeHighPerforming($query, float $threshold = 0.7)
+    public function scopeHighPerforming($query, float $threshold = 0.7): Builder
     {
         return $query->where('performance_score', '>=', $threshold)
             ->orderBy('performance_score', 'desc');
 
+    }
     /**
      * Increment usage count
      */
@@ -104,6 +111,7 @@ class CreativeTemplate extends BaseModel
     {
         $this->increment('usage_count');
 
+    }
     /**
      * Render template with variables
      */
@@ -113,9 +121,10 @@ class CreativeTemplate extends BaseModel
 
         foreach ($this->structure as $key => $template) {
             $rendered[$key] = $this->replaceVariables($template, $data);
+        }
 
         return $rendered;
-
+    }
     /**
      * Replace variables in template string
      */
@@ -126,4 +135,5 @@ class CreativeTemplate extends BaseModel
         }
 
         return $template;
+    }
 }

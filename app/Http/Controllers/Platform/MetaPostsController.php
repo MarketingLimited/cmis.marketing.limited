@@ -98,10 +98,7 @@ class MetaPostsController extends Controller
                 $metaAccount->access_token
             );
 
-            return response()->json([
-                'success' => true,
-                'post' => $post
-            ]);
+            return $this->success(['post' => $post], 'Operation completed successfully');
 
         } catch (\Exception $e) {
             Log::error('Failed to fetch post details', [
@@ -145,17 +142,10 @@ class MetaPostsController extends Controller
                 $this->metaPostsService->clearCache($metaAccount->instagram_account_id);
             }
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Posts cache cleared. Fetching fresh data...'
-            ]);
+            return $this->success(null, 'Posts cache cleared. Fetching fresh data...');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'error' => 'refresh_failed',
-                'message' => $e->getMessage()
-            ], 500);
+            return $this->serverError('refresh_failed' . ': ' . $e->getMessage());
         }
     }
 
@@ -311,11 +301,7 @@ class MetaPostsController extends Controller
                 'error' => $e->getMessage()
             ]);
 
-            return response()->json([
-                'success' => false,
-                'error' => 'fetch_failed',
-                'message' => $e->getMessage()
-            ], 500);
+            return $this->serverError('fetch_failed' . ': ' . $e->getMessage());
         }
     }
 }

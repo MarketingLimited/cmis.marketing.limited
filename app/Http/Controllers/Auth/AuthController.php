@@ -35,10 +35,7 @@ class AuthController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         try {
@@ -99,11 +96,7 @@ class AuthController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
 
-            return response()->json([
-                'success' => false,
-                'message' => 'Registration failed',
-                'error' => config('app.debug') ? $e->getMessage() : 'Internal server error'
-            ], 500);
+            return $this->serverError('Registration failed: ' . (config('app.debug') ? $e->getMessage() : 'Internal server error'));
         }
     }
 
@@ -121,10 +114,7 @@ class AuthController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         $user = User::where('email', $request->email)->first();
@@ -194,10 +184,7 @@ class AuthController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         try {
@@ -212,11 +199,7 @@ class AuthController extends Controller
             ]);
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to update profile',
-                'error' => config('app.debug') ? $e->getMessage() : 'Internal server error'
-            ], 500);
+            return $this->serverError('Failed to update profile: ' . (config('app.debug') ? $e->getMessage() : 'Internal server error'));
         }
     }
 
@@ -257,10 +240,7 @@ class AuthController extends Controller
     {
         $request->user()->currentAccessToken()->delete();
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Logged out successfully'
-        ]);
+        return $this->success(null, 'Logged out successfully');
     }
 
     /**
@@ -273,10 +253,7 @@ class AuthController extends Controller
     {
         $request->user()->tokens()->delete();
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Logged out from all devices successfully'
-        ]);
+        return $this->success(null, 'Logged out from all devices successfully');
     }
 
     /**

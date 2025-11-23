@@ -33,26 +33,31 @@ class DatasetFile extends BaseModel
     ];
 
     // Relationships
-    public function package()
+    public function package(): BelongsTo
     {
         return $this->belongsTo(DatasetPackage::class, 'package_id', 'package_id');
+    }
 
     // Helpers
     public function getSizeFormatted()
-    {
+    : \Illuminate\Database\Eloquent\Relations\Relation {
         $bytes = $this->file_size_bytes;
         $units = ['B', 'KB', 'MB', 'GB'];
 
         for ($i = 0; $bytes > 1024; $i++) {
             $bytes /= 1024;
+        }
 
         return round($bytes, 2) . ' ' . $units[$i];
+    }
 
-    public function verifyChecksum()
+    public function verifyChecksum(): bool
     {
         if (!file_exists(storage_path($this->file_path))) {
             return false;
+        }
 
         $actualChecksum = hash_file('sha256', storage_path($this->file_path));
         return $actualChecksum === $this->checksum;
+    }
 }

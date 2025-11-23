@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Channels;
 use App\Http\Controllers\Controller;
 use App\Models\Channel;
 use Illuminate\Http\Request;
+use Illuminate\View\View;
 
 /**
  * Class PostController
@@ -15,7 +16,7 @@ class PostController extends Controller
     /**
      * عرض قائمة المنشورات.
      */
-    public function index()
+    public function index(): View
     {
         $this->authorize('viewAny', Channel::class);
 

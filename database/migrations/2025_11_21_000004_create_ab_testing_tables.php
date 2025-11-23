@@ -1,12 +1,15 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
+use Database\Migrations\Concerns\HasRLSPolicies;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
+    use HasRLSPolicies;
+
     /**
      * Run the migrations (Phase 15 - A/B Testing & Experimentation)
      */
@@ -119,50 +122,34 @@ return new class extends Migration
         DB::statement('CREATE INDEX idx_events_occurred_at ON cmis.experiment_events(occurred_at DESC)');
         DB::statement('CREATE INDEX idx_events_type ON cmis.experiment_events(event_type)');
 
-        // Enable Row Level Security on all tables
-        DB::statement('ALTER TABLE cmis.experiments ENABLE ROW LEVEL SECURITY');
-        DB::statement('ALTER TABLE cmis.experiment_variants ENABLE ROW LEVEL SECURITY');
-        DB::statement('ALTER TABLE cmis.experiment_results ENABLE ROW LEVEL SECURITY');
-        DB::statement('ALTER TABLE cmis.experiment_events ENABLE ROW LEVEL SECURITY');
+        // Enable Row Level Security
+        // Main table with org_id
+        $this->enableRLS('cmis.experiments');
 
-        // Create RLS policies
-        DB::statement("
-            CREATE POLICY org_isolation ON cmis.experiments
-            USING (org_id = current_setting('app.current_org_id')::uuid)
-        ");
+        // Child tables inherit org_id from parent experiment table
+        $this->enableCustomRLS(
+            'cmis.experiment_variants',
+            "experiment_id IN (
+                SELECT experiment_id FROM cmis.experiments
+                WHERE org_id = current_setting('app.current_org_id')::uuid
+            )"
+        );
 
-        // Variants inherit org_id from experiment
-        DB::statement("
-            CREATE POLICY org_isolation ON cmis.experiment_variants
-            USING (
-                experiment_id IN (
-                    SELECT experiment_id FROM cmis.experiments
-                    WHERE org_id = current_setting('app.current_org_id')::uuid
-                )
-            )
-        ");
+        $this->enableCustomRLS(
+            'cmis.experiment_results',
+            "experiment_id IN (
+                SELECT experiment_id FROM cmis.experiments
+                WHERE org_id = current_setting('app.current_org_id')::uuid
+            )"
+        );
 
-        // Results inherit org_id from experiment
-        DB::statement("
-            CREATE POLICY org_isolation ON cmis.experiment_results
-            USING (
-                experiment_id IN (
-                    SELECT experiment_id FROM cmis.experiments
-                    WHERE org_id = current_setting('app.current_org_id')::uuid
-                )
-            )
-        ");
-
-        // Events inherit org_id from experiment
-        DB::statement("
-            CREATE POLICY org_isolation ON cmis.experiment_events
-            USING (
-                experiment_id IN (
-                    SELECT experiment_id FROM cmis.experiments
-                    WHERE org_id = current_setting('app.current_org_id')::uuid
-                )
-            )
-        ");
+        $this->enableCustomRLS(
+            'cmis.experiment_events',
+            "experiment_id IN (
+                SELECT experiment_id FROM cmis.experiments
+                WHERE org_id = current_setting('app.current_org_id')::uuid
+            )"
+        );
     }
 
     /**

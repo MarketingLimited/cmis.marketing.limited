@@ -77,23 +77,19 @@ class ABTestingController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         try {
             $result = $this->abTestingService->createABTest($request->all());
 
-            return response()->json($result, $result['success'] ? 201 : 500);
+            if (!$result['success']) {
+            return $this->serverError($result['message'] ?? 'Operation failed');
+        }
+        return $this->created($result['data'] ?? $result, $result['message'] ?? 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to create A/B test',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to create A/B test: ' . $e->getMessage());
         }
     }
 
@@ -125,10 +121,7 @@ class ABTestingController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         try {
@@ -138,14 +131,13 @@ class ABTestingController extends Controller
                 $request->input('is_control', false)
             );
 
-            return response()->json($result, $result['success'] ? 201 : 500);
+            if (!$result['success']) {
+            return $this->serverError($result['message'] ?? 'Operation failed');
+        }
+        return $this->created($result['data'] ?? $result, $result['message'] ?? 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to add variation',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to add variation: ' . $e->getMessage());
         }
     }
 
@@ -163,14 +155,13 @@ class ABTestingController extends Controller
         try {
             $result = $this->abTestingService->startTest($testId);
 
-            return response()->json($result, $result['success'] ? 200 : 400);
+            if (!$result['success']) {
+            return $this->serverError($result['message'] ?? 'Operation failed');
+        }
+        return $this->success($result['data'] ?? $result, $result['message'] ?? 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to start test',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to start test: ' . $e->getMessage());
         }
     }
 
@@ -197,14 +188,13 @@ class ABTestingController extends Controller
                 $request->input('reason')
             );
 
-            return response()->json($result, $result['success'] ? 200 : 400);
+            if (!$result['success']) {
+            return $this->serverError($result['message'] ?? 'Operation failed');
+        }
+        return $this->success($result['data'] ?? $result, $result['message'] ?? 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to stop test',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to stop test: ' . $e->getMessage());
         }
     }
 
@@ -222,14 +212,13 @@ class ABTestingController extends Controller
         try {
             $result = $this->abTestingService->getTestResults($testId);
 
-            return response()->json($result, $result['success'] ? 200 : 404);
+            if (!$result['success']) {
+            return $this->notFound($result['message'] ?? 'Operation failed');
+        }
+        return $this->success($result['data'] ?? $result, $result['message'] ?? 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to get test results',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to get test results: ' . $e->getMessage());
         }
     }
 
@@ -255,10 +244,7 @@ class ABTestingController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         try {
@@ -267,14 +253,13 @@ class ABTestingController extends Controller
                 $request->input('variation_id')
             );
 
-            return response()->json($result, $result['success'] ? 200 : 400);
+            if (!$result['success']) {
+            return $this->serverError($result['message'] ?? 'Operation failed');
+        }
+        return $this->success($result['data'] ?? $result, $result['message'] ?? 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to select winner',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to select winner: ' . $e->getMessage());
         }
     }
 
@@ -301,23 +286,19 @@ class ABTestingController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         try {
             $result = $this->abTestingService->listTests($request->all());
 
-            return response()->json($result, $result['success'] ? 200 : 500);
+            if (!$result['success']) {
+            return $this->serverError($result['message'] ?? 'Operation failed');
+        }
+        return $this->success($result['data'] ?? $result, $result['message'] ?? 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to list tests',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to list tests: ' . $e->getMessage());
         }
     }
 
@@ -343,10 +324,7 @@ class ABTestingController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         try {
@@ -355,14 +333,13 @@ class ABTestingController extends Controller
                 $request->input('additional_days')
             );
 
-            return response()->json($result, $result['success'] ? 200 : 400);
+            if (!$result['success']) {
+            return $this->serverError($result['message'] ?? 'Operation failed');
+        }
+        return $this->success($result['data'] ?? $result, $result['message'] ?? 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to extend test',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to extend test: ' . $e->getMessage());
         }
     }
 
@@ -380,14 +357,13 @@ class ABTestingController extends Controller
         try {
             $result = $this->abTestingService->deleteTest($testId);
 
-            return response()->json($result, $result['success'] ? 200 : 400);
+            if (!$result['success']) {
+            return $this->serverError($result['message'] ?? 'Operation failed');
+        }
+        return $this->success($result['data'] ?? $result, $result['message'] ?? 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to delete test',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to delete test: ' . $e->getMessage());
         }
     }
 }

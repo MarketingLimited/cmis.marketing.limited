@@ -63,21 +63,24 @@ class KnowledgeItem extends BaseModel
         
         if (!isset($tables[$category])) {
             return null;
-        
+        }
+
         $result = \DB::connection($this->connection)
             ->table($tables[$category])
             ->where('knowledge_id', $this->knowledge_id)
             ->first();
-            
+
         return $result ? $result->content : null;
-    
+    }
+
     /**
      * Scope for pending embeddings
      */
-    public function scopePendingEmbeddings($query)
+    public function scopePendingEmbeddings($query): Builder
     {
         return $query->whereNull('topic_embedding')
                     ->where('is_deprecated', false)
                     ->orderBy('tier', 'asc')
                     ->orderBy('last_verified_at', 'desc');
+    }
 }

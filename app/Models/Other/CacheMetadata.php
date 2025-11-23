@@ -3,6 +3,7 @@
 namespace App\Models\Other;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Builder;
 use App\Models\BaseModel;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
@@ -40,7 +41,8 @@ class CacheMetadata extends BaseModel
     /**
      * Scope to get auto-refresh caches
      */
-    public function scopeAutoRefresh($query)
+    public function scopeAutoRefresh($query): Builder
     {
         return $query->where('auto_refresh', true);
+}
 }

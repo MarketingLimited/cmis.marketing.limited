@@ -42,10 +42,7 @@ class BestTimeController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         $lookbackDays = $request->input('lookback_days', 30);
@@ -53,7 +50,7 @@ class BestTimeController extends Controller
 
         $analysis = $this->analyzer->analyzeBestTimes($socialAccountId, $lookbackDays, $topN);
 
-        return response()->json($analysis);
+        return $this->success($analysis, 'Retrieved successfully');
     }
 
     /**
@@ -94,10 +91,7 @@ class BestTimeController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         $dateRange = [
@@ -107,7 +101,7 @@ class BestTimeController extends Controller
 
         $comparison = $this->analyzer->compareActualVsRecommended($socialAccountId, $dateRange);
 
-        return response()->json($comparison);
+        return $this->success($comparison, 'Retrieved successfully');
     }
 
     /**

@@ -5,6 +5,7 @@ namespace App\Models\Compliance;
 use App\Models\Concerns\HasOrganization;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Builder;
 use App\Models\BaseModel;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
@@ -47,42 +48,48 @@ class ComplianceAudit extends BaseModel
     /**
      * Get the compliance rule
      */
-    public function rule()
+    public function rule(): BelongsTo
     {
         return $this->belongsTo(ComplianceRule::class, 'rule_id', 'rule_id');
 
+    }
     /**
      * Get the creative asset
      */
-    public function asset()
+    public function asset(): BelongsTo
     {
         return $this->belongsTo(\App\Models\CreativeAsset::class, 'asset_id', 'asset_id');
 
+    }
     /**
      * Get the reviewer
      */
-    public function reviewer()
+    public function reviewer(): BelongsTo
     {
         return $this->belongsTo(\App\Models\User::class, 'reviewed_by', 'user_id');
 
+    }
     /**
      * Scope passed audits
      */
-    public function scopePassed($query)
+    public function scopePassed($query): Builder
     {
         return $query->where('audit_result', 'pass');
 
+    }
     /**
      * Scope failed audits
      */
-    public function scopeFailed($query)
+    public function scopeFailed($query): Builder
     {
         return $query->where('audit_result', 'fail');
 
+    }
     /**
      * Scope pending review
      */
-    public function scopePendingReview($query)
+    public function scopePendingReview($query): Builder
     {
         return $query->where('status', 'pending')->whereNull('reviewed_at');
+}
 }

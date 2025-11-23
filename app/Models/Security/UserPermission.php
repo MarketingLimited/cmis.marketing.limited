@@ -6,6 +6,7 @@ use App\Models\Concerns\HasOrganization;
 
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Builder;
 use App\Models\BaseModel;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
@@ -43,63 +44,71 @@ class UserPermission extends BaseModel
     /**
      * Get the user
      */
-    public function user()
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id', 'user_id');
 
+    }
     /**
      * Get the permission
      */
-    public function permission()
+    public function permission(): BelongsTo
     {
         return $this->belongsTo(Permission::class, 'permission_id', 'permission_id');
 
+    }
     /**
      * Get the user who granted this permission
      */
-    public function grantedBy()
+    public function grantedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'granted_by', 'user_id');
 
+    }
     /**
      * Scope to get granted permissions
      */
-    public function scopeGranted($query)
+    public function scopeGranted($query): Builder
     {
         return $query->where('is_granted', true);
 
+    }
     /**
      * Scope to get revoked permissions
      */
-    public function scopeRevoked($query)
+    public function scopeRevoked($query): Builder
     {
         return $query->where('is_granted', false);
 
+    }
     /**
      * Scope to get non-expired permissions
      */
-    public function scopeActive($query)
+    public function scopeActive($query): Builder
     {
         return $query->where(function ($q) {
             $q->whereNull('expires_at')
               ->orWhere('expires_at', '>', now());
         })->where('is_granted', true);
 
+    }
     /**
      * Scope to get expired permissions
      */
-    public function scopeExpired($query)
+    public function scopeExpired($query): Builder
     {
         return $query->whereNotNull('expires_at')
             ->where('expires_at', '<=', now());
 
+    }
     /**
      * Scope to get permissions for a specific user
      */
-    public function scopeForUser($query, string $userId)
+    public function scopeForUser($query, string $userId): Builder
     {
         return $query->where('user_id', $userId);
 
+    }
     /**
      * Check if permission is currently active
      */
@@ -107,11 +116,14 @@ class UserPermission extends BaseModel
     {
         if (!$this->is_granted) {
             return false;
+        }
 
         if ($this->expires_at && $this->expires_at->isPast()) {
             return false;
+        }
 
         return true;
+    }
 
     /**
      * Check if permission has expired
@@ -119,4 +131,5 @@ class UserPermission extends BaseModel
     public function hasExpired(): bool
     {
         return $this->expires_at && $this->expires_at->isPast();
+    }
 }

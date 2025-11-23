@@ -1,12 +1,15 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
+use Database\Migrations\Concerns\HasRLSPolicies;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
+    use HasRLSPolicies;
+
     /**
      * Run the migrations (Phase 22: Social Media Publishing & Scheduling).
      */
@@ -48,12 +51,7 @@ return new class extends Migration
             $table->index('published_at');
         });
 
-        // RLS Policy
-        DB::statement("ALTER TABLE cmis.scheduled_posts ENABLE ROW LEVEL SECURITY");
-        DB::statement("
-            CREATE POLICY org_isolation ON cmis.scheduled_posts
-            USING (org_id = current_setting('app.current_org_id')::uuid)
-        ");
+        $this->enableRLS('cmis.scheduled_posts');
 
         // ===== Platform Posts Table =====
         Schema::create('cmis.platform_posts', function (Blueprint $table) {
@@ -84,12 +82,7 @@ return new class extends Migration
             $table->index('published_at');
         });
 
-        // RLS Policy
-        DB::statement("ALTER TABLE cmis.platform_posts ENABLE ROW LEVEL SECURITY");
-        DB::statement("
-            CREATE POLICY org_isolation ON cmis.platform_posts
-            USING (org_id = current_setting('app.current_org_id')::uuid)
-        ");
+        $this->enableRLS('cmis.platform_posts');
 
         // ===== Content Library Table =====
         Schema::create('cmis.content_library', function (Blueprint $table) {
@@ -116,12 +109,7 @@ return new class extends Migration
             $table->index('category');
         });
 
-        // RLS Policy
-        DB::statement("ALTER TABLE cmis.content_library ENABLE ROW LEVEL SECURITY");
-        DB::statement("
-            CREATE POLICY org_isolation ON cmis.content_library
-            USING (org_id = current_setting('app.current_org_id')::uuid)
-        ");
+        $this->enableRLS('cmis.content_library');
 
         // ===== Publishing Queue Table =====
         Schema::create('cmis.publishing_queue', function (Blueprint $table) {
@@ -145,12 +133,7 @@ return new class extends Migration
             $table->index(['org_id', 'status']);
         });
 
-        // RLS Policy
-        DB::statement("ALTER TABLE cmis.publishing_queue ENABLE ROW LEVEL SECURITY");
-        DB::statement("
-            CREATE POLICY org_isolation ON cmis.publishing_queue
-            USING (org_id = current_setting('app.current_org_id')::uuid)
-        ");
+        $this->enableRLS('cmis.publishing_queue');
 
         // ===== Best Time Recommendations Table =====
         Schema::create('cmis.best_time_recommendations', function (Blueprint $table) {
@@ -172,12 +155,7 @@ return new class extends Migration
             $table->index(['org_id', 'platform']);
         });
 
-        // RLS Policy
-        DB::statement("ALTER TABLE cmis.best_time_recommendations ENABLE ROW LEVEL SECURITY");
-        DB::statement("
-            CREATE POLICY org_isolation ON cmis.best_time_recommendations
-            USING (org_id = current_setting('app.current_org_id')::uuid)
-        ");
+        $this->enableRLS('cmis.best_time_recommendations');
 
         // ===== Publishing Performance View =====
         DB::statement("

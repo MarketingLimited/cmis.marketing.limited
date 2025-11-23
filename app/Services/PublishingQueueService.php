@@ -5,7 +5,7 @@ use Illuminate\Support\Str;
 
 class PublishingQueueService
 {
-    public function createQueue(array $data)
+    public function createQueue(array $data): array
     {
         \Log::info("PublishingQueueService::createQueue", ['data' => $data]);
         

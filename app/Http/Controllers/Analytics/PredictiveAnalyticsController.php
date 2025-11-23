@@ -66,10 +66,7 @@ class PredictiveAnalyticsController extends Controller
                 'message' => 'Forecasts generated successfully'
             ], 201);
         } catch (\RuntimeException $e) {
-            return response()->json([
-                'success' => false,
-                'message' => $e->getMessage()
-            ], 422);
+            return $this->validationError([], $e->getMessage());
         }
     }
 
@@ -115,10 +112,7 @@ class PredictiveAnalyticsController extends Controller
         $forecasts = $query->latest('generated_at')
             ->paginate($request->input('per_page', 30));
 
-        return response()->json([
-            'success' => true,
-            'forecasts' => $forecasts
-        ]);
+        return $this->success(['forecasts' => $forecasts], 'Operation completed successfully');
     }
 
     /**
@@ -255,10 +249,7 @@ class PredictiveAnalyticsController extends Controller
         $anomalies = $query->latest('detected_date')
             ->paginate($request->input('per_page', 15));
 
-        return response()->json([
-            'success' => true,
-            'anomalies' => $anomalies
-        ]);
+        return $this->success(['anomalies' => $anomalies], 'Operation completed successfully');
     }
 
     /**
@@ -276,10 +267,7 @@ class PredictiveAnalyticsController extends Controller
 
         $anomaly = Anomaly::findOrFail($anomalyId);
 
-        return response()->json([
-            'success' => true,
-            'anomaly' => $anomaly
-        ]);
+        return $this->success(['anomaly' => $anomaly], 'Operation completed successfully');
     }
 
     /**
@@ -302,11 +290,8 @@ class PredictiveAnalyticsController extends Controller
         $anomaly = Anomaly::findOrFail($anomalyId);
         $anomaly->acknowledge($user->user_id, $validated['notes'] ?? null);
 
-        return response()->json([
-            'success' => true,
-            'anomaly' => $anomaly->fresh(),
-            'message' => 'Anomaly acknowledged'
-        ]);
+        return $this->success(['anomaly' => $anomaly->fresh(),
+            'message' => 'Anomaly acknowledged'], 'Operation completed successfully');
     }
 
     /**
@@ -329,11 +314,8 @@ class PredictiveAnalyticsController extends Controller
         $anomaly = Anomaly::findOrFail($anomalyId);
         $anomaly->resolve($validated['resolution_notes']);
 
-        return response()->json([
-            'success' => true,
-            'anomaly' => $anomaly->fresh(),
-            'message' => 'Anomaly resolved'
-        ]);
+        return $this->success(['anomaly' => $anomaly->fresh(),
+            'message' => 'Anomaly resolved'], 'Operation completed successfully');
     }
 
     /**
@@ -352,11 +334,8 @@ class PredictiveAnalyticsController extends Controller
         $anomaly = Anomaly::findOrFail($anomalyId);
         $anomaly->markFalsePositive();
 
-        return response()->json([
-            'success' => true,
-            'anomaly' => $anomaly->fresh(),
-            'message' => 'Anomaly marked as false positive'
-        ]);
+        return $this->success(['anomaly' => $anomaly->fresh(),
+            'message' => 'Anomaly marked as false positive'], 'Operation completed successfully');
     }
 
     /**
@@ -394,10 +373,7 @@ class PredictiveAnalyticsController extends Controller
                 'message' => 'Trend analysis completed'
             ], 201);
         } catch (\RuntimeException $e) {
-            return response()->json([
-                'success' => false,
-                'message' => $e->getMessage()
-            ], 422);
+            return $this->validationError([], $e->getMessage());
         }
     }
 
@@ -435,10 +411,7 @@ class PredictiveAnalyticsController extends Controller
         $trends = $query->latest('period_end')
             ->paginate($request->input('per_page', 15));
 
-        return response()->json([
-            'success' => true,
-            'trends' => $trends
-        ]);
+        return $this->success(['trends' => $trends], 'Operation completed successfully');
     }
 
     /**
@@ -519,10 +492,7 @@ class PredictiveAnalyticsController extends Controller
         $recommendations = $query->latest('created_at')
             ->paginate($request->input('per_page', 15));
 
-        return response()->json([
-            'success' => true,
-            'recommendations' => $recommendations
-        ]);
+        return $this->success(['recommendations' => $recommendations], 'Operation completed successfully');
     }
 
     /**
@@ -540,11 +510,8 @@ class PredictiveAnalyticsController extends Controller
 
         $recommendation = Recommendation::findOrFail($recommendationId);
 
-        return response()->json([
-            'success' => true,
-            'recommendation' => $recommendation,
-            'is_expired' => $recommendation->isExpired()
-        ]);
+        return $this->success(['recommendation' => $recommendation,
+            'is_expired' => $recommendation->isExpired()], 'Operation completed successfully');
     }
 
     /**
@@ -563,11 +530,8 @@ class PredictiveAnalyticsController extends Controller
         $recommendation = Recommendation::findOrFail($recommendationId);
         $recommendation->accept($user->user_id);
 
-        return response()->json([
-            'success' => true,
-            'recommendation' => $recommendation->fresh(),
-            'message' => 'Recommendation accepted'
-        ]);
+        return $this->success(['recommendation' => $recommendation->fresh(),
+            'message' => 'Recommendation accepted'], 'Operation completed successfully');
     }
 
     /**
@@ -590,11 +554,8 @@ class PredictiveAnalyticsController extends Controller
         $recommendation = Recommendation::findOrFail($recommendationId);
         $recommendation->reject($user->user_id, $validated['rejection_reason'] ?? null);
 
-        return response()->json([
-            'success' => true,
-            'recommendation' => $recommendation->fresh(),
-            'message' => 'Recommendation rejected'
-        ]);
+        return $this->success(['recommendation' => $recommendation->fresh(),
+            'message' => 'Recommendation rejected'], 'Operation completed successfully');
     }
 
     /**
@@ -617,11 +578,8 @@ class PredictiveAnalyticsController extends Controller
         $recommendation = Recommendation::findOrFail($recommendationId);
         $recommendation->implement($validated['implementation_notes'] ?? null);
 
-        return response()->json([
-            'success' => true,
-            'recommendation' => $recommendation->fresh(),
-            'message' => 'Recommendation marked as implemented'
-        ]);
+        return $this->success(['recommendation' => $recommendation->fresh(),
+            'message' => 'Recommendation marked as implemented'], 'Operation completed successfully');
     }
 
     /**
@@ -685,10 +643,7 @@ class PredictiveAnalyticsController extends Controller
                 ->get()
         ];
 
-        return response()->json([
-            'success' => true,
-            'stats' => $stats
-        ]);
+        return $this->success(['stats' => $stats], 'Operation completed successfully');
     }
 
     /**

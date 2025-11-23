@@ -6,37 +6,39 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Concerns\ApiResponse;
+use Illuminate\Http\JsonResponse;
+use Illuminate\View\View;
 
 class SettingsController extends Controller
 {
     use ApiResponse;
 
-    public function index()
+    public function index(): View
     {
         return view('settings.index');
     }
 
-    public function profile()
+    public function profile(): View
     {
         return view('settings.profile');
     }
 
-    public function notifications()
+    public function notifications(): View
     {
         return view('settings.notifications');
     }
 
-    public function security()
+    public function security(): View
     {
         return view('settings.security');
     }
 
-    public function integrations()
+    public function integrations(): View
     {
         return view('settings.integrations');
     }
 
-    public function updateProfile(Request $request)
+    public function updateProfile(Request $request): JsonResponse
     {
         $user = Auth::user();
         $user->update($request->validate([
@@ -44,10 +46,10 @@ class SettingsController extends Controller
             'email' => 'required|email|unique:users,email,' . $user->user_id . ',user_id',
         ]));
 
-        return response()->json(['message' => 'تم تحديث الملف الشخصي بنجاح']);
+        return $this->success(['message' => 'تم تحديث الملف الشخصي بنجاح'], 'Operation completed successfully');
     }
 
-    public function updatePassword(Request $request)
+    public function updatePassword(Request $request): JsonResponse
     {
         $request->validate([
             'current_password' => 'required',
@@ -57,11 +59,11 @@ class SettingsController extends Controller
         $user = Auth::user();
         
         if (!\Hash::check($request->current_password, $user->password)) {
-            return response()->json(['error' => 'كلمة المرور الحالية غير صحيحة'], 400);
+            return $this->error('كلمة المرور الحالية غير صحيحة', 400);
         }
 
         $user->update(['password' => bcrypt($request->password)]);
 
-        return response()->json(['message' => 'تم تحديث كلمة المرور بنجاح']);
+        return $this->success(['message' => 'تم تحديث كلمة المرور بنجاح'], 'Operation completed successfully');
     }
 }

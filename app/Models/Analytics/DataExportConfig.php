@@ -8,6 +8,7 @@ use App\Models\Core\Org;
 use App\Models\Core\User;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Builder;
 use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -41,18 +42,22 @@ class DataExportConfig extends BaseModel
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by', 'user_id');
+    }
 
     public function logs(): HasMany
     {
         return $this->hasMany(DataExportLog::class, 'config_id', 'config_id');
+    }
 
-    public function scopeActive($query)
+    public function scopeActive($query): Builder
     {
         return $query->where('is_active', true);
+    }
 
-    public function scopeScheduled($query)
+    public function scopeScheduled($query): Builder
     {
         return $query->whereNotNull('schedule');
+    }
 
     public function markExported(): void
     {
@@ -60,4 +65,5 @@ class DataExportConfig extends BaseModel
             'last_export_at' => now(),
             'export_count' => $this->export_count + 1
         ]);
+    }
 }

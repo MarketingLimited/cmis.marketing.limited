@@ -6,6 +6,7 @@ use App\Models\Concerns\HasOrganization;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Builder;
 use App\Models\BaseModel;
 
 class Notification extends BaseModel
@@ -37,74 +38,84 @@ class Notification extends BaseModel
     /**
      * Get the user that owns the notification
      */
-    public function user()
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id', 'user_id');
+    }
 
     /**
      * Get the organization associated with the notification
      */
-    public function organization()
+    public function organization(): BelongsTo
     {
         return $this->belongsTo(Core\Org::class, 'org_id', 'org_id');
+    }
 
     /**
      * Scope to get notifications for a specific user
      */
-    public function scopeForUser($query, $userId)
+    public function scopeForUser($query, $userId): Builder
     {
         return $query->where('user_id', $userId);
+    }
 
     /**
      * Scope to get unread notifications
      */
-    public function scopeUnread($query)
+    public function scopeUnread($query): Builder
     {
         return $query->where('read', false);
+    }
 
     /**
      * Scope to get read notifications
      */
-    public function scopeRead($query)
+    public function scopeRead($query): Builder
     {
         return $query->where('read', true);
+    }
 
     /**
      * Scope to get recent notifications
      */
-    public function scopeRecent($query, $limit = 10)
+    public function scopeRecent($query, $limit = 10): Builder
     {
         return $query->orderBy('created_at', 'desc')->limit($limit);
+    }
 
     /**
      * Mark notification as read
      */
-    public function markAsRead()
+    public function markAsRead(): bool
     {
         if ($this->read) {
             return false;
+        }
 
         return $this->update([
             'read' => true,
             'read_at' => now(),
         ]);
+    }
 
     /**
      * Mark notification as unread
      */
     public function markAsUnread()
-    {
+    : \Illuminate\Database\Eloquent\Relations\Relation {
         return $this->update([
             'read' => false,
             'read_at' => null,
         ]);
+    }
 
     /**
      * Get formatted time ago
      */
-    public function getTimeAttribute()
+    public function getTimeAttribute(): mixed
     {
         return $this->created_at->diffForHumans();
+    }
 
     /**
      * Create a new notification
@@ -116,7 +127,7 @@ class Notification extends BaseModel
         ?string $orgId = null,
         ?string $title = null,
         ?array $data = null
-    ) {
+    ) : \Illuminate\Database\Eloquent\Relations\Relation {
         return static::create([
             'user_id' => $userId,
             'org_id' => $orgId,
@@ -125,32 +136,37 @@ class Notification extends BaseModel
             'message' => $message,
             'data' => $data ?? [],
         ]);
+    }
 
     /**
      * Notify user about campaign
      */
     public static function notifyCampaign(string $userId, string $message, ?string $orgId = null, ?array $data = null)
-    {
+    : \Illuminate\Database\Eloquent\Relations\Relation {
         return static::createNotification($userId, 'campaign', $message, $orgId, 'حملة تسويقية', $data);
+    }
 
     /**
      * Notify user about analytics
      */
     public static function notifyAnalytics(string $userId, string $message, ?string $orgId = null, ?array $data = null)
-    {
+    : \Illuminate\Database\Eloquent\Relations\Relation {
         return static::createNotification($userId, 'analytics', $message, $orgId, 'تحليلات', $data);
+    }
 
     /**
      * Notify user about integration
      */
     public static function notifyIntegration(string $userId, string $message, ?string $orgId = null, ?array $data = null)
-    {
+    : \Illuminate\Database\Eloquent\Relations\Relation {
         return static::createNotification($userId, 'integration', $message, $orgId, 'تكامل', $data);
+    }
 
     /**
      * Notify user about system event
      */
     public static function notifySystem(string $userId, string $message, ?string $orgId = null, ?array $data = null)
-    {
+    : \Illuminate\Database\Eloquent\Relations\Relation {
         return static::createNotification($userId, 'system', $message, $orgId, 'نظام', $data);
+    }
 }

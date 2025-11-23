@@ -303,7 +303,7 @@ class MetaSyncService extends BasePlatformSyncService
     /**
      * Get API Client
      */
-    protected function getApiClient()
+    protected function getApiClient(): mixed
     {
         return Http::withToken($this->integration->access_token)
             ->timeout(30)
@@ -313,7 +313,7 @@ class MetaSyncService extends BasePlatformSyncService
     /**
      * Make API Request
      */
-    protected function makeApiRequest(string $url, array $params = [])
+    protected function makeApiRequest(string $url, array $params = []): array
     {
         if (!$this->checkRateLimit('api_call')) {
             throw new \Exception('Rate limit exceeded');

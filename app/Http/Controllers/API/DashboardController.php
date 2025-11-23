@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\API;
 
+use App\Http\Controllers\Concerns\ApiResponse;
 use App\Http\Controllers\Controller;
 use App\Models\Core\Org;
 use App\Services\Dashboard\UnifiedDashboardService;
@@ -97,7 +98,7 @@ class DashboardController extends Controller
     {
         $dashboard = $this->dashboardService->getOrgDashboard($org);
 
-        return response()->json($dashboard);
+        return $this->success($dashboard, 'Retrieved successfully');
     }
 
     /**
@@ -125,9 +126,6 @@ class DashboardController extends Controller
         $this->dashboardService->clearCache($org);
         $dashboard = $this->dashboardService->getOrgDashboard($org);
 
-        return response()->json([
-            'message' => 'Dashboard refreshed',
-            'data' => $dashboard,
-        ]);
+        return $this->success($dashboard, 'Dashboard refreshed');
     }
 }

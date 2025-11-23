@@ -9,6 +9,7 @@ use App\Models\Campaign\Campaign;
 use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Builder;
 class AudienceOverlap extends BaseModel
 {
     use HasFactory;
@@ -64,22 +65,26 @@ class AudienceOverlap extends BaseModel
     {
         return $this->belongsTo(Campaign::class, 'campaign_a_id', 'campaign_id');
 
+        }
     public function campaignB(): BelongsTo
     {
         return $this->belongsTo(Campaign::class, 'campaign_b_id', 'campaign_id');
 
-    // ===== Overlap Analysis =====
 
+        }
     public function getSeverityLevel(): string
     {
         if ($this->overlap_percentage >= 75) {
             return 'critical';
-        } elseif ($this->overlap_percentage >= 50) {
+        }
+        if ($this->overlap_percentage >= 50) {
             return 'high';
-        } elseif ($this->overlap_percentage >= 25) {
+        }
+        if ($this->overlap_percentage >= 25) {
             return 'medium';
+        }
         return 'low';
-
+    }
     public function getSeverityColor(): string
     {
         return match($this->getSeverityLevel()) {
@@ -89,11 +94,13 @@ class AudienceOverlap extends BaseModel
             'low' => 'blue',
             default => 'gray'
         };
+    }
 
     public function getOverlapPercentageLabel(): string
     {
         return number_format($this->overlap_percentage, 2) . '%';
 
+        }
     public function getImpactDescription(): string
     {
         $wastedSpend = $this->wasted_spend_estimate ? '$' . number_format($this->wasted_spend_estimate, 2) : 'N/A';
@@ -107,22 +114,22 @@ class AudienceOverlap extends BaseModel
         // Jaccard Index = Intersection / Union
         if ($this->audience_a_size === 0 && $this->audience_b_size === 0) {
             return 0.0;
+        }
 
         $union = $this->audience_a_size + $this->audience_b_size - $this->overlap_size;
 
-        if ($union === 0) {
-            return 0.0;
-
-        return round($this->overlap_size / $union, 4);
-
+        return $union > 0 ? $this->overlap_size / $union : 0.0;
+    }
     public function isCritical(): bool
     {
         return $this->getSeverityLevel() === 'critical';
 
+        }
     public function isResolved(): bool
     {
         return $this->status === 'resolved';
 
+        }
     public function resolve(string $action): void
     {
         $this->update([
@@ -130,28 +137,35 @@ class AudienceOverlap extends BaseModel
             'resolved_at' => now(),
             'resolution_action' => $action,
         ]);
+    }
 
     public function markAsIgnored(): void
     {
         $this->update(['status' => 'ignored']);
+    }
 
     // ===== Scopes =====
 
-    public function scopeActive($query)
+    public function scopeActive($query): Builder
     {
         return $query->where('status', 'active');
 
-    public function scopeCritical($query)
+        }
+    public function scopeCritical($query): Builder
     {
         return $query->where('overlap_percentage', '>=', 75);
 
-    public function scopeHighImpact($query)
+        }
+    public function scopeHighImpact($query): Builder
     {
         return $query->where('impact_score', '>=', 0.7);
 
-    public function scopeForCampaign($query, string $campaignId)
+        }
+    public function scopeForCampaign($query, string $campaignId): Builder
     {
         return $query->where(function ($q) use ($campaignId) {
             $q->where('campaign_a_id', $campaignId)
               ->orWhere('campaign_b_id', $campaignId);
+        });
+    }
 }

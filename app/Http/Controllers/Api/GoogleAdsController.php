@@ -36,10 +36,7 @@ class GoogleAdsController extends Controller
             ]);
 
             if ($validator->fails()) {
-                return response()->json([
-                    'success' => false,
-                    'errors' => $validator->errors()
-                ], 422);
+                return $this->validationError($validator->errors(), 'Validation failed');
             }
 
             $orgId = auth()->user()->org_id;
@@ -59,17 +56,10 @@ class GoogleAdsController extends Controller
                 $request->input('limit', 50)
             );
 
-            return response()->json([
-                'success' => true,
-                'campaigns' => $campaigns,
-                'count' => count($campaigns)
-            ]);
+            return $this->success(['campaigns' => $campaigns,
+                'count' => count($campaigns)], 'Operation completed successfully');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to fetch Google Ads campaigns',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to fetch Google Ads campaigns' . ': ' . $e->getMessage());
         }
     }
 
@@ -90,10 +80,7 @@ class GoogleAdsController extends Controller
             ]);
 
             if ($validator->fails()) {
-                return response()->json([
-                    'success' => false,
-                    'errors' => $validator->errors()
-                ], 422);
+                return $this->validationError($validator->errors(), 'Validation failed');
             }
 
             $orgId = auth()->user()->org_id;
@@ -114,16 +101,9 @@ class GoogleAdsController extends Controller
                 $request->input('end_date')
             );
 
-            return response()->json([
-                'success' => true,
-                'campaign' => $campaign
-            ]);
+            return $this->success(['campaign' => $campaign], 'Operation completed successfully');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to fetch campaign details',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to fetch campaign details' . ': ' . $e->getMessage());
         }
     }
 
@@ -142,10 +122,7 @@ class GoogleAdsController extends Controller
             ]);
 
             if ($validator->fails()) {
-                return response()->json([
-                    'success' => false,
-                    'errors' => $validator->errors()
-                ], 422);
+                return $this->validationError($validator->errors(), 'Validation failed');
             }
 
             $orgId = auth()->user()->org_id;
@@ -164,17 +141,10 @@ class GoogleAdsController extends Controller
                 $integration->access_token
             );
 
-            return response()->json([
-                'success' => true,
-                'ad_groups' => $adGroups,
-                'count' => count($adGroups)
-            ]);
+            return $this->success(['ad_groups' => $adGroups,
+                'count' => count($adGroups)], 'Operation completed successfully');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to fetch ad groups',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to fetch ad groups' . ': ' . $e->getMessage());
         }
     }
 
@@ -193,10 +163,7 @@ class GoogleAdsController extends Controller
             ]);
 
             if ($validator->fails()) {
-                return response()->json([
-                    'success' => false,
-                    'errors' => $validator->errors()
-                ], 422);
+                return $this->validationError($validator->errors(), 'Validation failed');
             }
 
             $orgId = auth()->user()->org_id;
@@ -215,17 +182,10 @@ class GoogleAdsController extends Controller
                 $integration->access_token
             );
 
-            return response()->json([
-                'success' => true,
-                'ads' => $ads,
-                'count' => count($ads)
-            ]);
+            return $this->success(['ads' => $ads,
+                'count' => count($ads)], 'Operation completed successfully');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to fetch ads',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to fetch ads' . ': ' . $e->getMessage());
         }
     }
 
@@ -249,10 +209,7 @@ class GoogleAdsController extends Controller
             ]);
 
             if ($validator->fails()) {
-                return response()->json([
-                    'success' => false,
-                    'errors' => $validator->errors()
-                ], 422);
+                return $this->validationError($validator->errors(), 'Validation failed');
             }
 
             $orgId = auth()->user()->org_id;
@@ -297,11 +254,7 @@ class GoogleAdsController extends Controller
                 'campaign' => $result
             ], 201);
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to create Google Ads campaign',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to create Google Ads campaign' . ': ' . $e->getMessage());
         }
     }
 
@@ -322,10 +275,7 @@ class GoogleAdsController extends Controller
             ]);
 
             if ($validator->fails()) {
-                return response()->json([
-                    'success' => false,
-                    'errors' => $validator->errors()
-                ], 422);
+                return $this->validationError($validator->errors(), 'Validation failed');
             }
 
             $orgId = auth()->user()->org_id;
@@ -355,11 +305,7 @@ class GoogleAdsController extends Controller
                 ]
             ]);
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to fetch campaign metrics',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to fetch campaign metrics' . ': ' . $e->getMessage());
         }
     }
 
@@ -377,10 +323,7 @@ class GoogleAdsController extends Controller
             ]);
 
             if ($validator->fails()) {
-                return response()->json([
-                    'success' => false,
-                    'errors' => $validator->errors()
-                ], 422);
+                return $this->validationError($validator->errors(), 'Validation failed');
             }
 
             $orgId = auth()->user()->org_id;
@@ -395,16 +338,9 @@ class GoogleAdsController extends Controller
 
             $this->googleAdsService->clearCache($integration->platform_account_id);
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Google Ads cache cleared successfully'
-            ]);
+            return $this->success(null, 'Google Ads cache cleared successfully');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to refresh cache',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to refresh cache' . ': ' . $e->getMessage());
         }
     }
 }

@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
+use App\Http\Controllers\Concerns\ApiResponse;
 
 use App\Services\PerformanceOptimizationService;
 use Illuminate\Http\Request;
@@ -37,15 +38,18 @@ class PerformanceController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         try {
             $result = $this->performanceService->getPerformanceMetrics($orgId, $request->all());
-            return response()->json($result, $result['success'] ? 200 : 500);
+            if (!$result['success']) {
+            return $this->serverError($result['message'] ?? 'Operation failed');
+        }
+        return $this->success($result['data'] ?? $result, $result['message'] ?? 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => 'Failed to get metrics', 'error' => $e->getMessage()], 500);
+            return $this->serverError('Failed to get metrics: ' . $e->getMessage());
         }
     }
 
@@ -61,15 +65,18 @@ class PerformanceController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         try {
             $result = $this->performanceService->clearCache($request->all());
-            return response()->json($result, $result['success'] ? 200 : 500);
+            if (!$result['success']) {
+            return $this->serverError($result['message'] ?? 'Operation failed');
+        }
+        return $this->success($result['data'] ?? $result, $result['message'] ?? 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => 'Failed to clear cache', 'error' => $e->getMessage()], 500);
+            return $this->serverError('Failed to clear cache: ' . $e->getMessage());
         }
     }
 
@@ -81,10 +88,13 @@ class PerformanceController extends Controller
     {
         try {
             $result = $this->performanceService->warmupCache($orgId);
-            return response()->json($result, $result['success'] ? 200 : 500);
+            if (!$result['success']) {
+            return $this->serverError($result['message'] ?? 'Operation failed');
+        }
+        return $this->success($result['data'] ?? $result, $result['message'] ?? 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => 'Failed to warm up cache', 'error' => $e->getMessage()], 500);
+            return $this->serverError('Failed to warm up cache: ' . $e->getMessage());
         }
     }
 
@@ -96,10 +106,13 @@ class PerformanceController extends Controller
     {
         try {
             $result = $this->performanceService->optimizeDatabase($orgId);
-            return response()->json($result, $result['success'] ? 200 : 500);
+            if (!$result['success']) {
+            return $this->serverError($result['message'] ?? 'Operation failed');
+        }
+        return $this->success($result['data'] ?? $result, $result['message'] ?? 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => 'Failed to optimize database', 'error' => $e->getMessage()], 500);
+            return $this->serverError('Failed to optimize database: ' . $e->getMessage());
         }
     }
 
@@ -114,16 +127,19 @@ class PerformanceController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         try {
             $threshold = $request->input('threshold', 500);
             $result = $this->performanceService->getSlowQueries($orgId, $threshold);
-            return response()->json($result, $result['success'] ? 200 : 500);
+            if (!$result['success']) {
+            return $this->serverError($result['message'] ?? 'Operation failed');
+        }
+        return $this->success($result['data'] ?? $result, $result['message'] ?? 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => 'Failed to get slow queries', 'error' => $e->getMessage()], 500);
+            return $this->serverError('Failed to get slow queries' . ': ' . $e->getMessage());
         }
     }
 }

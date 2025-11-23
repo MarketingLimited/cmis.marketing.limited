@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\View\View;
+use Illuminate\Http\RedirectResponse;
 
 class CreativeBriefController extends Controller
 {
@@ -17,7 +19,7 @@ class CreativeBriefController extends Controller
     /**
      * Display briefs list
      */
-    public function index()
+    public function index(): View
     {
         try {
             $briefs = DB::select("
@@ -39,7 +41,7 @@ class CreativeBriefController extends Controller
     /**
      * Show create form
      */
-    public function create()
+    public function create(): View
     {
         $campaigns = DB::select("
             SELECT campaign_id, campaign_name
@@ -54,7 +56,7 @@ class CreativeBriefController extends Controller
     /**
      * Store new brief
      */
-    public function store(Request $request)
+    public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
             'campaign_id' => 'required|uuid',
@@ -110,7 +112,7 @@ class CreativeBriefController extends Controller
     /**
      * Show brief details
      */
-    public function show($briefId)
+    public function show($briefId): View
     {
         try {
             $brief = DB::selectOne("
@@ -142,7 +144,7 @@ class CreativeBriefController extends Controller
     /**
      * Approve brief
      */
-    public function approve($briefId)
+    public function approve($briefId): RedirectResponse
     {
         try {
             DB::table('cmis.creative_briefs')

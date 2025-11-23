@@ -3,204 +3,58 @@
 namespace App\Http\Controllers\AI;
 
 use App\Http\Controllers\Controller;
-use App\Services\AI\AIRecommendationService;
+use App\Http\Controllers\Concerns\ApiResponse;
+use App\Models\AiRecommendation;
 use Illuminate\Http\Request;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Gate;
 
 /**
- * AI Recommendations Controller (Phase 3 - Advanced AI Analytics)
+ * AI Recommendations Controller
  *
- * Provides API endpoints for AI-powered recommendations:
- * - Content recommendations
- * - Campaign strategy suggestions
- * - Audience targeting recommendations
- * - Optimal posting time suggestions
- * - Best performing content discovery
+ * Handles AI-powered recommendations and suggestions
  */
 class AIRecommendationsController extends Controller
 {
     use ApiResponse;
 
-    protected AIRecommendationService $recommendationService;
-
-    public function __construct(AIRecommendationService $recommendationService)
-    {
-        $this->middleware('auth:sanctum');
-        $this->middleware('throttle.ai');
-        $this->recommendationService = $recommendationService;
-    }
-
     /**
-     * Get similar high-performing content
-     *
-     * POST /api/ai/recommendations/similar
-     *
-     * Request body:
-     * {
-     *   "reference_type": "content|campaign|creative",
-     *   "reference_id": "uuid",
-     *   "limit": 10
-     * }
-     *
-     * @param Request $request
-     * @return JsonResponse
+     * Get AI-powered recommendations
      */
-    public function getSimilarContent(Request $request): JsonResponse
-    {
-        $validator = Validator::make($request->all(), [
-            'reference_type' => 'required|in:content,campaign,creative',
-            'reference_id' => 'required|uuid',
-            'limit' => 'nullable|integer|min:1|max:50',
-        ]);
+    public function index(Request $request, string $orgId)
+    : \Illuminate\Http\JsonResponse {
+        Gate::authorize('ai.view_recommendations');
 
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+        try {
+            $type = $request->input('type', 'all'); // all, campaign, content, optimization
+
+            $query = AiRecommendation::where('org_id', $orgId)
+                ->where('is_active', true)
+                ->orderBy('priority', 'desc')
+                ->orderBy('created_at', 'desc');
+
+            if ($type !== 'all') {
+                $query->where('recommendation_type', $type);
+            }
+
+            $recommendations = $query->limit(20)->get()->map(function ($rec) {
+                return [
+                    'id' => $rec->recommendation_id,
+                    'type' => $rec->recommendation_type,
+                    'title' => $rec->title,
+                    'description' => $rec->description,
+                    'priority' => $rec->priority,
+                    'confidence' => $rec->confidence_score,
+                    'created_at' => $rec->created_at,
+                ];
+            });
+
+            return $this->success([
+                'recommendations' => $recommendations,
+                'count' => $recommendations->count(),
+            ], 'Recommendations retrieved successfully');
+
+        } catch (\Exception $e) {
+            return $this->serverError('Failed to fetch recommendations');
         }
-
-        $orgId = $request->user()->org_id;
-
-        $result = $this->recommendationService->getSimilarHighPerformingContent(
-            $orgId,
-            $request->input('reference_type'),
-            $request->input('reference_id'),
-            $request->input('limit', 10)
-        );
-
-        return response()->json($result);
-    }
-
-    /**
-     * Get content recommendations for a campaign
-     *
-     * GET /api/ai/recommendations/campaign/{campaign_id}/content
-     *
-     * Query params:
-     * - content_type: string
-     * - platform: string
-     * - limit: int
-     *
-     * @param string $campaignId
-     * @param Request $request
-     * @return JsonResponse
-     */
-    public function getCampaignContentRecommendations(
-        string $campaignId,
-        Request $request
-    ): JsonResponse {
-        $validator = Validator::make($request->all(), [
-            'content_type' => 'nullable|string|max:50',
-            'platform' => 'nullable|string|max:50',
-            'limit' => 'nullable|integer|min:1|max:50',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
-        }
-
-        $result = $this->recommendationService->getContentRecommendationsForCampaign(
-            $campaignId,
-            $request->only(['content_type', 'platform', 'limit'])
-        );
-
-        return response()->json($result);
-    }
-
-    /**
-     * Get best performing content
-     *
-     * GET /api/orgs/{org_id}/ai/recommendations/best-performing
-     *
-     * Query params:
-     * - content_type: string
-     * - platform: string
-     * - date_range: date (ISO format)
-     * - limit: int
-     *
-     * @param string $orgId
-     * @param Request $request
-     * @return JsonResponse
-     */
-    public function getBestPerformingContent(
-        string $orgId,
-        Request $request
-    ): JsonResponse {
-        $validator = Validator::make($request->all(), [
-            'content_type' => 'nullable|string|max:50',
-            'platform' => 'nullable|string|max:50',
-            'date_range' => 'nullable|date',
-            'limit' => 'nullable|integer|min:1|max:100',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
-        }
-
-        $result = $this->recommendationService->getBestPerformingContent(
-            $orgId,
-            $request->only(['content_type', 'platform', 'date_range']),
-            $request->input('limit', 20)
-        );
-
-        return response()->json($result);
-    }
-
-    /**
-     * Get optimal posting times
-     *
-     * GET /api/orgs/{org_id}/ai/recommendations/optimal-times
-     *
-     * Query params:
-     * - platform: string (optional)
-     *
-     * @param string $orgId
-     * @param Request $request
-     * @return JsonResponse
-     */
-    public function getOptimalPostingTimes(
-        string $orgId,
-        Request $request
-    ): JsonResponse {
-        $validator = Validator::make($request->all(), [
-            'platform' => 'nullable|string|in:facebook,instagram,twitter,linkedin,tiktok',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
-        }
-
-        $result = $this->recommendationService->getOptimalPostingTimes(
-            $orgId,
-            $request->input('platform')
-        );
-
-        return response()->json($result);
-    }
-
-    /**
-     * Get audience targeting recommendations
-     *
-     * GET /api/ai/recommendations/campaign/{campaign_id}/audience
-     *
-     * @param string $campaignId
-     * @return JsonResponse
-     */
-    public function getAudienceRecommendations(string $campaignId): JsonResponse
-    {
-        $result = $this->recommendationService->getAudienceTargetingRecommendations($campaignId);
-
-        return response()->json($result);
     }
 }

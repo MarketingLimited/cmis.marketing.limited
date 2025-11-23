@@ -8,6 +8,7 @@ use App\Models\Core\Org;
 use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Builder;
 class OrchestrationWorkflow extends BaseModel
 {
     use HasFactory;
@@ -53,8 +54,7 @@ class OrchestrationWorkflow extends BaseModel
     public function orchestration(): BelongsTo
     {
         return $this->belongsTo(CampaignOrchestration::class, 'orchestration_id', 'orchestration_id');
-
-    // ===== Workflow Execution =====
+    }
 
     public function start(): void
     {
@@ -63,10 +63,12 @@ class OrchestrationWorkflow extends BaseModel
             'started_at' => now(),
             'current_step' => 0,
         ]);
+    }
 
     public function advanceStep(): void
     {
         $this->increment('current_step');
+    }
 
     public function logStep(string $stepName, string $status, ?array $details = null): void
     {
@@ -80,6 +82,7 @@ class OrchestrationWorkflow extends BaseModel
         ];
 
         $this->update(['execution_log' => $log]);
+    }
 
     public function complete(): void
     {
@@ -91,6 +94,7 @@ class OrchestrationWorkflow extends BaseModel
             'duration_seconds' => $duration,
             'current_step' => $this->total_steps,
         ]);
+    }
 
     public function fail(string $errorMessage): void
     {
@@ -102,37 +106,44 @@ class OrchestrationWorkflow extends BaseModel
             'duration_seconds' => $duration,
             'error_message' => $errorMessage,
         ]);
+    }
 
     public function getProgress(): float
     {
         if ($this->total_steps === 0) {
             return 0;
+        }
 
         return ($this->current_step / $this->total_steps) * 100;
+    }
 
     public function isRunning(): bool
     {
         return $this->status === 'running';
+    }
 
     public function isCompleted(): bool
     {
         return $this->status === 'completed';
+    }
 
     public function isFailed(): bool
     {
         return $this->status === 'failed';
+    }
 
-    // ===== Scopes =====
-
-    public function scopeRunning($query)
+    public function scopeRunning($query): Builder
     {
         return $query->where('status', 'running');
+    }
 
-    public function scopeCompleted($query)
+    public function scopeCompleted($query): Builder
     {
         return $query->where('status', 'completed');
+    }
 
-    public function scopeForType($query, string $type)
+    public function scopeForType($query, string $type): Builder
     {
         return $query->where('workflow_type', $type);
+    }
 }

@@ -123,7 +123,10 @@ class AdCreativeController extends Controller
     public function createVariations(string $orgId, string $creativeId, Request $request): JsonResponse
     {
         $result = $this->creativeService->createVariations($creativeId, $request->input('variations', []));
-        return response()->json($result, $result['success'] ? 201 : 500);
+        if (!$result['success']) {
+            return $this->serverError($result['message'] ?? 'Operation failed');
+        }
+        return $this->created($result['data'] ?? $result, $result['message'] ?? 'Operation completed successfully');
     }
 
     /**
@@ -133,7 +136,7 @@ class AdCreativeController extends Controller
     public function generateAI(string $orgId, Request $request): JsonResponse
     {
         $result = $this->creativeService->generateAICreative($request->all());
-        return response()->json($result);
+        return $this->success($result, 'Operation completed successfully');
     }
 
     /**
@@ -143,6 +146,6 @@ class AdCreativeController extends Controller
     public function templates(string $orgId, Request $request): JsonResponse
     {
         $result = $this->creativeService->getTemplates($request->all());
-        return response()->json($result);
+        return $this->success($result, 'Operation completed successfully');
     }
 }

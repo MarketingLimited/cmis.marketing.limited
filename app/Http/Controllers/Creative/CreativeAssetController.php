@@ -22,7 +22,7 @@ class CreativeAssetController extends Controller
         $this->middleware('auth:sanctum');
     }
 
-    public function index(Request $request, string $orgId)
+    public function index(Request $request, string $orgId): JsonResponse
     {
         $this->authorize('viewAny', CreativeAsset::class);
 
@@ -41,7 +41,8 @@ class CreativeAssetController extends Controller
                 $query->where('campaign_id', $campaignId);
             }
 
-            $assets = $query->orderBy('created_at', 'desc')->paginate($perPage);
+            // Eager load relationships (prevents N+1 queries)
+            $assets = $query->with(['campaign'])->orderBy('created_at', 'desc')->paginate($perPage);
 
             return $this->paginated($assets, 'Assets retrieved successfully');
 
@@ -50,7 +51,7 @@ class CreativeAssetController extends Controller
         }
     }
 
-    public function store(Request $request, string $orgId)
+    public function store(Request $request, string $orgId): JsonResponse
     {
         $this->authorize('create', CreativeAsset::class);
 
@@ -89,7 +90,7 @@ class CreativeAssetController extends Controller
         }
     }
 
-    public function show(Request $request, string $orgId, string $assetId)
+    public function show(Request $request, string $orgId, string $assetId): JsonResponse
     {
         try {
             $asset = CreativeAsset::where('org_id', $orgId)->findOrFail($assetId);
@@ -100,7 +101,7 @@ class CreativeAssetController extends Controller
         }
     }
 
-    public function update(Request $request, string $orgId, string $assetId)
+    public function update(Request $request, string $orgId, string $assetId): JsonResponse
     {
         $asset = CreativeAsset::where('org_id', $orgId)->findOrFail($assetId);
         $this->authorize('update', $asset);
@@ -134,7 +135,7 @@ class CreativeAssetController extends Controller
         }
     }
 
-    public function destroy(Request $request, string $orgId, string $assetId)
+    public function destroy(Request $request, string $orgId, string $assetId): JsonResponse
     {
         try {
             $asset = CreativeAsset::where('org_id', $orgId)->findOrFail($assetId);

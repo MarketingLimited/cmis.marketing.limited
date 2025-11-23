@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Builder;
 
 /**
  * Alert Rule Model (Phase 13)
@@ -102,7 +103,7 @@ class AlertRule extends BaseModel
     /**
      * Scope: Active rules only
      */
-    public function scopeActive($query)
+    public function scopeActive($query): Builder
     {
         return $query->where('is_active', true);
     }
@@ -110,7 +111,7 @@ class AlertRule extends BaseModel
     /**
      * Scope: By entity type
      */
-    public function scopeForEntity($query, string $entityType, ?string $entityId = null)
+    public function scopeForEntity($query, string $entityType, ?string $entityId = null): Builder
     {
         $query->where('entity_type', $entityType);
 
@@ -127,7 +128,7 @@ class AlertRule extends BaseModel
     /**
      * Scope: By severity
      */
-    public function scopeBySeverity($query, string $severity)
+    public function scopeBySeverity($query, string $severity): Builder
     {
         return $query->where('severity', $severity);
     }
@@ -135,7 +136,7 @@ class AlertRule extends BaseModel
     /**
      * Scope: Due for evaluation (cooldown period expired)
      */
-    public function scopeDueForEvaluation($query)
+    public function scopeDueForEvaluation($query): Builder
     {
         return $query->active()
             ->where(function ($q) {

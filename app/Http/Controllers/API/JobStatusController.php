@@ -57,17 +57,13 @@ class JobStatusController extends Controller
         $result = $this->getJobResult($jobId);
 
         if (!$result) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Job result not found or job not completed',
-            ], 404);
+            return $this->notFound('Job result not found or job not completed');
         }
 
-        return response()->json([
-            'success' => true,
+        return $this->success([
             'job_id' => $jobId,
             'result' => $result,
-        ]);
+        ], 'Job result retrieved successfully');
     }
 
     /**
@@ -83,16 +79,12 @@ class JobStatusController extends Controller
         $result = $this->getEmbeddingJobResult($jobId);
 
         if (!$result) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Job result not found or job not completed',
-            ], 404);
+            return $this->notFound('Job result not found or job not completed');
         }
 
-        return response()->json([
-            'success' => true,
+        return $this->success([
             'job_id' => $jobId,
             'result' => $result,
-        ]);
+        ], 'Embedding job result retrieved successfully');
     }
 }

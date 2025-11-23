@@ -7,6 +7,7 @@ use App\Models\Social\ScheduledSocialPost;
 use App\Models\Social\SocialAccount;
 use App\Models\Channel;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -29,7 +30,7 @@ class SocialSchedulerController extends Controller
     /**
      * Get dashboard overview with stats and scheduled posts
      */
-    public function dashboard(Request $request, string $orgId)
+    public function dashboard(Request $request, string $orgId): JsonResponse
     {
         $this->authorize('viewAnalytics', Channel::class);
         try {
@@ -54,10 +55,9 @@ class SocialSchedulerController extends Controller
                 ->limit(10)
                 ->get();
 
-            return response()->json([
-                'stats' => $stats,
+            return $this->success(['stats' => $stats,
                 'upcoming' => $upcomingPosts,
-            ]);
+            ], 'Operation completed successfully');
 
         } catch (\Exception $e) {
             return response()->json([
@@ -70,7 +70,7 @@ class SocialSchedulerController extends Controller
     /**
      * Get all scheduled posts
      */
-    public function scheduled(Request $request, string $orgId)
+    public function scheduled(Request $request, string $orgId): JsonResponse
     {
         $this->authorize('viewAny', Channel::class);
         try {
@@ -82,7 +82,7 @@ class SocialSchedulerController extends Controller
                 ->orderBy('scheduled_at', 'asc')
                 ->paginate($perPage);
 
-            return response()->json($posts);
+            return $this->success($posts, 'Retrieved successfully');
 
         } catch (\Exception $e) {
             return response()->json([
@@ -95,7 +95,7 @@ class SocialSchedulerController extends Controller
     /**
      * Get all published posts with engagement metrics
      */
-    public function published(Request $request, string $orgId)
+    public function published(Request $request, string $orgId): JsonResponse
     {
         $this->authorize('viewAny', Channel::class);
         try {
@@ -113,7 +113,7 @@ class SocialSchedulerController extends Controller
 
             $posts = $query->paginate($perPage);
 
-            return response()->json($posts);
+            return $this->success($posts, 'Retrieved successfully');
 
         } catch (\Exception $e) {
             return response()->json([
@@ -126,7 +126,7 @@ class SocialSchedulerController extends Controller
     /**
      * Get all draft posts
      */
-    public function drafts(Request $request, string $orgId)
+    public function drafts(Request $request, string $orgId): JsonResponse
     {
         $this->authorize('viewAny', Channel::class);
         try {
@@ -136,7 +136,7 @@ class SocialSchedulerController extends Controller
                 ->orderBy('updated_at', 'desc')
                 ->get();
 
-            return response()->json($posts);
+            return $this->success($posts, 'Retrieved successfully');
 
         } catch (\Exception $e) {
             return response()->json([
@@ -149,7 +149,7 @@ class SocialSchedulerController extends Controller
     /**
      * Schedule a new post
      */
-    public function schedule(Request $request, string $orgId)
+    public function schedule(Request $request, string $orgId): JsonResponse
     {
         $this->authorize('schedule', Channel::class);
         $validator = Validator::make($request->all(), [
@@ -215,7 +215,7 @@ class SocialSchedulerController extends Controller
     /**
      * Update a scheduled or draft post
      */
-    public function update(Request $request, string $orgId, string $postId)
+    public function update(Request $request, string $orgId, string $postId): JsonResponse
     {
         $this->authorize('update', Channel::class);
         $validator = Validator::make($request->all(), [
@@ -265,7 +265,7 @@ class SocialSchedulerController extends Controller
             ]);
 
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            return response()->json(['error' => 'Post not found'], 404);
+            return $this->notFound('Post not found');
         } catch (\Exception $e) {
             return response()->json([
                 'error' => 'Failed to update post',
@@ -277,7 +277,7 @@ class SocialSchedulerController extends Controller
     /**
      * Delete a post
      */
-    public function destroy(Request $request, string $orgId, string $postId)
+    public function destroy(Request $request, string $orgId, string $postId): JsonResponse
     {
         $this->authorize('delete', Channel::class);
         try {
@@ -299,10 +299,10 @@ class SocialSchedulerController extends Controller
 
             $post->delete();
 
-            return response()->json(['message' => 'Post deleted successfully']);
+            return $this->success(['message' => 'Post deleted successfully'], 'Operation completed successfully');
 
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            return response()->json(['error' => 'Post not found'], 404);
+            return $this->notFound('Post not found');
         } catch (\Exception $e) {
             return response()->json([
                 'error' => 'Failed to delete post',
@@ -315,7 +315,7 @@ class SocialSchedulerController extends Controller
      * Publish a post immediately
      * FIXED: Now uses actual publishing job instead of simulation
      */
-    public function publishNow(Request $request, string $orgId, string $postId)
+    public function publishNow(Request $request, string $orgId, string $postId): JsonResponse
     {
         $this->authorize('publish', Channel::class);
         try {
@@ -361,7 +361,7 @@ class SocialSchedulerController extends Controller
             ]);
 
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            return response()->json(['error' => 'Post not found'], 404);
+            return $this->notFound('Post not found');
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\Log::error('Failed to queue post for publishing', [
                 'post_id' => $postId,
@@ -379,7 +379,7 @@ class SocialSchedulerController extends Controller
     /**
      * Reschedule a post
      */
-    public function reschedule(Request $request, string $orgId, string $postId)
+    public function reschedule(Request $request, string $orgId, string $postId): JsonResponse
     {
         $this->authorize('schedule', Channel::class);
         $validator = Validator::make($request->all(), [
@@ -421,7 +421,7 @@ class SocialSchedulerController extends Controller
             ]);
 
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            return response()->json(['error' => 'Post not found'], 404);
+            return $this->notFound('Post not found');
         } catch (\Exception $e) {
             return response()->json([
                 'error' => 'Failed to reschedule post',
@@ -433,7 +433,7 @@ class SocialSchedulerController extends Controller
     /**
      * Get post by ID
      */
-    public function show(Request $request, string $orgId, string $postId)
+    public function show(Request $request, string $orgId, string $postId): JsonResponse
     {
         $this->authorize('view', Channel::class);
         try {
@@ -441,10 +441,10 @@ class SocialSchedulerController extends Controller
                 ->with(['user:id,name', 'campaign:campaign_id,name'])
                 ->findOrFail($postId);
 
-            return response()->json(['post' => $post]);
+            return $this->success(['post' => $post], 'Operation completed successfully');
 
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            return response()->json(['error' => 'Post not found'], 404);
+            return $this->notFound('Post not found');
         } catch (\Exception $e) {
             return response()->json([
                 'error' => 'Failed to fetch post',

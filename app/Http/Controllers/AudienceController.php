@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
+use App\Http\Controllers\Concerns\ApiResponse;
 
 use App\Services\AudienceTargetingService;
 use Illuminate\Http\Request;
@@ -82,10 +83,7 @@ class AudienceController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         try {
@@ -99,14 +97,10 @@ class AudienceController extends Controller
                 ], 500);
             }
 
-            return response()->json($result, 201);
+            return $this->created($result, 'Created successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to create audience',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to create audience' . ': ' . $e->getMessage());
         }
     }
 
@@ -134,14 +128,10 @@ class AudienceController extends Controller
                 ], 404);
             }
 
-            return response()->json($result);
+            return $this->success($result, 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to get audience',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to get audience' . ': ' . $e->getMessage());
         }
     }
 
@@ -168,23 +158,16 @@ class AudienceController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         try {
             $result = $this->audienceService->listAudiences($request->all());
 
-            return response()->json($result);
+            return $this->success($result, 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to list audiences',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to list audiences' . ': ' . $e->getMessage());
         }
     }
 
@@ -214,10 +197,7 @@ class AudienceController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         try {
@@ -231,14 +211,10 @@ class AudienceController extends Controller
                 ], 500);
             }
 
-            return response()->json($result);
+            return $this->success($result, 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to update audience',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to update audience' . ': ' . $e->getMessage());
         }
     }
 
@@ -259,20 +235,13 @@ class AudienceController extends Controller
             $success = $this->audienceService->deleteAudience($audienceId, $permanent);
 
             if ($success) {
-                return response()->json([
-                    'success' => true,
-                    'message' => 'Audience deleted successfully'
-                ]);
+                return $this->success(null, 'Audience deleted successfully');
             }
 
             return $this->error('Failed to delete audience', 500);
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to delete audience',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to delete audience' . ': ' . $e->getMessage());
         }
     }
 
@@ -304,10 +273,7 @@ class AudienceController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         try {
@@ -321,14 +287,10 @@ class AudienceController extends Controller
                 ], 500);
             }
 
-            return response()->json($result, 201);
+            return $this->created($result, 'Created successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to create lookalike audience',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to create lookalike audience' . ': ' . $e->getMessage());
         }
     }
 
@@ -363,10 +325,7 @@ class AudienceController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         try {
@@ -388,11 +347,7 @@ class AudienceController extends Controller
             ]);
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to estimate audience size',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to estimate audience size' . ': ' . $e->getMessage());
         }
     }
 
@@ -413,10 +368,7 @@ class AudienceController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         try {
@@ -425,14 +377,10 @@ class AudienceController extends Controller
                 $request->input('platform')
             );
 
-            return response()->json($result);
+            return $this->success($result, 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to get targeting suggestions',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to get targeting suggestions' . ': ' . $e->getMessage());
         }
     }
 }

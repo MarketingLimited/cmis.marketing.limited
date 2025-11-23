@@ -51,24 +51,27 @@ class ChannelMetric extends BaseModel
     /**
      * Get the channel
      */
-    public function channel()
+    public function channel(): BelongsTo
     {
         return $this->belongsTo(\App\Models\Channel::class, 'channel_id', 'channel_id');
 
+    }
     /**
      * Scope by date range
      */
-    public function scopeDateRange($query, $startDate, $endDate)
+    public function scopeDateRange($query, $startDate, $endDate): Builder
     {
         return $query->whereBetween('date', [$startDate, $endDate]);
 
+    }
     /**
      * Scope recent metrics
      */
-    public function scopeRecent($query, int $days = 30)
+    public function scopeRecent($query, int $days = 30): Builder
     {
         return $query->where('date', '>=', now()->subDays($days));
 
+    }
     /**
      * Get follower growth
      */
@@ -94,4 +97,6 @@ class ChannelMetric extends BaseModel
             'growth' => $growth,
             'percentage' => round($percentage, 2),
         ];
+}
+}
 }

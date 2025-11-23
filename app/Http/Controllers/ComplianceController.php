@@ -7,6 +7,8 @@ use App\Models\CreativeAsset;
 use App\Models\ComplianceRule;
 use App\Services\ComplianceService;
 use Illuminate\Http\Request;
+use Illuminate\View\View;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Gate;
 use App\Http\Controllers\Concerns\ApiResponse;
 
@@ -24,7 +26,7 @@ class ComplianceController extends Controller
     /**
      * Display compliance dashboard
      */
-    public function index()
+    public function index(): View
     {
         Gate::authorize('viewInsights', auth()->user());
 
@@ -34,7 +36,7 @@ class ComplianceController extends Controller
     /**
      * Validate campaign compliance
      */
-    public function validateCampaign(string $campaignId)
+    public function validateCampaign(string $campaignId): JsonResponse
     {
         Gate::authorize('viewInsights', auth()->user());
 
@@ -42,22 +44,17 @@ class ComplianceController extends Controller
             $campaign = Campaign::findOrFail($campaignId);
             $result = $this->complianceService->validateCampaign($campaign);
 
-            return response()->json([
-                'success' => true,
-                'data' => $result,
-            ]);
+            return $this->success($result, 'Operation completed successfully');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Validation failed: ' . $e->getMessage(),
-            ], 500);
+            return $this->serverError('Validation failed: ' . $e->getMessage(),
+            );
         }
     }
 
     /**
      * Validate creative asset compliance
      */
-    public function validateAsset(string $assetId)
+    public function validateAsset(string $assetId): JsonResponse
     {
         Gate::authorize('viewInsights', auth()->user());
 
@@ -65,44 +62,34 @@ class ComplianceController extends Controller
             $asset = CreativeAsset::findOrFail($assetId);
             $result = $this->complianceService->validateAsset($asset);
 
-            return response()->json([
-                'success' => true,
-                'data' => $result,
-            ]);
+            return $this->success($result, 'Operation completed successfully');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Validation failed: ' . $e->getMessage(),
-            ], 500);
+            return $this->serverError('Validation failed: ' . $e->getMessage(),
+            );
         }
     }
 
     /**
      * Get organization compliance summary
      */
-    public function orgSummary(string $orgId)
+    public function orgSummary(string $orgId): JsonResponse
     {
         Gate::authorize('viewInsights', auth()->user());
 
         try {
             $summary = $this->complianceService->getOrgComplianceSummary($orgId);
 
-            return response()->json([
-                'success' => true,
-                'data' => $summary,
-            ]);
+            return $this->success($summary, 'Operation completed successfully');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to get summary: ' . $e->getMessage(),
-            ], 500);
+            return $this->serverError('Failed to get summary: ' . $e->getMessage(),
+            );
         }
     }
 
     /**
      * List compliance rules
      */
-    public function rules(Request $request)
+    public function rules(Request $request): JsonResponse
     {
         Gate::authorize('viewInsights', auth()->user());
 
@@ -118,13 +105,13 @@ class ComplianceController extends Controller
 
         $rules = $query->orderBy('created_at', 'desc')->paginate(20);
 
-        return response()->json($rules);
+        return $this->success($rules, 'Retrieved successfully');
     }
 
     /**
      * Create compliance rule
      */
-    public function storeRule(Request $request)
+    public function storeRule(Request $request): JsonResponse
     {
         Gate::authorize('manageKnowledge', auth()->user());
 
@@ -154,17 +141,15 @@ class ComplianceController extends Controller
                 'data' => $rule,
             ], 201);
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to create rule: ' . $e->getMessage(),
-            ], 500);
+            return $this->serverError('Failed to create rule: ' . $e->getMessage(),
+            );
         }
     }
 
     /**
      * Update compliance rule
      */
-    public function updateRule(Request $request, string $ruleId)
+    public function updateRule(Request $request, string $ruleId): JsonResponse
     {
         Gate::authorize('manageKnowledge', auth()->user());
 
@@ -180,23 +165,17 @@ class ComplianceController extends Controller
             $rule = ComplianceRule::findOrFail($ruleId);
             $rule->update($validated);
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Compliance rule updated successfully',
-                'data' => $rule,
-            ]);
+            return $this->success($rule, 'Operation completed successfully');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to update rule: ' . $e->getMessage(),
-            ], 500);
+            return $this->serverError('Failed to update rule: ' . $e->getMessage(),
+            );
         }
     }
 
     /**
      * Delete compliance rule
      */
-    public function destroyRule(string $ruleId)
+    public function destroyRule(string $ruleId): JsonResponse
     {
         Gate::authorize('manageKnowledge', auth()->user());
 
@@ -204,22 +183,17 @@ class ComplianceController extends Controller
             $rule = ComplianceRule::findOrFail($ruleId);
             $rule->delete();
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Compliance rule deleted successfully',
-            ]);
+            return $this->success(['message' => 'Compliance rule deleted successfully',], 'Operation completed successfully');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to delete rule: ' . $e->getMessage(),
-            ], 500);
+            return $this->serverError('Failed to delete rule: ' . $e->getMessage(),
+            );
         }
     }
 
     /**
      * Get compliance audits
      */
-    public function audits(Request $request, string $orgId)
+    public function audits(Request $request, string $orgId): JsonResponse
     {
         Gate::authorize('viewInsights', auth()->user());
 
@@ -235,6 +209,6 @@ class ComplianceController extends Controller
 
         $audits = $query->orderBy('audited_at', 'desc')->paginate(20);
 
-        return response()->json($audits);
+        return $this->success($audits, 'Retrieved successfully');
     }
 }

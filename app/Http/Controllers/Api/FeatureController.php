@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers\Api;
+use App\Http\Controllers\Concerns\ApiResponse;
 
 use App\Http\Controllers\Controller;
 use App\Services\FeatureToggle\FeatureFlagService;
@@ -50,10 +51,9 @@ class FeatureController extends Controller
             ];
         }
 
-        return response()->json([
-            'platforms' => $availablePlatforms,
+        return $this->success(['platforms' => $availablePlatforms,
             'timestamp' => now()->toIso8601String(),
-        ]);
+        ], 'Operation completed successfully');
     }
 
     /**
@@ -79,12 +79,11 @@ class FeatureController extends Controller
             }
         }
 
-        return response()->json([
-            'matrix' => $matrix,
+        return $this->success(['matrix' => $matrix,
             'features' => $features,
             'platforms' => $platforms,
             'timestamp' => now()->toIso8601String(),
-        ]);
+        ], 'Operation completed successfully');
     }
 
     /**
@@ -99,12 +98,11 @@ class FeatureController extends Controller
     {
         $enabledPlatforms = $this->featureFlags->getEnabledPlatforms($category);
 
-        return response()->json([
-            'feature_category' => $category,
+        return $this->success(['feature_category' => $category,
             'enabled_platforms' => $enabledPlatforms,
             'count' => count($enabledPlatforms),
             'timestamp' => now()->toIso8601String(),
-        ]);
+        ], 'Operation completed successfully');
     }
 
     /**
@@ -119,11 +117,10 @@ class FeatureController extends Controller
     {
         $enabled = $this->featureFlags->isEnabled($featureKey);
 
-        return response()->json([
-            'feature_key' => $featureKey,
+        return $this->success(['feature_key' => $featureKey,
             'enabled' => $enabled,
             'timestamp' => now()->toIso8601String(),
-        ]);
+        ], 'Operation completed successfully');
     }
 
     /**

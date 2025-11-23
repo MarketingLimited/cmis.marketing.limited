@@ -5,6 +5,7 @@ namespace App\Http\Controllers\AI;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\View\View;
 
 /**
  * Class AIGeneratedCampaignController
@@ -15,7 +16,7 @@ class AIGeneratedCampaignController extends Controller
     /**
      * عرض قائمة الحملات التي تم توليدها بالذكاء الاصطناعي.
      */
-    public function index()
+    public function index(): View
     {
         Gate::authorize('generateCampaign', auth()->user());
 

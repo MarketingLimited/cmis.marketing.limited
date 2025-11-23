@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers\API;
+use App\Http\Controllers\Concerns\ApiResponse;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
@@ -37,10 +38,7 @@ class VectorEmbeddingsV2Controller extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         try {
@@ -76,10 +74,7 @@ class VectorEmbeddingsV2Controller extends Controller
                 'query' => $request->input('query')
             ]);
 
-            return response()->json([
-                'success' => false,
-                'message' => 'Search failed: ' . $e->getMessage()
-            ], 500);
+            return $this->serverError('Search failed: ');
         }
     }
 
@@ -99,10 +94,7 @@ class VectorEmbeddingsV2Controller extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         try {
@@ -134,10 +126,7 @@ class VectorEmbeddingsV2Controller extends Controller
                 'query' => $request->input('text_query')
             ]);
 
-            return response()->json([
-                'success' => false,
-                'message' => 'Hybrid search failed: ' . $e->getMessage()
-            ], 500);
+            return $this->serverError('Hybrid search failed: ');
         }
     }
 
@@ -159,10 +148,7 @@ class VectorEmbeddingsV2Controller extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         try {
@@ -197,10 +183,7 @@ class VectorEmbeddingsV2Controller extends Controller
                 'query' => $request->input('query')
             ]);
 
-            return response()->json([
-                'success' => false,
-                'message' => 'Context loading failed: ' . $e->getMessage()
-            ], 500);
+            return $this->serverError('Context loading failed: ');
         }
     }
 
@@ -222,10 +205,7 @@ class VectorEmbeddingsV2Controller extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         try {
@@ -271,10 +251,7 @@ class VectorEmbeddingsV2Controller extends Controller
                 'topic' => $request->input('topic')
             ]);
 
-            return response()->json([
-                'success' => false,
-                'message' => 'Registration failed: ' . $e->getMessage()
-            ], 500);
+            return $this->serverError('Registration failed: ');
         }
     }
 
@@ -290,10 +267,7 @@ class VectorEmbeddingsV2Controller extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         try {
@@ -320,10 +294,7 @@ class VectorEmbeddingsV2Controller extends Controller
                 'error' => $e->getMessage()
             ]);
 
-            return response()->json([
-                'success' => false,
-                'message' => 'Queue processing failed: ' . $e->getMessage()
-            ], 500);
+            return $this->serverError('Queue processing failed: ');
         }
     }
 
@@ -337,21 +308,14 @@ class VectorEmbeddingsV2Controller extends Controller
         try {
             $status = DB::select('SELECT * FROM cmis_knowledge.v_embedding_status');
 
-            return response()->json([
-                'success' => true,
-                'data' => $status,
-                'count' => count($status)
-            ]);
+            return $this->success($status, 'Operation completed successfully');
 
         } catch (\Exception $e) {
             Log::error('Failed to get embedding status', [
                 'error' => $e->getMessage()
             ]);
 
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to get status: ' . $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to get status: ');
         }
     }
 
@@ -365,21 +329,14 @@ class VectorEmbeddingsV2Controller extends Controller
         try {
             $analysis = DB::select('SELECT * FROM cmis_knowledge.v_intent_analysis');
 
-            return response()->json([
-                'success' => true,
-                'data' => $analysis,
-                'count' => count($analysis)
-            ]);
+            return $this->success($analysis, 'Operation completed successfully');
 
         } catch (\Exception $e) {
             Log::error('Failed to get intent analysis', [
                 'error' => $e->getMessage()
             ]);
 
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to get analysis: ' . $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to get analysis: ');
         }
     }
 
@@ -393,21 +350,14 @@ class VectorEmbeddingsV2Controller extends Controller
         try {
             $status = DB::select('SELECT * FROM cmis_knowledge.v_embedding_queue_status');
 
-            return response()->json([
-                'success' => true,
-                'data' => $status,
-                'count' => count($status)
-            ]);
+            return $this->success($status, 'Operation completed successfully');
 
         } catch (\Exception $e) {
             Log::error('Failed to get queue status', [
                 'error' => $e->getMessage()
             ]);
 
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to get queue status: ' . $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to get queue status: ');
         }
     }
 
@@ -421,21 +371,14 @@ class VectorEmbeddingsV2Controller extends Controller
         try {
             $performance = DB::select('SELECT * FROM cmis_knowledge.v_search_performance LIMIT 24');
 
-            return response()->json([
-                'success' => true,
-                'data' => $performance,
-                'count' => count($performance)
-            ]);
+            return $this->success($performance, 'Operation completed successfully');
 
         } catch (\Exception $e) {
             Log::error('Failed to get search performance', [
                 'error' => $e->getMessage()
             ]);
 
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to get performance data: ' . $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to get performance data: ');
         }
     }
 
@@ -450,21 +393,14 @@ class VectorEmbeddingsV2Controller extends Controller
             $report = DB::selectOne('SELECT cmis_knowledge.generate_system_report() as report');
             $reportData = json_decode($report->report, true);
 
-            return response()->json([
-                'success' => true,
-                'data' => $reportData,
-                'generated_at' => now()->toIso8601String()
-            ]);
+            return $this->success($reportData, 'Operation completed successfully');
 
         } catch (\Exception $e) {
             Log::error('Failed to generate system report', [
                 'error' => $e->getMessage()
             ]);
 
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to generate report: ' . $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to generate report: ');
         }
     }
 
@@ -479,21 +415,14 @@ class VectorEmbeddingsV2Controller extends Controller
             $verification = DB::selectOne('SELECT cmis_knowledge.verify_installation() as result');
             $verificationData = json_decode($verification->result, true);
 
-            return response()->json([
-                'success' => true,
-                'data' => $verificationData,
-                'verified_at' => now()->toIso8601String()
-            ]);
+            return $this->success($verificationData, 'Operation completed successfully');
 
         } catch (\Exception $e) {
             Log::error('Installation verification failed', [
                 'error' => $e->getMessage()
             ]);
 
-            return response()->json([
-                'success' => false,
-                'message' => 'Verification failed: ' . $e->getMessage()
-            ], 500);
+            return $this->serverError('Verification failed: ');
         }
     }
 }

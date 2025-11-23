@@ -3,6 +3,7 @@
 namespace App\Models\Creative;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Builder;
 use App\Models\BaseModel;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
@@ -43,28 +44,32 @@ class VideoScene extends BaseModel
     /**
      * Get the video template
      */
-    public function template()
+    public function template(): BelongsTo
     {
         return $this->belongsTo(VideoTemplate::class, 'template_id', 'template_id');
 
+    }
     /**
      * Get the creative asset
      */
-    public function asset()
+    public function asset(): BelongsTo
     {
         return $this->belongsTo(\App\Models\CreativeAsset::class, 'asset_id', 'asset_id');
 
+    }
     /**
      * Scope by scene type
      */
-    public function scopeOfType($query, string $type)
+    public function scopeOfType($query, string $type): Builder
     {
         return $query->where('scene_type', $type);
 
+    }
     /**
      * Scope ordered by scene number
      */
-    public function scopeOrdered($query)
+    public function scopeOrdered($query): Builder
     {
         return $query->orderBy('scene_number');
+}
 }

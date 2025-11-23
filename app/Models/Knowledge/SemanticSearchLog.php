@@ -52,49 +52,56 @@ class SemanticSearchLog extends BaseModel
     /**
      * Get the user
      */
-    public function user()
+    public function user(): BelongsTo
     {
         return $this->belongsTo(\App\Models\User::class, 'user_id', 'user_id');
 
+    }
     /**
      * Scope by search type
      */
-    public function scopeByType($query, string $type)
+    public function scopeByType($query, string $type): Builder
     {
         return $query->where('search_type', $type);
 
+    }
     /**
      * Scope with feedback
      */
-    public function scopeWithFeedback($query)
+    public function scopeWithFeedback($query): Builder
     {
         return $query->whereNotNull('was_helpful');
 
+    }
     /**
      * Scope helpful searches
      */
-    public function scopeHelpful($query)
+    public function scopeHelpful($query): Builder
     {
         return $query->where('was_helpful', true);
 
+    }
     /**
      * Scope with clicks
      */
-    public function scopeWithClicks($query)
+    public function scopeWithClicks($query): Builder
     {
         return $query->whereNotNull('clicked_result_id');
 
+    }
     /**
      * Scope slow searches
      */
-    public function scopeSlow($query, int $thresholdMs = 500)
+    public function scopeSlow($query, int $thresholdMs = 500): Builder
     {
         return $query->where('search_duration_ms', '>', $thresholdMs);
 
+    }
     /**
      * Scope recent searches
      */
-    public function scopeRecent($query, int $days = 30)
+    public function scopeRecent($query, int $days = 30): Builder
     {
         return $query->where('searched_at', '>=', now()->subDays($days));
+}
 }

@@ -8,6 +8,7 @@ use App\Models\Core\Org;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use App\Models\BaseModel;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
@@ -46,28 +47,24 @@ class SecurityContextAudit extends BaseModel
     /**
      * Scope to get audits for a specific user
      */
-    public function scopeForUser($query, string $userId)
+    public function scopeForUser($query, string $userId): Builder
     {
         return $query->where('user_id', $userId);
-
-    /**
-     * Scope to get audits for a specific org
-     */
-    public function scopeForOrg($query, string $orgId)
-    {
-        return $query->where('org_id', $orgId);
+    }
 
     /**
      * Scope to get successful audits
      */
-    public function scopeSuccessful($query)
+    public function scopeSuccessful($query): Builder
     {
         return $query->where('success', true);
+    }
 
     /**
      * Scope to get failed audits
      */
-    public function scopeFailed($query)
+    public function scopeFailed($query): Builder
     {
         return $query->where('success', false);
+    }
 }

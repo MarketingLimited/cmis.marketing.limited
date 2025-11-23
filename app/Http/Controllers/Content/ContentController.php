@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Content;
 use App\Http\Controllers\Controller;
 use App\Models\Creative\ContentItem;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use App\Http\Controllers\Concerns\ApiResponse;
@@ -16,16 +17,13 @@ class ContentController extends Controller
     /**
      * Display a listing of content items.
      */
-    public function index(Request $request)
+    public function index(Request $request): JsonResponse
     {
         try {
             $orgId = $this->resolveOrgId($request);
 
             if (!$orgId) {
-                return response()->json([
-                    'success' => false,
-                    'error' => 'No organization context found',
-                ], 400);
+                return $this->error('No organization context found', 400);
             }
 
             // Validate query parameters
@@ -66,27 +64,20 @@ class ContentController extends Controller
                 'error' => $e->getMessage(),
             ]);
 
-            return response()->json([
-                'success' => false,
-                'error' => 'Failed to retrieve content',
-                'message' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to retrieve content' . ': ' . $e->getMessage());
         }
     }
 
     /**
      * Store a newly created content item.
      */
-    public function store(Request $request)
+    public function store(Request $request): JsonResponse
     {
         try {
             $orgId = $this->resolveOrgId($request);
 
             if (!$orgId) {
-                return response()->json([
-                    'success' => false,
-                    'error' => 'No organization context found',
-                ], 400);
+                return $this->error('No organization context found', 400);
             }
 
             // Initialize RLS context for multi-tenancy
@@ -139,38 +130,27 @@ class ContentController extends Controller
             ], 201);
 
         } catch (\Illuminate\Validation\ValidationException $e) {
-            return response()->json([
-                'success' => false,
-                'error' => 'Validation failed',
-                'errors' => $e->errors(),
-            ], 422);
+            return $this->validationError($e->errors(), 'Validation failed');
         } catch (\Exception $e) {
             \Log::error('Content creation error', [
                 'user_id' => auth()->id(),
                 'error' => $e->getMessage(),
             ]);
 
-            return response()->json([
-                'success' => false,
-                'error' => 'Failed to create content',
-                'message' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to create content' . ': ' . $e->getMessage());
         }
     }
 
     /**
      * Display the specified content item.
      */
-    public function show(Request $request, string $contentId)
+    public function show(Request $request, string $contentId): JsonResponse
     {
         try {
             $orgId = $this->resolveOrgId($request);
 
             if (!$orgId) {
-                return response()->json([
-                    'success' => false,
-                    'error' => 'No organization context found',
-                ], 400);
+                return $this->error('No organization context found', 400);
             }
 
             $content = ContentItem::where('org_id', $orgId)
@@ -182,22 +162,13 @@ class ContentController extends Controller
                 $existsInOtherOrg = ContentItem::where('item_id', $contentId)->exists();
 
                 if ($existsInOtherOrg) {
-                    return response()->json([
-                        'success' => false,
-                        'error' => 'Unauthorized access to content',
-                    ], 403);
+                    return $this->forbidden('Unauthorized access to content');
                 }
 
-                return response()->json([
-                    'success' => false,
-                    'error' => 'Content not found',
-                ], 404);
+                return $this->notFound('Content not found');
             }
 
-            return response()->json([
-                'data' => $content,
-                'success' => true,
-            ]);
+            return $this->success($content, 'Content retrieved successfully');
 
         } catch (\Exception $e) {
             \Log::error('Content show error', [
@@ -205,27 +176,20 @@ class ContentController extends Controller
                 'error' => $e->getMessage(),
             ]);
 
-            return response()->json([
-                'success' => false,
-                'error' => 'Failed to retrieve content',
-                'message' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to retrieve content' . ': ' . $e->getMessage());
         }
     }
 
     /**
      * Update the specified content item.
      */
-    public function update(Request $request, string $contentId)
+    public function update(Request $request, string $contentId): JsonResponse
     {
         try {
             $orgId = $this->resolveOrgId($request);
 
             if (!$orgId) {
-                return response()->json([
-                    'success' => false,
-                    'error' => 'No organization context found',
-                ], 400);
+                return $this->error('No organization context found', 400);
             }
 
             $content = ContentItem::where('org_id', $orgId)
@@ -237,16 +201,10 @@ class ContentController extends Controller
                 $existsInOtherOrg = ContentItem::where('item_id', $contentId)->exists();
 
                 if ($existsInOtherOrg) {
-                    return response()->json([
-                        'success' => false,
-                        'error' => 'Unauthorized access to content',
-                    ], 403);
+                    return $this->forbidden('Unauthorized access to content');
                 }
 
-                return response()->json([
-                    'success' => false,
-                    'error' => 'Content not found',
-                ], 404);
+                return $this->notFound('Content not found');
             }
 
             // Validate request
@@ -261,45 +219,30 @@ class ContentController extends Controller
 
             $content->update($validated);
 
-            return response()->json([
-                'data' => $content->fresh(),
-                'success' => true,
-                'message' => 'Content updated successfully',
-            ]);
+            return $this->success($content->fresh(), 'Content updated successfully');
 
         } catch (\Illuminate\Validation\ValidationException $e) {
-            return response()->json([
-                'success' => false,
-                'error' => 'Validation failed',
-                'errors' => $e->errors(),
-            ], 422);
+            return $this->validationError($e->errors(), 'Validation failed');
         } catch (\Exception $e) {
             \Log::error('Content update error', [
                 'content_id' => $contentId,
                 'error' => $e->getMessage(),
             ]);
 
-            return response()->json([
-                'success' => false,
-                'error' => 'Failed to update content',
-                'message' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to update content' . ': ' . $e->getMessage());
         }
     }
 
     /**
      * Remove the specified content item.
      */
-    public function destroy(Request $request, string $contentId)
+    public function destroy(Request $request, string $contentId): JsonResponse
     {
         try {
             $orgId = $this->resolveOrgId($request);
 
             if (!$orgId) {
-                return response()->json([
-                    'success' => false,
-                    'error' => 'No organization context found',
-                ], 400);
+                return $this->error('No organization context found', 400);
             }
 
             $content = ContentItem::where('org_id', $orgId)
@@ -311,25 +254,16 @@ class ContentController extends Controller
                 $existsInOtherOrg = ContentItem::where('item_id', $contentId)->exists();
 
                 if ($existsInOtherOrg) {
-                    return response()->json([
-                        'success' => false,
-                        'error' => 'Unauthorized access to content',
-                    ], 403);
+                    return $this->forbidden('Unauthorized access to content');
                 }
 
-                return response()->json([
-                    'success' => false,
-                    'error' => 'Content not found',
-                ], 404);
+                return $this->notFound('Content not found');
             }
 
             // Soft delete the content
             $content->delete();
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Content deleted successfully',
-            ]);
+            return $this->success(['message' => 'Content deleted successfully'], 'Content deleted successfully');
 
         } catch (\Exception $e) {
             \Log::error('Content delete error', [
@@ -337,27 +271,20 @@ class ContentController extends Controller
                 'error' => $e->getMessage(),
             ]);
 
-            return response()->json([
-                'success' => false,
-                'error' => 'Failed to delete content',
-                'message' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to delete content' . ': ' . $e->getMessage());
         }
     }
 
     /**
      * Schedule the specified content item.
      */
-    public function schedule(Request $request, string $contentId)
+    public function schedule(Request $request, string $contentId): JsonResponse
     {
         try {
             $orgId = $this->resolveOrgId($request);
 
             if (!$orgId) {
-                return response()->json([
-                    'success' => false,
-                    'error' => 'No organization context found',
-                ], 400);
+                return $this->error('No organization context found', 400);
             }
 
             $content = ContentItem::where('org_id', $orgId)
@@ -369,16 +296,10 @@ class ContentController extends Controller
                 $existsInOtherOrg = ContentItem::where('item_id', $contentId)->exists();
 
                 if ($existsInOtherOrg) {
-                    return response()->json([
-                        'success' => false,
-                        'error' => 'Unauthorized access to content',
-                    ], 403);
+                    return $this->forbidden('Unauthorized access to content');
                 }
 
-                return response()->json([
-                    'success' => false,
-                    'error' => 'Content not found',
-                ], 404);
+                return $this->notFound('Content not found');
             }
 
             // Validate request
@@ -391,64 +312,50 @@ class ContentController extends Controller
                 'status' => 'scheduled',
             ]);
 
-            return response()->json([
-                'data' => $content->fresh(),
-                'success' => true,
-                'message' => 'Content scheduled successfully',
-            ]);
+            return $this->success($content->fresh(), 'Content scheduled successfully');
 
         } catch (\Illuminate\Validation\ValidationException $e) {
-            return response()->json([
-                'success' => false,
-                'error' => 'Validation failed',
-                'errors' => $e->errors(),
-            ], 422);
+            return $this->validationError($e->errors(), 'Validation failed');
         } catch (\Exception $e) {
             \Log::error('Content schedule error', [
                 'content_id' => $contentId,
                 'error' => $e->getMessage(),
             ]);
 
-            return response()->json([
-                'success' => false,
-                'error' => 'Failed to schedule content',
-                'message' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to schedule content' . ': ' . $e->getMessage());
         }
     }
 
     /**
      * Publish the specified content item.
      */
-    public function publish(Request $request, $content_id)
+    public function publish(Request $request, $content_id): JsonResponse
     {
         Log::info('ContentController::publish called (stub)', ['content_id' => $content_id]);
         // Stub implementation - Content publishing logic not yet implemented
-        return response()->json([
-            'message' => 'Content publish endpoint - implementation pending',
+        return $this->success(['message' => 'Content publish endpoint - implementation pending',
             'content_id' => $content_id,
             'stub' => true
-        ]);
+        ], 'Operation completed successfully');
     }
 
     /**
      * Unpublish the specified content item.
      */
-    public function unpublish(Request $request, $content_id)
+    public function unpublish(Request $request, $content_id): JsonResponse
     {
         Log::info('ContentController::unpublish called (stub)', ['content_id' => $content_id]);
         // Stub implementation - Content unpublishing logic not yet implemented
-        return response()->json([
-            'message' => 'Content unpublish endpoint - implementation pending',
+        return $this->success(['message' => 'Content unpublish endpoint - implementation pending',
             'content_id' => $content_id,
             'stub' => true
-        ]);
+        ], 'Operation completed successfully');
     }
 
     /**
      * Get content versions.
      */
-    public function versions(Request $request, $content_id)
+    public function versions(Request $request, $content_id): JsonResponse
     {
         Log::info('ContentController::versions called (stub)', ['content_id' => $content_id]);
         // Stub implementation - Content versioning not yet implemented

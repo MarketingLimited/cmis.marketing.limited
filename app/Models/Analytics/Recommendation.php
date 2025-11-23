@@ -8,6 +8,7 @@ use App\Models\Core\Org;
 use App\Models\Core\User;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Builder;
 use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -36,11 +37,12 @@ class Recommendation extends BaseModel
         'updated_at' => 'datetime'
     ];
 
-    
+
 
     public function actionedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'actioned_by', 'user_id');
+    }
 
     public function accept(string $userId, ?string $notes = null): void
     {
@@ -50,6 +52,7 @@ class Recommendation extends BaseModel
             'actioned_at' => now(),
             'action_notes' => $notes
         ]);
+    }
 
     public function reject(string $userId, string $reason): void
     {
@@ -59,6 +62,7 @@ class Recommendation extends BaseModel
             'actioned_at' => now(),
             'action_notes' => $reason
         ]);
+    }
 
     public function implement(string $userId, string $notes): void
     {
@@ -68,23 +72,29 @@ class Recommendation extends BaseModel
             'actioned_at' => now(),
             'action_notes' => $notes
         ]);
+    }
 
     public function isExpired(): bool
     {
         return $this->expires_at && $this->expires_at->isPast();
+    }
 
-    public function scopePending($query)
+    public function scopePending($query): Builder
     {
         return $query->where('status', 'pending')
                      ->where(function($q) {
                          $q->whereNull('expires_at')
                            ->orWhere('expires_at', '>', now());
+                     });
+    }
 
-    public function scopeHighPriority($query)
+    public function scopeHighPriority($query): Builder
     {
         return $query->whereIn('priority', ['critical', 'high']);
+    }
 
-    public function scopeByCategory($query, string $category)
+    public function scopeByCategory($query, string $category): Builder
     {
         return $query->where('category', $category);
+    }
 }

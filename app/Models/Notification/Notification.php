@@ -8,6 +8,7 @@ use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\Builder;
 class Notification extends BaseModel
 {
     use HasOrganization, SoftDeletes, HasUuids;
@@ -50,40 +51,45 @@ class Notification extends BaseModel
     /**
      * Scope unread notifications
      */
-    public function scopeUnread($query)
+    public function scopeUnread($query): Builder
     {
         return $query->where('is_read', false);
 
+    }
     /**
      * Scope by type
      */
-    public function scopeByType($query, string $type)
+    public function scopeByType($query, string $type): Builder
     {
         return $query->where('type', $type);
 
+    }
     /**
      * Scope by category
      */
-    public function scopeByCategory($query, string $category)
+    public function scopeByCategory($query, string $category): Builder
     {
         return $query->where('category', $category);
 
+    }
     /**
      * Scope by priority
      */
-    public function scopeHighPriority($query)
+    public function scopeHighPriority($query): Builder
     {
         return $query->where('priority', 'high');
 
+    }
     /**
      * Scope not expired
      */
-    public function scopeActive($query)
+    public function scopeActive($query): Builder
     {
         return $query->where(function ($q) {
             $q->whereNull('expires_at')
                 ->orWhere('expires_at', '>', now());
-
+        });
+    }
     /**
      * Mark as read
      */
@@ -94,13 +100,16 @@ class Notification extends BaseModel
             'read_at' => now(),
         ]);
 
+    }
     /**
-     * Check if expired
+          * Check if expired
      */
     public function isExpired(): bool
     {
         if (!$this->expires_at) {
             return false;
+        }
 
         return $this->expires_at->isPast();
+    }
 }

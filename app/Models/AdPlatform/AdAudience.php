@@ -5,6 +5,7 @@ namespace App\Models\AdPlatform;
 use App\Models\Concerns\HasOrganization;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Builder;
 use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -57,42 +58,48 @@ class AdAudience extends BaseModel
     /**
      * Get the integration
      */
-    public function integration()
+    public function integration(): BelongsTo
     {
         return $this->belongsTo(\App\Models\Core\Integration::class, 'integration_id', 'integration_id');
 
+    }
     /**
      * Scope by platform
      */
-    public function scopeByPlatform($query, string $platform)
+    public function scopeByPlatform($query, string $platform): Builder
     {
         return $query->where('platform', $platform);
 
+    }
     /**
      * Scope by audience type
      */
-    public function scopeByType($query, string $type)
+    public function scopeByType($query, string $type): Builder
     {
         return $query->where('audience_type', $type);
 
+    }
     /**
      * Scope custom audiences
      */
-    public function scopeCustom($query)
+    public function scopeCustom($query): Builder
     {
         return $query->where('audience_type', 'custom');
 
+    }
     /**
      * Scope lookalike audiences
      */
-    public function scopeLookalike($query)
+    public function scopeLookalike($query): Builder
     {
         return $query->where('audience_type', 'lookalike');
 
+    }
     /**
      * Scope by entity level
      */
-    public function scopeByEntityLevel($query, string $level)
+    public function scopeByEntityLevel($query, string $level): Builder
     {
         return $query->where('entity_level', $level);
+}
 }

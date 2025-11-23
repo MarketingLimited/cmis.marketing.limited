@@ -6,6 +6,7 @@ use App\Models\Concerns\HasOrganization;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Builder;
 use App\Models\BaseModel;
 
 class TrendingTopic extends BaseModel
@@ -59,14 +60,17 @@ class TrendingTopic extends BaseModel
     {
         $this->increment('mention_count', $count);
         $this->update(['last_seen_at' => now()]);
+    }
 
     public function updateDailyMentions(int $count): void
     {
         $this->update(['mention_count_24h' => $count]);
+    }
 
     public function updateWeeklyMentions(int $count): void
     {
         $this->update(['mention_count_7d' => $count]);
+    }
 
     /**
      * Growth Analysis
@@ -77,14 +81,17 @@ class TrendingTopic extends BaseModel
         if ($this->mention_count_7d == 0) {
             $this->update(['growth_rate' => 0]);
             return;
+        }
 
         $previousWeek = $this->mention_count - $this->mention_count_7d;
         if ($previousWeek == 0) {
             $this->update(['growth_rate' => 100]);
             return;
+        }
 
         $growthRate = (($this->mention_count_7d - $previousWeek) / $previousWeek) * 100;
         $this->update(['growth_rate' => $growthRate]);
+    }
 
     public function updateTrendVelocity(): void
     {
@@ -96,21 +103,26 @@ class TrendingTopic extends BaseModel
             $velocity = 'rising';
         } elseif ($this->growth_rate < -50) {
             $velocity = 'declining';
+        }
 
         $this->update(['trend_velocity' => $velocity]);
+    }
 
     public function isViral(): bool
     {
         return $this->trend_velocity === 'viral';
+    }
 
     public function isRising(): bool
     {
         return $this->trend_velocity === 'rising';
+    }
 
     public function isDeclining(): bool
     {
         return $this->trend_velocity === 'declining';
 
+    }
     /**
      * Platform Analysis
      */
@@ -118,29 +130,27 @@ class TrendingTopic extends BaseModel
     public function updatePlatformDistribution(array $distribution): void
     {
         $this->update(['platform_distribution' => $distribution]);
+    }
 
     public function getTopPlatform(): ?string
     {
         if (empty($this->platform_distribution)) {
             return null;
+        }
 
-        return array_key_first(
-            array_slice(
-                arsort($this->platform_distribution),
-                0,
-                1,
-                true
-            )
-        ) ?: null;
+        return array_key_first($this->platform_distribution);
+    }
 
     public function getPlatformPercentage(string $platform): float
     {
         if ($this->mention_count == 0) {
             return 0;
+        }
 
         $platformCount = $this->platform_distribution[$platform] ?? 0;
         return ($platformCount / $this->mention_count) * 100;
 
+    }
     /**
      * Sentiment Analysis
      */
@@ -151,15 +161,18 @@ class TrendingTopic extends BaseModel
             'overall_sentiment' => $sentiment,
             'avg_sentiment_score' => $avgScore,
         ]);
+    }
 
     public function isPositiveTrend(): bool
     {
         return $this->overall_sentiment === 'positive';
+    }
 
     public function isNegativeTrend(): bool
     {
         return $this->overall_sentiment === 'negative';
 
+    }
     /**
      * Relevance & Opportunity
      */
@@ -176,29 +189,36 @@ class TrendingTopic extends BaseModel
             $score += 25;
         } elseif ($this->growth_rate > 50) {
             $score += 15;
+        }
 
         // Positive sentiment bonus
         if ($this->overall_sentiment === 'positive') {
             $score += 15;
+        }
 
         // Custom factors
         foreach ($factors as $factor => $value) {
             $score += $value;
+        }
 
         $this->update(['relevance_score' => min($score, 100)]);
+    }
 
     public function markAsOpportunity(): void
     {
         $this->update(['is_opportunity' => true]);
+    }
 
     public function unmarkAsOpportunity(): void
     {
         $this->update(['is_opportunity' => false]);
+    }
 
     public function isHighRelevance(): bool
     {
         return $this->relevance_score >= 70;
 
+    }
     /**
      * Status Management
      */
@@ -206,20 +226,25 @@ class TrendingTopic extends BaseModel
     public function markAsActive(): void
     {
         $this->update(['status' => 'active']);
+    }
 
     public function markAsDeclining(): void
     {
         $this->update(['status' => 'declining']);
+    }
 
     public function markAsExpired(): void
     {
         $this->update(['status' => 'expired']);
+    }
 
     public function updatePeak(): void
     {
         if (!$this->peak_at || $this->mention_count_24h > $this->mention_count) {
             $this->update(['peak_at' => now()]);
+        }
 
+    }
     /**
      * Time Analysis
      */
@@ -227,51 +252,63 @@ class TrendingTopic extends BaseModel
     public function getAge(): int
     {
         return $this->first_seen_at->diffInHours(now());
+    }
 
     public function getTimeSincePeak(): ?int
     {
         if (!$this->peak_at) {
             return null;
+        }
 
         return $this->peak_at->diffInHours(now());
 
+    }
     /**
      * Scopes
      */
 
-    public function scopeActive($query)
+    public function scopeActive($query): Builder
     {
         return $query->where('status', 'active');
+    }
 
-    public function scopeViral($query)
+    public function scopeViral($query): Builder
     {
         return $query->where('trend_velocity', 'viral');
+    }
 
-    public function scopeRising($query)
+    public function scopeRising($query): Builder
     {
         return $query->where('trend_velocity', 'rising');
+    }
 
-    public function scopeHighRelevance($query)
+    public function scopeHighRelevance($query): Builder
     {
         return $query->where('relevance_score', '>=', 70);
+    }
 
-    public function scopeOpportunities($query)
+    public function scopeOpportunities($query): Builder
     {
         return $query->where('is_opportunity', true);
+    }
 
-    public function scopeOfType($query, string $type)
+    public function scopeOfType($query, string $type): Builder
     {
         return $query->where('topic_type', $type);
+    }
 
-    public function scopePositive($query)
+    public function scopePositive($query): Builder
     {
         return $query->where('overall_sentiment', 'positive');
+    }
 
-    public function scopeRecentFirst($query)
+    public function scopeRecentFirst($query): Builder
     {
         return $query->orderBy('first_seen_at', 'desc');
+    }
 
-    public function scopeByRelevance($query)
+    public function scopeByRelevance($query): Builder
     {
         return $query->orderBy('relevance_score', 'desc');
+    }
 }

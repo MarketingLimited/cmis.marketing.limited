@@ -3,6 +3,7 @@
 namespace App\Models\Other;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Builder;
 use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -30,7 +31,8 @@ class NamingTemplate extends BaseModel
     /**
      * Scope to filter by scope
      */
-    public function scopeByScope($query, string $scope)
+    public function scopeByScope($query, string $scope): Builder
     {
         return $query->where('scope', $scope);
+}
 }

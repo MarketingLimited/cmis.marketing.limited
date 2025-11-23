@@ -8,6 +8,7 @@ use App\Models\Integration;
 use App\Models\Campaign;
 use App\Models\Analytics\Metric;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Builder;
 
 /**
  * SocialPost Model
@@ -59,14 +60,14 @@ class SocialPost extends BaseModel
     const STATUS_CANCELLED = 'cancelled';
 
     // Relationships
-    public function integration() { return $this->belongsTo(Integration::class, 'integration_id'); }
-    public function campaign() { return $this->belongsTo(Campaign::class); }
-    public function metrics() { return $this->morphMany(Metric::class, 'entity'); }
-    public function history() { return $this->hasMany(PostHistory::class, 'post_id'); }
+    public function integration(): BelongsTo { return $this->belongsTo(Integration::class, 'integration_id'); }
+    public function campaign(): BelongsTo { return $this->belongsTo(Campaign::class); }
+    public function metrics(): MorphMany { return $this->morphMany(Metric::class, 'entity'); }
+    public function history(): HasMany { return $this->hasMany(PostHistory::class, 'post_id'); }
 
     // Scopes
-    public function scopePublished($q) { return $q->where('status', self::STATUS_PUBLISHED); }
-    public function scopeScheduled($q) { return $q->where('status', self::STATUS_SCHEDULED); }
-    public function scopeDraft($q) { return $q->where('status', self::STATUS_DRAFT); }
-    public function scopePlatform($q, $platform) { return $q->where('platform', $platform); }
+    public function scopePublished($q): Builder { return $q->where('status', self::STATUS_PUBLISHED); }
+    public function scopeScheduled($q): Builder { return $q->where('status', self::STATUS_SCHEDULED); }
+    public function scopeDraft($q): Builder { return $q->where('status', self::STATUS_DRAFT); }
+    public function scopePlatform($q, $platform): Builder { return $q->where('platform', $platform); }
 }

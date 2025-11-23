@@ -6,6 +6,7 @@ use App\Models\Concerns\HasOrganization;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Builder;
 use App\Models\BaseModel;
 
 class ResponseTemplate extends BaseModel
@@ -48,11 +49,12 @@ class ResponseTemplate extends BaseModel
      * Boot method
      */
 
-    protected static function booted()
+    protected static function booted(): void
     {
         static::saving(function ($template) {
             $template->character_count = strlen($template->template_content);
-
+        });
+    }
     /**
      * Status Management
      */
@@ -61,14 +63,17 @@ class ResponseTemplate extends BaseModel
     {
         $this->update(['status' => 'active']);
 
+        }
     public function archive(): void
     {
         $this->update(['status' => 'archived']);
 
+        }
     public function isActive(): bool
     {
         return $this->status === 'active';
 
+    }
     /**
      * Usage Tracking
      */
@@ -78,6 +83,7 @@ class ResponseTemplate extends BaseModel
         $this->increment('usage_count');
         $this->update(['last_used_at' => now()]);
 
+        }
     public function updateEffectiveness(float $score): void
     {
         // Calculate rolling average
@@ -88,13 +94,15 @@ class ResponseTemplate extends BaseModel
             $newScore = $score;
         } else {
             $newScore = (($currentScore * $usageCount) + $score) / ($usageCount + 1);
+        }
 
         $this->update(['effectiveness_score' => $newScore]);
-
+    }
     public function isEffective(): bool
     {
         return $this->effectiveness_score >= 70;
 
+    }
     /**
      * Template Rendering
      */
@@ -106,18 +114,21 @@ class ResponseTemplate extends BaseModel
         foreach ($data as $key => $value) {
             $placeholder = '{' . $key . '}';
             $content = str_replace($placeholder, $value, $content);
+        }
 
         return $content;
-
+    }
     public function getPlaceholders(): array
     {
         preg_match_all('/\{([^}]+)\}/', $this->template_content, $matches);
         return $matches[1] ?? [];
 
+        }
     public function hasVariable(string $variable): bool
     {
         return in_array($variable, $this->variables);
 
+        }
     public function validateData(array $data): array
     {
         $missing = [];
@@ -125,9 +136,11 @@ class ResponseTemplate extends BaseModel
         foreach ($this->variables as $variable) {
             if (!isset($data[$variable])) {
                 $missing[] = $variable;
+            }
+        }
 
         return $missing;
-
+    }
     /**
      * Platform Compatibility
      */
@@ -136,18 +149,21 @@ class ResponseTemplate extends BaseModel
     {
         return in_array($platform, $this->platforms);
 
+        }
     public function addPlatform(string $platform): void
     {
         $platforms = $this->platforms;
         if (!in_array($platform, $platforms)) {
             $platforms[] = $platform;
             $this->update(['platforms' => $platforms]);
-
+        }
+    }
     public function removePlatform(string $platform): void
     {
         $platforms = array_filter($this->platforms, fn($p) => $p !== $platform);
         $this->update(['platforms' => array_values($platforms)]);
 
+        }
     public function isWithinCharacterLimit(string $platform): bool
     {
         $limits = [
@@ -162,6 +178,7 @@ class ResponseTemplate extends BaseModel
         $limit = $limits[$platform] ?? PHP_INT_MAX;
         return $this->character_count <= $limit;
 
+    }
     /**
      * Trigger Matching
      */
@@ -172,7 +189,8 @@ class ResponseTemplate extends BaseModel
         if (!in_array($trigger, $triggers)) {
             $triggers[] = $trigger;
             $this->update(['suggested_triggers' => $triggers]);
-
+        }
+    }
     public function matchesTrigger(string $text): bool
     {
         $text = strtolower($text);
@@ -180,9 +198,11 @@ class ResponseTemplate extends BaseModel
         foreach ($this->suggested_triggers as $trigger) {
             if (str_contains($text, strtolower($trigger))) {
                 return true;
+            }
+        }
 
         return false;
-
+    }
     public function getMatchScore(string $text): int
     {
         $score = 0;
@@ -191,9 +211,11 @@ class ResponseTemplate extends BaseModel
         foreach ($this->suggested_triggers as $trigger) {
             if (str_contains($text, strtolower($trigger))) {
                 $score += 10;
+            }
+        }
 
         return min($score, 100);
-
+    }
     /**
      * Visibility Management
      */
@@ -202,10 +224,12 @@ class ResponseTemplate extends BaseModel
     {
         $this->update(['is_public' => true]);
 
+        }
     public function makePrivate(): void
     {
         $this->update(['is_public' => false]);
 
+    }
     /**
      * Preview Generation
      */
@@ -224,38 +248,46 @@ class ResponseTemplate extends BaseModel
         $data = array_merge($defaultData, $sampleData);
         return $this->render($data);
 
+    }
     /**
      * Scopes
      */
 
-    public function scopeActive($query)
+    public function scopeActive($query): Builder
     {
         return $query->where('status', 'active');
 
-    public function scopeInCategory($query, string $category)
+        }
+    public function scopeInCategory($query, string $category): Builder
     {
         return $query->where('category', $category);
 
-    public function scopePublic($query)
+        }
+    public function scopePublic($query): Builder
     {
         return $query->where('is_public', true);
 
-    public function scopeForPlatform($query, string $platform)
+        }
+    public function scopeForPlatform($query, string $platform): Builder
     {
         return $query->whereJsonContains('platforms', $platform);
 
-    public function scopeMostUsed($query, int $limit = 10)
+        }
+    public function scopeMostUsed($query, int $limit = 10): Builder
     {
         return $query->orderBy('usage_count', 'desc')->limit($limit);
 
-    public function scopeMostEffective($query, int $limit = 10)
+        }
+    public function scopeMostEffective($query, int $limit = 10): Builder
     {
         return $query->where('effectiveness_score', '>', 0)
                      ->orderBy('effectiveness_score', 'desc')
                      ->limit($limit);
 
-    public function scopeRecentlyUsed($query, int $days = 30)
+                     }
+    public function scopeRecentlyUsed($query, int $days = 30): Builder
     {
         return $query->where('last_used_at', '>=', now()->subDays($days))
                      ->orderBy('last_used_at', 'desc');
+    }
 }

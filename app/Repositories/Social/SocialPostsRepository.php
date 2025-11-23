@@ -36,7 +36,7 @@ class SocialPostsRepository
         return true;
     }
 
-    protected function logHistory($post, $action, $newStatus = null, $oldStatus = null, $changes = null)
+    protected function logHistory($post, $action, $newStatus = null, $oldStatus = null, $changes = null): void
     {
         PostHistory::create([
             'post_id' => $post->id,

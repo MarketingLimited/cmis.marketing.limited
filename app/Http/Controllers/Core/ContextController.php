@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers\Core;
+use App\Http\Controllers\Concerns\ApiResponse;
 
 use App\Http\Controllers\Controller;
 use App\Models\Security\SessionContext;
@@ -98,11 +99,7 @@ class ContextController extends Controller
                 'trace' => $e->getTraceAsString()
             ]);
 
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to retrieve context',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to retrieve context' . ': ' . $e->getMessage());
         }
     }
 
@@ -175,11 +172,7 @@ class ContextController extends Controller
                 'error' => $e->getMessage()
             ]);
 
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to retrieve organizations',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to retrieve organizations' . ': ' . $e->getMessage());
         }
     }
 
@@ -203,10 +196,7 @@ class ContextController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         try {
@@ -287,11 +277,7 @@ class ContextController extends Controller
                 'error' => $e->getMessage(),
             ]);
 
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to switch organization. Please try again.',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to switch organization. Please try again.' . ': ' . $e->getMessage());
         }
     }
 
@@ -327,11 +313,7 @@ class ContextController extends Controller
                 'error' => $e->getMessage()
             ]);
 
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to refresh context',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to refresh context' . ': ' . $e->getMessage());
         }
     }
 }

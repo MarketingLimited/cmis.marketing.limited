@@ -63,7 +63,7 @@ class CampaignAnalytics extends BaseModel
     /**
      * Get the campaign
      */
-    public function campaign()
+    public function campaign(): BelongsTo
     {
         return $this->belongsTo(\App\Models\Campaign::class, 'campaign_id', 'campaign_id');
     }
@@ -71,7 +71,7 @@ class CampaignAnalytics extends BaseModel
     /**
      * Scope by date range
      */
-    public function scopeDateRange($query, $startDate, $endDate)
+    public function scopeDateRange($query, $startDate, $endDate): Builder
     {
         return $query->whereBetween('date', [$startDate, $endDate]);
     }
@@ -79,7 +79,7 @@ class CampaignAnalytics extends BaseModel
     /**
      * Scope recent analytics
      */
-    public function scopeRecent($query, int $days = 30)
+    public function scopeRecent($query, int $days = 30): Builder
     {
         return $query->where('date', '>=', now()->subDays($days));
     }

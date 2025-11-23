@@ -1,11 +1,13 @@
 <?php
 
 namespace App\Http\Controllers\Analytics;
+use App\Http\Controllers\Concerns\ApiResponse;
 
 use App\Http\Controllers\Controller;
 use App\Models\Analytics\KpiTarget;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Http\JsonResponse;
 
 /**
  * KPI Target Controller
@@ -23,7 +25,7 @@ class KpiTargetController extends Controller
      * @param Request $request HTTP request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function index(Request $request)
+    public function index(Request $request): JsonResponse
     {
         Log::info('KpiTargetController::index called (stub)', [
             'filters' => $request->all(),
@@ -42,7 +44,7 @@ class KpiTargetController extends Controller
      * @param Request $request HTTP request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function create(Request $request)
+    public function create(Request $request): JsonResponse
     {
         Log::info('KpiTargetController::create called (stub)');
 
@@ -58,7 +60,7 @@ class KpiTargetController extends Controller
      * @param Request $request HTTP request with KPI target data
      * @return \Illuminate\Http\JsonResponse
      */
-    public function store(Request $request)
+    public function store(Request $request): JsonResponse
     {
         Log::info('KpiTargetController::store called (stub)', [
             'data' => $request->all(),
@@ -78,7 +80,7 @@ class KpiTargetController extends Controller
      * @param string $target_id KPI Target ID
      * @return \Illuminate\Http\JsonResponse
      */
-    public function show(Request $request, $target_id)
+    public function show(Request $request, $target_id): JsonResponse
     {
         Log::info('KpiTargetController::show called (stub)', [
             'target_id' => $target_id,
@@ -97,7 +99,7 @@ class KpiTargetController extends Controller
      * @param string $target_id KPI Target ID
      * @return \Illuminate\Http\JsonResponse
      */
-    public function edit(Request $request, $target_id)
+    public function edit(Request $request, $target_id): JsonResponse
     {
         Log::info('KpiTargetController::edit called (stub)', [
             'target_id' => $target_id,
@@ -116,7 +118,7 @@ class KpiTargetController extends Controller
      * @param string $target_id KPI Target ID
      * @return \Illuminate\Http\JsonResponse
      */
-    public function update(Request $request, $target_id)
+    public function update(Request $request, $target_id): JsonResponse
     {
         Log::info('KpiTargetController::update called (stub)', [
             'target_id' => $target_id,
@@ -137,7 +139,7 @@ class KpiTargetController extends Controller
      * @param string $target_id KPI Target ID
      * @return \Illuminate\Http\JsonResponse
      */
-    public function destroy(Request $request, $target_id)
+    public function destroy(Request $request, $target_id): JsonResponse
     {
         Log::info('KpiTargetController::destroy called (stub)', [
             'target_id' => $target_id,

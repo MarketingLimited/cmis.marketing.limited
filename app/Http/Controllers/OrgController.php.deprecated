@@ -7,15 +7,18 @@ use App\Models\CampaignPerformanceMetric;
 use App\Models\Core\Org;
 use App\Models\Security\AuditLog;
 use Illuminate\Http\Request;
+use Illuminate\View\View;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Maatwebsite\Excel\Facades\Excel;
 use PDF;
+use Illuminate\Http\RedirectResponse;
 
 class OrgController extends Controller
 {
-    public function index()
+    public function index(): View
     {
         $orgs = Org::query()
             ->select('org_id', 'name', 'default_locale', 'currency', 'created_at')
@@ -25,12 +28,12 @@ class OrgController extends Controller
         return view('orgs.index', compact('orgs'));
     }
 
-    public function create()
+    public function create(): View
     {
         return view('orgs.create');
     }
 
-    public function store(Request $request)
+    public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255|unique:cmis.orgs,name',
@@ -239,7 +242,7 @@ class OrgController extends Controller
         ];
     }
 
-    public function campaigns($id)
+    public function campaigns($id): View
     {
         $org = $this->resolveOrg($id);
 
@@ -255,7 +258,7 @@ class OrgController extends Controller
         ]);
     }
 
-    public function services($id)
+    public function services($id): View
     {
         $org = $this->resolveOrg($id);
 
@@ -271,7 +274,7 @@ class OrgController extends Controller
         ]);
     }
 
-    public function products($id)
+    public function products($id): View
     {
         $org = $this->resolveOrg($id);
 
@@ -287,7 +290,7 @@ class OrgController extends Controller
         ]);
     }
 
-    public function compareCampaigns(Request $request, $id)
+    public function compareCampaigns(Request $request, $id): RedirectResponse
     {
         $org = $this->resolveOrg($id);
 

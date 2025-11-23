@@ -12,6 +12,7 @@ use App\Repositories\Knowledge\KnowledgeRepository;
 use App\Repositories\Knowledge\EmbeddingRepository;
 use App\Services\CMIS\SemanticSearchService;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
@@ -69,7 +70,7 @@ class AIGenerationController extends Controller
     /**
      * Get AI dashboard statistics
      */
-    public function dashboard(Request $request, string $orgId)
+    public function dashboard(Request $request, string $orgId): \Illuminate\Http\JsonResponse
     {
         Gate::authorize('ai.view_insights');
 
@@ -108,17 +109,14 @@ class AIGenerationController extends Controller
                 ];
             }, array_keys(self::AI_MODELS), self::AI_MODELS);
 
-            return response()->json([
+            return $this->success([
                 'stats' => $stats,
                 'recent_generations' => $recentGenerations,
                 'models' => $models,
-            ]);
+            ], 'Dashboard data retrieved successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'error' => 'Failed to fetch dashboard data',
-                'message' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to fetch dashboard data: ' . $e->getMessage());
         }
     }
 
@@ -128,7 +126,7 @@ class AIGenerationController extends Controller
      * Supports both synchronous and asynchronous generation.
      * Use async=true for queued processing (recommended for production).
      */
-    public function generate(Request $request, string $orgId)
+    public function generate(Request $request, string $orgId): \Illuminate\Http\JsonResponse
     {
         Gate::authorize('ai.generate_content');
 
@@ -145,10 +143,7 @@ class AIGenerationController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'error' => 'Validation Error',
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors(), 'Validation Error');
         }
 
         $contentType = $request->input('content_type');
@@ -199,10 +194,7 @@ class AIGenerationController extends Controller
             $generatedContent = $this->callAIModel($model, $prompt, $maxTokens);
 
             if (!$generatedContent) {
-                return response()->json([
-                    'error' => 'AI generation failed',
-                    'message' => 'Unable to generate content. Please try again.'
-                ], 500);
+                return $this->serverError('Unable to generate content. Please try again.');
             }
 
             // Store generation history if it's a campaign
@@ -210,12 +202,12 @@ class AIGenerationController extends Controller
                 $this->storeGeneratedCampaign($orgId, $generatedContent, $model, $objective);
             }
 
-            return response()->json([
+            return $this->created([
                 'content' => $generatedContent,
                 'model' => $model,
                 'tokens_used' => strlen($generatedContent) / 4, // Rough estimate
                 'generated_at' => now()->toIso8601String(),
-            ], 201);
+            ], 'Content generated successfully');
 
         } catch (\Exception $e) {
             Log::error('AI generation failed', [
@@ -223,17 +215,14 @@ class AIGenerationController extends Controller
                 'error' => $e->getMessage(),
             ]);
 
-            return response()->json([
-                'error' => 'Failed to generate content',
-                'message' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to generate content: ' . $e->getMessage());
         }
     }
 
     /**
      * Perform semantic search using pgvector
      */
-    public function semanticSearch(Request $request, string $orgId, SemanticSearchService $searchService)
+    public function semanticSearch(Request $request, string $orgId, SemanticSearchService $searchService): \Illuminate\Http\JsonResponse
     {
         Gate::authorize('ai.semantic_search');
 
@@ -246,10 +235,7 @@ class AIGenerationController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'error' => 'Validation Error',
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors(), 'Validation Error');
         }
 
         try {
@@ -266,13 +252,13 @@ class AIGenerationController extends Controller
                 return ($result['similarity'] ?? 0) >= $threshold;
             })->values();
 
-            return response()->json([
+            return $this->success([
                 'query' => $query,
                 'results' => $filteredResults,
                 'count' => $filteredResults->count(),
                 'sources' => $sources,
                 'timestamp' => now()->toIso8601String(),
-            ]);
+            ], 'Semantic search completed successfully');
 
         } catch (\Exception $e) {
             Log::error('Semantic search failed', [
@@ -281,17 +267,14 @@ class AIGenerationController extends Controller
                 'error' => $e->getMessage(),
             ]);
 
-            return response()->json([
-                'error' => 'Semantic search failed',
-                'message' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Semantic search failed: ' . $e->getMessage());
         }
     }
 
     /**
      * Get AI-powered recommendations
      */
-    public function recommendations(Request $request, string $orgId)
+    public function recommendations(Request $request, string $orgId): \Illuminate\Http\JsonResponse
     {
         Gate::authorize('ai.view_recommendations');
 
@@ -319,23 +302,20 @@ class AIGenerationController extends Controller
                 ];
             });
 
-            return response()->json([
+            return $this->success([
                 'recommendations' => $recommendations,
                 'count' => $recommendations->count(),
-            ]);
+            ], 'Recommendations retrieved successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'error' => 'Failed to fetch recommendations',
-                'message' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to fetch recommendations: ' . $e->getMessage());
         }
     }
 
     /**
      * Get knowledge base items
      */
-    public function knowledge(Request $request, string $orgId)
+    public function knowledge(Request $request, string $orgId): \Illuminate\Http\JsonResponse
     {
         Gate::authorize('ai.manage_knowledge');
 
@@ -369,23 +349,20 @@ class AIGenerationController extends Controller
                     ];
                 });
 
-            return response()->json([
+            return $this->success([
                 'items' => $items,
                 'count' => $items->count(),
-            ]);
+            ], 'Knowledge items retrieved successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'error' => 'Failed to fetch knowledge items',
-                'message' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to fetch knowledge items: ' . $e->getMessage());
         }
     }
 
     /**
      * Process and vectorize knowledge documents
      */
-    public function processKnowledge(Request $request, string $orgId)
+    public function processKnowledge(Request $request, string $orgId): \Illuminate\Http\JsonResponse
     {
         Gate::authorize('ai.manage_knowledge');
 
@@ -394,10 +371,7 @@ class AIGenerationController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'error' => 'خطأ في التحقق',
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors(), 'خطأ في التحقق');
         }
 
         try {
@@ -409,37 +383,27 @@ class AIGenerationController extends Controller
             $result = $this->embeddingRepo->updateSingleEmbedding($knowledgeId);
 
             if ($result && isset($result->success) && $result->success) {
-                return response()->json([
-                    'success' => true,
-                    'message' => 'تم معالجة عنصر المعرفة بنجاح',
+                return $this->success([
                     'knowledge_id' => $knowledgeId,
                     'status' => 'completed',
                     'result' => $result,
-                ]);
+                ], 'تم معالجة عنصر المعرفة بنجاح');
             }
 
-            return response()->json([
-                'success' => false,
-                'message' => 'فشلت معالجة عنصر المعرفة',
-                'knowledge_id' => $knowledgeId,
-                'status' => 'failed',
-            ], 500);
+            return $this->serverError('فشلت معالجة عنصر المعرفة');
 
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            return response()->json(['error' => 'لم يتم العثور على عنصر المعرفة'], 404);
+            return $this->notFound('لم يتم العثور على عنصر المعرفة');
         } catch (\Exception $e) {
             Log::error('فشلت معالجة المعرفة: ' . $e->getMessage());
-            return response()->json([
-                'error' => 'فشلت معالجة المعرفة',
-                'message' => $e->getMessage()
-            ], 500);
+            return $this->serverError('فشلت معالجة المعرفة: ' . $e->getMessage());
         }
     }
 
     /**
      * Get content generation history
      */
-    public function history(Request $request, string $orgId)
+    public function history(Request $request, string $orgId): \Illuminate\Http\JsonResponse
     {
         Gate::authorize('ai.view_insights');
 
@@ -462,13 +426,10 @@ class AIGenerationController extends Controller
                     ];
                 });
 
-            return response()->json($history);
+            return $this->paginated($history, 'Generation history retrieved successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'error' => 'Failed to fetch history',
-                'message' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to fetch history: ' . $e->getMessage());
         }
     }
 
@@ -663,7 +624,7 @@ Create 10 compelling headline variations that capture attention and drive action
     /**
      * Batch process knowledge embeddings
      */
-    public function batchProcessEmbeddings(Request $request, string $orgId)
+    public function batchProcessEmbeddings(Request $request, string $orgId): \Illuminate\Http\JsonResponse
     {
         Gate::authorize('ai.manage_knowledge');
 
@@ -673,10 +634,7 @@ Create 10 compelling headline variations that capture attention and drive action
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'error' => 'خطأ في التحقق',
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors(), 'خطأ في التحقق');
         }
 
         try {
@@ -685,25 +643,20 @@ Create 10 compelling headline variations that capture attention and drive action
 
             $result = $this->embeddingRepo->batchUpdateEmbeddings($batchSize, $category);
 
-            return response()->json([
-                'success' => true,
-                'message' => 'تم معالجة الدفعة بنجاح',
+            return $this->success([
                 'result' => $result,
-            ]);
+            ], 'تم معالجة الدفعة بنجاح');
 
         } catch (\Exception $e) {
             Log::error('فشلت معالجة الدفعة: ' . $e->getMessage());
-            return response()->json([
-                'error' => 'فشلت معالجة الدفعة',
-                'message' => $e->getMessage()
-            ], 500);
+            return $this->serverError('فشلت معالجة الدفعة: ' . $e->getMessage());
         }
     }
 
     /**
      * Advanced semantic search
      */
-    public function advancedSemanticSearch(Request $request, string $orgId)
+    public function advancedSemanticSearch(Request $request, string $orgId): \Illuminate\Http\JsonResponse
     {
         Gate::authorize('ai.semantic_search');
 
@@ -718,10 +671,7 @@ Create 10 compelling headline variations that capture attention and drive action
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'error' => 'خطأ في التحقق',
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors(), 'خطأ في التحقق');
         }
 
         try {
@@ -735,26 +685,22 @@ Create 10 compelling headline variations that capture attention and drive action
                 $request->input('threshold', 0.3)
             );
 
-            return response()->json([
-                'success' => true,
+            return $this->success([
                 'query' => $request->input('query'),
                 'results' => $results,
                 'count' => $results->count(),
-            ]);
+            ], 'Advanced semantic search completed successfully');
 
         } catch (\Exception $e) {
             Log::error('فشل البحث الدلالي المتقدم: ' . $e->getMessage());
-            return response()->json([
-                'error' => 'فشل البحث الدلالي المتقدم',
-                'message' => $e->getMessage()
-            ], 500);
+            return $this->serverError('فشل البحث الدلالي المتقدم: ' . $e->getMessage());
         }
     }
 
     /**
      * Register new knowledge entry
      */
-    public function registerKnowledge(Request $request, string $orgId)
+    public function registerKnowledge(Request $request, string $orgId): \Illuminate\Http\JsonResponse
     {
         Gate::authorize('ai.manage_knowledge');
 
@@ -769,10 +715,7 @@ Create 10 compelling headline variations that capture attention and drive action
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'error' => 'خطأ في التحقق',
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors(), 'خطأ في التحقق');
         }
 
         try {
@@ -785,25 +728,20 @@ Create 10 compelling headline variations that capture attention and drive action
                 $request->input('keywords', [])
             );
 
-            return response()->json([
-                'success' => true,
-                'message' => 'تم تسجيل المعرفة بنجاح',
+            return $this->created([
                 'knowledge_id' => $knowledgeId,
-            ], 201);
+            ], 'تم تسجيل المعرفة بنجاح');
 
         } catch (\Exception $e) {
             Log::error('فشل تسجيل المعرفة: ' . $e->getMessage());
-            return response()->json([
-                'error' => 'فشل تسجيل المعرفة',
-                'message' => $e->getMessage()
-            ], 500);
+            return $this->serverError('فشل تسجيل المعرفة: ' . $e->getMessage());
         }
     }
 
     /**
      * Auto analyze knowledge
      */
-    public function analyzeKnowledge(Request $request, string $orgId)
+    public function analyzeKnowledge(Request $request, string $orgId): \Illuminate\Http\JsonResponse
     {
         Gate::authorize('ai.view_insights');
 
@@ -816,10 +754,7 @@ Create 10 compelling headline variations that capture attention and drive action
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'error' => 'خطأ في التحقق',
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors(), 'خطأ في التحقق');
         }
 
         try {
@@ -831,25 +766,21 @@ Create 10 compelling headline variations that capture attention and drive action
                 $request->input('batch_limit', 20)
             );
 
-            return response()->json([
-                'success' => true,
+            return $this->success([
                 'query' => $request->input('query'),
                 'analysis' => $analysis,
-            ]);
+            ], 'Knowledge analysis completed successfully');
 
         } catch (\Exception $e) {
             Log::error('فشل تحليل المعرفة: ' . $e->getMessage());
-            return response()->json([
-                'error' => 'فشل تحليل المعرفة',
-                'message' => $e->getMessage()
-            ], 500);
+            return $this->serverError('فشل تحليل المعرفة: ' . $e->getMessage());
         }
     }
 
     /**
      * Smart context loader for RAG
      */
-    public function loadContext(Request $request, string $orgId)
+    public function loadContext(Request $request, string $orgId): JsonResponse
     {
         Gate::authorize('ai.semantic_search');
 
@@ -861,10 +792,7 @@ Create 10 compelling headline variations that capture attention and drive action
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'error' => 'خطأ في التحقق',
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationError($validator->errors(), 'خطأ في التحقق');
         }
 
         try {
@@ -875,66 +803,56 @@ Create 10 compelling headline variations that capture attention and drive action
                 $request->input('token_limit', 5000)
             );
 
-            return response()->json([
-                'success' => true,
+            return $this->success([
                 'query' => $request->input('query'),
                 'context' => $context,
-            ]);
+            ], 'Context loaded successfully');
 
         } catch (\Exception $e) {
             Log::error('فشل تحميل السياق: ' . $e->getMessage());
-            return response()->json([
-                'error' => 'فشل تحميل السياق',
-                'message' => $e->getMessage()
-            ], 500);
+            return $this->serverError('فشل تحميل السياق: ' . $e->getMessage());
         }
     }
 
     /**
      * Get system report
      */
-    public function systemReport(Request $request)
+    public function systemReport(Request $request): JsonResponse
     {
         Gate::authorize('ai.view_insights');
 
         try {
             $report = $this->knowledgeRepo->generateSystemReport();
 
-            return response()->json([
-                'success' => true,
+            return $this->success([
                 'report' => $report,
-            ]);
+            ], 'System report generated successfully');
 
         } catch (\Exception $e) {
             Log::error('فشل إنشاء تقرير النظام: ' . $e->getMessage());
-            return response()->json([
-                'error' => 'فشل إنشاء تقرير النظام',
-                'message' => $e->getMessage()
-            ], 500);
+            return $this->serverError('فشل إنشاء تقرير النظام: ' . $e->getMessage());
         }
     }
 
     /**
      * Cleanup old embeddings
      */
-    public function cleanupEmbeddings(Request $request)
+    public function cleanupEmbeddings(Request $request): JsonResponse
     {
         Gate::authorize('ai.manage_knowledge');
 
         try {
             $success = $this->knowledgeRepo->cleanupOldEmbeddings();
 
-            return response()->json([
-                'success' => $success,
-                'message' => $success ? 'تم تنظيف التضمينات القديمة بنجاح' : 'فشل تنظيف التضمينات',
-            ]);
+            if ($success) {
+                return $this->success([], 'تم تنظيف التضمينات القديمة بنجاح');
+            }
+
+            return $this->serverError('فشل تنظيف التضمينات');
 
         } catch (\Exception $e) {
             Log::error('فشل تنظيف التضمينات: ' . $e->getMessage());
-            return response()->json([
-                'error' => 'فشل تنظيف التضمينات',
-                'message' => $e->getMessage()
-            ], 500);
+            return $this->serverError('فشل تنظيف التضمينات: ' . $e->getMessage());
         }
     }
 }

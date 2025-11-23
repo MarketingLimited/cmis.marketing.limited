@@ -328,8 +328,7 @@ class LinkedInWebhookController extends Controller
             return $this->error('Missing challenge parameter', 400);
         }
 
-        return response()->json([
-            'challenge' => $challenge,
-        ]);
+        return $this->success(['challenge' => $challenge,
+        ], 'Operation completed successfully');
     }
 }

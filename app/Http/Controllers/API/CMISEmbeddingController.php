@@ -50,17 +50,10 @@ class CMISEmbeddingController extends Controller
                 $validated['threshold'] ?? 0.7
             );
             
-            return response()->json([
-                'success' => true,
-                'data' => $results,
-                'count' => count($results)
-            ]);
+            return $this->success($results, 'Operation completed successfully');
             
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Search failed: ' . $e->getMessage()
-            ], 500);
+            return $this->serverError('Search failed: ');
         }
     }
     
@@ -74,18 +67,14 @@ class CMISEmbeddingController extends Controller
         try {
             $success = $this->processor->processSpecificKnowledge($knowledgeId);
             
-            return response()->json([
-                'success' => $success,
+            return $this->success(['success' => $success,
                 'message' => $success 
                     ? "Knowledge {$knowledgeId} processed successfully"
                     : "Failed to process knowledge {$knowledgeId}"
-            ]);
+            ], 'Operation completed successfully');
             
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Processing failed: ' . $e->getMessage()
-            ], 500);
+            return $this->serverError('Processing failed: ');
         }
     }
     
@@ -101,17 +90,10 @@ class CMISEmbeddingController extends Controller
         try {
             $results = $this->searchService->findSimilar($knowledgeId, $limit);
             
-            return response()->json([
-                'success' => true,
-                'data' => $results,
-                'count' => count($results)
-            ]);
+            return $this->success($results, 'Operation completed successfully');
             
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Search failed: ' . $e->getMessage()
-            ], 500);
+            return $this->serverError('Search failed: ');
         }
     }
     
@@ -130,10 +112,7 @@ class CMISEmbeddingController extends Controller
             ]);
             
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to get status: ' . $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to get status: ');
         }
     }
 }

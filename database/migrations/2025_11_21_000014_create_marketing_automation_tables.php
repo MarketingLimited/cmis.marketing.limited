@@ -1,12 +1,15 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
+use Database\Migrations\Concerns\HasRLSPolicies;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
+    use HasRLSPolicies;
+
     /**
      * Run the migrations.
      */
@@ -50,11 +53,7 @@ return new class extends Migration
         });
 
         // RLS Policy
-        DB::statement("
-            ALTER TABLE cmis.workflow_templates ENABLE ROW LEVEL SECURITY;
-            CREATE POLICY org_isolation ON cmis.workflow_templates
-            USING (org_id = current_setting('app.current_org_id', true)::uuid);
-        ");
+        $this->enableRLS('cmis.workflow_templates');
 
         // 2. Workflow Instances - Active workflow executions
         Schema::create('cmis.workflow_instances', function (Blueprint $table) {
@@ -104,11 +103,7 @@ return new class extends Migration
         });
 
         // RLS Policy
-        DB::statement("
-            ALTER TABLE cmis.workflow_instances ENABLE ROW LEVEL SECURITY;
-            CREATE POLICY org_isolation ON cmis.workflow_instances
-            USING (org_id = current_setting('app.current_org_id', true)::uuid);
-        ");
+        $this->enableRLS('cmis.workflow_instances');
 
         // 3. Workflow Steps - Individual steps in workflow execution
         Schema::create('cmis.workflow_steps', function (Blueprint $table) {
@@ -152,11 +147,7 @@ return new class extends Migration
         });
 
         // RLS Policy
-        DB::statement("
-            ALTER TABLE cmis.workflow_steps ENABLE ROW LEVEL SECURITY;
-            CREATE POLICY org_isolation ON cmis.workflow_steps
-            USING (org_id = current_setting('app.current_org_id', true)::uuid);
-        ");
+        $this->enableRLS('cmis.workflow_steps');
 
         // 4. Automation Rules - Simple if-this-then-that rules
         Schema::create('cmis.automation_rules', function (Blueprint $table) {
@@ -205,11 +196,7 @@ return new class extends Migration
         });
 
         // RLS Policy
-        DB::statement("
-            ALTER TABLE cmis.automation_rules ENABLE ROW LEVEL SECURITY;
-            CREATE POLICY org_isolation ON cmis.automation_rules
-            USING (org_id = current_setting('app.current_org_id', true)::uuid);
-        ");
+        $this->enableRLS('cmis.automation_rules');
 
         // 5. Automation Executions - Execution history
         Schema::create('cmis.automation_executions', function (Blueprint $table) {
@@ -252,11 +239,7 @@ return new class extends Migration
         });
 
         // RLS Policy
-        DB::statement("
-            ALTER TABLE cmis.automation_executions ENABLE ROW LEVEL SECURITY;
-            CREATE POLICY org_isolation ON cmis.automation_executions
-            USING (org_id = current_setting('app.current_org_id', true)::uuid);
-        ");
+        $this->enableRLS('cmis.automation_executions');
 
         // 6. Scheduled Jobs - Time-based automation triggers
         Schema::create('cmis.scheduled_jobs', function (Blueprint $table) {
@@ -302,11 +285,7 @@ return new class extends Migration
         });
 
         // RLS Policy
-        DB::statement("
-            ALTER TABLE cmis.scheduled_jobs ENABLE ROW LEVEL SECURITY;
-            CREATE POLICY org_isolation ON cmis.scheduled_jobs
-            USING (org_id = current_setting('app.current_org_id', true)::uuid);
-        ");
+        $this->enableRLS('cmis.scheduled_jobs');
 
         // Create Performance Views
 

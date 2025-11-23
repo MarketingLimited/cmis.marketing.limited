@@ -48,7 +48,7 @@ class AdvancedSchedulingController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         try {
@@ -61,10 +61,13 @@ class AdvancedSchedulingController extends Controller
             $data['created_by'] = $userId;
 
             $result = $this->schedulingService->createRecurringTemplate($data);
-            return response()->json($result, $result['success'] ? 201 : 500);
+            if (!$result['success']) {
+            return $this->serverError($result['message'] ?? 'Operation failed');
+        }
+        return $this->created($result['data'] ?? $result, $result['message'] ?? 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => 'Failed to create template', 'error' => $e->getMessage()], 500);
+            return $this->serverError('Failed to create template');
         }
     }
 
@@ -79,16 +82,19 @@ class AdvancedSchedulingController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         try {
             $daysAhead = $request->input('days_ahead', 30);
             $result = $this->schedulingService->generateRecurringPosts($templateId, $daysAhead);
-            return response()->json($result, $result['success'] ? 200 : 400);
+            if (!$result['success']) {
+            return $this->serverError($result['message'] ?? 'Operation failed');
+        }
+        return $this->success($result['data'] ?? $result, $result['message'] ?? 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => 'Failed to generate posts', 'error' => $e->getMessage()], 500);
+            return $this->serverError('Failed to generate posts');
         }
     }
 
@@ -104,15 +110,18 @@ class AdvancedSchedulingController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         try {
             $result = $this->schedulingService->getSchedulingQueue($accountId, $request->all());
-            return response()->json($result, $result['success'] ? 200 : 500);
+            if (!$result['success']) {
+            return $this->serverError($result['message'] ?? 'Operation failed');
+        }
+        return $this->success($result['data'] ?? $result, $result['message'] ?? 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => 'Failed to get queue', 'error' => $e->getMessage()], 500);
+            return $this->serverError('Failed to get queue');
         }
     }
 
@@ -128,15 +137,18 @@ class AdvancedSchedulingController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         try {
             $result = $this->schedulingService->recyclePost($postId, $request->all());
-            return response()->json($result, $result['success'] ? 201 : 400);
+            if (!$result['success']) {
+            return $this->serverError($result['message'] ?? 'Operation failed');
+        }
+        return $this->created($result['data'] ?? $result, $result['message'] ?? 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => 'Failed to recycle post', 'error' => $e->getMessage()], 500);
+            return $this->serverError('Failed to recycle post');
         }
     }
 
@@ -151,16 +163,19 @@ class AdvancedSchedulingController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         try {
             $strategy = $request->input('strategy', 'space_evenly');
             $result = $this->schedulingService->resolveConflicts($accountId, $strategy);
-            return response()->json($result, $result['success'] ? 200 : 500);
+            if (!$result['success']) {
+            return $this->serverError($result['message'] ?? 'Operation failed');
+        }
+        return $this->success($result['data'] ?? $result, $result['message'] ?? 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => 'Failed to resolve conflicts', 'error' => $e->getMessage()], 500);
+            return $this->serverError('Failed to resolve conflicts');
         }
     }
 
@@ -179,7 +194,7 @@ class AdvancedSchedulingController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         try {
@@ -188,10 +203,13 @@ class AdvancedSchedulingController extends Controller
                 $request->only(['start_date', 'strategy', 'timezone'])
             );
 
-            return response()->json($result, $result['success'] ? 200 : 500);
+            if (!$result['success']) {
+            return $this->serverError($result['message'] ?? 'Operation failed');
+        }
+        return $this->success($result['data'] ?? $result, $result['message'] ?? 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => 'Failed to reschedule', 'error' => $e->getMessage()], 500);
+            return $this->serverError('Failed to reschedule');
         }
     }
 }

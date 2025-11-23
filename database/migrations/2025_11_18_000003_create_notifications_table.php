@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
+use Database\Migrations\Concerns\HasRLSPolicies;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -11,6 +12,8 @@ use Illuminate\Support\Facades\DB;
  */
 return new class extends Migration
 {
+    use HasRLSPolicies;
+
     /**
      * Disable transactions for direct SQL execution
      */
@@ -87,7 +90,7 @@ return new class extends Migration
         ");
 
         // Enable RLS
-        DB::statement("ALTER TABLE cmis.notifications ENABLE ROW LEVEL SECURITY");
+        $this->enableRLS('cmis.notifications');
 
         // Create RLS policies
         DB::statement("DROP POLICY IF EXISTS notifications_insert_policy ON cmis.notifications");

@@ -5,6 +5,7 @@ namespace App\Models\AdPlatform;
 use App\Models\Concerns\HasOrganization;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Builder;
 use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -39,26 +40,27 @@ class AdAccount extends BaseModel
         'deleted_at' => 'datetime',
     ];
 
-    
-
     /**
      * Get the integration
      */
-    public function integration()
+    public function integration(): BelongsTo
     {
         return $this->belongsTo(\App\Models\Core\Integration::class, 'integration_id', 'integration_id');
+    }
 
     /**
      * Scope active accounts
      */
-    public function scopeActive($query)
+    public function scopeActive($query): Builder
     {
         return $query->where('status', 'active');
+    }
 
     /**
      * Scope by provider
      */
-    public function scopeByProvider($query, string $provider)
+    public function scopeByProvider($query, string $provider): Builder
     {
         return $query->where('provider', $provider);
+    }
 }

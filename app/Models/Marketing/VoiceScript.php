@@ -8,6 +8,7 @@ use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Builder;
 
 class VoiceScript extends BaseModel
 {
@@ -37,31 +38,37 @@ class VoiceScript extends BaseModel
         'script_structure' => 'array',
     ];
 
-    public function organization()
+    public function organization(): BelongsTo
     {
         return $this->belongsTo(\App\Models\Organization::class, 'org_id', 'org_id');
 
-    public function scenario()
+        }
+    public function scenario(): BelongsTo
     {
         return $this->belongsTo(VideoScenario::class, 'scenario_id', 'scenario_id');
 
-    public function scopeByLanguage($query, $language)
+        }
+    public function scopeByLanguage($query, $language): Builder
     {
         return $query->where('language', $language);
 
-    public function scopeByStatus($query, $status)
+        }
+    public function scopeByStatus($query, $status): Builder
     {
         return $query->where('status', $status);
 
-    public function getDurationFormatted()
+        }
+    public function getDurationFormatted(): string
     {
         $minutes = floor($this->estimated_duration_seconds / 60);
         $seconds = $this->estimated_duration_seconds % 60;
         return sprintf('%d:%02d', $minutes, $seconds);
+    }
 
-    public function updateWordCount()
+    public function updateWordCount(): void
     {
         $this->word_count = str_word_count($this->script_text);
         $this->estimated_duration_seconds = ceil($this->word_count / 2.5); // Average speaking rate
         $this->save();
+    }
 }

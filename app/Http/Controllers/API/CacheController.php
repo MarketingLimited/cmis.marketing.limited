@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Concerns\ApiResponse;
 use App\Models\Core\Org;
 use App\Services\Cache\CacheService;
 use Illuminate\Http\{Request, JsonResponse};
@@ -41,7 +42,7 @@ class CacheController extends Controller
     {
         $stats = $this->cacheService->getStats();
 
-        return response()->json($stats);
+        return $this->success($stats, 'Cache statistics retrieved successfully');
     }
 
     /**
@@ -63,10 +64,9 @@ class CacheController extends Controller
     {
         $this->cacheService->clearOrg($org->org_id);
 
-        return response()->json([
-            'message' => 'Organization cache cleared successfully',
+        return $this->success([
             'org_id' => $org->org_id,
-        ]);
+        ], 'Organization cache cleared successfully');
     }
 
     /**
@@ -87,10 +87,9 @@ class CacheController extends Controller
     {
         $this->cacheService->clearDashboard($org->org_id);
 
-        return response()->json([
-            'message' => 'Dashboard cache cleared',
+        return $this->success([
             'org_id' => $org->org_id,
-        ]);
+        ], 'Dashboard cache cleared');
     }
 
     /**
@@ -111,10 +110,9 @@ class CacheController extends Controller
     {
         $this->cacheService->clearCampaigns($org->org_id);
 
-        return response()->json([
-            'message' => 'Campaigns cache cleared',
+        return $this->success([
             'org_id' => $org->org_id,
-        ]);
+        ], 'Campaigns cache cleared');
     }
 
     /**
@@ -141,10 +139,9 @@ class CacheController extends Controller
 
         $this->cacheService->warmCache($org, $services);
 
-        return response()->json([
-            'message' => 'Cache warmed successfully',
+        return $this->success([
             'org_id' => $org->org_id,
             'services' => empty($services) ? ['all'] : $services,
-        ]);
+        ], 'Cache warmed successfully');
     }
 }

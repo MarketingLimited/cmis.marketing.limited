@@ -32,3 +32,4 @@ class ChannelFormat extends BaseModel
     {
         return $this->belongsTo(Channel::class, 'channel_id', 'channel_id');
 }
+}

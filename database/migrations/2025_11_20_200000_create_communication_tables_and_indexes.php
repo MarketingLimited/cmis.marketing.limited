@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
+use Database\Migrations\Concerns\HasRLSPolicies;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
@@ -15,6 +16,8 @@ use Illuminate\Database\Schema\Blueprint;
  */
 return new class extends Migration
 {
+    use HasRLSPolicies;
+
     public function up(): void
     {
         // Create SMS Log table
@@ -40,11 +43,8 @@ return new class extends Migration
             ");
 
             // Add RLS policy
-            DB::statement("ALTER TABLE cmis.sms_log ENABLE ROW LEVEL SECURITY");
-            DB::statement("
-                CREATE POLICY org_isolation ON cmis.sms_log
-                USING (org_id = current_setting('app.current_org_id', true)::uuid)
-            ");
+            
+            $this->enableRLS('cmis.sms_log');
         }
 
         // Create Scheduled SMS table
@@ -66,11 +66,8 @@ return new class extends Migration
             ");
 
             // Add RLS policy
-            DB::statement("ALTER TABLE cmis.scheduled_sms ENABLE ROW LEVEL SECURITY");
-            DB::statement("
-                CREATE POLICY org_isolation ON cmis.scheduled_sms
-                USING (org_id = current_setting('app.current_org_id', true)::uuid)
-            ");
+            
+            $this->enableRLS('cmis.scheduled_sms');
         }
 
         // Create SMS Templates table
@@ -91,11 +88,8 @@ return new class extends Migration
             ");
 
             // Add RLS policy
-            DB::statement("ALTER TABLE cmis.sms_templates ENABLE ROW LEVEL SECURITY");
-            DB::statement("
-                CREATE POLICY org_isolation ON cmis.sms_templates
-                USING (org_id = current_setting('app.current_org_id', true)::uuid)
-            ");
+            
+            $this->enableRLS('cmis.sms_templates');
         }
 
         // Create Notifications table if not exists
@@ -117,11 +111,8 @@ return new class extends Migration
             ");
 
             // Add RLS policy
-            DB::statement("ALTER TABLE cmis.notifications ENABLE ROW LEVEL SECURITY");
-            DB::statement("
-                CREATE POLICY org_isolation ON cmis.notifications
-                USING (org_id = current_setting('app.current_org_id', true)::uuid)
-            ");
+            
+            $this->enableRLS('cmis.notifications');
         }
 
         // Create Performance Indexes

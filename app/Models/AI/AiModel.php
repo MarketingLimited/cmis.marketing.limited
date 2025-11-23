@@ -7,6 +7,7 @@ use App\Models\Concerns\HasOrganization;
 use App\Models\Core\Org;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use App\Models\BaseModel;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
@@ -45,26 +46,19 @@ class AiModel extends BaseModel
         'deleted_at' => 'datetime',
     ];
 
-    
-
-    /**
-     * Scope to get models for a specific org
-     */
-    public function scopeForOrg($query, string $orgId)
-    {
-        return $query->where('org_id', $orgId);
-
     /**
      * Scope to filter by status
      */
-    public function scopeWithStatus($query, string $status)
+    public function scopeWithStatus($query, string $status): Builder
     {
         return $query->where('status', $status);
+    }
 
     /**
      * Scope to filter by provider
      */
-    public function scopeByProvider($query, string $provider)
+    public function scopeByProvider($query, string $provider): Builder
     {
         return $query->where('provider', $provider);
+    }
 }

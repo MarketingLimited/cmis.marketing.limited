@@ -6,6 +6,9 @@ use App\Services\BudgetBiddingService;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Validator;
+use App\Http\Requests\Budget\UpdateCampaignBudgetRequest;
+use App\Http\Requests\Budget\UpdateBidStrategyRequest;
+use App\Http\Requests\Budget\OptimizeBudgetRequest;
 
 /**
  * BudgetController
@@ -29,39 +32,30 @@ class BudgetController extends Controller
      * Update campaign budget
      * PUT /api/orgs/{org_id}/budget/campaign/{campaign_id}
      */
-    public function updateCampaignBudget(string $orgId, string $campaignId, Request $request): JsonResponse
+    public function updateCampaignBudget(string $orgId, string $campaignId, UpdateCampaignBudgetRequest $request): JsonResponse
     {
-        $validator = Validator::make($request->all(), [
-            'budget_type' => 'required|in:daily,lifetime',
-            'daily_budget' => 'required_if:budget_type,daily|nullable|numeric|min:1',
-            'lifetime_budget' => 'required_if:budget_type,lifetime|nullable|numeric|min:1'
-        ]);
+        $result = $this->budgetService->updateCampaignBudget($campaignId, $request->validated());
 
-        if ($validator->fails()) {
-            return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
+        if (!$result['success']) {
+            return $this->serverError($result['message'] ?? 'Failed to update campaign budget');
         }
 
-        $result = $this->budgetService->updateCampaignBudget($campaignId, $request->all());
-        return response()->json($result, $result['success'] ? 200 : 500);
+        return $this->success($result['data'] ?? $result, $result['message'] ?? 'Campaign budget updated successfully');
     }
 
     /**
      * Update bid strategy
      * PUT /api/orgs/{org_id}/budget/campaign/{campaign_id}/bid-strategy
      */
-    public function updateBidStrategy(string $orgId, string $campaignId, Request $request): JsonResponse
+    public function updateBidStrategy(string $orgId, string $campaignId, UpdateBidStrategyRequest $request): JsonResponse
     {
-        $validator = Validator::make($request->all(), [
-            'bid_strategy' => 'required|in:lowest_cost,cost_cap,bid_cap,target_cost',
-            'bid_amount' => 'nullable|numeric|min:0.01'
-        ]);
+        $result = $this->budgetService->updateBidStrategy($campaignId, $request->validated());
 
-        if ($validator->fails()) {
-            return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
+        if (!$result['success']) {
+            return $this->serverError($result['message'] ?? 'Failed to update bid strategy');
         }
 
-        $result = $this->budgetService->updateBidStrategy($campaignId, $request->all());
-        return response()->json($result, $result['success'] ? 200 : 500);
+        return $this->success($result['data'] ?? $result, $result['message'] ?? 'Bid strategy updated successfully');
     }
 
     /**
@@ -71,7 +65,12 @@ class BudgetController extends Controller
     public function getSpendTracking(string $orgId, string $campaignId): JsonResponse
     {
         $result = $this->budgetService->getSpendTracking($campaignId);
-        return response()->json($result, $result['success'] ? 200 : 404);
+
+        if (!$result['success']) {
+            return $this->notFound($result['message'] ?? 'Spend tracking not found');
+        }
+
+        return $this->success($result['data'] ?? $result, $result['message'] ?? 'Spend tracking retrieved successfully');
     }
 
     /**
@@ -81,7 +80,12 @@ class BudgetController extends Controller
     public function calculateROI(string $orgId, string $campaignId): JsonResponse
     {
         $result = $this->budgetService->calculateROI($campaignId);
-        return response()->json($result, $result['success'] ? 200 : 404);
+
+        if (!$result['success']) {
+            return $this->notFound($result['message'] ?? 'ROI data not found');
+        }
+
+        return $this->success($result['data'] ?? $result, $result['message'] ?? 'ROI calculated successfully');
     }
 
     /**
@@ -91,30 +95,31 @@ class BudgetController extends Controller
     public function getBudgetRecommendations(string $orgId, string $campaignId): JsonResponse
     {
         $result = $this->budgetService->getBudgetRecommendations($campaignId);
-        return response()->json($result, $result['success'] ? 200 : 404);
+
+        if (!$result['success']) {
+            return $this->notFound($result['message'] ?? 'Budget recommendations not found');
+        }
+
+        return $this->success($result['data'] ?? $result, $result['message'] ?? 'Budget recommendations retrieved successfully');
     }
 
     /**
      * Optimize budget allocation
      * POST /api/orgs/{org_id}/budget/optimize
      */
-    public function optimizeBudgetAllocation(string $orgId, Request $request): JsonResponse
+    public function optimizeBudgetAllocation(string $orgId, OptimizeBudgetRequest $request): JsonResponse
     {
-        $validator = Validator::make($request->all(), [
-            'ad_account_id' => 'required|uuid',
-            'total_budget' => 'required|numeric|min:1',
-            'goal' => 'nullable|in:roi,conversions,reach'
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
-        }
+        $validated = $request->validated();
 
         $result = $this->budgetService->optimizeBudgetAllocation(
-            $request->input('ad_account_id'),
-            $request->only(['total_budget', 'goal'])
+            $validated['ad_account_id'],
+            collect($validated)->only(['total_budget', 'goal'])->toArray()
         );
 
-        return response()->json($result, $result['success'] ? 200 : 500);
+        if (!$result['success']) {
+            return $this->serverError($result['message'] ?? 'Failed to optimize budget allocation');
+        }
+
+        return $this->success($result['data'] ?? $result, $result['message'] ?? 'Budget allocation optimized successfully');
     }
 }

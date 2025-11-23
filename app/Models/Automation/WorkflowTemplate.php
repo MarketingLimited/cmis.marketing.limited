@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Builder;
 
 class WorkflowTemplate extends BaseModel
 {
@@ -105,22 +106,22 @@ class WorkflowTemplate extends BaseModel
 
     // ===== Scopes =====
 
-    public function scopeActive($query)
+    public function scopeActive($query): Builder
     {
         return $query->where('status', 'active');
     }
 
-    public function scopePublic($query)
+    public function scopePublic($query): Builder
     {
         return $query->where('is_public', true);
     }
 
-    public function scopeOfCategory($query, string $category)
+    public function scopeOfCategory($query, string $category): Builder
     {
         return $query->where('category', $category);
     }
 
-    public function scopePopular($query, int $minUsage = 5)
+    public function scopePopular($query, int $minUsage = 5): Builder
     {
         return $query->where('usage_count', '>=', $minUsage)
             ->orderBy('usage_count', 'desc');

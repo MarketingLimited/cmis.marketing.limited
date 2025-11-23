@@ -43,3 +43,4 @@ protected $table = 'cmis.performance_metrics';
     {
         return $this->belongsTo(Campaign::class, 'campaign_id', 'campaign_id');
 }
+}

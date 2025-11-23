@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Models\Concerns\HasOrganization;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Builder;
 use App\Models\BaseModel;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
@@ -41,41 +42,46 @@ class UserPermission extends BaseModel
     /**
      * Get the user
      */
-    public function user()
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id', 'user_id');
 
+    }
     /**
      * Get the permission
      */
-    public function permission()
+    public function permission(): BelongsTo
     {
         return $this->belongsTo(Permission::class, 'permission_id', 'permission_id');
 
+    }
     /**
      * Get the user who granted this permission
      */
-    public function grantedBy()
+    public function grantedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'granted_by', 'user_id');
 
+    }
     /**
      * Scope to get active permissions
      */
-    public function scopeActive($query)
+    public function scopeActive($query): Builder
     {
         return $query->where('is_granted', true)
             ->where(function ($q) {
                 $q->whereNull('expires_at')
                     ->orWhere('expires_at', '>', now());
-
+            });
+    }
     /**
      * Scope to get expired permissions
      */
-    public function scopeExpired($query)
+    public function scopeExpired($query): Builder
     {
         return $query->where('expires_at', '<=', now());
 
+    }
     /**
      * Check if permission is active
      */
@@ -83,9 +89,12 @@ class UserPermission extends BaseModel
     {
         if (!$this->is_granted) {
             return false;
+        }
 
         if ($this->expires_at && $this->expires_at->isPast()) {
             return false;
+        }
 
         return true;
+    }
 }

@@ -3,6 +3,7 @@
 namespace App\Models\Knowledge;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Builder;
 use App\Models\BaseModel;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
@@ -43,42 +44,48 @@ class DevKnowledge extends BaseModel
      * Get related knowledge index entries
      */
     public function knowledgeEntries()
-    {
+    : mixed {
         return KnowledgeIndex::where('source_type', 'dev_knowledge')
             ->where('source_id', $this->dev_id);
 
+    }
     /**
      * Scope by category
      */
-    public function scopeByCategory($query, string $category)
+    public function scopeByCategory($query, string $category): Builder
     {
         return $query->where('category', $category);
 
+    }
     /**
      * Scope by language
      */
-    public function scopeByLanguage($query, string $language)
+    public function scopeByLanguage($query, string $language): Builder
     {
         return $query->where('language', $language);
 
+    }
     /**
      * Scope by framework
      */
-    public function scopeByFramework($query, string $framework)
+    public function scopeByFramework($query, string $framework): Builder
     {
         return $query->where('framework', $framework);
 
+    }
     /**
      * Scope active (non-deprecated)
      */
-    public function scopeActive($query)
+    public function scopeActive($query): Builder
     {
         return $query->where('is_deprecated', false);
 
+    }
     /**
      * Scope by difficulty level
      */
-    public function scopeByDifficulty($query, string $level)
+    public function scopeByDifficulty($query, string $level): Builder
     {
         return $query->where('difficulty_level', $level);
+}
 }

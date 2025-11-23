@@ -1,10 +1,13 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
+use Database\Migrations\Concerns\HasRLSPolicies;
 use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
+    use HasRLSPolicies;
+
     /**
      * Run the migrations.
      */
@@ -34,14 +37,11 @@ return new class extends Migration
         DB::statement('CREATE INDEX idx_automation_rules_created_at ON cmis_automation.automation_rules(created_at)');
 
         // Enable RLS for automation_rules
-        DB::statement('ALTER TABLE cmis_automation.automation_rules ENABLE ROW LEVEL SECURITY');
-
-        // Create RLS policy for automation_rules
-        DB::statement("
-            CREATE POLICY org_isolation_policy ON cmis_automation.automation_rules
-            FOR ALL
-            USING (org_id = current_setting('app.current_org_id', true)::uuid)
-        ");
+        $this->enableCustomRLS(
+            'cmis_automation.automation_rules',
+            "org_id = current_setting('app.current_org_id', true)::uuid",
+            'org_isolation_policy'
+        );
 
         // Create rule_execution_log table
         DB::statement("
@@ -62,20 +62,15 @@ return new class extends Migration
         DB::statement('CREATE INDEX idx_rule_execution_log_campaign_id ON cmis_automation.rule_execution_log(campaign_id)');
         DB::statement('CREATE INDEX idx_rule_execution_log_executed_at ON cmis_automation.rule_execution_log(executed_at DESC)');
 
-        // Enable RLS for rule_execution_log
-        DB::statement('ALTER TABLE cmis_automation.rule_execution_log ENABLE ROW LEVEL SECURITY');
-
-        // Create RLS policy for rule_execution_log (access via campaign ownership)
-        DB::statement("
-            CREATE POLICY org_isolation_policy ON cmis_automation.rule_execution_log
-            FOR ALL
-            USING (
-                campaign_id IN (
-                    SELECT id FROM cmis.campaigns
-                    WHERE org_id = current_setting('app.current_org_id', true)::uuid
-                )
-            )
-        ");
+        // Enable RLS for rule_execution_log (access via campaign ownership)
+        $this->enableCustomRLS(
+            'cmis_automation.rule_execution_log',
+            "campaign_id IN (
+                SELECT id FROM cmis.campaigns
+                WHERE org_id = current_setting('app.current_org_id', true)::uuid
+            )",
+            'org_isolation_policy'
+        );
 
         // Grant permissions to application role (if exists)
         DB::statement('GRANT USAGE ON SCHEMA cmis_automation TO begin');

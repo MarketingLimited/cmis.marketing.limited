@@ -10,6 +10,7 @@ use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Builder;
 class OptimizationModel extends BaseModel
 {
     use HasFactory;
@@ -79,12 +80,13 @@ class OptimizationModel extends BaseModel
     {
         return $this->belongsTo(User::class, 'created_by', 'user_id');
 
+        }
     public function runs(): HasMany
     {
         return $this->hasMany(OptimizationRun::class, 'model_id', 'model_id');
 
-    // ===== Model Status Management =====
 
+        }
     public function markAsTrained(array $metrics): void
     {
         $this->update([
@@ -98,6 +100,7 @@ class OptimizationModel extends BaseModel
             'r_squared' => $metrics['r_squared'] ?? null,
             'trained_at' => now(),
         ]);
+    }
 
     public function deploy(): void
     {
@@ -105,22 +108,25 @@ class OptimizationModel extends BaseModel
             'status' => 'deployed',
             'deployed_at' => now(),
         ]);
+    }
 
     public function recordUsage(): void
     {
         $this->increment('usage_count');
         $this->update(['last_used_at' => now()]);
+    }
 
     public function isDeployed(): bool
     {
         return $this->status === 'deployed';
 
+        }
     public function isTrained(): bool
     {
         return in_array($this->status, ['trained', 'deployed']);
 
-    // ===== Model Performance Helpers =====
 
+        }
     public function getPerformanceScore(): float
     {
         // Calculate composite score based on available metrics
@@ -128,16 +134,20 @@ class OptimizationModel extends BaseModel
 
         if ($this->accuracy_score !== null) {
             $scores[] = $this->accuracy_score;
+        }
         if ($this->f1_score !== null) {
             $scores[] = $this->f1_score;
+        }
         if ($this->r_squared !== null) {
             $scores[] = $this->r_squared;
+        }
 
         if (empty($scores)) {
             return 0.0;
+        }
 
-        return round(array_sum($scores) / count($scores), 4);
-
+        return array_sum($scores) / count($scores);
+    }
     public function getModelTypeLabel(): string
     {
         return match($this->model_type) {
@@ -148,6 +158,7 @@ class OptimizationModel extends BaseModel
             'performance_prediction' => 'Performance Prediction',
             default => ucfirst(str_replace('_', ' ', $this->model_type))
         };
+    }
 
     public function getAlgorithmLabel(): string
     {
@@ -160,18 +171,22 @@ class OptimizationModel extends BaseModel
             'neural_network' => 'Neural Network',
             default => ucfirst(str_replace('_', ' ', $this->algorithm))
         };
+    }
 
     // ===== Scopes =====
 
-    public function scopeDeployed($query)
+    public function scopeDeployed($query): Builder
     {
         return $query->where('status', 'deployed');
 
-    public function scopeForModelType($query, string $modelType)
+        }
+    public function scopeForModelType($query, string $modelType): Builder
     {
         return $query->where('model_type', $modelType);
 
-    public function scopeByAlgorithm($query, string $algorithm)
+        }
+    public function scopeByAlgorithm($query, string $algorithm): Builder
     {
         return $query->where('algorithm', $algorithm);
+    }
 }

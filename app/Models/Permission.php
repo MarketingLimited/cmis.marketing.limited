@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Builder;
 use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -36,7 +37,7 @@ class Permission extends BaseModel
      * Get the roles that have this permission
      */
     public function roles()
-    {
+    : \Illuminate\Database\Eloquent\Relations\Relation {
         return $this->belongsToMany(
             \App\Models\Core\Role::class,
             'cmis.role_permissions',
@@ -46,11 +47,12 @@ class Permission extends BaseModel
             ->withPivot('granted_by')
             ->withTimestamps();
 
+    }
     /**
      * Get the users that have this permission directly
      */
     public function users()
-    {
+    : \Illuminate\Database\Eloquent\Relations\Relation {
         return $this->belongsToMany(
             User::class,
             'cmis.user_permissions',
@@ -60,27 +62,31 @@ class Permission extends BaseModel
             ->withPivot('is_granted', 'expires_at', 'granted_by')
             ->withTimestamps();
 
+    }
     /**
      * Scope to get system permissions
      */
-    public function scopeSystem($query)
+    public function scopeSystem($query): Builder
     {
         return $query->where('is_system', true);
 
+    }
     /**
      * Scope to get permissions by module
      */
-    public function scopeByModule($query, string $module)
+    public function scopeByModule($query, string $module): Builder
     {
         return $query->where('module', $module);
 
+    }
     /**
      * Scope to get permissions by resource
      */
-    public function scopeByResource($query, string $resource)
+    public function scopeByResource($query, string $resource): Builder
     {
         return $query->where('resource', $resource);
 
+    }
     /**
      * Get the full permission string (module.resource.action)
      */
@@ -88,3 +94,4 @@ class Permission extends BaseModel
     {
         return "{$this->module}.{$this->resource}.{$this->action}";
     }
+}

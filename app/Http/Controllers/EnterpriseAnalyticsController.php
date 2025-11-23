@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\View\View;
 
 /**
  * Enterprise Analytics Dashboard Controller (Phase 9)
@@ -37,7 +38,7 @@ class EnterpriseAnalyticsController extends Controller
      * @param Request $request
      * @return \Illuminate\View\View
      */
-    public function realtime(Request $request)
+    public function realtime(Request $request): View
     {
         $user = $request->user();
         $orgId = $this->resolveOrgId($request);
@@ -64,7 +65,7 @@ class EnterpriseAnalyticsController extends Controller
      * @param string $campaignId
      * @return \Illuminate\View\View
      */
-    public function campaign(Request $request, string $campaignId)
+    public function campaign(Request $request, string $campaignId): View
     {
         $user = $request->user();
         $orgId = $this->resolveOrgId($request);
@@ -104,7 +105,7 @@ class EnterpriseAnalyticsController extends Controller
      * @param string|null $entityId
      * @return \Illuminate\View\View
      */
-    public function kpis(Request $request, ?string $entityType = null, ?string $entityId = null)
+    public function kpis(Request $request, ?string $entityType = null, ?string $entityId = null): View
     {
         $user = $request->user();
         $orgId = $this->resolveOrgId($request);
@@ -139,7 +140,7 @@ class EnterpriseAnalyticsController extends Controller
      * @param Request $request
      * @return \Illuminate\View\View
      */
-    public function enterprise(Request $request)
+    public function enterprise(Request $request): View
     {
         $user = $request->user();
         $orgId = $this->resolveOrgId($request);
@@ -173,7 +174,7 @@ class EnterpriseAnalyticsController extends Controller
      * @param Request $request
      * @return \Illuminate\View\View
      */
-    public function campaigns(Request $request)
+    public function campaigns(Request $request): View
     {
         $user = $request->user();
         $orgId = $this->resolveOrgId($request);

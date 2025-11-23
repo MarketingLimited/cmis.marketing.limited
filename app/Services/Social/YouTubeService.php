@@ -3,7 +3,7 @@ namespace App\Services\Social;
 
 class YouTubeService
 {
-    public function uploadVideo($videoPath, array $metadata)
+    public function uploadVideo($videoPath, array $metadata): array
     {
         \Log::info("YouTubeService::uploadVideo", ['path' => $videoPath, 'metadata' => $metadata]);
         

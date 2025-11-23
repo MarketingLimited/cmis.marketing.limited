@@ -6,6 +6,7 @@ use App\Models\Concerns\HasOrganization;
 
 use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Builder;
 
 class InfluencerProfile extends BaseModel {
     use HasOrganization;
@@ -16,6 +17,6 @@ protected $table = "cmis.influencer_profiles";
     public function partnerships():HasMany{return $this->hasMany(InfluencerPartnership::class,"influencer_id","influencer_id");}
     public function activate():void{$this->update(["status"=>"active"]);}
     public function calculateTier():void{$f=$this->total_followers;$this->update(["tier"=>match(true){$f<10000=>"nano",$f<100000=>"micro",$f<500000=>"mid",$f<1000000=>"macro",default=>"mega"}]);}
-    public function scopeActive($q){return $q->where("status","active");}
-    public function scopeByTier($q,$tier){return $q->where("tier",$tier);}
+    public function scopeActive($q): Builder{return $q->where("status","active");}
+    public function scopeByTier($q,$tier): Builder{return $q->where("tier",$tier);}
 }

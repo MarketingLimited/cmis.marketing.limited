@@ -55,7 +55,7 @@ protected $table = 'cmis.ad_metrics';
     /**
      * Get the entity (polymorphic)
      */
-    public function entity()
+    public function entity(): ?array
     {
         $models = [
             'campaign' => AdCampaign::class,
@@ -67,44 +67,51 @@ protected $table = 'cmis.ad_metrics';
 
         if (!$modelClass) {
             return null;
+        }
 
         return $modelClass::find($this->entity_id);
 
+    }
     /**
      * Scope by entity type
      */
-    public function scopeByEntityType($query, string $entityType)
+    public function scopeByEntityType($query, string $entityType): Builder
     {
         return $query->where('entity_type', $entityType);
 
+    }
     /**
      * Scope by platform
      */
-    public function scopeByPlatform($query, string $platform)
+    public function scopeByPlatform($query, string $platform): Builder
     {
         return $query->where('platform', $platform);
 
+    }
     /**
      * Scope by date range
      */
-    public function scopeDateRange($query, $startDate, $endDate)
+    public function scopeDateRange($query, $startDate, $endDate): Builder
     {
         return $query->whereBetween('metric_date', [$startDate, $endDate]);
 
+    }
     /**
      * Scope recent metrics
      */
-    public function scopeRecent($query, int $days = 30)
+    public function scopeRecent($query, int $days = 30): Builder
     {
         return $query->where('metric_date', '>=', now()->subDays($days));
 
+    }
     /**
      * Scope by metric date
      */
-    public function scopeForDate($query, $date)
+    public function scopeForDate($query, $date): Builder
     {
         return $query->where('metric_date', $date);
 
+    }
     /**
      * Calculate CTR if not set
      */
@@ -112,8 +119,9 @@ protected $table = 'cmis.ad_metrics';
     {
         if ($this->impressions === 0) {
             return 0.0;
-
+        }
         return ($this->clicks / $this->impressions) * 100;
+    }
 
     /**
      * Calculate CPC if not set
@@ -122,8 +130,9 @@ protected $table = 'cmis.ad_metrics';
     {
         if ($this->clicks === 0) {
             return 0.0;
-
+        }
         return $this->spend / $this->clicks;
+    }
 
     /**
      * Calculate CPA if not set
@@ -132,8 +141,9 @@ protected $table = 'cmis.ad_metrics';
     {
         if ($this->conversions === 0) {
             return 0.0;
-
+        }
         return $this->spend / $this->conversions;
+    }
 
     /**
      * Calculate ROAS if not set
@@ -142,8 +152,9 @@ protected $table = 'cmis.ad_metrics';
     {
         if ($this->spend == 0) {
             return 0.0;
-
+        }
         return $this->revenue / $this->spend;
+    }
 
     /**
      * Get conversion rate
@@ -152,6 +163,7 @@ protected $table = 'cmis.ad_metrics';
     {
         if ($this->clicks === 0) {
             return 0.0;
-
+        }
         return ($this->conversions / $this->clicks) * 100;
+    }
 }

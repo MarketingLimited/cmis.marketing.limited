@@ -10,6 +10,7 @@ use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Builder;
 class ScheduledPost extends BaseModel
 {
     use HasFactory;
@@ -250,33 +251,33 @@ class ScheduledPost extends BaseModel
 
     // ===== Scopes =====
 
-    public function scopeScheduled($query)
+    public function scopeScheduled($query): Builder
     {
         return $query->where('status', 'scheduled');
     }
 
-    public function scopePublished($query)
+    public function scopePublished($query): Builder
     {
         return $query->where('status', 'published');
     }
 
-    public function scopeDraft($query)
+    public function scopeDraft($query): Builder
     {
         return $query->where('status', 'draft');
     }
 
-    public function scopeDueForPublishing($query)
+    public function scopeDueForPublishing($query): Builder
     {
         return $query->where('status', 'scheduled')
                      ->where('scheduled_at', '<=', now());
     }
 
-    public function scopeForPlatform($query, string $platform)
+    public function scopeForPlatform($query, string $platform): Builder
     {
         return $query->whereJsonContains('platforms', $platform);
     }
 
-    public function scopePendingApproval($query)
+    public function scopePendingApproval($query): Builder
     {
         return $query->where('approval_status', 'pending');
     }

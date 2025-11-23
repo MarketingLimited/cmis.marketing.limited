@@ -5,6 +5,7 @@ namespace App\Models\Market;
 use App\Models\Concerns\HasOrganization;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Builder;
 use App\Models\BaseModel;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
@@ -31,7 +32,7 @@ class Market extends BaseModel
      * Get organizations in this market
      */
     public function organizations()
-    {
+    : \Illuminate\Database\Eloquent\Relations\Relation {
         return $this->belongsToMany(
             \App\Models\Core\Org::class,
             'cmis.org_markets',
@@ -46,31 +47,36 @@ class Market extends BaseModel
             'status',
         ])->withTimestamps();
 
+    }
     /**
      * Get org markets
      */
-    public function orgMarkets()
+    public function orgMarkets(): HasMany
     {
         return $this->hasMany(OrgMarket::class, 'market_id', 'market_id');
 
+    }
     /**
      * Scope by language
      */
-    public function scopeByLanguage($query, string $languageCode)
+    public function scopeByLanguage($query, string $languageCode): Builder
     {
         return $query->where('language_code', $languageCode);
 
+    }
     /**
      * Scope by currency
      */
-    public function scopeByCurrency($query, string $currencyCode)
+    public function scopeByCurrency($query, string $currencyCode): Builder
     {
         return $query->where('currency_code', $currencyCode);
 
+    }
     /**
      * Find by market ID
      */
     public static function findByMarketId(string $marketId)
-    {
+    : \Illuminate\Database\Eloquent\Relations\Relation {
         return self::where('market_id', $marketId)->first();
+}
 }
