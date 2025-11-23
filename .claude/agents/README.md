@@ -21,10 +21,11 @@ This directory contains **specialized AI agents** custom-built for the CMIS proj
 - 244 Models across 51 business domains
 - 201 test suite with continuous improvements
 
-**Total Agents:** 44 specialized agents
+**Total Agents:** 47 specialized agents
 **Project Knowledge Base:** `.claude/CMIS_PROJECT_KNOWLEDGE.md`
 
-**🆕 NEW:** 7 Ad Campaign & Platform Advertising Agents (2025-11-22)
+**🆕 NEW (2025-11-23):** 3 Advanced Analytics Agents (Predictive Analytics, A/B Testing, Alerts & Monitoring)
+**🆕 NEW (2025-11-22):** 7 Ad Campaign & Platform Advertising Agents
 
 ---
 
@@ -388,7 +389,151 @@ This directory contains **specialized AI agents** custom-built for the CMIS proj
 
 ---
 
-#### 9. **cmis-crm-specialist** - CRM & Lead Management Expert V2.1 📇
+#### 9. **cmis-predictive-analytics** - Predictive Analytics Expert 🔮 (v1.1 Enhanced)
+**File:** `cmis-predictive-analytics.md`
+
+**Purpose:** Master of machine learning forecasting, time series analysis, predictive modeling, and trend detection with intelligent library discovery and zero-dependency fallbacks.
+
+**Use when:**
+- Implementing ML-based forecasting (ARIMA, Prophet, LSTM) OR statistical forecasting
+- Building campaign performance prediction models
+- Creating trend detection and seasonality analysis
+- Designing anomaly detection with ML algorithms
+- Developing automated optimization recommendations
+- Calculating confidence scoring and prediction intervals
+
+**Handles:**
+- Time series forecasting (ARIMA, Prophet, LSTM neural networks, Statistical methods)
+- Campaign performance prediction
+- Trend analysis (linear regression, seasonality detection)
+- Anomaly detection (Z-score, isolation forest, seasonal)
+- Budget optimization predictions
+- Creative performance forecasting
+- Adaptive traffic allocation (Thompson Sampling)
+- **NEW:** Statistical forecasting (no external libraries required)
+- **NEW:** ML library discovery and installation guidance
+
+**Key Features (v1.1):**
+- ✅ **Intelligent library discovery** - Checks what's installed before suggesting
+- ✅ **Zero-dependency statistical forecasting** - Works WITHOUT external ML libraries
+- ✅ **4 forecasting patterns**: Prophet, ARIMA, LSTM, Statistical (recommended)
+- ✅ **Library installation guidance** - Clear prerequisites for each pattern
+- ✅ **Decision tree** - Guides choice between ML vs. statistical approaches
+- ✅ Multi-method anomaly detection with library-aware recommendations
+- ✅ Confidence interval calculations for all forecasting methods
+- ✅ Multi-tenant prediction isolation with RLS
+
+**Example:**
+```
+"Forecast campaign performance for next 30 days"
+→ Discovers installed ML libraries (none found)
+→ Recommends Pattern 4: Statistical Forecasting (zero dependencies)
+→ Uses Linear Regression or Moving Average
+→ Provides predictions with 95% confidence intervals
+→ Suggests Prophet installation for advanced seasonality (optional)
+→ Generates actionable recommendations
+```
+
+**Recommendation Priority:**
+1. ✅ **Statistical Forecasting** - Start here (90% of use cases, zero dependencies)
+2. ✅ **Prophet** - If installed and complex seasonality needed
+3. ⚠️ **ARIMA** - If statistical patterns insufficient
+4. ⚠️ **LSTM** - Only for advanced multi-variate forecasting
+
+**References:** `app/Services/Analytics/`, unified_metrics table, composer.json (library discovery)
+
+---
+
+#### 10. **cmis-ab-testing-specialist** - A/B Testing & Experimentation Specialist 🧪
+**File:** `cmis-ab-testing-specialist.md`
+
+**Purpose:** Expert in experiment design, variant management, statistical significance testing, and winner selection based on CMIS's actual ABTestingService implementation.
+
+**Use when:**
+- Creating A/B tests with proper statistical rigor
+- Implementing variant management and traffic allocation
+- Calculating statistical significance (Chi-square, t-tests)
+- Building winner selection and automated rollout
+- Designing multivariate experiments
+- Implementing adaptive traffic allocation (Multi-Armed Bandit)
+
+**Handles:**
+- Experiment creation and variant management (discovered from ABTestingService.php)
+- Chi-square statistical significance testing
+- Sample size calculation with power analysis
+- Confidence interval calculations for conversion rates
+- Winner selection and rollout automation
+- Multivariate testing with Bonferroni correction
+- Adaptive traffic allocation (Thompson Sampling)
+
+**Key Features:**
+- Based on actual CMIS implementation (cmis.experiments, cmis.experiment_variants)
+- Chi-square test with 95% confidence (critical value: 3.841)
+- Minimum detectable effect validation
+- Traffic allocation strategies (equal, weighted, adaptive)
+- Beta distribution sampling for Bayesian A/B testing
+
+**Example:**
+```
+"Create an A/B test for ad creative variants"
+→ Calculates minimum sample size for 95% confidence
+→ Creates control + variant experiment
+→ Tracks impressions, clicks, conversions in real-time
+→ Evaluates statistical significance using Chi-square
+→ Automatically selects winner when significant
+→ Provides rollout recommendations
+```
+
+**References:** `ABTestingService.php`, Phase 15 (A/B Testing), cmis.experiments tables
+
+---
+
+#### 11. **cmis-alerts-monitoring** - Alerts & Monitoring Specialist 🚨
+**File:** `cmis-alerts-monitoring.md`
+
+**Purpose:** Specialist in real-time alerting, threshold monitoring, anomaly detection, and multi-channel notification delivery based on CMIS's AlertEvaluationService.
+
+**Use when:**
+- Implementing threshold-based alert rules
+- Creating anomaly detection alerts
+- Building multi-channel notification systems
+- Designing escalation policies
+- Setting up cooldown and rate limiting
+- Creating alert acknowledgment workflows
+
+**Handles:**
+- Alert rule creation and condition evaluation (discovered from AlertEvaluationService.php)
+- Condition operators (gt, gte, lt, lte, eq, ne, change_pct)
+- Multi-channel delivery (email, Slack, webhook, in-app)
+- Cooldown period enforcement
+- Alert acknowledgment and resolution
+- Escalation policies with multiple levels
+- Alert templates and pre-built configurations
+
+**Key Features:**
+- Based on actual CMIS implementation (cmis.alert_rules, cmis.alert_history)
+- 7 condition operators for flexible rule definition
+- Cooldown periods to prevent alert spam
+- Severity levels (critical, high, medium, low)
+- Multi-channel notification with delivery tracking
+- Percentage change detection for anomalies
+
+**Example:**
+```
+"Create alert for CTR drop below 2%"
+→ Creates alert rule with threshold
+→ Evaluates condition against real-time metrics
+→ Respects 60-minute cooldown period
+→ Delivers to email, Slack, and in-app
+→ Tracks delivery status and acknowledgment
+→ Triggers escalation if unacknowledged
+```
+
+**References:** `AlertEvaluationService.php`, Phase 13 (Real-Time Alerts), cmis.alert_rules tables
+
+---
+
+#### 12. **cmis-crm-specialist** - CRM & Lead Management Expert V2.1 📇
 **File:** `cmis-crm-specialist.md`
 
 **Purpose:** Specialist in contact management, lead tracking, scoring, and pipeline management.
@@ -1230,6 +1375,12 @@ Agent:
 | **Testing** | laravel-testing | cmis-context-awareness |
 | **Documentation Management** | cmis-doc-organizer | laravel-documentation |
 | **App Idea Feasibility** | app-feasibility-researcher | - |
+| **Predictive Analytics** | cmis-predictive-analytics | cmis-analytics-expert |
+| **ML Forecasting** | cmis-predictive-analytics | cmis-analytics-expert |
+| **A/B Testing** | cmis-ab-testing-specialist | cmis-experimentation |
+| **Statistical Analysis** | cmis-ab-testing-specialist | cmis-analytics-expert |
+| **Alerts & Monitoring** | cmis-alerts-monitoring | cmis-enterprise-features |
+| **Notification Systems** | cmis-alerts-monitoring | cmis-marketing-automation |
 | **Complex Multi-Domain** | cmis-orchestrator | [Multiple] |
 
 ---

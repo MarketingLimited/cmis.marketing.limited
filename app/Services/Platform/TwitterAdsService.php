@@ -6,6 +6,17 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
+/**
+ * @deprecated This service is deprecated and will be removed in a future version.
+ * Use App\Services\AdPlatforms\Twitter\TwitterAdsPlatform instead via AdPlatformFactory.
+ *
+ * Reason: TwitterAdsPlatform extends AbstractAdPlatform and follows the standard
+ * platform integration pattern with proper RLS support and consistent architecture.
+ *
+ * Migration guide:
+ * Before: $service = new TwitterAdsService();
+ * After:  $platform = app(AdPlatformFactory::class)->make('twitter', $integration);
+ */
 class TwitterAdsService
 {
     private string $baseUrl = 'https://ads-api.twitter.com';

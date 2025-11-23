@@ -7,6 +7,29 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 
+/**
+ * LinkedIn Ads Service
+ *
+ * ⚠️ DEPRECATED: This service is deprecated as of 2025-11-23
+ *
+ * Please use App\Services\AdPlatforms\LinkedIn\LinkedInAdsPlatform instead.
+ *
+ * Reason for deprecation:
+ * - Overlaps with LinkedInAdsPlatform functionality
+ * - LinkedInAdsPlatform extends AbstractAdPlatform (better architecture)
+ * - LinkedInAdsPlatform has RLS context support
+ * - LinkedInAdsPlatform has proper token management
+ * - LinkedInAdsPlatform has Lead Gen Forms support
+ *
+ * Migration guide:
+ * - Replace LinkedInAdsService with LinkedInAdsPlatform
+ * - Use Integration model instead of passing tokens manually
+ * - Caching is handled by AbstractAdPlatform
+ *
+ * This class will be removed in version 2.0 (planned for 2026)
+ *
+ * @deprecated Since 2025-11-23, use LinkedInAdsPlatform instead
+ */
 class LinkedInAdsService
 {
     private string $apiVersion = 'v2';

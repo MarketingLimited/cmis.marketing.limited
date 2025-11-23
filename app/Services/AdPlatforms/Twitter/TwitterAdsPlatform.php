@@ -21,7 +21,7 @@ class TwitterAdsPlatform extends AbstractAdPlatform
     protected function getConfig(): array
     {
         return [
-            'api_version' => 'v11',
+            'api_version' => '12',
             'api_base_url' => 'https://ads-api.x.com',
         ];
     }
@@ -94,7 +94,7 @@ class TwitterAdsPlatform extends AbstractAdPlatform
             // Standard delivery
             $payload['standard_delivery'] = $data['standard_delivery'] ?? true;
 
-            $url = $this->buildUrl("/11/accounts/{$this->accountId}/campaigns");
+            $url = $this->buildUrl("/12/accounts/{$this->accountId}/campaigns");
             $response = $this->makeRequest('POST', $url, $payload);
 
             if (isset($response['data']['id'])) {
@@ -154,7 +154,7 @@ class TwitterAdsPlatform extends AbstractAdPlatform
                 $payload['end_time'] = $data['end_time'];
             }
 
-            $url = $this->buildUrl("/11/accounts/{$this->accountId}/campaigns/{$externalId}");
+            $url = $this->buildUrl("/12/accounts/{$this->accountId}/campaigns/{$externalId}");
             $response = $this->makeRequest('PUT', $url, $payload);
 
             if (isset($response['data']['id'])) {
@@ -190,7 +190,7 @@ class TwitterAdsPlatform extends AbstractAdPlatform
     public function getCampaign(string $externalId): array
     {
         try {
-            $url = $this->buildUrl("/11/accounts/{$this->accountId}/campaigns/{$externalId}");
+            $url = $this->buildUrl("/12/accounts/{$this->accountId}/campaigns/{$externalId}");
             $response = $this->makeRequest('GET', $url);
 
             if (isset($response['data'])) {
@@ -226,7 +226,7 @@ class TwitterAdsPlatform extends AbstractAdPlatform
     public function deleteCampaign(string $externalId): array
     {
         try {
-            $url = $this->buildUrl("/11/accounts/{$this->accountId}/campaigns/{$externalId}");
+            $url = $this->buildUrl("/12/accounts/{$this->accountId}/campaigns/{$externalId}");
             $response = $this->makeRequest('DELETE', $url);
 
             if (isset($response['data']['deleted']) && $response['data']['deleted']) {
@@ -275,7 +275,7 @@ class TwitterAdsPlatform extends AbstractAdPlatform
                 $params['cursor'] = $filters['cursor'];
             }
 
-            $url = $this->buildUrl("/11/accounts/{$this->accountId}/campaigns");
+            $url = $this->buildUrl("/12/accounts/{$this->accountId}/campaigns");
             $response = $this->makeRequest('GET', $url, $params);
 
             if (isset($response['data'])) {
@@ -331,7 +331,7 @@ class TwitterAdsPlatform extends AbstractAdPlatform
                 'placement' => 'ALL_ON_TWITTER',
             ];
 
-            $url = $this->buildUrl("/11/stats/accounts/{$this->accountId}");
+            $url = $this->buildUrl("/12/stats/accounts/{$this->accountId}");
             $response = $this->makeRequest('GET', $url, $params);
 
             if (isset($response['data'])) {
@@ -430,7 +430,7 @@ class TwitterAdsPlatform extends AbstractAdPlatform
                 $payload['charge_by'] = $data['charge_by'];
             }
 
-            $url = $this->buildUrl("/11/accounts/{$this->accountId}/line_items");
+            $url = $this->buildUrl("/12/accounts/{$this->accountId}/line_items");
             $response = $this->makeRequest('POST', $url, $payload);
 
             if (isset($response['data']['id'])) {
@@ -524,7 +524,7 @@ class TwitterAdsPlatform extends AbstractAdPlatform
                 'tweet_ids' => [$tweetId],
             ];
 
-            $url = $this->buildUrl("/11/accounts/{$this->accountId}/promoted_tweets");
+            $url = $this->buildUrl("/12/accounts/{$this->accountId}/promoted_tweets");
             $response = $this->makeRequest('POST', $url, $payload);
 
             if (isset($response['data'][0]['id'])) {
@@ -733,7 +733,7 @@ class TwitterAdsPlatform extends AbstractAdPlatform
 
             // Create targeting criteria
             if (!empty($targetingCriteria)) {
-                $url = $this->buildUrl("/11/accounts/{$this->accountId}/targeting_criteria");
+                $url = $this->buildUrl("/12/accounts/{$this->accountId}/targeting_criteria");
                 $payload = ['targeting_criteria' => $targetingCriteria];
                 $response = $this->makeRequest('POST', $url, $payload);
 
@@ -775,7 +775,7 @@ class TwitterAdsPlatform extends AbstractAdPlatform
                 'list_type' => $data['list_type'] ?? 'EMAIL',
             ];
 
-            $url = $this->buildUrl("/11/accounts/{$this->accountId}/tailored_audiences");
+            $url = $this->buildUrl("/12/accounts/{$this->accountId}/tailored_audiences");
             $response = $this->makeRequest('POST', $url, $payload);
 
             if (isset($response['data']['id'])) {
@@ -823,7 +823,7 @@ class TwitterAdsPlatform extends AbstractAdPlatform
             // Prepare user data based on list type
             $inputFilePath = $this->prepareTailoredAudienceFile($users, $listType);
 
-            $url = $this->buildUrl("/11/accounts/{$this->accountId}/tailored_audiences/{$audienceId}/users");
+            $url = $this->buildUrl("/12/accounts/{$this->accountId}/tailored_audiences/{$audienceId}/users");
 
             $payload = [
                 'input_file_path' => $inputFilePath,
@@ -887,14 +887,14 @@ class TwitterAdsPlatform extends AbstractAdPlatform
     public function getAvailableObjectives(): array
     {
         return [
-            'AWARENESS' => 'الوعي',
-            'TWEET_ENGAGEMENTS' => 'تفاعلات التغريدة',
-            'VIDEO_VIEWS' => 'مشاهدات الفيديو',
-            'FOLLOWERS' => 'المتابعون',
-            'APP_INSTALLS' => 'تثبيت التطبيق',
-            'WEBSITE_CLICKS' => 'نقرات الموقع',
-            'REACH' => 'الوصول',
-            'APP_ENGAGEMENTS' => 'تفاعلات التطبيق',
+            'AWARENESS' => 'Awareness',
+            'TWEET_ENGAGEMENTS' => 'Tweet Engagements',
+            'VIDEO_VIEWS' => 'Video Views',
+            'FOLLOWERS' => 'Followers',
+            'APP_INSTALLS' => 'App Installs',
+            'WEBSITE_CLICKS' => 'Website Clicks',
+            'REACH' => 'Reach',
+            'APP_ENGAGEMENTS' => 'App Engagements',
         ];
     }
 
@@ -932,7 +932,7 @@ class TwitterAdsPlatform extends AbstractAdPlatform
     public function syncAccount(): array
     {
         try {
-            $url = $this->buildUrl("/11/accounts/{$this->accountId}");
+            $url = $this->buildUrl("/12/accounts/{$this->accountId}");
             $response = $this->makeRequest('GET', $url);
 
             if (isset($response['data'])) {

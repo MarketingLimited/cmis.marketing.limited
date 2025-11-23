@@ -48,14 +48,17 @@ class AutomationRule extends BaseModel
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by', 'user_id');
+    }
 
     public function executions(): HasMany
     {
         return $this->hasMany(AutomationExecution::class, 'rule_id', 'rule_id');
+    }
 
     public function schedules(): HasMany
     {
         return $this->hasMany(AutomationSchedule::class, 'rule_id', 'rule_id');
+    }
 
     // ===== Status Management =====
 
@@ -65,6 +68,7 @@ class AutomationRule extends BaseModel
             'status' => 'active',
             'enabled' => true
         ]);
+    }
 
     public function pause(): void
     {
@@ -72,6 +76,7 @@ class AutomationRule extends BaseModel
             'status' => 'paused',
             'enabled' => false
         ]);
+    }
 
     public function archive(): void
     {
@@ -79,6 +84,7 @@ class AutomationRule extends BaseModel
             'status' => 'archived',
             'enabled' => false
         ]);
+    }
 
     // ===== Execution Tracking =====
 
@@ -90,19 +96,24 @@ class AutomationRule extends BaseModel
             $this->increment('success_count');
         } elseif ($status === 'failure') {
             $this->increment('failure_count');
+        }
 
         $this->update(['last_executed_at' => now()]);
+    }
 
     public function canExecute(): bool
     {
         if (!$this->enabled || $this->status !== 'active') {
             return false;
+        }
 
         // Check cooldown period
         if ($this->last_executed_at && $this->cooldown_minutes > 0) {
             $nextAllowedExecution = $this->last_executed_at->addMinutes($this->cooldown_minutes);
             if (now()->isBefore($nextAllowedExecution)) {
                 return false;
+            }
+        }
 
         // Check daily execution limit
         if ($this->max_executions_per_day) {
@@ -112,15 +123,20 @@ class AutomationRule extends BaseModel
 
             if ($todayExecutions >= $this->max_executions_per_day) {
                 return false;
+            }
+        }
 
         return true;
+    }
 
     public function getSuccessRate(): float
     {
         if ($this->execution_count === 0) {
             return 0.0;
+        }
 
         return round(($this->success_count / $this->execution_count) * 100, 2);
+    }
 
     // ===== Condition Helpers =====
 
@@ -129,6 +145,7 @@ class AutomationRule extends BaseModel
         $conditions = $this->conditions ?? [];
         $conditions[] = $condition;
         $this->update(['conditions' => $conditions]);
+    }
 
     public function removeCondition(int $index): void
     {
@@ -136,6 +153,8 @@ class AutomationRule extends BaseModel
         if (isset($conditions[$index])) {
             unset($conditions[$index]);
             $this->update(['conditions' => array_values($conditions)]);
+        }
+    }
 
     // ===== Action Helpers =====
 
@@ -144,6 +163,7 @@ class AutomationRule extends BaseModel
         $actions = $this->actions ?? [];
         $actions[] = $action;
         $this->update(['actions' => $actions]);
+    }
 
     public function removeAction(int $index): void
     {
@@ -151,21 +171,26 @@ class AutomationRule extends BaseModel
         if (isset($actions[$index])) {
             unset($actions[$index]);
             $this->update(['actions' => array_values($actions)]);
+        }
+    }
 
     // ===== Scopes =====
 
     public function scopeActive($query)
     {
         return $query->where('status', 'active')->where('enabled', true);
+    }
 
     public function scopeOfType($query, string $type)
     {
         return $query->where('rule_type', $type);
+    }
 
     public function scopeForEntity($query, string $entityType, string $entityId)
     {
         return $query->where('entity_type', $entityType)
                      ->where('entity_id', $entityId);
+    }
 
     public function scopeDueForExecution($query)
     {
@@ -173,5 +198,7 @@ class AutomationRule extends BaseModel
             ->where(function ($q) {
                 // No cooldown or cooldown expired
                 $q->whereNull('last_executed_at')
-                  ->orWhere('last_executed_at', '<=', now()->subMinutes($this->cooldown_minutes ?? 60));
+                  ->orWhere('last_executed_at', '<=', now()->subMinutes(60));
+            });
+    }
 }
