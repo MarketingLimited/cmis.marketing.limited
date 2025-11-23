@@ -39,6 +39,15 @@ class WebhookController extends Controller
             return response('Forbidden', 403);
         }
 
+        // Verify signature for POST requests (CRITICAL SECURITY)
+        if (!$this->verifyMetaSignature($request)) {
+            Log::warning('Meta webhook signature verification failed', [
+                'ip' => $request->ip(),
+                'headers' => $request->headers->all(),
+            ]);
+            return $this->unauthorized('Invalid webhook signature');
+        }
+
         // Handle webhook event (POST request)
         try {
             $data = $request->all();
@@ -87,6 +96,15 @@ class WebhookController extends Controller
             }
 
             return response('Forbidden', 403);
+        }
+
+        // Verify signature for POST requests (CRITICAL SECURITY)
+        if (!$this->verifyWhatsAppSignature($request)) {
+            Log::warning('WhatsApp webhook signature verification failed', [
+                'ip' => $request->ip(),
+                'headers' => $request->headers->all(),
+            ]);
+            return $this->unauthorized('Invalid webhook signature');
         }
 
         // Handle webhook event (POST request)
@@ -153,6 +171,15 @@ class WebhookController extends Controller
      */
     public function handleTwitterWebhook(Request $request): JsonResponse
     {
+        // Verify signature for POST requests (CRITICAL SECURITY)
+        if (!$this->verifyTwitterSignature($request)) {
+            Log::warning('Twitter webhook signature verification failed', [
+                'ip' => $request->ip(),
+                'headers' => $request->headers->all(),
+            ]);
+            return $this->unauthorized('Invalid webhook signature');
+        }
+
         try {
             $data = $request->all();
             Log::info('Twitter webhook received', ['data' => $data]);
@@ -199,6 +226,12 @@ class WebhookController extends Controller
                 Log::warning("No integration found for recipient {$recipientId}");
                 return;
             }
+
+            // Initialize RLS context for multi-tenancy (CRITICAL)
+            DB::statement(
+                'SELECT cmis.init_transaction_context(?, ?)',
+                [config('cmis.system_user_id'), $integration->org_id]
+            );
 
             // Store message
             DB::table('cmis_social.social_messages')->insert([
@@ -301,6 +334,12 @@ class WebhookController extends Controller
 
             if (!$integration) return;
 
+            // Initialize RLS context for multi-tenancy (CRITICAL)
+            DB::statement(
+                'SELECT cmis.init_transaction_context(?, ?)',
+                [config('cmis.system_user_id'), $integration->org_id]
+            );
+
             // Store message
             DB::table('cmis_social.social_messages')->insert([
                 'message_id' => \Illuminate\Support\Str::uuid(),
@@ -365,6 +404,102 @@ class WebhookController extends Controller
         $secret = config('services.tiktok.client_secret');
         $expectedSignature = hash_hmac('sha256', $payload, $secret);
 
+        return hash_equals($expectedSignature, $signature);
+    }
+
+    /**
+     * Verify Meta (Facebook) webhook signature
+     *
+     * CRITICAL SECURITY: Prevents unauthorized webhook calls
+     * Uses HMAC-SHA256 with app secret
+     */
+    protected function verifyMetaSignature(Request $request): bool
+    {
+        $signature = $request->header('X-Hub-Signature-256');
+
+        if (empty($signature)) {
+            Log::warning('Meta webhook missing signature header');
+            return false;
+        }
+
+        $appSecret = config('services.meta.app_secret');
+
+        if (empty($appSecret)) {
+            Log::error('Meta app secret not configured');
+            return false;
+        }
+
+        // Get raw request body
+        $payload = $request->getContent();
+
+        // Compute expected signature
+        $expectedSignature = 'sha256=' . hash_hmac('sha256', $payload, $appSecret);
+
+        // Constant-time comparison to prevent timing attacks
+        return hash_equals($expectedSignature, $signature);
+    }
+
+    /**
+     * Verify WhatsApp webhook signature
+     *
+     * CRITICAL SECURITY: Prevents unauthorized webhook calls
+     * Uses same signature method as Meta (HMAC-SHA256)
+     */
+    protected function verifyWhatsAppSignature(Request $request): bool
+    {
+        $signature = $request->header('X-Hub-Signature-256');
+
+        if (empty($signature)) {
+            Log::warning('WhatsApp webhook missing signature header');
+            return false;
+        }
+
+        $appSecret = config('services.whatsapp.app_secret');
+
+        if (empty($appSecret)) {
+            Log::error('WhatsApp app secret not configured');
+            return false;
+        }
+
+        // Get raw request body
+        $payload = $request->getContent();
+
+        // Compute expected signature
+        $expectedSignature = 'sha256=' . hash_hmac('sha256', $payload, $appSecret);
+
+        // Constant-time comparison to prevent timing attacks
+        return hash_equals($expectedSignature, $signature);
+    }
+
+    /**
+     * Verify Twitter/X webhook signature
+     *
+     * CRITICAL SECURITY: Prevents unauthorized webhook calls
+     * Uses SHA256 HMAC with consumer secret
+     */
+    protected function verifyTwitterSignature(Request $request): bool
+    {
+        $signature = $request->header('X-Twitter-Webhooks-Signature');
+
+        if (empty($signature)) {
+            Log::warning('Twitter webhook missing signature header');
+            return false;
+        }
+
+        $consumerSecret = config('services.twitter.consumer_secret');
+
+        if (empty($consumerSecret)) {
+            Log::error('Twitter consumer secret not configured');
+            return false;
+        }
+
+        // Get raw request body
+        $payload = $request->getContent();
+
+        // Compute expected signature
+        $expectedSignature = 'sha256=' . hash_hmac('sha256', $payload, $consumerSecret);
+
+        // Constant-time comparison to prevent timing attacks
         return hash_equals($expectedSignature, $signature);
     }
 }
