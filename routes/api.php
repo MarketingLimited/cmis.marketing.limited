@@ -1796,6 +1796,23 @@ Route::middleware(['auth:sanctum'])->prefix('leads')->name('leads.')->group(func
     Route::delete('/{id}', [App\Http\Controllers\LeadController::class, 'destroy'])->name('destroy');
     Route::get('/{id}/score', [App\Http\Controllers\LeadController::class, 'score'])->name('score');
     Route::put('/{id}/status', [App\Http\Controllers\LeadController::class, 'updateStatus'])->name('update-status');
+    Route::post('/{id}/convert', [App\Http\Controllers\LeadController::class, 'convert'])->name('convert');
+});
+
+/*
+|--------------------------------------------------------------------------
+| Contact Routes (CRM - Auto-resolve user's active org)
+| These routes provide access to contact management endpoints
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['auth:sanctum'])->prefix('contacts')->name('contacts.')->group(function () {
+    Route::get('/', [App\Http\Controllers\ContactController::class, 'index'])->name('index');
+    Route::post('/', [App\Http\Controllers\ContactController::class, 'store'])->name('store');
+    Route::get('/{id}', [App\Http\Controllers\ContactController::class, 'show'])->name('show');
+    Route::put('/{id}', [App\Http\Controllers\ContactController::class, 'update'])->name('update');
+    Route::delete('/{id}', [App\Http\Controllers\ContactController::class, 'destroy'])->name('destroy');
+    Route::get('/{id}/duplicates', [App\Http\Controllers\ContactController::class, 'findDuplicates'])->name('duplicates');
+    Route::post('/{id}/merge', [App\Http\Controllers\ContactController::class, 'merge'])->name('merge');
 });
 
 /*

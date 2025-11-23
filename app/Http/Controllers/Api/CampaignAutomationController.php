@@ -35,17 +35,12 @@ class CampaignAutomationController extends Controller
 
             $rules = $this->optimizationService->getRules($orgId);
 
-            return response()->json([
-                'success' => true,
+            return $this->success([
                 'rules' => $rules,
                 'count' => count($rules)
-            ]);
+            ], 'Automation rules retrieved successfully');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to fetch automation rules',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to fetch automation rules: ' . $e->getMessage());
         }
     }
 
@@ -57,17 +52,12 @@ class CampaignAutomationController extends Controller
         try {
             $templates = $this->rulesEngine->getRuleTemplates();
 
-            return response()->json([
-                'success' => true,
+            return $this->success([
                 'templates' => $templates,
                 'count' => count($templates)
-            ]);
+            ], 'Rule templates retrieved successfully');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to fetch rule templates',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to fetch rule templates: ' . $e->getMessage());
         }
     }
 
@@ -91,10 +81,7 @@ class CampaignAutomationController extends Controller
             ]);
 
             if ($validator->fails()) {
-                return response()->json([
-                    'success' => false,
-                    'errors' => $validator->errors()
-                ], 422);
+                return $this->validationError($validator->errors(), 'Validation failed');
             }
 
             $orgId = auth()->user()->org_id;
@@ -102,16 +89,12 @@ class CampaignAutomationController extends Controller
             $result = $this->optimizationService->createRule($orgId, $request->all());
 
             if (!$result['success']) {
-                return response()->json($result, 400);
+                return $this->error($result['message'] ?? 'Failed to create automation rule', 400);
             }
 
-            return response()->json($result, 201);
+            return $this->created($result, 'Automation rule created successfully');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to create automation rule',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to create automation rule: ' . $e->getMessage());
         }
     }
 
@@ -135,10 +118,7 @@ class CampaignAutomationController extends Controller
             ]);
 
             if ($validator->fails()) {
-                return response()->json([
-                    'success' => false,
-                    'errors' => $validator->errors()
-                ], 422);
+                return $this->validationError($validator->errors(), 'Validation failed');
             }
 
             $orgId = auth()->user()->org_id;
@@ -146,16 +126,12 @@ class CampaignAutomationController extends Controller
             $result = $this->optimizationService->updateRule($ruleId, $orgId, $request->all());
 
             if (!$result['success']) {
-                return response()->json($result, 400);
+                return $this->error($result['message'] ?? 'Failed to update automation rule', 400);
             }
 
-            return response()->json($result);
+            return $this->success($result, 'Automation rule updated successfully');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to update automation rule',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to update automation rule: ' . $e->getMessage());
         }
     }
 
@@ -170,16 +146,12 @@ class CampaignAutomationController extends Controller
             $result = $this->optimizationService->deleteRule($ruleId, $orgId);
 
             if (!$result['success']) {
-                return response()->json($result, 400);
+                return $this->error($result['message'] ?? 'Failed to delete automation rule', 400);
             }
 
-            return response()->json($result);
+            return $this->deleted('Automation rule deleted successfully');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to delete automation rule',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to delete automation rule: ' . $e->getMessage());
         }
     }
 
@@ -193,16 +165,9 @@ class CampaignAutomationController extends Controller
 
             $results = $this->optimizationService->optimizeOrganizationCampaigns($orgId);
 
-            return response()->json([
-                'success' => true,
-                'results' => $results
-            ]);
+            return $this->success(['results' => $results], 'Organization optimization completed successfully');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to run organization optimization',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to run organization optimization: ' . $e->getMessage());
         }
     }
 
@@ -216,16 +181,9 @@ class CampaignAutomationController extends Controller
 
             $result = $this->optimizationService->optimizeCampaign($campaignId, $orgId);
 
-            return response()->json([
-                'success' => true,
-                'result' => $result
-            ]);
+            return $this->success(['result' => $result], 'Campaign optimization completed successfully');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to optimize campaign',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to optimize campaign: ' . $e->getMessage());
         }
     }
 
@@ -240,10 +198,7 @@ class CampaignAutomationController extends Controller
             ]);
 
             if ($validator->fails()) {
-                return response()->json([
-                    'success' => false,
-                    'errors' => $validator->errors()
-                ], 422);
+                return $this->validationError($validator->errors(), 'Validation failed');
             }
 
             $orgId = auth()->user()->org_id;
@@ -253,17 +208,12 @@ class CampaignAutomationController extends Controller
                 $request->input('campaign_id')
             );
 
-            return response()->json([
-                'success' => true,
+            return $this->success([
                 'history' => $history,
                 'count' => count($history)
-            ]);
+            ], 'Execution history retrieved successfully');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to fetch execution history',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to fetch execution history: ' . $e->getMessage());
         }
     }
 }

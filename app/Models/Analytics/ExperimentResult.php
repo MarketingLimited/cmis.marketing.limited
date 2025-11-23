@@ -38,10 +38,12 @@ class ExperimentResult extends BaseModel
     public function experiment(): BelongsTo
     {
         return $this->belongsTo(Experiment::class, 'experiment_id', 'experiment_id');
+    }
 
     public function variant(): BelongsTo
     {
         return $this->belongsTo(ExperimentVariant::class, 'variant_id', 'variant_id');
+    }
 
     /**
      * Calculate derived metrics
@@ -59,6 +61,7 @@ class ExperimentResult extends BaseModel
             'conversion_rate' => $conversionRate,
             'roi' => $roi
         ]);
+    }
 
     /**
      * Scope: Recent results
@@ -66,6 +69,7 @@ class ExperimentResult extends BaseModel
     public function scopeRecent($query, int $days = 7)
     {
         return $query->where('date', '>=', now()->subDays($days));
+    }
 
     /**
      * Scope: By date range
@@ -73,4 +77,5 @@ class ExperimentResult extends BaseModel
     public function scopeDateRange($query, $startDate, $endDate)
     {
         return $query->whereBetween('date', [$startDate, $endDate]);
+    }
 }
