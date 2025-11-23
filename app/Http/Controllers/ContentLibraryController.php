@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Services\ContentLibraryService;
+use App\Http\Controllers\Concerns\ApiResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Validator;
@@ -42,13 +43,13 @@ class ContentLibraryController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         try {
             $userId = $request->user()->user_id ?? null;
             if (!$userId) {
-                return $this->error('Authentication required', 401);
+                return $this->unauthorized('Authentication required');
             }
 
             $result = $this->libraryService->uploadAsset($orgId, [
@@ -60,10 +61,14 @@ class ContentLibraryController extends Controller
                 'uploaded_by' => $userId
             ], $request->file('file'));
 
-            return response()->json($result, $result['success'] ? 201 : 500);
+            if ($result['success']) {
+                return $this->created($result['data'], $result['message']);
+            }
+
+            return $this->error($result['message'], 500);
 
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => 'Upload failed', 'error' => $e->getMessage()], 500);
+            return $this->serverError('Upload failed: ' . $e->getMessage());
         }
     }
 
@@ -85,15 +90,20 @@ class ContentLibraryController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         try {
             $result = $this->libraryService->getAssets($orgId, $request->all());
-            return response()->json($result, $result['success'] ? 200 : 500);
+
+            if ($result['success']) {
+                return $this->success($result['data'], 'Assets retrieved successfully');
+            }
+
+            return $this->error($result['message'], 500);
 
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => 'Failed to list assets', 'error' => $e->getMessage()], 500);
+            return $this->serverError('Failed to list assets: ' . $e->getMessage());
         }
     }
 
@@ -105,10 +115,15 @@ class ContentLibraryController extends Controller
     {
         try {
             $result = $this->libraryService->getAsset($assetId);
-            return response()->json($result, $result['success'] ? 200 : 404);
+
+            if ($result['success']) {
+                return $this->success($result['data'], 'Asset retrieved successfully');
+            }
+
+            return $this->notFound($result['message'] ?? 'Asset not found');
 
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => 'Failed to get asset', 'error' => $e->getMessage()], 500);
+            return $this->serverError('Failed to get asset: ' . $e->getMessage());
         }
     }
 
@@ -127,15 +142,20 @@ class ContentLibraryController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         try {
             $result = $this->libraryService->updateAsset($assetId, $request->all());
-            return response()->json($result, $result['success'] ? 200 : 400);
+
+            if ($result['success']) {
+                return $this->success($result['data'], $result['message']);
+            }
+
+            return $this->error($result['message'], 400);
 
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => 'Failed to update asset', 'error' => $e->getMessage()], 500);
+            return $this->serverError('Failed to update asset: ' . $e->getMessage());
         }
     }
 
@@ -147,10 +167,15 @@ class ContentLibraryController extends Controller
     {
         try {
             $result = $this->libraryService->deleteAsset($assetId);
-            return response()->json($result, $result['success'] ? 200 : 400);
+
+            if ($result['success']) {
+                return $this->deleted($result['message']);
+            }
+
+            return $this->error($result['message'], 400);
 
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => 'Failed to delete asset', 'error' => $e->getMessage()], 500);
+            return $this->serverError('Failed to delete asset: ' . $e->getMessage());
         }
     }
 

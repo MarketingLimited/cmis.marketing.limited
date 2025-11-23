@@ -8,10 +8,9 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
 class CreativeBrief extends BaseModel
 {
-    use HasFactory, SoftDeletes, HasUuids;
+    use HasFactory, SoftDeletes;
     use HasOrganization;
 
     protected $table = 'cmis.creative_briefs';
@@ -46,6 +45,7 @@ class CreativeBrief extends BaseModel
     public function campaign()
     {
         return $this->belongsTo(\App\Models\Campaign::class, 'campaign_id', 'campaign_id');
+    }
 
     /**
      * Get the creator
@@ -53,6 +53,7 @@ class CreativeBrief extends BaseModel
     public function creator()
     {
         return $this->belongsTo(\App\Models\User::class, 'created_by', 'user_id');
+    }
 
     /**
      * Get the approver
@@ -60,6 +61,7 @@ class CreativeBrief extends BaseModel
     public function approver()
     {
         return $this->belongsTo(\App\Models\User::class, 'approved_by', 'user_id');
+    }
 
     /**
      * Get creative assets using this brief
@@ -67,6 +69,7 @@ class CreativeBrief extends BaseModel
     public function creativeAssets()
     {
         return $this->hasMany(\App\Models\CreativeAsset::class, 'brief_id', 'brief_id');
+    }
 
     /**
      * Scope approved briefs
@@ -74,6 +77,7 @@ class CreativeBrief extends BaseModel
     public function scopeApproved($query)
     {
         return $query->where('status', 'approved')->whereNotNull('approved_at');
+    }
 
     /**
      * Scope pending briefs
@@ -81,6 +85,7 @@ class CreativeBrief extends BaseModel
     public function scopePending($query)
     {
         return $query->where('status', 'pending');
+    }
 
     /**
      * Validate brief structure using DB function
@@ -91,6 +96,7 @@ class CreativeBrief extends BaseModel
             $result = \DB::selectOne(
                 'SELECT cmis.validate_brief_structure(?::jsonb) as is_valid',
                 [json_encode($this->brief_data)]
+            );
 
             return (bool) $result->is_valid;
         } catch (\Exception $e) {
@@ -99,4 +105,6 @@ class CreativeBrief extends BaseModel
                 'error' => $e->getMessage()
             ]);
             return false;
+        }
+    }
 }
