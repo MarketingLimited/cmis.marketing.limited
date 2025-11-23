@@ -41,6 +41,7 @@ class Notification extends BaseModel
     {
         return $this->belongsTo(User::class, 'user_id', 'user_id');
 
+    }
     /**
      * Get the organization associated with the notification
      */
@@ -48,6 +49,7 @@ class Notification extends BaseModel
     {
         return $this->belongsTo(Core\Org::class, 'org_id', 'org_id');
 
+    }
     /**
      * Scope to get notifications for a specific user
      */
@@ -55,6 +57,7 @@ class Notification extends BaseModel
     {
         return $query->where('user_id', $userId);
 
+    }
     /**
      * Scope to get unread notifications
      */
@@ -62,6 +65,7 @@ class Notification extends BaseModel
     {
         return $query->where('read', false);
 
+    }
     /**
      * Scope to get read notifications
      */
@@ -69,6 +73,7 @@ class Notification extends BaseModel
     {
         return $query->where('read', true);
 
+    }
     /**
      * Scope to get recent notifications
      */
@@ -76,6 +81,7 @@ class Notification extends BaseModel
     {
         return $query->orderBy('created_at', 'desc')->limit($limit);
 
+    }
     /**
      * Mark notification as read
      */
@@ -89,6 +95,7 @@ class Notification extends BaseModel
             'read_at' => now(),
         ]);
 
+    }
     /**
      * Mark notification as unread
      */
@@ -99,6 +106,7 @@ class Notification extends BaseModel
             'read_at' => null,
         ]);
 
+    }
     /**
      * Get formatted time ago
      */
@@ -106,6 +114,7 @@ class Notification extends BaseModel
     {
         return $this->created_at->diffForHumans();
 
+    }
     /**
      * Create a new notification
      */
@@ -126,6 +135,7 @@ class Notification extends BaseModel
             'data' => $data ?? [],
         ]);
 
+    }
     /**
      * Notify user about campaign
      */
@@ -133,6 +143,7 @@ class Notification extends BaseModel
     {
         return static::createNotification($userId, 'campaign', $message, $orgId, 'حملة تسويقية', $data);
 
+    }
     /**
      * Notify user about analytics
      */
@@ -140,6 +151,7 @@ class Notification extends BaseModel
     {
         return static::createNotification($userId, 'analytics', $message, $orgId, 'تحليلات', $data);
 
+    }
     /**
      * Notify user about integration
      */
@@ -147,10 +159,13 @@ class Notification extends BaseModel
     {
         return static::createNotification($userId, 'integration', $message, $orgId, 'تكامل', $data);
 
+    }
     /**
      * Notify user about system event
      */
     public static function notifySystem(string $userId, string $message, ?string $orgId = null, ?array $data = null)
     {
         return static::createNotification($userId, 'system', $message, $orgId, 'نظام', $data);
+}
+}
 }

@@ -21,6 +21,7 @@ class KpiTarget extends BaseModel
     {
         return $this->belongsTo(Campaign::class, 'campaign_id', 'campaign_id');
 
+    }
     /**
      * Update the current value and status.
      *
@@ -48,6 +49,7 @@ class KpiTarget extends BaseModel
 
         return $this->save();
 
+    }
     /**
      * Get the progress percentage.
      *
@@ -60,6 +62,7 @@ class KpiTarget extends BaseModel
 
         return min(100, ($this->current_value / $this->target_value) * 100);
 
+    }
     /**
      * Scope active KPIs.
      *
@@ -71,6 +74,7 @@ class KpiTarget extends BaseModel
         return $query->where('status', '!=', 'achieved')
             ->whereDate('end_date', '>=', now());
 
+    }
     /**
      * Scope achieved KPIs.
      *
@@ -80,4 +84,7 @@ class KpiTarget extends BaseModel
     public function scopeAchieved($query)
     {
         return $query->where('status', 'achieved');
+}
+}
+}
 }

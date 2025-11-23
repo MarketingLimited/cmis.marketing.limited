@@ -48,6 +48,7 @@ class DataFeed extends BaseModel
     {
         return $this->hasMany(FeedItem::class, 'feed_id', 'feed_id');
 
+    }
     /**
      * Scope to filter by kind
      */
@@ -55,10 +56,12 @@ class DataFeed extends BaseModel
     {
         return $query->where('kind', $kind);
 
+    }
     /**
      * Scope to get feeds for a specific org
      */
     public function scopeForOrg(Builder $query, string $orgId): Builder
     {
         return $query->where('org_id', $orgId);
+}
 }

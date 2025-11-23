@@ -61,6 +61,7 @@ class SocialConversation extends BaseModel
     {
         return $this->belongsTo(SocialMention::class, 'root_mention_id', 'mention_id');
 
+    }
     /**
      * Status Management
      */
@@ -91,10 +92,12 @@ class SocialConversation extends BaseModel
     {
         return $this->status === 'open';
 
+        }
     public function isResolved(): bool
     {
         return $this->status === 'resolved';
 
+    }
     /**
      * Assignment
      */
@@ -111,6 +114,7 @@ class SocialConversation extends BaseModel
     {
         return $this->assigned_to !== null;
 
+    }
     /**
      * Priority Management
      */
@@ -131,10 +135,12 @@ class SocialConversation extends BaseModel
     {
         return $this->priority === 'urgent';
 
+        }
     public function isHighPriority(): bool
     {
         return in_array($this->priority, ['urgent', 'high']);
 
+    }
     /**
      * Message Tracking
      */
@@ -156,6 +162,7 @@ class SocialConversation extends BaseModel
     {
         return $this->unread_count > 0;
 
+    }
     /**
      * Response Tracking
      */
@@ -178,6 +185,7 @@ class SocialConversation extends BaseModel
     {
         return $this->first_response_at !== null;
 
+        }
     public function getAverageResponseTime(): ?int
     {
         if (!$this->first_response_at || $this->message_count <= 1) {
@@ -186,6 +194,7 @@ class SocialConversation extends BaseModel
         $totalTime = $this->first_response_at->diffInMinutes($this->last_response_at);
         return (int) ($totalTime / ($this->message_count - 1));
 
+    }
     /**
      * Participant Management
      */
@@ -201,10 +210,12 @@ class SocialConversation extends BaseModel
     {
         return count($this->participants);
 
+        }
     public function getParticipantsString(): string
     {
         return implode(', ', $this->participants);
 
+    }
     /**
      * Escalation
      */
@@ -220,6 +231,7 @@ class SocialConversation extends BaseModel
     {
         $this->update(['requires_escalation' => false]);
 
+    }
     /**
      * Sentiment & Topics
      */
@@ -235,6 +247,7 @@ class SocialConversation extends BaseModel
             $topics[] = $topic;
             $this->update(['topics' => $topics]);
 
+    }
     /**
      * Tags
      */
@@ -255,6 +268,7 @@ class SocialConversation extends BaseModel
     {
         return in_array($tag, $this->tags);
 
+    }
     /**
      * Notes
      */
@@ -269,6 +283,7 @@ class SocialConversation extends BaseModel
             'internal_notes' => $currentNotes ? "{$currentNotes}\n{$newNote}" : $newNote,
         ]);
 
+    }
     /**
      * Activity Tracking
      */
@@ -281,6 +296,7 @@ class SocialConversation extends BaseModel
     {
         return $this->last_activity_at->lt(now()->subHours($hoursThreshold));
 
+    }
     /**
      * Scopes
      */
@@ -289,47 +305,83 @@ class SocialConversation extends BaseModel
     {
         return $query->where('status', 'open');
 
+        }
     public function scopeInProgress($query)
     {
         return $query->where('status', 'in_progress');
 
+        }
     public function scopeResolved($query)
     {
         return $query->where('status', 'resolved');
 
+        }
     public function scopeUnassigned($query)
     {
         return $query->whereNull('assigned_to');
 
+        }
     public function scopeAssignedTo($query, string $userId)
     {
         return $query->where('assigned_to', $userId);
 
+        }
     public function scopeUrgent($query)
     {
         return $query->where('priority', 'urgent');
 
+        }
     public function scopeHighPriority($query)
     {
         return $query->whereIn('priority', ['urgent', 'high']);
 
+        }
     public function scopeWithUnread($query)
     {
         return $query->where('unread_count', '>', 0);
 
+        }
     public function scopeRequiringEscalation($query)
     {
         return $query->where('requires_escalation', true);
 
+        }
     public function scopeStale($query, int $hoursThreshold = 48)
     {
         return $query->where('last_activity_at', '<', now()->subHours($hoursThreshold));
 
+        }
     public function scopeOnPlatform($query, string $platform)
     {
         return $query->where('platform', $platform);
 
+        }
     public function scopeRecentActivity($query)
     {
         return $query->orderBy('last_activity_at', 'desc');
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
 }

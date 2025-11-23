@@ -49,6 +49,7 @@ class VideoTemplate extends BaseModel
     {
         return $this->hasMany(VideoScene::class, 'template_id', 'template_id');
 
+    }
     /**
      * Get the creator
      */
@@ -56,6 +57,7 @@ class VideoTemplate extends BaseModel
     {
         return $this->belongsTo(\App\Models\User::class, 'created_by', 'user_id');
 
+    }
     /**
      * Scope active templates
      */
@@ -63,10 +65,12 @@ class VideoTemplate extends BaseModel
     {
         return $query->where('is_active', true);
 
+    }
     /**
      * Scope by style
      */
     public function scopeWithStyle($query, string $style)
     {
         return $query->where('style', $style);
+}
 }

@@ -37,10 +37,12 @@ class MetaFieldDictionary extends BaseModel
     {
         return $query->where('field_name', $fieldName);
 
+    }
     /**
      * Scope to find by unified alias
      */
     public function scopeByUnifiedAlias($query, string $alias)
     {
         return $query->where('unified_alias', $alias);
+}
 }

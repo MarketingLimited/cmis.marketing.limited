@@ -37,6 +37,7 @@ class MetaFunctionDescription extends BaseModel
     {
         return $query->where('routine_name', $routineName);
 
+    }
     /**
      * Scope to find by schema
      */
@@ -44,10 +45,12 @@ class MetaFunctionDescription extends BaseModel
     {
         return $query->where('routine_schema', $schema);
 
+    }
     /**
      * Scope to filter by category
      */
     public function scopeByCategory($query, string $category)
     {
         return $query->where('cognitive_category', $category);
+}
 }

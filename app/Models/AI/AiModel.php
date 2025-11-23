@@ -54,6 +54,7 @@ class AiModel extends BaseModel
     public function scopeForOrg(Builder $query, string $orgId): Builder
     {
         return $query->where('org_id', $orgId);
+    }
 
     /**
      * Scope to filter by status
@@ -61,6 +62,7 @@ class AiModel extends BaseModel
     public function scopeWithStatus($query, string $status)
     {
         return $query->where('status', $status);
+    }
 
     /**
      * Scope to filter by provider
@@ -68,4 +70,5 @@ class AiModel extends BaseModel
     public function scopeByProvider($query, string $provider)
     {
         return $query->where('provider', $provider);
+    }
 }

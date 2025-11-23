@@ -38,25 +38,30 @@ class DatasetPackage extends BaseModel
     public function files()
     {
         return $this->hasMany(DatasetFile::class, 'package_id', 'package_id');
+    }
 
     // Scopes
     public function scopePublic($query)
     {
         return $query->where('is_public', true);
+    }
 
     public function scopeByType($query, $type)
     {
         return $query->where('package_type', $type);
+    }
 
     public function scopePopular($query, $minDownloads = 10)
     {
         return $query->where('download_count', '>=', $minDownloads)
             ->orderByDesc('download_count');
+    }
 
     // Helpers
     public function incrementDownloads()
     {
         $this->increment('download_count');
+    }
 
     public function getSizeFormatted()
     {
@@ -65,6 +70,8 @@ class DatasetPackage extends BaseModel
 
         for ($i = 0; $bytes > 1024; $i++) {
             $bytes /= 1024;
+        }
 
         return round($bytes, 2) . ' ' . $units[$i];
+    }
 }

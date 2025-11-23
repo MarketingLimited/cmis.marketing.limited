@@ -56,6 +56,7 @@ protected $table = 'cmis.temporal_analytics';
     {
         return $query->where('entity_type', $entityType);
 
+    }
     /**
      * Scope by time period
      */
@@ -63,6 +64,7 @@ protected $table = 'cmis.temporal_analytics';
     {
         return $query->where('time_period', $period);
 
+    }
     /**
      * Scope by date range
      */
@@ -71,6 +73,7 @@ protected $table = 'cmis.temporal_analytics';
         return $query->where('period_start', '>=', $start)
             ->where('period_end', '<=', $end);
 
+    }
     /**
      * Scope with anomalies
      */
@@ -79,6 +82,7 @@ protected $table = 'cmis.temporal_analytics';
         return $query->whereNotNull('anomalies')
             ->whereRaw("jsonb_array_length(anomalies) > 0");
 
+    }
     /**
      * Scope high confidence
      */
@@ -86,6 +90,7 @@ protected $table = 'cmis.temporal_analytics';
     {
         return $query->whereRaw("(confidence_scores->>'overall')::float >= ?", [$threshold]);
 
+    }
     /**
      * Scope good data quality
      */
@@ -93,6 +98,7 @@ protected $table = 'cmis.temporal_analytics';
     {
         return $query->where('data_quality', '>=', $threshold);
 
+    }
     /**
      * Scope recent analytics
      */
@@ -100,6 +106,7 @@ protected $table = 'cmis.temporal_analytics';
     {
         return $query->where('computed_at', '>=', now()->subDays($days));
 
+    }
     /**
      * Get metric value
      */
@@ -107,6 +114,7 @@ protected $table = 'cmis.temporal_analytics';
     {
         return $this->metrics[$metricName] ?? null;
 
+    }
     /**
      * Get trend for metric
      */
@@ -114,10 +122,12 @@ protected $table = 'cmis.temporal_analytics';
     {
         return $this->trends[$metricName] ?? null;
 
+    }
     /**
      * Has anomalies
      */
     public function hasAnomalies(): bool
     {
         return !empty($this->anomalies);
+}
 }

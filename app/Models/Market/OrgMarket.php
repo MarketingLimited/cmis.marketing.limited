@@ -48,6 +48,7 @@ class OrgMarket extends BaseModel
     {
         return $this->belongsTo(Market::class, 'market_id', 'market_id');
 
+    }
     /**
      * Scope primary markets
      */
@@ -55,6 +56,7 @@ class OrgMarket extends BaseModel
     {
         return $query->where('is_primary_market', true);
 
+    }
     /**
      * Scope by status
      */
@@ -62,6 +64,7 @@ class OrgMarket extends BaseModel
     {
         return $query->where('status', $status);
 
+    }
     /**
      * Scope active markets
      */
@@ -69,6 +72,7 @@ class OrgMarket extends BaseModel
     {
         return $query->where('status', 'active');
 
+    }
     /**
      * Scope by priority
      */
@@ -76,6 +80,7 @@ class OrgMarket extends BaseModel
     {
         return $query->where('priority_level', '>=', $threshold);
 
+    }
     /**
      * Get ROI
      */
@@ -88,4 +93,7 @@ class OrgMarket extends BaseModel
             return null;
 
         return (($revenue - $this->investment_budget) / $this->investment_budget) * 100;
+}
+}
+}
 }

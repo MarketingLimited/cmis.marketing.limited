@@ -41,6 +41,7 @@ class Anomaly extends BaseModel
     public function acknowledger(): BelongsTo
     {
         return $this->belongsTo(User::class, 'acknowledged_by', 'user_id');
+    }
 
     public function acknowledge(string $userId, ?string $notes = null): void
     {
@@ -50,6 +51,7 @@ class Anomaly extends BaseModel
             'acknowledged_at' => now(),
             'resolution_notes' => $notes
         ]);
+    }
 
     public function resolve(string $userId, string $notes): void
     {
@@ -59,6 +61,7 @@ class Anomaly extends BaseModel
             'acknowledged_at' => now(),
             'resolution_notes' => $notes
         ]);
+    }
 
     public function markFalsePositive(string $userId, string $notes): void
     {
@@ -68,16 +71,20 @@ class Anomaly extends BaseModel
             'acknowledged_at' => now(),
             'resolution_notes' => $notes
         ]);
+    }
 
     public function scopeUnacknowledged($query)
     {
         return $query->where('status', 'new');
+    }
 
     public function scopeCritical($query)
     {
         return $query->where('severity', 'critical');
+    }
 
     public function scopeRecent($query, int $days = 7)
     {
         return $query->where('detected_date', '>=', now()->subDays($days));
+    }
 }

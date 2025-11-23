@@ -48,6 +48,7 @@ class FlowStep extends BaseModel
     {
         return $this->belongsTo(Flow::class, 'flow_id', 'flow_id');
 
+    }
     /**
      * Scope to get steps for a specific flow
      */
@@ -55,10 +56,12 @@ class FlowStep extends BaseModel
     {
         return $query->where('flow_id', $flowId);
 
+    }
     /**
      * Scope to filter by type
      */
     public function scopeOfType($query, string $type)
     {
         return $query->where('type', $type);
+}
 }

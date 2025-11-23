@@ -35,6 +35,7 @@ protected $table = 'cmis.session_context';
     {
         return $this->belongsTo(UserSession::class, 'session_id', 'session_id');
 
+    }
     /**
      * Scope by context key
      */
@@ -42,6 +43,7 @@ protected $table = 'cmis.session_context';
     {
         return $query->where('context_key', $key);
 
+    }
     /**
      * Scope by context type
      */
@@ -49,6 +51,7 @@ protected $table = 'cmis.session_context';
     {
         return $query->where('context_type', $type);
 
+    }
     /**
      * Scope valid contexts (not expired)
      */
@@ -58,6 +61,7 @@ protected $table = 'cmis.session_context';
             $q->whereNull('expires_at')
                 ->orWhere('expires_at', '>', now());
 
+    }
     /**
      * Scope expired contexts
      */
@@ -66,6 +70,7 @@ protected $table = 'cmis.session_context';
         return $query->whereNotNull('expires_at')
             ->where('expires_at', '<=', now());
 
+    }
     /**
      * Check if context is valid
      */
@@ -76,6 +81,7 @@ protected $table = 'cmis.session_context';
 
         return $this->expires_at->isFuture();
 
+    }
     /**
      * Check if context has expired
      */
@@ -86,6 +92,7 @@ protected $table = 'cmis.session_context';
 
         return $this->expires_at->isPast();
 
+    }
     /**
      * Get or set context value
      */
@@ -98,6 +105,7 @@ protected $table = 'cmis.session_context';
 
         return $context ? $context->context_value : $default;
 
+    }
     /**
      * Set context value
      */
@@ -114,4 +122,8 @@ protected $table = 'cmis.session_context';
                 'set_at' => now(),
                 'expires_at' => $expiresAt,
             ]
+}
+}
+}
+}
 }

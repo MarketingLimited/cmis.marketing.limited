@@ -40,6 +40,7 @@ class RolePermission extends BaseModel
     {
         return $this->belongsTo(Role::class, 'role_id', 'role_id');
 
+    }
     /**
      * Get the permission
      */
@@ -47,6 +48,7 @@ class RolePermission extends BaseModel
     {
         return $this->belongsTo(Permission::class, 'permission_id', 'permission_id');
 
+    }
     /**
      * Get the user who granted this permission
      */
@@ -54,6 +56,7 @@ class RolePermission extends BaseModel
     {
         return $this->belongsTo(User::class, 'granted_by', 'user_id');
 
+    }
     /**
      * Scope to get permissions for a specific role
      */
@@ -61,10 +64,12 @@ class RolePermission extends BaseModel
     {
         return $query->where('role_id', $roleId);
 
+    }
     /**
      * Scope to get roles with a specific permission
      */
     public function scopeWithPermission($query, string $permissionId)
     {
         return $query->where('permission_id', $permissionId);
+}
 }

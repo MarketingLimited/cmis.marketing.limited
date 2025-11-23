@@ -45,18 +45,22 @@ class ExampleSet extends BaseModel
     public function scopeByCategory($query, $category)
     {
         return $query->where('category', $category);
+    }
 
     public function scopePassed($query)
     {
         return $query->where('test_status', 'passed');
+    }
 
     public function scopeFailed($query)
     {
         return $query->where('test_status', 'failed');
+    }
 
     public function scopeHighAccuracy($query, $threshold = 0.8)
     {
         return $query->where('accuracy_score', '>=', $threshold);
+    }
 
     // Helpers
     public function markAsPassed($actualOutput, $accuracyScore)
@@ -66,6 +70,7 @@ class ExampleSet extends BaseModel
             'actual_output' => $actualOutput,
             'accuracy_score' => $accuracyScore,
         ]);
+    }
 
     public function markAsFailed($actualOutput, $accuracyScore = 0)
     {
@@ -74,8 +79,10 @@ class ExampleSet extends BaseModel
             'actual_output' => $actualOutput,
             'accuracy_score' => $accuracyScore,
         ]);
+    }
 
     public function isPassed()
     {
         return $this->test_status === 'passed';
+    }
 }

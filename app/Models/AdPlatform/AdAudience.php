@@ -61,6 +61,7 @@ class AdAudience extends BaseModel
     {
         return $this->belongsTo(\App\Models\Core\Integration::class, 'integration_id', 'integration_id');
 
+    }
     /**
      * Scope by platform
      */
@@ -68,6 +69,7 @@ class AdAudience extends BaseModel
     {
         return $query->where('platform', $platform);
 
+    }
     /**
      * Scope by audience type
      */
@@ -75,6 +77,7 @@ class AdAudience extends BaseModel
     {
         return $query->where('audience_type', $type);
 
+    }
     /**
      * Scope custom audiences
      */
@@ -82,6 +85,7 @@ class AdAudience extends BaseModel
     {
         return $query->where('audience_type', 'custom');
 
+    }
     /**
      * Scope lookalike audiences
      */
@@ -89,10 +93,12 @@ class AdAudience extends BaseModel
     {
         return $query->where('audience_type', 'lookalike');
 
+    }
     /**
      * Scope by entity level
      */
     public function scopeByEntityLevel($query, string $level)
     {
         return $query->where('entity_level', $level);
+}
 }

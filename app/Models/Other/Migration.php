@@ -33,3 +33,4 @@ class Migration extends BaseModel
     {
         return $query->where('batch', $batch);
 }
+}

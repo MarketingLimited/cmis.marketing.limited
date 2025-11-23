@@ -50,6 +50,7 @@ class AdEntity extends BaseModel
     public function integration()
     {
         return $this->belongsTo(\App\Models\Core\Integration::class, 'integration_id', 'integration_id');
+    }
 
     /**
      * Get the ad set
@@ -57,6 +58,7 @@ class AdEntity extends BaseModel
     public function adSet()
     {
         return $this->belongsTo(AdSet::class, 'adset_external_id', 'adset_external_id');
+    }
 
     /**
      * Get the creative asset
@@ -64,6 +66,7 @@ class AdEntity extends BaseModel
     public function creative()
     {
         return $this->belongsTo(\App\Models\Core\Creative::class, 'creative_id', 'creative_id');
+    }
 
     /**
      * Get metrics
@@ -72,6 +75,7 @@ class AdEntity extends BaseModel
     {
         return $this->hasMany(AdMetric::class, 'entity_external_id', 'ad_external_id')
             ->where('entity_level', 'ad');
+    }
 
     /**
      * Scope active ads
@@ -79,6 +83,7 @@ class AdEntity extends BaseModel
     public function scopeActive($query)
     {
         return $query->where('ad_status', 'active');
+    }
 
     /**
      * Scope by platform
@@ -86,13 +91,15 @@ class AdEntity extends BaseModel
     public function scopeByPlatform($query, string $platform)
     {
         return $query->where('platform', $platform);
+    }
 
     /**
      * Scope by ad type
      */
     public function scopeByType($query, string $type)
     {
-        return $query->where('ad_type', $type);
+        return $this->where('ad_type', $type);
+    }
 
     /**
      * Scope by status
@@ -100,6 +107,7 @@ class AdEntity extends BaseModel
     public function scopeByStatus($query, string $status)
     {
         return $query->where('ad_status', $status);
+    }
 
     /**
      * Get latest metrics
@@ -109,6 +117,7 @@ class AdEntity extends BaseModel
         return $this->metrics()
             ->orderBy('metric_date', 'desc')
             ->first();
+    }
 
     /**
      * Get performance summary
@@ -126,4 +135,5 @@ class AdEntity extends BaseModel
             'avg_cpc' => $metrics->avg('cpc'),
             'avg_cpa' => $metrics->avg('cpa'),
         ];
+    }
 }

@@ -41,15 +41,20 @@ class MarketingAsset extends BaseModel
     {
         return $this->belongsTo(\App\Models\Organization::class, 'org_id', 'org_id');
 
+        }
     public function campaign()
     {
         return $this->belongsTo(\App\Models\Campaign::class, 'campaign_id', 'campaign_id');
 
+        }
     public function scopeByType($query, $type)
     {
         return $query->where('asset_type', $type);
 
+        }
     public function scopeActive($query)
     {
         return $query->where('status', 'active');
+}
+}
 }

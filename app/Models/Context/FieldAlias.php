@@ -33,6 +33,7 @@ class FieldAlias extends BaseModel
     {
         return $this->belongsTo(FieldDefinition::class, 'field_id', 'field_id');
 
+    }
     /**
      * Scope active aliases
      */
@@ -40,10 +41,12 @@ class FieldAlias extends BaseModel
     {
         return $query->where('is_active', true);
 
+    }
     /**
      * Scope by alias type
      */
     public function scopeOfType($query, string $type)
     {
         return $query->where('alias_type', $type);
+}
 }

@@ -46,6 +46,7 @@ class Market extends BaseModel
             'status',
         ])->withTimestamps();
 
+    }
     /**
      * Get org markets
      */
@@ -53,6 +54,7 @@ class Market extends BaseModel
     {
         return $this->hasMany(OrgMarket::class, 'market_id', 'market_id');
 
+    }
     /**
      * Scope by language
      */
@@ -60,6 +62,7 @@ class Market extends BaseModel
     {
         return $query->where('language_code', $languageCode);
 
+    }
     /**
      * Scope by currency
      */
@@ -67,10 +70,12 @@ class Market extends BaseModel
     {
         return $query->where('currency_code', $currencyCode);
 
+    }
     /**
      * Find by market ID
      */
     public static function findByMarketId(string $marketId)
     {
         return self::where('market_id', $marketId)->first();
+}
 }

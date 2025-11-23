@@ -44,3 +44,4 @@ class CacheMetadata extends BaseModel
     {
         return $query->where('auto_refresh', true);
 }
+}

@@ -37,6 +37,7 @@ class Metric extends BaseModel
 {
     use HasOrganization;
 
+    }
     /**
      * The table associated with the model.
      *
@@ -44,6 +45,7 @@ class Metric extends BaseModel
      */
     protected $table = 'cmis.metrics';
 
+    }
     /**
      * The attributes that are mass assignable.
      *
@@ -88,6 +90,7 @@ class Metric extends BaseModel
     const CATEGORY_VIDEO = 'video';
     const CATEGORY_AUDIENCE = 'audience';
 
+    }
     /**
      * Common metric names constants
      */
@@ -102,6 +105,7 @@ class Metric extends BaseModel
     const METRIC_CONVERSIONS = 'conversions';
     const METRIC_ENGAGEMENT_RATE = 'engagement_rate';
 
+    }
     /**
      * Platforms constants
      */
@@ -112,6 +116,7 @@ class Metric extends BaseModel
     const PLATFORM_TWITTER = 'twitter';
     const PLATFORM_SNAPCHAT = 'snapchat';
 
+    }
     /**
      * Get the entity that owns this metric (polymorphic)
      *
@@ -121,6 +126,7 @@ class Metric extends BaseModel
     {
         return $this->morphTo('entity', 'entity_type', 'entity_id');
 
+    }
     /**
      * Get the metric definition
      */
@@ -132,6 +138,7 @@ class Metric extends BaseModel
     // Scopes
     // ==================================================================
 
+    }
     /**
      * Scope for a specific entity
      *
@@ -145,6 +152,7 @@ class Metric extends BaseModel
         return $query->where('entity_type', $entityType)
                      ->where('entity_id', $entityId);
 
+    }
     /**
      * Scope for a specific metric name
      *
@@ -156,6 +164,7 @@ class Metric extends BaseModel
     {
         return $query->where('metric_name', $metricName);
 
+    }
     /**
      * Scope for a specific metric category
      *
@@ -167,6 +176,7 @@ class Metric extends BaseModel
     {
         return $query->where('metric_category', $category);
 
+    }
     /**
      * Scope for a specific platform
      *
@@ -178,6 +188,7 @@ class Metric extends BaseModel
     {
         return $query->where('platform', $platform);
 
+    }
     /**
      * Scope for date range
      *
@@ -193,6 +204,7 @@ class Metric extends BaseModel
 
         return $query->whereBetween('recorded_at', [$start, $end]);
 
+    }
     /**
      * Scope for today's metrics
      *
@@ -203,6 +215,7 @@ class Metric extends BaseModel
     {
         return $query->whereDate('recorded_at', today());
 
+    }
     /**
      * Scope for this week's metrics
      *
@@ -216,6 +229,7 @@ class Metric extends BaseModel
             now()->endOfWeek()
         ]);
 
+    }
     /**
      * Scope for this month's metrics
      *
@@ -227,6 +241,7 @@ class Metric extends BaseModel
         return $query->whereMonth('recorded_at', now()->month)
                      ->whereYear('recorded_at', now()->year);
 
+    }
     /**
      * Scope for latest metrics per entity
      *
@@ -237,6 +252,7 @@ class Metric extends BaseModel
     {
         return $query->orderBy('recorded_at', 'desc');
 
+    }
     /**
      * Scope for numeric metrics only
      *
@@ -251,6 +267,7 @@ class Metric extends BaseModel
     // Helper Methods
     // ==================================================================
 
+    }
     /**
      * Get the metric value (auto-detect type)
      *
@@ -266,6 +283,7 @@ class Metric extends BaseModel
 
         return $this->value_json;
 
+    }
     /**
      * Check if metric is numeric
      *
@@ -275,6 +293,7 @@ class Metric extends BaseModel
     {
         return $this->value_numeric !== null;
 
+    }
     /**
      * Format value for display
      *
@@ -301,6 +320,7 @@ class Metric extends BaseModel
 
         return (string) $value;
 
+    }
     /**
      * Get display name from definition or fallback
      *
@@ -314,6 +334,7 @@ class Metric extends BaseModel
     // Static Helper Methods
     // ==================================================================
 
+    }
     /**
      * Record a metric value
      *
@@ -350,6 +371,7 @@ class Metric extends BaseModel
             'metadata' => $options['metadata'] ?? null,
         ]);
 
+    }
     /**
      * Infer metric category from metric name
      *
@@ -379,4 +401,5 @@ class Metric extends BaseModel
         ];
 
         return $categoryMap[$metricName] ?? 'performance';
+}
 }

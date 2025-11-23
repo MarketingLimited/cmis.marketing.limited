@@ -36,6 +36,7 @@ class DatasetFile extends BaseModel
     public function package()
     {
         return $this->belongsTo(DatasetPackage::class, 'package_id', 'package_id');
+    }
 
     // Helpers
     public function getSizeFormatted()
@@ -45,14 +46,18 @@ class DatasetFile extends BaseModel
 
         for ($i = 0; $bytes > 1024; $i++) {
             $bytes /= 1024;
+        }
 
         return round($bytes, 2) . ' ' . $units[$i];
+    }
 
     public function verifyChecksum()
     {
         if (!file_exists(storage_path($this->file_path))) {
             return false;
+        }
 
         $actualChecksum = hash_file('sha256', storage_path($this->file_path));
         return $actualChecksum === $this->checksum;
+    }
 }

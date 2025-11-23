@@ -71,6 +71,7 @@ class ValueContext extends BaseModel
     {
         return $this->belongsTo(\App\Models\Offering::class, 'offering_id', 'offering_id');
 
+    }
     /**
      * Get the campaign
      */
@@ -78,6 +79,7 @@ class ValueContext extends BaseModel
     {
         return $this->belongsTo(\App\Models\Campaign::class, 'campaign_id', 'campaign_id');
 
+    }
     /**
      * Get the channel
      */
@@ -85,6 +87,7 @@ class ValueContext extends BaseModel
     {
         return $this->belongsTo(\App\Models\Channel::class, 'channel_id', 'channel_id');
 
+    }
     /**
      * Get the creator
      */
@@ -92,6 +95,7 @@ class ValueContext extends BaseModel
     {
         return $this->belongsTo(\App\Models\User::class, 'created_by', 'user_id');
 
+    }
     /**
      * Scope active contexts
      */
@@ -99,6 +103,7 @@ class ValueContext extends BaseModel
     {
         return $query->where('is_active', true)->whereNull('deleted_at');
 
+    }
     /**
      * Scope by framework
      */
@@ -106,10 +111,12 @@ class ValueContext extends BaseModel
     {
         return $query->where('framework', $framework);
 
+    }
     /**
      * Scope by awareness stage
      */
     public function scopeByAwarenessStage($query, string $stage)
     {
         return $query->where('awareness_stage', $stage);
+}
 }

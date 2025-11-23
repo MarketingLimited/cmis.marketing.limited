@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class UserActivity extends BaseModel
 {
     use HasOrganization;
+}
 /**
      * Get the user that performed the activity.
      */
@@ -19,6 +20,7 @@ class UserActivity extends BaseModel
     {
         return $this->belongsTo(User::class, 'user_id', 'user_id');
 
+    }
     /**
      * Log user activity.
      *
@@ -48,6 +50,7 @@ class UserActivity extends BaseModel
             'metadata' => $metadata,
         ]);
 
+    }
     /**
      * Scope activities by type.
      *
@@ -59,6 +62,7 @@ class UserActivity extends BaseModel
     {
         return $query->where('activity_type', $type);
 
+    }
     /**
      * Scope activities by entity.
      *
@@ -75,4 +79,5 @@ class UserActivity extends BaseModel
             $query->where('entity_id', $entityId);
 
         return $query;
+}
 }

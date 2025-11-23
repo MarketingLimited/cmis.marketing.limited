@@ -47,6 +47,7 @@ class VideoScene extends BaseModel
     {
         return $this->belongsTo(VideoTemplate::class, 'template_id', 'template_id');
 
+    }
     /**
      * Get the creative asset
      */
@@ -54,6 +55,7 @@ class VideoScene extends BaseModel
     {
         return $this->belongsTo(\App\Models\CreativeAsset::class, 'asset_id', 'asset_id');
 
+    }
     /**
      * Scope by scene type
      */
@@ -61,10 +63,12 @@ class VideoScene extends BaseModel
     {
         return $query->where('scene_type', $type);
 
+    }
     /**
      * Scope ordered by scene number
      */
     public function scopeOrdered($query)
     {
         return $query->orderBy('scene_number');
+}
 }

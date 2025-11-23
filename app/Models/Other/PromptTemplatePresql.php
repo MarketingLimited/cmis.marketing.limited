@@ -34,10 +34,12 @@ class PromptTemplatePresql extends BaseModel
     {
         return $this->belongsTo(PromptTemplate::class, 'prompt_id', 'prompt_id');
 
+    }
     /**
      * Get the SQL snippet
      */
     public function sqlSnippet()
     {
         return $this->belongsTo(SqlSnippet::class, 'snippet_id', 'snippet_id');
+}
 }

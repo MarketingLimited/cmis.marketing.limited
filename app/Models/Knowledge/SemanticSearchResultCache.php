@@ -48,6 +48,7 @@ class SemanticSearchResultCache extends BaseModel
 
         return $query->where('expires_at', '>', now())->first();
 
+    }
     /**
      * Check if cache is valid
      */
@@ -55,6 +56,7 @@ class SemanticSearchResultCache extends BaseModel
     {
         return $this->expires_at && $this->expires_at->isFuture();
 
+    }
     /**
      * Record cache hit
      */
@@ -63,6 +65,7 @@ class SemanticSearchResultCache extends BaseModel
         $this->increment('hit_count');
         $this->update(['last_hit' => now()]);
 
+    }
     /**
      * Scope valid caches
      */
@@ -70,6 +73,7 @@ class SemanticSearchResultCache extends BaseModel
     {
         return $query->where('expires_at', '>', now());
 
+    }
     /**
      * Scope expired caches
      */
@@ -77,6 +81,7 @@ class SemanticSearchResultCache extends BaseModel
     {
         return $query->where('expires_at', '<=', now());
 
+    }
     /**
      * Scope by hit count
      */
@@ -84,4 +89,6 @@ class SemanticSearchResultCache extends BaseModel
     {
         return $query->where('hit_count', '>=', $threshold)
             ->orderBy('hit_count', 'desc');
+}
+}
 }

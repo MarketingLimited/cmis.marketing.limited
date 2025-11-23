@@ -40,6 +40,7 @@ class IntentMapping extends BaseModel
     {
         return $query->where('is_active', true);
 
+    }
     /**
      * Scope by category
      */
@@ -47,10 +48,12 @@ class IntentMapping extends BaseModel
     {
         return $query->where('category', $category);
 
+    }
     /**
      * Find by intent code
      */
     public static function findByCode(string $code)
     {
         return self::where('intent_code', $code)->first();
+}
 }

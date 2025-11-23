@@ -53,6 +53,7 @@ class AuditLog extends BaseModel
     {
         return $query->where('org_id', $orgId);
 
+    }
     /**
      * Scope to get logs for a specific actor
      */
@@ -60,6 +61,7 @@ class AuditLog extends BaseModel
     {
         return $query->where('actor', $actor);
 
+    }
     /**
      * Scope to get logs for a specific action
      */
@@ -67,10 +69,12 @@ class AuditLog extends BaseModel
     {
         return $query->where('action', $action);
 
+    }
     /**
      * Scope to get recent logs
      */
     public function scopeRecent($query, int $hours = 24)
     {
         return $query->where('ts', '>=', now()->subHours($hours));
+}
 }

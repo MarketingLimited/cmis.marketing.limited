@@ -60,6 +60,7 @@ class AdSet extends BaseModel
     {
         return $this->belongsTo(\App\Models\Core\Integration::class, 'integration_id', 'integration_id');
 
+    }
     /**
      * Get the ad campaign
      */
@@ -67,6 +68,7 @@ class AdSet extends BaseModel
     {
         return $this->belongsTo(AdCampaign::class, 'campaign_external_id', 'campaign_external_id');
 
+    }
     /**
      * Get ad entities (ads)
      */
@@ -74,6 +76,7 @@ class AdSet extends BaseModel
     {
         return $this->hasMany(AdEntity::class, 'adset_external_id', 'adset_external_id');
 
+    }
     /**
      * Get metrics
      */
@@ -82,6 +85,7 @@ class AdSet extends BaseModel
         return $this->hasMany(AdMetric::class, 'entity_external_id', 'adset_external_id')
             ->where('entity_level', 'adset');
 
+    }
     /**
      * Scope active ad sets
      */
@@ -92,6 +96,7 @@ class AdSet extends BaseModel
                 $q->whereNull('end_time')
                     ->orWhere('end_time', '>=', now());
 
+    }
     /**
      * Scope by platform
      */
@@ -99,6 +104,7 @@ class AdSet extends BaseModel
     {
         return $query->where('platform', $platform);
 
+    }
     /**
      * Scope by status
      */
@@ -106,6 +112,7 @@ class AdSet extends BaseModel
     {
         return $query->where('ad_set_status', $status);
 
+    }
     /**
      * Check if ad set is running
      */
@@ -122,10 +129,16 @@ class AdSet extends BaseModel
 
         return true;
 
+    }
     /**
      * Get total spend
      */
     public function getTotalSpend(): float
     {
         return $this->metrics()->sum('spend');
+}
+}
+}
+}
+}
 }

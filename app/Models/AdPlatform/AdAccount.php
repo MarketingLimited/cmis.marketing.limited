@@ -39,14 +39,13 @@ class AdAccount extends BaseModel
         'deleted_at' => 'datetime',
     ];
 
-    
-
     /**
      * Get the integration
      */
     public function integration()
     {
         return $this->belongsTo(\App\Models\Core\Integration::class, 'integration_id', 'integration_id');
+    }
 
     /**
      * Scope active accounts
@@ -54,6 +53,7 @@ class AdAccount extends BaseModel
     public function scopeActive($query)
     {
         return $query->where('status', 'active');
+    }
 
     /**
      * Scope by provider
@@ -61,4 +61,5 @@ class AdAccount extends BaseModel
     public function scopeByProvider($query, string $provider)
     {
         return $query->where('provider', $provider);
+    }
 }

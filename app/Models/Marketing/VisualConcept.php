@@ -42,6 +42,7 @@ class VisualConcept extends BaseModel
     {
         return $this->belongsTo(\App\Models\Organization::class, 'org_id', 'org_id');
 
+        }
     public function scopePopular($query, $minUsage = 5)
     {
         return $query->where('usage_count', '>=', $minUsage)
@@ -55,4 +56,7 @@ class VisualConcept extends BaseModel
     public function incrementUsage()
     {
         $this->increment('usage_count');
+}
+}
+}
 }

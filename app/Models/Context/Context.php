@@ -53,6 +53,7 @@ class Context extends BaseModel
     {
         return $this->belongsTo(Campaign::class, 'campaign_id', 'campaign_id');
 
+    }
     /**
      * Scope to filter by type
      */
@@ -60,6 +61,7 @@ class Context extends BaseModel
     {
         return $query->where('type', $type);
 
+    }
     /**
      * Scope to get contexts for a specific org
      */
@@ -67,10 +69,12 @@ class Context extends BaseModel
     {
         return $query->where('org_id', $orgId);
 
+    }
     /**
      * Scope to get contexts for a specific campaign
      */
     public function scopeForCampaign($query, string $campaignId)
     {
         return $query->where('campaign_id', $campaignId);
+}
 }

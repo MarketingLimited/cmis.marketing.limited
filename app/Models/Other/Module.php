@@ -34,10 +34,12 @@ class Module extends BaseModel
     {
         return $this->hasMany(Anchor::class, 'module_id', 'module_id');
 
+    }
     /**
      * Scope to find by code
      */
     public function scopeByCode($query, string $code)
     {
         return $query->where('code', $code);
+}
 }

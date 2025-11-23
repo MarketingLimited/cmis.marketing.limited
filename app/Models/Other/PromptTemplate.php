@@ -40,6 +40,7 @@ class PromptTemplate extends BaseModel
     {
         return $this->belongsTo(Module::class, 'module_id', 'module_id');
 
+    }
     /**
      * Get output contracts
      */
@@ -51,6 +52,7 @@ class PromptTemplate extends BaseModel
             'prompt_id',
             'contract_id'
 
+    }
     /**
      * Get SQL snippets
      */
@@ -62,10 +64,12 @@ class PromptTemplate extends BaseModel
             'prompt_id',
             'snippet_id'
 
+    }
     /**
      * Scope to get templates for a specific module
      */
     public function scopeForModule($query, int $moduleId)
     {
         return $query->where('module_id', $moduleId);
+}
 }

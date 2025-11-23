@@ -62,6 +62,7 @@ class EmbeddingApiConfig extends BaseModel
     {
         return $this->hasMany(EmbeddingApiLog::class, 'config_id', 'config_id');
 
+    }
     /**
      * Scope active configs
      */
@@ -69,6 +70,7 @@ class EmbeddingApiConfig extends BaseModel
     {
         return $query->where('is_active', true);
 
+    }
     /**
      * Scope default config
      */
@@ -76,6 +78,7 @@ class EmbeddingApiConfig extends BaseModel
     {
         return $query->where('is_default', true);
 
+    }
     /**
      * Scope by provider
      */
@@ -83,6 +86,7 @@ class EmbeddingApiConfig extends BaseModel
     {
         return $query->where('provider_name', $provider);
 
+    }
     /**
      * Record usage
      */
@@ -95,6 +99,7 @@ class EmbeddingApiConfig extends BaseModel
 
         $this->update(['last_used' => now()]);
 
+    }
     /**
      * Get success rate
      */
@@ -105,4 +110,7 @@ class EmbeddingApiConfig extends BaseModel
 
         $successfulRequests = $this->total_requests - $this->failed_requests;
         return ($successfulRequests / $this->total_requests) * 100;
+}
+}
+}
 }

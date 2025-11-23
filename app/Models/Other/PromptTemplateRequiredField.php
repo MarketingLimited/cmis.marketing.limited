@@ -35,10 +35,12 @@ class PromptTemplateRequiredField extends BaseModel
     {
         return $this->belongsTo(PromptTemplate::class, 'prompt_id', 'prompt_id');
 
+    }
     /**
      * Get the field definition
      */
     public function fieldDefinition()
     {
         return $this->belongsTo(FieldDefinition::class, 'field_id', 'field_id');
+}
 }

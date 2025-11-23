@@ -45,19 +45,25 @@ class VisualScenario extends BaseModel
     {
         return $this->belongsTo(\App\Models\Organization::class, 'org_id', 'org_id');
 
+        }
     public function campaign()
     {
         return $this->belongsTo(\App\Models\Campaign::class, 'campaign_id', 'campaign_id');
 
+        }
     public function concept()
     {
         return $this->belongsTo(VisualConcept::class, 'concept_id', 'concept_id');
 
+        }
     public function scopeByStatus($query, $status)
     {
         return $query->where('status', $status);
 
+        }
     public function getTotalScenes()
     {
         return is_array($this->scenes) ? count($this->scenes) : 0;
+}
+}
 }

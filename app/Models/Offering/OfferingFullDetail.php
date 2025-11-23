@@ -64,6 +64,7 @@ class OfferingFullDetail extends BaseModel
     {
         return $this->belongsTo(\App\Models\Offering::class, 'offering_id', 'offering_id');
 
+    }
     /**
      * Get feature by key
      */
@@ -75,6 +76,7 @@ class OfferingFullDetail extends BaseModel
 
         return null;
 
+    }
     /**
      * Get pricing tier
      */
@@ -86,6 +88,7 @@ class OfferingFullDetail extends BaseModel
 
         return null;
 
+    }
     /**
      * Get use case by category
      */
@@ -94,6 +97,7 @@ class OfferingFullDetail extends BaseModel
         return array_filter($this->use_cases ?? [], function ($useCase) use ($category) {
             return isset($useCase['category']) && $useCase['category'] === $category;
 
+    }
     /**
      * Get testimonials by rating
      */
@@ -101,4 +105,11 @@ class OfferingFullDetail extends BaseModel
     {
         return array_filter($this->testimonials ?? [], function ($testimonial) use ($minRating) {
             return isset($testimonial['rating']) && $testimonial['rating'] >= $minRating;
+}
+}
+}
+}
+}
+}
+}
 }

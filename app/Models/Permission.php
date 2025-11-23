@@ -46,6 +46,7 @@ class Permission extends BaseModel
             ->withPivot('granted_by')
             ->withTimestamps();
 
+    }
     /**
      * Get the users that have this permission directly
      */
@@ -60,6 +61,7 @@ class Permission extends BaseModel
             ->withPivot('is_granted', 'expires_at', 'granted_by')
             ->withTimestamps();
 
+    }
     /**
      * Scope to get system permissions
      */
@@ -67,6 +69,7 @@ class Permission extends BaseModel
     {
         return $query->where('is_system', true);
 
+    }
     /**
      * Scope to get permissions by module
      */
@@ -74,6 +77,7 @@ class Permission extends BaseModel
     {
         return $query->where('module', $module);
 
+    }
     /**
      * Scope to get permissions by resource
      */
@@ -81,6 +85,7 @@ class Permission extends BaseModel
     {
         return $query->where('resource', $resource);
 
+    }
     /**
      * Get the full permission string (module.resource.action)
      */
@@ -88,3 +93,4 @@ class Permission extends BaseModel
     {
         return "{$this->module}.{$this->resource}.{$this->action}";
     }
+}

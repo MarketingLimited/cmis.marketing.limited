@@ -43,6 +43,7 @@ class OrgDataset extends BaseModel
     {
         return $this->belongsTo(DatasetPackage::class, 'pkg_id', 'pkg_id');
 
+    }
     /**
      * Scope to get enabled datasets
      */
@@ -50,10 +51,12 @@ class OrgDataset extends BaseModel
     {
         return $query->where('enabled', true);
 
+    }
     /**
      * Scope to get datasets for a specific org
      */
     public function scopeForOrg(Builder $query, string $orgId): Builder
     {
         return $query->where('org_id', $orgId);
+}
 }

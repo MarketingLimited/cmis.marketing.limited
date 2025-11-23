@@ -38,6 +38,7 @@ class LogsMigration extends BaseModel
     {
         return $query->where('phase', $phase);
 
+    }
     /**
      * Scope to filter by status
      */
@@ -45,10 +46,12 @@ class LogsMigration extends BaseModel
     {
         return $query->where('status', $status);
 
+    }
     /**
      * Scope to get recent logs
      */
     public function scopeRecent($query, int $hours = 24)
     {
         return $query->where('executed_at', '>=', now()->subHours($hours));
+}
 }

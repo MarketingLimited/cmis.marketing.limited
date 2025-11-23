@@ -67,51 +67,50 @@ class BudgetAllocation extends BaseModel
     {
         return $this->belongsTo(OptimizationRun::class, 'optimization_run_id', 'run_id');
 
+        }
     public function campaign(): BelongsTo
     {
         return $this->belongsTo(Campaign::class, 'campaign_id', 'campaign_id');
 
-    // ===== Allocation Helpers =====
 
+        }
     public function isIncrease(): bool
     {
         return $this->budget_change > 0;
 
+        }
     public function isDecrease(): bool
     {
         return $this->budget_change < 0;
 
+        }
     public function getChangeDirection(): string
     {
         if ($this->budget_change > 0) {
             return 'increase';
-        } elseif ($this->budget_change < 0) {
-            return 'decrease';
-        return 'no_change';
 
+            }
     public function getBudgetChangeLabel(): string
     {
         $sign = $this->budget_change > 0 ? '+' : '';
         return $sign . '$' . number_format(abs($this->budget_change), 2);
 
+        }
     public function getChangePercentageLabel(): string
     {
         $sign = $this->budget_change_percentage > 0 ? '+' : '';
         return $sign . number_format($this->budget_change_percentage, 2) . '%';
 
+        }
     public function getExpectedROIIncrease(): ?float
     {
         if (!$this->expected_revenue || !$this->recommended_budget) {
             return null;
 
-        $currentROI = $this->current_budget > 0
-            ? (($this->expected_revenue * ($this->current_budget / $this->recommended_budget)) / $this->current_budget)
-            : 0;
 
-        $newROI = $this->expected_revenue / $this->recommended_budget;
 
-        return ($newROI - $currentROI) / $currentROI * 100;
 
+            }
     public function markAsApplied(): void
     {
         $this->update([
@@ -129,19 +128,28 @@ class BudgetAllocation extends BaseModel
     {
         return $query->where('status', 'pending');
 
+        }
     public function scopeApplied($query)
     {
         return $query->where('status', 'applied');
 
+        }
     public function scopeIncreases($query)
     {
         return $query->where('budget_change', '>', 0);
 
+        }
     public function scopeDecreases($query)
     {
         return $query->where('budget_change', '<', 0);
 
+        }
     public function scopeHighConfidence($query)
     {
         return $query->where('confidence_level', '>=', 0.8);
+}
+}
+}
+}
+}
 }

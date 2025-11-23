@@ -47,6 +47,7 @@ protected $table = 'cmis.user_sessions';
     {
         return $this->hasMany(SessionContext::class, 'session_id', 'session_id');
 
+    }
     /**
      * Scope active sessions
      */
@@ -55,6 +56,7 @@ protected $table = 'cmis.user_sessions';
         return $query->where('is_active', true)
             ->whereNull('ended_at');
 
+    }
     /**
      * Scope by device type
      */
@@ -62,6 +64,7 @@ protected $table = 'cmis.user_sessions';
     {
         return $query->where('device_type', $deviceType);
 
+    }
     /**
      * Scope by browser
      */
@@ -69,6 +72,7 @@ protected $table = 'cmis.user_sessions';
     {
         return $query->where('browser', $browser);
 
+    }
     /**
      * Scope recent sessions
      */
@@ -76,6 +80,7 @@ protected $table = 'cmis.user_sessions';
     {
         return $query->where('started_at', '>=', now()->subHours($hours));
 
+    }
     /**
      * Scope long sessions
      */
@@ -83,6 +88,7 @@ protected $table = 'cmis.user_sessions';
     {
         return $query->where('session_duration', '>=', $minutes * 60);
 
+    }
     /**
      * Update last activity
      */
@@ -95,6 +101,7 @@ protected $table = 'cmis.user_sessions';
 
         $this->save();
 
+    }
     /**
      * End session
      */
@@ -108,6 +115,7 @@ protected $table = 'cmis.user_sessions';
 
         $this->save();
 
+    }
     /**
      * Check if session is expired
      */
@@ -121,6 +129,7 @@ protected $table = 'cmis.user_sessions';
 
         return $this->last_activity->diffInMinutes(now()) > $maxInactiveMinutes;
 
+    }
     /**
      * Get session duration in minutes
      */
@@ -130,4 +139,10 @@ protected $table = 'cmis.user_sessions';
             return 0;
 
         return (int) ceil($this->session_duration / 60);
+}
+}
+}
+}
+}
+}
 }

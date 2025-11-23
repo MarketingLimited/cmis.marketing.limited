@@ -51,6 +51,7 @@ class SecurityContextAudit extends BaseModel
     {
         return $query->where('user_id', $userId);
 
+    }
     /**
      * Scope to get audits for a specific org
      */
@@ -58,6 +59,7 @@ class SecurityContextAudit extends BaseModel
     {
         return $query->where('org_id', $orgId);
 
+    }
     /**
      * Scope to get successful audits
      */
@@ -65,10 +67,12 @@ class SecurityContextAudit extends BaseModel
     {
         return $query->where('success', true);
 
+    }
     /**
      * Scope to get failed audits
      */
     public function scopeFailed($query)
     {
         return $query->where('success', false);
+}
 }

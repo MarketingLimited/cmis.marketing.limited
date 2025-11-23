@@ -43,6 +43,7 @@ class FeedItem extends BaseModel
     {
         return $this->belongsTo(DataFeed::class, 'feed_id', 'feed_id');
 
+    }
     /**
      * Scope to get items for a specific feed
      */
@@ -50,6 +51,7 @@ class FeedItem extends BaseModel
     {
         return $query->where('feed_id', $feedId);
 
+    }
     /**
      * Scope to get valid items
      */
@@ -59,4 +61,6 @@ class FeedItem extends BaseModel
             ->where(function ($q) {
                 $q->whereNull('valid_to')
                     ->orWhere('valid_to', '>=', now());
+}
+}
 }

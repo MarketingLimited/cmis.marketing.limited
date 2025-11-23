@@ -51,6 +51,7 @@ class ComplianceAudit extends BaseModel
     {
         return $this->belongsTo(ComplianceRule::class, 'rule_id', 'rule_id');
 
+    }
     /**
      * Get the creative asset
      */
@@ -58,6 +59,7 @@ class ComplianceAudit extends BaseModel
     {
         return $this->belongsTo(\App\Models\CreativeAsset::class, 'asset_id', 'asset_id');
 
+    }
     /**
      * Get the reviewer
      */
@@ -65,6 +67,7 @@ class ComplianceAudit extends BaseModel
     {
         return $this->belongsTo(\App\Models\User::class, 'reviewed_by', 'user_id');
 
+    }
     /**
      * Scope passed audits
      */
@@ -72,6 +75,7 @@ class ComplianceAudit extends BaseModel
     {
         return $query->where('audit_result', 'pass');
 
+    }
     /**
      * Scope failed audits
      */
@@ -79,10 +83,12 @@ class ComplianceAudit extends BaseModel
     {
         return $query->where('audit_result', 'fail');
 
+    }
     /**
      * Scope pending review
      */
     public function scopePendingReview($query)
     {
         return $query->where('status', 'pending')->whereNull('reviewed_at');
+}
 }

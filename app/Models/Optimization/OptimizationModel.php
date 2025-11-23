@@ -79,12 +79,13 @@ class OptimizationModel extends BaseModel
     {
         return $this->belongsTo(User::class, 'created_by', 'user_id');
 
+        }
     public function runs(): HasMany
     {
         return $this->hasMany(OptimizationRun::class, 'model_id', 'model_id');
 
-    // ===== Model Status Management =====
 
+        }
     public function markAsTrained(array $metrics): void
     {
         $this->update([
@@ -115,12 +116,13 @@ class OptimizationModel extends BaseModel
     {
         return $this->status === 'deployed';
 
+        }
     public function isTrained(): bool
     {
         return in_array($this->status, ['trained', 'deployed']);
 
-    // ===== Model Performance Helpers =====
 
+        }
     public function getPerformanceScore(): float
     {
         // Calculate composite score based on available metrics
@@ -136,8 +138,8 @@ class OptimizationModel extends BaseModel
         if (empty($scores)) {
             return 0.0;
 
-        return round(array_sum($scores) / count($scores), 4);
 
+            }
     public function getModelTypeLabel(): string
     {
         return match($this->model_type) {
@@ -167,11 +169,23 @@ class OptimizationModel extends BaseModel
     {
         return $query->where('status', 'deployed');
 
+        }
     public function scopeForModelType($query, string $modelType)
     {
         return $query->where('model_type', $modelType);
 
+        }
     public function scopeByAlgorithm($query, string $algorithm)
     {
         return $query->where('algorithm', $algorithm);
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
 }

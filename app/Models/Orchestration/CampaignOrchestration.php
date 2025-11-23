@@ -68,28 +68,33 @@ class CampaignOrchestration extends BaseModel
     {
         return $this->belongsTo(CampaignTemplate::class, 'template_id', 'template_id');
 
+        }
     public function masterCampaign(): BelongsTo
     {
         return $this->belongsTo(Campaign::class, 'master_campaign_id', 'campaign_id');
 
+        }
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by', 'user_id');
 
+        }
     public function platformMappings(): HasMany
     {
         return $this->hasMany(OrchestrationPlatform::class, 'orchestration_id', 'orchestration_id');
 
+        }
     public function workflows(): HasMany
     {
         return $this->hasMany(OrchestrationWorkflow::class, 'orchestration_id', 'orchestration_id');
 
+        }
     public function syncLogs(): HasMany
     {
         return $this->hasMany(OrchestrationSyncLog::class, 'orchestration_id', 'orchestration_id');
 
-    // ===== Status Management =====
 
+        }
     public function activate(): void
     {
         $this->update([
@@ -135,13 +140,9 @@ class CampaignOrchestration extends BaseModel
         if ($this->sync_strategy !== 'auto') {
             return false;
 
-        if (!$this->last_sync_at) {
-            return true;
 
-        $frequency = $this->sync_frequency_minutes ?? 15;
-        $nextSync = $this->last_sync_at->addMinutes($frequency);
-        return now()->isAfter($nextSync);
 
+            }
     public function enableAutoSync(int $frequencyMinutes = 15): void
     {
         $this->update([
@@ -170,16 +171,18 @@ class CampaignOrchestration extends BaseModel
         $mapping = $this->platformMappings()->where('platform', $platform)->first();
         return $mapping?->status;
 
+        }
     public function isActiveOnPlatform(string $platform): bool
     {
         return $this->getPlatformStatus($platform) === 'active';
 
-    // ===== Budget Management =====
 
+        }
     public function getBudgetForPlatform(string $platform): ?float
     {
         return $this->budget_allocation[$platform] ?? null;
 
+        }
     public function updateBudgetAllocation(array $allocation): void
     {
         $this->update(['budget_allocation' => $allocation]);
@@ -188,27 +191,30 @@ class CampaignOrchestration extends BaseModel
     {
         return array_sum($this->budget_allocation ?? []);
 
+        }
     public function hasUnallocatedBudget(): bool
     {
         if (!$this->total_budget) {
             return false;
 
-        return $this->getTotalAllocatedBudget() < $this->total_budget;
 
-    // ===== Performance Tracking =====
 
+            }
     public function getTotalSpend(): float
     {
         return $this->platformMappings()->sum('spend');
 
+        }
     public function getTotalConversions(): int
     {
         return $this->platformMappings()->sum('conversions');
 
+        }
     public function getTotalRevenue(): float
     {
         return $this->platformMappings()->sum('revenue');
 
+        }
     public function getROAS(): float
     {
         $spend = $this->getTotalSpend();
@@ -216,46 +222,67 @@ class CampaignOrchestration extends BaseModel
 
         return $spend > 0 ? $revenue / $spend : 0;
 
+        }
     public function getBudgetUtilization(): float
     {
         if (!$this->total_budget || $this->total_budget == 0) {
             return 0;
 
-        return ($this->getTotalSpend() / $this->total_budget) * 100;
 
-    // ===== Status Checks =====
 
+            }
     public function isActive(): bool
     {
         return $this->status === 'active';
 
+        }
     public function isScheduled(): bool
     {
         return $this->status === 'scheduled';
 
+        }
     public function isDraft(): bool
     {
         return $this->status === 'draft';
 
+        }
     public function isCompleted(): bool
     {
         return $this->status === 'completed';
 
-    // ===== Scopes =====
 
+        }
     public function scopeActive($query)
     {
         return $query->where('status', 'active');
 
+        }
     public function scopeScheduled($query)
     {
         return $query->where('status', 'scheduled');
 
+        }
     public function scopeForPlatform($query, string $platform)
     {
         return $query->whereJsonContains('platforms', $platform);
 
+        }
     public function scopeAutoSync($query)
     {
         return $query->where('sync_strategy', 'auto');
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
 }

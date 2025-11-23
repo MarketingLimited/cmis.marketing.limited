@@ -56,12 +56,13 @@ class OrchestrationSyncLog extends BaseModel
     {
         return $this->belongsTo(CampaignOrchestration::class, 'orchestration_id', 'orchestration_id');
 
+        }
     public function platformMapping(): BelongsTo
     {
         return $this->belongsTo(OrchestrationPlatform::class, 'platform_mapping_id', 'platform_mapping_id');
 
-    // ===== Sync Tracking =====
 
+        }
     public function markAsRunning(): void
     {
         $this->update([
@@ -99,10 +100,12 @@ class OrchestrationSyncLog extends BaseModel
     {
         return $this->status === 'completed' && $this->entities_failed === 0;
 
+        }
     public function hasPartialFailure(): bool
     {
         return $this->status === 'completed' && $this->entities_failed > 0;
 
+        }
     public function getSyncTypeLabel(): string
     {
         return match($this->sync_type) {
@@ -129,23 +132,32 @@ class OrchestrationSyncLog extends BaseModel
         if ($total === 0) {
             return 0;
 
-        return ($this->entities_synced / $total) * 100;
 
-    // ===== Scopes =====
 
+            }
     public function scopeCompleted($query)
     {
         return $query->where('status', 'completed');
 
+        }
     public function scopeFailed($query)
     {
         return $query->where('status', 'failed');
 
+        }
     public function scopeForSyncType($query, string $type)
     {
         return $query->where('sync_type', $type);
 
+        }
     public function scopeRecent($query, int $hours = 24)
     {
         return $query->where('started_at', '>=', now()->subHours($hours));
+}
+}
+}
+}
+}
+}
+}
 }

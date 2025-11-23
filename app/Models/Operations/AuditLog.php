@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class AuditLog extends BaseModel
 {
     use HasOrganization;
+}
 /**
      * Get the user that performed the action.
      */
@@ -19,6 +20,7 @@ class AuditLog extends BaseModel
     {
         return $this->belongsTo(User::class, 'user_id', 'user_id');
 
+    }
     /**
      * Log an action.
      *

@@ -51,6 +51,7 @@ class FieldDefinition extends BaseModel
     {
         return $this->hasMany(FieldValue::class, 'field_id', 'field_id');
 
+    }
     /**
      * Get field aliases
      */
@@ -58,6 +59,7 @@ class FieldDefinition extends BaseModel
     {
         return $this->hasMany(FieldAlias::class, 'field_id', 'field_id');
 
+    }
     /**
      * Scope required fields
      */
@@ -65,6 +67,7 @@ class FieldDefinition extends BaseModel
     {
         return $query->where('is_required', true);
 
+    }
     /**
      * Scope active fields
      */
@@ -72,6 +75,7 @@ class FieldDefinition extends BaseModel
     {
         return $query->where('is_active', true);
 
+    }
     /**
      * Scope by module
      */
@@ -79,6 +83,7 @@ class FieldDefinition extends BaseModel
     {
         return $query->where('module_id', $moduleId);
 
+    }
     /**
      * Get formatted validation rules
      */
@@ -88,4 +93,6 @@ class FieldDefinition extends BaseModel
             return '';
 
         return implode('|', $this->validation_rules);
+}
+}
 }

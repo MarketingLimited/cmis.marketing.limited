@@ -43,6 +43,7 @@ class SessionContext extends BaseModel
     {
         return $this->belongsTo(Org::class, 'active_org_id', 'org_id');
 
+    }
     /**
      * Scope to get active sessions
      */
@@ -50,6 +51,7 @@ class SessionContext extends BaseModel
     {
         return $query->whereNull('deleted_at');
 
+    }
     /**
      * Scope to get sessions for a specific org
      */
@@ -57,6 +59,7 @@ class SessionContext extends BaseModel
     {
         return $query->where('active_org_id', $orgId);
 
+    }
     /**
      * Scope to get recently switched sessions
      */
@@ -64,6 +67,7 @@ class SessionContext extends BaseModel
     {
         return $query->where('switched_at', '>=', now()->subMinutes($minutes));
 
+    }
     /**
      * Switch to a different organization
      */
@@ -74,6 +78,7 @@ class SessionContext extends BaseModel
             'switched_at' => now(),
         ]);
 
+    }
     /**
      * Get or create session context
      */
@@ -87,10 +92,12 @@ class SessionContext extends BaseModel
                 'switched_at' => now(),
             ]
 
+    }
     /**
      * Clean up old sessions
      */
     public static function cleanupOldSessions(int $days = 30): int
     {
         return static::where('switched_at', '<', now()->subDays($days))->delete();
+}
 }

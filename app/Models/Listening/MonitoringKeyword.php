@@ -59,10 +59,12 @@ class MonitoringKeyword extends BaseModel
     {
         return $this->hasMany(SocialMention::class, 'keyword_id', 'keyword_id');
 
+        }
     public function alerts(): HasMany
     {
         return $this->hasMany(MonitoringAlert::class, 'keyword_id', 'keyword_id');
 
+    }
     /**
      * Status Management
      */
@@ -71,18 +73,22 @@ class MonitoringKeyword extends BaseModel
     {
         $this->update(['status' => 'active']);
 
+        }
     public function pause(): void
     {
         $this->update(['status' => 'paused']);
 
+        }
     public function archive(): void
     {
         $this->update(['status' => 'archived']);
 
+        }
     public function isActive(): bool
     {
         return $this->status === 'active';
 
+    }
     /**
      * Mention Tracking
      */
@@ -92,10 +98,12 @@ class MonitoringKeyword extends BaseModel
         $this->increment('mention_count');
         $this->update(['last_mention_at' => now()]);
 
+        }
     public function resetMentionCount(): void
     {
         $this->update(['mention_count' => 0]);
 
+    }
     /**
      * Platform Management
      */
@@ -107,15 +115,18 @@ class MonitoringKeyword extends BaseModel
             $platforms[] = $platform;
             $this->update(['platforms' => $platforms]);
 
+            }
     public function disablePlatform(string $platform): void
     {
         $platforms = array_filter($this->platforms, fn($p) => $p !== $platform);
         $this->update(['platforms' => array_values($platforms)]);
 
+        }
     public function isMonitoringPlatform(string $platform): bool
     {
         return in_array($platform, $this->platforms);
 
+    }
     /**
      * Alert Management
      */
@@ -127,10 +138,12 @@ class MonitoringKeyword extends BaseModel
             'alert_threshold' => $threshold,
         ]);
 
+        }
     public function disableAlerts(): void
     {
         $this->update(['enable_alerts' => false]);
 
+        }
     public function shouldTriggerAlert(array $mentionData): bool
     {
         if (!$this->enable_alerts) {
@@ -154,6 +167,7 @@ class MonitoringKeyword extends BaseModel
 
         return true;
 
+    }
     /**
      * Keyword Matching
      */
@@ -167,14 +181,9 @@ class MonitoringKeyword extends BaseModel
         if (str_contains($searchText, $keyword)) {
             return true;
 
-        // Check variations
-        foreach ($this->variations as $variation) {
-            $var = $this->case_sensitive ? $variation : strtolower($variation);
-            if (str_contains($searchText, $var)) {
-                return true;
 
-        return false;
 
+            }
     public function matchesWithExclusions(string $text): bool
     {
         // First check if it matches
@@ -190,6 +199,7 @@ class MonitoringKeyword extends BaseModel
 
         return true;
 
+    }
     /**
      * Scopes
      */
@@ -198,15 +208,37 @@ class MonitoringKeyword extends BaseModel
     {
         return $query->where('status', 'active');
 
+        }
     public function scopeForPlatform($query, string $platform)
     {
         return $query->whereJsonContains('platforms', $platform);
 
+        }
     public function scopeWithAlerts($query)
     {
         return $query->where('enable_alerts', true);
 
+        }
     public function scopeOfType($query, string $type)
     {
         return $query->where('keyword_type', $type);
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
 }

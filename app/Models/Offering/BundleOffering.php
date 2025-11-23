@@ -53,6 +53,7 @@ class BundleOffering extends BaseModel
 
         return \App\Models\Offering::whereIn('offering_id', $this->included_offerings)->get();
 
+    }
     /**
      * Scope active bundles
      */
@@ -67,6 +68,7 @@ class BundleOffering extends BaseModel
                 $q->whereNull('valid_to')
                     ->orWhere('valid_to', '>=', now());
 
+    }
     /**
      * Scope by bundle type
      */
@@ -74,6 +76,7 @@ class BundleOffering extends BaseModel
     {
         return $query->where('bundle_type', $type);
 
+    }
     /**
      * Check if bundle is valid
      */
@@ -90,6 +93,7 @@ class BundleOffering extends BaseModel
 
         return true;
 
+    }
     /**
      * Calculate savings amount
      */
@@ -97,6 +101,7 @@ class BundleOffering extends BaseModel
     {
         return $this->individual_price_sum - $this->bundle_price;
 
+    }
     /**
      * Calculate savings percentage
      */
@@ -107,10 +112,18 @@ class BundleOffering extends BaseModel
 
         return (($this->individual_price_sum - $this->bundle_price) / $this->individual_price_sum) * 100;
 
+    }
     /**
      * Get number of offerings
      */
     public function getOfferingCount(): int
     {
         return count($this->included_offerings ?? []);
+}
+}
+}
+}
+}
+}
+}
 }

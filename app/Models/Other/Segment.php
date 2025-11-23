@@ -47,3 +47,4 @@ class Segment extends BaseModel
     {
         return $query->where('org_id', $orgId);
 }
+}

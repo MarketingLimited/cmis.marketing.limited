@@ -51,6 +51,7 @@ class MarketingKnowledge extends BaseModel
         return KnowledgeIndex::where('source_type', 'marketing_knowledge')
             ->where('source_id', $this->marketing_id);
 
+    }
     /**
      * Scope by category
      */
@@ -58,6 +59,7 @@ class MarketingKnowledge extends BaseModel
     {
         return $query->where('category', $category);
 
+    }
     /**
      * Scope by industry
      */
@@ -65,6 +67,7 @@ class MarketingKnowledge extends BaseModel
     {
         return $query->where('industry', $industry);
 
+    }
     /**
      * Scope by market segment
      */
@@ -72,6 +75,7 @@ class MarketingKnowledge extends BaseModel
     {
         return $query->where('market_segment', $segment);
 
+    }
     /**
      * Scope high effectiveness
      */
@@ -79,4 +83,5 @@ class MarketingKnowledge extends BaseModel
     {
         return $query->where('effectiveness_score', '>=', $threshold)
             ->orderBy('effectiveness_score', 'desc');
+}
 }

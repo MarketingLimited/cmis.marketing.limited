@@ -76,28 +76,33 @@ class OptimizationRun extends BaseModel
     {
         return $this->belongsTo(OptimizationModel::class, 'model_id', 'model_id');
 
+        }
     public function executor(): BelongsTo
     {
         return $this->belongsTo(User::class, 'executed_by', 'user_id');
 
+        }
     public function applier(): BelongsTo
     {
         return $this->belongsTo(User::class, 'applied_by', 'user_id');
 
+        }
     public function campaign(): BelongsTo
     {
         return $this->belongsTo(Campaign::class, 'target_entity_id', 'campaign_id');
 
+        }
     public function budgetAllocations(): HasMany
     {
         return $this->hasMany(BudgetAllocation::class, 'optimization_run_id', 'run_id');
 
+        }
     public function insights(): HasMany
     {
         return $this->hasMany(OptimizationInsight::class, 'optimization_run_id', 'run_id');
 
-    // ===== Execution Status Management =====
 
+        }
     public function markAsRunning(): void
     {
         $this->update([
@@ -148,18 +153,19 @@ class OptimizationRun extends BaseModel
     {
         return in_array($this->status, ['completed', 'applied']);
 
+        }
     public function hasImprovement(): bool
     {
         return $this->improvement_percentage > 0;
 
+        }
     public function getImprovementLabel(): string
     {
         if (!$this->improvement_percentage) {
             return 'N/A';
 
-        $sign = $this->improvement_percentage > 0 ? '+' : '';
-        return $sign . number_format($this->improvement_percentage, 2) . '%';
 
+            }
     public function getOptimizationTypeLabel(): string
     {
         return match($this->optimization_type) {
@@ -187,15 +193,26 @@ class OptimizationRun extends BaseModel
     {
         return $query->where('status', 'completed');
 
+        }
     public function scopeApplied($query)
     {
         return $query->where('status', 'applied');
 
+        }
     public function scopeForOptimizationType($query, string $type)
     {
         return $query->where('optimization_type', $type);
 
+        }
     public function scopeWithImprovement($query)
     {
         return $query->where('improvement_percentage', '>', 0);
+}
+}
+}
+}
+}
+}
+}
+}
 }

@@ -92,6 +92,7 @@ class GeneratedMedia extends BaseModel
     public function campaign(): BelongsTo
     {
         return $this->belongsTo(Campaign::class, 'campaign_id');
+    }
 
     /**
      * Get the user who generated the media.
@@ -99,6 +100,7 @@ class GeneratedMedia extends BaseModel
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');
+    }
 
     /**
      * Scope a query to only include images.
@@ -106,6 +108,7 @@ class GeneratedMedia extends BaseModel
     public function scopeImages($query)
     {
         return $query->where('media_type', self::TYPE_IMAGE);
+    }
 
     /**
      * Scope a query to only include videos.
@@ -113,6 +116,7 @@ class GeneratedMedia extends BaseModel
     public function scopeVideos($query)
     {
         return $query->where('media_type', self::TYPE_VIDEO);
+    }
 
     /**
      * Scope a query to only include completed media.
@@ -120,6 +124,7 @@ class GeneratedMedia extends BaseModel
     public function scopeCompleted($query)
     {
         return $query->where('status', self::STATUS_COMPLETED);
+    }
 
     /**
      * Scope a query to only include failed media.
@@ -127,6 +132,7 @@ class GeneratedMedia extends BaseModel
     public function scopeFailed($query)
     {
         return $query->where('status', self::STATUS_FAILED);
+    }
 
     /**
      * Scope a query to filter by campaign.
@@ -134,6 +140,7 @@ class GeneratedMedia extends BaseModel
     public function scopeForCampaign($query, string $campaignId)
     {
         return $query->where('campaign_id', $campaignId);
+    }
 
     /**
      * Check if media is an image.
@@ -141,6 +148,7 @@ class GeneratedMedia extends BaseModel
     public function isImage(): bool
     {
         return $this->media_type === self::TYPE_IMAGE;
+    }
 
     /**
      * Check if media is a video.
@@ -148,6 +156,7 @@ class GeneratedMedia extends BaseModel
     public function isVideo(): bool
     {
         return $this->media_type === self::TYPE_VIDEO;
+    }
 
     /**
      * Check if generation is completed.
@@ -155,6 +164,7 @@ class GeneratedMedia extends BaseModel
     public function isCompleted(): bool
     {
         return $this->status === self::STATUS_COMPLETED;
+    }
 
     /**
      * Check if generation failed.
@@ -162,6 +172,7 @@ class GeneratedMedia extends BaseModel
     public function isFailed(): bool
     {
         return $this->status === self::STATUS_FAILED;
+    }
 
     /**
      * Check if generation is in progress.
@@ -169,6 +180,7 @@ class GeneratedMedia extends BaseModel
     public function isProcessing(): bool
     {
         return $this->status === self::STATUS_PROCESSING;
+    }
 
     /**
      * Mark media as processing.
@@ -176,6 +188,7 @@ class GeneratedMedia extends BaseModel
     public function markAsProcessing(): bool
     {
         return $this->update(['status' => self::STATUS_PROCESSING]);
+    }
 
     /**
      * Mark media as completed.
@@ -187,6 +200,7 @@ class GeneratedMedia extends BaseModel
             'media_url' => $mediaUrl,
             'file_size_bytes' => $fileSize,
         ]);
+    }
 
     /**
      * Mark media as failed.
@@ -197,6 +211,7 @@ class GeneratedMedia extends BaseModel
             'status' => self::STATUS_FAILED,
             'error_message' => $errorMessage,
         ]);
+    }
 
     /**
      * Get formatted file size.
@@ -205,6 +220,7 @@ class GeneratedMedia extends BaseModel
     {
         if (!$this->file_size_bytes) {
             return null;
+        }
 
         $units = ['B', 'KB', 'MB', 'GB'];
         $size = $this->file_size_bytes;
@@ -213,8 +229,10 @@ class GeneratedMedia extends BaseModel
         while ($size >= 1024 && $unitIndex < count($units) - 1) {
             $size /= 1024;
             $unitIndex++;
+        }
 
         return round($size, 2) . ' ' . $units[$unitIndex];
+    }
 
     /**
      * Get model display name.
@@ -228,6 +246,7 @@ class GeneratedMedia extends BaseModel
             self::MODEL_VEO_31_FAST => 'Veo 3.1 Fast',
             default => $this->ai_model,
         };
+    }
 
     /**
      * Get status badge color.
@@ -241,4 +260,5 @@ class GeneratedMedia extends BaseModel
             self::STATUS_FAILED => 'red',
             default => 'gray',
         };
+    }
 }

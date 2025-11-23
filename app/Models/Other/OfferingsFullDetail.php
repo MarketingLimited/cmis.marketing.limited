@@ -40,3 +40,4 @@ class OfferingsFullDetail extends BaseModel
     {
         return $query->where('offering_id', $offeringId);
 }
+}

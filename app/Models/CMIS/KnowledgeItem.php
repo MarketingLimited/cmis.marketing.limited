@@ -71,6 +71,7 @@ class KnowledgeItem extends BaseModel
             
         return $result ? $result->content : null;
     
+    }
     /**
      * Scope for pending embeddings
      */
@@ -80,4 +81,6 @@ class KnowledgeItem extends BaseModel
                     ->where('is_deprecated', false)
                     ->orderBy('tier', 'asc')
                     ->orderBy('last_verified_at', 'desc');
+}
+}
 }

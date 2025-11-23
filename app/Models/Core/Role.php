@@ -56,6 +56,7 @@ class Role extends BaseModel
     {
         return $this->belongsTo(\App\Models\User::class, 'created_by', 'user_id');
 
+    }
     /**
      * Get all user-org relationships with this role.
      *
@@ -65,6 +66,7 @@ class Role extends BaseModel
     {
         return $this->hasMany(UserOrg::class, 'role_id', 'role_id');
 
+    }
     /**
      * Get all permissions for this role.
      *
@@ -81,6 +83,7 @@ class Role extends BaseModel
             ->withPivot('granted_by')
             ->withTimestamps();
 
+    }
     /**
      * Get all role-permission pivot records.
      *
@@ -89,4 +92,5 @@ class Role extends BaseModel
     public function rolePermissions(): HasMany
     {
         return $this->hasMany(\App\Models\RolePermission::class, 'role_id', 'role_id');
+}
 }

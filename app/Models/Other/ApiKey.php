@@ -40,6 +40,7 @@ class ApiKey extends BaseModel
     public function scopeActive($query)
     {
         return $query->where('is_active', true);
+    }
 
     /**
      * Scope to find by service code
@@ -47,4 +48,5 @@ class ApiKey extends BaseModel
     public function scopeByServiceCode($query, string $serviceCode)
     {
         return $query->where('service_code', $serviceCode);
+    }
 }

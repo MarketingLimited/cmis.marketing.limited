@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class SyncLog extends BaseModel
 {
     use HasOrganization;
+}
 /**
      * Get the integration that this sync log belongs to.
      */
@@ -19,6 +20,7 @@ class SyncLog extends BaseModel
     {
         return $this->belongsTo(Integration::class, 'integration_id', 'integration_id');
 
+    }
     /**
      * Start a new sync log.
      *
@@ -48,6 +50,7 @@ class SyncLog extends BaseModel
             'metadata' => $metadata,
         ]);
 
+    }
     /**
      * Mark the sync as completed successfully.
      *
@@ -68,6 +71,7 @@ class SyncLog extends BaseModel
             'records_failed' => $failed,
         ]);
 
+    }
     /**
      * Mark the sync as failed.
      *
@@ -82,6 +86,7 @@ class SyncLog extends BaseModel
             'error_message' => $errorMessage,
         ]);
 
+    }
     /**
      * Scope successful syncs.
      *
@@ -92,6 +97,7 @@ class SyncLog extends BaseModel
     {
         return $query->where('status', 'completed')->where('records_failed', 0);
 
+    }
     /**
      * Scope failed syncs.
      *
@@ -102,6 +108,7 @@ class SyncLog extends BaseModel
     {
         return $query->where('status', 'failed');
 
+    }
     /**
      * Scope syncs by type.
      *
@@ -113,6 +120,7 @@ class SyncLog extends BaseModel
     {
         return $query->where('sync_type', $type);
 
+    }
     /**
      * Get the duration of the sync in seconds.
      *
@@ -124,4 +132,5 @@ class SyncLog extends BaseModel
             return null;
 
         return $this->completed_at->diffInSeconds($this->started_at);
+}
 }

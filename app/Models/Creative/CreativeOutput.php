@@ -55,6 +55,7 @@ class CreativeOutput extends BaseModel
     {
         return $this->belongsTo(\App\Models\Campaign::class, 'campaign_id', 'campaign_id');
 
+    }
     /**
      * Get the creative asset
      */
@@ -62,6 +63,7 @@ class CreativeOutput extends BaseModel
     {
         return $this->belongsTo(\App\Models\CreativeAsset::class, 'asset_id', 'asset_id');
 
+    }
     /**
      * Get the AI model used
      */
@@ -69,6 +71,7 @@ class CreativeOutput extends BaseModel
     {
         return $this->belongsTo(\App\Models\AiModel::class, 'ai_model_id', 'model_id');
 
+    }
     /**
      * Get performance metrics
      */
@@ -76,6 +79,7 @@ class CreativeOutput extends BaseModel
     {
         return $this->hasMany(\App\Models\PerformanceMetric::class, 'output_id', 'output_id');
 
+    }
     /**
      * Scope published outputs
      */
@@ -83,10 +87,12 @@ class CreativeOutput extends BaseModel
     {
         return $query->where('status', 'published')->whereNotNull('published_at');
 
+    }
     /**
      * Scope by output type
      */
     public function scopeOfType($query, string $type)
     {
         return $query->where('output_type', $type);
+}
 }

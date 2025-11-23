@@ -31,3 +31,4 @@ class Channel extends BaseModel
     {
         return $this->hasMany(ChannelFormat::class, 'channel_id', 'channel_id');
 }
+}

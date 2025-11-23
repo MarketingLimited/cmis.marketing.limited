@@ -45,6 +45,7 @@ class UserPermission extends BaseModel
     {
         return $this->belongsTo(User::class, 'user_id', 'user_id');
 
+    }
     /**
      * Get the permission
      */
@@ -52,6 +53,7 @@ class UserPermission extends BaseModel
     {
         return $this->belongsTo(Permission::class, 'permission_id', 'permission_id');
 
+    }
     /**
      * Get the user who granted this permission
      */
@@ -59,6 +61,7 @@ class UserPermission extends BaseModel
     {
         return $this->belongsTo(User::class, 'granted_by', 'user_id');
 
+    }
     /**
      * Scope to get active permissions
      */
@@ -69,6 +72,7 @@ class UserPermission extends BaseModel
                 $q->whereNull('expires_at')
                     ->orWhere('expires_at', '>', now());
 
+    }
     /**
      * Scope to get expired permissions
      */
@@ -76,6 +80,7 @@ class UserPermission extends BaseModel
     {
         return $query->where('expires_at', '<=', now());
 
+    }
     /**
      * Check if permission is active
      */
@@ -88,4 +93,8 @@ class UserPermission extends BaseModel
             return false;
 
         return true;
+}
+}
+}
+}
 }

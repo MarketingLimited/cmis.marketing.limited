@@ -49,6 +49,7 @@ class PublishingQueue extends BaseModel
     {
         return $this->belongsTo(SocialAccount::class, 'social_account_id', 'account_id');
 
+    }
     /**
      * Scope to get active queues only
      */
@@ -56,6 +57,7 @@ class PublishingQueue extends BaseModel
     {
         return $query->where('is_active', true);
 
+    }
     /**
      * Scope by organization
      */
@@ -63,6 +65,7 @@ class PublishingQueue extends BaseModel
     {
         return $query->where('org_id', $orgId);
 
+    }
     /**
      * Scope by social account
      */
@@ -70,6 +73,7 @@ class PublishingQueue extends BaseModel
     {
         return $query->where('social_account_id', $accountId);
 
+    }
     /**
      * Check if a specific weekday is enabled
      */
@@ -81,6 +85,7 @@ class PublishingQueue extends BaseModel
 
         return isset($this->weekdays_enabled[$dayIndex]) && $this->weekdays_enabled[$dayIndex] === '1';
 
+    }
     /**
      * Get enabled time slots for a specific day
      */
@@ -92,6 +97,7 @@ class PublishingQueue extends BaseModel
         return array_filter($this->time_slots ?? [], function ($slot) {
             return isset($slot['enabled']) && $slot['enabled'] === true;
 
+    }
     /**
      * Get all enabled time slots
      */
@@ -100,6 +106,7 @@ class PublishingQueue extends BaseModel
         return array_filter($this->time_slots ?? [], function ($slot) {
             return isset($slot['enabled']) && $slot['enabled'] === true;
 
+    }
     /**
      * Get next available posting time
      */
@@ -117,4 +124,11 @@ class PublishingQueue extends BaseModel
         // Find next available slot (implementation would go here)
         // This is a simplified version
         return $after->modify('+1 hour');
+}
+}
+}
+}
+}
+}
+}
 }

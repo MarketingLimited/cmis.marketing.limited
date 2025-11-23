@@ -54,8 +54,8 @@ class OrchestrationWorkflow extends BaseModel
     {
         return $this->belongsTo(CampaignOrchestration::class, 'orchestration_id', 'orchestration_id');
 
-    // ===== Workflow Execution =====
 
+        }
     public function start(): void
     {
         $this->update([
@@ -108,31 +108,42 @@ class OrchestrationWorkflow extends BaseModel
         if ($this->total_steps === 0) {
             return 0;
 
-        return ($this->current_step / $this->total_steps) * 100;
 
+            }
     public function isRunning(): bool
     {
         return $this->status === 'running';
 
+        }
     public function isCompleted(): bool
     {
         return $this->status === 'completed';
 
+        }
     public function isFailed(): bool
     {
         return $this->status === 'failed';
 
-    // ===== Scopes =====
 
+        }
     public function scopeRunning($query)
     {
         return $query->where('status', 'running');
 
+        }
     public function scopeCompleted($query)
     {
         return $query->where('status', 'completed');
 
+        }
     public function scopeForType($query, string $type)
     {
         return $query->where('workflow_type', $type);
+}
+}
+}
+}
+}
+}
+}
 }

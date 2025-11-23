@@ -55,6 +55,7 @@ class AnalyticsIntegration extends BaseModel
     {
         return $this->belongsTo(Campaign::class, 'campaign_id', 'campaign_id');
 
+    }
     /**
      * Scope to get integrations for a specific org
      */
@@ -62,6 +63,7 @@ class AnalyticsIntegration extends BaseModel
     {
         return $query->where('org_id', $orgId);
 
+    }
     /**
      * Scope to get integrations for a specific campaign
      */
@@ -69,10 +71,12 @@ class AnalyticsIntegration extends BaseModel
     {
         return $query->where('campaign_id', $campaignId);
 
+    }
     /**
      * Scope to filter by platform
      */
     public function scopeByPlatform($query, string $platform)
     {
         return $query->where('platform', $platform);
+}
 }

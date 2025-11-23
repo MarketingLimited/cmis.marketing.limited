@@ -61,6 +61,7 @@ class CopyComponent extends BaseModel
     {
         return $this->belongsTo(\App\Models\Campaign::class, 'campaign_id', 'campaign_id');
 
+    }
     /**
      * Get the channel
      */
@@ -68,6 +69,7 @@ class CopyComponent extends BaseModel
     {
         return $this->belongsTo(\App\Models\Channel::class, 'channel_id', 'channel_id');
 
+    }
     /**
      * Get the creator
      */
@@ -75,6 +77,7 @@ class CopyComponent extends BaseModel
     {
         return $this->belongsTo(\App\Models\User::class, 'created_by', 'user_id');
 
+    }
     /**
      * Scope by type
      */
@@ -82,6 +85,7 @@ class CopyComponent extends BaseModel
     {
         return $query->where('type_code', $type);
 
+    }
     /**
      * Scope by tone
      */
@@ -89,6 +93,7 @@ class CopyComponent extends BaseModel
     {
         return $query->where('tone', $tone);
 
+    }
     /**
      * Scope high performing
      */
@@ -97,10 +102,12 @@ class CopyComponent extends BaseModel
         return $query->where('performance_score', '>=', $threshold)
             ->orderBy('performance_score', 'desc');
 
+    }
     /**
      * Increment usage count
      */
     public function incrementUsage()
     {
         $this->increment('usage_count');
+}
 }

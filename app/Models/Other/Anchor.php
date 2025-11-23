@@ -39,4 +39,5 @@ class Anchor extends BaseModel
     public function module()
     {
         return $this->belongsTo(Module::class, 'module_id', 'module_id');
+    }
 }

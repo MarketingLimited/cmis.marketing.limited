@@ -34,3 +34,4 @@ class NamingTemplate extends BaseModel
     {
         return $query->where('scope', $scope);
 }
+}

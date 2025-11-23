@@ -47,10 +47,12 @@ class ExportBundle extends BaseModel
     {
         return $this->hasMany(ExportBundleItem::class, 'bundle_id', 'bundle_id');
 
+    }
     /**
      * Scope to get bundles for a specific org
      */
     public function scopeForOrg(Builder $query, string $orgId): Builder
     {
         return $query->where('org_id', $orgId);
+}
 }

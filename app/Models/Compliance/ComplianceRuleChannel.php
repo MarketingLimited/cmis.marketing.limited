@@ -29,10 +29,12 @@ class ComplianceRuleChannel extends BaseModel
     {
         return $this->belongsTo(ComplianceRule::class, 'rule_id', 'rule_id');
 
+    }
     /**
      * Get the channel
      */
     public function channel()
     {
         return $this->belongsTo(\App\Models\Channel::class, 'channel_id', 'channel_id');
+}
 }

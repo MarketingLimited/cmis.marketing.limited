@@ -56,6 +56,7 @@ class SemanticSearchLog extends BaseModel
     {
         return $this->belongsTo(\App\Models\User::class, 'user_id', 'user_id');
 
+    }
     /**
      * Scope by search type
      */
@@ -63,6 +64,7 @@ class SemanticSearchLog extends BaseModel
     {
         return $query->where('search_type', $type);
 
+    }
     /**
      * Scope with feedback
      */
@@ -70,6 +72,7 @@ class SemanticSearchLog extends BaseModel
     {
         return $query->whereNotNull('was_helpful');
 
+    }
     /**
      * Scope helpful searches
      */
@@ -77,6 +80,7 @@ class SemanticSearchLog extends BaseModel
     {
         return $query->where('was_helpful', true);
 
+    }
     /**
      * Scope with clicks
      */
@@ -84,6 +88,7 @@ class SemanticSearchLog extends BaseModel
     {
         return $query->whereNotNull('clicked_result_id');
 
+    }
     /**
      * Scope slow searches
      */
@@ -91,10 +96,12 @@ class SemanticSearchLog extends BaseModel
     {
         return $query->where('search_duration_ms', '>', $thresholdMs);
 
+    }
     /**
      * Scope recent searches
      */
     public function scopeRecent($query, int $days = 30)
     {
         return $query->where('searched_at', '>=', now()->subDays($days));
+}
 }

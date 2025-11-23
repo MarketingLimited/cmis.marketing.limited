@@ -263,3 +263,4 @@ class Integration extends BaseModel
             'sync_retry_count' => $status === 'failed' ? $this->sync_retry_count + 1 : 0,
         ]);
 }
+}

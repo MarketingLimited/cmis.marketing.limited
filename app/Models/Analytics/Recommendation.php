@@ -42,6 +42,7 @@ class Recommendation extends BaseModel
     {
         return $this->belongsTo(User::class, 'actioned_by', 'user_id');
 
+        }
     public function accept(string $userId, ?string $notes = null): void
     {
         $this->update([
@@ -51,6 +52,7 @@ class Recommendation extends BaseModel
             'action_notes' => $notes
         ]);
 
+        }
     public function reject(string $userId, string $reason): void
     {
         $this->update([
@@ -60,6 +62,7 @@ class Recommendation extends BaseModel
             'action_notes' => $reason
         ]);
 
+        }
     public function implement(string $userId, string $notes): void
     {
         $this->update([
@@ -69,10 +72,12 @@ class Recommendation extends BaseModel
             'action_notes' => $notes
         ]);
 
+        }
     public function isExpired(): bool
     {
         return $this->expires_at && $this->expires_at->isPast();
 
+        }
     public function scopePending($query)
     {
         return $query->where('status', 'pending')
@@ -80,11 +85,19 @@ class Recommendation extends BaseModel
                          $q->whereNull('expires_at')
                            ->orWhere('expires_at', '>', now());
 
+                           }
     public function scopeHighPriority($query)
     {
         return $query->whereIn('priority', ['critical', 'high']);
 
+        }
     public function scopeByCategory($query, string $category)
     {
         return $query->where('category', $category);
+}
+}
+}
+}
+}
+}
 }

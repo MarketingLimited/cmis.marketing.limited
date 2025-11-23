@@ -58,6 +58,7 @@ class ImageAsset extends BaseModel
     {
         return $this->belongsTo(\App\Models\CreativeAsset::class, 'asset_id', 'asset_id');
 
+    }
     /**
      * Get aspect ratio
      */
@@ -74,6 +75,7 @@ class ImageAsset extends BaseModel
 
         return ($this->width / $divisor) . ':' . ($this->height / $divisor);
 
+    }
     /**
      * Check if portrait
      */
@@ -81,6 +83,7 @@ class ImageAsset extends BaseModel
     {
         return $this->height > $this->width;
 
+    }
     /**
      * Check if landscape
      */
@@ -88,10 +91,13 @@ class ImageAsset extends BaseModel
     {
         return $this->width > $this->height;
 
+    }
     /**
      * Check if square
      */
     public function isSquare(): bool
     {
         return $this->width === $this->height;
+}
+}
 }

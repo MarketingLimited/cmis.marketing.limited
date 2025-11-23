@@ -42,6 +42,7 @@ class EmbeddingApiLog extends BaseModel
     {
         return $this->belongsTo(EmbeddingApiConfig::class, 'config_id', 'config_id');
 
+    }
     /**
      * Scope successful requests
      */
@@ -49,6 +50,7 @@ class EmbeddingApiLog extends BaseModel
     {
         return $query->whereBetween('status_code', [200, 299]);
 
+    }
     /**
      * Scope failed requests
      */
@@ -58,6 +60,7 @@ class EmbeddingApiLog extends BaseModel
             $q->where('status_code', '<', 200)
                 ->orWhere('status_code', '>=', 300);
 
+    }
     /**
      * Scope slow requests
      */
@@ -65,6 +68,7 @@ class EmbeddingApiLog extends BaseModel
     {
         return $query->where('response_time_ms', '>', $thresholdMs);
 
+    }
     /**
      * Scope by request type
      */
@@ -72,6 +76,7 @@ class EmbeddingApiLog extends BaseModel
     {
         return $query->where('request_type', $type);
 
+    }
     /**
      * Scope recent logs
      */
@@ -79,10 +84,13 @@ class EmbeddingApiLog extends BaseModel
     {
         return $query->where('logged_at', '>=', now()->subDays($days));
 
+    }
     /**
      * Check if request was successful
      */
     public function wasSuccessful(): bool
     {
         return $this->status_code >= 200 && $this->status_code < 300;
+}
+}
 }

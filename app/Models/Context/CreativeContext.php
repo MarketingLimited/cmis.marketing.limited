@@ -54,10 +54,12 @@ class CreativeContext extends BaseModel
     {
         return $this->belongsTo(\App\Models\User::class, 'created_by', 'user_id');
 
+    }
     /**
      * Scope active contexts
      */
     public function scopeActive($query)
     {
         return $query->where('is_active', true)->whereNull('deleted_at');
+}
 }

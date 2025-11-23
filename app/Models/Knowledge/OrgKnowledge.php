@@ -58,6 +58,7 @@ class OrgKnowledge extends BaseModel
     {
         return $this->belongsTo(\App\Models\User::class, 'created_by', 'user_id');
 
+    }
     /**
      * Get the last modifier
      */
@@ -65,6 +66,7 @@ class OrgKnowledge extends BaseModel
     {
         return $this->belongsTo(\App\Models\User::class, 'last_modified_by', 'user_id');
 
+    }
     /**
      * Get related knowledge index entries
      */
@@ -73,6 +75,7 @@ class OrgKnowledge extends BaseModel
         return KnowledgeIndex::where('source_type', 'org_knowledge')
             ->where('source_id', $this->org_knowledge_id);
 
+    }
     /**
      * Scope by knowledge type
      */
@@ -80,6 +83,7 @@ class OrgKnowledge extends BaseModel
     {
         return $query->where('knowledge_type', $type);
 
+    }
     /**
      * Scope by category
      */
@@ -87,6 +91,7 @@ class OrgKnowledge extends BaseModel
     {
         return $query->where('category', $category);
 
+    }
     /**
      * Scope by visibility
      */
@@ -94,6 +99,7 @@ class OrgKnowledge extends BaseModel
     {
         return $query->where('visibility', $visibility);
 
+    }
     /**
      * Scope non-confidential
      */
@@ -101,6 +107,7 @@ class OrgKnowledge extends BaseModel
     {
         return $query->where('is_confidential', false);
 
+    }
     /**
      * Scope non-expired
      */
@@ -110,6 +117,7 @@ class OrgKnowledge extends BaseModel
             $q->whereNull('expiry_date')
                 ->orWhere('expiry_date', '>=', now());
 
+    }
     /**
      * Check if knowledge has expired
      */
@@ -119,4 +127,7 @@ class OrgKnowledge extends BaseModel
             return false;
 
         return $this->expiry_date->isPast();
+}
+}
+}
 }

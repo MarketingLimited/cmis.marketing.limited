@@ -83,14 +83,17 @@ class SocialMention extends BaseModel
     {
         return $this->belongsTo(MonitoringKeyword::class, 'keyword_id', 'keyword_id');
 
+        }
     public function sentimentAnalysis(): HasOne
     {
         return $this->hasOne(SentimentAnalysis::class, 'mention_id', 'mention_id');
 
+        }
     public function conversations(): HasMany
     {
         return $this->hasMany(SocialConversation::class, 'root_mention_id', 'mention_id');
 
+    }
     /**
      * Status Management
      */
@@ -119,10 +122,12 @@ class SocialMention extends BaseModel
     {
         return $this->status === 'new';
 
+        }
     public function needsResponse(): bool
     {
         return $this->requires_response && !$this->responded_at;
 
+    }
     /**
      * Assignment
      */
@@ -135,6 +140,7 @@ class SocialMention extends BaseModel
     {
         $this->update(['assigned_to' => null]);
 
+    }
     /**
      * Sentiment Methods
      */
@@ -151,14 +157,17 @@ class SocialMention extends BaseModel
     {
         return $this->sentiment === 'positive';
 
+        }
     public function isNegative(): bool
     {
         return $this->sentiment === 'negative';
 
+        }
     public function isNeutral(): bool
     {
         return $this->sentiment === 'neutral';
 
+        }
     public function getSentimentLabel(): string
     {
         return match($this->sentiment) {
@@ -179,6 +188,7 @@ class SocialMention extends BaseModel
             default => 'gray'
         };
 
+    }
     /**
      * Engagement Methods
      */
@@ -204,10 +214,12 @@ class SocialMention extends BaseModel
     {
         return $this->likes_count + $this->comments_count + $this->shares_count;
 
+        }
     public function hasHighEngagement(): bool
     {
         return $this->engagement_rate > 5.0; // 5% is considered high
 
+    }
     /**
      * Author Methods
      */
@@ -216,10 +228,12 @@ class SocialMention extends BaseModel
     {
         return $this->author_followers_count > 10000 || $this->author_is_verified;
 
+        }
     public function getAuthorDisplayName(): string
     {
         return $this->author_display_name ?? $this->author_username;
 
+        }
     public function getAuthorBadge(): string
     {
         if ($this->author_is_verified) {
@@ -230,6 +244,7 @@ class SocialMention extends BaseModel
 
         return '';
 
+    }
     /**
      * Content Methods
      */
@@ -238,13 +253,14 @@ class SocialMention extends BaseModel
     {
         return count($this->media_urls) > 0;
 
+        }
     public function getExcerpt(int $length = 100): string
     {
         if (strlen($this->content) <= $length) {
             return $this->content;
 
-        return substr($this->content, 0, $length) . '...';
 
+            }
     public function getHashtagsString(): string
     {
         return implode(' ', array_map(fn($tag) => "#{$tag}", $this->hashtags));
@@ -270,6 +286,7 @@ class SocialMention extends BaseModel
             $entities[$entityType][] = $entityValue;
             $this->update(['detected_entities' => $entities]);
 
+    }
     /**
      * Scopes
      */
@@ -278,14 +295,17 @@ class SocialMention extends BaseModel
     {
         return $query->where('keyword_id', $keywordId);
 
+        }
     public function scopeOnPlatform($query, string $platform)
     {
         return $query->where('platform', $platform);
 
+        }
     public function scopeWithSentiment($query, string $sentiment)
     {
         return $query->where('sentiment', $sentiment);
 
+        }
     public function scopeNeedsResponse($query)
     {
         return $query->where('requires_response', true)
@@ -295,22 +315,27 @@ class SocialMention extends BaseModel
     {
         return $query->where('status', $status);
 
+        }
     public function scopeAssignedTo($query, string $userId)
     {
         return $query->where('assigned_to', $userId);
 
+        }
     public function scopeUnassigned($query)
     {
         return $query->whereNull('assigned_to');
 
+        }
     public function scopeRecentFirst($query)
     {
         return $query->orderBy('published_at', 'desc');
 
+        }
     public function scopeHighEngagement($query)
     {
         return $query->where('engagement_rate', '>', 5.0);
 
+        }
     public function scopeFromInfluencers($query)
     {
         return $query->where(function($q) {
@@ -320,4 +345,23 @@ class SocialMention extends BaseModel
     public function scopePublishedBetween($query, $startDate, $endDate)
     {
         return $query->whereBetween('published_at', [$startDate, $endDate]);
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
 }

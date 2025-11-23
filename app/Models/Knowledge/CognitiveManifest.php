@@ -61,6 +61,7 @@ class CognitiveManifest extends BaseModel
     {
         return $query->where('is_active', true);
 
+    }
     /**
      * Scope latest version
      */
@@ -68,6 +69,7 @@ class CognitiveManifest extends BaseModel
     {
         return $query->orderBy('manifest_version', 'desc');
 
+    }
     /**
      * Check if feature is enabled
      */
@@ -75,6 +77,7 @@ class CognitiveManifest extends BaseModel
     {
         return in_array($feature, $this->enabled_features ?? []);
 
+    }
     /**
      * Get quality threshold for metric
      */
@@ -82,10 +85,12 @@ class CognitiveManifest extends BaseModel
     {
         return $this->quality_thresholds[$metric] ?? null;
 
+    }
     /**
      * Get model configuration
      */
     public function getModelConfig(string $modelType): ?array
     {
         return $this->model_configurations[$modelType] ?? null;
+}
 }

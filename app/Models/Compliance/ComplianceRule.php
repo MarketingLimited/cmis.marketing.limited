@@ -49,6 +49,7 @@ class ComplianceRule extends BaseModel
     {
         return $this->hasMany(ComplianceAudit::class, 'rule_id', 'rule_id');
 
+    }
     /**
      * Get rule-channel associations
      */
@@ -60,6 +61,7 @@ class ComplianceRule extends BaseModel
             'rule_id',
             'channel_id'
 
+    }
     /**
      * Scope active rules
      */
@@ -67,6 +69,7 @@ class ComplianceRule extends BaseModel
     {
         return $query->where('is_active', true);
 
+    }
     /**
      * Scope by rule type
      */
@@ -74,10 +77,12 @@ class ComplianceRule extends BaseModel
     {
         return $query->where('rule_type', $type);
 
+    }
     /**
      * Scope by severity
      */
     public function scopeBySeverity($query, string $severity)
     {
         return $query->where('severity', $severity);
+}
 }

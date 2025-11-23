@@ -45,6 +45,7 @@ class Permission extends BaseModel
             ->withPivot('granted_by', 'granted_at')
             ->withTimestamps();
 
+    }
     /**
      * Get users that have this permission directly assigned
      */
@@ -55,6 +56,7 @@ class Permission extends BaseModel
             ->withPivot('is_granted', 'expires_at', 'granted_by', 'granted_at')
             ->withTimestamps();
 
+    }
     /**
      * Scope to get system permissions
      */
@@ -62,6 +64,7 @@ class Permission extends BaseModel
     {
         return $query->where('is_system', true);
 
+    }
     /**
      * Scope to get custom permissions
      */
@@ -69,6 +72,7 @@ class Permission extends BaseModel
     {
         return $query->where('is_system', false);
 
+    }
     /**
      * Scope to filter by module
      */
@@ -76,6 +80,7 @@ class Permission extends BaseModel
     {
         return $query->where('module', $module);
 
+    }
     /**
      * Scope to filter by resource
      */
@@ -83,6 +88,7 @@ class Permission extends BaseModel
     {
         return $query->where('resource', $resource);
 
+    }
     /**
      * Get full permission string (module.resource.action)
      */
@@ -97,4 +103,5 @@ class Permission extends BaseModel
     public function requiresOrgContext(): bool
     {
         return $this->requires_org_context ?? true;
+}
 }

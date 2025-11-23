@@ -42,10 +42,12 @@ class OutputContract extends BaseModel
             'contract_id',
             'prompt_id'
 
+    }
     /**
      * Scope to find by code
      */
     public function scopeByCode($query, string $code)
     {
         return $query->where('code', $code);
+}
 }

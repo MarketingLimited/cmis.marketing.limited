@@ -68,6 +68,7 @@ class KnowledgeIndex extends BaseModel
     {
         return $this->belongsTo(\App\Models\User::class, 'verified_by', 'user_id');
 
+    }
     /**
      * Increment access count
      */
@@ -76,6 +77,7 @@ class KnowledgeIndex extends BaseModel
         $this->increment('access_count');
         $this->update(['last_accessed' => now()]);
 
+    }
     /**
      * Scope verified knowledge only
      */
@@ -83,6 +85,7 @@ class KnowledgeIndex extends BaseModel
     {
         return $query->where('is_verified', true);
 
+    }
     /**
      * Scope by category
      */
@@ -90,6 +93,7 @@ class KnowledgeIndex extends BaseModel
     {
         return $query->where('category', $category);
 
+    }
     /**
      * Scope by source type
      */
@@ -97,6 +101,7 @@ class KnowledgeIndex extends BaseModel
     {
         return $query->where('source_type', $sourceType);
 
+    }
     /**
      * Scope high relevance
      */
@@ -104,6 +109,7 @@ class KnowledgeIndex extends BaseModel
     {
         return $query->where('relevance_score', '>=', $threshold);
 
+    }
     /**
      * Perform semantic search using vector similarity
      */
@@ -119,4 +125,6 @@ class KnowledgeIndex extends BaseModel
             $query->where('org_id', $orgId);
 
         return $query->limit($limit)->get();
+}
+}
 }

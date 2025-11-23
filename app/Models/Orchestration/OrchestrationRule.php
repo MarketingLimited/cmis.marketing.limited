@@ -52,8 +52,8 @@ class OrchestrationRule extends BaseModel
     {
         return $this->belongsTo(CampaignOrchestration::class, 'orchestration_id', 'orchestration_id');
 
-    // ===== Rule Management =====
 
+        }
     public function enable(): void
     {
         $this->update(['enabled' => true]);
@@ -74,16 +74,18 @@ class OrchestrationRule extends BaseModel
         if ($this->execution_count === 0) {
             return 0.0;
 
-        return ($this->success_count / $this->execution_count) * 100;
 
+            }
     public function isEnabled(): bool
     {
         return $this->enabled;
 
+        }
     public function isGlobal(): bool
     {
         return $this->orchestration_id === null;
 
+        }
     public function getRuleTypeLabel(): string
     {
         return match($this->rule_type) {
@@ -110,18 +112,22 @@ class OrchestrationRule extends BaseModel
     {
         return $query->where('enabled', true);
 
+        }
     public function scopeGlobal($query)
     {
         return $query->whereNull('orchestration_id');
 
+        }
     public function scopeForOrchestration($query, string $orchestrationId)
     {
         return $query->where('orchestration_id', $orchestrationId);
 
+        }
     public function scopeForType($query, string $type)
     {
         return $query->where('rule_type', $type);
 
+        }
     public function scopeByPriority($query)
     {
         return $query->orderByRaw("
@@ -133,4 +139,12 @@ class OrchestrationRule extends BaseModel
                 ELSE 5
             END
         ");
+}
+}
+}
+}
+}
+}
+}
+}
 }

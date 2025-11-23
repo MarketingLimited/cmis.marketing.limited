@@ -51,33 +51,40 @@ class SceneLibrary extends BaseModel
     public function organization()
     {
         return $this->belongsTo(\App\Models\Organization::class, 'org_id', 'org_id');
+    }
 
     // Scopes
     public function scopeTemplates($query)
     {
         return $query->where('is_template', true);
+    }
 
     public function scopeByCategory($query, $category)
     {
         return $query->where('category', $category);
+    }
 
     public function scopeByType($query, $type)
     {
         return $query->where('scene_type', $type);
+    }
 
     public function scopePopular($query, $minUsage = 10)
     {
         return $query->where('usage_count', '>=', $minUsage)
             ->orderByDesc('usage_count');
+    }
 
     // Helpers
     public function incrementUsage()
     {
         $this->increment('usage_count');
+    }
 
     public function getDurationFormatted()
     {
         $minutes = floor($this->duration_seconds / 60);
         $seconds = $this->duration_seconds % 60;
         return sprintf('%d:%02d', $minutes, $seconds);
+    }
 }

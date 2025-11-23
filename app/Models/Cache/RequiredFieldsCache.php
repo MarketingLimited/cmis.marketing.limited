@@ -32,10 +32,12 @@ class RequiredFieldsCache extends BaseModel
     {
         return $query->where('module_id', $moduleId);
 
+    }
     /**
      * Scope required fields only
      */
     public function scopeRequired($query)
     {
         return $query->where('is_required', true);
+}
 }

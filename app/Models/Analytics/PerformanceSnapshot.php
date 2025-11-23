@@ -13,6 +13,7 @@ class PerformanceSnapshot extends BaseModel
 {
     use HasOrganization;
 
+    }
     /**
      * Get the campaign that this snapshot belongs to.
      */
@@ -20,6 +21,7 @@ class PerformanceSnapshot extends BaseModel
     {
         return $this->belongsTo(Campaign::class, 'campaign_id', 'campaign_id');
 
+    }
     /**
      * Create a performance snapshot.
      *
@@ -50,6 +52,7 @@ class PerformanceSnapshot extends BaseModel
             'comparison_data' => $comparisonData,
         ]);
 
+    }
     /**
      * Scope snapshots by date range.
      *
@@ -62,6 +65,7 @@ class PerformanceSnapshot extends BaseModel
     {
         return $query->whereBetween('snapshot_date', [$startDate, $endDate]);
 
+    }
     /**
      * Scope snapshots by type.
      *
@@ -73,6 +77,7 @@ class PerformanceSnapshot extends BaseModel
     {
         return $query->where('snapshot_type', $type);
 
+    }
     /**
      * Scope snapshots by campaign.
      *
@@ -84,6 +89,7 @@ class PerformanceSnapshot extends BaseModel
     {
         return $query->where('campaign_id', $campaignId);
 
+    }
     /**
      * Get the latest snapshot for an organization.
      *
@@ -105,4 +111,6 @@ class PerformanceSnapshot extends BaseModel
         return $query->orderBy('snapshot_date', 'desc')
             ->orderBy('created_at', 'desc')
             ->first();
+}
+}
 }

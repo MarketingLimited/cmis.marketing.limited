@@ -41,10 +41,12 @@ class SqlSnippet extends BaseModel
             'snippet_id',
             'prompt_id'
 
+    }
     /**
      * Scope to find by name
      */
     public function scopeByName($query, string $name)
     {
         return $query->where('name', $name);
+}
 }

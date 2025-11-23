@@ -56,6 +56,7 @@ class ResearchKnowledge extends BaseModel
         return KnowledgeIndex::where('source_type', 'research_knowledge')
             ->where('source_id', $this->research_id);
 
+    }
     /**
      * Scope peer-reviewed only
      */
@@ -63,6 +64,7 @@ class ResearchKnowledge extends BaseModel
     {
         return $query->where('peer_reviewed', true);
 
+    }
     /**
      * Scope by field of study
      */
@@ -70,6 +72,7 @@ class ResearchKnowledge extends BaseModel
     {
         return $query->where('field_of_study', $field);
 
+    }
     /**
      * Scope by research type
      */
@@ -77,6 +80,7 @@ class ResearchKnowledge extends BaseModel
     {
         return $query->where('research_type', $type);
 
+    }
     /**
      * Scope high impact
      */
@@ -85,6 +89,7 @@ class ResearchKnowledge extends BaseModel
         return $query->where('impact_factor', '>=', $threshold)
             ->orderBy('impact_factor', 'desc');
 
+    }
     /**
      * Scope highly cited
      */
@@ -92,4 +97,5 @@ class ResearchKnowledge extends BaseModel
     {
         return $query->where('citations_count', '>=', $threshold)
             ->orderBy('citations_count', 'desc');
+}
 }

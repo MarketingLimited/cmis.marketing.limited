@@ -59,12 +59,13 @@ class CampaignTemplate extends BaseModel
     {
         return $this->belongsTo(User::class, 'created_by', 'user_id');
 
+        }
     public function orchestrations(): HasMany
     {
         return $this->hasMany(CampaignOrchestration::class, 'template_id', 'template_id');
 
-    // ===== Template Management =====
 
+        }
     public function incrementUsage(): void
     {
         $this->increment('usage_count');
@@ -81,12 +82,13 @@ class CampaignTemplate extends BaseModel
     {
         return $this->is_active;
 
+        }
     public function isGlobal(): bool
     {
         return $this->is_global;
 
-    // ===== Configuration Helpers =====
 
+        }
     public function getPlatformConfig(string $platform): array
     {
         $baseConfig = $this->base_config ?? [];
@@ -94,14 +96,17 @@ class CampaignTemplate extends BaseModel
 
         return array_merge($baseConfig, $platformSpecific);
 
+        }
     public function supportsPlatform(string $platform): bool
     {
         return in_array($platform, $this->platforms ?? []);
 
+        }
     public function getPlatformCount(): int
     {
         return count($this->platforms ?? []);
 
+        }
     public function getCategoryLabel(): string
     {
         return match($this->category) {
@@ -142,27 +147,38 @@ class CampaignTemplate extends BaseModel
                 $result[$platform] = $percentage;
             return $result;
 
-        return $template['custom_distribution'] ?? [];
 
-    // ===== Scopes =====
 
+            }
     public function scopeActive($query)
     {
         return $query->where('is_active', true);
 
+        }
     public function scopeGlobal($query)
     {
         return $query->where('is_global', true);
 
+        }
     public function scopeForCategory($query, string $category)
     {
         return $query->where('category', $category);
 
+        }
     public function scopeForObjective($query, string $objective)
     {
         return $query->where('objective', $objective);
 
+        }
     public function scopeForPlatform($query, string $platform)
     {
         return $query->whereJsonContains('platforms', $platform);
+}
+}
+}
+}
+}
+}
+}
+}
 }

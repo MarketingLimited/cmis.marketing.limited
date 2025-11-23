@@ -45,28 +45,32 @@ class OpsEtlLog extends BaseModel
     {
         return $this->belongsTo(\App\Models\Organization::class, 'org_id', 'org_id');
 
-    // Scopes
+        }
     public function scopeByOrg($query, $orgId)
     {
         return $query->where('org_id', $orgId);
 
+        }
     public function scopeByType($query, $type)
     {
         return $query->where('job_type', $type);
 
+        }
     public function scopeSuccessful($query)
     {
         return $query->where('status', 'completed');
 
+        }
     public function scopeFailed($query)
     {
         return $query->where('status', 'failed');
 
+        }
     public function scopeRecent($query, $days = 7)
     {
         return $query->where('created_at', '>=', now()->subDays($days));
 
-    // Helpers
+        }
     public static function start($orgId, $jobName, $jobType, $source, $destination)
     {
         return static::create([
@@ -108,4 +112,9 @@ class OpsEtlLog extends BaseModel
             return 0;
 
         return round(($this->records_succeeded / $this->records_processed) * 100, 2);
+}
+}
+}
+}
+}
 }

@@ -40,18 +40,22 @@ class DataExportLog extends BaseModel
 
     
 
+        }
     public function scopeCompleted($query)
     {
         return $query->where('status', 'completed');
 
+        }
     public function scopeFailed($query)
     {
         return $query->where('status', 'failed');
 
+        }
     public function scopeRecent($query, int $days = 30)
     {
         return $query->where('started_at', '>=', now()->subDays($days));
 
+        }
     public function markCompleted(int $recordsCount, int $fileSize, string $filePath): void
     {
         $this->update([
@@ -63,6 +67,7 @@ class DataExportLog extends BaseModel
             'execution_time_ms' => (int) (now()->diffInMilliseconds($this->started_at))
         ]);
 
+        }
     public function markFailed(string $error): void
     {
         $this->update([
@@ -71,4 +76,6 @@ class DataExportLog extends BaseModel
             'error_message' => $error,
             'execution_time_ms' => (int) (now()->diffInMilliseconds($this->started_at))
         ]);
+}
+}
 }

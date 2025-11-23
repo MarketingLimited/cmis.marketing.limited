@@ -82,8 +82,8 @@ class CreativePerformance extends BaseModel
     {
         return $this->belongsTo(Campaign::class, 'campaign_id', 'campaign_id');
 
-    // ===== Performance Analysis =====
 
+        }
     public function calculatePerformanceScore(): float
     {
         $weights = [
@@ -127,6 +127,7 @@ class CreativePerformance extends BaseModel
 
         return $totalWeight > 0 ? round($totalScore / $totalWeight, 4) : 0.0;
 
+        }
     public function calculateFatigueScore(): float
     {
         // Higher fatigue = more stale creative
@@ -136,18 +137,22 @@ class CreativePerformance extends BaseModel
 
         return round(($impressionFactor * 0.4) + ($ageFactor * 0.4) + ($performanceDecline * 0.2), 4);
 
+        }
     public function isFatigued(): bool
     {
         return $this->fatigue_score > 0.7;
 
+        }
     public function isHighPerforming(): bool
     {
         return $this->performance_score >= 0.7;
 
+        }
     public function needsRefresh(): bool
     {
         return $this->isFatigued() || ($this->freshness_days !== null && $this->freshness_days > 60);
 
+        }
     public function getCreativeTypeLabel(): string
     {
         return match($this->creative_type) {
@@ -176,48 +181,49 @@ class CreativePerformance extends BaseModel
         if (!$this->visual_features || !is_array($this->visual_features)) {
             return 'N/A';
 
-        $features = [];
-        if (isset($this->visual_features['dominant_color'])) {
-            $features[] = 'Color: ' . $this->visual_features['dominant_color'];
-        if (isset($this->visual_features['has_faces'])) {
-            $features[] = $this->visual_features['has_faces'] ? 'Has Faces' : 'No Faces';
-        if (isset($this->visual_features['has_text'])) {
-            $features[] = $this->visual_features['has_text'] ? 'Has Text Overlay' : 'No Text';
 
-        return implode(', ', $features) ?: 'N/A';
 
+            }
     public function getTextFeatureSummary(): string
     {
         if (!$this->text_features || !is_array($this->text_features)) {
             return 'N/A';
 
-        $features = [];
-        if (isset($this->text_features['headline_length'])) {
-            $features[] = 'Headline: ' . $this->text_features['headline_length'] . ' chars';
-        if (isset($this->text_features['has_cta'])) {
-            $features[] = $this->text_features['has_cta'] ? 'Has CTA' : 'No CTA';
-        if (isset($this->text_features['sentiment'])) {
-            $features[] = 'Sentiment: ' . ucfirst($this->text_features['sentiment']);
 
-        return implode(', ', $features) ?: 'N/A';
 
-    // ===== Scopes =====
 
+            }
     public function scopeHighPerforming($query)
     {
         return $query->where('performance_score', '>=', 0.7);
 
+        }
     public function scopeFatigued($query)
     {
         return $query->where('fatigue_score', '>', 0.7);
 
+        }
     public function scopeForCreativeType($query, string $type)
     {
         return $query->where('creative_type', $type);
 
+        }
     public function scopeNeedsRefresh($query)
     {
         return $query->where(function ($q) {
             $q->where('fatigue_score', '>', 0.7)
               ->orWhere('freshness_days', '>', 60);
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
 }

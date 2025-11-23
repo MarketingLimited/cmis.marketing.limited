@@ -55,6 +55,7 @@ class ChannelMetric extends BaseModel
     {
         return $this->belongsTo(\App\Models\Channel::class, 'channel_id', 'channel_id');
 
+    }
     /**
      * Scope by date range
      */
@@ -62,6 +63,7 @@ class ChannelMetric extends BaseModel
     {
         return $query->whereBetween('date', [$startDate, $endDate]);
 
+    }
     /**
      * Scope recent metrics
      */
@@ -69,6 +71,7 @@ class ChannelMetric extends BaseModel
     {
         return $query->where('date', '>=', now()->subDays($days));
 
+    }
     /**
      * Get follower growth
      */
@@ -94,4 +97,6 @@ class ChannelMetric extends BaseModel
             'growth' => $growth,
             'percentage' => round($percentage, 2),
         ];
+}
+}
 }

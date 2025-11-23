@@ -18,6 +18,7 @@ class AiQuery extends BaseModel
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id', 'user_id');
+    }
 
     /**
      * Log an AI query.
@@ -58,6 +59,7 @@ class AiQuery extends BaseModel
             'error_message' => $errorMessage,
             'metadata' => $metadata,
         ]);
+    }
 
     /**
      * Scope successful queries.
@@ -68,6 +70,7 @@ class AiQuery extends BaseModel
     public function scopeSuccessful($query)
     {
         return $query->where('status', 'success');
+    }
 
     /**
      * Scope failed queries.
@@ -78,6 +81,7 @@ class AiQuery extends BaseModel
     public function scopeFailed($query)
     {
         return $query->where('status', 'failed');
+    }
 
     /**
      * Scope queries by type.
@@ -89,6 +93,7 @@ class AiQuery extends BaseModel
     public function scopeByType($query, string $type)
     {
         return $query->where('query_type', $type);
+    }
 
     /**
      * Scope queries by model.
@@ -100,6 +105,7 @@ class AiQuery extends BaseModel
     public function scopeByModel($query, string $model)
     {
         return $query->where('model_used', $model);
+    }
 
     /**
      * Get total tokens used for an organization in a time period.
@@ -116,6 +122,8 @@ class AiQuery extends BaseModel
 
         if ($startDate && $endDate) {
             $query->whereBetween('created_at', [$startDate, $endDate]);
+        }
 
         return $query->sum('tokens_used') ?? 0;
+    }
 }

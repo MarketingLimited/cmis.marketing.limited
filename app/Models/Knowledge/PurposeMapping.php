@@ -42,6 +42,7 @@ class PurposeMapping extends BaseModel
     {
         return $query->where('is_active', true);
 
+    }
     /**
      * Scope by category
      */
@@ -49,10 +50,12 @@ class PurposeMapping extends BaseModel
     {
         return $query->where('category', $category);
 
+    }
     /**
      * Find by purpose code
      */
     public static function findByCode(string $code)
     {
         return self::where('purpose_code', $code)->first();
+}
 }

@@ -38,10 +38,12 @@ class MetaDocumentation extends BaseModel
     {
         return $query->where('meta_key', $key);
 
+    }
     /**
      * Scope to find by updated by
      */
     public function scopeUpdatedBy($query, string $updatedBy)
     {
         return $query->where('updated_by', $updatedBy);
+}
 }

@@ -62,12 +62,13 @@ class OrchestrationPlatform extends BaseModel
     {
         return $this->belongsTo(CampaignOrchestration::class, 'orchestration_id', 'orchestration_id');
 
+        }
     public function connection(): BelongsTo
     {
         return $this->belongsTo(PlatformConnection::class, 'connection_id', 'connection_id');
 
-    // ===== Status Management =====
 
+        }
     public function markAsCreating(): void
     {
         $this->update(['status' => 'creating']);
@@ -112,18 +113,22 @@ class OrchestrationPlatform extends BaseModel
     {
         return $this->impressions > 0 ? ($this->clicks / $this->impressions) * 100 : 0;
 
+        }
     public function getConversionRate(): float
     {
         return $this->clicks > 0 ? ($this->conversions / $this->clicks) * 100 : 0;
 
+        }
     public function getCPA(): float
     {
         return $this->conversions > 0 ? $this->spend / $this->conversions : 0;
 
+        }
     public function getROAS(): float
     {
         return $this->spend > 0 ? $this->revenue / $this->spend : 0;
 
+        }
     public function getPlatformLabel(): string
     {
         return match($this->platform) {
@@ -142,7 +147,16 @@ class OrchestrationPlatform extends BaseModel
     {
         return $query->where('status', 'active');
 
+        }
     public function scopeForPlatform($query, string $platform)
     {
         return $query->where('platform', $platform);
+}
+}
+}
+}
+}
+}
+}
+}
 }

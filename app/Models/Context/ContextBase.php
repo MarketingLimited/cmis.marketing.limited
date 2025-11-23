@@ -48,6 +48,7 @@ class ContextBase extends BaseModel
     {
         return $this->belongsTo(User::class, 'created_by', 'user_id');
 
+    }
     /**
      * Scope to get active contexts
      */
@@ -55,6 +56,7 @@ class ContextBase extends BaseModel
     {
         return $query->where('is_active', true)->whereNull('deleted_at');
 
+    }
     /**
      * Scope by context type
      */
@@ -62,10 +64,12 @@ class ContextBase extends BaseModel
     {
         return $query->where('context_type', $type);
 
+    }
     /**
      * Scope by organization
      */
     public function scopeForOrg(Builder $query, string $orgId): Builder
     {
         return $query->where('org_id', $orgId);
+}
 }

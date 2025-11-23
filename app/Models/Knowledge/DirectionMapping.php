@@ -41,6 +41,7 @@ class DirectionMapping extends BaseModel
     {
         return $query->where('is_active', true);
 
+    }
     /**
      * Scope by category
      */
@@ -48,6 +49,7 @@ class DirectionMapping extends BaseModel
     {
         return $query->where('category', $category);
 
+    }
     /**
      * Find by direction code
      */
@@ -55,6 +57,7 @@ class DirectionMapping extends BaseModel
     {
         return self::where('direction_code', $code)->first();
 
+    }
     /**
      * Render prompt with parameters
      */
@@ -67,4 +70,5 @@ class DirectionMapping extends BaseModel
         }
 
         return $template;
+}
 }

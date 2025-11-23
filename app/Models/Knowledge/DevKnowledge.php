@@ -47,6 +47,7 @@ class DevKnowledge extends BaseModel
         return KnowledgeIndex::where('source_type', 'dev_knowledge')
             ->where('source_id', $this->dev_id);
 
+    }
     /**
      * Scope by category
      */
@@ -54,6 +55,7 @@ class DevKnowledge extends BaseModel
     {
         return $query->where('category', $category);
 
+    }
     /**
      * Scope by language
      */
@@ -61,6 +63,7 @@ class DevKnowledge extends BaseModel
     {
         return $query->where('language', $language);
 
+    }
     /**
      * Scope by framework
      */
@@ -68,6 +71,7 @@ class DevKnowledge extends BaseModel
     {
         return $query->where('framework', $framework);
 
+    }
     /**
      * Scope active (non-deprecated)
      */
@@ -75,10 +79,12 @@ class DevKnowledge extends BaseModel
     {
         return $query->where('is_deprecated', false);
 
+    }
     /**
      * Scope by difficulty level
      */
     public function scopeByDifficulty($query, string $level)
     {
         return $query->where('difficulty_level', $level);
+}
 }

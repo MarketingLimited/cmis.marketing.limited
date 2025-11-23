@@ -54,6 +54,7 @@ class Notification extends BaseModel
     {
         return $query->where('is_read', false);
 
+    }
     /**
      * Scope by type
      */
@@ -61,6 +62,7 @@ class Notification extends BaseModel
     {
         return $query->where('type', $type);
 
+    }
     /**
      * Scope by category
      */
@@ -68,6 +70,7 @@ class Notification extends BaseModel
     {
         return $query->where('category', $category);
 
+    }
     /**
      * Scope by priority
      */
@@ -75,6 +78,7 @@ class Notification extends BaseModel
     {
         return $query->where('priority', 'high');
 
+    }
     /**
      * Scope not expired
      */
@@ -84,6 +88,7 @@ class Notification extends BaseModel
             $q->whereNull('expires_at')
                 ->orWhere('expires_at', '>', now());
 
+    }
     /**
      * Mark as read
      */
@@ -94,6 +99,7 @@ class Notification extends BaseModel
             'read_at' => now(),
         ]);
 
+    }
     /**
      * Check if expired
      */
@@ -103,4 +109,7 @@ class Notification extends BaseModel
             return false;
 
         return $this->expires_at->isPast();
+}
+}
+}
 }

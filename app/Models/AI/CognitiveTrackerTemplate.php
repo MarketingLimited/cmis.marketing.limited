@@ -44,19 +44,23 @@ class CognitiveTrackerTemplate extends BaseModel
     public function scopeActive($query)
     {
         return $query->where('is_active', true);
+    }
 
     public function scopeByCategory($query, $category)
     {
         return $query->where('category', $category);
+    }
 
     // Helpers
     public function activate()
     {
         $this->is_active = true;
         return $this->save();
+    }
 
     public function deactivate()
     {
         $this->is_active = false;
         return $this->save();
+    }
 }

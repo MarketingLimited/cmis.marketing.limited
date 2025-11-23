@@ -49,10 +49,12 @@ class OfferingsOld extends BaseModel
     {
         return $query->where('kind', $kind);
 
+    }
     /**
      * Scope to get offerings for a specific org
      */
     public function scopeForOrg(Builder $query, string $orgId): Builder
     {
         return $query->where('org_id', $orgId);
+}
 }

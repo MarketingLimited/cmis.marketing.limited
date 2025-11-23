@@ -44,3 +44,4 @@ class Offering extends BaseModel
             'offering_id',
             'campaign_id'
 }
+}

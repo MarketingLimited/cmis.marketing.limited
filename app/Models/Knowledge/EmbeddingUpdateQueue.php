@@ -46,6 +46,7 @@ class EmbeddingUpdateQueue extends BaseModel
             ->orderBy('priority', 'desc')
             ->orderBy('queued_at', 'asc');
 
+    }
     /**
      * Scope processing items
      */
@@ -53,6 +54,7 @@ class EmbeddingUpdateQueue extends BaseModel
     {
         return $query->where('status', 'processing');
 
+    }
     /**
      * Scope failed items
      */
@@ -60,6 +62,7 @@ class EmbeddingUpdateQueue extends BaseModel
     {
         return $query->where('status', 'failed');
 
+    }
     /**
      * Scope by priority
      */
@@ -67,6 +70,7 @@ class EmbeddingUpdateQueue extends BaseModel
     {
         return $query->where('priority', '>=', $threshold);
 
+    }
     /**
      * Mark as processing
      */
@@ -77,6 +81,7 @@ class EmbeddingUpdateQueue extends BaseModel
             'processing_started_at' => now(),
         ]);
 
+    }
     /**
      * Mark as completed
      */
@@ -87,6 +92,7 @@ class EmbeddingUpdateQueue extends BaseModel
             'completed_at' => now(),
         ]);
 
+    }
     /**
      * Mark as failed
      */
@@ -98,6 +104,7 @@ class EmbeddingUpdateQueue extends BaseModel
             'retry_count' => $this->retry_count + 1,
         ]);
 
+    }
     /**
      * Reset for retry
      */
@@ -107,4 +114,5 @@ class EmbeddingUpdateQueue extends BaseModel
             'status' => 'pending',
             'processing_started_at' => null,
         ]);
+}
 }

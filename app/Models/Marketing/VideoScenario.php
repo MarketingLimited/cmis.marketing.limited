@@ -44,17 +44,22 @@ class VideoScenario extends BaseModel
     {
         return $this->belongsTo(\App\Models\Organization::class, 'org_id', 'org_id');
 
+        }
     public function campaign()
     {
         return $this->belongsTo(\App\Models\Campaign::class, 'campaign_id', 'campaign_id');
 
+        }
     public function scopeByStatus($query, $status)
     {
         return $query->where('status', $status);
 
+        }
     public function getDurationFormatted()
     {
         $minutes = floor($this->duration_seconds / 60);
         $seconds = $this->duration_seconds % 60;
         return sprintf('%d:%02d', $minutes, $seconds);
+}
+}
 }

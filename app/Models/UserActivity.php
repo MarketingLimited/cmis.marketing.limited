@@ -43,6 +43,7 @@ class UserActivity extends BaseModel
     {
         return $this->belongsTo(User::class, 'user_id', 'user_id');
 
+    }
     /**
      * Get the organization associated with the activity
      */
@@ -50,6 +51,7 @@ class UserActivity extends BaseModel
     {
         return $this->belongsTo(Core\Org::class, 'org_id', 'org_id');
 
+    }
     /**
      * Scope to get activities for a specific user
      */
@@ -57,6 +59,7 @@ class UserActivity extends BaseModel
     {
         return $query->where('user_id', $userId);
 
+    }
     /**
      * Scope to get activities for a specific org
      */
@@ -64,6 +67,7 @@ class UserActivity extends BaseModel
     {
         return $query->where('org_id', $orgId);
 
+    }
     /**
      * Scope to get recent activities
      */
@@ -71,6 +75,7 @@ class UserActivity extends BaseModel
     {
         return $query->orderBy('created_at', 'desc')->limit($limit);
 
+    }
     /**
      * Get formatted activity description
      */
@@ -91,6 +96,7 @@ class UserActivity extends BaseModel
 
         return $descriptions[$action] ?? $action;
 
+    }
     /**
      * Get activity type for icons
      */
@@ -110,6 +116,7 @@ class UserActivity extends BaseModel
 
         return $types[$action] ?? 'access';
 
+    }
     /**
      * Create activity log entry
      */
@@ -130,4 +137,5 @@ class UserActivity extends BaseModel
             'details' => $details,
             'ip_address' => request()->ip(),
         ]);
+}
 }

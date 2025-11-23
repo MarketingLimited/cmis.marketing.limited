@@ -40,15 +40,17 @@ class OpsAudit extends BaseModel
     {
         return $this->belongsTo(\App\Models\User::class, 'user_id', 'user_id');
 
+        }
     public function organization()
     {
         return $this->belongsTo(\App\Models\Organization::class, 'org_id', 'org_id');
 
-    // Scopes
+        }
     public function scopeByType($query, $type)
     {
         return $query->where('operation_type', $type);
 
+        }
     public function scopeByEntity($query, $entityType, $entityId = null)
     {
         $query->where('entity_type', $entityType);
@@ -58,19 +60,22 @@ class OpsAudit extends BaseModel
 
         return $query;
 
+        }
     public function scopeByUser($query, $userId)
     {
         return $query->where('user_id', $userId);
 
+        }
     public function scopeSuccessful($query)
     {
         return $query->where('status', 'success');
 
+        }
     public function scopeFailed($query)
     {
         return $query->where('status', 'failed');
 
-    // Helpers
+        }
     public static function log($operationType, $operationName, $userId, $orgId, $entityType, $entityId, $oldValues = null, $newValues = null)
     {
         $changes = [];
@@ -97,4 +102,9 @@ class OpsAudit extends BaseModel
             'user_agent' => request()->userAgent(),
             'status' => 'success',
         ]);
+}
+}
+}
+}
+}
 }

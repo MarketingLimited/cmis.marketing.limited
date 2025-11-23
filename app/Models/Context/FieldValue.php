@@ -42,6 +42,7 @@ class FieldValue extends BaseModel
     {
         return $this->belongsTo(FieldDefinition::class, 'field_id', 'field_id');
 
+    }
     /**
      * Get the context (value context)
      */
@@ -49,6 +50,7 @@ class FieldValue extends BaseModel
     {
         return $this->belongsTo(ValueContext::class, 'context_id', 'context_id');
 
+    }
     /**
      * Get the creator
      */
@@ -56,6 +58,7 @@ class FieldValue extends BaseModel
     {
         return $this->belongsTo(\App\Models\User::class, 'created_by', 'user_id');
 
+    }
     /**
      * Scope by context
      */
@@ -63,6 +66,7 @@ class FieldValue extends BaseModel
     {
         return $query->where('context_id', $contextId);
 
+    }
     /**
      * Scope by field
      */
@@ -70,6 +74,7 @@ class FieldValue extends BaseModel
     {
         return $query->where('field_id', $fieldId);
 
+    }
     /**
      * Get the scalar value if it's a simple type
      */
@@ -79,4 +84,6 @@ class FieldValue extends BaseModel
             return reset($this->value);
 
         return $this->value;
+}
+}
 }

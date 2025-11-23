@@ -53,18 +53,22 @@ class MonitoringAlert extends BaseModel
     {
         $this->update(['status' => 'active']);
 
+        }
     public function pause(): void
     {
         $this->update(['status' => 'paused']);
 
+        }
     public function archive(): void
     {
         $this->update(['status' => 'archived']);
 
+        }
     public function isActive(): bool
     {
         return $this->status === 'active';
 
+    }
     /**
      * Trigger Management
      */
@@ -74,21 +78,20 @@ class MonitoringAlert extends BaseModel
         $this->increment('trigger_count');
         $this->update(['last_triggered_at' => now()]);
 
+        }
     public function canSendNotification(): bool
     {
         if (!$this->isActive()) {
             return false;
 
-        if (!$this->last_notification_at) {
-            return true;
 
-        $minutesSinceLastNotification = $this->last_notification_at->diffInMinutes(now());
-        return $minutesSinceLastNotification >= $this->notification_frequency;
 
+            }
     public function markNotificationSent(): void
     {
         $this->update(['last_notification_at' => now()]);
 
+    }
     /**
      * Condition Evaluation
      */
@@ -124,6 +127,7 @@ class MonitoringAlert extends BaseModel
 
         return true;
 
+    }
     /**
      * Notification Management
      */
@@ -135,15 +139,18 @@ class MonitoringAlert extends BaseModel
             $channels[] = $channel;
             $this->update(['notification_channels' => $channels]);
 
+            }
     public function removeChannel(string $channel): void
     {
         $channels = array_filter($this->notification_channels, fn($c) => $c !== $channel);
         $this->update(['notification_channels' => array_values($channels)]);
 
+        }
     public function hasChannel(string $channel): bool
     {
         return in_array($channel, $this->notification_channels);
 
+        }
     public function addRecipient(string $recipient): void
     {
         $recipients = $this->recipients;
@@ -151,11 +158,13 @@ class MonitoringAlert extends BaseModel
             $recipients[] = $recipient;
             $this->update(['recipients' => $recipients]);
 
+            }
     public function removeRecipient(string $recipient): void
     {
         $recipients = array_filter($this->recipients, fn($r) => $r !== $recipient);
         $this->update(['recipients' => array_values($recipients)]);
 
+    }
     /**
      * Severity Helpers
      */
@@ -164,18 +173,22 @@ class MonitoringAlert extends BaseModel
     {
         return $this->severity === 'critical';
 
+        }
     public function isHigh(): bool
     {
         return $this->severity === 'high';
 
+        }
     public function isMedium(): bool
     {
         return $this->severity === 'medium';
 
+        }
     public function isLow(): bool
     {
         return $this->severity === 'low';
 
+        }
     public function getSeverityColor(): string
     {
         return match($this->severity) {
@@ -186,6 +199,7 @@ class MonitoringAlert extends BaseModel
             default => 'gray'
         };
 
+        }
     public function getSeverityIcon(): string
     {
         return match($this->severity) {
@@ -196,6 +210,7 @@ class MonitoringAlert extends BaseModel
             default => '📌'
         };
 
+    }
     /**
      * Scopes
      */
@@ -204,19 +219,45 @@ class MonitoringAlert extends BaseModel
     {
         return $query->where('status', 'active');
 
+        }
     public function scopeOfType($query, string $type)
     {
         return $query->where('alert_type', $type);
 
+        }
     public function scopeBySeverity($query, string $severity)
     {
         return $query->where('severity', $severity);
 
+        }
     public function scopeCritical($query)
     {
         return $query->where('severity', 'critical');
 
+        }
     public function scopeRecentlyTriggered($query, int $hours = 24)
     {
         return $query->where('last_triggered_at', '>=', now()->subHours($hours));
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
 }

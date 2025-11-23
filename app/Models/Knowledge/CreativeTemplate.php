@@ -61,6 +61,7 @@ class CreativeTemplate extends BaseModel
     {
         return $this->belongsTo(\App\Models\Channel::class, 'channel_id', 'channel_id');
 
+    }
     /**
      * Get the creator
      */
@@ -68,6 +69,7 @@ class CreativeTemplate extends BaseModel
     {
         return $this->belongsTo(\App\Models\User::class, 'created_by', 'user_id');
 
+    }
     /**
      * Scope by template type
      */
@@ -75,6 +77,7 @@ class CreativeTemplate extends BaseModel
     {
         return $query->where('template_type', $type);
 
+    }
     /**
      * Scope by category
      */
@@ -82,6 +85,7 @@ class CreativeTemplate extends BaseModel
     {
         return $query->where('category', $category);
 
+    }
     /**
      * Scope public templates
      */
@@ -89,6 +93,7 @@ class CreativeTemplate extends BaseModel
     {
         return $query->where('is_public', true);
 
+    }
     /**
      * Scope high performing
      */
@@ -97,6 +102,7 @@ class CreativeTemplate extends BaseModel
         return $query->where('performance_score', '>=', $threshold)
             ->orderBy('performance_score', 'desc');
 
+    }
     /**
      * Increment usage count
      */
@@ -104,6 +110,7 @@ class CreativeTemplate extends BaseModel
     {
         $this->increment('usage_count');
 
+    }
     /**
      * Render template with variables
      */
@@ -116,6 +123,7 @@ class CreativeTemplate extends BaseModel
 
         return $rendered;
 
+    }
     /**
      * Replace variables in template string
      */
@@ -126,4 +134,6 @@ class CreativeTemplate extends BaseModel
         }
 
         return $template;
+}
+}
 }

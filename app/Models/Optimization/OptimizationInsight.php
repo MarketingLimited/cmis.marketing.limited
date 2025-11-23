@@ -66,20 +66,23 @@ class OptimizationInsight extends BaseModel
     {
         return $this->belongsTo(OptimizationRun::class, 'optimization_run_id', 'run_id');
 
+        }
     public function campaign(): BelongsTo
     {
         return $this->belongsTo(Campaign::class, 'campaign_id', 'campaign_id');
 
+        }
     public function acknowledger(): BelongsTo
     {
         return $this->belongsTo(User::class, 'acknowledged_by', 'user_id');
 
+        }
     public function applier(): BelongsTo
     {
         return $this->belongsTo(User::class, 'applied_by', 'user_id');
 
-    // ===== Insight Management =====
 
+        }
     public function acknowledge(string $userId): void
     {
         $this->update([
@@ -117,10 +120,12 @@ class OptimizationInsight extends BaseModel
     {
         return $this->expires_at && now()->isAfter($this->expires_at);
 
+        }
     public function isHighPriority(): bool
     {
         return $this->priority === 'critical' || $this->priority === 'high';
 
+        }
     public function getPriorityLevel(): int
     {
         return match($this->priority) {
@@ -169,29 +174,22 @@ class OptimizationInsight extends BaseModel
         if (!$this->impact_estimate) {
             return 'N/A';
 
-        $sign = $this->impact_estimate > 0 ? '+' : '';
-        return $sign . '$' . number_format($this->impact_estimate, 2);
 
+            }
     public function getConfidenceLabel(): string
     {
         if (!$this->confidence_score) {
             return 'N/A';
 
-        $percentage = $this->confidence_score * 100;
 
-        if ($percentage >= 90) {
-            return 'Very High (' . number_format($percentage, 0) . '%)';
-        } elseif ($percentage >= 75) {
-            return 'High (' . number_format($percentage, 0) . '%)';
-        } elseif ($percentage >= 60) {
-            return 'Medium (' . number_format($percentage, 0) . '%)';
 
-        return 'Low (' . number_format($percentage, 0) . '%)';
 
+            }
     public function hasAutomatedAction(): bool
     {
         return !empty($this->automated_action) && is_array($this->automated_action);
 
+        }
     public function canAutoExecute(): bool
     {
         return $this->hasAutomatedAction() &&
@@ -204,6 +202,7 @@ class OptimizationInsight extends BaseModel
     {
         return $query->where('status', 'pending');
 
+        }
     public function scopeActionable($query)
     {
         return $query->where('status', 'pending')
@@ -216,15 +215,33 @@ class OptimizationInsight extends BaseModel
     {
         return $query->whereIn('priority', ['critical', 'high']);
 
+        }
     public function scopeForCategory($query, string $category)
     {
         return $query->where('category', $category);
 
+        }
     public function scopeForInsightType($query, string $type)
     {
         return $query->where('insight_type', $type);
 
+        }
     public function scopeWithAutomation($query)
     {
         return $query->whereNotNull('automated_action');
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
 }

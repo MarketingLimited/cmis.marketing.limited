@@ -34,10 +34,12 @@ class ExportBundleItem extends BaseModel
     {
         return $this->belongsTo(ExportBundle::class, 'bundle_id', 'bundle_id');
 
+    }
     /**
      * Scope to get items for a specific bundle
      */
     public function scopeForBundle($query, string $bundleId)
     {
         return $query->where('bundle_id', $bundleId);
+}
 }

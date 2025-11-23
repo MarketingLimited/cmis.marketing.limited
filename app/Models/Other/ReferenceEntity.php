@@ -43,10 +43,12 @@ class ReferenceEntity extends BaseModel
     {
         return $query->where('category', $category);
 
+    }
     /**
      * Scope to find by code
      */
     public function scopeByCode($query, string $code)
     {
         return $query->where('code', $code);
+}
 }

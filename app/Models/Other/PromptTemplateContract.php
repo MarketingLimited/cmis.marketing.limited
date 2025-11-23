@@ -34,10 +34,12 @@ class PromptTemplateContract extends BaseModel
     {
         return $this->belongsTo(PromptTemplate::class, 'prompt_id', 'prompt_id');
 
+    }
     /**
      * Get the output contract
      */
     public function outputContract()
     {
         return $this->belongsTo(OutputContract::class, 'contract_id', 'contract_id');
+}
 }

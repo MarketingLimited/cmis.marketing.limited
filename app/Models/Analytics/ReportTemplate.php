@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+}
 /**
  * Report Template Model (Phase 12)
  *
@@ -58,6 +59,7 @@ class ReportTemplate extends BaseModel
     {
         return $this->belongsTo(User::class, 'created_by', 'user_id');
 
+    }
     /**
      * Scope: Public templates
      */
@@ -65,6 +67,7 @@ class ReportTemplate extends BaseModel
     {
         return $query->where('is_public', true);
 
+    }
     /**
      * Scope: System templates
      */
@@ -72,6 +75,7 @@ class ReportTemplate extends BaseModel
     {
         return $query->where('is_system', true);
 
+    }
     /**
      * Scope: By category
      */
@@ -79,6 +83,7 @@ class ReportTemplate extends BaseModel
     {
         return $query->where('category', $category);
 
+    }
     /**
      * Scope: By report type
      */
@@ -86,6 +91,7 @@ class ReportTemplate extends BaseModel
     {
         return $query->where('report_type', $reportType);
 
+    }
     /**
      * Increment usage counter
      */

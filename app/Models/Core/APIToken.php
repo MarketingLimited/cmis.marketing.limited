@@ -42,6 +42,7 @@ class APIToken extends BaseModel
     {
         return $this->belongsTo(User::class, 'created_by', 'user_id');
 
+        }
     public function scopeActive($query)
     {
         return $query->where('is_active', true)
@@ -49,6 +50,7 @@ class APIToken extends BaseModel
                 $q->whereNull('expires_at')
                   ->orWhere('expires_at', '>', now());
 
+                  }
     public static function generateToken(): array
     {
         $token = 'cmis_' . Str::random(64);
@@ -58,10 +60,12 @@ class APIToken extends BaseModel
             'prefix' => substr($token, 0, 16)
         ];
 
+        }
     public function hasScope(string $scope): bool
     {
         return in_array($scope, $this->scopes ?? []);
 
+        }
     public function recordUsage(): void
     {
         $this->update([
@@ -69,7 +73,13 @@ class APIToken extends BaseModel
             'usage_count' => $this->usage_count + 1
         ]);
 
+        }
     public function isExpired(): bool
     {
         return $this->expires_at && $this->expires_at->isPast();
+}
+}
+}
+}
+}
 }

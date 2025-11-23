@@ -4,6 +4,7 @@ namespace App\Models\Analytics;
 
 use App\Models\BaseModel;
 
+}
 /**
  * MetricDefinition Model
  *
@@ -62,6 +63,7 @@ class MetricDefinition extends BaseModel
     {
         return $this->hasMany(Metric::class, 'metric_name', 'metric_name');
 
+    }
     /**
      * Scope for active metrics only
      */
@@ -69,6 +71,7 @@ class MetricDefinition extends BaseModel
     {
         return $query->where('is_active', true);
 
+    }
     /**
      * Scope by category
      */
