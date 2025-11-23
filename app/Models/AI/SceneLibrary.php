@@ -8,6 +8,7 @@ use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Builder;
 
 class SceneLibrary extends BaseModel
 {
@@ -48,28 +49,28 @@ class SceneLibrary extends BaseModel
     ];
 
     // Relationships
-    public function organization()
+    public function organization(): BelongsTo
     {
         return $this->belongsTo(\App\Models\Organization::class, 'org_id', 'org_id');
     }
 
     // Scopes
-    public function scopeTemplates($query)
+    public function scopeTemplates($query): Builder
     {
         return $query->where('is_template', true);
     }
 
-    public function scopeByCategory($query, $category)
+    public function scopeByCategory($query, $category): Builder
     {
         return $query->where('category', $category);
     }
 
-    public function scopeByType($query, $type)
+    public function scopeByType($query, $type): Builder
     {
         return $query->where('scene_type', $type);
     }
 
-    public function scopePopular($query, $minUsage = 10)
+    public function scopePopular($query, $minUsage = 10): Builder
     {
         return $query->where('usage_count', '>=', $minUsage)
             ->orderByDesc('usage_count');

@@ -5,6 +5,7 @@ namespace App\Models\Offering;
 use App\Models\Concerns\HasOrganization;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Builder;
 use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -72,7 +73,7 @@ class BundleOffering extends BaseModel
     /**
      * Scope by bundle type
      */
-    public function scopeByType($query, string $type)
+    public function scopeByType($query, string $type): Builder
     {
         return $query->where('bundle_type', $type);
 

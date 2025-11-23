@@ -8,6 +8,7 @@ use App\Models\AdPlatform\AdCampaign;
 use App\Services\AI\PredictiveAnalyticsService;
 use Illuminate\Http\{JsonResponse, Request};
 use Illuminate\Validation\Rule;
+use Illuminate\Http\JsonResponse;
 
 /**
  * @group Predictive Analytics

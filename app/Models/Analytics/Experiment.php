@@ -8,6 +8,7 @@ use App\Models\Core\Org;
 use App\Models\Core\User;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Builder;
 use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -194,7 +195,7 @@ class Experiment extends BaseModel
     /**
      * Scope: Active experiments
      */
-    public function scopeActive($query)
+    public function scopeActive($query): Builder
     {
         return $query->whereIn('status', ['draft', 'running', 'paused']);
     }
@@ -202,7 +203,7 @@ class Experiment extends BaseModel
     /**
      * Scope: Running experiments
      */
-    public function scopeRunning($query)
+    public function scopeRunning($query): Builder
     {
         return $query->where('status', 'running');
     }
@@ -210,7 +211,7 @@ class Experiment extends BaseModel
     /**
      * Scope: Completed experiments
      */
-    public function scopeCompleted($query)
+    public function scopeCompleted($query): Builder
     {
         return $query->where('status', 'completed');
     }
@@ -218,7 +219,7 @@ class Experiment extends BaseModel
     /**
      * Scope: By experiment type
      */
-    public function scopeOfType($query, string $type)
+    public function scopeOfType($query, string $type): Builder
     {
         return $query->where('experiment_type', $type);
     }

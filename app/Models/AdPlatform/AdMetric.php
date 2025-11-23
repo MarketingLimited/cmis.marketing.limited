@@ -55,7 +55,7 @@ protected $table = 'cmis.ad_metrics';
     /**
      * Get the entity (polymorphic)
      */
-    public function entity()
+    public function entity(): ?array
     {
         $models = [
             'campaign' => AdCampaign::class,
@@ -75,7 +75,7 @@ protected $table = 'cmis.ad_metrics';
     /**
      * Scope by entity type
      */
-    public function scopeByEntityType($query, string $entityType)
+    public function scopeByEntityType($query, string $entityType): Builder
     {
         return $query->where('entity_type', $entityType);
 
@@ -83,7 +83,7 @@ protected $table = 'cmis.ad_metrics';
     /**
      * Scope by platform
      */
-    public function scopeByPlatform($query, string $platform)
+    public function scopeByPlatform($query, string $platform): Builder
     {
         return $query->where('platform', $platform);
 
@@ -91,7 +91,7 @@ protected $table = 'cmis.ad_metrics';
     /**
      * Scope by date range
      */
-    public function scopeDateRange($query, $startDate, $endDate)
+    public function scopeDateRange($query, $startDate, $endDate): Builder
     {
         return $query->whereBetween('metric_date', [$startDate, $endDate]);
 
@@ -99,7 +99,7 @@ protected $table = 'cmis.ad_metrics';
     /**
      * Scope recent metrics
      */
-    public function scopeRecent($query, int $days = 30)
+    public function scopeRecent($query, int $days = 30): Builder
     {
         return $query->where('metric_date', '>=', now()->subDays($days));
 
@@ -107,7 +107,7 @@ protected $table = 'cmis.ad_metrics';
     /**
      * Scope by metric date
      */
-    public function scopeForDate($query, $date)
+    public function scopeForDate($query, $date): Builder
     {
         return $query->where('metric_date', $date);
 

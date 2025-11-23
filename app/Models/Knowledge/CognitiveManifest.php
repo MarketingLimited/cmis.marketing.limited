@@ -57,7 +57,7 @@ class CognitiveManifest extends BaseModel
     /**
      * Scope active manifests
      */
-    public function scopeActive($query)
+    public function scopeActive($query): Builder
     {
         return $query->where('is_active', true);
 
@@ -65,7 +65,7 @@ class CognitiveManifest extends BaseModel
     /**
      * Scope latest version
      */
-    public function scopeLatestVersion($query)
+    public function scopeLatestVersion($query): Builder
     {
         return $query->orderBy('manifest_version', 'desc');
 

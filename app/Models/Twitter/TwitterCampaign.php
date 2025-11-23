@@ -9,6 +9,7 @@ use App\Models\Analytics\UnifiedMetric;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Builder;
 
 /**
  * Twitter Campaign Model
@@ -182,7 +183,7 @@ class TwitterCampaign extends BaseModel
     /**
      * Scope to get active campaigns
      */
-    public function scopeActive($query)
+    public function scopeActive($query): Builder
     {
         return $query->where('status', self::STATUS_ACTIVE);
     }
@@ -190,7 +191,7 @@ class TwitterCampaign extends BaseModel
     /**
      * Scope to get campaigns by type
      */
-    public function scopeOfType($query, string $type)
+    public function scopeOfType($query, string $type): Builder
     {
         return $query->where('campaign_type', $type);
     }
@@ -198,7 +199,7 @@ class TwitterCampaign extends BaseModel
     /**
      * Scope to get campaigns by objective
      */
-    public function scopeWithObjective($query, string $objective)
+    public function scopeWithObjective($query, string $objective): Builder
     {
         return $query->where('objective', $objective);
     }

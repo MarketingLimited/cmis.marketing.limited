@@ -7,6 +7,7 @@ use App\Models\Core\Org;
 use App\Models\Core\User;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Builder;
 use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -90,7 +91,7 @@ class ScheduledReport extends BaseModel
     /**
      * Scope: Active schedules only
      */
-    public function scopeActive($query)
+    public function scopeActive($query): Builder
     {
         return $query->where('is_active', true);
     }
@@ -98,7 +99,7 @@ class ScheduledReport extends BaseModel
     /**
      * Scope: Due for execution
      */
-    public function scopeDue($query)
+    public function scopeDue($query): Builder
     {
         return $query->active()
             ->where('next_run_at', '<=', now())
@@ -108,7 +109,7 @@ class ScheduledReport extends BaseModel
     /**
      * Scope: By frequency
      */
-    public function scopeFrequency($query, string $frequency)
+    public function scopeFrequency($query, string $frequency): Builder
     {
         return $query->where('frequency', $frequency);
     }

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Asset\VideoAsset;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Http\JsonResponse;
 
 /**
  * Video Asset Controller
@@ -23,7 +24,7 @@ class VideoAssetController extends Controller
      * @param Request $request HTTP request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function index(Request $request)
+    public function index(Request $request): JsonResponse
     {
         Log::info('VideoAssetController::index called (stub)', [
             'filters' => $request->all(),
@@ -42,7 +43,7 @@ class VideoAssetController extends Controller
      * @param Request $request HTTP request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function create(Request $request)
+    public function create(Request $request): JsonResponse
     {
         Log::info('VideoAssetController::create called (stub)');
 
@@ -58,7 +59,7 @@ class VideoAssetController extends Controller
      * @param Request $request HTTP request with video asset data and file upload
      * @return \Illuminate\Http\JsonResponse
      */
-    public function store(Request $request)
+    public function store(Request $request): JsonResponse
     {
         Log::info('VideoAssetController::store called (stub)', [
             'data' => $request->all(),
@@ -78,7 +79,7 @@ class VideoAssetController extends Controller
      * @param string $asset_id Video Asset ID
      * @return \Illuminate\Http\JsonResponse
      */
-    public function show(Request $request, $asset_id)
+    public function show(Request $request, $asset_id): JsonResponse
     {
         Log::info('VideoAssetController::show called (stub)', [
             'asset_id' => $asset_id,
@@ -97,7 +98,7 @@ class VideoAssetController extends Controller
      * @param string $asset_id Video Asset ID
      * @return \Illuminate\Http\JsonResponse
      */
-    public function edit(Request $request, $asset_id)
+    public function edit(Request $request, $asset_id): JsonResponse
     {
         Log::info('VideoAssetController::edit called (stub)', [
             'asset_id' => $asset_id,
@@ -116,7 +117,7 @@ class VideoAssetController extends Controller
      * @param string $asset_id Video Asset ID
      * @return \Illuminate\Http\JsonResponse
      */
-    public function update(Request $request, $asset_id)
+    public function update(Request $request, $asset_id): JsonResponse
     {
         Log::info('VideoAssetController::update called (stub)', [
             'asset_id' => $asset_id,
@@ -137,7 +138,7 @@ class VideoAssetController extends Controller
      * @param string $asset_id Video Asset ID
      * @return \Illuminate\Http\JsonResponse
      */
-    public function destroy(Request $request, $asset_id)
+    public function destroy(Request $request, $asset_id): JsonResponse
     {
         Log::info('VideoAssetController::destroy called (stub)', [
             'asset_id' => $asset_id,

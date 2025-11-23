@@ -4,10 +4,11 @@ namespace App\Http\Controllers\Offerings;
 
 use App\Http\Controllers\Controller;
 use App\Models\Offering;
+use Illuminate\View\View;
 
 class BundleController extends Controller
 {
-    public function index()
+    public function index(): View
     {
         $this->authorize('viewAny', Offering::class);
 

@@ -3,6 +3,7 @@
 namespace App\Models\Context;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Builder;
 use App\Models\BaseModel;
 use App\Models\Campaign;
 
@@ -48,7 +49,7 @@ class CampaignContextLink extends BaseModel
     /**
      * Get the campaign
      */
-    public function campaign()
+    public function campaign(): BelongsTo
     {
         return $this->belongsTo(Campaign::class, 'campaign_id', 'campaign_id');
 
@@ -56,7 +57,7 @@ class CampaignContextLink extends BaseModel
     /**
      * Get the context (polymorphic-like)
      */
-    public function context()
+    public function context(): BelongsTo
     {
         // Return appropriate context based on context_type
         switch ($this->context_type) {
@@ -73,7 +74,7 @@ class CampaignContextLink extends BaseModel
     /**
      * Get the creator
      */
-    public function creator()
+    public function creator(): BelongsTo
     {
         return $this->belongsTo(\App\Models\User::class, 'created_by', 'user_id');
 
@@ -81,7 +82,7 @@ class CampaignContextLink extends BaseModel
     /**
      * Scope active links
      */
-    public function scopeActive($query)
+    public function scopeActive($query): Builder
     {
         return $query->where('is_active', true)
             ->where(function ($q) {
@@ -96,7 +97,7 @@ class CampaignContextLink extends BaseModel
     /**
      * Scope by link type
      */
-    public function scopeOfType($query, string $type)
+    public function scopeOfType($query, string $type): Builder
     {
         return $query->where('link_type', $type);
 
@@ -104,7 +105,7 @@ class CampaignContextLink extends BaseModel
     /**
      * Scope primary links
      */
-    public function scopePrimary($query)
+    public function scopePrimary($query): Builder
     {
         return $query->where('link_type', 'primary');
 }

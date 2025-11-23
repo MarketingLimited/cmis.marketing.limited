@@ -8,6 +8,7 @@ use App\Models\Core\Integration;
 use App\Models\Core\Org;
 use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Builder;
 
 class SyncLog extends BaseModel
 {
@@ -93,7 +94,7 @@ class SyncLog extends BaseModel
      * @param \Illuminate\Database\Eloquent\Builder $query
      * @return \Illuminate\Database\Eloquent\Builder
      */
-    public function scopeSuccessful($query)
+    public function scopeSuccessful($query): Builder
     {
         return $query->where('status', 'completed')->where('records_failed', 0);
 
@@ -104,7 +105,7 @@ class SyncLog extends BaseModel
      * @param \Illuminate\Database\Eloquent\Builder $query
      * @return \Illuminate\Database\Eloquent\Builder
      */
-    public function scopeFailed($query)
+    public function scopeFailed($query): Builder
     {
         return $query->where('status', 'failed');
 
@@ -116,7 +117,7 @@ class SyncLog extends BaseModel
      * @param string $type
      * @return \Illuminate\Database\Eloquent\Builder
      */
-    public function scopeByType($query, string $type)
+    public function scopeByType($query, string $type): Builder
     {
         return $query->where('sync_type', $type);
 

@@ -8,6 +8,7 @@ use App\Models\Core\Org;
 use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Builder;
 class PublishingQueue extends BaseModel
 {
     use HasFactory;
@@ -88,18 +89,18 @@ class PublishingQueue extends BaseModel
 
     // ===== Scopes =====
 
-    public function scopePending($query)
+    public function scopePending($query): Builder
     {
         return $query->where('status', 'pending');
     }
 
-    public function scopeDue($query)
+    public function scopeDue($query): Builder
     {
         return $query->where('status', 'pending')
                      ->where('scheduled_for', '<=', now());
     }
 
-    public function scopeForPlatform($query, string $platform)
+    public function scopeForPlatform($query, string $platform): Builder
     {
         return $query->where('platform', $platform);
     }

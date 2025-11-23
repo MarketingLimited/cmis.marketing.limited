@@ -60,7 +60,7 @@ class OfferingFullDetail extends BaseModel
     /**
      * Get the offering
      */
-    public function offering()
+    public function offering(): BelongsTo
     {
         return $this->belongsTo(\App\Models\Offering::class, 'offering_id', 'offering_id');
 

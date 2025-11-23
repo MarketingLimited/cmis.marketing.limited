@@ -33,7 +33,7 @@ class RolePermission extends BaseModel
     /**
      * Get the role that owns this permission
      */
-    public function role()
+    public function role(): BelongsTo
     {
         return $this->belongsTo(\App\Models\Core\Role::class, 'role_id', 'role_id');
 
@@ -41,7 +41,7 @@ class RolePermission extends BaseModel
     /**
      * Get the permission
      */
-    public function permission()
+    public function permission(): BelongsTo
     {
         return $this->belongsTo(Permission::class, 'permission_id', 'permission_id');
 
@@ -49,7 +49,7 @@ class RolePermission extends BaseModel
     /**
      * Get the user who granted this permission
      */
-    public function grantedBy()
+    public function grantedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'granted_by', 'user_id');
 }

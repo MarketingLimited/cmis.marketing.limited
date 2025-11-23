@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Log;
  */
 class InstagramSyncService
 {
-    public function syncAccount($integration)
+    public function syncAccount($integration): array
     {
         Log::info('InstagramSyncService::syncAccount', ['integration_id' => $integration->integration_id ?? $integration]);
         
@@ -25,7 +25,7 @@ class InstagramSyncService
         ];
     }
 
-    public function syncPosts($integration, $since = null)
+    public function syncPosts($integration, $since = null): array
     {
         Log::info('InstagramSyncService::syncPosts', [
             'integration_id' => $integration->integration_id ?? $integration,
@@ -41,7 +41,7 @@ class InstagramSyncService
         ];
     }
 
-    public function syncStories($integration)
+    public function syncStories($integration): array
     {
         Log::info('InstagramSyncService::syncStories', ['integration_id' => $integration->integration_id ?? $integration]);
         
@@ -53,7 +53,7 @@ class InstagramSyncService
         ];
     }
 
-    public function syncComments($integration)
+    public function syncComments($integration): array
     {
         Log::info('InstagramSyncService::syncComments', ['integration_id' => $integration->integration_id ?? $integration]);
         
@@ -65,7 +65,7 @@ class InstagramSyncService
         ];
     }
 
-    public function syncInsights($integration)
+    public function syncInsights($integration): array
     {
         Log::info('InstagramSyncService::syncInsights', ['integration_id' => $integration->integration_id ?? $integration]);
         

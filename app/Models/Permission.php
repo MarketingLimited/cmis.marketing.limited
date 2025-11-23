@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Builder;
 use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -65,7 +66,7 @@ class Permission extends BaseModel
     /**
      * Scope to get system permissions
      */
-    public function scopeSystem($query)
+    public function scopeSystem($query): Builder
     {
         return $query->where('is_system', true);
 
@@ -73,7 +74,7 @@ class Permission extends BaseModel
     /**
      * Scope to get permissions by module
      */
-    public function scopeByModule($query, string $module)
+    public function scopeByModule($query, string $module): Builder
     {
         return $query->where('module', $module);
 
@@ -81,7 +82,7 @@ class Permission extends BaseModel
     /**
      * Scope to get permissions by resource
      */
-    public function scopeByResource($query, string $resource)
+    public function scopeByResource($query, string $resource): Builder
     {
         return $query->where('resource', $resource);
 

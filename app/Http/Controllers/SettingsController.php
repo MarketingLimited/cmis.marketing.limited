@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\View\View;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
 use App\Http\Controllers\Concerns\ApiResponse;
@@ -22,7 +24,7 @@ class SettingsController extends Controller
     /**
      * Display settings page
      */
-    public function index()
+    public function index(): View
     {
         return view('settings.index');
     }
@@ -30,7 +32,7 @@ class SettingsController extends Controller
     /**
      * Update user profile
      */
-    public function updateProfile(Request $request)
+    public function updateProfile(Request $request): JsonResponse
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -59,7 +61,7 @@ class SettingsController extends Controller
     /**
      * Update password
      */
-    public function updatePassword(Request $request)
+    public function updatePassword(Request $request): JsonResponse
     {
         $validated = $request->validate([
             'current_password' => 'required|string',
@@ -96,7 +98,7 @@ class SettingsController extends Controller
     /**
      * Update notification settings
      */
-    public function updateNotifications(Request $request)
+    public function updateNotifications(Request $request): JsonResponse
     {
         $validated = $request->validate([
             'email_notifications' => 'required|boolean',
@@ -133,7 +135,7 @@ class SettingsController extends Controller
     /**
      * Update organization settings
      */
-    public function updateOrganization(Request $request)
+    public function updateOrganization(Request $request): JsonResponse
     {
         $this->authorize('update', auth()->user()->organization);
 
@@ -165,7 +167,7 @@ class SettingsController extends Controller
     /**
      * Get API keys
      */
-    public function apiKeys()
+    public function apiKeys(): JsonResponse
     {
         // Return user's API keys (you would have an ApiKey model)
         return response()->json([
@@ -186,7 +188,7 @@ class SettingsController extends Controller
     /**
      * Create API key
      */
-    public function createApiKey(Request $request)
+    public function createApiKey(Request $request): JsonResponse
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -217,7 +219,7 @@ class SettingsController extends Controller
     /**
      * Delete API key
      */
-    public function deleteApiKey(string $keyId)
+    public function deleteApiKey(string $keyId): JsonResponse
     {
         try {
             // Delete API key
@@ -236,7 +238,7 @@ class SettingsController extends Controller
     /**
      * Get integrations
      */
-    public function integrations()
+    public function integrations(): JsonResponse
     {
         $user = auth()->user();
 
@@ -277,7 +279,7 @@ class SettingsController extends Controller
     /**
      * Export user data
      */
-    public function exportData(Request $request)
+    public function exportData(Request $request): JsonResponse
     {
         $validated = $request->validate([
             'format' => 'required|in:json,csv',

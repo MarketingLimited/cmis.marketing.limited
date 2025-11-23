@@ -12,6 +12,8 @@ use App\Models\Offering;
 use App\Models\Core\Org;
 use App\Models\PerformanceMetric;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
+use Illuminate\View\View;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -24,7 +26,7 @@ class DashboardController extends Controller
 {
     use ApiResponse;
 
-    public function index()
+    public function index(): View
     {
         // Anyone authenticated can view dashboard
         // Stub implementation - Proper authorization policy not yet implemented
@@ -35,7 +37,7 @@ class DashboardController extends Controller
         return view('dashboard', $data);
     }
 
-    public function data()
+    public function data(): JsonResponse
     {
         // Stub implementation - Proper authorization policy not yet implemented
         // $this->authorize('viewAny', Campaign::class);
@@ -43,7 +45,7 @@ class DashboardController extends Controller
         return $this->success($this->resolveDashboardMetrics(), 'Dashboard metrics retrieved successfully');
     }
 
-    public function latest(Request $request)
+    public function latest(Request $request): JsonResponse
     {
         // Stub implementation - Proper authorization policy not yet implemented
         // $this->authorize('viewAny', Campaign::class);
@@ -112,7 +114,7 @@ class DashboardController extends Controller
         }
     }
 
-    public function markAsRead(Request $request, $notificationId)
+    public function markAsRead(Request $request, $notificationId): JsonResponse
     {
         try {
             $user = $request->user();
@@ -141,7 +143,7 @@ class DashboardController extends Controller
     /**
      * Get dashboard overview data
      */
-    public function overview(Request $request)
+    public function overview(Request $request): JsonResponse
     {
         $user = $request->user();
         $orgId = $this->resolveOrgId($request);
@@ -162,7 +164,7 @@ class DashboardController extends Controller
     /**
      * Get dashboard statistics (automatically filtered by RLS)
      */
-    public function stats(Request $request)
+    public function stats(Request $request): JsonResponse
     {
         $stats = [
             'total_campaigns' => Campaign::count(),
@@ -177,7 +179,7 @@ class DashboardController extends Controller
     /**
      * Get recent activity
      */
-    public function recentActivity(Request $request)
+    public function recentActivity(Request $request): JsonResponse
     {
         $orgId = $this->resolveOrgId($request);
 
@@ -193,7 +195,7 @@ class DashboardController extends Controller
     /**
      * Get campaigns summary (automatically filtered by RLS)
      */
-    public function campaignsSummary(Request $request)
+    public function campaignsSummary(Request $request): JsonResponse
     {
         $summary = [
             'total' => Campaign::count(),
@@ -208,7 +210,7 @@ class DashboardController extends Controller
     /**
      * Get analytics overview
      */
-    public function analyticsOverview(Request $request)
+    public function analyticsOverview(Request $request): JsonResponse
     {
         $orgId = $this->resolveOrgId($request);
 
@@ -229,7 +231,7 @@ class DashboardController extends Controller
     /**
      * Get upcoming social media posts (automatically filtered by RLS)
      */
-    public function upcomingPosts(Request $request)
+    public function upcomingPosts(Request $request): JsonResponse
     {
         $posts = DB::table('cmis.scheduled_social_posts')
             ->where('status', 'scheduled')
@@ -244,7 +246,7 @@ class DashboardController extends Controller
     /**
      * Get campaigns performance chart data
      */
-    public function campaignsPerformance(Request $request)
+    public function campaignsPerformance(Request $request): JsonResponse
     {
         $orgId = $this->resolveOrgId($request);
 
@@ -268,7 +270,7 @@ class DashboardController extends Controller
     /**
      * Get engagement chart data
      */
-    public function engagement(Request $request)
+    public function engagement(Request $request): JsonResponse
     {
         $orgId = $this->resolveOrgId($request);
 
@@ -292,7 +294,7 @@ class DashboardController extends Controller
     /**
      * Get top performing campaigns (automatically filtered by RLS)
      */
-    public function topCampaigns(Request $request)
+    public function topCampaigns(Request $request): JsonResponse
     {
         $campaigns = Campaign::where('status', 'active')
             ->orderBy('created_at', 'desc')
@@ -305,7 +307,7 @@ class DashboardController extends Controller
     /**
      * Get budget summary (automatically filtered by RLS)
      */
-    public function budgetSummary(Request $request)
+    public function budgetSummary(Request $request): JsonResponse
     {
         $totalBudget = Campaign::sum('budget') ?? 0;
 
@@ -386,7 +388,7 @@ class DashboardController extends Controller
 
     protected function resolveDashboardMetrics(): array
     {
-        return Cache::remember('dashboard.metrics', now()->addMinutes(5), function () {
+        return Cache::remember('dashboard.metrics', now()->addMinutes(5), function (): array {
             // Safely count records with error handling
             $stats = [
                 'orgs' => $this->safeCount(fn() => Org::count()),

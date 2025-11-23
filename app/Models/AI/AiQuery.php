@@ -8,6 +8,7 @@ use App\Models\Core\Org;
 use App\Models\User;
 use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Builder;
 
 class AiQuery extends BaseModel
 {
@@ -67,7 +68,7 @@ class AiQuery extends BaseModel
      * @param \Illuminate\Database\Eloquent\Builder $query
      * @return \Illuminate\Database\Eloquent\Builder
      */
-    public function scopeSuccessful($query)
+    public function scopeSuccessful($query): Builder
     {
         return $query->where('status', 'success');
     }
@@ -78,7 +79,7 @@ class AiQuery extends BaseModel
      * @param \Illuminate\Database\Eloquent\Builder $query
      * @return \Illuminate\Database\Eloquent\Builder
      */
-    public function scopeFailed($query)
+    public function scopeFailed($query): Builder
     {
         return $query->where('status', 'failed');
     }
@@ -90,7 +91,7 @@ class AiQuery extends BaseModel
      * @param string $type
      * @return \Illuminate\Database\Eloquent\Builder
      */
-    public function scopeByType($query, string $type)
+    public function scopeByType($query, string $type): Builder
     {
         return $query->where('query_type', $type);
     }
@@ -102,7 +103,7 @@ class AiQuery extends BaseModel
      * @param string $model
      * @return \Illuminate\Database\Eloquent\Builder
      */
-    public function scopeByModel($query, string $model)
+    public function scopeByModel($query, string $model): Builder
     {
         return $query->where('model_used', $model);
     }

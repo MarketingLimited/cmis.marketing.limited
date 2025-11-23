@@ -8,6 +8,7 @@ use App\Models\Core\Org;
 use App\Models\Core\User;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Builder;
 use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -78,7 +79,7 @@ class Recommendation extends BaseModel
         return $this->expires_at && $this->expires_at->isPast();
 
         }
-    public function scopePending($query)
+    public function scopePending($query): Builder
     {
         return $query->where('status', 'pending')
                      ->where(function($q) {
@@ -86,12 +87,12 @@ class Recommendation extends BaseModel
                            ->orWhere('expires_at', '>', now());
 
                            }
-    public function scopeHighPriority($query)
+    public function scopeHighPriority($query): Builder
     {
         return $query->whereIn('priority', ['critical', 'high']);
 
         }
-    public function scopeByCategory($query, string $category)
+    public function scopeByCategory($query, string $category): Builder
     {
         return $query->where('category', $category);
 }

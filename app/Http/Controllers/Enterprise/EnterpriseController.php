@@ -8,6 +8,7 @@ use App\Services\Enterprise\AdvancedReportingService;
 use App\Services\Enterprise\WebhookManagementService;
 use Illuminate\Http\{JsonResponse, Request};
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Http\JsonResponse;
 
 /**
  * Enterprise Features Controller (Phase 5)

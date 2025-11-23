@@ -37,14 +37,4 @@ class Segment extends BaseModel
         'persona' => 'array',
         'deleted_at' => 'datetime',
     ];
-
-    
-
-    /**
-     * Scope to get segments for a specific org
-     */
-    public function scopeForOrg(Builder $query, string $orgId): Builder
-    {
-        return $query->where('org_id', $orgId);
-}
 }

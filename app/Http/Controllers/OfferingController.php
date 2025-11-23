@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Offering;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Http\JsonResponse;
 
 /**
  * Offering Controller
@@ -22,7 +23,7 @@ class OfferingController extends Controller
      * @param Request $request HTTP request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function index(Request $request)
+    public function index(Request $request): JsonResponse
     {
         Log::info('OfferingController::index called (stub)', [
             'filters' => $request->all(),
@@ -41,7 +42,7 @@ class OfferingController extends Controller
      * @param Request $request HTTP request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function create(Request $request)
+    public function create(Request $request): JsonResponse
     {
         Log::info('OfferingController::create called (stub)');
 
@@ -57,7 +58,7 @@ class OfferingController extends Controller
      * @param Request $request HTTP request with offering data
      * @return \Illuminate\Http\JsonResponse
      */
-    public function store(Request $request)
+    public function store(Request $request): JsonResponse
     {
         Log::info('OfferingController::store called (stub)', [
             'data' => $request->all(),
@@ -77,7 +78,7 @@ class OfferingController extends Controller
      * @param string $offering_id Offering ID
      * @return \Illuminate\Http\JsonResponse
      */
-    public function show(Request $request, $offering_id)
+    public function show(Request $request, $offering_id): JsonResponse
     {
         Log::info('OfferingController::show called (stub)', [
             'offering_id' => $offering_id,
@@ -96,7 +97,7 @@ class OfferingController extends Controller
      * @param string $offering_id Offering ID
      * @return \Illuminate\Http\JsonResponse
      */
-    public function edit(Request $request, $offering_id)
+    public function edit(Request $request, $offering_id): JsonResponse
     {
         Log::info('OfferingController::edit called (stub)', [
             'offering_id' => $offering_id,
@@ -115,7 +116,7 @@ class OfferingController extends Controller
      * @param string $offering_id Offering ID
      * @return \Illuminate\Http\JsonResponse
      */
-    public function update(Request $request, $offering_id)
+    public function update(Request $request, $offering_id): JsonResponse
     {
         Log::info('OfferingController::update called (stub)', [
             'offering_id' => $offering_id,
@@ -136,7 +137,7 @@ class OfferingController extends Controller
      * @param string $offering_id Offering ID
      * @return \Illuminate\Http\JsonResponse
      */
-    public function destroy(Request $request, $offering_id)
+    public function destroy(Request $request, $offering_id): JsonResponse
     {
         Log::info('OfferingController::destroy called (stub)', [
             'offering_id' => $offering_id,

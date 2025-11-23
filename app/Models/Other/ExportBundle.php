@@ -43,16 +43,8 @@ class ExportBundle extends BaseModel
     /**
      * Get the bundle items
      */
-    public function items()
+    public function items(): HasMany
     {
         return $this->hasMany(ExportBundleItem::class, 'bundle_id', 'bundle_id');
-
     }
-    /**
-     * Scope to get bundles for a specific org
-     */
-    public function scopeForOrg(Builder $query, string $orgId): Builder
-    {
-        return $query->where('org_id', $orgId);
-}
 }

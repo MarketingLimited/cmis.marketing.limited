@@ -3,6 +3,7 @@
 namespace App\Models\Security;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Builder;
 use App\Models\BaseModel;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
@@ -44,7 +45,7 @@ class PermissionsCache extends BaseModel
     /**
      * Get permission by category
      */
-    public function scopeByCategory($query, string $category)
+    public function scopeByCategory($query, string $category): Builder
     {
         return $query->where('category', $category);
 
@@ -52,7 +53,7 @@ class PermissionsCache extends BaseModel
     /**
      * Scope to get recently used permissions
      */
-    public function scopeRecentlyUsed($query, int $minutes = 60)
+    public function scopeRecentlyUsed($query, int $minutes = 60): Builder
     {
         return $query->where('last_used', '>=', now()->subMinutes($minutes));
 
@@ -60,7 +61,7 @@ class PermissionsCache extends BaseModel
     /**
      * Scope to get stale cache entries
      */
-    public function scopeStale($query, int $hours = 24)
+    public function scopeStale($query, int $hours = 24): Builder
     {
         return $query->where('last_used', '<', now()->subHours($hours));
 

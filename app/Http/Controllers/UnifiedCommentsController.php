@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use App\Http\Controllers\Concerns\ApiResponse;
+use Illuminate\Http\JsonResponse;
+use Illuminate\View\View;
 
 class UnifiedCommentsController extends Controller
 {
@@ -22,7 +24,7 @@ class UnifiedCommentsController extends Controller
     /**
      * Get unified comments from all platforms
      */
-    public function index(Request $request, $orgId = null)
+    public function index(Request $request, $orgId = null): JsonResponse
     {
         // If it's a web request (not API), return the view
         if (!$request->expectsJson()) {
@@ -70,7 +72,7 @@ class UnifiedCommentsController extends Controller
     /**
      * Reply to comment
      */
-    public function reply(Request $request, $orgId, $commentId)
+    public function reply(Request $request, $orgId, $commentId): JsonResponse
     {
         $this->commentsService = new UnifiedCommentsService($orgId);
 
@@ -111,7 +113,7 @@ class UnifiedCommentsController extends Controller
     /**
      * Hide comment
      */
-    public function hide(Request $request, $orgId, $commentId)
+    public function hide(Request $request, $orgId, $commentId): JsonResponse
     {
         $this->commentsService = new UnifiedCommentsService($orgId);
 
@@ -142,7 +144,7 @@ class UnifiedCommentsController extends Controller
     /**
      * Delete comment
      */
-    public function delete(Request $request, $orgId, $commentId)
+    public function delete(Request $request, $orgId, $commentId): JsonResponse
     {
         $this->commentsService = new UnifiedCommentsService($orgId);
 
@@ -173,7 +175,7 @@ class UnifiedCommentsController extends Controller
     /**
      * Like comment
      */
-    public function like(Request $request, $orgId, $commentId)
+    public function like(Request $request, $orgId, $commentId): JsonResponse
     {
         $this->commentsService = new UnifiedCommentsService($orgId);
 
@@ -204,7 +206,7 @@ class UnifiedCommentsController extends Controller
     /**
      * Bulk actions on comments
      */
-    public function bulkAction(Request $request, $orgId)
+    public function bulkAction(Request $request, $orgId): JsonResponse
     {
         $this->commentsService = new UnifiedCommentsService($orgId);
 
@@ -245,7 +247,7 @@ class UnifiedCommentsController extends Controller
     /**
      * Get comments statistics
      */
-    public function statistics(Request $request, $orgId)
+    public function statistics(Request $request, $orgId): JsonResponse
     {
         $this->commentsService = new UnifiedCommentsService($orgId);
 

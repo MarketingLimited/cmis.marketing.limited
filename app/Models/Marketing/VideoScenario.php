@@ -8,6 +8,7 @@ use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Builder;
 
 class VideoScenario extends BaseModel
 {
@@ -40,17 +41,17 @@ class VideoScenario extends BaseModel
         'deleted_at' => 'datetime',
     ];
 
-    public function organization()
+    public function organization(): BelongsTo
     {
         return $this->belongsTo(\App\Models\Organization::class, 'org_id', 'org_id');
 
         }
-    public function campaign()
+    public function campaign(): BelongsTo
     {
         return $this->belongsTo(\App\Models\Campaign::class, 'campaign_id', 'campaign_id');
 
         }
-    public function scopeByStatus($query, $status)
+    public function scopeByStatus($query, $status): Builder
     {
         return $query->where('status', $status);
 

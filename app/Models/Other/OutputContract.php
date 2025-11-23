@@ -3,6 +3,7 @@
 namespace App\Models\Other;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Builder;
 use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -46,7 +47,7 @@ class OutputContract extends BaseModel
     /**
      * Scope to find by code
      */
-    public function scopeByCode($query, string $code)
+    public function scopeByCode($query, string $code): Builder
     {
         return $query->where('code', $code);
 }

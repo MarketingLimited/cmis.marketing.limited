@@ -6,37 +6,39 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Concerns\ApiResponse;
+use Illuminate\Http\JsonResponse;
+use Illuminate\View\View;
 
 class SettingsController extends Controller
 {
     use ApiResponse;
 
-    public function index()
+    public function index(): View
     {
         return view('settings.index');
     }
 
-    public function profile()
+    public function profile(): View
     {
         return view('settings.profile');
     }
 
-    public function notifications()
+    public function notifications(): View
     {
         return view('settings.notifications');
     }
 
-    public function security()
+    public function security(): View
     {
         return view('settings.security');
     }
 
-    public function integrations()
+    public function integrations(): View
     {
         return view('settings.integrations');
     }
 
-    public function updateProfile(Request $request)
+    public function updateProfile(Request $request): JsonResponse
     {
         $user = Auth::user();
         $user->update($request->validate([
@@ -47,7 +49,7 @@ class SettingsController extends Controller
         return response()->json(['message' => 'تم تحديث الملف الشخصي بنجاح']);
     }
 
-    public function updatePassword(Request $request)
+    public function updatePassword(Request $request): JsonResponse
     {
         $request->validate([
             'current_password' => 'required',

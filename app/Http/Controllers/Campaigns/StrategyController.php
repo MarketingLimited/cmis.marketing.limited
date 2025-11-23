@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Campaigns;
 use App\Http\Controllers\Controller;
 use App\Models\Campaign;
 use Illuminate\Http\Request;
+use Illuminate\View\View;
 
 /**
  * Class StrategyController
@@ -15,7 +16,7 @@ class StrategyController extends Controller
     /**
      * عرض قائمة الاستراتيجيات التسويقية.
      */
-    public function index()
+    public function index(): View
     {
         $this->authorize('viewAny', Campaign::class);
 

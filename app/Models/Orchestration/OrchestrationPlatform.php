@@ -9,6 +9,7 @@ use App\Models\Platform\PlatformConnection;
 use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Builder;
 class OrchestrationPlatform extends BaseModel
 {
     use HasFactory;
@@ -143,12 +144,12 @@ class OrchestrationPlatform extends BaseModel
 
     // ===== Scopes =====
 
-    public function scopeActive($query)
+    public function scopeActive($query): Builder
     {
         return $query->where('status', 'active');
 
         }
-    public function scopeForPlatform($query, string $platform)
+    public function scopeForPlatform($query, string $platform): Builder
     {
         return $query->where('platform', $platform);
 }

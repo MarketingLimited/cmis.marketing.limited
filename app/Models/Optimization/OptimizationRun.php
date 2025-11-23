@@ -11,6 +11,7 @@ use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Builder;
 class OptimizationRun extends BaseModel
 {
     use HasFactory;
@@ -189,22 +190,22 @@ class OptimizationRun extends BaseModel
 
     // ===== Scopes =====
 
-    public function scopeCompleted($query)
+    public function scopeCompleted($query): Builder
     {
         return $query->where('status', 'completed');
 
         }
-    public function scopeApplied($query)
+    public function scopeApplied($query): Builder
     {
         return $query->where('status', 'applied');
 
         }
-    public function scopeForOptimizationType($query, string $type)
+    public function scopeForOptimizationType($query, string $type): Builder
     {
         return $query->where('optimization_type', $type);
 
         }
-    public function scopeWithImprovement($query)
+    public function scopeWithImprovement($query): Builder
     {
         return $query->where('improvement_percentage', '>', 0);
 }

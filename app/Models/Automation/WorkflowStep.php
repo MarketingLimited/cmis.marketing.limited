@@ -7,6 +7,7 @@ use App\Models\Concerns\HasOrganization;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Builder;
 
 class WorkflowStep extends BaseModel
 {
@@ -170,33 +171,33 @@ class WorkflowStep extends BaseModel
 
     // ===== Scopes =====
 
-    public function scopePending($query)
+    public function scopePending($query): Builder
     {
         return $query->where('status', 'pending');
     }
 
-    public function scopeRunning($query)
+    public function scopeRunning($query): Builder
     {
         return $query->where('status', 'running');
     }
 
-    public function scopeCompleted($query)
+    public function scopeCompleted($query): Builder
     {
         return $query->where('status', 'completed');
     }
 
-    public function scopeFailed($query)
+    public function scopeFailed($query): Builder
     {
         return $query->where('status', 'failed');
     }
 
-    public function scopeForInstance($query, string $instanceId)
+    public function scopeForInstance($query, string $instanceId): Builder
     {
         return $query->where('instance_id', $instanceId)
             ->orderBy('step_order');
     }
 
-    public function scopeOfType($query, string $type)
+    public function scopeOfType($query, string $type): Builder
     {
         return $query->where('step_type', $type);
     }

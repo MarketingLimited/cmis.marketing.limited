@@ -7,6 +7,8 @@ use App\Services\ReportService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use App\Http\Controllers\Concerns\ApiResponse;
+use Illuminate\Http\JsonResponse;
+use Illuminate\View\View;
 
 class ReportController extends Controller
 {
@@ -23,7 +25,7 @@ class ReportController extends Controller
     /**
      * Display a listing of reports
      */
-    public function index()
+    public function index(): View
     {
         Gate::authorize('viewReports', auth()->user());
 
@@ -33,7 +35,7 @@ class ReportController extends Controller
     /**
      * Generate campaign report
      */
-    public function campaign(Request $request, string $campaignId)
+    public function campaign(Request $request, string $campaignId): JsonResponse
     {
         Gate::authorize('viewReports', auth()->user());
 
@@ -61,7 +63,7 @@ class ReportController extends Controller
     /**
      * Generate organization report
      */
-    public function organization(Request $request, string $orgId)
+    public function organization(Request $request, string $orgId): JsonResponse
     {
         Gate::authorize('viewReports', auth()->user());
 
@@ -78,7 +80,7 @@ class ReportController extends Controller
     /**
      * Get report statistics
      */
-    public function stats(Request $request, string $orgId)
+    public function stats(Request $request, string $orgId): JsonResponse
     {
         Gate::authorize('viewReports', auth()->user());
 
@@ -103,7 +105,7 @@ class ReportController extends Controller
     /**
      * Export report
      */
-    public function export(Request $request)
+    public function export(Request $request): JsonResponse
     {
         Gate::authorize('exportData', auth()->user());
 
@@ -154,7 +156,7 @@ class ReportController extends Controller
     /**
      * Store a new report
      */
-    public function store(Request $request)
+    public function store(Request $request): JsonResponse
     {
         Gate::authorize('createReport', auth()->user());
 
@@ -179,7 +181,7 @@ class ReportController extends Controller
     /**
      * Delete a report
      */
-    public function destroy(string $reportId)
+    public function destroy(string $reportId): JsonResponse
     {
         Gate::authorize('createReport', auth()->user());
 

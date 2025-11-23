@@ -8,6 +8,7 @@ use App\Models\AI\DatasetPackage;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class OrgDataset extends BaseModel
@@ -39,24 +40,16 @@ class OrgDataset extends BaseModel
     /**
      * Get the dataset package
      */
-    public function datasetPackage()
+    public function datasetPackage(): BelongsTo
     {
         return $this->belongsTo(DatasetPackage::class, 'pkg_id', 'pkg_id');
-
     }
+
     /**
      * Scope to get enabled datasets
      */
-    public function scopeEnabled($query)
+    public function scopeEnabled($query): Builder
     {
         return $query->where('enabled', true);
-
     }
-    /**
-     * Scope to get datasets for a specific org
-     */
-    public function scopeForOrg(Builder $query, string $orgId): Builder
-    {
-        return $query->where('org_id', $orgId);
-}
 }

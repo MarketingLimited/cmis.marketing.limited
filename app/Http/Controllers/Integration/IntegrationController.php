@@ -6,11 +6,13 @@ use App\Http\Controllers\Controller;
 use App\Models\Core\Integration;
 use App\Models\Social\SocialAccount;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use App\Http\Controllers\Concerns\ApiResponse;
+use Illuminate\Http\RedirectResponse;
 
 class IntegrationController extends Controller
 {
@@ -77,7 +79,7 @@ class IntegrationController extends Controller
     /**
      * List all integrations for an organization
      */
-    public function index(Request $request, string $orgId)
+    public function index(Request $request, string $orgId): JsonResponse
     {
         $this->authorize('viewAny', Integration::class);
 
@@ -127,7 +129,7 @@ class IntegrationController extends Controller
     /**
      * Initiate OAuth connection for a platform
      */
-    public function connect(Request $request, string $orgId, string $platform)
+    public function connect(Request $request, string $orgId, string $platform): JsonResponse
     {
         $this->authorize('create', Integration::class);
 
@@ -174,7 +176,7 @@ class IntegrationController extends Controller
     /**
      * Handle OAuth callback from platform
      */
-    public function callback(Request $request, string $platform)
+    public function callback(Request $request, string $platform): RedirectResponse
     {
         try {
             // Verify state token
@@ -304,7 +306,7 @@ class IntegrationController extends Controller
     /**
      * Disconnect an integration
      */
-    public function disconnect(Request $request, string $orgId, string $integrationId)
+    public function disconnect(Request $request, string $orgId, string $integrationId): JsonResponse
     {
         try {
             $integration = Integration::where('org_id', $orgId)
@@ -345,7 +347,7 @@ class IntegrationController extends Controller
     /**
      * Trigger manual sync for an integration
      */
-    public function sync(Request $request, string $orgId, string $integrationId)
+    public function sync(Request $request, string $orgId, string $integrationId): JsonResponse
     {
         try {
             $integration = Integration::where('org_id', $orgId)
@@ -409,7 +411,7 @@ class IntegrationController extends Controller
     /**
      * Get sync history for an integration
      */
-    public function syncHistory(Request $request, string $orgId, string $integrationId)
+    public function syncHistory(Request $request, string $orgId, string $integrationId): JsonResponse
     {
         try {
             $integration = Integration::where('org_id', $orgId)
@@ -458,7 +460,7 @@ class IntegrationController extends Controller
     /**
      * Get integration settings
      */
-    public function getSettings(Request $request, string $orgId, string $integrationId)
+    public function getSettings(Request $request, string $orgId, string $integrationId): JsonResponse
     {
         try {
             $integration = Integration::where('org_id', $orgId)
@@ -497,7 +499,7 @@ class IntegrationController extends Controller
     /**
      * Update integration settings
      */
-    public function updateSettings(Request $request, string $orgId, string $integrationId)
+    public function updateSettings(Request $request, string $orgId, string $integrationId): JsonResponse
     {
         try {
             $integration = Integration::where('org_id', $orgId)
@@ -531,7 +533,7 @@ class IntegrationController extends Controller
     /**
      * Get recent integration activity
      */
-    public function activity(Request $request, string $orgId)
+    public function activity(Request $request, string $orgId): JsonResponse
     {
         $this->authorize('viewAny', Integration::class);
 
@@ -572,7 +574,7 @@ class IntegrationController extends Controller
     /**
      * Test connection for an integration
      */
-    public function test(Request $request, string $orgId, string $integrationId)
+    public function test(Request $request, string $orgId, string $integrationId): JsonResponse
     {
         try {
             $integration = Integration::where('org_id', $orgId)

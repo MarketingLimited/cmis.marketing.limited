@@ -4,6 +4,7 @@ namespace App\Models\Analytics;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Builder;
 use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -172,7 +173,7 @@ class ExperimentVariant extends BaseModel
     /**
      * Scope: Active variants
      */
-    public function scopeActive($query)
+    public function scopeActive($query): Builder
     {
         return $query->where('status', 'active');
     }
@@ -180,7 +181,7 @@ class ExperimentVariant extends BaseModel
     /**
      * Scope: Control variants
      */
-    public function scopeControl($query)
+    public function scopeControl($query): Builder
     {
         return $query->where('is_control', true);
     }
@@ -188,7 +189,7 @@ class ExperimentVariant extends BaseModel
     /**
      * Scope: Test variants (non-control)
      */
-    public function scopeTestVariants($query)
+    public function scopeTestVariants($query): Builder
     {
         return $query->where('is_control', false);
     }

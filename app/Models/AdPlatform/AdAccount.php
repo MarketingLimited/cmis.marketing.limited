@@ -5,6 +5,7 @@ namespace App\Models\AdPlatform;
 use App\Models\Concerns\HasOrganization;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Builder;
 use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -42,7 +43,7 @@ class AdAccount extends BaseModel
     /**
      * Get the integration
      */
-    public function integration()
+    public function integration(): BelongsTo
     {
         return $this->belongsTo(\App\Models\Core\Integration::class, 'integration_id', 'integration_id');
     }
@@ -50,7 +51,7 @@ class AdAccount extends BaseModel
     /**
      * Scope active accounts
      */
-    public function scopeActive($query)
+    public function scopeActive($query): Builder
     {
         return $query->where('status', 'active');
     }
@@ -58,7 +59,7 @@ class AdAccount extends BaseModel
     /**
      * Scope by provider
      */
-    public function scopeByProvider($query, string $provider)
+    public function scopeByProvider($query, string $provider): Builder
     {
         return $query->where('provider', $provider);
     }

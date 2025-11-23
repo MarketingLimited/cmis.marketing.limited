@@ -3,6 +3,7 @@
 namespace App\Models\Context;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Builder;
 use App\Models\BaseModel;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
@@ -38,7 +39,7 @@ class FieldValue extends BaseModel
     /**
      * Get the field definition
      */
-    public function field()
+    public function field(): BelongsTo
     {
         return $this->belongsTo(FieldDefinition::class, 'field_id', 'field_id');
 
@@ -46,7 +47,7 @@ class FieldValue extends BaseModel
     /**
      * Get the context (value context)
      */
-    public function context()
+    public function context(): BelongsTo
     {
         return $this->belongsTo(ValueContext::class, 'context_id', 'context_id');
 
@@ -54,7 +55,7 @@ class FieldValue extends BaseModel
     /**
      * Get the creator
      */
-    public function creator()
+    public function creator(): BelongsTo
     {
         return $this->belongsTo(\App\Models\User::class, 'created_by', 'user_id');
 
@@ -62,7 +63,7 @@ class FieldValue extends BaseModel
     /**
      * Scope by context
      */
-    public function scopeForContext($query, string $contextId)
+    public function scopeForContext($query, string $contextId): Builder
     {
         return $query->where('context_id', $contextId);
 
@@ -70,7 +71,7 @@ class FieldValue extends BaseModel
     /**
      * Scope by field
      */
-    public function scopeForField($query, string $fieldId)
+    public function scopeForField($query, string $fieldId): Builder
     {
         return $query->where('field_id', $fieldId);
 
@@ -78,7 +79,7 @@ class FieldValue extends BaseModel
     /**
      * Get the scalar value if it's a simple type
      */
-    public function getScalarValueAttribute()
+    public function getScalarValueAttribute(): mixed
     {
         if (is_array($this->value) && count($this->value) === 1) {
             return reset($this->value);

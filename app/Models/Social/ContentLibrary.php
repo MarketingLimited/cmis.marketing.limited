@@ -10,6 +10,7 @@ use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Builder;
 class ContentLibrary extends BaseModel
 {
     use HasFactory;
@@ -95,22 +96,22 @@ class ContentLibrary extends BaseModel
 
     // ===== Scopes =====
 
-    public function scopeTemplates($query)
+    public function scopeTemplates($query): Builder
     {
         return $query->where('is_template', true);
     }
 
-    public function scopeForContentType($query, string $type)
+    public function scopeForContentType($query, string $type): Builder
     {
         return $query->where('content_type', $type);
     }
 
-    public function scopeForCategory($query, string $category)
+    public function scopeForCategory($query, string $category): Builder
     {
         return $query->where('category', $category);
     }
 
-    public function scopePopular($query, int $limit = 10)
+    public function scopePopular($query, int $limit = 10): Builder
     {
         return $query->orderByDesc('usage_count')->limit($limit);
     }

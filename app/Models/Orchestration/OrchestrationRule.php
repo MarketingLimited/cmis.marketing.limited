@@ -8,6 +8,7 @@ use App\Models\Core\Org;
 use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Builder;
 class OrchestrationRule extends BaseModel
 {
     use HasFactory;
@@ -108,27 +109,27 @@ class OrchestrationRule extends BaseModel
 
     // ===== Scopes =====
 
-    public function scopeEnabled($query)
+    public function scopeEnabled($query): Builder
     {
         return $query->where('enabled', true);
 
         }
-    public function scopeGlobal($query)
+    public function scopeGlobal($query): Builder
     {
         return $query->whereNull('orchestration_id');
 
         }
-    public function scopeForOrchestration($query, string $orchestrationId)
+    public function scopeForOrchestration($query, string $orchestrationId): Builder
     {
         return $query->where('orchestration_id', $orchestrationId);
 
         }
-    public function scopeForType($query, string $type)
+    public function scopeForType($query, string $type): Builder
     {
         return $query->where('rule_type', $type);
 
         }
-    public function scopeByPriority($query)
+    public function scopeByPriority($query): Builder
     {
         return $query->orderByRaw("
             CASE priority

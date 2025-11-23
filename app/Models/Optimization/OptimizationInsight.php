@@ -10,6 +10,7 @@ use App\Models\Campaign\Campaign;
 use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Builder;
 class OptimizationInsight extends BaseModel
 {
     use HasFactory;
@@ -198,12 +199,12 @@ class OptimizationInsight extends BaseModel
 
     // ===== Scopes =====
 
-    public function scopePending($query)
+    public function scopePending($query): Builder
     {
         return $query->where('status', 'pending');
 
         }
-    public function scopeActionable($query)
+    public function scopeActionable($query): Builder
     {
         return $query->where('status', 'pending')
                      ->where('confidence_score', '>=', 0.7)
@@ -211,22 +212,22 @@ class OptimizationInsight extends BaseModel
                          $q->whereNull('expires_at')
                            ->orWhere('expires_at', '>', now());
 
-    public function scopeHighPriority($query)
+    public function scopeHighPriority($query): Builder
     {
         return $query->whereIn('priority', ['critical', 'high']);
 
         }
-    public function scopeForCategory($query, string $category)
+    public function scopeForCategory($query, string $category): Builder
     {
         return $query->where('category', $category);
 
         }
-    public function scopeForInsightType($query, string $type)
+    public function scopeForInsightType($query, string $type): Builder
     {
         return $query->where('insight_type', $type);
 
         }
-    public function scopeWithAutomation($query)
+    public function scopeWithAutomation($query): Builder
     {
         return $query->whereNotNull('automated_action');
 }

@@ -6,6 +6,7 @@ use App\Models\Concerns\HasOrganization;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Builder;
 use App\Models\BaseModel;
 
 class TrendingTopic extends BaseModel
@@ -243,47 +244,47 @@ class TrendingTopic extends BaseModel
      * Scopes
      */
 
-    public function scopeActive($query)
+    public function scopeActive($query): Builder
     {
         return $query->where('status', 'active');
 
         }
-    public function scopeViral($query)
+    public function scopeViral($query): Builder
     {
         return $query->where('trend_velocity', 'viral');
 
         }
-    public function scopeRising($query)
+    public function scopeRising($query): Builder
     {
         return $query->where('trend_velocity', 'rising');
 
         }
-    public function scopeHighRelevance($query)
+    public function scopeHighRelevance($query): Builder
     {
         return $query->where('relevance_score', '>=', 70);
 
         }
-    public function scopeOpportunities($query)
+    public function scopeOpportunities($query): Builder
     {
         return $query->where('is_opportunity', true);
 
         }
-    public function scopeOfType($query, string $type)
+    public function scopeOfType($query, string $type): Builder
     {
         return $query->where('topic_type', $type);
 
         }
-    public function scopePositive($query)
+    public function scopePositive($query): Builder
     {
         return $query->where('overall_sentiment', 'positive');
 
         }
-    public function scopeRecentFirst($query)
+    public function scopeRecentFirst($query): Builder
     {
         return $query->orderBy('first_seen_at', 'desc');
 
         }
-    public function scopeByRelevance($query)
+    public function scopeByRelevance($query): Builder
     {
         return $query->orderBy('relevance_score', 'desc');
 }

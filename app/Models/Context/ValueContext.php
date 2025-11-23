@@ -5,6 +5,7 @@ namespace App\Models\Context;
 use App\Models\Concerns\HasOrganization;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Builder;
 use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -67,7 +68,7 @@ class ValueContext extends BaseModel
     /**
      * Get the offering
      */
-    public function offering()
+    public function offering(): BelongsTo
     {
         return $this->belongsTo(\App\Models\Offering::class, 'offering_id', 'offering_id');
 
@@ -75,7 +76,7 @@ class ValueContext extends BaseModel
     /**
      * Get the campaign
      */
-    public function campaign()
+    public function campaign(): BelongsTo
     {
         return $this->belongsTo(\App\Models\Campaign::class, 'campaign_id', 'campaign_id');
 
@@ -83,7 +84,7 @@ class ValueContext extends BaseModel
     /**
      * Get the channel
      */
-    public function channel()
+    public function channel(): BelongsTo
     {
         return $this->belongsTo(\App\Models\Channel::class, 'channel_id', 'channel_id');
 
@@ -91,7 +92,7 @@ class ValueContext extends BaseModel
     /**
      * Get the creator
      */
-    public function creator()
+    public function creator(): BelongsTo
     {
         return $this->belongsTo(\App\Models\User::class, 'created_by', 'user_id');
 
@@ -99,7 +100,7 @@ class ValueContext extends BaseModel
     /**
      * Scope active contexts
      */
-    public function scopeActive($query)
+    public function scopeActive($query): Builder
     {
         return $query->where('is_active', true)->whereNull('deleted_at');
 
@@ -107,7 +108,7 @@ class ValueContext extends BaseModel
     /**
      * Scope by framework
      */
-    public function scopeByFramework($query, string $framework)
+    public function scopeByFramework($query, string $framework): Builder
     {
         return $query->where('framework', $framework);
 
@@ -115,7 +116,7 @@ class ValueContext extends BaseModel
     /**
      * Scope by awareness stage
      */
-    public function scopeByAwarenessStage($query, string $stage)
+    public function scopeByAwarenessStage($query, string $stage): Builder
     {
         return $query->where('awareness_stage', $stage);
 }

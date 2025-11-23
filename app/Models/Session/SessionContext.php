@@ -31,7 +31,7 @@ protected $table = 'cmis.session_context';
     /**
      * Get the session
      */
-    public function session()
+    public function session(): BelongsTo
     {
         return $this->belongsTo(UserSession::class, 'session_id', 'session_id');
 
@@ -39,7 +39,7 @@ protected $table = 'cmis.session_context';
     /**
      * Scope by context key
      */
-    public function scopeByKey($query, string $key)
+    public function scopeByKey($query, string $key): Builder
     {
         return $query->where('context_key', $key);
 
@@ -47,7 +47,7 @@ protected $table = 'cmis.session_context';
     /**
      * Scope by context type
      */
-    public function scopeByType($query, string $type)
+    public function scopeByType($query, string $type): Builder
     {
         return $query->where('context_type', $type);
 
@@ -65,7 +65,7 @@ protected $table = 'cmis.session_context';
     /**
      * Scope expired contexts
      */
-    public function scopeExpired($query)
+    public function scopeExpired($query): Builder
     {
         return $query->whereNotNull('expires_at')
             ->where('expires_at', '<=', now());

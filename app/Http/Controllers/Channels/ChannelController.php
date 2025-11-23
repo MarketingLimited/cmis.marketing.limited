@@ -6,12 +6,13 @@ use App\Http\Controllers\Controller;
 use App\Models\Channel;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Concerns\ApiResponse;
+use Illuminate\Http\JsonResponse;
 
 class ChannelController extends Controller
 {
     use ApiResponse;
 
-    public function index(Request $request, string $orgId)
+    public function index(Request $request, string $orgId): JsonResponse
     {
         $this->authorize('viewAny', Channel::class);
 
@@ -27,7 +28,7 @@ class ChannelController extends Controller
         }
     }
 
-    public function store(Request $request, string $orgId)
+    public function store(Request $request, string $orgId): JsonResponse
     {
         $this->authorize('create', Channel::class);
 
@@ -44,7 +45,7 @@ class ChannelController extends Controller
         }
     }
 
-    public function show(Request $request, string $orgId, string $channelId)
+    public function show(Request $request, string $orgId, string $channelId): JsonResponse
     {
         try {
             $channel = Channel::where('org_id', $orgId)->findOrFail($channelId);
@@ -55,7 +56,7 @@ class ChannelController extends Controller
         }
     }
 
-    public function update(Request $request, string $orgId, string $channelId)
+    public function update(Request $request, string $orgId, string $channelId): JsonResponse
     {
         try {
             $channel = Channel::where('org_id', $orgId)->findOrFail($channelId);
@@ -67,7 +68,7 @@ class ChannelController extends Controller
         }
     }
 
-    public function destroy(Request $request, string $orgId, string $channelId)
+    public function destroy(Request $request, string $orgId, string $channelId): JsonResponse
     {
         try {
             $channel = Channel::where('org_id', $orgId)->findOrFail($channelId);

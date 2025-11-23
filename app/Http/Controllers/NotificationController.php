@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Concerns\ApiResponse;
+use Illuminate\Http\JsonResponse;
 
 class NotificationController extends Controller
 {
@@ -18,7 +19,7 @@ class NotificationController extends Controller
         $this->middleware('auth:sanctum');
     }
 
-    public function index()
+    public function index(): JsonResponse
     {
         $user = Auth::user();
         $notifications = $user->notifications()->paginate(20);
@@ -26,7 +27,7 @@ class NotificationController extends Controller
         return response()->json($notifications);
     }
 
-    public function markAsRead($notificationId)
+    public function markAsRead($notificationId): JsonResponse
     {
         $user = Auth::user();
         $notification = $user->notifications()->findOrFail($notificationId);
@@ -35,7 +36,7 @@ class NotificationController extends Controller
         return response()->json(['message' => 'تم تعليم الإشعار كمقروء']);
     }
 
-    public function markAllAsRead()
+    public function markAllAsRead(): JsonResponse
     {
         $user = Auth::user();
         $user->unreadNotifications->markAsRead();
@@ -43,7 +44,7 @@ class NotificationController extends Controller
         return response()->json(['message' => 'تم تعليم جميع الإشعارات كمقروءة']);
     }
 
-    public function destroy($notificationId)
+    public function destroy($notificationId): JsonResponse
     {
         $user = Auth::user();
         $user->notifications()->findOrFail($notificationId)->delete();

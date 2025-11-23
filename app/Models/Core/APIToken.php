@@ -6,6 +6,7 @@ use App\Models\Concerns\HasOrganization;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Builder;
 use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Str;
@@ -43,7 +44,7 @@ class APIToken extends BaseModel
         return $this->belongsTo(User::class, 'created_by', 'user_id');
 
         }
-    public function scopeActive($query)
+    public function scopeActive($query): Builder
     {
         return $query->where('is_active', true)
             ->where(function ($q) {

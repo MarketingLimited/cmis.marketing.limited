@@ -5,6 +5,7 @@ namespace App\Models\Creative;
 use App\Models\Concerns\HasOrganization;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Builder;
 use App\Models\BaseModel;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
@@ -44,7 +45,7 @@ class VariationPolicy extends BaseModel
     /**
      * Get the creator
      */
-    public function creator()
+    public function creator(): BelongsTo
     {
         return $this->belongsTo(\App\Models\User::class, 'created_by', 'user_id');
 
@@ -52,7 +53,7 @@ class VariationPolicy extends BaseModel
     /**
      * Scope active policies
      */
-    public function scopeActive($query)
+    public function scopeActive($query): Builder
     {
         return $query->where('is_active', true);
 }

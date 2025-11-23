@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Concerns\ApiResponse;
+use Illuminate\Http\JsonResponse;
+use Illuminate\View\View;
 
 class KnowledgeController extends Controller
 {
@@ -19,7 +21,7 @@ class KnowledgeController extends Controller
     /**
      * Display knowledge base dashboard
      */
-    public function index()
+    public function index(): View
     {
         try {
             $stats = DB::select("
@@ -49,7 +51,7 @@ class KnowledgeController extends Controller
     /**
      * Search knowledge base
      */
-    public function search(Request $request)
+    public function search(Request $request): JsonResponse
     {
         $query = $request->input('q');
         $domain = $request->input('domain');
@@ -78,7 +80,7 @@ class KnowledgeController extends Controller
     /**
      * Register new knowledge
      */
-    public function store(Request $request)
+    public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
             'domain' => 'required|string|max:50',
@@ -119,7 +121,7 @@ class KnowledgeController extends Controller
     /**
      * Get domains list
      */
-    public function domains()
+    public function domains(): JsonResponse
     {
         try {
             $domains = DB::select("
@@ -145,7 +147,7 @@ class KnowledgeController extends Controller
     /**
      * Get categories by domain
      */
-    public function categories($domain)
+    public function categories($domain): JsonResponse
     {
         try {
             $categories = DB::select("

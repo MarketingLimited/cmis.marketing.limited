@@ -5,6 +5,7 @@ namespace App\Models\Market;
 use App\Models\Concerns\HasOrganization;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Builder;
 use App\Models\BaseModel;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
@@ -50,7 +51,7 @@ class Market extends BaseModel
     /**
      * Get org markets
      */
-    public function orgMarkets()
+    public function orgMarkets(): HasMany
     {
         return $this->hasMany(OrgMarket::class, 'market_id', 'market_id');
 
@@ -58,7 +59,7 @@ class Market extends BaseModel
     /**
      * Scope by language
      */
-    public function scopeByLanguage($query, string $languageCode)
+    public function scopeByLanguage($query, string $languageCode): Builder
     {
         return $query->where('language_code', $languageCode);
 
@@ -66,7 +67,7 @@ class Market extends BaseModel
     /**
      * Scope by currency
      */
-    public function scopeByCurrency($query, string $currencyCode)
+    public function scopeByCurrency($query, string $currencyCode): Builder
     {
         return $query->where('currency_code', $currencyCode);
 

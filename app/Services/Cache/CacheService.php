@@ -99,7 +99,7 @@ class CacheService
     /**
      * Cache dashboard data
      */
-    public function cacheDashboard(Org $org, callable $callback)
+    public function cacheDashboard(Org $org, callable $callback): self
     {
         return $this->remember(
             "dashboard:org:{$org->org_id}",
@@ -121,7 +121,7 @@ class CacheService
     /**
      * Cache campaign metrics
      */
-    public function cacheMetrics(string $campaignId, callable $callback)
+    public function cacheMetrics(string $campaignId, callable $callback): self
     {
         return $this->remember(
             "metrics:campaign:{$campaignId}",
@@ -143,7 +143,7 @@ class CacheService
     /**
      * Cache campaigns list
      */
-    public function cacheCampaigns(string $orgId, array $filters, callable $callback)
+    public function cacheCampaigns(string $orgId, array $filters, callable $callback): self
     {
         $filterHash = md5(json_encode($filters));
         return $this->remember(
@@ -165,7 +165,7 @@ class CacheService
     /**
      * Cache sync status
      */
-    public function cacheSyncStatus(string $orgId, callable $callback)
+    public function cacheSyncStatus(string $orgId, callable $callback): self
     {
         return $this->remember(
             "sync:org:{$orgId}",
@@ -187,7 +187,7 @@ class CacheService
     /**
      * Cache analytics data
      */
-    public function cacheAnalytics(string $orgId, string $type, array $params, callable $callback)
+    public function cacheAnalytics(string $orgId, string $type, array $params, callable $callback): self
     {
         $paramsHash = md5(json_encode($params));
         return $this->remember(

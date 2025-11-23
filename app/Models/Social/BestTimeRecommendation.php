@@ -8,6 +8,7 @@ use App\Models\Core\Org;
 use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Builder;
 class BestTimeRecommendation extends BaseModel
 {
     use HasFactory;
@@ -74,17 +75,17 @@ class BestTimeRecommendation extends BaseModel
 
     // ===== Scopes =====
 
-    public function scopeForPlatform($query, string $platform)
+    public function scopeForPlatform($query, string $platform): Builder
     {
         return $query->where('platform', $platform);
     }
 
-    public function scopeForDay($query, string $dayOfWeek)
+    public function scopeForDay($query, string $dayOfWeek): Builder
     {
         return $query->where('day_of_week', $dayOfWeek);
     }
 
-    public function scopeTopTimes($query, int $limit = 5)
+    public function scopeTopTimes($query, int $limit = 5): Builder
     {
         return $query->orderByDesc('engagement_score')->limit($limit);
     }

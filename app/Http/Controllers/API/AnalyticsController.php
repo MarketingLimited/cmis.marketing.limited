@@ -258,33 +258,41 @@ class AnalyticsController extends Controller
             $period = $request->input('period', 30);
             $startDate = now()->subDays($period);
 
-            $campaigns = DB::table('cmis_ads.ad_campaigns')
-                ->where('org_id', $orgId)
-                ->where('created_at', '>=', $startDate)
-                ->get();
-
-            // Get metrics for each campaign
-            $campaignMetrics = [];
-            foreach ($campaigns as $campaign) {
-                $metrics = DB::table('cmis_ads.ad_metrics')
-                    ->where('campaign_id', $campaign->campaign_id)
-                    ->where('date', '>=', $startDate)
-                    ->select(
-                        DB::raw('SUM(impressions) as total_impressions'),
-                        DB::raw('SUM(clicks) as total_clicks'),
-                        DB::raw('SUM(spend) as total_spend'),
-                        DB::raw('SUM(conversions) as total_conversions')
-                    )
-                    ->first();
-
-                $campaignMetrics[] = [
-                    'campaign_id' => $campaign->campaign_id,
-                    'campaign_name' => $campaign->campaign_name,
-                    'platform' => $campaign->platform,
-                    'status' => $campaign->status,
-                    'metrics' => $metrics,
-                ];
-            }
+            // Get campaigns with metrics in a single query (eliminates N+1)
+            $campaignMetrics = DB::table('cmis_ads.ad_campaigns as c')
+                ->leftJoin('cmis_ads.ad_metrics as m', function($join) use ($startDate) {
+                    $join->on('c.campaign_id', '=', 'm.campaign_id')
+                         ->where('m.date', '>=', $startDate);
+                })
+                ->where('c.org_id', $orgId)
+                ->where('c.created_at', '>=', $startDate)
+                ->select(
+                    'c.campaign_id',
+                    'c.campaign_name',
+                    'c.platform',
+                    'c.status',
+                    DB::raw('COALESCE(SUM(m.impressions), 0) as total_impressions'),
+                    DB::raw('COALESCE(SUM(m.clicks), 0) as total_clicks'),
+                    DB::raw('COALESCE(SUM(m.spend), 0) as total_spend'),
+                    DB::raw('COALESCE(SUM(m.conversions), 0) as total_conversions')
+                )
+                ->groupBy('c.campaign_id', 'c.campaign_name', 'c.platform', 'c.status')
+                ->get()
+                ->map(function($row) {
+                    return [
+                        'campaign_id' => $row->campaign_id,
+                        'campaign_name' => $row->campaign_name,
+                        'platform' => $row->platform,
+                        'status' => $row->status,
+                        'metrics' => (object)[
+                            'total_impressions' => $row->total_impressions,
+                            'total_clicks' => $row->total_clicks,
+                            'total_spend' => $row->total_spend,
+                            'total_conversions' => $row->total_conversions,
+                        ],
+                    ];
+                })
+                ->toArray();
 
             return response()->json([
                 'success' => true,

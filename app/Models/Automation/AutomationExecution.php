@@ -7,6 +7,7 @@ use App\Models\Concerns\HasOrganization;
 use App\Models\Core\Org;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Builder;
 use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -101,22 +102,22 @@ class AutomationExecution extends BaseModel
 
     // ===== Scopes =====
 
-    public function scopeSuccessful($query)
+    public function scopeSuccessful($query): Builder
     {
         return $query->where('status', 'success');
     }
 
-    public function scopeFailed($query)
+    public function scopeFailed($query): Builder
     {
         return $query->where('status', 'failure');
     }
 
-    public function scopeRecent($query, int $days = 7)
+    public function scopeRecent($query, int $days = 7): Builder
     {
         return $query->where('executed_at', '>=', now()->subDays($days));
     }
 
-    public function scopeForRule($query, string $ruleId)
+    public function scopeForRule($query, string $ruleId): Builder
     {
         return $query->where('rule_id', $ruleId);
     }

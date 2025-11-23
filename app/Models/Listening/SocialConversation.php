@@ -6,6 +6,7 @@ use App\Models\Concerns\HasOrganization;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Builder;
 use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -301,62 +302,62 @@ class SocialConversation extends BaseModel
      * Scopes
      */
 
-    public function scopeOpen($query)
+    public function scopeOpen($query): Builder
     {
         return $query->where('status', 'open');
 
         }
-    public function scopeInProgress($query)
+    public function scopeInProgress($query): Builder
     {
         return $query->where('status', 'in_progress');
 
         }
-    public function scopeResolved($query)
+    public function scopeResolved($query): Builder
     {
         return $query->where('status', 'resolved');
 
         }
-    public function scopeUnassigned($query)
+    public function scopeUnassigned($query): Builder
     {
         return $query->whereNull('assigned_to');
 
         }
-    public function scopeAssignedTo($query, string $userId)
+    public function scopeAssignedTo($query, string $userId): Builder
     {
         return $query->where('assigned_to', $userId);
 
         }
-    public function scopeUrgent($query)
+    public function scopeUrgent($query): Builder
     {
         return $query->where('priority', 'urgent');
 
         }
-    public function scopeHighPriority($query)
+    public function scopeHighPriority($query): Builder
     {
         return $query->whereIn('priority', ['urgent', 'high']);
 
         }
-    public function scopeWithUnread($query)
+    public function scopeWithUnread($query): Builder
     {
         return $query->where('unread_count', '>', 0);
 
         }
-    public function scopeRequiringEscalation($query)
+    public function scopeRequiringEscalation($query): Builder
     {
         return $query->where('requires_escalation', true);
 
         }
-    public function scopeStale($query, int $hoursThreshold = 48)
+    public function scopeStale($query, int $hoursThreshold = 48): Builder
     {
         return $query->where('last_activity_at', '<', now()->subHours($hoursThreshold));
 
         }
-    public function scopeOnPlatform($query, string $platform)
+    public function scopeOnPlatform($query, string $platform): Builder
     {
         return $query->where('platform', $platform);
 
         }
-    public function scopeRecentActivity($query)
+    public function scopeRecentActivity($query): Builder
     {
         return $query->orderBy('last_activity_at', 'desc');
 }

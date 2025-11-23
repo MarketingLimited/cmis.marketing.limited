@@ -8,6 +8,7 @@ use App\Models\Campaign\Campaign;
 use App\Models\Core\User;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Builder;
 use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -105,7 +106,7 @@ class GeneratedMedia extends BaseModel
     /**
      * Scope a query to only include images.
      */
-    public function scopeImages($query)
+    public function scopeImages($query): Builder
     {
         return $query->where('media_type', self::TYPE_IMAGE);
     }
@@ -113,7 +114,7 @@ class GeneratedMedia extends BaseModel
     /**
      * Scope a query to only include videos.
      */
-    public function scopeVideos($query)
+    public function scopeVideos($query): Builder
     {
         return $query->where('media_type', self::TYPE_VIDEO);
     }
@@ -121,7 +122,7 @@ class GeneratedMedia extends BaseModel
     /**
      * Scope a query to only include completed media.
      */
-    public function scopeCompleted($query)
+    public function scopeCompleted($query): Builder
     {
         return $query->where('status', self::STATUS_COMPLETED);
     }
@@ -129,7 +130,7 @@ class GeneratedMedia extends BaseModel
     /**
      * Scope a query to only include failed media.
      */
-    public function scopeFailed($query)
+    public function scopeFailed($query): Builder
     {
         return $query->where('status', self::STATUS_FAILED);
     }
@@ -137,7 +138,7 @@ class GeneratedMedia extends BaseModel
     /**
      * Scope a query to filter by campaign.
      */
-    public function scopeForCampaign($query, string $campaignId)
+    public function scopeForCampaign($query, string $campaignId): Builder
     {
         return $query->where('campaign_id', $campaignId);
     }

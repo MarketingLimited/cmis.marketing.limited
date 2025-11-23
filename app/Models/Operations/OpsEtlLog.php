@@ -7,6 +7,7 @@ use App\Models\Concerns\HasOrganization;
 use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Builder;
 
 class OpsEtlLog extends BaseModel
 {
@@ -41,32 +42,32 @@ class OpsEtlLog extends BaseModel
     ];
 
     // Relationships
-    public function organization()
+    public function organization(): BelongsTo
     {
         return $this->belongsTo(\App\Models\Organization::class, 'org_id', 'org_id');
 
         }
-    public function scopeByOrg($query, $orgId)
+    public function scopeByOrg($query, $orgId): Builder
     {
         return $query->where('org_id', $orgId);
 
         }
-    public function scopeByType($query, $type)
+    public function scopeByType($query, $type): Builder
     {
         return $query->where('job_type', $type);
 
         }
-    public function scopeSuccessful($query)
+    public function scopeSuccessful($query): Builder
     {
         return $query->where('status', 'completed');
 
         }
-    public function scopeFailed($query)
+    public function scopeFailed($query): Builder
     {
         return $query->where('status', 'failed');
 
         }
-    public function scopeRecent($query, $days = 7)
+    public function scopeRecent($query, $days = 7): Builder
     {
         return $query->where('created_at', '>=', now()->subDays($days));
 
@@ -97,7 +98,7 @@ class OpsEtlLog extends BaseModel
             'duration_seconds' => now()->diffInSeconds($this->started_at),
         ]);
 
-    public function fail($errorDetails = null)
+    public function fail($errorDetails = null): int
     {
         $this->update([
             'status' => 'failed',
@@ -106,7 +107,7 @@ class OpsEtlLog extends BaseModel
             'error_details' => $errorDetails,
         ]);
 
-    public function getSuccessRate()
+    public function getSuccessRate(): int
     {
         if ($this->records_processed == 0) {
             return 0;

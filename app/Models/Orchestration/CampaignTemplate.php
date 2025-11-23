@@ -10,6 +10,7 @@ use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Builder;
 class CampaignTemplate extends BaseModel
 {
     use HasFactory;
@@ -150,27 +151,27 @@ class CampaignTemplate extends BaseModel
 
 
             }
-    public function scopeActive($query)
+    public function scopeActive($query): Builder
     {
         return $query->where('is_active', true);
 
         }
-    public function scopeGlobal($query)
+    public function scopeGlobal($query): Builder
     {
         return $query->where('is_global', true);
 
         }
-    public function scopeForCategory($query, string $category)
+    public function scopeForCategory($query, string $category): Builder
     {
         return $query->where('category', $category);
 
         }
-    public function scopeForObjective($query, string $objective)
+    public function scopeForObjective($query, string $objective): Builder
     {
         return $query->where('objective', $objective);
 
         }
-    public function scopeForPlatform($query, string $platform)
+    public function scopeForPlatform($query, string $platform): Builder
     {
         return $query->whereJsonContains('platforms', $platform);
 }

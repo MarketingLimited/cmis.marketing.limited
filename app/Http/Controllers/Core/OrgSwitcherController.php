@@ -33,7 +33,7 @@ class OrgSwitcherController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function getUserOrganizations(Request $request)
+    public function getUserOrganizations(Request $request): JsonResponse
     {
         $user = Auth::user();
 
@@ -63,7 +63,7 @@ class OrgSwitcherController extends Controller
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function switchOrganization(Request $request)
+    public function switchOrganization(Request $request): JsonResponse
     {
         $request->validate([
             'org_id' => 'required|uuid',
@@ -141,7 +141,7 @@ class OrgSwitcherController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function getActiveOrganization()
+    public function getActiveOrganization(): JsonResponse
     {
         $user = Auth::user();
 

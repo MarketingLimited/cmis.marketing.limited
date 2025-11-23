@@ -88,7 +88,7 @@ class ContactController extends Controller
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function store(Request $request)
+    public function store(Request $request): JsonResponse
     {
         $orgId = $this->resolveOrgId($request);
 
@@ -144,7 +144,7 @@ class ContactController extends Controller
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function show(string $id, Request $request)
+    public function show(string $id, Request $request): JsonResponse
     {
         $orgId = $this->resolveOrgId($request);
 
@@ -171,7 +171,7 @@ class ContactController extends Controller
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function update(string $id, Request $request)
+    public function update(string $id, Request $request): JsonResponse
     {
         $orgId = $this->resolveOrgId($request);
 
@@ -233,7 +233,7 @@ class ContactController extends Controller
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function destroy(string $id, Request $request)
+    public function destroy(string $id, Request $request): JsonResponse
     {
         $orgId = $this->resolveOrgId($request);
 
@@ -311,7 +311,7 @@ class ContactController extends Controller
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function merge(string $id, Request $request)
+    public function merge(string $id, Request $request): JsonResponse
     {
         $orgId = $this->resolveOrgId($request);
 

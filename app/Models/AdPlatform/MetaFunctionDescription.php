@@ -3,6 +3,7 @@
 namespace App\Models\AdPlatform;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Builder;
 use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -33,7 +34,7 @@ class MetaFunctionDescription extends BaseModel
     /**
      * Scope to find by routine name
      */
-    public function scopeByRoutineName($query, string $routineName)
+    public function scopeByRoutineName($query, string $routineName): Builder
     {
         return $query->where('routine_name', $routineName);
 
@@ -41,7 +42,7 @@ class MetaFunctionDescription extends BaseModel
     /**
      * Scope to find by schema
      */
-    public function scopeBySchema($query, string $schema)
+    public function scopeBySchema($query, string $schema): Builder
     {
         return $query->where('routine_schema', $schema);
 
@@ -49,7 +50,7 @@ class MetaFunctionDescription extends BaseModel
     /**
      * Scope to filter by category
      */
-    public function scopeByCategory($query, string $category)
+    public function scopeByCategory($query, string $category): Builder
     {
         return $query->where('cognitive_category', $category);
 }

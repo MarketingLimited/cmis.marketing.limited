@@ -6,6 +6,7 @@ use App\Models\Concerns\HasOrganization;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Builder;
 use App\Models\BaseModel;
 
 class MonitoringAlert extends BaseModel
@@ -215,27 +216,27 @@ class MonitoringAlert extends BaseModel
      * Scopes
      */
 
-    public function scopeActive($query)
+    public function scopeActive($query): Builder
     {
         return $query->where('status', 'active');
 
         }
-    public function scopeOfType($query, string $type)
+    public function scopeOfType($query, string $type): Builder
     {
         return $query->where('alert_type', $type);
 
         }
-    public function scopeBySeverity($query, string $severity)
+    public function scopeBySeverity($query, string $severity): Builder
     {
         return $query->where('severity', $severity);
 
         }
-    public function scopeCritical($query)
+    public function scopeCritical($query): Builder
     {
         return $query->where('severity', 'critical');
 
         }
-    public function scopeRecentlyTriggered($query, int $hours = 24)
+    public function scopeRecentlyTriggered($query, int $hours = 24): Builder
     {
         return $query->where('last_triggered_at', '>=', now()->subHours($hours));
 }

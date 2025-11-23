@@ -8,6 +8,7 @@ use App\Services\Automation\AutomatedBudgetAllocator;
 use App\Services\CampaignOrchestratorService;
 use Illuminate\Http\{JsonResponse, Request};
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Http\JsonResponse;
 
 /**
  * Campaign Orchestration Controller (Phase 4 - Advanced Automation)

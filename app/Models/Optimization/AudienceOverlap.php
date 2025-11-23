@@ -9,6 +9,7 @@ use App\Models\Campaign\Campaign;
 use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Builder;
 class AudienceOverlap extends BaseModel
 {
     use HasFactory;
@@ -134,22 +135,22 @@ class AudienceOverlap extends BaseModel
 
     // ===== Scopes =====
 
-    public function scopeActive($query)
+    public function scopeActive($query): Builder
     {
         return $query->where('status', 'active');
 
         }
-    public function scopeCritical($query)
+    public function scopeCritical($query): Builder
     {
         return $query->where('overlap_percentage', '>=', 75);
 
         }
-    public function scopeHighImpact($query)
+    public function scopeHighImpact($query): Builder
     {
         return $query->where('impact_score', '>=', 0.7);
 
         }
-    public function scopeForCampaign($query, string $campaignId)
+    public function scopeForCampaign($query, string $campaignId): Builder
     {
         return $query->where(function ($q) use ($campaignId) {
             $q->where('campaign_a_id', $campaignId)

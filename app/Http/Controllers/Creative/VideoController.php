@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Creative;
 use App\Http\Controllers\Controller;
 use App\Models\CreativeAsset;
 use Illuminate\Http\Request;
+use Illuminate\View\View;
 
 /**
  * Class VideoController
@@ -15,7 +16,7 @@ class VideoController extends Controller
     /**
      * عرض مكتبة الفيديوهات.
      */
-    public function index()
+    public function index(): View
     {
         $this->authorize('viewAny', CreativeAsset::class);
 

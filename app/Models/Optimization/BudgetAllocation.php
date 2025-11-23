@@ -9,6 +9,7 @@ use App\Models\Campaign\Campaign;
 use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Builder;
 class BudgetAllocation extends BaseModel
 {
     use HasFactory;
@@ -124,27 +125,27 @@ class BudgetAllocation extends BaseModel
 
     // ===== Scopes =====
 
-    public function scopePending($query)
+    public function scopePending($query): Builder
     {
         return $query->where('status', 'pending');
 
         }
-    public function scopeApplied($query)
+    public function scopeApplied($query): Builder
     {
         return $query->where('status', 'applied');
 
         }
-    public function scopeIncreases($query)
+    public function scopeIncreases($query): Builder
     {
         return $query->where('budget_change', '>', 0);
 
         }
-    public function scopeDecreases($query)
+    public function scopeDecreases($query): Builder
     {
         return $query->where('budget_change', '<', 0);
 
         }
-    public function scopeHighConfidence($query)
+    public function scopeHighConfidence($query): Builder
     {
         return $query->where('confidence_level', '>=', 0.8);
 }

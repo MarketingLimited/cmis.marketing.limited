@@ -6,6 +6,7 @@ use App\Models\Concerns\HasOrganization;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Builder;
 use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -203,22 +204,22 @@ class SentimentAnalysis extends BaseModel
      * Scopes
      */
 
-    public function scopeWithSentiment($query, string $sentiment)
+    public function scopeWithSentiment($query, string $sentiment): Builder
     {
         return $query->where('overall_sentiment', $sentiment);
 
         }
-    public function scopeHighConfidence($query)
+    public function scopeHighConfidence($query): Builder
     {
         return $query->where('confidence', '>=', 80);
 
         }
-    public function scopeWithEmotion($query, string $emotion, float $threshold = 0.5)
+    public function scopeWithEmotion($query, string $emotion, float $threshold = 0.5): Builder
     {
         return $query->whereRaw("(emotions->>'$emotion')::float >= ?", [$threshold]);
 
         }
-    public function scopeAnalyzedBy($query, string $model)
+    public function scopeAnalyzedBy($query, string $model): Builder
     {
         return $query->where('model_used', $model);
 }

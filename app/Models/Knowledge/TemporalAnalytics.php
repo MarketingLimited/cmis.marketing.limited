@@ -52,7 +52,7 @@ protected $table = 'cmis.temporal_analytics';
     /**
      * Scope by entity type
      */
-    public function scopeByEntityType($query, string $entityType)
+    public function scopeByEntityType($query, string $entityType): Builder
     {
         return $query->where('entity_type', $entityType);
 
@@ -60,7 +60,7 @@ protected $table = 'cmis.temporal_analytics';
     /**
      * Scope by time period
      */
-    public function scopeByPeriod($query, string $period)
+    public function scopeByPeriod($query, string $period): Builder
     {
         return $query->where('time_period', $period);
 
@@ -68,7 +68,7 @@ protected $table = 'cmis.temporal_analytics';
     /**
      * Scope by date range
      */
-    public function scopeDateRange($query, $start, $end)
+    public function scopeDateRange($query, $start, $end): Builder
     {
         return $query->where('period_start', '>=', $start)
             ->where('period_end', '<=', $end);
@@ -77,7 +77,7 @@ protected $table = 'cmis.temporal_analytics';
     /**
      * Scope with anomalies
      */
-    public function scopeWithAnomalies($query)
+    public function scopeWithAnomalies($query): Builder
     {
         return $query->whereNotNull('anomalies')
             ->whereRaw("jsonb_array_length(anomalies) > 0");
@@ -86,7 +86,7 @@ protected $table = 'cmis.temporal_analytics';
     /**
      * Scope high confidence
      */
-    public function scopeHighConfidence($query, float $threshold = 0.8)
+    public function scopeHighConfidence($query, float $threshold = 0.8): Builder
     {
         return $query->whereRaw("(confidence_scores->>'overall')::float >= ?", [$threshold]);
 
@@ -94,7 +94,7 @@ protected $table = 'cmis.temporal_analytics';
     /**
      * Scope good data quality
      */
-    public function scopeGoodQuality($query, float $threshold = 0.7)
+    public function scopeGoodQuality($query, float $threshold = 0.7): Builder
     {
         return $query->where('data_quality', '>=', $threshold);
 
@@ -102,7 +102,7 @@ protected $table = 'cmis.temporal_analytics';
     /**
      * Scope recent analytics
      */
-    public function scopeRecent($query, int $days = 30)
+    public function scopeRecent($query, int $days = 30): Builder
     {
         return $query->where('computed_at', '>=', now()->subDays($days));
 

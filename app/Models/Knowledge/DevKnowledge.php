@@ -3,6 +3,7 @@
 namespace App\Models\Knowledge;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Builder;
 use App\Models\BaseModel;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
@@ -51,7 +52,7 @@ class DevKnowledge extends BaseModel
     /**
      * Scope by category
      */
-    public function scopeByCategory($query, string $category)
+    public function scopeByCategory($query, string $category): Builder
     {
         return $query->where('category', $category);
 
@@ -59,7 +60,7 @@ class DevKnowledge extends BaseModel
     /**
      * Scope by language
      */
-    public function scopeByLanguage($query, string $language)
+    public function scopeByLanguage($query, string $language): Builder
     {
         return $query->where('language', $language);
 
@@ -67,7 +68,7 @@ class DevKnowledge extends BaseModel
     /**
      * Scope by framework
      */
-    public function scopeByFramework($query, string $framework)
+    public function scopeByFramework($query, string $framework): Builder
     {
         return $query->where('framework', $framework);
 
@@ -75,7 +76,7 @@ class DevKnowledge extends BaseModel
     /**
      * Scope active (non-deprecated)
      */
-    public function scopeActive($query)
+    public function scopeActive($query): Builder
     {
         return $query->where('is_deprecated', false);
 
@@ -83,7 +84,7 @@ class DevKnowledge extends BaseModel
     /**
      * Scope by difficulty level
      */
-    public function scopeByDifficulty($query, string $level)
+    public function scopeByDifficulty($query, string $level): Builder
     {
         return $query->where('difficulty_level', $level);
 }

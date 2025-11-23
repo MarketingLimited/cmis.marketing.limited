@@ -11,6 +11,7 @@ use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Builder;
 class CampaignOrchestration extends BaseModel
 {
     use HasFactory;
@@ -252,22 +253,22 @@ class CampaignOrchestration extends BaseModel
 
 
         }
-    public function scopeActive($query)
+    public function scopeActive($query): Builder
     {
         return $query->where('status', 'active');
 
         }
-    public function scopeScheduled($query)
+    public function scopeScheduled($query): Builder
     {
         return $query->where('status', 'scheduled');
 
         }
-    public function scopeForPlatform($query, string $platform)
+    public function scopeForPlatform($query, string $platform): Builder
     {
         return $query->whereJsonContains('platforms', $platform);
 
         }
-    public function scopeAutoSync($query)
+    public function scopeAutoSync($query): Builder
     {
         return $query->where('sync_strategy', 'auto');
 }

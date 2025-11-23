@@ -5,6 +5,7 @@ namespace App\Models\Context;
 use App\Models\Concerns\HasOrganization;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Builder;
 use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -52,7 +53,7 @@ class OfferingContext extends BaseModel
     /**
      * Get the offering
      */
-    public function offering()
+    public function offering(): BelongsTo
     {
         return $this->belongsTo(\App\Models\Offering::class, 'offering_id', 'offering_id');
 
@@ -60,7 +61,7 @@ class OfferingContext extends BaseModel
     /**
      * Get the creator
      */
-    public function creator()
+    public function creator(): BelongsTo
     {
         return $this->belongsTo(\App\Models\User::class, 'created_by', 'user_id');
 
@@ -68,7 +69,7 @@ class OfferingContext extends BaseModel
     /**
      * Scope active contexts
      */
-    public function scopeActive($query)
+    public function scopeActive($query): Builder
     {
         return $query->where('is_active', true)->whereNull('deleted_at');
 }

@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Redis;
 use Symfony\Component\HttpFoundation\StreamedResponse;
+use Illuminate\Http\JsonResponse;
 
 /**
  * RealtimeController
@@ -157,7 +158,7 @@ class RealtimeController extends Controller
      * Returns information about what caches should be invalidated
      * based on recent updates.
      */
-    public function getCacheInvalidationSuggestions(Request $request)
+    public function getCacheInvalidationSuggestions(Request $request): JsonResponse
     {
         $user = $request->user();
 

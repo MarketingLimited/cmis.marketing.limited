@@ -6,6 +6,7 @@ use App\Models\Concerns\HasOrganization;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Builder;
 use App\Models\BaseModel;
 
 class Notification extends BaseModel
@@ -37,7 +38,7 @@ class Notification extends BaseModel
     /**
      * Get the user that owns the notification
      */
-    public function user()
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id', 'user_id');
 
@@ -45,7 +46,7 @@ class Notification extends BaseModel
     /**
      * Get the organization associated with the notification
      */
-    public function organization()
+    public function organization(): BelongsTo
     {
         return $this->belongsTo(Core\Org::class, 'org_id', 'org_id');
 
@@ -53,7 +54,7 @@ class Notification extends BaseModel
     /**
      * Scope to get notifications for a specific user
      */
-    public function scopeForUser($query, $userId)
+    public function scopeForUser($query, $userId): Builder
     {
         return $query->where('user_id', $userId);
 
@@ -61,7 +62,7 @@ class Notification extends BaseModel
     /**
      * Scope to get unread notifications
      */
-    public function scopeUnread($query)
+    public function scopeUnread($query): Builder
     {
         return $query->where('read', false);
 
@@ -69,7 +70,7 @@ class Notification extends BaseModel
     /**
      * Scope to get read notifications
      */
-    public function scopeRead($query)
+    public function scopeRead($query): Builder
     {
         return $query->where('read', true);
 
@@ -77,7 +78,7 @@ class Notification extends BaseModel
     /**
      * Scope to get recent notifications
      */
-    public function scopeRecent($query, $limit = 10)
+    public function scopeRecent($query, $limit = 10): Builder
     {
         return $query->orderBy('created_at', 'desc')->limit($limit);
 
@@ -85,7 +86,7 @@ class Notification extends BaseModel
     /**
      * Mark notification as read
      */
-    public function markAsRead()
+    public function markAsRead(): bool
     {
         if ($this->read) {
             return false;
@@ -110,7 +111,7 @@ class Notification extends BaseModel
     /**
      * Get formatted time ago
      */
-    public function getTimeAttribute()
+    public function getTimeAttribute(): mixed
     {
         return $this->created_at->diffForHumans();
 

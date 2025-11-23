@@ -8,6 +8,7 @@ use App\Models\Core\Org;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
@@ -39,35 +40,27 @@ class SessionContext extends BaseModel
     /**
      * Get the active organization
      */
-    public function activeOrg()
+    public function activeOrg(): BelongsTo
     {
         return $this->belongsTo(Org::class, 'active_org_id', 'org_id');
-
     }
+
     /**
      * Scope to get active sessions
      */
-    public function scopeActive($query)
+    public function scopeActive($query): Builder
     {
         return $query->whereNull('deleted_at');
-
     }
-    /**
-     * Scope to get sessions for a specific org
-     */
-    public function scopeForOrg(Builder $query, string $orgId): Builder
-    {
-        return $query->where('active_org_id', $orgId);
 
-    }
     /**
      * Scope to get recently switched sessions
      */
-    public function scopeRecentlySwitched($query, int $minutes = 60)
+    public function scopeRecentlySwitched($query, int $minutes = 60): Builder
     {
         return $query->where('switched_at', '>=', now()->subMinutes($minutes));
-
     }
+
     /**
      * Switch to a different organization
      */
@@ -77,8 +70,8 @@ class SessionContext extends BaseModel
             'active_org_id' => $newOrgId,
             'switched_at' => now(),
         ]);
-
     }
+
     /**
      * Get or create session context
      */
@@ -91,13 +84,14 @@ class SessionContext extends BaseModel
                 'provider' => $provider,
                 'switched_at' => now(),
             ]
-
+        );
     }
+
     /**
      * Clean up old sessions
      */
     public static function cleanupOldSessions(int $days = 30): int
     {
         return static::where('switched_at', '<', now()->subDays($days))->delete();
-}
+    }
 }

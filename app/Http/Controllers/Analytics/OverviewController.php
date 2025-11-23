@@ -7,10 +7,11 @@ use App\Models\Kpi;
 use App\Models\PerformanceMetric;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\View\View;
 
 class OverviewController extends Controller
 {
-    public function index()
+    public function index(): View
     {
         Gate::authorize('viewDashboard', auth()->user());
 

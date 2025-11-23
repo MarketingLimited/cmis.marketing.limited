@@ -5,6 +5,7 @@ namespace App\Models\Analytics;
 use App\Models\Core\User;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Builder;
 use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -63,7 +64,7 @@ class ReportTemplate extends BaseModel
     /**
      * Scope: Public templates
      */
-    public function scopePublic($query)
+    public function scopePublic($query): Builder
     {
         return $query->where('is_public', true);
 
@@ -71,7 +72,7 @@ class ReportTemplate extends BaseModel
     /**
      * Scope: System templates
      */
-    public function scopeSystem($query)
+    public function scopeSystem($query): Builder
     {
         return $query->where('is_system', true);
 
@@ -79,7 +80,7 @@ class ReportTemplate extends BaseModel
     /**
      * Scope: By category
      */
-    public function scopeCategory($query, string $category)
+    public function scopeCategory($query, string $category): Builder
     {
         return $query->where('category', $category);
 
@@ -87,7 +88,7 @@ class ReportTemplate extends BaseModel
     /**
      * Scope: By report type
      */
-    public function scopeType($query, string $reportType)
+    public function scopeType($query, string $reportType): Builder
     {
         return $query->where('report_type', $reportType);
 

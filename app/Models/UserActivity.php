@@ -39,47 +39,39 @@ class UserActivity extends BaseModel
     /**
      * Get the user that owns the activity
      */
-    public function user()
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id', 'user_id');
-
     }
+
     /**
      * Get the organization associated with the activity
      */
-    public function organization()
+    public function organization(): BelongsTo
     {
         return $this->belongsTo(Core\Org::class, 'org_id', 'org_id');
-
     }
+
     /**
      * Scope to get activities for a specific user
      */
-    public function scopeForUser($query, $userId)
+    public function scopeForUser($query, $userId): Builder
     {
         return $query->where('user_id', $userId);
-
     }
-    /**
-     * Scope to get activities for a specific org
-     */
-    public function scopeForOrg(Builder $query, string $orgId): Builder
-    {
-        return $query->where('org_id', $orgId);
 
-    }
     /**
      * Scope to get recent activities
      */
-    public function scopeRecent($query, $limit = 10)
+    public function scopeRecent($query, $limit = 10): Builder
     {
         return $query->orderBy('created_at', 'desc')->limit($limit);
-
     }
+
     /**
      * Get formatted activity description
      */
-    public function getDescriptionAttribute()
+    public function getDescriptionAttribute(): mixed
     {
         $action = $this->action;
         $entityType = $this->entity_type;
@@ -95,12 +87,12 @@ class UserActivity extends BaseModel
         ];
 
         return $descriptions[$action] ?? $action;
-
     }
+
     /**
      * Get activity type for icons
      */
-    public function getTypeAttribute()
+    public function getTypeAttribute(): mixed
     {
         $action = $this->action;
 
@@ -115,8 +107,8 @@ class UserActivity extends BaseModel
         ];
 
         return $types[$action] ?? 'access';
-
     }
+
     /**
      * Create activity log entry
      */
@@ -137,5 +129,5 @@ class UserActivity extends BaseModel
             'details' => $details,
             'ip_address' => request()->ip(),
         ]);
-}
+    }
 }

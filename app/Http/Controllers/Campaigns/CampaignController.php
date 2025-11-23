@@ -14,6 +14,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use App\Http\Controllers\Concerns\ApiResponse;
+use Illuminate\Http\JsonResponse;
 
 class CampaignController extends Controller
 {
@@ -29,7 +30,7 @@ class CampaignController extends Controller
         $this->middleware('auth:sanctum');
     }
 
-    public function index(Request $request)
+    public function index(Request $request): JsonResponse
     {
         // Check authorization for viewing any campaigns
         $this->authorize('viewAny', Campaign::class);
@@ -107,7 +108,7 @@ class CampaignController extends Controller
         }
     }
 
-    public function store(Request $request)
+    public function store(Request $request): JsonResponse
     {
         // Check authorization for creating campaigns
         $this->authorize('create', Campaign::class);
@@ -169,7 +170,7 @@ class CampaignController extends Controller
         }
     }
 
-    public function show(Request $request, string $campaignId)
+    public function show(Request $request, string $campaignId): JsonResponse
     {
         try {
             $orgId = $this->resolveOrgId($request);
@@ -225,7 +226,7 @@ class CampaignController extends Controller
         }
     }
 
-    public function update(Request $request, string $campaignId)
+    public function update(Request $request, string $campaignId): JsonResponse
     {
         try {
             $orgId = $this->resolveOrgId($request);
@@ -300,7 +301,7 @@ class CampaignController extends Controller
         }
     }
 
-    public function destroy(Request $request, string $campaignId)
+    public function destroy(Request $request, string $campaignId): JsonResponse
     {
         try {
             $orgId = $this->resolveOrgId($request);
@@ -358,7 +359,7 @@ class CampaignController extends Controller
         }
     }
 
-    public function duplicate(Request $request, string $campaignId)
+    public function duplicate(Request $request, string $campaignId): JsonResponse
     {
         try {
             $orgId = $this->resolveOrgId($request);
@@ -429,7 +430,7 @@ class CampaignController extends Controller
         }
     }
 
-    public function analytics(Request $request, string $campaignId)
+    public function analytics(Request $request, string $campaignId): JsonResponse
     {
         try {
             $orgId = $this->resolveOrgId($request);
@@ -553,7 +554,7 @@ class CampaignController extends Controller
      * Get comprehensive performance metrics for a campaign
      * NEW: P2 Option 3 - Campaign Performance Dashboard
      */
-    public function performanceMetrics(Request $request, string $campaignId)
+    public function performanceMetrics(Request $request, string $campaignId): JsonResponse
     {
         try {
             $orgId = $this->resolveOrgId($request);
@@ -614,7 +615,7 @@ class CampaignController extends Controller
      * Compare performance of multiple campaigns
      * NEW: P2 Option 3 - Campaign Performance Dashboard
      */
-    public function compareCampaigns(Request $request)
+    public function compareCampaigns(Request $request): JsonResponse
     {
         try {
             $orgId = $this->resolveOrgId($request);
@@ -691,7 +692,7 @@ class CampaignController extends Controller
      * Get performance trends over time for a campaign
      * NEW: P2 Option 3 - Campaign Performance Dashboard
      */
-    public function performanceTrends(Request $request, string $campaignId)
+    public function performanceTrends(Request $request, string $campaignId): JsonResponse
     {
         try {
             $orgId = $this->resolveOrgId($request);
@@ -758,7 +759,7 @@ class CampaignController extends Controller
      * Get top performing campaigns for the organization
      * NEW: P2 Option 3 - Campaign Performance Dashboard
      */
-    public function topPerforming(Request $request)
+    public function topPerforming(Request $request): JsonResponse
     {
         try {
             $orgId = $this->resolveOrgId($request);

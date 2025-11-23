@@ -45,16 +45,8 @@ class OfferingsOld extends BaseModel
     /**
      * Scope to filter by kind
      */
-    public function scopeOfKind($query, string $kind)
+    public function scopeOfKind($query, string $kind): Builder
     {
         return $query->where('kind', $kind);
-
     }
-    /**
-     * Scope to get offerings for a specific org
-     */
-    public function scopeForOrg(Builder $query, string $orgId): Builder
-    {
-        return $query->where('org_id', $orgId);
-}
 }

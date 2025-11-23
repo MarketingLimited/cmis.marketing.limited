@@ -5,10 +5,11 @@ namespace App\Http\Controllers\Creative;
 use App\Http\Controllers\Controller;
 use App\Models\CreativeAsset;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\View\View;
 
 class OverviewController extends Controller
 {
-    public function index()
+    public function index(): View
     {
         $this->authorize('viewAny', CreativeAsset::class);
 

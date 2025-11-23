@@ -8,6 +8,7 @@ use App\Models\Campaign;
 use App\Services\Campaign\UnifiedCampaignService;
 use Illuminate\Http\{Request, JsonResponse};
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Http\JsonResponse;
 
 /**
  * @group Unified Campaigns

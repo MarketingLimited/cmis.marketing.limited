@@ -3,6 +3,7 @@
 namespace App\Models\Context;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Builder;
 use App\Models\BaseModel;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
@@ -29,7 +30,7 @@ class FieldAlias extends BaseModel
     /**
      * Get the field definition
      */
-    public function field()
+    public function field(): BelongsTo
     {
         return $this->belongsTo(FieldDefinition::class, 'field_id', 'field_id');
 
@@ -37,7 +38,7 @@ class FieldAlias extends BaseModel
     /**
      * Scope active aliases
      */
-    public function scopeActive($query)
+    public function scopeActive($query): Builder
     {
         return $query->where('is_active', true);
 
@@ -45,7 +46,7 @@ class FieldAlias extends BaseModel
     /**
      * Scope by alias type
      */
-    public function scopeOfType($query, string $type)
+    public function scopeOfType($query, string $type): Builder
     {
         return $query->where('alias_type', $type);
 }

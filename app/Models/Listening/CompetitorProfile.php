@@ -6,6 +6,7 @@ use App\Models\Concerns\HasOrganization;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Builder;
 use App\Models\BaseModel;
 
 class CompetitorProfile extends BaseModel
@@ -196,22 +197,22 @@ class CompetitorProfile extends BaseModel
      * Scopes
      */
 
-    public function scopeActive($query)
+    public function scopeActive($query): Builder
     {
         return $query->where('status', 'active');
 
         }
-    public function scopeWithAlerts($query)
+    public function scopeWithAlerts($query): Builder
     {
         return $query->where('enable_alerts', true);
 
         }
-    public function scopeInIndustry($query, string $industry)
+    public function scopeInIndustry($query, string $industry): Builder
     {
         return $query->where('industry', $industry);
 
         }
-    public function scopeNeedsAnalysis($query, int $hoursThreshold = 24)
+    public function scopeNeedsAnalysis($query, int $hoursThreshold = 24): Builder
     {
         return $query->where(function($q) use ($hoursThreshold) {
             $q->whereNull('last_analyzed_at')

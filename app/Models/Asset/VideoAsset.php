@@ -58,7 +58,7 @@ class VideoAsset extends BaseModel
     /**
      * Get the creative asset
      */
-    public function asset()
+    public function asset(): BelongsTo
     {
         return $this->belongsTo(\App\Models\CreativeAsset::class, 'asset_id', 'asset_id');
 

@@ -8,6 +8,7 @@ use App\Models\Core\Org;
 use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Builder;
 class OrchestrationSyncLog extends BaseModel
 {
     use HasFactory;
@@ -135,22 +136,22 @@ class OrchestrationSyncLog extends BaseModel
 
 
             }
-    public function scopeCompleted($query)
+    public function scopeCompleted($query): Builder
     {
         return $query->where('status', 'completed');
 
         }
-    public function scopeFailed($query)
+    public function scopeFailed($query): Builder
     {
         return $query->where('status', 'failed');
 
         }
-    public function scopeForSyncType($query, string $type)
+    public function scopeForSyncType($query, string $type): Builder
     {
         return $query->where('sync_type', $type);
 
         }
-    public function scopeRecent($query, int $hours = 24)
+    public function scopeRecent($query, int $hours = 24): Builder
     {
         return $query->where('started_at', '>=', now()->subHours($hours));
 }

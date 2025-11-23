@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Analytics;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\View\View;
 
 /**
  * Class ExportController
@@ -15,7 +16,7 @@ class ExportController extends Controller
     /**
      * عرض واجهة تصدير التقارير.
      */
-    public function index()
+    public function index(): View
     {
         Gate::authorize('exportData', auth()->user());
 

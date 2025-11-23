@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Validator;
 use App\Http\Controllers\Concerns\ApiResponse;
 use App\Http\Requests\Core\StoreOrgRequest;
 use App\Http\Requests\Core\UpdateOrgRequest;
+use Illuminate\Http\JsonResponse;
 
 class OrgController extends Controller
 {
@@ -27,7 +28,7 @@ class OrgController extends Controller
     /**
      * قائمة شركات المستخدم الحالي
      */
-    public function listUserOrgs(Request $request)
+    public function listUserOrgs(Request $request): JsonResponse
     {
         try {
             $orgs = $request->user()
@@ -64,7 +65,7 @@ class OrgController extends Controller
     /**
      * إنشاء شركة جديدة
      */
-    public function store(StoreOrgRequest $request)
+    public function store(StoreOrgRequest $request): JsonResponse
     {
         $this->authorize('create', Org::class);
 
@@ -122,7 +123,7 @@ class OrgController extends Controller
     /**
      * عرض تفاصيل الشركة
      */
-    public function show(Request $request, string $orgId)
+    public function show(Request $request, string $orgId): JsonResponse
     {
         $org = Org::findOrFail($orgId);
         $this->authorize('view', $org);
@@ -156,7 +157,7 @@ class OrgController extends Controller
     /**
      * تحديث الشركة
      */
-    public function update(UpdateOrgRequest $request, string $orgId)
+    public function update(UpdateOrgRequest $request, string $orgId): JsonResponse
     {
         $org = Org::findOrFail($orgId);
         $this->authorize('update', $org);
@@ -182,7 +183,7 @@ class OrgController extends Controller
     /**
      * حذف الشركة
      */
-    public function destroy(Request $request, string $orgId)
+    public function destroy(Request $request, string $orgId): JsonResponse
     {
         try {
             $org = Org::findOrFail($orgId);
@@ -205,7 +206,7 @@ class OrgController extends Controller
     /**
      * إحصائيات الشركة
      */
-    public function statistics(Request $request, string $orgId)
+    public function statistics(Request $request, string $orgId): JsonResponse
     {
         try {
             $org = Org::findOrFail($orgId);

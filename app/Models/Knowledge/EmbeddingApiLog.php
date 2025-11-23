@@ -38,7 +38,7 @@ class EmbeddingApiLog extends BaseModel
     /**
      * Get the API config
      */
-    public function config()
+    public function config(): BelongsTo
     {
         return $this->belongsTo(EmbeddingApiConfig::class, 'config_id', 'config_id');
 
@@ -46,7 +46,7 @@ class EmbeddingApiLog extends BaseModel
     /**
      * Scope successful requests
      */
-    public function scopeSuccessful($query)
+    public function scopeSuccessful($query): Builder
     {
         return $query->whereBetween('status_code', [200, 299]);
 
@@ -54,7 +54,7 @@ class EmbeddingApiLog extends BaseModel
     /**
      * Scope failed requests
      */
-    public function scopeFailed($query)
+    public function scopeFailed($query): Builder
     {
         return $query->where(function ($q) {
             $q->where('status_code', '<', 200)
@@ -64,7 +64,7 @@ class EmbeddingApiLog extends BaseModel
     /**
      * Scope slow requests
      */
-    public function scopeSlow($query, int $thresholdMs = 1000)
+    public function scopeSlow($query, int $thresholdMs = 1000): Builder
     {
         return $query->where('response_time_ms', '>', $thresholdMs);
 
@@ -72,7 +72,7 @@ class EmbeddingApiLog extends BaseModel
     /**
      * Scope by request type
      */
-    public function scopeByType($query, string $type)
+    public function scopeByType($query, string $type): Builder
     {
         return $query->where('request_type', $type);
 
@@ -80,7 +80,7 @@ class EmbeddingApiLog extends BaseModel
     /**
      * Scope recent logs
      */
-    public function scopeRecent($query, int $days = 7)
+    public function scopeRecent($query, int $days = 7): Builder
     {
         return $query->where('logged_at', '>=', now()->subDays($days));
 

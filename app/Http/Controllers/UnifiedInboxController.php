@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Services\UnifiedInboxService;
 use Illuminate\Http\Request;
+use Illuminate\View\View;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Concerns\ApiResponse;
 
@@ -21,7 +23,7 @@ class UnifiedInboxController extends Controller
     /**
      * Get unified inbox messages
      */
-    public function index(Request $request)
+    public function index(Request $request): View
     {
         // If it's a web request (not API), return the view
         if (!$request->expectsJson()) {
@@ -66,7 +68,7 @@ class UnifiedInboxController extends Controller
     /**
      * Get conversation thread
      */
-    public function conversation(Request $request, $orgId, $conversationId)
+    public function conversation(Request $request, $orgId, $conversationId): JsonResponse
     {
         $this->inboxService = new UnifiedInboxService($orgId);
 
@@ -90,7 +92,7 @@ class UnifiedInboxController extends Controller
     /**
      * Send reply to message
      */
-    public function reply(Request $request, $orgId, $messageId)
+    public function reply(Request $request, $orgId, $messageId): JsonResponse
     {
         $this->inboxService = new UnifiedInboxService($orgId);
 
@@ -123,7 +125,7 @@ class UnifiedInboxController extends Controller
     /**
      * Mark messages as read
      */
-    public function markAsRead(Request $request, $orgId)
+    public function markAsRead(Request $request, $orgId): JsonResponse
     {
         $this->inboxService = new UnifiedInboxService($orgId);
 
@@ -151,7 +153,7 @@ class UnifiedInboxController extends Controller
     /**
      * Assign message to user
      */
-    public function assign(Request $request, $orgId, $messageId)
+    public function assign(Request $request, $orgId, $messageId): JsonResponse
     {
         $this->inboxService = new UnifiedInboxService($orgId);
 
@@ -178,7 +180,7 @@ class UnifiedInboxController extends Controller
     /**
      * Add note to message
      */
-    public function addNote(Request $request, $orgId, $messageId)
+    public function addNote(Request $request, $orgId, $messageId): JsonResponse
     {
         $this->inboxService = new UnifiedInboxService($orgId);
 
@@ -210,7 +212,7 @@ class UnifiedInboxController extends Controller
     /**
      * Get saved replies
      */
-    public function savedReplies(Request $request, $orgId)
+    public function savedReplies(Request $request, $orgId): JsonResponse
     {
         $this->inboxService = new UnifiedInboxService($orgId);
 
@@ -233,7 +235,7 @@ class UnifiedInboxController extends Controller
     /**
      * Create saved reply
      */
-    public function createSavedReply(Request $request, $orgId)
+    public function createSavedReply(Request $request, $orgId): JsonResponse
     {
         $this->inboxService = new UnifiedInboxService($orgId);
 
@@ -267,7 +269,7 @@ class UnifiedInboxController extends Controller
     /**
      * Get inbox statistics
      */
-    public function statistics(Request $request, $orgId)
+    public function statistics(Request $request, $orgId): JsonResponse
     {
         $this->inboxService = new UnifiedInboxService($orgId);
 

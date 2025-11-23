@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Core;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\View\View;
 
 /**
  * Class IntegrationController
@@ -14,7 +15,7 @@ class IntegrationController extends Controller
     /**
      * عرض قائمة التكاملات النشطة
      */
-    public function index()
+    public function index(): View
     {
         return view('core.integrations.index');
     }

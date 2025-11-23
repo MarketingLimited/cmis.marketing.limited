@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Content;
 use App\Http\Controllers\Controller;
 use App\Models\Creative\ContentItem;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use App\Http\Controllers\Concerns\ApiResponse;
@@ -16,7 +17,7 @@ class ContentController extends Controller
     /**
      * Display a listing of content items.
      */
-    public function index(Request $request)
+    public function index(Request $request): JsonResponse
     {
         try {
             $orgId = $this->resolveOrgId($request);
@@ -77,7 +78,7 @@ class ContentController extends Controller
     /**
      * Store a newly created content item.
      */
-    public function store(Request $request)
+    public function store(Request $request): JsonResponse
     {
         try {
             $orgId = $this->resolveOrgId($request);
@@ -161,7 +162,7 @@ class ContentController extends Controller
     /**
      * Display the specified content item.
      */
-    public function show(Request $request, string $contentId)
+    public function show(Request $request, string $contentId): JsonResponse
     {
         try {
             $orgId = $this->resolveOrgId($request);
@@ -216,7 +217,7 @@ class ContentController extends Controller
     /**
      * Update the specified content item.
      */
-    public function update(Request $request, string $contentId)
+    public function update(Request $request, string $contentId): JsonResponse
     {
         try {
             $orgId = $this->resolveOrgId($request);
@@ -290,7 +291,7 @@ class ContentController extends Controller
     /**
      * Remove the specified content item.
      */
-    public function destroy(Request $request, string $contentId)
+    public function destroy(Request $request, string $contentId): JsonResponse
     {
         try {
             $orgId = $this->resolveOrgId($request);
@@ -348,7 +349,7 @@ class ContentController extends Controller
     /**
      * Schedule the specified content item.
      */
-    public function schedule(Request $request, string $contentId)
+    public function schedule(Request $request, string $contentId): JsonResponse
     {
         try {
             $orgId = $this->resolveOrgId($request);
@@ -420,7 +421,7 @@ class ContentController extends Controller
     /**
      * Publish the specified content item.
      */
-    public function publish(Request $request, $content_id)
+    public function publish(Request $request, $content_id): JsonResponse
     {
         Log::info('ContentController::publish called (stub)', ['content_id' => $content_id]);
         // Stub implementation - Content publishing logic not yet implemented
@@ -434,7 +435,7 @@ class ContentController extends Controller
     /**
      * Unpublish the specified content item.
      */
-    public function unpublish(Request $request, $content_id)
+    public function unpublish(Request $request, $content_id): JsonResponse
     {
         Log::info('ContentController::unpublish called (stub)', ['content_id' => $content_id]);
         // Stub implementation - Content unpublishing logic not yet implemented
@@ -448,7 +449,7 @@ class ContentController extends Controller
     /**
      * Get content versions.
      */
-    public function versions(Request $request, $content_id)
+    public function versions(Request $request, $content_id): JsonResponse
     {
         Log::info('ContentController::versions called (stub)', ['content_id' => $content_id]);
         // Stub implementation - Content versioning not yet implemented

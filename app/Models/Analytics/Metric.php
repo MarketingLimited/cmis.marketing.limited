@@ -130,7 +130,7 @@ class Metric extends BaseModel
     /**
      * Get the metric definition
      */
-    public function definition()
+    public function definition(): HasOne
     {
         return $this->hasOne(MetricDefinition::class, 'metric_name', 'metric_name');
 

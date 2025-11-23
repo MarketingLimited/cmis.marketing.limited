@@ -284,7 +284,7 @@ class AssetController extends Controller
      * @param Request $request
      * @return mixed
      */
-    public function download(string $id, Request $request)
+    public function download(string $id, Request $request): JsonResponse
     {
         try {
             $orgId = $this->resolveOrgId($request);

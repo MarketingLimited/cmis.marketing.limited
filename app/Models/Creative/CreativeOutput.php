@@ -5,6 +5,7 @@ namespace App\Models\Creative;
 use App\Models\Concerns\HasOrganization;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Builder;
 use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -51,7 +52,7 @@ class CreativeOutput extends BaseModel
     /**
      * Get the campaign
      */
-    public function campaign()
+    public function campaign(): BelongsTo
     {
         return $this->belongsTo(\App\Models\Campaign::class, 'campaign_id', 'campaign_id');
 
@@ -59,7 +60,7 @@ class CreativeOutput extends BaseModel
     /**
      * Get the creative asset
      */
-    public function asset()
+    public function asset(): BelongsTo
     {
         return $this->belongsTo(\App\Models\CreativeAsset::class, 'asset_id', 'asset_id');
 
@@ -67,7 +68,7 @@ class CreativeOutput extends BaseModel
     /**
      * Get the AI model used
      */
-    public function aiModel()
+    public function aiModel(): BelongsTo
     {
         return $this->belongsTo(\App\Models\AiModel::class, 'ai_model_id', 'model_id');
 
@@ -75,7 +76,7 @@ class CreativeOutput extends BaseModel
     /**
      * Get performance metrics
      */
-    public function performanceMetrics()
+    public function performanceMetrics(): HasMany
     {
         return $this->hasMany(\App\Models\PerformanceMetric::class, 'output_id', 'output_id');
 
@@ -83,7 +84,7 @@ class CreativeOutput extends BaseModel
     /**
      * Scope published outputs
      */
-    public function scopePublished($query)
+    public function scopePublished($query): Builder
     {
         return $query->where('status', 'published')->whereNotNull('published_at');
 
@@ -91,7 +92,7 @@ class CreativeOutput extends BaseModel
     /**
      * Scope by output type
      */
-    public function scopeOfType($query, string $type)
+    public function scopeOfType($query, string $type): Builder
     {
         return $query->where('output_type', $type);
 }

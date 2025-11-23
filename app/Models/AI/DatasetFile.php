@@ -33,7 +33,7 @@ class DatasetFile extends BaseModel
     ];
 
     // Relationships
-    public function package()
+    public function package(): BelongsTo
     {
         return $this->belongsTo(DatasetPackage::class, 'package_id', 'package_id');
     }
@@ -51,7 +51,7 @@ class DatasetFile extends BaseModel
         return round($bytes, 2) . ' ' . $units[$i];
     }
 
-    public function verifyChecksum()
+    public function verifyChecksum(): bool
     {
         if (!file_exists(storage_path($this->file_path))) {
             return false;

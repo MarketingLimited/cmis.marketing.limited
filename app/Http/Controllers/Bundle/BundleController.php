@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Bundle;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Http\JsonResponse;
 
 /**
  * Bundle Controller
@@ -22,7 +23,7 @@ class BundleController extends Controller
      * @param Request $request HTTP request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function index(Request $request)
+    public function index(Request $request): JsonResponse
     {
         Log::info('BundleController::index called (stub)', [
             'filters' => $request->all(),
@@ -41,7 +42,7 @@ class BundleController extends Controller
      * @param Request $request HTTP request with bundle data
      * @return \Illuminate\Http\JsonResponse
      */
-    public function store(Request $request)
+    public function store(Request $request): JsonResponse
     {
         Log::info('BundleController::store called (stub)', [
             'data' => $request->all(),
@@ -61,7 +62,7 @@ class BundleController extends Controller
      * @param string $bundle_id Bundle ID
      * @return \Illuminate\Http\JsonResponse
      */
-    public function show(Request $request, $bundle_id)
+    public function show(Request $request, $bundle_id): JsonResponse
     {
         Log::info('BundleController::show called (stub)', [
             'bundle_id' => $bundle_id,
@@ -80,7 +81,7 @@ class BundleController extends Controller
      * @param string $bundle_id Bundle ID
      * @return \Illuminate\Http\JsonResponse
      */
-    public function update(Request $request, $bundle_id)
+    public function update(Request $request, $bundle_id): JsonResponse
     {
         Log::info('BundleController::update called (stub)', [
             'bundle_id' => $bundle_id,
@@ -101,7 +102,7 @@ class BundleController extends Controller
      * @param string $bundle_id Bundle ID
      * @return \Illuminate\Http\JsonResponse
      */
-    public function destroy(Request $request, $bundle_id)
+    public function destroy(Request $request, $bundle_id): JsonResponse
     {
         Log::info('BundleController::destroy called (stub)', [
             'bundle_id' => $bundle_id,

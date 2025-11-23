@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Models\Concerns\HasOrganization;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Builder;
 use App\Models\BaseModel;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
@@ -41,7 +42,7 @@ class UserPermission extends BaseModel
     /**
      * Get the user
      */
-    public function user()
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id', 'user_id');
 
@@ -49,7 +50,7 @@ class UserPermission extends BaseModel
     /**
      * Get the permission
      */
-    public function permission()
+    public function permission(): BelongsTo
     {
         return $this->belongsTo(Permission::class, 'permission_id', 'permission_id');
 
@@ -57,7 +58,7 @@ class UserPermission extends BaseModel
     /**
      * Get the user who granted this permission
      */
-    public function grantedBy()
+    public function grantedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'granted_by', 'user_id');
 
@@ -76,7 +77,7 @@ class UserPermission extends BaseModel
     /**
      * Scope to get expired permissions
      */
-    public function scopeExpired($query)
+    public function scopeExpired($query): Builder
     {
         return $query->where('expires_at', '<=', now());
 

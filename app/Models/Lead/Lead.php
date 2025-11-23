@@ -9,6 +9,7 @@ use App\Models\Contact\Contact;
 use App\Models\Core\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Builder;
 
 /**
  * Lead Model
@@ -67,7 +68,7 @@ class Lead extends BaseModel
     /**
      * Get the campaign this lead belongs to
      */
-    public function campaign()
+    public function campaign(): BelongsTo
     {
         return $this->belongsTo(Campaign::class, 'campaign_id', 'campaign_id');
     }
@@ -75,7 +76,7 @@ class Lead extends BaseModel
     /**
      * Get the user assigned to this lead
      */
-    public function assignedTo()
+    public function assignedTo(): BelongsTo
     {
         return $this->belongsTo(User::class, 'assigned_to', 'user_id');
     }
@@ -83,7 +84,7 @@ class Lead extends BaseModel
     /**
      * Get the contact associated with this lead
      */
-    public function contact()
+    public function contact(): BelongsTo
     {
         return $this->belongsTo(Contact::class, 'contact_id', 'contact_id');
     }
@@ -91,7 +92,7 @@ class Lead extends BaseModel
     /**
      * Scope for leads with a specific status
      */
-    public function scopeWithStatus($query, string $status)
+    public function scopeWithStatus($query, string $status): Builder
     {
         return $query->where('status', $status);
     }
@@ -99,7 +100,7 @@ class Lead extends BaseModel
     /**
      * Scope for high-scoring leads
      */
-    public function scopeHighScore($query, int $minScore = 70)
+    public function scopeHighScore($query, int $minScore = 70): Builder
     {
         return $query->where('score', '>=', $minScore);
     }
@@ -107,7 +108,7 @@ class Lead extends BaseModel
     /**
      * Scope for qualified leads
      */
-    public function scopeQualified($query)
+    public function scopeQualified($query): Builder
     {
         return $query->where('status', self::STATUS_QUALIFIED);
     }
@@ -115,7 +116,7 @@ class Lead extends BaseModel
     /**
      * Scope for converted leads
      */
-    public function scopeConverted($query)
+    public function scopeConverted($query): Builder
     {
         return $query->where('status', self::STATUS_CONVERTED);
     }
@@ -123,7 +124,7 @@ class Lead extends BaseModel
     /**
      * Scope for leads assigned to a user
      */
-    public function scopeAssignedTo($query, string $userId)
+    public function scopeAssignedTo($query, string $userId): Builder
     {
         return $query->where('assigned_to', $userId);
     }

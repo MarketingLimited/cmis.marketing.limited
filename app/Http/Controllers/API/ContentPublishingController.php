@@ -50,11 +50,15 @@ class ContentPublishingController extends Controller
                 'created_by' => $request->user()->user_id,
             ]);
 
+            // Fetch all integrations in one query (eliminates N+1)
+            $integrations = Integration::whereIn('integration_id', $validated['integration_ids'])
+                ->where('org_id', $orgId)
+                ->where('is_active', true)
+                ->get()
+                ->keyBy('integration_id');
+
             foreach ($validated['integration_ids'] as $integrationId) {
-                $integration = Integration::where('integration_id', $integrationId)
-                    ->where('org_id', $orgId)
-                    ->where('is_active', true)
-                    ->first();
+                $integration = $integrations->get($integrationId);
 
                 if (!$integration) {
                     $results[] = [
@@ -145,13 +149,17 @@ class ContentPublishingController extends Controller
                 'created_by' => $request->user()->user_id,
             ]);
 
+            // Fetch all integrations in one query (eliminates N+1)
+            $integrations = Integration::whereIn('integration_id', $validated['integration_ids'])
+                ->where('org_id', $orgId)
+                ->where('is_active', true)
+                ->get()
+                ->keyBy('integration_id');
+
             // Create scheduled posts for each integration
             $scheduledPosts = [];
             foreach ($validated['integration_ids'] as $integrationId) {
-                $integration = Integration::where('integration_id', $integrationId)
-                    ->where('org_id', $orgId)
-                    ->where('is_active', true)
-                    ->first();
+                $integration = $integrations->get($integrationId);
 
                 if (!$integration) continue;
 

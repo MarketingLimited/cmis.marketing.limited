@@ -57,9 +57,9 @@ class ContentPlanController extends Controller
             $query->where('end_date', '<=', $request->end_date);
         }
 
-        // Pagination
+        // Pagination with eager loading (prevents N+1 queries)
         $perPage = min($request->get('per_page', 15), 100);
-        $plans = $query->latest()->paginate($perPage);
+        $plans = $query->with(['campaign', 'items', 'creator'])->latest()->paginate($perPage);
 
         return $this->paginated($plans, 'Content plans retrieved successfully');
     }

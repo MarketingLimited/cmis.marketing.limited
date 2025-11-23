@@ -8,13 +8,15 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\View\View;
+use Illuminate\Http\RedirectResponse;
 
 class InvitationController extends Controller
 {
     /**
      * Show the invitation acceptance page
      */
-    public function show(string $token)
+    public function show(string $token): View
     {
         $invitation = UserOrg::where('invitation_token', $token)
             ->whereNull('invitation_accepted_at')
@@ -37,7 +39,7 @@ class InvitationController extends Controller
     /**
      * Accept the invitation
      */
-    public function accept(Request $request, string $token)
+    public function accept(Request $request, string $token): RedirectResponse
     {
         $invitation = UserOrg::where('invitation_token', $token)
             ->whereNull('invitation_accepted_at')
@@ -82,7 +84,7 @@ class InvitationController extends Controller
     /**
      * Decline the invitation
      */
-    public function decline(string $token)
+    public function decline(string $token): RedirectResponse
     {
         $invitation = UserOrg::where('invitation_token', $token)
             ->whereNull('invitation_accepted_at')

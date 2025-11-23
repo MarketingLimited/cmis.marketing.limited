@@ -303,7 +303,7 @@ class MetaSyncService extends BasePlatformSyncService
     /**
      * Get API Client
      */
-    protected function getApiClient()
+    protected function getApiClient(): mixed
     {
         return Http::withToken($this->integration->access_token)
             ->timeout(30)

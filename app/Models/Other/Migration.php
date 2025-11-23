@@ -3,6 +3,7 @@
 namespace App\Models\Other;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Builder;
 use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -29,7 +30,7 @@ class Migration extends BaseModel
     /**
      * Scope to get migrations for a specific batch
      */
-    public function scopeForBatch($query, int $batch)
+    public function scopeForBatch($query, int $batch): Builder
     {
         return $query->where('batch', $batch);
 }

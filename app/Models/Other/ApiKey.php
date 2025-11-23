@@ -3,6 +3,7 @@
 namespace App\Models\Other;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Builder;
 use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -37,7 +38,7 @@ class ApiKey extends BaseModel
     /**
      * Scope to get active API keys
      */
-    public function scopeActive($query)
+    public function scopeActive($query): Builder
     {
         return $query->where('is_active', true);
     }
@@ -45,7 +46,7 @@ class ApiKey extends BaseModel
     /**
      * Scope to find by service code
      */
-    public function scopeByServiceCode($query, string $serviceCode)
+    public function scopeByServiceCode($query, string $serviceCode): Builder
     {
         return $query->where('service_code', $serviceCode);
     }

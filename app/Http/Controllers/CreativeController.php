@@ -11,6 +11,7 @@ use App\Models\CreativeAsset;
 use App\Services\CreativeService;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Concerns\ApiResponse;
+use Illuminate\Http\JsonResponse;
 
 class CreativeController extends Controller
 {
@@ -70,7 +71,7 @@ class CreativeController extends Controller
     /**
      * Store a newly created creative asset
      */
-    public function store(StoreCreativeAssetRequest $request)
+    public function store(StoreCreativeAssetRequest $request): JsonResponse
     {
         try {
             $validated = $request->validated();
@@ -98,7 +99,7 @@ class CreativeController extends Controller
     /**
      * Display the specified creative asset
      */
-    public function show(string $assetId)
+    public function show(string $assetId): JsonResponse
     {
         try {
             $orgId = session('current_org_id') ?? auth()->user()->org_id;
@@ -131,7 +132,7 @@ class CreativeController extends Controller
     /**
      * Update the specified creative asset
      */
-    public function update(UpdateCreativeAssetRequest $request, string $assetId)
+    public function update(UpdateCreativeAssetRequest $request, string $assetId): JsonResponse
     {
         try {
             $orgId = session('current_org_id') ?? auth()->user()->org_id;
@@ -167,7 +168,7 @@ class CreativeController extends Controller
     /**
      * Remove the specified creative asset
      */
-    public function destroy(string $assetId)
+    public function destroy(string $assetId): JsonResponse
     {
         try {
             $deleted = $this->creativeService->deleteAsset($assetId);
@@ -201,7 +202,7 @@ class CreativeController extends Controller
     /**
      * Approve a creative asset
      */
-    public function approve(string $assetId)
+    public function approve(string $assetId): JsonResponse
     {
         try {
             $approved = $this->creativeService->approveAsset($assetId, auth()->id());
@@ -233,7 +234,7 @@ class CreativeController extends Controller
     /**
      * Reject a creative asset
      */
-    public function reject(Request $request, string $assetId)
+    public function reject(Request $request, string $assetId): JsonResponse
     {
         $request->validate([
             'reason' => 'required|string|max:1000',

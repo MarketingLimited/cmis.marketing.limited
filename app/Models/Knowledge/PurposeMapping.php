@@ -38,7 +38,7 @@ class PurposeMapping extends BaseModel
     /**
      * Scope active purposes
      */
-    public function scopeActive($query)
+    public function scopeActive($query): Builder
     {
         return $query->where('is_active', true);
 
@@ -46,7 +46,7 @@ class PurposeMapping extends BaseModel
     /**
      * Scope by category
      */
-    public function scopeByCategory($query, string $category)
+    public function scopeByCategory($query, string $category): Builder
     {
         return $query->where('category', $category);
 

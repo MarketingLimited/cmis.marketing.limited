@@ -51,7 +51,7 @@ class ChannelMetric extends BaseModel
     /**
      * Get the channel
      */
-    public function channel()
+    public function channel(): BelongsTo
     {
         return $this->belongsTo(\App\Models\Channel::class, 'channel_id', 'channel_id');
 
@@ -59,7 +59,7 @@ class ChannelMetric extends BaseModel
     /**
      * Scope by date range
      */
-    public function scopeDateRange($query, $startDate, $endDate)
+    public function scopeDateRange($query, $startDate, $endDate): Builder
     {
         return $query->whereBetween('date', [$startDate, $endDate]);
 
@@ -67,7 +67,7 @@ class ChannelMetric extends BaseModel
     /**
      * Scope recent metrics
      */
-    public function scopeRecent($query, int $days = 30)
+    public function scopeRecent($query, int $days = 30): Builder
     {
         return $query->where('date', '>=', now()->subDays($days));
 

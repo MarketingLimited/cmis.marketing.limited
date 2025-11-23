@@ -40,7 +40,7 @@ class EmbeddingUpdateQueue extends BaseModel
     /**
      * Scope pending items
      */
-    public function scopePending($query)
+    public function scopePending($query): Builder
     {
         return $query->where('status', 'pending')
             ->orderBy('priority', 'desc')
@@ -50,7 +50,7 @@ class EmbeddingUpdateQueue extends BaseModel
     /**
      * Scope processing items
      */
-    public function scopeProcessing($query)
+    public function scopeProcessing($query): Builder
     {
         return $query->where('status', 'processing');
 
@@ -58,7 +58,7 @@ class EmbeddingUpdateQueue extends BaseModel
     /**
      * Scope failed items
      */
-    public function scopeFailed($query)
+    public function scopeFailed($query): Builder
     {
         return $query->where('status', 'failed');
 
@@ -66,7 +66,7 @@ class EmbeddingUpdateQueue extends BaseModel
     /**
      * Scope by priority
      */
-    public function scopeHighPriority($query, int $threshold = 5)
+    public function scopeHighPriority($query, int $threshold = 5): Builder
     {
         return $query->where('priority', '>=', $threshold);
 

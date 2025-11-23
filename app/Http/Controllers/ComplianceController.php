@@ -7,6 +7,8 @@ use App\Models\CreativeAsset;
 use App\Models\ComplianceRule;
 use App\Services\ComplianceService;
 use Illuminate\Http\Request;
+use Illuminate\View\View;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Gate;
 use App\Http\Controllers\Concerns\ApiResponse;
 
@@ -24,7 +26,7 @@ class ComplianceController extends Controller
     /**
      * Display compliance dashboard
      */
-    public function index()
+    public function index(): View
     {
         Gate::authorize('viewInsights', auth()->user());
 
@@ -34,7 +36,7 @@ class ComplianceController extends Controller
     /**
      * Validate campaign compliance
      */
-    public function validateCampaign(string $campaignId)
+    public function validateCampaign(string $campaignId): JsonResponse
     {
         Gate::authorize('viewInsights', auth()->user());
 
@@ -57,7 +59,7 @@ class ComplianceController extends Controller
     /**
      * Validate creative asset compliance
      */
-    public function validateAsset(string $assetId)
+    public function validateAsset(string $assetId): JsonResponse
     {
         Gate::authorize('viewInsights', auth()->user());
 
@@ -80,7 +82,7 @@ class ComplianceController extends Controller
     /**
      * Get organization compliance summary
      */
-    public function orgSummary(string $orgId)
+    public function orgSummary(string $orgId): JsonResponse
     {
         Gate::authorize('viewInsights', auth()->user());
 
@@ -102,7 +104,7 @@ class ComplianceController extends Controller
     /**
      * List compliance rules
      */
-    public function rules(Request $request)
+    public function rules(Request $request): JsonResponse
     {
         Gate::authorize('viewInsights', auth()->user());
 
@@ -124,7 +126,7 @@ class ComplianceController extends Controller
     /**
      * Create compliance rule
      */
-    public function storeRule(Request $request)
+    public function storeRule(Request $request): JsonResponse
     {
         Gate::authorize('manageKnowledge', auth()->user());
 
@@ -164,7 +166,7 @@ class ComplianceController extends Controller
     /**
      * Update compliance rule
      */
-    public function updateRule(Request $request, string $ruleId)
+    public function updateRule(Request $request, string $ruleId): JsonResponse
     {
         Gate::authorize('manageKnowledge', auth()->user());
 
@@ -196,7 +198,7 @@ class ComplianceController extends Controller
     /**
      * Delete compliance rule
      */
-    public function destroyRule(string $ruleId)
+    public function destroyRule(string $ruleId): JsonResponse
     {
         Gate::authorize('manageKnowledge', auth()->user());
 
@@ -219,7 +221,7 @@ class ComplianceController extends Controller
     /**
      * Get compliance audits
      */
-    public function audits(Request $request, string $orgId)
+    public function audits(Request $request, string $orgId): JsonResponse
     {
         Gate::authorize('viewInsights', auth()->user());
 

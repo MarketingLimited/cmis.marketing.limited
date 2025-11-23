@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Creative;
 use App\Http\Controllers\Controller;
 use App\Models\Creative\ContentItem;
 use Illuminate\Http\Request;
+use Illuminate\View\View;
 
 /**
  * Class ContentController
@@ -15,7 +16,7 @@ class ContentController extends Controller
     /**
      * عرض قائمة المحتويات النصية.
      */
-    public function index()
+    public function index(): View
     {
         $this->authorize('viewAny', ContentItem::class);
 

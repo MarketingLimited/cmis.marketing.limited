@@ -8,6 +8,7 @@ use App\Models\Core\Org;
 use App\Models\Core\User;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Builder;
 use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -73,17 +74,17 @@ class Anomaly extends BaseModel
         ]);
     }
 
-    public function scopeUnacknowledged($query)
+    public function scopeUnacknowledged($query): Builder
     {
         return $query->where('status', 'new');
     }
 
-    public function scopeCritical($query)
+    public function scopeCritical($query): Builder
     {
         return $query->where('severity', 'critical');
     }
 
-    public function scopeRecent($query, int $days = 7)
+    public function scopeRecent($query, int $days = 7): Builder
     {
         return $query->where('detected_date', '>=', now()->subDays($days));
     }

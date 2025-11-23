@@ -9,6 +9,7 @@ use App\Models\Campaign;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
@@ -49,32 +50,24 @@ class Context extends BaseModel
     /**
      * Get the campaign
      */
-    public function campaign()
+    public function campaign(): BelongsTo
     {
         return $this->belongsTo(Campaign::class, 'campaign_id', 'campaign_id');
-
     }
+
     /**
      * Scope to filter by type
      */
-    public function scopeOfType($query, string $type)
+    public function scopeOfType($query, string $type): Builder
     {
         return $query->where('type', $type);
-
     }
-    /**
-     * Scope to get contexts for a specific org
-     */
-    public function scopeForOrg(Builder $query, string $orgId): Builder
-    {
-        return $query->where('org_id', $orgId);
 
-    }
     /**
      * Scope to get contexts for a specific campaign
      */
-    public function scopeForCampaign($query, string $campaignId)
+    public function scopeForCampaign($query, string $campaignId): Builder
     {
         return $query->where('campaign_id', $campaignId);
-}
+    }
 }

@@ -10,6 +10,7 @@ use App\Models\Campaign\Campaign;
 use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Builder;
 class AttributionModel extends BaseModel
 {
     use HasFactory;
@@ -148,27 +149,27 @@ class AttributionModel extends BaseModel
 
 
         }
-    public function scopeForModelType($query, string $modelType)
+    public function scopeForModelType($query, string $modelType): Builder
     {
         return $query->where('model_type', $modelType);
 
         }
-    public function scopeMultiTouch($query)
+    public function scopeMultiTouch($query): Builder
     {
         return $query->where('touchpoint_count', '>', 1);
 
         }
-    public function scopeDataDriven($query)
+    public function scopeDataDriven($query): Builder
     {
         return $query->where('model_type', 'data_driven');
 
         }
-    public function scopeHighValue($query, float $threshold = 100)
+    public function scopeHighValue($query, float $threshold = 100): Builder
     {
         return $query->where('conversion_value', '>=', $threshold);
 
         }
-    public function scopeWithinLookback($query, int $days)
+    public function scopeWithinLookback($query, int $days): Builder
     {
         return $query->where('conversion_date', '>=', now()->subDays($days));
 }

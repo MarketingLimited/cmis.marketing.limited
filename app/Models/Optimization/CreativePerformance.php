@@ -9,6 +9,7 @@ use App\Models\Campaign\Campaign;
 use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Builder;
 class CreativePerformance extends BaseModel
 {
     use HasFactory;
@@ -193,22 +194,22 @@ class CreativePerformance extends BaseModel
 
 
             }
-    public function scopeHighPerforming($query)
+    public function scopeHighPerforming($query): Builder
     {
         return $query->where('performance_score', '>=', 0.7);
 
         }
-    public function scopeFatigued($query)
+    public function scopeFatigued($query): Builder
     {
         return $query->where('fatigue_score', '>', 0.7);
 
         }
-    public function scopeForCreativeType($query, string $type)
+    public function scopeForCreativeType($query, string $type): Builder
     {
         return $query->where('creative_type', $type);
 
         }
-    public function scopeNeedsRefresh($query)
+    public function scopeNeedsRefresh($query): Builder
     {
         return $query->where(function ($q) {
             $q->where('fatigue_score', '>', 0.7)

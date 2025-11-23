@@ -46,7 +46,7 @@ class Flow extends BaseModel
     /**
      * Get the flow steps
      */
-    public function steps()
+    public function steps(): HasMany
     {
         return $this->hasMany(FlowStep::class, 'flow_id', 'flow_id')->orderBy('ord');
 
@@ -54,16 +54,8 @@ class Flow extends BaseModel
     /**
      * Scope to get enabled flows
      */
-    public function scopeEnabled($query)
+    public function scopeEnabled($query): Builder
     {
         return $query->where('enabled', true);
-
     }
-    /**
-     * Scope to get flows for a specific org
-     */
-    public function scopeForOrg(Builder $query, string $orgId): Builder
-    {
-        return $query->where('org_id', $orgId);
-}
 }

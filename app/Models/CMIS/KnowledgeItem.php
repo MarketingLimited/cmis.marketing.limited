@@ -75,7 +75,7 @@ class KnowledgeItem extends BaseModel
     /**
      * Scope for pending embeddings
      */
-    public function scopePendingEmbeddings($query)
+    public function scopePendingEmbeddings($query): Builder
     {
         return $query->whereNull('topic_embedding')
                     ->where('is_deprecated', false)

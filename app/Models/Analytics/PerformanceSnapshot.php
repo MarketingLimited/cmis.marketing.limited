@@ -8,6 +8,7 @@ use App\Models\Campaign;
 use App\Models\Core\Org;
 use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Builder;
 
 class PerformanceSnapshot extends BaseModel
 {
@@ -61,7 +62,7 @@ class PerformanceSnapshot extends BaseModel
      * @param string $endDate
      * @return \Illuminate\Database\Eloquent\Builder
      */
-    public function scopeDateRange($query, string $startDate, string $endDate)
+    public function scopeDateRange($query, string $startDate, string $endDate): Builder
     {
         return $query->whereBetween('snapshot_date', [$startDate, $endDate]);
 
@@ -73,7 +74,7 @@ class PerformanceSnapshot extends BaseModel
      * @param string $type
      * @return \Illuminate\Database\Eloquent\Builder
      */
-    public function scopeByType($query, string $type)
+    public function scopeByType($query, string $type): Builder
     {
         return $query->where('snapshot_type', $type);
 
@@ -85,7 +86,7 @@ class PerformanceSnapshot extends BaseModel
      * @param string $campaignId
      * @return \Illuminate\Database\Eloquent\Builder
      */
-    public function scopeByCampaign($query, string $campaignId)
+    public function scopeByCampaign($query, string $campaignId): Builder
     {
         return $query->where('campaign_id', $campaignId);
 

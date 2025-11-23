@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Campaigns;
 use App\Http\Controllers\Controller;
 use App\Models\Campaign;
 use Illuminate\Http\Request;
+use Illuminate\View\View;
 
 /**
  * Class AdController
@@ -15,7 +16,7 @@ class AdController extends Controller
     /**
      * عرض قائمة الحملات الإعلانية.
      */
-    public function index()
+    public function index(): View
     {
         $this->authorize('viewAny', Campaign::class);
 

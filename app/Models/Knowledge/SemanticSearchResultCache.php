@@ -69,7 +69,7 @@ class SemanticSearchResultCache extends BaseModel
     /**
      * Scope valid caches
      */
-    public function scopeValid($query)
+    public function scopeValid($query): Builder
     {
         return $query->where('expires_at', '>', now());
 
@@ -77,7 +77,7 @@ class SemanticSearchResultCache extends BaseModel
     /**
      * Scope expired caches
      */
-    public function scopeExpired($query)
+    public function scopeExpired($query): Builder
     {
         return $query->where('expires_at', '<=', now());
 
@@ -85,7 +85,7 @@ class SemanticSearchResultCache extends BaseModel
     /**
      * Scope by hit count
      */
-    public function scopePopular($query, int $threshold = 10)
+    public function scopePopular($query, int $threshold = 10): Builder
     {
         return $query->where('hit_count', '>=', $threshold)
             ->orderBy('hit_count', 'desc');

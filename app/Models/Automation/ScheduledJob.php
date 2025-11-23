@@ -7,6 +7,7 @@ use App\Models\Concerns\HasOrganization;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Builder;
 
 class ScheduledJob extends BaseModel
 {
@@ -214,29 +215,29 @@ class ScheduledJob extends BaseModel
 
     // ===== Scopes =====
 
-    public function scopeActive($query)
+    public function scopeActive($query): Builder
     {
         return $query->where('status', 'active');
     }
 
-    public function scopeDue($query)
+    public function scopeDue($query): Builder
     {
         return $query->active()
             ->whereNotNull('next_run_at')
             ->where('next_run_at', '<=', now());
     }
 
-    public function scopeForWorkflowTemplate($query, string $templateId)
+    public function scopeForWorkflowTemplate($query, string $templateId): Builder
     {
         return $query->where('workflow_template_id', $templateId);
     }
 
-    public function scopeForAutomationRule($query, string $ruleId)
+    public function scopeForAutomationRule($query, string $ruleId): Builder
     {
         return $query->where('automation_rule_id', $ruleId);
     }
 
-    public function scopeWithinDateRange($query, $start = null, $end = null)
+    public function scopeWithinDateRange($query, $start = null, $end = null): Builder
     {
         if ($start) {
             $query->where('start_date', '>=', $start);

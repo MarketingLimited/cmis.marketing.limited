@@ -8,6 +8,7 @@ use App\Models\Core\Org;
 use App\Models\Core\User;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Builder;
 use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -176,23 +177,23 @@ class AutomationRule extends BaseModel
 
     // ===== Scopes =====
 
-    public function scopeActive($query)
+    public function scopeActive($query): Builder
     {
         return $query->where('status', 'active')->where('enabled', true);
     }
 
-    public function scopeOfType($query, string $type)
+    public function scopeOfType($query, string $type): Builder
     {
         return $query->where('rule_type', $type);
     }
 
-    public function scopeForEntity($query, string $entityType, string $entityId)
+    public function scopeForEntity($query, string $entityType, string $entityId): Builder
     {
         return $query->where('entity_type', $entityType)
                      ->where('entity_id', $entityId);
     }
 
-    public function scopeDueForExecution($query)
+    public function scopeDueForExecution($query): Builder
     {
         return $query->active()
             ->where(function ($q) {

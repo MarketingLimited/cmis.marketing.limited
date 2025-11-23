@@ -8,6 +8,7 @@ use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Builder;
 
 class AiAction extends BaseModel
 {
@@ -41,33 +42,33 @@ class AiAction extends BaseModel
     ];
 
     // Relationships
-    public function user()
+    public function user(): BelongsTo
     {
         return $this->belongsTo(\App\Models\User::class, 'user_id', 'user_id');
     }
 
-    public function organization()
+    public function organization(): BelongsTo
     {
         return $this->belongsTo(\App\Models\Organization::class, 'org_id', 'org_id');
     }
 
     // Scopes
-    public function scopeByType($query, $type)
+    public function scopeByType($query, $type): Builder
     {
         return $query->where('action_type', $type);
     }
 
-    public function scopeSuccessful($query)
+    public function scopeSuccessful($query): Builder
     {
         return $query->where('status', 'success');
     }
 
-    public function scopeFailed($query)
+    public function scopeFailed($query): Builder
     {
         return $query->where('status', 'failed');
     }
 
-    public function scopeByOrg($query, $orgId)
+    public function scopeByOrg($query, $orgId): Builder
     {
         return $query->where('org_id', $orgId);
     }

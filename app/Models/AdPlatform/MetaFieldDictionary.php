@@ -3,6 +3,7 @@
 namespace App\Models\AdPlatform;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Builder;
 use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -33,7 +34,7 @@ class MetaFieldDictionary extends BaseModel
     /**
      * Scope to find by field name
      */
-    public function scopeByFieldName($query, string $fieldName)
+    public function scopeByFieldName($query, string $fieldName): Builder
     {
         return $query->where('field_name', $fieldName);
 
@@ -41,7 +42,7 @@ class MetaFieldDictionary extends BaseModel
     /**
      * Scope to find by unified alias
      */
-    public function scopeByUnifiedAlias($query, string $alias)
+    public function scopeByUnifiedAlias($query, string $alias): Builder
     {
         return $query->where('unified_alias', $alias);
 }

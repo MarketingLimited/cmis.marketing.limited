@@ -7,6 +7,7 @@ use App\Models\Concerns\HasOrganization;
 use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Builder;
 
 class OpsAudit extends BaseModel
 {
@@ -36,17 +37,17 @@ class OpsAudit extends BaseModel
     ];
 
     // Relationships
-    public function user()
+    public function user(): BelongsTo
     {
         return $this->belongsTo(\App\Models\User::class, 'user_id', 'user_id');
 
         }
-    public function organization()
+    public function organization(): BelongsTo
     {
         return $this->belongsTo(\App\Models\Organization::class, 'org_id', 'org_id');
 
         }
-    public function scopeByType($query, $type)
+    public function scopeByType($query, $type): Builder
     {
         return $query->where('operation_type', $type);
 
@@ -61,17 +62,17 @@ class OpsAudit extends BaseModel
         return $query;
 
         }
-    public function scopeByUser($query, $userId)
+    public function scopeByUser($query, $userId): Builder
     {
         return $query->where('user_id', $userId);
 
         }
-    public function scopeSuccessful($query)
+    public function scopeSuccessful($query): Builder
     {
         return $query->where('status', 'success');
 
         }
-    public function scopeFailed($query)
+    public function scopeFailed($query): Builder
     {
         return $query->where('status', 'failed');
 

@@ -8,6 +8,7 @@ use App\Models\Core\Org;
 use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Builder;
 class OrchestrationWorkflow extends BaseModel
 {
     use HasFactory;
@@ -126,17 +127,17 @@ class OrchestrationWorkflow extends BaseModel
 
 
         }
-    public function scopeRunning($query)
+    public function scopeRunning($query): Builder
     {
         return $query->where('status', 'running');
 
         }
-    public function scopeCompleted($query)
+    public function scopeCompleted($query): Builder
     {
         return $query->where('status', 'completed');
 
         }
-    public function scopeForType($query, string $type)
+    public function scopeForType($query, string $type): Builder
     {
         return $query->where('workflow_type', $type);
 }

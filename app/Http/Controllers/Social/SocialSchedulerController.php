@@ -7,6 +7,7 @@ use App\Models\Social\ScheduledSocialPost;
 use App\Models\Social\SocialAccount;
 use App\Models\Channel;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -29,7 +30,7 @@ class SocialSchedulerController extends Controller
     /**
      * Get dashboard overview with stats and scheduled posts
      */
-    public function dashboard(Request $request, string $orgId)
+    public function dashboard(Request $request, string $orgId): JsonResponse
     {
         $this->authorize('viewAnalytics', Channel::class);
         try {
@@ -70,7 +71,7 @@ class SocialSchedulerController extends Controller
     /**
      * Get all scheduled posts
      */
-    public function scheduled(Request $request, string $orgId)
+    public function scheduled(Request $request, string $orgId): JsonResponse
     {
         $this->authorize('viewAny', Channel::class);
         try {
@@ -95,7 +96,7 @@ class SocialSchedulerController extends Controller
     /**
      * Get all published posts with engagement metrics
      */
-    public function published(Request $request, string $orgId)
+    public function published(Request $request, string $orgId): JsonResponse
     {
         $this->authorize('viewAny', Channel::class);
         try {
@@ -126,7 +127,7 @@ class SocialSchedulerController extends Controller
     /**
      * Get all draft posts
      */
-    public function drafts(Request $request, string $orgId)
+    public function drafts(Request $request, string $orgId): JsonResponse
     {
         $this->authorize('viewAny', Channel::class);
         try {
@@ -149,7 +150,7 @@ class SocialSchedulerController extends Controller
     /**
      * Schedule a new post
      */
-    public function schedule(Request $request, string $orgId)
+    public function schedule(Request $request, string $orgId): JsonResponse
     {
         $this->authorize('schedule', Channel::class);
         $validator = Validator::make($request->all(), [
@@ -215,7 +216,7 @@ class SocialSchedulerController extends Controller
     /**
      * Update a scheduled or draft post
      */
-    public function update(Request $request, string $orgId, string $postId)
+    public function update(Request $request, string $orgId, string $postId): JsonResponse
     {
         $this->authorize('update', Channel::class);
         $validator = Validator::make($request->all(), [
@@ -277,7 +278,7 @@ class SocialSchedulerController extends Controller
     /**
      * Delete a post
      */
-    public function destroy(Request $request, string $orgId, string $postId)
+    public function destroy(Request $request, string $orgId, string $postId): JsonResponse
     {
         $this->authorize('delete', Channel::class);
         try {
@@ -315,7 +316,7 @@ class SocialSchedulerController extends Controller
      * Publish a post immediately
      * FIXED: Now uses actual publishing job instead of simulation
      */
-    public function publishNow(Request $request, string $orgId, string $postId)
+    public function publishNow(Request $request, string $orgId, string $postId): JsonResponse
     {
         $this->authorize('publish', Channel::class);
         try {
@@ -379,7 +380,7 @@ class SocialSchedulerController extends Controller
     /**
      * Reschedule a post
      */
-    public function reschedule(Request $request, string $orgId, string $postId)
+    public function reschedule(Request $request, string $orgId, string $postId): JsonResponse
     {
         $this->authorize('schedule', Channel::class);
         $validator = Validator::make($request->all(), [
@@ -433,7 +434,7 @@ class SocialSchedulerController extends Controller
     /**
      * Get post by ID
      */
-    public function show(Request $request, string $orgId, string $postId)
+    public function show(Request $request, string $orgId, string $postId): JsonResponse
     {
         $this->authorize('view', Channel::class);
         try {

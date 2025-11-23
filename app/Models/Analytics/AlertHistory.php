@@ -8,6 +8,7 @@ use App\Models\Core\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Builder;
 
 /**
  * Alert History Model (Phase 13)
@@ -102,7 +103,7 @@ class AlertHistory extends BaseModel
     /**
      * Scope: New alerts
      */
-    public function scopeNew($query)
+    public function scopeNew($query): Builder
     {
         return $query->where('status', 'new');
     }
@@ -110,7 +111,7 @@ class AlertHistory extends BaseModel
     /**
      * Scope: Active alerts (not resolved)
      */
-    public function scopeActive($query)
+    public function scopeActive($query): Builder
     {
         return $query->whereIn('status', ['new', 'acknowledged', 'snoozed']);
     }
@@ -118,7 +119,7 @@ class AlertHistory extends BaseModel
     /**
      * Scope: By severity
      */
-    public function scopeBySeverity($query, string $severity)
+    public function scopeBySeverity($query, string $severity): Builder
     {
         return $query->where('severity', $severity);
     }
@@ -126,7 +127,7 @@ class AlertHistory extends BaseModel
     /**
      * Scope: Critical alerts
      */
-    public function scopeCritical($query)
+    public function scopeCritical($query): Builder
     {
         return $query->where('severity', 'critical');
     }
@@ -134,7 +135,7 @@ class AlertHistory extends BaseModel
     /**
      * Scope: Recent alerts
      */
-    public function scopeRecent($query, int $days = 7)
+    public function scopeRecent($query, int $days = 7): Builder
     {
         return $query->where('triggered_at', '>=', now()->subDays($days));
     }
@@ -142,7 +143,7 @@ class AlertHistory extends BaseModel
     /**
      * Scope: Snoozed alerts that should be unsnoozed
      */
-    public function scopeDueForUnsnooze($query)
+    public function scopeDueForUnsnooze($query): Builder
     {
         return $query->where('status', 'snoozed')
             ->where('snoozed_until', '<=', now());

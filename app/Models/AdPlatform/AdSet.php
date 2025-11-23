@@ -5,6 +5,7 @@ namespace App\Models\AdPlatform;
 use App\Models\Concerns\HasOrganization;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Builder;
 use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -56,7 +57,7 @@ class AdSet extends BaseModel
     /**
      * Get the integration
      */
-    public function integration()
+    public function integration(): BelongsTo
     {
         return $this->belongsTo(\App\Models\Core\Integration::class, 'integration_id', 'integration_id');
 
@@ -64,7 +65,7 @@ class AdSet extends BaseModel
     /**
      * Get the ad campaign
      */
-    public function adCampaign()
+    public function adCampaign(): BelongsTo
     {
         return $this->belongsTo(AdCampaign::class, 'campaign_external_id', 'campaign_external_id');
 
@@ -72,7 +73,7 @@ class AdSet extends BaseModel
     /**
      * Get ad entities (ads)
      */
-    public function ads()
+    public function ads(): HasMany
     {
         return $this->hasMany(AdEntity::class, 'adset_external_id', 'adset_external_id');
 
@@ -80,7 +81,7 @@ class AdSet extends BaseModel
     /**
      * Get metrics
      */
-    public function metrics()
+    public function metrics(): HasMany
     {
         return $this->hasMany(AdMetric::class, 'entity_external_id', 'adset_external_id')
             ->where('entity_level', 'adset');
@@ -100,7 +101,7 @@ class AdSet extends BaseModel
     /**
      * Scope by platform
      */
-    public function scopeByPlatform($query, string $platform)
+    public function scopeByPlatform($query, string $platform): Builder
     {
         return $query->where('platform', $platform);
 
@@ -108,7 +109,7 @@ class AdSet extends BaseModel
     /**
      * Scope by status
      */
-    public function scopeByStatus($query, string $status)
+    public function scopeByStatus($query, string $status): Builder
     {
         return $query->where('ad_set_status', $status);
 

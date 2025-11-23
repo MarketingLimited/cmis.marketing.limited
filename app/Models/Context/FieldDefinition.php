@@ -3,6 +3,7 @@
 namespace App\Models\Context;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Builder;
 use App\Models\BaseModel;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
@@ -47,7 +48,7 @@ class FieldDefinition extends BaseModel
     /**
      * Get the field values
      */
-    public function values()
+    public function values(): HasMany
     {
         return $this->hasMany(FieldValue::class, 'field_id', 'field_id');
 
@@ -55,7 +56,7 @@ class FieldDefinition extends BaseModel
     /**
      * Get field aliases
      */
-    public function aliases()
+    public function aliases(): HasMany
     {
         return $this->hasMany(FieldAlias::class, 'field_id', 'field_id');
 
@@ -63,7 +64,7 @@ class FieldDefinition extends BaseModel
     /**
      * Scope required fields
      */
-    public function scopeRequired($query)
+    public function scopeRequired($query): Builder
     {
         return $query->where('is_required', true);
 
@@ -71,7 +72,7 @@ class FieldDefinition extends BaseModel
     /**
      * Scope active fields
      */
-    public function scopeActive($query)
+    public function scopeActive($query): Builder
     {
         return $query->where('is_active', true);
 
@@ -79,7 +80,7 @@ class FieldDefinition extends BaseModel
     /**
      * Scope by module
      */
-    public function scopeForModule($query, string $moduleId)
+    public function scopeForModule($query, string $moduleId): Builder
     {
         return $query->where('module_id', $moduleId);
 

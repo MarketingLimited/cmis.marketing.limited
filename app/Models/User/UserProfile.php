@@ -48,7 +48,7 @@ class UserProfile extends BaseModel
     /**
      * Get the user
      */
-    public function user()
+    public function user(): BelongsTo
     {
         return $this->belongsTo(\App\Models\User::class, 'user_id', 'user_id');
 

@@ -3,6 +3,7 @@
 namespace App\Models\Other;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Builder;
 use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -44,7 +45,7 @@ class FlowStep extends BaseModel
     /**
      * Get the flow
      */
-    public function flow()
+    public function flow(): BelongsTo
     {
         return $this->belongsTo(Flow::class, 'flow_id', 'flow_id');
 
@@ -52,7 +53,7 @@ class FlowStep extends BaseModel
     /**
      * Scope to get steps for a specific flow
      */
-    public function scopeForFlow($query, string $flowId)
+    public function scopeForFlow($query, string $flowId): Builder
     {
         return $query->where('flow_id', $flowId);
 
@@ -60,7 +61,7 @@ class FlowStep extends BaseModel
     /**
      * Scope to filter by type
      */
-    public function scopeOfType($query, string $type)
+    public function scopeOfType($query, string $type): Builder
     {
         return $query->where('type', $type);
 }

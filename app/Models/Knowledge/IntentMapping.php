@@ -36,7 +36,7 @@ class IntentMapping extends BaseModel
     /**
      * Scope active intents
      */
-    public function scopeActive($query)
+    public function scopeActive($query): Builder
     {
         return $query->where('is_active', true);
 
@@ -44,7 +44,7 @@ class IntentMapping extends BaseModel
     /**
      * Scope by category
      */
-    public function scopeByCategory($query, string $category)
+    public function scopeByCategory($query, string $category): Builder
     {
         return $query->where('category', $category);
 

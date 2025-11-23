@@ -6,6 +6,7 @@ use App\Models\Concerns\HasOrganization;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Builder;
 use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -291,17 +292,17 @@ class SocialMention extends BaseModel
      * Scopes
      */
 
-    public function scopeForKeyword($query, string $keywordId)
+    public function scopeForKeyword($query, string $keywordId): Builder
     {
         return $query->where('keyword_id', $keywordId);
 
         }
-    public function scopeOnPlatform($query, string $platform)
+    public function scopeOnPlatform($query, string $platform): Builder
     {
         return $query->where('platform', $platform);
 
         }
-    public function scopeWithSentiment($query, string $sentiment)
+    public function scopeWithSentiment($query, string $sentiment): Builder
     {
         return $query->where('sentiment', $sentiment);
 
@@ -311,38 +312,38 @@ class SocialMention extends BaseModel
         return $query->where('requires_response', true)
                      ->whereNull('responded_at');
 
-    public function scopeByStatus($query, string $status)
+    public function scopeByStatus($query, string $status): Builder
     {
         return $query->where('status', $status);
 
         }
-    public function scopeAssignedTo($query, string $userId)
+    public function scopeAssignedTo($query, string $userId): Builder
     {
         return $query->where('assigned_to', $userId);
 
         }
-    public function scopeUnassigned($query)
+    public function scopeUnassigned($query): Builder
     {
         return $query->whereNull('assigned_to');
 
         }
-    public function scopeRecentFirst($query)
+    public function scopeRecentFirst($query): Builder
     {
         return $query->orderBy('published_at', 'desc');
 
         }
-    public function scopeHighEngagement($query)
+    public function scopeHighEngagement($query): Builder
     {
         return $query->where('engagement_rate', '>', 5.0);
 
         }
-    public function scopeFromInfluencers($query)
+    public function scopeFromInfluencers($query): Builder
     {
         return $query->where(function($q) {
             $q->where('author_followers_count', '>', 10000)
               ->orWhere('author_is_verified', true);
 
-    public function scopePublishedBetween($query, $startDate, $endDate)
+    public function scopePublishedBetween($query, $startDate, $endDate): Builder
     {
         return $query->whereBetween('published_at', [$startDate, $endDate]);
 }

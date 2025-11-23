@@ -43,7 +43,7 @@ protected $table = 'cmis.user_sessions';
     /**
      * Get session contexts
      */
-    public function contexts()
+    public function contexts(): HasMany
     {
         return $this->hasMany(SessionContext::class, 'session_id', 'session_id');
 
@@ -51,7 +51,7 @@ protected $table = 'cmis.user_sessions';
     /**
      * Scope active sessions
      */
-    public function scopeActive($query)
+    public function scopeActive($query): Builder
     {
         return $query->where('is_active', true)
             ->whereNull('ended_at');
@@ -60,7 +60,7 @@ protected $table = 'cmis.user_sessions';
     /**
      * Scope by device type
      */
-    public function scopeByDeviceType($query, string $deviceType)
+    public function scopeByDeviceType($query, string $deviceType): Builder
     {
         return $query->where('device_type', $deviceType);
 
@@ -68,7 +68,7 @@ protected $table = 'cmis.user_sessions';
     /**
      * Scope by browser
      */
-    public function scopeByBrowser($query, string $browser)
+    public function scopeByBrowser($query, string $browser): Builder
     {
         return $query->where('browser', $browser);
 
@@ -76,7 +76,7 @@ protected $table = 'cmis.user_sessions';
     /**
      * Scope recent sessions
      */
-    public function scopeRecent($query, int $hours = 24)
+    public function scopeRecent($query, int $hours = 24): Builder
     {
         return $query->where('started_at', '>=', now()->subHours($hours));
 
@@ -84,7 +84,7 @@ protected $table = 'cmis.user_sessions';
     /**
      * Scope long sessions
      */
-    public function scopeLongSessions($query, int $minutes = 30)
+    public function scopeLongSessions($query, int $minutes = 30): Builder
     {
         return $query->where('session_duration', '>=', $minutes * 60);
 

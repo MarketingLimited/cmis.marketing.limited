@@ -10,6 +10,7 @@ use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Builder;
 class OptimizationModel extends BaseModel
 {
     use HasFactory;
@@ -165,17 +166,17 @@ class OptimizationModel extends BaseModel
 
     // ===== Scopes =====
 
-    public function scopeDeployed($query)
+    public function scopeDeployed($query): Builder
     {
         return $query->where('status', 'deployed');
 
         }
-    public function scopeForModelType($query, string $modelType)
+    public function scopeForModelType($query, string $modelType): Builder
     {
         return $query->where('model_type', $modelType);
 
         }
-    public function scopeByAlgorithm($query, string $algorithm)
+    public function scopeByAlgorithm($query, string $algorithm): Builder
     {
         return $query->where('algorithm', $algorithm);
 }

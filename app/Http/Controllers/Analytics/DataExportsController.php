@@ -323,7 +323,7 @@ class DataExportsController extends Controller
      * Download export file
      * GET /api/orgs/{org_id}/exports/download/{log_id}
      */
-    public function download(string $orgId, string $logId, Request $request)
+    public function download(string $orgId, string $logId, Request $request): JsonResponse
     {
         $user = $request->user();
 

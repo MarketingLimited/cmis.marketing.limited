@@ -8,6 +8,7 @@ use App\Models\Campaign;
 use App\Models\Core\Org;
 use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Builder;
 
 class KpiTarget extends BaseModel
 {
@@ -69,7 +70,7 @@ class KpiTarget extends BaseModel
      * @param \Illuminate\Database\Eloquent\Builder $query
      * @return \Illuminate\Database\Eloquent\Builder
      */
-    public function scopeActive($query)
+    public function scopeActive($query): Builder
     {
         return $query->where('status', '!=', 'achieved')
             ->whereDate('end_date', '>=', now());
@@ -81,7 +82,7 @@ class KpiTarget extends BaseModel
      * @param \Illuminate\Database\Eloquent\Builder $query
      * @return \Illuminate\Database\Eloquent\Builder
      */
-    public function scopeAchieved($query)
+    public function scopeAchieved($query): Builder
     {
         return $query->where('status', 'achieved');
 }

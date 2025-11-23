@@ -5,6 +5,7 @@ namespace App\Models\Knowledge;
 use App\Models\Concerns\HasOrganization;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Builder;
 use App\Models\BaseModel;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
@@ -58,7 +59,7 @@ class EmbeddingApiConfig extends BaseModel
     /**
      * Get API logs
      */
-    public function logs()
+    public function logs(): HasMany
     {
         return $this->hasMany(EmbeddingApiLog::class, 'config_id', 'config_id');
 
@@ -66,7 +67,7 @@ class EmbeddingApiConfig extends BaseModel
     /**
      * Scope active configs
      */
-    public function scopeActive($query)
+    public function scopeActive($query): Builder
     {
         return $query->where('is_active', true);
 
@@ -74,7 +75,7 @@ class EmbeddingApiConfig extends BaseModel
     /**
      * Scope default config
      */
-    public function scopeDefault($query)
+    public function scopeDefault($query): Builder
     {
         return $query->where('is_default', true);
 
@@ -82,7 +83,7 @@ class EmbeddingApiConfig extends BaseModel
     /**
      * Scope by provider
      */
-    public function scopeByProvider($query, string $provider)
+    public function scopeByProvider($query, string $provider): Builder
     {
         return $query->where('provider_name', $provider);
 

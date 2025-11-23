@@ -7,6 +7,7 @@ use App\Models\Concerns\HasOrganization;
 use App\Models\Core\Org;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Builder;
 use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -54,13 +55,13 @@ class TrendAnalysis extends BaseModel
         return !empty($this->seasonality_detected);
 
         }
-    public function scopeForEntity($query, string $entityType, string $entityId)
+    public function scopeForEntity($query, string $entityType, string $entityId): Builder
     {
         return $query->where('entity_type', $entityType)
                      ->where('entity_id', $entityId);
 
                      }
-    public function scopeRecent($query, int $days = 30)
+    public function scopeRecent($query, int $days = 30): Builder
     {
         return $query->where('period_end', '>=', now()->subDays($days));
 }

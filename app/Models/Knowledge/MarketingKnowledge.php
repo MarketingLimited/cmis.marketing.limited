@@ -3,6 +3,7 @@
 namespace App\Models\Knowledge;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Builder;
 use App\Models\BaseModel;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
@@ -55,7 +56,7 @@ class MarketingKnowledge extends BaseModel
     /**
      * Scope by category
      */
-    public function scopeByCategory($query, string $category)
+    public function scopeByCategory($query, string $category): Builder
     {
         return $query->where('category', $category);
 
@@ -63,7 +64,7 @@ class MarketingKnowledge extends BaseModel
     /**
      * Scope by industry
      */
-    public function scopeByIndustry($query, string $industry)
+    public function scopeByIndustry($query, string $industry): Builder
     {
         return $query->where('industry', $industry);
 
@@ -71,7 +72,7 @@ class MarketingKnowledge extends BaseModel
     /**
      * Scope by market segment
      */
-    public function scopeBySegment($query, string $segment)
+    public function scopeBySegment($query, string $segment): Builder
     {
         return $query->where('market_segment', $segment);
 
@@ -79,7 +80,7 @@ class MarketingKnowledge extends BaseModel
     /**
      * Scope high effectiveness
      */
-    public function scopeHighEffectiveness($query, float $threshold = 0.7)
+    public function scopeHighEffectiveness($query, float $threshold = 0.7): Builder
     {
         return $query->where('effectiveness_score', '>=', $threshold)
             ->orderBy('effectiveness_score', 'desc');

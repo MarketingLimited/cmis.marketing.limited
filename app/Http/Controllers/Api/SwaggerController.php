@@ -7,6 +7,7 @@ use App\Http\Controllers\Concerns\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Route;
+use Illuminate\View\View;
 
 /**
  * @OA\Info(
@@ -43,7 +44,7 @@ class SwaggerController extends Controller
     /**
      * Display Swagger UI for interactive API documentation.
      */
-    public function ui()
+    public function ui(): View
     {
         return view('api.swagger-ui');
     }

@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Concerns\ApiResponse;
+use Illuminate\Http\JsonResponse;
 
 class KpiController extends Controller
 {
@@ -21,7 +22,7 @@ class KpiController extends Controller
         $this->analyticsRepo = $analyticsRepo;
     }
 
-    public function index(Request $request, string $orgId)
+    public function index(Request $request, string $orgId): JsonResponse
     {
         Gate::authorize('viewReports', auth()->user());
 
@@ -38,7 +39,7 @@ class KpiController extends Controller
         }
     }
 
-    public function summary(Request $request, string $orgId)
+    public function summary(Request $request, string $orgId): JsonResponse
     {
         Gate::authorize('viewPerformance', auth()->user());
 
@@ -62,7 +63,7 @@ class KpiController extends Controller
         }
     }
 
-    public function trends(Request $request, string $orgId)
+    public function trends(Request $request, string $orgId): JsonResponse
     {
         Gate::authorize('viewInsights', auth()->user());
 
@@ -92,7 +93,7 @@ class KpiController extends Controller
     /**
      * Get migration reports
      */
-    public function migrations(Request $request)
+    public function migrations(Request $request): JsonResponse
     {
         Gate::authorize('viewReports', auth()->user());
 
@@ -113,7 +114,7 @@ class KpiController extends Controller
     /**
      * Run AI query on analytics data
      */
-    public function aiQuery(Request $request, string $orgId)
+    public function aiQuery(Request $request, string $orgId): JsonResponse
     {
         Gate::authorize('viewInsights', auth()->user());
 

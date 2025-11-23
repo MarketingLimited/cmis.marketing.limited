@@ -6,6 +6,8 @@ use App\Http\Controllers\Concerns\ApiResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\View\View;
+use Illuminate\Http\RedirectResponse;
 
 class SubscriptionController extends Controller
 {
@@ -14,7 +16,7 @@ class SubscriptionController extends Controller
     /**
      * Display subscription plans.
      */
-    public function plans()
+    public function plans(): View
     {
         $plans = [
             [
@@ -71,7 +73,7 @@ class SubscriptionController extends Controller
     /**
      * Show upgrade form.
      */
-    public function upgrade()
+    public function upgrade(): View
     {
         $user = Auth::user();
         $currentPlan = $user->organization->subscription_plan ?? 'starter';
@@ -103,7 +105,7 @@ class SubscriptionController extends Controller
      * NOTE: This is a simplified implementation. In production, integrate with
      * payment providers like Stripe, Paddle, or LemonSqueezy.
      */
-    public function processUpgrade(Request $request)
+    public function processUpgrade(Request $request): RedirectResponse
     {
         $validated = $request->validate([
             'plan' => 'required|in:starter,professional,enterprise',
@@ -157,7 +159,7 @@ class SubscriptionController extends Controller
     /**
      * Show current subscription status.
      */
-    public function status()
+    public function status(): View
     {
         $user = Auth::user();
         $organization = $user->organization;
@@ -187,7 +189,7 @@ class SubscriptionController extends Controller
     /**
      * Cancel subscription.
      */
-    public function cancel(Request $request)
+    public function cancel(Request $request): RedirectResponse
     {
         $user = Auth::user();
         $organization = $user->organization;

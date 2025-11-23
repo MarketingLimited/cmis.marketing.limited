@@ -8,6 +8,7 @@ use App\Models\Core\Org;
 use App\Models\Core\User;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Builder;
 use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -48,12 +49,12 @@ class DataExportConfig extends BaseModel
         return $this->hasMany(DataExportLog::class, 'config_id', 'config_id');
 
         }
-    public function scopeActive($query)
+    public function scopeActive($query): Builder
     {
         return $query->where('is_active', true);
 
         }
-    public function scopeScheduled($query)
+    public function scopeScheduled($query): Builder
     {
         return $query->whereNotNull('schedule');
 

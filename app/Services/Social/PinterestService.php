@@ -3,7 +3,7 @@ namespace App\Services\Social;
 
 class PinterestService
 {
-    public function createPin(array $data)
+    public function createPin(array $data): array
     {
         \Log::info("PinterestService::createPin", ['data' => $data]);
         
