@@ -63,7 +63,7 @@ class VisualScenario extends BaseModel
 
         }
     public function getTotalScenes()
-    {
+    : \Illuminate\Database\Eloquent\Relations\Relation {
         return is_array($this->scenes) ? count($this->scenes) : 0;
 }
 }

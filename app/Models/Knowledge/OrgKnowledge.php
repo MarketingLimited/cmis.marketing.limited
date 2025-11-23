@@ -72,7 +72,7 @@ class OrgKnowledge extends BaseModel
      * Get related knowledge index entries
      */
     public function knowledgeEntries()
-    {
+    : \Illuminate\Database\Eloquent\Relations\Relation {
         return KnowledgeIndex::where('source_type', 'org_knowledge')
             ->where('source_id', $this->org_knowledge_id);
 

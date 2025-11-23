@@ -75,7 +75,7 @@ class AiAction extends BaseModel
 
     // Helpers
     public static function log($userId, $orgId, $type, $name, $inputData, $outputData, $modelUsed, $tokensUsed = 0, $executionTime = 0)
-    {
+    : \Illuminate\Database\Eloquent\Relations\Relation {
         return static::create([
             'user_id' => $userId,
             'org_id' => $orgId,
@@ -91,7 +91,7 @@ class AiAction extends BaseModel
     }
 
     public static function logError($userId, $orgId, $type, $name, $inputData, $errorMessage)
-    {
+    : \Illuminate\Database\Eloquent\Relations\Relation {
         return static::create([
             'user_id' => $userId,
             'org_id' => $orgId,
@@ -104,14 +104,14 @@ class AiAction extends BaseModel
     }
 
     public static function totalCostForOrg($orgId, $days = 30)
-    {
+    : \Illuminate\Database\Eloquent\Relations\Relation {
         return static::where('org_id', $orgId)
             ->where('created_at', '>=', now()->subDays($days))
             ->sum('cost');
     }
 
     public static function totalTokensForOrg($orgId, $days = 30)
-    {
+    : \Illuminate\Database\Eloquent\Relations\Relation {
         return static::where('org_id', $orgId)
             ->where('created_at', '>=', now()->subDays($days))
             ->sum('tokens_used');

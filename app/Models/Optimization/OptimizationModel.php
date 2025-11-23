@@ -100,6 +100,7 @@ class OptimizationModel extends BaseModel
             'r_squared' => $metrics['r_squared'] ?? null,
             'trained_at' => now(),
         ]);
+    }
 
     public function deploy(): void
     {
@@ -107,11 +108,13 @@ class OptimizationModel extends BaseModel
             'status' => 'deployed',
             'deployed_at' => now(),
         ]);
+    }
 
     public function recordUsage(): void
     {
         $this->increment('usage_count');
         $this->update(['last_used_at' => now()]);
+    }
 
     public function isDeployed(): bool
     {
@@ -131,17 +134,20 @@ class OptimizationModel extends BaseModel
 
         if ($this->accuracy_score !== null) {
             $scores[] = $this->accuracy_score;
+        }
         if ($this->f1_score !== null) {
             $scores[] = $this->f1_score;
+        }
         if ($this->r_squared !== null) {
             $scores[] = $this->r_squared;
+        }
 
         if (empty($scores)) {
-            }
             return 0.0;
+        }
 
-
-            }
+        return array_sum($scores) / count($scores);
+    }
     public function getModelTypeLabel(): string
     {
         return match($this->model_type) {
@@ -152,6 +158,7 @@ class OptimizationModel extends BaseModel
             'performance_prediction' => 'Performance Prediction',
             default => ucfirst(str_replace('_', ' ', $this->model_type))
         };
+    }
 
     public function getAlgorithmLabel(): string
     {
@@ -164,6 +171,7 @@ class OptimizationModel extends BaseModel
             'neural_network' => 'Neural Network',
             default => ucfirst(str_replace('_', ' ', $this->algorithm))
         };
+    }
 
     // ===== Scopes =====
 
@@ -180,4 +188,5 @@ class OptimizationModel extends BaseModel
     public function scopeByAlgorithm($query, string $algorithm): Builder
     {
         return $query->where('algorithm', $algorithm);
+    }
 }

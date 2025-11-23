@@ -270,7 +270,7 @@ class Metric extends BaseModel
      * @return mixed
      */
     public function getValue()
-    {
+    : \Illuminate\Database\Eloquent\Relations\Relation {
         if ($this->value_numeric !== null) {
             return $this->value_numeric;
         }

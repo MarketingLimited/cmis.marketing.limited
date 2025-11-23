@@ -47,3 +47,66 @@ Google Ads Platform (Tests\Unit\Services\AdPlatforms\GoogleAdsPlatform)
  [ ] It gets available campaign types
  [ ] It syncs account successfully
 
+Linked In Ads Platform (Tests\Unit\Services\AdPlatforms\LinkedInAdsPlatform)
+ [ ] It creates campaign successfully
+ [ ] It handles campaign creation failure
+ [ ] It updates campaign successfully
+ [ ] It gets campaign details
+ [ ] It deletes campaign successfully
+ [ ] It fetches campaigns with filters
+ [ ] It gets campaign metrics
+ [ ] It creates ad set successfully
+ [ ] It handles ad set creation failure
+ [ ] It creates ad with existing share
+ [ ] It creates ad with new share content
+ [ ] It handles ad creation with missing content
+ [ ] It handles ad creation failure
+ [ ] It creates lead gen form
+ [ ] It gets lead form responses
+ [ ] It gets available objectives
+ [ ] It gets available placements
+ [ ] It gets available ad formats
+ [ ] It syncs account successfully
+ [ ] It refreshes access token successfully
+ [ ] It handles token refresh failure
+ [ ] It maps objective correctly
+ [ ] It maps cost type correctly
+ [ ] It maps status correctly
+ [ ] It ensures urn format correctly
+ [ ] It extracts id from urn correctly
+ [ ] It builds targeting criteria correctly
+ [ ] It aggregates metrics correctly
+ [ ] It handles http timeout
+ [ ] It handles invalid response format
+ [ ] It handles rate limit error
+
+Tik Tok Ads Platform (Tests\Unit\Services\AdPlatforms\TikTokAdsPlatform)
+ [ ] It creates campaign successfully
+ [ ] It handles campaign creation failure
+ [ ] It updates campaign successfully
+ [ ] It gets campaign details
+ [ ] It deletes campaign successfully
+ [ ] It fetches campaigns with filters
+ [ ] It gets campaign metrics
+ [ ] It creates ad set successfully
+ [ ] It handles ad set creation failure
+ [ ] It creates ad successfully
+ [ ] It handles ad creation failure
+ [ ] It uploads video successfully
+ [ ] It handles video upload missing file
+ [ ] It uploads image successfully
+ [ ] It handles image upload missing file
+ [ ] It gets interest categories
+ [ ] It gets available objectives
+ [ ] It gets available placements
+ [ ] It gets available optimization goals
+ [ ] It gets available bid types
+ [ ] It gets available call to actions
+ [ ] It syncs account successfully
+ [ ] It refreshes access token successfully
+ [ ] It handles token refresh failure
+ [ ] It maps status correctly
+ [ ] It handles constructor missing advertiser id
+ [ ] It handles constructor missing access token
+ [ ] It handles api rate limit
+

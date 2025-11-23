@@ -110,6 +110,7 @@ class OptimizationRun extends BaseModel
             'status' => 'running',
             'started_at' => now(),
         ]);
+    }
 
     public function markAsCompleted(array $results): void
     {
@@ -128,6 +129,7 @@ class OptimizationRun extends BaseModel
             'confidence_score' => $results['confidence_score'] ?? null,
             'iterations' => $results['iterations'] ?? null,
         ]);
+    }
 
     public function markAsFailed(string $errorMessage): void
     {
@@ -139,6 +141,7 @@ class OptimizationRun extends BaseModel
             'duration_seconds' => $duration,
             'error_message' => $errorMessage,
         ]);
+    }
 
     public function markAsApplied(string $userId): void
     {
@@ -147,6 +150,7 @@ class OptimizationRun extends BaseModel
             'applied_at' => now(),
             'applied_by' => $userId,
         ]);
+    }
 
     // ===== Performance Helpers =====
 
@@ -163,11 +167,12 @@ class OptimizationRun extends BaseModel
     public function getImprovementLabel(): string
     {
         if (!$this->improvement_percentage) {
-            }
             return 'N/A';
+        }
 
-
-            }
+        $sign = $this->improvement_percentage > 0 ? '+' : '';
+        return $sign . number_format($this->improvement_percentage, 2) . '%';
+    }
     public function getOptimizationTypeLabel(): string
     {
         return match($this->optimization_type) {
@@ -177,6 +182,7 @@ class OptimizationRun extends BaseModel
             'creative_optimization' => 'Creative Optimization',
             default => ucfirst(str_replace('_', ' ', $this->optimization_type))
         };
+    }
 
     public function getObjectiveLabel(): string
     {
@@ -188,6 +194,7 @@ class OptimizationRun extends BaseModel
             'maximize_reach' => 'Maximize Reach',
             default => ucfirst(str_replace('_', ' ', $this->objective))
         };
+    }
 
     // ===== Scopes =====
 

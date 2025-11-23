@@ -59,14 +59,14 @@ class VoiceScript extends BaseModel
 
         }
     public function getDurationFormatted()
-    {
+    : \Illuminate\Database\Eloquent\Relations\Relation {
         $minutes = floor($this->estimated_duration_seconds / 60);
         $seconds = $this->estimated_duration_seconds % 60;
         return sprintf('%d:%02d', $minutes, $seconds);
 
         }
     public function updateWordCount()
-    {
+    : \Illuminate\Database\Eloquent\Relations\Relation {
         $this->word_count = str_word_count($this->script_text);
         $this->estimated_duration_seconds = ceil($this->word_count / 2.5); // Average speaking rate
         $this->save();

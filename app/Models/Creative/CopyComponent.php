@@ -108,7 +108,7 @@ class CopyComponent extends BaseModel
      * Increment usage count
      */
     public function incrementUsage()
-    {
+    : \Illuminate\Database\Eloquent\Relations\Relation {
         $this->increment('usage_count');
 }
 }

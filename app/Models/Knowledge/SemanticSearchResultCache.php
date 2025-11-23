@@ -40,7 +40,7 @@ class SemanticSearchResultCache extends BaseModel
      * Find by query hash
      */
     public static function findByHash(string $queryHash, ?string $filtersHash = null)
-    {
+    : mixed {
         $query = self::where('query_hash', $queryHash);
 
         if ($filtersHash) {

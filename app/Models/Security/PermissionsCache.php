@@ -69,7 +69,7 @@ class PermissionsCache extends BaseModel
      * Update last used timestamp
      */
     public function touch($attribute = null)
-    {
+    : bool {
         if ($attribute === null) {
             return $this->update(['last_used' => now()]);
         }

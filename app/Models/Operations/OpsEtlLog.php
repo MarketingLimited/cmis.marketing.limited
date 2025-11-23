@@ -73,7 +73,7 @@ class OpsEtlLog extends BaseModel
 
         }
     public static function start($orgId, $jobName, $jobType, $source, $destination)
-    {
+    : \Illuminate\Database\Eloquent\Relations\Relation {
         return static::create([
             'org_id' => $orgId,
             'job_name' => $jobName,
@@ -88,7 +88,7 @@ class OpsEtlLog extends BaseModel
         ]);
 
     public function complete($recordsProcessed, $recordsSucceeded, $recordsFailed = 0)
-    {
+    : \Illuminate\Database\Eloquent\Relations\Relation {
         $this->update([
             'status' => 'completed',
             'records_processed' => $recordsProcessed,

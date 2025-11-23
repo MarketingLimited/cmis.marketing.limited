@@ -71,12 +71,12 @@ class PredictiveVisualEngine extends BaseModel
 
     // Helpers
     public function isHighPerformance()
-    {
+    : \Illuminate\Database\Eloquent\Relations\Relation {
         return $this->predicted_performance >= 0.8 && $this->confidence_score >= 0.75;
     }
 
     public function getOverallScore()
-    {
+    : \Illuminate\Database\Eloquent\Relations\Relation {
         return ($this->composition_score + $this->emotion_score + $this->attention_score) / 3;
     }
 

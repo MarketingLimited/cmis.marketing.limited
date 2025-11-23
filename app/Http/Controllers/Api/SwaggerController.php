@@ -63,7 +63,7 @@ class SwaggerController extends Controller
      * Return OpenAPI specification in YAML format.
      */
     public function yaml()
-    {
+    : \Illuminate\Http\JsonResponse {
         $spec = $this->generateOpenApiSpec();
 
         // Convert to YAML (simple implementation)

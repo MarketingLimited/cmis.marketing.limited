@@ -40,7 +40,7 @@ class DatasetFile extends BaseModel
 
     // Helpers
     public function getSizeFormatted()
-    {
+    : \Illuminate\Database\Eloquent\Relations\Relation {
         $bytes = $this->file_size_bytes;
         $units = ['B', 'KB', 'MB', 'GB'];
 

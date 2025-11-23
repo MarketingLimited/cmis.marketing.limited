@@ -61,7 +61,7 @@ class AIContentGenerationController extends Controller
      * Use async=true for queued processing (recommended for production).
      */
     public function generate(Request $request, string $orgId)
-    {
+    : \Illuminate\Http\JsonResponse {
         Gate::authorize('ai.generate_content');
 
         $validator = Validator::make($request->all(), [
@@ -157,7 +157,7 @@ class AIContentGenerationController extends Controller
      * Get content generation history
      */
     public function history(Request $request, string $orgId)
-    {
+    : \Illuminate\Http\JsonResponse {
         Gate::authorize('ai.view_insights');
 
         try {

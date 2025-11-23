@@ -26,7 +26,7 @@ class MetaWebhookController extends Controller
      * @return JsonResponse|string
      */
     public function handle(Request $request)
-    {
+    : \Illuminate\Http\JsonResponse {
         // Verify webhook (GET request)
         if ($request->isMethod('get')) {
             return $this->verify($request);
@@ -73,7 +73,7 @@ class MetaWebhookController extends Controller
      * Verify webhook (GET request)
      */
     protected function verify(Request $request)
-    {
+    : \Illuminate\Http\JsonResponse {
         $mode = $request->input('hub_mode');
         $token = $request->input('hub_verify_token');
         $challenge = $request->input('hub_challenge');

@@ -2,9 +2,12 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
+use Database\Migrations\Concerns\HasRLSPolicies;
 
 return new class extends Migration
 {
+    use HasRLSPolicies;
+
     /**
      * Run the migrations.
      *
@@ -17,30 +20,30 @@ return new class extends Migration
         // Drop the dangerous bypass function
         DB::statement('DROP FUNCTION IF EXISTS cmis.bypass_rls(BOOLEAN);');
 
-        // Recreate all policies WITHOUT the bypass clause
+        // Recreate all policies WITHOUT the bypass clause using HasRLSPolicies trait
         $tables = [
-            'ad_campaigns',
-            'ad_accounts',
-            'ad_sets',
-            'ad_entities',
-            'ad_metrics',
-            'ad_audiences'
+            'cmis.ad_campaigns',
+            'cmis.ad_accounts',
+            'cmis.ad_sets',
+            'cmis.ad_entities',
+            'cmis.ad_metrics',
+            'cmis.ad_audiences',
         ];
 
         foreach ($tables as $table) {
-            // Drop existing policy
-            DB::statement("DROP POLICY IF EXISTS {$table}_org_isolation ON cmis.{$table};");
+            $tableName = explode('.', $table)[1];
 
-            // Create new policy without bypass clause
+            // Drop existing policy with bypass clause
+            DB::statement("DROP POLICY IF EXISTS {$tableName}_org_isolation ON {$table};");
+            DB::statement("DROP POLICY IF EXISTS {$tableName}_tenant_isolation ON {$table};");
+
+            // Recreate secure policy without bypass using trait
+            // Note: RLS is already enabled on these tables, just recreating policies
             DB::statement("
-                CREATE POLICY {$table}_org_isolation ON cmis.{$table}
-                    FOR ALL
-                    USING (
-                        org_id = NULLIF(current_setting('app.current_org_id', true), '')::uuid
-                    )
-                    WITH CHECK (
-                        org_id = NULLIF(current_setting('app.current_org_id', true), '')::uuid
-                    );
+                CREATE POLICY {$tableName}_tenant_isolation ON {$table}
+                FOR ALL
+                USING (org_id = current_setting('app.current_org_id', true)::uuid)
+                WITH CHECK (org_id = current_setting('app.current_org_id', true)::uuid);
             ");
         }
 
@@ -72,19 +75,23 @@ return new class extends Migration
 
         // Recreate policies with bypass clause (for rollback compatibility only)
         $tables = [
-            'ad_campaigns',
-            'ad_accounts',
-            'ad_sets',
-            'ad_entities',
-            'ad_metrics',
-            'ad_audiences'
+            'cmis.ad_campaigns',
+            'cmis.ad_accounts',
+            'cmis.ad_sets',
+            'cmis.ad_entities',
+            'cmis.ad_metrics',
+            'cmis.ad_audiences',
         ];
 
         foreach ($tables as $table) {
-            DB::statement("DROP POLICY IF EXISTS {$table}_org_isolation ON cmis.{$table};");
+            $tableName = explode('.', $table)[1];
 
+            DB::statement("DROP POLICY IF EXISTS {$tableName}_org_isolation ON {$table};");
+            DB::statement("DROP POLICY IF EXISTS {$tableName}_tenant_isolation ON {$table};");
+
+            // Recreate with bypass clause for rollback
             DB::statement("
-                CREATE POLICY {$table}_org_isolation ON cmis.{$table}
+                CREATE POLICY {$tableName}_org_isolation ON {$table}
                     FOR ALL
                     USING (
                         org_id = NULLIF(current_setting('app.current_org_id', true), '')::uuid

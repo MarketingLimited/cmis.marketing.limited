@@ -32,7 +32,7 @@ class Market extends BaseModel
      * Get organizations in this market
      */
     public function organizations()
-    {
+    : \Illuminate\Database\Eloquent\Relations\Relation {
         return $this->belongsToMany(
             \App\Models\Core\Org::class,
             'cmis.org_markets',
@@ -76,7 +76,7 @@ class Market extends BaseModel
      * Find by market ID
      */
     public static function findByMarketId(string $marketId)
-    {
+    : \Illuminate\Database\Eloquent\Relations\Relation {
         return self::where('market_id', $marketId)->first();
 }
 }

@@ -76,7 +76,7 @@ class GeneratedCreative extends BaseModel
 
         }
     public function approve($userId)
-    {
+    : \Illuminate\Database\Eloquent\Relations\Relation {
         $this->update([
             'is_approved' => true,
             'approved_by' => $userId,

@@ -67,11 +67,7 @@ class AnalyticsDashboardController extends Controller
             );
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to load dashboard',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to load dashboard');
         }
     }
 
@@ -107,11 +103,7 @@ class AnalyticsDashboardController extends Controller
             );
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to load organization overview',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to load organization overview');
         }
     }
 
@@ -148,11 +140,7 @@ class AnalyticsDashboardController extends Controller
             );
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to load content performance',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to load content performance');
         }
     }
 
@@ -188,11 +176,7 @@ class AnalyticsDashboardController extends Controller
             );
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to load platform comparison',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to load platform comparison');
         }
     }
 
@@ -229,11 +213,7 @@ class AnalyticsDashboardController extends Controller
             ]);
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to load snapshot',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to load snapshot');
         }
     }
 
@@ -278,11 +258,7 @@ class AnalyticsDashboardController extends Controller
             ]);
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to load trends',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to load trends');
         }
     }
 }

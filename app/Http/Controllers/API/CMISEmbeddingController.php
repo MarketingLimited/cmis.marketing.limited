@@ -57,10 +57,7 @@ class CMISEmbeddingController extends Controller
             ]);
             
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Search failed: ' . $e->getMessage()
-            ], 500);
+            return $this->serverError('Search failed: ');
         }
     }
     
@@ -82,10 +79,7 @@ class CMISEmbeddingController extends Controller
             ]);
             
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Processing failed: ' . $e->getMessage()
-            ], 500);
+            return $this->serverError('Processing failed: ');
         }
     }
     
@@ -108,10 +102,7 @@ class CMISEmbeddingController extends Controller
             ]);
             
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Search failed: ' . $e->getMessage()
-            ], 500);
+            return $this->serverError('Search failed: ');
         }
     }
     
@@ -130,10 +121,7 @@ class CMISEmbeddingController extends Controller
             ]);
             
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to get status: ' . $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to get status: ');
         }
     }
 }

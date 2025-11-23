@@ -67,7 +67,7 @@ class UserPermission extends BaseModel
      * Scope to get active permissions
      */
     public function scopeActive($query)
-    {
+    : \Illuminate\Database\Eloquent\Builder {
         return $query->where('is_granted', true)
             ->where(function ($q) {
                 $q->whereNull('expires_at')

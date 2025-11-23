@@ -78,12 +78,12 @@ class SceneLibrary extends BaseModel
 
     // Helpers
     public function incrementUsage()
-    {
+    : \Illuminate\Database\Eloquent\Relations\Relation {
         $this->increment('usage_count');
     }
 
     public function getDurationFormatted()
-    {
+    : \Illuminate\Database\Eloquent\Relations\Relation {
         $minutes = floor($this->duration_seconds / 60);
         $seconds = $this->duration_seconds % 60;
         return sprintf('%d:%02d', $minutes, $seconds);

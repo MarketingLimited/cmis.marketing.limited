@@ -55,7 +55,7 @@ class PurposeMapping extends BaseModel
      * Find by purpose code
      */
     public static function findByCode(string $code)
-    {
+    : mixed {
         return self::where('purpose_code', $code)->first();
 }
 }

@@ -102,7 +102,7 @@ class Notification extends BaseModel
      * Mark notification as unread
      */
     public function markAsUnread()
-    {
+    : \Illuminate\Database\Eloquent\Relations\Relation {
         return $this->update([
             'read' => false,
             'read_at' => null,
@@ -127,7 +127,7 @@ class Notification extends BaseModel
         ?string $orgId = null,
         ?string $title = null,
         ?array $data = null
-    ) {
+    ) : \Illuminate\Database\Eloquent\Relations\Relation {
         return static::create([
             'user_id' => $userId,
             'org_id' => $orgId,
@@ -142,7 +142,7 @@ class Notification extends BaseModel
      * Notify user about campaign
      */
     public static function notifyCampaign(string $userId, string $message, ?string $orgId = null, ?array $data = null)
-    {
+    : \Illuminate\Database\Eloquent\Relations\Relation {
         return static::createNotification($userId, 'campaign', $message, $orgId, 'حملة تسويقية', $data);
     }
 
@@ -150,7 +150,7 @@ class Notification extends BaseModel
      * Notify user about analytics
      */
     public static function notifyAnalytics(string $userId, string $message, ?string $orgId = null, ?array $data = null)
-    {
+    : \Illuminate\Database\Eloquent\Relations\Relation {
         return static::createNotification($userId, 'analytics', $message, $orgId, 'تحليلات', $data);
     }
 
@@ -158,7 +158,7 @@ class Notification extends BaseModel
      * Notify user about integration
      */
     public static function notifyIntegration(string $userId, string $message, ?string $orgId = null, ?array $data = null)
-    {
+    : \Illuminate\Database\Eloquent\Relations\Relation {
         return static::createNotification($userId, 'integration', $message, $orgId, 'تكامل', $data);
     }
 
@@ -166,7 +166,7 @@ class Notification extends BaseModel
      * Notify user about system event
      */
     public static function notifySystem(string $userId, string $message, ?string $orgId = null, ?array $data = null)
-    {
+    : \Illuminate\Database\Eloquent\Relations\Relation {
         return static::createNotification($userId, 'system', $message, $orgId, 'نظام', $data);
     }
 }

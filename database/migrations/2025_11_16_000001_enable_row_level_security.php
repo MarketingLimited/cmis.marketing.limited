@@ -2,9 +2,12 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
+use Database\Migrations\Concerns\HasRLSPolicies;
 
 return new class extends Migration
 {
+    use HasRLSPolicies;
+
     /**
      * Run the migrations.
      *
@@ -53,37 +56,11 @@ return new class extends Migration
             $$ LANGUAGE plpgsql STABLE SECURITY DEFINER;
         ");
 
-        // Enable RLS on all tables
+        // Enable RLS on all tables using HasRLSPolicies trait
         foreach ($tables as $table) {
             echo "Enabling RLS on {$table}...\n";
-            DB::statement("ALTER TABLE {$table} ENABLE ROW LEVEL SECURITY");
+            $this->enableRLS($table);
         }
-
-        // Create RLS policies for each table
-        foreach ($tables as $table) {
-            $tableName = explode('.', $table)[1];
-
-            // Drop existing policy if it exists
-            DB::statement("DROP POLICY IF EXISTS {$tableName}_tenant_isolation ON {$table}");
-
-            // Create policy for SELECT, UPDATE, DELETE
-            echo "Creating RLS policy for {$table}...\n";
-            DB::statement("
-                CREATE POLICY {$tableName}_tenant_isolation ON {$table}
-                FOR ALL
-                USING (org_id = cmis.current_org_id())
-                WITH CHECK (org_id = cmis.current_org_id())
-            ");
-        }
-
-        // Special policy for orgs table (users can only see their own orgs)
-        DB::statement("DROP POLICY IF EXISTS orgs_tenant_isolation ON cmis.orgs");
-        DB::statement("
-            CREATE POLICY orgs_tenant_isolation ON cmis.orgs
-            FOR ALL
-            USING (org_id = cmis.current_org_id())
-            WITH CHECK (org_id = cmis.current_org_id())
-        ");
 
         // Grant usage on the function to the application user
         DB::statement("GRANT EXECUTE ON FUNCTION cmis.current_org_id() TO begin");
@@ -111,15 +88,9 @@ return new class extends Migration
             'cmis.ad_metrics',
         ];
 
-        // Drop all policies
+        // Disable RLS on all tables using HasRLSPolicies trait
         foreach ($tables as $table) {
-            $tableName = explode('.', $table)[1];
-            DB::statement("DROP POLICY IF EXISTS {$tableName}_tenant_isolation ON {$table}");
-        }
-
-        // Disable RLS on all tables
-        foreach ($tables as $table) {
-            DB::statement("ALTER TABLE {$table} DISABLE ROW LEVEL SECURITY");
+            $this->disableRLS($table);
         }
 
         // Drop the function

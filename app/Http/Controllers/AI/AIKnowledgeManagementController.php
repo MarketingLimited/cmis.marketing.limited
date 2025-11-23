@@ -29,7 +29,7 @@ class AIKnowledgeManagementController extends Controller
     /**
      * Get knowledge base items
      */
-    public function index(Request $request, string $orgId)
+    public function index(Request $request, string $orgId): \Illuminate\Http\JsonResponse
     {
         Gate::authorize('ai.manage_knowledge');
 
@@ -76,7 +76,7 @@ class AIKnowledgeManagementController extends Controller
     /**
      * Process and vectorize knowledge documents
      */
-    public function process(Request $request, string $orgId)
+    public function process(Request $request, string $orgId): \Illuminate\Http\JsonResponse
     {
         Gate::authorize('ai.manage_knowledge');
 
@@ -117,7 +117,7 @@ class AIKnowledgeManagementController extends Controller
     /**
      * Batch process knowledge embeddings
      */
-    public function batchProcess(Request $request, string $orgId)
+    public function batchProcess(Request $request, string $orgId): \Illuminate\Http\JsonResponse
     {
         Gate::authorize('ai.manage_knowledge');
 
@@ -149,7 +149,7 @@ class AIKnowledgeManagementController extends Controller
     /**
      * Register new knowledge entry
      */
-    public function register(Request $request, string $orgId)
+    public function register(Request $request, string $orgId): \Illuminate\Http\JsonResponse
     {
         Gate::authorize('ai.manage_knowledge');
 
@@ -190,7 +190,7 @@ class AIKnowledgeManagementController extends Controller
     /**
      * Advanced semantic search
      */
-    public function advancedSearch(Request $request, string $orgId)
+    public function advancedSearch(Request $request, string $orgId): \Illuminate\Http\JsonResponse
     {
         Gate::authorize('ai.semantic_search');
 
@@ -234,7 +234,7 @@ class AIKnowledgeManagementController extends Controller
     /**
      * Auto analyze knowledge
      */
-    public function analyze(Request $request, string $orgId)
+    public function analyze(Request $request, string $orgId): \Illuminate\Http\JsonResponse
     {
         Gate::authorize('ai.view_insights');
 
@@ -273,7 +273,7 @@ class AIKnowledgeManagementController extends Controller
     /**
      * Smart context loader for RAG
      */
-    public function loadContext(Request $request, string $orgId)
+    public function loadContext(Request $request, string $orgId): \Illuminate\Http\JsonResponse
     {
         Gate::authorize('ai.semantic_search');
 
@@ -310,7 +310,7 @@ class AIKnowledgeManagementController extends Controller
     /**
      * Get system report
      */
-    public function systemReport(Request $request)
+    public function systemReport(Request $request): \Illuminate\Http\JsonResponse
     {
         Gate::authorize('ai.view_insights');
 
@@ -330,7 +330,7 @@ class AIKnowledgeManagementController extends Controller
     /**
      * Cleanup old embeddings
      */
-    public function cleanup(Request $request)
+    public function cleanup(Request $request): \Illuminate\Http\JsonResponse
     {
         Gate::authorize('ai.manage_knowledge');
 

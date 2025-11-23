@@ -54,13 +54,13 @@ class CognitiveTrackerTemplate extends BaseModel
 
     // Helpers
     public function activate()
-    {
+    : mixed {
         $this->is_active = true;
         return $this->save();
     }
 
     public function deactivate()
-    {
+    : mixed {
         $this->is_active = false;
         return $this->save();
     }

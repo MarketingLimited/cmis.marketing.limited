@@ -53,7 +53,7 @@ class ResearchKnowledge extends BaseModel
      * Get related knowledge index entries
      */
     public function knowledgeEntries()
-    {
+    : mixed {
         return KnowledgeIndex::where('source_type', 'research_knowledge')
             ->where('source_id', $this->research_id);
 

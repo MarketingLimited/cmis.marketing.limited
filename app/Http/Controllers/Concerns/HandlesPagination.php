@@ -92,7 +92,7 @@ trait HandlesPagination
      * }
      */
     protected function paginatedResponse(LengthAwarePaginator $paginator, string $message = 'Data retrieved successfully')
-    {
+    : \Illuminate\Http\JsonResponse {
         return response()->json([
             'success' => true,
             'message' => $message,

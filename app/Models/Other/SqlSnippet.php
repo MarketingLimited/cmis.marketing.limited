@@ -35,7 +35,7 @@ class SqlSnippet extends BaseModel
      * Get prompt templates using this snippet
      */
     public function promptTemplates()
-    {
+    : \Illuminate\Database\Eloquent\Relations\Relation {
         return $this->belongsToMany(
             PromptTemplate::class,
             'cmis.prompt_template_presql',

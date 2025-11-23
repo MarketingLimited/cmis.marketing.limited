@@ -23,7 +23,7 @@ class AISemanticSearchController extends Controller
      * Perform semantic search using pgvector
      */
     public function search(Request $request, string $orgId, SemanticSearchService $searchService)
-    {
+    : \Illuminate\Http\JsonResponse {
         Gate::authorize('ai.semantic_search');
 
         $validator = Validator::make($request->all(), [

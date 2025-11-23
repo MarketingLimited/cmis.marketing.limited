@@ -114,7 +114,7 @@ class AdEntity extends BaseModel
      * Get latest metrics
      */
     public function getLatestMetrics()
-    {
+    : \Illuminate\Database\Eloquent\Relations\Relation {
         return $this->metrics()
             ->orderBy('metric_date', 'desc')
             ->first();

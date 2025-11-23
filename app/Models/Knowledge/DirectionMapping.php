@@ -54,7 +54,7 @@ class DirectionMapping extends BaseModel
      * Find by direction code
      */
     public static function findByCode(string $code)
-    {
+    : mixed {
         return self::where('direction_code', $code)->first();
 
     }

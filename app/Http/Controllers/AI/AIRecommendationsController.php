@@ -21,7 +21,7 @@ class AIRecommendationsController extends Controller
      * Get AI-powered recommendations
      */
     public function index(Request $request, string $orgId)
-    {
+    : \Illuminate\Http\JsonResponse {
         Gate::authorize('ai.view_recommendations');
 
         try {

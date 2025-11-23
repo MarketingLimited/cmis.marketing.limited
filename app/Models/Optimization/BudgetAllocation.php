@@ -88,10 +88,13 @@ class BudgetAllocation extends BaseModel
     public function getChangeDirection(): string
     {
         if ($this->budget_change > 0) {
-            }
             return 'increase';
-
-            }
+        }
+        if ($this->budget_change < 0) {
+            return 'decrease';
+        }
+        return 'no_change';
+    }
     public function getBudgetChangeLabel(): string
     {
         $sign = $this->budget_change > 0 ? '+' : '';
@@ -107,23 +110,26 @@ class BudgetAllocation extends BaseModel
     public function getExpectedROIIncrease(): ?float
     {
         if (!$this->expected_revenue || !$this->recommended_budget) {
-            }
             return null;
+        }
 
+        $currentROI = $this->current_budget > 0 ? $this->expected_revenue / $this->current_budget : 0;
+        $expectedROI = $this->recommended_budget > 0 ? $this->expected_revenue / $this->recommended_budget : 0;
 
-
-
-            }
+        return $expectedROI - $currentROI;
+    }
     public function markAsApplied(): void
     {
         $this->update([
             'status' => 'applied',
             'applied_at' => now(),
         ]);
+    }
 
     public function markAsRejected(): void
     {
         $this->update(['status' => 'rejected']);
+    }
 
     // ===== Scopes =====
 
@@ -150,4 +156,5 @@ class BudgetAllocation extends BaseModel
     public function scopeHighConfidence($query): Builder
     {
         return $query->where('confidence_level', '>=', 0.8);
+    }
 }

@@ -73,10 +73,7 @@ class VectorEmbeddingsV2Controller extends Controller
                 'query' => $request->input('query')
             ]);
 
-            return response()->json([
-                'success' => false,
-                'message' => 'Search failed: ' . $e->getMessage()
-            ], 500);
+            return $this->serverError('Search failed: ');
         }
     }
 
@@ -128,10 +125,7 @@ class VectorEmbeddingsV2Controller extends Controller
                 'query' => $request->input('text_query')
             ]);
 
-            return response()->json([
-                'success' => false,
-                'message' => 'Hybrid search failed: ' . $e->getMessage()
-            ], 500);
+            return $this->serverError('Hybrid search failed: ');
         }
     }
 
@@ -188,10 +182,7 @@ class VectorEmbeddingsV2Controller extends Controller
                 'query' => $request->input('query')
             ]);
 
-            return response()->json([
-                'success' => false,
-                'message' => 'Context loading failed: ' . $e->getMessage()
-            ], 500);
+            return $this->serverError('Context loading failed: ');
         }
     }
 
@@ -259,10 +250,7 @@ class VectorEmbeddingsV2Controller extends Controller
                 'topic' => $request->input('topic')
             ]);
 
-            return response()->json([
-                'success' => false,
-                'message' => 'Registration failed: ' . $e->getMessage()
-            ], 500);
+            return $this->serverError('Registration failed: ');
         }
     }
 
@@ -305,10 +293,7 @@ class VectorEmbeddingsV2Controller extends Controller
                 'error' => $e->getMessage()
             ]);
 
-            return response()->json([
-                'success' => false,
-                'message' => 'Queue processing failed: ' . $e->getMessage()
-            ], 500);
+            return $this->serverError('Queue processing failed: ');
         }
     }
 
@@ -333,10 +318,7 @@ class VectorEmbeddingsV2Controller extends Controller
                 'error' => $e->getMessage()
             ]);
 
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to get status: ' . $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to get status: ');
         }
     }
 
@@ -361,10 +343,7 @@ class VectorEmbeddingsV2Controller extends Controller
                 'error' => $e->getMessage()
             ]);
 
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to get analysis: ' . $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to get analysis: ');
         }
     }
 
@@ -389,10 +368,7 @@ class VectorEmbeddingsV2Controller extends Controller
                 'error' => $e->getMessage()
             ]);
 
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to get queue status: ' . $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to get queue status: ');
         }
     }
 
@@ -417,10 +393,7 @@ class VectorEmbeddingsV2Controller extends Controller
                 'error' => $e->getMessage()
             ]);
 
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to get performance data: ' . $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to get performance data: ');
         }
     }
 
@@ -446,10 +419,7 @@ class VectorEmbeddingsV2Controller extends Controller
                 'error' => $e->getMessage()
             ]);
 
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to generate report: ' . $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to generate report: ');
         }
     }
 
@@ -475,10 +445,7 @@ class VectorEmbeddingsV2Controller extends Controller
                 'error' => $e->getMessage()
             ]);
 
-            return response()->json([
-                'success' => false,
-                'message' => 'Verification failed: ' . $e->getMessage()
-            ], 500);
+            return $this->serverError('Verification failed: ');
         }
     }
 }

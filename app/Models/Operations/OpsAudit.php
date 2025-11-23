@@ -53,7 +53,7 @@ class OpsAudit extends BaseModel
 
         }
     public function scopeByEntity($query, $entityType, $entityId = null)
-    {
+    : \Illuminate\Database\Eloquent\Builder {
         $query->where('entity_type', $entityType);
 
         if ($entityId) {
@@ -78,7 +78,7 @@ class OpsAudit extends BaseModel
 
         }
     public static function log($operationType, $operationName, $userId, $orgId, $entityType, $entityId, $oldValues = null, $newValues = null)
-    {
+    : \Illuminate\Database\Eloquent\Relations\Relation {
         $changes = [];
 
         if ($oldValues && $newValues) {

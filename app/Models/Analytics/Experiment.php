@@ -69,7 +69,7 @@ class Experiment extends BaseModel
     }
 
     public function controlVariant()
-    {
+    : \Illuminate\Database\Eloquent\Relations\Relation {
         return $this->variants()->where('is_control', true)->first();
     }
 

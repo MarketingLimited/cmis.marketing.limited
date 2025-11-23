@@ -81,7 +81,7 @@ class OrgComparisonController extends Controller
      * Export comparison as PDF
      */
     public function exportComparePdf(Request $request, $id)
-    {
+    : \Illuminate\Http\JsonResponse {
         $org = Org::findOrFail($id);
 
         $campaigns = collect(json_decode($request->input('campaigns'), true));
@@ -96,7 +96,7 @@ class OrgComparisonController extends Controller
      * Export comparison as Excel
      */
     public function exportCompareExcel(Request $request, $id)
-    {
+    : \Illuminate\Http\JsonResponse {
         $org = Org::findOrFail($id);
 
         $campaigns = collect(json_decode($request->input('campaigns'), true));

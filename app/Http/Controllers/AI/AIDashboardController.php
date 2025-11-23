@@ -55,7 +55,7 @@ class AIDashboardController extends Controller
      * Get AI dashboard statistics
      */
     public function show(Request $request, string $orgId)
-    {
+    : \Illuminate\Http\JsonResponse {
         Gate::authorize('ai.view_insights');
 
         try {

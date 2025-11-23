@@ -120,7 +120,7 @@ class AdCampaign extends BaseModel
      * Alias for adMetrics() for consistency
      */
     public function metrics()
-    {
+    : \Illuminate\Database\Eloquent\Relations\Relation {
         return $this->adMetrics();
     }
 

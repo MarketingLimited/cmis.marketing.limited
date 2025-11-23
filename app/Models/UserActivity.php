@@ -119,7 +119,7 @@ class UserActivity extends BaseModel
         ?string $entityType = null,
         ?string $entityId = null,
         ?array $details = null
-    ) {
+    ) : \Illuminate\Database\Eloquent\Relations\Relation {
         return static::create([
             'user_id' => $userId,
             'org_id' => $orgId,

@@ -75,10 +75,16 @@ class AudienceOverlap extends BaseModel
     public function getSeverityLevel(): string
     {
         if ($this->overlap_percentage >= 75) {
-            }
             return 'critical';
-
-            }
+        }
+        if ($this->overlap_percentage >= 50) {
+            return 'high';
+        }
+        if ($this->overlap_percentage >= 25) {
+            return 'medium';
+        }
+        return 'low';
+    }
     public function getSeverityColor(): string
     {
         return match($this->getSeverityLevel()) {
@@ -88,6 +94,7 @@ class AudienceOverlap extends BaseModel
             'low' => 'blue',
             default => 'gray'
         };
+    }
 
     public function getOverlapPercentageLabel(): string
     {
@@ -106,13 +113,13 @@ class AudienceOverlap extends BaseModel
     {
         // Jaccard Index = Intersection / Union
         if ($this->audience_a_size === 0 && $this->audience_b_size === 0) {
-            }
             return 0.0;
+        }
 
+        $union = $this->audience_a_size + $this->audience_b_size - $this->overlap_size;
 
-
-
-            }
+        return $union > 0 ? $this->overlap_size / $union : 0.0;
+    }
     public function isCritical(): bool
     {
         return $this->getSeverityLevel() === 'critical';
@@ -130,10 +137,12 @@ class AudienceOverlap extends BaseModel
             'resolved_at' => now(),
             'resolution_action' => $action,
         ]);
+    }
 
     public function markAsIgnored(): void
     {
         $this->update(['status' => 'ignored']);
+    }
 
     // ===== Scopes =====
 
@@ -157,4 +166,6 @@ class AudienceOverlap extends BaseModel
         return $query->where(function ($q) use ($campaignId) {
             $q->where('campaign_a_id', $campaignId)
               ->orWhere('campaign_b_id', $campaignId);
-
+        });
+    }
+}

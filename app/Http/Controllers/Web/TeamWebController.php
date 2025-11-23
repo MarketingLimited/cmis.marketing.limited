@@ -80,7 +80,7 @@ class TeamWebController extends Controller
      * Send invitation
      */
     public function invite(Request $request, string $orgId)
-    {
+    : \Illuminate\Http\JsonResponse {
         $user = auth()->user();
         $org = Organization::findOrFail($orgId);
 

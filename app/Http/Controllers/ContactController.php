@@ -30,7 +30,7 @@ class ContactController extends Controller
      * @return \Illuminate\Http\JsonResponse
      */
     public function index(Request $request)
-    {
+    : \Illuminate\Http\JsonResponse {
         $orgId = $this->resolveOrgId($request);
 
         if (!$orgId) {
@@ -263,7 +263,7 @@ class ContactController extends Controller
      * @return \Illuminate\Http\JsonResponse
      */
     public function findDuplicates(string $id, Request $request)
-    {
+    : \Illuminate\Http\JsonResponse {
         $orgId = $this->resolveOrgId($request);
 
         if (!$orgId) {

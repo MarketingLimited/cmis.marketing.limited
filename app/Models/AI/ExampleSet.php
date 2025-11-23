@@ -65,7 +65,7 @@ class ExampleSet extends BaseModel
 
     // Helpers
     public function markAsPassed($actualOutput, $accuracyScore)
-    {
+    : mixed {
         $this->update([
             'test_status' => 'passed',
             'actual_output' => $actualOutput,
@@ -74,7 +74,7 @@ class ExampleSet extends BaseModel
     }
 
     public function markAsFailed($actualOutput, $accuracyScore = 0)
-    {
+    : mixed {
         $this->update([
             'test_status' => 'failed',
             'actual_output' => $actualOutput,
@@ -83,7 +83,7 @@ class ExampleSet extends BaseModel
     }
 
     public function isPassed()
-    {
+    : mixed {
         return $this->test_status === 'passed';
     }
 }

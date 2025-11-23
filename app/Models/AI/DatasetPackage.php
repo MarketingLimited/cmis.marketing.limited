@@ -60,12 +60,12 @@ class DatasetPackage extends BaseModel
 
     // Helpers
     public function incrementDownloads()
-    {
+    : \Illuminate\Database\Eloquent\Relations\Relation {
         $this->increment('download_count');
     }
 
     public function getSizeFormatted()
-    {
+    : \Illuminate\Database\Eloquent\Relations\Relation {
         $bytes = $this->total_size_bytes;
         $units = ['B', 'KB', 'MB', 'GB', 'TB'];
 

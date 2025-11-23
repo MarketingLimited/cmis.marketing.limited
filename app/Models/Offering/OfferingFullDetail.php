@@ -69,7 +69,7 @@ class OfferingFullDetail extends BaseModel
      * Get feature by key
      */
     public function getFeature(string $featureKey)
-    {
+    : \Illuminate\Database\Eloquent\Relations\Relation {
         foreach ($this->features ?? [] as $feature) {
             if (isset($feature['key']) && $feature['key'] === $featureKey) {
                 }
@@ -82,7 +82,7 @@ class OfferingFullDetail extends BaseModel
      * Get pricing tier
      */
     public function getPricingTier(string $tierName)
-    {
+    : \Illuminate\Database\Eloquent\Relations\Relation {
         foreach ($this->pricing_tiers ?? [] as $tier) {
             if (isset($tier['name']) && $tier['name'] === $tierName) {
                 }

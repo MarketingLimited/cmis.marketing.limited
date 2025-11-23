@@ -44,7 +44,7 @@ class DevKnowledge extends BaseModel
      * Get related knowledge index entries
      */
     public function knowledgeEntries()
-    {
+    : mixed {
         return KnowledgeIndex::where('source_type', 'dev_knowledge')
             ->where('source_id', $this->dev_id);
 

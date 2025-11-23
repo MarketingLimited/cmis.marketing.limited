@@ -30,7 +30,7 @@ class CacheService
     /**
      * Remember with automatic invalidation tags
      */
-    public function remember(string $key, int $ttl, callable $callback, array $tags = [])
+    public function remember(string $key, int $ttl, callable $callback, array $tags = []): mixed
     {
         $fullKey = $this->key($key);
 

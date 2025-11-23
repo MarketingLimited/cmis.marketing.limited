@@ -37,7 +37,7 @@ class Permission extends BaseModel
      * Get the roles that have this permission
      */
     public function roles()
-    {
+    : \Illuminate\Database\Eloquent\Relations\Relation {
         return $this->belongsToMany(
             \App\Models\Core\Role::class,
             'cmis.role_permissions',
@@ -52,7 +52,7 @@ class Permission extends BaseModel
      * Get the users that have this permission directly
      */
     public function users()
-    {
+    : \Illuminate\Database\Eloquent\Relations\Relation {
         return $this->belongsToMany(
             User::class,
             'cmis.user_permissions',

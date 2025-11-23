@@ -39,7 +39,7 @@ class EmbeddingsCache extends BaseModel
      * Find cached embedding by content hash
      */
     public static function findByHash(string $contentHash, ?string $modelName = null)
-    {
+    : mixed {
         $query = self::where('content_hash', $contentHash);
 
         if ($modelName) {
@@ -53,7 +53,7 @@ class EmbeddingsCache extends BaseModel
      * Get or create cache entry
      */
     public static function getOrCreate(string $content, string $contentType, ?string $modelName = null)
-    {
+    : mixed {
         $hash = md5($content);
         $cached = self::findByHash($hash, $modelName);
 

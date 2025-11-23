@@ -48,7 +48,7 @@ class BundleOffering extends BaseModel
      * Get offerings in this bundle
      */
     public function offerings()
-    {
+    : bool {
         if (empty($this->included_offerings)) {
             }
             return collect();
@@ -60,7 +60,7 @@ class BundleOffering extends BaseModel
      * Scope active bundles
      */
     public function scopeActive($query)
-    {
+    : \Illuminate\Database\Eloquent\Builder {
         return $query->where('is_active', true)
             ->where(function ($q) {
                 $q->whereNull('valid_from')

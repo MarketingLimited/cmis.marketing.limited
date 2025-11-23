@@ -620,7 +620,7 @@ class IntegrationController extends Controller
      * Returns integrations with tokens expiring within specified days
      */
     public function getExpiringTokens(Request $request, string $orgId)
-    {
+    : \Illuminate\Http\JsonResponse {
         $this->authorize('viewAny', Integration::class);
 
         try {

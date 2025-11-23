@@ -46,7 +46,7 @@ class PromptTemplate extends BaseModel
      * Get output contracts
      */
     public function outputContracts()
-    {
+    : \Illuminate\Database\Eloquent\Relations\Relation {
         return $this->belongsToMany(
             OutputContract::class,
             'cmis.prompt_template_contracts',
@@ -58,7 +58,7 @@ class PromptTemplate extends BaseModel
      * Get SQL snippets
      */
     public function sqlSnippets()
-    {
+    : \Illuminate\Database\Eloquent\Relations\Relation {
         return $this->belongsToMany(
             SqlSnippet::class,
             'cmis.prompt_template_presql',

@@ -48,7 +48,7 @@ class MarketingKnowledge extends BaseModel
      * Get related knowledge index entries
      */
     public function knowledgeEntries()
-    {
+    : mixed {
         return KnowledgeIndex::where('source_type', 'marketing_knowledge')
             ->where('source_id', $this->marketing_id);
 

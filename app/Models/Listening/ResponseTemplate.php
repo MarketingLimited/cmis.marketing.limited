@@ -50,7 +50,7 @@ class ResponseTemplate extends BaseModel
      */
 
     protected static function booted()
-    {
+    : bool {
         static::saving(function ($template) {
             $template->character_count = strlen($template->template_content);
 

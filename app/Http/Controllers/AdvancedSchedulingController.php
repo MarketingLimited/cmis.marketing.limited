@@ -67,7 +67,7 @@ class AdvancedSchedulingController extends Controller
         return $this->created($result['data'] ?? $result, $result['message'] ?? 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => 'Failed to create template', 'error' => $e->getMessage()], 500);
+            return $this->serverError('Failed to create template');
         }
     }
 
@@ -94,7 +94,7 @@ class AdvancedSchedulingController extends Controller
         return $this->success($result['data'] ?? $result, $result['message'] ?? 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => 'Failed to generate posts', 'error' => $e->getMessage()], 500);
+            return $this->serverError('Failed to generate posts');
         }
     }
 
@@ -121,7 +121,7 @@ class AdvancedSchedulingController extends Controller
         return $this->success($result['data'] ?? $result, $result['message'] ?? 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => 'Failed to get queue', 'error' => $e->getMessage()], 500);
+            return $this->serverError('Failed to get queue');
         }
     }
 
@@ -148,7 +148,7 @@ class AdvancedSchedulingController extends Controller
         return $this->created($result['data'] ?? $result, $result['message'] ?? 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => 'Failed to recycle post', 'error' => $e->getMessage()], 500);
+            return $this->serverError('Failed to recycle post');
         }
     }
 
@@ -175,7 +175,7 @@ class AdvancedSchedulingController extends Controller
         return $this->success($result['data'] ?? $result, $result['message'] ?? 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => 'Failed to resolve conflicts', 'error' => $e->getMessage()], 500);
+            return $this->serverError('Failed to resolve conflicts');
         }
     }
 
@@ -209,7 +209,7 @@ class AdvancedSchedulingController extends Controller
         return $this->success($result['data'] ?? $result, $result['message'] ?? 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => 'Failed to reschedule', 'error' => $e->getMessage()], 500);
+            return $this->serverError('Failed to reschedule');
         }
     }
 }

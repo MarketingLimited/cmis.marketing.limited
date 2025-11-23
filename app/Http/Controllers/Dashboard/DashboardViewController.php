@@ -193,7 +193,7 @@ class DashboardViewController extends Controller
      * Safely execute a query with error handling
      */
     private function safeTry(callable $callback, $default)
-    {
+    : \Illuminate\Http\JsonResponse {
         try {
             return $callback();
         } catch (\Exception $e) {

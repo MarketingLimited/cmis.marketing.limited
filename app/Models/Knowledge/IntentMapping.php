@@ -53,7 +53,7 @@ class IntentMapping extends BaseModel
      * Find by intent code
      */
     public static function findByCode(string $code)
-    {
+    : mixed {
         return self::where('intent_code', $code)->first();
 }
 }

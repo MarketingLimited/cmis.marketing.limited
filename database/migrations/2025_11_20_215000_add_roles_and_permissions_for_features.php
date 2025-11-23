@@ -4,9 +4,11 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
+use Database\Migrations\Concerns\HasRLSPolicies;
 
 return new class extends Migration
 {
+    use HasRLSPolicies;
     /**
      * Run the migrations.
      *
@@ -50,25 +52,28 @@ return new class extends Migration
 
             DB::statement("COMMENT ON TABLE cmis.roles IS 'User roles with associated permissions'");
 
-            // Enable RLS
-            DB::statement("ALTER TABLE cmis.roles ENABLE ROW LEVEL SECURITY");
-        }
+            // Enable RLS with public read access (all users can read roles)
+            $this->enablePublicRLS('cmis.roles');
 
-        // RLS policies - only create if we created the roles table in this migration
-        if ($rolesTableCreated) {
-            // RLS Policy: All authenticated users can read roles
-            DB::statement("
-                CREATE POLICY roles_read_all ON cmis.roles
-                FOR SELECT
-                USING (true);
-            ");
-
-            // RLS Policy: Only admins can modify roles
+            // RLS Policy: Only admins can modify roles (additional custom policy)
             DB::statement("
                 CREATE POLICY roles_admin_modify ON cmis.roles
-                FOR ALL
+                FOR INSERT
                 USING (current_setting('app.is_admin', true)::boolean = true)
                 WITH CHECK (current_setting('app.is_admin', true)::boolean = true);
+            ");
+
+            DB::statement("
+                CREATE POLICY roles_admin_update ON cmis.roles
+                FOR UPDATE
+                USING (current_setting('app.is_admin', true)::boolean = true)
+                WITH CHECK (current_setting('app.is_admin', true)::boolean = true);
+            ");
+
+            DB::statement("
+                CREATE POLICY roles_admin_delete ON cmis.roles
+                FOR DELETE
+                USING (current_setting('app.is_admin', true)::boolean = true);
             ");
         }
 
@@ -99,10 +104,10 @@ return new class extends Migration
 
         DB::statement("COMMENT ON TABLE cmis.feature_permissions IS 'Granular permissions for features and platforms per user or role'");
 
-        // Enable RLS
+        // Enable RLS (using trait to enable, then add custom policies)
         DB::statement("ALTER TABLE cmis.feature_permissions ENABLE ROW LEVEL SECURITY");
 
-        // RLS Policy: Users can see their own permissions
+        // RLS Policy: Users can see their own permissions (custom logic)
         // Note: This policy assumes the roles table has the expected schema
         // If using the existing cmis.roles table, this policy may need adjustment
         if ($rolesTableCreated) {
@@ -129,12 +134,24 @@ return new class extends Migration
             ");
         }
 
-        // RLS Policy: Admins can modify
+        // RLS Policy: Admins can modify (custom policies for INSERT/UPDATE/DELETE)
         DB::statement("
-            CREATE POLICY feature_permissions_admin_modify ON cmis.feature_permissions
-            FOR ALL
+            CREATE POLICY feature_permissions_admin_insert ON cmis.feature_permissions
+            FOR INSERT
+            WITH CHECK (current_setting('app.is_admin', true)::boolean = true);
+        ");
+
+        DB::statement("
+            CREATE POLICY feature_permissions_admin_update ON cmis.feature_permissions
+            FOR UPDATE
             USING (current_setting('app.is_admin', true)::boolean = true)
             WITH CHECK (current_setting('app.is_admin', true)::boolean = true);
+        ");
+
+        DB::statement("
+            CREATE POLICY feature_permissions_admin_delete ON cmis.feature_permissions
+            FOR DELETE
+            USING (current_setting('app.is_admin', true)::boolean = true);
         ");
 
         // Grant permissions (only if role exists)
@@ -154,7 +171,14 @@ return new class extends Migration
      */
     public function down()
     {
-        // Drop tables
+        // Disable RLS and drop tables (trait handles policy cleanup)
+        if (Schema::hasTable('cmis.feature_permissions')) {
+            $this->disableRLS('cmis.feature_permissions');
+        }
+        if (Schema::hasTable('cmis.roles')) {
+            $this->disableRLS('cmis.roles');
+        }
+
         Schema::dropIfExists('cmis.feature_permissions');
         Schema::dropIfExists('cmis.roles');
 

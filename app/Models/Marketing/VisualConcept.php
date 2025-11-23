@@ -55,6 +55,6 @@ class VisualConcept extends BaseModel
             ->orderByDesc('performance_score');
 
     public function incrementUsage()
-    {
+    : \Illuminate\Database\Eloquent\Relations\Relation {
         $this->increment('usage_count');
 }

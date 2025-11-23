@@ -111,7 +111,7 @@ protected $table = 'cmis.temporal_analytics';
      * Get metric value
      */
     public function getMetric(string $metricName)
-    {
+    : mixed {
         return $this->metrics[$metricName] ?? null;
 
     }

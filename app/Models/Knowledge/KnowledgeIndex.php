@@ -115,7 +115,7 @@ class KnowledgeIndex extends BaseModel
      * Perform semantic search using vector similarity
      */
     public static function semanticSearch(array $queryEmbedding, int $limit = 10, ?string $orgId = null)
-    {
+    : \Illuminate\Database\Eloquent\Relations\Relation {
         $vectorStr = '[' . implode(',', $queryEmbedding) . ']';
 
         $query = self::query()

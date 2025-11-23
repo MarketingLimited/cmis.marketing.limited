@@ -40,7 +40,7 @@ class Permission extends BaseModel
      * Get roles that have this permission
      */
     public function roles()
-    {
+    : \Illuminate\Database\Eloquent\Relations\Relation {
         return $this->belongsToMany(Role::class, 'cmis.role_permissions',
             'permission_id', 'role_id')
             ->withPivot('granted_by', 'granted_at')
@@ -51,7 +51,7 @@ class Permission extends BaseModel
      * Get users that have this permission directly assigned
      */
     public function users()
-    {
+    : \Illuminate\Database\Eloquent\Relations\Relation {
         return $this->belongsToMany(User::class, 'cmis.user_permissions',
             'permission_id', 'user_id')
             ->withPivot('is_granted', 'expires_at', 'granted_by', 'granted_at')

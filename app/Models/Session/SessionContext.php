@@ -56,7 +56,7 @@ class SessionContext extends BaseModel
      * Scope valid contexts (not expired)
      */
     public function scopeValid($query)
-    {
+    : \Illuminate\Database\Eloquent\Builder {
         return $query->where(function ($q) {
             $q->whereNull('expires_at')
                 ->orWhere('expires_at', '>', now());
@@ -100,7 +100,7 @@ class SessionContext extends BaseModel
      * Get or set context value
      */
     public static function getContextValue(string $sessionId, string $key, $default = null)
-    {
+    : \Illuminate\Database\Eloquent\Relations\Relation {
         $context = self::where('session_id', $sessionId)
             ->where('context_key', $key)
             ->valid()

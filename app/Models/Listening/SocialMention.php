@@ -311,7 +311,7 @@ class SocialMention extends BaseModel
 
         }
     public function scopeNeedsResponse($query)
-    {
+    : \Illuminate\Database\Eloquent\Builder {
         return $query->where('requires_response', true)
                      ->whereNull('responded_at');
 

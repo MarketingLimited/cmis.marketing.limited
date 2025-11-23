@@ -28,7 +28,7 @@ class CreativeController extends Controller
      * Display a listing of creative assets
      */
     public function index(FilterCreativeAssetsRequest $request)
-    {
+    : \Illuminate\Http\JsonResponse {
         try {
             $validated = $request->validated();
             $orgId = session('current_org_id') ?? auth()->user()->org_id;

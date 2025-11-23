@@ -63,17 +63,17 @@ class CognitiveTrend extends BaseModel
 
     // Helpers
     public function isHot()
-    {
+    : mixed {
         return $this->trend_score >= 0.8;
     }
 
     public function isGrowing()
-    {
+    : mixed {
         return $this->trend_score > ($this->peak_score * 0.9);
     }
 
     public function isDeclining()
-    {
+    : mixed {
         return $this->trend_score < ($this->peak_score * 0.5);
     }
 }

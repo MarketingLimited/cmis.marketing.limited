@@ -135,7 +135,7 @@ class TikTokSyncService extends BasePlatformSyncService
      * @return mixed API client instance
      * @throws \Exception Always throws - not yet implemented
      */
-    protected function getApiClient()
+    protected function getApiClient(): mixed
     {
         throw new \Exception("TikTok API client not yet implemented (stub)");
     }

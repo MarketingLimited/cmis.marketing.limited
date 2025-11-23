@@ -91,7 +91,7 @@ class AdSet extends BaseModel
      * Scope active ad sets
      */
     public function scopeActive($query)
-    {
+    : \Illuminate\Database\Eloquent\Builder {
         return $query->where('ad_set_status', 'active')
             ->where(function ($q) {
                 $q->whereNull('end_time')
