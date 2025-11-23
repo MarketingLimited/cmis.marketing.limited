@@ -20,6 +20,7 @@ use App\Http\Controllers\API\PlatformIntegrationController;
 use App\Http\Controllers\API\SyncController;
 use App\Http\Controllers\API\ContentPublishingController;
 use App\Http\Controllers\API\WebhookController;
+use App\Http\Controllers\Webhooks\LinkedInWebhookController;
 use App\Http\Controllers\API\AnalyticsController;
 use App\Http\Controllers\API\AdCampaignController as APIAdCampaignController;
 
@@ -80,9 +81,20 @@ Route::prefix('webhooks')->name('webhooks.')
             ->middleware('verify.webhook:twitter')
             ->name('twitter');
 
+        // LinkedIn webhooks - verification endpoint and event handlers
+        Route::get('/linkedin/verify', [LinkedInWebhookController::class, 'verify'])
+            ->name('linkedin.verify');
+
+        Route::post('/linkedin/leadgen', [LinkedInWebhookController::class, 'handleLeadGenForm'])
+            ->name('linkedin.leadgen');
+
+        Route::post('/linkedin/campaigns', [LinkedInWebhookController::class, 'handleCampaignNotification'])
+            ->name('linkedin.campaigns');
+
+        // Legacy LinkedIn webhook endpoint (deprecated - use specific endpoints above)
         Route::post('/linkedin', [WebhookController::class, 'handleLinkedInWebhook'])
             ->middleware('verify.webhook:linkedin')
-            ->name('linkedin');
+            ->name('linkedin.legacy');
 
         Route::post('/snapchat', [WebhookController::class, 'handleSnapchatWebhook'])
             ->middleware('verify.webhook:snapchat')
