@@ -21,6 +21,8 @@ class DemoDataSeeder extends Seeder
      */
     public function run(): void
     {
+        // Bypass RLS policies for seeding
+        DB::statement('SET LOCAL app.is_admin = true');
         DB::statement('SET CONSTRAINTS ALL DEFERRED');
 
         $this->loadReferenceData();

@@ -1361,7 +1361,7 @@ CREATE TABLE cmis.session_context (
 
 CREATE TABLE cmis.sessions (
     id character varying(255) NOT NULL,
-    user_id bigint,
+    user_id uuid,
     ip_address character varying(45),
     user_agent text,
     payload text NOT NULL,
@@ -2297,7 +2297,7 @@ CREATE TABLE public.naming_templates_old (
 
 CREATE TABLE public.sessions (
     id character varying(255) NOT NULL,
-    user_id bigint,
+    user_id uuid,
     ip_address character varying(45),
     user_agent text,
     payload text NOT NULL,

@@ -13,6 +13,8 @@ class RolesSeeder extends Seeder
      */
     public function run(): void
     {
+        // Bypass RLS for seeding system roles (org_id = null)
+        DB::statement('SET LOCAL app.is_admin = true');
         DB::statement('SET CONSTRAINTS ALL DEFERRED');
 
         $roles = [
