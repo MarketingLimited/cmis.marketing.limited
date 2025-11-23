@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Knowledge\KnowledgeIndex;
 use App\Models\CMIS\KnowledgeItem;
+use App\Services\Embedding\EmbeddingOrchestrator;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Illuminate\Support\Collection;
@@ -17,7 +18,7 @@ class KnowledgeService
 {
     public function __construct(
         protected CacheService $cache,
-        protected EmbeddingService $embeddingService
+        protected EmbeddingOrchestrator $embeddingOrchestrator
     ) {}
 
     /**
@@ -37,7 +38,7 @@ class KnowledgeService
     ): Collection {
         try {
             // Generate embedding for the search query
-            $queryEmbedding = $this->embeddingService->generateEmbedding($query);
+            $queryEmbedding = $this->embeddingOrchestrator->generateEmbedding($query);
 
             if (!$queryEmbedding) {
                 Log::warning('Failed to generate embedding for query', ['query' => $query]);
@@ -102,7 +103,7 @@ class KnowledgeService
         // Generate embedding for the content
         $embedding = null;
         if (!empty($data['content'])) {
-            $embedding = $this->embeddingService->generateEmbedding($data['content']);
+            $embedding = $this->embeddingOrchestrator->generateEmbedding($data['content']);
         }
 
         $knowledgeItem = KnowledgeIndex::create([
@@ -145,7 +146,7 @@ class KnowledgeService
     {
         // Regenerate embedding if content changed
         if (isset($data['content']) && $data['content'] !== $knowledgeItem->content) {
-            $data['embedding'] = $this->embeddingService->generateEmbedding($data['content']);
+            $data['embedding'] = $this->embeddingOrchestrator->generateEmbedding($data['content']);
         }
 
         $knowledgeItem->update($data);
@@ -312,7 +313,7 @@ class KnowledgeService
     public function reindex(KnowledgeIndex $knowledgeItem): KnowledgeIndex
     {
         if ($knowledgeItem->content) {
-            $embedding = $this->embeddingService->generateEmbedding($knowledgeItem->content);
+            $embedding = $this->embeddingOrchestrator->generateEmbedding($knowledgeItem->content);
 
             $knowledgeItem->update([
                 'embedding' => $embedding,

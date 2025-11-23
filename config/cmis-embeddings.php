@@ -8,10 +8,10 @@ return [
     
     'gemini' => [
         'api_key' => env('GEMINI_API_KEY'),
-        'model_name' => env('GEMINI_MODEL', 'models/gemini-embedding-001'),
+        'model_name' => env('GEMINI_MODEL', 'models/text-embedding-004'),
         'embedding_dimension' => 768,
         'max_batch_size' => 100,
-        'rate_limit_per_minute' => 60,
+        'rate_limit_per_minute' => 30, // Google Gemini API limit: 30 requests/minute
         'retry_attempts' => 3,
         'timeout_seconds' => 30,
         'base_url' => 'https://generativelanguage.googleapis.com/v1beta/',
