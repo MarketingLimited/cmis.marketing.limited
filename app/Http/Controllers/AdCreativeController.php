@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Services\AdCreativeService;
+use App\Http\Controllers\Concerns\ApiResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Validator;
@@ -43,11 +44,16 @@ class AdCreativeController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
+            return $this->validationError($validator->errors(), 'Validation failed');
         }
 
         $result = $this->creativeService->createCreative($request->all());
-        return response()->json($result, $result['success'] ? 201 : 500);
+
+        if ($result['success']) {
+            return $this->created($result['data'], 'Creative created successfully');
+        }
+
+        return $this->error($result['error'] ?? 'Failed to create creative', 500);
     }
 
     /**
@@ -57,7 +63,12 @@ class AdCreativeController extends Controller
     public function show(string $orgId, string $creativeId): JsonResponse
     {
         $result = $this->creativeService->getCreative($creativeId);
-        return response()->json($result, $result['success'] ? 200 : 404);
+
+        if ($result['success']) {
+            return $this->success($result['data'], 'Creative retrieved successfully');
+        }
+
+        return $this->notFound($result['error'] ?? 'Creative not found');
     }
 
     /**
@@ -67,7 +78,12 @@ class AdCreativeController extends Controller
     public function index(string $orgId, Request $request): JsonResponse
     {
         $result = $this->creativeService->listCreatives($request->all());
-        return response()->json($result);
+
+        if ($result['success']) {
+            return $this->success($result['data'], 'Creatives retrieved successfully');
+        }
+
+        return $this->error($result['error'] ?? 'Failed to list creatives', 500);
     }
 
     /**
@@ -77,7 +93,12 @@ class AdCreativeController extends Controller
     public function update(string $orgId, string $creativeId, Request $request): JsonResponse
     {
         $result = $this->creativeService->updateCreative($creativeId, $request->all());
-        return response()->json($result, $result['success'] ? 200 : 500);
+
+        if ($result['success']) {
+            return $this->success($result['data'], 'Creative updated successfully');
+        }
+
+        return $this->error($result['error'] ?? 'Failed to update creative', 500);
     }
 
     /**
@@ -87,7 +108,12 @@ class AdCreativeController extends Controller
     public function destroy(string $orgId, string $creativeId): JsonResponse
     {
         $success = $this->creativeService->deleteCreative($creativeId);
-        return response()->json(['success' => $success], $success ? 200 : 500);
+
+        if ($success) {
+            return $this->deleted('Creative deleted successfully');
+        }
+
+        return $this->error('Failed to delete creative', 500);
     }
 
     /**
