@@ -1,12 +1,15 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
+use Database\Migrations\Concerns\HasRLSPolicies;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
+    use HasRLSPolicies;
+
     public function up(): void
     {
         // API tokens for external integrations
@@ -33,8 +36,8 @@ return new class extends Migration
             $table->foreign('created_by')->references('user_id')->on('cmis.users')->onDelete('cascade');
         });
 
-        DB::statement('ALTER TABLE cmis.api_tokens ENABLE ROW LEVEL SECURITY');
-        DB::statement("CREATE POLICY org_isolation ON cmis.api_tokens USING (org_id = current_setting('app.current_org_id')::uuid)");
+        
+        $this->enableRLS('cmis.api_tokens');
 
         // Data export configurations
         Schema::create('cmis.data_export_configs', function (Blueprint $table) {
@@ -62,8 +65,8 @@ return new class extends Migration
             $table->foreign('created_by')->references('user_id')->on('cmis.users')->onDelete('cascade');
         });
 
-        DB::statement('ALTER TABLE cmis.data_export_configs ENABLE ROW LEVEL SECURITY');
-        DB::statement("CREATE POLICY org_isolation ON cmis.data_export_configs USING (org_id = current_setting('app.current_org_id')::uuid)");
+        
+        $this->enableRLS('cmis.data_export_configs');
 
         // Export execution logs
         Schema::create('cmis.data_export_logs', function (Blueprint $table) {
@@ -93,8 +96,8 @@ return new class extends Migration
             $table->foreign('org_id')->references('org_id')->on('cmis.orgs')->onDelete('cascade');
         });
 
-        DB::statement('ALTER TABLE cmis.data_export_logs ENABLE ROW LEVEL SECURITY');
-        DB::statement("CREATE POLICY org_isolation ON cmis.data_export_logs USING (org_id = current_setting('app.current_org_id')::uuid)");
+        
+        $this->enableRLS('cmis.data_export_logs');
     }
 
     public function down(): void

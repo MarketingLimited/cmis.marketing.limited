@@ -1,12 +1,15 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
+use Database\Migrations\Concerns\HasRLSPolicies;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
+    use HasRLSPolicies;
+
     /**
      * Run the migrations (Phase 19: Real-Time Analytics Dashboard & Reporting Hub).
      */
@@ -34,15 +37,16 @@ return new class extends Migration
         });
 
         // RLS Policy
-        DB::statement("ALTER TABLE cmis.dashboard_templates ENABLE ROW LEVEL SECURITY");
-        DB::statement("
-            CREATE POLICY org_isolation ON cmis.dashboard_templates
-            USING (org_id IS NULL OR org_id = current_setting('app.current_org_id')::uuid)
-        ");
-
-        // ===== Dashboard Widgets Table =====
-        Schema::create('cmis.dashboard_widgets', function (Blueprint $table) {
-            $table->uuid('widget_id')->primary()->default(DB::raw('gen_random_uuid()'));
+        $this->enableRLS('cmis.dashboard_templates');
+        $this->enableCustomRLS(
+            'cmis.dashboard_templates',
+            "org_id IS NULL OR org_id = current_setting('app.current_org_id')::uuid)
+                    ");
+            
+                    // ===== Dashboard Widgets Table =====
+                    Schema::create('cmis.dashboard_widgets', function (Blueprint $table) {
+                        $table->uuid('widget_id')->primary()->default(DB::raw('gen_random_uuid("
+        );
             $table->uuid('org_id')->index();
             $table->uuid('user_id'); // Owner of the widget
             $table->uuid('dashboard_id')->nullable(); // If part of a saved dashboard
@@ -68,12 +72,7 @@ return new class extends Migration
             $table->index('widget_type');
         });
 
-        // RLS Policy
-        DB::statement("ALTER TABLE cmis.dashboard_widgets ENABLE ROW LEVEL SECURITY");
-        DB::statement("
-            CREATE POLICY org_isolation ON cmis.dashboard_widgets
-            USING (org_id = current_setting('app.current_org_id')::uuid)
-        ");
+        $this->enableRLS('cmis.dashboard_widgets');
 
         // ===== Dashboard Snapshots Table =====
         Schema::create('cmis.dashboard_snapshots', function (Blueprint $table) {
@@ -98,12 +97,7 @@ return new class extends Migration
             $table->index(['org_id', 'snapshot_date']);
         });
 
-        // RLS Policy
-        DB::statement("ALTER TABLE cmis.dashboard_snapshots ENABLE ROW LEVEL SECURITY");
-        DB::statement("
-            CREATE POLICY org_isolation ON cmis.dashboard_snapshots
-            USING (org_id = current_setting('app.current_org_id')::uuid)
-        ");
+        $this->enableRLS('cmis.dashboard_snapshots');
 
         // ===== Report Schedules Table =====
         Schema::create('cmis.report_schedules', function (Blueprint $table) {
@@ -129,12 +123,7 @@ return new class extends Migration
             $table->index('next_send_at');
         });
 
-        // RLS Policy
-        DB::statement("ALTER TABLE cmis.report_schedules ENABLE ROW LEVEL SECURITY");
-        DB::statement("
-            CREATE POLICY org_isolation ON cmis.report_schedules
-            USING (org_id = current_setting('app.current_org_id')::uuid)
-        ");
+        $this->enableRLS('cmis.report_schedules');
 
         // ===== Dashboard Alerts Table =====
         Schema::create('cmis.dashboard_alerts', function (Blueprint $table) {
@@ -157,12 +146,7 @@ return new class extends Migration
             $table->index(['org_id', 'enabled']);
         });
 
-        // RLS Policy
-        DB::statement("ALTER TABLE cmis.dashboard_alerts ENABLE ROW LEVEL SECURITY");
-        DB::statement("
-            CREATE POLICY org_isolation ON cmis.dashboard_alerts
-            USING (org_id = current_setting('app.current_org_id')::uuid)
-        ");
+        $this->enableRLS('cmis.dashboard_alerts');
 
         // ===== Real-Time Metrics Cache Table =====
         Schema::create('cmis.realtime_metrics_cache', function (Blueprint $table) {
@@ -186,12 +170,7 @@ return new class extends Migration
             $table->index('expires_at');
         });
 
-        // RLS Policy
-        DB::statement("ALTER TABLE cmis.realtime_metrics_cache ENABLE ROW LEVEL SECURITY");
-        DB::statement("
-            CREATE POLICY org_isolation ON cmis.realtime_metrics_cache
-            USING (org_id = current_setting('app.current_org_id')::uuid)
-        ");
+        $this->enableRLS('cmis.realtime_metrics_cache');
     }
 
     /**

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\AI;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 
@@ -15,7 +16,7 @@ class AIInsightsController extends Controller
     /**
      * عرض الرؤى والتحليلات التنبؤية.
      */
-    public function index()
+    public function index(): View
     {
         Gate::authorize('viewInsights', auth()->user());
 

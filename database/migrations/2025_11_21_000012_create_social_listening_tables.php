@@ -1,12 +1,15 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
+use Database\Migrations\Concerns\HasRLSPolicies;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
+    use HasRLSPolicies;
+
     /**
      * Run the migrations.
      */
@@ -51,11 +54,7 @@ return new class extends Migration
         });
 
         // RLS Policy
-        DB::statement("
-            ALTER TABLE cmis.monitoring_keywords ENABLE ROW LEVEL SECURITY;
-            CREATE POLICY org_isolation ON cmis.monitoring_keywords
-            USING (org_id = current_setting('app.current_org_id', true)::uuid);
-        ");
+        $this->enableRLS('cmis.monitoring_keywords');
 
         // 2. Social Mentions - Captured mentions from platforms
         Schema::create('cmis.social_mentions', function (Blueprint $table) {
@@ -126,11 +125,7 @@ return new class extends Migration
         });
 
         // RLS Policy
-        DB::statement("
-            ALTER TABLE cmis.social_mentions ENABLE ROW LEVEL SECURITY;
-            CREATE POLICY org_isolation ON cmis.social_mentions
-            USING (org_id = current_setting('app.current_org_id', true)::uuid);
-        ");
+        $this->enableRLS('cmis.social_mentions');
 
         // 3. Sentiment Analysis - AI sentiment results
         Schema::create('cmis.sentiment_analysis', function (Blueprint $table) {
@@ -176,11 +171,7 @@ return new class extends Migration
         });
 
         // RLS Policy
-        DB::statement("
-            ALTER TABLE cmis.sentiment_analysis ENABLE ROW LEVEL SECURITY;
-            CREATE POLICY org_isolation ON cmis.sentiment_analysis
-            USING (org_id = current_setting('app.current_org_id', true)::uuid);
-        ");
+        $this->enableRLS('cmis.sentiment_analysis');
 
         // 4. Competitor Profiles - Competitor social accounts
         Schema::create('cmis.competitor_profiles', function (Blueprint $table) {
@@ -221,11 +212,7 @@ return new class extends Migration
         });
 
         // RLS Policy
-        DB::statement("
-            ALTER TABLE cmis.competitor_profiles ENABLE ROW LEVEL SECURITY;
-            CREATE POLICY org_isolation ON cmis.competitor_profiles
-            USING (org_id = current_setting('app.current_org_id', true)::uuid);
-        ");
+        $this->enableRLS('cmis.competitor_profiles');
 
         // 5. Trending Topics - Detected trends and topics
         Schema::create('cmis.trending_topics', function (Blueprint $table) {
@@ -275,11 +262,7 @@ return new class extends Migration
         });
 
         // RLS Policy
-        DB::statement("
-            ALTER TABLE cmis.trending_topics ENABLE ROW LEVEL SECURITY;
-            CREATE POLICY org_isolation ON cmis.trending_topics
-            USING (org_id = current_setting('app.current_org_id', true)::uuid);
-        ");
+        $this->enableRLS('cmis.trending_topics');
 
         // 6. Monitoring Alerts - Alert configurations and logs
         Schema::create('cmis.monitoring_alerts', function (Blueprint $table) {
@@ -320,11 +303,7 @@ return new class extends Migration
         });
 
         // RLS Policy
-        DB::statement("
-            ALTER TABLE cmis.monitoring_alerts ENABLE ROW LEVEL SECURITY;
-            CREATE POLICY org_isolation ON cmis.monitoring_alerts
-            USING (org_id = current_setting('app.current_org_id', true)::uuid);
-        ");
+        $this->enableRLS('cmis.monitoring_alerts');
 
         // 7. Social Conversations - Threaded conversation tracking
         Schema::create('cmis.social_conversations', function (Blueprint $table) {
@@ -373,11 +352,7 @@ return new class extends Migration
         });
 
         // RLS Policy
-        DB::statement("
-            ALTER TABLE cmis.social_conversations ENABLE ROW LEVEL SECURITY;
-            CREATE POLICY org_isolation ON cmis.social_conversations
-            USING (org_id = current_setting('app.current_org_id', true)::uuid);
-        ");
+        $this->enableRLS('cmis.social_conversations');
 
         // 8. Response Templates - Quick response templates
         Schema::create('cmis.response_templates', function (Blueprint $table) {
@@ -419,11 +394,7 @@ return new class extends Migration
         });
 
         // RLS Policy
-        DB::statement("
-            ALTER TABLE cmis.response_templates ENABLE ROW LEVEL SECURITY;
-            CREATE POLICY org_isolation ON cmis.response_templates
-            USING (org_id = current_setting('app.current_org_id', true)::uuid);
-        ");
+        $this->enableRLS('cmis.response_templates');
 
         // Create Performance Views
 

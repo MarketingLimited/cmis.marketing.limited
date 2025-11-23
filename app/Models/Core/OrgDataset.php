@@ -7,6 +7,7 @@ use App\Models\Concerns\HasOrganization;
 use App\Models\AI\DatasetPackage;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use App\Models\BaseModel;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class OrgDataset extends BaseModel
@@ -52,7 +53,7 @@ class OrgDataset extends BaseModel
     /**
      * Scope to get datasets for a specific org
      */
-    public function scopeForOrg($query, string $orgId)
+    public function scopeForOrg(Builder $query, string $orgId): Builder
     {
         return $query->where('org_id', $orgId);
 }

@@ -1,12 +1,15 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
+use Database\Migrations\Concerns\HasRLSPolicies;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
+    use HasRLSPolicies;
+
     /**
      * Run the migrations (Phase 20: AI-Powered Campaign Optimization Engine).
      */
@@ -35,12 +38,7 @@ return new class extends Migration
             $table->index('status');
         });
 
-        // RLS Policy
-        DB::statement("ALTER TABLE cmis.optimization_models ENABLE ROW LEVEL SECURITY");
-        DB::statement("
-            CREATE POLICY org_isolation ON cmis.optimization_models
-            USING (org_id = current_setting('app.current_org_id')::uuid)
-        ");
+        $this->enableRLS('cmis.optimization_models');
 
         // ===== Optimization Runs Table =====
         Schema::create('cmis.optimization_runs', function (Blueprint $table) {
@@ -71,12 +69,7 @@ return new class extends Migration
             $table->index('status');
         });
 
-        // RLS Policy
-        DB::statement("ALTER TABLE cmis.optimization_runs ENABLE ROW LEVEL SECURITY");
-        DB::statement("
-            CREATE POLICY org_isolation ON cmis.optimization_runs
-            USING (org_id = current_setting('app.current_org_id')::uuid)
-        ");
+        $this->enableRLS('cmis.optimization_runs');
 
         // ===== Budget Allocations Table =====
         Schema::create('cmis.budget_allocations', function (Blueprint $table) {
@@ -104,12 +97,7 @@ return new class extends Migration
             $table->index(['period_start', 'period_end']);
         });
 
-        // RLS Policy
-        DB::statement("ALTER TABLE cmis.budget_allocations ENABLE ROW LEVEL SECURITY");
-        DB::statement("
-            CREATE POLICY org_isolation ON cmis.budget_allocations
-            USING (org_id = current_setting('app.current_org_id')::uuid)
-        ");
+        $this->enableRLS('cmis.budget_allocations');
 
         // ===== Audience Overlaps Table =====
         Schema::create('cmis.audience_overlaps', function (Blueprint $table) {
@@ -134,12 +122,7 @@ return new class extends Migration
             $table->index(['campaign_a_id', 'campaign_b_id']);
         });
 
-        // RLS Policy
-        DB::statement("ALTER TABLE cmis.audience_overlaps ENABLE ROW LEVEL SECURITY");
-        DB::statement("
-            CREATE POLICY org_isolation ON cmis.audience_overlaps
-            USING (org_id = current_setting('app.current_org_id')::uuid)
-        ");
+        $this->enableRLS('cmis.audience_overlaps');
 
         // ===== Attribution Models Table =====
         Schema::create('cmis.attribution_models', function (Blueprint $table) {
@@ -163,12 +146,7 @@ return new class extends Migration
             $table->index('is_active');
         });
 
-        // RLS Policy
-        DB::statement("ALTER TABLE cmis.attribution_models ENABLE ROW LEVEL SECURITY");
-        DB::statement("
-            CREATE POLICY org_isolation ON cmis.attribution_models
-            USING (org_id = current_setting('app.current_org_id')::uuid)
-        ");
+        $this->enableRLS('cmis.attribution_models');
 
         // ===== Creative Performance Table =====
         Schema::create('cmis.creative_performance', function (Blueprint $table) {
@@ -192,12 +170,7 @@ return new class extends Migration
             $table->index('creative_type');
         });
 
-        // RLS Policy
-        DB::statement("ALTER TABLE cmis.creative_performance ENABLE ROW LEVEL SECURITY");
-        DB::statement("
-            CREATE POLICY org_isolation ON cmis.creative_performance
-            USING (org_id = current_setting('app.current_org_id')::uuid)
-        ");
+        $this->enableRLS('cmis.creative_performance');
 
         // ===== Optimization Insights Table =====
         Schema::create('cmis.optimization_insights', function (Blueprint $table) {
@@ -225,12 +198,7 @@ return new class extends Migration
             $table->index(['category', 'severity']);
         });
 
-        // RLS Policy
-        DB::statement("ALTER TABLE cmis.optimization_insights ENABLE ROW LEVEL SECURITY");
-        DB::statement("
-            CREATE POLICY org_isolation ON cmis.optimization_insights
-            USING (org_id = current_setting('app.current_org_id')::uuid)
-        ");
+        $this->enableRLS('cmis.optimization_insights');
     }
 
     /**

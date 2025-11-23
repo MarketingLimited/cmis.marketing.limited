@@ -7,6 +7,7 @@ use App\Models\Concerns\HasOrganization;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use App\Models\BaseModel;
+use Illuminate\Database\Eloquent\Builder;
 
 class UserActivity extends BaseModel
 {
@@ -59,7 +60,7 @@ class UserActivity extends BaseModel
     /**
      * Scope to get activities for a specific org
      */
-    public function scopeForOrg($query, $orgId)
+    public function scopeForOrg(Builder $query, string $orgId): Builder
     {
         return $query->where('org_id', $orgId);
 

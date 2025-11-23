@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\AdPlatform;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Concerns\ApiResponse;
 use App\Models\AdPlatform\AdAudience;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
@@ -21,54 +23,53 @@ class AdAudienceController extends Controller
      * Display a listing of ad audiences with filtering and pagination
      *
      * @param Request $request HTTP request
-     * @return \Illuminate\Http\JsonResponse
+     * @return JsonResponse
      */
-    public function index(Request $request)
+    public function index(Request $request): JsonResponse
     {
         Log::info('AdAudienceController::index called (stub)', [
             'filters' => $request->all(),
         ]);
 
-        return response()->json([
+        return $this->success([
             'data' => [],
             'pagination' => ['total' => 0, 'per_page' => 15, 'current_page' => 1],
             'stub' => true
-        ], 200);
+        ], 'Ad audiences retrieved successfully');
     }
 
     /**
      * Return form/metadata for creating a new ad audience
      *
      * @param Request $request HTTP request
-     * @return \Illuminate\Http\JsonResponse
+     * @return JsonResponse
      */
-    public function create(Request $request)
+    public function create(Request $request): JsonResponse
     {
         Log::info('AdAudienceController::create called (stub)');
 
-        return response()->json([
+        return $this->success([
             'form_fields' => [],
             'stub' => true
-        ], 200);
+        ], 'Form metadata retrieved successfully');
     }
 
     /**
      * Store a newly created ad audience in database
      *
      * @param Request $request HTTP request with ad audience data
-     * @return \Illuminate\Http\JsonResponse
+     * @return JsonResponse
      */
-    public function store(Request $request)
+    public function store(Request $request): JsonResponse
     {
         Log::info('AdAudienceController::store called (stub)', [
             'data' => $request->all(),
         ]);
 
-        return response()->json([
-            'success' => true,
+        return $this->created([
             'id' => 'ad_audience_stub_' . uniqid(),
             'stub' => true
-        ], 201);
+        ], 'Ad audience created successfully');
     }
 
     /**
@@ -76,18 +77,18 @@ class AdAudienceController extends Controller
      *
      * @param Request $request HTTP request
      * @param string $audience_id Ad Audience ID
-     * @return \Illuminate\Http\JsonResponse
+     * @return JsonResponse
      */
-    public function show(Request $request, $audience_id)
+    public function show(Request $request, $audience_id): JsonResponse
     {
         Log::info('AdAudienceController::show called (stub)', [
             'audience_id' => $audience_id,
         ]);
 
-        return response()->json([
-            'data' => ['id' => $audience_id],
+        return $this->success([
+            'id' => $audience_id,
             'stub' => true
-        ], 200);
+        ], 'Ad audience retrieved successfully');
     }
 
     /**
@@ -95,18 +96,18 @@ class AdAudienceController extends Controller
      *
      * @param Request $request HTTP request
      * @param string $audience_id Ad Audience ID
-     * @return \Illuminate\Http\JsonResponse
+     * @return JsonResponse
      */
-    public function edit(Request $request, $audience_id)
+    public function edit(Request $request, $audience_id): JsonResponse
     {
         Log::info('AdAudienceController::edit called (stub)', [
             'audience_id' => $audience_id,
         ]);
 
-        return response()->json([
+        return $this->success([
             'form_fields' => ['id' => $audience_id],
             'stub' => true
-        ], 200);
+        ], 'Edit form metadata retrieved successfully');
     }
 
     /**
@@ -114,20 +115,19 @@ class AdAudienceController extends Controller
      *
      * @param Request $request HTTP request with ad audience data
      * @param string $audience_id Ad Audience ID
-     * @return \Illuminate\Http\JsonResponse
+     * @return JsonResponse
      */
-    public function update(Request $request, $audience_id)
+    public function update(Request $request, $audience_id): JsonResponse
     {
         Log::info('AdAudienceController::update called (stub)', [
             'audience_id' => $audience_id,
             'data' => $request->all(),
         ]);
 
-        return response()->json([
-            'success' => true,
+        return $this->success([
             'id' => $audience_id,
             'stub' => true
-        ], 200);
+        ], 'Ad audience updated successfully');
     }
 
     /**
@@ -135,17 +135,14 @@ class AdAudienceController extends Controller
      *
      * @param Request $request HTTP request
      * @param string $audience_id Ad Audience ID
-     * @return \Illuminate\Http\JsonResponse
+     * @return JsonResponse
      */
-    public function destroy(Request $request, $audience_id)
+    public function destroy(Request $request, $audience_id): JsonResponse
     {
         Log::info('AdAudienceController::destroy called (stub)', [
             'audience_id' => $audience_id,
         ]);
 
-        return response()->json([
-            'success' => true,
-            'stub' => true
-        ], 200);
+        return $this->deleted('Ad audience deleted successfully');
     }
 }

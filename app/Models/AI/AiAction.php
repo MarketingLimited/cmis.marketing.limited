@@ -44,27 +44,33 @@ class AiAction extends BaseModel
     public function user()
     {
         return $this->belongsTo(\App\Models\User::class, 'user_id', 'user_id');
+    }
 
     public function organization()
     {
         return $this->belongsTo(\App\Models\Organization::class, 'org_id', 'org_id');
+    }
 
     // Scopes
     public function scopeByType($query, $type)
     {
         return $query->where('action_type', $type);
+    }
 
     public function scopeSuccessful($query)
     {
         return $query->where('status', 'success');
+    }
 
     public function scopeFailed($query)
     {
         return $query->where('status', 'failed');
+    }
 
     public function scopeByOrg($query, $orgId)
     {
         return $query->where('org_id', $orgId);
+    }
 
     // Helpers
     public static function log($userId, $orgId, $type, $name, $inputData, $outputData, $modelUsed, $tokensUsed = 0, $executionTime = 0)
@@ -81,6 +87,7 @@ class AiAction extends BaseModel
             'execution_time_ms' => $executionTime,
             'status' => 'success',
         ]);
+    }
 
     public static function logError($userId, $orgId, $type, $name, $inputData, $errorMessage)
     {
@@ -93,16 +100,19 @@ class AiAction extends BaseModel
             'status' => 'failed',
             'error_message' => $errorMessage,
         ]);
+    }
 
     public static function totalCostForOrg($orgId, $days = 30)
     {
         return static::where('org_id', $orgId)
             ->where('created_at', '>=', now()->subDays($days))
             ->sum('cost');
+    }
 
     public static function totalTokensForOrg($orgId, $days = 30)
     {
         return static::where('org_id', $orgId)
             ->where('created_at', '>=', now()->subDays($days))
             ->sum('tokens_used');
+    }
 }

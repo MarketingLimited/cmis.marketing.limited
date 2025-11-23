@@ -6,6 +6,9 @@ use App\Services\BudgetBiddingService;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Validator;
+use App\Http\Requests\Budget\UpdateCampaignBudgetRequest;
+use App\Http\Requests\Budget\UpdateBidStrategyRequest;
+use App\Http\Requests\Budget\OptimizeBudgetRequest;
 
 /**
  * BudgetController
@@ -29,19 +32,9 @@ class BudgetController extends Controller
      * Update campaign budget
      * PUT /api/orgs/{org_id}/budget/campaign/{campaign_id}
      */
-    public function updateCampaignBudget(string $orgId, string $campaignId, Request $request): JsonResponse
+    public function updateCampaignBudget(string $orgId, string $campaignId, UpdateCampaignBudgetRequest $request): JsonResponse
     {
-        $validator = Validator::make($request->all(), [
-            'budget_type' => 'required|in:daily,lifetime',
-            'daily_budget' => 'required_if:budget_type,daily|nullable|numeric|min:1',
-            'lifetime_budget' => 'required_if:budget_type,lifetime|nullable|numeric|min:1'
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
-        }
-
-        $result = $this->budgetService->updateCampaignBudget($campaignId, $request->all());
+        $result = $this->budgetService->updateCampaignBudget($campaignId, $request->validated());
         return response()->json($result, $result['success'] ? 200 : 500);
     }
 
@@ -49,18 +42,9 @@ class BudgetController extends Controller
      * Update bid strategy
      * PUT /api/orgs/{org_id}/budget/campaign/{campaign_id}/bid-strategy
      */
-    public function updateBidStrategy(string $orgId, string $campaignId, Request $request): JsonResponse
+    public function updateBidStrategy(string $orgId, string $campaignId, UpdateBidStrategyRequest $request): JsonResponse
     {
-        $validator = Validator::make($request->all(), [
-            'bid_strategy' => 'required|in:lowest_cost,cost_cap,bid_cap,target_cost',
-            'bid_amount' => 'nullable|numeric|min:0.01'
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
-        }
-
-        $result = $this->budgetService->updateBidStrategy($campaignId, $request->all());
+        $result = $this->budgetService->updateBidStrategy($campaignId, $request->validated());
         return response()->json($result, $result['success'] ? 200 : 500);
     }
 
@@ -98,21 +82,13 @@ class BudgetController extends Controller
      * Optimize budget allocation
      * POST /api/orgs/{org_id}/budget/optimize
      */
-    public function optimizeBudgetAllocation(string $orgId, Request $request): JsonResponse
+    public function optimizeBudgetAllocation(string $orgId, OptimizeBudgetRequest $request): JsonResponse
     {
-        $validator = Validator::make($request->all(), [
-            'ad_account_id' => 'required|uuid',
-            'total_budget' => 'required|numeric|min:1',
-            'goal' => 'nullable|in:roi,conversions,reach'
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
-        }
+        $validated = $request->validated();
 
         $result = $this->budgetService->optimizeBudgetAllocation(
-            $request->input('ad_account_id'),
-            $request->only(['total_budget', 'goal'])
+            $validated['ad_account_id'],
+            collect($validated)->only(['total_budget', 'goal'])->toArray()
         );
 
         return response()->json($result, $result['success'] ? 200 : 500);

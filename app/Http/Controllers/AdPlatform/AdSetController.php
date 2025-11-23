@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\AdPlatform;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Concerns\ApiResponse;
 use App\Models\AdPlatform\AdSet;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
@@ -21,54 +23,53 @@ class AdSetController extends Controller
      * Display a listing of ad sets with filtering and pagination
      *
      * @param Request $request HTTP request
-     * @return \Illuminate\Http\JsonResponse
+     * @return JsonResponse
      */
-    public function index(Request $request)
+    public function index(Request $request): JsonResponse
     {
         Log::info('AdSetController::index called (stub)', [
             'filters' => $request->all(),
         ]);
 
-        return response()->json([
+        return $this->success([
             'data' => [],
             'pagination' => ['total' => 0, 'per_page' => 15, 'current_page' => 1],
             'stub' => true
-        ], 200);
+        ], 'Ad sets retrieved successfully');
     }
 
     /**
      * Return form/metadata for creating a new ad set
      *
      * @param Request $request HTTP request
-     * @return \Illuminate\Http\JsonResponse
+     * @return JsonResponse
      */
-    public function create(Request $request)
+    public function create(Request $request): JsonResponse
     {
         Log::info('AdSetController::create called (stub)');
 
-        return response()->json([
+        return $this->success([
             'form_fields' => [],
             'stub' => true
-        ], 200);
+        ], 'Form metadata retrieved successfully');
     }
 
     /**
      * Store a newly created ad set in database
      *
      * @param Request $request HTTP request with ad set data
-     * @return \Illuminate\Http\JsonResponse
+     * @return JsonResponse
      */
-    public function store(Request $request)
+    public function store(Request $request): JsonResponse
     {
         Log::info('AdSetController::store called (stub)', [
             'data' => $request->all(),
         ]);
 
-        return response()->json([
-            'success' => true,
+        return $this->created([
             'id' => 'ad_set_stub_' . uniqid(),
             'stub' => true
-        ], 201);
+        ], 'Ad set created successfully');
     }
 
     /**
@@ -76,18 +77,18 @@ class AdSetController extends Controller
      *
      * @param Request $request HTTP request
      * @param string $adset_id Ad Set ID
-     * @return \Illuminate\Http\JsonResponse
+     * @return JsonResponse
      */
-    public function show(Request $request, $adset_id)
+    public function show(Request $request, $adset_id): JsonResponse
     {
         Log::info('AdSetController::show called (stub)', [
             'adset_id' => $adset_id,
         ]);
 
-        return response()->json([
-            'data' => ['id' => $adset_id],
+        return $this->success([
+            'id' => $adset_id,
             'stub' => true
-        ], 200);
+        ], 'Ad set retrieved successfully');
     }
 
     /**
@@ -95,18 +96,18 @@ class AdSetController extends Controller
      *
      * @param Request $request HTTP request
      * @param string $adset_id Ad Set ID
-     * @return \Illuminate\Http\JsonResponse
+     * @return JsonResponse
      */
-    public function edit(Request $request, $adset_id)
+    public function edit(Request $request, $adset_id): JsonResponse
     {
         Log::info('AdSetController::edit called (stub)', [
             'adset_id' => $adset_id,
         ]);
 
-        return response()->json([
+        return $this->success([
             'form_fields' => ['id' => $adset_id],
             'stub' => true
-        ], 200);
+        ], 'Edit form metadata retrieved successfully');
     }
 
     /**
@@ -114,20 +115,19 @@ class AdSetController extends Controller
      *
      * @param Request $request HTTP request with ad set data
      * @param string $adset_id Ad Set ID
-     * @return \Illuminate\Http\JsonResponse
+     * @return JsonResponse
      */
-    public function update(Request $request, $adset_id)
+    public function update(Request $request, $adset_id): JsonResponse
     {
         Log::info('AdSetController::update called (stub)', [
             'adset_id' => $adset_id,
             'data' => $request->all(),
         ]);
 
-        return response()->json([
-            'success' => true,
+        return $this->success([
             'id' => $adset_id,
             'stub' => true
-        ], 200);
+        ], 'Ad set updated successfully');
     }
 
     /**
@@ -135,17 +135,14 @@ class AdSetController extends Controller
      *
      * @param Request $request HTTP request
      * @param string $adset_id Ad Set ID
-     * @return \Illuminate\Http\JsonResponse
+     * @return JsonResponse
      */
-    public function destroy(Request $request, $adset_id)
+    public function destroy(Request $request, $adset_id): JsonResponse
     {
         Log::info('AdSetController::destroy called (stub)', [
             'adset_id' => $adset_id,
         ]);
 
-        return response()->json([
-            'success' => true,
-            'stub' => true
-        ], 200);
+        return $this->deleted('Ad set deleted successfully');
     }
 }

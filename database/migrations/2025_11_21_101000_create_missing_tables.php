@@ -1,12 +1,15 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
+use Database\Migrations\Concerns\HasRLSPolicies;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
+    use HasRLSPolicies;
+
     /**
      * Run the migrations.
      *
@@ -30,11 +33,8 @@ return new class extends Migration
             });
 
             // Add RLS policy
-            DB::statement("ALTER TABLE cmis.templates ENABLE ROW LEVEL SECURITY");
-            DB::statement("
-                CREATE POLICY org_isolation ON cmis.templates
-                USING (org_id = current_setting('app.current_org_id', true)::uuid)
-            ");
+            
+            $this->enableRLS('cmis.templates');
             echo "✓ Created cmis.templates table with RLS\n";
         }
 
@@ -55,11 +55,8 @@ return new class extends Migration
             });
 
             // Add RLS policy
-            DB::statement("ALTER TABLE cmis.comments ENABLE ROW LEVEL SECURITY");
-            DB::statement("
-                CREATE POLICY org_isolation ON cmis.comments
-                USING (org_id = current_setting('app.current_org_id', true)::uuid)
-            ");
+            
+            $this->enableRLS('cmis.comments');
             echo "✓ Created cmis.comments table with RLS\n";
         }
 
@@ -83,11 +80,8 @@ return new class extends Migration
             });
 
             // Add RLS policy
-            DB::statement("ALTER TABLE cmis.scheduled_posts ENABLE ROW LEVEL SECURITY");
-            DB::statement("
-                CREATE POLICY org_isolation ON cmis.scheduled_posts
-                USING (org_id = current_setting('app.current_org_id', true)::uuid)
-            ");
+            
+            $this->enableRLS('cmis.scheduled_posts');
             echo "✓ Created cmis.scheduled_posts table with RLS\n";
         }
 
@@ -111,11 +105,8 @@ return new class extends Migration
             });
 
             // Add RLS policy
-            DB::statement("ALTER TABLE cmis.ad_campaigns_v2 ENABLE ROW LEVEL SECURITY");
-            DB::statement("
-                CREATE POLICY org_isolation ON cmis.ad_campaigns_v2
-                USING (org_id = current_setting('app.current_org_id', true)::uuid)
-            ");
+            
+            $this->enableRLS('cmis.ad_campaigns_v2');
             echo "✓ Created cmis.ad_campaigns_v2 table with RLS\n";
         }
 
@@ -135,11 +126,8 @@ return new class extends Migration
             });
 
             // Add RLS policy
-            DB::statement("ALTER TABLE cmis.semantic_search_log ENABLE ROW LEVEL SECURITY");
-            DB::statement("
-                CREATE POLICY org_isolation ON cmis.semantic_search_log
-                USING (org_id = current_setting('app.current_org_id', true)::uuid)
-            ");
+            
+            $this->enableRLS('cmis.semantic_search_log');
             echo "✓ Created cmis.semantic_search_log table with RLS\n";
         }
 
@@ -158,11 +146,8 @@ return new class extends Migration
             });
 
             // Add RLS policy
-            DB::statement("ALTER TABLE cmis.knowledge_indexes ENABLE ROW LEVEL SECURITY");
-            DB::statement("
-                CREATE POLICY org_isolation ON cmis.knowledge_indexes
-                USING (org_id = current_setting('app.current_org_id', true)::uuid)
-            ");
+            
+            $this->enableRLS('cmis.knowledge_indexes');
             echo "✓ Created cmis.knowledge_indexes table with RLS\n";
         }
 
@@ -186,11 +171,8 @@ return new class extends Migration
             });
 
             // Add RLS policy
-            DB::statement("ALTER TABLE cmis.ads ENABLE ROW LEVEL SECURITY");
-            DB::statement("
-                CREATE POLICY org_isolation ON cmis.ads
-                USING (org_id = current_setting('app.current_org_id', true)::uuid)
-            ");
+            
+            $this->enableRLS('cmis.ads');
             echo "✓ Created cmis.ads table with RLS\n";
         }
 

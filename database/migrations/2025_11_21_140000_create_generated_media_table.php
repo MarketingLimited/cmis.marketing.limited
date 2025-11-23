@@ -1,12 +1,15 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
+use Database\Migrations\Concerns\HasRLSPolicies;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
+    use HasRLSPolicies;
+
     /**
      * Run the migrations.
      */
@@ -64,15 +67,7 @@ return new class extends Migration
         ");
 
         // Enable Row Level Security
-        DB::statement("
-            ALTER TABLE cmis_ai.generated_media ENABLE ROW LEVEL SECURITY;
-        ");
-
-        // Create RLS policy for multi-tenancy
-        DB::statement("
-            CREATE POLICY org_isolation ON cmis_ai.generated_media
-            USING (org_id = current_setting('app.current_org_id')::uuid);
-        ");
+        $this->enableRLS('cmis_ai.generated_media');
 
         // Add foreign key constraint to orgs (if table has primary key)
         $orgPkExists = DB::select("
@@ -115,7 +110,7 @@ return new class extends Migration
     {
         DB::statement("DROP TRIGGER IF EXISTS set_generated_media_timestamp ON cmis_ai.generated_media;");
         DB::statement("DROP FUNCTION IF EXISTS cmis_ai.update_generated_media_timestamp();");
-        DB::statement("DROP POLICY IF EXISTS org_isolation ON cmis_ai.generated_media;");
+        $this->disableRLS('cmis_ai.generated_media');
         DB::statement("DROP TABLE IF EXISTS cmis_ai.generated_media CASCADE;");
     }
 };

@@ -3,6 +3,7 @@
 namespace App\Models\AdPlatform;
 
 use App\Models\Concerns\HasOrganization;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -126,7 +127,7 @@ class AdCampaign extends BaseModel
     /**
      * Scope by organization
      */
-    public function scopeForOrg($query, string $orgId)
+    public function scopeForOrg(Builder $query, string $orgId): Builder
     {
         return $query->where('org_id', $orgId);
     }
@@ -134,7 +135,7 @@ class AdCampaign extends BaseModel
     /**
      * Scope by integration
      */
-    public function scopeForIntegration($query, string $integrationId)
+    public function scopeForIntegration(Builder $query, string $integrationId): Builder
     {
         return $query->where('integration_id', $integrationId);
     }

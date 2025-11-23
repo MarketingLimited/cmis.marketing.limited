@@ -1,12 +1,15 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
+use Database\Migrations\Concerns\HasRLSPolicies;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
+    use HasRLSPolicies;
+
     /**
      * Run the migrations (Phase 21: Cross-Platform Campaign Orchestration).
      */
@@ -37,15 +40,16 @@ return new class extends Migration
         });
 
         // RLS Policy
-        DB::statement("ALTER TABLE cmis.campaign_templates ENABLE ROW LEVEL SECURITY");
-        DB::statement("
-            CREATE POLICY org_isolation ON cmis.campaign_templates
-            USING (org_id IS NULL OR org_id = current_setting('app.current_org_id')::uuid)
-        ");
-
-        // ===== Campaign Orchestrations Table =====
-        Schema::create('cmis.campaign_orchestrations', function (Blueprint $table) {
-            $table->uuid('orchestration_id')->primary()->default(DB::raw('gen_random_uuid()'));
+        $this->enableRLS('cmis.campaign_templates');
+        $this->enableCustomRLS(
+            'cmis.campaign_templates',
+            "org_id IS NULL OR org_id = current_setting('app.current_org_id')::uuid)
+                    ");
+            
+                    // ===== Campaign Orchestrations Table =====
+                    Schema::create('cmis.campaign_orchestrations', function (Blueprint $table) {
+                        $table->uuid('orchestration_id')->primary()->default(DB::raw('gen_random_uuid("
+        );
             $table->uuid('org_id')->index();
             $table->uuid('template_id')->nullable();
             $table->uuid('master_campaign_id')->nullable(); // Link to cmis.campaigns
@@ -75,12 +79,7 @@ return new class extends Migration
             $table->index('scheduled_start_at');
         });
 
-        // RLS Policy
-        DB::statement("ALTER TABLE cmis.campaign_orchestrations ENABLE ROW LEVEL SECURITY");
-        DB::statement("
-            CREATE POLICY org_isolation ON cmis.campaign_orchestrations
-            USING (org_id = current_setting('app.current_org_id')::uuid)
-        ");
+        $this->enableRLS('cmis.campaign_orchestrations');
 
         // ===== Orchestration Platforms Table =====
         Schema::create('cmis.orchestration_platforms', function (Blueprint $table) {
@@ -113,12 +112,7 @@ return new class extends Migration
             $table->index('status');
         });
 
-        // RLS Policy
-        DB::statement("ALTER TABLE cmis.orchestration_platforms ENABLE ROW LEVEL SECURITY");
-        DB::statement("
-            CREATE POLICY org_isolation ON cmis.orchestration_platforms
-            USING (org_id = current_setting('app.current_org_id')::uuid)
-        ");
+        $this->enableRLS('cmis.orchestration_platforms');
 
         // ===== Orchestration Workflows Table =====
         Schema::create('cmis.orchestration_workflows', function (Blueprint $table) {
@@ -145,12 +139,7 @@ return new class extends Migration
             $table->index(['orchestration_id', 'status']);
         });
 
-        // RLS Policy
-        DB::statement("ALTER TABLE cmis.orchestration_workflows ENABLE ROW LEVEL SECURITY");
-        DB::statement("
-            CREATE POLICY org_isolation ON cmis.orchestration_workflows
-            USING (org_id = current_setting('app.current_org_id')::uuid)
-        ");
+        $this->enableRLS('cmis.orchestration_workflows');
 
         // ===== Orchestration Rules Table =====
         Schema::create('cmis.orchestration_rules', function (Blueprint $table) {
@@ -176,12 +165,7 @@ return new class extends Migration
             $table->index('rule_type');
         });
 
-        // RLS Policy
-        DB::statement("ALTER TABLE cmis.orchestration_rules ENABLE ROW LEVEL SECURITY");
-        DB::statement("
-            CREATE POLICY org_isolation ON cmis.orchestration_rules
-            USING (org_id = current_setting('app.current_org_id')::uuid)
-        ");
+        $this->enableRLS('cmis.orchestration_rules');
 
         // ===== Orchestration Sync Logs Table =====
         Schema::create('cmis.orchestration_sync_logs', function (Blueprint $table) {
@@ -211,12 +195,7 @@ return new class extends Migration
             $table->index('status');
         });
 
-        // RLS Policy
-        DB::statement("ALTER TABLE cmis.orchestration_sync_logs ENABLE ROW LEVEL SECURITY");
-        DB::statement("
-            CREATE POLICY org_isolation ON cmis.orchestration_sync_logs
-            USING (org_id = current_setting('app.current_org_id')::uuid)
-        ");
+        $this->enableRLS('cmis.orchestration_sync_logs');
 
         // ===== Cross-Platform Performance View =====
         DB::statement("

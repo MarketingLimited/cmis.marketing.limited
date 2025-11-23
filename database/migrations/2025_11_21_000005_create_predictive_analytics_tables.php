@@ -1,12 +1,15 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
+use Database\Migrations\Concerns\HasRLSPolicies;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
+    use HasRLSPolicies;
+
     /**
      * Run the migrations (Phase 16 - Predictive Analytics & Forecasting)
      */
@@ -146,37 +149,22 @@ return new class extends Migration
         DB::statement('CREATE INDEX idx_trends_type ON cmis.trend_analysis(trend_type)');
 
         // Enable Row Level Security
-        DB::statement('ALTER TABLE cmis.forecasts ENABLE ROW LEVEL SECURITY');
-        DB::statement('ALTER TABLE cmis.anomalies ENABLE ROW LEVEL SECURITY');
-        DB::statement('ALTER TABLE cmis.recommendations ENABLE ROW LEVEL SECURITY');
-        DB::statement('ALTER TABLE cmis.trend_analysis ENABLE ROW LEVEL SECURITY');
-        DB::statement('ALTER TABLE cmis.prediction_models ENABLE ROW LEVEL SECURITY');
+        
+        
+        
+        
+        
 
         // Create RLS policies
-        DB::statement("
-            CREATE POLICY org_isolation ON cmis.forecasts
-            USING (org_id = current_setting('app.current_org_id')::uuid)
-        ");
+        $this->enableRLS('cmis.forecasts');
 
-        DB::statement("
-            CREATE POLICY org_isolation ON cmis.anomalies
-            USING (org_id = current_setting('app.current_org_id')::uuid)
-        ");
+        $this->enableRLS('cmis.anomalies');
 
-        DB::statement("
-            CREATE POLICY org_isolation ON cmis.recommendations
-            USING (org_id = current_setting('app.current_org_id')::uuid)
-        ");
+        $this->enableRLS('cmis.recommendations');
 
-        DB::statement("
-            CREATE POLICY org_isolation ON cmis.trend_analysis
-            USING (org_id = current_setting('app.current_org_id')::uuid)
-        ");
+        $this->enableRLS('cmis.trend_analysis');
 
-        DB::statement("
-            CREATE POLICY org_isolation ON cmis.prediction_models
-            USING (org_id = current_setting('app.current_org_id')::uuid)
-        ");
+        $this->enableRLS('cmis.prediction_models');
     }
 
     /**

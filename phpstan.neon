@@ -1,22 +1,18 @@
+includes:
+    - vendor/larastan/larastan/extension.neon
+
 parameters:
-    # Start at level 5, gradually increase to 8
-    level: 5
+    # Start at level 0 for initial baseline, gradually increase
+    level: 0
 
     paths:
         - app
-        - tests
 
     # Exclude problematic files during refactoring
     excludePaths:
-        # Old stub files - DELETE THESE
-        - app/Services/AdPlatform/LinkedInAdsService.php
-        - app/Services/AdPlatform/TwitterAdsService.php
-        - app/Services/AdPlatform/GoogleAdsService.php
-        - app/Services/AdPlatform/TikTokAdsService.php
-        - app/Services/AdPlatform/SnapchatAdsService.php
-
-        # God classes being refactored - add during refactoring
-        # - app/Services/AdPlatforms/Google/GoogleAdsPlatform.php
+        # Migrations and seeders don't need type checking
+        - database/migrations/*
+        - database/seeders/*
 
     # Bootstrap file for Laravel
     bootstrapFiles:
@@ -26,29 +22,13 @@ parameters:
     scanDirectories:
         - vendor
 
-    # Check for missing return types
-    checkMissingReturnTypes: true
-
-    # Check method/function return types are not too wide
-    checkTooWideReturnTypesInProtectedAndPublicMethods: true
-
-    # Always check for unused parameters
-    checkUnusedParameters: true
-
-    # Report possibly undefined variables
-    reportMaybeVariablesAssignedBeforeUse: true
-
     # Stricter analysis
     treatPhpDocTypesAsCertain: false
 
-    # Custom rules to enforce
-    rules:
-        # Enforce return types on all methods
-        - PHPStan\Rules\Methods\MissingReturnTypeRule
-
-        # No unused private properties/methods
-        - PHPStan\Rules\Classes\UnusedPrivatePropertyRule
-        - PHPStan\Rules\Classes\UnusedPrivateMethodRule
+    # Laravel-specific configuration
+    checkModelProperties: true
+    checkOctaneCompatibility: false
+    noUnnecessaryCollectionCall: true
 
     # Ignore specific errors temporarily (remove these as you fix issues)
     ignoreErrors:

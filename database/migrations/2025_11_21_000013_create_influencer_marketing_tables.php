@@ -1,12 +1,15 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
+use Database\Migrations\Concerns\HasRLSPolicies;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
+    use HasRLSPolicies;
+
     /**
      * Run the migrations.
      */
@@ -81,11 +84,7 @@ return new class extends Migration
         });
 
         // RLS Policy
-        DB::statement("
-            ALTER TABLE cmis.influencer_profiles ENABLE ROW LEVEL SECURITY;
-            CREATE POLICY org_isolation ON cmis.influencer_profiles
-            USING (org_id = current_setting('app.current_org_id', true)::uuid);
-        ");
+        $this->enableRLS('cmis.influencer_profiles');
 
         // 2. Influencer Partnerships - Partnership agreements
         Schema::create('cmis.influencer_partnerships', function (Blueprint $table) {
@@ -150,11 +149,7 @@ return new class extends Migration
         });
 
         // RLS Policy
-        DB::statement("
-            ALTER TABLE cmis.influencer_partnerships ENABLE ROW LEVEL SECURITY;
-            CREATE POLICY org_isolation ON cmis.influencer_partnerships
-            USING (org_id = current_setting('app.current_org_id', true)::uuid);
-        ");
+        $this->enableRLS('cmis.influencer_partnerships');
 
         // 3. Influencer Campaigns - Campaigns with influencers
         Schema::create('cmis.influencer_campaigns', function (Blueprint $table) {
@@ -222,11 +217,7 @@ return new class extends Migration
         });
 
         // RLS Policy
-        DB::statement("
-            ALTER TABLE cmis.influencer_campaigns ENABLE ROW LEVEL SECURITY;
-            CREATE POLICY org_isolation ON cmis.influencer_campaigns
-            USING (org_id = current_setting('app.current_org_id', true)::uuid);
-        ");
+        $this->enableRLS('cmis.influencer_campaigns');
 
         // 4. Campaign Deliverables - Content deliverables and approvals
         Schema::create('cmis.campaign_deliverables', function (Blueprint $table) {
@@ -287,11 +278,7 @@ return new class extends Migration
         });
 
         // RLS Policy
-        DB::statement("
-            ALTER TABLE cmis.campaign_deliverables ENABLE ROW LEVEL SECURITY;
-            CREATE POLICY org_isolation ON cmis.campaign_deliverables
-            USING (org_id = current_setting('app.current_org_id', true)::uuid);
-        ");
+        $this->enableRLS('cmis.campaign_deliverables');
 
         // 5. Influencer Payments - Payment tracking and history
         Schema::create('cmis.influencer_payments', function (Blueprint $table) {
@@ -339,11 +326,7 @@ return new class extends Migration
         });
 
         // RLS Policy
-        DB::statement("
-            ALTER TABLE cmis.influencer_payments ENABLE ROW LEVEL SECURITY;
-            CREATE POLICY org_isolation ON cmis.influencer_payments
-            USING (org_id = current_setting('app.current_org_id', true)::uuid);
-        ");
+        $this->enableRLS('cmis.influencer_payments');
 
         // 6. Influencer Applications - Applications to campaigns
         Schema::create('cmis.influencer_applications', function (Blueprint $table) {
@@ -383,11 +366,7 @@ return new class extends Migration
         });
 
         // RLS Policy
-        DB::statement("
-            ALTER TABLE cmis.influencer_applications ENABLE ROW LEVEL SECURITY;
-            CREATE POLICY org_isolation ON cmis.influencer_applications
-            USING (org_id = current_setting('app.current_org_id', true)::uuid);
-        ");
+        $this->enableRLS('cmis.influencer_applications');
 
         // 7. Influencer Performance History - Historical performance data
         Schema::create('cmis.influencer_performance', function (Blueprint $table) {
@@ -435,11 +414,7 @@ return new class extends Migration
         });
 
         // RLS Policy
-        DB::statement("
-            ALTER TABLE cmis.influencer_performance ENABLE ROW LEVEL SECURITY;
-            CREATE POLICY org_isolation ON cmis.influencer_performance
-            USING (org_id = current_setting('app.current_org_id', true)::uuid);
-        ");
+        $this->enableRLS('cmis.influencer_performance');
 
         // Create Performance Views
 

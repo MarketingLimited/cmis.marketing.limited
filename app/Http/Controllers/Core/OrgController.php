@@ -9,6 +9,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use App\Http\Controllers\Concerns\ApiResponse;
+use App\Http\Requests\Core\StoreOrgRequest;
+use App\Http\Requests\Core\UpdateOrgRequest;
 
 class OrgController extends Controller
 {
@@ -62,22 +64,9 @@ class OrgController extends Controller
     /**
      * إنشاء شركة جديدة
      */
-    public function store(Request $request)
+    public function store(StoreOrgRequest $request)
     {
         $this->authorize('create', Org::class);
-
-        $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
-            'default_locale' => 'nullable|string|max:10',
-            'currency' => 'nullable|string|size:3',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'error' => 'Validation Error',
-                'errors' => $validator->errors()
-            ], 422);
-        }
 
         try {
             DB::beginTransaction();
@@ -167,23 +156,10 @@ class OrgController extends Controller
     /**
      * تحديث الشركة
      */
-    public function update(Request $request, string $orgId)
+    public function update(UpdateOrgRequest $request, string $orgId)
     {
         $org = Org::findOrFail($orgId);
         $this->authorize('update', $org);
-
-        $validator = Validator::make($request->all(), [
-            'name' => 'sometimes|string|max:255',
-            'default_locale' => 'sometimes|string|max:10',
-            'currency' => 'sometimes|string|size:3',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'error' => 'Validation Error',
-                'errors' => $validator->errors()
-            ], 422);
-        }
 
         try {
             $org->update($request->only(['name', 'default_locale', 'currency']));

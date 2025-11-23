@@ -6,6 +6,7 @@ use App\Models\Concerns\HasOrganization;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use App\Models\BaseModel;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Models\Core\Org;
 use App\Models\User;
@@ -64,7 +65,7 @@ class ContextBase extends BaseModel
     /**
      * Scope by organization
      */
-    public function scopeForOrg($query, string $orgId)
+    public function scopeForOrg(Builder $query, string $orgId): Builder
     {
         return $query->where('org_id', $orgId);
 }
