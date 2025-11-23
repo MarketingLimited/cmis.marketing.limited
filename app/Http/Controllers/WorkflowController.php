@@ -82,11 +82,8 @@ class WorkflowController extends Controller
                 Auth::user()->current_org_id
             );
 
-            return response()->json([
-                'success' => true,
-                'flow_id' => $flowId,
-                'message' => 'تم إنشاء سير العمل بنجاح'
-            ]);
+            return $this->success(['flow_id' => $flowId,
+                'message' => 'تم إنشاء سير العمل بنجاح'], 'Operation completed successfully');
         } catch (\Exception $e) {
             Log::error('Workflow initialize error: ' . $e->getMessage());
             return $this->serverError('فشل إنشاء سير العمل' . ': ' . $e->getMessage());

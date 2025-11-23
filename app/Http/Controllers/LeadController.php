@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
+use App\Http\Controllers\Concerns\ApiResponse;
 
 use App\Models\Lead\Lead;
 use Illuminate\Http\Request;
@@ -76,13 +77,12 @@ class LeadController extends Controller
             $leads = $query->orderBy('created_at', 'desc')
                 ->paginate($perPage);
 
-            return response()->json([
-                'data' => $leads->items(),
+            return $this->success($leads->items(),
                 'total' => $leads->total(),
                 'per_page' => $leads->perPage(),
                 'current_page' => $leads->currentPage(),
                 'last_page' => $leads->lastPage(),
-            ]);
+            , 'Operation completed successfully');
         } catch (\Exception $e) {
             Log::error("Failed to list leads: {$e->getMessage()}");
             return response()->json([
@@ -269,9 +269,8 @@ class LeadController extends Controller
             // Soft delete
             $lead->delete();
 
-            return response()->json([
-                'message' => 'Lead deleted successfully'
-            ]);
+            return $this->success(['message' => 'Lead deleted successfully'
+            ], 'Operation completed successfully');
         } catch (\Exception $e) {
             Log::error("Failed to delete lead: {$e->getMessage()}");
             return response()->json([

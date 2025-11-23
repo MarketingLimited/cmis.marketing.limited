@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
+use App\Http\Controllers\Concerns\ApiResponse;
 
 use App\Services\TeamManagementService;
 use Illuminate\Http\Request;
@@ -77,11 +78,9 @@ class TeamController extends Controller
         return $this->created($result['data'] ?? $result, $result['message'] ?? 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to send invitation',
+            return $this->serverError('Failed to send invitation',
                 'error' => $e->getMessage()
-            ], 500);
+            );
         }
     }
 
@@ -111,11 +110,9 @@ class TeamController extends Controller
         return $this->success($result['data'] ?? $result, $result['message'] ?? 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to accept invitation',
+            return $this->serverError('Failed to accept invitation',
                 'error' => $e->getMessage()
-            ], 500);
+            );
         }
     }
 
@@ -150,11 +147,9 @@ class TeamController extends Controller
         return $this->success($result['data'] ?? $result, $result['message'] ?? 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to list team members',
+            return $this->serverError('Failed to list team members',
                 'error' => $e->getMessage()
-            ], 500);
+            );
         }
     }
 
@@ -178,11 +173,9 @@ class TeamController extends Controller
         return $this->success($result['data'] ?? $result, $result['message'] ?? 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to remove team member',
+            return $this->serverError('Failed to remove team member',
                 'error' => $e->getMessage()
-            ], 500);
+            );
         }
     }
 
@@ -224,11 +217,9 @@ class TeamController extends Controller
         return $this->success($result['data'] ?? $result, $result['message'] ?? 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to update role',
+            return $this->serverError('Failed to update role',
                 'error' => $e->getMessage()
-            ], 500);
+            );
         }
     }
 
@@ -251,11 +242,9 @@ class TeamController extends Controller
         return $this->success($result['data'] ?? $result, $result['message'] ?? 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to get role permissions',
+            return $this->serverError('Failed to get role permissions',
                 'error' => $e->getMessage()
-            ], 500);
+            );
         }
     }
 
@@ -277,11 +266,9 @@ class TeamController extends Controller
         return $this->success($result['data'] ?? $result, $result['message'] ?? 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to get roles',
+            return $this->serverError('Failed to get roles',
                 'error' => $e->getMessage()
-            ], 500);
+            );
         }
     }
 
@@ -324,11 +311,9 @@ class TeamController extends Controller
         return $this->success($result['data'] ?? $result, $result['message'] ?? 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to assign accounts',
+            return $this->serverError('Failed to assign accounts',
                 'error' => $e->getMessage()
-            ], 500);
+            );
         }
     }
 
@@ -351,11 +336,9 @@ class TeamController extends Controller
         return $this->success($result['data'] ?? $result, $result['message'] ?? 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to list invitations',
+            return $this->serverError('Failed to list invitations',
                 'error' => $e->getMessage()
-            ], 500);
+            );
         }
     }
 
@@ -379,11 +362,9 @@ class TeamController extends Controller
         return $this->success($result['data'] ?? $result, $result['message'] ?? 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to cancel invitation',
+            return $this->serverError('Failed to cancel invitation',
                 'error' => $e->getMessage()
-            ], 500);
+            );
         }
     }
 }

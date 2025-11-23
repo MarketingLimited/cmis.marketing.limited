@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers\Api;
+use App\Http\Controllers\Concerns\ApiResponse;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\AI\GenerateContentRequest;
@@ -220,11 +221,8 @@ class AiContentController extends Controller
         $quotaStatus = $this->quotaService->getQuotaStatus($user->org_id, $user->id);
         $recommendations = $this->quotaService->getRecommendations($user->org_id, $user->id);
 
-        return response()->json([
-            'success' => true,
-            'quota_status' => $quotaStatus,
-            'recommendations' => $recommendations,
-        ]);
+        return $this->success(['quota_status' => $quotaStatus,
+            'recommendations' => $recommendations,], 'Operation completed successfully');
     }
 
     /**

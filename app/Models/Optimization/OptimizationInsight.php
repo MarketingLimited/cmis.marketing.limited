@@ -91,6 +91,7 @@ class OptimizationInsight extends BaseModel
             'acknowledged_at' => now(),
             'acknowledged_by' => $userId,
         ]);
+    }
 
     public function apply(string $userId, array $actionTaken): void
     {
@@ -100,14 +101,17 @@ class OptimizationInsight extends BaseModel
             'applied_by' => $userId,
             'action_taken' => $actionTaken,
         ]);
+    }
 
     public function dismiss(): void
     {
         $this->update(['status' => 'dismissed']);
+    }
 
     public function markAsExpired(): void
     {
         $this->update(['status' => 'expired']);
+    }
 
     // ===== Insight Analysis =====
 
@@ -116,6 +120,7 @@ class OptimizationInsight extends BaseModel
         return $this->status === 'pending' &&
                $this->confidence_score >= 0.7 &&
                (!$this->expires_at || now()->isBefore($this->expires_at));
+    }
 
     public function isExpired(): bool
     {
@@ -136,6 +141,7 @@ class OptimizationInsight extends BaseModel
             'low' => 4,
             default => 5
         };
+    }
 
     public function getPriorityColor(): string
     {
@@ -146,6 +152,7 @@ class OptimizationInsight extends BaseModel
             'low' => 'blue',
             default => 'gray'
         };
+    }
 
     public function getCategoryLabel(): string
     {
@@ -158,6 +165,7 @@ class OptimizationInsight extends BaseModel
             'platform' => 'Platform Performance',
             default => ucfirst($this->category)
         };
+    }
 
     public function getInsightTypeLabel(): string
     {
@@ -169,25 +177,25 @@ class OptimizationInsight extends BaseModel
             'recommendation' => 'Recommendation',
             default => ucfirst($this->insight_type)
         };
+    }
 
     public function getImpactEstimateLabel(): string
     {
         if (!$this->impact_estimate) {
-            }
             return 'N/A';
+        }
 
+        return '$' . number_format($this->impact_estimate, 2);
+    }
 
-            }
     public function getConfidenceLabel(): string
     {
         if (!$this->confidence_score) {
-            }
             return 'N/A';
+        }
 
-
-
-
-            }
+        return number_format($this->confidence_score * 100, 1) . '%';
+    }
     public function hasAutomatedAction(): bool
     {
         return !empty($this->automated_action) && is_array($this->automated_action);
@@ -198,6 +206,7 @@ class OptimizationInsight extends BaseModel
         return $this->hasAutomatedAction() &&
                $this->isActionable() &&
                $this->confidence_score >= 0.85;
+    }
 
     // ===== Scopes =====
 
@@ -213,6 +222,8 @@ class OptimizationInsight extends BaseModel
                      ->where(function ($q) {
                          $q->whereNull('expires_at')
                            ->orWhere('expires_at', '>', now());
+                     });
+    }
 
     public function scopeHighPriority($query): Builder
     {
@@ -232,4 +243,5 @@ class OptimizationInsight extends BaseModel
     public function scopeWithAutomation($query): Builder
     {
         return $query->whereNotNull('automated_action');
+    }
 }

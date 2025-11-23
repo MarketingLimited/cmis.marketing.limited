@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers\Asset;
+use App\Http\Controllers\Concerns\ApiResponse;
 
 use App\Http\Controllers\Controller;
 use App\Models\Asset\ImageAsset;

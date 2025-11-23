@@ -77,12 +77,9 @@ class KpiController extends Controller
             // Get performance trends from analytics repository
             $trendsData = $this->analyticsRepo->snapshotPerformanceForDays($days);
 
-            return response()->json([
-                'success' => true,
-                'org_id' => $orgId,
+            return $this->success(['org_id' => $orgId,
                 'period_days' => $days,
-                'trends' => $trendsData,
-            ]);
+                'trends' => $trendsData,], 'Operation completed successfully');
 
         } catch (\Exception $e) {
             Log::error('فشل جلب الاتجاهات: ' . $e->getMessage());
@@ -100,10 +97,7 @@ class KpiController extends Controller
         try {
             $migrations = $this->analyticsRepo->reportMigrations();
 
-            return response()->json([
-                'success' => true,
-                'migrations' => $migrations,
-            ]);
+            return $this->success(['migrations' => $migrations,], 'Operation completed successfully');
 
         } catch (\Exception $e) {
             Log::error('فشل جلب تقارير الهجرة: ' . $e->getMessage());
@@ -125,10 +119,9 @@ class KpiController extends Controller
 
             $success = $this->analyticsRepo->runAiQuery($orgId, $validated['prompt']);
 
-            return response()->json([
-                'success' => $success,
+            return $this->success(['success' => $success,
                 'message' => $success ? 'تم تنفيذ الاستعلام بنجاح' : 'فشل تنفيذ الاستعلام',
-            ]);
+            ], 'Operation completed successfully');
 
         } catch (\Exception $e) {
             Log::error('فشل تنفيذ استعلام الذكاء الاصطناعي: ' . $e->getMessage());

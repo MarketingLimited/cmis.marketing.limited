@@ -168,10 +168,9 @@ class ContentController extends Controller
                 return $this->notFound('Content not found');
             }
 
-            return response()->json([
-                'data' => $content,
+            return $this->success($content,
                 'success' => true,
-            ]);
+            , 'Operation completed successfully');
 
         } catch (\Exception $e) {
             \Log::error('Content show error', [
@@ -222,11 +221,10 @@ class ContentController extends Controller
 
             $content->update($validated);
 
-            return response()->json([
-                'data' => $content->fresh(),
+            return $this->success($content->fresh(),
                 'success' => true,
                 'message' => 'Content updated successfully',
-            ]);
+            , 'Operation completed successfully');
 
         } catch (\Illuminate\Validation\ValidationException $e) {
             return $this->validationError($e->errors(), 'Validation failed');
@@ -270,10 +268,7 @@ class ContentController extends Controller
             // Soft delete the content
             $content->delete();
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Content deleted successfully',
-            ]);
+            return $this->success(['message' => 'Content deleted successfully',], 'Operation completed successfully');
 
         } catch (\Exception $e) {
             \Log::error('Content delete error', [
@@ -322,11 +317,10 @@ class ContentController extends Controller
                 'status' => 'scheduled',
             ]);
 
-            return response()->json([
-                'data' => $content->fresh(),
+            return $this->success($content->fresh(),
                 'success' => true,
                 'message' => 'Content scheduled successfully',
-            ]);
+            , 'Operation completed successfully');
 
         } catch (\Illuminate\Validation\ValidationException $e) {
             return $this->validationError($e->errors(), 'Validation failed');
@@ -347,11 +341,10 @@ class ContentController extends Controller
     {
         Log::info('ContentController::publish called (stub)', ['content_id' => $content_id]);
         // Stub implementation - Content publishing logic not yet implemented
-        return response()->json([
-            'message' => 'Content publish endpoint - implementation pending',
+        return $this->success(['message' => 'Content publish endpoint - implementation pending',
             'content_id' => $content_id,
             'stub' => true
-        ]);
+        ], 'Operation completed successfully');
     }
 
     /**
@@ -361,11 +354,10 @@ class ContentController extends Controller
     {
         Log::info('ContentController::unpublish called (stub)', ['content_id' => $content_id]);
         // Stub implementation - Content unpublishing logic not yet implemented
-        return response()->json([
-            'message' => 'Content unpublish endpoint - implementation pending',
+        return $this->success(['message' => 'Content unpublish endpoint - implementation pending',
             'content_id' => $content_id,
             'stub' => true
-        ]);
+        ], 'Operation completed successfully');
     }
 
     /**

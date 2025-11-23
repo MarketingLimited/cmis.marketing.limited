@@ -33,7 +33,7 @@ class NotificationController extends Controller
         $notification = $user->notifications()->findOrFail($notificationId);
         $notification->markAsRead();
 
-        return response()->json(['message' => 'تم تعليم الإشعار كمقروء']);
+        return $this->success(['message' => 'تم تعليم الإشعار كمقروء'], 'Operation completed successfully');
     }
 
     public function markAllAsRead(): JsonResponse
@@ -41,7 +41,7 @@ class NotificationController extends Controller
         $user = Auth::user();
         $user->unreadNotifications->markAsRead();
 
-        return response()->json(['message' => 'تم تعليم جميع الإشعارات كمقروءة']);
+        return $this->success(['message' => 'تم تعليم جميع الإشعارات كمقروءة'], 'Operation completed successfully');
     }
 
     public function destroy($notificationId): JsonResponse
@@ -49,6 +49,6 @@ class NotificationController extends Controller
         $user = Auth::user();
         $user->notifications()->findOrFail($notificationId)->delete();
 
-        return response()->json(['message' => 'تم حذف الإشعار']);
+        return $this->success(['message' => 'تم حذف الإشعار'], 'Operation completed successfully');
     }
 }

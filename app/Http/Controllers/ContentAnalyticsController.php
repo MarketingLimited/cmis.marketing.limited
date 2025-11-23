@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
+use App\Http\Controllers\Concerns\ApiResponse;
 
 use App\Services\ContentAnalyticsService;
 use Illuminate\Http\Request;
@@ -56,11 +57,9 @@ class ContentAnalyticsController extends Controller
             return $this->success($analytics, 'Retrieved successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to load post analytics',
+            return $this->serverError('Failed to load post analytics',
                 'error' => $e->getMessage()
-            ], 500);
+            );
         }
     }
 
@@ -97,11 +96,9 @@ class ContentAnalyticsController extends Controller
             return $this->success($analytics, 'Retrieved successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to load hashtag analytics',
+            return $this->serverError('Failed to load hashtag analytics',
                 'error' => $e->getMessage()
-            ], 500);
+            );
         }
     }
 
@@ -124,11 +121,9 @@ class ContentAnalyticsController extends Controller
             return $this->success($demographics, 'Retrieved successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to load audience demographics',
+            return $this->serverError('Failed to load audience demographics',
                 'error' => $e->getMessage()
-            ], 500);
+            );
         }
     }
 
@@ -163,11 +158,9 @@ class ContentAnalyticsController extends Controller
             return $this->success($patterns, 'Retrieved successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to load engagement patterns',
+            return $this->serverError('Failed to load engagement patterns',
                 'error' => $e->getMessage()
-            ], 500);
+            );
         }
     }
 
@@ -202,11 +195,9 @@ class ContentAnalyticsController extends Controller
             return $this->success($performance, 'Retrieved successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to load content type performance',
+            return $this->serverError('Failed to load content type performance',
                 'error' => $e->getMessage()
-            ], 500);
+            );
         }
     }
 
@@ -245,11 +236,9 @@ class ContentAnalyticsController extends Controller
             return $this->success($topPosts, 'Retrieved successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to load top posts',
+            return $this->serverError('Failed to load top posts',
                 'error' => $e->getMessage()
-            ], 500);
+            );
         }
     }
 
@@ -303,11 +292,9 @@ class ContentAnalyticsController extends Controller
             ]);
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to load comprehensive analysis',
+            return $this->serverError('Failed to load comprehensive analysis',
                 'error' => $e->getMessage()
-            ], 500);
+            );
         }
     }
 }

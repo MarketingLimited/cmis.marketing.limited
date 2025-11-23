@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers\API;
+use App\Http\Controllers\Concerns\ApiResponse;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
@@ -307,11 +308,7 @@ class VectorEmbeddingsV2Controller extends Controller
         try {
             $status = DB::select('SELECT * FROM cmis_knowledge.v_embedding_status');
 
-            return response()->json([
-                'success' => true,
-                'data' => $status,
-                'count' => count($status)
-            ]);
+            return $this->success($status, 'Operation completed successfully');
 
         } catch (\Exception $e) {
             Log::error('Failed to get embedding status', [
@@ -332,11 +329,7 @@ class VectorEmbeddingsV2Controller extends Controller
         try {
             $analysis = DB::select('SELECT * FROM cmis_knowledge.v_intent_analysis');
 
-            return response()->json([
-                'success' => true,
-                'data' => $analysis,
-                'count' => count($analysis)
-            ]);
+            return $this->success($analysis, 'Operation completed successfully');
 
         } catch (\Exception $e) {
             Log::error('Failed to get intent analysis', [
@@ -357,11 +350,7 @@ class VectorEmbeddingsV2Controller extends Controller
         try {
             $status = DB::select('SELECT * FROM cmis_knowledge.v_embedding_queue_status');
 
-            return response()->json([
-                'success' => true,
-                'data' => $status,
-                'count' => count($status)
-            ]);
+            return $this->success($status, 'Operation completed successfully');
 
         } catch (\Exception $e) {
             Log::error('Failed to get queue status', [
@@ -382,11 +371,7 @@ class VectorEmbeddingsV2Controller extends Controller
         try {
             $performance = DB::select('SELECT * FROM cmis_knowledge.v_search_performance LIMIT 24');
 
-            return response()->json([
-                'success' => true,
-                'data' => $performance,
-                'count' => count($performance)
-            ]);
+            return $this->success($performance, 'Operation completed successfully');
 
         } catch (\Exception $e) {
             Log::error('Failed to get search performance', [
@@ -408,11 +393,7 @@ class VectorEmbeddingsV2Controller extends Controller
             $report = DB::selectOne('SELECT cmis_knowledge.generate_system_report() as report');
             $reportData = json_decode($report->report, true);
 
-            return response()->json([
-                'success' => true,
-                'data' => $reportData,
-                'generated_at' => now()->toIso8601String()
-            ]);
+            return $this->success($reportData, 'Operation completed successfully');
 
         } catch (\Exception $e) {
             Log::error('Failed to generate system report', [
@@ -434,11 +415,7 @@ class VectorEmbeddingsV2Controller extends Controller
             $verification = DB::selectOne('SELECT cmis_knowledge.verify_installation() as result');
             $verificationData = json_decode($verification->result, true);
 
-            return response()->json([
-                'success' => true,
-                'data' => $verificationData,
-                'verified_at' => now()->toIso8601String()
-            ]);
+            return $this->success($verificationData, 'Operation completed successfully');
 
         } catch (\Exception $e) {
             Log::error('Installation verification failed', [

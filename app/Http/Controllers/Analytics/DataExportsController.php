@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers\Analytics;
+use App\Http\Controllers\Concerns\ApiResponse;
 
 use App\Http\Controllers\Controller;
 use App\Jobs\ProcessDataExportJob;
@@ -62,10 +63,7 @@ class DataExportsController extends Controller
         $configs = $query->orderBy('created_at', 'desc')
             ->paginate($request->input('per_page', 15));
 
-        return response()->json([
-            'success' => true,
-            'configs' => $configs
-        ]);
+        return $this->success(['configs' => $configs], 'Operation completed successfully');
     }
 
     /**
@@ -126,10 +124,7 @@ class DataExportsController extends Controller
         $config = DataExportConfig::with(['creator', 'logs'])
             ->findOrFail($configId);
 
-        return response()->json([
-            'success' => true,
-            'config' => $config
-        ]);
+        return $this->success(['config' => $config], 'Operation completed successfully');
     }
 
     /**
@@ -310,10 +305,7 @@ class DataExportsController extends Controller
         $logs = $query->latest('started_at')
             ->paginate($request->input('per_page', 20));
 
-        return response()->json([
-            'success' => true,
-            'logs' => $logs
-        ]);
+        return $this->success(['logs' => $logs], 'Operation completed successfully');
     }
 
     /**
@@ -368,10 +360,7 @@ class DataExportsController extends Controller
         $tokens = $query->orderBy('created_at', 'desc')
             ->paginate($request->input('per_page', 15));
 
-        return response()->json([
-            'success' => true,
-            'tokens' => $tokens
-        ]);
+        return $this->success(['tokens' => $tokens], 'Operation completed successfully');
     }
 
     /**
@@ -499,10 +488,7 @@ class DataExportsController extends Controller
             ->limit(5)
             ->get();
 
-        return response()->json([
-            'success' => true,
-            'stats' => $stats,
-            'period_days' => $days
-        ]);
+        return $this->success(['stats' => $stats,
+            'period_days' => $days], 'Operation completed successfully');
     }
 }

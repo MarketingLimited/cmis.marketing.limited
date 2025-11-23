@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
+use App\Http\Controllers\Concerns\ApiResponse;
 
 use App\Services\CMIS\SemanticSearchService;
 use Illuminate\Http\JsonResponse;
@@ -186,10 +187,7 @@ class SearchController extends Controller
                 'creative_embeddings' => \DB::table('cmis_ai.creative_embeddings')->count(),
             ];
 
-            return response()->json([
-                'success' => true,
-                'stats' => $stats
-            ]);
+            return $this->success(['stats' => $stats], 'Operation completed successfully');
 
         } catch (\Exception $e) {
             return $this->serverError('Failed to retrieve stats');

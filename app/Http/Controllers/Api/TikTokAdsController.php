@@ -179,17 +179,12 @@ class TikTokAdsController extends Controller
                 $integration->access_token
             );
 
-            return response()->json([
-                'success' => true,
-                'ad_groups' => $adGroups,
-                'count' => count($adGroups)
-            ]);
+            return $this->success(['ad_groups' => $adGroups,
+                'count' => count($adGroups)], 'Operation completed successfully');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to fetch ad groups',
+            return $this->serverError('Failed to fetch ad groups',
                 'error' => $e->getMessage()
-            ], 500);
+            );
         }
     }
 
@@ -223,17 +218,12 @@ class TikTokAdsController extends Controller
                 $integration->access_token
             );
 
-            return response()->json([
-                'success' => true,
-                'ads' => $ads,
-                'count' => count($ads)
-            ]);
+            return $this->success(['ads' => $ads,
+                'count' => count($ads)], 'Operation completed successfully');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to fetch ads',
+            return $this->serverError('Failed to fetch ads',
                 'error' => $e->getMessage()
-            ], 500);
+            );
         }
     }
 
@@ -340,11 +330,9 @@ class TikTokAdsController extends Controller
                 ]
             ]);
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to fetch campaign metrics',
+            return $this->serverError('Failed to fetch campaign metrics',
                 'error' => $e->getMessage()
-            ], 500);
+            );
         }
     }
 
@@ -376,11 +364,9 @@ class TikTokAdsController extends Controller
 
             return $this->success(null, 'TikTok Ads cache cleared successfully');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to refresh cache',
+            return $this->serverError('Failed to refresh cache',
                 'error' => $e->getMessage()
-            ], 500);
+            );
         }
     }
 }

@@ -47,6 +47,6 @@ class ProfileController extends Controller
         $path = $request->file('avatar')->store('avatars', 'public');
         $user->update(['avatar' => $path]);
 
-        return response()->json(['avatar_url' => asset('storage/' . $path)]);
+        return $this->success(['avatar_url' => asset('storage/' . $path)], 'Operation completed successfully');
     }
 }

@@ -55,10 +55,9 @@ class SocialSchedulerController extends Controller
                 ->limit(10)
                 ->get();
 
-            return response()->json([
-                'stats' => $stats,
+            return $this->success(['stats' => $stats,
                 'upcoming' => $upcomingPosts,
-            ]);
+            ], 'Operation completed successfully');
 
         } catch (\Exception $e) {
             return response()->json([
@@ -300,7 +299,7 @@ class SocialSchedulerController extends Controller
 
             $post->delete();
 
-            return response()->json(['message' => 'Post deleted successfully']);
+            return $this->success(['message' => 'Post deleted successfully'], 'Operation completed successfully');
 
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return $this->notFound('Post not found');
@@ -442,7 +441,7 @@ class SocialSchedulerController extends Controller
                 ->with(['user:id,name', 'campaign:campaign_id,name'])
                 ->findOrFail($postId);
 
-            return response()->json(['post' => $post]);
+            return $this->success(['post' => $post], 'Operation completed successfully');
 
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return $this->notFound('Post not found');

@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers\API;
+use App\Http\Controllers\Concerns\ApiResponse;
 
 use App\Http\Controllers\Controller;
 use App\Models\Core\Integration;
@@ -59,12 +60,9 @@ class SyncController extends Controller
                 }
             }
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Sync jobs dispatched',
+            return $this->success(['message' => 'Sync jobs dispatched',
                 'platform' => $integration->platform,
-                'jobs' => $jobs,
-            ]);
+                'jobs' => $jobs,], 'Operation completed successfully');
         } catch (\Exception $e) {
             Log::error("Failed to trigger sync for {$integrationId}: {$e->getMessage()}");
             return response()->json([
@@ -92,12 +90,9 @@ class SyncController extends Controller
             $connector = ConnectorFactory::make($integration->platform);
             $posts = $connector->syncPosts($integration, $request->all());
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Posts synced successfully',
+            return $this->success(['message' => 'Posts synced successfully',
                 'platform' => $integration->platform,
-                'posts_count' => $posts->count(),
-            ]);
+                'posts_count' => $posts->count(),], 'Operation completed successfully');
         } catch (\Exception $e) {
             Log::error("Failed to sync posts for {$integrationId}: {$e->getMessage()}");
             return response()->json([
@@ -125,12 +120,9 @@ class SyncController extends Controller
             $connector = ConnectorFactory::make($integration->platform);
             $comments = $connector->syncComments($integration, $request->all());
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Comments synced successfully',
+            return $this->success(['message' => 'Comments synced successfully',
                 'platform' => $integration->platform,
-                'comments_count' => $comments->count(),
-            ]);
+                'comments_count' => $comments->count(),], 'Operation completed successfully');
         } catch (\Exception $e) {
             Log::error("Failed to sync comments for {$integrationId}: {$e->getMessage()}");
             return response()->json([
@@ -158,12 +150,9 @@ class SyncController extends Controller
             $connector = ConnectorFactory::make($integration->platform);
             $messages = $connector->syncMessages($integration, $request->all());
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Messages synced successfully',
+            return $this->success(['message' => 'Messages synced successfully',
                 'platform' => $integration->platform,
-                'messages_count' => $messages->count(),
-            ]);
+                'messages_count' => $messages->count(),], 'Operation completed successfully');
         } catch (\Exception $e) {
             Log::error("Failed to sync messages for {$integrationId}: {$e->getMessage()}");
             return response()->json([
@@ -191,12 +180,9 @@ class SyncController extends Controller
             $connector = ConnectorFactory::make($integration->platform);
             $campaigns = $connector->syncCampaigns($integration, $request->all());
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Campaigns synced successfully',
+            return $this->success(['message' => 'Campaigns synced successfully',
                 'platform' => $integration->platform,
-                'campaigns_count' => $campaigns->count(),
-            ]);
+                'campaigns_count' => $campaigns->count(),], 'Operation completed successfully');
         } catch (\Exception $e) {
             Log::error("Failed to sync campaigns for {$integrationId}: {$e->getMessage()}");
             return response()->json([
@@ -230,12 +216,9 @@ class SyncController extends Controller
                 $dispatched += 4;
             }
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Sync jobs dispatched for all platforms',
+            return $this->success(['message' => 'Sync jobs dispatched for all platforms',
                 'integrations_count' => $integrations->count(),
-                'jobs_dispatched' => $dispatched,
-            ]);
+                'jobs_dispatched' => $dispatched,], 'Operation completed successfully');
         } catch (\Exception $e) {
             Log::error("Failed to sync all platforms: {$e->getMessage()}");
             return response()->json([
@@ -303,11 +286,8 @@ class SyncController extends Controller
                 ->limit($limit)
                 ->get();
 
-            return response()->json([
-                'success' => true,
-                'sync_history' => $syncLogs,
-                'total' => $syncLogs->count(),
-            ]);
+            return $this->success(['sync_history' => $syncLogs,
+                'total' => $syncLogs->count(),], 'Operation completed successfully');
         } catch (\Exception $e) {
             Log::error("Failed to get sync history: {$e->getMessage()}");
             return response()->json([

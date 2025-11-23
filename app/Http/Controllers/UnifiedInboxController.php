@@ -71,11 +71,8 @@ class UnifiedInboxController extends Controller
         try {
             $messages = $this->inboxService->getConversation($conversationId);
 
-            return response()->json([
-                'success' => true,
-                'conversation_id' => $conversationId,
-                'messages' => $messages,
-            ]);
+            return $this->success(['conversation_id' => $conversationId,
+                'messages' => $messages,], 'Operation completed successfully');
         } catch (\Exception $e) {
             Log::error('Failed to get conversation: ' . $e->getMessage());
             return $this->serverError('فشل في جلب المحادثة');
@@ -172,11 +169,8 @@ class UnifiedInboxController extends Controller
                 $request->user()->user_id
             );
 
-            return response()->json([
-                'success' => true,
-                'message' => 'تمت إضافة الملاحظة',
-                'note_id' => $noteId
-            ]);
+            return $this->success(['message' => 'تمت إضافة الملاحظة',
+                'note_id' => $noteId], 'Operation completed successfully');
         } catch (\Exception $e) {
             Log::error('Failed to add note: ' . $e->getMessage());
             return $this->serverError('فشل في إضافة الملاحظة');
@@ -193,10 +187,7 @@ class UnifiedInboxController extends Controller
         try {
             $replies = $this->inboxService->getSavedReplies();
 
-            return response()->json([
-                'success' => true,
-                'replies' => $replies
-            ]);
+            return $this->success(['replies' => $replies], 'Operation completed successfully');
         } catch (\Exception $e) {
             Log::error('Failed to get saved replies: ' . $e->getMessage());
             return $this->serverError('فشل في جلب الردود المحفوظة');
@@ -223,11 +214,8 @@ class UnifiedInboxController extends Controller
                 $validated['category'] ?? null
             );
 
-            return response()->json([
-                'success' => true,
-                'message' => 'تم حفظ الرد',
-                'reply_id' => $replyId
-            ]);
+            return $this->success(['message' => 'تم حفظ الرد',
+                'reply_id' => $replyId], 'Operation completed successfully');
         } catch (\Exception $e) {
             Log::error('Failed to create saved reply: ' . $e->getMessage());
             return $this->serverError('فشل في حفظ الرد');
@@ -244,10 +232,7 @@ class UnifiedInboxController extends Controller
         try {
             $stats = $this->inboxService->getStatistics();
 
-            return response()->json([
-                'success' => true,
-                'statistics' => $stats
-            ]);
+            return $this->success(['statistics' => $stats], 'Operation completed successfully');
         } catch (\Exception $e) {
             Log::error('Failed to get inbox statistics: ' . $e->getMessage());
             return $this->serverError('فشل في جلب الإحصائيات');

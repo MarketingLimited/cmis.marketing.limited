@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
+use App\Http\Controllers\Concerns\ApiResponse;
 
 use App\Services\PublishingQueueService;
 use Illuminate\Http\Request;
@@ -100,11 +101,9 @@ class PublishingQueueController extends Controller
                 'error' => $e->getMessage()
             ], 422);
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to configure queue',
+            return $this->serverError('Failed to configure queue',
                 'error' => $e->getMessage()
-            ], 500);
+            );
         }
     }
 
@@ -140,17 +139,11 @@ class PublishingQueueController extends Controller
                 ])
             );
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Queue updated successfully',
-                'data' => $queue
-            ]);
+            return $this->success($queue, 'Operation completed successfully');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to update queue',
+            return $this->serverError('Failed to update queue',
                 'error' => $e->getMessage()
-            ], 500);
+            );
         }
     }
 
@@ -202,11 +195,7 @@ class PublishingQueueController extends Controller
     {
         $posts = $this->queueService->getQueuedPosts($socialAccountId);
 
-        return response()->json([
-            'success' => true,
-            'data' => $posts,
-            'count' => $posts->count()
-        ]);
+        return $this->success($posts, 'Operation completed successfully');
     }
 
     /**

@@ -187,9 +187,6 @@ class ReportController extends Controller
 
         // Delete report file and record
         // For now, just return success
-        return response()->json([
-            'success' => true,
-            'message' => 'Report deleted successfully',
-        ]);
+        return $this->success(['message' => 'Report deleted successfully',], 'Operation completed successfully');
     }
 }

@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers\API;
+use App\Http\Controllers\Concerns\ApiResponse;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
@@ -73,13 +74,12 @@ class SyncStatusController extends Controller
             ];
         });
 
-        return response()->json([
-            'org_id' => $org->org_id,
+        return $this->success(['org_id' => $org->org_id,
             'total_integrations' => $integrations->count(),
             'active_syncs' => $integrations->where('sync_status', 'syncing')->count(),
             'failed_syncs' => $integrations->where('sync_status', 'failed')->count(),
             'integrations' => $status,
-        ]);
+        ], 'Operation completed successfully');
     }
 
     /**
@@ -121,8 +121,7 @@ class SyncStatusController extends Controller
             return $this->notFound('Integration not found');
         }
 
-        return response()->json([
-            'integration_id' => $integration->integration_id,
+        return $this->success(['integration_id' => $integration->integration_id,
             'provider' => $integration->provider,
             'platform' => $integration->platform,
             'last_synced_at' => $integration->last_synced_at?->toIso8601String(),
@@ -133,7 +132,7 @@ class SyncStatusController extends Controller
             'is_syncing' => $integration->sync_status === 'syncing',
             'token_status' => $this->getTokenStatus($integration),
             'is_active' => $integration->is_active,
-        ]);
+        ], 'Operation completed successfully');
     }
 
     /**
@@ -187,12 +186,11 @@ class SyncStatusController extends Controller
                 ->onQueue('priority'); // Use priority queue for manual syncs
         }
 
-        return response()->json([
-            'message' => 'Sync triggered successfully',
+        return $this->success(['message' => 'Sync triggered successfully',
             'integrations_count' => $integrations->count(),
             'data_type' => $dataType,
             'status' => 'queued',
-        ]);
+        ], 'Operation completed successfully');
     }
 
     /**
@@ -250,13 +248,12 @@ class SyncStatusController extends Controller
         SyncPlatformData::dispatch($integration, $dataType)
             ->onQueue('priority');
 
-        return response()->json([
-            'message' => 'Sync triggered successfully',
+        return $this->success(['message' => 'Sync triggered successfully',
             'integration_id' => $integration->integration_id,
             'provider' => $integration->provider,
             'data_type' => $dataType,
             'status' => 'queued',
-        ]);
+        ], 'Operation completed successfully');
     }
 
     /**

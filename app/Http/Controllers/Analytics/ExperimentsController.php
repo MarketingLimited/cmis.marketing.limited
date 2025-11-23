@@ -57,10 +57,7 @@ class ExperimentsController extends Controller
         $experiments = $query->latest('created_at')
             ->paginate($request->input('per_page', 15));
 
-        return response()->json([
-            'success' => true,
-            'experiments' => $experiments
-        ]);
+        return $this->success(['experiments' => $experiments], 'Operation completed successfully');
     }
 
     /**
@@ -119,11 +116,8 @@ class ExperimentsController extends Controller
         $experiment = Experiment::with(['creator', 'variants', 'results'])
             ->findOrFail($experimentId);
 
-        return response()->json([
-            'success' => true,
-            'experiment' => $experiment,
-            'performance' => $this->experimentService->getPerformanceSummary($experiment)
-        ]);
+        return $this->success(['experiment' => $experiment,
+            'performance' => $this->experimentService->getPerformanceSummary($experiment)], 'Operation completed successfully');
     }
 
     /**
@@ -247,11 +241,8 @@ class ExperimentsController extends Controller
 
         $variant->update($validated);
 
-        return response()->json([
-            'success' => true,
-            'variant' => $variant->fresh(),
-            'message' => 'Variant updated successfully'
-        ]);
+        return $this->success(['variant' => $variant->fresh(),
+            'message' => 'Variant updated successfully'], 'Operation completed successfully');
     }
 
     /**
@@ -272,16 +263,11 @@ class ExperimentsController extends Controller
         try {
             $experiment->start();
 
-            return response()->json([
-                'success' => true,
-                'experiment' => $experiment->fresh(),
-                'message' => 'Experiment started successfully'
-            ]);
+            return $this->success(['experiment' => $experiment->fresh(),
+                'message' => 'Experiment started successfully'], 'Operation completed successfully');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => $e->getMessage()
-            ], 422);
+            return $this->validationError(, $e->getMessage()
+            );
         }
     }
 
@@ -303,16 +289,11 @@ class ExperimentsController extends Controller
         try {
             $experiment->pause();
 
-            return response()->json([
-                'success' => true,
-                'experiment' => $experiment->fresh(),
-                'message' => 'Experiment paused successfully'
-            ]);
+            return $this->success(['experiment' => $experiment->fresh(),
+                'message' => 'Experiment paused successfully'], 'Operation completed successfully');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => $e->getMessage()
-            ], 422);
+            return $this->validationError(, $e->getMessage()
+            );
         }
     }
 
@@ -334,16 +315,11 @@ class ExperimentsController extends Controller
         try {
             $experiment->resume();
 
-            return response()->json([
-                'success' => true,
-                'experiment' => $experiment->fresh(),
-                'message' => 'Experiment resumed successfully'
-            ]);
+            return $this->success(['experiment' => $experiment->fresh(),
+                'message' => 'Experiment resumed successfully'], 'Operation completed successfully');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => $e->getMessage()
-            ], 422);
+            return $this->validationError(, $e->getMessage()
+            );
         }
     }
 
@@ -442,12 +418,9 @@ class ExperimentsController extends Controller
             $significance = [];
         }
 
-        return response()->json([
-            'success' => true,
-            'performance' => $performance,
+        return $this->success(['performance' => $performance,
             'time_series' => $timeSeries,
-            'statistical_significance' => $significance
-        ]);
+            'statistical_significance' => $significance], 'Operation completed successfully');
     }
 
     /**
@@ -480,9 +453,6 @@ class ExperimentsController extends Controller
             ->limit(5)
             ->get();
 
-        return response()->json([
-            'success' => true,
-            'stats' => $stats
-        ]);
+        return $this->success(['stats' => $stats], 'Operation completed successfully');
     }
 }

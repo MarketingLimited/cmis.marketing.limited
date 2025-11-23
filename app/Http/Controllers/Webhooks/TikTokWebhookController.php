@@ -46,7 +46,7 @@ class TikTokWebhookController extends Controller
                     break;
             }
 
-            return response()->json(['success' => true]);
+            return $this->success(['success' => true], 'Operation completed successfully');
         } catch (\Exception $e) {
             Log::error("TikTok webhook error: {$e->getMessage()}");
             return response()->json(['success' => false], 500);

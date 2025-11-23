@@ -49,10 +49,9 @@ class OrgController extends Controller
                     ];
                 });
 
-            return response()->json([
-                'orgs' => $orgs,
+            return $this->success(['orgs' => $orgs,
                 'total' => $orgs->count()
-            ]);
+            ], 'Operation completed successfully');
 
         } catch (\Exception $e) {
             return response()->json([
@@ -142,7 +141,7 @@ class OrgController extends Controller
                 }
             ])->findOrFail($orgId);
 
-            return response()->json(['org' => $org]);
+            return $this->success(['org' => $org], 'Operation completed successfully');
 
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return $this->notFound('Organization not found');
@@ -165,10 +164,9 @@ class OrgController extends Controller
         try {
             $org->update($request->only(['name', 'default_locale', 'currency']));
 
-            return response()->json([
-                'message' => 'Organization updated successfully',
+            return $this->success(['message' => 'Organization updated successfully',
                 'org' => $org->fresh()
-            ]);
+            ], 'Operation completed successfully');
 
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return $this->notFound('Organization not found');
@@ -191,7 +189,7 @@ class OrgController extends Controller
 
             $org->delete();
 
-            return response()->json(['message' => 'Organization deleted successfully']);
+            return $this->success(['message' => 'Organization deleted successfully'], 'Operation completed successfully');
 
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return $this->notFound('Organization not found');
@@ -221,10 +219,9 @@ class OrgController extends Controller
                 'created_at' => $org->created_at,
             ];
 
-            return response()->json([
-                'org_id' => $orgId,
+            return $this->success(['org_id' => $orgId,
                 'statistics' => $stats
-            ]);
+            ], 'Operation completed successfully');
 
         } catch (\Exception $e) {
             return response()->json([

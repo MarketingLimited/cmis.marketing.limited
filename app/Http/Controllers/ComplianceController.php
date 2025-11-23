@@ -44,15 +44,10 @@ class ComplianceController extends Controller
             $campaign = Campaign::findOrFail($campaignId);
             $result = $this->complianceService->validateCampaign($campaign);
 
-            return response()->json([
-                'success' => true,
-                'data' => $result,
-            ]);
+            return $this->success($result, 'Operation completed successfully');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Validation failed: ' . $e->getMessage(),
-            ], 500);
+            return $this->serverError('Validation failed: ' . $e->getMessage(),
+            );
         }
     }
 
@@ -67,15 +62,10 @@ class ComplianceController extends Controller
             $asset = CreativeAsset::findOrFail($assetId);
             $result = $this->complianceService->validateAsset($asset);
 
-            return response()->json([
-                'success' => true,
-                'data' => $result,
-            ]);
+            return $this->success($result, 'Operation completed successfully');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Validation failed: ' . $e->getMessage(),
-            ], 500);
+            return $this->serverError('Validation failed: ' . $e->getMessage(),
+            );
         }
     }
 
@@ -89,15 +79,10 @@ class ComplianceController extends Controller
         try {
             $summary = $this->complianceService->getOrgComplianceSummary($orgId);
 
-            return response()->json([
-                'success' => true,
-                'data' => $summary,
-            ]);
+            return $this->success($summary, 'Operation completed successfully');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to get summary: ' . $e->getMessage(),
-            ], 500);
+            return $this->serverError('Failed to get summary: ' . $e->getMessage(),
+            );
         }
     }
 
@@ -156,10 +141,8 @@ class ComplianceController extends Controller
                 'data' => $rule,
             ], 201);
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to create rule: ' . $e->getMessage(),
-            ], 500);
+            return $this->serverError('Failed to create rule: ' . $e->getMessage(),
+            );
         }
     }
 
@@ -182,16 +165,10 @@ class ComplianceController extends Controller
             $rule = ComplianceRule::findOrFail($ruleId);
             $rule->update($validated);
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Compliance rule updated successfully',
-                'data' => $rule,
-            ]);
+            return $this->success($rule, 'Operation completed successfully');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to update rule: ' . $e->getMessage(),
-            ], 500);
+            return $this->serverError('Failed to update rule: ' . $e->getMessage(),
+            );
         }
     }
 
@@ -206,15 +183,10 @@ class ComplianceController extends Controller
             $rule = ComplianceRule::findOrFail($ruleId);
             $rule->delete();
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Compliance rule deleted successfully',
-            ]);
+            return $this->success(['message' => 'Compliance rule deleted successfully',], 'Operation completed successfully');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to delete rule: ' . $e->getMessage(),
-            ], 500);
+            return $this->serverError('Failed to delete rule: ' . $e->getMessage(),
+            );
         }
     }
 

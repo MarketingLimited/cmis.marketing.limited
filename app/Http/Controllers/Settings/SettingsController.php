@@ -46,7 +46,7 @@ class SettingsController extends Controller
             'email' => 'required|email|unique:users,email,' . $user->user_id . ',user_id',
         ]));
 
-        return response()->json(['message' => 'تم تحديث الملف الشخصي بنجاح']);
+        return $this->success(['message' => 'تم تحديث الملف الشخصي بنجاح'], 'Operation completed successfully');
     }
 
     public function updatePassword(Request $request): JsonResponse
@@ -64,6 +64,6 @@ class SettingsController extends Controller
 
         $user->update(['password' => bcrypt($request->password)]);
 
-        return response()->json(['message' => 'تم تحديث كلمة المرور بنجاح']);
+        return $this->success(['message' => 'تم تحديث كلمة المرور بنجاح'], 'Operation completed successfully');
     }
 }

@@ -194,11 +194,8 @@ class UnifiedCommentsController extends Controller
                 $request->input('comment_ids')
             );
 
-            return response()->json([
-                'success' => true,
-                'message' => 'تم تنفيذ العملية الجماعية',
-                'results' => $result
-            ]);
+            return $this->success(['message' => 'تم تنفيذ العملية الجماعية',
+                'results' => $result], 'Operation completed successfully');
         } catch (\Exception $e) {
             Log::error('Failed to execute bulk action: ' . $e->getMessage());
             return $this->serverError('فشل في تنفيذ العملية الجماعية' . ': ' . $e->getMessage());
@@ -215,10 +212,7 @@ class UnifiedCommentsController extends Controller
         try {
             $stats = $this->commentsService->getStatistics();
 
-            return response()->json([
-                'success' => true,
-                'statistics' => $stats
-            ]);
+            return $this->success(['statistics' => $stats], 'Operation completed successfully');
         } catch (\Exception $e) {
             Log::error('Failed to get comment statistics: ' . $e->getMessage());
             return $this->serverError('فشل في جلب إحصائيات التعليقات' . ': ' . $e->getMessage());

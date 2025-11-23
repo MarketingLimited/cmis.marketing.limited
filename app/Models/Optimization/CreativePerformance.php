@@ -100,22 +100,27 @@ class CreativePerformance extends BaseModel
         // Normalize ROAS (assume good ROAS is 3.0+)
         if ($this->roas !== null) {
             $scores['roas'] = min($this->roas / 3.0, 1.0);
+        }
 
         // CVR is already a percentage
         if ($this->cvr !== null) {
             $scores['cvr'] = min($this->cvr * 10, 1.0); // Assume 10% CVR is excellent
+        }
 
         // CTR is already a percentage
         if ($this->ctr !== null) {
             $scores['ctr'] = min($this->ctr * 5, 1.0); // Assume 20% CTR is excellent
+        }
 
         // Engagement rate
         if ($this->engagement_rate !== null) {
             $scores['engagement_rate'] = min($this->engagement_rate * 5, 1.0);
+        }
 
         // Freshness (inverse of fatigue)
         if ($this->freshness_days !== null) {
             $scores['freshness'] = max(1.0 - ($this->freshness_days / 90), 0); // 90 days = stale
+        }
 
         // Calculate weighted average
         $totalScore = 0;
@@ -125,10 +130,11 @@ class CreativePerformance extends BaseModel
             if (isset($scores[$metric])) {
                 $totalScore += $scores[$metric] * $weight;
                 $totalWeight += $weight;
+            }
+        }
 
         return $totalWeight > 0 ? round($totalScore / $totalWeight, 4) : 0.0;
-
-        }
+    }
     public function calculateFatigueScore(): float
     {
         // Higher fatigue = more stale creative
@@ -165,6 +171,7 @@ class CreativePerformance extends BaseModel
             'reels' => 'Reels',
             default => ucfirst($this->creative_type)
         };
+    }
 
     public function getRecommendationLabel(): string
     {
@@ -176,26 +183,33 @@ class CreativePerformance extends BaseModel
             'test_variation' => 'Test Variations',
             default => ucfirst(str_replace('_', ' ', $this->recommendation ?? 'none'))
         };
+    }
 
     public function getVisualFeatureSummary(): string
     {
         if (!$this->visual_features || !is_array($this->visual_features)) {
-            }
             return 'N/A';
+        }
 
+        $summary = [];
+        foreach ($this->visual_features as $key => $value) {
+            $summary[] = ucfirst($key) . ': ' . $value;
+        }
+        return implode(', ', $summary);
+    }
 
-
-            }
     public function getTextFeatureSummary(): string
     {
         if (!$this->text_features || !is_array($this->text_features)) {
-            }
             return 'N/A';
+        }
 
-
-
-
-            }
+        $summary = [];
+        foreach ($this->text_features as $key => $value) {
+            $summary[] = ucfirst($key) . ': ' . $value;
+        }
+        return implode(', ', $summary);
+    }
     public function scopeHighPerforming($query): Builder
     {
         return $query->where('performance_score', '>=', 0.7);
@@ -216,4 +230,6 @@ class CreativePerformance extends BaseModel
         return $query->where(function ($q) {
             $q->where('fatigue_score', '>', 0.7)
               ->orWhere('freshness_days', '>', 60);
+        });
+    }
 }

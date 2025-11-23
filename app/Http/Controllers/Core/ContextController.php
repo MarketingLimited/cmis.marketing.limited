@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers\Core;
+use App\Http\Controllers\Concerns\ApiResponse;
 
 use App\Http\Controllers\Controller;
 use App\Models\Security\SessionContext;
@@ -98,11 +99,9 @@ class ContextController extends Controller
                 'trace' => $e->getTraceAsString()
             ]);
 
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to retrieve context',
+            return $this->serverError('Failed to retrieve context',
                 'error' => $e->getMessage()
-            ], 500);
+            );
         }
     }
 
@@ -175,11 +174,9 @@ class ContextController extends Controller
                 'error' => $e->getMessage()
             ]);
 
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to retrieve organizations',
+            return $this->serverError('Failed to retrieve organizations',
                 'error' => $e->getMessage()
-            ], 500);
+            );
         }
     }
 
@@ -284,11 +281,9 @@ class ContextController extends Controller
                 'error' => $e->getMessage(),
             ]);
 
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to switch organization. Please try again.',
+            return $this->serverError('Failed to switch organization. Please try again.',
                 'error' => $e->getMessage()
-            ], 500);
+            );
         }
     }
 
@@ -324,11 +319,9 @@ class ContextController extends Controller
                 'error' => $e->getMessage()
             ]);
 
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to refresh context',
+            return $this->serverError('Failed to refresh context',
                 'error' => $e->getMessage()
-            ], 500);
+            );
         }
     }
 }

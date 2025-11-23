@@ -62,11 +62,10 @@ class KnowledgeController extends Controller
                 SELECT * FROM cmis_knowledge.semantic_search_advanced(?, ?, ?, NULL, NULL, 20)
             ", [$query, $domain, $category]);
 
-            return response()->json([
-                'success' => true,
+            return $this->success([
                 'results' => $results,
                 'count' => count($results)
-            ]);
+            ], 'Search completed successfully');
         } catch (\Exception $e) {
             Log::error('Knowledge search error: ' . $e->getMessage());
             return $this->serverError('خطأ في البحث' . ': ' . $e->getMessage());
@@ -99,11 +98,9 @@ class KnowledgeController extends Controller
                 json_encode($validated['keywords'] ?? [])
             ]);
 
-            return response()->json([
-                'success' => true,
-                'knowledge_id' => $result[0]->knowledge_id ?? null,
-                'message' => 'تم تسجيل المعرفة بنجاح'
-            ]);
+            return $this->success([
+                'knowledge_id' => $result[0]->knowledge_id ?? null
+            ], 'تم تسجيل المعرفة بنجاح');
         } catch (\Exception $e) {
             Log::error('Knowledge store error: ' . $e->getMessage());
             return $this->serverError('فشل تسجيل المعرفة' . ': ' . $e->getMessage());
@@ -124,15 +121,9 @@ class KnowledgeController extends Controller
                 ORDER BY count DESC
             ");
 
-            return response()->json([
-                'success' => true,
-                'domains' => $domains
-            ]);
+            return $this->success(['domains' => $domains], 'Domains retrieved successfully');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to retrieve domains: ' . $e->getMessage());
         }
     }
 
@@ -150,15 +141,9 @@ class KnowledgeController extends Controller
                 ORDER BY count DESC
             ", [$domain]);
 
-            return response()->json([
-                'success' => true,
-                'categories' => $categories
-            ]);
+            return $this->success(['categories' => $categories], 'Categories retrieved successfully');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to retrieve categories: ' . $e->getMessage());
         }
     }
 }

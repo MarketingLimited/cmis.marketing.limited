@@ -216,4 +216,5 @@ class OptimizationRun extends BaseModel
     public function scopeWithImprovement($query): Builder
     {
         return $query->where('improvement_percentage', '>', 0);
+    }
 }

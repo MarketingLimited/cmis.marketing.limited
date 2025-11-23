@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
+use App\Http\Controllers\Concerns\ApiResponse;
 
 use App\Services\CommentService;
 use Illuminate\Http\Request;
@@ -80,11 +81,9 @@ class CommentController extends Controller
         return $this->created($result['data'] ?? $result, $result['message'] ?? 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to add comment',
+            return $this->serverError('Failed to add comment',
                 'error' => $e->getMessage()
-            ], 500);
+            );
         }
     }
 
@@ -131,11 +130,9 @@ class CommentController extends Controller
         return $this->created($result['data'] ?? $result, $result['message'] ?? 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to add reply',
+            return $this->serverError('Failed to add reply',
                 'error' => $e->getMessage()
-            ], 500);
+            );
         }
     }
 
@@ -183,11 +180,9 @@ class CommentController extends Controller
         return $this->success($result['data'] ?? $result, $result['message'] ?? 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to update comment',
+            return $this->serverError('Failed to update comment',
                 'error' => $e->getMessage()
-            ], 500);
+            );
         }
     }
 
@@ -218,11 +213,9 @@ class CommentController extends Controller
         return $this->success($result['data'] ?? $result, $result['message'] ?? 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to delete comment',
+            return $this->serverError('Failed to delete comment',
                 'error' => $e->getMessage()
-            ], 500);
+            );
         }
     }
 
@@ -262,11 +255,9 @@ class CommentController extends Controller
         return $this->success($result['data'] ?? $result, $result['message'] ?? 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to get comments',
+            return $this->serverError('Failed to get comments',
                 'error' => $e->getMessage()
-            ], 500);
+            );
         }
     }
 
@@ -314,11 +305,9 @@ class CommentController extends Controller
         return $this->success($result['data'] ?? $result, $result['message'] ?? 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to add reaction',
+            return $this->serverError('Failed to add reaction',
                 'error' => $e->getMessage()
-            ], 500);
+            );
         }
     }
 
@@ -349,11 +338,9 @@ class CommentController extends Controller
         return $this->success($result['data'] ?? $result, $result['message'] ?? 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to remove reaction',
+            return $this->serverError('Failed to remove reaction',
                 'error' => $e->getMessage()
-            ], 500);
+            );
         }
     }
 
@@ -391,11 +378,9 @@ class CommentController extends Controller
         return $this->success($result['data'] ?? $result, $result['message'] ?? 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to get activity feed',
+            return $this->serverError('Failed to get activity feed',
                 'error' => $e->getMessage()
-            ], 500);
+            );
         }
     }
 }

@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers\API;
+use App\Http\Controllers\Concerns\ApiResponse;
 
 use App\Http\Controllers\Controller;
 use App\Models\Core\Integration;
@@ -103,11 +104,8 @@ class ContentPublishingController extends Controller
                 }
             }
 
-            return response()->json([
-                'success' => true,
-                'content_item_id' => $contentItem->content_id,
-                'results' => $results,
-            ]);
+            return $this->success(['content_item_id' => $contentItem->content_id,
+                'results' => $results,], 'Operation completed successfully');
         } catch (\Exception $e) {
             Log::error("Failed to publish content: {$e->getMessage()}");
             return response()->json([
@@ -188,12 +186,9 @@ class ContentPublishingController extends Controller
                 ];
             }
 
-            return response()->json([
-                'success' => true,
-                'content_item_id' => $contentItem->content_id,
+            return $this->success(['content_item_id' => $contentItem->content_id,
                 'scheduled_posts' => $scheduledPosts,
-                'message' => 'Content scheduled successfully',
-            ]);
+                'message' => 'Content scheduled successfully',], 'Operation completed successfully');
         } catch (\Exception $e) {
             Log::error("Failed to schedule content: {$e->getMessage()}");
             return response()->json([
@@ -230,11 +225,8 @@ class ContentPublishingController extends Controller
                 ->orderBy('sp.scheduled_at', 'asc')
                 ->get();
 
-            return response()->json([
-                'success' => true,
-                'scheduled_posts' => $scheduledPosts,
-                'total' => $scheduledPosts->count(),
-            ]);
+            return $this->success(['scheduled_posts' => $scheduledPosts,
+                'total' => $scheduledPosts->count(),], 'Operation completed successfully');
         } catch (\Exception $e) {
             Log::error("Failed to get scheduled posts: {$e->getMessage()}");
             return response()->json([
@@ -293,10 +285,7 @@ class ContentPublishingController extends Controller
                     ->update($updates);
             }
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Scheduled post updated successfully',
-            ]);
+            return $this->success(['message' => 'Scheduled post updated successfully',], 'Operation completed successfully');
         } catch (\Exception $e) {
             Log::error("Failed to update scheduled post: {$e->getMessage()}");
             return response()->json([
@@ -331,10 +320,7 @@ class ContentPublishingController extends Controller
                 return $this->notFound('Scheduled post not found or already processed');
             }
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Scheduled post cancelled successfully',
-            ]);
+            return $this->success(['message' => 'Scheduled post cancelled successfully',], 'Operation completed successfully');
         } catch (\Exception $e) {
             Log::error("Failed to cancel scheduled post: {$e->getMessage()}");
             return response()->json([
@@ -368,11 +354,8 @@ class ContentPublishingController extends Controller
                 ->limit($limit)
                 ->get();
 
-            return response()->json([
-                'success' => true,
-                'history' => $history,
-                'total' => $history->count(),
-            ]);
+            return $this->success(['history' => $history,
+                'total' => $history->count(),], 'Operation completed successfully');
         } catch (\Exception $e) {
             Log::error("Failed to get publishing history: {$e->getMessage()}");
             return response()->json([

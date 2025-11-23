@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
+use App\Http\Controllers\Concerns\ApiResponse;
 
 use App\Services\PerformanceOptimizationService;
 use Illuminate\Http\Request;
@@ -48,7 +49,7 @@ class PerformanceController extends Controller
         return $this->success($result['data'] ?? $result, $result['message'] ?? 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => 'Failed to get metrics', 'error' => $e->getMessage()], 500);
+            return ->serverError('Failed to get metrics' . ': ' . ->getMessage());
         }
     }
 
@@ -75,7 +76,7 @@ class PerformanceController extends Controller
         return $this->success($result['data'] ?? $result, $result['message'] ?? 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => 'Failed to clear cache', 'error' => $e->getMessage()], 500);
+            return ->serverError('Failed to clear cache' . ': ' . ->getMessage());
         }
     }
 
@@ -93,7 +94,7 @@ class PerformanceController extends Controller
         return $this->success($result['data'] ?? $result, $result['message'] ?? 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => 'Failed to warm up cache', 'error' => $e->getMessage()], 500);
+            return ->serverError('Failed to warm up cache' . ': ' . ->getMessage());
         }
     }
 
@@ -111,7 +112,7 @@ class PerformanceController extends Controller
         return $this->success($result['data'] ?? $result, $result['message'] ?? 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => 'Failed to optimize database', 'error' => $e->getMessage()], 500);
+            return ->serverError('Failed to optimize database' . ': ' . ->getMessage());
         }
     }
 
@@ -138,7 +139,7 @@ class PerformanceController extends Controller
         return $this->success($result['data'] ?? $result, $result['message'] ?? 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => 'Failed to get slow queries', 'error' => $e->getMessage()], 500);
+            return ->serverError('Failed to get slow queries' . ': ' . ->getMessage());
         }
     }
 }

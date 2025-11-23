@@ -98,10 +98,7 @@ class MetaPostsController extends Controller
                 $metaAccount->access_token
             );
 
-            return response()->json([
-                'success' => true,
-                'post' => $post
-            ]);
+            return $this->success(['post' => $post], 'Operation completed successfully');
 
         } catch (\Exception $e) {
             Log::error('Failed to fetch post details', [

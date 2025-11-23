@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers\API;
+use App\Http\Controllers\Concerns\ApiResponse;
 
 use App\Http\Controllers\Controller;
 use App\Models\Core\Integration;
@@ -38,11 +39,8 @@ class PlatformIntegrationController extends Controller
                 'org_id' => $request->user()->org_id ?? $request->input('org_id'),
             ]);
 
-            return response()->json([
-                'success' => true,
-                'auth_url' => $authUrl,
-                'platform' => $platform,
-            ]);
+            return $this->success(['auth_url' => $authUrl,
+                'platform' => $platform,], 'Operation completed successfully');
         } catch (\Exception $e) {
             Log::error("Failed to get auth URL for {$platform}: {$e->getMessage()}");
             return response()->json([
@@ -173,10 +171,7 @@ class PlatformIntegrationController extends Controller
             $connector = ConnectorFactory::make($integration->platform);
             $connector->disconnect($integration);
 
-            return response()->json([
-                'success' => true,
-                'message' => "Successfully disconnected from {$integration->platform}",
-            ]);
+            return $this->success(['message' => "Successfully disconnected from {$integration->platform}",], 'Operation completed successfully');
         } catch (\Exception $e) {
             Log::error("Failed to disconnect integration {$integrationId}: {$e->getMessage()}");
             return response()->json([
@@ -214,11 +209,8 @@ class PlatformIntegrationController extends Controller
                     ];
                 });
 
-            return response()->json([
-                'success' => true,
-                'integrations' => $integrations,
-                'total' => $integrations->count(),
-            ]);
+            return $this->success(['integrations' => $integrations,
+                'total' => $integrations->count(),], 'Operation completed successfully');
         } catch (\Exception $e) {
             Log::error("Failed to get connected platforms: {$e->getMessage()}");
             return response()->json([
@@ -242,10 +234,7 @@ class PlatformIntegrationController extends Controller
                 ->where('org_id', $request->user()->org_id)
                 ->firstOrFail();
 
-            return response()->json([
-                'success' => true,
-                'integration' => $integration,
-            ]);
+            return $this->success(['integration' => $integration,], 'Operation completed successfully');
         } catch (\Exception $e) {
             return $this->notFound('Integration not found');
         }
@@ -268,11 +257,8 @@ class PlatformIntegrationController extends Controller
             $connector = ConnectorFactory::make($integration->platform);
             $updatedIntegration = $connector->refreshToken($integration);
 
-            return response()->json([
-                'success' => true,
-                'integration' => $updatedIntegration,
-                'message' => 'Token refreshed successfully',
-            ]);
+            return $this->success(['integration' => $updatedIntegration,
+                'message' => 'Token refreshed successfully',], 'Operation completed successfully');
         } catch (\Exception $e) {
             Log::error("Failed to refresh token for {$integrationId}: {$e->getMessage()}");
             return response()->json([
@@ -304,11 +290,8 @@ class PlatformIntegrationController extends Controller
             // Update last_sync_at
             $integration->update(['last_sync_at' => now()]);
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Connection is working',
-                'platform' => $integration->platform,
-            ]);
+            return $this->success(['message' => 'Connection is working',
+                'platform' => $integration->platform,], 'Operation completed successfully');
         } catch (\Exception $e) {
             Log::error("Connection test failed for {$integrationId}: {$e->getMessage()}");
             return response()->json([

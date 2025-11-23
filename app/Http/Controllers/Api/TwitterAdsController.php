@@ -61,11 +61,9 @@ class TwitterAdsController extends Controller
                 'total_count' => $result['total_count']
             ]);
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to fetch Twitter Ads campaigns',
+            return $this->serverError('Failed to fetch Twitter Ads campaigns',
                 'error' => $e->getMessage()
-            ], 500);
+            );
         }
     }
 
@@ -122,11 +120,9 @@ class TwitterAdsController extends Controller
                 'campaign' => $result
             ], 201);
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to create Twitter Ads campaign',
+            return $this->serverError('Failed to create Twitter Ads campaign',
                 'error' => $e->getMessage()
-            ], 500);
+            );
         }
     }
 
@@ -170,11 +166,9 @@ class TwitterAdsController extends Controller
                 'metrics' => $result['metrics']
             ]);
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to fetch campaign details',
+            return $this->serverError('Failed to fetch campaign details',
                 'error' => $e->getMessage()
-            ], 500);
+            );
         }
     }
 
@@ -221,11 +215,9 @@ class TwitterAdsController extends Controller
                 ]
             ]);
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to fetch campaign metrics',
+            return $this->serverError('Failed to fetch campaign metrics',
                 'error' => $e->getMessage()
-            ], 500);
+            );
         }
     }
 
@@ -257,11 +249,9 @@ class TwitterAdsController extends Controller
 
             return $this->success(null, 'Twitter Ads cache cleared successfully');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to refresh cache',
+            return $this->serverError('Failed to refresh cache',
                 'error' => $e->getMessage()
-            ], 500);
+            );
         }
     }
 }

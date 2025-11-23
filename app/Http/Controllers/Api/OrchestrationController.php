@@ -38,10 +38,7 @@ class OrchestrationController extends Controller
             ->active()
             ->get();
 
-        return response()->json([
-            'success' => true,
-            'templates' => $templates,
-        ]);
+        return $this->success(['templates' => $templates,], 'Operation completed successfully');
     }
 
     /**
@@ -105,10 +102,8 @@ class OrchestrationController extends Controller
             ], 201);
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => $e->getMessage(),
-            ], 500);
+            return $this->serverError($e->getMessage(),
+            );
         }
     }
 
@@ -128,10 +123,7 @@ class OrchestrationController extends Controller
 
         $orchestrations = $query->orderByDesc('created_at')->get();
 
-        return response()->json([
-            'success' => true,
-            'orchestrations' => $orchestrations,
-        ]);
+        return $this->success(['orchestrations' => $orchestrations,], 'Operation completed successfully');
     }
 
     /**
@@ -148,11 +140,8 @@ class OrchestrationController extends Controller
 
         $performance = $this->orchestrationService->getAggregatedPerformance($orchestration);
 
-        return response()->json([
-            'success' => true,
-            'orchestration' => $orchestration,
-            'performance' => $performance,
-        ]);
+        return $this->success(['orchestration' => $orchestration,
+            'performance' => $performance,], 'Operation completed successfully');
     }
 
     /**
@@ -176,17 +165,12 @@ class OrchestrationController extends Controller
         try {
             $workflow = $this->orchestrationService->deploy($orchestration);
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Deployment started',
-                'workflow' => $workflow,
-            ]);
+            return $this->success(['message' => 'Deployment started',
+                'workflow' => $workflow,], 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => $e->getMessage(),
-            ], 500);
+            return $this->serverError($e->getMessage(),
+            );
         }
     }
 
@@ -207,17 +191,12 @@ class OrchestrationController extends Controller
                 $request->input('sync_type', 'full')
             );
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Sync completed',
-                'results' => $results,
-            ]);
+            return $this->success(['message' => 'Sync completed',
+                'results' => $results,], 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => $e->getMessage(),
-            ], 500);
+            return $this->serverError($e->getMessage(),
+            );
         }
     }
 
@@ -235,16 +214,11 @@ class OrchestrationController extends Controller
         try {
             $this->orchestrationService->pause($orchestration);
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Orchestration paused on all platforms',
-            ]);
+            return $this->success(['message' => 'Orchestration paused on all platforms',], 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => $e->getMessage(),
-            ], 500);
+            return $this->serverError($e->getMessage(),
+            );
         }
     }
 
@@ -262,16 +236,11 @@ class OrchestrationController extends Controller
         try {
             $this->orchestrationService->resume($orchestration);
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Orchestration resumed on all platforms',
-            ]);
+            return $this->success(['message' => 'Orchestration resumed on all platforms',], 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => $e->getMessage(),
-            ], 500);
+            return $this->serverError($e->getMessage(),
+            );
         }
     }
 
@@ -307,11 +276,8 @@ class OrchestrationController extends Controller
                 ->update(['allocated_budget' => $budget]);
         }
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Budget updated successfully',
-            'orchestration' => $orchestration,
-        ]);
+        return $this->success(['message' => 'Budget updated successfully',
+            'orchestration' => $orchestration,], 'Operation completed successfully');
     }
 
     /**
@@ -328,9 +294,6 @@ class OrchestrationController extends Controller
 
         $performance = $this->orchestrationService->getAggregatedPerformance($orchestration);
 
-        return response()->json([
-            'success' => true,
-            'performance' => $performance,
-        ]);
+        return $this->success(['performance' => $performance,], 'Operation completed successfully');
     }
 }

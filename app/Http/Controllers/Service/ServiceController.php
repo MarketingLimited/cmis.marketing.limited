@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers\Service;
+use App\Http\Controllers\Concerns\ApiResponse;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;

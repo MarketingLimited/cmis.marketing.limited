@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
+use App\Http\Controllers\Concerns\ApiResponse;
 
 use App\Services\AudienceTargetingService;
 use Illuminate\Http\Request;
@@ -99,11 +100,9 @@ class AudienceController extends Controller
             return $this->created($result, 'Created successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to create audience',
+            return $this->serverError('Failed to create audience',
                 'error' => $e->getMessage()
-            ], 500);
+            );
         }
     }
 
@@ -134,11 +133,9 @@ class AudienceController extends Controller
             return $this->success($result, 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to get audience',
+            return $this->serverError('Failed to get audience',
                 'error' => $e->getMessage()
-            ], 500);
+            );
         }
     }
 
@@ -174,11 +171,9 @@ class AudienceController extends Controller
             return $this->success($result, 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to list audiences',
+            return $this->serverError('Failed to list audiences',
                 'error' => $e->getMessage()
-            ], 500);
+            );
         }
     }
 
@@ -225,11 +220,9 @@ class AudienceController extends Controller
             return $this->success($result, 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to update audience',
+            return $this->serverError('Failed to update audience',
                 'error' => $e->getMessage()
-            ], 500);
+            );
         }
     }
 
@@ -256,11 +249,9 @@ class AudienceController extends Controller
             return $this->error('Failed to delete audience', 500);
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to delete audience',
+            return $this->serverError('Failed to delete audience',
                 'error' => $e->getMessage()
-            ], 500);
+            );
         }
     }
 
@@ -309,11 +300,9 @@ class AudienceController extends Controller
             return $this->created($result, 'Created successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to create lookalike audience',
+            return $this->serverError('Failed to create lookalike audience',
                 'error' => $e->getMessage()
-            ], 500);
+            );
         }
     }
 
@@ -370,11 +359,9 @@ class AudienceController extends Controller
             ]);
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to estimate audience size',
+            return $this->serverError('Failed to estimate audience size',
                 'error' => $e->getMessage()
-            ], 500);
+            );
         }
     }
 
@@ -407,11 +394,9 @@ class AudienceController extends Controller
             return $this->success($result, 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to get targeting suggestions',
+            return $this->serverError('Failed to get targeting suggestions',
                 'error' => $e->getMessage()
-            ], 500);
+            );
         }
     }
 }

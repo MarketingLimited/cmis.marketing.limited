@@ -99,50 +99,56 @@ class AttributionModel extends BaseModel
             'data_driven' => 'Data-Driven (Algorithmic)',
             default => ucfirst(str_replace('_', ' ', $this->model_type))
         };
+    }
 
     public function getAttributionForCampaign(string $campaignId): ?float
     {
         if (!$this->attribution_weights || !is_array($this->attribution_weights)) {
-            }
             return null;
+        }
 
-
-            }
+        return $this->attribution_weights[$campaignId] ?? null;
+    }
     public function getShapleyValue(string $campaignId): ?float
     {
         if (!$this->shapley_values || !is_array($this->shapley_values)) {
-            }
             return null;
+        }
 
+        return $this->shapley_values[$campaignId] ?? null;
+    }
 
-            }
     public function getMarkovContribution(string $campaignId): ?float
     {
         if (!$this->markov_contribution || !is_array($this->markov_contribution)) {
-            }
             return null;
+        }
 
+        return $this->markov_contribution[$campaignId] ?? null;
+    }
 
-            }
     public function getTouchpointPath(): string
     {
         if (!$this->touchpoints || !is_array($this->touchpoints)) {
-            }
             return 'N/A';
+        }
 
+        $path = array_map(fn($tp) => $tp['campaign_name'] ?? $tp['campaign_id'] ?? 'Unknown', $this->touchpoints);
+        return implode(' → ', $path);
+    }
 
-            }
     public function getAverageTimeToConversion(): ?float
     {
         if (!$this->touchpoints || !is_array($this->touchpoints) || count($this->touchpoints) === 0) {
-            }
             return null;
+        }
 
+        $firstTouchTime = strtotime($this->touchpoints[0]['timestamp'] ?? 'now');
+        $lastTouchTime = strtotime($this->conversion_date);
+        $hoursDiff = ($lastTouchTime - $firstTouchTime) / 3600;
 
-
-
-
-            }
+        return max($hoursDiff, 0);
+    }
     public function isMultiTouch(): bool
     {
         return $this->touchpoint_count > 1;
@@ -177,4 +183,5 @@ class AttributionModel extends BaseModel
     public function scopeWithinLookback($query, int $days): Builder
     {
         return $query->where('conversion_date', '>=', now()->subDays($days));
+    }
 }

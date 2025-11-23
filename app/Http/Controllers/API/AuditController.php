@@ -100,12 +100,7 @@ class AuditController extends Controller
                 LIMIT ?
             ", [$limit]);
 
-            return response()->json([
-                'success' => true,
-                'data' => $weeks,
-                'count' => count($weeks),
-                'message' => 'Weekly performance retrieved successfully'
-            ]);
+            return $this->success($weeks, 'Operation completed successfully');
 
         } catch (\Exception $e) {
             return $this->serverError('Failed to retrieve weekly performance');
@@ -290,13 +285,7 @@ class AuditController extends Controller
 
             $criticalAlerts = array_filter($alerts, fn($a) => $a->severity === 'critical');
 
-            return response()->json([
-                'success' => true,
-                'data' => $alerts,
-                'has_critical' => !empty($criticalAlerts),
-                'count' => count($alerts),
-                'message' => empty($alerts) ? 'No alerts' : count($alerts) . ' alert(s) found'
-            ]);
+            return $this->success($alerts, 'Operation completed successfully');
 
         } catch (\Exception $e) {
             return $this->serverError('Failed to check alerts');
@@ -339,10 +328,8 @@ class AuditController extends Controller
                     'message' => $result->message
                 ]);
             } else {
-                return response()->json([
-                    'success' => false,
-                    'message' => $result->message
-                ], 500);
+                return $this->serverError($result->message
+                );
             }
 
         } catch (\Exception $e) {

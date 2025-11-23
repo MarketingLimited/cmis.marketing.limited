@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
+use App\Http\Controllers\Concerns\ApiResponse;
 
 use App\Models\CreativeAsset;
 use Illuminate\Http\Request;
@@ -63,13 +64,12 @@ class AssetController extends Controller
             $assets = $query->orderBy('created_at', 'desc')
                 ->paginate($perPage);
 
-            return response()->json([
-                'data' => $assets->items(),
+            return $this->success($assets->items(),
                 'total' => $assets->total(),
                 'per_page' => $assets->perPage(),
                 'current_page' => $assets->currentPage(),
                 'last_page' => $assets->lastPage(),
-            ]);
+            , 'Operation completed successfully');
         } catch (\Exception $e) {
             Log::error("Failed to list assets: {$e->getMessage()}");
             return response()->json([
@@ -263,9 +263,8 @@ class AssetController extends Controller
             $asset->save();
             $asset->delete();
 
-            return response()->json([
-                'message' => 'Asset deleted successfully'
-            ]);
+            return $this->success(['message' => 'Asset deleted successfully'
+            ], 'Operation completed successfully');
         } catch (\Exception $e) {
             Log::error("Failed to delete asset: {$e->getMessage()}");
             return response()->json([

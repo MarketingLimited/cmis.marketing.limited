@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
+use App\Http\Controllers\Concerns\ApiResponse;
 
 use App\Services\ApprovalWorkflowService;
 use Illuminate\Http\Request;
@@ -61,11 +62,9 @@ class ApprovalController extends Controller
             , 'Approval requested successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to request approval',
+            return $this->serverError('Failed to request approval',
                 'error' => $e->getMessage()
-            ], 500);
+            );
         }
     }
 
@@ -199,11 +198,7 @@ class ApprovalController extends Controller
             $orgId
         );
 
-        return response()->json([
-            'success' => true,
-            'data' => $approvals,
-            'count' => $approvals->count()
-        ]);
+        return $this->success($approvals, 'Operation completed successfully');
     }
 
     /**
@@ -219,11 +214,7 @@ class ApprovalController extends Controller
     {
         $history = $this->approvalService->getApprovalHistory($postId);
 
-        return response()->json([
-            'success' => true,
-            'data' => $history,
-            'count' => $history->count()
-        ]);
+        return $this->success($history, 'Operation completed successfully');
     }
 
     /**

@@ -197,10 +197,7 @@ class RealtimeController extends Controller
             }
         }
 
-        return response()->json([
-            'success' => true,
-            'suggestions' => array_values($suggestions),
-            'last_check' => now()->toIso8601String(),
-        ]);
+        return $this->success(['suggestions' => array_values($suggestions),
+            'last_check' => now()->toIso8601String(),], 'Operation completed successfully');
     }
 }

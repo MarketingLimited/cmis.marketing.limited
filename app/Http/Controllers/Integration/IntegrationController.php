@@ -159,11 +159,10 @@ class IntegrationController extends Controller
 
             $authUrl = $config['oauth_url'] . '?' . $params;
 
-            return response()->json([
-                'auth_url' => $authUrl,
+            return $this->success(['auth_url' => $authUrl,
                 'redirect_uri' => $redirectUri,
                 'platform' => $platform,
-            ]);
+            ], 'Operation completed successfully');
 
         } catch (\Exception $e) {
             return response()->json([
@@ -329,10 +328,9 @@ class IntegrationController extends Controller
             // Optionally delete it completely
             // $integration->delete();
 
-            return response()->json([
-                'message' => 'Integration disconnected successfully',
+            return $this->success(['message' => 'Integration disconnected successfully',
                 'integration_id' => $integrationId,
-            ]);
+            ], 'Operation completed successfully');
 
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return $this->notFound('Integration not found');
@@ -366,11 +364,10 @@ class IntegrationController extends Controller
             // Trigger sync
             $result = $this->triggerSync($integration);
 
-            return response()->json([
-                'message' => 'Sync initiated successfully',
+            return $this->success(['message' => 'Sync initiated successfully',
                 'integration_id' => $integrationId,
                 'sync_result' => $result,
-            ]);
+            ], 'Operation completed successfully');
 
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return $this->notFound('Integration not found');
@@ -445,7 +442,7 @@ class IntegrationController extends Controller
                 ],
             ];
 
-            return response()->json(['history' => $history]);
+            return $this->success(['history' => $history], 'Operation completed successfully');
 
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return $this->notFound('Integration not found');
@@ -481,10 +478,9 @@ class IntegrationController extends Controller
                 'sync_comments' => false,
             ];
 
-            return response()->json([
-                'integration_id' => $integrationId,
+            return $this->success(['integration_id' => $integrationId,
                 'settings' => $settings,
-            ]);
+            ], 'Operation completed successfully');
 
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return $this->notFound('Integration not found');
@@ -515,10 +511,9 @@ class IntegrationController extends Controller
             // Stub implementation - Validate and store settings not yet implemented
             $settings = $request->all();
 
-            return response()->json([
-                'message' => 'Settings updated successfully',
+            return $this->success(['message' => 'Settings updated successfully',
                 'settings' => $settings,
-            ]);
+            ], 'Operation completed successfully');
 
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return $this->notFound('Integration not found');
@@ -561,7 +556,7 @@ class IntegrationController extends Controller
                 ],
             ];
 
-            return response()->json(['activity' => $activity]);
+            return $this->success(['activity' => $activity], 'Operation completed successfully');
 
         } catch (\Exception $e) {
             return response()->json([
@@ -597,12 +592,11 @@ class IntegrationController extends Controller
             // Stub implementation - Test API connection with the platform not yet implemented
             // This would make a simple API call to verify the token is still valid
 
-            return response()->json([
-                'status' => 'success',
+            return $this->success(['status' => 'success',
                 'message' => 'Connection is working properly',
                 'platform' => $integration->platform,
                 'tested_at' => now()->toIso8601String(),
-            ]);
+            ], 'Operation completed successfully');
 
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return $this->notFound('Integration not found');
@@ -664,13 +658,12 @@ class IntegrationController extends Controller
                     ];
                 });
 
-            return response()->json([
-                'expiring_tokens' => $expiringTokens,
+            return $this->success(['expiring_tokens' => $expiringTokens,
                 'total_count' => $expiringTokens->count(),
                 'critical_count' => $expiringTokens->where('severity', 'critical')->count(),
                 'urgent_count' => $expiringTokens->where('severity', 'urgent')->count(),
                 'warning_count' => $expiringTokens->where('severity', 'warning')->count(),
-            ]);
+            ], 'Operation completed successfully');
 
         } catch (\Exception $e) {
             return response()->json([

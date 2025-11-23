@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
+use App\Http\Controllers\Concerns\ApiResponse;
 
 use App\Services\IntegrationHubService;
 use Illuminate\Http\Request;
@@ -47,7 +48,7 @@ class IntegrationHubController extends Controller
         return $this->success($result['data'] ?? $result, $result['message'] ?? 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => 'Failed to get integrations', 'error' => $e->getMessage()], 500);
+            return ->serverError('Failed to get integrations' . ': ' . ->getMessage());
         }
     }
 
@@ -85,7 +86,7 @@ class IntegrationHubController extends Controller
         return $this->created($result['data'] ?? $result, $result['message'] ?? 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => 'Failed to create integration', 'error' => $e->getMessage()], 500);
+            return ->serverError('Failed to create integration' . ': ' . ->getMessage());
         }
     }
 
@@ -103,7 +104,7 @@ class IntegrationHubController extends Controller
         return $this->success($result['data'] ?? $result, $result['message'] ?? 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => 'Test failed', 'error' => $e->getMessage()], 500);
+            return ->serverError('Test failed' . ': ' . ->getMessage());
         }
     }
 
@@ -141,7 +142,7 @@ class IntegrationHubController extends Controller
         return $this->created($result['data'] ?? $result, $result['message'] ?? 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => 'Failed to create webhook', 'error' => $e->getMessage()], 500);
+            return ->serverError('Failed to create webhook' . ': ' . ->getMessage());
         }
     }
 
@@ -178,7 +179,7 @@ class IntegrationHubController extends Controller
         return $this->created($result['data'] ?? $result, $result['message'] ?? 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => 'Failed to generate API key', 'error' => $e->getMessage()], 500);
+            return ->serverError('Failed to generate API key' . ': ' . ->getMessage());
         }
     }
 
@@ -196,7 +197,7 @@ class IntegrationHubController extends Controller
         return $this->success($result['data'] ?? $result, $result['message'] ?? 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => 'Failed to list API keys', 'error' => $e->getMessage()], 500);
+            return ->serverError('Failed to list API keys' . ': ' . ->getMessage());
         }
     }
 
@@ -214,7 +215,7 @@ class IntegrationHubController extends Controller
         return $this->success($result['data'] ?? $result, $result['message'] ?? 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => 'Failed to revoke API key', 'error' => $e->getMessage()], 500);
+            return ->serverError('Failed to revoke API key' . ': ' . ->getMessage());
         }
     }
 
@@ -242,7 +243,7 @@ class IntegrationHubController extends Controller
         return $this->success($result['data'] ?? $result, $result['message'] ?? 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => 'Failed to get logs', 'error' => $e->getMessage()], 500);
+            return ->serverError('Failed to get logs' . ': ' . ->getMessage());
         }
     }
 }

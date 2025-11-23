@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
+use App\Http\Controllers\Concerns\ApiResponse;
 
 use App\Services\ReportGenerationService;
 use Illuminate\Http\Request;
@@ -82,11 +83,9 @@ class ReportsController extends Controller
             return $this->success($report, 'Retrieved successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to generate performance report',
+            return $this->serverError('Failed to generate performance report',
                 'error' => $e->getMessage()
-            ], 500);
+            );
         }
     }
 
@@ -137,11 +136,9 @@ class ReportsController extends Controller
             return $this->success($report, 'Retrieved successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to generate AI insights report',
+            return $this->serverError('Failed to generate AI insights report',
                 'error' => $e->getMessage()
-            ], 500);
+            );
         }
     }
 
@@ -190,11 +187,9 @@ class ReportsController extends Controller
             return $this->success($report, 'Retrieved successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to generate organization report',
+            return $this->serverError('Failed to generate organization report',
                 'error' => $e->getMessage()
-            ], 500);
+            );
         }
     }
 
@@ -249,11 +244,9 @@ class ReportsController extends Controller
             return $this->success($report, 'Retrieved successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to generate content analysis report',
+            return $this->serverError('Failed to generate content analysis report',
                 'error' => $e->getMessage()
-            ], 500);
+            );
         }
     }
 
@@ -312,11 +305,9 @@ class ReportsController extends Controller
             return $this->created($schedule, 'Created successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to schedule report',
+            return $this->serverError('Failed to schedule report',
                 'error' => $e->getMessage()
-            ], 500);
+            );
         }
     }
 
@@ -339,11 +330,9 @@ class ReportsController extends Controller
             return $this->success($schedules, 'Retrieved successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to get scheduled reports',
+            return $this->serverError('Failed to get scheduled reports',
                 'error' => $e->getMessage()
-            ], 500);
+            );
         }
     }
 
@@ -368,11 +357,9 @@ class ReportsController extends Controller
             return $this->error('Failed to cancel report schedule or schedule not found', 404);
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to cancel scheduled report',
+            return $this->serverError('Failed to cancel scheduled report',
                 'error' => $e->getMessage()
-            ], 500);
+            );
         }
     }
 

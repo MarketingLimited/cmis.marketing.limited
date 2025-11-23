@@ -50,7 +50,7 @@ class ChannelController extends Controller
         try {
             $channel = Channel::where('org_id', $orgId)->findOrFail($channelId);
             $this->authorize('view', $channel);
-            return response()->json(['channel' => $channel]);
+            return $this->success(['channel' => $channel], 'Operation completed successfully');
         } catch (\Exception $e) {
             return $this->notFound('Channel not found');
         }
@@ -62,7 +62,7 @@ class ChannelController extends Controller
             $channel = Channel::where('org_id', $orgId)->findOrFail($channelId);
             $this->authorize('update', $channel);
             $channel->update($request->all());
-            return response()->json(['message' => 'Channel updated', 'channel' => $channel]);
+            return $this->success(['message' => 'Channel updated', 'channel' => $channel], 'Operation completed successfully');
         } catch (\Exception $e) {
             return $this->serverError('Failed to update');
         }
@@ -74,7 +74,7 @@ class ChannelController extends Controller
             $channel = Channel::where('org_id', $orgId)->findOrFail($channelId);
             $this->authorize('delete', $channel);
             $channel->delete();
-            return response()->json(['message' => 'Channel deleted']);
+            return $this->success(['message' => 'Channel deleted'], 'Operation completed successfully');
         } catch (\Exception $e) {
             return $this->serverError('Failed to delete');
         }

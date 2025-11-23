@@ -63,11 +63,8 @@ class OptimizationController extends Controller
                 $request->constraints ?? []
             );
 
-            return response()->json([
-                'success' => true,
-                'run' => $run->load('budgetAllocations'),
-                'message' => 'Budget optimization completed successfully',
-            ]);
+            return $this->success(['run' => $run->load('budgetAllocations'),
+                'message' => 'Budget optimization completed successfully',], 'Operation completed successfully');
 
         } catch (\Exception $e) {
             Log::error('Budget optimization failed', [
@@ -75,10 +72,8 @@ class OptimizationController extends Controller
                 'user_id' => $request->user()->user_id,
             ]);
 
-            return response()->json([
-                'success' => false,
-                'message' => 'Budget optimization failed: ' . $e->getMessage(),
-            ], 500);
+            return $this->serverError('Budget optimization failed: ' . $e->getMessage(),
+            );
         }
     }
 
@@ -95,10 +90,7 @@ class OptimizationController extends Controller
             ->orderByDesc('allocation_score')
             ->get();
 
-        return response()->json([
-            'success' => true,
-            'allocations' => $allocations,
-        ]);
+        return $this->success(['allocations' => $allocations,], 'Operation completed successfully');
     }
 
     /**
@@ -122,11 +114,8 @@ class OptimizationController extends Controller
             // Mark allocation as applied
             $allocation->markAsApplied();
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Budget allocation applied successfully',
-                'allocation' => $allocation,
-            ]);
+            return $this->success(['message' => 'Budget allocation applied successfully',
+                'allocation' => $allocation,], 'Operation completed successfully');
 
         } catch (\Exception $e) {
             Log::error('Failed to apply budget allocation', [
@@ -134,10 +123,8 @@ class OptimizationController extends Controller
                 'error' => $e->getMessage(),
             ]);
 
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to apply budget allocation: ' . $e->getMessage(),
-            ], 500);
+            return $this->serverError('Failed to apply budget allocation: ' . $e->getMessage(),
+            );
         }
     }
 
@@ -165,17 +152,12 @@ class OptimizationController extends Controller
                 $request->campaign_ids
             );
 
-            return response()->json([
-                'success' => true,
-                'overlaps' => $overlaps,
-                'count' => count($overlaps),
-            ]);
+            return $this->success(['overlaps' => $overlaps,
+                'count' => count($overlaps),], 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Overlap detection failed: ' . $e->getMessage(),
-            ], 500);
+            return $this->serverError('Overlap detection failed: ' . $e->getMessage(),
+            );
         }
     }
 
@@ -192,10 +174,7 @@ class OptimizationController extends Controller
             ->orderByDesc('overlap_percentage')
             ->get();
 
-        return response()->json([
-            'success' => true,
-            'overlaps' => $overlaps,
-        ]);
+        return $this->success(['overlaps' => $overlaps,], 'Operation completed successfully');
     }
 
     /**
@@ -219,11 +198,8 @@ class OptimizationController extends Controller
 
         $overlap->resolve($request->resolution_action);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Overlap resolved successfully',
-            'overlap' => $overlap,
-        ]);
+        return $this->success(['message' => 'Overlap resolved successfully',
+            'overlap' => $overlap,], 'Operation completed successfully');
     }
 
     // ===== Attribution =====
@@ -257,16 +233,11 @@ class OptimizationController extends Controller
                 $request->lookback_days ?? 30
             );
 
-            return response()->json([
-                'success' => true,
-                'attribution' => $attribution,
-            ]);
+            return $this->success(['attribution' => $attribution,], 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Attribution calculation failed: ' . $e->getMessage(),
-            ], 500);
+            return $this->serverError('Attribution calculation failed: ' . $e->getMessage(),
+            );
         }
     }
 
@@ -280,10 +251,7 @@ class OptimizationController extends Controller
 
         $report = $this->attributionEngine->generateAttributionReport($orgId, $days);
 
-        return response()->json([
-            'success' => true,
-            'report' => $report,
-        ]);
+        return $this->success(['report' => $report,], 'Operation completed successfully');
     }
 
     // ===== Creative Performance =====
@@ -310,17 +278,12 @@ class OptimizationController extends Controller
                 $request->campaign_ids
             );
 
-            return response()->json([
-                'success' => true,
-                'performances' => $performances,
-                'count' => count($performances),
-            ]);
+            return $this->success(['performances' => $performances,
+                'count' => count($performances),], 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Creative analysis failed: ' . $e->getMessage(),
-            ], 500);
+            return $this->serverError('Creative analysis failed: ' . $e->getMessage(),
+            );
         }
     }
 
@@ -334,10 +297,7 @@ class OptimizationController extends Controller
 
         $report = $this->creativeAnalyzer->generateCreativeReport($orgId, $days);
 
-        return response()->json([
-            'success' => true,
-            'report' => $report,
-        ]);
+        return $this->success(['report' => $report,], 'Operation completed successfully');
     }
 
     // ===== Optimization Insights =====
@@ -364,17 +324,12 @@ class OptimizationController extends Controller
                 $request->campaign_ids
             );
 
-            return response()->json([
-                'success' => true,
-                'insights' => $insights,
-                'count' => count($insights),
-            ]);
+            return $this->success(['insights' => $insights,
+                'count' => count($insights),], 'Operation completed successfully');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Insight generation failed: ' . $e->getMessage(),
-            ], 500);
+            return $this->serverError('Insight generation failed: ' . $e->getMessage(),
+            );
         }
     }
 
@@ -409,10 +364,7 @@ class OptimizationController extends Controller
 
         $insights = $query->orderBy('priority')->orderByDesc('impact_estimate')->get();
 
-        return response()->json([
-            'success' => true,
-            'insights' => $insights,
-        ]);
+        return $this->success(['insights' => $insights,], 'Operation completed successfully');
     }
 
     /**
@@ -429,11 +381,8 @@ class OptimizationController extends Controller
 
         $insight->acknowledge($userId);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Insight acknowledged',
-            'insight' => $insight,
-        ]);
+        return $this->success(['message' => 'Insight acknowledged',
+            'insight' => $insight,], 'Operation completed successfully');
     }
 
     /**
@@ -458,11 +407,8 @@ class OptimizationController extends Controller
 
         $insight->apply($userId, $request->action_taken);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Insight applied successfully',
-            'insight' => $insight,
-        ]);
+        return $this->success(['message' => 'Insight applied successfully',
+            'insight' => $insight,], 'Operation completed successfully');
     }
 
     /**
@@ -478,10 +424,7 @@ class OptimizationController extends Controller
 
         $insight->dismiss();
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Insight dismissed',
-        ]);
+        return $this->success(['message' => 'Insight dismissed',], 'Operation completed successfully');
     }
 
     // ===== Optimization Runs =====
@@ -499,10 +442,7 @@ class OptimizationController extends Controller
             ->limit(50)
             ->get();
 
-        return response()->json([
-            'success' => true,
-            'runs' => $runs,
-        ]);
+        return $this->success(['runs' => $runs,], 'Operation completed successfully');
     }
 
     /**
@@ -517,10 +457,7 @@ class OptimizationController extends Controller
             ->with(['model', 'budgetAllocations', 'insights'])
             ->firstOrFail();
 
-        return response()->json([
-            'success' => true,
-            'run' => $run,
-        ]);
+        return $this->success(['run' => $run,], 'Operation completed successfully');
     }
 
     // ===== Optimization Models =====
@@ -536,9 +473,6 @@ class OptimizationController extends Controller
             ->orderByDesc('deployed_at')
             ->get();
 
-        return response()->json([
-            'success' => true,
-            'models' => $models,
-        ]);
+        return $this->success(['models' => $models,], 'Operation completed successfully');
     }
 }
