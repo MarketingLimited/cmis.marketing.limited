@@ -33,10 +33,7 @@ class SnapchatAdsController extends Controller
             ]);
 
             if ($validator->fails()) {
-                return response()->json([
-                    'success' => false,
-                    'errors' => $validator->errors()
-                ], 422);
+                return $this->validationError($validator->errors());
             }
 
             $orgId = auth()->user()->org_id;
@@ -55,18 +52,13 @@ class SnapchatAdsController extends Controller
                 $request->input('limit', 50)
             );
 
-            return response()->json([
-                'success' => true,
+            return $this->success([
                 'campaigns' => $result['campaigns'],
                 'paging' => $result['paging'],
                 'count' => count($result['campaigns'])
-            ]);
+            ], 'Snapchat Ads campaigns retrieved successfully');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to fetch Snapchat Ads campaigns',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to fetch Snapchat Ads campaigns: ' . $e->getMessage());
         }
     }
 
@@ -87,10 +79,7 @@ class SnapchatAdsController extends Controller
             ]);
 
             if ($validator->fails()) {
-                return response()->json([
-                    'success' => false,
-                    'errors' => $validator->errors()
-                ], 422);
+                return $this->validationError($validator->errors());
             }
 
             $orgId = auth()->user()->org_id;
@@ -100,7 +89,7 @@ class SnapchatAdsController extends Controller
                 ->first();
 
             if (!$integration) {
-                return $this->error('Snapchat Ads integration not found', 404);
+                return $this->notFound('Snapchat Ads integration not found');
             }
 
             $campaignData = [
@@ -118,17 +107,9 @@ class SnapchatAdsController extends Controller
                 $campaignData
             );
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Snapchat Ads campaign created successfully',
-                'campaign' => $result
-            ], 201);
+            return $this->created($result, 'Snapchat Ads campaign created successfully');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to create Snapchat Ads campaign',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to create Snapchat Ads campaign: ' . $e->getMessage());
         }
     }
 
@@ -145,10 +126,7 @@ class SnapchatAdsController extends Controller
             ]);
 
             if ($validator->fails()) {
-                return response()->json([
-                    'success' => false,
-                    'errors' => $validator->errors()
-                ], 422);
+                return $this->validationError($validator->errors());
             }
 
             $orgId = auth()->user()->org_id;
@@ -158,7 +136,7 @@ class SnapchatAdsController extends Controller
                 ->first();
 
             if (!$integration) {
-                return $this->error('Snapchat Ads integration not found', 404);
+                return $this->notFound('Snapchat Ads integration not found');
             }
 
             $result = $this->snapchatAdsService->getCampaignDetails(
@@ -169,17 +147,9 @@ class SnapchatAdsController extends Controller
                 $request->input('end_date')
             );
 
-            return response()->json([
-                'success' => true,
-                'campaign' => $result['campaign'],
-                'metrics' => $result['metrics']
-            ]);
+            return $this->success($result, 'Campaign details retrieved successfully');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to fetch campaign details',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to fetch campaign details: ' . $e->getMessage());
         }
     }
 
@@ -196,10 +166,7 @@ class SnapchatAdsController extends Controller
             ]);
 
             if ($validator->fails()) {
-                return response()->json([
-                    'success' => false,
-                    'errors' => $validator->errors()
-                ], 422);
+                return $this->validationError($validator->errors());
             }
 
             $orgId = auth()->user()->org_id;
@@ -209,7 +176,7 @@ class SnapchatAdsController extends Controller
                 ->first();
 
             if (!$integration) {
-                return $this->error('Snapchat Ads integration not found', 404);
+                return $this->notFound('Snapchat Ads integration not found');
             }
 
             $metrics = $this->snapchatAdsService->getCampaignMetrics(
@@ -220,20 +187,15 @@ class SnapchatAdsController extends Controller
                 $request->input('end_date')
             );
 
-            return response()->json([
-                'success' => true,
+            return $this->success([
                 'metrics' => $metrics,
                 'period' => [
                     'start_date' => $request->input('start_date'),
                     'end_date' => $request->input('end_date')
                 ]
-            ]);
+            ], 'Campaign metrics retrieved successfully');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to fetch campaign metrics',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to fetch campaign metrics: ' . $e->getMessage());
         }
     }
 
@@ -248,10 +210,7 @@ class SnapchatAdsController extends Controller
             ]);
 
             if ($validator->fails()) {
-                return response()->json([
-                    'success' => false,
-                    'errors' => $validator->errors()
-                ], 422);
+                return $this->validationError($validator->errors());
             }
 
             $orgId = auth()->user()->org_id;
@@ -261,21 +220,14 @@ class SnapchatAdsController extends Controller
                 ->first();
 
             if (!$integration) {
-                return $this->error('Snapchat Ads integration not found', 404);
+                return $this->notFound('Snapchat Ads integration not found');
             }
 
             $this->snapchatAdsService->clearCache($integration->platform_account_id);
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Snapchat Ads cache cleared successfully'
-            ]);
+            return $this->success([], 'Snapchat Ads cache cleared successfully');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to refresh cache',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->serverError('Failed to refresh cache: ' . $e->getMessage());
         }
     }
 }

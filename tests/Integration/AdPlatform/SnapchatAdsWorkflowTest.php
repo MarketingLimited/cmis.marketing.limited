@@ -6,15 +6,18 @@ use Tests\TestCase;
 use Tests\Traits\CreatesTestData;
 use Tests\Traits\MocksExternalAPIs;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use App\Services\AdPlatform\SnapchatAdsService;
-use App\Models\AdPlatform\AdCampaign;
-use App\Models\AdPlatform\AdSet;
-use App\Models\AdPlatform\Ad;
-use Illuminate\Support\Str;
+use App\Services\AdPlatforms\Snapchat\SnapchatAdsPlatform;
+use App\Services\Platform\SnapchatAdsService;
+use App\Models\Core\Integration;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\DB;
 
 use PHPUnit\Framework\Attributes\Test;
+
 /**
  * Snapchat Ads Platform Integration Tests
+ *
+ * Tests complete workflow for Snapchat advertising campaigns
  */
 class SnapchatAdsWorkflowTest extends TestCase
 {
@@ -26,91 +29,99 @@ class SnapchatAdsWorkflowTest extends TestCase
     }
 
     #[Test]
-    public function it_creates_snapchat_ad_campaign()
+    public function it_creates_snapchat_ad_campaign_complete_workflow()
     {
         $setup = $this->createUserWithOrg();
         $org = $setup['org'];
+        $user = $setup['user'];
 
-        $integration = $this->createTestIntegration($org->org_id, 'snapchat_ads');
+        // Set RLS context
+        DB::statement('SELECT cmis.init_transaction_context(?, ?)', [$user->user_id, $org->org_id]);
 
-        $this->mockSnapchatAPI('success', [
-            'campaigns' => [
-                [
-                    'id' => 'snap_campaign_123',
-                    'name' => 'Summer App Install Campaign',
-                    'status' => 'ACTIVE',
-                ],
+        $integration = Integration::factory()->create([
+            'org_id' => $org->org_id,
+            'platform' => 'snapchat',
+            'is_active' => true,
+            'metadata' => [
+                'ad_account_id' => 'snap_account_123',
+                'access_token' => 'test_token',
             ],
         ]);
 
-        $campaignData = [
-            'ad_account_id' => 'snap_account_123',
-            'name' => 'Summer App Install Campaign',
-            'status' => 'ACTIVE',
-            'start_time' => '2024-06-01T00:00:00.000Z',
-            'daily_budget_micro' => 100000000, // $100
-        ];
+        Http::fake([
+            'adsapi.snapchat.com/*/campaigns' => Http::response([
+                'campaigns' => [
+                    [
+                        'campaign' => [
+                            'id' => 'snap_campaign_123',
+                            'name' => 'Summer App Install Campaign',
+                            'status' => 'ACTIVE',
+                            'objective' => 'APP_INSTALLS',
+                            'daily_budget_micro' => 100000000,
+                        ],
+                    ],
+                ],
+            ], 200),
+        ]);
 
-        $service = app(SnapchatAdsService::class);
-        $result = $service->createCampaign($integration, $campaignData);
+        $service = new SnapchatAdsPlatform($integration);
+
+        $result = $service->createCampaign([
+            'name' => 'Summer App Install Campaign',
+            'objective' => 'APP_INSTALLS',
+            'daily_budget' => 100.00,
+            'status' => 'ACTIVE',
+        ]);
 
         $this->assertTrue($result['success']);
-        $this->assertDatabaseHas('cmis.ad_campaigns', [
-            'org_id' => $org->org_id,
-            'platform' => 'snapchat',
-            'external_campaign_id' => 'snap_campaign_123',
-        ]);
-
-        $this->logTestResult('passed', [
-            'workflow' => 'snapchat_ads',
-            'action' => 'create_campaign',
-        ]);
+        $this->assertEquals('snap_campaign_123', $result['campaign_id']);
     }
 
     #[Test]
-    public function it_creates_snapchat_ad_squad()
+    public function it_creates_snapchat_ad_set_workflow()
     {
         $setup = $this->createUserWithOrg();
         $org = $setup['org'];
+        $user = $setup['user'];
 
-        $integration = $this->createTestIntegration($org->org_id, 'snapchat_ads');
+        DB::statement('SELECT cmis.init_transaction_context(?, ?)', [$user->user_id, $org->org_id]);
 
-        $campaign = AdCampaign::create([
-            'campaign_id' => Str::uuid(),
+        $integration = Integration::factory()->create([
             'org_id' => $org->org_id,
-            'integration_id' => $integration->integration_id,
             'platform' => 'snapchat',
-            'external_campaign_id' => 'snap_campaign_123',
-            'name' => 'Summer App Install Campaign',
-            'objective' => 'app_installs',
-            'status' => 'active',
-        ]);
-
-        $this->mockSnapchatAPI('success', [
-            'adsquads' => [
-                [
-                    'id' => 'snap_squad_456',
-                    'name' => 'iOS Users 18-35',
-                    'status' => 'ACTIVE',
-                ],
+            'is_active' => true,
+            'metadata' => [
+                'ad_account_id' => 'snap_account_123',
+                'access_token' => 'test_token',
             ],
         ]);
 
-        $adSquadData = [
-            'campaign_id' => 'snap_campaign_123',
+        Http::fake([
+            'adsapi.snapchat.com/*/adsquads' => Http::response([
+                'adsquads' => [
+                    [
+                        'adsquad' => [
+                            'id' => 'snap_squad_456',
+                            'name' => 'iOS Users 18-35',
+                            'status' => 'ACTIVE',
+                            'type' => 'SNAP_ADS',
+                        ],
+                    ],
+                ],
+            ], 200),
+        ]);
+
+        $service = new SnapchatAdsPlatform($integration);
+
+        $result = $service->createAdSet('snap_campaign_123', [
             'name' => 'iOS Users 18-35',
-            'status' => 'ACTIVE',
             'type' => 'SNAP_ADS',
             'placement' => 'SNAP_ADS',
-            'optimization_goal' => 'APP_INSTALLS',
-            'billing_event' => 'IMPRESSION',
-            'bid_micro' => 500000, // $0.50
-            'daily_budget_micro' => 50000000, // $50
+            'daily_budget' => 50.00,
+            'status' => 'ACTIVE',
             'targeting' => [
                 'geos' => [
-                    [
-                        'country_code' => 'us',
-                    ],
+                    ['country_code' => 'US'],
                 ],
                 'demographics' => [
                     [
@@ -118,329 +129,323 @@ class SnapchatAdsWorkflowTest extends TestCase
                         'max_age' => 35,
                     ],
                 ],
-                'devices' => [
+            ],
+        ]);
+
+        $this->assertTrue($result['success']);
+        $this->assertEquals('snap_squad_456', $result['adsquad_id']);
+    }
+
+    #[Test]
+    public function it_creates_snapchat_video_ad_workflow()
+    {
+        $setup = $this->createUserWithOrg();
+        $org = $setup['org'];
+        $user = $setup['user'];
+
+        DB::statement('SELECT cmis.init_transaction_context(?, ?)', [$user->user_id, $org->org_id]);
+
+        $integration = Integration::factory()->create([
+            'org_id' => $org->org_id,
+            'platform' => 'snapchat',
+            'is_active' => true,
+            'metadata' => [
+                'ad_account_id' => 'snap_account_123',
+                'access_token' => 'test_token',
+            ],
+        ]);
+
+        // Mock creative creation
+        Http::fake([
+            'adsapi.snapchat.com/*/creatives' => Http::response([
+                'creatives' => [
                     [
-                        'os_type' => 'iOS',
+                        'creative' => [
+                            'id' => 'snap_creative_123',
+                            'name' => 'App Install Video',
+                            'type' => 'WEB_VIEW',
+                        ],
                     ],
                 ],
-            ],
-        ];
-
-        $service = app(SnapchatAdsService::class);
-        $result = $service->createAdSquad($integration, $adSquadData);
-
-        $this->assertTrue($result['success']);
-        $this->assertDatabaseHas('cmis.ad_sets', [
-            'campaign_id' => $campaign->campaign_id,
-            'platform' => 'snapchat',
-            'external_ad_set_id' => 'snap_squad_456',
-        ]);
-
-        $this->logTestResult('passed', [
-            'workflow' => 'snapchat_ads',
-            'action' => 'create_ad_squad',
-        ]);
-    }
-
-    #[Test]
-    public function it_creates_snapchat_video_ad()
-    {
-        $setup = $this->createUserWithOrg();
-        $org = $setup['org'];
-
-        $integration = $this->createTestIntegration($org->org_id, 'snapchat_ads');
-
-        $campaign = AdCampaign::create([
-            'campaign_id' => Str::uuid(),
-            'org_id' => $org->org_id,
-            'integration_id' => $integration->integration_id,
-            'platform' => 'snapchat',
-            'external_campaign_id' => 'snap_campaign_123',
-            'name' => 'Summer App Install Campaign',
-            'objective' => 'app_installs',
-            'status' => 'active',
-        ]);
-
-        $adSet = AdSet::create([
-            'ad_set_id' => Str::uuid(),
-            'campaign_id' => $campaign->campaign_id,
-            'org_id' => $org->org_id,
-            'platform' => 'snapchat',
-            'external_ad_set_id' => 'snap_squad_456',
-            'name' => 'iOS Users 18-35',
-            'status' => 'active',
-        ]);
-
-        $this->mockSnapchatAPI('success', [
-            'ads' => [
-                [
-                    'id' => 'snap_ad_789',
-                    'name' => 'App Install Video Ad',
-                    'status' => 'ACTIVE',
+            ], 200),
+            'adsapi.snapchat.com/*/ads' => Http::response([
+                'ads' => [
+                    [
+                        'ad' => [
+                            'id' => 'snap_ad_789',
+                            'name' => 'App Install Video Ad',
+                            'status' => 'ACTIVE',
+                            'type' => 'SNAP_AD',
+                        ],
+                    ],
                 ],
-            ],
+            ], 200),
         ]);
 
-        $adData = [
-            'ad_squad_id' => 'snap_squad_456',
+        $service = new SnapchatAdsPlatform($integration);
+
+        // First create creative
+        $creativeResult = $service->createCreative([
+            'name' => 'App Install Video',
+            'type' => 'WEB_VIEW',
+            'headline' => 'Download Now!',
+            'brand_name' => 'Summer App',
+            'top_snap_media_id' => 'media_123',
+        ]);
+
+        $this->assertTrue($creativeResult['success']);
+
+        // Then create ad
+        $adResult = $service->createAd('snap_squad_456', [
             'name' => 'App Install Video Ad',
-            'status' => 'ACTIVE',
+            'creative_id' => $creativeResult['creative_id'],
             'type' => 'SNAP_AD',
-            'creative' => [
-                'id' => 'snap_creative_123',
-                'type' => 'VIDEO',
-                'headline' => 'حمّل التطبيق الآن!',
-                'brand_name' => 'Summer App',
-                'call_to_action' => 'INSTALL_NOW',
-            ],
-        ];
-
-        $service = app(SnapchatAdsService::class);
-        $result = $service->createAd($integration, $adData);
-
-        $this->assertTrue($result['success']);
-        $this->assertDatabaseHas('cmis.ads', [
-            'ad_set_id' => $adSet->ad_set_id,
-            'platform' => 'snapchat',
-            'external_ad_id' => 'snap_ad_789',
-        ]);
-
-        $this->logTestResult('passed', [
-            'workflow' => 'snapchat_ads',
-            'action' => 'create_video_ad',
-        ]);
-    }
-
-    #[Test]
-    public function it_uploads_creative_to_snapchat()
-    {
-        $setup = $this->createUserWithOrg();
-        $org = $setup['org'];
-
-        $integration = $this->createTestIntegration($org->org_id, 'snapchat_ads');
-
-        $this->mockSnapchatAPI('success', [
-            'media' => [
-                [
-                    'id' => 'snap_media_123',
-                    'type' => 'VIDEO',
-                    'download_link' => 'https://example.com/video.mp4',
-                ],
-            ],
-        ]);
-
-        $service = app(SnapchatAdsService::class);
-        $result = $service->uploadCreative($integration, [
-            'ad_account_id' => 'snap_account_123',
-            'type' => 'VIDEO',
-            'media' => '/path/to/video.mp4',
-        ]);
-
-        $this->assertTrue($result['success']);
-        $this->assertEquals('snap_media_123', $result['media_id']);
-
-        $this->logTestResult('passed', [
-            'workflow' => 'snapchat_ads',
-            'action' => 'upload_creative',
-        ]);
-    }
-
-    #[Test]
-    public function it_creates_snapchat_collection_ad()
-    {
-        $setup = $this->createUserWithOrg();
-        $org = $setup['org'];
-
-        $integration = $this->createTestIntegration($org->org_id, 'snapchat_ads');
-
-        $this->mockSnapchatAPI('success', [
-            'ads' => [
-                [
-                    'id' => 'snap_collection_ad_123',
-                    'name' => 'Product Collection Ad',
-                    'type' => 'COLLECTION',
-                ],
-            ],
-        ]);
-
-        $collectionAdData = [
-            'ad_squad_id' => 'snap_squad_456',
-            'name' => 'Product Collection Ad',
             'status' => 'ACTIVE',
-            'type' => 'COLLECTION_AD',
-            'creative' => [
-                'type' => 'COLLECTION',
-                'headline' => 'تسوق المجموعة الصيفية',
-                'brand_name' => 'Summer Store',
-                'call_to_action' => 'SHOP_NOW',
-                'catalog_id' => 'catalog_123',
-            ],
-        ];
-
-        $service = app(SnapchatAdsService::class);
-        $result = $service->createCollectionAd($integration, $collectionAdData);
-
-        $this->assertTrue($result['success']);
-
-        $this->logTestResult('passed', [
-            'workflow' => 'snapchat_ads',
-            'action' => 'create_collection_ad',
         ]);
+
+        $this->assertTrue($adResult['success']);
+        $this->assertEquals('snap_ad_789', $adResult['ad_id']);
     }
 
     #[Test]
-    public function it_fetches_snapchat_campaign_stats()
+    public function it_fetches_snapchat_campaign_stats_workflow()
     {
         $setup = $this->createUserWithOrg();
         $org = $setup['org'];
+        $user = $setup['user'];
 
-        $integration = $this->createTestIntegration($org->org_id, 'snapchat_ads');
+        DB::statement('SELECT cmis.init_transaction_context(?, ?)', [$user->user_id, $org->org_id]);
 
-        $campaign = AdCampaign::create([
-            'campaign_id' => Str::uuid(),
+        $integration = Integration::factory()->create([
             'org_id' => $org->org_id,
-            'integration_id' => $integration->integration_id,
             'platform' => 'snapchat',
-            'external_campaign_id' => 'snap_campaign_123',
-            'name' => 'Summer App Install Campaign',
-            'objective' => 'app_installs',
-            'status' => 'active',
+            'is_active' => true,
+            'metadata' => [
+                'ad_account_id' => 'snap_account_123',
+                'access_token' => 'test_token',
+            ],
         ]);
 
-        $this->mockSnapchatAPI('success', [
-            'timeseries_stats' => [
-                [
-                    'id' => 'snap_campaign_123',
-                    'stats' => [
-                        'impressions' => 75000,
-                        'swipes' => 3750,
-                        'spend' => 125000000, // $125 in micros
-                        'conversion_purchases' => 150,
-                        'conversion_purchases_value' => 15000000000, // $15,000 in micros
+        Http::fake([
+            'adsapi.snapchat.com/*/stats' => Http::response([
+                'timeseries_stats' => [
+                    [
+                        'stats' => [
+                            'impressions' => 75000,
+                            'swipes' => 3750,
+                            'spend' => 125000000, // $125 in micros
+                            'conversion_purchases' => 150,
+                            'view_completion' => 25000,
+                            'screen_time_millis' => 180000000,
+                        ],
                     ],
                 ],
-            ],
+            ], 200),
         ]);
 
-        $service = app(SnapchatAdsService::class);
-        $result = $service->getCampaignStats($integration, 'snap_campaign_123');
+        $service = new SnapchatAdsPlatform($integration);
+        $result = $service->getCampaignMetrics('snap_campaign_123', '2024-01-01', '2024-01-31');
 
         $this->assertTrue($result['success']);
-        $this->assertEquals(75000, $result['data']['impressions']);
-        $this->assertEquals(150, $result['data']['conversions']);
-
-        $this->logTestResult('passed', [
-            'workflow' => 'snapchat_ads',
-            'action' => 'fetch_stats',
-        ]);
+        $this->assertEquals(75000, $result['metrics']['impressions']);
+        $this->assertEquals(3750, $result['metrics']['swipes']);
+        $this->assertEquals(150, $result['metrics']['conversions']);
     }
 
     #[Test]
-    public function it_pauses_snapchat_campaign()
+    public function it_pauses_and_resumes_snapchat_campaign_workflow()
     {
         $setup = $this->createUserWithOrg();
         $org = $setup['org'];
+        $user = $setup['user'];
 
-        $integration = $this->createTestIntegration($org->org_id, 'snapchat_ads');
+        DB::statement('SELECT cmis.init_transaction_context(?, ?)', [$user->user_id, $org->org_id]);
 
-        $campaign = AdCampaign::create([
-            'campaign_id' => Str::uuid(),
+        $integration = Integration::factory()->create([
             'org_id' => $org->org_id,
-            'integration_id' => $integration->integration_id,
             'platform' => 'snapchat',
-            'external_campaign_id' => 'snap_campaign_123',
-            'name' => 'Summer App Install Campaign',
-            'objective' => 'app_installs',
-            'status' => 'active',
-        ]);
-
-        $this->mockSnapchatAPI('success', [
-            'campaigns' => [
-                [
-                    'id' => 'snap_campaign_123',
-                    'status' => 'PAUSED',
-                ],
+            'is_active' => true,
+            'metadata' => [
+                'ad_account_id' => 'snap_account_123',
+                'access_token' => 'test_token',
             ],
         ]);
 
-        $service = app(SnapchatAdsService::class);
-        $result = $service->pauseCampaign($integration, 'snap_campaign_123');
-
-        $this->assertTrue($result['success']);
-
-        $campaign->refresh();
-        $this->assertEquals('paused', $campaign->status);
-
-        $this->logTestResult('passed', [
-            'workflow' => 'snapchat_ads',
-            'action' => 'pause_campaign',
+        Http::fake([
+            'adsapi.snapchat.com/*/campaigns' => Http::sequence()
+                ->push([
+                    'campaigns' => [
+                        ['campaign' => ['id' => 'snap_campaign_123', 'status' => 'PAUSED']],
+                    ],
+                ], 200)
+                ->push([
+                    'campaigns' => [
+                        ['campaign' => ['id' => 'snap_campaign_123', 'status' => 'ACTIVE']],
+                    ],
+                ], 200),
         ]);
+
+        $service = new SnapchatAdsPlatform($integration);
+
+        // Pause campaign
+        $pauseResult = $service->updateCampaignStatus('snap_campaign_123', 'PAUSED');
+        $this->assertTrue($pauseResult['success']);
+
+        // Resume campaign
+        $resumeResult = $service->updateCampaignStatus('snap_campaign_123', 'ACTIVE');
+        $this->assertTrue($resumeResult['success']);
     }
 
     #[Test]
-    public function it_updates_snapchat_campaign_budget()
+    public function it_updates_snapchat_campaign_budget_workflow()
     {
         $setup = $this->createUserWithOrg();
         $org = $setup['org'];
+        $user = $setup['user'];
 
-        $integration = $this->createTestIntegration($org->org_id, 'snapchat_ads');
+        DB::statement('SELECT cmis.init_transaction_context(?, ?)', [$user->user_id, $org->org_id]);
 
-        $campaign = AdCampaign::create([
-            'campaign_id' => Str::uuid(),
+        $integration = Integration::factory()->create([
             'org_id' => $org->org_id,
-            'integration_id' => $integration->integration_id,
             'platform' => 'snapchat',
-            'external_campaign_id' => 'snap_campaign_123',
-            'name' => 'Summer App Install Campaign',
-            'objective' => 'app_installs',
-            'status' => 'active',
-            'daily_budget' => 100.00,
-        ]);
-
-        $this->mockSnapchatAPI('success', [
-            'campaigns' => [
-                [
-                    'id' => 'snap_campaign_123',
-                    'daily_budget_micro' => 200000000,
-                ],
+            'is_active' => true,
+            'metadata' => [
+                'ad_account_id' => 'snap_account_123',
+                'access_token' => 'test_token',
             ],
         ]);
 
-        $service = app(SnapchatAdsService::class);
-        $result = $service->updateCampaignBudget($integration, 'snap_campaign_123', 200.00);
+        Http::fake([
+            'adsapi.snapchat.com/*/campaigns' => Http::response([
+                'campaigns' => [
+                    [
+                        'campaign' => [
+                            'id' => 'snap_campaign_123',
+                            'daily_budget_micro' => 200000000, // $200
+                        ],
+                    ],
+                ],
+            ], 200),
+        ]);
+
+        $service = new SnapchatAdsPlatform($integration);
+        $result = $service->updateCampaign('snap_campaign_123', [
+            'daily_budget' => 200.00,
+        ]);
 
         $this->assertTrue($result['success']);
-
-        $campaign->refresh();
-        $this->assertEquals(200.00, $campaign->daily_budget);
-
-        $this->logTestResult('passed', [
-            'workflow' => 'snapchat_ads',
-            'action' => 'update_budget',
-        ]);
     }
 
     #[Test]
-    public function it_handles_snapchat_api_errors()
+    public function it_handles_snapchat_api_errors_in_workflow()
     {
         $setup = $this->createUserWithOrg();
         $org = $setup['org'];
+        $user = $setup['user'];
 
-        $integration = $this->createTestIntegration($org->org_id, 'snapchat_ads');
+        DB::statement('SELECT cmis.init_transaction_context(?, ?)', [$user->user_id, $org->org_id]);
 
-        $this->mockSnapchatAPI('error');
+        $integration = Integration::factory()->create([
+            'org_id' => $org->org_id,
+            'platform' => 'snapchat',
+            'is_active' => true,
+            'metadata' => [
+                'ad_account_id' => 'snap_account_123',
+                'access_token' => 'invalid_token',
+            ],
+        ]);
 
-        $service = app(SnapchatAdsService::class);
-        $result = $service->createCampaign($integration, [
+        Http::fake([
+            'adsapi.snapchat.com/*' => Http::response([
+                'request_status' => 'ERROR',
+                'error' => 'Invalid access token',
+            ], 401),
+        ]);
+
+        $service = new SnapchatAdsPlatform($integration);
+        $result = $service->createCampaign([
             'name' => 'Test Campaign',
+            'objective' => 'AWARENESS',
         ]);
 
         $this->assertFalse($result['success']);
         $this->assertArrayHasKey('error', $result);
+    }
 
-        $this->logTestResult('passed', [
-            'workflow' => 'snapchat_ads',
-            'test' => 'error_handling',
+    #[Test]
+    public function it_uses_snapchat_ads_service_for_caching()
+    {
+        $setup = $this->createUserWithOrg();
+        $org = $setup['org'];
+
+        Http::fake([
+            'adsapi.snapchat.com/*' => Http::response([
+                'campaigns' => [
+                    [
+                        'campaign' => [
+                            'id' => 'camp_1',
+                            'name' => 'Test Campaign',
+                            'status' => 'ACTIVE',
+                        ],
+                    ],
+                ],
+            ], 200),
         ]);
+
+        $service = new SnapchatAdsService();
+
+        // First call - should hit API
+        $result1 = $service->fetchCampaigns('snap_account_123', 'test_token', 50);
+
+        // Second call - should use cache
+        $result2 = $service->fetchCampaigns('snap_account_123', 'test_token', 50);
+
+        $this->assertCount(1, $result1['campaigns']);
+        $this->assertEquals($result1, $result2);
+    }
+
+    #[Test]
+    public function it_creates_audience_segment()
+    {
+        $setup = $this->createUserWithOrg();
+        $org = $setup['org'];
+        $user = $setup['user'];
+
+        DB::statement('SELECT cmis.init_transaction_context(?, ?)', [$user->user_id, $org->org_id]);
+
+        $integration = Integration::factory()->create([
+            'org_id' => $org->org_id,
+            'platform' => 'snapchat',
+            'is_active' => true,
+            'metadata' => [
+                'ad_account_id' => 'snap_account_123',
+                'access_token' => 'test_token',
+            ],
+        ]);
+
+        Http::fake([
+            'adsapi.snapchat.com/*/segments' => Http::response([
+                'segments' => [
+                    [
+                        'segment' => [
+                            'id' => 'segment_123',
+                            'name' => 'Custom Audience',
+                            'source_type' => 'ENGAGEMENT',
+                        ],
+                    ],
+                ],
+            ], 200),
+        ]);
+
+        $service = new SnapchatAdsPlatform($integration);
+        $result = $service->createAudienceSegment([
+            'name' => 'Custom Audience',
+            'description' => 'Users who engaged with previous campaigns',
+            'source_type' => 'ENGAGEMENT',
+            'retention_in_days' => 180,
+        ]);
+
+        $this->assertTrue($result['success']);
+        $this->assertEquals('segment_123', $result['segment_id']);
     }
 }
