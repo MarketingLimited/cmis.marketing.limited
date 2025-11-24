@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'الاستوديو الإبداعي')
+@section('title', __('creative.title'))
 
 @section('content')
 <div x-data="creativeStudioManager(@json(['stats' => $stats, 'recentAssets' => $recentAssets, 'searchableAssets' => $searchableAssets]))" x-init="init()">
@@ -8,15 +8,15 @@
     <!-- Page Header -->
     <div class="flex items-center justify-between mb-6">
         <div>
-            <h1 class="text-3xl font-bold text-gray-900 dark:text-white">الاستوديو الإبداعي</h1>
-            <p class="mt-2 text-gray-600 dark:text-gray-400">إدارة الأصول الإبداعية، القوالب، والمحتوى المرئي</p>
+            <h1 class="text-3xl font-bold text-gray-900 dark:text-white">{{ __('creative.title') }}</h1>
+            <p class="mt-2 text-gray-600 dark:text-gray-400">{{ __('creative.subtitle') }}</p>
         </div>
         <div class="flex space-x-3 space-x-reverse">
             <x-ui.button @click="showUploadModal = true" variant="primary" icon="fas fa-upload">
-                رفع أصل جديد
+                {{ __('creative.upload_new_asset') }}
             </x-ui.button>
             <x-ui.button @click="showTemplateModal = true" variant="secondary" icon="fas fa-plus">
-                إنشاء من قالب
+                {{ __('creative.create_from_template') }}
             </x-ui.button>
         </div>
     </div>
@@ -26,56 +26,56 @@
         <div class="bg-gradient-to-br from-orange-500 to-orange-600 text-white rounded-lg shadow-lg p-6">
             <div class="flex items-center justify-between mb-4">
                 <div>
-                    <p class="text-sm opacity-90">إجمالي الأصول</p>
+                    <p class="text-sm opacity-90">{{ __('creative.total_assets') }}</p>
                     <p class="text-3xl font-bold mt-2" x-text="stats.totalAssets"></p>
                 </div>
                 <i class="fas fa-images text-4xl opacity-50"></i>
             </div>
             <div class="flex items-center text-sm">
                 <i class="fas fa-arrow-up ml-1"></i>
-                <span x-text="stats.assetsChange + '% هذا الشهر'"></span>
+                <span x-text="stats.assetsChange + '% ' + '{{ __('creative.this_month') }}'"></span>
             </div>
         </div>
 
         <div class="bg-gradient-to-br from-pink-500 to-pink-600 text-white rounded-lg shadow-lg p-6">
             <div class="flex items-center justify-between mb-4">
                 <div>
-                    <p class="text-sm opacity-90">قيد المراجعة</p>
+                    <p class="text-sm opacity-90">{{ __('creative.pending_review') }}</p>
                     <p class="text-3xl font-bold mt-2" x-text="stats.pendingReview"></p>
                 </div>
                 <i class="fas fa-clock text-4xl opacity-50"></i>
             </div>
             <div class="flex items-center text-sm">
                 <i class="fas fa-hourglass-half ml-1"></i>
-                <span x-text="stats.avgReviewTime + ' ساعة متوسط'"></span>
+                <span x-text="stats.avgReviewTime + ' ' + '{{ __('creative.hours_average') }}'"></span>
             </div>
         </div>
 
         <div class="bg-gradient-to-br from-teal-500 to-teal-600 text-white rounded-lg shadow-lg p-6">
             <div class="flex items-center justify-between mb-4">
                 <div>
-                    <p class="text-sm opacity-90">معتمدة</p>
+                    <p class="text-sm opacity-90">{{ __('creative.approved') }}</p>
                     <p class="text-3xl font-bold mt-2" x-text="stats.approved"></p>
                 </div>
                 <i class="fas fa-check-circle text-4xl opacity-50"></i>
             </div>
             <div class="flex items-center text-sm">
                 <i class="fas fa-percent ml-1"></i>
-                <span x-text="stats.approvalRate + '% معدل القبول'"></span>
+                <span x-text="stats.approvalRate + '% ' + '{{ __('creative.approval_rate') }}'"></span>
             </div>
         </div>
 
         <div class="bg-gradient-to-br from-indigo-500 to-indigo-600 text-white rounded-lg shadow-lg p-6">
             <div class="flex items-center justify-between mb-4">
                 <div>
-                    <p class="text-sm opacity-90">القوالب</p>
+                    <p class="text-sm opacity-90">{{ __('creative.templates') }}</p>
                     <p class="text-3xl font-bold mt-2" x-text="stats.templates"></p>
                 </div>
                 <i class="fas fa-layer-group text-4xl opacity-50"></i>
             </div>
             <div class="flex items-center text-sm">
                 <i class="fas fa-star ml-1"></i>
-                <span x-text="stats.popularTemplates + ' شائعة'"></span>
+                <span x-text="stats.popularTemplates + ' ' + '{{ __('creative.popular_count') }}'"></span>
             </div>
         </div>
     </div>
@@ -88,22 +88,22 @@
                 <button @click="activeTab = 'all'"
                         :class="activeTab === 'all' ? 'border-orange-500 text-orange-600' : 'border-transparent text-gray-500'"
                         class="px-4 py-2 border-b-2 font-medium text-sm transition">
-                    الكل (<span x-text="assets.length"></span>)
+                    {{ __('creative.all') }} (<span x-text="assets.length"></span>)
                 </button>
                 <button @click="activeTab = 'images'"
                         :class="activeTab === 'images' ? 'border-orange-500 text-orange-600' : 'border-transparent text-gray-500'"
                         class="px-4 py-2 border-b-2 font-medium text-sm transition">
-                    صور
+                    {{ __('creative.images') }}
                 </button>
                 <button @click="activeTab = 'videos'"
                         :class="activeTab === 'videos' ? 'border-orange-500 text-orange-600' : 'border-transparent text-gray-500'"
                         class="px-4 py-2 border-b-2 font-medium text-sm transition">
-                    فيديوهات
+                    {{ __('creative.videos') }}
                 </button>
                 <button @click="activeTab = 'templates'"
                         :class="activeTab === 'templates' ? 'border-orange-500 text-orange-600' : 'border-transparent text-gray-500'"
                         class="px-4 py-2 border-b-2 font-medium text-sm transition">
-                    قوالب
+                    {{ __('creative.templates') }}
                 </button>
             </div>
 
@@ -113,18 +113,18 @@
                     <input type="text"
                            x-model="searchQuery"
                            @input="filterAssets()"
-                           placeholder="بحث في الأصول..."
+                           placeholder="{{ __('creative.search_assets') }}..."
                            class="px-4 py-2 pr-10 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-orange-500">
                     <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
                 </div>
                 <select x-model="filterStatus"
                         @change="filterAssets()"
                         class="px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-orange-500">
-                    <option value="">جميع الحالات</option>
-                    <option value="approved">معتمدة</option>
-                    <option value="pending">قيد المراجعة</option>
-                    <option value="rejected">مرفوضة</option>
-                    <option value="draft">مسودة</option>
+                    <option value="">{{ __('creative.all_statuses') }}</option>
+                    <option value="approved">{{ __('creative.approved') }}</option>
+                    <option value="pending">{{ __('creative.pending_review') }}</option>
+                    <option value="rejected">{{ __('creative.rejected') }}</option>
+                    <option value="draft">{{ __('creative.draft') }}</option>
                 </select>
             </div>
         </div>
@@ -193,7 +193,7 @@
         <template x-if="filteredAssets.length === 0">
             <div class="col-span-full text-center py-12">
                 <i class="fas fa-folder-open text-6xl text-gray-300 mb-4"></i>
-                <p class="text-gray-500">لا توجد أصول متاحة</p>
+                <p class="text-gray-500">{{ __('creative.no_assets') }}</p>
             </div>
         </template>
     </div>
@@ -213,7 +213,7 @@
                     </div>
                     <span class="absolute top-2 right-2 px-2 py-1 text-xs font-semibold bg-yellow-400 text-yellow-900 rounded-full"
                           x-show="template.popular">
-                        <i class="fas fa-star ml-1"></i> شائع
+                        <i class="fas fa-star ml-1"></i> {{ __('creative.popular') }}
                     </span>
                 </div>
 
@@ -223,10 +223,10 @@
                     <div class="flex items-center justify-between">
                         <div class="text-xs text-gray-500">
                             <i class="fas fa-clone ml-1"></i>
-                            <span x-text="template.uses + ' استخدام'"></span>
+                            <span x-text="template.uses + ' ' + '{{ __('creative.use_count') }}'"></span>
                         </div>
                         <x-ui.button @click="useTemplate(template.id)" size="sm" variant="primary">
-                            استخدام القالب
+                            {{ __('creative.use_template') }}
                         </x-ui.button>
                     </div>
                 </div>
@@ -237,7 +237,7 @@
     <!-- Creative Performance -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
         <!-- Top Performing Assets -->
-        <x-ui.card title="الأصول الأعلى أداءً">
+        <x-ui.card :title="__('creative.top_performing')">
             <div class="space-y-3">
                 <template x-for="(asset, index) in topPerforming" :key="asset.id">
                     <div class="flex items-center space-x-3 space-x-reverse p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
@@ -261,7 +261,7 @@
         </x-ui.card>
 
         <!-- Recent Activity -->
-        <x-ui.card title="النشاط الأخير">
+        <x-ui.card :title="__('creative.recent_activity')">
             <div class="space-y-3">
                 <template x-for="activity in recentActivity" :key="activity.id">
                     <div class="flex items-start space-x-3 space-x-reverse">
@@ -284,11 +284,11 @@
     </div>
 
     <!-- Brand Guidelines -->
-    <x-ui.card title="إرشادات العلامة التجارية" class="mb-6">
+    <x-ui.card :title="__('creative.brand_guidelines')" class="mb-6">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
             <!-- Colors -->
             <div>
-                <h4 class="font-semibold text-gray-900 dark:text-white mb-3">ألوان العلامة</h4>
+                <h4 class="font-semibold text-gray-900 dark:text-white mb-3">{{ __('creative.brand_colors') }}</h4>
                 <div class="flex flex-wrap gap-2">
                     <template x-for="color in brandColors" :key="color.hex">
                         <div class="text-center">
@@ -304,7 +304,7 @@
 
             <!-- Fonts -->
             <div>
-                <h4 class="font-semibold text-gray-900 dark:text-white mb-3">الخطوط</h4>
+                <h4 class="font-semibold text-gray-900 dark:text-white mb-3">{{ __('creative.fonts') }}</h4>
                 <div class="space-y-2">
                     <template x-for="font in brandFonts" :key="font.name">
                         <div class="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
@@ -317,7 +317,7 @@
 
             <!-- Logos -->
             <div>
-                <h4 class="font-semibold text-gray-900 dark:text-white mb-3">شعارات العلامة</h4>
+                <h4 class="font-semibold text-gray-900 dark:text-white mb-3">{{ __('creative.brand_logos') }}</h4>
                 <div class="space-y-3">
                     <template x-for="logo in brandLogos" :key="logo.id">
                         <div class="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg flex items-center justify-between">
@@ -341,68 +341,68 @@
     </x-ui.card>
 
     <!-- Upload Asset Modal -->
-    <x-ui.modal name="uploadModal" title="رفع أصل إبداعي جديد" max-width="lg" x-show="showUploadModal" @close="showUploadModal = false">
+    <x-ui.modal name="uploadModal" :title="__('creative.upload_creative_asset')" max-width="lg" x-show="showUploadModal" @close="showUploadModal = false">
         <div class="space-y-4">
             <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">نوع الأصل</label>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ __('creative.asset_type') }}</label>
                 <div class="grid grid-cols-2 gap-3">
                     <button @click="uploadForm.type = 'image'"
                             :class="uploadForm.type === 'image' ? 'bg-orange-100 border-orange-600 text-orange-700' : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600'"
                             class="px-4 py-3 border-2 rounded-lg font-semibold flex items-center justify-center">
-                        <i class="fas fa-image ml-2"></i> صورة
+                        <i class="fas fa-image ml-2"></i> {{ __('creative.image') }}
                     </button>
                     <button @click="uploadForm.type = 'video'"
                             :class="uploadForm.type === 'video' ? 'bg-orange-100 border-orange-600 text-orange-700' : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600'"
                             class="px-4 py-3 border-2 rounded-lg font-semibold flex items-center justify-center">
-                        <i class="fas fa-video ml-2"></i> فيديو
+                        <i class="fas fa-video ml-2"></i> {{ __('creative.video') }}
                     </button>
                 </div>
             </div>
             <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">اسم الأصل</label>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ __('creative.asset_name') }}</label>
                 <input type="text"
                        x-model="uploadForm.name"
-                       placeholder="مثال: إعلان الصيف 2025 - نسخة A"
+                       placeholder="{{ __('creative.asset_name_example') }}"
                        class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-orange-500">
             </div>
             <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">الحملة</label>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ __('creative.campaign') }}</label>
                 <select x-model="uploadForm.campaign"
                         class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-orange-500">
-                    <option value="">اختر الحملة</option>
+                    <option value="">{{ __('creative.choose_campaign') }}</option>
                     <option value="1">حملة الصيف 2025</option>
                     <option value="2">الجمعة البيضاء</option>
                     <option value="3">إطلاق المنتج الجديد</option>
                 </select>
             </div>
             <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">رفع الملف</label>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ __('creative.upload_file') }}</label>
                 <div class="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-8 text-center hover:border-orange-500 transition cursor-pointer">
                     <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-2"></i>
-                    <p class="text-sm text-gray-600 dark:text-gray-400">اسحب الملف هنا أو انقر للاختيار</p>
-                    <p class="text-xs text-gray-500 mt-1">PNG, JPG, MP4, MOV (حتى 50MB)</p>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">{{ __('creative.drag_or_click') }}</p>
+                    <p class="text-xs text-gray-500 mt-1">{{ __('creative.file_formats') }}</p>
                 </div>
             </div>
             <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">الوسوم (اختياري)</label>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ __('creative.tags_optional') }}</label>
                 <input type="text"
                        x-model="uploadForm.tags"
-                       placeholder="مثال: صيف، عروض، تخفيضات"
+                       placeholder="{{ __('creative.tags_example') }}"
                        class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-orange-500">
             </div>
         </div>
         <div class="mt-6 flex justify-end space-x-3 space-x-reverse">
             <x-ui.button @click="showUploadModal = false" variant="secondary">
-                إلغاء
+                {{ __('creative.cancel') }}
             </x-ui.button>
             <x-ui.button @click="uploadAsset()" variant="primary" icon="fas fa-upload">
-                رفع الأصل
+                {{ __('creative.upload_asset') }}
             </x-ui.button>
         </div>
     </x-ui.modal>
 
     <!-- Template Selection Modal -->
-    <x-ui.modal name="templateModal" title="اختيار قالب" max-width="xl" x-show="showTemplateModal" @close="showTemplateModal = false">
+    <x-ui.modal name="templateModal" :title="__('creative.select_template')" max-width="xl" x-show="showTemplateModal" @close="showTemplateModal = false">
         <div class="grid grid-cols-2 md:grid-cols-3 gap-4 max-h-96 overflow-y-auto">
             <template x-for="template in templates" :key="template.id">
                 <div class="border-2 border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:border-orange-500 transition cursor-pointer"

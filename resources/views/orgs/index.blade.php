@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'المؤسسات')
+@section('title', __('organizations.title'))
 
 @section('content')
 <div x-data="orgsManager({{ Js::from($orgs) }})">
@@ -8,11 +8,11 @@
     <!-- Page Header -->
     <div class="flex items-center justify-between mb-6">
         <div>
-            <h1 class="text-3xl font-bold text-gray-900 dark:text-white">المؤسسات</h1>
-            <p class="mt-2 text-gray-600 dark:text-gray-400">إدارة جميع المؤسسات والعملاء ({{count($orgs)}} مؤسسة)</p>
+            <h1 class="text-3xl font-bold text-gray-900 dark:text-white">{{ __('organizations.title') }}</h1>
+            <p class="mt-2 text-gray-600 dark:text-gray-400">{{ __('organizations.manage_organizations') }} ({{count($orgs)}} {{ trans_choice('organizations.organization_count', count($orgs)) }})</p>
         </div>
         <x-ui.button @click="openModal('create-org-modal')" icon="fas fa-plus">
-            مؤسسة جديدة
+            {{ __('organizations.new_organization') }}
         </x-ui.button>
     </div>
 
@@ -23,25 +23,25 @@
                 <input type="text"
                        x-model="searchQuery"
                        @input="filterOrgs()"
-                       placeholder="البحث عن مؤسسة..."
+                       placeholder="{{ __('organizations.search_organization') }}..."
                        class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500">
             </div>
             <div>
                 <select x-model="filterStatus"
                         @change="filterOrgs()"
                         class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500">
-                    <option value="">جميع الحالات</option>
-                    <option value="active">نشط</option>
-                    <option value="inactive">غير نشط</option>
+                    <option value="">{{ __('organizations.all_statuses') }}</option>
+                    <option value="active">{{ __('organizations.active') }}</option>
+                    <option value="inactive">{{ __('organizations.inactive') }}</option>
                 </select>
             </div>
             <div>
                 <select x-model="sortBy"
                         @change="filterOrgs()"
                         class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500">
-                    <option value="name">الاسم</option>
-                    <option value="created_at">تاريخ الإنشاء</option>
-                    <option value="campaigns_count">عدد الحملات</option>
+                    <option value="name">{{ __('organizations.sort_by_name') }}</option>
+                    <option value="created_at">{{ __('organizations.sort_by_date') }}</option>
+                    <option value="campaigns_count">{{ __('organizations.sort_by_campaigns') }}</option>
                 </select>
             </div>
         </div>
@@ -75,35 +75,35 @@
                     </div>
                     <p class="text-xs text-gray-500 dark:text-gray-400 mb-4">
                         <i class="fas fa-calendar ml-1"></i>
-                        تم الإنشاء: <span x-text="formatDate(org.created_at)"></span>
+                        {{ __('organizations.created') }}: <span x-text="formatDate(org.created_at)"></span>
                     </p>
 
                     <!-- Stats -->
                     <div class="grid grid-cols-3 gap-4 mb-4 text-center">
                         <div>
                             <div class="text-2xl font-bold text-blue-600" x-text="org.campaigns_count || 0"></div>
-                            <div class="text-xs text-gray-500">حملة</div>
+                            <div class="text-xs text-gray-500">{{ __('organizations.campaign') }}</div>
                         </div>
                         <div>
                             <div class="text-2xl font-bold text-green-600" x-text="org.users_count || 0"></div>
-                            <div class="text-xs text-gray-500">مستخدم</div>
+                            <div class="text-xs text-gray-500">{{ __('organizations.user') }}</div>
                         </div>
                         <div>
                             <div class="text-2xl font-bold text-purple-600" x-text="org.assets_count || 0"></div>
-                            <div class="text-xs text-gray-500">أصل</div>
+                            <div class="text-xs text-gray-500">{{ __('organizations.asset') }}</div>
                         </div>
                     </div>
 
                     <!-- Actions -->
                     <div class="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
                         <a :href="'/orgs/' + org.org_id" class="text-blue-600 hover:text-blue-700 text-sm font-semibold">
-                            <i class="fas fa-eye ml-1"></i> عرض التفاصيل
+                            <i class="fas fa-eye ml-1"></i> {{ __('organizations.view_details') }}
                         </a>
                         <div class="flex space-x-2 space-x-reverse">
-                            <button @click="editOrg(org)" class="text-gray-600 hover:text-blue-600" title="تعديل">
+                            <button @click="editOrg(org)" class="text-gray-600 hover:text-blue-600" title="{{ __('organizations.edit') }}">
                                 <i class="fas fa-edit"></i>
                             </button>
-                            <button @click="deleteOrg(org.org_id)" class="text-gray-600 hover:text-red-600" title="حذف">
+                            <button @click="deleteOrg(org.org_id)" class="text-gray-600 hover:text-red-600" title="{{ __('organizations.delete') }}">
                                 <i class="fas fa-trash"></i>
                             </button>
                         </div>
@@ -116,60 +116,60 @@
     <!-- Empty State -->
     <div x-show="filteredOrgs.length === 0" class="text-center py-12">
         <i class="fas fa-building text-6xl text-gray-300 mb-4"></i>
-        <h3 class="text-xl font-semibold text-gray-600 mb-2">لا توجد مؤسسات</h3>
-        <p class="text-gray-500 mb-4" x-show="searchQuery || filterStatus">جرب تغيير معايير البحث</p>
-        <p class="text-gray-500 mb-4" x-show="!searchQuery && !filterStatus">ابدأ بإضافة مؤسسة جديدة</p>
+        <h3 class="text-xl font-semibold text-gray-600 mb-2">{{ __('organizations.no_organizations') }}</h3>
+        <p class="text-gray-500 mb-4" x-show="searchQuery || filterStatus">{{ __('organizations.try_different_search') }}</p>
+        <p class="text-gray-500 mb-4" x-show="!searchQuery && !filterStatus">{{ __('organizations.start_by_adding') }}</p>
         <x-ui.button @click="openModal('create-org-modal')" icon="fas fa-plus" x-show="!searchQuery && !filterStatus">
-            إضافة مؤسسة
+            {{ __('organizations.add_organization') }}
         </x-ui.button>
     </div>
 
 </div>
 
 <!-- Create/Edit Organization Modal -->
-<x-ui.modal name="create-org-modal" title="مؤسسة جديدة" max-width="lg">
+<x-ui.modal name="create-org-modal" :title="__('organizations.new_organization')" max-width="lg">
     <form x-data="orgForm()" @submit.prevent="submitOrg()">
         <x-forms.input
-            label="اسم المؤسسة"
+            :label="__('organizations.organization_name')"
             name="name"
             x-model="formData.name"
             required
-            placeholder="أدخل اسم المؤسسة" />
+            :placeholder="__('organizations.enter_organization_name')" />
 
         <x-forms.textarea
-            label="الوصف"
+            :label="__('organizations.description')"
             name="description"
             x-model="formData.description"
-            placeholder="وصف قصير عن المؤسسة" />
+            :placeholder="__('organizations.short_description')" />
 
         <x-forms.input
-            label="البريد الإلكتروني"
+            :label="__('organizations.email')"
             name="email"
             type="email"
             x-model="formData.email"
-            placeholder="email@example.com" />
+            :placeholder="__('organizations.email_placeholder')" />
 
         <x-forms.input
-            label="رقم الهاتف"
+            :label="__('organizations.phone_number')"
             name="phone"
             x-model="formData.phone"
-            placeholder="+966 50 000 0000" />
+            :placeholder="__('organizations.phone_placeholder')" />
 
         <x-forms.select
-            label="الحالة"
+            :label="__('organizations.status')"
             name="status"
             x-model="formData.status"
             required>
-            <option value="active">نشط</option>
-            <option value="inactive">غير نشط</option>
+            <option value="active">{{ __('organizations.active') }}</option>
+            <option value="inactive">{{ __('organizations.inactive') }}</option>
         </x-forms.select>
 
         <x-slot name="footer">
             <x-ui.button type="button" variant="secondary" @click="closeModal('create-org-modal')">
-                إلغاء
+                {{ __('common.cancel') }}
             </x-ui.button>
             <x-ui.button type="submit" icon="fas fa-save">
-                حفظ
+                {{ __('organizations.save') }}
             </x-ui.button>
         </x-slot>
     </form>

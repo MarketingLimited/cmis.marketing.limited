@@ -1,118 +1,81 @@
 <?php
 
 return [
-
-    /*
-    |--------------------------------------------------------------------------
-    | Common Language Lines (Arabic)
-    |--------------------------------------------------------------------------
-    */
-
-    // General Actions
+    // Actions
     'save' => 'حفظ',
     'cancel' => 'إلغاء',
     'delete' => 'حذف',
     'edit' => 'تعديل',
     'create' => 'إنشاء',
     'update' => 'تحديث',
-    'view' => 'عرض',
-    'back' => 'رجوع',
-    'next' => 'التالي',
-    'previous' => 'السابق',
-    'finish' => 'إنهاء',
-    'close' => 'إغلاق',
     'search' => 'بحث',
     'filter' => 'تصفية',
     'export' => 'تصدير',
     'import' => 'استيراد',
-    'download' => 'تحميل',
-    'upload' => 'رفع',
     'refresh' => 'تحديث',
-    'reset' => 'إعادة تعيين',
+    'back' => 'رجوع',
+    'next' => 'التالي',
+    'previous' => 'السابق',
     'submit' => 'إرسال',
+    'close' => 'إغلاق',
+    'view' => 'عرض',
+    'download' => 'تحميل',
+
+    // Confirmations
+    'yes' => 'نعم',
+    'no' => 'لا',
     'confirm' => 'تأكيد',
+    'are_you_sure' => 'هل أنت متأكد؟',
 
     // Status
     'active' => 'نشط',
     'inactive' => 'غير نشط',
-    'enabled' => 'مفعّل',
-    'disabled' => 'معطّل',
     'pending' => 'قيد الانتظار',
-    'approved' => 'معتمد',
-    'rejected' => 'مرفوض',
     'completed' => 'مكتمل',
-    'in_progress' => 'قيد التنفيذ',
-    'failed' => 'فشل',
-    'success' => 'نجح',
+    'draft' => 'مسودة',
+    'published' => 'منشور',
 
-    // Time
-    'today' => 'اليوم',
-    'yesterday' => 'أمس',
-    'this_week' => 'هذا الأسبوع',
-    'last_week' => 'الأسبوع الماضي',
-    'this_month' => 'هذا الشهر',
-    'last_month' => 'الشهر الماضي',
-    'this_year' => 'هذه السنة',
-    'custom_range' => 'نطاق مخصص',
-
-    // Common Fields
-    'name' => 'الاسم',
-    'title' => 'العنوان',
-    'description' => 'الوصف',
-    'type' => 'النوع',
-    'category' => 'الفئة',
-    'status' => 'الحالة',
-    'created_at' => 'تاريخ الإنشاء',
-    'updated_at' => 'تاريخ التحديث',
-    'created_by' => 'أنشأ بواسطة',
-    'updated_by' => 'حدّث بواسطة',
-
-    // Navigation
-    'dashboard' => 'لوحة التحكم',
-    'home' => 'الرئيسية',
-    'settings' => 'الإعدادات',
+    // User
     'profile' => 'الملف الشخصي',
     'logout' => 'تسجيل الخروج',
+    'login' => 'تسجيل الدخول',
+    'register' => 'تسجيل',
+    'password' => 'كلمة المرور',
+    'email' => 'البريد الإلكتروني',
+    'name' => 'الاسم',
 
-    // Messages
-    'success_message' => 'تمت العملية بنجاح',
-    'error_message' => 'حدث خطأ، يرجى المحاولة مرة أخرى',
-    'no_data' => 'لا توجد بيانات',
-    'loading' => 'جارٍ التحميل...',
-    'processing' => 'جارٍ المعالجة...',
-    'please_wait' => 'يرجى الانتظار',
+    // Notifications
+    'notifications' => 'الإشعارات',
+    'no_notifications' => 'لا توجد إشعارات',
+    'mark_as_read' => 'تحديد كمقروء',
+    'view_all' => 'عرض الكل',
 
-    // Confirmation
-    'are_you_sure' => 'هل أنت متأكد؟',
-    'cannot_undo' => 'لا يمكن التراجع عن هذا الإجراء',
-    'confirm_delete' => 'تأكيد الحذف',
-    'confirm_action' => 'تأكيد الإجراء',
-
-    // Pagination
+    // Misc
+    'welcome' => 'مرحباً',
+    'welcome_back' => 'مرحباً بعودتك',
+    'loading' => 'جاري التحميل...',
+    'no_results' => 'لا توجد نتائج',
     'showing' => 'عرض',
     'of' => 'من',
     'results' => 'نتيجة',
-    'per_page' => 'لكل صفحة',
     'page' => 'صفحة',
+    'per_page' => 'لكل صفحة',
 
-    // Errors
-    'error' => 'خطأ',
-    'warning' => 'تحذير',
-    'info' => 'معلومة',
-    'permission_denied' => 'ليس لديك صلاحية لهذا الإجراء',
-    'not_found' => 'غير موجود',
-    'server_error' => 'خطأ في الخادم',
+    // Footer
+    'all_rights_reserved' => 'جميع الحقوق محفوظة',
+    'help' => 'المساعدة',
+    'support' => 'الدعم',
+    'terms' => 'الشروط',
+    'privacy_policy' => 'سياسة الخصوصية',
+    'terms_of_service' => 'شروط الخدمة',
 
-    // AI Features
-    'ai_powered' => 'مدعوم بالذكاء الاصطناعي',
-    'generate_with_ai' => 'توليد بالذكاء الاصطناعي',
-    'ai_quota_exceeded' => 'تم تجاوز حصة الذكاء الاصطناعي',
-    'upgrade_plan' => 'ترقية الخطة',
+    // Branding
+    'platform_name' => 'منصة CMIS',
+    'platform_tagline' => 'منصة التسويق',
+    'marketing_platform' => 'منصة التسويق',
 
-    // Phase Status
-    'coming_soon' => 'قريباً',
-    'available' => 'متاح',
-    'beta' => 'تجريبي',
-    'new' => 'جديد',
-
+    // Organization
+    'current_organization' => 'المنظمة الحالية',
+    'not_set' => 'غير محدد',
+    'switch_organization' => 'تبديل المنظمة',
 ];

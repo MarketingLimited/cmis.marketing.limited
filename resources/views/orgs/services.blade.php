@@ -1,10 +1,10 @@
 @extends('layouts.admin')
 
 @section('content')
-<h2>الخدمات</h2>
+<h2>{{ __('organizations.services') }}</h2>
 <ul>
 @foreach($services as $s)
-  <li>{{ $s->name }} — النوع: {{ $s->kind }}</li>
+  <li>{{ $s->name }} — {{ __('offerings.type') }}: {{ $s->kind }}</li>
 @endforeach
 </ul>
 @endsection

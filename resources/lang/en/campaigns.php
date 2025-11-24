@@ -1,280 +1,153 @@
 <?php
 
 return [
-
-    /*
-    |--------------------------------------------------------------------------
-    | Campaign Language Lines (English)
-    |--------------------------------------------------------------------------
-    |
-    | English translations for campaign-related text
-    |
-    */
-
-    // General
-    'campaigns' => 'Campaigns',
-    'campaign' => 'Campaign',
-    'my_campaigns' => 'My Campaigns',
+    // Page Titles
+    'title' => 'Campaigns',
     'all_campaigns' => 'All Campaigns',
-    'active_campaigns' => 'Active Campaigns',
-    'draft_campaigns' => 'Drafts',
-    'completed_campaigns' => 'Completed Campaigns',
-
-    // Actions
-    'create_campaign' => 'Create New Campaign',
+    'create_campaign' => 'Create Campaign',
     'edit_campaign' => 'Edit Campaign',
-    'delete_campaign' => 'Delete Campaign',
-    'pause_campaign' => 'Pause',
-    'resume_campaign' => 'Resume',
-    'duplicate_campaign' => 'Duplicate Campaign',
-    'archive_campaign' => 'Archive',
-    'publish_campaign' => 'Publish Campaign',
-    'save_draft' => 'Save as Draft',
+    'campaign_details' => 'Campaign Details',
+    'campaign_wizard' => 'Campaign Wizard',
 
-    // Campaign Details
+    // Campaign Fields
     'campaign_name' => 'Campaign Name',
     'campaign_objective' => 'Campaign Objective',
-    'campaign_budget' => 'Campaign Budget',
-    'campaign_duration' => 'Campaign Duration',
+    'platform' => 'Platform',
+    'budget' => 'Budget',
     'start_date' => 'Start Date',
     'end_date' => 'End Date',
-    'target_audience' => 'Target Audience',
-    'campaign_status' => 'Campaign Status',
+    'status' => 'Status',
+    'description' => 'Description',
 
-    // Campaign Objectives
-    'objectives' => [
-        'awareness' => 'Brand Awareness',
-        'traffic' => 'Website Traffic',
-        'engagement' => 'Engagement',
-        'leads' => 'Lead Generation',
-        'sales' => 'Sales',
-        'app_installs' => 'App Installs',
-        'video_views' => 'Video Views',
-        'messages' => 'Messages',
-    ],
+    // Objectives
+    'awareness' => 'Awareness',
+    'consideration' => 'Consideration',
+    'conversion' => 'Conversion',
+    'traffic' => 'Traffic',
+    'engagement' => 'Engagement',
+    'app_installs' => 'App Installs',
+    'video_views' => 'Video Views',
+    'lead_generation' => 'Lead Generation',
+    'sales' => 'Sales',
 
-    // Campaign Status
-    'status' => [
-        'draft' => 'Draft',
-        'pending_review' => 'Pending Review',
-        'approved' => 'Approved',
-        'active' => 'Active',
-        'paused' => 'Paused',
-        'completed' => 'Completed',
-        'cancelled' => 'Cancelled',
-        'archived' => 'Archived',
-    ],
+    // Status
+    'active' => 'Active',
+    'paused' => 'Paused',
+    'scheduled' => 'Scheduled',
+    'completed' => 'Completed',
+    'draft' => 'Draft',
+    'archived' => 'Archived',
 
     // Budget
     'daily_budget' => 'Daily Budget',
     'total_budget' => 'Total Budget',
     'spent' => 'Spent',
     'remaining' => 'Remaining',
-    'currency' => 'Currency',
+    'budget_type' => 'Budget Type',
 
-    // Performance Metrics
-    'metrics' => [
-        'impressions' => 'Impressions',
-        'reach' => 'Reach',
-        'clicks' => 'Clicks',
-        'ctr' => 'Click-Through Rate',
-        'conversions' => 'Conversions',
-        'cost_per_click' => 'Cost Per Click',
-        'cost_per_conversion' => 'Cost Per Conversion',
-        'roas' => 'Return on Ad Spend',
-    ],
+    // Performance
+    'impressions' => 'Impressions',
+    'clicks' => 'Clicks',
+    'conversions' => 'Conversions',
+    'ctr' => 'CTR',
+    'cpc' => 'CPC',
+    'cpm' => 'CPM',
+    'cpa' => 'CPA',
+    'roas' => 'ROAS',
 
-    // Platforms
-    'platforms' => [
-        'meta' => 'Meta (Facebook & Instagram)',
-        'facebook' => 'Facebook',
-        'instagram' => 'Instagram',
-        'google' => 'Google Ads',
-        'tiktok' => 'TikTok',
-        'linkedin' => 'LinkedIn',
-        'twitter' => 'Twitter (X)',
-        'snapchat' => 'Snapchat',
-    ],
-
-    // AI Generation
-    'ai_generate' => 'Generate with AI',
-    'ai_suggestions' => 'AI Suggestions',
-    'generate_ideas' => 'Generate Ideas',
-    'improve_content' => 'Improve Content',
-    'marketing_principles' => 'Marketing Principles',
+    // Actions
+    'launch_campaign' => 'Launch Campaign',
+    'pause_campaign' => 'Pause Campaign',
+    'resume_campaign' => 'Resume Campaign',
+    'duplicate_campaign' => 'Duplicate Campaign',
+    'archive_campaign' => 'Archive Campaign',
+    'delete_campaign' => 'Delete Campaign',
 
     // Messages
-    'created_successfully' => 'Campaign created successfully',
-    'updated_successfully' => 'Campaign updated successfully',
-    'deleted_successfully' => 'Campaign deleted successfully',
-    'published_successfully' => 'Campaign published successfully',
-    'paused_successfully' => 'Campaign paused successfully',
-    'resumed_successfully' => 'Campaign resumed successfully',
-
-    // Errors
-    'not_found' => 'Campaign not found',
-    'cannot_edit' => 'Cannot edit this campaign',
-    'cannot_delete' => 'Cannot delete this campaign',
-    'budget_exceeded' => 'Budget exceeded',
+    'campaign_created' => 'Campaign created successfully',
+    'campaign_updated' => 'Campaign updated successfully',
+    'campaign_deleted' => 'Campaign deleted successfully',
+    'campaign_launched' => 'Campaign launched successfully',
+    'campaign_paused' => 'Campaign paused successfully',
+    'campaign_resumed' => 'Campaign resumed successfully',
 
     // Wizard Steps
-    'wizard' => [
-        'title' => 'Campaign Wizard',
-        'create_campaign' => 'Create Campaign with Wizard',
-        'started' => 'Campaign wizard started',
-        'session_expired' => 'Your wizard session has expired. Please start again.',
-        'step_saved' => 'Progress saved successfully',
-        'progress_saved' => 'Your progress has been saved',
-        'cancelled' => 'Campaign wizard cancelled',
-        'confirm_complete' => 'Are you sure you want to complete and launch this campaign?',
-        'completion_error' => 'Please complete all required steps before launching',
-        'step_x_of_y' => 'Step :current of :total',
+    'step_objective' => 'Select Objective',
+    'step_platform' => 'Choose Platform',
+    'step_audience' => 'Define Audience',
+    'step_budget' => 'Set Budget',
+    'step_creative' => 'Add Creative',
+    'step_review' => 'Review & Launch',
 
-        'step_1_title' => 'Campaign Basics',
-        'step_2_title' => 'Targeting & Audience',
-        'step_3_title' => 'Creative Content',
-        'step_4_title' => 'Review & Launch',
+    // Filters
+    'filter_by_status' => 'Filter by Status',
+    'filter_by_platform' => 'Filter by Platform',
+    'filter_by_objective' => 'Filter by Objective',
+    'all_statuses' => 'All Statuses',
+    'all_platforms' => 'All Platforms',
 
-        // Step 1
-        'name_help' => 'Choose a clear, descriptive name for your campaign',
-        'objective_help' => 'Select what you want to achieve with this campaign',
-        'budget_help' => 'Set your total campaign budget (minimum $10)',
-        'end_date_help' => 'Leave blank for ongoing campaigns',
-        'description_help' => 'Optional: Add notes about your campaign strategy',
+    // Table Headers
+    'name' => 'Name',
+    'objective' => 'Objective',
+    'spend' => 'Spend',
+    'results' => 'Results',
+    'actions' => 'Actions',
 
-        // Step 2
-        'targeting' => [
-            'custom_help' => 'Define audience manually with demographics and interests',
-            'lookalike_help' => 'Find people similar to your existing customers',
-            'saved_help' => 'Use a previously saved audience',
-            'saved_audience_help' => 'Select from your saved audiences',
-            'age_help' => 'Target specific age groups (18-65)',
-            'locations_help' => 'Hold Ctrl/Cmd to select multiple countries',
-            'interests_help' => 'Enter interests separated by commas (e.g., fitness, technology, travel)',
-            'interests_placeholder' => 'e.g., fitness, technology, travel',
-            'reach_estimate' => 'Estimated reach: :min - :max people',
-        ],
+    // Misc
+    'no_campaigns' => 'No campaigns found',
+    'total_campaigns' => 'Total Campaigns',
 
-        // Step 3
-        'creative' => [
-            'primary_text_placeholder' => 'Write your main ad text here...',
-            'primary_text_help' => 'This is the main text that will appear in your ad',
-            'headline_placeholder' => 'Catchy headline',
-            'headline_help' => 'A short, attention-grabbing headline',
-            'description_placeholder' => 'Additional description',
-            'description_help' => 'Brief description to support your message',
-            'cta_help' => 'Select the action button that appears on your ad',
-            'media_help' => 'PNG, JPG, or MP4 files up to 10MB',
-            'media_urls_placeholder' => 'Enter image/video URLs (one per line)',
-            'ai_helper_title' => 'Need help writing?',
-            'ai_helper_description' => 'Use AI to generate compelling ad copy based on your campaign details',
-            'ai_helper_coming_soon' => 'AI content generation will open here (coming soon)',
-            'preview_placeholder' => 'Your ad text will appear here',
-            'preview_note' => 'This is a preview. Actual ad appearance may vary by platform.',
-        ],
-
-        // Step 4
-        'review' => [
-            'almost_ready' => '🎉 Almost Ready!',
-            'review_description' => 'Review your campaign details before launching. You can edit any section by clicking Edit.',
-            'health_check' => 'Campaign Health Check',
-            'all_required_fields' => 'All required fields completed',
-            'budget_configured' => 'Budget properly configured',
-            'audience_defined' => 'Target audience defined',
-            'creative_complete' => 'Creative content ready',
-            'important_notice' => 'Important Notice',
-            'launch_notice' => 'Once launched, this campaign will go live and start spending your budget. Make sure all details are correct.',
-            'agree_terms' => 'I understand and agree to launch this campaign',
-        ],
-    ],
-
-    // Additional Fields
-    'name' => 'Campaign Name',
-    'name_placeholder' => 'Enter campaign name',
-    'objective' => 'Campaign Objective',
-    'objectives' => [
-        'awareness' => 'Brand Awareness',
-        'traffic' => 'Website Traffic',
-        'engagement' => 'Engagement',
-        'conversions' => 'Conversions',
-        'app_installs' => 'App Installs',
-    ],
-    'budget_total' => 'Total Budget',
-    'budget_daily' => 'Daily Budget (Optional)',
-    'description' => 'Description',
-    'description_placeholder' => 'Add campaign notes...',
-    'duration' => 'Campaign Duration',
-    'ongoing' => 'Ongoing',
-    'people' => 'people',
-
-    // Targeting
-    'audience_type' => 'Audience Type',
-    'saved_audience' => 'Saved Audience',
+    // Create Campaign Form
+    'create_campaign_subtitle' => 'Create an integrated marketing campaign with goals and budget',
+    'basic_information' => 'Basic Information',
+    'goals_kpis' => 'Goals and KPIs',
+    'budget_timeline' => 'Budget and Timeline',
+    'target_audience' => 'Target Audience',
+    'status_settings' => 'Status and Settings',
+    'campaign_name_required' => 'Campaign Name *',
+    'campaign_type_required' => 'Campaign Type *',
+    'select_type' => 'Select type',
+    'type_awareness' => 'Awareness',
+    'type_consideration' => 'Consideration',
+    'type_conversion' => 'Conversion',
+    'type_retention' => 'Retention',
+    'type_engagement' => 'Engagement',
+    'organization_required' => 'Organization *',
+    'select_organization' => 'Select organization',
+    'campaign_goals_required' => 'Campaign Goals *',
+    'campaign_goals_placeholder' => 'Define the main goals of the campaign...',
+    'primary_kpi' => 'Primary KPI',
+    'select_kpi' => 'Select KPI',
+    'kpi_impressions' => 'Impressions',
+    'kpi_clicks' => 'Clicks',
+    'kpi_conversions' => 'Conversions',
+    'kpi_engagement' => 'Engagement',
+    'kpi_reach' => 'Reach',
+    'kpi_roi' => 'Return on Investment',
+    'target_value' => 'Target Value',
+    'measurement_unit' => 'Measurement Unit',
+    'measurement_unit_placeholder' => 'Example: count, percentage, SAR',
+    'total_budget_required' => 'Total Budget (SAR) *',
+    'currency' => 'Currency',
+    'start_date_required' => 'Start Date *',
+    'end_date_required' => 'End Date *',
+    'expected_duration' => 'Expected Duration',
+    'duration_auto_calculated' => 'Will be calculated automatically based on dates',
+    'days' => 'days',
+    'target_audience_description' => 'Target Audience Description',
+    'target_audience_placeholder' => 'Define age group, interests, geographical location...',
     'age_range' => 'Age Range',
-    'min_age' => 'Minimum Age',
-    'max_age' => 'Maximum Age',
-    'genders' => 'Genders',
-    'all_genders' => 'All Genders',
-    'male' => 'Male',
-    'female' => 'Female',
-    'locations' => 'Target Locations',
-    'interests' => 'Interests',
-    'estimated_reach' => 'Estimated Reach',
-    'targeting' => [
-        'custom' => 'Custom Audience',
-        'lookalike' => 'Lookalike Audience',
-        'saved' => 'Saved Audience',
-    ],
-    'countries' => [
-        'saudi_arabia' => 'Saudi Arabia',
-        'uae' => 'United Arab Emirates',
-        'egypt' => 'Egypt',
-        'kuwait' => 'Kuwait',
-        'qatar' => 'Qatar',
-        'bahrain' => 'Bahrain',
-        'oman' => 'Oman',
-        'jordan' => 'Jordan',
-        'lebanon' => 'Lebanon',
-    ],
-
-    // Creative
-    'ad_format' => 'Ad Format',
-    'formats' => [
-        'single_image' => 'Single Image',
-        'carousel' => 'Carousel',
-        'video' => 'Video',
-        'collection' => 'Collection',
-    ],
-    'primary_text' => 'Primary Text',
-    'headline' => 'Headline',
-    'call_to_action' => 'Call to Action',
-    'cta' => [
-        'learn_more' => 'Learn More',
-        'shop_now' => 'Shop Now',
-        'sign_up' => 'Sign Up',
-        'download' => 'Download',
-        'get_offer' => 'Get Offer',
-        'contact_us' => 'Contact Us',
-        'book_now' => 'Book Now',
-        'apply_now' => 'Apply Now',
-    ],
-    'upload_media' => 'Upload Media',
-    'or_provide_urls' => 'Or provide URLs',
-    'generate_with_ai' => 'Generate with AI',
-    'preview' => 'Preview',
-
-    // Review
-    'budget_summary' => 'Budget Summary',
-    'total_budget' => 'Total Budget',
-    'saved_as_draft' => 'Campaign saved as draft',
-    'created_successfully' => 'Campaign created successfully!',
-
-    // Help Text
-    'help' => [
-        'campaign_name' => 'Choose a descriptive name to help you identify this campaign',
-        'objective' => 'Select the primary goal you want to achieve with this campaign',
-        'budget' => 'Set the amount you want to spend on this campaign',
-        'audience' => 'Define the characteristics of the audience you want to reach',
-    ],
-
+    'select_age_range' => 'Select range',
+    'gender' => 'Gender',
+    'gender_all' => 'All',
+    'gender_male' => 'Male',
+    'gender_female' => 'Female',
+    'gender_other' => 'Other',
+    'location' => 'Location',
+    'location_placeholder' => 'Example: Riyadh, Jeddah',
+    'campaign_active' => 'Campaign is active',
+    'create_auto_workflow' => 'Create automatic workflow',
+    'cancel' => 'Cancel',
+    'end_date_after_start' => 'End date must be after start date',
+    'budget_greater_zero' => 'Budget must be greater than zero',
 ];

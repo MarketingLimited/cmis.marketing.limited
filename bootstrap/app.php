@@ -35,6 +35,11 @@ return Application::configure(basePath: dirname(__DIR__))
         // Apply security headers globally to all requests
         $middleware->append(\App\Http\Middleware\SecurityHeaders::class);
 
+        // Apply locale detection to web requests
+        $middleware->web(append: [
+            \App\Http\Middleware\SetLocale::class,
+        ]);
+
         // Register middleware aliases
         $middleware->alias([
             // Multi-Tenancy & Organization Context (Phase 1 - Consolidated)

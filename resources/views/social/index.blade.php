@@ -1,7 +1,7 @@
 @extends('layouts.admin')
 
-@section('page-title', 'إدارة وسائل التواصل الاجتماعي')
-@section('page-subtitle', 'جدولة ونشر المحتوى على جميع منصات التواصل')
+@section('page-title', __('social.title'))
+@section('page-subtitle', __('social.subtitle'))
 
 @section('content')
 <div x-data="socialManager()" x-init="init()">
@@ -14,7 +14,7 @@
                         :class="filterPlatform === 'all' ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-700'"
                         class="px-4 py-2 rounded-lg font-medium transition">
                     <i class="fas fa-globe ml-2"></i>
-                    الكل
+                    {{ __('social.all') }}
                 </button>
                 <button @click="filterPlatform = 'facebook'"
                         :class="filterPlatform === 'facebook' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700'"
@@ -47,11 +47,11 @@
                 <button @click="showNewPostModal = true"
                         class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 py-2 rounded-lg font-medium hover:shadow-lg transition">
                     <i class="fas fa-plus ml-2"></i>
-                    منشور جديد
+                    {{ __('social.new_post') }}
                 </button>
                 <button class="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition">
                     <i class="fas fa-calendar ml-2"></i>
-                    تقويم المحتوى
+                    {{ __('social.content_calendar') }}
                 </button>
             </div>
         </div>
@@ -61,31 +61,31 @@
             <button @click="statusFilter = 'all'"
                     :class="statusFilter === 'all' ? 'text-indigo-600 border-indigo-600' : 'text-gray-600 border-transparent'"
                     class="px-4 py-2 border-b-2 font-medium transition">
-                الكل
+                {{ __('social.all') }}
             </button>
             <button @click="statusFilter = 'scheduled'"
                     :class="statusFilter === 'scheduled' ? 'text-indigo-600 border-indigo-600' : 'text-gray-600 border-transparent'"
                     class="px-4 py-2 border-b-2 font-medium transition">
                 <i class="fas fa-clock ml-2"></i>
-                مجدول (<span x-text="scheduledCount"></span>)
+                {{ __('social.scheduled') }} (<span x-text="scheduledCount"></span>)
             </button>
             <button @click="statusFilter = 'published'"
                     :class="statusFilter === 'published' ? 'text-indigo-600 border-indigo-600' : 'text-gray-600 border-transparent'"
                     class="px-4 py-2 border-b-2 font-medium transition">
                 <i class="fas fa-check-circle ml-2"></i>
-                منشور (<span x-text="publishedCount"></span>)
+                {{ __('social.published') }} (<span x-text="publishedCount"></span>)
             </button>
             <button @click="statusFilter = 'draft'"
                     :class="statusFilter === 'draft' ? 'text-indigo-600 border-indigo-600' : 'text-gray-600 border-transparent'"
                     class="px-4 py-2 border-b-2 font-medium transition">
                 <i class="fas fa-file ml-2"></i>
-                مسودة (<span x-text="draftCount"></span>)
+                {{ __('social.draft') }} (<span x-text="draftCount"></span>)
             </button>
             <button @click="statusFilter = 'failed'"
                     :class="statusFilter === 'failed' ? 'text-indigo-600 border-indigo-600' : 'text-gray-600 border-transparent'"
                     class="px-4 py-2 border-b-2 font-medium transition">
                 <i class="fas fa-exclamation-triangle ml-2"></i>
-                فشل (<span x-text="failedCount"></span>)
+                {{ __('social.failed') }} (<span x-text="failedCount"></span>)
             </button>
         </div>
     </div>
@@ -165,13 +165,13 @@
                         <button @click="editPost(post)"
                                 class="flex-1 bg-indigo-50 text-indigo-600 px-3 py-2 rounded-lg text-sm font-medium hover:bg-indigo-100 transition">
                             <i class="fas fa-edit ml-1"></i>
-                            تعديل
+                            {{ __('social.edit') }}
                         </button>
                         <template x-if="post.status === 'scheduled'">
                             <button @click="publishNow(post.post_id)"
                                     class="flex-1 bg-green-50 text-green-600 px-3 py-2 rounded-lg text-sm font-medium hover:bg-green-100 transition">
                                 <i class="fas fa-paper-plane ml-1"></i>
-                                نشر الآن
+                                {{ __('social.publish_now') }}
                             </button>
                         </template>
                         <button @click="deletePost(post.post_id)"
@@ -188,9 +188,9 @@
     <template x-if="filteredPosts.length === 0">
         <x-empty-state
             icon="fas fa-calendar-alt"
-            title="لا توجد منشورات"
-            description="ابدأ بإنشاء منشور جديد لجدولته على وسائل التواصل"
-            action-text="إنشاء منشور"
+            :title="__('social.no_posts')"
+            :description="__('social.no_posts_description')"
+            :action-text="__('social.create_post')"
             action-click="showNewPostModal = true"
         />
     </template>

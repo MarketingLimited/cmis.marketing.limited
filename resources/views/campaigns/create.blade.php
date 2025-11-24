@@ -1,7 +1,7 @@
 @extends('layouts.admin')
 
-@section('page-title', 'إنشاء حملة تسويقية جديدة')
-@section('page-subtitle', 'أنشئ حملة تسويقية متكاملة مع أهداف وميزانية')
+@section('page-title', __('campaigns.create_campaign'))
+@section('page-subtitle', __('campaigns.create_campaign_subtitle'))
 
 @section('content')
 <div class="max-w-5xl mx-auto">
@@ -13,12 +13,12 @@
             <div class="bg-white rounded-xl shadow-sm p-6">
                 <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center">
                     <i class="fas fa-info-circle text-indigo-600 ml-2"></i>
-                    المعلومات الأساسية
+                    {{ __('campaigns.basic_information') }}
                 </h3>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div class="md:col-span-2">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">اسم الحملة *</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('campaigns.campaign_name_required') }}</label>
                         <input type="text" name="campaign_name" x-model="form.campaign_name" required
                                value="{{ old('campaign_name') }}"
                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
@@ -28,23 +28,23 @@
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">نوع الحملة *</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('campaigns.campaign_type_required') }}</label>
                         <select name="campaign_type" x-model="form.campaign_type" required
                                 class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
-                            <option value="">اختر النوع</option>
-                            <option value="awareness">توعية</option>
-                            <option value="consideration">اهتمام</option>
-                            <option value="conversion">تحويل</option>
-                            <option value="retention">استبقاء</option>
-                            <option value="engagement">تفاعل</option>
+                            <option value="">{{ __('campaigns.select_type') }}</option>
+                            <option value="awareness">{{ __('campaigns.type_awareness') }}</option>
+                            <option value="consideration">{{ __('campaigns.type_consideration') }}</option>
+                            <option value="conversion">{{ __('campaigns.type_conversion') }}</option>
+                            <option value="retention">{{ __('campaigns.type_retention') }}</option>
+                            <option value="engagement">{{ __('campaigns.type_engagement') }}</option>
                         </select>
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">المؤسسة *</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('campaigns.organization_required') }}</label>
                         <select name="org_id" x-model="form.org_id" required
                                 class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
-                            <option value="">اختر المؤسسة</option>
+                            <option value="">{{ __('campaigns.select_organization') }}</option>
                             @foreach($organizations ?? [] as $org)
                                 <option value="{{ $org->org_id }}">{{ $org->org_name }}</option>
                             @endforeach
@@ -52,7 +52,7 @@
                     </div>
 
                     <div class="md:col-span-2">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">الوصف</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('campaigns.description') }}</label>
                         <textarea name="description" x-model="form.description" rows="3"
                                   value="{{ old('description') }}"
                                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">{{ old('description') }}</textarea>
@@ -64,44 +64,44 @@
             <div class="bg-white rounded-xl shadow-sm p-6">
                 <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center">
                     <i class="fas fa-bullseye text-indigo-600 ml-2"></i>
-                    الأهداف ومؤشرات الأداء
+                    {{ __('campaigns.goals_kpis') }}
                 </h3>
 
                 <div class="space-y-4">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">أهداف الحملة *</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('campaigns.campaign_goals_required') }}</label>
                         <textarea name="goals" x-model="form.goals" rows="3" required
-                                  placeholder="حدد الأهداف الرئيسية للحملة..."
+                                  placeholder="{{ __('campaigns.campaign_goals_placeholder') }}"
                                   value="{{ old('goals') }}"
                                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">{{ old('goals') }}</textarea>
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">مؤشر الأداء الرئيسي</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('campaigns.primary_kpi') }}</label>
                             <select name="primary_kpi" x-model="form.primary_kpi"
                                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
-                                <option value="">اختر المؤشر</option>
-                                <option value="impressions">الانطباعات</option>
-                                <option value="clicks">النقرات</option>
-                                <option value="conversions">التحويلات</option>
-                                <option value="engagement">التفاعل</option>
-                                <option value="reach">الوصول</option>
-                                <option value="roi">العائد على الاستثمار</option>
+                                <option value="">{{ __('campaigns.select_kpi') }}</option>
+                                <option value="impressions">{{ __('campaigns.kpi_impressions') }}</option>
+                                <option value="clicks">{{ __('campaigns.kpi_clicks') }}</option>
+                                <option value="conversions">{{ __('campaigns.kpi_conversions') }}</option>
+                                <option value="engagement">{{ __('campaigns.kpi_engagement') }}</option>
+                                <option value="reach">{{ __('campaigns.kpi_reach') }}</option>
+                                <option value="roi">{{ __('campaigns.kpi_roi') }}</option>
                             </select>
                         </div>
 
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">القيمة المستهدفة</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('campaigns.target_value') }}</label>
                             <input type="number" name="target_value" x-model="form.target_value"
                                    value="{{ old('target_value') }}"
                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
                         </div>
 
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">وحدة القياس</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('campaigns.measurement_unit') }}</label>
                             <input type="text" name="measurement_unit" x-model="form.measurement_unit"
-                                   placeholder="مثال: عدد، نسبة، ر.س"
+                                   placeholder="{{ __('campaigns.measurement_unit_placeholder') }}"
                                    value="{{ old('measurement_unit') }}"
                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
                         </div>
@@ -113,19 +113,19 @@
             <div class="bg-white rounded-xl shadow-sm p-6">
                 <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center">
                     <i class="fas fa-wallet text-indigo-600 ml-2"></i>
-                    الميزانية والجدول الزمني
+                    {{ __('campaigns.budget_timeline') }}
                 </h3>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">الميزانية الكلية (ر.س) *</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('campaigns.total_budget_required') }}</label>
                         <input type="number" name="budget" x-model="form.budget" step="0.01" min="0" required
                                value="{{ old('budget') }}"
                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">العملة</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('campaigns.currency') }}</label>
                         <select name="currency" x-model="form.currency"
                                 class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
                             <option value="SAR">ريال سعودي (SAR)</option>
@@ -136,14 +136,14 @@
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">تاريخ البدء *</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('campaigns.start_date_required') }}</label>
                         <input type="date" name="start_date" x-model="form.start_date" required
                                value="{{ old('start_date') }}"
                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">تاريخ الانتهاء *</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('campaigns.end_date_required') }}</label>
                         <input type="date" name="end_date" x-model="form.end_date" required
                                value="{{ old('end_date') }}"
                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
@@ -153,11 +153,11 @@
                         <div class="bg-indigo-50 border border-indigo-200 rounded-lg p-4">
                             <div class="flex items-center justify-between">
                                 <div>
-                                    <p class="text-sm font-medium text-indigo-900">المدة المتوقعة</p>
-                                    <p class="text-xs text-indigo-700 mt-1">سيتم حسابها تلقائياً بناءً على التواريخ</p>
+                                    <p class="text-sm font-medium text-indigo-900">{{ __('campaigns.expected_duration') }}</p>
+                                    <p class="text-xs text-indigo-700 mt-1">{{ __('campaigns.duration_auto_calculated') }}</p>
                                 </div>
                                 <template x-if="form.start_date && form.end_date">
-                                    <span class="text-2xl font-bold text-indigo-600" x-text="calculateDuration() + ' يوم'"></span>
+                                    <span class="text-2xl font-bold text-indigo-600" x-text="calculateDuration() + ' {{ __('campaigns.days') }}'"></span>
                                 </template>
                             </div>
                         </div>
@@ -169,24 +169,24 @@
             <div class="bg-white rounded-xl shadow-sm p-6">
                 <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center">
                     <i class="fas fa-users text-indigo-600 ml-2"></i>
-                    الجمهور المستهدف
+                    {{ __('campaigns.target_audience') }}
                 </h3>
 
                 <div class="space-y-4">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">وصف الجمهور المستهدف</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('campaigns.target_audience_description') }}</label>
                         <textarea name="target_audience" x-model="form.target_audience" rows="3"
-                                  placeholder="حدد الفئة العمرية، الاهتمامات، الموقع الجغرافي..."
+                                  placeholder="{{ __('campaigns.target_audience_placeholder') }}"
                                   value="{{ old('target_audience') }}"
                                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">{{ old('target_audience') }}</textarea>
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">الفئة العمرية</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('campaigns.age_range') }}</label>
                             <select name="age_range" x-model="form.age_range"
                                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
-                                <option value="">اختر الفئة</option>
+                                <option value="">{{ __('campaigns.select_age_range') }}</option>
                                 <option value="18-24">18-24</option>
                                 <option value="25-34">25-34</option>
                                 <option value="35-44">35-44</option>
@@ -196,20 +196,20 @@
                         </div>
 
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">الجنس</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('campaigns.gender') }}</label>
                             <select name="gender" x-model="form.gender"
                                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
-                                <option value="">الكل</option>
-                                <option value="male">ذكور</option>
-                                <option value="female">إناث</option>
-                                <option value="other">أخرى</option>
+                                <option value="">{{ __('campaigns.gender_all') }}</option>
+                                <option value="male">{{ __('campaigns.gender_male') }}</option>
+                                <option value="female">{{ __('campaigns.gender_female') }}</option>
+                                <option value="other">{{ __('campaigns.gender_other') }}</option>
                             </select>
                         </div>
 
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">الموقع</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('campaigns.location') }}</label>
                             <input type="text" name="location" x-model="form.location"
-                                   placeholder="مثال: الرياض، جدة"
+                                   placeholder="{{ __('campaigns.location_placeholder') }}"
                                    value="{{ old('location') }}"
                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
                         </div>
@@ -221,20 +221,20 @@
             <div class="bg-white rounded-xl shadow-sm p-6">
                 <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center">
                     <i class="fas fa-cog text-indigo-600 ml-2"></i>
-                    الحالة والإعدادات
+                    {{ __('campaigns.status_settings') }}
                 </h3>
 
                 <div class="space-y-3">
                     <label class="flex items-center">
                         <input type="checkbox" name="is_active" value="1" checked
                                class="w-5 h-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
-                        <span class="mr-2 text-sm text-gray-700">الحملة نشطة</span>
+                        <span class="mr-2 text-sm text-gray-700">{{ __('campaigns.campaign_active') }}</span>
                     </label>
 
                     <label class="flex items-center">
                         <input type="checkbox" name="enable_workflow" value="1" checked
                                class="w-5 h-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
-                        <span class="mr-2 text-sm text-gray-700">إنشاء سير عمل تلقائي</span>
+                        <span class="mr-2 text-sm text-gray-700">{{ __('campaigns.create_auto_workflow') }}</span>
                     </label>
                 </div>
             </div>
@@ -244,11 +244,11 @@
                 <button type="submit"
                         class="flex-1 bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-8 py-3 rounded-lg font-medium hover:shadow-lg transition">
                     <i class="fas fa-rocket ml-2"></i>
-                    إطلاق الحملة
+                    {{ __('campaigns.launch_campaign') }}
                 </button>
                 <a href="{{ route('campaigns.index') }}"
                    class="bg-gray-100 text-gray-700 px-8 py-3 rounded-lg font-medium hover:bg-gray-200 transition">
-                    إلغاء
+                    {{ __('campaigns.cancel') }}
                 </a>
             </div>
         </div>
@@ -286,7 +286,7 @@ function campaignForm() {
                 const end = new Date(this.form.end_date);
 
                 if (end <= start) {
-                    alert('تاريخ الانتهاء يجب أن يكون بعد تاريخ البدء');
+                    alert('{{ __('campaigns.end_date_after_start') }}');
                     e.preventDefault();
                     return false;
                 }
@@ -294,7 +294,7 @@ function campaignForm() {
 
             // Check budget
             if (this.form.budget && parseFloat(this.form.budget) <= 0) {
-                alert('الميزانية يجب أن تكون أكبر من صفر');
+                alert('{{ __('campaigns.budget_greater_zero') }}');
                 e.preventDefault();
                 return false;
             }

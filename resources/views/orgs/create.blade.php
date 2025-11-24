@@ -1,7 +1,7 @@
 @extends('layouts.admin')
 
-@section('page-title', 'إنشاء مؤسسة جديدة')
-@section('page-subtitle', 'أضف مؤسسة جديدة إلى النظام')
+@section('page-title', __('organizations.create_organization'))
+@section('page-subtitle', __('organizations.create_organization_subtitle'))
 
 @section('content')
 <div class="max-w-4xl mx-auto">
@@ -25,21 +25,21 @@
         <div class="space-y-6">
             <!-- Basic Information -->
             <div>
-                <h3 class="text-lg font-bold text-gray-900 mb-4">المعلومات الأساسية</h3>
+                <h3 class="text-lg font-bold text-gray-900 mb-4">{{ __('organizations.basic_information') }}</h3>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div class="md:col-span-2">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">اسم المؤسسة *</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('organizations.organization_name_required') }}</label>
                         <input type="text" name="name" value="{{ old('name') }}" required
                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 @error('name') border-red-500 @enderror">
                         @error('name')
                             <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
                         @enderror
-                        <p class="text-gray-500 text-xs mt-1">اسم فريد للمؤسسة</p>
+                        <p class="text-gray-500 text-xs mt-1">{{ __('organizations.unique_name_hint') }}</p>
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">اللغة الافتراضية</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('organizations.default_locale') }}</label>
                         <select name="default_locale"
                                 class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 @error('default_locale') border-red-500 @enderror">
                             <option value="ar-BH" {{ old('default_locale') == 'ar-BH' ? 'selected' : '' }}>العربية (البحرين)</option>
@@ -53,7 +53,7 @@
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">العملة</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('organizations.currency') }}</label>
                         <select name="currency"
                                 class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 @error('currency') border-red-500 @enderror">
                             <option value="BHD" {{ old('currency') == 'BHD' ? 'selected' : '' }}>دينار بحريني (BHD)</option>
@@ -67,14 +67,14 @@
                     </div>
 
                     <div class="md:col-span-2">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">المزود (اختياري)</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('organizations.provider_optional') }}</label>
                         <input type="text" name="provider" value="{{ old('provider') }}"
                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 @error('provider') border-red-500 @enderror"
-                               placeholder="مثال: manual، api، integration">
+                               placeholder="{{ __('organizations.provider_placeholder') }}">
                         @error('provider')
                             <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
                         @enderror
-                        <p class="text-gray-500 text-xs mt-1">مصدر إنشاء المؤسسة (اختياري)</p>
+                        <p class="text-gray-500 text-xs mt-1">{{ __('organizations.provider_source_hint') }}</p>
                     </div>
                 </div>
             </div>
@@ -84,11 +84,11 @@
                 <button type="submit"
                         class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-8 py-3 rounded-lg font-medium hover:shadow-lg transition">
                     <i class="fas fa-save ml-2"></i>
-                    حفظ المؤسسة
+                    {{ __('organizations.save_organization') }}
                 </button>
                 <a href="{{ route('orgs.index') }}"
                    class="bg-gray-100 text-gray-700 px-8 py-3 rounded-lg font-medium hover:bg-gray-200 transition">
-                    إلغاء
+                    {{ __('organizations.cancel') }}
                 </a>
             </div>
         </div>

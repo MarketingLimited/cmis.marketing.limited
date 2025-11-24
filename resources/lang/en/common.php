@@ -1,118 +1,81 @@
 <?php
 
 return [
-
-    /*
-    |--------------------------------------------------------------------------
-    | Common Language Lines (English)
-    |--------------------------------------------------------------------------
-    */
-
-    // General Actions
+    // Actions
     'save' => 'Save',
     'cancel' => 'Cancel',
     'delete' => 'Delete',
     'edit' => 'Edit',
     'create' => 'Create',
     'update' => 'Update',
-    'view' => 'View',
-    'back' => 'Back',
-    'next' => 'Next',
-    'previous' => 'Previous',
-    'finish' => 'Finish',
-    'close' => 'Close',
     'search' => 'Search',
     'filter' => 'Filter',
     'export' => 'Export',
     'import' => 'Import',
-    'download' => 'Download',
-    'upload' => 'Upload',
     'refresh' => 'Refresh',
-    'reset' => 'Reset',
+    'back' => 'Back',
+    'next' => 'Next',
+    'previous' => 'Previous',
     'submit' => 'Submit',
+    'close' => 'Close',
+    'view' => 'View',
+    'download' => 'Download',
+
+    // Confirmations
+    'yes' => 'Yes',
+    'no' => 'No',
     'confirm' => 'Confirm',
+    'are_you_sure' => 'Are you sure?',
 
     // Status
     'active' => 'Active',
     'inactive' => 'Inactive',
-    'enabled' => 'Enabled',
-    'disabled' => 'Disabled',
     'pending' => 'Pending',
-    'approved' => 'Approved',
-    'rejected' => 'Rejected',
     'completed' => 'Completed',
-    'in_progress' => 'In Progress',
-    'failed' => 'Failed',
-    'success' => 'Success',
+    'draft' => 'Draft',
+    'published' => 'Published',
 
-    // Time
-    'today' => 'Today',
-    'yesterday' => 'Yesterday',
-    'this_week' => 'This Week',
-    'last_week' => 'Last Week',
-    'this_month' => 'This Month',
-    'last_month' => 'Last Month',
-    'this_year' => 'This Year',
-    'custom_range' => 'Custom Range',
-
-    // Common Fields
-    'name' => 'Name',
-    'title' => 'Title',
-    'description' => 'Description',
-    'type' => 'Type',
-    'category' => 'Category',
-    'status' => 'Status',
-    'created_at' => 'Created At',
-    'updated_at' => 'Updated At',
-    'created_by' => 'Created By',
-    'updated_by' => 'Updated By',
-
-    // Navigation
-    'dashboard' => 'Dashboard',
-    'home' => 'Home',
-    'settings' => 'Settings',
+    // User
     'profile' => 'Profile',
     'logout' => 'Logout',
+    'login' => 'Login',
+    'register' => 'Register',
+    'password' => 'Password',
+    'email' => 'Email',
+    'name' => 'Name',
 
-    // Messages
-    'success_message' => 'Operation completed successfully',
-    'error_message' => 'An error occurred, please try again',
-    'no_data' => 'No data available',
+    // Notifications
+    'notifications' => 'Notifications',
+    'no_notifications' => 'No notifications',
+    'mark_as_read' => 'Mark as read',
+    'view_all' => 'View all',
+
+    // Misc
+    'welcome' => 'Welcome',
+    'welcome_back' => 'Welcome back',
     'loading' => 'Loading...',
-    'processing' => 'Processing...',
-    'please_wait' => 'Please wait',
-
-    // Confirmation
-    'are_you_sure' => 'Are you sure?',
-    'cannot_undo' => 'This action cannot be undone',
-    'confirm_delete' => 'Confirm Deletion',
-    'confirm_action' => 'Confirm Action',
-
-    // Pagination
+    'no_results' => 'No results found',
     'showing' => 'Showing',
     'of' => 'of',
     'results' => 'results',
-    'per_page' => 'per page',
     'page' => 'Page',
+    'per_page' => 'Per page',
 
-    // Errors
-    'error' => 'Error',
-    'warning' => 'Warning',
-    'info' => 'Information',
-    'permission_denied' => 'You do not have permission for this action',
-    'not_found' => 'Not Found',
-    'server_error' => 'Server Error',
+    // Footer
+    'all_rights_reserved' => 'All rights reserved',
+    'help' => 'Help',
+    'support' => 'Support',
+    'terms' => 'Terms',
+    'privacy_policy' => 'Privacy Policy',
+    'terms_of_service' => 'Terms of Service',
 
-    // AI Features
-    'ai_powered' => 'AI-Powered',
-    'generate_with_ai' => 'Generate with AI',
-    'ai_quota_exceeded' => 'AI quota exceeded',
-    'upgrade_plan' => 'Upgrade Plan',
+    // Branding
+    'platform_name' => 'CMIS Platform',
+    'platform_tagline' => 'Marketing Platform',
+    'marketing_platform' => 'Marketing Platform',
 
-    // Phase Status
-    'coming_soon' => 'Coming Soon',
-    'available' => 'Available',
-    'beta' => 'Beta',
-    'new' => 'New',
-
+    // Organization
+    'current_organization' => 'Current Organization',
+    'not_set' => 'Not Set',
+    'switch_organization' => 'Switch Organization',
 ];
