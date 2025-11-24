@@ -145,7 +145,7 @@ jobs:
           echo "Total build size: $total_size"
 
       - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: bundle-analysis
           path: public/build
