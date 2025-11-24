@@ -49,6 +49,15 @@ Route::post('/logout', [LoginController::class, 'destroy'])
     ->middleware('auth')
     ->name('logout');
 
+// ==================== Language Switcher ====================
+Route::get('/locale/{locale}', function ($locale) {
+    if (in_array($locale, config('app.available_locales', ['en', 'ar']))) {
+        session(['locale' => $locale]);
+        app()->setLocale($locale);
+    }
+    return redirect()->back();
+})->name('locale.switch');
+
 // Public Routes - Home page redirects appropriately
 Route::get('/', function () {
     if (auth()->check()) {
@@ -63,7 +72,7 @@ Route::get('/', function () {
 })->name('home');
 
 // Protected Routes - Require Authentication
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth', 'org.context'])->group(function () {
 
     // ==================== Dashboard ====================
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard.index');
@@ -155,8 +164,6 @@ Route::middleware(['auth'])->group(function () {
 
     // ==================== Analytics (Legacy) ====================
     Route::get('/analytics/legacy', [AnalyticsOverviewController::class, 'index'])->name('analytics.legacy');
-    Route::get('/reports', [AnalyticsOverviewController::class, 'index'])->name('analytics.reports');
-    Route::get('/metrics', [AnalyticsOverviewController::class, 'index'])->name('analytics.metrics');
 
     // ==================== Enterprise Analytics (Phase 9) ====================
     Route::prefix('analytics')->name('analytics.')->group(function () {
@@ -173,6 +180,12 @@ Route::middleware(['auth'])->group(function () {
         // KPI Dashboard
         Route::get('/kpis', [EnterpriseAnalyticsController::class, 'kpis'])->name('kpis');
         Route::get('/kpis/{entity_type}/{entity_id}', [EnterpriseAnalyticsController::class, 'kpis'])->name('kpis.entity');
+
+        // Reports, Insights, Metrics, Export (Web Views)
+        Route::get('/reports', [EnterpriseAnalyticsController::class, 'reports'])->name('reports.view');
+        Route::get('/insights', [EnterpriseAnalyticsController::class, 'insights'])->name('insights.view');
+        Route::get('/metrics', [EnterpriseAnalyticsController::class, 'metrics'])->name('metrics.view');
+        Route::get('/export', [EnterpriseAnalyticsController::class, 'export'])->name('export.view');
 
         // Default route - redirect to enterprise hub
         Route::get('/', function () {

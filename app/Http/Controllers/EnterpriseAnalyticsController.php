@@ -229,6 +229,110 @@ class EnterpriseAnalyticsController extends Controller
     }
 
     /**
+     * AI-powered insights dashboard
+     *
+     * GET /analytics/insights
+     *
+     * Displays AI-generated insights and recommendations
+     *
+     * @param Request $request
+     * @return \Illuminate\View\View
+     */
+    public function insights(Request $request): View
+    {
+        $user = $request->user();
+        $orgId = $this->resolveOrgId($request);
+
+        if (!$orgId) {
+            abort(404, 'No active organization found');
+        }
+
+        return view('analytics.insights', [
+            'orgId' => $orgId,
+            'user' => $user,
+            'pageTitle' => 'AI Insights'
+        ]);
+    }
+
+    /**
+     * Reports dashboard
+     *
+     * GET /analytics/reports
+     *
+     * Displays custom reports and report builder
+     *
+     * @param Request $request
+     * @return \Illuminate\View\View
+     */
+    public function reports(Request $request): View
+    {
+        $user = $request->user();
+        $orgId = $this->resolveOrgId($request);
+
+        if (!$orgId) {
+            abort(404, 'No active organization found');
+        }
+
+        return view('analytics.reports', [
+            'orgId' => $orgId,
+            'user' => $user,
+            'pageTitle' => 'Reports'
+        ]);
+    }
+
+    /**
+     * Metrics dashboard
+     *
+     * GET /analytics/metrics
+     *
+     * Displays detailed metrics and performance indicators
+     *
+     * @param Request $request
+     * @return \Illuminate\View\View
+     */
+    public function metrics(Request $request): View
+    {
+        $user = $request->user();
+        $orgId = $this->resolveOrgId($request);
+
+        if (!$orgId) {
+            abort(404, 'No active organization found');
+        }
+
+        return view('analytics.metrics', [
+            'orgId' => $orgId,
+            'user' => $user,
+            'pageTitle' => 'Metrics'
+        ]);
+    }
+
+    /**
+     * Export dashboard
+     *
+     * GET /analytics/export
+     *
+     * Export data and reports
+     *
+     * @param Request $request
+     * @return \Illuminate\View\View
+     */
+    public function export(Request $request): View
+    {
+        $user = $request->user();
+        $orgId = $this->resolveOrgId($request);
+
+        if (!$orgId) {
+            abort(404, 'No active organization found');
+        }
+
+        return view('analytics.export', [
+            'orgId' => $orgId,
+            'user' => $user,
+            'pageTitle' => 'Export Data'
+        ]);
+    }
+
+    /**
      * Resolve entity name for display
      *
      * @param string $entityType
