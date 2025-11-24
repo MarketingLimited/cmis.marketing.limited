@@ -95,12 +95,18 @@ Example:
 
 ## 🔍 Discovery Protocol Framework
 
-### The Five-Step Discovery Process
+### 🚨 MANDATORY: Six-Step Discovery Process
 
 For ANY question about the CMIS codebase, follow this process:
 
 ```
 ┌─────────────────────────────────────────────┐
+│ Step 0: CONSULT /docs/ DIRECTORY (REQUIRED)│
+│ Search and read ALL relevant documentation  │
+│ BEFORE starting implementation/analysis     │
+└───────────────┬─────────────────────────────┘
+                │
+┌───────────────▼─────────────────────────────┐
 │ Step 1: IDENTIFY THE DOMAIN                │
 │ What aspect of CMIS is this question about? │
 └───────────────┬─────────────────────────────┘
@@ -125,6 +131,76 @@ For ANY question about the CMIS codebase, follow this process:
 │ How does this inform my recommendation?     │
 └─────────────────────────────────────────────┘
 ```
+
+### 🚨 CRITICAL: Step 0 - Consult /docs/ Directory FIRST
+
+**BEFORE starting ANY implementation, debugging, planning, or analysis, agents MUST:**
+
+1. **Search /docs/ for relevant documentation:**
+   ```bash
+   # Search for related topics
+   grep -r "keyword" docs/ --include="*.md"
+
+   # List all documentation
+   find docs/ -name "*.md" -type f | sort
+
+   # Check specific areas
+   ls -la docs/active/analysis/
+   ls -la docs/phases/completed/
+   ls -la docs/architecture/
+   ```
+
+2. **Read ALL relevant documents found:**
+   - Past bug fixes and solutions
+   - Architectural decisions and reasoning
+   - Previous implementation patterns
+   - Known issues and workarounds
+   - Design goals and constraints
+
+3. **Apply what you learned to:**
+   - ✅ Avoid repeating previous mistakes
+   - ✅ Reuse existing solutions and patterns
+   - ✅ Align with established design goals
+   - ✅ Make evidence-based decisions
+   - ✅ Build on prior work, not duplicate it
+
+**Why This Matters:**
+
+The /docs/ directory is the **primary source of truth** for:
+- **Historical context** - Why decisions were made
+- **Past solutions** - Already-solved problems
+- **Architecture** - System design and patterns
+- **Bugs & Fixes** - Issues encountered and resolved
+- **Project goals** - Strategic direction
+
+**Example - Step 0 in Action:**
+
+**Task:** "Add a new analytics feature"
+
+**Step 0: Consult /docs/ FIRST**
+```bash
+# 1. Search for existing analytics work
+grep -r "analytics" docs/ --include="*.md"
+
+# Found: docs/active/analysis/analytics-architecture.md
+# Found: docs/phases/completed/phase-2/analytics-implementation.md
+
+# 2. Read these documents
+# - Learned: Analytics uses unified_metrics table
+# - Learned: Previous performance issues with N+1 queries
+# - Learned: Caching strategy already established
+# - Learned: Real-time analytics requires queue jobs
+
+# 3. Apply knowledge
+# - Use unified_metrics table (don't create new one!)
+# - Implement proper eager loading (avoid past N+1 issues)
+# - Follow established caching patterns
+# - Use existing queue infrastructure
+```
+
+**Result:** Avoided duplicating work, repeating mistakes, and architectural conflicts.
+
+---
 
 ### Example Application
 

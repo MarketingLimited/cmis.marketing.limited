@@ -225,6 +225,38 @@ class Kernel extends ConsoleKernel
             });
 
         // ==========================================
+        // 📚 Knowledge System Auto-Update (NEW: 2025-11-24)
+        // ==========================================
+
+        // Full knowledge refresh daily at 2:30 AM
+        $schedule->command('knowledge:refresh-all')
+            ->dailyAt('02:30')
+            ->withoutOverlapping()
+            ->onOneServer()
+            ->runInBackground()
+            ->appendOutputTo(storage_path('logs/knowledge-refresh.log'))
+            ->onSuccess(function () {
+                Log::info('✅ All knowledge maps refreshed successfully');
+            })
+            ->onFailure(function () {
+                Log::error('❌ Failed to refresh knowledge maps');
+            });
+
+        // Health check every 6 hours
+        $schedule->command('knowledge:health-check')
+            ->everySixHours()
+            ->withoutOverlapping()
+            ->onOneServer()
+            ->runInBackground()
+            ->appendOutputTo(storage_path('logs/knowledge-health.log'))
+            ->onSuccess(function () {
+                Log::info('✅ Knowledge health check completed');
+            })
+            ->onFailure(function () {
+                Log::warning('⚠️ Knowledge health check detected issues');
+            });
+
+        // ==========================================
         // 🧠 Original Cognitive Vitality Monitoring
         // ==========================================
 

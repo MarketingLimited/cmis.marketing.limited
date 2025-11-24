@@ -20,6 +20,35 @@ CMIS is a Laravel-based Campaign Management & Integration System with:
 
 ## 🚨 Critical Rules
 
+### 🚨 MANDATORY: Consult /docs/ Directory FIRST (NEW - 2025-11-24)
+**BEFORE starting ANY implementation, debugging, planning, or analysis:**
+
+- ✅ **Search /docs/ for relevant documentation:** `php artisan docs:search "keyword"`
+- ✅ **Read ALL relevant documents found**
+- ✅ **Apply learned knowledge** (past bugs, solutions, architectural decisions)
+- ❌ **NEVER skip this step** - /docs/ is PRIMARY SOURCE OF TRUTH
+
+**Why this is critical:**
+- Avoid repeating previous mistakes
+- Reuse existing solutions and patterns
+- Align with established design goals
+- Make evidence-based decisions
+- Build on prior work, not duplicate it
+
+**Quick Commands:**
+```bash
+# Search documentation
+php artisan docs:search "campaign"
+
+# Generate/refresh docs index
+php artisan knowledge:generate-docs-index
+
+# Check all knowledge health
+php artisan knowledge:health-check
+```
+
+**See:** `DOCS_CONSULTATION_QUICKSTART.md` and `docs/reference/KNOWLEDGE_COMMANDS_REFERENCE.md`
+
 ### Multi-Tenancy (ALWAYS RESPECT)
 - ✅ ALL database operations MUST respect RLS policies
 - ✅ Use schema-qualified table names: `cmis.campaigns`, `cmis_meta.ad_accounts`
@@ -385,6 +414,28 @@ SELECT * FROM cmis.campaigns; -- Should only show this org's data
 
 ## 🚀 Quick Commands
 
+### Knowledge System Commands (NEW - 2025-11-24)
+```bash
+# Search documentation
+php artisan docs:search "keyword" --context=3
+
+# Generate all knowledge maps
+php artisan knowledge:refresh-all
+
+# Generate individual maps
+php artisan knowledge:generate-docs-index
+php artisan knowledge:generate-codebase-map
+php artisan knowledge:generate-schema-map
+php artisan knowledge:generate-model-graph
+php artisan knowledge:generate-service-map
+
+# Check knowledge health
+php artisan knowledge:health-check
+```
+
+**See:** `docs/reference/KNOWLEDGE_COMMANDS_REFERENCE.md` for complete command reference.
+
+### Standard Laravel Commands
 ```bash
 # Run tests
 vendor/bin/phpunit

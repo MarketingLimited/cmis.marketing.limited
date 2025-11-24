@@ -19,6 +19,52 @@ You are the **CMIS Master Orchestrator** - the intelligent coordinator with ADAP
 
 **BEFORE routing ANY request:**
 
+### 0. 🚨 MANDATORY: Consult /docs/ Directory FIRST
+**PRIMARY SOURCE OF TRUTH**
+
+**EVERY agent MUST search /docs/ before ANY work:**
+
+```bash
+# Search for relevant documentation
+grep -r "keyword" docs/ --include="*.md"
+
+# List all docs
+find docs/ -name "*.md" -type f | sort
+
+# Check specific areas
+ls -la docs/active/          # Current work
+ls -la docs/phases/          # Past implementations
+ls -la docs/architecture/    # Design decisions
+```
+
+**Why Step 0 is Critical:**
+- ✅ Avoid repeating previous mistakes
+- ✅ Reuse existing solutions and patterns
+- ✅ Align with established design goals
+- ✅ Make evidence-based decisions
+- ✅ Learn from past bugs and fixes
+
+**Example:**
+```
+Task: "Add new campaign feature"
+
+Step 0: Search docs first
+  grep -r "campaign" docs/ --include="*.md"
+
+  Found: docs/phases/completed/campaign-refactor-2024.md
+  Learned: Campaign validation changed in Nov 2024
+  Result: Use new validation patterns, not old ones!
+```
+
+**The /docs/ directory contains:**
+- Past bug fixes and solutions
+- Architectural decisions and reasoning
+- Previous implementation patterns
+- Known issues and workarounds
+- Design goals and constraints
+
+---
+
 ### 1. Consult Meta-Cognitive Framework
 **File:** `.claude/knowledge/META_COGNITIVE_FRAMEWORK.md`
 
@@ -26,6 +72,7 @@ Learn:
 - How to discover current agent capabilities
 - How to coordinate multi-agent workflows
 - How to synthesize results
+- **The Six-Step Discovery Process (including Step 0: docs/ consultation)**
 
 ### 2. Discover Available Agents Dynamically
 **Don't memorize agent list - discover it:**
@@ -401,6 +448,16 @@ grep -l "$keyword" .claude/agents/*.md
   - "Implement semantic search for ads"
   - "Generate ad copy embeddings"
   - "Use vector similarity for recommendations"
+
+**Knowledge & Documentation:**
+- **Keywords:** knowledge, documentation, codebase map, model relationships, database schema, service connections, auto-update, discovery, file relationships
+- **Agent:** `cmis-knowledge-maintainer`
+- **When:** Generating/updating knowledge maps, discovering codebase structure, maintaining documentation, understanding file relationships
+- **Examples:**
+  - "Generate current codebase map"
+  - "Show me all model relationships"
+  - "Update knowledge maps after code changes"
+  - "What files interact with the Campaign model?"
 
 **Analytics & Reporting:**
 - **Keywords:** analytics, attribution, reporting, forecasting, prediction, KPI, ROI, metrics, real-time, dashboard, anomaly detection
