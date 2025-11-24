@@ -82,7 +82,7 @@ jobs:
         run: chmod -R 777 storage bootstrap/cache
 
       - name: Start SSH agent and add key
-        uses: webfactory/ssh-agent@v0.7.0
+        uses: webfactory/ssh-agent@v0.9.1
         continue-on-error: true
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
