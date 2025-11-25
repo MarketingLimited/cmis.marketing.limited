@@ -24,7 +24,12 @@ class PermissionService
      */
     public function check(User $user, string $permissionCode, ?string $orgId = null): bool
     {
-        $orgId = $orgId ?? session('current_org_id');
+        // Get org_id from: parameter > request attribute > session > user's current_org_id
+        $orgId = $orgId
+            ?? request()->attributes->get('current_org_id')
+            ?? request()->route('org')
+            ?? session('current_org_id')
+            ?? $user->current_org_id;
 
         if (!$orgId) {
             Log::warning('Permission check without org context', [
