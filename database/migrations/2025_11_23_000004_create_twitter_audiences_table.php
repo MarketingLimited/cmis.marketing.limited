@@ -39,7 +39,7 @@ return new class extends Migration
                 $table->string('status')->default('ACTIVE'); // ACTIVE, BUILDING, READY, TOO_SMALL, DELETED
 
                 // Source audience (for lookalike audiences)
-                $table->uuid('source_audience_id')->nullable();
+                $table->uuid('source_audience_id')->nullable()->index();
                 $table->string('source_country')->nullable(); // For lookalike geo-targeting
 
                 // Metadata (JSONB for flexibility)
@@ -50,21 +50,24 @@ return new class extends Migration
                 $table->timestamps();
                 $table->softDeletes();
 
-                // Foreign keys
+                // Foreign keys (org only - self-reference added after table creation)
                 $table->foreign('org_id')
                     ->references('org_id')
-                    ->on('cmis.organizations')
+                    ->on('cmis.orgs')
                     ->onDelete('cascade');
-
-                $table->foreign('source_audience_id')
-                    ->references('id')
-                    ->on('cmis_twitter.audiences')
-                    ->onDelete('set null');
 
                 // Indexes
                 $table->index('audience_type');
                 $table->index('status');
                 $table->index('list_type');
+            });
+
+            // Add self-referencing foreign key AFTER table is created
+            Schema::table('cmis_twitter.audiences', function (Blueprint $table) {
+                $table->foreign('source_audience_id')
+                    ->references('id')
+                    ->on('cmis_twitter.audiences')
+                    ->onDelete('set null');
             });
 
             // Enable RLS

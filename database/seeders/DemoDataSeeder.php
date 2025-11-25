@@ -21,9 +21,12 @@ class DemoDataSeeder extends Seeder
      */
     public function run(): void
     {
-        DB::statement('SET CONSTRAINTS ALL DEFERRED');
-
+        // First load reference data (roles, orgs, users, channels)
+        // BEFORE setting deferred constraints
         $this->loadReferenceData();
+
+        // Now set constraints deferred for the bulk inserts that follow
+        DB::statement('SET CONSTRAINTS ALL DEFERRED');
         $this->createUserOrgs();
         $this->createRolePermissions();
         $this->createOfferingsAndSegments();
@@ -64,10 +67,13 @@ class DemoDataSeeder extends Seeder
 
     private function loadReferenceData()
     {
-        // Load existing IDs
-        $this->orgIds = DB::table('cmis.orgs')->pluck('org_id', 'name')->toArray();
-        $this->userIds = DB::table('cmis.users')->pluck('user_id', 'email')->toArray();
-        $this->roleIds = DB::table('cmis.roles')->pluck('role_id', 'role_code')->toArray();
+        // Use SeederConstants for IDs that are shared across seeders
+        // This eliminates transaction isolation issues
+        $this->roleIds = SeederConstants::getRoleIds();
+        $this->orgIds = SeederConstants::getOrgIds();
+        $this->userIds = SeederConstants::getUserIds();
+
+        // Load channel IDs from database (these don't have transaction issues)
         $this->channelIds = DB::table('public.channels')->pluck('channel_id', 'code')->toArray();
 
         // Load channel formats

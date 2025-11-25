@@ -4,12 +4,12 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 
 class OrgsSeeder extends Seeder
 {
     /**
      * Seed demo organizations with complete data.
+     * Uses fixed UUIDs from SeederConstants for consistency.
      */
     public function run(): void
     {
@@ -17,7 +17,7 @@ class OrgsSeeder extends Seeder
 
         $orgs = [
             [
-                'org_id' => '9a5e0b1c-3d4e-4f5a-8b7c-1d2e3f4a5b6c',
+                'org_id' => SeederConstants::ORG_TECHVISION,
                 'name' => 'TechVision Solutions',
                 'default_locale' => 'en',
                 'currency' => 'USD',
@@ -26,7 +26,7 @@ class OrgsSeeder extends Seeder
                 'provider' => null,
             ],
             [
-                'org_id' => '8b6f1a2d-4e5f-5a6b-9c8d-2e3f4a5b6c7d',
+                'org_id' => SeederConstants::ORG_ARABIC_MARKETING,
                 'name' => 'الشركة العربية للتسويق',
                 'default_locale' => 'ar',
                 'currency' => 'SAR',
@@ -35,7 +35,7 @@ class OrgsSeeder extends Seeder
                 'provider' => null,
             ],
             [
-                'org_id' => '7c8e2b3f-5f6a-6b7c-0d9e-3f4a5b6c7d8e',
+                'org_id' => SeederConstants::ORG_FASHIONHUB,
                 'name' => 'FashionHub Retail',
                 'default_locale' => 'en',
                 'currency' => 'EUR',
@@ -44,7 +44,7 @@ class OrgsSeeder extends Seeder
                 'provider' => null,
             ],
             [
-                'org_id' => '6d9f3c4a-6a7b-7c8d-1e0f-4a5b6c7d8e9f',
+                'org_id' => SeederConstants::ORG_HEALTHWELL,
                 'name' => 'HealthWell Clinic',
                 'default_locale' => 'en',
                 'currency' => 'AED',

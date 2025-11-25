@@ -24,19 +24,9 @@ return new class extends Migration
             echo "✓ Created table: cmis.activity_logs\n";
         }
         
-        // settings table (22 errors)
-        if (!$this->tableExists('cmis.settings')) {
-            DB::statement("CREATE TABLE cmis.settings (
-                setting_id UUID PRIMARY KEY,
-                org_id UUID NOT NULL,
-                key VARCHAR(255) NOT NULL,
-                value JSONB,
-                type VARCHAR(50),
-                created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
-                updated_at TIMESTAMP WITH TIME ZONE DEFAULT now()
-            )");
-            echo "✓ Created table: cmis.settings\n";
-        }
+        // settings table - MOVED to 2025_11_25_230000_create_settings_table_standalone.php
+        // The settings table with deleted_at column is now created in a later migration
+        // to ensure proper Schema::hasTable checks work correctly
         
         // schedules table (22 errors)
         if (!$this->tableExists('cmis.schedules')) {
@@ -182,7 +172,8 @@ return new class extends Migration
         $tables = [
             'campaign_metrics', 'embeddings_cache', 'scheduled_social_posts_v2',
             'content_plans_v2', 'social_accounts_v2', 'social_posts_v2',
-            'campaign_analytics', 'schedules', 'settings', 'activity_logs'
+            'campaign_analytics', 'schedules', 'activity_logs'
+            // Note: 'settings' is handled by 2025_11_25_230000_create_settings_table_standalone
         ];
         
         foreach ($tables as $table) {

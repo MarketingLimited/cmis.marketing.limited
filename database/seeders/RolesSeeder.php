@@ -4,21 +4,19 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 
 class RolesSeeder extends Seeder
 {
     /**
      * Seed system and organization-specific roles.
+     * Uses fixed UUIDs from SeederConstants for consistency across seeders.
      */
     public function run(): void
     {
-        DB::statement('SET CONSTRAINTS ALL DEFERRED');
-
         $roles = [
             // System Roles (org_id = null)
             [
-                'role_id' => '90def48b-062e-4c13-a8d9-a0c6361d6057',
+                'role_id' => SeederConstants::ROLE_OWNER,
                 'org_id' => null,
                 'role_name' => 'Owner',
                 'role_code' => 'owner',
@@ -31,7 +29,7 @@ class RolesSeeder extends Seeder
                 'provider' => null,
             ],
             [
-                'role_id' => Str::uuid(),
+                'role_id' => SeederConstants::ROLE_ADMIN,
                 'org_id' => null,
                 'role_name' => 'Admin',
                 'role_code' => 'admin',
@@ -44,7 +42,7 @@ class RolesSeeder extends Seeder
                 'provider' => null,
             ],
             [
-                'role_id' => Str::uuid(),
+                'role_id' => SeederConstants::ROLE_MARKETING_MANAGER,
                 'org_id' => null,
                 'role_name' => 'Marketing Manager',
                 'role_code' => 'marketing_manager',
@@ -57,7 +55,7 @@ class RolesSeeder extends Seeder
                 'provider' => null,
             ],
             [
-                'role_id' => Str::uuid(),
+                'role_id' => SeederConstants::ROLE_CONTENT_CREATOR,
                 'org_id' => null,
                 'role_name' => 'Content Creator',
                 'role_code' => 'content_creator',
@@ -70,7 +68,7 @@ class RolesSeeder extends Seeder
                 'provider' => null,
             ],
             [
-                'role_id' => Str::uuid(),
+                'role_id' => SeederConstants::ROLE_SOCIAL_MANAGER,
                 'org_id' => null,
                 'role_name' => 'Social Media Manager',
                 'role_code' => 'social_manager',
@@ -83,7 +81,7 @@ class RolesSeeder extends Seeder
                 'provider' => null,
             ],
             [
-                'role_id' => Str::uuid(),
+                'role_id' => SeederConstants::ROLE_ANALYST,
                 'org_id' => null,
                 'role_name' => 'Analyst',
                 'role_code' => 'analyst',
@@ -96,7 +94,7 @@ class RolesSeeder extends Seeder
                 'provider' => null,
             ],
             [
-                'role_id' => Str::uuid(),
+                'role_id' => SeederConstants::ROLE_VIEWER,
                 'org_id' => null,
                 'role_name' => 'Viewer',
                 'role_code' => 'viewer',

@@ -21,9 +21,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        $pdo = DB::connection()->getPdo();
-
-        echo "\n📊 Creating foreign keys directly...\n\n";
+        echo "\n📊 Creating foreign keys using DO blocks...\n\n";
 
         // User reference foreign keys
         $userForeignKeys = [
@@ -31,7 +29,7 @@ return new class extends Migration
             ['table' => 'user_permissions', 'column' => 'user_id', 'refTable' => 'users', 'refColumn' => 'user_id', 'name' => 'fk_user_permissions_user', 'onDelete' => 'CASCADE'],
             ['table' => 'user_activities', 'column' => 'user_id', 'refTable' => 'users', 'refColumn' => 'user_id', 'name' => 'fk_user_activities_user', 'onDelete' => 'CASCADE'],
             ['table' => 'user_sessions', 'column' => 'user_id', 'refTable' => 'users', 'refColumn' => 'user_id', 'name' => 'fk_user_sessions_user', 'onDelete' => 'CASCADE'],
-            ['table' => 'sessions', 'column' => 'user_id', 'refTable' => 'users', 'refColumn' => 'user_id', 'name' => 'fk_sessions_user', 'onDelete' => 'SET NULL'],
+            // NOTE: sessions FK is handled by 2025_11_25_210758_fix_sessions_user_id_data_type.php after datatype fix
             ['table' => 'scheduled_social_posts', 'column' => 'user_id', 'refTable' => 'users', 'refColumn' => 'user_id', 'name' => 'fk_scheduled_social_posts_user', 'onDelete' => 'CASCADE'],
             ['table' => 'security_context_audit', 'column' => 'user_id', 'refTable' => 'users', 'refColumn' => 'user_id', 'name' => 'fk_security_context_audit_user', 'onDelete' => 'SET NULL'],
             ['table' => 'notifications', 'column' => 'user_id', 'refTable' => 'users', 'refColumn' => 'user_id', 'name' => 'fk_notifications_user', 'onDelete' => 'CASCADE'],
@@ -64,51 +62,65 @@ return new class extends Migration
 
         foreach ($foreignKeys as $fk) {
             try {
-                // Check if table and column exist
-                $tableCheck = $pdo->query("
-                    SELECT 1 FROM information_schema.tables
-                    WHERE table_schema = 'cmis' AND table_name = '{$fk['table']}'
-                ");
+                // Use DO block to conditionally create foreign key
+                $sql = "
+                    DO $$
+                    BEGIN
+                        -- Check if table exists
+                        IF NOT EXISTS (
+                            SELECT 1 FROM information_schema.tables
+                            WHERE table_schema = 'cmis' AND table_name = '{$fk['table']}'
+                        ) THEN
+                            RAISE NOTICE 'Table cmis.{$fk['table']} does not exist, skipping';
+                            RETURN;
+                        END IF;
 
-                if (!$tableCheck || !$tableCheck->fetch()) {
-                    echo "⚠️  Table cmis.{$fk['table']} does not exist, skipping\n";
-                    $skipped++;
-                    continue;
-                }
+                        -- Check if constraint already exists
+                        IF NOT EXISTS (
+                            SELECT 1 FROM information_schema.table_constraints
+                            WHERE constraint_schema = 'cmis'
+                            AND table_name = '{$fk['table']}'
+                            AND constraint_name = '{$fk['name']}'
+                        ) THEN
+                            -- Create the foreign key
+                            EXECUTE 'ALTER TABLE cmis.{$fk['table']}
+                                     ADD CONSTRAINT {$fk['name']}
+                                     FOREIGN KEY ({$fk['column']})
+                                     REFERENCES cmis.{$fk['refTable']}({$fk['refColumn']})
+                                     ON DELETE {$fk['onDelete']}';
+                            RAISE NOTICE 'Added FK: {$fk['name']}';
+                        ELSE
+                            RAISE NOTICE 'FK {$fk['name']} already exists';
+                        END IF;
+                    END
+                    $$;
+                ";
 
-                // Check if constraint already exists
-                $constraintCheck = $pdo->query("
-                    SELECT 1 FROM information_schema.table_constraints
+                DB::statement($sql);
+
+                // Count based on whether the constraint was added or skipped
+                $checkResult = DB::selectOne("
+                    SELECT 1 as exists FROM information_schema.table_constraints
                     WHERE constraint_schema = 'cmis'
                     AND table_name = '{$fk['table']}'
                     AND constraint_name = '{$fk['name']}'
                 ");
 
-                if ($constraintCheck && $constraintCheck->fetch()) {
-                    echo "✓ FK {$fk['name']} already exists\n";
+                if ($checkResult) {
+                    echo "✓ FK {$fk['name']} on cmis.{$fk['table']}.{$fk['column']} -> cmis.{$fk['refTable']}.{$fk['refColumn']}\n";
+                    $added++;
+                } else {
                     $skipped++;
-                    continue;
                 }
 
-                // Create the foreign key
-                $sql = "ALTER TABLE cmis.{$fk['table']}
-                        ADD CONSTRAINT {$fk['name']}
-                        FOREIGN KEY ({$fk['column']})
-                        REFERENCES cmis.{$fk['refTable']}({$fk['refColumn']})
-                        ON DELETE {$fk['onDelete']}";
-
-                $pdo->exec($sql);
-                echo "✓ Added FK: {$fk['name']} on cmis.{$fk['table']}.{$fk['column']} -> cmis.{$fk['refTable']}.{$fk['refColumn']}\n";
-                $added++;
-
-            } catch (\PDOException $e) {
-                echo "⚠️  Could not add FK {$fk['name']}: " . substr($e->getMessage(), 0, 80) . "...\n";
+            } catch (\Exception $e) {
+                echo "⚠️  Error processing FK {$fk['name']}: " . $e->getMessage() . "\n";
                 $skipped++;
             }
         }
 
         echo "\n✅ Foreign key creation complete!\n";
-        echo "   Added: {$added}\n";
+        echo "   Processed: {$added}\n";
         echo "   Skipped: {$skipped}\n\n";
     }
 
@@ -123,7 +135,7 @@ return new class extends Migration
             ['table' => 'user_permissions', 'name' => 'fk_user_permissions_user'],
             ['table' => 'user_activities', 'name' => 'fk_user_activities_user'],
             ['table' => 'user_sessions', 'name' => 'fk_user_sessions_user'],
-            ['table' => 'sessions', 'name' => 'fk_sessions_user'],
+            // NOTE: sessions FK is handled by 2025_11_25_210758_fix_sessions_user_id_data_type.php
             ['table' => 'scheduled_social_posts', 'name' => 'fk_scheduled_social_posts_user'],
             ['table' => 'security_context_audit', 'name' => 'fk_security_context_audit_user'],
             ['table' => 'notifications', 'name' => 'fk_notifications_user'],
