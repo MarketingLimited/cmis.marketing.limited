@@ -47,7 +47,7 @@ class ValidateOrgAccess
             $hasAccess = DB::table('cmis.user_orgs')
                 ->where('user_id', $userId)
                 ->where('org_id', $orgId)
-                ->where('status', 'active')
+                ->where('is_active', true)
                 ->whereNull('deleted_at')
                 ->exists();
 
@@ -79,9 +79,11 @@ class ValidateOrgAccess
                 // Get org admin contact info for helpful error
                 $orgAdmin = DB::table('cmis.user_orgs')
                     ->join('cmis.users', 'cmis.users.user_id', '=', 'cmis.user_orgs.user_id')
+                    ->join('cmis.roles', 'cmis.roles.role_id', '=', 'cmis.user_orgs.role_id')
                     ->where('cmis.user_orgs.org_id', $orgId)
-                    ->where('cmis.user_orgs.role', 'admin')
-                    ->where('cmis.user_orgs.status', 'active')
+                    ->whereIn('cmis.roles.role_name', ['Admin', 'Owner'])
+                    ->where('cmis.user_orgs.is_active', true)
+                    ->whereNull('cmis.user_orgs.deleted_at')
                     ->select('cmis.users.email', 'cmis.users.name')
                     ->first();
 
