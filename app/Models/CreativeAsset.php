@@ -69,4 +69,5 @@ class CreativeAsset extends BaseModel
     public function campaign(): BelongsTo
     {
         return $this->belongsTo(Campaign::class, 'campaign_id', 'campaign_id');
+    }
 }
