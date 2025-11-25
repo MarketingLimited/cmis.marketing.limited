@@ -24,9 +24,7 @@ class CampaignController extends Controller
     public function __construct(CampaignService $campaignService)
     {
         $this->campaignService = $campaignService;
-
-        // Apply authorization to all actions
-        $this->middleware('auth:sanctum');
+        // Note: Authentication is handled by route middleware (auth for web, auth:sanctum for API)
     }
 
     public function index(Request $request, string $org)
@@ -73,14 +71,22 @@ class CampaignController extends Controller
             // Pagination
             $campaigns = $query->paginate($validated['per_page'] ?? 20);
 
-            return response()->json([
-                'data' => $campaigns->items(),
-                'meta' => [
-                    'current_page' => $campaigns->currentPage(),
-                    'per_page' => $campaigns->perPage(),
-                    'total' => $campaigns->total(),
-                    'last_page' => $campaigns->lastPage(),
-                ],
+            // Return view for web requests, JSON for API requests
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'data' => $campaigns->items(),
+                    'meta' => [
+                        'current_page' => $campaigns->currentPage(),
+                        'per_page' => $campaigns->perPage(),
+                        'total' => $campaigns->total(),
+                        'last_page' => $campaigns->lastPage(),
+                    ],
+                ]);
+            }
+
+            return view('campaigns.index', [
+                'campaigns' => $campaigns,
+                'currentOrg' => $org,
             ]);
 
         } catch (\Exception $e) {
@@ -90,11 +96,15 @@ class CampaignController extends Controller
                 'trace' => $e->getTraceAsString()
             ]);
 
-            return response()->json([
-                'success' => false,
-                'error' => 'Failed to retrieve campaigns',
-                'message' => $e->getMessage()
-            ], 500);
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'error' => 'Failed to retrieve campaigns',
+                    'message' => $e->getMessage()
+                ], 500);
+            }
+
+            return back()->withErrors(['error' => 'Failed to retrieve campaigns']);
         }
     }
 
@@ -125,30 +135,56 @@ class CampaignController extends Controller
 
             $campaign = Campaign::create($validated);
 
-            return response()->json([
-                'data' => $campaign,
-                'success' => true,
-                'message' => 'Campaign created successfully',
-            ], 201);
+            // Return appropriate response for web vs API requests
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'data' => $campaign,
+                    'success' => true,
+                    'message' => 'Campaign created successfully',
+                ], 201);
+            }
+
+            return redirect()
+                ->route('orgs.campaigns.show', ['org' => $org, 'campaign' => $campaign->campaign_id])
+                ->with('success', 'Campaign created successfully!');
 
         } catch (\Illuminate\Validation\ValidationException $e) {
-            return response()->json([
-                'success' => false,
-                'error' => 'Validation failed',
-                'errors' => $e->errors(),
-            ], 422);
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'error' => 'Validation failed',
+                    'errors' => $e->errors(),
+                ], 422);
+            }
+            throw $e; // Let Laravel handle redirect with errors
+
         } catch (\Exception $e) {
             \Log::error('Campaign creation error', [
                 'user_id' => auth()->id(),
                 'error' => $e->getMessage(),
             ]);
 
-            return response()->json([
-                'success' => false,
-                'error' => 'Failed to create campaign',
-                'message' => $e->getMessage()
-            ], 500);
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'error' => 'Failed to create campaign',
+                    'message' => $e->getMessage()
+                ], 500);
+            }
+
+            return back()
+                ->withInput()
+                ->withErrors(['error' => 'Failed to create campaign: ' . $e->getMessage()]);
         }
+    }
+
+    public function create(Request $request, string $org)
+    {
+        $this->authorize('create', Campaign::class);
+
+        return view('campaigns.create', [
+            'currentOrg' => $org,
+        ]);
     }
 
     public function show(Request $request, string $org, string $campaign)
@@ -164,24 +200,37 @@ class CampaignController extends Controller
                 $existsInOtherOrg = Campaign::where('campaign_id', $campaign)->exists();
 
                 if ($existsInOtherOrg) {
-                    return response()->json([
-                        'success' => false,
-                        'error' => 'Unauthorized access to campaign',
-                    ], 403);
+                    if ($request->wantsJson()) {
+                        return response()->json([
+                            'success' => false,
+                            'error' => 'Unauthorized access to campaign',
+                        ], 403);
+                    }
+                    abort(403, 'Unauthorized access to campaign');
                 }
 
-                return response()->json([
-                    'success' => false,
-                    'error' => 'Campaign not found',
-                ], 404);
+                if ($request->wantsJson()) {
+                    return response()->json([
+                        'success' => false,
+                        'error' => 'Campaign not found',
+                    ], 404);
+                }
+                abort(404, 'Campaign not found');
             }
 
             // Check authorization for viewing this specific campaign
             $this->authorize('view', $campaignModel);
 
-            return response()->json([
-                'data' => $campaignModel,
-                'success' => true,
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'data' => $campaignModel,
+                    'success' => true,
+                ]);
+            }
+
+            return view('campaigns.show', [
+                'campaign' => $campaignModel,
+                'currentOrg' => $org,
             ]);
 
         } catch (\Exception $e) {
@@ -190,12 +239,34 @@ class CampaignController extends Controller
                 'error' => $e->getMessage(),
             ]);
 
-            return response()->json([
-                'success' => false,
-                'error' => 'Failed to retrieve campaign',
-                'message' => $e->getMessage()
-            ], 500);
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'error' => 'Failed to retrieve campaign',
+                    'message' => $e->getMessage()
+                ], 500);
+            }
+
+            return back()->withErrors(['error' => 'Failed to retrieve campaign']);
         }
+    }
+
+    public function edit(Request $request, string $org, string $campaign)
+    {
+        $campaignModel = Campaign::where('org_id', $org)
+            ->where('campaign_id', $campaign)
+            ->first();
+
+        if (!$campaignModel) {
+            abort(404, 'Campaign not found');
+        }
+
+        $this->authorize('update', $campaignModel);
+
+        return view('campaigns.edit', [
+            'campaign' => $campaignModel,
+            'currentOrg' => $org,
+        ]);
     }
 
     public function update(Request $request, string $org, string $campaign)

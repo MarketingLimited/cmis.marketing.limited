@@ -3,6 +3,8 @@
 use App\Http\Controllers\AI\AIDashboardController;
 use App\Http\Controllers\Analytics\OverviewController as AnalyticsOverviewController;
 use App\Http\Controllers\Campaigns\CampaignController;
+use App\Http\Controllers\Campaigns\CampaignAdSetController;
+use App\Http\Controllers\Campaigns\CampaignAdController;
 use App\Http\Controllers\Creative\CreativeAssetController;
 use App\Http\Controllers\Creative\OverviewController as CreativeOverviewController;
 use App\Http\Controllers\DashboardController;
@@ -84,7 +86,7 @@ Route::middleware(['auth'])->group(function () {
 
     // ==================== Organization-Specific Routes ====================
     // All routes under /orgs/{org}/* require org context and validate org access
-    Route::prefix('orgs/{org}')->name('orgs.')->whereUuid('org')->middleware(['validate.org.access'])->group(function () {
+    Route::prefix('orgs/{org}')->name('orgs.')->whereUuid('org')->middleware(['validate.org.access', 'org.context'])->group(function () {
 
         // Organization Management
         Route::get('/', [OrgController::class, 'show'])->name('show');
@@ -119,6 +121,33 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/{campaign}/performance/{range}', [CampaignController::class, 'performanceByRange'])
                 ->whereIn('range', ['daily', 'weekly', 'monthly', 'yearly'])
                 ->name('performance');
+
+            // Ad Sets (nested under campaigns)
+            Route::prefix('{campaign}/ad-sets')->name('ad-sets.')->group(function () {
+                Route::get('/', [CampaignAdSetController::class, 'index'])->name('index');
+                Route::get('/create', [CampaignAdSetController::class, 'create'])->name('create');
+                Route::post('/', [CampaignAdSetController::class, 'store'])->name('store');
+                Route::get('/{adSet}', [CampaignAdSetController::class, 'show'])->name('show');
+                Route::get('/{adSet}/edit', [CampaignAdSetController::class, 'edit'])->name('edit');
+                Route::put('/{adSet}', [CampaignAdSetController::class, 'update'])->name('update');
+                Route::delete('/{adSet}', [CampaignAdSetController::class, 'destroy'])->name('destroy');
+                Route::post('/{adSet}/duplicate', [CampaignAdSetController::class, 'duplicate'])->name('duplicate');
+                Route::patch('/{adSet}/status', [CampaignAdSetController::class, 'updateStatus'])->name('status');
+
+                // Ads (nested under ad sets)
+                Route::prefix('{adSet}/ads')->name('ads.')->group(function () {
+                    Route::get('/', [CampaignAdController::class, 'index'])->name('index');
+                    Route::get('/create', [CampaignAdController::class, 'create'])->name('create');
+                    Route::post('/', [CampaignAdController::class, 'store'])->name('store');
+                    Route::get('/{ad}', [CampaignAdController::class, 'show'])->name('show');
+                    Route::get('/{ad}/edit', [CampaignAdController::class, 'edit'])->name('edit');
+                    Route::put('/{ad}', [CampaignAdController::class, 'update'])->name('update');
+                    Route::delete('/{ad}', [CampaignAdController::class, 'destroy'])->name('destroy');
+                    Route::post('/{ad}/duplicate', [CampaignAdController::class, 'duplicate'])->name('duplicate');
+                    Route::patch('/{ad}/status', [CampaignAdController::class, 'updateStatus'])->name('status');
+                    Route::get('/{ad}/preview', [CampaignAdController::class, 'preview'])->name('preview');
+                });
+            });
 
             // Campaign Wizard
             Route::prefix('wizard')->name('wizard.')->group(function () {
@@ -222,8 +251,52 @@ Route::middleware(['auth'])->group(function () {
 
         // ==================== Settings (Org-specific) ====================
         Route::prefix('settings')->name('settings.')->group(function () {
-            Route::get('/', [App\Http\Controllers\Settings\SettingsController::class, 'index'])->name('index');
+            // Redirect /settings to user settings page
+            Route::get('/', function ($org) {
+                return redirect()->route('orgs.settings.user', $org);
+            })->name('index');
+
+            // User Settings Page (Profile, Notifications, Security)
+            Route::get('/user', [App\Http\Controllers\Settings\SettingsController::class, 'userSettings'])->name('user');
+
+            // Organization Settings Page (General, Team, API, Billing)
+            Route::get('/organization', [App\Http\Controllers\Settings\SettingsController::class, 'organizationSettings'])->name('organization');
+
+            // User Settings Actions
+            Route::put('/profile', [App\Http\Controllers\Settings\SettingsController::class, 'updateProfile'])->name('profile.update');
+            Route::put('/notifications', [App\Http\Controllers\Settings\SettingsController::class, 'updateNotifications'])->name('notifications.update');
+            Route::put('/password', [App\Http\Controllers\Settings\SettingsController::class, 'updatePassword'])->name('password.update');
+            Route::delete('/sessions/{session}', [App\Http\Controllers\Settings\SettingsController::class, 'destroySession'])->name('sessions.destroy');
+
+            // Organization Settings Actions
+            Route::put('/organization/update', [App\Http\Controllers\Settings\SettingsController::class, 'updateOrganization'])->name('organization.update');
+            Route::post('/api-tokens', [App\Http\Controllers\Settings\SettingsController::class, 'storeApiToken'])->name('api-tokens.store');
+            Route::delete('/api-tokens/{token}', [App\Http\Controllers\Settings\SettingsController::class, 'destroyApiToken'])->name('api-tokens.destroy');
+            Route::post('/team/invite', [App\Http\Controllers\Settings\SettingsController::class, 'inviteTeamMember'])->name('team.invite');
+            Route::delete('/team/{user}', [App\Http\Controllers\Settings\SettingsController::class, 'removeTeamMember'])->name('team.remove');
+
+            // Legacy route for integrations
             Route::get('/integrations', [App\Http\Controllers\Settings\SettingsController::class, 'integrations'])->name('integrations');
+
+            // Platform Connections (Meta, Google, TikTok, etc.)
+            Route::prefix('platform-connections')->name('platform-connections.')->group(function () {
+                Route::get('/', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'index'])->name('index');
+
+                // Meta System User Token Management
+                Route::get('/meta/add', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'createMetaToken'])->name('meta.create');
+                Route::post('/meta', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'storeMetaToken'])->name('meta.store');
+                Route::get('/meta/{connection}/edit', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'editMetaToken'])->name('meta.edit');
+                Route::put('/meta/{connection}', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'updateMetaToken'])->name('meta.update');
+                Route::post('/meta/{connection}/refresh-accounts', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'refreshAdAccounts'])->name('meta.refresh-accounts');
+
+                // Meta Asset Selection (Pages, Instagram, Ad Accounts, Pixels, Catalogs)
+                Route::get('/meta/{connection}/assets', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'selectMetaAssets'])->name('meta.assets');
+                Route::post('/meta/{connection}/assets', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'storeMetaAssets'])->name('meta.assets.store');
+
+                // Generic Connection Actions
+                Route::post('/{connection}/test', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'testConnection'])->name('test');
+                Route::delete('/{connection}', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'destroy'])->name('destroy');
+            });
         });
 
     }); // End of Organization-Specific Routes
