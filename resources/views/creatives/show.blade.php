@@ -13,6 +13,9 @@
   </style>
 </head>
 <body class="bg-white text-gray-800">
+  @php
+    $currentOrg = $currentOrg ?? request()->route('org') ?? auth()->user()->active_org_id ?? auth()->user()->org_id;
+  @endphp
   <!-- الشريط العلوي -->
   <header class="bg-indigo-700 text-white py-4 shadow-md">
     <div class="max-w-7xl mx-auto flex justify-between items-center px-6">

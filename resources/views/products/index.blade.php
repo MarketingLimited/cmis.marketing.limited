@@ -2,6 +2,10 @@
 
 @section('title', 'المنتجات')
 
+@php
+    $currentOrg = $currentOrg ?? request()->route('org') ?? auth()->user()->active_org_id ?? auth()->user()->org_id;
+@endphp
+
 @section('content')
 <div class="container mx-auto px-4 py-6" x-data="productsPage()">
     <!-- Header -->
@@ -11,7 +15,7 @@
             <p class="mt-2 text-gray-600">إدارة منتجاتك وعروضك التسويقية</p>
         </div>
         @can('create', App\Models\Offering::class)
-        <a href="{{ route('products.create') }}" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700">
+        <a href="{{ route('orgs.products.create', ['org' => $currentOrg]) }}" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700">
             <svg class="ml-2 -mr-1 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
             </svg>
@@ -109,11 +113,11 @@
 
                         <!-- Actions -->
                         <div class="flex gap-2">
-                            <a :href="'/products/' + product.id" class="flex-1 inline-flex justify-center items-center px-3 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                            <a :href="'{{ route('orgs.products.show', ['org' => $currentOrg, 'product' => '']) }}' + product.id" class="flex-1 inline-flex justify-center items-center px-3 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
                                 عرض
                             </a>
                             @can('update', App\Models\Offering::class)
-                            <a :href="'/products/' + product.id + '/edit'" class="flex-1 inline-flex justify-center items-center px-3 py-2 border border-indigo-300 rounded-md text-sm font-medium text-indigo-700 bg-indigo-50 hover:bg-indigo-100">
+                            <a :href="'{{ route('orgs.products.edit', ['org' => $currentOrg, 'product' => '']) }}' + product.id" class="flex-1 inline-flex justify-center items-center px-3 py-2 border border-indigo-300 rounded-md text-sm font-medium text-indigo-700 bg-indigo-50 hover:bg-indigo-100">
                                 تعديل
                             </a>
                             @endcan
@@ -132,7 +136,7 @@
             <p class="mt-1 text-sm text-gray-500">ابدأ بإنشاء منتج جديد</p>
             @can('create', App\Models\Offering::class)
             <div class="mt-6">
-                <a href="{{ route('products.create') }}" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700">
+                <a href="{{ route('orgs.products.create', ['org' => $currentOrg]) }}" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700">
                     <svg class="ml-2 -mr-1 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                     </svg>

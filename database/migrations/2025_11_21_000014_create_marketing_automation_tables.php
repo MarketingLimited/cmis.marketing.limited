@@ -50,10 +50,10 @@ return new class extends Migration
         });
 
         // RLS Policy
+        DB::statement("ALTER TABLE cmis.workflow_templates ENABLE ROW LEVEL SECURITY");
         DB::statement("
-            ALTER TABLE cmis.workflow_templates ENABLE ROW LEVEL SECURITY;
             CREATE POLICY org_isolation ON cmis.workflow_templates
-            USING (org_id = current_setting('app.current_org_id', true)::uuid);
+            USING (org_id = current_setting('app.current_org_id', true)::uuid)
         ");
 
         // 2. Workflow Instances - Active workflow executions
@@ -104,10 +104,10 @@ return new class extends Migration
         });
 
         // RLS Policy
+        DB::statement("ALTER TABLE cmis.workflow_instances ENABLE ROW LEVEL SECURITY");
         DB::statement("
-            ALTER TABLE cmis.workflow_instances ENABLE ROW LEVEL SECURITY;
             CREATE POLICY org_isolation ON cmis.workflow_instances
-            USING (org_id = current_setting('app.current_org_id', true)::uuid);
+            USING (org_id = current_setting('app.current_org_id', true)::uuid)
         ");
 
         // 3. Workflow Steps - Individual steps in workflow execution
@@ -152,111 +152,113 @@ return new class extends Migration
         });
 
         // RLS Policy
+        DB::statement("ALTER TABLE cmis.workflow_steps ENABLE ROW LEVEL SECURITY");
         DB::statement("
-            ALTER TABLE cmis.workflow_steps ENABLE ROW LEVEL SECURITY;
             CREATE POLICY org_isolation ON cmis.workflow_steps
-            USING (org_id = current_setting('app.current_org_id', true)::uuid);
+            USING (org_id = current_setting('app.current_org_id', true)::uuid)
         ");
 
+        // COMMENTED OUT: Table already created by migration 2025_11_21_000006 with RLS policies
         // 4. Automation Rules - Simple if-this-then-that rules
-        Schema::create('cmis.automation_rules', function (Blueprint $table) {
-            $table->uuid('rule_id')->primary()->default(DB::raw('gen_random_uuid()'));
-            $table->uuid('org_id')->nullable(false);
-            $table->uuid('created_by')->nullable(false);
+        // Schema::create('cmis.automation_rules', function (Blueprint $table) {
+        //     $table->uuid('rule_id')->primary()->default(DB::raw('gen_random_uuid()'));
+        //     $table->uuid('org_id')->nullable(false);
+        //     $table->uuid('created_by')->nullable(false);
+        //
+        //     // Rule Information
+        //     $table->string('rule_name', 255)->nullable(false);
+        //     $table->text('description')->nullable();
+        //     $table->string('category', 100)->nullable();
+        //
+        //     // Trigger
+        //     $table->string('trigger_type', 50)->nullable(false); // event, schedule, condition
+        //     $table->jsonb('trigger_config')->nullable(false);
+        //
+        //     // Conditions
+        //     $table->jsonb('conditions')->default('[]'); // Array of conditions to check
+        //     $table->string('condition_logic', 20)->default('all'); // all, any, custom
+        //
+        //     // Actions
+        //     $table->jsonb('actions')->nullable(false); // Array of actions to execute
+        //     $table->boolean('execute_sequentially')->default(true);
+        //
+        //     // Execution Settings
+        //     $table->integer('max_executions_per_day')->nullable();
+        //     $table->integer('delay_between_actions_seconds')->default(0);
+        //     $table->boolean('stop_on_error')->default(false);
+        //
+        //     // Status & Statistics
+        //     $table->string('status', 50)->default('active'); // active, paused, archived
+        //     $table->integer('total_executions')->default(0);
+        //     $table->integer('successful_executions')->default(0);
+        //     $table->integer('failed_executions')->default(0);
+        //     $table->timestamp('last_executed_at')->nullable();
+        //     $table->timestamp('last_success_at')->nullable();
+        //
+        //     $table->timestamps();
+        //
+        //     // Indexes
+        //     $table->index(['org_id', 'status']);
+        //     $table->index('trigger_type');
+        //
+        //     // Foreign keys
+        //     $table->foreign('org_id')->references('org_id')->on('cmis.orgs')->onDelete('cascade');
+        // });
+        //
+        // // RLS Policy
+        // DB::statement("ALTER TABLE cmis.automation_rules ENABLE ROW LEVEL SECURITY");
+        // DB::statement("
+        //     CREATE POLICY org_isolation ON cmis.automation_rules
+        //     USING (org_id = current_setting('app.current_org_id', true)::uuid)
+        // ");
 
-            // Rule Information
-            $table->string('rule_name', 255)->nullable(false);
-            $table->text('description')->nullable();
-            $table->string('category', 100)->nullable();
-
-            // Trigger
-            $table->string('trigger_type', 50)->nullable(false); // event, schedule, condition
-            $table->jsonb('trigger_config')->nullable(false);
-
-            // Conditions
-            $table->jsonb('conditions')->default('[]'); // Array of conditions to check
-            $table->string('condition_logic', 20)->default('all'); // all, any, custom
-
-            // Actions
-            $table->jsonb('actions')->nullable(false); // Array of actions to execute
-            $table->boolean('execute_sequentially')->default(true);
-
-            // Execution Settings
-            $table->integer('max_executions_per_day')->nullable();
-            $table->integer('delay_between_actions_seconds')->default(0);
-            $table->boolean('stop_on_error')->default(false);
-
-            // Status & Statistics
-            $table->string('status', 50)->default('active'); // active, paused, archived
-            $table->integer('total_executions')->default(0);
-            $table->integer('successful_executions')->default(0);
-            $table->integer('failed_executions')->default(0);
-            $table->timestamp('last_executed_at')->nullable();
-            $table->timestamp('last_success_at')->nullable();
-
-            $table->timestamps();
-
-            // Indexes
-            $table->index(['org_id', 'status']);
-            $table->index('trigger_type');
-
-            // Foreign keys
-            $table->foreign('org_id')->references('org_id')->on('cmis.orgs')->onDelete('cascade');
-        });
-
-        // RLS Policy
-        DB::statement("
-            ALTER TABLE cmis.automation_rules ENABLE ROW LEVEL SECURITY;
-            CREATE POLICY org_isolation ON cmis.automation_rules
-            USING (org_id = current_setting('app.current_org_id', true)::uuid);
-        ");
-
+        // COMMENTED OUT: Table already created by migration 2025_11_21_000006 with RLS policies
         // 5. Automation Executions - Execution history
-        Schema::create('cmis.automation_executions', function (Blueprint $table) {
-            $table->uuid('execution_id')->primary()->default(DB::raw('gen_random_uuid()'));
-            $table->uuid('org_id')->nullable(false);
-            $table->uuid('rule_id')->nullable();
-            $table->uuid('instance_id')->nullable();
-
-            // Execution Type
-            $table->string('execution_type', 50)->nullable(false); // rule, workflow
-            $table->string('trigger_source', 100)->nullable(); // What triggered this
-
-            // Execution Details
-            $table->jsonb('trigger_data')->default('{}');
-            $table->jsonb('context_data')->default('{}');
-            $table->timestamp('started_at')->nullable(false);
-            $table->timestamp('completed_at')->nullable();
-            $table->integer('execution_time_ms')->nullable();
-
-            // Results
-            $table->string('status', 50)->nullable(false); // success, failed, partial
-            $table->integer('actions_executed')->default(0);
-            $table->integer('actions_successful')->default(0);
-            $table->integer('actions_failed')->default(0);
-            $table->jsonb('execution_log')->default('[]');
-            $table->text('error_message')->nullable();
-
-            $table->timestamps();
-
-            // Indexes
-            $table->index(['org_id', 'status']);
-            $table->index(['rule_id', 'started_at']);
-            $table->index(['instance_id', 'started_at']);
-            $table->index('started_at');
-
-            // Foreign keys
-            $table->foreign('org_id')->references('org_id')->on('cmis.orgs')->onDelete('cascade');
-            $table->foreign('rule_id')->references('rule_id')->on('cmis.automation_rules')->onDelete('cascade');
-            $table->foreign('instance_id')->references('instance_id')->on('cmis.workflow_instances')->onDelete('cascade');
-        });
-
-        // RLS Policy
-        DB::statement("
-            ALTER TABLE cmis.automation_executions ENABLE ROW LEVEL SECURITY;
-            CREATE POLICY org_isolation ON cmis.automation_executions
-            USING (org_id = current_setting('app.current_org_id', true)::uuid);
-        ");
+        // Schema::create('cmis.automation_executions', function (Blueprint $table) {
+        //     $table->uuid('execution_id')->primary()->default(DB::raw('gen_random_uuid()'));
+        //     $table->uuid('org_id')->nullable(false);
+        //     $table->uuid('rule_id')->nullable();
+        //     $table->uuid('instance_id')->nullable();
+        //
+        //     // Execution Type
+        //     $table->string('execution_type', 50)->nullable(false); // rule, workflow
+        //     $table->string('trigger_source', 100)->nullable(); // What triggered this
+        //
+        //     // Execution Details
+        //     $table->jsonb('trigger_data')->default('{}');
+        //     $table->jsonb('context_data')->default('{}');
+        //     $table->timestamp('started_at')->nullable(false);
+        //     $table->timestamp('completed_at')->nullable();
+        //     $table->integer('execution_time_ms')->nullable();
+        //
+        //     // Results
+        //     $table->string('status', 50)->nullable(false); // success, failed, partial
+        //     $table->integer('actions_executed')->default(0);
+        //     $table->integer('actions_successful')->default(0);
+        //     $table->integer('actions_failed')->default(0);
+        //     $table->jsonb('execution_log')->default('[]');
+        //     $table->text('error_message')->nullable();
+        //
+        //     $table->timestamps();
+        //
+        //     // Indexes
+        //     $table->index(['org_id', 'status']);
+        //     $table->index(['rule_id', 'started_at']);
+        //     $table->index(['instance_id', 'started_at']);
+        //     $table->index('started_at');
+        //
+        //     // Foreign keys
+        //     $table->foreign('org_id')->references('org_id')->on('cmis.orgs')->onDelete('cascade');
+        //     $table->foreign('rule_id')->references('rule_id')->on('cmis.automation_rules')->onDelete('cascade');
+        //     $table->foreign('instance_id')->references('instance_id')->on('cmis.workflow_instances')->onDelete('cascade');
+        // });
+        //
+        // // RLS Policy
+        // DB::statement("ALTER TABLE cmis.automation_executions ENABLE ROW LEVEL SECURITY");
+        // DB::statement("
+        //     CREATE POLICY org_isolation ON cmis.automation_executions
+        //     USING (org_id = current_setting('app.current_org_id', true)::uuid)
+        // ");
 
         // 6. Scheduled Jobs - Time-based automation triggers
         Schema::create('cmis.scheduled_jobs', function (Blueprint $table) {
@@ -302,10 +304,10 @@ return new class extends Migration
         });
 
         // RLS Policy
+        DB::statement("ALTER TABLE cmis.scheduled_jobs ENABLE ROW LEVEL SECURITY");
         DB::statement("
-            ALTER TABLE cmis.scheduled_jobs ENABLE ROW LEVEL SECURITY;
             CREATE POLICY org_isolation ON cmis.scheduled_jobs
-            USING (org_id = current_setting('app.current_org_id', true)::uuid);
+            USING (org_id = current_setting('app.current_org_id', true)::uuid)
         ");
 
         // Create Performance Views
@@ -316,15 +318,15 @@ return new class extends Migration
             SELECT
                 a.org_id,
                 a.rule_id,
-                a.rule_name,
-                a.category,
+                a.name as rule_name,
+                a.rule_type,
                 a.status,
-                a.total_executions,
-                a.successful_executions,
-                a.failed_executions,
+                a.execution_count as total_executions,
+                a.success_count as successful_executions,
+                a.failure_count as failed_executions,
                 CASE
-                    WHEN a.total_executions > 0
-                    THEN (a.successful_executions::float / a.total_executions * 100)
+                    WHEN a.execution_count > 0
+                    THEN (a.success_count::float / a.execution_count * 100)
                     ELSE 0
                 END as success_rate,
                 a.last_executed_at,
@@ -332,9 +334,9 @@ return new class extends Migration
             FROM cmis.automation_rules a
             LEFT JOIN cmis.automation_executions e
                 ON a.rule_id = e.rule_id
-                AND e.started_at >= NOW() - INTERVAL '30 days'
-            GROUP BY a.org_id, a.rule_id, a.rule_name, a.category, a.status,
-                     a.total_executions, a.successful_executions, a.failed_executions,
+                AND e.executed_at >= NOW() - INTERVAL '30 days'
+            GROUP BY a.org_id, a.rule_id, a.name, a.rule_type, a.status,
+                     a.execution_count, a.success_count, a.failure_count,
                      a.last_executed_at;
         ");
 

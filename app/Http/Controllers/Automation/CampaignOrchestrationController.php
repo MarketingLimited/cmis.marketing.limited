@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Automation;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Concerns\ApiResponse;
 use App\Services\Automation\CampaignLifecycleManager;
 use App\Services\Automation\AutomatedBudgetAllocator;
 use App\Services\CampaignOrchestratorService;

@@ -170,19 +170,19 @@ return new class extends Migration
         
         // Additional high-impact tables
         
-        // platform_connections table (30 failures)
-        if (!Schema::hasTable('cmis.platform_connections')) {
-            DB::statement("CREATE TABLE cmis.platform_connections (
-                connection_id UUID PRIMARY KEY,
-                org_id UUID NOT NULL,
-                platform VARCHAR(50),
-                credentials JSONB,
-                is_active BOOLEAN DEFAULT true,
-                created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
-                updated_at TIMESTAMP WITH TIME ZONE DEFAULT now()
-            )");
-            echo "✓ Created table: cmis.platform_connections\n";
-        }
+        // platform_connections table - COMMENTED OUT: Now created by migration 2025_11_21_000007 with RLS
+        // if (!Schema::hasTable('cmis.platform_connections')) {
+        //     DB::statement("CREATE TABLE cmis.platform_connections (
+        //         connection_id UUID PRIMARY KEY,
+        //         org_id UUID NOT NULL,
+        //         platform VARCHAR(50),
+        //         credentials JSONB,
+        //         is_active BOOLEAN DEFAULT true,
+        //         created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
+        //         updated_at TIMESTAMP WITH TIME ZONE DEFAULT now()
+        //     )");
+        //     echo "✓ Created table: cmis.platform_connections\n";
+        // }
         
         // assets table (30 failures)
         if (!Schema::hasTable('cmis.assets')) {

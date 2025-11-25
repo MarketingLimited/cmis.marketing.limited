@@ -1,5 +1,9 @@
 @extends('layouts.analytics')
 
+@php
+    $currentOrg = $currentOrg ?? request()->route('org') ?? auth()->user()->active_org_id ?? auth()->user()->org_id;
+@endphp
+
 @section('title', 'Real-Time Analytics')
 
 @section('page-title', 'Real-Time Analytics Dashboard')
@@ -189,7 +193,7 @@
                                         <div class="text-sm text-gray-900" x-text="formatCurrency(campaign.spend)"></div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm">
-                                        <a :href="`/analytics/campaign/${campaign.campaign_id}`"
+                                        <a :href="`{{ route('orgs.analytics.campaign', ['org' => $currentOrg, 'campaign' => '']) }}`.slice(0, -1) + campaign.campaign_id"
                                            class="text-indigo-600 hover:text-indigo-900 font-medium">
                                             View Details
                                         </a>

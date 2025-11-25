@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\GPT;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Concerns\ApiResponse;
 use App\Models\Campaign;
 use App\Models\Creative\ContentPlan;
 use App\Services\CampaignService;

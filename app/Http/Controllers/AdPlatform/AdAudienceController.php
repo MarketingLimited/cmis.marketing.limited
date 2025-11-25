@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\AdPlatform;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Concerns\ApiResponse;
 use App\Models\AdPlatform\AdAudience;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;

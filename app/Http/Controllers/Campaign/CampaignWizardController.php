@@ -25,13 +25,14 @@ class CampaignWizardController extends Controller
     /**
      * Start new wizard session
      */
-    public function create(): RedirectResponse
+    public function create(string $org): RedirectResponse
     {
         $user = auth()->user();
 
-        $session = $this->wizardService->startWizard($user->id, $user->org_id);
+        $session = $this->wizardService->startWizard($user->id, $org);
 
-        return redirect()->route('campaign.wizard.step', [
+        return redirect()->route('orgs.campaigns.wizard.step', [
+            'org' => $org,
             'session_id' => $session['session_id'],
             'step' => 1,
         ])->with('success', __('campaigns.wizard.started'));
@@ -40,13 +41,13 @@ class CampaignWizardController extends Controller
     /**
      * Display wizard step
      */
-    public function showStep(string $sessionId, int $step): View|RedirectResponse
+    public function showStep(string $org, string $sessionId, int $step): View|RedirectResponse
     {
         try {
             $session = $this->wizardService->getSession($sessionId);
 
             if (!$session) {
-                return redirect()->route('campaigns.index')
+                return redirect()->route('orgs.campaigns.index', ['org' => $org])
                     ->with('error', __('campaigns.wizard.session_expired'));
             }
 
@@ -61,14 +62,15 @@ class CampaignWizardController extends Controller
             // Get step configuration
             $stepConfig = $steps[$step] ?? null;
             if (!$stepConfig) {
-                return redirect()->route('campaign.wizard.step', [
+                return redirect()->route('orgs.campaigns.wizard.step', [
+                    'org' => $org,
                     'session_id' => $sessionId,
                     'step' => 1,
                 ]);
             }
 
             // Load additional data based on step
-            $stepData = $this->loadStepData($step, $session);
+            $stepData = $this->loadStepData($step, $session, $org);
 
             return view('campaigns.wizard.step', [
                 'session' => $session,
@@ -81,7 +83,7 @@ class CampaignWizardController extends Controller
             ]);
 
         } catch (WizardStepException $e) {
-            return redirect()->route('campaigns.index')
+            return redirect()->route('orgs.campaigns.index', ['org' => $org])
                 ->with('error', $e->getMessage());
         }
     }
@@ -91,6 +93,7 @@ class CampaignWizardController extends Controller
      */
     public function updateStep(
         Request $request,
+        string $org,
         string $sessionId,
         int $step
     ): RedirectResponse {
@@ -114,7 +117,8 @@ class CampaignWizardController extends Controller
                 case 'next':
                     try {
                         $this->wizardService->nextStep($sessionId);
-                        return redirect()->route('campaign.wizard.step', [
+                        return redirect()->route('orgs.campaigns.wizard.step', [
+                            'org' => $org,
                             'session_id' => $sessionId,
                             'step' => $step + 1,
                         ])->with('success', __('campaigns.wizard.step_saved'));
@@ -127,12 +131,14 @@ class CampaignWizardController extends Controller
                 case 'previous':
                     try {
                         $this->wizardService->previousStep($sessionId);
-                        return redirect()->route('campaign.wizard.step', [
+                        return redirect()->route('orgs.campaigns.wizard.step', [
+                            'org' => $org,
                             'session_id' => $sessionId,
                             'step' => $step - 1,
                         ]);
                     } catch (WizardStepException $e) {
-                        return redirect()->route('campaign.wizard.step', [
+                        return redirect()->route('orgs.campaigns.wizard.step', [
+                            'org' => $org,
                             'session_id' => $sessionId,
                             'step' => 1,
                         ]);
@@ -154,7 +160,7 @@ class CampaignWizardController extends Controller
     /**
      * Save campaign as draft
      */
-    public function saveDraft(string $sessionId): RedirectResponse
+    public function saveDraft(string $org, string $sessionId): RedirectResponse
     {
         try {
             $session = $this->wizardService->getSession($sessionId);
@@ -164,11 +170,11 @@ class CampaignWizardController extends Controller
             }
 
             // Set RLS context for campaign creation
-            DB::statement("SELECT cmis.init_transaction_context(?)", [auth()->user()->org_id]);
+            DB::statement("SELECT cmis.init_transaction_context(?)", [$org]);
 
             $draft = $this->wizardService->saveDraft($sessionId);
 
-            return redirect()->route('campaigns.show', $draft->id)
+            return redirect()->route('orgs.campaigns.show', ['org' => $org, 'campaign' => $draft->id])
                 ->with('success', __('campaigns.saved_as_draft'));
 
         } catch (WizardStepException $e) {
@@ -180,7 +186,7 @@ class CampaignWizardController extends Controller
     /**
      * Complete wizard and create campaign
      */
-    public function complete(string $sessionId): RedirectResponse
+    public function complete(string $org, string $sessionId): RedirectResponse
     {
         try {
             $session = $this->wizardService->getSession($sessionId);
@@ -190,11 +196,11 @@ class CampaignWizardController extends Controller
             }
 
             // Set RLS context for campaign creation
-            DB::statement("SELECT cmis.init_transaction_context(?)", [auth()->user()->org_id]);
+            DB::statement("SELECT cmis.init_transaction_context(?)", [$org]);
 
             $campaign = $this->wizardService->complete($sessionId);
 
-            return redirect()->route('campaigns.show', $campaign->id)
+            return redirect()->route('orgs.campaigns.show', ['org' => $org, 'campaign' => $campaign->id])
                 ->with('success', __('campaigns.created_successfully'));
 
         } catch (WizardStepException $e) {
@@ -207,7 +213,7 @@ class CampaignWizardController extends Controller
     /**
      * Cancel wizard and return to campaigns
      */
-    public function cancel(string $sessionId): RedirectResponse
+    public function cancel(string $org, string $sessionId): RedirectResponse
     {
         $session = $this->wizardService->getSession($sessionId);
 
@@ -216,14 +222,14 @@ class CampaignWizardController extends Controller
             \Cache::forget("campaign_wizard:session:{$sessionId}");
         }
 
-        return redirect()->route('campaigns.index')
+        return redirect()->route('orgs.campaigns.index', ['org' => $org])
             ->with('info', __('campaigns.wizard.cancelled'));
     }
 
     /**
      * Load additional data for specific wizard steps
      */
-    protected function loadStepData(int $step, array $session): array
+    protected function loadStepData(int $step, array $session, string $org): array
     {
         $data = [];
 
@@ -246,10 +252,10 @@ class CampaignWizardController extends Controller
                 ];
 
                 // Load saved audiences for org
-                DB::statement("SELECT cmis.init_transaction_context(?)", [auth()->user()->org_id]);
+                DB::statement("SELECT cmis.init_transaction_context(?)", [$org]);
                 $data['saved_audiences'] = DB::table('cmis.audiences')
                     ->select('id', 'name', 'estimated_size')
-                    ->where('org_id', auth()->user()->org_id)
+                    ->where('org_id', $org)
                     ->where('status', 'active')
                     ->orderBy('name')
                     ->get();

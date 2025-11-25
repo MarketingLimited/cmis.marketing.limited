@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Concerns\ApiResponse;
 use App\Models\Core\Org;
 use App\Services\Dashboard\UnifiedDashboardService;
 use Illuminate\Http\JsonResponse;

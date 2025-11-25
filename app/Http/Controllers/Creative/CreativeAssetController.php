@@ -22,7 +22,7 @@ class CreativeAssetController extends Controller
         $this->middleware('auth:sanctum');
     }
 
-    public function index(Request $request, string $orgId)
+    public function index(Request $request, string $org)
     {
         $this->authorize('viewAny', CreativeAsset::class);
 
@@ -31,7 +31,7 @@ class CreativeAssetController extends Controller
             $status = $request->input('status');
             $campaignId = $request->input('campaign_id');
 
-            $query = CreativeAsset::where('org_id', $orgId);
+            $query = CreativeAsset::where('org_id', $org);
 
             if ($status) {
                 $query->where('status', $status);
@@ -50,7 +50,7 @@ class CreativeAssetController extends Controller
         }
     }
 
-    public function store(Request $request, string $orgId)
+    public function store(Request $request, string $org)
     {
         $this->authorize('create', CreativeAsset::class);
 
@@ -71,7 +71,7 @@ class CreativeAssetController extends Controller
 
         try {
             $asset = CreativeAsset::create([
-                'org_id' => $orgId,
+                'org_id' => $org,
                 'campaign_id' => $request->campaign_id,
                 'channel_id' => $request->channel_id,
                 'format_id' => $request->format_id,
@@ -89,10 +89,10 @@ class CreativeAssetController extends Controller
         }
     }
 
-    public function show(Request $request, string $orgId, string $assetId)
+    public function show(Request $request, string $org, string $assetId)
     {
         try {
-            $asset = CreativeAsset::where('org_id', $orgId)->findOrFail($assetId);
+            $asset = CreativeAsset::where('org_id', $org)->findOrFail($assetId);
             $this->authorize('view', $asset);
             return $this->success($asset, 'Asset retrieved successfully');
         } catch (\Exception $e) {
@@ -100,9 +100,9 @@ class CreativeAssetController extends Controller
         }
     }
 
-    public function update(Request $request, string $orgId, string $assetId)
+    public function update(Request $request, string $org, string $assetId)
     {
-        $asset = CreativeAsset::where('org_id', $orgId)->findOrFail($assetId);
+        $asset = CreativeAsset::where('org_id', $org)->findOrFail($assetId);
         $this->authorize('update', $asset);
 
         $validator = Validator::make($request->all(), [
@@ -134,10 +134,10 @@ class CreativeAssetController extends Controller
         }
     }
 
-    public function destroy(Request $request, string $orgId, string $assetId)
+    public function destroy(Request $request, string $org, string $assetId)
     {
         try {
-            $asset = CreativeAsset::where('org_id', $orgId)->findOrFail($assetId);
+            $asset = CreativeAsset::where('org_id', $org)->findOrFail($assetId);
             $this->authorize('delete', $asset);
             $asset->delete();
             return $this->deleted('Asset deleted successfully');

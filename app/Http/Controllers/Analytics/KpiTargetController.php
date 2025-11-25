@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Analytics;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Concerns\ApiResponse;
 use App\Models\Analytics\KpiTarget;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;

@@ -15,8 +15,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Create experiments table
-        Schema::create('cmis.experiments', function (Blueprint $table) {
+        // Create experiments table (skip if already exists from migration 2025_11_21_000004)
+        if (!Schema::hasTable('cmis.experiments')) {
+            Schema::create('cmis.experiments', function (Blueprint $table) {
             $table->uuid('experiment_id')->primary();
             $table->uuid('org_id')->index();
             $table->uuid('created_by');
@@ -56,11 +57,13 @@ return new class extends Migration
             $table->foreign('created_by')->references('user_id')->on('cmis.users')->onDelete('cascade');
         });
 
-        // Enable RLS
-        $this->enableRLS('cmis.experiments');
+            // Enable RLS
+            $this->enableRLS('cmis.experiments');
+        }
 
         // Create experiment_variants table
-        Schema::create('cmis.experiment_variants', function (Blueprint $table) {
+        if (!Schema::hasTable('cmis.experiment_variants')) {
+            Schema::create('cmis.experiment_variants', function (Blueprint $table) {
             $table->uuid('variant_id')->primary();
             $table->uuid('experiment_id');
             $table->string('name', 100);
@@ -89,9 +92,11 @@ return new class extends Migration
             // Foreign keys
             $table->foreign('experiment_id')->references('experiment_id')->on('cmis.experiments')->onDelete('cascade');
         });
+        }
 
         // Create experiment_results table (daily aggregated results)
-        Schema::create('cmis.experiment_results', function (Blueprint $table) {
+        if (!Schema::hasTable('cmis.experiment_results')) {
+            Schema::create('cmis.experiment_results', function (Blueprint $table) {
             $table->uuid('result_id')->primary();
             $table->uuid('experiment_id');
             $table->uuid('variant_id');
@@ -118,9 +123,11 @@ return new class extends Migration
             $table->foreign('experiment_id')->references('experiment_id')->on('cmis.experiments')->onDelete('cascade');
             $table->foreign('variant_id')->references('variant_id')->on('cmis.experiment_variants')->onDelete('cascade');
         });
+        }
 
         // Create experiment_events table (raw event tracking)
-        Schema::create('cmis.experiment_events', function (Blueprint $table) {
+        if (!Schema::hasTable('cmis.experiment_events')) {
+            Schema::create('cmis.experiment_events', function (Blueprint $table) {
             $table->uuid('event_id')->primary();
             $table->uuid('experiment_id');
             $table->uuid('variant_id');
@@ -143,11 +150,12 @@ return new class extends Migration
             $table->foreign('experiment_id')->references('experiment_id')->on('cmis.experiments')->onDelete('cascade');
             $table->foreign('variant_id')->references('variant_id')->on('cmis.experiment_variants')->onDelete('cascade');
         });
+        }
 
         // Create indexes for performance
-        DB::statement('CREATE INDEX idx_experiments_started_at ON cmis.experiments(started_at) WHERE started_at IS NOT NULL');
-        DB::statement('CREATE INDEX idx_experiment_events_user_variant ON cmis.experiment_events(user_id, variant_id) WHERE user_id IS NOT NULL');
-        DB::statement('CREATE INDEX idx_experiment_results_date_range ON cmis.experiment_results(experiment_id, date)');
+        DB::statement('CREATE INDEX IF NOT EXISTS idx_experiments_started_at ON cmis.experiments(started_at) WHERE started_at IS NOT NULL');
+        DB::statement('CREATE INDEX IF NOT EXISTS idx_experiment_events_user_variant ON cmis.experiment_events(user_id, variant_id) WHERE user_id IS NOT NULL');
+        DB::statement('CREATE INDEX IF NOT EXISTS idx_experiment_results_date_range ON cmis.experiment_results(experiment_id, date)');
     }
 
     /**

@@ -29,21 +29,12 @@ class CampaignController extends Controller
         $this->middleware('auth:sanctum');
     }
 
-    public function index(Request $request)
+    public function index(Request $request, string $org)
     {
         // Check authorization for viewing any campaigns
         $this->authorize('viewAny', Campaign::class);
 
         try {
-            $orgId = $this->resolveOrgId($request);
-
-            if (!$orgId) {
-                return response()->json([
-                    'success' => false,
-                    'error' => 'No organization context found',
-                ], 400);
-            }
-
             // Get validated data or use defaults
             $validated = $request->validate([
                 'per_page' => ['sometimes', 'integer', 'min:1', 'max:100'],
@@ -55,7 +46,7 @@ class CampaignController extends Controller
                 'sort_direction' => ['sometimes', 'string', 'in:asc,desc'],
             ]);
 
-            $query = Campaign::where('org_id', $orgId);
+            $query = Campaign::where('org_id', $org);
 
             // Apply filters
             if (!empty($validated['status'])) {
@@ -107,21 +98,12 @@ class CampaignController extends Controller
         }
     }
 
-    public function store(Request $request)
+    public function store(Request $request, string $org)
     {
         // Check authorization for creating campaigns
         $this->authorize('create', Campaign::class);
 
         try {
-            $orgId = $this->resolveOrgId($request);
-
-            if (!$orgId) {
-                return response()->json([
-                    'success' => false,
-                    'error' => 'No organization context found',
-                ], 400);
-            }
-
             // Validate request
             $validated = $request->validate([
                 'name' => ['required', 'string', 'max:255'],
@@ -133,7 +115,7 @@ class CampaignController extends Controller
                 'campaign_type' => ['nullable', 'string'],
             ]);
 
-            $validated['org_id'] = $orgId;
+            $validated['org_id'] = $org;
             $validated['created_by'] = $request->user()->user_id;
             $validated['campaign_id'] = Str::uuid()->toString();
 
@@ -169,26 +151,17 @@ class CampaignController extends Controller
         }
     }
 
-    public function show(Request $request, string $campaignId)
+    public function show(Request $request, string $org, string $campaign)
     {
         try {
-            $orgId = $this->resolveOrgId($request);
-
-            if (!$orgId) {
-                return response()->json([
-                    'success' => false,
-                    'error' => 'No organization context found',
-                ], 400);
-            }
-
-            $campaign = Campaign::where('org_id', $orgId)
-                ->where('campaign_id', $campaignId)
+            $campaignModel = Campaign::where('org_id', $org)
+                ->where('campaign_id', $campaign)
                 ->with(['creator', 'org'])
                 ->first();
 
-            if (!$campaign) {
+            if (!$campaignModel) {
                 // Check if campaign exists in another org
-                $existsInOtherOrg = Campaign::where('campaign_id', $campaignId)->exists();
+                $existsInOtherOrg = Campaign::where('campaign_id', $campaign)->exists();
 
                 if ($existsInOtherOrg) {
                     return response()->json([
@@ -204,16 +177,16 @@ class CampaignController extends Controller
             }
 
             // Check authorization for viewing this specific campaign
-            $this->authorize('view', $campaign);
+            $this->authorize('view', $campaignModel);
 
             return response()->json([
-                'data' => $campaign,
+                'data' => $campaignModel,
                 'success' => true,
             ]);
 
         } catch (\Exception $e) {
             \Log::error('Campaign show error', [
-                'campaign_id' => $campaignId,
+                'campaign_id' => $campaign,
                 'error' => $e->getMessage(),
             ]);
 
@@ -225,25 +198,16 @@ class CampaignController extends Controller
         }
     }
 
-    public function update(Request $request, string $campaignId)
+    public function update(Request $request, string $org, string $campaign)
     {
         try {
-            $orgId = $this->resolveOrgId($request);
-
-            if (!$orgId) {
-                return response()->json([
-                    'success' => false,
-                    'error' => 'No organization context found',
-                ], 400);
-            }
-
-            $campaign = Campaign::where('org_id', $orgId)
-                ->where('campaign_id', $campaignId)
+            $campaignModel = Campaign::where('org_id', $org)
+                ->where('campaign_id', $campaign)
                 ->first();
 
-            if (!$campaign) {
+            if (!$campaignModel) {
                 // Check if campaign exists in another org
-                $existsInOtherOrg = Campaign::where('campaign_id', $campaignId)->exists();
+                $existsInOtherOrg = Campaign::where('campaign_id', $campaign)->exists();
 
                 if ($existsInOtherOrg) {
                     return response()->json([
@@ -259,7 +223,7 @@ class CampaignController extends Controller
             }
 
             // Check authorization for updating this campaign
-            $this->authorize('update', $campaign);
+            $this->authorize('update', $campaignModel);
 
             // Validate request
             $validated = $request->validate([
@@ -272,10 +236,10 @@ class CampaignController extends Controller
                 'campaign_type' => ['nullable', 'string'],
             ]);
 
-            $campaign->update($validated);
+            $campaignModel->update($validated);
 
             return response()->json([
-                'data' => $campaign->fresh(),
+                'data' => $campaignModel->fresh(),
                 'success' => true,
                 'message' => 'Campaign updated successfully',
             ]);
@@ -288,7 +252,7 @@ class CampaignController extends Controller
             ], 422);
         } catch (\Exception $e) {
             \Log::error('Campaign update error', [
-                'campaign_id' => $campaignId,
+                'campaign_id' => $campaign,
                 'error' => $e->getMessage(),
             ]);
 
@@ -300,25 +264,16 @@ class CampaignController extends Controller
         }
     }
 
-    public function destroy(Request $request, string $campaignId)
+    public function destroy(Request $request, string $org, string $campaign)
     {
         try {
-            $orgId = $this->resolveOrgId($request);
-
-            if (!$orgId) {
-                return response()->json([
-                    'success' => false,
-                    'error' => 'No organization context found',
-                ], 400);
-            }
-
-            $campaign = Campaign::where('org_id', $orgId)
-                ->where('campaign_id', $campaignId)
+            $campaignModel = Campaign::where('org_id', $org)
+                ->where('campaign_id', $campaign)
                 ->first();
 
-            if (!$campaign) {
+            if (!$campaignModel) {
                 // Check if campaign exists in another org
-                $existsInOtherOrg = Campaign::where('campaign_id', $campaignId)->exists();
+                $existsInOtherOrg = Campaign::where('campaign_id', $campaign)->exists();
 
                 if ($existsInOtherOrg) {
                     return response()->json([
@@ -334,10 +289,10 @@ class CampaignController extends Controller
             }
 
             // Check authorization for deleting this campaign
-            $this->authorize('delete', $campaign);
+            $this->authorize('delete', $campaignModel);
 
             // Soft delete the campaign
-            $campaign->delete();
+            $campaignModel->delete();
 
             return response()->json([
                 'success' => true,
@@ -346,7 +301,7 @@ class CampaignController extends Controller
 
         } catch (\Exception $e) {
             \Log::error('Campaign delete error', [
-                'campaign_id' => $campaignId,
+                'campaign_id' => $campaign,
                 'error' => $e->getMessage(),
             ]);
 
@@ -358,25 +313,16 @@ class CampaignController extends Controller
         }
     }
 
-    public function duplicate(Request $request, string $campaignId)
+    public function duplicate(Request $request, string $org, string $campaign)
     {
         try {
-            $orgId = $this->resolveOrgId($request);
-
-            if (!$orgId) {
-                return response()->json([
-                    'success' => false,
-                    'error' => 'No organization context found',
-                ], 400);
-            }
-
-            $campaign = Campaign::where('org_id', $orgId)
-                ->where('campaign_id', $campaignId)
+            $campaignModel = Campaign::where('org_id', $org)
+                ->where('campaign_id', $campaign)
                 ->first();
 
-            if (!$campaign) {
+            if (!$campaignModel) {
                 // Check if campaign exists in another org
-                $existsInOtherOrg = Campaign::where('campaign_id', $campaignId)->exists();
+                $existsInOtherOrg = Campaign::where('campaign_id', $campaign)->exists();
 
                 if ($existsInOtherOrg) {
                     return response()->json([
@@ -392,18 +338,18 @@ class CampaignController extends Controller
             }
 
             // Check authorization for viewing (needed to duplicate) and creating
-            $this->authorize('view', $campaign);
+            $this->authorize('view', $campaignModel);
             $this->authorize('create', Campaign::class);
 
             // Create duplicate
-            $duplicateData = $campaign->toArray();
+            $duplicateData = $campaignModel->toArray();
             unset($duplicateData['campaign_id']);
             unset($duplicateData['created_at']);
             unset($duplicateData['updated_at']);
             unset($duplicateData['deleted_at']);
 
             $duplicateData['campaign_id'] = Str::uuid()->toString();
-            $duplicateData['name'] = $campaign->name . ' (Copy)';
+            $duplicateData['name'] = $campaignModel->name . ' (Copy)';
             $duplicateData['status'] = 'draft';
             $duplicateData['created_by'] = $request->user()->user_id;
 
@@ -417,7 +363,7 @@ class CampaignController extends Controller
 
         } catch (\Exception $e) {
             \Log::error('Campaign duplicate error', [
-                'campaign_id' => $campaignId,
+                'campaign_id' => $campaign,
                 'error' => $e->getMessage(),
             ]);
 
@@ -429,25 +375,16 @@ class CampaignController extends Controller
         }
     }
 
-    public function analytics(Request $request, string $campaignId)
+    public function analytics(Request $request, string $org, string $campaign)
     {
         try {
-            $orgId = $this->resolveOrgId($request);
-
-            if (!$orgId) {
-                return response()->json([
-                    'success' => false,
-                    'error' => 'No organization context found',
-                ], 400);
-            }
-
-            $campaign = Campaign::where('org_id', $orgId)
-                ->where('campaign_id', $campaignId)
+            $campaignModel = Campaign::where('org_id', $org)
+                ->where('campaign_id', $campaign)
                 ->first();
 
-            if (!$campaign) {
+            if (!$campaignModel) {
                 // Check if campaign exists in another org
-                $existsInOtherOrg = Campaign::where('campaign_id', $campaignId)->exists();
+                $existsInOtherOrg = Campaign::where('campaign_id', $campaign)->exists();
 
                 if ($existsInOtherOrg) {
                     return response()->json([
@@ -463,7 +400,7 @@ class CampaignController extends Controller
             }
 
             // Check authorization for viewing campaign analytics
-            $this->authorize('view', $campaign);
+            $this->authorize('view', $campaignModel);
 
             // Get analytics data
             // Note: performance_metrics table uses KPI-based structure (kpi, observed columns)
@@ -482,7 +419,7 @@ class CampaignController extends Controller
             // Try to get metrics from performance_metrics table (KPI-based structure)
             try {
                 $metricsData = DB::table('cmis.performance_metrics')
-                    ->where('campaign_id', $campaignId)
+                    ->where('campaign_id', $campaign)
                     ->whereNull('deleted_at')
                     ->get();
 
@@ -525,7 +462,7 @@ class CampaignController extends Controller
             } catch (\Exception $metricsError) {
                 // Log but continue with mock data
                 \Log::warning('Could not retrieve performance metrics', [
-                    'campaign_id' => $campaignId,
+                    'campaign_id' => $campaign,
                     'error' => $metricsError->getMessage(),
                 ]);
             }
@@ -537,7 +474,7 @@ class CampaignController extends Controller
 
         } catch (\Exception $e) {
             \Log::error('Campaign analytics error', [
-                'campaign_id' => $campaignId,
+                'campaign_id' => $campaign,
                 'error' => $e->getMessage(),
             ]);
 
@@ -553,31 +490,22 @@ class CampaignController extends Controller
      * Get comprehensive performance metrics for a campaign
      * NEW: P2 Option 3 - Campaign Performance Dashboard
      */
-    public function performanceMetrics(Request $request, string $campaignId)
+    public function performanceMetrics(Request $request, string $org, string $campaign)
     {
         try {
-            $orgId = $this->resolveOrgId($request);
-
-            if (!$orgId) {
-                return response()->json([
-                    'success' => false,
-                    'error' => 'No organization context found',
-                ], 400);
-            }
-
             // Verify campaign belongs to org and authorize
-            $campaign = Campaign::where('org_id', $orgId)
-                ->where('campaign_id', $campaignId)
+            $campaignModel = Campaign::where('org_id', $org)
+                ->where('campaign_id', $campaign)
                 ->first();
 
-            if (!$campaign) {
+            if (!$campaignModel) {
                 return response()->json([
                     'success' => false,
                     'error' => 'Campaign not found',
                 ], 404);
             }
 
-            $this->authorize('view', $campaign);
+            $this->authorize('view', $campaignModel);
 
             // Parse date range from request
             $dateRange = null;
@@ -589,7 +517,7 @@ class CampaignController extends Controller
             }
 
             // Get metrics from service
-            $metrics = $this->campaignService->getPerformanceMetrics($campaignId, $dateRange);
+            $metrics = $this->campaignService->getPerformanceMetrics($campaign, $dateRange);
 
             return response()->json([
                 'success' => true,
@@ -598,7 +526,7 @@ class CampaignController extends Controller
 
         } catch (\Exception $e) {
             \Log::error('Campaign performance metrics error', [
-                'campaign_id' => $campaignId,
+                'campaign_id' => $campaign,
                 'error' => $e->getMessage(),
             ]);
 
@@ -614,18 +542,9 @@ class CampaignController extends Controller
      * Compare performance of multiple campaigns
      * NEW: P2 Option 3 - Campaign Performance Dashboard
      */
-    public function compareCampaigns(Request $request)
+    public function compareCampaigns(Request $request, string $org)
     {
         try {
-            $orgId = $this->resolveOrgId($request);
-
-            if (!$orgId) {
-                return response()->json([
-                    'success' => false,
-                    'error' => 'No organization context found',
-                ], 400);
-            }
-
             // Validate request
             $validated = $request->validate([
                 'campaign_ids' => 'required|array|min:1|max:10',
@@ -635,7 +554,7 @@ class CampaignController extends Controller
             ]);
 
             // Verify all campaigns belong to org
-            $campaigns = Campaign::where('org_id', $orgId)
+            $campaigns = Campaign::where('org_id', $org)
                 ->whereIn('campaign_id', $validated['campaign_ids'])
                 ->get();
 
@@ -691,31 +610,22 @@ class CampaignController extends Controller
      * Get performance trends over time for a campaign
      * NEW: P2 Option 3 - Campaign Performance Dashboard
      */
-    public function performanceTrends(Request $request, string $campaignId)
+    public function performanceTrends(Request $request, string $org, string $campaign)
     {
         try {
-            $orgId = $this->resolveOrgId($request);
-
-            if (!$orgId) {
-                return response()->json([
-                    'success' => false,
-                    'error' => 'No organization context found',
-                ], 400);
-            }
-
             // Verify campaign belongs to org and authorize
-            $campaign = Campaign::where('org_id', $orgId)
-                ->where('campaign_id', $campaignId)
+            $campaignModel = Campaign::where('org_id', $org)
+                ->where('campaign_id', $campaign)
                 ->first();
 
-            if (!$campaign) {
+            if (!$campaignModel) {
                 return response()->json([
                     'success' => false,
                     'error' => 'Campaign not found',
                 ], 404);
             }
 
-            $this->authorize('view', $campaign);
+            $this->authorize('view', $campaignModel);
 
             // Validate request
             $validated = $request->validate([
@@ -727,7 +637,7 @@ class CampaignController extends Controller
             $periods = $validated['periods'] ?? 30;
 
             // Get trends from service
-            $trends = $this->campaignService->getPerformanceTrends($campaignId, $interval, $periods);
+            $trends = $this->campaignService->getPerformanceTrends($campaign, $interval, $periods);
 
             return response()->json([
                 'success' => true,
@@ -742,7 +652,7 @@ class CampaignController extends Controller
             ], 422);
         } catch (\Exception $e) {
             \Log::error('Campaign performance trends error', [
-                'campaign_id' => $campaignId,
+                'campaign_id' => $campaign,
                 'error' => $e->getMessage(),
             ]);
 
@@ -758,18 +668,9 @@ class CampaignController extends Controller
      * Get top performing campaigns for the organization
      * NEW: P2 Option 3 - Campaign Performance Dashboard
      */
-    public function topPerforming(Request $request)
+    public function topPerforming(Request $request, string $org)
     {
         try {
-            $orgId = $this->resolveOrgId($request);
-
-            if (!$orgId) {
-                return response()->json([
-                    'success' => false,
-                    'error' => 'No organization context found',
-                ], 400);
-            }
-
             // Check authorization for viewing campaigns
             $this->authorize('viewAny', Campaign::class);
 
@@ -794,7 +695,7 @@ class CampaignController extends Controller
             }
 
             // Get top performers from service
-            $topCampaigns = $this->campaignService->getTopPerformingCampaigns($orgId, $metric, $limit, $dateRange);
+            $topCampaigns = $this->campaignService->getTopPerformingCampaigns($org, $metric, $limit, $dateRange);
 
             return response()->json([
                 'success' => true,

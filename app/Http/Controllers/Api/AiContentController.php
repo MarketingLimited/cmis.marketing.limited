@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Concerns\ApiResponse;
 use App\Http\Requests\AI\GenerateContentRequest;
 use App\Http\Requests\GenerateAdDesignRequest;
 use App\Http\Requests\GenerateAdCopyRequest;

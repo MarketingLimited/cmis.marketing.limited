@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Enterprise;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Concerns\ApiResponse;
 use App\Services\Enterprise\PerformanceMonitoringService;
 use App\Services\Enterprise\AdvancedReportingService;
 use App\Services\Enterprise\WebhookManagementService;

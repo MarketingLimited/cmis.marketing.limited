@@ -3,7 +3,7 @@
 namespace App\Services\CMIS;
 
 use App\Services\Embedding\EmbeddingOrchestrator;
-use App\Services\Gemini\EmbeddingService as GeminiEmbeddingService;
+use App\Services\CMIS\GeminiEmbeddingService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;

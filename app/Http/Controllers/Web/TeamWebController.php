@@ -25,13 +25,13 @@ class TeamWebController extends Controller
     /**
      * Display team members page
      */
-    public function index(string $orgId)
+    public function index(string $org)
     {
         $user = auth()->user();
-        $org = Organization::findOrFail($orgId);
+        $orgModel = Organization::findOrFail($org);
 
         // Verify access
-        if (!$user->orgs()->where('org_id', $orgId)->exists()) {
+        if (!$user->orgs()->where('org_id', $org)->exists()) {
             abort(403, 'You do not have access to this organization');
         }
 
@@ -39,14 +39,14 @@ class TeamWebController extends Controller
         try {
             DB::statement("SELECT cmis.init_transaction_context(?, ?)", [
                 $user->user_id,
-                $orgId
+                $org
             ]);
         } catch (\Exception $e) {
             \Log::warning("Could not set RLS context: " . $e->getMessage());
         }
 
         // Get team members
-        $members = UserOrg::where('org_id', $orgId)
+        $members = UserOrg::where('org_id', $org)
             ->with(['user', 'role'])
             ->orderBy('created_at', 'desc')
             ->paginate(20);
@@ -56,7 +56,7 @@ class TeamWebController extends Controller
 
         // Get pending invitations
         $pendingInvitations = DB::table('cmis.invitations')
-            ->where('org_id', $orgId)
+            ->where('org_id', $org)
             ->where('status', 'pending')
             ->orderBy('created_at', 'desc')
             ->limit(10)
@@ -64,26 +64,26 @@ class TeamWebController extends Controller
 
         // Stats
         $stats = [
-            'total_members' => UserOrg::where('org_id', $orgId)->count(),
-            'active_members' => UserOrg::where('org_id', $orgId)->where('status', 'active')->count(),
+            'total_members' => UserOrg::where('org_id', $org)->count(),
+            'active_members' => UserOrg::where('org_id', $org)->where('status', 'active')->count(),
             'pending_invitations' => DB::table('cmis.invitations')
-                ->where('org_id', $orgId)
+                ->where('org_id', $org)
                 ->where('status', 'pending')
                 ->count(),
         ];
 
-        return view('orgs.team', compact('org', 'members', 'roles', 'pendingInvitations', 'stats'));
+        return view('orgs.team', compact('orgModel', 'members', 'roles', 'pendingInvitations', 'stats'));
     }
 
     /**
      * Send invitation
      */
-    public function invite(Request $request, string $orgId)
+    public function invite(Request $request, string $org)
     {
         $user = auth()->user();
-        $org = Organization::findOrFail($orgId);
+        $orgModel = Organization::findOrFail($org);
 
-        if (!$user->orgs()->where('org_id', $orgId)->exists()) {
+        if (!$user->orgs()->where('org_id', $org)->exists()) {
             abort(403);
         }
 
@@ -95,12 +95,12 @@ class TeamWebController extends Controller
 
         // Set context
         try {
-            DB::statement("SELECT cmis.init_transaction_context(?, ?)", [$user->user_id, $orgId]);
+            DB::statement("SELECT cmis.init_transaction_context(?, ?)", [$user->user_id, $org]);
         } catch (\Exception $e) {}
 
         // Check existing
         $existingInvitation = DB::table('cmis.invitations')
-            ->where('org_id', $orgId)
+            ->where('org_id', $org)
             ->where('email', $validated['email'])
             ->where('status', 'pending')
             ->first();
@@ -113,7 +113,7 @@ class TeamWebController extends Controller
         $token = Str::random(64);
 
         DB::table('cmis.invitations')->insert([
-            'org_id' => $orgId,
+            'org_id' => $org,
             'email' => $validated['email'],
             'role_id' => $validated['role_id'],
             'invited_by' => $user->user_id,
@@ -127,7 +127,7 @@ class TeamWebController extends Controller
 
         $invitationUrl = route('invitations.show', ['token' => $token]);
 
-        \Log::info("Invitation created for {$validated['email']} to join {$org->name}", [
+        \Log::info("Invitation created for {$validated['email']} to join {$orgModel->name}", [
             'url' => $invitationUrl
         ]);
 

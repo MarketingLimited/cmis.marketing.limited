@@ -1,5 +1,9 @@
 @extends('layouts.analytics')
 
+@php
+    $currentOrg = $currentOrg ?? request()->route('org') ?? auth()->user()->active_org_id ?? auth()->user()->org_id;
+@endphp
+
 @section('title', 'Campaign Analytics')
 
 @section('page-title', 'Campaign Analytics')
@@ -25,7 +29,7 @@
                     <option value="completed">Completed</option>
                     <option value="draft">Draft</option>
                 </select>
-                <a href="{{ route('campaigns.create') }}" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition flex items-center gap-2">
+                <a href="{{ route('orgs.campaigns.create', ['org' => $currentOrg]) }}" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition flex items-center gap-2">
                     <i class="fas fa-plus"></i>
                     <span>New Campaign</span>
                 </a>
@@ -83,15 +87,15 @@
 
                 <!-- Actions -->
                 <div class="flex gap-2 pt-3 border-t border-gray-200">
-                    <a href="{{ route('analytics.campaign', $campaign->campaign_id) }}"
+                    <a href="{{ route('orgs.analytics.campaign', ['org' => $currentOrg, 'campaign' => $campaign->campaign_id]) }}"
                        class="flex-1 text-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition">
                         <i class="fas fa-chart-line mr-1"></i>Analytics
                     </a>
-                    <a href="{{ route('campaigns.show', $campaign->campaign_id) }}"
+                    <a href="{{ route('orgs.campaigns.show', ['org' => $currentOrg, 'campaign' => $campaign->campaign_id]) }}"
                        class="flex-1 text-center px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-medium transition">
                         <i class="fas fa-eye mr-1"></i>View
                     </a>
-                    <a href="{{ route('campaigns.edit', $campaign->campaign_id) }}"
+                    <a href="{{ route('orgs.campaigns.edit', ['org' => $currentOrg, 'campaign' => $campaign->campaign_id]) }}"
                        class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-medium transition">
                         <i class="fas fa-edit"></i>
                     </a>
@@ -105,7 +109,7 @@
                 <i class="fas fa-bullhorn text-gray-300 text-6xl mb-4"></i>
                 <h3 class="text-xl font-bold text-gray-700 mb-2">No Campaigns Found</h3>
                 <p class="text-gray-500 mb-6">Get started by creating your first campaign</p>
-                <a href="{{ route('campaigns.create') }}" class="inline-flex items-center px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition">
+                <a href="{{ route('orgs.campaigns.create', ['org' => $currentOrg]) }}" class="inline-flex items-center px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition">
                     <i class="fas fa-plus mr-2"></i>
                     <span>Create New Campaign</span>
                 </a>

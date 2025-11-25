@@ -17,7 +17,7 @@ class CreativeBriefController extends Controller
     /**
      * Display briefs list
      */
-    public function index()
+    public function index(string $org)
     {
         try {
             $briefs = DB::select("
@@ -27,7 +27,7 @@ class CreativeBriefController extends Controller
                 WHERE b.org_id = ?
                 ORDER BY b.created_at DESC
                 LIMIT 50
-            ", [Auth::user()->current_org_id]);
+            ", [$org]);
 
             return view('briefs.index', compact('briefs'));
         } catch (\Exception $e) {
@@ -39,14 +39,14 @@ class CreativeBriefController extends Controller
     /**
      * Show create form
      */
-    public function create()
+    public function create(string $org)
     {
         $campaigns = DB::select("
             SELECT campaign_id, campaign_name
             FROM cmis.campaigns
             WHERE org_id = ? AND deleted_at IS NULL
             ORDER BY created_at DESC
-        ", [Auth::user()->current_org_id]);
+        ", [$org]);
 
         return view('briefs.create', compact('campaigns'));
     }
@@ -54,7 +54,7 @@ class CreativeBriefController extends Controller
     /**
      * Store new brief
      */
-    public function store(Request $request)
+    public function store(Request $request, string $org)
     {
         $validated = $request->validate([
             'campaign_id' => 'required|uuid',
@@ -79,7 +79,7 @@ class CreativeBriefController extends Controller
             }
 
             $briefId = DB::table('cmis.creative_briefs')->insertGetId([
-                'org_id' => Auth::user()->current_org_id,
+                'org_id' => $org,
                 'campaign_id' => $validated['campaign_id'],
                 'brief_name' => $validated['brief_name'],
                 'objective' => $validated['objective'],
@@ -100,7 +100,7 @@ class CreativeBriefController extends Controller
                 Log::warning('Failed to generate brief summary: ' . $e->getMessage());
             }
 
-            return redirect()->route('briefs.show', $briefId)->with('success', 'تم إنشاء البريف بنجاح');
+            return redirect()->route('orgs.briefs.show', ['org' => $org, 'briefId' => $briefId])->with('success', 'تم إنشاء البريف بنجاح');
         } catch (\Exception $e) {
             Log::error('Brief store error: ' . $e->getMessage());
             return back()->with('error', 'فشل إنشاء البريف')->withInput();
@@ -110,7 +110,7 @@ class CreativeBriefController extends Controller
     /**
      * Show brief details
      */
-    public function show($briefId)
+    public function show(string $org, $briefId)
     {
         try {
             $brief = DB::selectOne("
@@ -120,10 +120,10 @@ class CreativeBriefController extends Controller
                 LEFT JOIN cmis.campaigns c ON c.campaign_id = b.campaign_id
                 LEFT JOIN cmis.users u ON u.user_id = b.created_by
                 WHERE b.brief_id = ? AND b.org_id = ?
-            ", [$briefId, Auth::user()->current_org_id]);
+            ", [$briefId, $org]);
 
             if (!$brief) {
-                return redirect()->route('briefs.index')->with('error', 'البريف غير موجود');
+                return redirect()->route('orgs.briefs.index', ['org' => $org])->with('error', 'البريف غير موجود');
             }
 
             // Decode JSON fields
@@ -135,19 +135,19 @@ class CreativeBriefController extends Controller
             return view('briefs.show', compact('brief'));
         } catch (\Exception $e) {
             Log::error('Brief show error: ' . $e->getMessage());
-            return redirect()->route('briefs.index')->with('error', 'فشل تحميل البريف');
+            return redirect()->route('orgs.briefs.index', ['org' => $org])->with('error', 'فشل تحميل البريف');
         }
     }
 
     /**
      * Approve brief
      */
-    public function approve($briefId)
+    public function approve(string $org, $briefId)
     {
         try {
             DB::table('cmis.creative_briefs')
                 ->where('brief_id', $briefId)
-                ->where('org_id', Auth::user()->current_org_id)
+                ->where('org_id', $org)
                 ->update([
                     'status' => 'approved',
                     'approved_by' => Auth::id(),
@@ -155,7 +155,7 @@ class CreativeBriefController extends Controller
                     'updated_at' => now(),
                 ]);
 
-            return redirect()->route('briefs.show', $briefId)->with('success', 'تمت الموافقة على البريف');
+            return redirect()->route('orgs.briefs.show', ['org' => $org, 'briefId' => $briefId])->with('success', 'تمت الموافقة على البريف');
         } catch (\Exception $e) {
             Log::error('Brief approve error: ' . $e->getMessage());
             return back()->with('error', 'فشلت الموافقة على البريف');

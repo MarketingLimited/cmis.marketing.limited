@@ -1,11 +1,15 @@
 @extends('layouts.admin')
 
+@php
+    $currentOrg = $currentOrg ?? request()->route('org') ?? auth()->user()->active_org_id ?? auth()->user()->org_id;
+@endphp
+
 @section('title', 'Create Content')
 
 @section('content')
 <div class="max-w-4xl mx-auto">
     <div class="mb-6">
-        <a href="{{  route('content.index')  }}" class="text-indigo-600 hover:text-indigo-800 inline-flex items-center">
+        <a href="{{  route('orgs.content.index', ['org' => $currentOrg])  }}" class="text-indigo-600 hover:text-indigo-800 inline-flex items-center">
             <i class="fas fa-arrow-left mr-2"></i>
             Back to Content Library
         </a>
@@ -14,7 +18,7 @@
     <div class="bg-white rounded-lg shadow p-6">
         <h1 class="text-2xl font-bold text-gray-900 mb-6">Create New Content</h1>
 
-        <form method="POST" action="{{  route('content.store')  }}" enctype="multipart/form-data" class="space-y-6">
+        <form method="POST" action="{{  route('orgs.content.store', ['org' => $currentOrg])  }}" enctype="multipart/form-data" class="space-y-6">
             @csrf
 
             @if ($errorS->any())
@@ -162,7 +166,7 @@
 
             <!-- Form Actions -->
             <div class="flex justify-end space-x-4 pt-4">
-                <a href="{{  route('content.index')  }}"
+                <a href="{{  route('orgs.content.index', ['org' => $currentOrg])  }}"
                    class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">
                     Cancel
                 </a>

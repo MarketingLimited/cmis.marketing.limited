@@ -3,10 +3,14 @@
 @section('page-title', $service->name ?? 'تفاصيل الخدمة')
 @section('page-subtitle', 'عرض تفاصيل الخدمة التسويقية')
 
+@php
+    $currentOrg = $currentOrg ?? request()->route('org') ?? auth()->user()->active_org_id ?? auth()->user()->org_id;
+@endphp
+
 @section('content')
 <div class="max-w-6xl mx-auto">
     <x-breadcrumb :items="[
-        ['label' => 'الخدمات', 'url' => route('services.index')],
+        ['label' => 'الخدمات', 'url' => route('orgs.services.index', ['org' => $currentOrg])],
         ['label' => $service->name ?? 'الخدمة']
     ]" />
 

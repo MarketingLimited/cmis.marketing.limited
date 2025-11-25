@@ -1,11 +1,15 @@
 @extends('layouts.admin')
 
+@php
+    $currentOrg = $currentOrg ?? request()->route('org') ?? auth()->user()->active_org_id ?? auth()->user()->org_id;
+@endphp
+
 @section('page-title', 'إنشاء بريف جديد')
 @section('page-subtitle', 'أنشئ بريف إبداعي شامل لحملتك التسويقية')
 
 @section('content')
 <div class="max-w-5xl mx-auto">
-    <form method="POST" action="{{ route('briefs.store') }}" x-data="briefForm()" @submit="validateAndSubmit">
+    <form method="POST" action="{{ route('orgs.briefs.store', ['org' => $currentOrg]) }}" x-data="briefForm()" @submit="validateAndSubmit">
         @csrf
 
         <div class="space-y-6">
@@ -215,7 +219,7 @@
                         <i class="fas fa-save ml-2"></i>
                         حفظ كمسودة
                     </button>
-                    <a href="{{ route('briefs.index') }}"
+                    <a href="{{ route('orgs.briefs.index', ['org' => $currentOrg]) }}"
                        class="bg-white border border-gray-300 text-gray-700 px-8 py-3 rounded-lg font-medium hover:bg-gray-50 transition">
                         إلغاء
                     </a>

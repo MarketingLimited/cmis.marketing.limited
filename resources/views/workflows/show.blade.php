@@ -1,4 +1,7 @@
 @extends('layouts.admin')
+@php
+    $currentOrg = $currentOrg ?? request()->route('org') ?? auth()->user()->active_org_id ?? auth()->user()->org_id;
+@endphp
 
 @section('page-title', $workflow->flow_name ?? 'تفاصيل سير العمل')
 @section('page-subtitle', 'تتبع تقدم وخطوات سير العمل')
@@ -6,7 +9,7 @@
 @section('content')
 <div x-data="workflowDetails()" x-init="init()" class="max-w-6xl mx-auto">
     <x-breadcrumb :items="[
-        ['label' => 'سير العمل', 'url' => route('workflows.index')],
+        ['label' => 'سير العمل', 'url' => route('orgs.workflows.index', ['org' => $currentOrg])],
         ['label' => $workflow->flow_name ?? 'التفاصيل']
     ]" />
 
@@ -226,7 +229,7 @@
                         إلغاء سير العمل
                     </button>
                     @endif
-                    <a href="{{ route('workflows.index') }}"
+                    <a href="{{ route('orgs.workflows.index', ['org' => $currentOrg]) }}"
                        class="block w-full bg-gray-50 text-gray-600 text-center py-2 rounded-lg font-medium hover:bg-gray-100 transition">
                         <i class="fas fa-arrow-right ml-2"></i>
                         العودة للقائمة

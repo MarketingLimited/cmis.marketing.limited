@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\ApiResponse;
 use App\Services\CMIS\SemanticSearchService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;

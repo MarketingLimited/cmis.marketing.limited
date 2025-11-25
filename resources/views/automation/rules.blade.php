@@ -8,6 +8,9 @@
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </head>
 <body class="bg-gray-50">
+    @php
+        $currentOrg = $currentOrg ?? request()->route('org') ?? auth()->user()->active_org_id ?? auth()->user()->org_id;
+    @endphp
     <div x-data="automationRules()" x-init="loadRules()" class="container mx-auto px-4 py-8">
         <!-- Header -->
         <div class="mb-8">

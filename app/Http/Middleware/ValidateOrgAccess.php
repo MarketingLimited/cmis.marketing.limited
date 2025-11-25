@@ -30,7 +30,8 @@ class ValidateOrgAccess
             ], 401);
         }
 
-        $orgId = $request->route('org_id');
+        // Try both 'org' and 'org_id' parameter names for flexibility
+        $orgId = $request->route('org') ?? $request->route('org_id');
 
         if (!$orgId) {
             return response()->json([

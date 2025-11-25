@@ -51,8 +51,10 @@ ALTER TABLE cmis.creative_outputs OWNER TO begin;
 ALTER TABLE cmis.data_feeds OWNER TO begin;
 ALTER TABLE cmis.dataset_files OWNER TO begin;
 ALTER TABLE cmis.dataset_packages OWNER TO begin;
-ALTER TABLE cmis.experiment_variants OWNER TO begin;
-ALTER TABLE cmis.experiments OWNER TO begin;
+-- COMMENTED OUT: Migration 2025_11_21_000004
+-- ALTER TABLE cmis.experiment_variants OWNER TO begin;
+-- COMMENTED OUT: Migration 2025_11_21_000004
+-- ALTER TABLE cmis.experiments OWNER TO begin;
 ALTER TABLE cmis.export_bundle_items OWNER TO begin;
 ALTER TABLE cmis.export_bundles OWNER TO begin;
 ALTER TABLE cmis.failed_jobs OWNER TO begin;
@@ -104,7 +106,8 @@ ALTER TABLE cmis.required_fields_cache OWNER TO begin;
 ALTER TABLE cmis.role_permissions OWNER TO begin;
 ALTER TABLE cmis.roles OWNER TO begin;
 ALTER TABLE cmis.scene_library OWNER TO begin;
-ALTER TABLE cmis.scheduled_reports OWNER TO begin;
+-- COMMENTED OUT: Table created by migration 2025_11_21_000001
+-- ALTER TABLE cmis.scheduled_reports OWNER TO begin;
 ALTER TABLE cmis.scheduled_social_posts OWNER TO begin;
 ALTER TABLE cmis.security_context_audit OWNER TO begin;
 ALTER TABLE cmis.segments OWNER TO begin;
@@ -274,7 +277,9 @@ ALTER TABLE ONLY cmis.data_feeds     ADD CONSTRAINT data_feeds_pkey PRIMARY KEY 
 ALTER TABLE ONLY cmis.dataset_files     ADD CONSTRAINT dataset_files_pkey PRIMARY KEY (file_id);
 ALTER TABLE ONLY cmis.dataset_packages     ADD CONSTRAINT dataset_packages_code_version_key UNIQUE (code, version);
 ALTER TABLE ONLY cmis.dataset_packages     ADD CONSTRAINT dataset_packages_pkey PRIMARY KEY (pkg_id);
-ALTER TABLE ONLY cmis.experiment_variants     ADD CONSTRAINT experiment_variants_pkey PRIMARY KEY (exp_id, asset_id);
+-- COMMENTED OUT: Migration 2025_11_21_000004
+-- COMMENTED OUT: Migration 2025_11_21_000004
+-- -- ALTER TABLE ONLY cmis.experiment_variants     ADD CONSTRAINT experiment_variants_pkey PRIMARY KEY (exp_id, asset_id);
 ALTER TABLE ONLY cmis.experiments     ADD CONSTRAINT experiments_pkey PRIMARY KEY (exp_id);
 ALTER TABLE ONLY cmis.export_bundle_items     ADD CONSTRAINT export_bundle_items_pkey PRIMARY KEY (bundle_id, asset_id);
 ALTER TABLE ONLY cmis.export_bundles     ADD CONSTRAINT export_bundles_pkey PRIMARY KEY (bundle_id);
@@ -335,7 +340,8 @@ ALTER TABLE ONLY cmis.role_permissions     ADD CONSTRAINT role_permissions_role_
 ALTER TABLE ONLY cmis.roles     ADD CONSTRAINT roles_org_id_role_code_key UNIQUE (org_id, role_code);
 ALTER TABLE ONLY cmis.roles     ADD CONSTRAINT roles_pkey PRIMARY KEY (role_id);
 ALTER TABLE ONLY cmis.scene_library     ADD CONSTRAINT scene_library_pkey PRIMARY KEY (scene_id);
-ALTER TABLE ONLY cmis.scheduled_reports     ADD CONSTRAINT scheduled_reports_pkey PRIMARY KEY (schedule_id);
+-- COMMENTED OUT: Table created by migration 2025_11_21_000001
+-- ALTER TABLE ONLY cmis.scheduled_reports     ADD CONSTRAINT scheduled_reports_pkey PRIMARY KEY (schedule_id);
 ALTER TABLE ONLY cmis.scheduled_social_posts     ADD CONSTRAINT scheduled_social_posts_pkey PRIMARY KEY (id);
 ALTER TABLE ONLY cmis.security_context_audit     ADD CONSTRAINT security_context_audit_pkey PRIMARY KEY (id);
 ALTER TABLE ONLY cmis.segments     ADD CONSTRAINT segments_org_id_name_key UNIQUE (org_id, name);
@@ -520,9 +526,12 @@ ALTER TABLE ONLY cmis.creative_outputs     ADD CONSTRAINT creative_outputs_campa
 ALTER TABLE ONLY cmis.creative_outputs     ADD CONSTRAINT creative_outputs_context_id_fkey FOREIGN KEY (context_id) REFERENCES cmis.contexts(context_id) ON DELETE CASCADE;
 ALTER TABLE ONLY cmis.data_feeds     ADD CONSTRAINT data_feeds_org_id_fkey FOREIGN KEY (org_id) REFERENCES cmis.orgs(org_id) ON DELETE CASCADE;
 ALTER TABLE ONLY cmis.dataset_files     ADD CONSTRAINT dataset_files_pkg_id_fkey FOREIGN KEY (pkg_id) REFERENCES cmis.dataset_packages(pkg_id) ON DELETE CASCADE;
-ALTER TABLE ONLY cmis.experiment_variants     ADD CONSTRAINT experiment_variants_asset_id_fkey FOREIGN KEY (asset_id) REFERENCES cmis.creative_assets(asset_id) ON DELETE CASCADE;
-ALTER TABLE ONLY cmis.experiment_variants     ADD CONSTRAINT experiment_variants_exp_id_fkey FOREIGN KEY (exp_id) REFERENCES cmis.experiments(exp_id) ON DELETE CASCADE;
-ALTER TABLE ONLY cmis.experiments     ADD CONSTRAINT experiments_campaign_id_fkey FOREIGN KEY (campaign_id) REFERENCES cmis.campaigns(campaign_id) MATCH FULL ON DELETE SET NULL;
+-- ALTER TABLE ONLY cmis.experiment_variants     ADD CONSTRAINT experiment_variants_asset_id_fkey FOREIGN KEY (asset_id) REFERENCES cmis.creative_assets(asset_id) ON DELETE CASCADE;
+-- COMMENTED OUT: Migration 2025_11_21_000004
+; 632s/^/-- COMMENTED OUT: Migration 2025_11_21_000004
+-- /
+-- -- ALTER TABLE ONLY cmis.experiment_variants     ADD CONSTRAINT experiment_variants_exp_id_fkey FOREIGN KEY (exp_id) REFERENCES cmis.experiments(exp_id) ON DELETE CASCADE;
+-- ALTER TABLE ONLY cmis.experiments     ADD CONSTRAINT experiments_campaign_id_fkey FOREIGN KEY (campaign_id) REFERENCES cmis.campaigns(campaign_id) MATCH FULL ON DELETE SET NULL;
 ALTER TABLE ONLY cmis.experiments     ADD CONSTRAINT experiments_org_id_fkey FOREIGN KEY (org_id) REFERENCES cmis.orgs(org_id) ON DELETE CASCADE;
 ALTER TABLE ONLY cmis.export_bundle_items     ADD CONSTRAINT export_bundle_items_asset_id_fkey FOREIGN KEY (asset_id) REFERENCES cmis.creative_assets(asset_id) ON DELETE CASCADE;
 ALTER TABLE ONLY cmis.export_bundle_items     ADD CONSTRAINT export_bundle_items_bundle_id_fkey FOREIGN KEY (bundle_id) REFERENCES cmis.export_bundles(bundle_id) ON DELETE CASCADE;

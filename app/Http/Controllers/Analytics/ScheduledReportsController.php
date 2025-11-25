@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Analytics;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Concerns\ApiResponse;
 use App\Models\Analytics\ReportExecutionLog;
 use App\Models\Analytics\ReportTemplate;
 use App\Models\Analytics\ScheduledReport;

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Api\Webhooks;
+namespace App\Http\Controllers\API\Webhooks;
 
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Concerns\ApiResponse;

@@ -3,10 +3,14 @@
 @section('page-title', $product->name ?? 'تفاصيل المنتج')
 @section('page-subtitle', 'عرض تفاصيل ومعلومات المنتج')
 
+@php
+    $currentOrg = $currentOrg ?? request()->route('org') ?? auth()->user()->active_org_id ?? auth()->user()->org_id;
+@endphp
+
 @section('content')
 <div class="max-w-6xl mx-auto">
     <x-breadcrumb :items="[
-        ['label' => 'المنتجات', 'url' => route('products.index')],
+        ['label' => 'المنتجات', 'url' => route('orgs.products.index', ['org' => $currentOrg])],
         ['label' => $product->name ?? 'المنتج']
     ]" />
 
@@ -138,7 +142,7 @@
             <div class="bg-white rounded-xl shadow-sm p-6">
                 <h3 class="text-lg font-bold text-gray-900 mb-4">إجراءات</h3>
                 <div class="space-y-2">
-                    <a href="{{ route('products.edit', $product->offering_id) }}"
+                    <a href="{{ route('orgs.products.edit', ['org' => $currentOrg, 'product' => $product->offering_id]) }}"
                        class="block w-full bg-indigo-50 text-indigo-600 text-center py-2 rounded-lg font-medium hover:bg-indigo-100 transition">
                         <i class="fas fa-edit ml-2"></i>
                         تعديل

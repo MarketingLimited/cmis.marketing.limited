@@ -3,7 +3,7 @@
 @section('content')
 <h2>📊 حملات المؤسسة</h2>
 
-<form id="compareForm" action="{{ url('orgs/' . $id . '/campaigns/compare') }}" method="get">
+<form id="compareForm" action="{{ route('orgs.campaigns.compare', ['org' => $org->org_id]) }}" method="get">
 <table>
     <thead>
         <tr>
@@ -30,7 +30,7 @@
             <td>{{ $c->budget ? number_format($c->budget, 2) : '-' }}</td>
             <td>{{ $c->currency ?? '-' }}</td>
             <td>
-                <a href="/campaigns/{{ $c->campaign_id }}" class="button">عرض</a>
+                <a href="{{ route('orgs.campaigns.show', ['org' => $org->org_id, 'campaign' => $c->campaign_id]) }}" class="button">عرض</a>
             </td>
         </tr>
         @empty

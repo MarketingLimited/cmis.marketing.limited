@@ -1,4 +1,7 @@
 @extends('layouts.admin')
+@php
+    $currentOrg = $currentOrg ?? request()->route('org') ?? auth()->user()->active_org_id ?? auth()->user()->org_id;
+@endphp
 
 @section('page-title', 'قاعدة المعرفة')
 @section('page-subtitle', 'إدارة وبحث قاعدة معرفة النظام')
@@ -140,11 +143,11 @@
                 <i class="fas fa-clock text-indigo-600 ml-2"></i>
                 المعرفة الأخيرة
             </h3>
-            <button @click="showAddModal = true"
+            <a href="{{route('orgs.knowledge.create', ['org' => $currentOrg])}}"
                     class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:shadow-lg transition">
                 <i class="fas fa-plus ml-2"></i>
                 إضافة معرفة
-            </button>
+            </a>
         </div>
 
         <div class="space-y-3">
@@ -254,7 +257,7 @@ function knowledgeManager() {
 
         async loadDomains() {
             try {
-                const response = await fetch('/knowledge/domains');
+                const response = await fetch('/orgs/{{ $currentOrg }}/knowledge/domains');
                 const data = await response.json();
                 this.domains = data.domains || [];
             } catch (error) {
@@ -269,7 +272,7 @@ function knowledgeManager() {
             }
 
             try {
-                const response = await fetch(`/knowledge/domains/${this.selectedDomain}/categories`);
+                const response = await fetch(`/orgs/{{ $currentOrg }}/knowledge/domains/${this.selectedDomain}/categories`);
                 const data = await response.json();
                 this.categories = data.categories || [];
             } catch (error) {
@@ -287,7 +290,7 @@ function knowledgeManager() {
 
             this.searched = true;
             try {
-                const response = await fetch('/knowledge/search', {
+                const response = await fetch('/orgs/{{ $currentOrg }}/knowledge/search', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -310,7 +313,7 @@ function knowledgeManager() {
 
         async addKnowledge() {
             try {
-                const response = await fetch('/knowledge', {
+                const response = await fetch('/orgs/{{ $currentOrg }}/knowledge', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

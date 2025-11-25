@@ -2,15 +2,19 @@
 
 @section('title', 'Campaign Details')
 
+@php
+    $currentOrg = $currentOrg ?? request()->route('org') ?? auth()->user()->active_org_id ?? auth()->user()->org_id;
+@endphp
+
 @section('content')
 <div class="max-w-7xl mx-auto">
     <div class="mb-6 flex justify-between items-center">
-        <a href="{{  route('campaigns.index')  }}" class="text-indigo-600 hover:text-indigo-800 inline-flex items-center">
+        <a href="{{  route('orgs.campaigns.index', ['org' => $currentOrg])  }}" class="text-indigo-600 hover:text-indigo-800 inline-flex items-center">
             <i class="fas fa-arrow-left mr-2"></i>
             Back to Campaigns
         </a>
         <div class="flex space-x-3">
-            <a href="{{  route('campaigns.edit', $campaign->campaign_id ?? $campaign->id)  }}"
+            <a href="{{  route('orgs.campaigns.edit', ['org' => $currentOrg, 'campaign' => $campaign->campaign_id ?? $campaign->id])  }}"
                class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-md">
                 <i class="fas fa-edit mr-2"></i>
                 Edit Campaign

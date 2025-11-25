@@ -3,9 +3,13 @@
 @section('page-title', 'إنشاء حملة تسويقية جديدة')
 @section('page-subtitle', 'أنشئ حملة تسويقية متكاملة مع أهداف وميزانية')
 
+@php
+    $currentOrg = $currentOrg ?? request()->route('org') ?? auth()->user()->active_org_id ?? auth()->user()->org_id;
+@endphp
+
 @section('content')
 <div class="max-w-5xl mx-auto">
-    <form method="POST" action="{{ route('campaigns.store') }}" x-data="campaignForm()" @submit="validateForm">
+    <form method="POST" action="{{ route('orgs.campaigns.store', ['org' => $currentOrg]) }}" x-data="campaignForm()" @submit="validateForm">
         @csrf
 
         <div class="space-y-6">
@@ -246,7 +250,7 @@
                     <i class="fas fa-rocket ml-2"></i>
                     إطلاق الحملة
                 </button>
-                <a href="{{ route('campaigns.index') }}"
+                <a href="{{ route('orgs.campaigns.index', ['org' => $currentOrg]) }}"
                    class="bg-gray-100 text-gray-700 px-8 py-3 rounded-lg font-medium hover:bg-gray-200 transition">
                     إلغاء
                 </a>

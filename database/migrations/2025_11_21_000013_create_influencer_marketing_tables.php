@@ -81,10 +81,10 @@ return new class extends Migration
         });
 
         // RLS Policy
+        DB::statement("ALTER TABLE cmis.influencer_profiles ENABLE ROW LEVEL SECURITY");
         DB::statement("
-            ALTER TABLE cmis.influencer_profiles ENABLE ROW LEVEL SECURITY;
             CREATE POLICY org_isolation ON cmis.influencer_profiles
-            USING (org_id = current_setting('app.current_org_id', true)::uuid);
+            USING (org_id = current_setting('app.current_org_id', true)::uuid)
         ");
 
         // 2. Influencer Partnerships - Partnership agreements
@@ -150,10 +150,10 @@ return new class extends Migration
         });
 
         // RLS Policy
+        DB::statement("ALTER TABLE cmis.influencer_partnerships ENABLE ROW LEVEL SECURITY");
         DB::statement("
-            ALTER TABLE cmis.influencer_partnerships ENABLE ROW LEVEL SECURITY;
             CREATE POLICY org_isolation ON cmis.influencer_partnerships
-            USING (org_id = current_setting('app.current_org_id', true)::uuid);
+            USING (org_id = current_setting('app.current_org_id', true)::uuid)
         ");
 
         // 3. Influencer Campaigns - Campaigns with influencers
@@ -222,10 +222,10 @@ return new class extends Migration
         });
 
         // RLS Policy
+        DB::statement("ALTER TABLE cmis.influencer_campaigns ENABLE ROW LEVEL SECURITY");
         DB::statement("
-            ALTER TABLE cmis.influencer_campaigns ENABLE ROW LEVEL SECURITY;
             CREATE POLICY org_isolation ON cmis.influencer_campaigns
-            USING (org_id = current_setting('app.current_org_id', true)::uuid);
+            USING (org_id = current_setting('app.current_org_id', true)::uuid)
         ");
 
         // 4. Campaign Deliverables - Content deliverables and approvals
@@ -287,10 +287,10 @@ return new class extends Migration
         });
 
         // RLS Policy
+        DB::statement("ALTER TABLE cmis.campaign_deliverables ENABLE ROW LEVEL SECURITY");
         DB::statement("
-            ALTER TABLE cmis.campaign_deliverables ENABLE ROW LEVEL SECURITY;
             CREATE POLICY org_isolation ON cmis.campaign_deliverables
-            USING (org_id = current_setting('app.current_org_id', true)::uuid);
+            USING (org_id = current_setting('app.current_org_id', true)::uuid)
         ");
 
         // 5. Influencer Payments - Payment tracking and history
@@ -339,10 +339,10 @@ return new class extends Migration
         });
 
         // RLS Policy
+        DB::statement("ALTER TABLE cmis.influencer_payments ENABLE ROW LEVEL SECURITY");
         DB::statement("
-            ALTER TABLE cmis.influencer_payments ENABLE ROW LEVEL SECURITY;
             CREATE POLICY org_isolation ON cmis.influencer_payments
-            USING (org_id = current_setting('app.current_org_id', true)::uuid);
+            USING (org_id = current_setting('app.current_org_id', true)::uuid)
         ");
 
         // 6. Influencer Applications - Applications to campaigns
@@ -383,10 +383,10 @@ return new class extends Migration
         });
 
         // RLS Policy
+        DB::statement("ALTER TABLE cmis.influencer_applications ENABLE ROW LEVEL SECURITY");
         DB::statement("
-            ALTER TABLE cmis.influencer_applications ENABLE ROW LEVEL SECURITY;
             CREATE POLICY org_isolation ON cmis.influencer_applications
-            USING (org_id = current_setting('app.current_org_id', true)::uuid);
+            USING (org_id = current_setting('app.current_org_id', true)::uuid)
         ");
 
         // 7. Influencer Performance History - Historical performance data
@@ -435,10 +435,10 @@ return new class extends Migration
         });
 
         // RLS Policy
+        DB::statement("ALTER TABLE cmis.influencer_performance ENABLE ROW LEVEL SECURITY");
         DB::statement("
-            ALTER TABLE cmis.influencer_performance ENABLE ROW LEVEL SECURITY;
             CREATE POLICY org_isolation ON cmis.influencer_performance
-            USING (org_id = current_setting('app.current_org_id', true)::uuid);
+            USING (org_id = current_setting('app.current_org_id', true)::uuid)
         ");
 
         // Create Performance Views

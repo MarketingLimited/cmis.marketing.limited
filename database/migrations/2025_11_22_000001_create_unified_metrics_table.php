@@ -46,8 +46,10 @@ return new class extends Migration
         // 1. Create Unified Metrics Table (Partitioned)
         // ==================================================================
 
-        DB::statement("
-            CREATE TABLE cmis.metrics (
+        // Skip if table already exists from earlier migration
+        if (!Schema::hasTable('cmis.metrics')) {
+            DB::statement("
+                CREATE TABLE cmis.metrics (
                 id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
                 org_id UUID NOT NULL,
 
@@ -107,29 +109,30 @@ return new class extends Migration
             ");
         }
 
-        // ==================================================================
-        // 3. Create Indexes for Performance
-        // ==================================================================
+            // ==================================================================
+            // 3. Create Indexes for Performance
+            // ==================================================================
 
-        // Primary lookup patterns
-        DB::statement("CREATE INDEX idx_metrics_entity ON cmis.metrics (entity_type, entity_id, recorded_at DESC);");
-        DB::statement("CREATE INDEX idx_metrics_org_date ON cmis.metrics (org_id, recorded_at DESC);");
-        DB::statement("CREATE INDEX idx_metrics_name_date ON cmis.metrics (metric_name, recorded_at DESC);");
-        DB::statement("CREATE INDEX idx_metrics_category ON cmis.metrics (metric_category, recorded_at DESC);");
-        DB::statement("CREATE INDEX idx_metrics_platform ON cmis.metrics (platform, recorded_at DESC) WHERE platform IS NOT NULL;");
+            // Primary lookup patterns
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_metrics_entity ON cmis.metrics (entity_type, entity_id, recorded_at DESC);");
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_metrics_org_date ON cmis.metrics (org_id, recorded_at DESC);");
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_metrics_name_date ON cmis.metrics (metric_name, recorded_at DESC);");
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_metrics_category ON cmis.metrics (metric_category, recorded_at DESC);");
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_metrics_platform ON cmis.metrics (platform, recorded_at DESC) WHERE platform IS NOT NULL;");
 
-        // Composite indexes for common queries
-        DB::statement("CREATE INDEX idx_metrics_entity_name ON cmis.metrics (entity_type, entity_id, metric_name, recorded_at DESC);");
-        DB::statement("CREATE INDEX idx_metrics_org_entity ON cmis.metrics (org_id, entity_type, recorded_at DESC);");
+            // Composite indexes for common queries
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_metrics_entity_name ON cmis.metrics (entity_type, entity_id, metric_name, recorded_at DESC);");
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_metrics_org_entity ON cmis.metrics (org_id, entity_type, recorded_at DESC);");
 
-        // JSONB index for metadata queries
-        DB::statement("CREATE INDEX idx_metrics_metadata_gin ON cmis.metrics USING GIN (metadata);");
+            // JSONB index for metadata queries
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_metrics_metadata_gin ON cmis.metrics USING GIN (metadata);");
 
-        // ==================================================================
-        // 4. Enable Row-Level Security
-        // ==================================================================
+            // ==================================================================
+            // 4. Enable Row-Level Security
+            // ==================================================================
 
-        $this->enableRLS('cmis.metrics');
+            $this->enableRLS('cmis.metrics');
+        }
 
         // ==================================================================
         // 5. Create Metric Definitions Table (Lookup/Reference)
@@ -221,7 +224,9 @@ return new class extends Migration
         // ==================================================================
         // 7. Create Helper Views for Common Queries
         // ==================================================================
-
+        // COMMENTED OUT: These views reference columns that may not exist if metrics table
+        // was created by an earlier migration with a different schema
+        /*
         // View for latest metrics per entity
         DB::statement("
             CREATE VIEW cmis.latest_metrics AS
@@ -250,6 +255,7 @@ return new class extends Migration
             WHERE value_numeric IS NOT NULL
             GROUP BY org_id, entity_type, entity_id, metric_name, platform, DATE(recorded_at);
         ");
+        */
     }
 
     /**

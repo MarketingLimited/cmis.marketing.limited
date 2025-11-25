@@ -34,38 +34,48 @@
 
             <!-- Navigation -->
             <nav class="mt-6 px-4 space-y-2">
-                <a href="{{ route('dashboard.index') }}" class="sidebar-item flex items-center gap-3 px-4 py-3 rounded-xl {{ request()->routeIs('dashboard.*') ? 'bg-white/20 text-white shadow-lg' : 'text-white/80 hover:bg-white/10' }}">
+                @php
+                    $currentOrg = auth()->user()->active_org_id ?? auth()->user()->current_org_id ?? auth()->user()->org_id ?? request()->route('org');
+                @endphp
+
+                @if($currentOrg)
+                <a href="{{ route('orgs.dashboard.index', ['org' => $currentOrg]) }}" class="sidebar-item flex items-center gap-3 px-4 py-3 rounded-xl {{ request()->routeIs('orgs.dashboard.*') ? 'bg-white/20 text-white shadow-lg' : 'text-white/80 hover:bg-white/10' }}">
                     <i class="fas fa-home text-lg w-6"></i>
                     <span class="font-medium">الرئيسية</span>
                 </a>
 
-                <a href="{{ route('campaigns.index') }}" class="sidebar-item flex items-center gap-3 px-4 py-3 rounded-xl {{ request()->routeIs('campaigns.*') ? 'bg-white/20 text-white shadow-lg' : 'text-white/80 hover:bg-white/10' }}">
+                <a href="{{ route('orgs.campaigns.index', ['org' => $currentOrg]) }}" class="sidebar-item flex items-center gap-3 px-4 py-3 rounded-xl {{ request()->routeIs('orgs.campaigns.*') ? 'bg-white/20 text-white shadow-lg' : 'text-white/80 hover:bg-white/10' }}">
                     <i class="fas fa-bullhorn text-lg w-6"></i>
                     <span class="font-medium">الحملات</span>
                 </a>
 
                 {{-- TODO: Implement content.index route --}}
-                {{-- <a href="{{ route('content.index') }}" class="sidebar-item flex items-center gap-3 px-4 py-3 rounded-xl {{ request()->routeIs('content.*') ? 'bg-white/20 text-white shadow-lg' : 'text-white/80 hover:bg-white/10' }}">
+                {{-- <a href="{{ route('orgs.content.index', ['org' => $currentOrg]) }}" class="sidebar-item flex items-center gap-3 px-4 py-3 rounded-xl {{ request()->routeIs('orgs.content.*') ? 'bg-white/20 text-white shadow-lg' : 'text-white/80 hover:bg-white/10' }}">
                     <i class="fas fa-file-alt text-lg w-6"></i>
                     <span class="font-medium">المحتوى</span>
                 </a> --}}
 
-                <a href="{{ route('creative-assets.index') }}" class="sidebar-item flex items-center gap-3 px-4 py-3 rounded-xl {{ request()->routeIs('creative-assets.*') ? 'bg-white/20 text-white shadow-lg' : 'text-white/80 hover:bg-white/10' }}">
+                <a href="{{ route('orgs.creative-assets.index', ['org' => $currentOrg]) }}" class="sidebar-item flex items-center gap-3 px-4 py-3 rounded-xl {{ request()->routeIs('orgs.creative-assets.*') ? 'bg-white/20 text-white shadow-lg' : 'text-white/80 hover:bg-white/10' }}">
                     <i class="fas fa-images text-lg w-6"></i>
                     <span class="font-medium">الملفات الإبداعية</span>
                 </a>
 
                 @can('viewAny', App\Models\User::class)
-                <a href="{{ route('analytics.index') }}" class="sidebar-item flex items-center gap-3 px-4 py-3 rounded-xl {{ request()->routeIs('analytics.*') ? 'bg-white/20 text-white shadow-lg' : 'text-white/80 hover:bg-white/10' }}">
+                <a href="{{ route('orgs.analytics.index', ['org' => $currentOrg]) }}" class="sidebar-item flex items-center gap-3 px-4 py-3 rounded-xl {{ request()->routeIs('orgs.analytics.*') ? 'bg-white/20 text-white shadow-lg' : 'text-white/80 hover:bg-white/10' }}">
                     <i class="fas fa-chart-line text-lg w-6"></i>
                     <span class="font-medium">التحليلات</span>
                 </a>
                 @endcan
 
-                <a href="{{ route('inbox.index') }}" class="sidebar-item flex items-center gap-3 px-4 py-3 rounded-xl {{ request()->routeIs('inbox.*') ? 'bg-white/20 text-white shadow-lg' : 'text-white/80 hover:bg-white/10' }}">
+                <a href="{{ route('orgs.inbox.index', ['org' => $currentOrg]) }}" class="sidebar-item flex items-center gap-3 px-4 py-3 rounded-xl {{ request()->routeIs('orgs.inbox.*') ? 'bg-white/20 text-white shadow-lg' : 'text-white/80 hover:bg-white/10' }}">
                     <i class="fas fa-inbox text-lg w-6"></i>
                     <span class="font-medium">صندوق الرسائل</span>
                 </a>
+                @else
+                <div class="px-4 py-3 text-white/60 text-sm">
+                    الرجاء اختيار منظمة للمتابعة
+                </div>
+                @endif
 
                 <div class="pt-4 border-t border-white/20 mt-4">
                     <p class="text-white/50 text-xs font-medium px-4 mb-2">الأدوات</p>
@@ -78,18 +88,18 @@
                     @endcan
 
                     @auth
-                    @if(auth()->user()->active_org_id)
-                    <a href="{{ route('orgs.team.index', auth()->user()->active_org_id) }}" class="sidebar-item flex items-center gap-3 px-4 py-3 rounded-xl {{ request()->routeIs('orgs.team.*') ? 'bg-white/20 text-white shadow-lg' : 'text-white/80 hover:bg-white/10' }}">
+                    @if($currentOrg)
+                    <a href="{{ route('orgs.team.index', ['org' => $currentOrg]) }}" class="sidebar-item flex items-center gap-3 px-4 py-3 rounded-xl {{ request()->routeIs('orgs.team.*') ? 'bg-white/20 text-white shadow-lg' : 'text-white/80 hover:bg-white/10' }}">
                         <i class="fas fa-user-friends text-lg w-6"></i>
                         <span class="font-medium">إدارة الفريق</span>
                     </a>
-                    @endif
-                    @endauth
 
-                    <a href="{{ route('settings.index') }}" class="sidebar-item flex items-center gap-3 px-4 py-3 rounded-xl {{ request()->routeIs('settings.*') ? 'bg-white/20 text-white shadow-lg' : 'text-white/80 hover:bg-white/10' }}">
+                    <a href="{{ route('orgs.settings.index', ['org' => $currentOrg]) }}" class="sidebar-item flex items-center gap-3 px-4 py-3 rounded-xl {{ request()->routeIs('orgs.settings.*') ? 'bg-white/20 text-white shadow-lg' : 'text-white/80 hover:bg-white/10' }}">
                         <i class="fas fa-cog text-lg w-6"></i>
                         <span class="font-medium">الإعدادات</span>
                     </a>
+                    @endif
+                    @endauth
                 </div>
             </nav>
 
@@ -213,10 +223,15 @@
                                             <i class="fas fa-user text-gray-600 w-5"></i>
                                             <span class="text-sm text-gray-700">الملف الشخصي</span>
                                         </a>
-                                        <a href="{{ route('settings.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-50 transition">
+                                        @php
+                                            $userOrg = auth()->user()->active_org_id ?? auth()->user()->current_org_id ?? auth()->user()->org_id ?? request()->route('org');
+                                        @endphp
+                                        @if($userOrg)
+                                        <a href="{{ route('orgs.settings.index', ['org' => $userOrg]) }}" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-50 transition">
                                             <i class="fas fa-cog text-gray-600 w-5"></i>
                                             <span class="text-sm text-gray-700">الإعدادات</span>
                                         </a>
+                                        @endif
                                         <hr class="my-2">
                                         <form method="POST" action="{{ route('logout') }}">
                                             @csrf

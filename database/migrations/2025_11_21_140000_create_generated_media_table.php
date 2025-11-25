@@ -68,7 +68,11 @@ return new class extends Migration
             ALTER TABLE cmis_ai.generated_media ENABLE ROW LEVEL SECURITY;
         ");
 
-        // Create RLS policy for multi-tenancy
+        // Drop existing policy if it exists, then create RLS policy for multi-tenancy
+        DB::statement("
+            DROP POLICY IF EXISTS org_isolation ON cmis_ai.generated_media;
+        ");
+
         DB::statement("
             CREATE POLICY org_isolation ON cmis_ai.generated_media
             USING (org_id = current_setting('app.current_org_id')::uuid);
@@ -98,6 +102,11 @@ return new class extends Migration
                 RETURN NEW;
             END;
             $$ LANGUAGE plpgsql;
+        ");
+
+        // Drop existing trigger if it exists before creating
+        DB::statement("
+            DROP TRIGGER IF EXISTS set_generated_media_timestamp ON cmis_ai.generated_media;
         ");
 
         DB::statement("

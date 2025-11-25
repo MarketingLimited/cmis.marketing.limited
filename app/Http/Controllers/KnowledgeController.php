@@ -19,7 +19,7 @@ class KnowledgeController extends Controller
     /**
      * Display knowledge base dashboard
      */
-    public function index()
+    public function index(string $org)
     {
         try {
             $stats = DB::select("
@@ -28,16 +28,16 @@ class KnowledgeController extends Controller
                     COUNT(DISTINCT domain) as domains_count,
                     COUNT(DISTINCT category) as categories_count
                 FROM cmis_knowledge.index
-                WHERE deleted_at IS NULL
-            ")[0] ?? null;
+                WHERE org_id = ? AND deleted_at IS NULL
+            ", [$org])[0] ?? null;
 
             $recentKnowledge = DB::select("
                 SELECT knowledge_id, domain, category, topic, created_at
                 FROM cmis_knowledge.index
-                WHERE deleted_at IS NULL
+                WHERE org_id = ? AND deleted_at IS NULL
                 ORDER BY created_at DESC
                 LIMIT 10
-            ");
+            ", [$org]);
 
             return view('knowledge.index', compact('stats', 'recentKnowledge'));
         } catch (\Exception $e) {
@@ -49,7 +49,7 @@ class KnowledgeController extends Controller
     /**
      * Search knowledge base
      */
-    public function search(Request $request)
+    public function search(Request $request, string $org)
     {
         $query = $request->input('q');
         $domain = $request->input('domain');
@@ -57,8 +57,8 @@ class KnowledgeController extends Controller
 
         try {
             $results = DB::select("
-                SELECT * FROM cmis_knowledge.semantic_search_advanced(?, ?, ?, NULL, NULL, 20)
-            ", [$query, $domain, $category]);
+                SELECT * FROM cmis_knowledge.semantic_search_advanced(?, ?, ?, ?, NULL, 20)
+            ", [$query, $domain, $category, $org]);
 
             return response()->json([
                 'success' => true,
@@ -78,7 +78,7 @@ class KnowledgeController extends Controller
     /**
      * Register new knowledge
      */
-    public function store(Request $request)
+    public function store(Request $request, string $org)
     {
         $validated = $request->validate([
             'domain' => 'required|string|max:50',
@@ -91,8 +91,9 @@ class KnowledgeController extends Controller
 
         try {
             $result = DB::select("
-                SELECT cmis_knowledge.register_knowledge(?, ?, ?, ?, ?, ?) as knowledge_id
+                SELECT cmis_knowledge.register_knowledge(?, ?, ?, ?, ?, ?, ?) as knowledge_id
             ", [
+                $org,
                 $validated['domain'],
                 $validated['category'],
                 $validated['topic'],
@@ -119,16 +120,16 @@ class KnowledgeController extends Controller
     /**
      * Get domains list
      */
-    public function domains()
+    public function domains(string $org)
     {
         try {
             $domains = DB::select("
                 SELECT DISTINCT domain, COUNT(*) as count
                 FROM cmis_knowledge.index
-                WHERE deleted_at IS NULL
+                WHERE org_id = ? AND deleted_at IS NULL
                 GROUP BY domain
                 ORDER BY count DESC
-            ");
+            ", [$org]);
 
             return response()->json([
                 'success' => true,
@@ -145,16 +146,16 @@ class KnowledgeController extends Controller
     /**
      * Get categories by domain
      */
-    public function categories($domain)
+    public function categories(string $org, $domain)
     {
         try {
             $categories = DB::select("
                 SELECT DISTINCT category, COUNT(*) as count
                 FROM cmis_knowledge.index
-                WHERE domain = ? AND deleted_at IS NULL
+                WHERE org_id = ? AND domain = ? AND deleted_at IS NULL
                 GROUP BY category
                 ORDER BY count DESC
-            ", [$domain]);
+            ", [$org, $domain]);
 
             return response()->json([
                 'success' => true,

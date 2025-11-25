@@ -3,6 +3,9 @@
 @section('title', __('onboarding.step_x', ['number' => $step]))
 
 @section('content')
+@php
+    $currentOrg = $currentOrg ?? request()->route('org') ?? auth()->user()->active_org_id ?? auth()->user()->org_id;
+@endphp
 <div class="max-w-4xl mx-auto py-8 px-4" x-data="onboardingStep()">
     {{-- Progress Bar --}}
     <div class="mb-8">

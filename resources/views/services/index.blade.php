@@ -2,6 +2,10 @@
 
 @section('title', 'الخدمات')
 
+@php
+    $currentOrg = $currentOrg ?? request()->route('org') ?? auth()->user()->active_org_id ?? auth()->user()->org_id;
+@endphp
+
 @section('content')
 <div class="container mx-auto px-4 py-6">
     <div class="mb-6 flex items-center justify-between">
@@ -10,7 +14,7 @@
             <p class="mt-2 text-gray-600">إدارة خدماتك التسويقية والاستشارية</p>
         </div>
         @can('create', App\Models\Offering::class)
-        <a href="{{ route('services.create') }}" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700">
+        <a href="{{ route('orgs.services.create', ['org' => $currentOrg]) }}" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700">
             <svg class="ml-2 -mr-1 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
             </svg>

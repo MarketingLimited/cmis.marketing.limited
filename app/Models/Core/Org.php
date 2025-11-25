@@ -86,4 +86,5 @@ class Org extends BaseModel
     public function integrations(): HasMany
     {
         return $this->hasMany(Integration::class, 'org_id', 'org_id');
+    }
 }

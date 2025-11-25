@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Analytics;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Concerns\ApiResponse;
 use App\Services\Analytics\AIInsightsService;
 use App\Services\Analytics\DashboardCustomizationService;
 use App\Services\Analytics\ReportGeneratorService;

@@ -21,15 +21,14 @@ class UnifiedInboxController extends Controller
     /**
      * Get unified inbox messages
      */
-    public function index(Request $request)
+    public function index(Request $request, string $org)
     {
         // If it's a web request (not API), return the view
         if (!$request->expectsJson()) {
             return view('inbox.index');
         }
 
-        $orgId = $request->route('org_id');
-        $this->inboxService = new UnifiedInboxService($orgId);
+        $this->inboxService = new UnifiedInboxService($org);
 
         try {
             $filters = [
@@ -66,9 +65,9 @@ class UnifiedInboxController extends Controller
     /**
      * Get conversation thread
      */
-    public function conversation(Request $request, $orgId, $conversationId)
+    public function conversation(Request $request, string $org, $conversationId)
     {
-        $this->inboxService = new UnifiedInboxService($orgId);
+        $this->inboxService = new UnifiedInboxService($org);
 
         try {
             $messages = $this->inboxService->getConversation($conversationId);
@@ -90,9 +89,9 @@ class UnifiedInboxController extends Controller
     /**
      * Send reply to message
      */
-    public function reply(Request $request, $orgId, $messageId)
+    public function reply(Request $request, string $org, $messageId)
     {
-        $this->inboxService = new UnifiedInboxService($orgId);
+        $this->inboxService = new UnifiedInboxService($org);
 
         $validated = $request->validate([
             'reply_text' => 'required|string|max:5000',
@@ -123,9 +122,9 @@ class UnifiedInboxController extends Controller
     /**
      * Mark messages as read
      */
-    public function markAsRead(Request $request, $orgId)
+    public function markAsRead(Request $request, string $org)
     {
-        $this->inboxService = new UnifiedInboxService($orgId);
+        $this->inboxService = new UnifiedInboxService($org);
 
         $validated = $request->validate([
             'message_ids' => 'required|array',
@@ -151,9 +150,9 @@ class UnifiedInboxController extends Controller
     /**
      * Assign message to user
      */
-    public function assign(Request $request, $orgId, $messageId)
+    public function assign(Request $request, string $org, $messageId)
     {
-        $this->inboxService = new UnifiedInboxService($orgId);
+        $this->inboxService = new UnifiedInboxService($org);
 
         $validated = $request->validate([
             'user_id' => 'required|integer|exists:cmis.users,user_id',
@@ -178,9 +177,9 @@ class UnifiedInboxController extends Controller
     /**
      * Add note to message
      */
-    public function addNote(Request $request, $orgId, $messageId)
+    public function addNote(Request $request, string $org, $messageId)
     {
-        $this->inboxService = new UnifiedInboxService($orgId);
+        $this->inboxService = new UnifiedInboxService($org);
 
         $validated = $request->validate([
             'note' => 'required|string|max:2000',
@@ -210,9 +209,9 @@ class UnifiedInboxController extends Controller
     /**
      * Get saved replies
      */
-    public function savedReplies(Request $request, $orgId)
+    public function savedReplies(Request $request, string $org)
     {
-        $this->inboxService = new UnifiedInboxService($orgId);
+        $this->inboxService = new UnifiedInboxService($org);
 
         try {
             $replies = $this->inboxService->getSavedReplies();
@@ -233,9 +232,9 @@ class UnifiedInboxController extends Controller
     /**
      * Create saved reply
      */
-    public function createSavedReply(Request $request, $orgId)
+    public function createSavedReply(Request $request, string $org)
     {
-        $this->inboxService = new UnifiedInboxService($orgId);
+        $this->inboxService = new UnifiedInboxService($org);
 
         $validated = $request->validate([
             'title' => 'required|string|max:255',
@@ -267,9 +266,9 @@ class UnifiedInboxController extends Controller
     /**
      * Get inbox statistics
      */
-    public function statistics(Request $request, $orgId)
+    public function statistics(Request $request, string $org)
     {
-        $this->inboxService = new UnifiedInboxService($orgId);
+        $this->inboxService = new UnifiedInboxService($org);
 
         try {
             $stats = $this->inboxService->getStatistics();
