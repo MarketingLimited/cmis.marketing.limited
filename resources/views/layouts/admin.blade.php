@@ -213,10 +213,10 @@
                     <span class="mr-2 sm:mr-3">التكاملات</span>
                 </a>
 
-                <a href="{{ route('orgs.offerings.index', ['org' => $currentOrg]) }}"
-                   class="flex items-center px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base text-gray-700 dark:text-gray-300 rounded-lg hover:bg-blue-50 dark:hover:bg-gray-700 transition {{ request()->routeIs('offerings.*') || request()->routeIs('products.*') || request()->routeIs('services.*') ? 'bg-blue-50 text-blue-600 font-semibold' : '' }}">
+                <a href="{{ route('orgs.products', ['org' => $currentOrg]) }}"
+                   class="flex items-center px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base text-gray-700 dark:text-gray-300 rounded-lg hover:bg-blue-50 dark:hover:bg-gray-700 transition {{ request()->routeIs('orgs.products') || request()->routeIs('orgs.services') ? 'bg-blue-50 text-blue-600 font-semibold' : '' }}">
                     <i class="fas fa-box text-base sm:text-lg w-5 sm:w-6"></i>
-                    <span class="mr-2 sm:mr-3">العروض</span>
+                    <span class="mr-2 sm:mr-3">المنتجات</span>
                 </a>
                 @else
                 <div class="px-4 py-3 text-gray-600 dark:text-gray-400 text-sm">
