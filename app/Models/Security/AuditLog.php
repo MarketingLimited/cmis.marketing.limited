@@ -43,14 +43,7 @@ class AuditLog extends BaseModel
         'deleted_by' => 'string',
     ];
 
-    
 
-    /**
-     * Scope to get logs for a specific organization
-     */
-    public function scopeForOrg($query, string $orgId)
-    {
-        return $query->where('org_id', $orgId);
 
     /**
      * Scope to get logs for a specific actor
@@ -58,6 +51,7 @@ class AuditLog extends BaseModel
     public function scopeByActor($query, string $actor)
     {
         return $query->where('actor', $actor);
+    }
 
     /**
      * Scope to get logs for a specific action
@@ -65,6 +59,7 @@ class AuditLog extends BaseModel
     public function scopeByAction($query, string $action)
     {
         return $query->where('action', $action);
+    }
 
     /**
      * Scope to get recent logs
@@ -72,4 +67,5 @@ class AuditLog extends BaseModel
     public function scopeRecent($query, int $hours = 24)
     {
         return $query->where('ts', '>=', now()->subHours($hours));
+    }
 }
