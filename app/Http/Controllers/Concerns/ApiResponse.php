@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Concerns;
 
+use App\Http\Controllers\Concerns\ApiResponse;
 use Illuminate\Http\JsonResponse;
 
 /**

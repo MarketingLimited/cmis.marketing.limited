@@ -37,11 +37,14 @@ class PermissionsSeeder extends Seeder
             ['code' => 'permission.revoke', 'name' => 'Revoke Permissions', 'category' => 'access_control', 'is_dangerous' => true],
 
             // Campaign Management
-            ['code' => 'campaign.view', 'name' => 'View Campaigns', 'category' => 'campaigns', 'is_dangerous' => false],
-            ['code' => 'campaign.create', 'name' => 'Create Campaigns', 'category' => 'campaigns', 'is_dangerous' => false],
-            ['code' => 'campaign.edit', 'name' => 'Edit Campaigns', 'category' => 'campaigns', 'is_dangerous' => false],
-            ['code' => 'campaign.delete', 'name' => 'Delete Campaigns', 'category' => 'campaigns', 'is_dangerous' => false],
-            ['code' => 'campaign.publish', 'name' => 'Publish Campaigns', 'category' => 'campaigns', 'is_dangerous' => false],
+            ['code' => 'cmis.campaigns.view', 'name' => 'View Campaigns', 'category' => 'campaigns', 'is_dangerous' => false],
+            ['code' => 'cmis.campaigns.create', 'name' => 'Create Campaigns', 'category' => 'campaigns', 'is_dangerous' => false],
+            ['code' => 'cmis.campaigns.update', 'name' => 'Update Campaigns', 'category' => 'campaigns', 'is_dangerous' => false],
+            ['code' => 'cmis.campaigns.delete', 'name' => 'Delete Campaigns', 'category' => 'campaigns', 'is_dangerous' => false],
+            ['code' => 'cmis.campaigns.restore', 'name' => 'Restore Campaigns', 'category' => 'campaigns', 'is_dangerous' => false],
+            ['code' => 'cmis.campaigns.force_delete', 'name' => 'Force Delete Campaigns', 'category' => 'campaigns', 'is_dangerous' => true],
+            ['code' => 'cmis.campaigns.publish', 'name' => 'Publish Campaigns', 'category' => 'campaigns', 'is_dangerous' => false],
+            ['code' => 'cmis.campaigns.view_analytics', 'name' => 'View Campaign Analytics', 'category' => 'campaigns', 'is_dangerous' => false],
 
             // Creative Assets
             ['code' => 'creative.view', 'name' => 'View Creative Assets', 'category' => 'creative', 'is_dangerous' => false],

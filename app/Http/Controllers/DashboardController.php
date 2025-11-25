@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\ApiResponse;
 use App\Models\AiGeneratedCampaign;
 use App\Models\AiModel;
 use App\Models\AiRecommendation;

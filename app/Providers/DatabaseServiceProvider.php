@@ -41,6 +41,12 @@ class DatabaseServiceProvider extends ServiceProvider
         // Event::listen(StatementPrepared::class, function ($event) {
         //     $this->setOrgIdForRLS();
         // });
+
+        // Set PostgreSQL search_path after connection is established
+        // This ensures all CMIS schemas are searchable
+        DB::connection('pgsql')->getPdo()->exec(
+            "SET search_path TO cmis, public, cmis_refactored, cmis_analytics, cmis_ai_analytics, cmis_ops"
+        );
     }
 
     /**

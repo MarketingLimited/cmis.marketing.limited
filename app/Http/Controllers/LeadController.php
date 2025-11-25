@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\ApiResponse;
 use App\Models\Lead\Lead;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;

@@ -947,6 +947,35 @@ Route::middleware(['auth:sanctum', 'validate.org.access', 'org.context'])
 
     /*
     |----------------------------------------------------------------------
+    | Audience Targeting - Fetch audiences from ad platforms
+    |----------------------------------------------------------------------
+    | Custom audiences, lookalike audiences, interests, behaviors, demographics
+    */
+    Route::prefix('audience-targeting')->name('audience-targeting.')->group(function () {
+        // Get all targeting options for platform and ad account
+        Route::get('/all', [App\Http\Controllers\Api\AudienceTargetingController::class, 'getAllTargetingOptions'])->name('all');
+
+        // Custom audiences (website visitors, customer lists, app users)
+        Route::get('/custom-audiences', [App\Http\Controllers\Api\AudienceTargetingController::class, 'getCustomAudiences'])->name('custom');
+
+        // Lookalike audiences (similar audiences based on custom audiences)
+        Route::get('/lookalike-audiences', [App\Http\Controllers\Api\AudienceTargetingController::class, 'getLookalikeAudiences'])->name('lookalike');
+
+        // Interest targeting (search for interests)
+        Route::get('/interests', [App\Http\Controllers\Api\AudienceTargetingController::class, 'searchInterests'])->name('interests');
+
+        // Behavior/In-market audiences
+        Route::get('/behaviors', [App\Http\Controllers\Api\AudienceTargetingController::class, 'getBehaviors'])->name('behaviors');
+
+        // Demographics (age, gender, education, etc.)
+        Route::get('/demographics', [App\Http\Controllers\Api\AudienceTargetingController::class, 'getDemographics'])->name('demographics');
+
+        // Get connected ad accounts
+        Route::get('/ad-accounts', [App\Http\Controllers\Api\AudienceTargetingController::class, 'getConnectedAdAccounts'])->name('ad-accounts');
+    });
+
+    /*
+    |----------------------------------------------------------------------
     | Meta Posts (Facebook & Instagram Organic Posts) - Phase 4
     |----------------------------------------------------------------------
     | Fetch existing organic posts and create ad campaigns from them

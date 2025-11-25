@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\ApiResponse;
 use App\Services\AIInsightsService;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;

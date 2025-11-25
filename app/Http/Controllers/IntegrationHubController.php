@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\ApiResponse;
 use App\Services\IntegrationHubService;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;

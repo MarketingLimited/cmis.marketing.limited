@@ -94,9 +94,14 @@
                         <span class="font-medium">إدارة الفريق</span>
                     </a>
 
-                    <a href="{{ route('orgs.settings.index', ['org' => $currentOrg]) }}" class="sidebar-item flex items-center gap-3 px-4 py-3 rounded-xl {{ request()->routeIs('orgs.settings.*') ? 'bg-white/20 text-white shadow-lg' : 'text-white/80 hover:bg-white/10' }}">
-                        <i class="fas fa-cog text-lg w-6"></i>
-                        <span class="font-medium">الإعدادات</span>
+                    <a href="{{ route('orgs.settings.user', ['org' => $currentOrg]) }}" class="sidebar-item flex items-center gap-3 px-4 py-3 rounded-xl {{ request()->routeIs('orgs.settings.user') || request()->routeIs('orgs.settings.profile') || request()->routeIs('orgs.settings.notifications') || request()->routeIs('orgs.settings.password') || request()->routeIs('orgs.settings.sessions') ? 'bg-white/20 text-white shadow-lg' : 'text-white/80 hover:bg-white/10' }}">
+                        <i class="fas fa-user-cog text-lg w-6"></i>
+                        <span class="font-medium">إعدادات المستخدم</span>
+                    </a>
+
+                    <a href="{{ route('orgs.settings.organization', ['org' => $currentOrg]) }}" class="sidebar-item flex items-center gap-3 px-4 py-3 rounded-xl {{ request()->routeIs('orgs.settings.organization') || request()->routeIs('orgs.settings.team.*') || request()->routeIs('orgs.settings.api-tokens.*') ? 'bg-white/20 text-white shadow-lg' : 'text-white/80 hover:bg-white/10' }}">
+                        <i class="fas fa-building text-lg w-6"></i>
+                        <span class="font-medium">إعدادات المنظمة</span>
                     </a>
                     @endif
                     @endauth
@@ -219,17 +224,17 @@
                                         <p class="text-white/80 text-xs">{{ Auth::user()->email }}</p>
                                     </div>
                                     <div class="p-2">
-                                        <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-50 transition">
-                                            <i class="fas fa-user text-gray-600 w-5"></i>
-                                            <span class="text-sm text-gray-700">الملف الشخصي</span>
-                                        </a>
                                         @php
                                             $userOrg = auth()->user()->active_org_id ?? auth()->user()->current_org_id ?? auth()->user()->org_id ?? request()->route('org');
                                         @endphp
                                         @if($userOrg)
-                                        <a href="{{ route('orgs.settings.index', ['org' => $userOrg]) }}" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-50 transition">
-                                            <i class="fas fa-cog text-gray-600 w-5"></i>
-                                            <span class="text-sm text-gray-700">الإعدادات</span>
+                                        <a href="{{ route('orgs.settings.user', ['org' => $userOrg]) }}" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-50 transition">
+                                            <i class="fas fa-user-cog text-gray-600 w-5"></i>
+                                            <span class="text-sm text-gray-700">إعدادات المستخدم</span>
+                                        </a>
+                                        <a href="{{ route('orgs.settings.organization', ['org' => $userOrg]) }}" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-50 transition">
+                                            <i class="fas fa-building text-gray-600 w-5"></i>
+                                            <span class="text-sm text-gray-700">إعدادات المنظمة</span>
                                         </a>
                                         @endif
                                         <hr class="my-2">
