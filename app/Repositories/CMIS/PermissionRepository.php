@@ -24,7 +24,7 @@ class PermissionRepository implements PermissionRepositoryInterface
     public function checkPermission(string $userId, string $orgId, string $permissionCode): bool
     {
         $result = DB::select(
-            'SELECT cmis.check_permission(?, ?, ?) as has_permission',
+            'SELECT cmis.check_permission(?::uuid, ?::uuid, ?::text) as has_permission',
             [$userId, $orgId, $permissionCode]
         );
 
