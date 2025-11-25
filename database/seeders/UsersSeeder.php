@@ -123,5 +123,69 @@ class UsersSeeder extends Seeder
         $pdo->exec('ALTER TABLE cmis.users ENABLE ROW LEVEL SECURITY');
 
         $this->command->info('Users seeded successfully! Default password: password');
+
+        // Assign users to organizations with roles
+        $this->assignUsersToOrgs($pdo, $users);
+    }
+
+    /**
+     * Assign users to organizations with appropriate roles.
+     */
+    private function assignUsersToOrgs($pdo, array $users): void
+    {
+        // Get role IDs
+        $ownerRoleId = DB::table('cmis.roles')->where('role_name', 'Owner')->value('role_id');
+        $adminRoleId = DB::table('cmis.roles')->where('role_name', 'Admin')->value('role_id');
+        $managerRoleId = DB::table('cmis.roles')->where('role_name', 'Marketing Manager')->value('role_id');
+
+        if (!$ownerRoleId || !$adminRoleId || !$managerRoleId) {
+            $this->command->warn('Roles not found. Run RolesAndPermissionsSeeder first.');
+            return;
+        }
+
+        // Organization IDs from OrgsSeeder
+        $orgs = [
+            'techvision' => '9a5e0b1c-3d4e-4f5a-8b7c-1d2e3f4a5b6c',
+            'arabic' => '8b6f1a2d-4e5f-5a6b-9c8d-2e3f4a5b6c7d',
+            'fashionhub' => '7c8e2b3f-5f6a-6b7c-0d9e-3f4a5b6c7d8e',
+            'healthwell' => '6d9f3c4a-6a7b-7c8d-1e0f-4a5b6c7d8e9f',
+        ];
+
+        $userOrgs = [
+            // Admin User - Owner of all orgs
+            [$users[0][0], $orgs['techvision'], $ownerRoleId],
+            [$users[0][0], $orgs['arabic'], $ownerRoleId],
+            [$users[0][0], $orgs['fashionhub'], $ownerRoleId],
+            [$users[0][0], $orgs['healthwell'], $ownerRoleId],
+
+            // Sarah Johnson - TechVision Admin
+            [$users[1][0], $orgs['techvision'], $adminRoleId],
+
+            // محمد أحمد - Arabic Marketing Admin
+            [$users[2][0], $orgs['arabic'], $adminRoleId],
+
+            // Emma Williams - FashionHub Manager
+            [$users[3][0], $orgs['fashionhub'], $managerRoleId],
+
+            // David Chen - HealthWell Manager
+            [$users[4][0], $orgs['healthwell'], $managerRoleId],
+
+            // Maria Garcia - TechVision Manager
+            [$users[5][0], $orgs['techvision'], $managerRoleId],
+
+            // Ahmed Al-Rashid - Arabic Marketing Manager
+            [$users[6][0], $orgs['arabic'], $managerRoleId],
+        ];
+
+        $stmt = $pdo->prepare("
+            INSERT INTO cmis.user_orgs (user_id, org_id, role_id, is_active, joined_at)
+            VALUES (?, ?, ?, true, NOW())
+        ");
+
+        foreach ($userOrgs as $userOrg) {
+            $stmt->execute($userOrg);
+        }
+
+        $this->command->info('User-organization relationships created successfully!');
     }
 }
