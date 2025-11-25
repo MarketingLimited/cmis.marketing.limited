@@ -55,7 +55,7 @@
                     <span class="font-medium">المحتوى</span>
                 </a> --}}
 
-                <a href="{{ route('orgs.creative-assets.index', ['org' => $currentOrg]) }}" class="sidebar-item flex items-center gap-3 px-4 py-3 rounded-xl {{ request()->routeIs('orgs.creative-assets.*') ? 'bg-white/20 text-white shadow-lg' : 'text-white/80 hover:bg-white/10' }}">
+                <a href="{{ route('orgs.creative.assets.index', ['org' => $currentOrg]) }}" class="sidebar-item flex items-center gap-3 px-4 py-3 rounded-xl {{ request()->routeIs('orgs.creative.assets.*') ? 'bg-white/20 text-white shadow-lg' : 'text-white/80 hover:bg-white/10' }}">
                     <i class="fas fa-images text-lg w-6"></i>
                     <span class="font-medium">الملفات الإبداعية</span>
                 </a>
