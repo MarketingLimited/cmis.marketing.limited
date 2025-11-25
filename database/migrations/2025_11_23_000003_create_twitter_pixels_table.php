@@ -46,7 +46,7 @@ return new class extends Migration
                 // Foreign keys
                 $table->foreign('org_id')
                     ->references('org_id')
-                    ->on('cmis.organizations')
+                    ->on('cmis.orgs')
                     ->onDelete('cascade');
 
                 // Indexes
@@ -77,7 +77,7 @@ return new class extends Migration
                 // Foreign keys
                 $table->foreign('org_id')
                     ->references('org_id')
-                    ->on('cmis.organizations')
+                    ->on('cmis.orgs')
                     ->onDelete('cascade');
 
                 $table->foreign('pixel_id')

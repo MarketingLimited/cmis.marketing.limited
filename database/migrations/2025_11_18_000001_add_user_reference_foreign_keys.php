@@ -33,7 +33,7 @@ return new class extends Migration
             ['schema' => 'cmis', 'table' => 'user_permissions', 'column' => 'user_id', 'name' => 'fk_user_permissions_user'],
             ['schema' => 'cmis', 'table' => 'user_activities', 'column' => 'user_id', 'name' => 'fk_user_activities_user'],
             ['schema' => 'cmis', 'table' => 'user_sessions', 'column' => 'user_id', 'name' => 'fk_user_sessions_user'],
-            ['schema' => 'cmis', 'table' => 'sessions', 'column' => 'user_id', 'name' => 'fk_sessions_user'],
+            // NOTE: sessions FK is handled by 2025_11_25_210758_fix_sessions_user_id_data_type.php after datatype fix
             ['schema' => 'cmis', 'table' => 'scheduled_social_posts', 'column' => 'user_id', 'name' => 'fk_scheduled_social_posts_user'],
             ['schema' => 'cmis', 'table' => 'security_context_audit', 'column' => 'user_id', 'name' => 'fk_security_context_audit_user'],
 
@@ -162,7 +162,7 @@ return new class extends Migration
             ['schema' => 'cmis', 'table' => 'user_permissions', 'name' => 'fk_user_permissions_user'],
             ['schema' => 'cmis', 'table' => 'user_activities', 'name' => 'fk_user_activities_user'],
             ['schema' => 'cmis', 'table' => 'user_sessions', 'name' => 'fk_user_sessions_user'],
-            ['schema' => 'cmis', 'table' => 'sessions', 'name' => 'fk_sessions_user'],
+            // NOTE: sessions FK is handled by 2025_11_25_210758_fix_sessions_user_id_data_type.php
             ['schema' => 'cmis', 'table' => 'scheduled_social_posts', 'name' => 'fk_scheduled_social_posts_user'],
             ['schema' => 'cmis', 'table' => 'security_context_audit', 'name' => 'fk_security_context_audit_user'],
             ['schema' => 'cmis', 'table' => 'audience_templates', 'name' => 'fk_audience_templates_created_by'],

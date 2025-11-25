@@ -5,12 +5,12 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
 
 class UsersSeeder extends Seeder
 {
     /**
      * Seed demo users for the application.
+     * Uses fixed UUIDs from SeederConstants for consistency.
      * Default password for all users: password
      */
     public function run(): void
@@ -29,9 +29,10 @@ class UsersSeeder extends Seeder
         $hashedPassword = Hash::make('password');
         $now = now()->toDateTimeString();
 
+        // Use fixed UUIDs from SeederConstants for consistency across seeders
         $users = [
             [
-                'd76b3d33-4d67-4dd6-9df9-845a18ba3435',
+                SeederConstants::USER_ADMIN,
                 'Admin User',
                 'admin@cmis.test',
                 $now,
@@ -42,7 +43,7 @@ class UsersSeeder extends Seeder
                 null,
             ],
             [
-                (string) Str::uuid(),
+                SeederConstants::USER_SARAH,
                 'Sarah Johnson',
                 'sarah@techvision.com',
                 $now,
@@ -53,7 +54,7 @@ class UsersSeeder extends Seeder
                 null,
             ],
             [
-                (string) Str::uuid(),
+                SeederConstants::USER_MOHAMED,
                 'محمد أحمد',
                 'mohamed@arabic-marketing.com',
                 $now,
@@ -64,7 +65,7 @@ class UsersSeeder extends Seeder
                 null,
             ],
             [
-                (string) Str::uuid(),
+                SeederConstants::USER_EMMA,
                 'Emma Williams',
                 'emma@fashionhub.com',
                 $now,
@@ -75,7 +76,7 @@ class UsersSeeder extends Seeder
                 null,
             ],
             [
-                (string) Str::uuid(),
+                SeederConstants::USER_DAVID,
                 'David Chen',
                 'david@healthwell.com',
                 $now,
@@ -86,7 +87,7 @@ class UsersSeeder extends Seeder
                 null,
             ],
             [
-                (string) Str::uuid(),
+                SeederConstants::USER_MARIA,
                 'Maria Garcia',
                 'maria@techvision.com',
                 $now,
@@ -97,7 +98,7 @@ class UsersSeeder extends Seeder
                 null,
             ],
             [
-                (string) Str::uuid(),
+                SeederConstants::USER_AHMED,
                 'Ahmed Al-Rashid',
                 'ahmed@arabic-marketing.com',
                 $now,
@@ -130,25 +131,21 @@ class UsersSeeder extends Seeder
 
     /**
      * Assign users to organizations with appropriate roles.
+     * Uses SeederConstants for role and org IDs.
      */
     private function assignUsersToOrgs($pdo, array $users): void
     {
-        // Get role IDs
-        $ownerRoleId = DB::table('cmis.roles')->where('role_name', 'Owner')->value('role_id');
-        $adminRoleId = DB::table('cmis.roles')->where('role_name', 'Admin')->value('role_id');
-        $managerRoleId = DB::table('cmis.roles')->where('role_name', 'Marketing Manager')->value('role_id');
+        // Use SeederConstants for role IDs - no database query needed
+        $ownerRoleId = SeederConstants::ROLE_OWNER;
+        $adminRoleId = SeederConstants::ROLE_ADMIN;
+        $managerRoleId = SeederConstants::ROLE_MARKETING_MANAGER;
 
-        if (!$ownerRoleId || !$adminRoleId || !$managerRoleId) {
-            $this->command->warn('Roles not found. Run RolesAndPermissionsSeeder first.');
-            return;
-        }
-
-        // Organization IDs from OrgsSeeder
+        // Use SeederConstants for organization IDs
         $orgs = [
-            'techvision' => '9a5e0b1c-3d4e-4f5a-8b7c-1d2e3f4a5b6c',
-            'arabic' => '8b6f1a2d-4e5f-5a6b-9c8d-2e3f4a5b6c7d',
-            'fashionhub' => '7c8e2b3f-5f6a-6b7c-0d9e-3f4a5b6c7d8e',
-            'healthwell' => '6d9f3c4a-6a7b-7c8d-1e0f-4a5b6c7d8e9f',
+            'techvision' => SeederConstants::ORG_TECHVISION,
+            'arabic' => SeederConstants::ORG_ARABIC_MARKETING,
+            'fashionhub' => SeederConstants::ORG_FASHIONHUB,
+            'healthwell' => SeederConstants::ORG_HEALTHWELL,
         ];
 
         $userOrgs = [
