@@ -160,7 +160,7 @@
                 <i class="fas fa-building text-xl sm:text-2xl md:text-3xl mb-1 sm:mb-2"></i>
                 <span class="text-xs sm:text-sm font-semibold text-center">مؤسسة جديدة</span>
             </a>
-            <a href="{{ route('orgs.creative-assets.index', ['org' => $currentOrg->org_id]) }}" class="flex flex-col items-center p-3 sm:p-4 bg-gradient-to-br from-purple-500 to-purple-600 text-white rounded-lg hover:shadow-lg transition">
+            <a href="{{ route('orgs.creative.assets.index', ['org' => $currentOrg->org_id]) }}" class="flex flex-col items-center p-3 sm:p-4 bg-gradient-to-br from-purple-500 to-purple-600 text-white rounded-lg hover:shadow-lg transition">
                 <i class="fas fa-palette text-xl sm:text-2xl md:text-3xl mb-1 sm:mb-2"></i>
                 <span class="text-xs sm:text-sm font-semibold text-center">محتوى إبداعي</span>
             </a>

@@ -177,7 +177,7 @@
 
                 <div class="pt-3 sm:pt-4 pb-1 sm:pb-2 text-[10px] sm:text-xs font-semibold text-gray-400 uppercase px-3 sm:px-4">المحتوى</div>
 
-                <a href="{{ route('orgs.creative-assets.index', ['org' => $currentOrg]) }}"
+                <a href="{{ route('orgs.creative.assets.index', ['org' => $currentOrg]) }}"
                    class="flex items-center px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base text-gray-700 dark:text-gray-300 rounded-lg hover:bg-blue-50 dark:hover:bg-gray-700 transition {{ request()->routeIs('creative.*') ? 'bg-blue-50 text-blue-600 font-semibold' : '' }}">
                     <i class="fas fa-palette text-base sm:text-lg w-5 sm:w-6"></i>
                     <span class="mr-2 sm:mr-3">الإبداع</span>
