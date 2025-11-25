@@ -340,10 +340,10 @@
                             @php
                                 $currentOrg = auth()->user()->active_org_id ?? auth()->user()->current_org_id ?? auth()->user()->org_id ?? request()->route('org');
                             @endphp
-                            @if($currentOrg)
-                            <a href="{{ route('orgs.profile', ['org' => $currentOrg]) }}" class="block px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-t-lg">
+                            <a href="{{ route('profile') }}" class="block px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-t-lg">
                                 <i class="fas fa-user ml-2"></i> الملف الشخصي
                             </a>
+                            @if($currentOrg)
                             <a href="{{ route('orgs.settings.index', ['org' => $currentOrg]) }}" class="block px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">
                                 <i class="fas fa-cog ml-2"></i> الإعدادات
                             </a>
