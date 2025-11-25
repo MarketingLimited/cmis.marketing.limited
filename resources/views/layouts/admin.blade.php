@@ -315,7 +315,7 @@
                                     $currentOrg = auth()->user()->active_org_id ?? auth()->user()->current_org_id ?? auth()->user()->org_id ?? request()->route('org');
                                 @endphp
                                 @if($currentOrg)
-                                <a href="{{ route('orgs.settings.notifications', ['org' => $currentOrg]) }}" class="text-sm text-blue-600 hover:text-blue-700">عرض جميع الإشعارات</a>
+                                <a href="{{ route('orgs.settings.index', ['org' => $currentOrg]) }}" class="text-sm text-blue-600 hover:text-blue-700">عرض جميع الإشعارات</a>
                                 @endif
                             </div>
                         </div>
