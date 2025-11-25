@@ -72,9 +72,10 @@ CREATE INDEX idx_orgs_id ON cmis.orgs USING btree (org_id);
 CREATE INDEX idx_performance_metrics_campaign_time ON cmis.performance_metrics USING btree (campaign_id, observed_at DESC) WHERE (deleted_at IS NULL);
 CREATE INDEX idx_reference_entities_metadata_gin ON cmis.reference_entities USING gin (metadata jsonb_path_ops);
 CREATE INDEX idx_scheduled_posts_status_time ON cmis.scheduled_social_posts USING btree (status, scheduled_at) WHERE (deleted_at IS NULL);
-CREATE INDEX idx_scheduled_reports_entity ON cmis.scheduled_reports USING btree (entity_id);
-CREATE INDEX idx_scheduled_reports_next_run ON cmis.scheduled_reports USING btree (next_run_at) WHERE (is_active = true);
-CREATE INDEX idx_scheduled_reports_type ON cmis.scheduled_reports USING btree (report_type);
+-- COMMENTED OUT: Table created by migration 2025_11_21_000001
+-- CREATE INDEX idx_scheduled_reports_entity ON cmis.scheduled_reports USING btree (entity_id);
+-- CREATE INDEX idx_scheduled_reports_next_run ON cmis.scheduled_reports USING btree (next_run_at) WHERE (is_active = true);
+-- CREATE INDEX idx_scheduled_reports_type ON cmis.scheduled_reports USING btree (report_type);
 CREATE INDEX idx_security_audit_org_created ON cmis.security_context_audit USING btree (org_id, created_at DESC);
 CREATE INDEX idx_security_audit_user_created ON cmis.security_context_audit USING btree (user_id, created_at DESC);
 CREATE INDEX idx_team_account_access_user_social ON cmis.team_account_access USING btree (org_user_id, social_account_id);

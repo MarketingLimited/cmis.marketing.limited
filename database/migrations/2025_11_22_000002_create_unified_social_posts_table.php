@@ -37,7 +37,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('cmis.social_posts', function (Blueprint $table) {
+        // Track if we create social_posts table (for dependent table creation)
+        $createdSocialPosts = false;
+
+        // Skip if table already exists from earlier migration
+        if (!Schema::hasTable('cmis.social_posts')) {
+            $createdSocialPosts = true;
+            Schema::create('cmis.social_posts', function (Blueprint $table) {
             // ==================================================================
             // Primary & Organization
             // ==================================================================
@@ -126,28 +132,31 @@ return new class extends Migration
             $table->foreign('campaign_id')->references('id')->on('cmis.campaigns')->onDelete('set null');
         });
 
-        // ==================================================================
-        // Indexes for Performance
-        // ==================================================================
-        DB::statement("CREATE INDEX idx_social_posts_status_scheduled ON cmis.social_posts (status, scheduled_at) WHERE status = 'scheduled';");
-        DB::statement("CREATE INDEX idx_social_posts_platform_status ON cmis.social_posts (platform, status, created_at DESC);");
-        DB::statement("CREATE INDEX idx_social_posts_campaign ON cmis.social_posts (campaign_id, published_at DESC) WHERE campaign_id IS NOT NULL;");
-        DB::statement("CREATE INDEX idx_social_posts_org_published ON cmis.social_posts (org_id, published_at DESC) WHERE published_at IS NOT NULL;");
+            // ==================================================================
+            // Indexes for Performance
+            // ==================================================================
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_social_posts_status_scheduled ON cmis.social_posts (status, scheduled_at) WHERE status = 'scheduled';");
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_social_posts_platform_status ON cmis.social_posts (platform, status, created_at DESC);");
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_social_posts_campaign ON cmis.social_posts (campaign_id, published_at DESC) WHERE campaign_id IS NOT NULL;");
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_social_posts_org_published ON cmis.social_posts (org_id, published_at DESC) WHERE published_at IS NOT NULL;");
 
-        // JSONB indexes
-        DB::statement("CREATE INDEX idx_social_posts_media_gin ON cmis.social_posts USING GIN (media);");
-        DB::statement("CREATE INDEX idx_social_posts_options_gin ON cmis.social_posts USING GIN (options);");
-        DB::statement("CREATE INDEX idx_social_posts_tags_gin ON cmis.social_posts USING GIN (tags);");
+            // JSONB indexes
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_social_posts_media_gin ON cmis.social_posts USING GIN (media);");
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_social_posts_options_gin ON cmis.social_posts USING GIN (options);");
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_social_posts_tags_gin ON cmis.social_posts USING GIN (tags);");
 
-        // ==================================================================
-        // Enable Row-Level Security
-        // ==================================================================
-        $this->enableRLS('cmis.social_posts');
+            // ==================================================================
+            // Enable Row-Level Security
+            // ==================================================================
+            $this->enableRLS('cmis.social_posts');
+        }
 
         // ==================================================================
         // Create Helper Views
         // ==================================================================
-
+        // COMMENTED OUT: These views may reference columns that don't exist if social_posts table
+        // was created by an earlier migration with a different schema
+        /*
         // View for published posts only
         DB::statement("
             CREATE VIEW cmis.published_posts AS
@@ -187,11 +196,14 @@ return new class extends Migration
             WHERE status = 'failed'
             ORDER BY failed_at DESC;
         ");
+        */
 
         // ==================================================================
         // Create Post History Table (Audit Trail)
         // ==================================================================
-        Schema::create('cmis.social_post_history', function (Blueprint $table) {
+        // Only create if social_posts was just created with compatible schema
+        if ($createdSocialPosts && !Schema::hasTable('cmis.social_post_history')) {
+            Schema::create('cmis.social_post_history', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->uuid('post_id')->index();
             $table->uuid('org_id');
@@ -207,9 +219,10 @@ return new class extends Migration
             $table->foreign('org_id')->references('org_id')->on('cmis.orgs')->onDelete('cascade');
         });
 
-        DB::statement("CREATE INDEX idx_post_history_post ON cmis.social_post_history (post_id, created_at DESC);");
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_post_history_post ON cmis.social_post_history (post_id, created_at DESC);");
 
-        $this->enableRLS('cmis.social_post_history');
+            $this->enableRLS('cmis.social_post_history');
+        }
     }
 
     /**

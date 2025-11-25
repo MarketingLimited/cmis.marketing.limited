@@ -23,7 +23,7 @@ class WorkflowController extends Controller
     /**
      * Display workflow list
      */
-    public function index()
+    public function index(string $org)
     {
         try {
             $workflows = \DB::select("
@@ -34,7 +34,7 @@ class WorkflowController extends Controller
                 WHERE w.org_id = ?
                 ORDER BY w.created_at DESC
                 LIMIT 50
-            ", [Auth::user()->current_org_id]);
+            ", [$org]);
 
             return view('workflows.index', compact('workflows'));
         } catch (\Exception $e) {
@@ -46,7 +46,7 @@ class WorkflowController extends Controller
     /**
      * Show workflow details
      */
-    public function show($flowId)
+    public function show(string $org, $flowId)
     {
         try {
             $status = $this->workflowService->getWorkflowStatus($flowId);
@@ -58,14 +58,14 @@ class WorkflowController extends Controller
             ]);
         } catch (\Exception $e) {
             Log::error('Workflow show error: ' . $e->getMessage());
-            return redirect()->route('workflows.index')->with('error', 'فشل تحميل سير العمل');
+            return redirect()->route('orgs.workflows.index', ['org' => $org])->with('error', 'فشل تحميل سير العمل');
         }
     }
 
     /**
      * Initialize campaign workflow
      */
-    public function initializeCampaign(Request $request)
+    public function initializeCampaign(Request $request, string $org)
     {
         $validated = $request->validate([
             'campaign_id' => 'required|uuid',
@@ -76,7 +76,7 @@ class WorkflowController extends Controller
             $flowId = $this->workflowService->initializeCampaignWorkflow(
                 $validated['campaign_id'],
                 $validated['campaign_name'],
-                Auth::user()->current_org_id
+                $org
             );
 
             return response()->json([
@@ -97,7 +97,7 @@ class WorkflowController extends Controller
     /**
      * Complete workflow step
      */
-    public function completeStep(Request $request, $flowId, $stepNumber)
+    public function completeStep(Request $request, string $org, $flowId, $stepNumber)
     {
         $validated = $request->validate([
             'notes' => 'nullable|string',
@@ -129,7 +129,7 @@ class WorkflowController extends Controller
     /**
      * Assign step to user
      */
-    public function assignStep(Request $request, $flowId, $stepNumber)
+    public function assignStep(Request $request, string $org, $flowId, $stepNumber)
     {
         $validated = $request->validate([
             'user_id' => 'required|uuid',
@@ -158,7 +158,7 @@ class WorkflowController extends Controller
     /**
      * Add comment to step
      */
-    public function addComment(Request $request, $flowId, $stepNumber)
+    public function addComment(Request $request, string $org, $flowId, $stepNumber)
     {
         $validated = $request->validate([
             'comment' => 'required|string|max:1000',

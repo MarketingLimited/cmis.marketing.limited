@@ -1,5 +1,9 @@
 @extends('layouts.admin')
 
+@php
+    $currentOrg = $currentOrg ?? request()->route('org') ?? auth()->user()->active_org_id ?? auth()->user()->org_id;
+@endphp
+
 @section('title', 'لوحة التحليلات')
 
 @section('content')
@@ -18,7 +22,7 @@
                 <option value="90">آخر 90 يوم</option>
                 <option value="365">آخر سنة</option>
             </select>
-            <a href="{{ route('analytics.export') }}" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+            <a href="{{ route('orgs.analytics.export', ['org' => $currentOrg]) }}" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
                 <svg class="ml-2 -mr-1 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
                 </svg>

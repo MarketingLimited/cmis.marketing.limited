@@ -48,10 +48,12 @@ Route::post('/logout', [LoginController::class, 'destroy'])
 // Public Routes - Home page redirects appropriately
 Route::get('/', function () {
     if (auth()->check()) {
-        // If user has active org, go to dashboard; otherwise, choose org
+        // If user has active org, go to that org's dashboard; otherwise, choose org
         $user = auth()->user();
-        if ($user->active_org_id) {
-            return redirect()->route('dashboard.index');
+        $orgId = $user->active_org_id ?? $user->current_org_id ?? $user->org_id;
+
+        if ($orgId) {
+            return redirect()->route('orgs.dashboard.index', ['org' => $orgId]);
         }
         return redirect()->route('orgs.index');
     }
@@ -61,40 +63,7 @@ Route::get('/', function () {
 // Protected Routes - Require Authentication
 Route::middleware(['auth'])->group(function () {
 
-    // ==================== Dashboard ====================
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard.index');
-    Route::get('/dashboard/data', [DashboardController::class, 'data'])->name('dashboard.data');
-    Route::get('/notifications/latest', [DashboardController::class, 'latest'])->name('notifications.latest');
-    Route::post('/notifications/{notificationId}/read', [DashboardController::class, 'markAsRead'])->name('notifications.markAsRead');
-
-    // ==================== Campaigns ====================
-    Route::prefix('campaigns')->name('campaigns.')->group(function () {
-        Route::get('/', [CampaignController::class, 'index'])->name('index');
-        Route::get('/performance-dashboard', function () {
-            return view('campaigns.performance-dashboard');
-        })->name('performance-dashboard');
-        Route::get('create', [CampaignController::class, 'create'])->name('create');
-        Route::post('/', [CampaignController::class, 'store'])->name('store');
-        Route::get('{campaign}', [CampaignController::class, 'show'])->name('show');
-        Route::get('{campaign}/edit', [CampaignController::class, 'edit'])->name('edit');
-        Route::put('{campaign}', [CampaignController::class, 'update'])->name('update');
-        Route::delete('{campaign}', [CampaignController::class, 'destroy'])->name('destroy');
-        Route::get('{campaign}/performance/{range}', [CampaignController::class, 'performanceByRange'])
-            ->whereIn('range', ['daily', 'weekly', 'monthly', 'yearly'])
-            ->name('performance');
-    });
-
-    // ==================== Campaign Wizard ====================
-    Route::prefix('campaigns/wizard')->name('campaign.wizard.')->group(function () {
-        Route::get('/create', [App\Http\Controllers\Campaign\CampaignWizardController::class, 'create'])->name('create');
-        Route::get('/{session_id}/step/{step}', [App\Http\Controllers\Campaign\CampaignWizardController::class, 'showStep'])->name('step');
-        Route::post('/{session_id}/step/{step}', [App\Http\Controllers\Campaign\CampaignWizardController::class, 'updateStep'])->name('update');
-        Route::get('/{session_id}/save-draft', [App\Http\Controllers\Campaign\CampaignWizardController::class, 'saveDraft'])->name('save-draft');
-        Route::get('/{session_id}/complete', [App\Http\Controllers\Campaign\CampaignWizardController::class, 'complete'])->name('complete');
-        Route::get('/{session_id}/cancel', [App\Http\Controllers\Campaign\CampaignWizardController::class, 'cancel'])->name('cancel');
-    });
-
-    // ==================== User Onboarding ====================
+    // ==================== User Onboarding (No org context needed) ====================
     Route::prefix('onboarding')->name('onboarding.')->group(function () {
         Route::get('/', [App\Http\Controllers\UserOnboardingController::class, 'index'])->name('index');
         Route::get('/step/{step}', [App\Http\Controllers\UserOnboardingController::class, 'showStep'])->name('step');
@@ -106,29 +75,160 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/tips', [App\Http\Controllers\UserOnboardingController::class, 'getTips'])->name('tips');
     });
 
-    // ==================== Organizations ====================
+    // ==================== Organizations List (No specific org context) ====================
     Route::prefix('orgs')->name('orgs.')->group(function () {
         Route::get('/', [OrgController::class, 'index'])->name('index');
         Route::get('/create', function () { return view('orgs.create'); })->name('create');
         Route::post('/', [OrgController::class, 'store'])->name('store');
-        Route::get('/{org}', [OrgController::class, 'show'])->whereUuid('org')->name('show');
-        Route::get('/{org}/edit', [OrgController::class, 'edit'])->whereUuid('org')->name('edit');
-        Route::put('/{org}', [OrgController::class, 'update'])->whereUuid('org')->name('update');
-        Route::get('/{org}/campaigns', [OrgController::class, 'campaigns'])->whereUuid('org')->name('campaigns');
-        Route::get('/{org}/campaigns/compare', [OrgController::class, 'compareCampaigns'])->whereUuid('org')->name('campaigns.compare');
-        Route::get('/{org}/services', [OrgController::class, 'services'])->whereUuid('org')->name('services');
-        Route::get('/{org}/products', [OrgController::class, 'products'])->whereUuid('org')->name('products');
-        Route::post('/{org}/campaigns/export/pdf', [OrgController::class, 'exportComparePdf'])->whereUuid('org')->name('campaigns.export.pdf');
-        Route::post('/{org}/campaigns/export/excel', [OrgController::class, 'exportCompareExcel'])->whereUuid('org')->name('campaigns.export.excel');
+    });
 
-        // ==================== Team Management (NEW) ====================
-        Route::prefix('{org}/team')->name('team.')->whereUuid('org')->group(function () {
+    // ==================== Organization-Specific Routes ====================
+    // All routes under /orgs/{org}/* require org context and validate org access
+    Route::prefix('orgs/{org}')->name('orgs.')->whereUuid('org')->middleware(['validate.org.access'])->group(function () {
+
+        // Organization Management
+        Route::get('/', [OrgController::class, 'show'])->name('show');
+        Route::get('/edit', [OrgController::class, 'edit'])->name('edit');
+        Route::put('/', [OrgController::class, 'update'])->name('update');
+
+        // ==================== Dashboard ====================
+        Route::prefix('dashboard')->name('dashboard.')->group(function () {
+            Route::get('/', [DashboardController::class, 'index'])->name('index');
+            Route::get('/data', [DashboardController::class, 'data'])->name('data');
+        });
+
+        // Notifications (org-specific)
+        Route::get('/notifications/latest', [DashboardController::class, 'latest'])->name('notifications.latest');
+        Route::post('/notifications/{notificationId}/read', [DashboardController::class, 'markAsRead'])->name('notifications.markAsRead');
+
+        // ==================== Campaigns ====================
+        Route::prefix('campaigns')->name('campaigns.')->group(function () {
+            Route::get('/', [CampaignController::class, 'index'])->name('index');
+            Route::get('/performance-dashboard', function () {
+                return view('campaigns.performance-dashboard');
+            })->name('performance-dashboard');
+            Route::get('/compare', [OrgController::class, 'compareCampaigns'])->name('compare');
+            Route::post('/export/pdf', [OrgController::class, 'exportComparePdf'])->name('export.pdf');
+            Route::post('/export/excel', [OrgController::class, 'exportCompareExcel'])->name('export.excel');
+            Route::get('/create', [CampaignController::class, 'create'])->name('create');
+            Route::post('/', [CampaignController::class, 'store'])->name('store');
+            Route::get('/{campaign}', [CampaignController::class, 'show'])->name('show');
+            Route::get('/{campaign}/edit', [CampaignController::class, 'edit'])->name('edit');
+            Route::put('/{campaign}', [CampaignController::class, 'update'])->name('update');
+            Route::delete('/{campaign}', [CampaignController::class, 'destroy'])->name('destroy');
+            Route::get('/{campaign}/performance/{range}', [CampaignController::class, 'performanceByRange'])
+                ->whereIn('range', ['daily', 'weekly', 'monthly', 'yearly'])
+                ->name('performance');
+
+            // Campaign Wizard
+            Route::prefix('wizard')->name('wizard.')->group(function () {
+                Route::get('/create', [App\Http\Controllers\Campaign\CampaignWizardController::class, 'create'])->name('create');
+                Route::get('/{session_id}/step/{step}', [App\Http\Controllers\Campaign\CampaignWizardController::class, 'showStep'])->name('step');
+                Route::post('/{session_id}/step/{step}', [App\Http\Controllers\Campaign\CampaignWizardController::class, 'updateStep'])->name('update');
+                Route::get('/{session_id}/save-draft', [App\Http\Controllers\Campaign\CampaignWizardController::class, 'saveDraft'])->name('save-draft');
+                Route::get('/{session_id}/complete', [App\Http\Controllers\Campaign\CampaignWizardController::class, 'complete'])->name('complete');
+                Route::get('/{session_id}/cancel', [App\Http\Controllers\Campaign\CampaignWizardController::class, 'cancel'])->name('cancel');
+            });
+        });
+
+        // ==================== Products & Services (Org-specific) ====================
+        Route::get('/services', [OrgController::class, 'services'])->name('services');
+        Route::get('/products', [OrgController::class, 'products'])->name('products');
+
+        // ==================== Team Management ====================
+        Route::prefix('team')->name('team.')->group(function () {
             Route::get('/', [App\Http\Controllers\Web\TeamWebController::class, 'index'])->name('index');
             Route::post('/invite', [App\Http\Controllers\Web\TeamWebController::class, 'invite'])->name('invite');
         });
-    });
 
-    // ==================== Offerings ====================
+        // ==================== Analytics ====================
+        Route::prefix('analytics')->name('analytics.')->group(function () {
+            Route::get('/', [EnterpriseAnalyticsController::class, 'enterprise'])->name('index');
+            Route::get('/enterprise', [EnterpriseAnalyticsController::class, 'enterprise'])->name('enterprise');
+            Route::get('/realtime', [EnterpriseAnalyticsController::class, 'realtime'])->name('realtime');
+            Route::get('/campaigns', [EnterpriseAnalyticsController::class, 'campaigns'])->name('campaigns');
+            Route::get('/campaign/{campaign_id}', [EnterpriseAnalyticsController::class, 'campaign'])->name('campaign');
+            Route::get('/kpis', [EnterpriseAnalyticsController::class, 'kpis'])->name('kpis');
+            Route::get('/kpis/{entity_type}/{entity_id}', [EnterpriseAnalyticsController::class, 'kpis'])->name('kpis.entity');
+            Route::get('/legacy', [AnalyticsOverviewController::class, 'index'])->name('legacy');
+            Route::get('/reports', [AnalyticsOverviewController::class, 'index'])->name('reports');
+            Route::get('/metrics', [AnalyticsOverviewController::class, 'index'])->name('metrics');
+        });
+
+        // ==================== Creative ====================
+        Route::prefix('creative')->name('creative.')->group(function () {
+            Route::get('/', [CreativeOverviewController::class, 'index'])->name('index');
+            Route::get('/assets', [CreativeAssetController::class, 'index'])->name('assets.index');
+            Route::get('/ads', [CreativeOverviewController::class, 'index'])->name('ads');
+            Route::get('/templates', [CreativeOverviewController::class, 'index'])->name('templates');
+
+            // Creative Briefs
+            Route::prefix('briefs')->name('briefs.')->group(function () {
+                Route::get('/', [App\Http\Controllers\CreativeBriefController::class, 'index'])->name('index');
+                Route::get('/create', [App\Http\Controllers\CreativeBriefController::class, 'create'])->name('create');
+                Route::post('/', [App\Http\Controllers\CreativeBriefController::class, 'store'])->name('store');
+                Route::get('/{briefId}', [App\Http\Controllers\CreativeBriefController::class, 'show'])->name('show');
+                Route::post('/{briefId}/approve', [App\Http\Controllers\CreativeBriefController::class, 'approve'])->name('approve');
+            });
+        });
+
+        // ==================== Channels ====================
+        Route::prefix('channels')->name('channels.')->group(function () {
+            Route::get('/', [WebChannelController::class, 'index'])->name('index');
+            Route::get('/{channelId}', [WebChannelController::class, 'show'])->name('show');
+        });
+
+        // ==================== AI ====================
+        Route::prefix('ai')->name('ai.')->group(function () {
+            Route::get('/', [AIDashboardController::class, 'index'])->name('index');
+            Route::get('/campaigns', [AIDashboardController::class, 'index'])->name('campaigns');
+            Route::get('/recommendations', [AIDashboardController::class, 'index'])->name('recommendations');
+            Route::get('/models', [AIDashboardController::class, 'index'])->name('models');
+        });
+
+        // ==================== Knowledge Base ====================
+        Route::prefix('knowledge')->name('knowledge.')->group(function () {
+            Route::get('/', [App\Http\Controllers\KnowledgeController::class, 'index'])->name('index');
+            Route::post('/search', [App\Http\Controllers\KnowledgeController::class, 'search'])->name('search');
+            Route::post('/', [App\Http\Controllers\KnowledgeController::class, 'store'])->name('store');
+            Route::get('/domains', [App\Http\Controllers\KnowledgeController::class, 'domains'])->name('domains');
+            Route::get('/domains/{domain}/categories', [App\Http\Controllers\KnowledgeController::class, 'categories'])->name('categories');
+        });
+
+        // ==================== Workflows ====================
+        Route::prefix('workflows')->name('workflows.')->group(function () {
+            Route::get('/', [App\Http\Controllers\WorkflowController::class, 'index'])->name('index');
+            Route::get('/{flowId}', [App\Http\Controllers\WorkflowController::class, 'show'])->name('show');
+            Route::post('/initialize-campaign', [App\Http\Controllers\WorkflowController::class, 'initializeCampaign'])->name('initialize-campaign');
+            Route::post('/{flowId}/steps/{stepNumber}/complete', [App\Http\Controllers\WorkflowController::class, 'completeStep'])->name('complete-step');
+            Route::post('/{flowId}/steps/{stepNumber}/assign', [App\Http\Controllers\WorkflowController::class, 'assignStep'])->name('assign-step');
+            Route::post('/{flowId}/steps/{stepNumber}/comment', [App\Http\Controllers\WorkflowController::class, 'addComment'])->name('add-comment');
+        });
+
+        // ==================== Social Media ====================
+        Route::prefix('social')->name('social.')->group(function () {
+            Route::get('/', function () { return view('social.index'); })->name('index');
+            Route::get('/posts', function () { return view('social.posts'); })->name('posts');
+            Route::get('/scheduler', function () { return view('social.scheduler'); })->name('scheduler');
+            Route::get('/inbox', function () { return view('social.inbox'); })->name('inbox');
+        });
+
+        // ==================== Unified Inbox / Comments ====================
+        Route::prefix('inbox')->name('inbox.')->group(function () {
+            Route::get('/', [UnifiedInboxController::class, 'index'])->name('index');
+            Route::get('/comments', [UnifiedCommentsController::class, 'index'])->name('comments');
+            Route::post('/comments/{comment_id}/reply', [UnifiedCommentsController::class, 'reply'])->name('comments.reply');
+        });
+
+        // ==================== Settings (Org-specific) ====================
+        Route::prefix('settings')->name('settings.')->group(function () {
+            Route::get('/', [App\Http\Controllers\Settings\SettingsController::class, 'index'])->name('index');
+            Route::get('/integrations', [App\Http\Controllers\Settings\SettingsController::class, 'integrations'])->name('integrations');
+        });
+
+    }); // End of Organization-Specific Routes
+
+    // ==================== Offerings (Global - not org-specific) ====================
     Route::get('/offerings', [OfferingsOverviewController::class, 'index'])->name('offerings.index');
     
     Route::prefix('products')->name('products.')->group(function () {
@@ -149,92 +249,8 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/bundles', [BundleController::class, 'index'])->name('offerings.bundles');
 
-    // ==================== Analytics (Legacy) ====================
-    Route::get('/analytics/legacy', [AnalyticsOverviewController::class, 'index'])->name('analytics.legacy');
-    Route::get('/reports', [AnalyticsOverviewController::class, 'index'])->name('analytics.reports');
-    Route::get('/metrics', [AnalyticsOverviewController::class, 'index'])->name('analytics.metrics');
-
-    // ==================== Enterprise Analytics (Phase 9) ====================
-    Route::prefix('analytics')->name('analytics.')->group(function () {
-        // Enterprise Hub - Unified dashboard
-        Route::get('/enterprise', [EnterpriseAnalyticsController::class, 'enterprise'])->name('enterprise');
-
-        // Real-Time Dashboard
-        Route::get('/realtime', [EnterpriseAnalyticsController::class, 'realtime'])->name('realtime');
-
-        // Campaign Analytics
-        Route::get('/campaigns', [EnterpriseAnalyticsController::class, 'campaigns'])->name('campaigns');
-        Route::get('/campaign/{campaign_id}', [EnterpriseAnalyticsController::class, 'campaign'])->name('campaign');
-
-        // KPI Dashboard
-        Route::get('/kpis', [EnterpriseAnalyticsController::class, 'kpis'])->name('kpis');
-        Route::get('/kpis/{entity_type}/{entity_id}', [EnterpriseAnalyticsController::class, 'kpis'])->name('kpis.entity');
-
-        // Default route - redirect to enterprise hub
-        Route::get('/', function () {
-            return redirect()->route('analytics.enterprise');
-        })->name('index');
-    });
-
-    // ==================== Creative ====================
-    Route::get('/creative', [CreativeOverviewController::class, 'index'])->name('creative.index');
-    Route::get('/creative-assets', [CreativeAssetController::class, 'index'])->name('creative-assets.index');
-    Route::get('/ads', [CreativeOverviewController::class, 'index'])->name('creative.ads');
-    Route::get('/templates', [CreativeOverviewController::class, 'index'])->name('creative.templates');
-
-    Route::prefix('briefs')->name('briefs.')->group(function () {
-        Route::get('/', [App\Http\Controllers\CreativeBriefController::class, 'index'])->name('index');
-        Route::get('/create', [App\Http\Controllers\CreativeBriefController::class, 'create'])->name('create');
-        Route::post('/', [App\Http\Controllers\CreativeBriefController::class, 'store'])->name('store');
-        Route::get('/{briefId}', [App\Http\Controllers\CreativeBriefController::class, 'show'])->name('show');
-        Route::post('/{briefId}/approve', [App\Http\Controllers\CreativeBriefController::class, 'approve'])->name('approve');
-    });
-
-    // ==================== Channels ====================
-    Route::prefix('channels')->name('channels.')->group(function () {
-        Route::get('/', [WebChannelController::class, 'index'])->name('index');
-        Route::get('/{channelId}', [WebChannelController::class, 'show'])->name('show');
-    });
-
-    // ==================== AI ====================
-    Route::get('/ai', [AIDashboardController::class, 'index'])->name('ai.index');
-    Route::get('/ai/campaigns', [AIDashboardController::class, 'index'])->name('ai.campaigns');
-    Route::get('/ai/recommendations', [AIDashboardController::class, 'index'])->name('ai.recommendations');
-    Route::get('/ai/models', [AIDashboardController::class, 'index'])->name('ai.models');
-
-    // ==================== Knowledge Base ====================
-    Route::prefix('knowledge')->name('knowledge.')->group(function () {
-        Route::get('/', [App\Http\Controllers\KnowledgeController::class, 'index'])->name('index');
-        Route::post('/search', [App\Http\Controllers\KnowledgeController::class, 'search'])->name('search');
-        Route::post('/', [App\Http\Controllers\KnowledgeController::class, 'store'])->name('store');
-        Route::get('/domains', [App\Http\Controllers\KnowledgeController::class, 'domains'])->name('domains');
-        Route::get('/domains/{domain}/categories', [App\Http\Controllers\KnowledgeController::class, 'categories'])->name('categories');
-    });
-
-    // ==================== Workflows ====================
-    Route::prefix('workflows')->name('workflows.')->group(function () {
-        Route::get('/', [App\Http\Controllers\WorkflowController::class, 'index'])->name('index');
-        Route::get('/{flowId}', [App\Http\Controllers\WorkflowController::class, 'show'])->name('show');
-        Route::post('/initialize-campaign', [App\Http\Controllers\WorkflowController::class, 'initializeCampaign'])->name('initialize-campaign');
-        Route::post('/{flowId}/steps/{stepNumber}/complete', [App\Http\Controllers\WorkflowController::class, 'completeStep'])->name('complete-step');
-        Route::post('/{flowId}/steps/{stepNumber}/assign', [App\Http\Controllers\WorkflowController::class, 'assignStep'])->name('assign-step');
-        Route::post('/{flowId}/steps/{stepNumber}/comment', [App\Http\Controllers\WorkflowController::class, 'addComment'])->name('add-comment');
-    });
-
-    // ==================== Social Media ====================
-    Route::prefix('social')->name('social.')->group(function () {
-        Route::get('/', function () { return view('social.index'); })->name('index');
-        Route::get('/posts', function () { return view('social.posts'); })->name('posts');
-        Route::get('/scheduler', function () { return view('social.scheduler'); })->name('scheduler');
-        Route::get('/inbox', function () { return view('social.inbox'); })->name('inbox');
-    });
-
-    // ==================== Unified Inbox / Comments (NEW) ====================
-    Route::prefix('inbox')->name('inbox.')->group(function () {
-        Route::get('/', [UnifiedInboxController::class, 'index'])->name('index');
-        Route::get('/comments', [UnifiedCommentsController::class, 'index'])->name('comments');
-        Route::post('/comments/{comment_id}/reply', [UnifiedCommentsController::class, 'reply'])->name('comments.reply');
-    });
+    // ==================== User-Level Routes (No org context) ====================
+    // These routes are user-centric rather than org-centric
 
     // ==================== User Management ====================
     Route::prefix('users')->name('users.')->group(function () {
@@ -244,13 +260,13 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/{userId}/edit', function ($userId) { return view('users.edit', ['userId' => $userId]); })->name('edit');
     });
 
-    // ==================== Settings ====================
+    // ==================== User Settings (User-level, not org-specific) ====================
     Route::prefix('settings')->name('settings.')->group(function () {
         Route::get('/', [App\Http\Controllers\Settings\SettingsController::class, 'index'])->name('index');
         Route::get('/profile', [App\Http\Controllers\Settings\SettingsController::class, 'profile'])->name('profile');
         Route::get('/notifications', [App\Http\Controllers\Settings\SettingsController::class, 'notifications'])->name('notifications');
         Route::get('/security', [App\Http\Controllers\Settings\SettingsController::class, 'security'])->name('security');
-        Route::get('/integrations', [App\Http\Controllers\Settings\SettingsController::class, 'integrations'])->name('integrations');
+        // Note: Integrations moved to org-specific settings at /orgs/{org}/settings/integrations
     });
 
     // ==================== Subscription ====================

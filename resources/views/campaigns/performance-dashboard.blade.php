@@ -2,6 +2,10 @@
 
 @section('title', 'Campaign Performance Dashboard')
 
+@php
+    $currentOrg = $currentOrg ?? request()->route('org') ?? auth()->user()->active_org_id ?? auth()->user()->org_id;
+@endphp
+
 @push('styles')
 <style>
     .metric-card {

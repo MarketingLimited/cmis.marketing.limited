@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Asset;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Concerns\ApiResponse;
 use App\Models\Asset\ImageAsset;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;

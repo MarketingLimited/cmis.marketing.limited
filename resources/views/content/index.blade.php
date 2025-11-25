@@ -1,12 +1,16 @@
 @extends('layouts.admin')
 
+@php
+    $currentOrg = $currentOrg ?? request()->route('org') ?? auth()->user()->active_org_id ?? auth()->user()->org_id;
+@endphp
+
 @section('title', 'Content Library')
 
 @section('content')
 <div class="max-w-7xl mx-auto">
     <div class="flex justify-between items-center mb-6">
         <h1 class="text-3xl font-bold text-gray-900">Content Library</h1>
-        <a href="{{  route('content.create')  }}" class="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-md">
+        <a href="{{  route('orgs.content.create', ['org' => $currentOrg])  }}" class="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-md">
             <i class="fas fa-plus mr-2"></i>
             New Content
         </a>
@@ -20,7 +24,7 @@
 
     <!-- Filters -->
     <div class="bg-white rounded-lg shadow mb-6 p-4">
-        <form method="GET" action="{{  route('content.index')  }}" class="flex flex-wrap gap-4">
+        <form method="GET" action="{{  route('orgs.content.index', ['org' => $currentOrg])  }}" class="flex flex-wrap gap-4">
             <div class="flex-1 min-w-[200px]">
                 <input type="text" name="search" placeholder="Search content..."
                        value="{{  request('search')  }}"
@@ -96,16 +100,16 @@
                     @endif
 
                     <div class="flex justify-between items-center pt-4 border-t border-gray-200">
-                        <a href="{{  route('content.show', $item->content_id ?? $item->id)  }}"
+                        <a href="{{  route('orgs.content.show', ['org' => $currentOrg, 'content' => $item->content_id ?? $item->id])  }}"
                            class="text-indigo-600 hover:text-indigo-800 text-sm font-medium">
                             View Details
                         </a>
                         <div class="flex space-x-2">
-                            <a href="{{  route('content.edit', $item->content_id ?? $item->id)  }}"
+                            <a href="{{  route('orgs.content.edit', ['org' => $currentOrg, 'content' => $item->content_id ?? $item->id])  }}"
                                class="text-gray-600 hover:text-gray-900">
                                 <i class="fas fa-edit"></i>
                             </a>
-                            <form method="POST" action="{{  route('content.destroy', $item->content_id ?? $item->id)  }}"
+                            <form method="POST" action="{{  route('orgs.content.destroy', ['org' => $currentOrg, 'content' => $item->content_id ?? $item->id])  }}"
                                   onsubmit="return confirm('Are you sure you want to delete this content?');" class="inline">
                                 @csrf
                                 @method('DELETE')
@@ -122,7 +126,7 @@
                 <i class="fas fa-file-alt text-5xl text-gray-400 mb-4"></i>
                 <h3 class="text-xl font-semibold text-gray-900 mb-2">No content yet</h3>
                 <p class="text-gray-600 mb-4">Start creating content for your campaigns</p>
-                <a href="{{  route('content.create')  }}"
+                <a href="{{  route('orgs.content.create', ['org' => $currentOrg])  }}"
                    class="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-md">
                     <i class="fas fa-plus mr-2"></i>
                     Create Content

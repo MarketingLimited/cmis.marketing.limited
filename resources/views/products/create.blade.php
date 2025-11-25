@@ -2,6 +2,10 @@
 
 @section('title', 'إنشاء منتج جديد')
 
+@php
+    $currentOrg = $currentOrg ?? request()->route('org') ?? auth()->user()->active_org_id ?? auth()->user()->org_id;
+@endphp
+
 @section('content')
 <div class="container mx-auto px-4 py-6" x-data="productCreate()">
     <!-- Header -->
@@ -11,7 +15,7 @@
                 <h1 class="text-3xl font-bold text-gray-900">إنشاء منتج جديد</h1>
                 <p class="mt-2 text-gray-600">أضف منتج جديد إلى قائمة منتجاتك</p>
             </div>
-            <a href="{{ route('products.index') }}" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+            <a href="{{ route('orgs.products.index', ['org' => $currentOrg]) }}" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
                 <svg class="ml-2 -mr-1 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
                 </svg>
@@ -174,7 +178,7 @@
 
         <!-- Actions -->
         <div class="bg-gray-50 px-6 py-4 flex items-center justify-between">
-            <button type="button" @click="window.location='{{ route('products.index') }}'" class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+            <button type="button" @click="window.location='{{ route('orgs.products.index', ['org' => $currentOrg]) }}'" class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
                 إلغاء
             </button>
             <div class="flex gap-3">
@@ -234,7 +238,7 @@ function productCreate() {
                 const data = await response.json();
 
                 if (response.ok) {
-                    window.location = '{{ route('products.index') }}';
+                    window.location = '{{ route('orgs.products.index', ['org' => $currentOrg]) }}';
                 } else {
                     this.errors = data.errors || {};
                     alert(data.message || 'حدث خطأ أثناء الحفظ');

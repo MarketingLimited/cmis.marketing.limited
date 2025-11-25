@@ -1,5 +1,9 @@
 @extends('layouts.admin')
 
+@php
+    $currentOrg = $currentOrg ?? request()->route('org') ?? auth()->user()->active_org_id ?? auth()->user()->org_id;
+@endphp
+
 @section('page-title', 'بريفات الحملات الإبداعية')
 @section('page-subtitle', 'إدارة بريفات الحملات والمشاريع التسويقية')
 
@@ -72,7 +76,7 @@
             </select>
         </div>
 
-        <a href="{{ route('briefs.create') }}"
+        <a href="{{ route('orgs.briefs.create', ['org' => $currentOrg]) }}"
            class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 py-3 rounded-lg font-medium hover:shadow-lg transition">
             <i class="fas fa-plus ml-2"></i>
             بريف جديد
@@ -143,12 +147,12 @@
 
                     <!-- Actions -->
                     <div class="flex gap-2 pt-4 border-t">
-                        <a :href="`/briefs/${brief.brief_id}`"
+                        <a :href="`{{ route('orgs.briefs.show', ['org' => $currentOrg, 'brief' => '']) }}`.slice(0, -1) + brief.brief_id"
                            class="flex-1 bg-indigo-50 text-indigo-600 text-center py-2 rounded-lg font-medium hover:bg-indigo-100 transition">
                             <i class="fas fa-eye ml-2"></i>
                             عرض التفاصيل
                         </a>
-                        <a :href="`/briefs/${brief.brief_id}/edit`"
+                        <a :href="`{{ route('orgs.briefs.edit', ['org' => $currentOrg, 'brief' => '']) }}`.slice(0, -1) + brief.brief_id"
                            class="bg-gray-50 text-gray-600 px-4 py-2 rounded-lg hover:bg-gray-100 transition">
                             <i class="fas fa-edit"></i>
                         </a>
@@ -169,7 +173,7 @@
             title="لا توجد بريفات"
             description="ابدأ بإنشاء بريف جديد لحملتك التسويقية"
             action-text="إنشاء بريف"
-            :action-url="route('briefs.create')"
+            :action-url="route('orgs.briefs.create', ['org' => $currentOrg])"
         />
     </template>
 </div>
@@ -236,7 +240,7 @@ function briefsManager() {
             if (!confirm('هل أنت متأكد من حذف هذا البريف؟')) return;
 
             try {
-                const response = await fetch(`/briefs/${briefId}`, {
+                const response = await fetch(`{{ route('orgs.briefs.destroy', ['org' => $currentOrg, 'brief' => '']) }}`.slice(0, -1) + briefId, {
                     method: 'DELETE',
                     headers: {
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content

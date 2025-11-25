@@ -1,5 +1,8 @@
 @extends('layouts.admin')
 @section('title', 'تعديل خدمة')
+@php
+    $currentOrg = $currentOrg ?? request()->route('org') ?? auth()->user()->active_org_id ?? auth()->user()->org_id;
+@endphp
 @section('content')
 <div class="container mx-auto px-4 py-6" x-data="serviceEdit({{ $service->offering_id }})">
     <div class="mb-6">
@@ -17,7 +20,7 @@
             </div>
         </div>
         <div class="flex justify-end gap-3">
-            <button type="button" onclick="window.location='{{ route('services.index') }}'" class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">إلغاء</button>
+            <button type="button" onclick="window.location='{{ route('orgs.services.index', ['org' => $currentOrg]) }}'" class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">إلغاء</button>
             <button type="submit" :disabled="saving" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">حفظ</button>
         </div>
     </form>
@@ -36,7 +39,7 @@ function serviceEdit(serviceId) {
                     headers: {'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content},
                     body: JSON.stringify(this.service)
                 });
-                window.location = '{{ route('services.index') }}';
+                window.location = '{{ route('orgs.services.index', ['org' => $currentOrg]) }}';
             } finally {
                 this.saving = false;
             }

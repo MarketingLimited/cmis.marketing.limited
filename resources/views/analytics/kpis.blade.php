@@ -1,5 +1,9 @@
 @extends('layouts.analytics')
 
+@php
+    $currentOrg = $currentOrg ?? request()->route('org') ?? auth()->user()->active_org_id ?? auth()->user()->org_id;
+@endphp
+
 @section('title', 'KPI Dashboard - ' . $entityName)
 
 @section('page-title', 'KPI Performance Dashboard')

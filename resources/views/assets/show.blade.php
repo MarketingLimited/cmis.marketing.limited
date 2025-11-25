@@ -1,4 +1,9 @@
 @extends('layouts.admin')
+
+@php
+    $currentOrg = $currentOrg ?? request()->route('org') ?? auth()->user()->active_org_id ?? auth()->user()->org_id;
+@endphp
+
 @section('title', 'تفاصيل الأصل')
 @section('content')
 <div class="container mx-auto px-4 py-6" x-data="assetShow({{ $assetId }})">

@@ -1,5 +1,9 @@
 @extends('layouts.analytics')
 
+@php
+    $currentOrg = $currentOrg ?? request()->route('org') ?? auth()->user()->active_org_id ?? auth()->user()->org_id;
+@endphp
+
 @section('title', 'Enterprise Analytics Hub')
 
 @section('page-title', 'Enterprise Analytics Hub')
@@ -109,7 +113,7 @@
                             </div>
                         </div>
                         <div class="text-center">
-                            <a href="{{ route('analytics.realtime') }}" class="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition">
+                            <a href="{{ route('orgs.analytics.realtime', ['org' => $currentOrg]) }}" class="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition">
                                 <span>View Full Real-Time Dashboard</span>
                                 <i class="fas fa-arrow-right ml-2"></i>
                             </a>
@@ -153,7 +157,7 @@
                             </div>
                         </div>
                         <div class="text-center mt-6">
-                            <a href="{{ route('analytics.kpis') }}" class="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition">
+                            <a href="{{ route('orgs.analytics.kpis', ['org' => $currentOrg]) }}" class="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition">
                                 <span>View Full KPI Dashboard</span>
                                 <i class="fas fa-arrow-right ml-2"></i>
                             </a>
@@ -166,7 +170,7 @@
                     <div class="space-y-4">
                         <div class="flex justify-between items-center">
                             <h4 class="text-lg font-semibold text-gray-900">Active Campaigns ({{ $activeCampaigns->count() }})</h4>
-                            <a href="{{ route('campaigns.index') }}" class="text-indigo-600 hover:text-indigo-700 font-medium text-sm">
+                            <a href="{{ route('orgs.campaigns.index', ['org' => $currentOrg]) }}" class="text-indigo-600 hover:text-indigo-700 font-medium text-sm">
                                 View All <i class="fas fa-arrow-right ml-1"></i>
                             </a>
                         </div>
@@ -185,11 +189,11 @@
                                     {{ $campaign->end_date ? \Carbon\Carbon::parse($campaign->end_date)->format('M d, Y') : 'Ongoing' }}
                                 </p>
                                 <div class="flex gap-2">
-                                    <a href="{{ route('analytics.campaign', $campaign->campaign_id) }}"
+                                    <a href="{{ route('orgs.analytics.campaign', ['org' => $currentOrg, 'campaign' => $campaign->campaign_id]) }}"
                                        class="flex-1 text-center px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded text-sm font-medium transition">
                                         <i class="fas fa-chart-line mr-1"></i>Analytics
                                     </a>
-                                    <a href="{{ route('campaigns.show', $campaign->campaign_id) }}"
+                                    <a href="{{ route('orgs.campaigns.show', ['org' => $currentOrg, 'campaign' => $campaign->campaign_id]) }}"
                                        class="flex-1 text-center px-3 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded text-sm font-medium transition">
                                         <i class="fas fa-eye mr-1"></i>Details
                                     </a>
@@ -201,7 +205,7 @@
                         <div class="text-center py-12 bg-gray-50 rounded-lg">
                             <i class="fas fa-bullhorn text-gray-300 text-5xl mb-4"></i>
                             <p class="text-gray-500">No active campaigns found</p>
-                            <a href="{{ route('campaigns.create') }}" class="inline-block mt-4 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition">
+                            <a href="{{ route('orgs.campaigns.create', ['org' => $currentOrg]) }}" class="inline-block mt-4 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition">
                                 Create New Campaign
                             </a>
                         </div>

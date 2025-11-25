@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Analytics;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Concerns\ApiResponse;
 use App\Jobs\ProcessAlertsJob;
 use App\Models\Analytics\AlertHistory;
 use App\Models\Analytics\AlertRule;

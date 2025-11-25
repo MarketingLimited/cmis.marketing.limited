@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Concerns\ApiResponse;
 use App\Models\Core\Integration;
 use App\Services\Connectors\ConnectorFactory;
 use Illuminate\Http\Request;

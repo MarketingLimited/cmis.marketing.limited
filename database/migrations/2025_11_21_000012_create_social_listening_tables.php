@@ -51,10 +51,10 @@ return new class extends Migration
         });
 
         // RLS Policy
+        DB::statement("ALTER TABLE cmis.monitoring_keywords ENABLE ROW LEVEL SECURITY");
         DB::statement("
-            ALTER TABLE cmis.monitoring_keywords ENABLE ROW LEVEL SECURITY;
             CREATE POLICY org_isolation ON cmis.monitoring_keywords
-            USING (org_id = current_setting('app.current_org_id', true)::uuid);
+            USING (org_id = current_setting('app.current_org_id', true)::uuid)
         ");
 
         // 2. Social Mentions - Captured mentions from platforms
@@ -126,10 +126,10 @@ return new class extends Migration
         });
 
         // RLS Policy
+        DB::statement("ALTER TABLE cmis.social_mentions ENABLE ROW LEVEL SECURITY");
         DB::statement("
-            ALTER TABLE cmis.social_mentions ENABLE ROW LEVEL SECURITY;
             CREATE POLICY org_isolation ON cmis.social_mentions
-            USING (org_id = current_setting('app.current_org_id', true)::uuid);
+            USING (org_id = current_setting('app.current_org_id', true)::uuid)
         ");
 
         // 3. Sentiment Analysis - AI sentiment results
@@ -176,10 +176,10 @@ return new class extends Migration
         });
 
         // RLS Policy
+        DB::statement("ALTER TABLE cmis.sentiment_analysis ENABLE ROW LEVEL SECURITY");
         DB::statement("
-            ALTER TABLE cmis.sentiment_analysis ENABLE ROW LEVEL SECURITY;
             CREATE POLICY org_isolation ON cmis.sentiment_analysis
-            USING (org_id = current_setting('app.current_org_id', true)::uuid);
+            USING (org_id = current_setting('app.current_org_id', true)::uuid)
         ");
 
         // 4. Competitor Profiles - Competitor social accounts
@@ -221,10 +221,10 @@ return new class extends Migration
         });
 
         // RLS Policy
+        DB::statement("ALTER TABLE cmis.competitor_profiles ENABLE ROW LEVEL SECURITY");
         DB::statement("
-            ALTER TABLE cmis.competitor_profiles ENABLE ROW LEVEL SECURITY;
             CREATE POLICY org_isolation ON cmis.competitor_profiles
-            USING (org_id = current_setting('app.current_org_id', true)::uuid);
+            USING (org_id = current_setting('app.current_org_id', true)::uuid)
         ");
 
         // 5. Trending Topics - Detected trends and topics
@@ -275,10 +275,10 @@ return new class extends Migration
         });
 
         // RLS Policy
+        DB::statement("ALTER TABLE cmis.trending_topics ENABLE ROW LEVEL SECURITY");
         DB::statement("
-            ALTER TABLE cmis.trending_topics ENABLE ROW LEVEL SECURITY;
             CREATE POLICY org_isolation ON cmis.trending_topics
-            USING (org_id = current_setting('app.current_org_id', true)::uuid);
+            USING (org_id = current_setting('app.current_org_id', true)::uuid)
         ");
 
         // 6. Monitoring Alerts - Alert configurations and logs
@@ -320,10 +320,10 @@ return new class extends Migration
         });
 
         // RLS Policy
+        DB::statement("ALTER TABLE cmis.monitoring_alerts ENABLE ROW LEVEL SECURITY");
         DB::statement("
-            ALTER TABLE cmis.monitoring_alerts ENABLE ROW LEVEL SECURITY;
             CREATE POLICY org_isolation ON cmis.monitoring_alerts
-            USING (org_id = current_setting('app.current_org_id', true)::uuid);
+            USING (org_id = current_setting('app.current_org_id', true)::uuid)
         ");
 
         // 7. Social Conversations - Threaded conversation tracking
@@ -373,10 +373,10 @@ return new class extends Migration
         });
 
         // RLS Policy
+        DB::statement("ALTER TABLE cmis.social_conversations ENABLE ROW LEVEL SECURITY");
         DB::statement("
-            ALTER TABLE cmis.social_conversations ENABLE ROW LEVEL SECURITY;
             CREATE POLICY org_isolation ON cmis.social_conversations
-            USING (org_id = current_setting('app.current_org_id', true)::uuid);
+            USING (org_id = current_setting('app.current_org_id', true)::uuid)
         ");
 
         // 8. Response Templates - Quick response templates
@@ -419,10 +419,10 @@ return new class extends Migration
         });
 
         // RLS Policy
+        DB::statement("ALTER TABLE cmis.response_templates ENABLE ROW LEVEL SECURITY");
         DB::statement("
-            ALTER TABLE cmis.response_templates ENABLE ROW LEVEL SECURITY;
             CREATE POLICY org_isolation ON cmis.response_templates
-            USING (org_id = current_setting('app.current_org_id', true)::uuid);
+            USING (org_id = current_setting('app.current_org_id', true)::uuid)
         ");
 
         // Create Performance Views

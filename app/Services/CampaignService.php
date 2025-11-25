@@ -6,6 +6,7 @@ use App\Models\Campaign;
 use App\Models\CampaignAnalytics;
 use App\Repositories\Contracts\CampaignRepositoryInterface;
 use App\Repositories\Contracts\PermissionRepositoryInterface;
+use App\Services\Cache\CacheService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 

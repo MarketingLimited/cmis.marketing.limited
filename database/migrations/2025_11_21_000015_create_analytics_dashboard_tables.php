@@ -59,10 +59,10 @@ return new class extends Migration
         });
 
         // RLS Policy
+        DB::statement("ALTER TABLE cmis.dashboard_configs ENABLE ROW LEVEL SECURITY");
         DB::statement("
-            ALTER TABLE cmis.dashboard_configs ENABLE ROW LEVEL SECURITY;
             CREATE POLICY org_isolation ON cmis.dashboard_configs
-            USING (org_id = current_setting('app.current_org_id', true)::uuid);
+            USING (org_id = current_setting('app.current_org_id', true)::uuid)
         ");
 
         // 2. Custom Reports - Saved report configurations
@@ -125,10 +125,10 @@ return new class extends Migration
         });
 
         // RLS Policy
+        DB::statement("ALTER TABLE cmis.custom_reports ENABLE ROW LEVEL SECURITY");
         DB::statement("
-            ALTER TABLE cmis.custom_reports ENABLE ROW LEVEL SECURITY;
             CREATE POLICY org_isolation ON cmis.custom_reports
-            USING (org_id = current_setting('app.current_org_id', true)::uuid);
+            USING (org_id = current_setting('app.current_org_id', true)::uuid)
         ");
 
         // 3. Data Snapshots - Historical data for comparisons
@@ -176,10 +176,10 @@ return new class extends Migration
         });
 
         // RLS Policy
+        DB::statement("ALTER TABLE cmis.data_snapshots ENABLE ROW LEVEL SECURITY");
         DB::statement("
-            ALTER TABLE cmis.data_snapshots ENABLE ROW LEVEL SECURITY;
             CREATE POLICY org_isolation ON cmis.data_snapshots
-            USING (org_id = current_setting('app.current_org_id', true)::uuid);
+            USING (org_id = current_setting('app.current_org_id', true)::uuid)
         ");
 
         // 4. Analytics Metrics - Real-time aggregated metrics
@@ -226,65 +226,66 @@ return new class extends Migration
         });
 
         // RLS Policy
+        DB::statement("ALTER TABLE cmis.analytics_metrics ENABLE ROW LEVEL SECURITY");
         DB::statement("
-            ALTER TABLE cmis.analytics_metrics ENABLE ROW LEVEL SECURITY;
             CREATE POLICY org_isolation ON cmis.analytics_metrics
-            USING (org_id = current_setting('app.current_org_id', true)::uuid);
+            USING (org_id = current_setting('app.current_org_id', true)::uuid)
         ");
 
+        // COMMENTED OUT: Table already created by migration 2025_11_21_000008 with RLS policies
         // 5. Report Schedules - Automated report generation
-        Schema::create('cmis.report_schedules', function (Blueprint $table) {
-            $table->uuid('schedule_id')->primary()->default(DB::raw('gen_random_uuid()'));
-            $table->uuid('org_id')->nullable(false);
-            $table->uuid('report_id')->nullable(false);
-            $table->uuid('created_by')->nullable(false);
-
-            // Schedule Configuration
-            $table->string('schedule_name', 255)->nullable(false);
-            $table->string('frequency', 50)->nullable(false); // daily, weekly, monthly, quarterly
-            $table->string('cron_expression')->nullable();
-            $table->jsonb('schedule_config')->default('{}'); // Day of week, time, timezone
-
-            // Recipients
-            $table->jsonb('recipients')->nullable(false); // Email addresses
-            $table->jsonb('cc_recipients')->default('[]');
-            $table->string('subject_template')->nullable();
-            $table->text('email_body_template')->nullable();
-
-            // Delivery Settings
-            $table->jsonb('delivery_formats')->default('["pdf"]'); // pdf, excel, csv
-            $table->boolean('attach_to_email')->default(true);
-            $table->boolean('include_dashboard_link')->default(true);
-
-            // Execution Tracking
-            $table->timestamp('next_run_at')->nullable();
-            $table->timestamp('last_run_at')->nullable();
-            $table->integer('execution_count')->default(0);
-            $table->integer('success_count')->default(0);
-            $table->integer('failure_count')->default(0);
-            $table->text('last_error')->nullable();
-
-            // Status
-            $table->string('status', 50)->default('active'); // active, paused, failed
-
-            $table->timestamps();
-
-            // Indexes
-            $table->index(['org_id', 'status']);
-            $table->index(['report_id', 'status']);
-            $table->index(['next_run_at', 'status']);
-
-            // Foreign keys
-            $table->foreign('org_id')->references('org_id')->on('cmis.orgs')->onDelete('cascade');
-            $table->foreign('report_id')->references('report_id')->on('cmis.custom_reports')->onDelete('cascade');
-        });
-
-        // RLS Policy
-        DB::statement("
-            ALTER TABLE cmis.report_schedules ENABLE ROW LEVEL SECURITY;
-            CREATE POLICY org_isolation ON cmis.report_schedules
-            USING (org_id = current_setting('app.current_org_id', true)::uuid);
-        ");
+        // Schema::create('cmis.report_schedules', function (Blueprint $table) {
+        //     $table->uuid('schedule_id')->primary()->default(DB::raw('gen_random_uuid()'));
+        //     $table->uuid('org_id')->nullable(false);
+        //     $table->uuid('report_id')->nullable(false);
+        //     $table->uuid('created_by')->nullable(false);
+        //
+        //     // Schedule Configuration
+        //     $table->string('schedule_name', 255)->nullable(false);
+        //     $table->string('frequency', 50)->nullable(false); // daily, weekly, monthly, quarterly
+        //     $table->string('cron_expression')->nullable();
+        //     $table->jsonb('schedule_config')->default('{}'); // Day of week, time, timezone
+        //
+        //     // Recipients
+        //     $table->jsonb('recipients')->nullable(false); // Email addresses
+        //     $table->jsonb('cc_recipients')->default('[]');
+        //     $table->string('subject_template')->nullable();
+        //     $table->text('email_body_template')->nullable();
+        //
+        //     // Delivery Settings
+        //     $table->jsonb('delivery_formats')->default('["pdf"]'); // pdf, excel, csv
+        //     $table->boolean('attach_to_email')->default(true);
+        //     $table->boolean('include_dashboard_link')->default(true);
+        //
+        //     // Execution Tracking
+        //     $table->timestamp('next_run_at')->nullable();
+        //     $table->timestamp('last_run_at')->nullable();
+        //     $table->integer('execution_count')->default(0);
+        //     $table->integer('success_count')->default(0);
+        //     $table->integer('failure_count')->default(0);
+        //     $table->text('last_error')->nullable();
+        //
+        //     // Status
+        //     $table->string('status', 50)->default('active'); // active, paused, failed
+        //
+        //     $table->timestamps();
+        //
+        //     // Indexes
+        //     $table->index(['org_id', 'status']);
+        //     $table->index(['report_id', 'status']);
+        //     $table->index(['next_run_at', 'status']);
+        //
+        //     // Foreign keys
+        //     $table->foreign('org_id')->references('org_id')->on('cmis.orgs')->onDelete('cascade');
+        //     $table->foreign('report_id')->references('report_id')->on('cmis.custom_reports')->onDelete('cascade');
+        // });
+        //
+        // // RLS Policy
+        // DB::statement("ALTER TABLE cmis.report_schedules ENABLE ROW LEVEL SECURITY");
+        // DB::statement("
+        //     CREATE POLICY org_isolation ON cmis.report_schedules
+        //     USING (org_id = current_setting('app.current_org_id', true)::uuid)
+        // ");
 
         // 6. Data Exports - Export history and downloads
         Schema::create('cmis.data_exports', function (Blueprint $table) {
@@ -333,100 +334,102 @@ return new class extends Migration
         });
 
         // RLS Policy
+        DB::statement("ALTER TABLE cmis.data_exports ENABLE ROW LEVEL SECURITY");
         DB::statement("
-            ALTER TABLE cmis.data_exports ENABLE ROW LEVEL SECURITY;
             CREATE POLICY org_isolation ON cmis.data_exports
-            USING (org_id = current_setting('app.current_org_id', true)::uuid);
+            USING (org_id = current_setting('app.current_org_id', true)::uuid)
         ");
 
+        // COMMENTED OUT: Analytics views reference columns that don't exist in current table schema
+        // These views can be recreated later with correct column references
         // Create Comprehensive Analytics Views
-
-        // View 1: Executive Summary Dashboard
-        DB::statement("
-            CREATE OR REPLACE VIEW cmis.v_executive_summary AS
-            SELECT
-                org_id,
-
-                -- Campaign Performance (Phase 21)
-                (SELECT COUNT(*) FROM cmis.campaign_orchestrations WHERE org_id = o.org_id AND status = 'active') as active_campaigns,
-                (SELECT AVG(total_spend) FROM cmis.campaign_orchestrations WHERE org_id = o.org_id) as avg_campaign_spend,
-                (SELECT AVG(roas) FROM cmis.campaign_orchestrations WHERE org_id = o.org_id) as avg_roas,
-
-                -- Social Publishing (Phase 22)
-                (SELECT COUNT(*) FROM cmis.scheduled_posts WHERE org_id = o.org_id AND status = 'published') as total_posts_published,
-                (SELECT AVG(engagement_rate) FROM cmis.platform_posts WHERE org_id = o.org_id) as avg_post_engagement,
-
-                -- Social Listening (Phase 23)
-                (SELECT COUNT(*) FROM cmis.social_mentions WHERE org_id = o.org_id AND captured_at >= NOW() - INTERVAL '30 days') as mentions_30d,
-                (SELECT AVG(CASE WHEN sentiment = 'positive' THEN 1 WHEN sentiment = 'negative' THEN -1 ELSE 0 END)
-                 FROM cmis.social_mentions WHERE org_id = o.org_id AND captured_at >= NOW() - INTERVAL '30 days') as avg_sentiment_score,
-
-                -- Influencer Marketing (Phase 24)
-                (SELECT COUNT(*) FROM cmis.influencer_partnerships WHERE org_id = o.org_id AND status = 'active') as active_partnerships,
-                (SELECT AVG(avg_roi) FROM cmis.influencer_profiles WHERE org_id = o.org_id) as avg_influencer_roi,
-
-                -- Automation (Phase 25)
-                (SELECT COUNT(*) FROM cmis.workflow_instances WHERE org_id = o.org_id AND status = 'completed' AND completed_at >= NOW() - INTERVAL '30 days') as workflows_completed_30d,
-                (SELECT COUNT(*) FROM cmis.automation_rules WHERE org_id = o.org_id AND status = 'active') as active_automation_rules
-
-            FROM cmis.orgs o;
-        ");
-
-        // View 2: Performance Trends (Last 30 Days)
-        DB::statement("
-            CREATE OR REPLACE VIEW cmis.v_performance_trends AS
-            SELECT
-                org_id,
-                DATE(created_at) as date,
-
-                -- Daily metrics
-                COUNT(DISTINCT CASE WHEN EXISTS(SELECT 1 FROM cmis.social_mentions m WHERE m.org_id = o.org_id AND DATE(m.captured_at) = DATE(o.created_at)) THEN 1 END) as daily_mentions,
-                COUNT(DISTINCT CASE WHEN EXISTS(SELECT 1 FROM cmis.scheduled_posts p WHERE p.org_id = o.org_id AND DATE(p.published_at) = DATE(o.created_at)) THEN 1 END) as daily_posts
-
-            FROM cmis.orgs o
-            WHERE o.created_at >= NOW() - INTERVAL '30 days'
-            GROUP BY org_id, DATE(created_at)
-            ORDER BY date DESC;
-        ");
-
-        // View 3: ROI Summary Across All Phases
-        DB::statement("
-            CREATE OR REPLACE VIEW cmis.v_roi_summary AS
-            SELECT
-                o.org_id,
-
-                -- Campaign ROI
-                COALESCE(SUM(c.total_spend), 0) as total_campaign_spend,
-                COALESCE(SUM(c.total_revenue), 0) as total_campaign_revenue,
-                CASE
-                    WHEN SUM(c.total_spend) > 0
-                    THEN ((SUM(c.total_revenue) - SUM(c.total_spend)) / SUM(c.total_spend) * 100)
-                    ELSE 0
-                END as campaign_roi_percentage,
-
-                -- Influencer ROI
-                COALESCE(SUM(ic.influencer_payment), 0) as total_influencer_spend,
-                COALESCE(SUM(ic.conversion_value), 0) as total_influencer_revenue,
-                CASE
-                    WHEN SUM(ic.influencer_payment) > 0
-                    THEN ((SUM(ic.conversion_value) - SUM(ic.influencer_payment)) / SUM(ic.influencer_payment) * 100)
-                    ELSE 0
-                END as influencer_roi_percentage,
-
-                -- Overall ROI
-                CASE
-                    WHEN (COALESCE(SUM(c.total_spend), 0) + COALESCE(SUM(ic.influencer_payment), 0)) > 0
-                    THEN (((COALESCE(SUM(c.total_revenue), 0) + COALESCE(SUM(ic.conversion_value), 0)) -
-                           (COALESCE(SUM(c.total_spend), 0) + COALESCE(SUM(ic.influencer_payment), 0))) /
-                          (COALESCE(SUM(c.total_spend), 0) + COALESCE(SUM(ic.influencer_payment), 0)) * 100)
-                    ELSE 0
-                END as overall_roi_percentage
-
-            FROM cmis.orgs o
-            LEFT JOIN cmis.campaign_orchestrations c ON o.org_id = c.org_id
-            LEFT JOIN cmis.influencer_campaigns ic ON o.org_id = ic.org_id
-            GROUP BY o.org_id;
-        ");
+        //
+        // // View 1: Executive Summary Dashboard
+        // DB::statement("
+        //     CREATE OR REPLACE VIEW cmis.v_executive_summary AS
+        //     SELECT
+        //         org_id,
+        //
+        //         -- Campaign Performance (Phase 21)
+        //         (SELECT COUNT(*) FROM cmis.campaign_orchestrations WHERE org_id = o.org_id AND status = 'active') as active_campaigns,
+        //         (SELECT AVG(total_budget) FROM cmis.campaign_orchestrations WHERE org_id = o.org_id) as avg_campaign_budget,
+        //         0 as avg_roas,
+        //
+        //         -- Social Publishing (Phase 22)
+        //         (SELECT COUNT(*) FROM cmis.scheduled_posts WHERE org_id = o.org_id AND status = 'published') as total_posts_published,
+        //         (SELECT AVG(engagement_rate) FROM cmis.platform_posts WHERE org_id = o.org_id) as avg_post_engagement,
+        //
+        //         -- Social Listening (Phase 23)
+        //         (SELECT COUNT(*) FROM cmis.social_mentions WHERE org_id = o.org_id AND captured_at >= NOW() - INTERVAL '30 days') as mentions_30d,
+        //         (SELECT AVG(CASE WHEN sentiment = 'positive' THEN 1 WHEN sentiment = 'negative' THEN -1 ELSE 0 END)
+        //          FROM cmis.social_mentions WHERE org_id = o.org_id AND captured_at >= NOW() - INTERVAL '30 days') as avg_sentiment_score,
+        //
+        //         -- Influencer Marketing (Phase 24)
+        //         (SELECT COUNT(*) FROM cmis.influencer_partnerships WHERE org_id = o.org_id AND status = 'active') as active_partnerships,
+        //         (SELECT AVG(avg_roi) FROM cmis.influencer_profiles WHERE org_id = o.org_id) as avg_influencer_roi,
+        //
+        //         -- Automation (Phase 25)
+        //         (SELECT COUNT(*) FROM cmis.workflow_instances WHERE org_id = o.org_id AND status = 'completed' AND completed_at >= NOW() - INTERVAL '30 days') as workflows_completed_30d,
+        //         (SELECT COUNT(*) FROM cmis.automation_rules WHERE org_id = o.org_id AND status = 'active') as active_automation_rules
+        //
+        //     FROM cmis.orgs o;
+        // ");
+        //
+        // // View 2: Performance Trends (Last 30 Days)
+        // DB::statement("
+        //     CREATE OR REPLACE VIEW cmis.v_performance_trends AS
+        //     SELECT
+        //         org_id,
+        //         DATE(created_at) as date,
+        //
+        //         -- Daily metrics
+        //         COUNT(DISTINCT CASE WHEN EXISTS(SELECT 1 FROM cmis.social_mentions m WHERE m.org_id = o.org_id AND DATE(m.captured_at) = DATE(o.created_at)) THEN 1 END) as daily_mentions,
+        //         COUNT(DISTINCT CASE WHEN EXISTS(SELECT 1 FROM cmis.scheduled_posts p WHERE p.org_id = o.org_id AND DATE(p.published_at) = DATE(o.created_at)) THEN 1 END) as daily_posts
+        //
+        //     FROM cmis.orgs o
+        //     WHERE o.created_at >= NOW() - INTERVAL '30 days'
+        //     GROUP BY org_id, DATE(created_at)
+        //     ORDER BY date DESC;
+        // ");
+        //
+        // // View 3: ROI Summary Across All Phases
+        // DB::statement("
+        //     CREATE OR REPLACE VIEW cmis.v_roi_summary AS
+        //     SELECT
+        //         o.org_id,
+        //
+        //         -- Campaign ROI
+        //         COALESCE(SUM(c.total_spend), 0) as total_campaign_spend,
+        //         COALESCE(SUM(c.total_revenue), 0) as total_campaign_revenue,
+        //         CASE
+        //             WHEN SUM(c.total_spend) > 0
+        //             THEN ((SUM(c.total_revenue) - SUM(c.total_spend)) / SUM(c.total_spend) * 100)
+        //             ELSE 0
+        //         END as campaign_roi_percentage,
+        //
+        //         -- Influencer ROI
+        //         COALESCE(SUM(ic.influencer_payment), 0) as total_influencer_spend,
+        //         COALESCE(SUM(ic.conversion_value), 0) as total_influencer_revenue,
+        //         CASE
+        //             WHEN SUM(ic.influencer_payment) > 0
+        //             THEN ((SUM(ic.conversion_value) - SUM(ic.influencer_payment)) / SUM(ic.influencer_payment) * 100)
+        //             ELSE 0
+        //         END as influencer_roi_percentage,
+        //
+        //         -- Overall ROI
+        //         CASE
+        //             WHEN (COALESCE(SUM(c.total_spend), 0) + COALESCE(SUM(ic.influencer_payment), 0)) > 0
+        //             THEN (((COALESCE(SUM(c.total_revenue), 0) + COALESCE(SUM(ic.conversion_value), 0)) -
+        //                    (COALESCE(SUM(c.total_spend), 0) + COALESCE(SUM(ic.influencer_payment), 0))) /
+        //                   (COALESCE(SUM(c.total_spend), 0) + COALESCE(SUM(ic.influencer_payment), 0)) * 100)
+        //             ELSE 0
+        //         END as overall_roi_percentage
+        //
+        //     FROM cmis.orgs o
+        //     LEFT JOIN cmis.campaign_orchestrations c ON o.org_id = c.org_id
+        //     LEFT JOIN cmis.influencer_campaigns ic ON o.org_id = ic.org_id
+        //     GROUP BY o.org_id;
+        // ");
     }
 
     /**

@@ -1,4 +1,7 @@
 @extends('layouts.admin')
+@php
+    $currentOrg = $currentOrg ?? request()->route('org') ?? auth()->user()->active_org_id ?? auth()->user()->org_id;
+@endphp
 
 @section('page-title', 'إدارة سير العمل')
 @section('page-subtitle', 'تتبع وإدارة سير عمل الحملات والمشاريع')
@@ -68,7 +71,7 @@
 
                     <!-- Actions -->
                     <div class="flex gap-2 pt-4 border-t">
-                        <a :href="`/workflows/${workflow.flow_id}`"
+                        <a :href="'/orgs/{{ $currentOrg }}/workflows/' + workflow.flow_id"
                            class="flex-1 bg-indigo-50 text-indigo-600 text-center py-2 rounded-lg font-medium hover:bg-indigo-100 transition">
                             <i class="fas fa-eye ml-2"></i>
                             عرض التفاصيل

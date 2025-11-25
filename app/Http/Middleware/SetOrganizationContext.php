@@ -23,10 +23,18 @@ use Symfony\Component\HttpFoundation\Response;
  *   });
  *
  * How it works:
- * 1. Extracts org_id from authenticated user's current_org_id or org_id property
+ * 1. Extracts org_id with priority:
+ *    a) URL route parameter (/orgs/{org}/campaigns) - enables multi-org access
+ *    b) User's current_org_id property
+ *    c) User's org_id property (default org)
  * 2. Calls cmis.init_transaction_context(user_id, org_id) to set PostgreSQL session variables
  * 3. RLS policies automatically filter all queries based on the set org_id
  * 4. Cleans up context after request completes
+ *
+ * Multi-Organization Access:
+ * Users can work with multiple organizations simultaneously by accessing
+ * different URLs in different browser tabs (e.g., /orgs/org-1/campaigns and
+ * /orgs/org-2/campaigns in separate tabs).
  */
 class SetOrganizationContext
 {
@@ -68,9 +76,15 @@ class SetOrganizationContext
             return $next($request);
         }
 
-        // Determine org_id from user
-        // Priority: current_org_id (for multi-org users) > org_id (default org)
-        $orgId = $user->current_org_id ?? $user->org_id ?? null;
+        // Determine org_id with priority:
+        // 1. URL route parameter (org or org_id) - enables multi-org access
+        // 2. User's current_org_id (for multi-org users)
+        // 3. User's org_id (default org)
+        $orgId = $request->route('org')
+            ?? $request->route('org_id')
+            ?? $user->current_org_id
+            ?? $user->org_id
+            ?? null;
 
         if (!$orgId) {
             Log::error('SetOrganizationContext: User has no organization', [

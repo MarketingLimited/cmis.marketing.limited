@@ -2,6 +2,10 @@
 
 @section('title', 'جدولة السوشيال ميديا')
 
+@php
+    $currentOrg = $currentOrg ?? request()->route('org') ?? auth()->user()->active_org_id ?? auth()->user()->org_id;
+@endphp
+
 @section('content')
 <div x-data="socialSchedulerManager()" x-init="init()">
 

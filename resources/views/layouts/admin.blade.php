@@ -150,8 +150,12 @@
 
             <!-- Navigation -->
             <nav class="px-3 sm:px-4 py-4 sm:py-6 space-y-1 sm:space-y-2 overflow-y-auto h-[calc(100vh-4rem)]">
+                @php
+                    $currentOrg = auth()->user()->active_org_id ?? auth()->user()->current_org_id ?? auth()->user()->org_id ?? request()->route('org');
+                @endphp
 
-                <a href="{{ route('dashboard.index') }}"
+                @if($currentOrg)
+                <a href="{{ route('orgs.dashboard.index', ['org' => $currentOrg]) }}"
                    class="flex items-center px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base text-gray-700 dark:text-gray-300 rounded-lg hover:bg-blue-50 dark:hover:bg-gray-700 transition {{ request()->routeIs('dashboard.*') ? 'bg-blue-50 text-blue-600 font-semibold' : '' }}">
                     <i class="fas fa-home text-base sm:text-lg w-5 sm:w-6"></i>
                     <span class="mr-2 sm:mr-3">الرئيسية</span>
@@ -165,7 +169,7 @@
                     <span class="mr-2 sm:mr-3">المؤسسات</span>
                 </a>
 
-                <a href="{{ route('campaigns.index') }}"
+                <a href="{{ route('orgs.campaigns.index', ['org' => $currentOrg]) }}"
                    class="flex items-center px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base text-gray-700 dark:text-gray-300 rounded-lg hover:bg-blue-50 dark:hover:bg-gray-700 transition {{ request()->routeIs('campaigns.*') ? 'bg-blue-50 text-blue-600 font-semibold' : '' }}">
                     <i class="fas fa-bullhorn text-base sm:text-lg w-5 sm:w-6"></i>
                     <span class="mr-2 sm:mr-3">الحملات</span>
@@ -173,13 +177,13 @@
 
                 <div class="pt-3 sm:pt-4 pb-1 sm:pb-2 text-[10px] sm:text-xs font-semibold text-gray-400 uppercase px-3 sm:px-4">المحتوى</div>
 
-                <a href="{{ route('creative.index') }}"
+                <a href="{{ route('orgs.creative-assets.index', ['org' => $currentOrg]) }}"
                    class="flex items-center px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base text-gray-700 dark:text-gray-300 rounded-lg hover:bg-blue-50 dark:hover:bg-gray-700 transition {{ request()->routeIs('creative.*') ? 'bg-blue-50 text-blue-600 font-semibold' : '' }}">
                     <i class="fas fa-palette text-base sm:text-lg w-5 sm:w-6"></i>
                     <span class="mr-2 sm:mr-3">الإبداع</span>
                 </a>
 
-                <a href="{{ route('social.index') }}"
+                <a href="{{ route('orgs.social.index', ['org' => $currentOrg]) }}"
                    class="flex items-center px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base text-gray-700 dark:text-gray-300 rounded-lg hover:bg-blue-50 dark:hover:bg-gray-700 transition {{ request()->routeIs('social.*') ? 'bg-blue-50 text-blue-600 font-semibold' : '' }}">
                     <i class="fas fa-share-alt text-base sm:text-lg w-5 sm:w-6"></i>
                     <span class="mr-2 sm:mr-3 text-sm sm:text-base">القنوات الاجتماعية</span>
@@ -187,7 +191,7 @@
 
                 <div class="pt-3 sm:pt-4 pb-1 sm:pb-2 text-[10px] sm:text-xs font-semibold text-gray-400 uppercase px-3 sm:px-4">التحليلات</div>
 
-                <a href="{{ route('analytics.index') }}"
+                <a href="{{ route('orgs.analytics.index', ['org' => $currentOrg]) }}"
                    class="flex items-center px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base text-gray-700 dark:text-gray-300 rounded-lg hover:bg-blue-50 dark:hover:bg-gray-700 transition {{ request()->routeIs('analytics.*') ? 'bg-blue-50 text-blue-600 font-semibold' : '' }}">
                     <i class="fas fa-chart-line text-base sm:text-lg w-5 sm:w-6"></i>
                     <span class="mr-2 sm:mr-3">التحليلات</span>
@@ -195,7 +199,7 @@
 
                 <div class="pt-3 sm:pt-4 pb-1 sm:pb-2 text-[10px] sm:text-xs font-semibold text-gray-400 uppercase px-3 sm:px-4">الذكاء الاصطناعي</div>
 
-                <a href="{{ route('ai.index') }}"
+                <a href="{{ route('orgs.ai.index', ['org' => $currentOrg]) }}"
                    class="flex items-center px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base text-gray-700 dark:text-gray-300 rounded-lg hover:bg-blue-50 dark:hover:bg-gray-700 transition {{ request()->routeIs('ai.*') ? 'bg-blue-50 text-blue-600 font-semibold' : '' }}">
                     <i class="fas fa-robot text-base sm:text-lg w-5 sm:w-6"></i>
                     <span class="mr-2 sm:mr-3">الذكاء الاصطناعي</span>
@@ -203,17 +207,22 @@
 
                 <div class="pt-3 sm:pt-4 pb-1 sm:pb-2 text-[10px] sm:text-xs font-semibold text-gray-400 uppercase px-3 sm:px-4">الإعدادات</div>
 
-                <a href="{{ route('settings.integrations') }}"
+                <a href="{{ route('orgs.settings.integrations', ['org' => $currentOrg]) }}"
                    class="flex items-center px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base text-gray-700 dark:text-gray-300 rounded-lg hover:bg-blue-50 dark:hover:bg-gray-700 transition {{ request()->routeIs('settings.integrations') ? 'bg-blue-50 text-blue-600 font-semibold' : '' }}">
                     <i class="fas fa-plug text-base sm:text-lg w-5 sm:w-6"></i>
                     <span class="mr-2 sm:mr-3">التكاملات</span>
                 </a>
 
-                <a href="{{ route('offerings.index') }}"
+                <a href="{{ route('orgs.offerings.index', ['org' => $currentOrg]) }}"
                    class="flex items-center px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base text-gray-700 dark:text-gray-300 rounded-lg hover:bg-blue-50 dark:hover:bg-gray-700 transition {{ request()->routeIs('offerings.*') || request()->routeIs('products.*') || request()->routeIs('services.*') ? 'bg-blue-50 text-blue-600 font-semibold' : '' }}">
                     <i class="fas fa-box text-base sm:text-lg w-5 sm:w-6"></i>
                     <span class="mr-2 sm:mr-3">العروض</span>
                 </a>
+                @else
+                <div class="px-4 py-3 text-gray-600 dark:text-gray-400 text-sm">
+                    الرجاء اختيار منظمة للمتابعة
+                </div>
+                @endif
 
             </nav>
         </aside>
@@ -302,7 +311,12 @@
                             </div>
 
                             <div class="p-3 text-center border-t border-gray-200 dark:border-gray-700">
-                                <a href="{{ route('settings.notifications') }}" class="text-sm text-blue-600 hover:text-blue-700">عرض جميع الإشعارات</a>
+                                @php
+                                    $currentOrg = auth()->user()->active_org_id ?? auth()->user()->current_org_id ?? auth()->user()->org_id ?? request()->route('org');
+                                @endphp
+                                @if($currentOrg)
+                                <a href="{{ route('orgs.settings.notifications', ['org' => $currentOrg]) }}" class="text-sm text-blue-600 hover:text-blue-700">عرض جميع الإشعارات</a>
+                                @endif
                             </div>
                         </div>
                     </div>
@@ -323,12 +337,17 @@
                              x-transition
                              class="absolute left-0 right-0 sm:left-0 sm:right-auto mt-2 w-full sm:w-48 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 z-50"
                              x-cloak>
-                            <a href="{{ route('profile') }}" class="block px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-t-lg">
+                            @php
+                                $currentOrg = auth()->user()->active_org_id ?? auth()->user()->current_org_id ?? auth()->user()->org_id ?? request()->route('org');
+                            @endphp
+                            @if($currentOrg)
+                            <a href="{{ route('orgs.profile', ['org' => $currentOrg]) }}" class="block px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-t-lg">
                                 <i class="fas fa-user ml-2"></i> الملف الشخصي
                             </a>
-                            <a href="{{ route('settings.index') }}" class="block px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">
+                            <a href="{{ route('orgs.settings.index', ['org' => $currentOrg]) }}" class="block px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">
                                 <i class="fas fa-cog ml-2"></i> الإعدادات
                             </a>
+                            @endif
                             <hr class="border-gray-200 dark:border-gray-700">
                             <form method="POST" action="{{ route('logout') }}" class="block">
                                 @csrf

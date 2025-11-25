@@ -15,7 +15,7 @@ return new class extends Migration
 
         // Create automation_rules table
         DB::statement("
-            CREATE TABLE cmis_automation.automation_rules (
+            CREATE TABLE IF NOT EXISTS cmis_automation.automation_rules (
                 id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
                 org_id UUID NOT NULL REFERENCES cmis.organizations(id) ON DELETE CASCADE,
                 name VARCHAR(255) NOT NULL,
@@ -29,14 +29,16 @@ return new class extends Migration
         ");
 
         // Add indexes for automation_rules
-        DB::statement('CREATE INDEX idx_automation_rules_org_id ON cmis_automation.automation_rules(org_id)');
-        DB::statement('CREATE INDEX idx_automation_rules_is_active ON cmis_automation.automation_rules(is_active)');
-        DB::statement('CREATE INDEX idx_automation_rules_created_at ON cmis_automation.automation_rules(created_at)');
+        DB::statement('CREATE INDEX IF NOT EXISTS idx_automation_rules_org_id ON cmis_automation.automation_rules(org_id)');
+        DB::statement('CREATE INDEX IF NOT EXISTS idx_automation_rules_is_active ON cmis_automation.automation_rules(is_active)');
+        DB::statement('CREATE INDEX IF NOT EXISTS idx_automation_rules_created_at ON cmis_automation.automation_rules(created_at)');
 
         // Enable RLS for automation_rules
         DB::statement('ALTER TABLE cmis_automation.automation_rules ENABLE ROW LEVEL SECURITY');
 
-        // Create RLS policy for automation_rules
+        // Drop existing policy if it exists, then create RLS policy for automation_rules
+        DB::statement('DROP POLICY IF EXISTS org_isolation_policy ON cmis_automation.automation_rules');
+
         DB::statement("
             CREATE POLICY org_isolation_policy ON cmis_automation.automation_rules
             FOR ALL
@@ -45,7 +47,7 @@ return new class extends Migration
 
         // Create rule_execution_log table
         DB::statement("
-            CREATE TABLE cmis_automation.rule_execution_log (
+            CREATE TABLE IF NOT EXISTS cmis_automation.rule_execution_log (
                 id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
                 rule_id UUID REFERENCES cmis_automation.automation_rules(id) ON DELETE SET NULL,
                 campaign_id UUID NOT NULL REFERENCES cmis.campaigns(id) ON DELETE CASCADE,
@@ -58,14 +60,16 @@ return new class extends Migration
         ");
 
         // Add indexes for rule_execution_log
-        DB::statement('CREATE INDEX idx_rule_execution_log_rule_id ON cmis_automation.rule_execution_log(rule_id)');
-        DB::statement('CREATE INDEX idx_rule_execution_log_campaign_id ON cmis_automation.rule_execution_log(campaign_id)');
-        DB::statement('CREATE INDEX idx_rule_execution_log_executed_at ON cmis_automation.rule_execution_log(executed_at DESC)');
+        DB::statement('CREATE INDEX IF NOT EXISTS idx_rule_execution_log_rule_id ON cmis_automation.rule_execution_log(rule_id)');
+        DB::statement('CREATE INDEX IF NOT EXISTS idx_rule_execution_log_campaign_id ON cmis_automation.rule_execution_log(campaign_id)');
+        DB::statement('CREATE INDEX IF NOT EXISTS idx_rule_execution_log_executed_at ON cmis_automation.rule_execution_log(executed_at DESC)');
 
         // Enable RLS for rule_execution_log
         DB::statement('ALTER TABLE cmis_automation.rule_execution_log ENABLE ROW LEVEL SECURITY');
 
-        // Create RLS policy for rule_execution_log (access via campaign ownership)
+        // Drop existing policy if it exists, then create RLS policy for rule_execution_log (access via campaign ownership)
+        DB::statement('DROP POLICY IF EXISTS org_isolation_policy ON cmis_automation.rule_execution_log');
+
         DB::statement("
             CREATE POLICY org_isolation_policy ON cmis_automation.rule_execution_log
             FOR ALL

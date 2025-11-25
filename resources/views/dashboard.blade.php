@@ -152,7 +152,7 @@
     <!-- Quick Actions -->
     <x-ui.card title="إجراءات سريعة">
         <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-3 md:gap-4">
-            <a href="{{ route('campaigns.index') }}" class="flex flex-col items-center p-3 sm:p-4 bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-lg hover:shadow-lg transition">
+            <a href="{{ route('orgs.campaigns.index', ['org' => $currentOrg->org_id]) }}" class="flex flex-col items-center p-3 sm:p-4 bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-lg hover:shadow-lg transition">
                 <i class="fas fa-plus-circle text-xl sm:text-2xl md:text-3xl mb-1 sm:mb-2"></i>
                 <span class="text-xs sm:text-sm font-semibold text-center">حملة جديدة</span>
             </a>
@@ -160,19 +160,19 @@
                 <i class="fas fa-building text-xl sm:text-2xl md:text-3xl mb-1 sm:mb-2"></i>
                 <span class="text-xs sm:text-sm font-semibold text-center">مؤسسة جديدة</span>
             </a>
-            <a href="{{ route('creative.index') }}" class="flex flex-col items-center p-3 sm:p-4 bg-gradient-to-br from-purple-500 to-purple-600 text-white rounded-lg hover:shadow-lg transition">
+            <a href="{{ route('orgs.creative-assets.index', ['org' => $currentOrg->org_id]) }}" class="flex flex-col items-center p-3 sm:p-4 bg-gradient-to-br from-purple-500 to-purple-600 text-white rounded-lg hover:shadow-lg transition">
                 <i class="fas fa-palette text-xl sm:text-2xl md:text-3xl mb-1 sm:mb-2"></i>
                 <span class="text-xs sm:text-sm font-semibold text-center">محتوى إبداعي</span>
             </a>
-            <a href="{{ route('analytics.index') }}" class="flex flex-col items-center p-3 sm:p-4 bg-gradient-to-br from-yellow-500 to-yellow-600 text-white rounded-lg hover:shadow-lg transition">
+            <a href="{{ route('orgs.analytics.index', ['org' => $currentOrg->org_id]) }}" class="flex flex-col items-center p-3 sm:p-4 bg-gradient-to-br from-yellow-500 to-yellow-600 text-white rounded-lg hover:shadow-lg transition">
                 <i class="fas fa-chart-line text-xl sm:text-2xl md:text-3xl mb-1 sm:mb-2"></i>
                 <span class="text-xs sm:text-sm font-semibold text-center">التحليلات</span>
             </a>
-            <a href="{{ route('settings.integrations') }}" class="flex flex-col items-center p-3 sm:p-4 bg-gradient-to-br from-red-500 to-red-600 text-white rounded-lg hover:shadow-lg transition">
+            <a href="{{ route('orgs.settings.integrations', ['org' => $currentOrg->org_id]) }}" class="flex flex-col items-center p-3 sm:p-4 bg-gradient-to-br from-red-500 to-red-600 text-white rounded-lg hover:shadow-lg transition">
                 <i class="fas fa-plug text-xl sm:text-2xl md:text-3xl mb-1 sm:mb-2"></i>
                 <span class="text-xs sm:text-sm font-semibold text-center">التكاملات</span>
             </a>
-            <a href="{{ route('ai.index') }}" class="flex flex-col items-center p-3 sm:p-4 bg-gradient-to-br from-indigo-500 to-indigo-600 text-white rounded-lg hover:shadow-lg transition">
+            <a href="{{ route('orgs.ai.index', ['org' => $currentOrg->org_id]) }}" class="flex flex-col items-center p-3 sm:p-4 bg-gradient-to-br from-indigo-500 to-indigo-600 text-white rounded-lg hover:shadow-lg transition">
                 <i class="fas fa-robot text-xl sm:text-2xl md:text-3xl mb-1 sm:mb-2"></i>
                 <span class="text-xs sm:text-sm font-semibold text-center">الذكاء الاصطناعي</span>
             </a>

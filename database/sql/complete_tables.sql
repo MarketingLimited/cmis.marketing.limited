@@ -738,25 +738,27 @@ CREATE TABLE cmis.dataset_packages (
     provider text
 );
 
-CREATE TABLE cmis.experiment_variants (
-    exp_id uuid NOT NULL,
-    asset_id uuid NOT NULL,
-    deleted_at timestamp with time zone,
-    provider text
-);
+-- COMMENTED OUT: Table created by migration 2025_11_21_000004_create_ab_testing_tables.php
+-- CREATE TABLE cmis.experiment_variants (
+--     exp_id uuid NOT NULL,
+--     asset_id uuid NOT NULL,
+--     deleted_at timestamp with time zone,
+--     provider text
+-- );
 
-CREATE TABLE cmis.experiments (
-    exp_id uuid DEFAULT gen_random_uuid() NOT NULL,
-    org_id uuid NOT NULL,
-    channel_id integer,
-    framework text,
-    hypothesis text,
-    status text DEFAULT 'draft'::text,
-    created_at timestamp with time zone DEFAULT now(),
-    campaign_id uuid,
-    deleted_at timestamp with time zone,
-    provider text
-);
+-- COMMENTED OUT: This table is now created by migration 2025_11_21_000004_create_ab_testing_tables.php with RLS policies
+-- CREATE TABLE cmis.experiments (
+--     exp_id uuid DEFAULT gen_random_uuid() NOT NULL,
+--     org_id uuid NOT NULL,
+--     channel_id integer,
+--     framework text,
+--     hypothesis text,
+--     status text DEFAULT 'draft'::text,
+--     created_at timestamp with time zone DEFAULT now(),
+--     campaign_id uuid,
+--     deleted_at timestamp with time zone,
+--     provider text
+-- );
 
 CREATE TABLE cmis.export_bundle_items (
     bundle_id uuid NOT NULL,
@@ -1292,22 +1294,23 @@ CREATE TABLE cmis.scene_library (
     CONSTRAINT scene_library_quality_score_check CHECK (((quality_score >= 1) AND (quality_score <= 5)))
 );
 
-CREATE TABLE cmis.scheduled_reports (
-    schedule_id uuid NOT NULL,
-    report_type character varying(50) NOT NULL,
-    entity_id uuid NOT NULL,
-    frequency character varying(20) DEFAULT 'weekly'::character varying NOT NULL,
-    format character varying(10) DEFAULT 'pdf'::character varying NOT NULL,
-    delivery_method character varying(20) DEFAULT 'email'::character varying NOT NULL,
-    recipients jsonb,
-    config jsonb,
-    is_active boolean DEFAULT true,
-    last_run_at timestamp with time zone,
-    next_run_at timestamp with time zone,
-    created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
-    updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT chk_scheduled_reports_frequency CHECK (((frequency)::text = ANY (ARRAY[('daily'::character varying)::text, ('weekly'::character varying)::text, ('monthly'::character varying)::text, ('quarterly'::character varying)::text, ('yearly'::character varying)::text])))
-);
+-- COMMENTED OUT: This table is now created by migration 2025_11_21_000001_create_scheduled_reports_table.php with RLS policies
+-- CREATE TABLE cmis.scheduled_reports (
+--     schedule_id uuid NOT NULL,
+--     report_type character varying(50) NOT NULL,
+--     entity_id uuid NOT NULL,
+--     frequency character varying(20) DEFAULT 'weekly'::character varying NOT NULL,
+--     format character varying(10) DEFAULT 'pdf'::character varying NOT NULL,
+--     delivery_method character varying(20) DEFAULT 'email'::character varying NOT NULL,
+--     recipients jsonb,
+--     config jsonb,
+--     is_active boolean DEFAULT true,
+--     last_run_at timestamp with time zone,
+--     next_run_at timestamp with time zone,
+--     created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
+--     updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
+--     CONSTRAINT chk_scheduled_reports_frequency CHECK (((frequency)::text = ANY (ARRAY[('daily'::character varying)::text, ('weekly'::character varying)::text, ('monthly'::character varying)::text, ('quarterly'::character varying)::text, ('yearly'::character varying)::text])))
+-- );
 
 CREATE TABLE cmis.scheduled_social_posts (
     id uuid NOT NULL,

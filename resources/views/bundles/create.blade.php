@@ -1,4 +1,9 @@
 @extends('layouts.admin')
+
+@php
+    $currentOrg = $currentOrg ?? request()->route('org') ?? auth()->user()->active_org_id ?? auth()->user()->org_id;
+@endphp
+
 @section('title', 'إنشاء حزمة جديدة')
 @section('content')
 <div class="container mx-auto px-4 py-6" x-data="bundleCreate()">
@@ -17,7 +22,7 @@
             <input type="number" x-model="bundle.discount" min="0" max="100" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
         </div>
         <div class="flex justify-end gap-3">
-            <button type="button" onclick="window.location='{{ route('offerings.bundles') }}'" class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">إلغاء</button>
+            <button type="button" onclick="window.location='{{ route('orgs.bundles.index', ['org' => $currentOrg]) }}'" class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">إلغاء</button>
             <button type="submit" :disabled="saving" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">إنشاء الحزمة</button>
         </div>
     </form>
@@ -31,12 +36,12 @@ function bundleCreate() {
         async saveBundle() {
             this.saving = true;
             try {
-                await fetch('/api/orgs/1/offerings/bundles', {
+                await fetch('/api/orgs/{{ $currentOrg }}/offerings/bundles', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content},
                     body: JSON.stringify(this.bundle)
                 });
-                window.location = '{{ route('offerings.bundles') }}';
+                window.location = '{{ route('orgs.bundles.index', ['org' => $currentOrg]) }}';
             } finally {
                 this.saving = false;
             }

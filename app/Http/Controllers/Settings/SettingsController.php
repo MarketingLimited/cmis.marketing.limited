@@ -11,7 +11,7 @@ class SettingsController extends Controller
 {
     use ApiResponse;
 
-    public function index()
+    public function index(string $org)
     {
         return view('settings.index');
     }
@@ -31,7 +31,7 @@ class SettingsController extends Controller
         return view('settings.security');
     }
 
-    public function integrations()
+    public function integrations(string $org)
     {
         return view('settings.integrations');
     }
@@ -55,7 +55,7 @@ class SettingsController extends Controller
         ]);
 
         $user = Auth::user();
-        
+
         if (!\Hash::check($request->current_password, $user->password)) {
             return response()->json(['error' => 'كلمة المرور الحالية غير صحيحة'], 400);
         }

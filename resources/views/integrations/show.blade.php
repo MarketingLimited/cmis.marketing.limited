@@ -1,5 +1,9 @@
 @extends('layouts.admin')
 
+@php
+    $currentOrg = $currentOrg ?? request()->route('org') ?? auth()->user()->active_org_id ?? auth()->user()->org_id;
+@endphp
+
 @section('content')
 <h2>🧩 تفاصيل التكامل (Integration Details)</h2>
 <p>في هذه الصفحة يمكنك الاطلاع على تفاصيل التكامل وإدارة مفاتيح الاتصال ومراجعة سجل الأنشطة.</p>
@@ -55,7 +59,7 @@
 
 <!-- أزرار التحكم -->
 <div style="display:flex; gap:10px; margin-top:20px;">
-  <a href="/integrations" style="background:#475569; color:white; padding:10px 15px; border-radius:6px; text-decoration:none;">🔙 العودة</a>
+  <a href="{{ route('orgs.settings.integrations', ['org' => $currentOrg]) }}" style="background:#475569; color:white; padding:10px 15px; border-radius:6px; text-decoration:none;">🔙 العودة</a>
   <button style="background:#10b981; color:white; border:none; padding:10px 15px; border-radius:6px; cursor:pointer;">🔄 تحديث الاتصال</button>
   <button style="background:#ef4444; color:white; border:none; padding:10px 15px; border-radius:6px; cursor:pointer;">❌ حذف التكامل</button>
 </div>

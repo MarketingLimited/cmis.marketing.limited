@@ -60,6 +60,20 @@ return new class extends Migration
         ];
 
         foreach ($tables as $table) {
+            // Check if table exists first
+            $tableExists = DB::selectOne("
+                SELECT EXISTS (
+                    SELECT 1
+                    FROM information_schema.tables
+                    WHERE table_schema = 'cmis'
+                    AND table_name = ?
+                ) as exists
+            ", [$table]);
+
+            if (!$tableExists->exists) {
+                continue; // Skip if table doesn't exist
+            }
+
             // Check and add created_at if it doesn't exist
             $hasCreatedAt = DB::selectOne("
                 SELECT EXISTS (

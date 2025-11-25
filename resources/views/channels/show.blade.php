@@ -1,10 +1,13 @@
 @extends('layouts.admin')
 @section('title', 'تفاصيل القناة')
+@php
+    $currentOrg = $currentOrg ?? request()->route('org') ?? auth()->user()->active_org_id ?? auth()->user()->org_id;
+@endphp
 @section('content')
 <div class="container mx-auto px-4 py-6" x-data="channelShow({{ $channelId }})">
     <div class="mb-6 flex items-center justify-between">
         <h1 class="text-3xl font-bold text-gray-900" x-text="channel.name"></h1>
-        <a href="{{ route('channels.index') }}" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">رجوع</a>
+        <a href="{{ route('orgs.channels.index', ['org' => $currentOrg]) }}" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">رجوع</a>
     </div>
 
     <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">

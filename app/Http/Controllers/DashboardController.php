@@ -24,26 +24,27 @@ class DashboardController extends Controller
 {
     use ApiResponse;
 
-    public function index()
+    public function index(string $org)
     {
         // Anyone authenticated can view dashboard
         // Stub implementation - Proper authorization policy not yet implemented
         // $this->authorize('viewAny', Campaign::class);
 
-        $data = $this->resolveDashboardMetrics();
+        $data = $this->resolveDashboardMetrics($org);
+        $data['currentOrg'] = Org::where('org_id', $org)->first();
 
         return view('dashboard', $data);
     }
 
-    public function data()
+    public function data(string $org)
     {
         // Stub implementation - Proper authorization policy not yet implemented
         // $this->authorize('viewAny', Campaign::class);
 
-        return $this->success($this->resolveDashboardMetrics(), 'Dashboard metrics retrieved successfully');
+        return $this->success($this->resolveDashboardMetrics($org), 'Dashboard metrics retrieved successfully');
     }
 
-    public function latest(Request $request)
+    public function latest(Request $request, string $org)
     {
         // Stub implementation - Proper authorization policy not yet implemented
         // $this->authorize('viewAny', Campaign::class);
@@ -112,7 +113,7 @@ class DashboardController extends Controller
         }
     }
 
-    public function markAsRead(Request $request, $notificationId)
+    public function markAsRead(Request $request, string $org, $notificationId)
     {
         try {
             $user = $request->user();
@@ -123,6 +124,7 @@ class DashboardController extends Controller
 
             $notification = Notification::where('notification_id', $notificationId)
                 ->where('user_id', $user->user_id)
+                ->where('org_id', $org)
                 ->first();
 
             if (!$notification) {
@@ -160,15 +162,15 @@ class DashboardController extends Controller
     }
 
     /**
-     * Get dashboard statistics (automatically filtered by RLS)
+     * Get dashboard statistics (filtered by org_id)
      */
-    public function stats(Request $request)
+    public function stats(Request $request, string $org)
     {
         $stats = [
-            'total_campaigns' => Campaign::count(),
-            'active_campaigns' => Campaign::where('status', 'active')->count(),
-            'total_content' => DB::table('cmis.content_items')->count(),
-            'total_assets' => CreativeAsset::count(),
+            'total_campaigns' => Campaign::where('org_id', $org)->count(),
+            'active_campaigns' => Campaign::where('org_id', $org)->where('status', 'active')->count(),
+            'total_content' => DB::table('cmis.content_items')->where('org_id', $org)->count(),
+            'total_assets' => CreativeAsset::where('org_id', $org)->count(),
         ];
 
         return $this->success($stats, 'Statistics retrieved successfully');
@@ -191,15 +193,15 @@ class DashboardController extends Controller
     }
 
     /**
-     * Get campaigns summary (automatically filtered by RLS)
+     * Get campaigns summary (filtered by org_id)
      */
-    public function campaignsSummary(Request $request)
+    public function campaignsSummary(Request $request, string $org)
     {
         $summary = [
-            'total' => Campaign::count(),
-            'active' => Campaign::where('status', 'active')->count(),
-            'completed' => Campaign::where('status', 'completed')->count(),
-            'draft' => Campaign::where('status', 'draft')->count(),
+            'total' => Campaign::where('org_id', $org)->count(),
+            'active' => Campaign::where('org_id', $org)->where('status', 'active')->count(),
+            'completed' => Campaign::where('org_id', $org)->where('status', 'completed')->count(),
+            'draft' => Campaign::where('org_id', $org)->where('status', 'draft')->count(),
         ];
 
         return $this->success($summary, 'Campaigns summary retrieved successfully');
@@ -227,11 +229,12 @@ class DashboardController extends Controller
     }
 
     /**
-     * Get upcoming social media posts (automatically filtered by RLS)
+     * Get upcoming social media posts (filtered by org_id)
      */
-    public function upcomingPosts(Request $request)
+    public function upcomingPosts(Request $request, string $org)
     {
         $posts = DB::table('cmis.scheduled_social_posts')
+            ->where('org_id', $org)
             ->where('status', 'scheduled')
             ->where('scheduled_at', '>', now())
             ->orderBy('scheduled_at')
@@ -290,11 +293,12 @@ class DashboardController extends Controller
     }
 
     /**
-     * Get top performing campaigns (automatically filtered by RLS)
+     * Get top performing campaigns (filtered by org_id)
      */
-    public function topCampaigns(Request $request)
+    public function topCampaigns(Request $request, string $org)
     {
-        $campaigns = Campaign::where('status', 'active')
+        $campaigns = Campaign::where('org_id', $org)
+            ->where('status', 'active')
             ->orderBy('created_at', 'desc')
             ->limit(5)
             ->get(['campaign_id', 'name', 'status', 'budget', 'start_date', 'end_date']);
@@ -303,11 +307,11 @@ class DashboardController extends Controller
     }
 
     /**
-     * Get budget summary (automatically filtered by RLS)
+     * Get budget summary (filtered by org_id)
      */
-    public function budgetSummary(Request $request)
+    public function budgetSummary(Request $request, string $org)
     {
-        $totalBudget = Campaign::sum('budget') ?? 0;
+        $totalBudget = Campaign::where('org_id', $org)->sum('budget') ?? 0;
 
         $summary = [
             'total_budget' => $totalBudget,
@@ -350,14 +354,15 @@ class DashboardController extends Controller
     }
 
     /**
-     * Get campaigns data (automatically filtered by RLS)
+     * Get campaigns data (filtered by org_id)
      */
     private function getCampaignsData(string $orgId): array
     {
         return [
-            'total' => Campaign::count(),
-            'active' => Campaign::where('status', 'active')->count(),
-            'recent' => Campaign::orderBy('created_at', 'desc')
+            'total' => Campaign::where('org_id', $orgId)->count(),
+            'active' => Campaign::where('org_id', $orgId)->where('status', 'active')->count(),
+            'recent' => Campaign::where('org_id', $orgId)
+                ->orderBy('created_at', 'desc')
                 ->limit(5)
                 ->get(['campaign_id', 'name', 'status', 'created_at']),
         ];
@@ -384,27 +389,27 @@ class DashboardController extends Controller
         return [];
     }
 
-    protected function resolveDashboardMetrics(): array
+    protected function resolveDashboardMetrics(string $orgId): array
     {
-        return Cache::remember('dashboard.metrics', now()->addMinutes(5), function () {
-            // Safely count records with error handling
+        return Cache::remember("dashboard.metrics.{$orgId}", now()->addMinutes(5), function () use ($orgId) {
+            // Safely count records with error handling - filtered by org_id
             $stats = [
-                'orgs' => $this->safeCount(fn() => Org::count()),
-                'campaigns' => $this->safeCount(fn() => Campaign::count()),
+                'orgs' => 1, // Current org
+                'campaigns' => $this->safeCount(fn() => Campaign::where('org_id', $orgId)->count()),
                 'offerings' => 0, // Table doesn't exist yet
-                'kpis' => $this->safeCount(fn() => DB::table('cmis.kpis')->count()),
-                'creative_assets' => $this->safeCount(fn() => CreativeAsset::count()),
+                'kpis' => $this->safeCount(fn() => DB::table('cmis.kpis')->where('org_id', $orgId)->count()),
+                'creative_assets' => $this->safeCount(fn() => CreativeAsset::where('org_id', $orgId)->count()),
             ];
 
-            $campaignStatus = $this->safeTry(function() {
-                return Campaign::query()
+            $campaignStatus = $this->safeTry(function() use ($orgId) {
+                return Campaign::where('org_id', $orgId)
                     ->select('status', DB::raw('COUNT(*) as count'))
                     ->groupBy('status')
                     ->pluck('count', 'status');
             }, collect());
 
-            $campaignsByOrg = $this->safeTry(function() {
-                return Campaign::query()
+            $campaignsByOrg = $this->safeTry(function() use ($orgId) {
+                return Campaign::where('cmis.campaigns.org_id', $orgId)
                     ->join('cmis.orgs as o', 'cmis.campaigns.org_id', '=', 'o.org_id')
                     ->select('o.name as org_name', DB::raw('COUNT(cmis.campaigns.campaign_id) as total'))
                     ->groupBy('o.name')
@@ -419,12 +424,12 @@ class DashboardController extends Controller
             ];
 
             $analytics = [
-                'kpis' => $this->safeCount(fn() => DB::table('cmis.kpis')->count()),
+                'kpis' => $this->safeCount(fn() => DB::table('cmis.kpis')->where('org_id', $orgId)->count()),
                 'metrics' => 0, // PerformanceMetric table may not exist
             ];
 
             $creative = [
-                'assets' => $this->safeCount(fn() => CreativeAsset::count()),
+                'assets' => $this->safeCount(fn() => CreativeAsset::where('org_id', $orgId)->count()),
                 'images' => 0,
                 'videos' => 0,
             ];

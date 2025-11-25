@@ -16,57 +16,60 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('cmis_twitter.audiences', function (Blueprint $table) {
-            $table->uuid('id')->primary();
-            $table->uuid('org_id')->index();
+        // Skip if table already exists from earlier migration
+        if (!Schema::hasTable('cmis_twitter.audiences')) {
+            Schema::create('cmis_twitter.audiences', function (Blueprint $table) {
+                $table->uuid('id')->primary();
+                $table->uuid('org_id')->index();
 
-            // Twitter platform identifiers
-            $table->string('platform_audience_id')->unique()->index();
-            $table->string('platform_account_id')->index();
+                // Twitter platform identifiers
+                $table->string('platform_audience_id')->unique()->index();
+                $table->string('platform_account_id')->index();
 
-            // Audience details
-            $table->string('name');
-            $table->string('audience_type'); // TAILORED, LOOKALIKE, FOLLOWER_LOOKALIKE
-            $table->string('list_type')->nullable(); // EMAIL, TWITTER_ID, MOBILE_ADVERTISING_ID, etc.
+                // Audience details
+                $table->string('name');
+                $table->string('audience_type'); // TAILORED, LOOKALIKE, FOLLOWER_LOOKALIKE
+                $table->string('list_type')->nullable(); // EMAIL, TWITTER_ID, MOBILE_ADVERTISING_ID, etc.
 
-            // Audience size estimates
-            $table->bigInteger('size_estimate')->nullable();
-            $table->bigInteger('targetable_size')->nullable();
+                // Audience size estimates
+                $table->bigInteger('size_estimate')->nullable();
+                $table->bigInteger('targetable_size')->nullable();
 
-            // Status
-            $table->string('status')->default('ACTIVE'); // ACTIVE, BUILDING, READY, TOO_SMALL, DELETED
+                // Status
+                $table->string('status')->default('ACTIVE'); // ACTIVE, BUILDING, READY, TOO_SMALL, DELETED
 
-            // Source audience (for lookalike audiences)
-            $table->uuid('source_audience_id')->nullable();
-            $table->string('source_country')->nullable(); // For lookalike geo-targeting
+                // Source audience (for lookalike audiences)
+                $table->uuid('source_audience_id')->nullable();
+                $table->string('source_country')->nullable(); // For lookalike geo-targeting
 
-            // Metadata (JSONB for flexibility)
-            $table->jsonb('config_metadata')->nullable();
-            $table->jsonb('platform_metadata')->nullable();
+                // Metadata (JSONB for flexibility)
+                $table->jsonb('config_metadata')->nullable();
+                $table->jsonb('platform_metadata')->nullable();
 
-            // Timestamps
-            $table->timestamps();
-            $table->softDeletes();
+                // Timestamps
+                $table->timestamps();
+                $table->softDeletes();
 
-            // Foreign keys
-            $table->foreign('org_id')
-                ->references('org_id')
-                ->on('cmis.organizations')
-                ->onDelete('cascade');
+                // Foreign keys
+                $table->foreign('org_id')
+                    ->references('org_id')
+                    ->on('cmis.organizations')
+                    ->onDelete('cascade');
 
-            $table->foreign('source_audience_id')
-                ->references('id')
-                ->on('cmis_twitter.audiences')
-                ->onDelete('set null');
+                $table->foreign('source_audience_id')
+                    ->references('id')
+                    ->on('cmis_twitter.audiences')
+                    ->onDelete('set null');
 
-            // Indexes
-            $table->index('audience_type');
-            $table->index('status');
-            $table->index('list_type');
-        });
+                // Indexes
+                $table->index('audience_type');
+                $table->index('status');
+                $table->index('list_type');
+            });
 
-        // Enable RLS
-        $this->enableRLS('cmis_twitter.audiences');
+            // Enable RLS
+            $this->enableRLS('cmis_twitter.audiences');
+        }
     }
 
     /**

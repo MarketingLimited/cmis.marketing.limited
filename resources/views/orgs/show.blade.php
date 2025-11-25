@@ -34,7 +34,7 @@
                     </div>
                 </div>
                 <div class="flex gap-3">
-                    <a href="{{ route('orgs.edit', $org->org_id) }}"
+                    <a href="{{ route('orgs.edit', ['org' => $org->org_id]) }}"
                        class="bg-white/20 hover:bg-white/30 backdrop-blur-sm px-6 py-3 rounded-xl flex items-center gap-2 transition">
                         <i class="fas fa-edit"></i>
                         تعديل
@@ -100,21 +100,21 @@
             <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
                 <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-6">الإجراءات السريعة</h3>
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <a href="{{ route('orgs.campaigns', $org->org_id) }}"
+                    <a href="{{ route('orgs.campaigns.index', ['org' => $org->org_id]) }}"
                        class="flex flex-col items-center p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl hover:bg-blue-100 dark:hover:bg-blue-900/40 transition group">
                         <div class="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition">
                             <i class="fas fa-bullhorn text-white text-xl"></i>
                         </div>
                         <span class="text-sm font-medium text-gray-900 dark:text-white">الحملات</span>
                     </a>
-                    <a href="{{ route('orgs.products', $org->org_id) }}"
+                    <a href="{{ route('orgs.products', ['org' => $org->org_id]) }}"
                        class="flex flex-col items-center p-4 bg-green-50 dark:bg-green-900/20 rounded-xl hover:bg-green-100 dark:hover:bg-green-900/40 transition group">
                         <div class="w-12 h-12 bg-green-500 rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition">
                             <i class="fas fa-box text-white text-xl"></i>
                         </div>
                         <span class="text-sm font-medium text-gray-900 dark:text-white">المنتجات</span>
                     </a>
-                    <a href="{{ route('orgs.services', $org->org_id) }}"
+                    <a href="{{ route('orgs.services', ['org' => $org->org_id]) }}"
                        class="flex flex-col items-center p-4 bg-purple-50 dark:bg-purple-900/20 rounded-xl hover:bg-purple-100 dark:hover:bg-purple-900/40 transition group">
                         <div class="w-12 h-12 bg-purple-500 rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition">
                             <i class="fas fa-concierge-bell text-white text-xl"></i>
@@ -135,7 +135,7 @@
             <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
                 <div class="flex items-center justify-between mb-6">
                     <h3 class="text-xl font-bold text-gray-900 dark:text-white">أحدث الحملات</h3>
-                    <a href="{{ route('orgs.campaigns', $org->org_id) }}" class="text-blue-600 hover:text-blue-700 text-sm">
+                    <a href="{{ route('orgs.campaigns.index', ['org' => $org->org_id]) }}" class="text-blue-600 hover:text-blue-700 text-sm">
                         عرض الكل <i class="fas fa-arrow-left mr-1"></i>
                     </a>
                 </div>

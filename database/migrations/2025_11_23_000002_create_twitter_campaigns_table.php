@@ -16,7 +16,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('cmis_twitter.campaigns', function (Blueprint $table) {
+        // Skip if table already exists from earlier migration
+        if (!Schema::hasTable('cmis_twitter.campaigns')) {
+            Schema::create('cmis_twitter.campaigns', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->uuid('org_id')->index();
             $table->uuid('integration_id')->nullable();
@@ -73,6 +75,7 @@ return new class extends Migration
 
         // Enable RLS with standard org_id policy
         $this->enableRLS('cmis_twitter.campaigns');
+        }
     }
 
     /**

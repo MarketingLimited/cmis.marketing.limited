@@ -27,7 +27,7 @@ return new class extends Migration
 
         // Update existing quotas based on subscription tiers
         DB::statement("
-            UPDATE cmis.ai_usage_quotas
+            UPDATE cmis_ai.usage_quotas
             SET
                 image_quota_daily = CASE
                     WHEN tier = 'free' THEN 5
@@ -36,29 +36,29 @@ return new class extends Migration
                     ELSE 5
                 END,
                 image_quota_monthly = CASE
-                    WHEN quota_type = 'free' THEN 50
-                    WHEN quota_type = 'pro' THEN 500
-                    WHEN quota_type = 'enterprise' THEN -1
+                    WHEN tier = 'free' THEN 50
+                    WHEN tier = 'pro' THEN 500
+                    WHEN tier = 'enterprise' THEN -1
                     ELSE 50
                 END,
                 video_quota_daily = CASE
-                    WHEN quota_type = 'free' THEN 0
-                    WHEN quota_type = 'pro' THEN 10
-                    WHEN quota_type = 'enterprise' THEN -1
+                    WHEN tier = 'free' THEN 0
+                    WHEN tier = 'pro' THEN 10
+                    WHEN tier = 'enterprise' THEN -1
                     ELSE 0
                 END,
                 video_quota_monthly = CASE
-                    WHEN quota_type = 'free' THEN 0
-                    WHEN quota_type = 'pro' THEN 100
-                    WHEN quota_type = 'enterprise' THEN -1
+                    WHEN tier = 'free' THEN 0
+                    WHEN tier = 'pro' THEN 100
+                    WHEN tier = 'enterprise' THEN -1
                     ELSE 0
                 END
             WHERE tier IS NOT NULL;
         ");
 
-        // Add columns to ai_usage_logs for tracking media generation
+        // Add columns to usage_tracking for tracking media generation
         DB::statement("
-            ALTER TABLE cmis_ai.ai_usage_logs
+            ALTER TABLE cmis_ai.usage_tracking
             ADD COLUMN IF NOT EXISTS generation_type VARCHAR(20),
             ADD COLUMN IF NOT EXISTS cost_usd DECIMAL(10,4),
             ADD COLUMN IF NOT EXISTS media_resolution VARCHAR(20),
@@ -68,13 +68,13 @@ return new class extends Migration
 
         // Create index for efficient quota queries
         DB::statement("
-            CREATE INDEX IF NOT EXISTS idx_ai_usage_logs_generation_type
-            ON cmis_ai.ai_usage_logs(generation_type);
+            CREATE INDEX IF NOT EXISTS idx_usage_tracking_generation_type
+            ON cmis_ai.usage_tracking(generation_type);
         ");
 
         DB::statement("
-            CREATE INDEX IF NOT EXISTS idx_ai_usage_logs_org_created
-            ON cmis_ai.ai_usage_logs(org_id, created_at);
+            CREATE INDEX IF NOT EXISTS idx_usage_tracking_org_created
+            ON cmis_ai.usage_tracking(org_id, created_at);
         ");
     }
 
@@ -83,11 +83,11 @@ return new class extends Migration
      */
     public function down(): void
     {
-        DB::statement("DROP INDEX IF EXISTS cmis_ai.idx_ai_usage_logs_generation_type;");
-        DB::statement("DROP INDEX IF EXISTS cmis_ai.idx_ai_usage_logs_org_created;");
+        DB::statement("DROP INDEX IF EXISTS cmis_ai.idx_usage_tracking_generation_type;");
+        DB::statement("DROP INDEX IF EXISTS cmis_ai.idx_usage_tracking_org_created;");
 
         DB::statement("
-            ALTER TABLE cmis_ai.ai_usage_logs
+            ALTER TABLE cmis_ai.usage_tracking
             DROP COLUMN IF EXISTS generation_type,
             DROP COLUMN IF EXISTS cost_usd,
             DROP COLUMN IF EXISTS media_resolution,

@@ -22,14 +22,14 @@ class UnifiedCommentsController extends Controller
     /**
      * Get unified comments from all platforms
      */
-    public function index(Request $request, $orgId = null)
+    public function index(Request $request, string $org)
     {
         // If it's a web request (not API), return the view
         if (!$request->expectsJson()) {
             return view('inbox.comments');
         }
 
-        $this->commentsService = new UnifiedCommentsService($orgId);
+        $this->commentsService = new UnifiedCommentsService($org);
 
         try {
             $filters = [
@@ -70,9 +70,9 @@ class UnifiedCommentsController extends Controller
     /**
      * Reply to comment
      */
-    public function reply(Request $request, $orgId, $commentId)
+    public function reply(Request $request, string $org, $commentId)
     {
-        $this->commentsService = new UnifiedCommentsService($orgId);
+        $this->commentsService = new UnifiedCommentsService($org);
 
         $validator = Validator::make($request->all(), [
             'reply_text' => 'required|string|max:5000',
@@ -111,9 +111,9 @@ class UnifiedCommentsController extends Controller
     /**
      * Hide comment
      */
-    public function hide(Request $request, $orgId, $commentId)
+    public function hide(Request $request, string $org, $commentId)
     {
-        $this->commentsService = new UnifiedCommentsService($orgId);
+        $this->commentsService = new UnifiedCommentsService($org);
 
         try {
             $result = $this->commentsService->hideComment($commentId);
@@ -142,9 +142,9 @@ class UnifiedCommentsController extends Controller
     /**
      * Delete comment
      */
-    public function delete(Request $request, $orgId, $commentId)
+    public function delete(Request $request, string $org, $commentId)
     {
-        $this->commentsService = new UnifiedCommentsService($orgId);
+        $this->commentsService = new UnifiedCommentsService($org);
 
         try {
             $result = $this->commentsService->deleteComment($commentId);
@@ -173,9 +173,9 @@ class UnifiedCommentsController extends Controller
     /**
      * Like comment
      */
-    public function like(Request $request, $orgId, $commentId)
+    public function like(Request $request, string $org, $commentId)
     {
-        $this->commentsService = new UnifiedCommentsService($orgId);
+        $this->commentsService = new UnifiedCommentsService($org);
 
         try {
             $result = $this->commentsService->likeComment($commentId);
@@ -204,9 +204,9 @@ class UnifiedCommentsController extends Controller
     /**
      * Bulk actions on comments
      */
-    public function bulkAction(Request $request, $orgId)
+    public function bulkAction(Request $request, string $org)
     {
-        $this->commentsService = new UnifiedCommentsService($orgId);
+        $this->commentsService = new UnifiedCommentsService($org);
 
         $validator = Validator::make($request->all(), [
             'action' => 'required|string|in:hide,delete,like',
@@ -245,9 +245,9 @@ class UnifiedCommentsController extends Controller
     /**
      * Get comments statistics
      */
-    public function statistics(Request $request, $orgId)
+    public function statistics(Request $request, string $org)
     {
-        $this->commentsService = new UnifiedCommentsService($orgId);
+        $this->commentsService = new UnifiedCommentsService($org);
 
         try {
             $stats = $this->commentsService->getStatistics();

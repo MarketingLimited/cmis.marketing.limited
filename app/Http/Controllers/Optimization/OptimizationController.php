@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Optimization;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Concerns\ApiResponse;
 use App\Services\Optimization\DatabaseQueryOptimizer;
 use App\Services\Optimization\MultiLayerCacheService;
 use App\Services\Optimization\PerformanceProfiler;

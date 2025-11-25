@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Analytics;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Concerns\ApiResponse;
 use App\Services\Analytics\RealTimeAnalyticsService;
 use App\Services\Analytics\CustomMetricsService;
 use App\Services\Analytics\ROICalculationEngine;

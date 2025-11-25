@@ -1,5 +1,9 @@
 @extends('layouts.admin')
 
+@php
+    $currentOrg = $currentOrg ?? request()->route('org') ?? auth()->user()->active_org_id ?? auth()->user()->org_id;
+@endphp
+
 @section('content')
 <div class="space-y-6">
     <div>
@@ -8,9 +12,9 @@
     </div>
 
     <div class="flex flex-wrap gap-4">
-        <a href="/products" class="inline-flex items-center gap-2 bg-sky-100 text-sky-700 px-4 py-2 rounded-lg font-semibold hover:bg-sky-200 transition">📦 المنتجات</a>
-        <a href="/services" class="inline-flex items-center gap-2 bg-sky-100 text-sky-700 px-4 py-2 rounded-lg font-semibold hover:bg-sky-200 transition">🧰 الخدمات</a>
-        <a href="/bundles" class="inline-flex items-center gap-2 bg-sky-100 text-sky-700 px-4 py-2 rounded-lg font-semibold hover:bg-sky-200 transition">🎁 الباقات</a>
+        <a href="{{ route('orgs.products.index', ['org' => $currentOrg]) }}" class="inline-flex items-center gap-2 bg-sky-100 text-sky-700 px-4 py-2 rounded-lg font-semibold hover:bg-sky-200 transition">📦 المنتجات</a>
+        <a href="{{ route('orgs.services.index', ['org' => $currentOrg]) }}" class="inline-flex items-center gap-2 bg-sky-100 text-sky-700 px-4 py-2 rounded-lg font-semibold hover:bg-sky-200 transition">🧰 الخدمات</a>
+        <a href="{{ route('orgs.bundles.index', ['org' => $currentOrg]) }}" class="inline-flex items-center gap-2 bg-sky-100 text-sky-700 px-4 py-2 rounded-lg font-semibold hover:bg-sky-200 transition">🎁 الباقات</a>
     </div>
 
     <div class="bg-white shadow rounded-2xl p-6">

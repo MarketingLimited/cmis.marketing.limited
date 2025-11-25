@@ -3,6 +3,9 @@
 @section('title', __('onboarding.welcome'))
 
 @section('content')
+@php
+    $currentOrg = $currentOrg ?? request()->route('org') ?? auth()->user()->active_org_id ?? auth()->user()->org_id;
+@endphp
 <div class="max-w-4xl mx-auto py-8 px-4" x-data="onboardingDashboard()">
     {{-- Welcome Header --}}
     <div class="bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg shadow-lg p-8 text-white mb-8">

@@ -9,39 +9,31 @@ use Illuminate\Support\Facades\Cache;
 /**
  * ChannelController for Web Routes
  *
- * هذا Controller مخصص للـ web routes ولا يحتاج orgId parameter
- * يستخدم session('current_org_id') للحصول على المنظمة الحالية
+ * Updated to use URL-based org parameter
  */
 class ChannelController extends Controller
 {
     /**
-     * Display a listing of channels for the current organization
+     * Display a listing of channels for the organization
      */
-    public function index()
+    public function index(string $org)
     {
         $this->authorize('viewAny', Channel::class);
 
-        $orgId = session('current_org_id');
-
-        if (!$orgId) {
-            return redirect()->route('dashboard.index')
-                ->with('error', 'الرجاء اختيار منظمة أولاً');
-        }
-
-        $stats = Cache::remember("channels.stats.{$orgId}", now()->addMinutes(5), function () use ($orgId) {
+        $stats = Cache::remember("channels.stats.{$org}", now()->addMinutes(5), function () use ($org) {
             return [
-                'total' => Channel::where('org_id', $orgId)->count(),
-                'active' => Channel::where('org_id', $orgId)
+                'total' => Channel::where('org_id', $org)->count(),
+                'active' => Channel::where('org_id', $org)
                     ->where('status', 'active')
                     ->count(),
-                'inactive' => Channel::where('org_id', $orgId)
+                'inactive' => Channel::where('org_id', $org)
                     ->where('status', 'inactive')
                     ->count(),
             ];
         });
 
         $channels = Channel::query()
-            ->where('org_id', $orgId)
+            ->where('org_id', $org)
             ->with(['org:org_id,name'])
             ->orderByDesc('created_at')
             ->paginate(20);
@@ -55,12 +47,10 @@ class ChannelController extends Controller
     /**
      * Display the specified channel
      */
-    public function show($channelId)
+    public function show(string $org, $channelId)
     {
-        $orgId = session('current_org_id');
-
         $channel = Channel::query()
-            ->where('org_id', $orgId)
+            ->where('org_id', $org)
             ->with(['org:org_id,name'])
             ->findOrFail($channelId);
 

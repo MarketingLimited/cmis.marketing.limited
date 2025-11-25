@@ -2,10 +2,14 @@
 
 @section('title', 'Edit Campaign')
 
+@php
+    $currentOrg = $currentOrg ?? request()->route('org') ?? auth()->user()->active_org_id ?? auth()->user()->org_id;
+@endphp
+
 @section('content')
 <div class="max-w-4xl mx-auto">
     <div class="mb-6">
-        <a href="{{  route('campaigns.show', $campaign->campaign_id ?? $campaign->id)  }}" class="text-indigo-600 hover:text-indigo-800 inline-flex items-center">
+        <a href="{{  route('orgs.campaigns.show', ['org' => $currentOrg, 'campaign' => $campaign->campaign_id ?? $campaign->id])  }}" class="text-indigo-600 hover:text-indigo-800 inline-flex items-center">
             <i class="fas fa-arrow-left mr-2"></i>
             Back to Campaign
         </a>
@@ -14,7 +18,7 @@
     <div class="bg-white rounded-lg shadow p-6">
         <h1 class="text-2xl font-bold text-gray-900 mb-6">Edit Campaign</h1>
 
-        <form method="POST" action="{{  route('campaigns.update', $campaign->campaign_id ?? $campaign->id)  }}" class="space-y-6">
+        <form method="POST" action="{{  route('orgs.campaigns.update', ['org' => $currentOrg, 'campaign' => $campaign->campaign_id ?? $campaign->id])  }}" class="space-y-6">
             @csrf
             @method('PUT')
 
@@ -134,7 +138,7 @@
 
             <!-- Form Actions -->
             <div class="flex justify-between pt-4">
-                <form method="POST" action="{{  route('campaigns.destroy', $campaign->campaign_id ?? $campaign->id)  }}"
+                <form method="POST" action="{{  route('orgs.campaigns.destroy', ['org' => $currentOrg, 'campaign' => $campaign->campaign_id ?? $campaign->id])  }}"
                       onsubmit="return confirm('Are you sure you want to delete this campaign?');">
                     @csrf
                     @method('DELETE')
@@ -144,7 +148,7 @@
                 </form>
 
                 <div class="flex space-x-4">
-                    <a href="{{  route('campaigns.show', $campaign->campaign_id ?? $campaign->id)  }}"
+                    <a href="{{  route('orgs.campaigns.show', ['org' => $currentOrg, 'campaign' => $campaign->campaign_id ?? $campaign->id])  }}"
                        class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">
                         Cancel
                     </a>

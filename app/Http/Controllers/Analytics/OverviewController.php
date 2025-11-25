@@ -10,24 +10,26 @@ use Illuminate\Support\Facades\Gate;
 
 class OverviewController extends Controller
 {
-    public function index()
+    public function index(string $org)
     {
         Gate::authorize('viewDashboard', auth()->user());
 
-        $stats = Cache::remember('analytics.stats', now()->addMinutes(5), function () {
+        $stats = Cache::remember("analytics.stats.{$org}", now()->addMinutes(5), function () use ($org) {
             return [
-                'kpis' => Kpi::count(),
-                'metrics' => PerformanceMetric::count(),
+                'kpis' => Kpi::where('org_id', $org)->count(),
+                'metrics' => PerformanceMetric::where('org_id', $org)->count(),
             ];
         });
 
         $latestMetrics = PerformanceMetric::query()
+            ->where('org_id', $org)
             ->select('metric_id', 'kpi', 'observed', 'target', 'baseline', 'observed_at')
             ->orderByDesc('observed_at')
             ->limit(15)
             ->get();
 
         $kpis = Kpi::query()
+            ->where('org_id', $org)
             ->orderBy('kpi')
             ->get();
 

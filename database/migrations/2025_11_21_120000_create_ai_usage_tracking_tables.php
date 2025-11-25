@@ -26,7 +26,8 @@ return new class extends Migration
         DB::statement('CREATE SCHEMA IF NOT EXISTS cmis_ai');
 
         // 1. Create usage quotas table
-        Schema::create('cmis_ai.usage_quotas', function (Blueprint $table) {
+        if (!Schema::hasTable('cmis_ai.usage_quotas')) {
+            Schema::create('cmis_ai.usage_quotas', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->uuid('org_id')->nullable()->comment('Organization ID (null = system default)');
             $table->uuid('user_id')->nullable()->comment('User ID (null = org-level quota)');
@@ -60,9 +61,11 @@ return new class extends Migration
             $table->index(['user_id', 'ai_service'], 'idx_user_service');
             $table->index('tier');
         });
+        }
 
         // 2. Create usage tracking table (detailed log)
-        Schema::create('cmis_ai.usage_tracking', function (Blueprint $table) {
+        if (!Schema::hasTable('cmis_ai.usage_tracking')) {
+            Schema::create('cmis_ai.usage_tracking', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->uuid('org_id');
             $table->uuid('user_id')->nullable();
@@ -102,9 +105,11 @@ return new class extends Migration
             $table->index(['ai_service', 'created_at'], 'idx_service_time');
             $table->index('status');
         });
+        }
 
         // 3. Create usage summary table (aggregated for fast queries)
-        Schema::create('cmis_ai.usage_summary', function (Blueprint $table) {
+        if (!Schema::hasTable('cmis_ai.usage_summary')) {
+            Schema::create('cmis_ai.usage_summary', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->uuid('org_id');
             $table->uuid('user_id')->nullable();
@@ -129,28 +134,38 @@ return new class extends Migration
             $table->unique(['org_id', 'ai_service', 'summary_date', 'period_type'], 'idx_summary_unique');
             $table->index(['org_id', 'period_type', 'summary_date'], 'idx_org_period');
         });
+        }
 
         // 4. Enable Row-Level Security on all tables
-        DB::statement("ALTER TABLE cmis_ai.usage_quotas ENABLE ROW LEVEL SECURITY");
-        DB::statement("
-            CREATE POLICY org_isolation ON cmis_ai.usage_quotas
-            USING (
-                org_id = current_setting('app.current_org_id', true)::uuid
-                OR org_id IS NULL
-            )
-        ");
+        if (Schema::hasTable('cmis_ai.usage_quotas')) {
+            DB::statement("ALTER TABLE cmis_ai.usage_quotas ENABLE ROW LEVEL SECURITY");
+            DB::statement("DROP POLICY IF EXISTS org_isolation ON cmis_ai.usage_quotas");
+            DB::statement("
+                CREATE POLICY org_isolation ON cmis_ai.usage_quotas
+                USING (
+                    org_id = current_setting('app.current_org_id', true)::uuid
+                    OR org_id IS NULL
+                )
+            ");
+        }
 
-        DB::statement("ALTER TABLE cmis_ai.usage_tracking ENABLE ROW LEVEL SECURITY");
-        DB::statement("
-            CREATE POLICY org_isolation ON cmis_ai.usage_tracking
-            USING (org_id = current_setting('app.current_org_id', true)::uuid)
-        ");
+        if (Schema::hasTable('cmis_ai.usage_tracking')) {
+            DB::statement("ALTER TABLE cmis_ai.usage_tracking ENABLE ROW LEVEL SECURITY");
+            DB::statement("DROP POLICY IF EXISTS org_isolation ON cmis_ai.usage_tracking");
+            DB::statement("
+                CREATE POLICY org_isolation ON cmis_ai.usage_tracking
+                USING (org_id = current_setting('app.current_org_id', true)::uuid)
+            ");
+        }
 
-        DB::statement("ALTER TABLE cmis_ai.usage_summary ENABLE ROW LEVEL SECURITY");
-        DB::statement("
-            CREATE POLICY org_isolation ON cmis_ai.usage_summary
-            USING (org_id = current_setting('app.current_org_id', true)::uuid)
-        ");
+        if (Schema::hasTable('cmis_ai.usage_summary')) {
+            DB::statement("ALTER TABLE cmis_ai.usage_summary ENABLE ROW LEVEL SECURITY");
+            DB::statement("DROP POLICY IF EXISTS org_isolation ON cmis_ai.usage_summary");
+            DB::statement("
+                CREATE POLICY org_isolation ON cmis_ai.usage_summary
+                USING (org_id = current_setting('app.current_org_id', true)::uuid)
+            ");
+        }
 
         // 5. Insert default system-level quotas
         DB::table('cmis_ai.usage_quotas')->insert([

@@ -133,13 +133,13 @@ class OrgController extends Controller
     /**
      * عرض تفاصيل الشركة
      */
-    public function show(Request $request, string $orgId)
+    public function show(Request $request, string $org)
     {
-        $org = Org::findOrFail($orgId);
-        $this->authorize('view', $org);
+        $orgModel = Org::findOrFail($org);
+        $this->authorize('view', $orgModel);
 
         try {
-            $org = Org::with([
+            $orgModel = Org::with([
                 'users' => function($query) {
                     $query->select('users.user_id', 'email', 'display_name', 'name', 'status')
                           ->where('is_active', true);
@@ -150,9 +150,9 @@ class OrgController extends Controller
                 'integrations' => function($query) {
                     $query->where('status', 'active');
                 }
-            ])->findOrFail($orgId);
+            ])->findOrFail($org);
 
-            return response()->json(['org' => $org]);
+            return response()->json(['org' => $orgModel]);
 
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json(['error' => 'Organization not found'], 404);
@@ -167,10 +167,10 @@ class OrgController extends Controller
     /**
      * تحديث الشركة
      */
-    public function update(Request $request, string $orgId)
+    public function update(Request $request, string $org)
     {
-        $org = Org::findOrFail($orgId);
-        $this->authorize('update', $org);
+        $orgModel = Org::findOrFail($org);
+        $this->authorize('update', $orgModel);
 
         $validator = Validator::make($request->all(), [
             'name' => 'sometimes|string|max:255',
@@ -186,11 +186,11 @@ class OrgController extends Controller
         }
 
         try {
-            $org->update($request->only(['name', 'default_locale', 'currency']));
+            $orgModel->update($request->only(['name', 'default_locale', 'currency']));
 
             return response()->json([
                 'message' => 'Organization updated successfully',
-                'org' => $org->fresh()
+                'org' => $orgModel->fresh()
             ]);
 
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
@@ -206,13 +206,13 @@ class OrgController extends Controller
     /**
      * حذف الشركة
      */
-    public function destroy(Request $request, string $orgId)
+    public function destroy(Request $request, string $org)
     {
         try {
-            $org = Org::findOrFail($orgId);
-            $this->authorize('delete', $org);
+            $orgModel = Org::findOrFail($org);
+            $this->authorize('delete', $orgModel);
 
-            $org->delete();
+            $orgModel->delete();
 
             return response()->json(['message' => 'Organization deleted successfully']);
 
@@ -229,23 +229,23 @@ class OrgController extends Controller
     /**
      * إحصائيات الشركة
      */
-    public function statistics(Request $request, string $orgId)
+    public function statistics(Request $request, string $org)
     {
         try {
-            $org = Org::findOrFail($orgId);
-            $this->authorize('view', $org);
+            $orgModel = Org::findOrFail($org);
+            $this->authorize('view', $orgModel);
 
             $stats = [
-                'users_count' => $org->users()->count(),
-                'campaigns_count' => $org->campaigns()->count(),
-                'active_campaigns' => $org->campaigns()->where('status', 'active')->count(),
-                'creative_assets_count' => $org->creativeAssets()->count(),
-                'integrations_count' => $org->integrations()->where('status', 'active')->count(),
-                'created_at' => $org->created_at,
+                'users_count' => $orgModel->users()->count(),
+                'campaigns_count' => $orgModel->campaigns()->count(),
+                'active_campaigns' => $orgModel->campaigns()->where('status', 'active')->count(),
+                'creative_assets_count' => $orgModel->creativeAssets()->count(),
+                'integrations_count' => $orgModel->integrations()->where('status', 'active')->count(),
+                'created_at' => $orgModel->created_at,
             ];
 
             return response()->json([
-                'org_id' => $orgId,
+                'org_id' => $org,
                 'statistics' => $stats
             ]);
 

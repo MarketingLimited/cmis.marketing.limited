@@ -8,6 +8,9 @@
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </head>
 <body class="bg-gray-50">
+    @php
+        $currentOrg = $currentOrg ?? request()->route('org') ?? auth()->user()->active_org_id ?? auth()->user()->org_id;
+    @endphp
     <div x-data="campaignOptimization()" x-init="loadData()" class="container mx-auto px-4 py-8">
         <!-- Header -->
         <div class="mb-8">
@@ -50,7 +53,7 @@
                     <div class="text-2xl font-bold" x-text="activeRulesCount"></div>
                     <div class="text-sm text-purple-100">Rules monitoring your campaigns</div>
                 </div>
-                <a href="/automation/rules"
+                <a href="{{ route('orgs.automation.rules', ['org' => $currentOrg]) }}"
                    class="block w-full px-4 py-2 bg-white text-purple-600 rounded-lg font-medium hover:bg-purple-50 transition text-center">
                     Manage Rules
                 </a>

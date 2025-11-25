@@ -2,11 +2,15 @@
 
 @section('title', 'Campaigns')
 
+@php
+    $currentOrg = $currentOrg ?? request()->route('org') ?? auth()->user()->active_org_id ?? auth()->user()->org_id;
+@endphp
+
 @section('content')
 <div class="max-w-7xl mx-auto">
     <div class="flex justify-between items-center mb-6">
         <h1 class="text-3xl font-bold text-gray-900">Campaigns</h1>
-        <a href="{{  route('campaigns.create')  }}" class="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-md">
+        <a href="{{  route('orgs.campaigns.create', ['org' => $currentOrg])  }}" class="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-md">
             <i class="fas fa-plus mr-2"></i>
             New Campaign
         </a>
@@ -20,7 +24,7 @@
 
     <!-- Filters -->
     <div class="bg-white rounded-lg shadow mb-6 p-4">
-        <form method="GET" action="{{  route('campaigns.index')  }}" class="flex flex-wrap gap-4">
+        <form method="GET" action="{{  route('orgs.campaigns.index', ['org' => $currentOrg])  }}" class="flex flex-wrap gap-4">
             <div class="flex-1 min-w-[200px]">
                 <input type="text" name="search" placeholder="Search campaigns..."
                        value="{{  request('search')  }}"
@@ -82,16 +86,16 @@
                     </div>
 
                     <div class="flex justify-between items-center pt-4 border-t border-gray-200">
-                        <a href="{{  route('campaigns.show', $campaign->campaign_id ?? $campaign->id)  }}"
+                        <a href="{{  route('orgs.campaigns.show', ['org' => $currentOrg, 'campaign' => $campaign->campaign_id ?? $campaign->id])  }}"
                            class="text-indigo-600 hover:text-indigo-800 text-sm font-medium">
                             View Details
                         </a>
                         <div class="flex space-x-2">
-                            <a href="{{  route('campaigns.edit', $campaign->campaign_id ?? $campaign->id)  }}"
+                            <a href="{{  route('orgs.campaigns.edit', ['org' => $currentOrg, 'campaign' => $campaign->campaign_id ?? $campaign->id])  }}"
                                class="text-gray-600 hover:text-gray-900">
                                 <i class="fas fa-edit"></i>
                             </a>
-                            <form method="POST" action="{{  route('campaigns.destroy', $campaign->campaign_id ?? $campaign->id)  }}"
+                            <form method="POST" action="{{  route('orgs.campaigns.destroy', ['org' => $currentOrg, 'campaign' => $campaign->campaign_id ?? $campaign->id])  }}"
                                   onsubmit="return confirm('Are you sure you want to delete this campaign?');" class="inline">
                                 @csrf
                                 @method('DELETE')
@@ -108,7 +112,7 @@
                 <i class="fas fa-bullhorn text-5xl text-gray-400 mb-4"></i>
                 <h3 class="text-xl font-semibold text-gray-900 mb-2">No campaigns yet</h3>
                 <p class="text-gray-600 mb-4">Get started by creating your first campaign</p>
-                <a href="{{  route('campaigns.create')  }}"
+                <a href="{{  route('orgs.campaigns.create', ['org' => $currentOrg])  }}"
                    class="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-md">
                     <i class="fas fa-plus mr-2"></i>
                     Create Campaign

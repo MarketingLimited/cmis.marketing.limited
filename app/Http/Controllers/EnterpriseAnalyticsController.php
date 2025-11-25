@@ -35,19 +35,15 @@ class EnterpriseAnalyticsController extends Controller
      * Renders the real-time dashboard view with auto-refreshing metrics
      *
      * @param Request $request
+     * @param string $org
      * @return \Illuminate\View\View
      */
-    public function realtime(Request $request)
+    public function realtime(Request $request, string $org)
     {
         $user = $request->user();
-        $orgId = $this->resolveOrgId($request);
-
-        if (!$orgId) {
-            abort(404, 'No active organization found');
-        }
 
         return view('analytics.realtime', [
-            'orgId' => $orgId,
+            'orgId' => $org,
             'user' => $user,
             'pageTitle' => 'Real-Time Analytics Dashboard'
         ]);
@@ -61,20 +57,17 @@ class EnterpriseAnalyticsController extends Controller
      * Renders the campaign analytics view with ROI, attribution, and projection data
      *
      * @param Request $request
+     * @param string $org
      * @param string $campaignId
      * @return \Illuminate\View\View
      */
-    public function campaign(Request $request, string $campaignId)
+    public function campaign(Request $request, string $org, string $campaignId)
     {
         $user = $request->user();
-        $orgId = $this->resolveOrgId($request);
-
-        if (!$orgId) {
-            abort(404, 'No active organization found');
-        }
 
         // Verify campaign exists and belongs to org (RLS will filter automatically)
         $campaign = DB::table('cmis.campaigns')
+            ->where('org_id', $org)
             ->where('campaign_id', $campaignId)
             ->first();
 
@@ -83,7 +76,7 @@ class EnterpriseAnalyticsController extends Controller
         }
 
         return view('analytics.campaign', [
-            'orgId' => $orgId,
+            'orgId' => $org,
             'campaignId' => $campaignId,
             'campaign' => $campaign,
             'user' => $user,
@@ -100,27 +93,23 @@ class EnterpriseAnalyticsController extends Controller
      * Renders the KPI dashboard view with health scores and status indicators
      *
      * @param Request $request
+     * @param string $org
      * @param string|null $entityType
      * @param string|null $entityId
      * @return \Illuminate\View\View
      */
-    public function kpis(Request $request, ?string $entityType = null, ?string $entityId = null)
+    public function kpis(Request $request, string $org, ?string $entityType = null, ?string $entityId = null)
     {
         $user = $request->user();
-        $orgId = $this->resolveOrgId($request);
-
-        if (!$orgId) {
-            abort(404, 'No active organization found');
-        }
 
         // Default to organization-wide view
         $entityType = $entityType ?? 'org';
-        $entityId = $entityId ?? $orgId;
+        $entityId = $entityId ?? $org;
 
-        $entityName = $this->resolveEntityName($entityType, $entityId);
+        $entityName = $this->resolveEntityName($entityType, $entityId, $org);
 
         return view('analytics.kpis', [
-            'orgId' => $orgId,
+            'orgId' => $org,
             'entityType' => $entityType,
             'entityId' => $entityId,
             'entityName' => $entityName,
@@ -137,26 +126,23 @@ class EnterpriseAnalyticsController extends Controller
      * Combines real-time metrics, KPIs, and notifications in a single view
      *
      * @param Request $request
+     * @param string $org
      * @return \Illuminate\View\View
      */
-    public function enterprise(Request $request)
+    public function enterprise(Request $request, string $org)
     {
         $user = $request->user();
-        $orgId = $this->resolveOrgId($request);
-
-        if (!$orgId) {
-            abort(404, 'No active organization found');
-        }
 
         // Get active campaigns for quick links
         $activeCampaigns = DB::table('cmis.campaigns')
+            ->where('org_id', $org)
             ->where('status', 'active')
             ->orderBy('start_date', 'desc')
             ->limit(10)
             ->get(['campaign_id', 'name', 'status', 'start_date', 'end_date']);
 
         return view('analytics.enterprise', [
-            'orgId' => $orgId,
+            'orgId' => $org,
             'user' => $user,
             'activeCampaigns' => $activeCampaigns,
             'pageTitle' => 'Enterprise Analytics Hub'
@@ -171,24 +157,21 @@ class EnterpriseAnalyticsController extends Controller
      * Lists all campaigns with quick access to analytics
      *
      * @param Request $request
+     * @param string $org
      * @return \Illuminate\View\View
      */
-    public function campaigns(Request $request)
+    public function campaigns(Request $request, string $org)
     {
         $user = $request->user();
-        $orgId = $this->resolveOrgId($request);
-
-        if (!$orgId) {
-            abort(404, 'No active organization found');
-        }
 
         // Get campaigns with pagination (RLS automatically filters)
         $campaigns = DB::table('cmis.campaigns')
+            ->where('org_id', $org)
             ->orderBy('created_at', 'desc')
             ->paginate(20);
 
         return view('analytics.campaigns', [
-            'orgId' => $orgId,
+            'orgId' => $org,
             'campaigns' => $campaigns,
             'user' => $user,
             'pageTitle' => 'Campaign Analytics'
@@ -196,58 +179,28 @@ class EnterpriseAnalyticsController extends Controller
     }
 
     /**
-     * Resolve organization ID from request
-     *
-     * @param Request $request
-     * @return string|null
-     */
-    private function resolveOrgId(Request $request): ?string
-    {
-        $user = $request->user();
-        if (!$user) {
-            return null;
-        }
-
-        // Try to get from route parameter first
-        if ($request->route('org_id')) {
-            return $request->route('org_id');
-        }
-
-        // Fall back to user's active org
-        if ($user->active_org_id) {
-            return $user->active_org_id;
-        }
-
-        // Query the user_orgs pivot table for an active org
-        $activeOrg = DB::table('cmis.user_orgs')
-            ->where('user_id', $user->user_id)
-            ->where('is_active', true)
-            ->first();
-
-        return $activeOrg?->org_id;
-    }
-
-    /**
      * Resolve entity name for display
      *
      * @param string $entityType
      * @param string $entityId
+     * @param string $org
      * @return string
      */
-    private function resolveEntityName(string $entityType, string $entityId): string
+    private function resolveEntityName(string $entityType, string $entityId, string $org): string
     {
         switch ($entityType) {
             case 'campaign':
                 $campaign = DB::table('cmis.campaigns')
                     ->where('campaign_id', $entityId)
+                    ->where('org_id', $org)
                     ->first();
                 return $campaign?->name ?? 'Unknown Campaign';
 
             case 'org':
-                $org = DB::table('cmis.orgs')
+                $orgRecord = DB::table('cmis.orgs')
                     ->where('org_id', $entityId)
                     ->first();
-                return $org?->name ?? 'Organization';
+                return $orgRecord?->name ?? 'Organization';
 
             default:
                 return ucfirst($entityType);

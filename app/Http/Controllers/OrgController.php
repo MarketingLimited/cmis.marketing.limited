@@ -97,9 +97,9 @@ class OrgController extends Controller
         }
     }
 
-    public function show($id)
+    public function show($org)
     {
-        $org = $this->resolveOrg($id);
+        $org = $this->resolveOrg($org);
 
         // Fetch real statistics
         $stats = [
@@ -255,9 +255,9 @@ class OrgController extends Controller
         ]);
     }
 
-    public function services($id)
+    public function services($org)
     {
-        $org = $this->resolveOrg($id);
+        $org = $this->resolveOrg($org);
 
         $services = $org->offerings()
             ->select('offering_id', 'name', 'kind')
@@ -271,9 +271,9 @@ class OrgController extends Controller
         ]);
     }
 
-    public function products($id)
+    public function products($org)
     {
-        $org = $this->resolveOrg($id);
+        $org = $this->resolveOrg($org);
 
         $products = $org->offerings()
             ->select('offering_id', 'name', 'kind')
@@ -287,9 +287,9 @@ class OrgController extends Controller
         ]);
     }
 
-    public function compareCampaigns(Request $request, $id)
+    public function compareCampaigns(Request $request, $org)
     {
-        $org = $this->resolveOrg($id);
+        $org = $this->resolveOrg($org);
 
         $campaignIds = collect($request->input('campaign_ids', []))
             ->filter(fn ($value) => Str::isUuid($value))

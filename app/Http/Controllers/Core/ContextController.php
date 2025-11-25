@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Core;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Concerns\ApiResponse;
 use App\Models\Security\SessionContext;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;

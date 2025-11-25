@@ -92,6 +92,7 @@ return new class extends Migration
             JOIN pg_type t ON a.atttypid = t.oid
             WHERE t.typname = 'vector'
             AND n.nspname IN ('cmis', 'cmis_ai', 'cmis_knowledge')
+            AND c.relkind = 'r'
             AND a.attnum > 0
             AND NOT a.attisdropped
             ORDER BY n.nspname, c.relname, a.attname

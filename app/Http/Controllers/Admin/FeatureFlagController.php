@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Concerns\ApiResponse;
 use App\Services\FeatureToggle\FeatureFlagService;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
