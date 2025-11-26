@@ -2,8 +2,16 @@
 <html lang="ar" dir="rtl" x-data="{ sidebarOpen: window.innerWidth >= 1024, darkMode: false }" :class="{ 'dark': darkMode }">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="description" content="@yield('meta-description', 'نظام CMIS للتسويق الذكي - إدارة الحملات والمؤسسات')">
+    <meta name="theme-color" content="#667eea">
+
+    <!-- Open Graph / Social Media -->
+    <meta property="og:title" content="@yield('title', 'CMIS') - لوحة التحكم">
+    <meta property="og:description" content="@yield('meta-description', 'نظام CMIS للتسويق الذكي')">
+    <meta property="og:type" content="website">
+
     <title>@yield('title', 'CMIS') - لوحة التحكم</title>
 
     <!-- Tailwind CSS CDN -->
@@ -79,6 +87,37 @@
             button, a {
                 touch-action: manipulation;
             }
+
+            /* Larger tap targets on mobile */
+            button, a, input, select, textarea {
+                min-height: 44px;
+            }
+        }
+
+        /* Enhanced focus indicators for accessibility */
+        button:focus-visible,
+        a:focus-visible,
+        input:focus-visible,
+        select:focus-visible,
+        textarea:focus-visible {
+            outline: 2px solid #3b82f6;
+            outline-offset: 2px;
+        }
+
+        /* Smooth scroll behavior */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Reduce motion for users who prefer it */
+        @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
         }
     </style>
 
@@ -133,7 +172,7 @@
 
         <!-- Sidebar -->
         <aside :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
-               class="fixed inset-y-0 right-0 z-40 w-72 sm:w-80 md:w-64 bg-white dark:bg-gray-800 shadow-xl transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0">
+               class="fixed inset-y-0 right-0 z-40 w-80 lg:w-64 bg-white dark:bg-gray-800 shadow-xl transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0">
 
             <!-- Logo -->
             <div class="flex items-center justify-between h-16 px-6 bg-gradient-to-r from-blue-600 to-purple-600">
