@@ -152,6 +152,35 @@
             0%, 100% { opacity: 1; }
             50% { opacity: 0.5; }
         }
+
+        /* User Menu Bottom Sheet Enhancements */
+        @media (max-width: 767px) {
+            /* Prevent body scroll when menu is open */
+            body:has([x-data*="userMenuOpen"]) {
+                overflow: hidden;
+            }
+
+            /* Smooth slide-up animation */
+            [x-show="userMenuOpen"] {
+                will-change: transform;
+            }
+
+            /* Better touch targets for mobile */
+            [x-data*="userMenuOpen"] a,
+            [x-data*="userMenuOpen"] button {
+                min-height: 56px;
+                touch-action: manipulation;
+            }
+        }
+
+        /* Enhanced z-index management */
+        .z-\[60\] {
+            z-index: 60;
+        }
+
+        .z-\[70\] {
+            z-index: 70;
+        }
     </style>
 
     @stack('styles')
@@ -389,8 +418,13 @@
 
                     <!-- User Menu -->
                     <div class="relative" x-data="{ userMenuOpen: false }">
-                        <button @click="userMenuOpen = !userMenuOpen" class="flex items-center space-x-1 sm:space-x-2 space-x-reverse p-1 sm:p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition">
-                            <img src="https://ui-avatars.com/api/?name=Admin&background=667eea&color=fff" class="w-7 h-7 sm:w-8 sm:h-8 rounded-full">
+                        <button @click="userMenuOpen = !userMenuOpen"
+                                class="flex items-center space-x-1 sm:space-x-2 space-x-reverse p-1 sm:p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition"
+                                :aria-expanded="userMenuOpen"
+                                aria-label="قائمة المستخدم">
+                            <img src="https://ui-avatars.com/api/?name=Admin&background=667eea&color=fff"
+                                 class="w-7 h-7 sm:w-8 sm:h-8 rounded-full"
+                                 alt="صورة المستخدم">
                             <div class="text-right hidden lg:block">
                                 <p class="text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300">{{ auth()->user()->name ?? 'المستخدم' }}</p>
                                 <p class="text-[10px] sm:text-xs text-gray-500">مدير النظام</p>
@@ -398,27 +432,85 @@
                             <i class="fas fa-chevron-down text-[10px] sm:text-xs text-gray-600 dark:text-gray-300 hidden sm:inline"></i>
                         </button>
 
+                        <!-- Mobile Backdrop -->
+                        <div x-show="userMenuOpen"
+                             @click="userMenuOpen = false"
+                             x-transition:enter="transition-opacity ease-out duration-200"
+                             x-transition:enter-start="opacity-0"
+                             x-transition:enter-end="opacity-100"
+                             x-transition:leave="transition-opacity ease-in duration-150"
+                             x-transition:leave-start="opacity-100"
+                             x-transition:leave-end="opacity-0"
+                             class="fixed inset-0 bg-black bg-opacity-50 z-[60] md:hidden"
+                             x-cloak></div>
+
+                        <!-- Desktop: Dropdown | Mobile: Bottom Sheet -->
                         <div x-show="userMenuOpen"
                              @click.away="userMenuOpen = false"
-                             x-transition
-                             class="absolute left-0 right-0 sm:left-0 sm:right-auto mt-2 w-full sm:w-48 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 z-50"
+                             x-transition:enter="transition ease-out duration-200"
+                             x-transition:enter-start="opacity-0 md:scale-95 translate-y-full md:translate-y-0"
+                             x-transition:enter-end="opacity-100 md:scale-100 translate-y-0"
+                             x-transition:leave="transition ease-in duration-150"
+                             x-transition:leave-start="opacity-100 md:scale-100 translate-y-0"
+                             x-transition:leave-end="opacity-0 md:scale-95 translate-y-full md:translate-y-0"
+                             class="fixed left-0 right-0 bottom-0 md:absolute md:left-0 md:right-auto md:top-full md:bottom-auto md:mt-2
+                                    w-full md:w-56
+                                    bg-white dark:bg-gray-800
+                                    rounded-t-2xl md:rounded-lg
+                                    shadow-2xl md:shadow-xl
+                                    border-t-2 md:border md:border-gray-200
+                                    border-gray-300 dark:border-gray-700
+                                    z-[70]
+                                    max-h-[70vh] md:max-h-auto overflow-y-auto"
                              x-cloak>
+
+                            <!-- Mobile Handle (Pull Indicator) -->
+                            <div class="md:hidden flex justify-center py-2 border-b border-gray-200 dark:border-gray-700">
+                                <div class="w-12 h-1 bg-gray-300 dark:bg-gray-600 rounded-full"></div>
+                            </div>
+
+                            <!-- User Info Header (Mobile Only) -->
+                            <div class="md:hidden px-4 py-4 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-gray-700 dark:to-gray-700">
+                                <div class="flex items-center gap-3">
+                                    <img src="https://ui-avatars.com/api/?name=Admin&background=667eea&color=fff"
+                                         class="w-12 h-12 rounded-full ring-2 ring-white dark:ring-gray-600"
+                                         alt="صورة المستخدم">
+                                    <div class="text-right">
+                                        <p class="text-sm font-bold text-gray-900 dark:text-white">{{ auth()->user()->name ?? 'المستخدم' }}</p>
+                                        <p class="text-xs text-gray-600 dark:text-gray-400">مدير النظام</p>
+                                    </div>
+                                </div>
+                            </div>
+
                             @php
                                 $currentOrg = auth()->user()->active_org_id ?? auth()->user()->current_org_id ?? auth()->user()->org_id ?? request()->route('org');
                             @endphp
-                            <a href="{{ route('profile') }}" class="block px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-t-lg">
-                                <i class="fas fa-user ml-2"></i> الملف الشخصي
-                            </a>
-                            @if($currentOrg)
-                            <a href="{{ route('orgs.settings.index', ['org' => $currentOrg]) }}" class="block px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">
-                                <i class="fas fa-cog ml-2"></i> الإعدادات
-                            </a>
-                            @endif
+
+                            <!-- Menu Items -->
+                            <div class="py-2">
+                                <a href="{{ route('profile') }}"
+                                   class="flex items-center gap-3 px-4 md:px-4 py-4 md:py-3 text-base md:text-sm text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-gray-700 transition-colors md:rounded-t-lg">
+                                    <i class="fas fa-user text-blue-600 dark:text-blue-400 w-5 text-center"></i>
+                                    <span class="font-medium md:font-normal">الملف الشخصي</span>
+                                </a>
+
+                                @if($currentOrg)
+                                <a href="{{ route('orgs.settings.index', ['org' => $currentOrg]) }}"
+                                   class="flex items-center gap-3 px-4 md:px-4 py-4 md:py-3 text-base md:text-sm text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-gray-700 transition-colors">
+                                    <i class="fas fa-cog text-gray-600 dark:text-gray-400 w-5 text-center"></i>
+                                    <span class="font-medium md:font-normal">الإعدادات</span>
+                                </a>
+                                @endif
+                            </div>
+
                             <hr class="border-gray-200 dark:border-gray-700">
-                            <form method="POST" action="{{ route('logout') }}" class="block">
+
+                            <form method="POST" action="{{ route('logout') }}" class="py-2">
                                 @csrf
-                                <button type="submit" class="w-full text-right px-4 py-3 text-sm text-red-600 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-b-lg">
-                                    <i class="fas fa-sign-out-alt ml-2"></i> تسجيل الخروج
+                                <button type="submit"
+                                        class="flex items-center gap-3 w-full text-right px-4 md:px-4 py-4 md:py-3 text-base md:text-sm text-red-600 dark:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors md:rounded-b-lg font-semibold md:font-normal">
+                                    <i class="fas fa-sign-out-alt w-5 text-center"></i>
+                                    <span>تسجيل الخروج</span>
                                 </button>
                             </form>
                         </div>
