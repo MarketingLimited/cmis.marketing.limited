@@ -18,8 +18,8 @@ class SocialPostController extends Controller
     use ApiResponse;
 
     /**
-     * Get connected social accounts (Facebook Pages & Instagram) with real names.
-     * Only returns accounts that are selected in the platform connection's selected_assets.
+     * Get connected social accounts for all platforms (11 total platforms).
+     * Returns active platform connections for the organization.
      */
     public function getConnectedAccounts(Request $request, string $org)
     {
@@ -27,47 +27,95 @@ class SocialPostController extends Controller
             // Set RLS context
             DB::statement("SELECT set_config('app.current_org_id', ?, false)", [$org]);
 
-            $connection = PlatformConnection::where('org_id', $org)
-                ->where('platform', 'meta')
+            // Get all active platform connections for this organization
+            $connections = PlatformConnection::where('org_id', $org)
                 ->where('status', 'active')
-                ->first();
+                ->get();
 
-            if (!$connection) {
+            if ($connections->isEmpty()) {
                 return $this->success([
                     'accounts' => [],
-                    'message' => 'No Meta connection found',
+                    'message' => 'No platform connections found. Please connect your social media accounts.',
                 ], 'No connected accounts');
             }
 
-            $accessToken = $connection->access_token;
-            $metadata = $connection->account_metadata ?? [];
-            $selectedAssets = $metadata['selected_assets'] ?? [];
             $accounts = [];
 
-            // Get the linked integration_id for FK references
-            $integration = DB::table('cmis.integrations')
-                ->where('platform_connection_id', $connection->connection_id)
-                ->first();
-            $integrationId = $integration?->integration_id;
+            // Map platform connection icons and colors
+            $platformIcons = [
+                'facebook' => 'fab fa-facebook',
+                'instagram' => 'fab fa-instagram',
+                'twitter' => 'fab fa-twitter',
+                'x' => 'fab fa-x-twitter',
+                'linkedin' => 'fab fa-linkedin',
+                'youtube' => 'fab fa-youtube',
+                'tiktok' => 'fab fa-tiktok',
+                'pinterest' => 'fab fa-pinterest',
+                'reddit' => 'fab fa-reddit',
+                'tumblr' => 'fab fa-tumblr',
+                'google_business' => 'fab fa-google',
+                'threads' => 'fab fa-threads',
+            ];
 
-            // Get selected page IDs and Instagram account IDs
-            $selectedPageIds = $selectedAssets['pages'] ?? [];
-            $selectedInstagramIds = $selectedAssets['instagram_accounts'] ?? [];
+            // Process each platform connection
+            foreach ($connections as $connection) {
+                $platform = strtolower($connection->platform);
+                $metadata = $connection->account_metadata ?? [];
 
-            // If no assets are selected, show a message
-            if (empty($selectedPageIds) && empty($selectedInstagramIds)) {
-                return $this->success([
-                    'accounts' => [],
-                    'message' => 'No assets selected. Please configure your Meta connection assets.',
-                    'assets_url' => route('orgs.settings.platform-connections.meta.assets', [$org, $connection->connection_id]),
-                ], 'No assets selected');
+                // For Meta platform, get selected assets (Pages & Instagram accounts)
+                if ($platform === 'meta' || $platform === 'facebook') {
+                    $this->addMetaAccounts($connection, $accounts);
+                    continue;
+                }
+
+                // For other platforms, add the connection as a single account
+                $accounts[] = [
+                    'id' => $platform . '_' . $connection->connection_id,
+                    'type' => $platform,
+                    'platformId' => $connection->account_id ?? $connection->connection_id,
+                    'name' => $connection->account_name ?? ucfirst($platform) . ' Account',
+                    'picture' => $metadata['profile_picture_url'] ?? $metadata['picture'] ?? null,
+                    'username' => $metadata['username'] ?? $metadata['screen_name'] ?? null,
+                    'connectionId' => $connection->connection_id,
+                    'icon' => $platformIcons[$platform] ?? 'fas fa-share-alt',
+                    'lastSync' => $connection->last_sync_at?->diffForHumans(),
+                ];
             }
 
-            // Fetch selected Facebook Pages with real names
-            foreach ($selectedPageIds as $pageId) {
+            return $this->success([
+                'accounts' => $accounts,
+                'total' => count($accounts),
+            ], 'Connected accounts retrieved successfully');
+
+        } catch (\Exception $e) {
+            Log::error('Failed to get connected accounts', [
+                'org_id' => $org,
+                'error' => $e->getMessage(),
+            ]);
+
+            return $this->error('Failed to load connected accounts', 500);
+        }
+    }
+
+    /**
+     * Helper method to add Meta (Facebook/Instagram) accounts
+     */
+    protected function addMetaAccounts(PlatformConnection $connection, array &$accounts): void
+    {
+        $accessToken = $connection->access_token;
+        $metadata = $connection->account_metadata ?? [];
+        $selectedAssets = $metadata['selected_assets'] ?? [];
+
+        // Get selected page IDs and Instagram account IDs
+        $selectedPageIds = $selectedAssets['pages'] ?? [];
+        $selectedInstagramIds = $selectedAssets['instagram_accounts'] ?? [];
+
+        // Fetch selected Facebook Pages with real names
+        foreach ($selectedPageIds as $pageId) {
+            try {
                 $pageResponse = Http::timeout(15)->get("https://graph.facebook.com/v21.0/{$pageId}", [
                     'access_token' => $accessToken,
-                    'fields' => 'id,name,picture{url},category,instagram_business_account',
+                    'fields' => 'id,name,picture{url},category',
                 ]);
 
                 if ($pageResponse->successful()) {
@@ -78,20 +126,21 @@ class SocialPostController extends Controller
                         'platformId' => $page['id'],
                         'name' => $page['name'] ?? 'Facebook Page',
                         'picture' => $page['picture']['data']['url'] ?? null,
-                        'category' => $page['category'] ?? null,
                         'connectionId' => $connection->connection_id,
-                        'integrationId' => $integrationId,
+                        'icon' => 'fab fa-facebook',
                     ];
-                } else {
-                    Log::warning('Failed to fetch page details', [
-                        'page_id' => $pageId,
-                        'error' => $pageResponse->json('error', []),
-                    ]);
                 }
+            } catch (\Exception $e) {
+                Log::warning('Failed to fetch Facebook page details', [
+                    'page_id' => $pageId,
+                    'error' => $e->getMessage(),
+                ]);
             }
+        }
 
-            // Fetch selected Instagram accounts with real names
-            foreach ($selectedInstagramIds as $igId) {
+        // Fetch selected Instagram accounts with real names
+        foreach ($selectedInstagramIds as $igId) {
+            try {
                 $igResponse = Http::timeout(15)->get("https://graph.facebook.com/v21.0/{$igId}", [
                     'access_token' => $accessToken,
                     'fields' => 'id,username,name,profile_picture_url,followers_count',
@@ -127,29 +176,15 @@ class SocialPostController extends Controller
                         'connectedPageId' => $connectedPage['id'] ?? null,
                         'connectedPageName' => $connectedPage['name'] ?? null,
                         'connectionId' => $connection->connection_id,
-                        'integrationId' => $integrationId,
+                        'icon' => 'fab fa-instagram',
                     ];
-                } else {
-                    Log::warning('Failed to fetch Instagram account details', [
-                        'instagram_id' => $igId,
-                        'error' => $igResponse->json('error', []),
-                    ]);
                 }
+            } catch (\Exception $e) {
+                Log::warning('Failed to fetch Instagram account details', [
+                    'instagram_id' => $igId,
+                    'error' => $e->getMessage(),
+                ]);
             }
-
-            return $this->success([
-                'accounts' => $accounts,
-                'connection_id' => $connection->connection_id,
-                'integration_id' => $integrationId,
-                'selected_assets' => $selectedAssets,
-            ], 'Connected accounts retrieved successfully');
-
-        } catch (\Exception $e) {
-            Log::error('Failed to fetch connected accounts', [
-                'org_id' => $org,
-                'error' => $e->getMessage(),
-            ]);
-            return $this->error('Failed to fetch accounts: ' . $e->getMessage(), 500);
         }
     }
 
@@ -211,6 +246,10 @@ class SocialPostController extends Controller
             'scheduled_at' => 'required_if:publish_type,scheduled|nullable|date',
             'post_type' => 'nullable|string|in:feed,reel,story,carousel,tweet,thread,post,article',
             'media.*' => 'nullable|file|mimes:jpeg,jpg,png,gif,mp4,mov|max:51200',
+            // Post options validation
+            'post_options' => 'nullable|string', // JSON string of all post options
+            'first_comment' => 'nullable|string|max:2200',
+            'location' => 'nullable|string|max:255',
         ]);
 
         $platforms = json_decode($request->platforms, true);
@@ -330,11 +369,85 @@ class SocialPostController extends Controller
                 // Determine post content type
                 $contentType = $request->post_type ?? (!empty($mediaUrls) ? 'feed' : 'text');
 
+                // Parse post options if provided
+                $postOptions = $request->post_options ? json_decode($request->post_options, true) : [];
+
+                // Build comprehensive metadata with all post options
+                $metadata = [
+                    'platform_details' => $platform,
+                    'publish_type' => $request->publish_type,
+                    'connection_id' => $connection?->connection_id,
+                    'is_queued' => $request->publish_type === 'queue',
+
+                    // Instagram/Facebook Common Options
+                    'instagram_options' => $postOptions['instagram'] ?? [],
+                    'first_comment' => $postOptions['instagram']['firstComment'] ?? $request->first_comment ?? null,
+                    'location' => $postOptions['instagram']['location'] ?? $request->location ?? null,
+                    'location_id' => $postOptions['instagram']['locationId'] ?? null,
+                    'user_tags' => $postOptions['instagram']['userTags'] ?? [],
+                    'collaborators' => $postOptions['instagram']['collaborators'] ?? [],
+                    'product_tags' => $postOptions['instagram']['productTags'] ?? [],
+                    'alt_text' => $postOptions['instagram']['altText'] ?? null,
+                    'ai_label' => $postOptions['instagram']['aiLabel'] ?? false,
+                    'enable_captions' => $postOptions['instagram']['enableCaptions'] ?? true,
+                    'translate_captions' => $postOptions['instagram']['translateCaptions'] ?? false,
+                    'comments_enabled' => $postOptions['instagram']['commentsEnabled'] ?? true,
+                    'hide_like_count' => $postOptions['instagram']['hideLikeCount'] ?? false,
+                    'hide_share_count' => $postOptions['instagram']['hideShareCount'] ?? false,
+                    'pin_to_profile' => $postOptions['instagram']['pinToProfile'] ?? false,
+                    'pin_to_reels_tab' => $postOptions['instagram']['pinToReelsTab'] ?? false,
+                    'allow_download' => $postOptions['instagram']['allowDownload'] ?? true,
+                    'archive_after_post' => $postOptions['instagram']['archiveAfterPost'] ?? false,
+
+                    // Reel-Specific Options
+                    'reel_options' => $postOptions['reel'] ?? [],
+                    'cover_type' => $postOptions['reel']['coverType'] ?? 'frame',
+                    'cover_frame_offset' => $postOptions['reel']['coverFrameOffset'] ?? 0,
+                    'cover_image_url' => $postOptions['reel']['coverImageUrl'] ?? null,
+                    'share_to_feed' => $postOptions['reel']['shareToFeed'] ?? true,
+                    'allow_remix' => $postOptions['reel']['allowRemix'] ?? true,
+                    'audio_name' => $postOptions['reel']['audioName'] ?? null,
+
+                    // Story Options
+                    'story_options' => $postOptions['story'] ?? [],
+
+                    // Carousel Options
+                    'carousel_options' => $postOptions['carousel'] ?? [],
+                    'alt_texts' => $postOptions['carousel']['altTexts'] ?? [],
+
+                    // TikTok Options
+                    'tiktok_options' => $postOptions['tiktok'] ?? [],
+                    'tiktok_viewer_setting' => $postOptions['tiktok']['viewerSetting'] ?? 'public',
+                    'tiktok_disable_comments' => $postOptions['tiktok']['disableComments'] ?? false,
+                    'tiktok_disable_duet' => $postOptions['tiktok']['disableDuet'] ?? false,
+                    'tiktok_disable_stitch' => $postOptions['tiktok']['disableStitch'] ?? false,
+                    'tiktok_allow_download' => $postOptions['tiktok']['allowDownload'] ?? true,
+                    'tiktok_brand_content' => $postOptions['tiktok']['brandContentToggle'] ?? false,
+                    'tiktok_ai_generated' => $postOptions['tiktok']['aiGenerated'] ?? false,
+
+                    // LinkedIn Options
+                    'linkedin_options' => $postOptions['linkedin'] ?? [],
+                    'linkedin_visibility' => $postOptions['linkedin']['visibility'] ?? 'PUBLIC',
+                    'linkedin_article_title' => $postOptions['linkedin']['articleTitle'] ?? null,
+                    'linkedin_article_description' => $postOptions['linkedin']['articleDescription'] ?? null,
+                    'linkedin_allow_comments' => $postOptions['linkedin']['allowComments'] ?? true,
+
+                    // Twitter/X Options
+                    'twitter_options' => $postOptions['twitter'] ?? [],
+                    'twitter_reply_restriction' => $postOptions['twitter']['replyRestriction'] ?? 'everyone',
+                    'twitter_sensitive_content' => $postOptions['twitter']['sensitiveContent'] ?? false,
+                    'twitter_thread_tweets' => $postOptions['twitter']['threadTweets'] ?? [],
+                    'twitter_alt_text' => $postOptions['twitter']['altText'] ?? null,
+
+                    // Facebook Options
+                    'facebook_options' => $postOptions['facebook'] ?? [],
+                ];
+
                 // Insert directly using DB query to avoid model issues
                 DB::table('cmis.social_posts')->insert([
                     'id' => $postId,
                     'org_id' => $org,
-                    'integration_id' => $integrationIdForPost, // Use correct integration_id from integrations table
+                    'integration_id' => $integrationIdForPost,
                     'platform' => $platformType,
                     'account_id' => $accountId,
                     'account_username' => $accountName,
@@ -344,12 +457,7 @@ class SocialPostController extends Controller
                     'status' => $status,
                     'scheduled_at' => $scheduledAt,
                     'created_by' => auth()->id(),
-                    'metadata' => json_encode([
-                        'platform_details' => $platform,
-                        'publish_type' => $request->publish_type,
-                        'connection_id' => $connection?->connection_id, // Store for reference when publishing
-                        'is_queued' => $request->publish_type === 'queue',
-                    ]),
+                    'metadata' => json_encode($metadata),
                     'created_at' => now(),
                     'updated_at' => now(),
                 ]);
@@ -696,10 +804,16 @@ class SocialPostController extends Controller
                 'selected_instagram' => $selectedInstagramIds,
             ]);
 
+            // Get post metadata for options
+            $postMetadata = DB::table('cmis.social_posts')
+                ->where('id', $postId)
+                ->value('metadata');
+            $postOptions = $postMetadata ? json_decode($postMetadata, true) : [];
+
             if ($platform === 'facebook' && $pageId) {
-                return $this->publishToFacebook($content, $mediaUrls, $pageId, $accessToken);
+                return $this->publishToFacebook($content, $mediaUrls, $pageId, $accessToken, $postOptions);
             } elseif ($platform === 'instagram' && $instagramAccountId) {
-                return $this->publishToInstagram($content, $mediaUrls, $instagramAccountId, $pageId, $accessToken);
+                return $this->publishToInstagram($content, $mediaUrls, $instagramAccountId, $pageId, $accessToken, $postOptions);
             } else {
                 return [
                     'success' => false,
@@ -721,8 +835,9 @@ class SocialPostController extends Controller
 
     /**
      * Publish to Facebook Page.
+     * Supports post options: location, user_tags, etc.
      */
-    private function publishToFacebook(string $content, array $mediaUrls, string $pageId, string $accessToken): array
+    private function publishToFacebook(string $content, array $mediaUrls, string $pageId, string $accessToken, array $postOptions = []): array
     {
         try {
             Log::info('Publishing to Facebook', [
@@ -836,8 +951,16 @@ class SocialPostController extends Controller
 
     /**
      * Publish to Instagram.
+     * Supports Instagram Graph API options:
+     * - share_to_feed (for Reels)
+     * - thumb_offset (cover frame offset in ms)
+     * - cover_url (custom cover image)
+     * - collaborators (invite collaborators)
+     * - location_id (tag location)
+     * - user_tags (tag people)
+     * - product_tags (for shopping)
      */
-    private function publishToInstagram(string $content, array $mediaUrls, string $instagramAccountId, ?string $pageId, string $accessToken): array
+    private function publishToInstagram(string $content, array $mediaUrls, string $instagramAccountId, ?string $pageId, string $accessToken, array $postOptions = []): array
     {
         try {
             // Instagram requires media for posts
@@ -850,11 +973,72 @@ class SocialPostController extends Controller
 
             $firstMedia = $mediaUrls[0];
 
-            // Step 1: Create media container
+            // Step 1: Create media container with all supported options
             $containerData = [
                 'access_token' => $accessToken,
                 'caption' => $content,
             ];
+
+            // Add Instagram Graph API supported options
+            // Share to feed option (for Reels)
+            if (isset($postOptions['share_to_feed'])) {
+                $containerData['share_to_feed'] = $postOptions['share_to_feed'] ? 'true' : 'false';
+            }
+
+            // Cover frame offset (thumbnail_offset) for video
+            if (!empty($postOptions['cover_frame_offset']) && $firstMedia['type'] === 'video') {
+                $containerData['thumb_offset'] = (int) $postOptions['cover_frame_offset'];
+            }
+
+            // Custom cover image URL
+            if (!empty($postOptions['cover_image_url']) && $postOptions['cover_type'] === 'custom') {
+                $containerData['cover_url'] = $postOptions['cover_image_url'];
+            }
+
+            // Location ID (requires Facebook Places ID)
+            if (!empty($postOptions['location_id'])) {
+                $containerData['location_id'] = $postOptions['location_id'];
+            }
+
+            // Collaborators (Instagram collab feature)
+            if (!empty($postOptions['collaborators']) && is_array($postOptions['collaborators'])) {
+                // Instagram API accepts collaborator usernames
+                $collaborators = array_slice($postOptions['collaborators'], 0, 3); // Max 3
+                if (!empty($collaborators)) {
+                    $containerData['collaborators'] = json_encode($collaborators);
+                }
+            }
+
+            // User tags (for images/carousels)
+            if (!empty($postOptions['user_tags']) && is_array($postOptions['user_tags'])) {
+                $userTags = [];
+                foreach ($postOptions['user_tags'] as $tag) {
+                    if (!empty($tag['username'])) {
+                        $userTags[] = [
+                            'username' => ltrim($tag['username'], '@'),
+                            'x' => $tag['x'] ?? 0.5,
+                            'y' => $tag['y'] ?? 0.5,
+                        ];
+                    }
+                }
+                if (!empty($userTags)) {
+                    $containerData['user_tags'] = json_encode($userTags);
+                }
+            }
+
+            // Product tags (requires Instagram Shopping)
+            if (!empty($postOptions['product_tags']) && is_array($postOptions['product_tags'])) {
+                $containerData['product_tags'] = json_encode($postOptions['product_tags']);
+            }
+
+            Log::info('Instagram container data with options', [
+                'instagram_id' => $instagramAccountId,
+                'options_count' => count(array_filter($containerData)),
+                'has_share_to_feed' => isset($containerData['share_to_feed']),
+                'has_location' => isset($containerData['location_id']),
+                'has_collaborators' => isset($containerData['collaborators']),
+                'has_user_tags' => isset($containerData['user_tags']),
+            ]);
 
             if ($firstMedia['type'] === 'video') {
                 $containerData['media_type'] = 'VIDEO';
@@ -866,12 +1050,18 @@ class SocialPostController extends Controller
                     // Carousel post
                     $containerData['media_type'] = 'CAROUSEL';
                     $children = [];
+                    $altTexts = $postOptions['alt_texts'] ?? [];
 
-                    foreach ($mediaUrls as $media) {
+                    foreach ($mediaUrls as $index => $media) {
                         $childData = [
                             'access_token' => $accessToken,
                             'is_carousel_item' => true,
                         ];
+
+                        // Add alt text for accessibility (per-item)
+                        if (!empty($altTexts[$index])) {
+                            $childData['alt_text'] = $altTexts[$index];
+                        }
 
                         if ($media['type'] === 'video') {
                             $childData['media_type'] = 'VIDEO';
@@ -884,11 +1074,21 @@ class SocialPostController extends Controller
 
                         if ($childResponse->successful()) {
                             $children[] = $childResponse->json('id');
+                        } else {
+                            Log::warning('Failed to create carousel item', [
+                                'index' => $index,
+                                'error' => $childResponse->json('error.message'),
+                            ]);
                         }
                     }
 
                     $containerData['children'] = implode(',', $children);
                 }
+            }
+
+            // Add alt text for single image posts
+            if (!empty($postOptions['alt_text']) && $firstMedia['type'] !== 'video' && count($mediaUrls) === 1) {
+                $containerData['alt_text'] = $postOptions['alt_text'];
             }
 
             $containerResponse = Http::timeout(60)->post("https://graph.facebook.com/v21.0/{$instagramAccountId}/media", $containerData);
@@ -941,10 +1141,40 @@ class SocialPostController extends Controller
 
                 $permalink = $permalinkResponse->json('permalink', "https://instagram.com/p/{$postId}");
 
+                // Post first comment if provided
+                $firstCommentPosted = false;
+                if (!empty($postOptions['first_comment'])) {
+                    try {
+                        $commentResponse = Http::timeout(30)->post("https://graph.facebook.com/v21.0/{$postId}/comments", [
+                            'access_token' => $accessToken,
+                            'message' => $postOptions['first_comment'],
+                        ]);
+
+                        if ($commentResponse->successful()) {
+                            $firstCommentPosted = true;
+                            Log::info('First comment posted successfully', [
+                                'post_id' => $postId,
+                                'comment_id' => $commentResponse->json('id'),
+                            ]);
+                        } else {
+                            Log::warning('Failed to post first comment', [
+                                'post_id' => $postId,
+                                'error' => $commentResponse->json('error.message'),
+                            ]);
+                        }
+                    } catch (\Exception $e) {
+                        Log::warning('Exception posting first comment', [
+                            'post_id' => $postId,
+                            'error' => $e->getMessage(),
+                        ]);
+                    }
+                }
+
                 return [
                     'success' => true,
                     'post_id' => $postId,
                     'permalink' => $permalink,
+                    'first_comment_posted' => $firstCommentPosted,
                     'message' => 'Published to Instagram successfully',
                 ];
             } else {
