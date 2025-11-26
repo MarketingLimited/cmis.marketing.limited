@@ -13,11 +13,11 @@
         </nav>
         <h1 class="text-2xl font-bold text-gray-900">{{ __('Configure Google Assets') }}</h1>
         <p class="mt-1 text-sm text-gray-500">
-            {{ __('Select your Google services and assets for this organization.') }}
+            {{ __('Select multiple Google services and assets for this organization.') }}
         </p>
         <div class="mt-2 p-2 bg-blue-50 border border-blue-200 rounded text-xs text-blue-700">
             <i class="fas fa-info-circle mr-1"></i>
-            {{ __('Each organization can have only one account per service type.') }}
+            {{ __('You can select multiple accounts per service type (e.g., multiple YouTube channels, Google Ads accounts).') }}
         </div>
     </div>
 
@@ -72,11 +72,11 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                             @foreach($youtubeChannels as $channel)
                                 <label class="flex items-center p-3 border rounded-lg hover:bg-gray-50 cursor-pointer transition"
-                                       :class="{ 'border-red-500 bg-red-50': selectedYoutubeChannel === '{{ $channel['id'] }}' }">
-                                    <input type="radio" name="youtube_channel" value="{{ $channel['id'] }}"
-                                           {{ ($selectedAssets['youtube_channel'] ?? null) === $channel['id'] ? 'checked' : '' }}
-                                           x-model="selectedYoutubeChannel"
-                                           class="h-4 w-4 text-red-600 border-gray-300 focus:ring-red-500">
+                                       :class="{ 'border-red-500 bg-red-50': selectedYoutubeChannels.includes('{{ $channel['id'] }}') }">
+                                    <input type="checkbox" name="youtube_channel[]" value="{{ $channel['id'] }}"
+                                           {{ in_array($channel['id'], $selectedAssets['youtube_channel'] ?? []) ? 'checked' : '' }}
+                                           x-model="selectedYoutubeChannels"
+                                           class="h-4 w-4 text-red-600 border-gray-300 rounded focus:ring-red-500">
                                     <div class="ml-3 flex items-center gap-3">
                                         @if($channel['thumbnail'] ?? null)
                                             <img src="{{ $channel['thumbnail'] }}" alt="" class="w-10 h-10 rounded-full">
@@ -124,18 +124,19 @@
                         </p>
                     </div>
 
-                    <div x-show="showManualYoutube" x-cloak class="mt-4 p-4 bg-gray-50 rounded-lg">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('Enter YouTube Channel ID') }}</label>
-                        <div class="flex gap-2">
-                            <input type="text" name="manual_youtube_channel_id" placeholder="e.g., UC..."
-                                   class="flex-1 rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 text-sm">
-                            <button type="button" @click="showManualYoutube = false" class="px-3 py-2 text-gray-500 hover:text-gray-700">
-                                <i class="fas fa-times"></i>
-                            </button>
-                        </div>
+                    <div x-show="showManualYoutube" x-cloak class="mt-4 p-4 bg-gray-50 rounded-lg" x-data="{ manualIds: '' }">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('Enter YouTube Channel IDs (comma or newline separated)') }}</label>
+                        <textarea x-model="manualIds" rows="3" placeholder="UC..., UC..., UC..."
+                                  class="w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 text-sm"></textarea>
+                        <template x-for="(id, index) in manualIds.split(/[,\n]+/).filter(i => i.trim())" :key="index">
+                            <input type="hidden" name="manual_youtube_channel_ids[]" :value="id.trim()">
+                        </template>
                         <p class="text-xs text-gray-500 mt-2">
                             {{ __('To find your Channel ID: YouTube Studio → Settings → Channel → Advanced settings → Copy "Channel ID"') }}
                         </p>
+                        <button type="button" @click="showManualYoutube = false" class="mt-2 text-sm text-red-600 hover:text-red-800">
+                            <i class="fas fa-times mr-1"></i>{{ __('Close') }}
+                        </button>
                     </div>
                 </div>
             </div>
@@ -162,10 +163,10 @@
                         <div class="space-y-2">
                             @foreach($googleAdsAccounts as $account)
                                 <label class="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 cursor-pointer transition"
-                                       :class="{ 'border-green-500 bg-green-50': selectedGoogleAds === '{{ $account['id'] }}' }">
+                                       :class="{ 'border-green-500 bg-green-50': selectedGoogleAds.includes('{{ $account['id'] }}' }">
                                     <div class="flex items-center">
-                                        <input type="radio" name="google_ads" value="{{ $account['id'] }}"
-                                               {{ ($selectedAssets['google_ads'] ?? null) === $account['id'] ? 'checked' : '' }}
+                                        <input type="checkbox" name="google_ads[]" value="{{ $account['id'] }}"
+                                               {{ in_array($account['id'], $selectedAssets['google_ads'] ?? []) ? 'checked' : '' }}
                                                x-model="selectedGoogleAds"
                                                class="h-4 w-4 text-green-600 border-gray-300 focus:ring-green-500">
                                         <div class="ml-3">
@@ -247,9 +248,9 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                             @foreach($analyticsProperties as $property)
                                 <label class="flex items-center p-3 border rounded-lg hover:bg-gray-50 cursor-pointer transition"
-                                       :class="{ 'border-orange-500 bg-orange-50': selectedAnalytics === '{{ $property['id'] }}' }">
-                                    <input type="radio" name="analytics" value="{{ $property['id'] }}"
-                                           {{ ($selectedAssets['analytics'] ?? null) === $property['id'] ? 'checked' : '' }}
+                                       :class="{ 'border-orange-500 bg-orange-50': selectedAnalytics.includes('{{ $property['id'] }}' }">
+                                    <input type="checkbox" name="analytics[]" value="{{ $property['id'] }}"
+                                           {{ in_array($property['id'], $selectedAssets['analytics'] ?? []) ? 'checked' : '' }}
                                            x-model="selectedAnalytics"
                                            class="h-4 w-4 text-orange-600 border-gray-300 focus:ring-orange-500">
                                     <div class="ml-3">
@@ -305,9 +306,9 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                             @foreach($businessProfiles as $profile)
                                 <label class="flex items-center p-3 border rounded-lg hover:bg-gray-50 cursor-pointer transition"
-                                       :class="{ 'border-blue-500 bg-blue-50': selectedBusiness === '{{ $profile['id'] }}' }">
-                                    <input type="radio" name="business_profile" value="{{ $profile['id'] }}"
-                                           {{ ($selectedAssets['business_profile'] ?? null) === $profile['id'] ? 'checked' : '' }}
+                                       :class="{ 'border-blue-500 bg-blue-50': selectedBusiness.includes('{{ $profile['id'] }}' }">
+                                    <input type="checkbox" name="business_profile[]" value="{{ $profile['id'] }}"
+                                           {{ in_array($profile['id'], $selectedAssets['business_profile'] ?? []) ? 'checked' : '' }}
                                            x-model="selectedBusiness"
                                            class="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500">
                                     <div class="ml-3">
@@ -377,9 +378,9 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                             @foreach($tagManagerContainers as $container)
                                 <label class="flex items-center p-3 border rounded-lg hover:bg-gray-50 cursor-pointer transition"
-                                       :class="{ 'border-purple-500 bg-purple-50': selectedTagManager === '{{ $container['containerId'] }}' }">
-                                    <input type="radio" name="tag_manager" value="{{ $container['containerId'] }}"
-                                           {{ ($selectedAssets['tag_manager'] ?? null) === $container['containerId'] ? 'checked' : '' }}
+                                       :class="{ 'border-purple-500 bg-purple-50': selectedTagManager.includes('{{ $container['containerId'] }}' }">
+                                    <input type="checkbox" name="tag_manager[]" value="{{ $container['containerId'] }}"
+                                           {{ in_array($container['containerId'], $selectedAssets['tag_manager'] ?? []) ? 'checked' : '' }}
                                            x-model="selectedTagManager"
                                            class="h-4 w-4 text-purple-600 border-gray-300 focus:ring-purple-500">
                                     <div class="ml-3">
@@ -435,9 +436,9 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                             @foreach($merchantCenterAccounts as $merchant)
                                 <label class="flex items-center p-3 border rounded-lg hover:bg-gray-50 cursor-pointer transition"
-                                       :class="{ 'border-teal-500 bg-teal-50': selectedMerchant === '{{ $merchant['id'] }}' }">
-                                    <input type="radio" name="merchant_center" value="{{ $merchant['id'] }}"
-                                           {{ ($selectedAssets['merchant_center'] ?? null) === $merchant['id'] ? 'checked' : '' }}
+                                       :class="{ 'border-teal-500 bg-teal-50': selectedMerchant.includes('{{ $merchant['id'] }}' }">
+                                    <input type="checkbox" name="merchant_center[]" value="{{ $merchant['id'] }}"
+                                           {{ in_array($merchant['id'], $selectedAssets['merchant_center'] ?? []) ? 'checked' : '' }}
                                            x-model="selectedMerchant"
                                            class="h-4 w-4 text-teal-600 border-gray-300 focus:ring-teal-500">
                                     <div class="ml-3">
@@ -493,9 +494,9 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                             @foreach($searchConsoleSites as $site)
                                 <label class="flex items-center p-3 border rounded-lg hover:bg-gray-50 cursor-pointer transition"
-                                       :class="{ 'border-indigo-500 bg-indigo-50': selectedSearchConsole === '{{ $site['siteUrl'] }}' }">
-                                    <input type="radio" name="search_console" value="{{ $site['siteUrl'] }}"
-                                           {{ ($selectedAssets['search_console'] ?? null) === $site['siteUrl'] ? 'checked' : '' }}
+                                       :class="{ 'border-indigo-500 bg-indigo-50': selectedSearchConsole.includes('{{ $site['siteUrl'] }}' }">
+                                    <input type="checkbox" name="search_console[]" value="{{ $site['siteUrl'] }}"
+                                           {{ in_array($site['siteUrl'], $selectedAssets['search_console'] ?? []) ? 'checked' : '' }}
                                            x-model="selectedSearchConsole"
                                            class="h-4 w-4 text-indigo-600 border-gray-300 focus:ring-indigo-500">
                                     <div class="ml-3">
@@ -548,9 +549,9 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                             @foreach($googleCalendars as $calendar)
                                 <label class="flex items-center p-3 border rounded-lg hover:bg-gray-50 cursor-pointer transition"
-                                       :class="{ 'border-cyan-500 bg-cyan-50': selectedCalendar === '{{ $calendar['id'] }}' }">
-                                    <input type="radio" name="calendar" value="{{ $calendar['id'] }}"
-                                           {{ ($selectedAssets['calendar'] ?? null) === $calendar['id'] ? 'checked' : '' }}
+                                       :class="{ 'border-cyan-500 bg-cyan-50': selectedCalendar.includes('{{ $calendar['id'] }}' }">
+                                    <input type="checkbox" name="calendar[]" value="{{ $calendar['id'] }}"
+                                           {{ in_array($calendar['id'], $selectedAssets['calendar'] ?? []) ? 'checked' : '' }}
                                            x-model="selectedCalendar"
                                            class="h-4 w-4 text-cyan-600 border-gray-300 focus:ring-cyan-500">
                                     <div class="ml-3 flex items-center gap-2">
@@ -847,15 +848,15 @@ function googleAssetsPage() {
         showManualCalendar: false,
         showManualDrive: false,
 
-        // Selected items (single value per type)
-        selectedYoutubeChannel: @json($selectedAssets['youtube_channel'] ?? null),
-        selectedGoogleAds: @json($selectedAssets['google_ads'] ?? null),
-        selectedAnalytics: @json($selectedAssets['analytics'] ?? null),
-        selectedBusiness: @json($selectedAssets['business_profile'] ?? null),
-        selectedTagManager: @json($selectedAssets['tag_manager'] ?? null),
-        selectedMerchant: @json($selectedAssets['merchant_center'] ?? null),
-        selectedSearchConsole: @json($selectedAssets['search_console'] ?? null),
-        selectedCalendar: @json($selectedAssets['calendar'] ?? null),
+        // Selected items (multiple values per type - arrays)
+        selectedYoutubeChannels: @json($selectedAssets['youtube_channel'] ?? []),
+        selectedGoogleAds: @json($selectedAssets['google_ads'] ?? []),
+        selectedAnalytics: @json($selectedAssets['analytics'] ?? []),
+        selectedBusiness: @json($selectedAssets['business_profile'] ?? []),
+        selectedTagManager: @json($selectedAssets['tag_manager'] ?? []),
+        selectedMerchant: @json($selectedAssets['merchant_center'] ?? []),
+        selectedSearchConsole: @json($selectedAssets['search_console'] ?? []),
+        selectedCalendar: @json($selectedAssets['calendar'] ?? []),
 
         // Google Drive - multi-select
         includeMyDrive: @json($selectedAssets['include_my_drive'] ?? false),
