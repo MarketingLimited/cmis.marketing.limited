@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Controllers\Concerns\ApiResponse;
 use App\Models\Platform\PlatformConnection;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
@@ -291,6 +292,190 @@ class PlatformConnectionsController extends Controller
         return redirect()
             ->route('orgs.settings.platform-connections.index', $org)
             ->with('success', $successMessage);
+    }
+
+    // ==================== GOOGLE TOKEN MANAGEMENT ====================
+
+    /**
+     * Show form to add Google service account credentials.
+     */
+    public function createGoogleToken(Request $request, string $org)
+    {
+        return view('settings.platform-connections.google-token', [
+            'currentOrg' => $org,
+            'connection' => null,
+        ]);
+    }
+
+    /**
+     * Store Google service account or OAuth credentials.
+     */
+    public function storeGoogleToken(Request $request, string $org)
+    {
+        $credentialType = $request->input('credential_type', 'service_account');
+
+        $rules = [
+            'account_name' => 'required|string|max:255',
+            'credential_type' => 'required|in:service_account,oauth',
+        ];
+
+        if ($credentialType === 'service_account') {
+            $rules['service_account_json'] = 'required|string|min:100';
+        } else {
+            $rules['client_id'] = 'required|string';
+            $rules['client_secret'] = 'required|string';
+            $rules['refresh_token'] = 'nullable|string';
+        }
+
+        $validator = Validator::make($request->all(), $rules);
+
+        if ($validator->fails()) {
+            if ($request->wantsJson()) {
+                return $this->validationError($validator->errors());
+            }
+            return back()->withErrors($validator)->withInput();
+        }
+
+        try {
+            $accountMetadata = [
+                'credential_type' => $credentialType,
+                'validated_at' => now()->toIso8601String(),
+            ];
+
+            $accessToken = null;
+
+            if ($credentialType === 'service_account') {
+                $serviceAccountJson = $request->input('service_account_json');
+                $serviceAccount = json_decode($serviceAccountJson, true);
+
+                if (!$serviceAccount || !isset($serviceAccount['client_email'])) {
+                    return back()->withErrors(['service_account_json' => 'Invalid service account JSON format'])->withInput();
+                }
+
+                $accountMetadata['service_account_email'] = $serviceAccount['client_email'];
+                $accountMetadata['project_id'] = $serviceAccount['project_id'] ?? null;
+                $accessToken = $serviceAccountJson; // Store encrypted
+            } else {
+                $accountMetadata['client_id'] = $request->input('client_id');
+                $accessToken = json_encode([
+                    'client_id' => $request->input('client_id'),
+                    'client_secret' => $request->input('client_secret'),
+                    'refresh_token' => $request->input('refresh_token'),
+                ]);
+            }
+
+            // Create the connection
+            $connection = PlatformConnection::create([
+                'connection_id' => Str::uuid(),
+                'org_id' => $org,
+                'platform' => 'google',
+                'account_id' => $accountMetadata['service_account_email'] ?? $request->input('client_id') ?? 'google_' . Str::random(8),
+                'account_name' => $request->input('account_name'),
+                'status' => 'active',
+                'access_token' => $accessToken,
+                'account_metadata' => $accountMetadata,
+                'auto_sync' => true,
+                'sync_frequency_minutes' => 60,
+            ]);
+
+            if ($request->wantsJson()) {
+                return $this->created($connection, 'Google connection created successfully');
+            }
+
+            return redirect()
+                ->route('orgs.settings.platform-connections.google.assets', [$org, $connection->connection_id])
+                ->with('success', 'Google connection created successfully. Now select which Google services to use.');
+
+        } catch (\Exception $e) {
+            Log::error('Failed to store Google credentials', ['error' => $e->getMessage()]);
+            return back()->withErrors(['general' => 'Failed to save credentials: ' . $e->getMessage()])->withInput();
+        }
+    }
+
+    /**
+     * Edit Google credentials.
+     */
+    public function editGoogleToken(Request $request, string $org, string $connectionId)
+    {
+        $connection = PlatformConnection::where('connection_id', $connectionId)
+            ->where('org_id', $org)
+            ->where('platform', 'google')
+            ->firstOrFail();
+
+        return view('settings.platform-connections.google-token', [
+            'currentOrg' => $org,
+            'connection' => $connection,
+        ]);
+    }
+
+    /**
+     * Update Google credentials.
+     */
+    public function updateGoogleToken(Request $request, string $org, string $connectionId)
+    {
+        $connection = PlatformConnection::where('connection_id', $connectionId)
+            ->where('org_id', $org)
+            ->where('platform', 'google')
+            ->firstOrFail();
+
+        $credentialType = $request->input('credential_type', $connection->account_metadata['credential_type'] ?? 'service_account');
+
+        $validator = Validator::make($request->all(), [
+            'account_name' => 'required|string|max:255',
+            'service_account_json' => 'nullable|string|min:100',
+            'client_id' => 'nullable|string',
+            'client_secret' => 'nullable|string',
+            'refresh_token' => 'nullable|string',
+        ]);
+
+        if ($validator->fails()) {
+            if ($request->wantsJson()) {
+                return $this->validationError($validator->errors());
+            }
+            return back()->withErrors($validator)->withInput();
+        }
+
+        $updateData = [
+            'account_name' => $request->input('account_name'),
+        ];
+
+        $accountMetadata = $connection->account_metadata ?? [];
+        $accountMetadata['credential_type'] = $credentialType;
+
+        // Update credentials if provided
+        if ($credentialType === 'service_account' && $request->filled('service_account_json')) {
+            $serviceAccountJson = $request->input('service_account_json');
+            $serviceAccount = json_decode($serviceAccountJson, true);
+
+            if (!$serviceAccount || !isset($serviceAccount['client_email'])) {
+                return back()->withErrors(['service_account_json' => 'Invalid service account JSON format'])->withInput();
+            }
+
+            $accountMetadata['service_account_email'] = $serviceAccount['client_email'];
+            $accountMetadata['project_id'] = $serviceAccount['project_id'] ?? null;
+            $updateData['access_token'] = $serviceAccountJson;
+            $updateData['account_id'] = $serviceAccount['client_email'];
+        } elseif ($credentialType === 'oauth' && ($request->filled('client_id') || $request->filled('client_secret'))) {
+            $accountMetadata['client_id'] = $request->input('client_id', $accountMetadata['client_id'] ?? null);
+            $updateData['access_token'] = json_encode([
+                'client_id' => $request->input('client_id'),
+                'client_secret' => $request->input('client_secret'),
+                'refresh_token' => $request->input('refresh_token'),
+            ]);
+        }
+
+        $accountMetadata['validated_at'] = now()->toIso8601String();
+        $updateData['account_metadata'] = $accountMetadata;
+
+        $connection->update($updateData);
+
+        if ($request->wantsJson()) {
+            return $this->success($connection->fresh(), 'Google connection updated successfully');
+        }
+
+        return redirect()
+            ->route('orgs.settings.platform-connections.index', $org)
+            ->with('success', 'Google connection updated successfully');
     }
 
     /**
@@ -1424,7 +1609,40 @@ class PlatformConnectionsController extends Controller
      */
     public function selectGoogleAssets(Request $request, string $org, string $connectionId)
     {
-        return $this->showGenericPlatformAssets($request, $org, $connectionId, 'google');
+        $connection = PlatformConnection::where('connection_id', $connectionId)
+            ->where('org_id', $org)
+            ->where('platform', 'google')
+            ->firstOrFail();
+
+        $selectedAssets = $connection->account_metadata['selected_assets'] ?? [];
+
+        // Fetch assets from various Google APIs
+        // Note: These will return empty arrays until API integration is implemented
+        // For now, users can add assets manually
+        $youtubeChannels = $this->getGoogleYouTubeChannels($connection);
+        $googleAdsAccounts = $this->getGoogleAdsAccounts($connection);
+        $analyticsProperties = $this->getGoogleAnalyticsProperties($connection);
+        $businessProfiles = $this->getGoogleBusinessProfiles($connection);
+        $tagManagerContainers = $this->getGoogleTagManagerContainers($connection);
+        $merchantCenterAccounts = $this->getGoogleMerchantCenterAccounts($connection);
+        $searchConsoleSites = $this->getGoogleSearchConsoleSites($connection);
+        $googleCalendars = $this->getGoogleCalendars($connection);
+        $driveFolders = $this->getGoogleDriveFolders($connection);
+
+        return view('settings.platform-connections.google-assets', [
+            'currentOrg' => $org,
+            'connection' => $connection,
+            'selectedAssets' => $selectedAssets,
+            'youtubeChannels' => $youtubeChannels,
+            'googleAdsAccounts' => $googleAdsAccounts,
+            'analyticsProperties' => $analyticsProperties,
+            'businessProfiles' => $businessProfiles,
+            'tagManagerContainers' => $tagManagerContainers,
+            'merchantCenterAccounts' => $merchantCenterAccounts,
+            'searchConsoleSites' => $searchConsoleSites,
+            'googleCalendars' => $googleCalendars,
+            'driveFolders' => $driveFolders,
+        ]);
     }
 
     /**
@@ -1432,9 +1650,645 @@ class PlatformConnectionsController extends Controller
      */
     public function storeGoogleAssets(Request $request, string $org, string $connectionId)
     {
-        return $this->storeGenericPlatformAssets($request, $org, $connectionId, 'google', [
-            'business_profile', 'ad_account'
-        ]);
+        $connection = PlatformConnection::where('connection_id', $connectionId)
+            ->where('org_id', $org)
+            ->where('platform', 'google')
+            ->firstOrFail();
+
+        // Single-select asset types
+        $singleAssetTypes = [
+            'youtube_channel',
+            'google_ads',
+            'analytics',
+            'business_profile',
+            'tag_manager',
+            'merchant_center',
+            'search_console',
+            'calendar',
+        ];
+
+        // Build validation rules
+        $rules = [
+            'include_my_drive' => 'nullable|boolean',
+            'shared_drives' => 'nullable|array',
+            'shared_drives.*' => 'nullable|string|max:255',
+            'selected_shared_drives' => 'nullable|string', // JSON string from Alpine.js
+            'manual_drives' => 'nullable|array',
+            'manual_drives.*' => 'nullable|string|max:255',
+        ];
+
+        foreach ($singleAssetTypes as $type) {
+            $rules[$type] = 'nullable|string|max:255';
+            $rules['manual_' . $type . '_id'] = 'nullable|string|max:255';
+        }
+
+        $validator = Validator::make($request->all(), $rules);
+
+        if ($validator->fails()) {
+            return back()->withErrors($validator)->withInput();
+        }
+
+        // Build selected assets (single value per type)
+        $selectedAssets = [];
+        foreach ($singleAssetTypes as $type) {
+            $manualKey = 'manual_' . $type . '_id';
+            $value = $request->filled($manualKey)
+                ? $request->input($manualKey)
+                : $request->input($type);
+
+            if ($value) {
+                $selectedAssets[$type] = $value;
+            }
+        }
+
+        // Handle Google Drive multi-select
+        $selectedAssets['include_my_drive'] = (bool) $request->input('include_my_drive', false);
+
+        // Get shared drives from either array or JSON string
+        $sharedDrives = $request->input('shared_drives', []);
+        if (empty($sharedDrives) && $request->filled('selected_shared_drives')) {
+            $sharedDrives = json_decode($request->input('selected_shared_drives'), true) ?? [];
+        }
+        $selectedAssets['shared_drives'] = array_filter(array_unique($sharedDrives));
+
+        // Add manually entered drives
+        $manualDrives = array_filter($request->input('manual_drives', []));
+        $selectedAssets['manual_drives'] = array_values(array_unique($manualDrives));
+
+        // Update connection metadata
+        $metadata = $connection->account_metadata ?? [];
+        $metadata['selected_assets'] = $selectedAssets;
+        $metadata['assets_updated_at'] = now()->toIso8601String();
+
+        $connection->update(['account_metadata' => $metadata]);
+
+        // Build success message
+        $assetLabels = [
+            'youtube_channel' => 'YouTube Channel',
+            'google_ads' => 'Google Ads',
+            'analytics' => 'Analytics',
+            'business_profile' => 'Business Profile',
+            'tag_manager' => 'Tag Manager',
+            'merchant_center' => 'Merchant Center',
+            'search_console' => 'Search Console',
+            'calendar' => 'Calendar',
+        ];
+
+        $selectedList = [];
+        foreach ($singleAssetTypes as $type) {
+            if (!empty($selectedAssets[$type])) {
+                $selectedList[] = $assetLabels[$type] ?? ucfirst(str_replace('_', ' ', $type));
+            }
+        }
+
+        // Add Drive to list if selected
+        $driveCount = count($selectedAssets['shared_drives'] ?? []) + count($selectedAssets['manual_drives'] ?? []);
+        if ($selectedAssets['include_my_drive'] || $driveCount > 0) {
+            $driveLabel = 'Drive';
+            if ($selectedAssets['include_my_drive']) {
+                $driveLabel .= ' (My Drive';
+                if ($driveCount > 0) {
+                    $driveLabel .= " + {$driveCount} shared";
+                }
+                $driveLabel .= ')';
+            } elseif ($driveCount > 0) {
+                $driveLabel .= " ({$driveCount} shared)";
+            }
+            $selectedList[] = $driveLabel;
+        }
+
+        $message = 'Google assets configured: ' . (count($selectedList) > 0 ? implode(', ', $selectedList) : 'None');
+
+        if ($request->wantsJson()) {
+            return $this->success([
+                'connection' => $connection->fresh(),
+                'selected_assets' => $selectedAssets,
+            ], $message);
+        }
+
+        return redirect()
+            ->route('orgs.settings.platform-connections.index', $org)
+            ->with('success', $message);
+    }
+
+    // ==================== GOOGLE ASSET FETCHING METHODS ====================
+
+    /**
+     * Get a valid Google access token, refreshing if necessary.
+     */
+    private function getValidGoogleAccessToken(PlatformConnection $connection): ?string
+    {
+        $accessToken = $connection->access_token;
+
+        // Check if token is expired and we have a refresh token
+        if ($connection->token_expires_at && $connection->token_expires_at->isPast() && $connection->refresh_token) {
+            $config = config('social-platforms.google');
+
+            try {
+                $response = Http::asForm()->post($config['token_url'], [
+                    'client_id' => $config['client_id'],
+                    'client_secret' => $config['client_secret'],
+                    'refresh_token' => $connection->refresh_token,
+                    'grant_type' => 'refresh_token',
+                ]);
+
+                if ($response->successful()) {
+                    $tokenData = $response->json();
+                    $connection->update([
+                        'access_token' => $tokenData['access_token'],
+                        'token_expires_at' => now()->addSeconds($tokenData['expires_in'] ?? 3600),
+                    ]);
+                    $accessToken = $tokenData['access_token'];
+                } else {
+                    Log::warning('Failed to refresh Google token', ['response' => $response->json()]);
+                }
+            } catch (\Exception $e) {
+                Log::error('Exception refreshing Google token', ['error' => $e->getMessage()]);
+            }
+        }
+
+        return $accessToken;
+    }
+
+    /**
+     * Get YouTube channels associated with Google connection.
+     * This fetches both personal channels and brand account channels the user manages.
+     */
+    private function getGoogleYouTubeChannels(PlatformConnection $connection): array
+    {
+        try {
+            $accessToken = $this->getValidGoogleAccessToken($connection);
+            if (!$accessToken) return [];
+
+            $channels = [];
+            $channelIds = [];
+
+            // 1. Get the user's own channel (personal)
+            $mineResponse = Http::withToken($accessToken)
+                ->get('https://www.googleapis.com/youtube/v3/channels', [
+                    'part' => 'snippet,statistics,contentDetails,brandingSettings',
+                    'mine' => 'true',
+                ]);
+
+            if ($mineResponse->successful()) {
+                foreach ($mineResponse->json('items', []) as $channel) {
+                    $channelId = $channel['id'];
+                    if (!in_array($channelId, $channelIds)) {
+                        $channelIds[] = $channelId;
+                        $channels[] = $this->formatYouTubeChannel($channel, 'personal');
+                    }
+                }
+            }
+
+            // 2. Try to get channels from YouTube Studio API (brand accounts)
+            // This uses an undocumented but widely-used endpoint
+            $delegateResponse = Http::withToken($accessToken)
+                ->withHeaders(['X-Origin' => 'https://www.youtube.com'])
+                ->get('https://www.googleapis.com/youtube/v3/channels', [
+                    'part' => 'snippet,statistics,contentDetails,brandingSettings',
+                    'managedByMe' => 'true',
+                ]);
+
+            if ($delegateResponse->successful()) {
+                foreach ($delegateResponse->json('items', []) as $channel) {
+                    $channelId = $channel['id'];
+                    if (!in_array($channelId, $channelIds)) {
+                        $channelIds[] = $channelId;
+                        $channels[] = $this->formatYouTubeChannel($channel, 'managed');
+                    }
+                }
+            }
+
+            // 3. Try to get channels via the accounts/delegated endpoint
+            // Get list of accessible accounts through Google Account
+            $accountsResponse = Http::withToken($accessToken)
+                ->get('https://youtube.googleapis.com/youtube/v3/channels', [
+                    'part' => 'snippet,statistics',
+                    'forHandle' => '@' . ($connection->account_metadata['email'] ?? ''),
+                ]);
+
+            // This likely won't work but worth trying
+
+            // 4. Alternative: Check subscriptions for owned channels (channels user uploaded to)
+            $uploadsResponse = Http::withToken($accessToken)
+                ->get('https://www.googleapis.com/youtube/v3/search', [
+                    'part' => 'snippet',
+                    'forMine' => 'true',
+                    'type' => 'channel',
+                    'maxResults' => 50,
+                ]);
+
+            // 5. Get channels from playlists (each channel has default playlists)
+            $playlistsResponse = Http::withToken($accessToken)
+                ->get('https://www.googleapis.com/youtube/v3/playlists', [
+                    'part' => 'snippet',
+                    'mine' => 'true',
+                    'maxResults' => 50,
+                ]);
+
+            if ($playlistsResponse->successful()) {
+                $playlistChannelIds = [];
+                foreach ($playlistsResponse->json('items', []) as $playlist) {
+                    $playlistChannelId = $playlist['snippet']['channelId'] ?? null;
+                    if ($playlistChannelId && !in_array($playlistChannelId, $channelIds) && !in_array($playlistChannelId, $playlistChannelIds)) {
+                        $playlistChannelIds[] = $playlistChannelId;
+                    }
+                }
+
+                // Fetch details for these channels
+                if (!empty($playlistChannelIds)) {
+                    $channelDetailsResponse = Http::withToken($accessToken)
+                        ->get('https://www.googleapis.com/youtube/v3/channels', [
+                            'part' => 'snippet,statistics,contentDetails,brandingSettings',
+                            'id' => implode(',', $playlistChannelIds),
+                        ]);
+
+                    if ($channelDetailsResponse->successful()) {
+                        foreach ($channelDetailsResponse->json('items', []) as $channel) {
+                            $channelId = $channel['id'];
+                            if (!in_array($channelId, $channelIds)) {
+                                $channelIds[] = $channelId;
+                                $channels[] = $this->formatYouTubeChannel($channel, 'brand');
+                            }
+                        }
+                    }
+                }
+            }
+
+            // 6. Check activities to find channels user has access to
+            $activitiesResponse = Http::withToken($accessToken)
+                ->get('https://www.googleapis.com/youtube/v3/activities', [
+                    'part' => 'snippet',
+                    'mine' => 'true',
+                    'maxResults' => 50,
+                ]);
+
+            if ($activitiesResponse->successful()) {
+                $activityChannelIds = [];
+                foreach ($activitiesResponse->json('items', []) as $activity) {
+                    $activityChannelId = $activity['snippet']['channelId'] ?? null;
+                    if ($activityChannelId && !in_array($activityChannelId, $channelIds) && !in_array($activityChannelId, $activityChannelIds)) {
+                        $activityChannelIds[] = $activityChannelId;
+                    }
+                }
+
+                // Fetch details for activity channels
+                if (!empty($activityChannelIds)) {
+                    $channelDetailsResponse = Http::withToken($accessToken)
+                        ->get('https://www.googleapis.com/youtube/v3/channels', [
+                            'part' => 'snippet,statistics,contentDetails,brandingSettings',
+                            'id' => implode(',', array_slice($activityChannelIds, 0, 50)),
+                        ]);
+
+                    if ($channelDetailsResponse->successful()) {
+                        foreach ($channelDetailsResponse->json('items', []) as $channel) {
+                            $channelId = $channel['id'];
+                            if (!in_array($channelId, $channelIds)) {
+                                $channelIds[] = $channelId;
+                                $channels[] = $this->formatYouTubeChannel($channel, 'brand');
+                            }
+                        }
+                    }
+                }
+            }
+
+            return $channels;
+        } catch (\Exception $e) {
+            Log::error('Exception fetching YouTube channels', ['error' => $e->getMessage()]);
+            return [];
+        }
+    }
+
+    /**
+     * Format a YouTube channel response into a standardized array.
+     */
+    private function formatYouTubeChannel(array $channel, string $type = 'personal'): array
+    {
+        return [
+            'id' => $channel['id'],
+            'title' => $channel['snippet']['title'] ?? 'Unknown Channel',
+            'description' => Str::limit($channel['snippet']['description'] ?? '', 100),
+            'thumbnail' => $channel['snippet']['thumbnails']['default']['url'] ?? null,
+            'subscriber_count' => $channel['statistics']['subscriberCount'] ?? 0,
+            'video_count' => $channel['statistics']['videoCount'] ?? 0,
+            'view_count' => $channel['statistics']['viewCount'] ?? 0,
+            'custom_url' => $channel['snippet']['customUrl'] ?? null,
+            'type' => $type, // personal, managed, brand
+        ];
+    }
+
+    /**
+     * Get Google Ads accounts.
+     * Note: Google Ads API requires a developer token and is more complex.
+     * Users can add accounts manually for now.
+     */
+    private function getGoogleAdsAccounts(PlatformConnection $connection): array
+    {
+        // Google Ads API requires a developer token and approved access
+        // This is complex to implement without the google-ads-php library
+        // Users should add their Customer ID manually
+        return [];
+    }
+
+    /**
+     * Get Google Analytics properties (GA4).
+     */
+    private function getGoogleAnalyticsProperties(PlatformConnection $connection): array
+    {
+        try {
+            $accessToken = $this->getValidGoogleAccessToken($connection);
+            if (!$accessToken) return [];
+
+            // First get account summaries
+            $response = Http::withToken($accessToken)
+                ->get('https://analyticsadmin.googleapis.com/v1beta/accountSummaries');
+
+            if (!$response->successful()) {
+                Log::warning('Analytics accountSummaries API failed', ['status' => $response->status(), 'body' => $response->json()]);
+                return [];
+            }
+
+            $properties = [];
+            foreach ($response->json('accountSummaries', []) as $account) {
+                foreach ($account['propertySummaries'] ?? [] as $property) {
+                    $properties[] = [
+                        'id' => $property['property'] ?? '',
+                        'displayName' => $property['displayName'] ?? 'Unknown Property',
+                        'accountName' => $account['displayName'] ?? '',
+                        'propertyType' => $property['propertyType'] ?? 'PROPERTY_TYPE_ORDINARY',
+                    ];
+                }
+            }
+
+            return $properties;
+        } catch (\Exception $e) {
+            Log::error('Exception fetching Analytics properties', ['error' => $e->getMessage()]);
+            return [];
+        }
+    }
+
+    /**
+     * Get Google Business Profile locations.
+     */
+    private function getGoogleBusinessProfiles(PlatformConnection $connection): array
+    {
+        try {
+            $accessToken = $this->getValidGoogleAccessToken($connection);
+            if (!$accessToken) return [];
+
+            // First get accounts
+            $accountsResponse = Http::withToken($accessToken)
+                ->get('https://mybusinessaccountmanagement.googleapis.com/v1/accounts');
+
+            if (!$accountsResponse->successful()) {
+                Log::warning('Business Profile accounts API failed', ['status' => $accountsResponse->status(), 'body' => $accountsResponse->json()]);
+                return [];
+            }
+
+            $profiles = [];
+            foreach ($accountsResponse->json('accounts', []) as $account) {
+                $accountName = $account['name'] ?? '';
+
+                // Get locations for this account
+                $locationsResponse = Http::withToken($accessToken)
+                    ->get("https://mybusinessbusinessinformation.googleapis.com/v1/{$accountName}/locations", [
+                        'readMask' => 'name,title,storefrontAddress,primaryCategory',
+                    ]);
+
+                if ($locationsResponse->successful()) {
+                    foreach ($locationsResponse->json('locations', []) as $location) {
+                        $address = $location['storefrontAddress'] ?? [];
+                        $profiles[] = [
+                            'id' => $location['name'] ?? '',
+                            'name' => $location['title'] ?? 'Unknown Location',
+                            'address' => implode(', ', array_filter([
+                                $address['addressLines'][0] ?? '',
+                                $address['locality'] ?? '',
+                                $address['administrativeArea'] ?? '',
+                            ])),
+                            'primaryCategory' => $location['primaryCategory']['displayName'] ?? '',
+                        ];
+                    }
+                }
+            }
+
+            return $profiles;
+        } catch (\Exception $e) {
+            Log::error('Exception fetching Business Profiles', ['error' => $e->getMessage()]);
+            return [];
+        }
+    }
+
+    /**
+     * Get Google Tag Manager containers.
+     */
+    private function getGoogleTagManagerContainers(PlatformConnection $connection): array
+    {
+        try {
+            $accessToken = $this->getValidGoogleAccessToken($connection);
+            if (!$accessToken) return [];
+
+            // First get accounts
+            $accountsResponse = Http::withToken($accessToken)
+                ->get('https://www.googleapis.com/tagmanager/v2/accounts');
+
+            if (!$accountsResponse->successful()) {
+                Log::warning('Tag Manager accounts API failed', ['status' => $accountsResponse->status(), 'body' => $accountsResponse->json()]);
+                return [];
+            }
+
+            $containers = [];
+            foreach ($accountsResponse->json('account', []) as $account) {
+                $accountPath = $account['path'] ?? '';
+
+                // Get containers for this account
+                $containersResponse = Http::withToken($accessToken)
+                    ->get("https://www.googleapis.com/tagmanager/v2/{$accountPath}/containers");
+
+                if ($containersResponse->successful()) {
+                    foreach ($containersResponse->json('container', []) as $container) {
+                        $containers[] = [
+                            'containerId' => $container['containerId'] ?? '',
+                            'name' => $container['name'] ?? 'Unknown Container',
+                            'publicId' => $container['publicId'] ?? '',
+                            'domainName' => $container['domainName'] ?? [],
+                            'accountId' => $account['accountId'] ?? '',
+                        ];
+                    }
+                }
+            }
+
+            return $containers;
+        } catch (\Exception $e) {
+            Log::error('Exception fetching Tag Manager containers', ['error' => $e->getMessage()]);
+            return [];
+        }
+    }
+
+    /**
+     * Get Google Merchant Center accounts.
+     */
+    private function getGoogleMerchantCenterAccounts(PlatformConnection $connection): array
+    {
+        try {
+            $accessToken = $this->getValidGoogleAccessToken($connection);
+            if (!$accessToken) return [];
+
+            $response = Http::withToken($accessToken)
+                ->get('https://shoppingcontent.googleapis.com/content/v2.1/accounts/authinfo');
+
+            if (!$response->successful()) {
+                Log::warning('Merchant Center authinfo API failed', ['status' => $response->status(), 'body' => $response->json()]);
+                return [];
+            }
+
+            $accounts = [];
+            foreach ($response->json('accountIdentifiers', []) as $identifier) {
+                $merchantId = $identifier['merchantId'] ?? $identifier['aggregatorId'] ?? null;
+                if ($merchantId) {
+                    // Get account details
+                    $accountResponse = Http::withToken($accessToken)
+                        ->get("https://shoppingcontent.googleapis.com/content/v2.1/{$merchantId}/accounts/{$merchantId}");
+
+                    $accountData = $accountResponse->successful() ? $accountResponse->json() : [];
+
+                    $accounts[] = [
+                        'id' => $merchantId,
+                        'name' => $accountData['name'] ?? "Merchant {$merchantId}",
+                        'websiteUrl' => $accountData['websiteUrl'] ?? '',
+                    ];
+                }
+            }
+
+            return $accounts;
+        } catch (\Exception $e) {
+            Log::error('Exception fetching Merchant Center accounts', ['error' => $e->getMessage()]);
+            return [];
+        }
+    }
+
+    /**
+     * Get Google Search Console sites.
+     */
+    private function getGoogleSearchConsoleSites(PlatformConnection $connection): array
+    {
+        try {
+            $accessToken = $this->getValidGoogleAccessToken($connection);
+            if (!$accessToken) return [];
+
+            $response = Http::withToken($accessToken)
+                ->get('https://www.googleapis.com/webmasters/v3/sites');
+
+            if (!$response->successful()) {
+                Log::warning('Search Console sites API failed', ['status' => $response->status(), 'body' => $response->json()]);
+                return [];
+            }
+
+            $sites = [];
+            foreach ($response->json('siteEntry', []) as $site) {
+                $sites[] = [
+                    'siteUrl' => $site['siteUrl'] ?? '',
+                    'permissionLevel' => $site['permissionLevel'] ?? 'siteUnverifiedUser',
+                ];
+            }
+
+            return $sites;
+        } catch (\Exception $e) {
+            Log::error('Exception fetching Search Console sites', ['error' => $e->getMessage()]);
+            return [];
+        }
+    }
+
+    /**
+     * Get Google Calendars.
+     */
+    private function getGoogleCalendars(PlatformConnection $connection): array
+    {
+        try {
+            $accessToken = $this->getValidGoogleAccessToken($connection);
+            if (!$accessToken) return [];
+
+            $response = Http::withToken($accessToken)
+                ->get('https://www.googleapis.com/calendar/v3/users/me/calendarList', [
+                    'minAccessRole' => 'writer',
+                ]);
+
+            if (!$response->successful()) {
+                Log::warning('Calendar list API failed', ['status' => $response->status(), 'body' => $response->json()]);
+                return [];
+            }
+
+            $calendars = [];
+            foreach ($response->json('items', []) as $calendar) {
+                $calendars[] = [
+                    'id' => $calendar['id'] ?? '',
+                    'summary' => $calendar['summary'] ?? 'Unknown Calendar',
+                    'description' => $calendar['description'] ?? '',
+                    'backgroundColor' => $calendar['backgroundColor'] ?? '#4285f4',
+                    'primary' => $calendar['primary'] ?? false,
+                    'accessRole' => $calendar['accessRole'] ?? 'reader',
+                ];
+            }
+
+            return $calendars;
+        } catch (\Exception $e) {
+            Log::error('Exception fetching Google Calendars', ['error' => $e->getMessage()]);
+            return [];
+        }
+    }
+
+    /**
+     * Get Google Drive shared drives/folders.
+     */
+    private function getGoogleDriveFolders(PlatformConnection $connection): array
+    {
+        try {
+            $accessToken = $this->getValidGoogleAccessToken($connection);
+            if (!$accessToken) return [];
+
+            $drives = [];
+
+            // Get shared drives
+            $drivesResponse = Http::withToken($accessToken)
+                ->get('https://www.googleapis.com/drive/v3/drives', [
+                    'pageSize' => 100,
+                ]);
+
+            if ($drivesResponse->successful()) {
+                foreach ($drivesResponse->json('drives', []) as $drive) {
+                    $drives[] = [
+                        'id' => $drive['id'] ?? '',
+                        'name' => $drive['name'] ?? 'Unknown Drive',
+                        'kind' => 'drive#drive',
+                    ];
+                }
+            }
+
+            // Also get root folders from My Drive if no shared drives
+            if (empty($drives)) {
+                $foldersResponse = Http::withToken($accessToken)
+                    ->get('https://www.googleapis.com/drive/v3/files', [
+                        'q' => "mimeType='application/vnd.google-apps.folder' and 'root' in parents",
+                        'pageSize' => 20,
+                        'fields' => 'files(id,name,mimeType)',
+                    ]);
+
+                if ($foldersResponse->successful()) {
+                    foreach ($foldersResponse->json('files', []) as $folder) {
+                        $drives[] = [
+                            'id' => $folder['id'] ?? '',
+                            'name' => $folder['name'] ?? 'Unknown Folder',
+                            'kind' => 'drive#folder',
+                        ];
+                    }
+                }
+            }
+
+            return $drives;
+        } catch (\Exception $e) {
+            Log::error('Exception fetching Google Drive folders', ['error' => $e->getMessage()]);
+            return [];
+        }
     }
 
     /**
@@ -1799,40 +2653,45 @@ class PlatformConnectionsController extends Controller
         $hasRequiredPermissions = $tokenInfo['has_all_required_permissions'] ?? true;
         $warnings = $tokenInfo['warnings'] ?? [];
 
-        // Create connection
-        $connection = PlatformConnection::updateOrCreate(
-            [
-                'org_id' => $orgId,
-                'platform' => 'meta',
-                'account_id' => $tokenInfo['user_id'] ?? 'oauth_user_' . Str::random(8),
-            ],
-            [
-                'account_name' => $tokenInfo['user_name'] ?? 'Meta Account',
-                'status' => $hasRequiredPermissions ? 'active' : 'warning',
-                'access_token' => $accessToken,
-                'token_expires_at' => now()->addSeconds($expiresIn),
-                'scopes' => $tokenInfo['scopes'] ?? [],
-                'account_metadata' => [
-                    'token_type' => 'oauth_user',
-                    'is_system_user' => false,
-                    'is_never_expires' => false,
-                    'app_id' => $tokenInfo['app_id'] ?? null,
-                    'user_id' => $tokenInfo['user_id'] ?? null,
-                    'user_name' => $tokenInfo['user_name'] ?? null,
-                    'ad_accounts' => $adAccounts,
-                    'ad_accounts_count' => count($adAccounts),
-                    'active_ad_accounts_count' => count($activeAdAccounts),
-                    'missing_required_permissions' => $tokenInfo['missing_required_permissions'] ?? [],
-                    'missing_recommended_permissions' => $tokenInfo['missing_recommended_permissions'] ?? [],
-                    'warnings' => $warnings,
-                    'is_valid' => true,
-                    'validated_at' => now()->toIso8601String(),
-                    'connected_via' => 'oauth',
+        // Create connection within a transaction with RLS context
+        $connection = DB::transaction(function () use ($orgId, $tokenInfo, $hasRequiredPermissions, $accessToken, $expiresIn, $adAccounts, $activeAdAccounts, $warnings) {
+            // Set RLS context for the organization (LOCAL = true, applies to this transaction)
+            DB::statement("SELECT set_config('app.current_org_id', ?, true)", [$orgId]);
+
+            return PlatformConnection::updateOrCreate(
+                [
+                    'org_id' => $orgId,
+                    'platform' => 'meta',
+                    'account_id' => $tokenInfo['user_id'] ?? 'oauth_user_' . Str::random(8),
                 ],
-                'auto_sync' => true,
-                'sync_frequency_minutes' => 15,
-            ]
-        );
+                [
+                    'account_name' => $tokenInfo['user_name'] ?? 'Meta Account',
+                    'status' => $hasRequiredPermissions ? 'active' : 'warning',
+                    'access_token' => $accessToken,
+                    'token_expires_at' => now()->addSeconds($expiresIn),
+                    'scopes' => $tokenInfo['scopes'] ?? [],
+                    'account_metadata' => [
+                        'token_type' => 'oauth_user',
+                        'is_system_user' => false,
+                        'is_never_expires' => false,
+                        'app_id' => $tokenInfo['app_id'] ?? null,
+                        'user_id' => $tokenInfo['user_id'] ?? null,
+                        'user_name' => $tokenInfo['user_name'] ?? null,
+                        'ad_accounts' => $adAccounts,
+                        'ad_accounts_count' => count($adAccounts),
+                        'active_ad_accounts_count' => count($activeAdAccounts),
+                        'missing_required_permissions' => $tokenInfo['missing_required_permissions'] ?? [],
+                        'missing_recommended_permissions' => $tokenInfo['missing_recommended_permissions'] ?? [],
+                        'warnings' => $warnings,
+                        'is_valid' => true,
+                        'validated_at' => now()->toIso8601String(),
+                        'connected_via' => 'oauth',
+                    ],
+                    'auto_sync' => true,
+                    'sync_frequency_minutes' => 15,
+                ]
+            );
+        });
 
         session()->forget('oauth_state');
 
@@ -1918,27 +2777,33 @@ class PlatformConnectionsController extends Controller
             $accountId = $channelData['id'] ?? $accountId;
         }
 
-        $connection = PlatformConnection::updateOrCreate(
-            [
-                'org_id' => $orgId,
-                'platform' => 'youtube',
-                'account_id' => $accountId,
-            ],
-            [
-                'account_name' => $accountName,
-                'status' => 'active',
-                'access_token' => $tokenData['access_token'],
-                'refresh_token' => $tokenData['refresh_token'] ?? null,
-                'token_expires_at' => isset($tokenData['expires_in'])
-                    ? now()->addSeconds($tokenData['expires_in'])
-                    : null,
-                'scopes' => explode(' ', $tokenData['scope'] ?? ''),
-                'account_metadata' => [
-                    'token_type' => $tokenData['token_type'] ?? 'Bearer',
-                    'connected_at' => now()->toIso8601String(),
+        // Create or update the connection within a transaction with RLS context
+        $connection = DB::transaction(function () use ($orgId, $accountId, $accountName, $tokenData) {
+            // Set RLS context for the organization (LOCAL = true, applies to this transaction)
+            DB::statement("SELECT set_config('app.current_org_id', ?, true)", [$orgId]);
+
+            return PlatformConnection::updateOrCreate(
+                [
+                    'org_id' => $orgId,
+                    'platform' => 'youtube',
+                    'account_id' => $accountId,
                 ],
-            ]
-        );
+                [
+                    'account_name' => $accountName,
+                    'status' => 'active',
+                    'access_token' => $tokenData['access_token'],
+                    'refresh_token' => $tokenData['refresh_token'] ?? null,
+                    'token_expires_at' => isset($tokenData['expires_in'])
+                        ? now()->addSeconds($tokenData['expires_in'])
+                        : null,
+                    'scopes' => explode(' ', $tokenData['scope'] ?? ''),
+                    'account_metadata' => [
+                        'token_type' => $tokenData['token_type'] ?? 'Bearer',
+                        'connected_at' => now()->toIso8601String(),
+                    ],
+                ]
+            );
+        });
 
         session()->forget('oauth_state');
 
@@ -2011,27 +2876,33 @@ class PlatformConnectionsController extends Controller
             $accountId = $userData['sub'] ?? $accountId;
         }
 
-        $connection = PlatformConnection::updateOrCreate(
-            [
-                'org_id' => $orgId,
-                'platform' => 'linkedin',
-                'account_id' => $accountId,
-            ],
-            [
-                'account_name' => $accountName,
-                'status' => 'active',
-                'access_token' => $tokenData['access_token'],
-                'refresh_token' => $tokenData['refresh_token'] ?? null,
-                'token_expires_at' => isset($tokenData['expires_in'])
-                    ? now()->addSeconds($tokenData['expires_in'])
-                    : null,
-                'scopes' => explode(' ', $tokenData['scope'] ?? ''),
-                'account_metadata' => [
-                    'token_type' => $tokenData['token_type'] ?? 'Bearer',
-                    'connected_at' => now()->toIso8601String(),
+        // Create or update the connection within a transaction with RLS context
+        $connection = DB::transaction(function () use ($orgId, $accountId, $accountName, $tokenData) {
+            // Set RLS context for the organization (LOCAL = true, applies to this transaction)
+            DB::statement("SELECT set_config('app.current_org_id', ?, true)", [$orgId]);
+
+            return PlatformConnection::updateOrCreate(
+                [
+                    'org_id' => $orgId,
+                    'platform' => 'linkedin',
+                    'account_id' => $accountId,
                 ],
-            ]
-        );
+                [
+                    'account_name' => $accountName,
+                    'status' => 'active',
+                    'access_token' => $tokenData['access_token'],
+                    'refresh_token' => $tokenData['refresh_token'] ?? null,
+                    'token_expires_at' => isset($tokenData['expires_in'])
+                        ? now()->addSeconds($tokenData['expires_in'])
+                        : null,
+                    'scopes' => explode(' ', $tokenData['scope'] ?? ''),
+                    'account_metadata' => [
+                        'token_type' => $tokenData['token_type'] ?? 'Bearer',
+                        'connected_at' => now()->toIso8601String(),
+                    ],
+                ]
+            );
+        });
 
         session()->forget('oauth_state');
 
@@ -2112,27 +2983,33 @@ class PlatformConnectionsController extends Controller
             $accountId = $userData['id'] ?? $accountId;
         }
 
-        $connection = PlatformConnection::updateOrCreate(
-            [
-                'org_id' => $orgId,
-                'platform' => 'twitter',
-                'account_id' => $accountId,
-            ],
-            [
-                'account_name' => $accountName,
-                'status' => 'active',
-                'access_token' => $tokenData['access_token'],
-                'refresh_token' => $tokenData['refresh_token'] ?? null,
-                'token_expires_at' => isset($tokenData['expires_in'])
-                    ? now()->addSeconds($tokenData['expires_in'])
-                    : null,
-                'scopes' => explode(' ', $tokenData['scope'] ?? ''),
-                'account_metadata' => [
-                    'token_type' => $tokenData['token_type'] ?? 'Bearer',
-                    'connected_at' => now()->toIso8601String(),
+        // Create or update the connection within a transaction with RLS context
+        $connection = DB::transaction(function () use ($orgId, $accountId, $accountName, $tokenData) {
+            // Set RLS context for the organization (LOCAL = true, applies to this transaction)
+            DB::statement("SELECT set_config('app.current_org_id', ?, true)", [$orgId]);
+
+            return PlatformConnection::updateOrCreate(
+                [
+                    'org_id' => $orgId,
+                    'platform' => 'twitter',
+                    'account_id' => $accountId,
                 ],
-            ]
-        );
+                [
+                    'account_name' => $accountName,
+                    'status' => 'active',
+                    'access_token' => $tokenData['access_token'],
+                    'refresh_token' => $tokenData['refresh_token'] ?? null,
+                    'token_expires_at' => isset($tokenData['expires_in'])
+                        ? now()->addSeconds($tokenData['expires_in'])
+                        : null,
+                    'scopes' => explode(' ', $tokenData['scope'] ?? ''),
+                    'account_metadata' => [
+                        'token_type' => $tokenData['token_type'] ?? 'Bearer',
+                        'connected_at' => now()->toIso8601String(),
+                    ],
+                ]
+            );
+        });
 
         session()->forget(['oauth_state', 'twitter_code_verifier']);
 
@@ -2202,27 +3079,33 @@ class PlatformConnectionsController extends Controller
             $accountId = $userData['id'] ?? $accountId;
         }
 
-        $connection = PlatformConnection::updateOrCreate(
-            [
-                'org_id' => $orgId,
-                'platform' => 'pinterest',
-                'account_id' => $accountId,
-            ],
-            [
-                'account_name' => $accountName,
-                'status' => 'active',
-                'access_token' => $tokenData['access_token'],
-                'refresh_token' => $tokenData['refresh_token'] ?? null,
-                'token_expires_at' => isset($tokenData['expires_in'])
-                    ? now()->addSeconds($tokenData['expires_in'])
-                    : null,
-                'scopes' => $tokenData['scope'] ? explode(',', $tokenData['scope']) : [],
-                'account_metadata' => [
-                    'token_type' => $tokenData['token_type'] ?? 'Bearer',
-                    'connected_at' => now()->toIso8601String(),
+        // Create or update the connection within a transaction with RLS context
+        $connection = DB::transaction(function () use ($orgId, $accountId, $accountName, $tokenData) {
+            // Set RLS context for the organization (LOCAL = true, applies to this transaction)
+            DB::statement("SELECT set_config('app.current_org_id', ?, true)", [$orgId]);
+
+            return PlatformConnection::updateOrCreate(
+                [
+                    'org_id' => $orgId,
+                    'platform' => 'pinterest',
+                    'account_id' => $accountId,
                 ],
-            ]
-        );
+                [
+                    'account_name' => $accountName,
+                    'status' => 'active',
+                    'access_token' => $tokenData['access_token'],
+                    'refresh_token' => $tokenData['refresh_token'] ?? null,
+                    'token_expires_at' => isset($tokenData['expires_in'])
+                        ? now()->addSeconds($tokenData['expires_in'])
+                        : null,
+                    'scopes' => $tokenData['scope'] ? explode(',', $tokenData['scope']) : [],
+                    'account_metadata' => [
+                        'token_type' => $tokenData['token_type'] ?? 'Bearer',
+                        'connected_at' => now()->toIso8601String(),
+                    ],
+                ]
+            );
+        });
 
         session()->forget('oauth_state');
 
@@ -2299,28 +3182,34 @@ class PlatformConnectionsController extends Controller
             $accountId = $userData['open_id'] ?? $accountId;
         }
 
-        $connection = PlatformConnection::updateOrCreate(
-            [
-                'org_id' => $orgId,
-                'platform' => 'tiktok',
-                'account_id' => $accountId,
-            ],
-            [
-                'account_name' => $accountName,
-                'status' => 'active',
-                'access_token' => $tokenData['access_token'],
-                'refresh_token' => $tokenData['refresh_token'] ?? null,
-                'token_expires_at' => isset($tokenData['expires_in'])
-                    ? now()->addSeconds($tokenData['expires_in'])
-                    : null,
-                'scopes' => $tokenData['scope'] ? explode(',', $tokenData['scope']) : [],
-                'account_metadata' => [
-                    'token_type' => $tokenData['token_type'] ?? 'Bearer',
-                    'connected_at' => now()->toIso8601String(),
-                    'open_id' => $tokenData['open_id'] ?? null,
+        // Create or update the connection within a transaction with RLS context
+        $connection = DB::transaction(function () use ($orgId, $accountId, $accountName, $tokenData) {
+            // Set RLS context for the organization (LOCAL = true, applies to this transaction)
+            DB::statement("SELECT set_config('app.current_org_id', ?, true)", [$orgId]);
+
+            return PlatformConnection::updateOrCreate(
+                [
+                    'org_id' => $orgId,
+                    'platform' => 'tiktok',
+                    'account_id' => $accountId,
                 ],
-            ]
-        );
+                [
+                    'account_name' => $accountName,
+                    'status' => 'active',
+                    'access_token' => $tokenData['access_token'],
+                    'refresh_token' => $tokenData['refresh_token'] ?? null,
+                    'token_expires_at' => isset($tokenData['expires_in'])
+                        ? now()->addSeconds($tokenData['expires_in'])
+                        : null,
+                    'scopes' => $tokenData['scope'] ? explode(',', $tokenData['scope']) : [],
+                    'account_metadata' => [
+                        'token_type' => $tokenData['token_type'] ?? 'Bearer',
+                        'connected_at' => now()->toIso8601String(),
+                        'open_id' => $tokenData['open_id'] ?? null,
+                    ],
+                ]
+            );
+        });
 
         session()->forget(['oauth_state', 'tiktok_csrf_state']);
 
@@ -2394,27 +3283,33 @@ class PlatformConnectionsController extends Controller
             $accountId = $userData['id'] ?? $accountId;
         }
 
-        $connection = PlatformConnection::updateOrCreate(
-            [
-                'org_id' => $orgId,
-                'platform' => 'reddit',
-                'account_id' => $accountId,
-            ],
-            [
-                'account_name' => $accountName,
-                'status' => 'active',
-                'access_token' => $tokenData['access_token'],
-                'refresh_token' => $tokenData['refresh_token'] ?? null,
-                'token_expires_at' => isset($tokenData['expires_in'])
-                    ? now()->addSeconds($tokenData['expires_in'])
-                    : null,
-                'scopes' => explode(' ', $tokenData['scope'] ?? ''),
-                'account_metadata' => [
-                    'token_type' => $tokenData['token_type'] ?? 'Bearer',
-                    'connected_at' => now()->toIso8601String(),
+        // Create or update the connection within a transaction with RLS context
+        $connection = DB::transaction(function () use ($orgId, $accountId, $accountName, $tokenData) {
+            // Set RLS context for the organization (LOCAL = true, applies to this transaction)
+            DB::statement("SELECT set_config('app.current_org_id', ?, true)", [$orgId]);
+
+            return PlatformConnection::updateOrCreate(
+                [
+                    'org_id' => $orgId,
+                    'platform' => 'reddit',
+                    'account_id' => $accountId,
                 ],
-            ]
-        );
+                [
+                    'account_name' => $accountName,
+                    'status' => 'active',
+                    'access_token' => $tokenData['access_token'],
+                    'refresh_token' => $tokenData['refresh_token'] ?? null,
+                    'token_expires_at' => isset($tokenData['expires_in'])
+                        ? now()->addSeconds($tokenData['expires_in'])
+                        : null,
+                    'scopes' => explode(' ', $tokenData['scope'] ?? ''),
+                    'account_metadata' => [
+                        'token_type' => $tokenData['token_type'] ?? 'Bearer',
+                        'connected_at' => now()->toIso8601String(),
+                    ],
+                ]
+            );
+        });
 
         session()->forget('oauth_state');
 
@@ -2511,32 +3406,224 @@ class PlatformConnectionsController extends Controller
             }
         }
 
-        $connection = PlatformConnection::updateOrCreate(
-            [
-                'org_id' => $orgId,
-                'platform' => 'google_business',
-                'account_id' => $accountId,
-            ],
-            [
-                'account_name' => $accountName,
-                'status' => 'active',
-                'access_token' => $tokenData['access_token'],
-                'refresh_token' => $tokenData['refresh_token'] ?? null,
-                'token_expires_at' => isset($tokenData['expires_in'])
-                    ? now()->addSeconds($tokenData['expires_in'])
-                    : null,
-                'scopes' => explode(' ', $tokenData['scope'] ?? ''),
-                'account_metadata' => [
-                    'token_type' => $tokenData['token_type'] ?? 'Bearer',
-                    'connected_at' => now()->toIso8601String(),
+        // Create or update the connection within a transaction with RLS context
+        $connection = DB::transaction(function () use ($orgId, $accountId, $accountName, $tokenData) {
+            // Set RLS context for the organization (LOCAL = true, applies to this transaction)
+            DB::statement("SELECT set_config('app.current_org_id', ?, true)", [$orgId]);
+
+            return PlatformConnection::updateOrCreate(
+                [
+                    'org_id' => $orgId,
+                    'platform' => 'google_business',
+                    'account_id' => $accountId,
                 ],
-            ]
-        );
+                [
+                    'account_name' => $accountName,
+                    'status' => 'active',
+                    'access_token' => $tokenData['access_token'],
+                    'refresh_token' => $tokenData['refresh_token'] ?? null,
+                    'token_expires_at' => isset($tokenData['expires_in'])
+                        ? now()->addSeconds($tokenData['expires_in'])
+                        : null,
+                    'scopes' => explode(' ', $tokenData['scope'] ?? ''),
+                    'account_metadata' => [
+                        'token_type' => $tokenData['token_type'] ?? 'Bearer',
+                        'connected_at' => now()->toIso8601String(),
+                    ],
+                ]
+            );
+        });
 
         session()->forget('oauth_state');
 
         return redirect()->route('orgs.settings.platform-connections.index', $orgId)
             ->with('success', 'Google Business Profile connected successfully');
+    }
+
+    /**
+     * Initiate Google OAuth authorization (unified for all Google services).
+     */
+    public function authorizeGoogle(Request $request, string $org)
+    {
+        $config = config('social-platforms.google');
+
+        if (!$config['client_id'] || !$config['client_secret']) {
+            return redirect()->route('orgs.settings.platform-connections.index', $org)
+                ->with('error', 'Google API credentials are not configured. Please add GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET to your .env file.');
+        }
+
+        $state = base64_encode(json_encode(['org_id' => $org, 'platform' => 'google']));
+
+        session(['oauth_state' => $state]);
+
+        $params = http_build_query([
+            'client_id' => $config['client_id'],
+            'redirect_uri' => $config['redirect_uri'],
+            'response_type' => 'code',
+            'scope' => implode(' ', $config['scopes']),
+            'state' => $state,
+            'access_type' => 'offline',
+            // Force account selector AND consent screen
+            // This allows users to select Brand Accounts and ensures we get a refresh token
+            'prompt' => 'select_account consent',
+            'include_granted_scopes' => 'true',
+        ]);
+
+        return redirect($config['authorize_url'] . '?' . $params);
+    }
+
+    /**
+     * Handle Google OAuth callback (unified for all Google services).
+     */
+    public function callbackGoogle(Request $request)
+    {
+        $state = json_decode(base64_decode($request->get('state')), true);
+        $orgId = $state['org_id'] ?? null;
+
+        if (!$orgId || $request->get('state') !== session('oauth_state')) {
+            return redirect()->route('orgs.settings.platform-connections.index', $orgId ?? 'default')
+                ->with('error', 'Invalid OAuth state');
+        }
+
+        if ($request->has('error')) {
+            return redirect()->route('orgs.settings.platform-connections.index', $orgId)
+                ->with('error', 'Google authorization was denied: ' . $request->get('error_description', $request->get('error')));
+        }
+
+        $config = config('social-platforms.google');
+
+        // Exchange code for tokens
+        $response = Http::asForm()->post($config['token_url'], [
+            'code' => $request->get('code'),
+            'client_id' => $config['client_id'],
+            'client_secret' => $config['client_secret'],
+            'redirect_uri' => $config['redirect_uri'],
+            'grant_type' => 'authorization_code',
+        ]);
+
+        if (!$response->successful()) {
+            Log::error('Google OAuth token exchange failed', [
+                'error' => $response->json(),
+                'status' => $response->status(),
+            ]);
+            return redirect()->route('orgs.settings.platform-connections.index', $orgId)
+                ->with('error', 'Failed to obtain access token from Google');
+        }
+
+        $tokenData = $response->json();
+        $accessToken = $tokenData['access_token'];
+        $refreshToken = $tokenData['refresh_token'] ?? null;
+        $expiresIn = $tokenData['expires_in'] ?? 3600;
+        $grantedScopes = explode(' ', $tokenData['scope'] ?? '');
+
+        // Get user info
+        $userInfo = $this->getGoogleUserInfo($accessToken);
+
+        $accountName = $userInfo['name'] ?? $userInfo['email'] ?? 'Google Account';
+        $accountId = $userInfo['id'] ?? 'google_' . Str::random(10);
+        $accountEmail = $userInfo['email'] ?? null;
+
+        // Prepare the data for upsert
+        $updateData = [
+            'account_name' => $accountName,
+            'status' => 'active',
+            'access_token' => $accessToken,
+            'refresh_token' => $refreshToken,
+            'token_expires_at' => now()->addSeconds($expiresIn),
+            'scopes' => $grantedScopes,
+            'account_metadata' => [
+                'credential_type' => 'oauth',
+                'token_type' => $tokenData['token_type'] ?? 'Bearer',
+                'user_id' => $accountId,
+                'email' => $accountEmail,
+                'name' => $userInfo['name'] ?? null,
+                'picture' => $userInfo['picture'] ?? null,
+                'granted_scopes' => $grantedScopes,
+                'connected_at' => now()->toIso8601String(),
+                'connected_via' => 'oauth_direct',
+            ],
+            'auto_sync' => true,
+            'sync_frequency_minutes' => 60,
+        ];
+
+        // Find existing connection (including soft-deleted) and update/restore it
+        $connection = DB::transaction(function () use ($orgId, $accountId, $updateData) {
+            // Set RLS context for the organization
+            DB::statement("SELECT set_config('app.current_org_id', ?, true)", [$orgId]);
+
+            // Find existing connection INCLUDING soft-deleted ones (to avoid unique constraint violation)
+            $existing = PlatformConnection::withTrashed()
+                ->where('org_id', $orgId)
+                ->where('platform', 'google')
+                ->where('account_id', $accountId)
+                ->first();
+
+            if ($existing) {
+                // Restore if soft-deleted
+                if ($existing->trashed()) {
+                    $existing->restore();
+                }
+
+                // Update the connection
+                $existing->update([
+                    'account_name' => $updateData['account_name'],
+                    'status' => $updateData['status'],
+                    'access_token' => $updateData['access_token'],
+                    'refresh_token' => $updateData['refresh_token'],
+                    'token_expires_at' => $updateData['token_expires_at'],
+                    'scopes' => $updateData['scopes'],
+                    'account_metadata' => $updateData['account_metadata'],
+                    'auto_sync' => $updateData['auto_sync'],
+                    'sync_frequency_minutes' => $updateData['sync_frequency_minutes'],
+                ]);
+
+                return $existing->fresh();
+            } else {
+                // Create new connection
+                return PlatformConnection::create([
+                    'org_id' => $orgId,
+                    'platform' => 'google',
+                    'account_id' => $accountId,
+                    'account_name' => $updateData['account_name'],
+                    'status' => $updateData['status'],
+                    'access_token' => $updateData['access_token'],
+                    'refresh_token' => $updateData['refresh_token'],
+                    'token_expires_at' => $updateData['token_expires_at'],
+                    'scopes' => $updateData['scopes'],
+                    'account_metadata' => $updateData['account_metadata'],
+                    'auto_sync' => $updateData['auto_sync'],
+                    'sync_frequency_minutes' => $updateData['sync_frequency_minutes'],
+                ]);
+            }
+        });
+
+        session()->forget('oauth_state');
+
+        // Redirect to asset selection page
+        return redirect()
+            ->route('orgs.settings.platform-connections.google.assets', [$orgId, $connection->connection_id])
+            ->with('success', 'Google account connected successfully. Now select which Google services to use.');
+    }
+
+    /**
+     * Get Google user info from access token.
+     */
+    private function getGoogleUserInfo(string $accessToken): array
+    {
+        try {
+            $response = Http::withToken($accessToken)
+                ->get('https://www.googleapis.com/oauth2/v2/userinfo');
+
+            if ($response->successful()) {
+                return $response->json();
+            }
+
+            Log::warning('Failed to get Google user info', ['response' => $response->json()]);
+            return [];
+        } catch (\Exception $e) {
+            Log::error('Exception getting Google user info', ['error' => $e->getMessage()]);
+            return [];
+        }
     }
 
     /**
@@ -2593,26 +3680,32 @@ class PlatformConnectionsController extends Controller
         $accountName = 'Snapchat Account';
         $accountId = 'snapchat_' . Str::random(10);
 
-        $connection = PlatformConnection::updateOrCreate(
-            [
-                'org_id' => $orgId,
-                'platform' => 'snapchat',
-                'account_id' => $accountId,
-            ],
-            [
-                'account_name' => $accountName,
-                'status' => 'active',
-                'access_token' => $tokenData['access_token'],
-                'refresh_token' => $tokenData['refresh_token'] ?? null,
-                'token_expires_at' => isset($tokenData['expires_in'])
-                    ? now()->addSeconds($tokenData['expires_in'])
-                    : null,
-                'account_metadata' => [
-                    'token_type' => $tokenData['token_type'] ?? 'Bearer',
-                    'connected_at' => now()->toIso8601String(),
+        // Create or update the connection within a transaction with RLS context
+        $connection = DB::transaction(function () use ($orgId, $accountId, $accountName, $tokenData) {
+            // Set RLS context for the organization (LOCAL = true, applies to this transaction)
+            DB::statement("SELECT set_config('app.current_org_id', ?, true)", [$orgId]);
+
+            return PlatformConnection::updateOrCreate(
+                [
+                    'org_id' => $orgId,
+                    'platform' => 'snapchat',
+                    'account_id' => $accountId,
                 ],
-            ]
-        );
+                [
+                    'account_name' => $accountName,
+                    'status' => 'active',
+                    'access_token' => $tokenData['access_token'],
+                    'refresh_token' => $tokenData['refresh_token'] ?? null,
+                    'token_expires_at' => isset($tokenData['expires_in'])
+                        ? now()->addSeconds($tokenData['expires_in'])
+                        : null,
+                    'account_metadata' => [
+                        'token_type' => $tokenData['token_type'] ?? 'Bearer',
+                        'connected_at' => now()->toIso8601String(),
+                    ],
+                ]
+            );
+        });
 
         session()->forget('oauth_state');
 
