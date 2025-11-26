@@ -60,7 +60,7 @@
                             </div>
                             <div>
                                 <h3 class="text-lg font-medium text-gray-900">{{ __('YouTube Channel') }}</h3>
-                                <p class="text-sm text-gray-500">{{ count($youtubeChannels ?? []) }} {{ __('channel(s) available') }}</p>
+                                <p class="text-sm text-gray-500" x-text="filteredYoutubeCount + ' ' + '{{ __("channel(s) available") }}'"></p>
                             </div>
                         </div>
                         <button type="button" @click="showManualYoutube = !showManualYoutube" class="text-sm text-red-600 hover:text-red-800">
@@ -69,9 +69,25 @@
                     </div>
 
                     @if(count($youtubeChannels ?? []) > 0)
+                        {{-- Search & Bulk Actions --}}
+                        <div class="mb-4 space-y-2">
+                            <input type="text" x-model="youtubeSearch" placeholder="{{ __('Search channels...') }}"
+                                   class="w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 text-sm">
+                            <div class="flex gap-2">
+                                <button type="button" @click="selectAllYoutube" class="text-xs text-red-600 hover:text-red-800">
+                                    <i class="fas fa-check-square mr-1"></i>{{ __('Select All Visible') }}
+                                </button>
+                                <button type="button" @click="deselectAllYoutube" class="text-xs text-red-600 hover:text-red-800">
+                                    <i class="fas fa-square mr-1"></i>{{ __('Deselect All') }}
+                                </button>
+                                <span class="text-xs text-gray-500" x-show="selectedYoutubeChannels.length > 0">
+                                    (<span x-text="selectedYoutubeChannels.length"></span> {{ __('selected') }})
+                                </span>
+                            </div>
+                        </div>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                             @foreach($youtubeChannels as $channel)
-                                <label class="flex items-center p-3 border rounded-lg hover:bg-gray-50 cursor-pointer transition"
+                                <label x-show="matchesYoutubeSearch('{{ $channel['title'] }}')" class="flex items-center p-3 border rounded-lg hover:bg-gray-50 cursor-pointer transition"
                                        :class="{ 'border-red-500 bg-red-50': selectedYoutubeChannels.includes('{{ $channel['id'] }}') }">
                                     <input type="checkbox" name="youtube_channel[]" value="{{ $channel['id'] }}"
                                            {{ in_array($channel['id'], $selectedAssets['youtube_channel'] ?? []) ? 'checked' : '' }}
@@ -848,6 +864,16 @@ function googleAssetsPage() {
         showManualCalendar: false,
         showManualDrive: false,
 
+        // Search queries
+        youtubeSearch: '',
+        googleAdsSearch: '',
+        analyticsSearch: '',
+        businessSearch: '',
+        tagManagerSearch: '',
+        merchantSearch: '',
+        searchConsoleSearch: '',
+        calendarSearch: '',
+
         // Selected items (multiple values per type - arrays)
         selectedYoutubeChannels: @json($selectedAssets['youtube_channel'] ?? []),
         selectedGoogleAds: @json($selectedAssets['google_ads'] ?? []),
@@ -858,6 +884,16 @@ function googleAssetsPage() {
         selectedSearchConsole: @json($selectedAssets['search_console'] ?? []),
         selectedCalendar: @json($selectedAssets['calendar'] ?? []),
 
+        // All available assets (for search/filtering)
+        allYoutubeChannels: @json($youtubeChannels ?? []),
+        allGoogleAds: @json($googleAdsAccounts ?? []),
+        allAnalytics: @json($analyticsProperties ?? []),
+        allBusiness: @json($businessProfiles ?? []),
+        allTagManager: @json($tagManagerContainers ?? []),
+        allMerchant: @json($merchantCenterAccounts ?? []),
+        allSearchConsole: @json($searchConsoleSites ?? []),
+        allCalendars: @json($googleCalendars ?? []),
+
         // Google Drive - multi-select
         includeMyDrive: @json($selectedAssets['include_my_drive'] ?? false),
         selectedSharedDrives: @json($selectedAssets['shared_drives'] ?? []),
@@ -867,6 +903,42 @@ function googleAssetsPage() {
 
         // All available drives for filtering
         allDrives: @json($driveFolders ?? []),
+
+        // Search matching methods
+        matchesYoutubeSearch(title) {
+            if (!this.youtubeSearch) return true;
+            return title.toLowerCase().includes(this.youtubeSearch.toLowerCase());
+        },
+
+        // Computed filtered counts
+        get filteredYoutubeCount() {
+            if (!this.youtubeSearch) return this.allYoutubeChannels.length;
+            return this.allYoutubeChannels.filter(ch =>
+                ch.title.toLowerCase().includes(this.youtubeSearch.toLowerCase())
+            ).length;
+        },
+
+        // Bulk selection methods for YouTube
+        selectAllYoutube() {
+            this.allYoutubeChannels.forEach(channel => {
+                if (this.matchesYoutubeSearch(channel.title) && !this.selectedYoutubeChannels.includes(channel.id)) {
+                    this.selectedYoutubeChannels.push(channel.id);
+                }
+            });
+        },
+
+        deselectAllYoutube() {
+            if (this.youtubeSearch) {
+                // Deselect only filtered
+                this.selectedYoutubeChannels = this.selectedYoutubeChannels.filter(id => {
+                    const channel = this.allYoutubeChannels.find(ch => ch.id === id);
+                    return channel && !this.matchesYoutubeSearch(channel.title);
+                });
+            } else {
+                // Deselect all
+                this.selectedYoutubeChannels = [];
+            }
+        },
 
         // Computed property for filtered drives count
         get filteredDrivesCount() {

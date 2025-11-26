@@ -54,7 +54,7 @@
                             </div>
                             <div>
                                 <h3 class="text-lg font-medium text-gray-900">{{ __('Facebook Pages') }}</h3>
-                                <p class="text-sm text-gray-500">{{ count($pages) }} {{ __('page(s) available') }}</p>
+                                <p class="text-sm text-gray-500" x-text="filteredPagesCount + ' ' + '{{ __("page(s) available") }}'"></p>
                             </div>
                         </div>
                         <button type="button" @click="showManualPage = !showManualPage" class="text-sm text-blue-600 hover:text-blue-800">
@@ -63,9 +63,25 @@
                     </div>
 
                     @if(count($pages) > 0)
+                        {{-- Search & Bulk Actions --}}
+                        <div class="mb-4 space-y-2">
+                            <input type="text" x-model="pagesSearch" placeholder="{{ __('Search pages by name...') }}"
+                                   class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm">
+                            <div class="flex gap-2">
+                                <button type="button" @click="selectAllPages" class="text-xs text-blue-600 hover:text-blue-800">
+                                    <i class="fas fa-check-square mr-1"></i>{{ __('Select All Visible') }}
+                                </button>
+                                <button type="button" @click="deselectAllPages" class="text-xs text-blue-600 hover:text-blue-800">
+                                    <i class="fas fa-square mr-1"></i>{{ __('Deselect All') }}
+                                </button>
+                                <span class="text-xs text-gray-500" x-show="selectedPages.length > 0">
+                                    (<span x-text="selectedPages.length"></span> {{ __('selected') }})
+                                </span>
+                            </div>
+                        </div>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                             @foreach($pages as $page)
-                                <label class="flex items-center p-3 border rounded-lg hover:bg-gray-50 cursor-pointer transition"
+                                <label x-show="matchesPagesSearch('{{ $page['name'] }}')" class="flex items-center p-3 border rounded-lg hover:bg-gray-50 cursor-pointer transition"
                                        :class="{ 'border-blue-500 bg-blue-50': selectedPages.includes('{{ $page['id'] }}' }">
                                     <input type="checkbox" name="page[]" value="{{ $page['id'] }}"
                                            {{ in_array($page['id'], $selectedAssets['page'] ?? []) ? 'checked' : '' }}
@@ -123,7 +139,7 @@
                             </div>
                             <div>
                                 <h3 class="text-lg font-medium text-gray-900">{{ __('Instagram Accounts') }}</h3>
-                                <p class="text-sm text-gray-500">{{ count($instagramAccounts) }} {{ __('account(s) available') }}</p>
+                                <p class="text-sm text-gray-500" x-text="filteredInstagramCount + ' ' + '{{ __("account(s) available") }}'"></p>
                             </div>
                         </div>
                         <button type="button" @click="showManualInstagram = !showManualInstagram" class="text-sm text-pink-600 hover:text-pink-800">
@@ -132,9 +148,25 @@
                     </div>
 
                     @if(count($instagramAccounts) > 0)
+                        {{-- Search & Bulk Actions --}}
+                        <div class="mb-4 space-y-2">
+                            <input type="text" x-model="instagramSearch" placeholder="{{ __('Search Instagram accounts by username...') }}"
+                                   class="w-full rounded-md border-gray-300 shadow-sm focus:border-pink-500 focus:ring-pink-500 text-sm">
+                            <div class="flex gap-2">
+                                <button type="button" @click="selectAllInstagram" class="text-xs text-pink-600 hover:text-pink-800">
+                                    <i class="fas fa-check-square mr-1"></i>{{ __('Select All Visible') }}
+                                </button>
+                                <button type="button" @click="deselectAllInstagram" class="text-xs text-pink-600 hover:text-pink-800">
+                                    <i class="fas fa-square mr-1"></i>{{ __('Deselect All') }}
+                                </button>
+                                <span class="text-xs text-gray-500" x-show="selectedInstagrams.length > 0">
+                                    (<span x-text="selectedInstagrams.length"></span> {{ __('selected') }})
+                                </span>
+                            </div>
+                        </div>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                             @foreach($instagramAccounts as $ig)
-                                <label class="flex items-center p-3 border rounded-lg hover:bg-gray-50 cursor-pointer transition"
+                                <label x-show="matchesInstagramSearch('{{ $ig['username'] }}')" class="flex items-center p-3 border rounded-lg hover:bg-gray-50 cursor-pointer transition"
                                        :class="{ 'border-pink-500 bg-pink-50': selectedInstagrams.includes('{{ $ig['id'] }}' }">
                                     <input type="checkbox" name="instagram_account[]" value="{{ $ig['id'] }}"
                                            {{ in_array($ig['id'], $selectedAssets['instagram_account'] ?? []) ? 'checked' : '' }}
@@ -597,6 +629,14 @@ function metaAssetsPage() {
         showManualPixel: false,
         showManualCatalog: false,
 
+        // Search queries
+        pagesSearch: '',
+        instagramSearch: '',
+        threadsSearch: '',
+        adAccountsSearch: '',
+        pixelsSearch: '',
+        catalogsSearch: '',
+
         // Manual input values
         manualThreadsId: '',
 
@@ -607,6 +647,75 @@ function metaAssetsPage() {
         selectedAdAccounts: @json($selectedAssets['ad_account'] ?? []),
         selectedPixels: @json($selectedAssets['pixel'] ?? []),
         selectedCatalogs: @json($selectedAssets['catalog'] ?? []),
+
+        // All available assets (for search/filtering)
+        allPages: @json($pages ?? []),
+        allInstagram: @json($instagramAccounts ?? []),
+        allThreads: @json($threadsAccounts ?? []),
+        allAdAccounts: @json($adAccounts ?? []),
+        allPixels: @json($pixels ?? []),
+        allCatalogs: @json($catalogs ?? []),
+
+        // Search matching methods
+        matchesPagesSearch(name) {
+            if (!this.pagesSearch) return true;
+            return name.toLowerCase().includes(this.pagesSearch.toLowerCase());
+        },
+
+        matchesInstagramSearch(username) {
+            if (!this.instagramSearch) return true;
+            return username.toLowerCase().includes(this.instagramSearch.toLowerCase());
+        },
+
+        // Computed filtered counts
+        get filteredPagesCount() {
+            if (!this.pagesSearch) return this.allPages.length;
+            return this.allPages.filter(p => p.name.toLowerCase().includes(this.pagesSearch.toLowerCase())).length;
+        },
+
+        get filteredInstagramCount() {
+            if (!this.instagramSearch) return this.allInstagram.length;
+            return this.allInstagram.filter(ig => ig.username.toLowerCase().includes(this.instagramSearch.toLowerCase())).length;
+        },
+
+        // Bulk selection methods
+        selectAllPages() {
+            this.allPages.forEach(page => {
+                if (this.matchesPagesSearch(page.name) && !this.selectedPages.includes(page.id)) {
+                    this.selectedPages.push(page.id);
+                }
+            });
+        },
+
+        deselectAllPages() {
+            if (this.pagesSearch) {
+                this.selectedPages = this.selectedPages.filter(id => {
+                    const page = this.allPages.find(p => p.id === id);
+                    return page && !this.matchesPagesSearch(page.name);
+                });
+            } else {
+                this.selectedPages = [];
+            }
+        },
+
+        selectAllInstagram() {
+            this.allInstagram.forEach(ig => {
+                if (this.matchesInstagramSearch(ig.username) && !this.selectedInstagrams.includes(ig.id)) {
+                    this.selectedInstagrams.push(ig.id);
+                }
+            });
+        },
+
+        deselectAllInstagram() {
+            if (this.instagramSearch) {
+                this.selectedInstagrams = this.selectedInstagrams.filter(id => {
+                    const ig = this.allInstagram.find(i => i.id === id);
+                    return ig && !this.matchesInstagramSearch(ig.username);
+                });
+            } else {
+                this.selectedInstagrams = [];
+            }
+        },
     }
 }
 </script>
