@@ -1222,4 +1222,777 @@ class PlatformConnectionsController extends Controller
             ],
         ];
     }
+
+    // ===== OAuth 2.0 Methods for Social Media Platforms =====
+
+    /**
+     * Initiate YouTube OAuth authorization.
+     */
+    public function authorizeYouTube(Request $request, string $org)
+    {
+        $config = config('social-platforms.youtube');
+        $state = base64_encode(json_encode(['org_id' => $org, 'platform' => 'youtube']));
+
+        session(['oauth_state' => $state]);
+
+        $params = http_build_query([
+            'client_id' => $config['client_id'],
+            'redirect_uri' => $config['redirect_uri'],
+            'response_type' => 'code',
+            'scope' => implode(' ', $config['scopes']),
+            'state' => $state,
+            'access_type' => 'offline',
+            'prompt' => 'consent',
+        ]);
+
+        return redirect($config['authorize_url'] . '?' . $params);
+    }
+
+    /**
+     * Handle YouTube OAuth callback.
+     */
+    public function callbackYouTube(Request $request)
+    {
+        $state = json_decode(base64_decode($request->get('state')), true);
+        $orgId = $state['org_id'] ?? null;
+
+        if (!$orgId || $request->get('state') !== session('oauth_state')) {
+            return redirect()->route('orgs.settings.platform-connections.index', $orgId ?? 'default')
+                ->with('error', 'Invalid OAuth state');
+        }
+
+        $config = config('social-platforms.youtube');
+
+        $response = Http::asForm()->post($config['token_url'], [
+            'code' => $request->get('code'),
+            'client_id' => $config['client_id'],
+            'client_secret' => $config['client_secret'],
+            'redirect_uri' => $config['redirect_uri'],
+            'grant_type' => 'authorization_code',
+        ]);
+
+        if (!$response->successful()) {
+            return redirect()->route('orgs.settings.platform-connections.index', $orgId)
+                ->with('error', 'Failed to obtain access token from YouTube');
+        }
+
+        $tokenData = $response->json();
+
+        // Get user info
+        $userResponse = Http::withToken($tokenData['access_token'])
+            ->get('https://www.googleapis.com/youtube/v3/channels', [
+                'part' => 'snippet',
+                'mine' => 'true',
+            ]);
+
+        $accountName = 'YouTube Channel';
+        $accountId = 'youtube_' . Str::random(10);
+
+        if ($userResponse->successful()) {
+            $channelData = $userResponse->json('items.0', []);
+            $accountName = $channelData['snippet']['title'] ?? 'YouTube Channel';
+            $accountId = $channelData['id'] ?? $accountId;
+        }
+
+        $connection = PlatformConnection::updateOrCreate(
+            [
+                'org_id' => $orgId,
+                'platform' => 'youtube',
+                'account_id' => $accountId,
+            ],
+            [
+                'account_name' => $accountName,
+                'status' => 'active',
+                'access_token' => $tokenData['access_token'],
+                'refresh_token' => $tokenData['refresh_token'] ?? null,
+                'token_expires_at' => isset($tokenData['expires_in'])
+                    ? now()->addSeconds($tokenData['expires_in'])
+                    : null,
+                'scopes' => explode(' ', $tokenData['scope'] ?? ''),
+                'account_metadata' => [
+                    'token_type' => $tokenData['token_type'] ?? 'Bearer',
+                    'connected_at' => now()->toIso8601String(),
+                ],
+            ]
+        );
+
+        session()->forget('oauth_state');
+
+        return redirect()->route('orgs.settings.platform-connections.index', $orgId)
+            ->with('success', 'YouTube account connected successfully');
+    }
+
+    /**
+     * Initiate LinkedIn OAuth authorization.
+     */
+    public function authorizeLinkedIn(Request $request, string $org)
+    {
+        $config = config('social-platforms.linkedin');
+        $state = base64_encode(json_encode(['org_id' => $org, 'platform' => 'linkedin']));
+
+        session(['oauth_state' => $state]);
+
+        $params = http_build_query([
+            'response_type' => 'code',
+            'client_id' => $config['client_id'],
+            'redirect_uri' => $config['redirect_uri'],
+            'state' => $state,
+            'scope' => implode(' ', $config['scopes']),
+        ]);
+
+        return redirect($config['authorize_url'] . '?' . $params);
+    }
+
+    /**
+     * Handle LinkedIn OAuth callback.
+     */
+    public function callbackLinkedIn(Request $request)
+    {
+        $state = json_decode(base64_decode($request->get('state')), true);
+        $orgId = $state['org_id'] ?? null;
+
+        if (!$orgId || $request->get('state') !== session('oauth_state')) {
+            return redirect()->route('orgs.settings.platform-connections.index', $orgId ?? 'default')
+                ->with('error', 'Invalid OAuth state');
+        }
+
+        $config = config('social-platforms.linkedin');
+
+        $response = Http::asForm()->post($config['token_url'], [
+            'grant_type' => 'authorization_code',
+            'code' => $request->get('code'),
+            'client_id' => $config['client_id'],
+            'client_secret' => $config['client_secret'],
+            'redirect_uri' => $config['redirect_uri'],
+        ]);
+
+        if (!$response->successful()) {
+            return redirect()->route('orgs.settings.platform-connections.index', $orgId)
+                ->with('error', 'Failed to obtain access token from LinkedIn');
+        }
+
+        $tokenData = $response->json();
+
+        // Get user info
+        $userResponse = Http::withToken($tokenData['access_token'])
+            ->withHeaders(['LinkedIn-Version' => '202401'])
+            ->get('https://api.linkedin.com/v2/userinfo');
+
+        $accountName = 'LinkedIn Profile';
+        $accountId = 'li_' . Str::random(10);
+
+        if ($userResponse->successful()) {
+            $userData = $userResponse->json();
+            $accountName = $userData['name'] ?? $userData['email'] ?? 'LinkedIn Profile';
+            $accountId = $userData['sub'] ?? $accountId;
+        }
+
+        $connection = PlatformConnection::updateOrCreate(
+            [
+                'org_id' => $orgId,
+                'platform' => 'linkedin',
+                'account_id' => $accountId,
+            ],
+            [
+                'account_name' => $accountName,
+                'status' => 'active',
+                'access_token' => $tokenData['access_token'],
+                'refresh_token' => $tokenData['refresh_token'] ?? null,
+                'token_expires_at' => isset($tokenData['expires_in'])
+                    ? now()->addSeconds($tokenData['expires_in'])
+                    : null,
+                'scopes' => explode(' ', $tokenData['scope'] ?? ''),
+                'account_metadata' => [
+                    'token_type' => $tokenData['token_type'] ?? 'Bearer',
+                    'connected_at' => now()->toIso8601String(),
+                ],
+            ]
+        );
+
+        session()->forget('oauth_state');
+
+        return redirect()->route('orgs.settings.platform-connections.index', $orgId)
+            ->with('success', 'LinkedIn account connected successfully');
+    }
+
+    /**
+     * Initiate Twitter/X OAuth authorization.
+     */
+    public function authorizeTwitter(Request $request, string $org)
+    {
+        $config = config('social-platforms.twitter');
+        $state = base64_encode(json_encode(['org_id' => $org, 'platform' => 'twitter']));
+
+        session(['oauth_state' => $state]);
+
+        $codeVerifier = Str::random(128);
+        $codeChallenge = rtrim(strtr(base64_encode(hash('sha256', $codeVerifier, true)), '+/', '-_'), '=');
+
+        session(['twitter_code_verifier' => $codeVerifier]);
+
+        $params = http_build_query([
+            'response_type' => 'code',
+            'client_id' => $config['client_id'],
+            'redirect_uri' => $config['redirect_uri'],
+            'scope' => implode(' ', $config['scopes']),
+            'state' => $state,
+            'code_challenge' => $codeChallenge,
+            'code_challenge_method' => 'S256',
+        ]);
+
+        return redirect($config['authorize_url'] . '?' . $params);
+    }
+
+    /**
+     * Handle Twitter/X OAuth callback.
+     */
+    public function callbackTwitter(Request $request)
+    {
+        $state = json_decode(base64_decode($request->get('state')), true);
+        $orgId = $state['org_id'] ?? null;
+
+        if (!$orgId || $request->get('state') !== session('oauth_state')) {
+            return redirect()->route('orgs.settings.platform-connections.index', $orgId ?? 'default')
+                ->with('error', 'Invalid OAuth state');
+        }
+
+        $config = config('social-platforms.twitter');
+
+        $response = Http::asForm()
+            ->withBasicAuth($config['client_id'], $config['client_secret'])
+            ->post($config['token_url'], [
+                'code' => $request->get('code'),
+                'grant_type' => 'authorization_code',
+                'client_id' => $config['client_id'],
+                'redirect_uri' => $config['redirect_uri'],
+                'code_verifier' => session('twitter_code_verifier'),
+            ]);
+
+        if (!$response->successful()) {
+            return redirect()->route('orgs.settings.platform-connections.index', $orgId)
+                ->with('error', 'Failed to obtain access token from Twitter');
+        }
+
+        $tokenData = $response->json();
+
+        // Get user info
+        $userResponse = Http::withToken($tokenData['access_token'])
+            ->get('https://api.twitter.com/2/users/me');
+
+        $accountName = 'X (Twitter) Account';
+        $accountId = 'twitter_' . Str::random(10);
+
+        if ($userResponse->successful()) {
+            $userData = $userResponse->json('data', []);
+            $accountName = '@' . ($userData['username'] ?? 'twitter');
+            $accountId = $userData['id'] ?? $accountId;
+        }
+
+        $connection = PlatformConnection::updateOrCreate(
+            [
+                'org_id' => $orgId,
+                'platform' => 'twitter',
+                'account_id' => $accountId,
+            ],
+            [
+                'account_name' => $accountName,
+                'status' => 'active',
+                'access_token' => $tokenData['access_token'],
+                'refresh_token' => $tokenData['refresh_token'] ?? null,
+                'token_expires_at' => isset($tokenData['expires_in'])
+                    ? now()->addSeconds($tokenData['expires_in'])
+                    : null,
+                'scopes' => explode(' ', $tokenData['scope'] ?? ''),
+                'account_metadata' => [
+                    'token_type' => $tokenData['token_type'] ?? 'Bearer',
+                    'connected_at' => now()->toIso8601String(),
+                ],
+            ]
+        );
+
+        session()->forget(['oauth_state', 'twitter_code_verifier']);
+
+        return redirect()->route('orgs.settings.platform-connections.index', $orgId)
+            ->with('success', 'X (Twitter) account connected successfully');
+    }
+
+    /**
+     * Initiate Pinterest OAuth authorization.
+     */
+    public function authorizePinterest(Request $request, string $org)
+    {
+        $config = config('social-platforms.pinterest');
+        $state = base64_encode(json_encode(['org_id' => $org, 'platform' => 'pinterest']));
+
+        session(['oauth_state' => $state]);
+
+        $params = http_build_query([
+            'response_type' => 'code',
+            'client_id' => $config['app_id'],
+            'redirect_uri' => $config['redirect_uri'],
+            'state' => $state,
+            'scope' => implode(',', $config['scopes']),
+        ]);
+
+        return redirect($config['authorize_url'] . '?' . $params);
+    }
+
+    /**
+     * Handle Pinterest OAuth callback.
+     */
+    public function callbackPinterest(Request $request)
+    {
+        $state = json_decode(base64_decode($request->get('state')), true);
+        $orgId = $state['org_id'] ?? null;
+
+        if (!$orgId || $request->get('state') !== session('oauth_state')) {
+            return redirect()->route('orgs.settings.platform-connections.index', $orgId ?? 'default')
+                ->with('error', 'Invalid OAuth state');
+        }
+
+        $config = config('social-platforms.pinterest');
+
+        $response = Http::asForm()->post($config['token_url'], [
+            'grant_type' => 'authorization_code',
+            'code' => $request->get('code'),
+            'redirect_uri' => $config['redirect_uri'],
+        ])->withBasicAuth($config['app_id'], $config['app_secret']);
+
+        if (!$response->successful()) {
+            return redirect()->route('orgs.settings.platform-connections.index', $orgId)
+                ->with('error', 'Failed to obtain access token from Pinterest');
+        }
+
+        $tokenData = $response->json();
+
+        // Get user info
+        $userResponse = Http::withToken($tokenData['access_token'])
+            ->get('https://api.pinterest.com/v5/user_account');
+
+        $accountName = 'Pinterest Account';
+        $accountId = 'pinterest_' . Str::random(10);
+
+        if ($userResponse->successful()) {
+            $userData = $userResponse->json();
+            $accountName = $userData['username'] ?? 'Pinterest Account';
+            $accountId = $userData['id'] ?? $accountId;
+        }
+
+        $connection = PlatformConnection::updateOrCreate(
+            [
+                'org_id' => $orgId,
+                'platform' => 'pinterest',
+                'account_id' => $accountId,
+            ],
+            [
+                'account_name' => $accountName,
+                'status' => 'active',
+                'access_token' => $tokenData['access_token'],
+                'refresh_token' => $tokenData['refresh_token'] ?? null,
+                'token_expires_at' => isset($tokenData['expires_in'])
+                    ? now()->addSeconds($tokenData['expires_in'])
+                    : null,
+                'scopes' => $tokenData['scope'] ? explode(',', $tokenData['scope']) : [],
+                'account_metadata' => [
+                    'token_type' => $tokenData['token_type'] ?? 'Bearer',
+                    'connected_at' => now()->toIso8601String(),
+                ],
+            ]
+        );
+
+        session()->forget('oauth_state');
+
+        return redirect()->route('orgs.settings.platform-connections.index', $orgId)
+            ->with('success', 'Pinterest account connected successfully');
+    }
+
+    /**
+     * Initiate TikTok OAuth authorization.
+     */
+    public function authorizeTikTok(Request $request, string $org)
+    {
+        $config = config('social-platforms.tiktok');
+        $state = base64_encode(json_encode(['org_id' => $org, 'platform' => 'tiktok']));
+
+        session(['oauth_state' => $state]);
+
+        $csrfState = Str::random(32);
+        session(['tiktok_csrf_state' => $csrfState]);
+
+        $params = http_build_query([
+            'client_key' => $config['client_key'],
+            'scope' => implode(',', $config['scopes']),
+            'response_type' => 'code',
+            'redirect_uri' => $config['redirect_uri'],
+            'state' => $state,
+        ]);
+
+        return redirect($config['authorize_url'] . '?' . $params);
+    }
+
+    /**
+     * Handle TikTok OAuth callback.
+     */
+    public function callbackTikTok(Request $request)
+    {
+        $state = json_decode(base64_decode($request->get('state')), true);
+        $orgId = $state['org_id'] ?? null;
+
+        if (!$orgId || $request->get('state') !== session('oauth_state')) {
+            return redirect()->route('orgs.settings.platform-connections.index', $orgId ?? 'default')
+                ->with('error', 'Invalid OAuth state');
+        }
+
+        $config = config('social-platforms.tiktok');
+
+        $response = Http::asForm()->post($config['token_url'], [
+            'client_key' => $config['client_key'],
+            'client_secret' => $config['client_secret'],
+            'code' => $request->get('code'),
+            'grant_type' => 'authorization_code',
+            'redirect_uri' => $config['redirect_uri'],
+        ]);
+
+        if (!$response->successful()) {
+            return redirect()->route('orgs.settings.platform-connections.index', $orgId)
+                ->with('error', 'Failed to obtain access token from TikTok');
+        }
+
+        $tokenData = $response->json('data', []);
+
+        // Get user info
+        $userResponse = Http::withToken($tokenData['access_token'])
+            ->post('https://open.tiktokapis.com/v2/user/info/', [
+                'fields' => ['open_id', 'union_id', 'display_name'],
+            ]);
+
+        $accountName = 'TikTok Account';
+        $accountId = 'tiktok_' . Str::random(10);
+
+        if ($userResponse->successful()) {
+            $userData = $userResponse->json('data.user', []);
+            $accountName = $userData['display_name'] ?? 'TikTok Account';
+            $accountId = $userData['open_id'] ?? $accountId;
+        }
+
+        $connection = PlatformConnection::updateOrCreate(
+            [
+                'org_id' => $orgId,
+                'platform' => 'tiktok',
+                'account_id' => $accountId,
+            ],
+            [
+                'account_name' => $accountName,
+                'status' => 'active',
+                'access_token' => $tokenData['access_token'],
+                'refresh_token' => $tokenData['refresh_token'] ?? null,
+                'token_expires_at' => isset($tokenData['expires_in'])
+                    ? now()->addSeconds($tokenData['expires_in'])
+                    : null,
+                'scopes' => $tokenData['scope'] ? explode(',', $tokenData['scope']) : [],
+                'account_metadata' => [
+                    'token_type' => $tokenData['token_type'] ?? 'Bearer',
+                    'connected_at' => now()->toIso8601String(),
+                    'open_id' => $tokenData['open_id'] ?? null,
+                ],
+            ]
+        );
+
+        session()->forget(['oauth_state', 'tiktok_csrf_state']);
+
+        return redirect()->route('orgs.settings.platform-connections.index', $orgId)
+            ->with('success', 'TikTok account connected successfully');
+    }
+
+    /**
+     * Initiate Reddit OAuth authorization.
+     */
+    public function authorizeReddit(Request $request, string $org)
+    {
+        $config = config('social-platforms.reddit');
+        $state = base64_encode(json_encode(['org_id' => $org, 'platform' => 'reddit']));
+
+        session(['oauth_state' => $state]);
+
+        $params = http_build_query([
+            'client_id' => $config['client_id'],
+            'response_type' => 'code',
+            'state' => $state,
+            'redirect_uri' => $config['redirect_uri'],
+            'duration' => 'permanent',
+            'scope' => implode(' ', $config['scopes']),
+        ]);
+
+        return redirect($config['authorize_url'] . '?' . $params);
+    }
+
+    /**
+     * Handle Reddit OAuth callback.
+     */
+    public function callbackReddit(Request $request)
+    {
+        $state = json_decode(base64_decode($request->get('state')), true);
+        $orgId = $state['org_id'] ?? null;
+
+        if (!$orgId || $request->get('state') !== session('oauth_state')) {
+            return redirect()->route('orgs.settings.platform-connections.index', $orgId ?? 'default')
+                ->with('error', 'Invalid OAuth state');
+        }
+
+        $config = config('social-platforms.reddit');
+
+        $response = Http::asForm()
+            ->withBasicAuth($config['client_id'], $config['client_secret'])
+            ->post($config['token_url'], [
+                'grant_type' => 'authorization_code',
+                'code' => $request->get('code'),
+                'redirect_uri' => $config['redirect_uri'],
+            ]);
+
+        if (!$response->successful()) {
+            return redirect()->route('orgs.settings.platform-connections.index', $orgId)
+                ->with('error', 'Failed to obtain access token from Reddit');
+        }
+
+        $tokenData = $response->json();
+
+        // Get user info
+        $userResponse = Http::withToken($tokenData['access_token'])
+            ->withHeaders(['User-Agent' => $config['user_agent']])
+            ->get('https://oauth.reddit.com/api/v1/me');
+
+        $accountName = 'Reddit Account';
+        $accountId = 'reddit_' . Str::random(10);
+
+        if ($userResponse->successful()) {
+            $userData = $userResponse->json();
+            $accountName = 'u/' . ($userData['name'] ?? 'redditor');
+            $accountId = $userData['id'] ?? $accountId;
+        }
+
+        $connection = PlatformConnection::updateOrCreate(
+            [
+                'org_id' => $orgId,
+                'platform' => 'reddit',
+                'account_id' => $accountId,
+            ],
+            [
+                'account_name' => $accountName,
+                'status' => 'active',
+                'access_token' => $tokenData['access_token'],
+                'refresh_token' => $tokenData['refresh_token'] ?? null,
+                'token_expires_at' => isset($tokenData['expires_in'])
+                    ? now()->addSeconds($tokenData['expires_in'])
+                    : null,
+                'scopes' => explode(' ', $tokenData['scope'] ?? ''),
+                'account_metadata' => [
+                    'token_type' => $tokenData['token_type'] ?? 'Bearer',
+                    'connected_at' => now()->toIso8601String(),
+                ],
+            ]
+        );
+
+        session()->forget('oauth_state');
+
+        return redirect()->route('orgs.settings.platform-connections.index', $orgId)
+            ->with('success', 'Reddit account connected successfully');
+    }
+
+    /**
+     * Initiate Tumblr OAuth authorization (OAuth 1.0a).
+     */
+    public function authorizeTumblr(Request $request, string $org)
+    {
+        // TODO: Implement OAuth 1.0a flow for Tumblr
+        // This requires additional OAuth 1.0a library as it uses a different flow than OAuth 2.0
+        return redirect()->route('orgs.settings.platform-connections.index', $org)
+            ->with('error', 'Tumblr OAuth integration coming soon. OAuth 1.0a requires additional implementation.');
+    }
+
+    /**
+     * Handle Tumblr OAuth callback.
+     */
+    public function callbackTumblr(Request $request)
+    {
+        // TODO: Implement OAuth 1.0a callback for Tumblr
+        return redirect()->route('orgs.settings.platform-connections.index', 'default')
+            ->with('error', 'Tumblr OAuth callback not yet implemented');
+    }
+
+    /**
+     * Initiate Google Business Profile OAuth authorization.
+     */
+    public function authorizeGoogleBusiness(Request $request, string $org)
+    {
+        $config = config('social-platforms.google_business');
+        $state = base64_encode(json_encode(['org_id' => $org, 'platform' => 'google_business']));
+
+        session(['oauth_state' => $state]);
+
+        $params = http_build_query([
+            'client_id' => $config['client_id'],
+            'redirect_uri' => $config['redirect_uri'],
+            'response_type' => 'code',
+            'scope' => implode(' ', $config['scopes']),
+            'state' => $state,
+            'access_type' => 'offline',
+            'prompt' => 'consent',
+        ]);
+
+        return redirect($config['authorize_url'] . '?' . $params);
+    }
+
+    /**
+     * Handle Google Business Profile OAuth callback.
+     */
+    public function callbackGoogleBusiness(Request $request)
+    {
+        $state = json_decode(base64_decode($request->get('state')), true);
+        $orgId = $state['org_id'] ?? null;
+
+        if (!$orgId || $request->get('state') !== session('oauth_state')) {
+            return redirect()->route('orgs.settings.platform-connections.index', $orgId ?? 'default')
+                ->with('error', 'Invalid OAuth state');
+        }
+
+        $config = config('social-platforms.google_business');
+
+        $response = Http::asForm()->post($config['token_url'], [
+            'code' => $request->get('code'),
+            'client_id' => $config['client_id'],
+            'client_secret' => $config['client_secret'],
+            'redirect_uri' => $config['redirect_uri'],
+            'grant_type' => 'authorization_code',
+        ]);
+
+        if (!$response->successful()) {
+            return redirect()->route('orgs.settings.platform-connections.index', $orgId)
+                ->with('error', 'Failed to obtain access token from Google Business Profile');
+        }
+
+        $tokenData = $response->json();
+
+        // Get locations
+        $locationsResponse = Http::withToken($tokenData['access_token'])
+            ->get('https://mybusiness.googleapis.com/v4/accounts');
+
+        $accountName = 'Google Business Profile';
+        $accountId = 'gbp_' . Str::random(10);
+
+        if ($locationsResponse->successful()) {
+            $accounts = $locationsResponse->json('accounts', []);
+            if (!empty($accounts)) {
+                $accountName = $accounts[0]['accountName'] ?? 'Google Business Profile';
+                $accountId = $accounts[0]['name'] ?? $accountId;
+            }
+        }
+
+        $connection = PlatformConnection::updateOrCreate(
+            [
+                'org_id' => $orgId,
+                'platform' => 'google_business',
+                'account_id' => $accountId,
+            ],
+            [
+                'account_name' => $accountName,
+                'status' => 'active',
+                'access_token' => $tokenData['access_token'],
+                'refresh_token' => $tokenData['refresh_token'] ?? null,
+                'token_expires_at' => isset($tokenData['expires_in'])
+                    ? now()->addSeconds($tokenData['expires_in'])
+                    : null,
+                'scopes' => explode(' ', $tokenData['scope'] ?? ''),
+                'account_metadata' => [
+                    'token_type' => $tokenData['token_type'] ?? 'Bearer',
+                    'connected_at' => now()->toIso8601String(),
+                ],
+            ]
+        );
+
+        session()->forget('oauth_state');
+
+        return redirect()->route('orgs.settings.platform-connections.index', $orgId)
+            ->with('success', 'Google Business Profile connected successfully');
+    }
+
+    /**
+     * Initiate Snapchat OAuth authorization.
+     */
+    public function authorizeSnapchat(Request $request, string $org)
+    {
+        $config = config('social-platforms.snapchat');
+        $state = base64_encode(json_encode(['org_id' => $org, 'platform' => 'snapchat']));
+
+        session(['oauth_state' => $state]);
+
+        $params = http_build_query([
+            'client_id' => $config['client_id'],
+            'redirect_uri' => $config['redirect_uri'],
+            'response_type' => 'code',
+            'scope' => implode(',', $config['scopes']),
+            'state' => $state,
+        ]);
+
+        return redirect($config['authorize_url'] . '?' . $params);
+    }
+
+    /**
+     * Handle Snapchat OAuth callback.
+     */
+    public function callbackSnapchat(Request $request)
+    {
+        $state = json_decode(base64_decode($request->get('state')), true);
+        $orgId = $state['org_id'] ?? null;
+
+        if (!$orgId || $request->get('state') !== session('oauth_state')) {
+            return redirect()->route('orgs.settings.platform-connections.index', $orgId ?? 'default')
+                ->with('error', 'Invalid OAuth state');
+        }
+
+        $config = config('social-platforms.snapchat');
+
+        $response = Http::asForm()->post($config['token_url'], [
+            'code' => $request->get('code'),
+            'client_id' => $config['client_id'],
+            'client_secret' => $config['client_secret'],
+            'redirect_uri' => $config['redirect_uri'],
+            'grant_type' => 'authorization_code',
+        ]);
+
+        if (!$response->successful()) {
+            return redirect()->route('orgs.settings.platform-connections.index', $orgId)
+                ->with('error', 'Failed to obtain access token from Snapchat');
+        }
+
+        $tokenData = $response->json();
+
+        $accountName = 'Snapchat Account';
+        $accountId = 'snapchat_' . Str::random(10);
+
+        $connection = PlatformConnection::updateOrCreate(
+            [
+                'org_id' => $orgId,
+                'platform' => 'snapchat',
+                'account_id' => $accountId,
+            ],
+            [
+                'account_name' => $accountName,
+                'status' => 'active',
+                'access_token' => $tokenData['access_token'],
+                'refresh_token' => $tokenData['refresh_token'] ?? null,
+                'token_expires_at' => isset($tokenData['expires_in'])
+                    ? now()->addSeconds($tokenData['expires_in'])
+                    : null,
+                'account_metadata' => [
+                    'token_type' => $tokenData['token_type'] ?? 'Bearer',
+                    'connected_at' => now()->toIso8601String(),
+                ],
+            ]
+        );
+
+        session()->forget('oauth_state');
+
+        return redirect()->route('orgs.settings.platform-connections.index', $orgId)
+            ->with('success', 'Snapchat account connected successfully');
+    }
 }
