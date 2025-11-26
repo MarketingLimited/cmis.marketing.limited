@@ -13,8 +13,12 @@
         </nav>
         <h1 class="text-2xl font-bold text-gray-900">{{ __('Configure Meta Assets') }}</h1>
         <p class="mt-1 text-sm text-gray-500">
-            {{ __('Select which Facebook Pages, Instagram accounts, Ad Accounts, Pixels, and Catalogs to use with this connection.') }}
+            {{ __('Select one of each: Facebook Page, Instagram account, Threads account, Ad Account, Pixel, and Catalog for this organization.') }}
         </p>
+        <div class="mt-2 p-2 bg-blue-50 border border-blue-200 rounded text-xs text-blue-700">
+            <i class="fas fa-info-circle mr-1"></i>
+            {{ __('Each organization can have only one account per platform type.') }}
+        </div>
     </div>
 
     {{-- Connection Info --}}
@@ -62,11 +66,11 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                             @foreach($pages as $page)
                                 <label class="flex items-center p-3 border rounded-lg hover:bg-gray-50 cursor-pointer transition"
-                                       :class="{ 'border-blue-500 bg-blue-50': selectedPages.includes('{{ $page['id'] }}') }">
-                                    <input type="checkbox" name="pages[]" value="{{ $page['id'] }}"
-                                           {{ in_array($page['id'], $selectedAssets['pages'] ?? []) ? 'checked' : '' }}
-                                           x-model="selectedPages"
-                                           class="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                                       :class="{ 'border-blue-500 bg-blue-50': selectedPage === '{{ $page['id'] }}' }">
+                                    <input type="radio" name="page" value="{{ $page['id'] }}"
+                                           {{ ($selectedAssets['page'] ?? null) === $page['id'] ? 'checked' : '' }}
+                                           x-model="selectedPage"
+                                           class="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500">
                                     <div class="ml-3 flex items-center gap-3">
                                         @if($page['picture'])
                                             <img src="{{ $page['picture'] }}" alt="" class="w-8 h-8 rounded-full">
@@ -131,11 +135,11 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                             @foreach($instagramAccounts as $ig)
                                 <label class="flex items-center p-3 border rounded-lg hover:bg-gray-50 cursor-pointer transition"
-                                       :class="{ 'border-pink-500 bg-pink-50': selectedInstagram.includes('{{ $ig['id'] }}') }">
-                                    <input type="checkbox" name="instagram_accounts[]" value="{{ $ig['id'] }}"
-                                           {{ in_array($ig['id'], $selectedAssets['instagram_accounts'] ?? []) ? 'checked' : '' }}
+                                       :class="{ 'border-pink-500 bg-pink-50': selectedInstagram === '{{ $ig['id'] }}' }">
+                                    <input type="radio" name="instagram_account" value="{{ $ig['id'] }}"
+                                           {{ ($selectedAssets['instagram_account'] ?? null) === $ig['id'] ? 'checked' : '' }}
                                            x-model="selectedInstagram"
-                                           class="h-4 w-4 text-pink-600 border-gray-300 rounded focus:ring-pink-500">
+                                           class="h-4 w-4 text-pink-600 border-gray-300 focus:ring-pink-500">
                                     <div class="ml-3 flex items-center gap-3">
                                         @if($ig['profile_picture'])
                                             <img src="{{ $ig['profile_picture'] }}" alt="" class="w-8 h-8 rounded-full">
@@ -179,6 +183,83 @@
                 </div>
             </div>
 
+            {{-- Threads Accounts --}}
+            <div class="bg-white shadow sm:rounded-lg overflow-hidden">
+                <div class="px-4 py-5 sm:p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-gray-900 rounded-lg flex items-center justify-center">
+                                <svg class="w-5 h-5 text-white" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M12.186 24h-.007c-3.581-.024-6.334-1.205-8.184-3.509C2.35 18.44 1.5 15.586 1.472 12.01v-.017c.03-3.579.879-6.43 2.525-8.482C5.845 1.205 8.6.024 12.18 0h.014c2.746.02 5.043.725 6.826 2.098 1.677 1.29 2.858 3.13 3.509 5.467l-2.04.569c-1.104-3.96-3.898-5.984-8.304-6.015-2.91.022-5.11.936-6.54 2.717C4.307 6.504 3.616 8.914 3.589 12c.027 3.086.718 5.496 2.057 7.164 1.43 1.783 3.631 2.698 6.54 2.717 2.623-.02 4.358-.631 5.8-2.045 1.647-1.613 1.618-3.593 1.09-4.798-.31-.71-.873-1.3-1.634-1.75-.192 1.352-.622 2.446-1.284 3.272-.886 1.102-2.14 1.704-3.73 1.79-1.202.065-2.361-.218-3.259-.801-1.063-.689-1.685-1.74-1.752-2.96-.065-1.182.408-2.256 1.332-3.023.85-.706 2.017-1.122 3.381-1.206.934-.057 1.9-.004 2.86.156.04-.61.04-1.185-.002-1.725-.075-.98-.378-1.735-.902-2.243-.524-.509-1.303-.776-2.317-.796-1.037.018-1.9.283-2.49.766-.49.4-.773.9-.87 1.53l-2.095-.36c.173-1.14.69-2.074 1.54-2.772 1.008-.826 2.397-1.263 4.018-1.264h.02c1.656 0 2.97.478 3.905 1.422.92.927 1.412 2.256 1.463 3.948.016.532.005 1.09-.033 1.668 1.244.834 2.174 1.96 2.683 3.27.707 1.82.645 4.315-1.612 6.528-1.877 1.838-4.2 2.646-7.543 2.668zm.535-8.39c-1.34.082-2.387.778-2.387 1.588 0 .343.144.665.417.932.37.363.955.548 1.745.548.018 0 .036 0 .055-.001 1.163-.063 2.024-.556 2.489-1.133.35-.434.548-.995.595-1.673-.927-.18-1.9-.298-2.914-.261z"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-medium text-gray-900">{{ __('Threads Accounts') }}</h3>
+                                <p class="text-sm text-gray-500">{{ count($threadsAccounts ?? []) }} {{ __('account(s) available') }}</p>
+                            </div>
+                        </div>
+                        <button type="button" @click="showManualThreads = !showManualThreads" class="text-sm text-gray-600 hover:text-gray-800">
+                            <i class="fas fa-plus mr-1"></i>{{ __('Add manually') }}
+                        </button>
+                    </div>
+
+                    @if(count($threadsAccounts ?? []) > 0)
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            @foreach($threadsAccounts as $threads)
+                                <label class="flex items-center p-3 border rounded-lg hover:bg-gray-50 cursor-pointer transition"
+                                       :class="{ 'border-gray-700 bg-gray-50': selectedThreads === '{{ $threads['id'] }}' }">
+                                    <input type="radio" name="threads_account" value="{{ $threads['id'] }}"
+                                           {{ ($selectedAssets['threads_account'] ?? null) === $threads['id'] ? 'checked' : '' }}
+                                           x-model="selectedThreads"
+                                           class="h-4 w-4 text-gray-700 border-gray-300 focus:ring-gray-500">
+                                    <div class="ml-3 flex items-center gap-3">
+                                        @if($threads['profile_picture'] ?? null)
+                                            <img src="{{ $threads['profile_picture'] }}" alt="" class="w-8 h-8 rounded-full">
+                                        @else
+                                            <div class="w-8 h-8 bg-gray-900 rounded-full flex items-center justify-center">
+                                                <svg class="w-4 h-4 text-white" viewBox="0 0 24 24" fill="currentColor">
+                                                    <path d="M12.186 24h-.007c-3.581-.024-6.334-1.205-8.184-3.509C2.35 18.44 1.5 15.586 1.472 12.01v-.017c.03-3.579.879-6.43 2.525-8.482C5.845 1.205 8.6.024 12.18 0h.014c2.746.02 5.043.725 6.826 2.098 1.677 1.29 2.858 3.13 3.509 5.467l-2.04.569c-1.104-3.96-3.898-5.984-8.304-6.015-2.91.022-5.11.936-6.54 2.717C4.307 6.504 3.616 8.914 3.589 12c.027 3.086.718 5.496 2.057 7.164 1.43 1.783 3.631 2.698 6.54 2.717 2.623-.02 4.358-.631 5.8-2.045 1.647-1.613 1.618-3.593 1.09-4.798-.31-.71-.873-1.3-1.634-1.75-.192 1.352-.622 2.446-1.284 3.272-.886 1.102-2.14 1.704-3.73 1.79-1.202.065-2.361-.218-3.259-.801-1.063-.689-1.685-1.74-1.752-2.96-.065-1.182.408-2.256 1.332-3.023.85-.706 2.017-1.122 3.381-1.206.934-.057 1.9-.004 2.86.156.04-.61.04-1.185-.002-1.725-.075-.98-.378-1.735-.902-2.243-.524-.509-1.303-.776-2.317-.796-1.037.018-1.9.283-2.49.766-.49.4-.773.9-.87 1.53l-2.095-.36c.173-1.14.69-2.074 1.54-2.772 1.008-.826 2.397-1.263 4.018-1.264h.02c1.656 0 2.97.478 3.905 1.422.92.927 1.412 2.256 1.463 3.948.016.532.005 1.09-.033 1.668 1.244.834 2.174 1.96 2.683 3.27.707 1.82.645 4.315-1.612 6.528-1.877 1.838-4.2 2.646-7.543 2.668zm.535-8.39c-1.34.082-2.387.778-2.387 1.588 0 .343.144.665.417.932.37.363.955.548 1.745.548.018 0 .036 0 .055-.001 1.163-.063 2.024-.556 2.489-1.133.35-.434.548-.995.595-1.673-.927-.18-1.9-.298-2.914-.261z"/>
+                                                </svg>
+                                            </div>
+                                        @endif
+                                        <div>
+                                            <span class="text-sm font-medium text-gray-900">{{ $threads['username'] ?? $threads['name'] }}</span>
+                                            @if($threads['followers_count'] ?? null)
+                                                <span class="block text-xs text-gray-500">{{ number_format($threads['followers_count']) }} followers</span>
+                                            @endif
+                                            @if($threads['connected_instagram'] ?? null)
+                                                <span class="text-xs text-pink-600"><i class="fab fa-instagram mr-1"></i>{{ $threads['connected_instagram'] }}</span>
+                                            @endif
+                                        </div>
+                                    </div>
+                                </label>
+                            @endforeach
+                        </div>
+                    @else
+                        <div class="text-center py-6 bg-gray-50 rounded-lg">
+                            <svg class="w-8 h-8 text-gray-300 mx-auto mb-2" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12.186 24h-.007c-3.581-.024-6.334-1.205-8.184-3.509C2.35 18.44 1.5 15.586 1.472 12.01v-.017c.03-3.579.879-6.43 2.525-8.482C5.845 1.205 8.6.024 12.18 0h.014c2.746.02 5.043.725 6.826 2.098 1.677 1.29 2.858 3.13 3.509 5.467l-2.04.569c-1.104-3.96-3.898-5.984-8.304-6.015-2.91.022-5.11.936-6.54 2.717C4.307 6.504 3.616 8.914 3.589 12c.027 3.086.718 5.496 2.057 7.164 1.43 1.783 3.631 2.698 6.54 2.717 2.623-.02 4.358-.631 5.8-2.045 1.647-1.613 1.618-3.593 1.09-4.798-.31-.71-.873-1.3-1.634-1.75-.192 1.352-.622 2.446-1.284 3.272-.886 1.102-2.14 1.704-3.73 1.79-1.202.065-2.361-.218-3.259-.801-1.063-.689-1.685-1.74-1.752-2.96-.065-1.182.408-2.256 1.332-3.023.85-.706 2.017-1.122 3.381-1.206.934-.057 1.9-.004 2.86.156.04-.61.04-1.185-.002-1.725-.075-.98-.378-1.735-.902-2.243-.524-.509-1.303-.776-2.317-.796-1.037.018-1.9.283-2.49.766-.49.4-.773.9-.87 1.53l-2.095-.36c.173-1.14.69-2.074 1.54-2.772 1.008-.826 2.397-1.263 4.018-1.264h.02c1.656 0 2.97.478 3.905 1.422.92.927 1.412 2.256 1.463 3.948.016.532.005 1.09-.033 1.668 1.244.834 2.174 1.96 2.683 3.27.707 1.82.645 4.315-1.612 6.528-1.877 1.838-4.2 2.646-7.543 2.668zm.535-8.39c-1.34.082-2.387.778-2.387 1.588 0 .343.144.665.417.932.37.363.955.548 1.745.548.018 0 .036 0 .055-.001 1.163-.063 2.024-.556 2.489-1.133.35-.434.548-.995.595-1.673-.927-.18-1.9-.298-2.914-.261z"/>
+                            </svg>
+                            <p class="text-sm text-gray-500">{{ __('No Threads accounts found') }}</p>
+                            <p class="text-xs text-gray-400 mt-1">{{ __('Threads requires an Instagram Business account') }}</p>
+                        </div>
+                    @endif
+
+                    {{-- Manual Threads ID Input --}}
+                    <div x-show="showManualThreads" x-cloak class="mt-4 p-4 bg-gray-50 rounded-lg">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('Enter Threads User ID manually') }}</label>
+                        <div class="flex gap-2">
+                            <input type="text" name="manual_threads_id" placeholder="e.g., 17841400000000000"
+                                   class="flex-1 rounded-md border-gray-300 shadow-sm focus:border-gray-500 focus:ring-gray-500 text-sm">
+                            <button type="button" @click="showManualThreads = false" class="px-3 py-2 text-gray-500 hover:text-gray-700">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-1">{{ __('Use the same ID as your Instagram Business account') }}</p>
+                    </div>
+                </div>
+            </div>
+
             {{-- Ad Accounts --}}
             <div class="bg-white shadow sm:rounded-lg overflow-hidden">
                 <div class="px-4 py-5 sm:p-6">
@@ -201,12 +282,12 @@
                         <div class="space-y-2">
                             @foreach($adAccounts as $account)
                                 <label class="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 cursor-pointer transition"
-                                       :class="{ 'border-green-500 bg-green-50': selectedAdAccounts.includes('{{ $account['id'] }}') }">
+                                       :class="{ 'border-green-500 bg-green-50': selectedAdAccount === '{{ $account['id'] }}' }">
                                     <div class="flex items-center">
-                                        <input type="checkbox" name="ad_accounts[]" value="{{ $account['id'] }}"
-                                               {{ in_array($account['id'], $selectedAssets['ad_accounts'] ?? []) ? 'checked' : '' }}
-                                               x-model="selectedAdAccounts"
-                                               class="h-4 w-4 text-green-600 border-gray-300 rounded focus:ring-green-500">
+                                        <input type="radio" name="ad_account" value="{{ $account['id'] }}"
+                                               {{ ($selectedAssets['ad_account'] ?? null) === $account['id'] ? 'checked' : '' }}
+                                               x-model="selectedAdAccount"
+                                               class="h-4 w-4 text-green-600 border-gray-300 focus:ring-green-500">
                                         <div class="ml-3">
                                             <span class="text-sm font-medium text-gray-900">{{ $account['name'] }}</span>
                                             <span class="text-xs text-gray-400 ml-2">({{ $account['account_id'] }})</span>
@@ -268,11 +349,11 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                             @foreach($pixels as $pixel)
                                 <label class="flex items-center p-3 border rounded-lg hover:bg-gray-50 cursor-pointer transition"
-                                       :class="{ 'border-purple-500 bg-purple-50': selectedPixels.includes('{{ $pixel['id'] }}') }">
-                                    <input type="checkbox" name="pixels[]" value="{{ $pixel['id'] }}"
-                                           {{ in_array($pixel['id'], $selectedAssets['pixels'] ?? []) ? 'checked' : '' }}
-                                           x-model="selectedPixels"
-                                           class="h-4 w-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500">
+                                       :class="{ 'border-purple-500 bg-purple-50': selectedPixel === '{{ $pixel['id'] }}' }">
+                                    <input type="radio" name="pixel" value="{{ $pixel['id'] }}"
+                                           {{ ($selectedAssets['pixel'] ?? null) === $pixel['id'] ? 'checked' : '' }}
+                                           x-model="selectedPixel"
+                                           class="h-4 w-4 text-purple-600 border-gray-300 focus:ring-purple-500">
                                     <div class="ml-3">
                                         <span class="text-sm font-medium text-gray-900">{{ $pixel['name'] }}</span>
                                         <span class="text-xs text-gray-400 ml-1">({{ $pixel['id'] }})</span>
@@ -328,11 +409,11 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                             @foreach($catalogs as $catalog)
                                 <label class="flex items-center p-3 border rounded-lg hover:bg-gray-50 cursor-pointer transition"
-                                       :class="{ 'border-orange-500 bg-orange-50': selectedCatalogs.includes('{{ $catalog['id'] }}') }">
-                                    <input type="checkbox" name="catalogs[]" value="{{ $catalog['id'] }}"
-                                           {{ in_array($catalog['id'], $selectedAssets['catalogs'] ?? []) ? 'checked' : '' }}
-                                           x-model="selectedCatalogs"
-                                           class="h-4 w-4 text-orange-600 border-gray-300 rounded focus:ring-orange-500">
+                                       :class="{ 'border-orange-500 bg-orange-50': selectedCatalog === '{{ $catalog['id'] }}' }">
+                                    <input type="radio" name="catalog" value="{{ $catalog['id'] }}"
+                                           {{ ($selectedAssets['catalog'] ?? null) === $catalog['id'] ? 'checked' : '' }}
+                                           x-model="selectedCatalog"
+                                           class="h-4 w-4 text-orange-600 border-gray-300 focus:ring-orange-500">
                                     <div class="ml-3">
                                         <span class="text-sm font-medium text-gray-900">{{ $catalog['name'] }}</span>
                                         <span class="text-xs text-gray-400 ml-1">({{ $catalog['id'] }})</span>
@@ -379,11 +460,35 @@
                     <div>
                         <h3 class="text-lg font-medium text-gray-900">{{ __('Selection Summary') }}</h3>
                         <p class="text-sm text-gray-500 mt-1">
-                            <span x-text="selectedPages.length"></span> {{ __('pages') }},
-                            <span x-text="selectedInstagram.length"></span> {{ __('Instagram') }},
-                            <span x-text="selectedAdAccounts.length"></span> {{ __('ad accounts') }},
-                            <span x-text="selectedPixels.length"></span> {{ __('pixels') }},
-                            <span x-text="selectedCatalogs.length"></span> {{ __('catalogs') }}
+                            <span :class="{ 'text-green-600 font-medium': selectedPage }">
+                                <i class="fas" :class="selectedPage ? 'fa-check-circle' : 'fa-circle'"></i>
+                                {{ __('Page') }}
+                            </span>
+                            <span class="mx-1">•</span>
+                            <span :class="{ 'text-green-600 font-medium': selectedInstagram }">
+                                <i class="fas" :class="selectedInstagram ? 'fa-check-circle' : 'fa-circle'"></i>
+                                {{ __('Instagram') }}
+                            </span>
+                            <span class="mx-1">•</span>
+                            <span :class="{ 'text-green-600 font-medium': selectedThreads }">
+                                <i class="fas" :class="selectedThreads ? 'fa-check-circle' : 'fa-circle'"></i>
+                                {{ __('Threads') }}
+                            </span>
+                            <span class="mx-1">•</span>
+                            <span :class="{ 'text-green-600 font-medium': selectedAdAccount }">
+                                <i class="fas" :class="selectedAdAccount ? 'fa-check-circle' : 'fa-circle'"></i>
+                                {{ __('Ad Account') }}
+                            </span>
+                            <span class="mx-1">•</span>
+                            <span :class="{ 'text-green-600 font-medium': selectedPixel }">
+                                <i class="fas" :class="selectedPixel ? 'fa-check-circle' : 'fa-circle'"></i>
+                                {{ __('Pixel') }}
+                            </span>
+                            <span class="mx-1">•</span>
+                            <span :class="{ 'text-green-600 font-medium': selectedCatalog }">
+                                <i class="fas" :class="selectedCatalog ? 'fa-check-circle' : 'fa-circle'"></i>
+                                {{ __('Catalog') }}
+                            </span>
                         </p>
                     </div>
                     <div class="flex gap-3">
@@ -409,16 +514,18 @@ function metaAssetsPage() {
         // Manual input visibility
         showManualPage: false,
         showManualInstagram: false,
+        showManualThreads: false,
         showManualAdAccount: false,
         showManualPixel: false,
         showManualCatalog: false,
 
-        // Selected items (pre-populate from existing selection)
-        selectedPages: @json($selectedAssets['pages'] ?? []),
-        selectedInstagram: @json($selectedAssets['instagram_accounts'] ?? []),
-        selectedAdAccounts: @json($selectedAssets['ad_accounts'] ?? []),
-        selectedPixels: @json($selectedAssets['pixels'] ?? []),
-        selectedCatalogs: @json($selectedAssets['catalogs'] ?? []),
+        // Selected items (single value per type - one account per org)
+        selectedPage: @json($selectedAssets['page'] ?? null),
+        selectedInstagram: @json($selectedAssets['instagram_account'] ?? null),
+        selectedThreads: @json($selectedAssets['threads_account'] ?? null),
+        selectedAdAccount: @json($selectedAssets['ad_account'] ?? null),
+        selectedPixel: @json($selectedAssets['pixel'] ?? null),
+        selectedCatalog: @json($selectedAssets['catalog'] ?? null),
     }
 }
 </script>

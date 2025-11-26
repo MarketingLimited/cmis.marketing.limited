@@ -861,6 +861,7 @@ class PlatformConnectionsController extends Controller
         // Fetch all available assets
         $pages = $this->getMetaPages($accessToken);
         $instagramAccounts = $this->getMetaInstagramAccounts($accessToken, $pages);
+        $threadsAccounts = $this->getThreadsAccounts($accessToken, $instagramAccounts);
         $adAccounts = $this->getMetaAdAccounts($accessToken);
         $pixels = $this->getMetaPixels($accessToken, $adAccounts);
         $catalogs = $this->getMetaCatalogs($accessToken);
@@ -873,6 +874,7 @@ class PlatformConnectionsController extends Controller
             'connection' => $connection,
             'pages' => $pages,
             'instagramAccounts' => $instagramAccounts,
+            'threadsAccounts' => $threadsAccounts,
             'adAccounts' => $adAccounts,
             'pixels' => $pixels,
             'catalogs' => $catalogs,
@@ -890,20 +892,18 @@ class PlatformConnectionsController extends Controller
             ->where('platform', 'meta')
             ->firstOrFail();
 
+        // Each org can only have ONE of each asset type
         $validator = Validator::make($request->all(), [
-            'pages' => 'nullable|array',
-            'pages.*' => 'string',
-            'instagram_accounts' => 'nullable|array',
-            'instagram_accounts.*' => 'string',
-            'ad_accounts' => 'nullable|array',
-            'ad_accounts.*' => 'string',
-            'pixels' => 'nullable|array',
-            'pixels.*' => 'string',
-            'catalogs' => 'nullable|array',
-            'catalogs.*' => 'string',
-            // Manual ID inputs
+            'page' => 'nullable|string|max:50',
+            'instagram_account' => 'nullable|string|max:50',
+            'threads_account' => 'nullable|string|max:50',
+            'ad_account' => 'nullable|string|max:50',
+            'pixel' => 'nullable|string|max:50',
+            'catalog' => 'nullable|string|max:50',
+            // Manual ID inputs (override selected values)
             'manual_page_id' => 'nullable|string|max:50',
             'manual_instagram_id' => 'nullable|string|max:50',
+            'manual_threads_id' => 'nullable|string|max:50',
             'manual_ad_account_id' => 'nullable|string|max:50',
             'manual_pixel_id' => 'nullable|string|max:50',
             'manual_catalog_id' => 'nullable|string|max:50',
@@ -913,41 +913,30 @@ class PlatformConnectionsController extends Controller
             return back()->withErrors($validator)->withInput();
         }
 
-        // Build selected assets array
+        // Build selected assets (single value per type - one account per org)
         $selectedAssets = [
-            'pages' => $request->input('pages', []),
-            'instagram_accounts' => $request->input('instagram_accounts', []),
-            'ad_accounts' => $request->input('ad_accounts', []),
-            'pixels' => $request->input('pixels', []),
-            'catalogs' => $request->input('catalogs', []),
+            'page' => $request->filled('manual_page_id')
+                ? $request->input('manual_page_id')
+                : $request->input('page'),
+            'instagram_account' => $request->filled('manual_instagram_id')
+                ? $request->input('manual_instagram_id')
+                : $request->input('instagram_account'),
+            'threads_account' => $request->filled('manual_threads_id')
+                ? $request->input('manual_threads_id')
+                : $request->input('threads_account'),
+            'ad_account' => $request->filled('manual_ad_account_id')
+                ? $this->normalizeAdAccountId($request->input('manual_ad_account_id'))
+                : $request->input('ad_account'),
+            'pixel' => $request->filled('manual_pixel_id')
+                ? $request->input('manual_pixel_id')
+                : $request->input('pixel'),
+            'catalog' => $request->filled('manual_catalog_id')
+                ? $request->input('manual_catalog_id')
+                : $request->input('catalog'),
         ];
 
-        // Add manual IDs if provided
-        if ($request->filled('manual_page_id')) {
-            $selectedAssets['pages'][] = $request->input('manual_page_id');
-        }
-        if ($request->filled('manual_instagram_id')) {
-            $selectedAssets['instagram_accounts'][] = $request->input('manual_instagram_id');
-        }
-        if ($request->filled('manual_ad_account_id')) {
-            $manualAdAccount = $request->input('manual_ad_account_id');
-            // Ensure it has act_ prefix
-            if (!str_starts_with($manualAdAccount, 'act_')) {
-                $manualAdAccount = 'act_' . $manualAdAccount;
-            }
-            $selectedAssets['ad_accounts'][] = $manualAdAccount;
-        }
-        if ($request->filled('manual_pixel_id')) {
-            $selectedAssets['pixels'][] = $request->input('manual_pixel_id');
-        }
-        if ($request->filled('manual_catalog_id')) {
-            $selectedAssets['catalogs'][] = $request->input('manual_catalog_id');
-        }
-
-        // Remove duplicates
-        foreach ($selectedAssets as $key => $values) {
-            $selectedAssets[$key] = array_unique(array_filter($values));
-        }
+        // Filter out null values
+        $selectedAssets = array_filter($selectedAssets, fn($v) => !is_null($v) && $v !== '');
 
         // Update connection metadata
         $metadata = $connection->account_metadata ?? [];
@@ -956,18 +945,29 @@ class PlatformConnectionsController extends Controller
 
         $connection->update(['account_metadata' => $metadata]);
 
-        $totalSelected = array_sum(array_map('count', $selectedAssets));
+        $totalSelected = count($selectedAssets);
 
         if ($request->wantsJson()) {
             return $this->success([
                 'connection' => $connection->fresh(),
                 'selected_assets' => $selectedAssets,
-            ], "Selected {$totalSelected} asset(s) successfully");
+            ], "Meta assets configured: {$totalSelected} asset type(s) selected");
         }
+
+        // Build detailed message
+        $assetTypes = [];
+        if (!empty($selectedAssets['page'])) $assetTypes[] = 'Facebook Page';
+        if (!empty($selectedAssets['instagram_account'])) $assetTypes[] = 'Instagram';
+        if (!empty($selectedAssets['threads_account'])) $assetTypes[] = 'Threads';
+        if (!empty($selectedAssets['ad_account'])) $assetTypes[] = 'Ad Account';
+        if (!empty($selectedAssets['pixel'])) $assetTypes[] = 'Pixel';
+        if (!empty($selectedAssets['catalog'])) $assetTypes[] = 'Catalog';
+
+        $assetList = count($assetTypes) > 0 ? implode(', ', $assetTypes) : 'None';
 
         return redirect()
             ->route('orgs.settings.platform-connections.index', $org)
-            ->with('success', "Meta assets configured successfully. {$totalSelected} asset(s) selected.");
+            ->with('success', "Meta assets configured: {$assetList}");
     }
 
     /**
@@ -1173,6 +1173,338 @@ class PlatformConnectionsController extends Controller
     }
 
     /**
+     * Normalize ad account ID to include act_ prefix.
+     */
+    private function normalizeAdAccountId(?string $id): ?string
+    {
+        if (!$id) return null;
+        return str_starts_with($id, 'act_') ? $id : 'act_' . $id;
+    }
+
+    // ===== Generic Platform Assets Methods =====
+
+    /**
+     * Show asset selection page for LinkedIn connection.
+     */
+    public function selectLinkedInAssets(Request $request, string $org, string $connectionId)
+    {
+        $connection = PlatformConnection::where('connection_id', $connectionId)
+            ->where('org_id', $org)
+            ->where('platform', 'linkedin')
+            ->firstOrFail();
+
+        $selectedAssets = $connection->account_metadata['selected_assets'] ?? [];
+
+        // For now, return empty arrays - these will be populated via API calls when implemented
+        return view('settings.platform-connections.linkedin-assets', [
+            'currentOrg' => $org,
+            'connection' => $connection,
+            'profiles' => [],
+            'pages' => [],
+            'adAccounts' => [],
+            'insightTags' => [],
+            'selectedAssets' => $selectedAssets,
+        ]);
+    }
+
+    /**
+     * Store selected LinkedIn assets.
+     */
+    public function storeLinkedInAssets(Request $request, string $org, string $connectionId)
+    {
+        return $this->storeGenericPlatformAssets($request, $org, $connectionId, 'linkedin', [
+            'profile', 'page', 'ad_account', 'pixel'
+        ]);
+    }
+
+    /**
+     * Show asset selection page for Twitter/X connection.
+     */
+    public function selectTwitterAssets(Request $request, string $org, string $connectionId)
+    {
+        return $this->showGenericPlatformAssets($request, $org, $connectionId, 'twitter');
+    }
+
+    /**
+     * Store selected Twitter/X assets.
+     */
+    public function storeTwitterAssets(Request $request, string $org, string $connectionId)
+    {
+        return $this->storeGenericPlatformAssets($request, $org, $connectionId, 'twitter', [
+            'account', 'ad_account', 'pixel', 'catalog'
+        ]);
+    }
+
+    /**
+     * Show asset selection page for TikTok connection.
+     */
+    public function selectTikTokAssets(Request $request, string $org, string $connectionId)
+    {
+        return $this->showGenericPlatformAssets($request, $org, $connectionId, 'tiktok');
+    }
+
+    /**
+     * Store selected TikTok assets.
+     */
+    public function storeTikTokAssets(Request $request, string $org, string $connectionId)
+    {
+        return $this->storeGenericPlatformAssets($request, $org, $connectionId, 'tiktok', [
+            'account', 'ad_account', 'pixel', 'catalog'
+        ]);
+    }
+
+    /**
+     * Show asset selection page for Snapchat connection.
+     */
+    public function selectSnapchatAssets(Request $request, string $org, string $connectionId)
+    {
+        return $this->showGenericPlatformAssets($request, $org, $connectionId, 'snapchat');
+    }
+
+    /**
+     * Store selected Snapchat assets.
+     */
+    public function storeSnapchatAssets(Request $request, string $org, string $connectionId)
+    {
+        return $this->storeGenericPlatformAssets($request, $org, $connectionId, 'snapchat', [
+            'account', 'ad_account', 'pixel', 'catalog'
+        ]);
+    }
+
+    /**
+     * Show asset selection page for Pinterest connection.
+     */
+    public function selectPinterestAssets(Request $request, string $org, string $connectionId)
+    {
+        return $this->showGenericPlatformAssets($request, $org, $connectionId, 'pinterest');
+    }
+
+    /**
+     * Store selected Pinterest assets.
+     */
+    public function storePinterestAssets(Request $request, string $org, string $connectionId)
+    {
+        return $this->storeGenericPlatformAssets($request, $org, $connectionId, 'pinterest', [
+            'account', 'ad_account', 'pixel', 'catalog'
+        ]);
+    }
+
+    /**
+     * Show asset selection page for YouTube connection.
+     */
+    public function selectYouTubeAssets(Request $request, string $org, string $connectionId)
+    {
+        return $this->showGenericPlatformAssets($request, $org, $connectionId, 'youtube');
+    }
+
+    /**
+     * Store selected YouTube assets.
+     */
+    public function storeYouTubeAssets(Request $request, string $org, string $connectionId)
+    {
+        return $this->storeGenericPlatformAssets($request, $org, $connectionId, 'youtube', [
+            'channel'
+        ]);
+    }
+
+    /**
+     * Show asset selection page for Google connection.
+     */
+    public function selectGoogleAssets(Request $request, string $org, string $connectionId)
+    {
+        return $this->showGenericPlatformAssets($request, $org, $connectionId, 'google');
+    }
+
+    /**
+     * Store selected Google assets.
+     */
+    public function storeGoogleAssets(Request $request, string $org, string $connectionId)
+    {
+        return $this->storeGenericPlatformAssets($request, $org, $connectionId, 'google', [
+            'business_profile', 'ad_account'
+        ]);
+    }
+
+    /**
+     * Show asset selection page for Reddit connection.
+     */
+    public function selectRedditAssets(Request $request, string $org, string $connectionId)
+    {
+        return $this->showGenericPlatformAssets($request, $org, $connectionId, 'reddit');
+    }
+
+    /**
+     * Store selected Reddit assets.
+     */
+    public function storeRedditAssets(Request $request, string $org, string $connectionId)
+    {
+        return $this->storeGenericPlatformAssets($request, $org, $connectionId, 'reddit', [
+            'account'
+        ]);
+    }
+
+    /**
+     * Generic method to show platform assets page.
+     */
+    private function showGenericPlatformAssets(Request $request, string $org, string $connectionId, string $platform)
+    {
+        $connection = PlatformConnection::where('connection_id', $connectionId)
+            ->where('org_id', $org)
+            ->where('platform', $platform)
+            ->firstOrFail();
+
+        $selectedAssets = $connection->account_metadata['selected_assets'] ?? [];
+
+        $platformNames = [
+            'twitter' => 'X (Twitter)',
+            'tiktok' => 'TikTok',
+            'snapchat' => 'Snapchat',
+            'pinterest' => 'Pinterest',
+            'youtube' => 'YouTube',
+            'google' => 'Google',
+            'reddit' => 'Reddit',
+        ];
+
+        return view('settings.platform-connections.platform-assets', [
+            'currentOrg' => $org,
+            'connection' => $connection,
+            'platform' => $platform,
+            'platformName' => $platformNames[$platform] ?? ucfirst($platform),
+            'accounts' => [],
+            'channels' => [],
+            'businessProfiles' => [],
+            'adAccounts' => [],
+            'pixels' => [],
+            'catalogs' => [],
+            'selectedAssets' => $selectedAssets,
+        ]);
+    }
+
+    /**
+     * Generic method to store platform assets.
+     */
+    private function storeGenericPlatformAssets(Request $request, string $org, string $connectionId, string $platform, array $assetTypes)
+    {
+        $connection = PlatformConnection::where('connection_id', $connectionId)
+            ->where('org_id', $org)
+            ->where('platform', $platform)
+            ->firstOrFail();
+
+        // Build validation rules based on asset types
+        $rules = [];
+        foreach ($assetTypes as $type) {
+            $rules[$type] = 'nullable|string|max:100';
+            $rules['manual_' . $type . '_id'] = 'nullable|string|max:100';
+        }
+
+        $validator = Validator::make($request->all(), $rules);
+
+        if ($validator->fails()) {
+            return back()->withErrors($validator)->withInput();
+        }
+
+        // Build selected assets (single value per type)
+        $selectedAssets = [];
+        foreach ($assetTypes as $type) {
+            $manualKey = 'manual_' . $type . '_id';
+            $value = $request->filled($manualKey)
+                ? $request->input($manualKey)
+                : $request->input($type);
+
+            if ($value) {
+                $selectedAssets[$type] = $value;
+            }
+        }
+
+        // Update connection metadata
+        $metadata = $connection->account_metadata ?? [];
+        $metadata['selected_assets'] = $selectedAssets;
+        $metadata['assets_updated_at'] = now()->toIso8601String();
+
+        $connection->update(['account_metadata' => $metadata]);
+
+        // Build success message
+        $assetLabels = [
+            'account' => 'Account',
+            'profile' => 'Profile',
+            'page' => 'Page',
+            'channel' => 'Channel',
+            'business_profile' => 'Business Profile',
+            'ad_account' => 'Ad Account',
+            'pixel' => 'Pixel',
+            'catalog' => 'Catalog',
+        ];
+
+        $selectedList = [];
+        foreach ($selectedAssets as $type => $value) {
+            $selectedList[] = $assetLabels[$type] ?? ucfirst($type);
+        }
+
+        $message = ucfirst($platform) . ' assets configured: ' . (count($selectedList) > 0 ? implode(', ', $selectedList) : 'None');
+
+        if ($request->wantsJson()) {
+            return $this->success([
+                'connection' => $connection->fresh(),
+                'selected_assets' => $selectedAssets,
+            ], $message);
+        }
+
+        return redirect()
+            ->route('orgs.settings.platform-connections.index', $org)
+            ->with('success', $message);
+    }
+
+    /**
+     * Get Threads accounts associated with Instagram Business accounts.
+     * Threads uses the same user ID as Instagram.
+     */
+    private function getThreadsAccounts(string $accessToken, array $instagramAccounts = []): array
+    {
+        $threadsAccounts = [];
+
+        try {
+            foreach ($instagramAccounts as $ig) {
+                $igId = $ig['id'] ?? null;
+                if (!$igId) continue;
+
+                // Try to get Threads profile using the Instagram account ID
+                // Threads API uses the same user ID as Instagram Business Account
+                $response = Http::timeout(15)->get("https://graph.threads.net/v1.0/{$igId}", [
+                    'access_token' => $accessToken,
+                    'fields' => 'id,username,name,threads_profile_picture_url,threads_biography',
+                ]);
+
+                if ($response->successful()) {
+                    $threadsData = $response->json();
+                    if (!empty($threadsData['id'])) {
+                        $threadsAccounts[] = [
+                            'id' => $threadsData['id'],
+                            'username' => $threadsData['username'] ?? $ig['username'] ?? null,
+                            'name' => $threadsData['name'] ?? $ig['name'] ?? 'Threads Account',
+                            'profile_picture' => $threadsData['threads_profile_picture_url'] ?? $ig['profile_picture'] ?? null,
+                            'biography' => $threadsData['threads_biography'] ?? null,
+                            'connected_instagram' => $ig['username'] ?? null,
+                            'instagram_id' => $igId,
+                        ];
+                    }
+                } else {
+                    // If Threads API fails, the Instagram account might not have Threads enabled
+                    // or the token doesn't have Threads permissions
+                    Log::debug('Threads account not found for Instagram', [
+                        'instagram_id' => $igId,
+                        'error' => $response->json('error', []),
+                    ]);
+                }
+            }
+
+            return $threadsAccounts;
+        } catch (\Exception $e) {
+            Log::error('Failed to fetch Threads accounts', ['error' => $e->getMessage()]);
+            return $threadsAccounts;
+        }
+    }
+
+    /**
      * Get available platforms.
      */
     private function getAvailablePlatforms(): array
@@ -1224,6 +1556,163 @@ class PlatformConnectionsController extends Controller
     }
 
     // ===== OAuth 2.0 Methods for Social Media Platforms =====
+
+    /**
+     * Initiate Meta (Facebook) OAuth authorization.
+     */
+    public function authorizeMeta(Request $request, string $org)
+    {
+        $config = config('social-platforms.meta');
+        $state = base64_encode(json_encode(['org_id' => $org, 'platform' => 'meta']));
+
+        session(['oauth_state' => $state]);
+
+        // Meta OAuth scopes for ads management and social publishing
+        $scopes = [
+            'ads_management',
+            'ads_read',
+            'business_management',
+            'pages_read_engagement',
+            'pages_show_list',
+            'pages_manage_posts',
+            'pages_manage_metadata',
+            'instagram_basic',
+            'instagram_content_publish',
+            'instagram_manage_comments',
+            'instagram_manage_insights',
+            'read_insights',
+        ];
+
+        $params = http_build_query([
+            'client_id' => $config['app_id'],
+            'redirect_uri' => $config['redirect_uri'],
+            'response_type' => 'code',
+            'scope' => implode(',', $scopes),
+            'state' => $state,
+        ]);
+
+        return redirect('https://www.facebook.com/v21.0/dialog/oauth?' . $params);
+    }
+
+    /**
+     * Handle Meta (Facebook) OAuth callback.
+     */
+    public function callbackMeta(Request $request)
+    {
+        $state = json_decode(base64_decode($request->get('state')), true);
+        $orgId = $state['org_id'] ?? null;
+
+        if (!$orgId || $request->get('state') !== session('oauth_state')) {
+            return redirect()->route('orgs.settings.platform-connections.index', $orgId ?? 'default')
+                ->with('error', 'Invalid OAuth state');
+        }
+
+        if ($request->has('error')) {
+            return redirect()->route('orgs.settings.platform-connections.index', $orgId)
+                ->with('error', 'Meta authorization was denied: ' . $request->get('error_description', 'Unknown error'));
+        }
+
+        $config = config('social-platforms.meta');
+
+        // Exchange code for access token
+        $response = Http::get('https://graph.facebook.com/v21.0/oauth/access_token', [
+            'client_id' => $config['app_id'],
+            'client_secret' => $config['app_secret'],
+            'redirect_uri' => $config['redirect_uri'],
+            'code' => $request->get('code'),
+        ]);
+
+        if (!$response->successful()) {
+            Log::error('Meta OAuth token exchange failed', [
+                'error' => $response->json(),
+            ]);
+            return redirect()->route('orgs.settings.platform-connections.index', $orgId)
+                ->with('error', 'Failed to obtain access token from Meta');
+        }
+
+        $tokenData = $response->json();
+        $accessToken = $tokenData['access_token'];
+
+        // Exchange for long-lived token
+        $longLivedResponse = Http::get('https://graph.facebook.com/v21.0/oauth/access_token', [
+            'grant_type' => 'fb_exchange_token',
+            'client_id' => $config['app_id'],
+            'client_secret' => $config['app_secret'],
+            'fb_exchange_token' => $accessToken,
+        ]);
+
+        if ($longLivedResponse->successful()) {
+            $longLivedData = $longLivedResponse->json();
+            $accessToken = $longLivedData['access_token'];
+            $expiresIn = $longLivedData['expires_in'] ?? 5184000; // Default 60 days
+        } else {
+            $expiresIn = $tokenData['expires_in'] ?? 3600;
+        }
+
+        // Validate the token and get user info
+        $tokenInfo = $this->validateMetaToken($accessToken);
+
+        if (!$tokenInfo['valid']) {
+            return redirect()->route('orgs.settings.platform-connections.index', $orgId)
+                ->with('error', 'Token validation failed: ' . ($tokenInfo['error'] ?? 'Unknown error'));
+        }
+
+        // Get ad accounts
+        $adAccounts = $this->getMetaAdAccounts($accessToken);
+        $activeAdAccounts = array_filter($adAccounts, fn($acc) => $acc['can_create_ads'] ?? false);
+
+        $hasRequiredPermissions = $tokenInfo['has_all_required_permissions'] ?? true;
+        $warnings = $tokenInfo['warnings'] ?? [];
+
+        // Create connection
+        $connection = PlatformConnection::updateOrCreate(
+            [
+                'org_id' => $orgId,
+                'platform' => 'meta',
+                'account_id' => $tokenInfo['user_id'] ?? 'oauth_user_' . Str::random(8),
+            ],
+            [
+                'account_name' => $tokenInfo['user_name'] ?? 'Meta Account',
+                'status' => $hasRequiredPermissions ? 'active' : 'warning',
+                'access_token' => $accessToken,
+                'token_expires_at' => now()->addSeconds($expiresIn),
+                'scopes' => $tokenInfo['scopes'] ?? [],
+                'account_metadata' => [
+                    'token_type' => 'oauth_user',
+                    'is_system_user' => false,
+                    'is_never_expires' => false,
+                    'app_id' => $tokenInfo['app_id'] ?? null,
+                    'user_id' => $tokenInfo['user_id'] ?? null,
+                    'user_name' => $tokenInfo['user_name'] ?? null,
+                    'ad_accounts' => $adAccounts,
+                    'ad_accounts_count' => count($adAccounts),
+                    'active_ad_accounts_count' => count($activeAdAccounts),
+                    'missing_required_permissions' => $tokenInfo['missing_required_permissions'] ?? [],
+                    'missing_recommended_permissions' => $tokenInfo['missing_recommended_permissions'] ?? [],
+                    'warnings' => $warnings,
+                    'is_valid' => true,
+                    'validated_at' => now()->toIso8601String(),
+                    'connected_via' => 'oauth',
+                ],
+                'auto_sync' => true,
+                'sync_frequency_minutes' => 15,
+            ]
+        );
+
+        session()->forget('oauth_state');
+
+        // Build success message
+        $successMessage = 'Meta account connected successfully via OAuth. Found ' . count($adAccounts) . ' ad account(s).';
+        if (!$hasRequiredPermissions) {
+            $missingPerms = implode(', ', $tokenInfo['missing_required_permissions'] ?? []);
+            $successMessage .= " Warning: Missing some permissions ({$missingPerms}).";
+        }
+
+        // Redirect to asset selection
+        return redirect()
+            ->route('orgs.settings.platform-connections.meta.assets', [$orgId, $connection->connection_id])
+            ->with('success', $successMessage . ' Now select which Pages, Instagram accounts, and other assets to use.');
+    }
 
     /**
      * Initiate YouTube OAuth authorization.

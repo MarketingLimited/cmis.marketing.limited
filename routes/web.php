@@ -309,6 +309,10 @@ Route::middleware(['auth'])->group(function () {
                 Route::get('/meta/{connection}/assets', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'selectMetaAssets'])->name('meta.assets');
                 Route::post('/meta/{connection}/assets', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'storeMetaAssets'])->name('meta.assets.store');
 
+                // Meta OAuth (Facebook Login)
+                Route::get('/meta/authorize', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'authorizeMeta'])->name('meta.authorize');
+                Route::get('/meta/callback', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'callbackMeta'])->name('meta.callback');
+
                 // YouTube OAuth
                 Route::get('/youtube/authorize', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'authorizeYouTube'])->name('youtube.authorize');
                 Route::get('/youtube/callback', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'callbackYouTube'])->name('youtube.callback');
@@ -344,6 +348,38 @@ Route::middleware(['auth'])->group(function () {
                 // Snapchat OAuth
                 Route::get('/snapchat/authorize', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'authorizeSnapchat'])->name('snapchat.authorize');
                 Route::get('/snapchat/callback', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'callbackSnapchat'])->name('snapchat.callback');
+
+                // LinkedIn Assets
+                Route::get('/linkedin/{connection}/assets', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'selectLinkedInAssets'])->name('linkedin.assets');
+                Route::post('/linkedin/{connection}/assets', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'storeLinkedInAssets'])->name('linkedin.assets.store');
+
+                // Twitter/X Assets
+                Route::get('/twitter/{connection}/assets', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'selectTwitterAssets'])->name('twitter.assets');
+                Route::post('/twitter/{connection}/assets', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'storeTwitterAssets'])->name('twitter.assets.store');
+
+                // TikTok Assets
+                Route::get('/tiktok/{connection}/assets', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'selectTikTokAssets'])->name('tiktok.assets');
+                Route::post('/tiktok/{connection}/assets', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'storeTikTokAssets'])->name('tiktok.assets.store');
+
+                // Snapchat Assets
+                Route::get('/snapchat/{connection}/assets', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'selectSnapchatAssets'])->name('snapchat.assets');
+                Route::post('/snapchat/{connection}/assets', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'storeSnapchatAssets'])->name('snapchat.assets.store');
+
+                // Pinterest Assets
+                Route::get('/pinterest/{connection}/assets', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'selectPinterestAssets'])->name('pinterest.assets');
+                Route::post('/pinterest/{connection}/assets', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'storePinterestAssets'])->name('pinterest.assets.store');
+
+                // YouTube Assets
+                Route::get('/youtube/{connection}/assets', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'selectYouTubeAssets'])->name('youtube.assets');
+                Route::post('/youtube/{connection}/assets', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'storeYouTubeAssets'])->name('youtube.assets.store');
+
+                // Google Assets (Business Profile & Ads)
+                Route::get('/google/{connection}/assets', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'selectGoogleAssets'])->name('google.assets');
+                Route::post('/google/{connection}/assets', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'storeGoogleAssets'])->name('google.assets.store');
+
+                // Reddit Assets
+                Route::get('/reddit/{connection}/assets', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'selectRedditAssets'])->name('reddit.assets');
+                Route::post('/reddit/{connection}/assets', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'storeRedditAssets'])->name('reddit.assets.store');
 
                 // Generic Connection Actions
                 Route::post('/{connection}/test', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'testConnection'])->name('test');
