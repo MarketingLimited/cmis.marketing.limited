@@ -92,6 +92,7 @@ class DemoDataSeeder extends Seeder
     {
         $userOrgs = [
             // Admin in all orgs
+            ['user' => 'admin@cmis.test', 'org' => 'CMIS', 'role' => 'owner'],
             ['user' => 'admin@cmis.test', 'org' => 'TechVision Solutions', 'role' => 'owner'],
             ['user' => 'admin@cmis.test', 'org' => 'الشركة العربية للتسويق', 'role' => 'owner'],
             ['user' => 'admin@cmis.test', 'org' => 'FashionHub Retail', 'role' => 'owner'],

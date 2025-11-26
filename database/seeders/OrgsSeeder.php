@@ -17,6 +17,15 @@ class OrgsSeeder extends Seeder
 
         $orgs = [
             [
+                'org_id' => SeederConstants::ORG_CMIS,
+                'name' => 'CMIS',
+                'default_locale' => 'en',
+                'currency' => 'USD',
+                'created_at' => now(),
+                'deleted_at' => null,
+                'provider' => null,
+            ],
+            [
                 'org_id' => SeederConstants::ORG_TECHVISION,
                 'name' => 'TechVision Solutions',
                 'default_locale' => 'en',

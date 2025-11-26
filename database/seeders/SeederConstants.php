@@ -25,6 +25,7 @@ class SeederConstants
     // ==========================================
     // ORGANIZATION UUIDs (used by OrgsSeeder & DemoDataSeeder)
     // ==========================================
+    public const ORG_CMIS = '5c8d4b5a-7b8c-8d9e-2f1a-5b6c7d8e9f0a';
     public const ORG_TECHVISION = '9a5e0b1c-3d4e-4f5a-8b7c-1d2e3f4a5b6c';
     public const ORG_ARABIC_MARKETING = '8b6f1a2d-4e5f-5a6b-9c8d-2e3f4a5b6c7d';
     public const ORG_FASHIONHUB = '7c8e2b3f-5f6a-6b7c-0d9e-3f4a5b6c7d8e';
@@ -63,6 +64,7 @@ class SeederConstants
     public static function getOrgIds(): array
     {
         return [
+            'CMIS' => self::ORG_CMIS,
             'TechVision Solutions' => self::ORG_TECHVISION,
             'الشركة العربية للتسويق' => self::ORG_ARABIC_MARKETING,
             'FashionHub Retail' => self::ORG_FASHIONHUB,
