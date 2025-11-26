@@ -55,6 +55,7 @@ Route::prefix('integrations')->name('integrations.')->group(function () {
     Route::get('/tumblr/callback', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'callbackTumblr'])->name('tumblr.callback');
     Route::get('/reddit/callback', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'callbackReddit'])->name('reddit.callback');
     Route::get('/google-business/callback', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'callbackGoogleBusiness'])->name('google-business.callback');
+    Route::get('/google/callback', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'callbackGoogle'])->name('google.callback');
     Route::get('/snapchat/callback', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'callbackSnapchat'])->name('snapchat.callback');
 });
 
@@ -321,6 +322,12 @@ Route::middleware(['auth'])->group(function () {
                 Route::get('/meta/{connection}/assets', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'selectMetaAssets'])->name('meta.assets');
                 Route::post('/meta/{connection}/assets', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'storeMetaAssets'])->name('meta.assets.store');
 
+                // Google Service Account / OAuth Token Management
+                Route::get('/google/add', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'createGoogleToken'])->name('google.create');
+                Route::post('/google', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'storeGoogleToken'])->name('google.store');
+                Route::get('/google/{connection}/edit', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'editGoogleToken'])->name('google.edit');
+                Route::put('/google/{connection}', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'updateGoogleToken'])->name('google.update');
+
                 // Meta OAuth (Facebook Login)
                 Route::get('/meta/authorize', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'authorizeMeta'])->name('meta.authorize');
                 Route::get('/meta/callback', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'callbackMeta'])->name('meta.callback');
@@ -356,6 +363,9 @@ Route::middleware(['auth'])->group(function () {
                 // Google Business Profile OAuth
                 Route::get('/google-business/authorize', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'authorizeGoogleBusiness'])->name('google-business.authorize');
                 Route::get('/google-business/callback', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'callbackGoogleBusiness'])->name('google-business.callback');
+
+                // Google OAuth (unified for all Google services)
+                Route::get('/google/authorize', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'authorizeGoogle'])->name('google.authorize');
 
                 // Snapchat OAuth
                 Route::get('/snapchat/authorize', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'authorizeSnapchat'])->name('snapchat.authorize');

@@ -17,11 +17,16 @@
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
 
-    <!-- Chart.js CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <!-- Alpine.js CDN - loaded early with defer to prevent FOUC -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
-    <!-- Icons: Heroicons via CDN -->
+    <!-- Icons: Font Awesome CDN -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Chart.js CDN - Conditional Loading -->
+    @if(request()->routeIs('analytics.*') || request()->routeIs('orgs.dashboard.*') || request()->routeIs('dashboard.*'))
+    <script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    @endif
 
     <style>
         [x-cloak] { display: none !important; }
@@ -118,6 +123,34 @@
                 animation-iteration-count: 1 !important;
                 transition-duration: 0.01ms !important;
             }
+        }
+
+        /* Performance optimizations */
+        .org-card {
+            contain: layout style paint;
+        }
+
+        /* Better image rendering */
+        img {
+            image-rendering: -webkit-optimize-contrast;
+            image-rendering: crisp-edges;
+        }
+
+        /* Prevent layout shift */
+        [x-cloak] {
+            display: none !important;
+        }
+
+        /* Optimize animations */
+        @media (prefers-reduced-motion: no-preference) {
+            .animate-pulse {
+                animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
         }
     </style>
 
@@ -613,8 +646,5 @@
     </script>
 
     @stack('scripts')
-
-    <!-- Alpine.js CDN - loaded after scripts stack to ensure component functions are defined -->
-    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </body>
 </html>

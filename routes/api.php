@@ -1514,6 +1514,18 @@ Route::middleware(['auth:sanctum', 'validate.org.access', 'org.context'])
         // Social Publishing API - Fetch connected social accounts with real names
         Route::get('/social/accounts', [App\Http\Controllers\Social\SocialPostController::class, 'getConnectedAccounts'])->name('social.accounts');
 
+        // Social Location Search API - Facebook Places autocomplete
+        Route::get('/social/locations', [App\Http\Controllers\Social\SocialPostController::class, 'searchLocations'])->name('social.locations');
+
+        // Collaborator Suggestions API - Get previously used collaborators
+        Route::get('/social/collaborators/suggestions', [App\Http\Controllers\Social\SocialPostController::class, 'getCollaboratorSuggestions'])->name('social.collaborators.suggestions');
+
+        // Instagram Username Validation API - Verify username exists using Business Discovery
+        Route::post('/social/instagram/validate-username', [App\Http\Controllers\Social\SocialPostController::class, 'validateInstagramUsername'])->name('social.instagram.validate-username');
+
+        // Store Collaborator API - Save collaborator for future suggestions
+        Route::post('/social/collaborators', [App\Http\Controllers\Social\SocialPostController::class, 'storeCollaborator'])->name('social.collaborators.store');
+
         // Social Posts API (for social publishing & scheduling)
         Route::prefix('social/posts')->name('social.posts.')->group(function () {
             Route::get('/', [App\Http\Controllers\Social\SocialPostController::class, 'index'])->name('index');

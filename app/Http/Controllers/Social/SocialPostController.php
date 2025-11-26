@@ -372,15 +372,14 @@ class SocialPostController extends Controller
                 // Parse post options if provided
                 $postOptions = $request->post_options ? json_decode($request->post_options, true) : [];
 
-                // Build comprehensive metadata with all post options
+                // Build metadata with only API-supported options
                 $metadata = [
                     'platform_details' => $platform,
                     'publish_type' => $request->publish_type,
                     'connection_id' => $connection?->connection_id,
                     'is_queued' => $request->publish_type === 'queue',
 
-                    // Instagram/Facebook Common Options
-                    'instagram_options' => $postOptions['instagram'] ?? [],
+                    // Instagram/Facebook API-Supported Options
                     'first_comment' => $postOptions['instagram']['firstComment'] ?? $request->first_comment ?? null,
                     'location' => $postOptions['instagram']['location'] ?? $request->location ?? null,
                     'location_id' => $postOptions['instagram']['locationId'] ?? null,
@@ -388,59 +387,42 @@ class SocialPostController extends Controller
                     'collaborators' => $postOptions['instagram']['collaborators'] ?? [],
                     'product_tags' => $postOptions['instagram']['productTags'] ?? [],
                     'alt_text' => $postOptions['instagram']['altText'] ?? null,
-                    'ai_label' => $postOptions['instagram']['aiLabel'] ?? false,
-                    'enable_captions' => $postOptions['instagram']['enableCaptions'] ?? true,
-                    'translate_captions' => $postOptions['instagram']['translateCaptions'] ?? false,
-                    'comments_enabled' => $postOptions['instagram']['commentsEnabled'] ?? true,
-                    'hide_like_count' => $postOptions['instagram']['hideLikeCount'] ?? false,
-                    'hide_share_count' => $postOptions['instagram']['hideShareCount'] ?? false,
-                    'pin_to_profile' => $postOptions['instagram']['pinToProfile'] ?? false,
-                    'pin_to_reels_tab' => $postOptions['instagram']['pinToReelsTab'] ?? false,
-                    'allow_download' => $postOptions['instagram']['allowDownload'] ?? true,
-                    'archive_after_post' => $postOptions['instagram']['archiveAfterPost'] ?? false,
 
-                    // Reel-Specific Options
-                    'reel_options' => $postOptions['reel'] ?? [],
+                    // Reel API-Supported Options
                     'cover_type' => $postOptions['reel']['coverType'] ?? 'frame',
                     'cover_frame_offset' => $postOptions['reel']['coverFrameOffset'] ?? 0,
                     'cover_image_url' => $postOptions['reel']['coverImageUrl'] ?? null,
                     'share_to_feed' => $postOptions['reel']['shareToFeed'] ?? true,
-                    'allow_remix' => $postOptions['reel']['allowRemix'] ?? true,
-                    'audio_name' => $postOptions['reel']['audioName'] ?? null,
 
-                    // Story Options
-                    'story_options' => $postOptions['story'] ?? [],
-
-                    // Carousel Options
-                    'carousel_options' => $postOptions['carousel'] ?? [],
+                    // Carousel API-Supported Options
                     'alt_texts' => $postOptions['carousel']['altTexts'] ?? [],
 
-                    // TikTok Options
-                    'tiktok_options' => $postOptions['tiktok'] ?? [],
+                    // TikTok API-Supported Options (Content Posting API)
                     'tiktok_viewer_setting' => $postOptions['tiktok']['viewerSetting'] ?? 'public',
                     'tiktok_disable_comments' => $postOptions['tiktok']['disableComments'] ?? false,
                     'tiktok_disable_duet' => $postOptions['tiktok']['disableDuet'] ?? false,
                     'tiktok_disable_stitch' => $postOptions['tiktok']['disableStitch'] ?? false,
-                    'tiktok_allow_download' => $postOptions['tiktok']['allowDownload'] ?? true,
                     'tiktok_brand_content' => $postOptions['tiktok']['brandContentToggle'] ?? false,
                     'tiktok_ai_generated' => $postOptions['tiktok']['aiGenerated'] ?? false,
 
-                    // LinkedIn Options
-                    'linkedin_options' => $postOptions['linkedin'] ?? [],
+                    // LinkedIn API-Supported Options
                     'linkedin_visibility' => $postOptions['linkedin']['visibility'] ?? 'PUBLIC',
                     'linkedin_article_title' => $postOptions['linkedin']['articleTitle'] ?? null,
                     'linkedin_article_description' => $postOptions['linkedin']['articleDescription'] ?? null,
                     'linkedin_allow_comments' => $postOptions['linkedin']['allowComments'] ?? true,
 
-                    // Twitter/X Options
-                    'twitter_options' => $postOptions['twitter'] ?? [],
+                    // Twitter/X API-Supported Options
                     'twitter_reply_restriction' => $postOptions['twitter']['replyRestriction'] ?? 'everyone',
-                    'twitter_sensitive_content' => $postOptions['twitter']['sensitiveContent'] ?? false,
                     'twitter_thread_tweets' => $postOptions['twitter']['threadTweets'] ?? [],
                     'twitter_alt_text' => $postOptions['twitter']['altText'] ?? null,
 
-                    // Facebook Options
-                    'facebook_options' => $postOptions['facebook'] ?? [],
+                    // Product Details (DM-based orders - No Instagram Shopping required)
+                    'product_enabled' => $postOptions['product']['enabled'] ?? false,
+                    'product_title' => $postOptions['product']['title'] ?? null,
+                    'product_price' => $postOptions['product']['price'] ?? null,
+                    'product_currency' => $postOptions['product']['currency'] ?? 'SAR',
+                    'product_description' => $postOptions['product']['description'] ?? null,
+                    'product_order_message' => $postOptions['product']['orderMessage'] ?? null,
                 ];
 
                 // Insert directly using DB query to avoid model issues
@@ -1399,5 +1381,289 @@ class SocialPostController extends Controller
         ];
 
         return $this->success($postTypes, 'Post types retrieved successfully');
+    }
+
+    /**
+     * Search for locations using Facebook Places API.
+     * Returns location suggestions for autocomplete.
+     */
+    public function searchLocations(Request $request, string $org)
+    {
+        $request->validate([
+            'query' => 'required|string|min:2|max:100',
+        ]);
+
+        try {
+            // Get Meta connection for access token
+            $connection = PlatformConnection::where('org_id', $org)
+                ->where('platform', 'meta')
+                ->where('status', 'active')
+                ->first();
+
+            if (!$connection) {
+                return $this->error('No active Meta connection found. Please connect your Facebook/Instagram account first.', 400);
+            }
+
+            $accessToken = $connection->access_token;
+            $query = $request->query('query');
+
+            // Search Facebook Places API
+            $response = Http::timeout(15)->get('https://graph.facebook.com/v21.0/search', [
+                'type' => 'place',
+                'q' => $query,
+                'fields' => 'id,name,location,category_list',
+                'limit' => 10,
+                'access_token' => $accessToken,
+            ]);
+
+            if (!$response->successful()) {
+                $error = $response->json('error.message', 'Failed to search locations');
+                Log::warning('Facebook Places search failed', [
+                    'query' => $query,
+                    'error' => $error,
+                ]);
+                return $this->error($error, 400);
+            }
+
+            $places = $response->json('data', []);
+
+            // Format results for autocomplete
+            $locations = array_map(function ($place) {
+                $location = $place['location'] ?? [];
+                $categories = $place['category_list'] ?? [];
+                $categoryName = !empty($categories) ? $categories[0]['name'] ?? '' : '';
+
+                // Build address string
+                $addressParts = array_filter([
+                    $location['city'] ?? '',
+                    $location['state'] ?? '',
+                    $location['country'] ?? '',
+                ]);
+                $address = implode(', ', $addressParts);
+
+                return [
+                    'id' => $place['id'],
+                    'name' => $place['name'],
+                    'address' => $address,
+                    'category' => $categoryName,
+                    'latitude' => $location['latitude'] ?? null,
+                    'longitude' => $location['longitude'] ?? null,
+                ];
+            }, $places);
+
+            return $this->success($locations, 'Locations found');
+
+        } catch (\Exception $e) {
+            Log::error('Location search error', [
+                'org_id' => $org,
+                'query' => $request->query('query'),
+                'error' => $e->getMessage(),
+            ]);
+            return $this->error('Failed to search locations: ' . $e->getMessage(), 500);
+        }
+    }
+
+    /**
+     * Get previously used collaborators for suggestions.
+     * Extracts unique collaborator usernames from past posts.
+     */
+    public function getCollaboratorSuggestions(Request $request, string $org)
+    {
+        try {
+            DB::statement("SELECT set_config('app.current_org_id', ?, false)", [$org]);
+
+            // Get unique collaborators from past Instagram posts
+            $posts = DB::table('cmis.social_posts')
+                ->where('org_id', $org)
+                ->where('platform', 'instagram')
+                ->whereNotNull('metadata')
+                ->whereNull('deleted_at')
+                ->orderBy('created_at', 'desc')
+                ->limit(100) // Check last 100 posts
+                ->pluck('metadata');
+
+            $collaborators = [];
+
+            foreach ($posts as $metadataJson) {
+                $metadata = json_decode($metadataJson, true);
+                if (!empty($metadata['collaborators']) && is_array($metadata['collaborators'])) {
+                    foreach ($metadata['collaborators'] as $collab) {
+                        $username = ltrim($collab, '@');
+                        if (!empty($username) && !in_array($username, $collaborators)) {
+                            $collaborators[] = $username;
+                        }
+                    }
+                }
+            }
+
+            // Limit to 20 most recent unique collaborators
+            $collaborators = array_slice($collaborators, 0, 20);
+
+            return $this->success([
+                'collaborators' => $collaborators,
+                'total' => count($collaborators),
+            ], 'Collaborator suggestions retrieved');
+
+        } catch (\Exception $e) {
+            Log::error('Failed to get collaborator suggestions', [
+                'org_id' => $org,
+                'error' => $e->getMessage(),
+            ]);
+            return $this->error('Failed to get collaborator suggestions', 500);
+        }
+    }
+
+    /**
+     * Validate an Instagram username exists using Instagram Business Discovery API.
+     * This API allows looking up public Instagram accounts by username.
+     */
+    public function validateInstagramUsername(Request $request, string $org)
+    {
+        $request->validate([
+            'username' => 'required|string|min:1|max:30',
+        ]);
+
+        try {
+            // Get Meta connection for access token
+            $connection = PlatformConnection::where('org_id', $org)
+                ->where('platform', 'meta')
+                ->where('status', 'active')
+                ->first();
+
+            if (!$connection) {
+                return $this->error('No active Meta connection found', 400);
+            }
+
+            $accessToken = $connection->access_token;
+            $username = ltrim($request->username, '@');
+
+            // Get the Instagram Business Account ID from selected assets
+            $metadata = $connection->account_metadata ?? [];
+            $selectedAssets = $metadata['selected_assets'] ?? [];
+            $instagramAccountIds = $selectedAssets['instagram_accounts'] ?? [];
+
+            if (empty($instagramAccountIds)) {
+                return $this->error('No Instagram Business account connected', 400);
+            }
+
+            $igAccountId = $instagramAccountIds[0]; // Use first connected account
+
+            // Use Instagram Business Discovery API to look up the username
+            // This requires the instagram_basic permission and a connected IG Business account
+            $response = Http::timeout(15)->get("https://graph.facebook.com/v21.0/{$igAccountId}", [
+                'access_token' => $accessToken,
+                'fields' => "business_discovery.username({$username}){id,username,name,profile_picture_url,followers_count,follows_count,media_count,biography}",
+            ]);
+
+            if ($response->successful()) {
+                $data = $response->json();
+                $discovery = $data['business_discovery'] ?? null;
+
+                if ($discovery) {
+                    return $this->success([
+                        'valid' => true,
+                        'user' => [
+                            'id' => $discovery['id'] ?? null,
+                            'username' => $discovery['username'] ?? $username,
+                            'name' => $discovery['name'] ?? null,
+                            'profile_picture' => $discovery['profile_picture_url'] ?? null,
+                            'followers' => $discovery['followers_count'] ?? 0,
+                            'following' => $discovery['follows_count'] ?? 0,
+                            'posts' => $discovery['media_count'] ?? 0,
+                            'bio' => $discovery['biography'] ?? null,
+                        ],
+                    ], 'Username is valid');
+                }
+            }
+
+            // If we get here, the username wasn't found or there was an error
+            $errorMsg = $response->json('error.message', 'Username not found');
+            $errorCode = $response->json('error.code');
+
+            // Handle specific error codes
+            if ($errorCode === 110) {
+                // User not found
+                return $this->success([
+                    'valid' => false,
+                    'message' => 'لم يتم العثور على المستخدم',
+                ], 'Username not found');
+            }
+
+            Log::warning('Instagram username validation failed', [
+                'username' => $username,
+                'error' => $errorMsg,
+                'code' => $errorCode,
+            ]);
+
+            return $this->success([
+                'valid' => false,
+                'message' => 'لا يمكن التحقق من المستخدم',
+            ], 'Could not validate username');
+
+        } catch (\Exception $e) {
+            Log::error('Instagram username validation error', [
+                'org_id' => $org,
+                'username' => $request->username,
+                'error' => $e->getMessage(),
+            ]);
+            return $this->error('Failed to validate username: ' . $e->getMessage(), 500);
+        }
+    }
+
+    /**
+     * Store a collaborator for future suggestions.
+     * Called when a post with collaborators is successfully published.
+     */
+    public function storeCollaborator(Request $request, string $org)
+    {
+        $request->validate([
+            'username' => 'required|string|min:1|max:30',
+        ]);
+
+        try {
+            DB::statement("SELECT set_config('app.current_org_id', ?, false)", [$org]);
+
+            $username = ltrim($request->username, '@');
+
+            // Check if already exists
+            $exists = DB::table('cmis.collaborator_suggestions')
+                ->where('org_id', $org)
+                ->where('username', $username)
+                ->whereNull('deleted_at')
+                ->exists();
+
+            if ($exists) {
+                // Update last used timestamp
+                DB::table('cmis.collaborator_suggestions')
+                    ->where('org_id', $org)
+                    ->where('username', $username)
+                    ->update([
+                        'use_count' => DB::raw('use_count + 1'),
+                        'last_used_at' => now(),
+                        'updated_at' => now(),
+                    ]);
+            } else {
+                // Insert new collaborator
+                DB::table('cmis.collaborator_suggestions')->insert([
+                    'id' => Str::uuid()->toString(),
+                    'org_id' => $org,
+                    'username' => $username,
+                    'use_count' => 1,
+                    'last_used_at' => now(),
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            }
+
+            return $this->success(null, 'Collaborator stored');
+
+        } catch (\Exception $e) {
+            // Silently fail - this is not critical
+            Log::warning('Failed to store collaborator', [
+                'org_id' => $org,
+                'error' => $e->getMessage(),
+            ]);
+            return $this->success(null, 'OK');
+        }
     }
 }

@@ -4,6 +4,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Console\Scheduling\Schedule;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -31,6 +32,13 @@ return Application::configure(basePath: dirname(__DIR__))
                 ->group(base_path('routes/api-ai-quota.php'));
         }
     )
+    ->withSchedule(function (Schedule $schedule): void {
+        // Import the Kernel's schedule method
+        $kernel = app(\App\Console\Kernel::class);
+        $reflection = new \ReflectionClass($kernel);
+        $method = $reflection->getMethod('schedule');
+        $method->invoke($kernel, $schedule);
+    })
     ->withMiddleware(function (Middleware $middleware): void {
         // Apply security headers globally to all requests
         $middleware->append(\App\Http\Middleware\SecurityHeaders::class);

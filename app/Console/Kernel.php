@@ -13,6 +13,9 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use App\Jobs\Sync\DispatchPlatformSyncs;
+use App\Jobs\Social\ProcessScheduledPostsJob;
+use App\Jobs\Social\RefreshExpiredTokensJob;
+use App\Jobs\Social\SyncPlatformAnalyticsJob;
 
 class Kernel extends ConsoleKernel
 {
@@ -110,6 +113,46 @@ class Kernel extends ConsoleKernel
             })
             ->onFailure(function () {
                 Log::error('❌ Failed to publish social media posts');
+            });
+
+        // ==========================================
+        // 📱 Social Media Publishing & Analytics
+        // ==========================================
+
+        // Process scheduled posts queue every minute
+        $schedule->job(new ProcessScheduledPostsJob())
+            ->everyMinute()
+            ->withoutOverlapping()
+            ->onOneServer()
+            ->onSuccess(function () {
+                Log::info('✅ Scheduled posts processed successfully');
+            })
+            ->onFailure(function () {
+                Log::error('❌ Failed to process scheduled posts');
+            });
+
+        // Refresh expired OAuth tokens every hour
+        $schedule->job(new RefreshExpiredTokensJob())
+            ->hourly()
+            ->withoutOverlapping()
+            ->onOneServer()
+            ->onSuccess(function () {
+                Log::info('✅ Platform tokens refreshed successfully');
+            })
+            ->onFailure(function () {
+                Log::error('❌ Failed to refresh platform tokens');
+            });
+
+        // Sync platform analytics every 30 minutes
+        $schedule->job(new SyncPlatformAnalyticsJob())
+            ->everyThirtyMinutes()
+            ->withoutOverlapping()
+            ->onOneServer()
+            ->onSuccess(function () {
+                Log::info('✅ Platform analytics synced successfully');
+            })
+            ->onFailure(function () {
+                Log::error('❌ Failed to sync platform analytics');
             });
 
         // 🔐 NEW Week 2: Check for expiring integration tokens daily at 9 AM
@@ -298,9 +341,9 @@ class Kernel extends ConsoleKernel
                 'created_at' => now(),
             ]);
         })
+        ->name('cognitive-health-report')
         ->dailyAt('02:00')
         ->onOneServer()
-        ->withoutOverlapping()
         ->onFailure(function () {
             Log::warning('⚠️ فشل توليد التقرير الإدراكي الدوري في ' . now());
         });
@@ -328,9 +371,9 @@ class Kernel extends ConsoleKernel
                 ]);
             }
         })
+        ->name('cognitive-morning-email')
         ->dailyAt('08:00')
         ->onOneServer()
-        ->withoutOverlapping()
         ->onFailure(function () {
             Log::warning('⚠️ فشل إرسال التقرير الإدراكي الصباحي في ' . now());
         });

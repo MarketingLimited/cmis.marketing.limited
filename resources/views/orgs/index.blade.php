@@ -3,7 +3,7 @@
 @section('title', 'المؤسسات')
 
 @section('content')
-<div x-data="orgsManager({{ Js::from($orgs) }})">
+<div x-data="orgsManager({{ Js::from($orgs) }})" x-cloak>
 
     <!-- Page Header -->
     <div class="flex items-center justify-between mb-6">
@@ -50,10 +50,32 @@
         </div>
     </x-ui.card>
 
+    <!-- Loading Skeleton (shows before Alpine.js loads) -->
+    <div x-show="false" x-cloak class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+        @for($i = 0; $i < 6; $i++)
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden animate-pulse">
+            <div class="h-20 sm:h-24 bg-gradient-to-br from-gray-300 to-gray-400"></div>
+            <div class="pt-10 sm:pt-12 p-4 sm:p-6 space-y-3">
+                <div class="h-6 bg-gray-300 rounded w-3/4"></div>
+                <div class="flex gap-2">
+                    <div class="h-6 bg-gray-200 rounded w-16"></div>
+                    <div class="h-6 bg-gray-200 rounded w-16"></div>
+                </div>
+                <div class="h-4 bg-gray-200 rounded w-1/2"></div>
+                <div class="grid grid-cols-3 gap-2 pt-2">
+                    <div class="h-12 bg-gray-200 rounded"></div>
+                    <div class="h-12 bg-gray-200 rounded"></div>
+                    <div class="h-12 bg-gray-200 rounded"></div>
+                </div>
+            </div>
+        </div>
+        @endfor
+    </div>
+
     <!-- Organizations Grid -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+    <div x-show="filteredOrgs.length > 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
         <template x-for="org in filteredOrgs" :key="org.org_id">
-            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-xl transition-all duration-200 overflow-hidden">
+            <div class="org-card bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-xl transition-all duration-200 overflow-hidden">
                 <!-- Header with gradient -->
                 <div class="h-20 sm:h-24 bg-gradient-to-br from-blue-500 to-purple-600 relative">
                     <div class="absolute bottom-0 right-4 sm:right-6 transform translate-y-1/2">

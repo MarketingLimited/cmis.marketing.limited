@@ -403,6 +403,103 @@ return [
         ],
     ],
 
+    'google' => [
+        'name' => 'Google Services',
+        'enabled' => true,
+        'oauth_version' => '2.0',
+        'client_id' => env('GOOGLE_CLIENT_ID'),
+        'client_secret' => env('GOOGLE_CLIENT_SECRET'),
+        'redirect_uri' => env('GOOGLE_REDIRECT_URI', env('APP_URL') . '/integrations/google/callback'),
+        'rate_limit' => 1000,
+        'base_url' => 'https://www.googleapis.com',
+        'authorize_url' => 'https://accounts.google.com/o/oauth2/v2/auth',
+        'token_url' => 'https://oauth2.googleapis.com/token',
+        'userinfo_url' => 'https://www.googleapis.com/oauth2/v2/userinfo',
+        'scopes' => [
+            // Core profile
+            'openid',
+            'email',
+            'profile',
+            // YouTube
+            'https://www.googleapis.com/auth/youtube.readonly',
+            'https://www.googleapis.com/auth/youtube.upload',
+            'https://www.googleapis.com/auth/youtube',
+            // Google Ads
+            'https://www.googleapis.com/auth/adwords',
+            // Analytics
+            'https://www.googleapis.com/auth/analytics.readonly',
+            'https://www.googleapis.com/auth/analytics.edit',
+            // Business Profile
+            'https://www.googleapis.com/auth/business.manage',
+            // Tag Manager
+            'https://www.googleapis.com/auth/tagmanager.readonly',
+            'https://www.googleapis.com/auth/tagmanager.edit.containers',
+            // Search Console
+            'https://www.googleapis.com/auth/webmasters.readonly',
+            // Calendar
+            'https://www.googleapis.com/auth/calendar.readonly',
+            // Drive
+            'https://www.googleapis.com/auth/drive.readonly',
+            'https://www.googleapis.com/auth/drive.metadata.readonly',
+        ],
+        'services' => [
+            'youtube' => [
+                'name' => 'YouTube',
+                'base_url' => 'https://www.googleapis.com/youtube/v3',
+                'icon' => 'fab fa-youtube',
+                'color' => 'red',
+            ],
+            'google_ads' => [
+                'name' => 'Google Ads',
+                'base_url' => 'https://googleads.googleapis.com',
+                'icon' => 'fas fa-ad',
+                'color' => 'green',
+            ],
+            'analytics' => [
+                'name' => 'Google Analytics',
+                'base_url' => 'https://analyticsadmin.googleapis.com/v1beta',
+                'icon' => 'fas fa-chart-line',
+                'color' => 'orange',
+            ],
+            'business_profile' => [
+                'name' => 'Google Business Profile',
+                'base_url' => 'https://mybusinessbusinessinformation.googleapis.com/v1',
+                'icon' => 'fas fa-store',
+                'color' => 'blue',
+            ],
+            'tag_manager' => [
+                'name' => 'Tag Manager',
+                'base_url' => 'https://www.googleapis.com/tagmanager/v2',
+                'icon' => 'fas fa-code',
+                'color' => 'purple',
+            ],
+            'merchant_center' => [
+                'name' => 'Merchant Center',
+                'base_url' => 'https://shoppingcontent.googleapis.com/content/v2.1',
+                'icon' => 'fas fa-shopping-cart',
+                'color' => 'teal',
+            ],
+            'search_console' => [
+                'name' => 'Search Console',
+                'base_url' => 'https://searchconsole.googleapis.com',
+                'icon' => 'fas fa-search',
+                'color' => 'indigo',
+            ],
+            'calendar' => [
+                'name' => 'Google Calendar',
+                'base_url' => 'https://www.googleapis.com/calendar/v3',
+                'icon' => 'fas fa-calendar',
+                'color' => 'cyan',
+            ],
+            'drive' => [
+                'name' => 'Google Drive',
+                'base_url' => 'https://www.googleapis.com/drive/v3',
+                'icon' => 'fas fa-folder',
+                'color' => 'yellow',
+            ],
+        ],
+    ],
+
     'google_business' => [
         'name' => 'Google Business Profile',
         'enabled' => true,
