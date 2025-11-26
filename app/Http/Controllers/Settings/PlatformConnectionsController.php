@@ -1076,13 +1076,24 @@ class PlatformConnectionsController extends Controller
     {
         $pixels = [];
 
+        Log::info('Fetching Meta Pixels', ['ad_accounts_count' => count($adAccounts)]);
+
+        if (empty($adAccounts)) {
+            Log::warning('No ad accounts provided for pixel lookup');
+            return $pixels;
+        }
+
         try {
             foreach ($adAccounts as $account) {
                 $accountId = $account['id'] ?? null;
-                if (!$accountId) continue;
+                if (!$accountId) {
+                    Log::warning('Ad account missing ID', ['account' => $account]);
+                    continue;
+                }
 
                 // Ensure account ID has act_ prefix for ad account endpoints
                 $formattedAccountId = str_starts_with($accountId, 'act_') ? $accountId : 'act_' . $accountId;
+                Log::info('Fetching pixels for ad account', ['account_id' => $formattedAccountId]);
 
                 // Use only basic fields - some fields may be deprecated or require advanced access
                 $response = Http::timeout(15)->get("https://graph.facebook.com/v21.0/{$formattedAccountId}/adspixels", [
@@ -1091,8 +1102,19 @@ class PlatformConnectionsController extends Controller
                     'limit' => 50,
                 ]);
 
+                Log::info('Pixels API response', [
+                    'account_id' => $formattedAccountId,
+                    'status' => $response->status(),
+                    'successful' => $response->successful(),
+                ]);
+
                 if ($response->successful()) {
-                    foreach ($response->json('data', []) as $pixel) {
+                    $pixelData = $response->json('data', []);
+                    Log::info('Pixels found for ad account', [
+                        'account_id' => $formattedAccountId,
+                        'pixels_count' => count($pixelData),
+                    ]);
+                    foreach ($pixelData as $pixel) {
                         // Avoid duplicates
                         $existingIds = array_column($pixels, 'id');
                         if (!in_array($pixel['id'], $existingIds)) {
@@ -1128,38 +1150,62 @@ class PlatformConnectionsController extends Controller
     /**
      * Get Product Catalogs.
      *
-     * According to Meta Graph API documentation:
-     * 1. First get user's businesses: GET /me/businesses
-     * 2. Then get catalogs for each business: GET /{businessId}/owned_product_catalogs
+     * Note: /me/businesses often returns empty for System Users even when businesses exist.
+     * Workaround: Extract business IDs from ad accounts which include the business field.
      *
      * @see https://developers.facebook.com/docs/marketing-api/reference/product-catalog
      */
     private function getMetaCatalogs(string $accessToken): array
     {
         $catalogs = [];
+        $businesses = [];
 
         try {
-            // Step 1: Get user's businesses first
+            // Step 1: Try /me/businesses first
             $businessesResponse = Http::timeout(15)->get('https://graph.facebook.com/v21.0/me/businesses', [
                 'access_token' => $accessToken,
                 'fields' => 'id,name',
                 'limit' => 50,
             ]);
 
-            $businesses = [];
             if ($businessesResponse->successful()) {
                 $businesses = $businessesResponse->json('data', []);
-                Log::info('Fetched businesses for catalog lookup', ['count' => count($businesses)]);
-            } else {
-                Log::warning('Failed to fetch businesses for catalog lookup', [
-                    'status' => $businessesResponse->status(),
-                    'error' => $businessesResponse->json('error.message'),
-                    'error_code' => $businessesResponse->json('error.code'),
-                    'error_type' => $businessesResponse->json('error.type'),
-                ]);
+                Log::info('Fetched businesses from /me/businesses', ['count' => count($businesses)]);
             }
 
-            // Step 2: For each business, fetch owned product catalogs
+            // Step 2: If /me/businesses is empty, extract business IDs from ad accounts
+            // This is a workaround because /me/businesses often returns empty for System Users
+            if (empty($businesses)) {
+                Log::info('No businesses from /me/businesses, trying to extract from ad accounts');
+
+                $adAccountsResponse = Http::timeout(15)->get('https://graph.facebook.com/v21.0/me/adaccounts', [
+                    'access_token' => $accessToken,
+                    'fields' => 'id,name,business{id,name}',
+                    'limit' => 50,
+                ]);
+
+                if ($adAccountsResponse->successful()) {
+                    $seenBusinessIds = [];
+                    foreach ($adAccountsResponse->json('data', []) as $adAccount) {
+                        $business = $adAccount['business'] ?? null;
+                        if ($business && !empty($business['id']) && !in_array($business['id'], $seenBusinessIds)) {
+                            $businesses[] = [
+                                'id' => $business['id'],
+                                'name' => $business['name'] ?? 'Unknown Business',
+                            ];
+                            $seenBusinessIds[] = $business['id'];
+                        }
+                    }
+                    Log::info('Extracted businesses from ad accounts', ['count' => count($businesses)]);
+                }
+            }
+
+            if (empty($businesses)) {
+                Log::warning('No businesses found for catalog lookup');
+                return $catalogs;
+            }
+
+            // Step 3: For each business, fetch owned product catalogs
             foreach ($businesses as $business) {
                 $businessId = $business['id'] ?? null;
                 $businessName = $business['name'] ?? 'Unknown Business';
@@ -1185,6 +1231,11 @@ class PlatformConnectionsController extends Controller
                             ];
                         }
                     }
+                    Log::info('Fetched catalogs for business', [
+                        'business_id' => $businessId,
+                        'business_name' => $businessName,
+                        'catalogs_count' => count($catalogResponse->json('data', [])),
+                    ]);
                 } else {
                     Log::warning('Failed to fetch catalogs for business', [
                         'business_id' => $businessId,
@@ -1196,7 +1247,7 @@ class PlatformConnectionsController extends Controller
                 }
             }
 
-            // Step 3: Also try client catalogs (catalogs shared with you)
+            // Step 4: Also try client catalogs (catalogs shared with you)
             foreach ($businesses as $business) {
                 $businessId = $business['id'] ?? null;
                 if (!$businessId) continue;
@@ -1223,7 +1274,6 @@ class PlatformConnectionsController extends Controller
                         }
                     }
                 }
-                // Don't log warning for client catalogs as they're optional
             }
 
             Log::info('Total catalogs fetched', ['count' => count($catalogs)]);
