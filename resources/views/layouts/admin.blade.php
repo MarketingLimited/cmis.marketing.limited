@@ -333,6 +333,123 @@
                         <i class="fas fa-bars text-lg sm:text-xl"></i>
                     </button>
 
+                    <!-- Organization Switcher -->
+                    <div class="relative" x-data="orgSwitcher()" x-init="init()">
+                        <!-- Desktop & Tablet: Dropdown Button -->
+                        <button @click="toggleOrgMenu()"
+                                :aria-expanded="orgMenuOpen"
+                                aria-label="تبديل المؤسسة"
+                                class="hidden sm:flex items-center gap-2 px-3 py-2 text-sm bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 border border-blue-200 dark:border-blue-800 text-gray-700 dark:text-gray-300 rounded-lg hover:shadow-md transition-all">
+                            <div class="w-7 h-7 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center text-white font-bold text-xs"
+                                 x-text="currentOrg ? currentOrg.name.substring(0, 2).toUpperCase() : 'XX'"></div>
+                            <span class="font-medium max-w-[150px] truncate" x-text="currentOrg ? currentOrg.name : 'تحميل...'"></span>
+                            <i class="fas fa-chevron-down text-xs transition-transform" :class="{ 'rotate-180': orgMenuOpen }"></i>
+                        </button>
+
+                        <!-- Mobile: Compact Button -->
+                        <button @click="toggleOrgMenu()"
+                                :aria-expanded="orgMenuOpen"
+                                aria-label="تبديل المؤسسة"
+                                class="sm:hidden flex items-center justify-center w-10 h-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg text-white font-bold text-sm shadow-md">
+                            <span x-text="currentOrg ? currentOrg.name.substring(0, 2).toUpperCase() : 'XX'"></span>
+                        </button>
+
+                        <!-- Mobile Backdrop -->
+                        <div x-show="orgMenuOpen"
+                             @click="orgMenuOpen = false"
+                             class="fixed inset-0 bg-black bg-opacity-50 z-[80] sm:hidden"
+                             x-cloak></div>
+
+                        <!-- Desktop: Dropdown | Mobile: Bottom Sheet -->
+                        <div x-show="orgMenuOpen"
+                             @click.away="orgMenuOpen = false"
+                             class="fixed left-0 right-0 bottom-0 sm:absolute sm:left-0 sm:right-auto sm:top-full sm:mt-2
+                                    w-full sm:w-80
+                                    bg-white dark:bg-gray-800
+                                    rounded-t-2xl sm:rounded-lg
+                                    shadow-2xl sm:shadow-xl
+                                    border-t border-gray-200 dark:border-gray-700 sm:border
+                                    z-[90]
+                                    max-h-[70vh] sm:max-h-96 overflow-hidden"
+                             x-cloak>
+
+                            <!-- Mobile Pull Indicator -->
+                            <div class="sm:hidden flex justify-center py-2 border-b border-gray-200 dark:border-gray-700">
+                                <div class="w-12 h-1 bg-gray-300 dark:bg-gray-600 rounded-full"></div>
+                            </div>
+
+                            <!-- Header -->
+                            <div class="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
+                                <h3 class="font-semibold text-gray-900 dark:text-white text-sm sm:text-base">المؤسسات المتاحة</h3>
+
+                                <!-- Search Bar -->
+                                <div class="mt-3 relative">
+                                    <input type="text"
+                                           x-model="searchQuery"
+                                           @input="filterOrgs()"
+                                           placeholder="البحث عن مؤسسة..."
+                                           class="w-full px-3 py-2 text-sm bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                    <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+                                </div>
+                            </div>
+
+                            <!-- Organizations List -->
+                            <div class="overflow-y-auto max-h-[50vh] sm:max-h-64">
+                                <!-- Loading State -->
+                                <div x-show="loading" class="p-8 text-center">
+                                    <i class="fas fa-spinner fa-spin text-2xl text-gray-400"></i>
+                                    <p class="text-sm text-gray-500 mt-2">جارٍ التحميل...</p>
+                                </div>
+
+                                <!-- Empty State -->
+                                <template x-if="!loading && filteredOrgs.length === 0">
+                                    <div class="p-8 text-center text-gray-500">
+                                        <i class="fas fa-building text-3xl mb-2"></i>
+                                        <p class="text-sm">لا توجد مؤسسات</p>
+                                    </div>
+                                </template>
+
+                                <!-- Organizations -->
+                                <template x-for="org in filteredOrgs" :key="org.org_id">
+                                    <button @click="switchOrg(org.org_id)"
+                                            :disabled="org.is_current || switching"
+                                            class="w-full px-4 py-3 sm:py-4 flex items-center gap-3 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors border-b border-gray-100 dark:border-gray-700 last:border-0 disabled:opacity-50"
+                                            :class="{ 'bg-blue-50 dark:bg-blue-900/20': org.is_current }">
+
+                                        <!-- Org Icon/Avatar -->
+                                        <div class="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center text-white font-bold text-sm"
+                                             x-text="org.name.substring(0, 2).toUpperCase()"></div>
+
+                                        <!-- Org Info -->
+                                        <div class="flex-1 text-right min-w-0">
+                                            <div class="flex items-center gap-2">
+                                                <p class="font-medium text-gray-900 dark:text-white text-sm truncate"
+                                                   x-text="org.name"></p>
+                                                <i x-show="org.is_current"
+                                                   class="fas fa-check-circle text-green-500 text-sm flex-shrink-0"></i>
+                                            </div>
+                                            <p class="text-xs text-gray-500 dark:text-gray-400"
+                                               x-text="`${org.currency || 'BHD'} • ${org.default_locale || 'ar-BH'}`"></p>
+                                        </div>
+
+                                        <!-- Loading Spinner (when switching) -->
+                                        <i x-show="switching && org.org_id === switchingToOrgId"
+                                           class="fas fa-spinner fa-spin text-blue-600 text-sm"></i>
+                                    </button>
+                                </template>
+                            </div>
+
+                            <!-- Footer: Create New Org (Optional) -->
+                            <div class="px-4 py-3 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50">
+                                <a href="{{ route('orgs.create') }}"
+                                   class="flex items-center justify-center gap-2 w-full px-4 py-2 text-sm text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors">
+                                    <i class="fas fa-plus-circle"></i>
+                                    <span>إنشاء مؤسسة جديدة</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="relative hidden sm:block" x-data="{ searchOpen: false }">
                         <button @click="searchOpen = !searchOpen" class="flex items-center px-3 sm:px-4 py-1.5 sm:py-2 text-sm sm:text-base text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition">
                             <i class="fas fa-search ml-2 text-sm"></i>
@@ -563,6 +680,148 @@
                 toggleDarkMode() {
                     this.darkMode = !this.darkMode;
                     localStorage.setItem('darkMode', this.darkMode);
+                }
+            };
+        }
+
+        // Organization Switcher
+        function orgSwitcher() {
+            return {
+                orgMenuOpen: false,
+                loading: false,
+                switching: false,
+                switchingToOrgId: null,
+                organizations: [],
+                filteredOrgs: [],
+                currentOrg: null,
+                searchQuery: '',
+
+                async init() {
+                    await this.loadOrganizations();
+                },
+
+                async loadOrganizations() {
+                    this.loading = true;
+                    try {
+                        const response = await fetch('/api/user/organizations', {
+                            headers: {
+                                'Accept': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
+                            }
+                        });
+
+                        if (response.ok) {
+                            const data = await response.json();
+                            this.organizations = data.data.organizations || [];
+                            this.filteredOrgs = this.organizations;
+                            this.currentOrg = this.organizations.find(org => org.is_current) || null;
+                        } else {
+                            console.error('Failed to load organizations:', response.statusText);
+                        }
+                    } catch (error) {
+                        console.error('Error loading organizations:', error);
+                    } finally {
+                        this.loading = false;
+                    }
+                },
+
+                toggleOrgMenu() {
+                    this.orgMenuOpen = !this.orgMenuOpen;
+                    if (this.orgMenuOpen && this.organizations.length === 0) {
+                        this.loadOrganizations();
+                    }
+                },
+
+                filterOrgs() {
+                    const query = this.searchQuery.toLowerCase().trim();
+                    if (!query) {
+                        this.filteredOrgs = this.organizations;
+                    } else {
+                        this.filteredOrgs = this.organizations.filter(org =>
+                            org.name.toLowerCase().includes(query)
+                        );
+                    }
+                },
+
+                async switchOrg(orgId) {
+                    if (this.switching || orgId === this.currentOrg?.org_id) return;
+
+                    this.switching = true;
+                    this.switchingToOrgId = orgId;
+
+                    try {
+                        const response = await fetch('/api/user/switch-organization', {
+                            method: 'POST',
+                            headers: {
+                                'Accept': 'application/json',
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
+                            },
+                            body: JSON.stringify({ org_id: orgId })
+                        });
+
+                        if (response.ok) {
+                            const data = await response.json();
+
+                            // Update current org
+                            this.organizations = this.organizations.map(org => ({
+                                ...org,
+                                is_current: org.org_id === orgId
+                            }));
+                            this.currentOrg = this.organizations.find(org => org.org_id === orgId);
+                            this.filteredOrgs = this.organizations;
+
+                            // Show success message
+                            this.showSuccessMessage(data.message || 'تم تبديل المؤسسة بنجاح');
+
+                            // Close menu
+                            this.orgMenuOpen = false;
+
+                            // Reload page to refresh all org-specific data
+                            setTimeout(() => {
+                                window.location.reload();
+                            }, 500);
+                        } else {
+                            const error = await response.json();
+                            this.showErrorMessage(error.message || 'فشل تبديل المؤسسة');
+                        }
+                    } catch (error) {
+                        console.error('Error switching organization:', error);
+                        this.showErrorMessage('حدث خطأ أثناء تبديل المؤسسة');
+                    } finally {
+                        this.switching = false;
+                        this.switchingToOrgId = null;
+                    }
+                },
+
+                showSuccessMessage(message) {
+                    // Create temporary toast notification
+                    const toast = document.createElement('div');
+                    toast.className = 'fixed top-4 left-1/2 -translate-x-1/2 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-[100] flex items-center gap-2 animate-fade-in-down';
+                    toast.innerHTML = `
+                        <i class="fas fa-check-circle"></i>
+                        <span>${message}</span>
+                    `;
+                    document.body.appendChild(toast);
+
+                    setTimeout(() => {
+                        toast.remove();
+                    }, 3000);
+                },
+
+                showErrorMessage(message) {
+                    // Create temporary toast notification
+                    const toast = document.createElement('div');
+                    toast.className = 'fixed top-4 left-1/2 -translate-x-1/2 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg z-[100] flex items-center gap-2 animate-fade-in-down';
+                    toast.innerHTML = `
+                        <i class="fas fa-exclamation-circle"></i>
+                        <span>${message}</span>
+                    `;
+                    document.body.appendChild(toast);
+
+                    setTimeout(() => {
+                        toast.remove();
+                    }, 3000);
                 }
             };
         }
