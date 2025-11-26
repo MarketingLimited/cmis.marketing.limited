@@ -1507,6 +1507,22 @@ Route::middleware(['auth:sanctum', 'validate.org.access', 'org.context'])
             Route::get('/insights', [App\Http\Controllers\API\KnowledgeLearningController::class, 'getInsights'])->name('insights');
             Route::get('/failure-patterns', [App\Http\Controllers\API\KnowledgeLearningController::class, 'getFailurePatterns'])->name('failure-patterns');
         });
+
+        // Platform Connections API (for social publishing)
+        Route::get('/platform-connections', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'index'])->name('platform-connections.index');
+
+        // Social Publishing API - Fetch connected social accounts with real names
+        Route::get('/social/accounts', [App\Http\Controllers\Social\SocialPostController::class, 'getConnectedAccounts'])->name('social.accounts');
+
+        // Social Posts API (for social publishing & scheduling)
+        Route::prefix('social/posts')->name('social.posts.')->group(function () {
+            Route::get('/', [App\Http\Controllers\Social\SocialPostController::class, 'index'])->name('index');
+            Route::post('/', [App\Http\Controllers\Social\SocialPostController::class, 'store'])->name('store');
+            Route::get('/{post}', [App\Http\Controllers\Social\SocialPostController::class, 'show'])->name('show');
+            Route::put('/{post}', [App\Http\Controllers\Social\SocialPostController::class, 'update'])->name('update');
+            Route::delete('/{post}', [App\Http\Controllers\Social\SocialPostController::class, 'destroy'])->name('destroy');
+            Route::post('/{post}/publish', [App\Http\Controllers\Social\SocialPostController::class, 'publish'])->name('publish');
+        });
     });
 
 // Production Readiness & Optimization (Phase 6)
@@ -1901,6 +1917,7 @@ Route::prefix('ai')->middleware(['auth:sanctum', 'throttle.ai'])->group(function
 
     // Social Media Tools
     Route::post('/generate-hashtags', [App\Http\Controllers\API\AIAssistantController::class, 'generateHashtags']);
+    Route::post('/transform-social-content', [App\Http\Controllers\API\AIAssistantController::class, 'transformSocialContent']);
 
     // Translation
     Route::post('/translate', [App\Http\Controllers\API\AIAssistantController::class, 'translate']);
