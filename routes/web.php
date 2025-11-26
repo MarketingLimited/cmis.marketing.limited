@@ -309,6 +309,42 @@ Route::middleware(['auth'])->group(function () {
                 Route::get('/meta/{connection}/assets', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'selectMetaAssets'])->name('meta.assets');
                 Route::post('/meta/{connection}/assets', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'storeMetaAssets'])->name('meta.assets.store');
 
+                // YouTube OAuth
+                Route::get('/youtube/authorize', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'authorizeYouTube'])->name('youtube.authorize');
+                Route::get('/youtube/callback', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'callbackYouTube'])->name('youtube.callback');
+
+                // LinkedIn OAuth
+                Route::get('/linkedin/authorize', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'authorizeLinkedIn'])->name('linkedin.authorize');
+                Route::get('/linkedin/callback', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'callbackLinkedIn'])->name('linkedin.callback');
+
+                // Twitter/X OAuth
+                Route::get('/twitter/authorize', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'authorizeTwitter'])->name('twitter.authorize');
+                Route::get('/twitter/callback', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'callbackTwitter'])->name('twitter.callback');
+
+                // Pinterest OAuth
+                Route::get('/pinterest/authorize', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'authorizePinterest'])->name('pinterest.authorize');
+                Route::get('/pinterest/callback', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'callbackPinterest'])->name('pinterest.callback');
+
+                // TikTok OAuth
+                Route::get('/tiktok/authorize', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'authorizeTikTok'])->name('tiktok.authorize');
+                Route::get('/tiktok/callback', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'callbackTikTok'])->name('tiktok.callback');
+
+                // Reddit OAuth
+                Route::get('/reddit/authorize', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'authorizeReddit'])->name('reddit.authorize');
+                Route::get('/reddit/callback', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'callbackReddit'])->name('reddit.callback');
+
+                // Tumblr OAuth
+                Route::get('/tumblr/authorize', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'authorizeTumblr'])->name('tumblr.authorize');
+                Route::get('/tumblr/callback', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'callbackTumblr'])->name('tumblr.callback');
+
+                // Google Business Profile OAuth
+                Route::get('/google-business/authorize', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'authorizeGoogleBusiness'])->name('google-business.authorize');
+                Route::get('/google-business/callback', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'callbackGoogleBusiness'])->name('google-business.callback');
+
+                // Snapchat OAuth
+                Route::get('/snapchat/authorize', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'authorizeSnapchat'])->name('snapchat.authorize');
+                Route::get('/snapchat/callback', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'callbackSnapchat'])->name('snapchat.callback');
+
                 // Generic Connection Actions
                 Route::post('/{connection}/test', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'testConnection'])->name('test');
                 Route::delete('/{connection}', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'destroy'])->name('destroy');
