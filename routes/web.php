@@ -240,6 +240,19 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/posts', function () { return view('social.posts'); })->name('posts');
             Route::get('/scheduler', function () { return view('social.scheduler'); })->name('scheduler');
             Route::get('/inbox', function () { return view('social.inbox'); })->name('inbox');
+
+            // Post actions (uses session auth from web middleware)
+            Route::delete('/posts/{post}', [App\Http\Controllers\Social\SocialPostController::class, 'destroy'])->name('posts.destroy');
+            Route::put('/posts/{post}', [App\Http\Controllers\Social\SocialPostController::class, 'update'])->name('posts.update');
+            Route::delete('/posts-failed', [App\Http\Controllers\Social\SocialPostController::class, 'destroyAllFailed'])->name('posts.destroy-all-failed');
+
+            // Queue settings
+            Route::get('/queue-settings', [App\Http\Controllers\Social\SocialPostController::class, 'getQueueSettings'])->name('queue-settings.index');
+            Route::post('/queue-settings', [App\Http\Controllers\Social\SocialPostController::class, 'saveQueueSettings'])->name('queue-settings.save');
+            Route::get('/queue-slot/{integrationId}', [App\Http\Controllers\Social\SocialPostController::class, 'getNextQueueSlot'])->name('queue-settings.next-slot');
+
+            // Post types
+            Route::get('/post-types', [App\Http\Controllers\Social\SocialPostController::class, 'getPostTypes'])->name('post-types.index');
         });
 
         // ==================== Unified Inbox / Comments ====================
