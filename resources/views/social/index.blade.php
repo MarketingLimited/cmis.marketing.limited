@@ -1409,8 +1409,27 @@ function socialManager() {
 
             // If multiple platforms selected, show common post types
             if (uniquePlatforms.length > 1) {
-                // Return 'feed' as common type for all platforms
-                return [{value: 'feed', label: 'منشور عادي (Feed Post)', icon: 'fa-newspaper'}];
+                // Find common post types across all selected platforms
+                const platformPostTypes = uniquePlatforms.map(platform =>
+                    this.allPostTypes[platform] || []
+                );
+
+                // Get the intersection of all post types (common across all platforms)
+                if (platformPostTypes.length === 0) {
+                    return [{value: 'feed', label: 'منشور عادي (Feed Post)', icon: 'fa-newspaper'}];
+                }
+
+                // Find post types that exist in all platforms
+                const commonPostTypes = platformPostTypes[0].filter(postType =>
+                    platformPostTypes.every(types =>
+                        types.some(t => t.value === postType.value)
+                    )
+                );
+
+                // If no common types, default to feed
+                return commonPostTypes.length > 0
+                    ? commonPostTypes
+                    : [{value: 'feed', label: 'منشور عادي (Feed Post)', icon: 'fa-newspaper'}];
             }
 
             // Single platform selected, return its specific post types
