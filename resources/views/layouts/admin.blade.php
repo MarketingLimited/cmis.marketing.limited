@@ -703,7 +703,7 @@
                 async loadOrganizations() {
                     this.loading = true;
                     try {
-                        const response = await fetch('/api/user/organizations', {
+                        const response = await fetch('/user/organizations', {
                             headers: {
                                 'Accept': 'application/json',
                                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
@@ -712,7 +712,7 @@
 
                         if (response.ok) {
                             const data = await response.json();
-                            this.organizations = data.data.organizations || [];
+                            this.organizations = data.organizations || [];
                             this.filteredOrgs = this.organizations;
                             this.currentOrg = this.organizations.find(org => org.is_current) || null;
                         } else {
@@ -750,7 +750,7 @@
                     this.switchingToOrgId = orgId;
 
                     try {
-                        const response = await fetch('/api/user/switch-organization', {
+                        const response = await fetch('/user/switch-organization', {
                             method: 'POST',
                             headers: {
                                 'Accept': 'application/json',

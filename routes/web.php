@@ -100,6 +100,10 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/', [OrgController::class, 'store'])->name('store');
     });
 
+    // ==================== Organization Switcher (Web Session Auth) ====================
+    Route::get('/user/organizations', [OrgController::class, 'getUserOrganizations'])->name('user.organizations');
+    Route::post('/user/switch-organization', [OrgController::class, 'switchOrganization'])->name('user.switch-organization');
+
     // ==================== Organization-Specific Routes ====================
     // All routes under /orgs/{org}/* require org context and validate org access
     Route::prefix('orgs/{org}')->name('orgs.')->whereUuid('org')->middleware(['validate.org.access', 'org.context'])->group(function () {
