@@ -18,27 +18,30 @@
 
     <!-- Search and Filter -->
     <x-ui.card class="mb-6">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
+        <div class="flex flex-col sm:flex-row gap-3 sm:gap-4">
+            <div class="flex-1">
                 <input type="text"
                        x-model="searchQuery"
-                       @input="filterOrgs()"
+                       @input.debounce.300ms="filterOrgs()"
                        placeholder="البحث عن مؤسسة..."
-                       class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500">
+                       aria-label="البحث عن مؤسسة"
+                       class="w-full px-4 py-3 text-base border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
             </div>
-            <div>
+            <div class="sm:w-48">
                 <select x-model="filterStatus"
                         @change="filterOrgs()"
-                        class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500">
+                        aria-label="تصفية حسب الحالة"
+                        class="w-full px-4 py-3 text-base border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
                     <option value="">جميع الحالات</option>
                     <option value="active">نشط</option>
                     <option value="inactive">غير نشط</option>
                 </select>
             </div>
-            <div>
+            <div class="sm:w-48">
                 <select x-model="sortBy"
                         @change="filterOrgs()"
-                        class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500">
+                        aria-label="الترتيب حسب"
+                        class="w-full px-4 py-3 text-base border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
                     <option value="name">الاسم</option>
                     <option value="created_at">تاريخ الإنشاء</option>
                     <option value="campaigns_count">عدد الحملات</option>
@@ -48,22 +51,22 @@
     </x-ui.card>
 
     <!-- Organizations Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
         <template x-for="org in filteredOrgs" :key="org.org_id">
-            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-xl transition overflow-hidden">
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-xl transition-all duration-200 overflow-hidden">
                 <!-- Header with gradient -->
-                <div class="h-24 bg-gradient-to-br from-blue-500 to-purple-600 relative">
-                    <div class="absolute bottom-0 right-6 transform translate-y-1/2">
-                        <div class="w-20 h-20 bg-white dark:bg-gray-800 rounded-full border-4 border-white dark:border-gray-800 flex items-center justify-center shadow-lg">
-                            <i class="fas fa-building text-3xl text-blue-600"></i>
+                <div class="h-20 sm:h-24 bg-gradient-to-br from-blue-500 to-purple-600 relative">
+                    <div class="absolute bottom-0 right-4 sm:right-6 transform translate-y-1/2">
+                        <div class="w-16 h-16 sm:w-20 sm:h-20 bg-white dark:bg-gray-800 rounded-full border-4 border-white dark:border-gray-800 flex items-center justify-center shadow-lg">
+                            <i class="fas fa-building text-2xl sm:text-3xl text-blue-600"></i>
                         </div>
                     </div>
                 </div>
 
                 <!-- Content -->
-                <div class="pt-12 p-6">
-                    <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2" x-text="org.name"></h3>
-                    <div class="flex items-center space-x-2 space-x-reverse mb-2">
+                <div class="pt-10 sm:pt-12 p-4 sm:p-6">
+                    <h3 class="text-lg sm:text-xl font-bold text-gray-900 dark:text-white mb-2 truncate" x-text="org.name" :title="org.name"></h3>
+                    <div class="flex items-center gap-2 mb-2 flex-wrap">
                         <span class="text-xs px-2 py-1 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400">
                             <i class="fas fa-globe ml-1"></i>
                             <span x-text="org.default_locale || 'ar'"></span>
@@ -79,31 +82,41 @@
                     </p>
 
                     <!-- Stats -->
-                    <div class="grid grid-cols-3 gap-4 mb-4 text-center">
+                    <div class="grid grid-cols-3 gap-2 sm:gap-4 mb-4 text-center">
                         <div>
-                            <div class="text-2xl font-bold text-blue-600" x-text="org.campaigns_count || 0"></div>
-                            <div class="text-xs text-gray-500">حملة</div>
+                            <div class="text-xl sm:text-2xl font-bold text-blue-600" x-text="org.campaigns_count || 0"></div>
+                            <div class="text-[10px] sm:text-xs text-gray-500">حملة</div>
                         </div>
                         <div>
-                            <div class="text-2xl font-bold text-green-600" x-text="org.users_count || 0"></div>
-                            <div class="text-xs text-gray-500">مستخدم</div>
+                            <div class="text-xl sm:text-2xl font-bold text-green-600" x-text="org.users_count || 0"></div>
+                            <div class="text-[10px] sm:text-xs text-gray-500">مستخدم</div>
                         </div>
                         <div>
-                            <div class="text-2xl font-bold text-purple-600" x-text="org.assets_count || 0"></div>
-                            <div class="text-xs text-gray-500">أصل</div>
+                            <div class="text-xl sm:text-2xl font-bold text-purple-600" x-text="org.assets_count || 0"></div>
+                            <div class="text-[10px] sm:text-xs text-gray-500">أصل</div>
                         </div>
                     </div>
 
                     <!-- Actions -->
                     <div class="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
-                        <a :href="'/orgs/' + org.org_id" class="text-blue-600 hover:text-blue-700 text-sm font-semibold">
-                            <i class="fas fa-eye ml-1"></i> عرض التفاصيل
+                        <a :href="'/orgs/' + org.org_id"
+                           class="text-blue-600 hover:text-blue-700 text-sm font-semibold inline-flex items-center gap-1 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded"
+                           :aria-label="'عرض تفاصيل ' + org.name">
+                            <i class="fas fa-eye"></i>
+                            <span class="hidden sm:inline">عرض التفاصيل</span>
+                            <span class="sm:hidden">عرض</span>
                         </a>
-                        <div class="flex space-x-2 space-x-reverse">
-                            <button @click="editOrg(org)" class="text-gray-600 hover:text-blue-600" title="تعديل">
+                        <div class="flex gap-2">
+                            <button @click="editOrg(org)"
+                                    class="p-3 min-w-[44px] min-h-[44px] flex items-center justify-center text-gray-600 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                                    :aria-label="'تعديل ' + org.name"
+                                    title="تعديل">
                                 <i class="fas fa-edit"></i>
                             </button>
-                            <button @click="deleteOrg(org.org_id)" class="text-gray-600 hover:text-red-600" title="حذف">
+                            <button @click="deleteOrg(org.org_id)"
+                                    class="p-3 min-w-[44px] min-h-[44px] flex items-center justify-center text-gray-600 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+                                    :aria-label="'حذف ' + org.name"
+                                    title="حذف">
                                 <i class="fas fa-trash"></i>
                             </button>
                         </div>
@@ -241,12 +254,19 @@ function orgsManager(serverOrgs) {
 
         formatDate(dateString) {
             if (!dateString) return 'غير متوفر';
-            const date = new Date(dateString);
-            return date.toLocaleDateString('ar-SA', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
-            });
+            try {
+                const date = new Date(dateString);
+                if (isNaN(date.getTime())) return 'تاريخ غير صالح';
+                return new Intl.DateTimeFormat('ar-SA', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    timeZone: 'Asia/Riyadh'
+                }).format(date);
+            } catch (error) {
+                console.error('Date formatting error:', error);
+                return 'خطأ في التاريخ';
+            }
         },
 
         editOrg(org) {
@@ -270,14 +290,18 @@ function orgsManager(serverOrgs) {
                     }
                 });
 
-                if (!response.ok) throw new Error('Failed to delete');
+                const data = await response.json().catch(() => ({}));
+
+                if (!response.ok) {
+                    throw new Error(data.message || 'فشل حذف المؤسسة');
+                }
 
                 this.allOrgs = this.allOrgs.filter(o => o.org_id !== orgId);
                 this.filterOrgs();
-                window.notify('تم حذف المؤسسة بنجاح', 'success');
+                window.notify(data.message || 'تم حذف المؤسسة بنجاح', 'success');
             } catch (error) {
                 console.error('Error deleting organization:', error);
-                window.notify('فشل حذف المؤسسة', 'error');
+                window.notify(error.message || 'حدث خطأ غير متوقع', 'error');
             }
         }
     };
@@ -295,11 +319,40 @@ function orgForm() {
             currency: 'SAR'
         },
 
+        validateForm() {
+            const errors = [];
+
+            if (!this.formData.name || this.formData.name.trim().length < 3) {
+                errors.push('اسم المؤسسة يجب أن يكون 3 أحرف على الأقل');
+            }
+
+            if (this.formData.email && !this.isValidEmail(this.formData.email)) {
+                errors.push('البريد الإلكتروني غير صحيح');
+            }
+
+            if (this.formData.phone && !this.isValidPhone(this.formData.phone)) {
+                errors.push('رقم الهاتف غير صحيح (مثال: +966 50 000 0000)');
+            }
+
+            return errors;
+        },
+
+        isValidEmail(email) {
+            return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+        },
+
+        isValidPhone(phone) {
+            // Saudi phone format: +966 5X XXX XXXX or 05X XXX XXXX
+            const cleaned = phone.replace(/\s/g, '');
+            return /^(\+966|00966|0)?5\d{8}$/.test(cleaned);
+        },
+
         async submitOrg() {
             try {
-                // Validate required fields
-                if (!this.formData.name) {
-                    window.notify('الرجاء إدخال اسم المؤسسة', 'warning');
+                // Validate form
+                const errors = this.validateForm();
+                if (errors.length > 0) {
+                    window.notify(errors[0], 'warning');
                     return;
                 }
 
@@ -315,19 +368,20 @@ function orgForm() {
                     body: JSON.stringify(this.formData)
                 });
 
+                const data = await response.json().catch(() => ({}));
+
                 if (!response.ok) {
-                    const error = await response.json();
-                    throw new Error(error.message || 'Failed to create organization');
+                    throw new Error(data.message || 'فشل إنشاء المؤسسة');
                 }
 
-                window.notify('تم إنشاء المؤسسة بنجاح', 'success');
+                window.notify(data.message || 'تم إنشاء المؤسسة بنجاح', 'success');
                 closeModal('create-org-modal');
 
                 // Refresh the page to show new organization
                 setTimeout(() => location.reload(), 1000);
             } catch (error) {
                 console.error('Error creating organization:', error);
-                window.notify(error.message || 'فشل إنشاء المؤسسة', 'error');
+                window.notify(error.message || 'حدث خطأ غير متوقع', 'error');
             }
         }
     };
