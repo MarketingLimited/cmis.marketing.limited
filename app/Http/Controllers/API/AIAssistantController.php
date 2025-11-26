@@ -555,6 +555,70 @@ class AIAssistantController extends Controller
     }
 
     /**
+     * Transform social post content with AI
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function transformSocialContent(Request $request)
+    {
+        // Log incoming request for debugging
+        Log::info('AI Transform Request', [
+            'all' => $request->all(),
+            'content' => $request->content,
+            'type' => $request->type,
+            'platform' => $request->platform,
+        ]);
+
+        $validator = Validator::make($request->all(), [
+            'content' => 'required|string|max:5000',
+            'type' => 'required|string|in:shorter,longer,formal,casual,hashtags,emojis',
+            'platform' => 'nullable|string|in:facebook,instagram,twitter,linkedin,tiktok,youtube,general',
+        ]);
+
+        if ($validator->fails()) {
+            Log::error('AI Transform Validation Failed', [
+                'errors' => $validator->errors()->toArray(),
+                'request' => $request->all()
+            ]);
+            return $this->validationError($validator->errors(), 'Validation failed');
+        }
+
+        try {
+            $content = $request->content;
+            $type = $request->type;
+            $platform = $request->platform ?? 'general';
+
+            // Build specific prompts for each transformation type
+            $prompt = match($type) {
+                'shorter' => "اختصر هذا المحتوى مع الحفاظ على الرسالة الأساسية. أعطني المحتوى المختصر فقط بدون أي نص إضافي أو شرح:\n\n{$content}",
+                'longer' => "اكتب نسخة أطول وأكثر تفصيلاً من هذا المحتوى. أعطني المحتوى الجديد فقط بدون أي مقدمة أو شرح:\n\n{$content}",
+                'formal' => "أعد كتابة هذا المحتوى بأسلوب رسمي ومهني. أعطني النص المعاد كتابته فقط بدون أي تعليق:\n\n{$content}",
+                'casual' => "أعد كتابة هذا المحتوى بأسلوب غير رسمي وودود. أعطني النص المعاد كتابته فقط بدون أي تعليق:\n\n{$content}",
+                'hashtags' => "اقترح 5-10 هاشتاقات مناسبة لهذا المحتوى على منصة {$platform}. أعطني الهاشتاقات فقط بدون أي شرح أو نص إضافي:\n\n{$content}",
+                'emojis' => "أضف إيموجي مناسب ومعبّر لهذا المحتوى بطريقة طبيعية وجذابة. أعطني المحتوى مع الإيموجي فقط بدون أي تعليق:\n\n{$content}",
+            };
+
+            // Call Gemini API
+            $result = $this->callGeminiAPI($prompt);
+
+            return $this->success([
+                'original' => $content,
+                'transformed' => trim($result),
+                'type' => $type,
+            ], 'Content transformed successfully');
+
+        } catch (\Exception $e) {
+            Log::error('AI API Error in transformSocialContent', [
+                'type' => $request->type,
+                'error' => $e->getMessage()
+            ]);
+
+            return $this->serverError('فشل تحويل المحتوى: ' . $e->getMessage());
+        }
+    }
+
+    /**
      * Call Gemini AI API
      *
      * @param string $prompt
@@ -564,6 +628,9 @@ class AIAssistantController extends Controller
     protected function callGeminiAPI(string $prompt): string
     {
         $apiKey = config('services.gemini.api_key', env('GEMINI_API_KEY', 'test_key'));
+        $model = config('services.gemini.text_model', 'gemini-2.5-flash'); // Use text generation model
+        $temperature = config('services.gemini.temperature', 0.7);
+        $maxTokens = config('services.gemini.max_tokens', 2048);
 
         if (!$apiKey) {
             throw new \Exception('Gemini API key not configured');
@@ -573,7 +640,7 @@ class AIAssistantController extends Controller
             ->withHeaders([
                 'Content-Type' => 'application/json',
             ])
-            ->post("https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key={$apiKey}", [
+            ->post("https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key={$apiKey}", [
                 'contents' => [
                     [
                         'parts' => [
@@ -582,8 +649,8 @@ class AIAssistantController extends Controller
                     ]
                 ],
                 'generationConfig' => [
-                    'temperature' => 0.7,
-                    'maxOutputTokens' => 2048,
+                    'temperature' => $temperature,
+                    'maxOutputTokens' => $maxTokens,
                 ],
             ]);
 

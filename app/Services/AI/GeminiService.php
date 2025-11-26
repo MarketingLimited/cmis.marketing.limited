@@ -36,7 +36,7 @@ class GeminiService
         string $prompt,
         array $options = []
     ): array {
-        $model = $options['model'] ?? 'gemini-3-pro-preview';
+        $model = $options['model'] ?? config('services.gemini.text_model', 'gemini-2.5-flash');
         $config = array_merge($this->defaultConfig, $options['config'] ?? []);
 
         try {
@@ -83,7 +83,7 @@ class GeminiService
         string $prompt,
         array $options = []
     ): array {
-        $model = $options['model'] ?? 'gemini-3-pro-image-preview';
+        $model = $options['model'] ?? config('services.gemini.image_model', 'gemini-3-pro-image-preview');
         $resolution = $options['resolution'] ?? 'media_resolution_high';
         $config = array_merge($this->defaultConfig, [
             'mediaResolution' => $resolution

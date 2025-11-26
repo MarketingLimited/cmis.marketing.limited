@@ -189,13 +189,25 @@ return [
         'temperature' => env('AI_TEMPERATURE', 0.7),
     ],
 
-    // Google Gemini AI (Legacy - deprecated in favor of google.ai_api_key)
+    // Google Gemini AI - Multiple Models by Use Case
     'gemini' => [
         'api_key' => env('GEMINI_API_KEY', env('GOOGLE_AI_API_KEY')),
-        'model' => env('GEMINI_MODEL', 'gemini-3-pro-preview'),
-        'temperature' => env('GEMINI_TEMPERATURE', 1.0),
+
+        // Model Selection by Use Case
+        'text_model' => env('GEMINI_TEXT_MODEL', 'gemini-2.5-flash'), // Text generation & content creation
+        'embedding_model' => env('GEMINI_EMBEDDING_MODEL', 'text-embedding-004'), // Embeddings & semantic search
+        'image_model' => env('GEMINI_IMAGE_MODEL', 'gemini-3-pro-image-preview'), // Image generation
+        'video_model' => env('GEMINI_VIDEO_MODEL', 'veo-3.1-fast-generate-preview'), // Video generation (Veo 3.1 Fast)
+
+        // Legacy support (fallback to text_model)
+        'model' => env('GEMINI_MODEL', env('GEMINI_TEXT_MODEL', 'gemini-2.5-flash')),
+
+        // Generation Parameters
+        'temperature' => env('GEMINI_TEMPERATURE', 0.7),
         'max_tokens' => env('GEMINI_MAX_TOKENS', 2048),
-        'rate_limit' => env('GEMINI_RATE_LIMIT', 30), // requests per minute
+
+        // Rate Limiting
+        'rate_limit' => env('GEMINI_RATE_LIMIT', 60), // requests per minute
         'rate_limit_hour' => env('GEMINI_RATE_LIMIT_HOUR', 500), // requests per hour
     ],
 

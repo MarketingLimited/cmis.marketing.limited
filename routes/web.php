@@ -253,6 +253,9 @@ Route::middleware(['auth'])->group(function () {
 
             // Post types
             Route::get('/post-types', [App\Http\Controllers\Social\SocialPostController::class, 'getPostTypes'])->name('post-types.index');
+
+            // AI Content Transformation
+            Route::post('/ai/transform-content', [App\Http\Controllers\API\AIAssistantController::class, 'transformSocialContent'])->name('ai.transform-content');
         });
 
         // ==================== Unified Inbox / Comments ====================

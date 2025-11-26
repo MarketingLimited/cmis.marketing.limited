@@ -21,7 +21,11 @@ class GeminiProvider implements EmbeddingProviderInterface
         $this->config = $config ?? config('cmis-embeddings.gemini', []);
         $this->apiKey = $this->config['api_key'] ?? env('GEMINI_API_KEY', '');
         $this->baseUrl = $this->config['base_url'] ?? 'https://generativelanguage.googleapis.com/v1beta/';
-        $this->modelName = $this->config['model_name'] ?? 'models/text-embedding-004';
+        $this->modelName = $this->config['model_name'] ?? config('services.gemini.embedding_model', 'text-embedding-004');
+        // Add 'models/' prefix if not present
+        if (!str_starts_with($this->modelName, 'models/')) {
+            $this->modelName = 'models/' . $this->modelName;
+        }
         $this->lastResetTime = new \DateTime();
     }
 

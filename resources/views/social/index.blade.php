@@ -1656,8 +1656,7 @@ function socialManager() {
             this.newPost.scheduledTime = time.value;
         },
 
-        aiSuggest(type) {
-            // Placeholder for AI suggestions - can integrate with actual AI service
+        async aiSuggest(type) {
             const content = this.newPost.content;
             if (!content) {
                 if (window.notify) {
@@ -1666,17 +1665,64 @@ function socialManager() {
                 return;
             }
 
-            // Simple transformations as placeholder
-            switch(type) {
-                case 'shorter':
-                    this.newPost.content = content.split('.').slice(0, 2).join('.') + '.';
-                    break;
-                case 'hashtags':
-                    this.newPost.content = content + '\n\n#تسويق #محتوى #سوشيال_ميديا';
-                    break;
-                case 'emojis':
-                    this.newPost.content = '✨ ' + content + ' 🚀';
-                    break;
+            // Show loading state
+            const loadingMessage = {
+                'shorter': 'جاري الاختصار...',
+                'longer': 'جاري التوسع...',
+                'formal': 'جاري تحويل الأسلوب...',
+                'casual': 'جاري تحويل الأسلوب...',
+                'hashtags': 'جاري إنشاء الهاشتاقات...',
+                'emojis': 'جاري إضافة الإيموجي...',
+            }[type] || 'جاري المعالجة...';
+
+            if (window.notify) {
+                window.notify(loadingMessage, 'info');
+            }
+
+            // Disable the button temporarily
+            const originalContent = this.newPost.content;
+
+            try {
+                // Call the AI API
+                const response = await fetch(`/orgs/${this.orgId}/social/ai/transform-content`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    credentials: 'same-origin',
+                    body: JSON.stringify({
+                        content: content,
+                        type: type,
+                        platform: 'general'
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success && data.data.transformed) {
+                    this.newPost.content = data.data.transformed;
+                    if (window.notify) {
+                        window.notify('تم التحويل بنجاح!', 'success');
+                    }
+                } else {
+                    // Show detailed validation errors for debugging
+                    let errorMessage = data.message || 'فشل التحويل';
+                    if (data.errors) {
+                        const errorDetails = Object.values(data.errors).flat().join(', ');
+                        errorMessage += ': ' + errorDetails;
+                    }
+                    throw new Error(errorMessage);
+                }
+            } catch (error) {
+                console.error('AI transformation error:', error);
+                if (window.notify) {
+                    window.notify('حدث خطأ في مساعد AI: ' + error.message, 'error');
+                }
+                // Restore original content on error
+                this.newPost.content = originalContent;
             }
         },
 
