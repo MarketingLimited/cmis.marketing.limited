@@ -777,9 +777,22 @@
                             // Close menu
                             this.orgMenuOpen = false;
 
-                            // Reload page to refresh all org-specific data
+                            // Navigate to the new org's dashboard
+                            // The URL pattern uses /orgs/{org_id}/... so we need to redirect
                             setTimeout(() => {
-                                window.location.reload();
+                                // Check if current URL contains an org path
+                                const currentPath = window.location.pathname;
+                                const orgPattern = /^\/orgs\/([a-f0-9-]+)(\/.*)?$/i;
+                                const match = currentPath.match(orgPattern);
+
+                                if (match) {
+                                    // Replace old org_id with new one in URL
+                                    const subPath = match[2] || '/dashboard';
+                                    window.location.href = `/orgs/${orgId}${subPath}`;
+                                } else {
+                                    // If not on an org-specific page, go to the new org's dashboard
+                                    window.location.href = `/orgs/${orgId}/dashboard`;
+                                }
                             }, 500);
                         } else {
                             const error = await response.json();
