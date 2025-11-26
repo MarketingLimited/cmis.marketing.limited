@@ -28,6 +28,7 @@ return [
             'ads_management',
             'ads_read',
             'business_management',
+            'catalog_management',
             'pages_manage_posts',
             'pages_read_engagement',
             'instagram_basic',
