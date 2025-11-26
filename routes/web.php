@@ -306,9 +306,6 @@ Route::middleware(['auth'])->group(function () {
             Route::post('/team/invite', [App\Http\Controllers\Settings\SettingsController::class, 'inviteTeamMember'])->name('team.invite');
             Route::delete('/team/{user}', [App\Http\Controllers\Settings\SettingsController::class, 'removeTeamMember'])->name('team.remove');
 
-            // Legacy route for integrations
-            Route::get('/integrations', [App\Http\Controllers\Settings\SettingsController::class, 'integrations'])->name('integrations');
-
             // Platform Connections (Meta, Google, TikTok, etc.)
             Route::prefix('platform-connections')->name('platform-connections.')->group(function () {
                 Route::get('/', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'index'])->name('index');

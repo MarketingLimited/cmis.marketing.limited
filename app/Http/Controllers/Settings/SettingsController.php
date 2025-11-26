@@ -477,9 +477,4 @@ class SettingsController extends Controller
     {
         return view('settings.security');
     }
-
-    public function integrations(string $org)
-    {
-        return view('settings.integrations');
-    }
 }
