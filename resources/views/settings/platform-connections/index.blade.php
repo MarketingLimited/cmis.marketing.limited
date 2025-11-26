@@ -3,11 +3,38 @@
 @section('title', __('Platform Connections') . ' - Settings')
 
 @section('content')
-<div class="max-w-6xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+<div class="max-w-6xl mx-auto py-4 sm:py-8 px-4 sm:px-6 lg:px-8">
+    {{-- Breadcrumb Navigation --}}
+    <nav class="mb-4 sm:mb-6" aria-label="Breadcrumb">
+        <ol class="flex items-center space-x-2 text-sm">
+            <li>
+                <a href="{{ route('orgs.dashboard', $currentOrg) }}" class="text-gray-500 hover:text-gray-700 transition">
+                    <i class="fas fa-home mr-1"></i>
+                    <span class="hidden sm:inline">Organization</span>
+                </a>
+            </li>
+            <li class="flex items-center">
+                <i class="fas fa-chevron-right text-gray-400 mx-2 text-xs"></i>
+                <a href="{{ route('orgs.settings.index', $currentOrg) }}" class="text-gray-500 hover:text-gray-700 transition">
+                    <i class="fas fa-cog mr-1"></i>
+                    <span class="hidden sm:inline">Settings</span>
+                </a>
+            </li>
+            <li class="flex items-center">
+                <i class="fas fa-chevron-right text-gray-400 mx-2 text-xs"></i>
+                <span class="text-gray-900 font-medium">
+                    <i class="fas fa-plug mr-1"></i>
+                    <span class="hidden sm:inline">Platform Connections</span>
+                    <span class="sm:hidden">Platforms</span>
+                </span>
+            </li>
+        </ol>
+    </nav>
+
     {{-- Header --}}
-    <div class="mb-8">
-        <h1 class="text-2xl font-bold text-gray-900">Platform Connections</h1>
-        <p class="mt-1 text-sm text-gray-500">
+    <div class="mb-6 sm:mb-8">
+        <h1 class="text-xl sm:text-2xl font-bold text-gray-900">Platform Connections</h1>
+        <p class="mt-1 text-xs sm:text-sm text-gray-500">
             Connect your ad platform accounts to manage campaigns directly from CMIS.
         </p>
     </div>
@@ -36,26 +63,28 @@
         {{-- Meta (Facebook/Instagram) --}}
         <div class="bg-white shadow sm:rounded-lg overflow-hidden">
             <div class="px-4 py-5 sm:p-6">
-                <div class="flex items-center justify-between mb-4">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
                     <div class="flex items-center">
-                        <div class="flex-shrink-0 w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                            <i class="fab fa-facebook text-blue-600 text-2xl"></i>
+                        <div class="flex-shrink-0 w-10 h-10 sm:w-12 sm:h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                            <i class="fab fa-facebook text-blue-600 text-xl sm:text-2xl"></i>
                         </div>
-                        <div class="ml-4">
-                            <h3 class="text-lg font-medium text-gray-900">Meta (Facebook/Instagram/Threads)</h3>
-                            <p class="text-sm text-gray-500">Connect via Facebook Login or add a System User token from Business Manager</p>
+                        <div class="ml-3 sm:ml-4 min-w-0 flex-1">
+                            <h3 class="text-base sm:text-lg font-medium text-gray-900">Meta (Facebook/Instagram/Threads)</h3>
+                            <p class="text-xs sm:text-sm text-gray-500 mt-0.5">Connect via Facebook Login or add a System User token from Business Manager</p>
                         </div>
                     </div>
-                    <div class="flex items-center space-x-2">
+                    <div class="flex items-center gap-2 sm:gap-2 flex-shrink-0">
                         {{-- OAuth Connect Button --}}
                         <a href="{{ route('orgs.settings.platform-connections.meta.authorize', $currentOrg) }}"
-                           class="inline-flex items-center px-4 py-2 border border-blue-600 rounded-md shadow-sm text-sm font-medium text-blue-600 bg-white hover:bg-blue-50">
-                            <i class="fab fa-facebook mr-2"></i> Connect
+                           class="inline-flex items-center justify-center px-3 sm:px-4 py-2 border border-blue-600 rounded-md shadow-sm text-xs sm:text-sm font-medium text-blue-600 bg-white hover:bg-blue-50 flex-1 sm:flex-none min-w-0">
+                            <i class="fab fa-facebook mr-1 sm:mr-2"></i>
+                            <span class="truncate">Connect</span>
                         </a>
                         {{-- Manual Token Button --}}
                         <a href="{{ route('orgs.settings.platform-connections.meta.create', $currentOrg) }}"
-                           class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700">
-                            <i class="fas fa-key mr-2"></i> Add Token
+                           class="inline-flex items-center justify-center px-3 sm:px-4 py-2 border border-transparent rounded-md shadow-sm text-xs sm:text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 flex-1 sm:flex-none min-w-0">
+                            <i class="fas fa-key mr-1 sm:mr-2"></i>
+                            <span class="truncate">Add Token</span>
                         </a>
                     </div>
                 </div>
@@ -78,36 +107,36 @@
                                     $hasErrors = collect($warnings)->contains('type', 'error');
                                 @endphp
 
-                                <div class="p-4 bg-gray-50 rounded-lg">
-                                    <div class="flex items-center justify-between">
-                                        <div class="flex items-center">
+                                <div class="p-3 sm:p-4 bg-gray-50 rounded-lg" x-data="{ mobileMenuOpen: false }">
+                                    <div class="flex items-start sm:items-center justify-between gap-3">
+                                        <div class="flex items-start sm:items-center flex-1 min-w-0">
                                             <div class="flex-shrink-0">
                                                 @if($connection->status === 'active' && !$hasErrors)
-                                                    <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-green-100">
-                                                        <i class="fas fa-check text-green-600"></i>
+                                                    <span class="inline-flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-green-100">
+                                                        <i class="fas fa-check text-green-600 text-xs sm:text-sm"></i>
                                                     </span>
                                                 @elseif($connection->status === 'error' || $hasErrors)
-                                                    <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-red-100">
-                                                        <i class="fas fa-exclamation text-red-600"></i>
+                                                    <span class="inline-flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-red-100">
+                                                        <i class="fas fa-exclamation text-red-600 text-xs sm:text-sm"></i>
                                                     </span>
                                                 @elseif($connection->status === 'warning' || $hasWarnings)
-                                                    <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-yellow-100">
-                                                        <i class="fas fa-exclamation-triangle text-yellow-600"></i>
+                                                    <span class="inline-flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-yellow-100">
+                                                        <i class="fas fa-exclamation-triangle text-yellow-600 text-xs sm:text-sm"></i>
                                                     </span>
                                                 @else
-                                                    <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-gray-100">
-                                                        <i class="fas fa-clock text-gray-600"></i>
+                                                    <span class="inline-flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-gray-100">
+                                                        <i class="fas fa-clock text-gray-600 text-xs sm:text-sm"></i>
                                                     </span>
                                                 @endif
                                             </div>
-                                            <div class="ml-3">
-                                                <div class="flex items-center gap-2">
-                                                    <p class="text-sm font-medium text-gray-900">{{ $connection->account_name }}</p>
+                                            <div class="ml-2 sm:ml-3 min-w-0 flex-1">
+                                                <div class="flex flex-wrap items-center gap-1 sm:gap-2">
+                                                    <p class="text-xs sm:text-sm font-medium text-gray-900">{{ $connection->account_name }}</p>
                                                     @if($isSystemUser)
-                                                        <span class="px-1.5 py-0.5 bg-blue-100 text-blue-700 text-xs rounded">System User</span>
+                                                        <span class="px-1.5 py-0.5 bg-blue-100 text-blue-700 text-xs rounded whitespace-nowrap">System User</span>
                                                     @endif
                                                     @if($isNeverExpires)
-                                                        <span class="px-1.5 py-0.5 bg-green-100 text-green-700 text-xs rounded">Never Expires</span>
+                                                        <span class="px-1.5 py-0.5 bg-green-100 text-green-700 text-xs rounded whitespace-nowrap">Never Expires</span>
                                                     @endif
                                                 </div>
                                                 <p class="text-xs text-gray-500 mt-0.5">
@@ -116,60 +145,105 @@
                                                         <span class="text-yellow-600">({{ $activeAdAccountsCount }} active)</span>
                                                     @endif
                                                     @if($connection->token_expires_at)
-                                                        &bull; Expires {{ $connection->token_expires_at->diffForHumans() }}
+                                                        <span class="hidden sm:inline">&bull;</span>
+                                                        <br class="sm:hidden">
+                                                        <span>Expires {{ $connection->token_expires_at->diffForHumans() }}</span>
                                                     @elseif($isNeverExpires)
-                                                        &bull; <span class="text-green-600">Long-lived token</span>
+                                                        <span class="hidden sm:inline">&bull;</span>
+                                                        <span class="text-green-600">Long-lived token</span>
                                                     @endif
                                                     @if($metadata['validated_at'] ?? null)
-                                                        &bull; Validated {{ \Carbon\Carbon::parse($metadata['validated_at'])->diffForHumans() }}
+                                                        <span class="hidden sm:inline">&bull; Validated {{ \Carbon\Carbon::parse($metadata['validated_at'])->diffForHumans() }}</span>
                                                     @endif
                                                 </p>
                                                 @if($connection->last_error_message)
                                                     <p class="text-xs text-red-600 mt-1">
                                                         <i class="fas fa-exclamation-circle mr-1"></i>
-                                                        {{ Str::limit($connection->last_error_message, 80) }}
+                                                        {{ Str::limit($connection->last_error_message, 60) }}
                                                     </p>
                                                 @endif
                                             </div>
                                         </div>
-                                        <div class="flex items-center space-x-2">
-                                            {{-- Select Assets (Pages, Instagram, etc.) --}}
+
+                                        {{-- Desktop Actions (hidden on mobile) --}}
+                                        <div class="hidden md:flex items-center gap-1 flex-shrink-0">
                                             <a href="{{ route('orgs.settings.platform-connections.meta.assets', [$currentOrg, $connection->connection_id]) }}"
-                                               class="p-2 text-gray-400 hover:text-purple-600" title="Select Assets (Pages, Instagram, Pixels, etc.)">
+                                               class="p-2 text-gray-400 hover:text-purple-600 transition" title="Select Assets">
                                                 <i class="fas fa-layer-group"></i>
                                             </a>
-
-                                            {{-- Test Connection --}}
                                             <form action="{{ route('orgs.settings.platform-connections.test', [$currentOrg, $connection->connection_id]) }}" method="POST" class="inline">
                                                 @csrf
-                                                <button type="submit" class="p-2 text-gray-400 hover:text-blue-600" title="Test Connection">
+                                                <button type="submit" class="p-2 text-gray-400 hover:text-blue-600 transition" title="Test Connection">
                                                     <i class="fas fa-sync-alt"></i>
                                                 </button>
                                             </form>
-
-                                            {{-- Refresh Ad Accounts --}}
                                             <form action="{{ route('orgs.settings.platform-connections.meta.refresh-accounts', [$currentOrg, $connection->connection_id]) }}" method="POST" class="inline">
                                                 @csrf
-                                                <button type="submit" class="p-2 text-gray-400 hover:text-green-600" title="Refresh Ad Accounts">
+                                                <button type="submit" class="p-2 text-gray-400 hover:text-green-600 transition" title="Refresh Ad Accounts">
                                                     <i class="fas fa-redo"></i>
                                                 </button>
                                             </form>
-
-                                            {{-- Edit --}}
                                             <a href="{{ route('orgs.settings.platform-connections.meta.edit', [$currentOrg, $connection->connection_id]) }}"
-                                               class="p-2 text-gray-400 hover:text-blue-600" title="Edit">
+                                               class="p-2 text-gray-400 hover:text-blue-600 transition" title="Edit">
                                                 <i class="fas fa-edit"></i>
                                             </a>
-
-                                            {{-- Delete --}}
                                             <form action="{{ route('orgs.settings.platform-connections.destroy', [$currentOrg, $connection->connection_id]) }}"
                                                   method="POST" class="inline" onsubmit="return confirm('Are you sure you want to delete this connection?');">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button type="submit" class="p-2 text-gray-400 hover:text-red-600" title="Delete">
+                                                <button type="submit" class="p-2 text-gray-400 hover:text-red-600 transition" title="Delete">
                                                     <i class="fas fa-trash"></i>
                                                 </button>
                                             </form>
+                                        </div>
+
+                                        {{-- Mobile Actions (dropdown menu) --}}
+                                        <div class="md:hidden relative flex-shrink-0" @click.away="mobileMenuOpen = false">
+                                            <button @click="mobileMenuOpen = !mobileMenuOpen"
+                                                    class="p-2 text-gray-400 hover:text-gray-600 transition"
+                                                    type="button">
+                                                <i class="fas fa-ellipsis-v"></i>
+                                            </button>
+                                            <div x-show="mobileMenuOpen"
+                                                 x-transition:enter="transition ease-out duration-100"
+                                                 x-transition:enter-start="opacity-0 scale-95"
+                                                 x-transition:enter-end="opacity-100 scale-100"
+                                                 x-transition:leave="transition ease-in duration-75"
+                                                 x-transition:leave-start="opacity-100 scale-100"
+                                                 x-transition:leave-end="opacity-0 scale-95"
+                                                 class="absolute right-0 top-10 w-48 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 z-10"
+                                                 style="display: none;">
+                                                <div class="py-1">
+                                                    <a href="{{ route('orgs.settings.platform-connections.meta.assets', [$currentOrg, $connection->connection_id]) }}"
+                                                       class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                                        <i class="fas fa-layer-group w-4 mr-2"></i>Select Assets
+                                                    </a>
+                                                    <form action="{{ route('orgs.settings.platform-connections.test', [$currentOrg, $connection->connection_id]) }}" method="POST">
+                                                        @csrf
+                                                        <button type="submit" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                                            <i class="fas fa-sync-alt w-4 mr-2"></i>Test Connection
+                                                        </button>
+                                                    </form>
+                                                    <form action="{{ route('orgs.settings.platform-connections.meta.refresh-accounts', [$currentOrg, $connection->connection_id]) }}" method="POST">
+                                                        @csrf
+                                                        <button type="submit" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                                            <i class="fas fa-redo w-4 mr-2"></i>Refresh Accounts
+                                                        </button>
+                                                    </form>
+                                                    <a href="{{ route('orgs.settings.platform-connections.meta.edit', [$currentOrg, $connection->connection_id]) }}"
+                                                       class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                                        <i class="fas fa-edit w-4 mr-2"></i>Edit
+                                                    </a>
+                                                    <form action="{{ route('orgs.settings.platform-connections.destroy', [$currentOrg, $connection->connection_id]) }}"
+                                                          method="POST" onsubmit="return confirm('Are you sure you want to delete this connection?');">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="submit" class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50">
+                                                            <i class="fas fa-trash w-4 mr-2"></i>Delete
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
 
@@ -320,18 +394,268 @@
             </div>
         </div>
 
+        {{-- Google (All Google Services) --}}
+        <div class="bg-white shadow sm:rounded-lg overflow-hidden">
+            <div class="px-4 py-5 sm:p-6">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0 w-10 h-10 sm:w-12 sm:h-12 bg-white rounded-lg shadow flex items-center justify-center">
+                            <svg class="w-6 h-6 sm:w-8 sm:h-8" viewBox="0 0 24 24">
+                                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                            </svg>
+                        </div>
+                        <div class="ml-3 sm:ml-4 min-w-0 flex-1">
+                            <h3 class="text-base sm:text-lg font-medium text-gray-900">Google Services</h3>
+                            <p class="text-xs sm:text-sm text-gray-500 mt-0.5">YouTube, Google Ads, Analytics, Tag Manager, Merchant Center, Search Console & more</p>
+                        </div>
+                    </div>
+                    @php
+                        $googleConfig = config('social-platforms.google');
+                        $hasGoogleApiCredentials = !empty($googleConfig['client_id']) && !empty($googleConfig['client_secret']);
+                    @endphp
+                    <div class="flex items-center gap-2 flex-shrink-0">
+                        {{-- Direct Connect with Google OAuth --}}
+                        @if($hasGoogleApiCredentials)
+                            <a href="{{ route('orgs.settings.platform-connections.google.authorize', $currentOrg) }}"
+                               class="inline-flex items-center justify-center px-3 sm:px-4 py-2 border border-transparent rounded-md shadow-sm text-xs sm:text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 flex-1 sm:flex-none min-w-0">
+                                <svg class="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 flex-shrink-0" viewBox="0 0 24 24">
+                                    <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                                    <path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                                    <path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                                    <path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                                </svg>
+                                <span class="truncate">Connect</span>
+                            </a>
+                        @endif
+                        {{-- Add Service Account/OAuth Manually --}}
+                        <a href="{{ route('orgs.settings.platform-connections.google.create', $currentOrg) }}"
+                           class="inline-flex items-center justify-center px-3 sm:px-4 py-2 border border-gray-300 rounded-md shadow-sm text-xs sm:text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 flex-1 sm:flex-none min-w-0"
+                           title="Add Service Account or OAuth credentials manually">
+                            <i class="fas fa-key mr-1 sm:mr-2"></i>
+                            <span class="truncate">Add Manually</span>
+                        </a>
+                    </div>
+                </div>
+
+                @php $googleConnections = $connectionsByPlatform->get('google', collect()); @endphp
+
+                @if($googleConnections->count() > 0)
+                    <div class="mt-4 border-t border-gray-200 pt-4">
+                        <h4 class="text-sm font-medium text-gray-700 mb-3">Connected Accounts</h4>
+                        <div class="space-y-3">
+                            @foreach($googleConnections as $connection)
+                                @php
+                                    $metadata = $connection->account_metadata ?? [];
+                                    $credentialType = $metadata['credential_type'] ?? 'unknown';
+                                    $selectedAssets = $metadata['selected_assets'] ?? [];
+                                @endphp
+
+                                <div class="p-3 sm:p-4 bg-gray-50 rounded-lg" x-data="{ mobileMenuOpen: false }">
+                                    <div class="flex items-start sm:items-center justify-between gap-3">
+                                        <div class="flex items-start sm:items-center flex-1 min-w-0">
+                                            <div class="flex-shrink-0">
+                                                @if($connection->status === 'active')
+                                                    <span class="inline-flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-green-100">
+                                                        <i class="fas fa-check text-green-600 text-xs sm:text-sm"></i>
+                                                    </span>
+                                                @elseif($connection->status === 'error')
+                                                    <span class="inline-flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-red-100">
+                                                        <i class="fas fa-exclamation text-red-600 text-xs sm:text-sm"></i>
+                                                    </span>
+                                                @else
+                                                    <span class="inline-flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-gray-100">
+                                                        <i class="fas fa-clock text-gray-600 text-xs sm:text-sm"></i>
+                                                    </span>
+                                                @endif
+                                            </div>
+                                            <div class="ml-2 sm:ml-3 min-w-0 flex-1">
+                                                <div class="flex flex-wrap items-center gap-1 sm:gap-2">
+                                                    <p class="text-xs sm:text-sm font-medium text-gray-900">{{ $connection->account_name }}</p>
+                                                    @if($credentialType === 'service_account')
+                                                        <span class="px-1.5 py-0.5 bg-blue-100 text-blue-700 text-xs rounded whitespace-nowrap">Service Account</span>
+                                                    @elseif($credentialType === 'oauth')
+                                                        <span class="px-1.5 py-0.5 bg-green-100 text-green-700 text-xs rounded whitespace-nowrap">OAuth</span>
+                                                    @endif
+                                                </div>
+                                                <p class="text-xs text-gray-500 mt-0.5">
+                                                    @if($metadata['service_account_email'] ?? null)
+                                                        {{ Str::limit($metadata['service_account_email'], 30) }}
+                                                    @endif
+                                                    @if($metadata['validated_at'] ?? null)
+                                                        <span class="hidden sm:inline">&bull; Validated {{ \Carbon\Carbon::parse($metadata['validated_at'])->diffForHumans() }}</span>
+                                                    @endif
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        {{-- Desktop Actions (hidden on mobile) --}}
+                                        <div class="hidden md:flex items-center gap-1 flex-shrink-0">
+                                            <a href="{{ route('orgs.settings.platform-connections.google.assets', [$currentOrg, $connection->connection_id]) }}"
+                                               class="p-2 text-gray-400 hover:text-blue-600 transition" title="Select Google Services">
+                                                <i class="fas fa-layer-group"></i>
+                                            </a>
+                                            <form action="{{ route('orgs.settings.platform-connections.test', [$currentOrg, $connection->connection_id]) }}" method="POST" class="inline">
+                                                @csrf
+                                                <button type="submit" class="p-2 text-gray-400 hover:text-blue-600 transition" title="Test Connection">
+                                                    <i class="fas fa-sync-alt"></i>
+                                                </button>
+                                            </form>
+                                            <a href="{{ route('orgs.settings.platform-connections.google.edit', [$currentOrg, $connection->connection_id]) }}"
+                                               class="p-2 text-gray-400 hover:text-blue-600 transition" title="Edit Credentials">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <form action="{{ route('orgs.settings.platform-connections.destroy', [$currentOrg, $connection->connection_id]) }}" method="POST" class="inline">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" onclick="return confirm('Are you sure you want to remove this connection?')"
+                                                        class="p-2 text-gray-400 hover:text-red-600 transition" title="Remove Connection">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+
+                                        {{-- Mobile Actions (dropdown menu) --}}
+                                        <div class="md:hidden relative flex-shrink-0" @click.away="mobileMenuOpen = false">
+                                            <button @click="mobileMenuOpen = !mobileMenuOpen"
+                                                    class="p-2 text-gray-400 hover:text-gray-600 transition"
+                                                    type="button">
+                                                <i class="fas fa-ellipsis-v"></i>
+                                            </button>
+                                            <div x-show="mobileMenuOpen"
+                                                 x-transition:enter="transition ease-out duration-100"
+                                                 x-transition:enter-start="opacity-0 scale-95"
+                                                 x-transition:enter-end="opacity-100 scale-100"
+                                                 x-transition:leave="transition ease-in duration-75"
+                                                 x-transition:leave-start="opacity-100 scale-100"
+                                                 x-transition:leave-end="opacity-0 scale-95"
+                                                 class="absolute right-0 top-10 w-48 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 z-10"
+                                                 style="display: none;">
+                                                <div class="py-1">
+                                                    <a href="{{ route('orgs.settings.platform-connections.google.assets', [$currentOrg, $connection->connection_id]) }}"
+                                                       class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                                        <i class="fas fa-layer-group w-4 mr-2"></i>Select Services
+                                                    </a>
+                                                    <form action="{{ route('orgs.settings.platform-connections.test', [$currentOrg, $connection->connection_id]) }}" method="POST">
+                                                        @csrf
+                                                        <button type="submit" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                                            <i class="fas fa-sync-alt w-4 mr-2"></i>Test Connection
+                                                        </button>
+                                                    </form>
+                                                    <a href="{{ route('orgs.settings.platform-connections.google.edit', [$currentOrg, $connection->connection_id]) }}"
+                                                       class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                                        <i class="fas fa-edit w-4 mr-2"></i>Edit
+                                                    </a>
+                                                    <form action="{{ route('orgs.settings.platform-connections.destroy', [$currentOrg, $connection->connection_id]) }}"
+                                                          method="POST" onsubmit="return confirm('Are you sure you want to remove this connection?');">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="submit" class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50">
+                                                            <i class="fas fa-trash w-4 mr-2"></i>Delete
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {{-- Show selected assets summary --}}
+                                    @if(!empty($selectedAssets))
+                                        <div class="mt-3 flex flex-wrap gap-2">
+                                            @if($selectedAssets['youtube_channel'] ?? null)
+                                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-red-100 text-red-700">
+                                                    <i class="fab fa-youtube mr-1"></i>YouTube
+                                                </span>
+                                            @endif
+                                            @if($selectedAssets['google_ads'] ?? null)
+                                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-green-100 text-green-700">
+                                                    <i class="fas fa-ad mr-1"></i>Google Ads
+                                                </span>
+                                            @endif
+                                            @if($selectedAssets['analytics'] ?? null)
+                                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-orange-100 text-orange-700">
+                                                    <i class="fas fa-chart-line mr-1"></i>Analytics
+                                                </span>
+                                            @endif
+                                            @if($selectedAssets['business_profile'] ?? null)
+                                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-700">
+                                                    <i class="fas fa-store mr-1"></i>Business
+                                                </span>
+                                            @endif
+                                            @if($selectedAssets['tag_manager'] ?? null)
+                                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-purple-100 text-purple-700">
+                                                    <i class="fas fa-code mr-1"></i>GTM
+                                                </span>
+                                            @endif
+                                            @if($selectedAssets['merchant_center'] ?? null)
+                                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-teal-100 text-teal-700">
+                                                    <i class="fas fa-shopping-cart mr-1"></i>Merchant
+                                                </span>
+                                            @endif
+                                            @if($selectedAssets['search_console'] ?? null)
+                                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-indigo-100 text-indigo-700">
+                                                    <i class="fas fa-search mr-1"></i>Search Console
+                                                </span>
+                                            @endif
+                                            @if($selectedAssets['calendar'] ?? null)
+                                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-cyan-100 text-cyan-700">
+                                                    <i class="fas fa-calendar mr-1"></i>Calendar
+                                                </span>
+                                            @endif
+                                            @if($selectedAssets['drive'] ?? null)
+                                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-yellow-100 text-yellow-700">
+                                                    <i class="fas fa-folder mr-1"></i>Drive
+                                                </span>
+                                            @endif
+                                            <a href="{{ route('orgs.settings.platform-connections.google.assets', [$currentOrg, $connection->connection_id]) }}"
+                                               class="text-xs text-blue-600 hover:text-blue-800 ml-1">
+                                                <i class="fas fa-edit mr-1"></i>Edit
+                                            </a>
+                                        </div>
+                                    @else
+                                        <div class="mt-3">
+                                            <a href="{{ route('orgs.settings.platform-connections.google.assets', [$currentOrg, $connection->connection_id]) }}"
+                                               class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-50 rounded-md hover:bg-blue-100 transition">
+                                                <i class="fas fa-layer-group mr-2"></i>Select Google Services (YouTube, Ads, Analytics, etc.)
+                                            </a>
+                                        </div>
+                                    @endif
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                @else
+                    <div class="mt-4 text-center py-6 bg-gray-50 rounded-lg">
+                        <svg class="w-12 h-12 mx-auto text-gray-300 mb-2" viewBox="0 0 24 24">
+                            <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                            <path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                            <path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                            <path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                        </svg>
+                        <p class="text-sm text-gray-500">No Google accounts connected yet</p>
+                        @if($hasGoogleApiCredentials)
+                            <p class="text-xs text-gray-400 mt-1">Click "Connect" to sign in with your Google account</p>
+                        @else
+                            <p class="text-xs text-gray-400 mt-1">Click "Add Manually" to add service account credentials</p>
+                        @endif
+                    </div>
+                @endif
+            </div>
+        </div>
+
         {{-- Social Media Platforms --}}
         {{-- Note: Threads is now part of Meta assets, not a standalone platform --}}
+        {{-- Note: YouTube and Google Business Profile are now part of Google Services assets --}}
         @php
             $socialPlatforms = [
-                'youtube' => ['YouTube', 'fab fa-youtube', 'red', 'Video uploads, Shorts, thumbnails, and playlists'],
                 'linkedin' => ['LinkedIn', 'fab fa-linkedin', 'blue', 'Professional networking, text, images, carousel, video, articles, polls'],
                 'twitter' => ['X (Twitter)', 'fab fa-twitter', 'sky', 'Tweets, threads, media, polls, and reply controls'],
                 'pinterest' => ['Pinterest', 'fab fa-pinterest', 'red', 'Pins, video pins, Idea pins, and board management'],
                 'tiktok' => ['TikTok', 'fab fa-tiktok', 'gray', 'Video uploads, photo carousel, privacy controls'],
                 'tumblr' => ['Tumblr', 'fab fa-tumblr', 'indigo', 'Text, photos, videos, links, quotes, and queue management'],
                 'reddit' => ['Reddit', 'fab fa-reddit', 'orange', 'Text, link, image, video posts, and crossposting'],
-                'google_business' => ['Google Business Profile', 'fab fa-google', 'blue', 'Local business posts, events, offers, and multi-location publishing'],
                 'snapchat' => ['Snapchat', 'fab fa-snapchat', 'yellow', 'Snap Ads and Stories'],
             ];
         @endphp
@@ -340,19 +664,20 @@
             @php $platformConnections = $connectionsByPlatform->get($platform, collect()); @endphp
             <div class="bg-white shadow sm:rounded-lg overflow-hidden">
                 <div class="px-4 py-5 sm:p-6">
-                    <div class="flex items-center justify-between mb-4">
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
                         <div class="flex items-center">
-                            <div class="flex-shrink-0 w-12 h-12 bg-{{ $info[2] }}-100 rounded-lg flex items-center justify-center">
-                                <i class="{{ $info[1] }} text-{{ $info[2] }}-600 text-2xl"></i>
+                            <div class="flex-shrink-0 w-10 h-10 sm:w-12 sm:h-12 bg-{{ $info[2] }}-100 rounded-lg flex items-center justify-center">
+                                <i class="{{ $info[1] }} text-{{ $info[2] }}-600 text-xl sm:text-2xl"></i>
                             </div>
-                            <div class="ml-4">
-                                <h3 class="text-lg font-medium text-gray-900">{{ $info[0] }}</h3>
-                                <p class="text-sm text-gray-500">{{ $info[3] }}</p>
+                            <div class="ml-3 sm:ml-4 min-w-0 flex-1">
+                                <h3 class="text-base sm:text-lg font-medium text-gray-900">{{ $info[0] }}</h3>
+                                <p class="text-xs sm:text-sm text-gray-500 mt-0.5">{{ $info[3] }}</p>
                             </div>
                         </div>
                         <button onclick="connectPlatform('{{ $platform }}')"
-                               class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-{{ $info[2] }}-600 hover:bg-{{ $info[2] }}-700">
-                            <i class="fas fa-plug mr-2"></i> Connect
+                               class="inline-flex items-center justify-center px-3 sm:px-4 py-2 border border-transparent rounded-md shadow-sm text-xs sm:text-sm font-medium text-white bg-{{ $info[2] }}-600 hover:bg-{{ $info[2] }}-700 flex-shrink-0 w-full sm:w-auto">
+                            <i class="fas fa-plug mr-1 sm:mr-2"></i>
+                            <span>Connect</span>
                         </button>
                     </div>
 
@@ -367,15 +692,13 @@
                                         $hasAssets = !empty(array_filter($connSelectedAssets));
 
                                         // Define asset types per platform
+                                        // Note: youtube and google_business are now part of Google Services
                                         $platformAssetTypes = [
                                             'linkedin' => ['profile', 'page', 'ad_account', 'pixel'],
                                             'twitter' => ['account', 'ad_account', 'pixel', 'catalog'],
                                             'tiktok' => ['account', 'ad_account', 'pixel', 'catalog'],
                                             'snapchat' => ['account', 'ad_account', 'pixel', 'catalog'],
                                             'pinterest' => ['account', 'ad_account', 'pixel', 'catalog'],
-                                            'youtube' => ['channel'],
-                                            'google' => ['business_profile', 'ad_account'],
-                                            'google_business' => ['business_profile'],
                                             'reddit' => ['account'],
                                             'tumblr' => ['account'],
                                         ];
@@ -407,22 +730,22 @@
                                         ];
                                         $assetRoute = $assetRoutes[$platform] ?? null;
                                     @endphp
-                                    <div class="p-4 bg-gray-50 rounded-lg">
-                                        <div class="flex items-center justify-between">
-                                            <div class="flex items-center">
+                                    <div class="p-3 sm:p-4 bg-gray-50 rounded-lg" x-data="{ mobileMenuOpen: false }">
+                                        <div class="flex items-start sm:items-center justify-between gap-3">
+                                            <div class="flex items-start sm:items-center flex-1 min-w-0">
                                                 <div class="flex-shrink-0">
                                                     @if($connection->status === 'active')
-                                                        <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-green-100">
-                                                            <i class="fas fa-check text-green-600"></i>
+                                                        <span class="inline-flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-green-100">
+                                                            <i class="fas fa-check text-green-600 text-xs sm:text-sm"></i>
                                                         </span>
                                                     @else
-                                                        <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-gray-100">
-                                                            <i class="fas fa-clock text-gray-600"></i>
+                                                        <span class="inline-flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-gray-100">
+                                                            <i class="fas fa-clock text-gray-600 text-xs sm:text-sm"></i>
                                                         </span>
                                                     @endif
                                                 </div>
-                                                <div class="ml-3">
-                                                    <p class="text-sm font-medium text-gray-900">{{ $connection->account_name ?? 'Account' }}</p>
+                                                <div class="ml-2 sm:ml-3 min-w-0 flex-1">
+                                                    <p class="text-xs sm:text-sm font-medium text-gray-900">{{ $connection->account_name ?? 'Account' }}</p>
                                                     <p class="text-xs text-gray-500 mt-0.5">
                                                         @if($connection->token_expires_at)
                                                             Expires {{ $connection->token_expires_at->diffForHumans() }}
@@ -432,18 +755,18 @@
                                                     </p>
                                                 </div>
                                             </div>
-                                            <div class="flex items-center space-x-2">
-                                                {{-- Select Assets (if route exists) --}}
+
+                                            {{-- Desktop Actions (hidden on mobile) --}}
+                                            <div class="hidden md:flex items-center gap-1 flex-shrink-0">
                                                 @if($assetRoute && Route::has($assetRoute))
                                                     <a href="{{ route($assetRoute, [$currentOrg, $connection->connection_id]) }}"
-                                                       class="p-2 text-gray-400 hover:text-purple-600" title="Select Assets">
+                                                       class="p-2 text-gray-400 hover:text-purple-600 transition" title="Select Assets">
                                                         <i class="fas fa-layer-group"></i>
                                                     </a>
                                                 @endif
-
                                                 <form action="{{ route('orgs.settings.platform-connections.test', [$currentOrg, $connection->connection_id]) }}" method="POST" class="inline">
                                                     @csrf
-                                                    <button type="submit" class="p-2 text-gray-400 hover:text-blue-600" title="Test Connection">
+                                                    <button type="submit" class="p-2 text-gray-400 hover:text-blue-600 transition" title="Test Connection">
                                                         <i class="fas fa-sync-alt"></i>
                                                     </button>
                                                 </form>
@@ -451,10 +774,51 @@
                                                       method="POST" class="inline" onsubmit="return confirm('Are you sure you want to disconnect this {{ $info[0] }} account?');">
                                                     @csrf
                                                     @method('DELETE')
-                                                    <button type="submit" class="p-2 text-gray-400 hover:text-red-600" title="Disconnect">
+                                                    <button type="submit" class="p-2 text-gray-400 hover:text-red-600 transition" title="Disconnect">
                                                         <i class="fas fa-trash"></i>
                                                     </button>
                                                 </form>
+                                            </div>
+
+                                            {{-- Mobile Actions (dropdown menu) --}}
+                                            <div class="md:hidden relative flex-shrink-0" @click.away="mobileMenuOpen = false">
+                                                <button @click="mobileMenuOpen = !mobileMenuOpen"
+                                                        class="p-2 text-gray-400 hover:text-gray-600 transition"
+                                                        type="button">
+                                                    <i class="fas fa-ellipsis-v"></i>
+                                                </button>
+                                                <div x-show="mobileMenuOpen"
+                                                     x-transition:enter="transition ease-out duration-100"
+                                                     x-transition:enter-start="opacity-0 scale-95"
+                                                     x-transition:enter-end="opacity-100 scale-100"
+                                                     x-transition:leave="transition ease-in duration-75"
+                                                     x-transition:leave-start="opacity-100 scale-100"
+                                                     x-transition:leave-end="opacity-0 scale-95"
+                                                     class="absolute right-0 top-10 w-48 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 z-10"
+                                                     style="display: none;">
+                                                    <div class="py-1">
+                                                        @if($assetRoute && Route::has($assetRoute))
+                                                            <a href="{{ route($assetRoute, [$currentOrg, $connection->connection_id]) }}"
+                                                               class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                                                <i class="fas fa-layer-group w-4 mr-2"></i>Select Assets
+                                                            </a>
+                                                        @endif
+                                                        <form action="{{ route('orgs.settings.platform-connections.test', [$currentOrg, $connection->connection_id]) }}" method="POST">
+                                                            @csrf
+                                                            <button type="submit" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                                                <i class="fas fa-sync-alt w-4 mr-2"></i>Test Connection
+                                                            </button>
+                                                        </form>
+                                                        <form action="{{ route('orgs.settings.platform-connections.destroy', [$currentOrg, $connection->connection_id]) }}"
+                                                              method="POST" onsubmit="return confirm('Are you sure you want to disconnect this {{ $info[0] }} account?');">
+                                                            @csrf
+                                                            @method('DELETE')
+                                                            <button type="submit" class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50">
+                                                                <i class="fas fa-trash w-4 mr-2"></i>Delete
+                                                            </button>
+                                                        </form>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
 
