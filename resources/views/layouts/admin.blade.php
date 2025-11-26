@@ -17,6 +17,9 @@
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
 
+    <!-- Alpine.js Collapse Plugin - must load before Alpine core -->
+    <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.x.x/dist/cdn.min.js"></script>
+
     <!-- Alpine.js CDN - loaded early with defer to prevent FOUC -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
@@ -890,16 +893,24 @@
                 notifications: [],
                 unreadCount: 0,
                 refreshInterval: null,
+                endpointUnavailable: false, // Track if endpoint doesn't exist
 
                 async init() {
                     await this.loadNotifications();
-                    // Auto-refresh every 30 seconds
-                    this.refreshInterval = setInterval(() => {
-                        this.loadNotifications();
-                    }, 30000);
+                    // Auto-refresh every 30 seconds only if endpoint is available
+                    if (!this.endpointUnavailable) {
+                        this.refreshInterval = setInterval(() => {
+                            this.loadNotifications();
+                        }, 30000);
+                    }
                 },
 
                 async loadNotifications() {
+                    // Skip if we know the endpoint doesn't exist
+                    if (this.endpointUnavailable) {
+                        return;
+                    }
+
                     this.loading = true;
                     try {
                         const response = await fetch('/notifications/latest', {
@@ -913,13 +924,21 @@
                             const data = await response.json();
                             this.notifications = data.notifications || [];
                             this.unreadCount = this.notifications.filter(n => !n.read).length;
+                        } else if (response.status === 404) {
+                            // Endpoint doesn't exist yet - mark as unavailable and use sample data
+                            this.endpointUnavailable = true;
+                            this.loadSampleNotifications();
+                            // Clear the refresh interval since endpoint doesn't exist
+                            if (this.refreshInterval) {
+                                clearInterval(this.refreshInterval);
+                                this.refreshInterval = null;
+                            }
                         } else {
-                            // Fallback to sample data if API not ready
+                            // Other errors - fallback to sample data but keep trying
                             this.loadSampleNotifications();
                         }
                     } catch (error) {
-                        console.error('Failed to load notifications:', error);
-                        // Fallback to sample data
+                        // Network or other errors - fallback to sample data
                         this.loadSampleNotifications();
                     } finally {
                         this.loading = false;
