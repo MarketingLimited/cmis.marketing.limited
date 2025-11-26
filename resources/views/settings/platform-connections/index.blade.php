@@ -42,14 +42,22 @@
                             <i class="fab fa-facebook text-blue-600 text-2xl"></i>
                         </div>
                         <div class="ml-4">
-                            <h3 class="text-lg font-medium text-gray-900">Meta (Facebook/Instagram)</h3>
-                            <p class="text-sm text-gray-500">Connect using a System User access token from Meta Business Manager</p>
+                            <h3 class="text-lg font-medium text-gray-900">Meta (Facebook/Instagram/Threads)</h3>
+                            <p class="text-sm text-gray-500">Connect via Facebook Login or add a System User token from Business Manager</p>
                         </div>
                     </div>
-                    <a href="{{ route('orgs.settings.platform-connections.meta.create', $currentOrg) }}"
-                       class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700">
-                        <i class="fas fa-plus mr-2"></i> Add Token
-                    </a>
+                    <div class="flex items-center space-x-2">
+                        {{-- OAuth Connect Button --}}
+                        <a href="{{ route('orgs.settings.platform-connections.meta.authorize', $currentOrg) }}"
+                           class="inline-flex items-center px-4 py-2 border border-blue-600 rounded-md shadow-sm text-sm font-medium text-blue-600 bg-white hover:bg-blue-50">
+                            <i class="fab fa-facebook mr-2"></i> Connect
+                        </a>
+                        {{-- Manual Token Button --}}
+                        <a href="{{ route('orgs.settings.platform-connections.meta.create', $currentOrg) }}"
+                           class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700">
+                            <i class="fas fa-key mr-2"></i> Add Token
+                        </a>
+                    </div>
                 </div>
 
                 @php $metaConnections = $connectionsByPlatform->get('meta', collect()); @endphp
@@ -204,33 +212,38 @@
                                     @endif
                                 </div>
 
-                                {{-- Show selected assets summary --}}
+                                {{-- Show selected assets summary (1 account per asset type) --}}
                                 @php $selectedAssets = $metadata['selected_assets'] ?? []; @endphp
-                                @if(!empty($selectedAssets) && (count($selectedAssets['pages'] ?? []) > 0 || count($selectedAssets['instagram_accounts'] ?? []) > 0 || count($selectedAssets['ad_accounts'] ?? []) > 0 || count($selectedAssets['pixels'] ?? []) > 0 || count($selectedAssets['catalogs'] ?? []) > 0))
+                                @if(!empty($selectedAssets) && (($selectedAssets['page'] ?? null) || ($selectedAssets['instagram_account'] ?? null) || ($selectedAssets['threads_account'] ?? null) || ($selectedAssets['ad_account'] ?? null) || ($selectedAssets['pixel'] ?? null) || ($selectedAssets['catalog'] ?? null)))
                                     <div class="ml-11 mt-3 flex flex-wrap gap-2">
-                                        @if(count($selectedAssets['pages'] ?? []) > 0)
+                                        @if($selectedAssets['page'] ?? null)
                                             <span class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-700">
-                                                <i class="fab fa-facebook mr-1"></i>{{ count($selectedAssets['pages']) }} Page(s)
+                                                <i class="fab fa-facebook mr-1"></i>Page
                                             </span>
                                         @endif
-                                        @if(count($selectedAssets['instagram_accounts'] ?? []) > 0)
+                                        @if($selectedAssets['instagram_account'] ?? null)
                                             <span class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-gradient-to-r from-purple-100 to-pink-100 text-pink-700">
-                                                <i class="fab fa-instagram mr-1"></i>{{ count($selectedAssets['instagram_accounts']) }} Instagram
+                                                <i class="fab fa-instagram mr-1"></i>Instagram
                                             </span>
                                         @endif
-                                        @if(count($selectedAssets['ad_accounts'] ?? []) > 0)
+                                        @if($selectedAssets['threads_account'] ?? null)
+                                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-700">
+                                                <i class="fas fa-at mr-1"></i>Threads
+                                            </span>
+                                        @endif
+                                        @if($selectedAssets['ad_account'] ?? null)
                                             <span class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-green-100 text-green-700">
-                                                <i class="fas fa-ad mr-1"></i>{{ count($selectedAssets['ad_accounts']) }} Ad Account(s)
+                                                <i class="fas fa-ad mr-1"></i>Ad Account
                                             </span>
                                         @endif
-                                        @if(count($selectedAssets['pixels'] ?? []) > 0)
+                                        @if($selectedAssets['pixel'] ?? null)
                                             <span class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-purple-100 text-purple-700">
-                                                <i class="fas fa-code mr-1"></i>{{ count($selectedAssets['pixels']) }} Pixel(s)
+                                                <i class="fas fa-code mr-1"></i>Pixel
                                             </span>
                                         @endif
-                                        @if(count($selectedAssets['catalogs'] ?? []) > 0)
+                                        @if($selectedAssets['catalog'] ?? null)
                                             <span class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-orange-100 text-orange-700">
-                                                <i class="fas fa-shopping-bag mr-1"></i>{{ count($selectedAssets['catalogs']) }} Catalog(s)
+                                                <i class="fas fa-shopping-bag mr-1"></i>Catalog
                                             </span>
                                         @endif
                                         <a href="{{ route('orgs.settings.platform-connections.meta.assets', [$currentOrg, $connection->connection_id]) }}"
@@ -242,7 +255,7 @@
                                     <div class="ml-11 mt-3">
                                         <a href="{{ route('orgs.settings.platform-connections.meta.assets', [$currentOrg, $connection->connection_id]) }}"
                                            class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-purple-700 bg-purple-50 rounded-md hover:bg-purple-100 transition">
-                                            <i class="fas fa-layer-group mr-2"></i>Select Pages, Instagram, Pixels & Catalogs
+                                            <i class="fas fa-layer-group mr-2"></i>Select Page, Instagram, Threads, Pixels & Catalog
                                         </a>
                                     </div>
                                 @endif
@@ -308,9 +321,9 @@
         </div>
 
         {{-- Social Media Platforms --}}
+        {{-- Note: Threads is now part of Meta assets, not a standalone platform --}}
         @php
             $socialPlatforms = [
-                'threads' => ['Threads', 'fab fa-at', 'purple', 'Text posts, polls, media sharing to Meta\'s Threads platform'],
                 'youtube' => ['YouTube', 'fab fa-youtube', 'red', 'Video uploads, Shorts, thumbnails, and playlists'],
                 'linkedin' => ['LinkedIn', 'fab fa-linkedin', 'blue', 'Professional networking, text, images, carousel, video, articles, polls'],
                 'twitter' => ['X (Twitter)', 'fab fa-twitter', 'sky', 'Tweets, threads, media, polls, and reply controls'],
@@ -348,6 +361,52 @@
                             <h4 class="text-sm font-medium text-gray-700 mb-3">Connected Accounts</h4>
                             <div class="space-y-3">
                                 @foreach($platformConnections as $connection)
+                                    @php
+                                        $connMetadata = $connection->account_metadata ?? [];
+                                        $connSelectedAssets = $connMetadata['selected_assets'] ?? [];
+                                        $hasAssets = !empty(array_filter($connSelectedAssets));
+
+                                        // Define asset types per platform
+                                        $platformAssetTypes = [
+                                            'linkedin' => ['profile', 'page', 'ad_account', 'pixel'],
+                                            'twitter' => ['account', 'ad_account', 'pixel', 'catalog'],
+                                            'tiktok' => ['account', 'ad_account', 'pixel', 'catalog'],
+                                            'snapchat' => ['account', 'ad_account', 'pixel', 'catalog'],
+                                            'pinterest' => ['account', 'ad_account', 'pixel', 'catalog'],
+                                            'youtube' => ['channel'],
+                                            'google' => ['business_profile', 'ad_account'],
+                                            'google_business' => ['business_profile'],
+                                            'reddit' => ['account'],
+                                            'tumblr' => ['account'],
+                                        ];
+                                        $assetTypes = $platformAssetTypes[$platform] ?? ['account'];
+
+                                        // Asset display labels
+                                        $assetLabels = [
+                                            'account' => ['Account', 'fas fa-user', 'sky'],
+                                            'profile' => ['Profile', 'fas fa-user', 'blue'],
+                                            'page' => ['Page', 'fas fa-building', 'blue'],
+                                            'channel' => ['Channel', 'fab fa-youtube', 'red'],
+                                            'business_profile' => ['Business', 'fab fa-google', 'blue'],
+                                            'ad_account' => ['Ad Account', 'fas fa-ad', 'green'],
+                                            'pixel' => ['Pixel', 'fas fa-code', 'purple'],
+                                            'catalog' => ['Catalog', 'fas fa-shopping-bag', 'orange'],
+                                        ];
+
+                                        // Route names for asset selection
+                                        $assetRoutes = [
+                                            'linkedin' => 'orgs.settings.platform-connections.linkedin.assets',
+                                            'twitter' => 'orgs.settings.platform-connections.twitter.assets',
+                                            'tiktok' => 'orgs.settings.platform-connections.tiktok.assets',
+                                            'snapchat' => 'orgs.settings.platform-connections.snapchat.assets',
+                                            'pinterest' => 'orgs.settings.platform-connections.pinterest.assets',
+                                            'youtube' => 'orgs.settings.platform-connections.youtube.assets',
+                                            'google' => 'orgs.settings.platform-connections.google.assets',
+                                            'google_business' => 'orgs.settings.platform-connections.google.assets',
+                                            'reddit' => 'orgs.settings.platform-connections.reddit.assets',
+                                        ];
+                                        $assetRoute = $assetRoutes[$platform] ?? null;
+                                    @endphp
                                     <div class="p-4 bg-gray-50 rounded-lg">
                                         <div class="flex items-center justify-between">
                                             <div class="flex items-center">
@@ -374,6 +433,14 @@
                                                 </div>
                                             </div>
                                             <div class="flex items-center space-x-2">
+                                                {{-- Select Assets (if route exists) --}}
+                                                @if($assetRoute && Route::has($assetRoute))
+                                                    <a href="{{ route($assetRoute, [$currentOrg, $connection->connection_id]) }}"
+                                                       class="p-2 text-gray-400 hover:text-purple-600" title="Select Assets">
+                                                        <i class="fas fa-layer-group"></i>
+                                                    </a>
+                                                @endif
+
                                                 <form action="{{ route('orgs.settings.platform-connections.test', [$currentOrg, $connection->connection_id]) }}" method="POST" class="inline">
                                                     @csrf
                                                     <button type="submit" class="p-2 text-gray-400 hover:text-blue-600" title="Test Connection">
@@ -390,6 +457,33 @@
                                                 </form>
                                             </div>
                                         </div>
+
+                                        {{-- Show selected assets summary --}}
+                                        @if($assetRoute && Route::has($assetRoute))
+                                            @if($hasAssets)
+                                                <div class="ml-11 mt-3 flex flex-wrap gap-2">
+                                                    @foreach($assetTypes as $assetType)
+                                                        @if($connSelectedAssets[$assetType] ?? null)
+                                                            @php $labelInfo = $assetLabels[$assetType] ?? ['Asset', 'fas fa-check', 'gray']; @endphp
+                                                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-{{ $labelInfo[2] }}-100 text-{{ $labelInfo[2] }}-700">
+                                                                <i class="{{ $labelInfo[1] }} mr-1"></i>{{ $labelInfo[0] }}
+                                                            </span>
+                                                        @endif
+                                                    @endforeach
+                                                    <a href="{{ route($assetRoute, [$currentOrg, $connection->connection_id]) }}"
+                                                       class="text-xs text-blue-600 hover:text-blue-800 ml-1">
+                                                        <i class="fas fa-edit mr-1"></i>Edit
+                                                    </a>
+                                                </div>
+                                            @else
+                                                <div class="ml-11 mt-3">
+                                                    <a href="{{ route($assetRoute, [$currentOrg, $connection->connection_id]) }}"
+                                                       class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-{{ $info[2] }}-700 bg-{{ $info[2] }}-50 rounded-md hover:bg-{{ $info[2] }}-100 transition">
+                                                        <i class="fas fa-layer-group mr-2"></i>Select Assets
+                                                    </a>
+                                                </div>
+                                            @endif
+                                        @endif
                                     </div>
                                 @endforeach
                             </div>
@@ -546,11 +640,11 @@
 
 <script>
 function connectPlatform(platform) {
-    const orgId = '{{ $currentOrg->org_id }}';
+    const orgId = '{{ $currentOrg }}';
 
     // OAuth endpoints for each platform
+    // Note: Threads is now part of Meta assets, accessed via Meta OAuth
     const oauthEndpoints = {
-        'threads': `/orgs/${orgId}/settings/platform-connections/meta/authorize`,
         'youtube': `/orgs/${orgId}/settings/platform-connections/youtube/authorize`,
         'linkedin': `/orgs/${orgId}/settings/platform-connections/linkedin/authorize`,
         'twitter': `/orgs/${orgId}/settings/platform-connections/twitter/authorize`,
