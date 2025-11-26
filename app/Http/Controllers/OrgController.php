@@ -32,7 +32,23 @@ class OrgController extends Controller
     public function getUserOrganizations()
     {
         try {
-            $currentOrgId = session('current_org_id') ?? auth()->user()->current_org_id;
+            $user = auth()->user();
+
+            if (!$user) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'غير مصرح',
+                ], 401);
+            }
+
+            $currentOrgId = session('current_org_id') ?? $user->current_org_id;
+
+            \Log::debug('getUserOrganizations called', [
+                'user_id' => $user->user_id ?? $user->id,
+                'session_org' => session('current_org_id'),
+                'user_org' => $user->current_org_id,
+                'current_org_id' => $currentOrgId,
+            ]);
 
             $orgs = Org::query()
                 ->select('org_id', 'name', 'default_locale', 'currency', 'created_at')
@@ -48,6 +64,11 @@ class OrgController extends Controller
                     ];
                 });
 
+            \Log::debug('Organizations fetched', [
+                'count' => $orgs->count(),
+                'orgs' => $orgs->pluck('name', 'org_id')->toArray(),
+            ]);
+
             return response()->json([
                 'success' => true,
                 'organizations' => $orgs,
@@ -57,12 +78,13 @@ class OrgController extends Controller
         } catch (\Exception $e) {
             \Log::error('Failed to fetch user organizations', [
                 'user_id' => auth()->id(),
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
             ]);
 
             return response()->json([
                 'success' => false,
-                'message' => 'فشل جلب المؤسسات',
+                'message' => 'فشل جلب المؤسسات: ' . $e->getMessage(),
             ], 500);
         }
     }
@@ -72,27 +94,48 @@ class OrgController extends Controller
      */
     public function switchOrganization(Request $request)
     {
-        $request->validate([
-            'org_id' => 'required|uuid|exists:cmis.orgs,org_id'
-        ]);
-
         try {
+            // Validate using model class instead of hardcoded table name
+            $request->validate([
+                'org_id' => ['required', 'uuid', function ($attribute, $value, $fail) {
+                    if (!Org::where('org_id', $value)->exists()) {
+                        $fail('المؤسسة المحددة غير موجودة');
+                    }
+                }]
+            ]);
+
             $orgId = $request->input('org_id');
             $user = auth()->user();
+
+            if (!$user) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'غير مصرح',
+                ], 401);
+            }
+
+            \Log::debug('switchOrganization called', [
+                'user_id' => $user->user_id ?? $user->id,
+                'new_org_id' => $orgId,
+                'old_session_org' => session('current_org_id'),
+                'old_user_org' => $user->current_org_id,
+            ]);
 
             // Update session
             session(['current_org_id' => $orgId]);
 
             // Update user's current_org_id field
-            $user->update(['current_org_id' => $orgId]);
+            $user->current_org_id = $orgId;
+            $user->save();
 
             // Get the organization details
             $org = Org::find($orgId);
 
-            \Log::info('User switched organization', [
-                'user_id' => $user->user_id,
+            \Log::info('User switched organization successfully', [
+                'user_id' => $user->user_id ?? $user->id,
                 'org_id' => $orgId,
-                'org_name' => $org->name ?? 'Unknown'
+                'org_name' => $org->name ?? 'Unknown',
+                'new_session_org' => session('current_org_id'),
             ]);
 
             return response()->json([
@@ -104,16 +147,24 @@ class OrgController extends Controller
                 'currency' => $org->currency ?? 'BHD',
             ]);
 
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+                'errors' => $e->errors(),
+            ], 422);
+
         } catch (\Exception $e) {
             \Log::error('Failed to switch organization', [
                 'user_id' => auth()->id(),
                 'org_id' => $request->input('org_id'),
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
             ]);
 
             return response()->json([
                 'success' => false,
-                'message' => 'فشل تبديل المؤسسة',
+                'message' => 'فشل تبديل المؤسسة: ' . $e->getMessage(),
             ], 500);
         }
     }

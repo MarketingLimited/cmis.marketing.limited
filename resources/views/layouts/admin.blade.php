@@ -704,22 +704,32 @@
                     this.loading = true;
                     try {
                         const response = await fetch('/user/organizations', {
+                            method: 'GET',
+                            credentials: 'same-origin', // Important: Include session cookies
                             headers: {
                                 'Accept': 'application/json',
+                                'X-Requested-With': 'XMLHttpRequest',
                                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
                             }
                         });
 
+                        console.log('Load organizations response:', response.status, response.statusText);
+
                         if (response.ok) {
                             const data = await response.json();
+                            console.log('Organizations data:', data);
                             this.organizations = data.organizations || [];
                             this.filteredOrgs = this.organizations;
                             this.currentOrg = this.organizations.find(org => org.is_current) || null;
+                            console.log('Current org:', this.currentOrg);
                         } else {
-                            console.error('Failed to load organizations:', response.statusText);
+                            const errorData = await response.json().catch(() => ({}));
+                            console.error('Failed to load organizations:', response.status, errorData);
+                            this.showErrorMessage(errorData.message || 'فشل تحميل المؤسسات');
                         }
                     } catch (error) {
                         console.error('Error loading organizations:', error);
+                        this.showErrorMessage('خطأ في الاتصال بالخادم');
                     } finally {
                         this.loading = false;
                     }
@@ -749,20 +759,27 @@
                     this.switching = true;
                     this.switchingToOrgId = orgId;
 
+                    console.log('Switching to organization:', orgId);
+
                     try {
                         const response = await fetch('/user/switch-organization', {
                             method: 'POST',
+                            credentials: 'same-origin', // Important: Include session cookies
                             headers: {
                                 'Accept': 'application/json',
                                 'Content-Type': 'application/json',
+                                'X-Requested-With': 'XMLHttpRequest',
                                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
                             },
                             body: JSON.stringify({ org_id: orgId })
                         });
 
-                        if (response.ok) {
-                            const data = await response.json();
+                        console.log('Switch organization response:', response.status, response.statusText);
 
+                        const data = await response.json();
+                        console.log('Switch response data:', data);
+
+                        if (response.ok && data.success) {
                             // Update current org
                             this.organizations = this.organizations.map(org => ({
                                 ...org,
@@ -795,8 +812,8 @@
                                 }
                             }, 500);
                         } else {
-                            const error = await response.json();
-                            this.showErrorMessage(error.message || 'فشل تبديل المؤسسة');
+                            console.error('Switch failed:', data);
+                            this.showErrorMessage(data.message || 'فشل تبديل المؤسسة');
                         }
                     } catch (error) {
                         console.error('Error switching organization:', error);
