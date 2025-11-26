@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl" x-data="{ sidebarOpen: window.innerWidth >= 1024, darkMode: false }" :class="{ 'dark': darkMode }">
+<html lang="ar" dir="rtl" x-data="appLayout()" :class="{ 'dark': darkMode }">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
@@ -160,7 +160,7 @@
 
         <!-- Mobile Overlay -->
         <div x-show="sidebarOpen"
-             @click="sidebarOpen = false"
+             @click="toggleSidebar()"
              x-transition:enter="transition-opacity ease-linear duration-300"
              x-transition:enter-start="opacity-0"
              x-transition:enter-end="opacity-100"
@@ -182,7 +182,7 @@
                     </div>
                     <h1 class="text-xl font-bold text-white">CMIS</h1>
                 </div>
-                <button @click="sidebarOpen = false" class="lg:hidden text-white">
+                <button @click="toggleSidebar()" class="lg:hidden text-white hover:bg-white/10 p-2 rounded-lg transition-colors">
                     <i class="fas fa-times text-xl"></i>
                 </button>
             </div>
@@ -267,7 +267,7 @@
             <header class="flex items-center justify-between h-14 sm:h-16 px-3 sm:px-6 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-sm">
 
                 <div class="flex items-center space-x-2 sm:space-x-4 space-x-reverse">
-                    <button @click="sidebarOpen = !sidebarOpen" class="p-2 text-gray-600 dark:text-gray-300 lg:hidden hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">
+                    <button @click="toggleSidebar()" class="p-2 text-gray-600 dark:text-gray-300 lg:hidden hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
                         <i class="fas fa-bars text-lg sm:text-xl"></i>
                     </button>
 
@@ -282,7 +282,7 @@
                 <div class="flex items-center space-x-1.5 sm:space-x-4 space-x-reverse">
 
                     <!-- Dark Mode Toggle -->
-                    <button @click="darkMode = !darkMode" class="p-1.5 sm:p-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition">
+                    <button @click="toggleDarkMode()" class="p-1.5 sm:p-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
                         <i class="fas text-sm sm:text-base" :class="darkMode ? 'fa-sun' : 'fa-moon'"></i>
                     </button>
 
@@ -404,6 +404,44 @@
 
     <!-- Scripts -->
     <script>
+        // App Layout Controller
+        function appLayout() {
+            return {
+                sidebarOpen: false,
+                darkMode: false,
+
+                init() {
+                    // Only auto-open sidebar on desktop (>= 1024px)
+                    this.sidebarOpen = window.innerWidth >= 1024;
+
+                    // Handle window resize
+                    window.addEventListener('resize', () => {
+                        // Auto-open on desktop, auto-close on mobile
+                        if (window.innerWidth >= 1024) {
+                            this.sidebarOpen = true;
+                        } else {
+                            this.sidebarOpen = false;
+                        }
+                    });
+
+                    // Load dark mode preference
+                    const savedDarkMode = localStorage.getItem('darkMode');
+                    if (savedDarkMode !== null) {
+                        this.darkMode = savedDarkMode === 'true';
+                    }
+                },
+
+                toggleSidebar() {
+                    this.sidebarOpen = !this.sidebarOpen;
+                },
+
+                toggleDarkMode() {
+                    this.darkMode = !this.darkMode;
+                    localStorage.setItem('darkMode', this.darkMode);
+                }
+            };
+        }
+
         // Notifications Widget
         function notificationsWidget() {
             return {
