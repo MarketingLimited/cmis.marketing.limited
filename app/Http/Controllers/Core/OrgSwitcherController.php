@@ -43,10 +43,10 @@ class OrgSwitcherController extends Controller
         }
 
         // Get all organizations the user belongs to
-        // Note: Disable global scopes (SoftDeletes, OrgScope) as cmis.orgs table doesn't have deleted_at
+        // Note: Disable global scopes to avoid issues with pivot table soft deletes
         $organizations = $user->orgs()
             ->withoutGlobalScopes()
-            ->select('cmis.orgs.org_id', 'cmis.orgs.name', 'cmis.orgs.slug')
+            ->select('cmis.orgs.org_id', 'cmis.orgs.name', 'cmis.orgs.default_locale', 'cmis.orgs.currency')
             ->orderBy('cmis.orgs.name')
             ->get();
 
@@ -118,13 +118,15 @@ class OrgSwitcherController extends Controller
             ]);
 
             // Get the new org details
-            $newOrg = $user->orgs()->where('cmis.orgs.org_id', $newOrgId)->first();
+            $newOrg = $user->orgs()
+                ->withoutGlobalScopes()
+                ->where('cmis.orgs.org_id', $newOrgId)
+                ->first();
 
             return $this->success([
                 'active_org' => [
                     'org_id' => $newOrg->org_id,
                     'name' => $newOrg->name,
-                    'slug' => $newOrg->slug,
                 ],
             ], 'Organization switched successfully');
 
@@ -158,7 +160,10 @@ class OrgSwitcherController extends Controller
         $sessionContext = SessionContext::where('session_id', session()->getId())->first();
         $activeOrgId = $cachedOrgId ?? $sessionContext?->active_org_id ?? $user->org_id;
 
-        $activeOrg = $user->orgs()->where('cmis.orgs.org_id', $activeOrgId)->first();
+        $activeOrg = $user->orgs()
+            ->withoutGlobalScopes()
+            ->where('cmis.orgs.org_id', $activeOrgId)
+            ->first();
 
         if (!$activeOrg) {
             // Fallback to user's primary org
@@ -169,7 +174,6 @@ class OrgSwitcherController extends Controller
             'active_org' => [
                 'org_id' => $activeOrg->org_id,
                 'name' => $activeOrg->name,
-                'slug' => $activeOrg->slug ?? null,
             ],
         ], 'Active organization retrieved successfully');
     }
