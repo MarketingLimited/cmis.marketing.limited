@@ -24,6 +24,7 @@ use App\Http\Controllers\API\Webhooks\TikTokWebhookController;
 use App\Http\Controllers\Webhooks\LinkedInWebhookController;
 use App\Http\Controllers\API\AnalyticsController;
 use App\Http\Controllers\API\AdCampaignController as APIAdCampaignController;
+use App\Http\Controllers\Api\UserOrganizationController;
 
 /*
 |--------------------------------------------------------------------------
@@ -152,6 +153,10 @@ Route::prefix('auth')->group(function () {
 Route::middleware('auth:sanctum')->group(function () {
     // قائمة الشركات للمستخدم
     Route::get('/user/orgs', [OrgController::class, 'listUserOrgs'])->name('user.orgs');
+
+    // Organization Switcher APIs
+    Route::get('/user/organizations', [UserOrganizationController::class, 'index'])->name('user.organizations.index');
+    Route::post('/user/switch-organization', [UserOrganizationController::class, 'switch'])->name('user.organizations.switch');
 
     // إنشاء شركة جديدة
     Route::post('/orgs', [OrgController::class, 'store'])->name('orgs.store');
