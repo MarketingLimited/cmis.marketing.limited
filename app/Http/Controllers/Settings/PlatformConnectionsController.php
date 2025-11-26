@@ -1068,7 +1068,7 @@ class PlatformConnectionsController extends Controller
     }
 
     /**
-     * Store selected Meta assets for a connection.
+     * Store selected Meta assets for a connection (supports multi-select).
      */
     public function storeMetaAssets(Request $request, string $org, string $connectionId)
     {
@@ -1077,51 +1077,49 @@ class PlatformConnectionsController extends Controller
             ->where('platform', 'meta')
             ->firstOrFail();
 
-        // Each org can only have ONE of each asset type
-        $validator = Validator::make($request->all(), [
-            'page' => 'nullable|string|max:50',
-            'instagram_account' => 'nullable|string|max:50',
-            'threads_account' => 'nullable|string|max:50',
-            'ad_account' => 'nullable|string|max:50',
-            'pixel' => 'nullable|string|max:50',
-            'catalog' => 'nullable|string|max:50',
-            // Manual ID inputs (override selected values)
-            'manual_page_id' => 'nullable|string|max:50',
-            'manual_instagram_id' => 'nullable|string|max:50',
-            'manual_threads_id' => 'nullable|string|max:50',
-            'manual_ad_account_id' => 'nullable|string|max:50',
-            'manual_pixel_id' => 'nullable|string|max:50',
-            'manual_catalog_id' => 'nullable|string|max:50',
-        ]);
+        // Multi-select asset types
+        $multiAssetTypes = ['page', 'instagram_account', 'threads_account', 'ad_account', 'pixel', 'catalog'];
+
+        // Build validation rules for multi-select
+        $rules = [];
+        foreach ($multiAssetTypes as $type) {
+            $rules[$type] = 'nullable|array';
+            $rules[$type . '.*'] = 'nullable|string|max:50';
+            $rules['manual_' . $type . '_ids'] = 'nullable|array';
+            $rules['manual_' . $type . '_ids.*'] = 'nullable|string|max:50';
+        }
+
+        $validator = Validator::make($request->all(), $rules);
 
         if ($validator->fails()) {
             return back()->withErrors($validator)->withInput();
         }
 
-        // Build selected assets (single value per type - one account per org)
-        $selectedAssets = [
-            'page' => $request->filled('manual_page_id')
-                ? $request->input('manual_page_id')
-                : $request->input('page'),
-            'instagram_account' => $request->filled('manual_instagram_id')
-                ? $request->input('manual_instagram_id')
-                : $request->input('instagram_account'),
-            'threads_account' => $request->filled('manual_threads_id')
-                ? $request->input('manual_threads_id')
-                : $request->input('threads_account'),
-            'ad_account' => $request->filled('manual_ad_account_id')
-                ? $this->normalizeAdAccountId($request->input('manual_ad_account_id'))
-                : $request->input('ad_account'),
-            'pixel' => $request->filled('manual_pixel_id')
-                ? $request->input('manual_pixel_id')
-                : $request->input('pixel'),
-            'catalog' => $request->filled('manual_catalog_id')
-                ? $request->input('manual_catalog_id')
-                : $request->input('catalog'),
-        ];
+        // Build selected assets (multiple values per type)
+        $selectedAssets = [];
+        foreach ($multiAssetTypes as $type) {
+            $manualKey = 'manual_' . $type . '_ids';
 
-        // Filter out null values
-        $selectedAssets = array_filter($selectedAssets, fn($v) => !is_null($v) && $v !== '');
+            // Get selected values from checkboxes
+            $selectedValues = $request->input($type, []);
+
+            // Get manually entered values
+            $manualValues = $request->input($manualKey, []);
+
+            // Merge and deduplicate
+            $allValues = array_merge($selectedValues, $manualValues);
+
+            // Normalize ad account IDs if needed
+            if ($type === 'ad_account') {
+                $allValues = array_map(fn($id) => $this->normalizeAdAccountId($id), $allValues);
+            }
+
+            $allValues = array_filter(array_unique($allValues));
+
+            if (!empty($allValues)) {
+                $selectedAssets[$type] = array_values($allValues);
+            }
+        }
 
         // Update connection metadata
         $metadata = $connection->account_metadata ?? [];
@@ -1130,29 +1128,37 @@ class PlatformConnectionsController extends Controller
 
         $connection->update(['account_metadata' => $metadata]);
 
-        $totalSelected = count($selectedAssets);
-
         if ($request->wantsJson()) {
             return $this->success([
                 'connection' => $connection->fresh(),
                 'selected_assets' => $selectedAssets,
-            ], "Meta assets configured: {$totalSelected} asset type(s) selected");
+            ], "Meta assets configured successfully");
         }
 
-        // Build detailed message
-        $assetTypes = [];
-        if (!empty($selectedAssets['page'])) $assetTypes[] = 'Facebook Page';
-        if (!empty($selectedAssets['instagram_account'])) $assetTypes[] = 'Instagram';
-        if (!empty($selectedAssets['threads_account'])) $assetTypes[] = 'Threads';
-        if (!empty($selectedAssets['ad_account'])) $assetTypes[] = 'Ad Account';
-        if (!empty($selectedAssets['pixel'])) $assetTypes[] = 'Pixel';
-        if (!empty($selectedAssets['catalog'])) $assetTypes[] = 'Catalog';
+        // Build detailed message with counts
+        $assetLabels = [
+            'page' => 'Facebook Page',
+            'instagram_account' => 'Instagram Account',
+            'threads_account' => 'Threads Account',
+            'ad_account' => 'Ad Account',
+            'pixel' => 'Pixel',
+            'catalog' => 'Catalog',
+        ];
 
-        $assetList = count($assetTypes) > 0 ? implode(', ', $assetTypes) : 'None';
+        $assetList = [];
+        foreach ($multiAssetTypes as $type) {
+            if (!empty($selectedAssets[$type])) {
+                $count = count($selectedAssets[$type]);
+                $label = $assetLabels[$type];
+                $assetList[] = $count === 1 ? $label : "{$count} {$label}s";
+            }
+        }
+
+        $message = 'Meta assets configured: ' . (count($assetList) > 0 ? implode(', ', $assetList) : 'None');
 
         return redirect()
             ->route('orgs.settings.platform-connections.index', $org)
-            ->with('success', "Meta assets configured: {$assetList}");
+            ->with('success', $message);
     }
 
     /**
@@ -1646,7 +1652,7 @@ class PlatformConnectionsController extends Controller
     }
 
     /**
-     * Store selected Google assets.
+     * Store selected Google assets (supports multi-select for all asset types).
      */
     public function storeGoogleAssets(Request $request, string $org, string $connectionId)
     {
@@ -1655,8 +1661,8 @@ class PlatformConnectionsController extends Controller
             ->where('platform', 'google')
             ->firstOrFail();
 
-        // Single-select asset types
-        $singleAssetTypes = [
+        // Multi-select asset types
+        $multiAssetTypes = [
             'youtube_channel',
             'google_ads',
             'analytics',
@@ -1672,14 +1678,16 @@ class PlatformConnectionsController extends Controller
             'include_my_drive' => 'nullable|boolean',
             'shared_drives' => 'nullable|array',
             'shared_drives.*' => 'nullable|string|max:255',
-            'selected_shared_drives' => 'nullable|string', // JSON string from Alpine.js
             'manual_drives' => 'nullable|array',
             'manual_drives.*' => 'nullable|string|max:255',
         ];
 
-        foreach ($singleAssetTypes as $type) {
-            $rules[$type] = 'nullable|string|max:255';
-            $rules['manual_' . $type . '_id'] = 'nullable|string|max:255';
+        // Add validation for multi-select asset types
+        foreach ($multiAssetTypes as $type) {
+            $rules[$type] = 'nullable|array';
+            $rules[$type . '.*'] = 'nullable|string|max:255';
+            $rules['manual_' . $type . '_ids'] = 'nullable|array';
+            $rules['manual_' . $type . '_ids.*'] = 'nullable|string|max:255';
         }
 
         $validator = Validator::make($request->all(), $rules);
@@ -1688,28 +1696,32 @@ class PlatformConnectionsController extends Controller
             return back()->withErrors($validator)->withInput();
         }
 
-        // Build selected assets (single value per type)
+        // Build selected assets (multiple values per type)
         $selectedAssets = [];
-        foreach ($singleAssetTypes as $type) {
-            $manualKey = 'manual_' . $type . '_id';
-            $value = $request->filled($manualKey)
-                ? $request->input($manualKey)
-                : $request->input($type);
+        foreach ($multiAssetTypes as $type) {
+            $manualKey = 'manual_' . $type . '_ids';
 
-            if ($value) {
-                $selectedAssets[$type] = $value;
+            // Get selected values from checkboxes
+            $selectedValues = $request->input($type, []);
+
+            // Get manually entered values
+            $manualValues = $request->input($manualKey, []);
+
+            // Merge and deduplicate
+            $allValues = array_merge($selectedValues, $manualValues);
+            $allValues = array_filter(array_unique($allValues));
+
+            if (!empty($allValues)) {
+                $selectedAssets[$type] = array_values($allValues);
             }
         }
 
         // Handle Google Drive multi-select
         $selectedAssets['include_my_drive'] = (bool) $request->input('include_my_drive', false);
 
-        // Get shared drives from either array or JSON string
+        // Get shared drives
         $sharedDrives = $request->input('shared_drives', []);
-        if (empty($sharedDrives) && $request->filled('selected_shared_drives')) {
-            $sharedDrives = json_decode($request->input('selected_shared_drives'), true) ?? [];
-        }
-        $selectedAssets['shared_drives'] = array_filter(array_unique($sharedDrives));
+        $selectedAssets['shared_drives'] = array_values(array_filter(array_unique($sharedDrives)));
 
         // Add manually entered drives
         $manualDrives = array_filter($request->input('manual_drives', []));
@@ -1722,7 +1734,7 @@ class PlatformConnectionsController extends Controller
 
         $connection->update(['account_metadata' => $metadata]);
 
-        // Build success message
+        // Build success message with counts
         $assetLabels = [
             'youtube_channel' => 'YouTube Channel',
             'google_ads' => 'Google Ads',
@@ -1735,9 +1747,11 @@ class PlatformConnectionsController extends Controller
         ];
 
         $selectedList = [];
-        foreach ($singleAssetTypes as $type) {
+        foreach ($multiAssetTypes as $type) {
             if (!empty($selectedAssets[$type])) {
-                $selectedList[] = $assetLabels[$type] ?? ucfirst(str_replace('_', ' ', $type));
+                $count = count($selectedAssets[$type]);
+                $label = $assetLabels[$type] ?? ucfirst(str_replace('_', ' ', $type));
+                $selectedList[] = $count === 1 ? $label : "{$count} {$label}s";
             }
         }
 
