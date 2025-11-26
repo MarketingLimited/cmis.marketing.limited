@@ -167,14 +167,19 @@
                 <span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded">ads_management</span>
                 <span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded">ads_read</span>
                 <span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded">business_management</span>
+                <span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded">catalog_management</span>
                 <span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded">pages_read_engagement</span>
                 <span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded">pages_show_list</span>
             </div>
             <p class="mt-3 text-xs text-blue-700">
                 Optional for advanced features:
                 <span class="px-1 bg-blue-100 rounded">instagram_basic</span>,
-                <span class="px-1 bg-blue-100 rounded">instagram_manage_insights</span>,
+                <span class="px-1 bg-blue-100 rounded">instagram_content_publish</span>,
                 <span class="px-1 bg-blue-100 rounded">leads_retrieval</span>
+            </p>
+            <p class="mt-2 text-xs text-blue-600">
+                <i class="fas fa-info-circle mr-1"></i>
+                Business ID is automatically detected from your token - no manual entry needed.
             </p>
         </div>
 
