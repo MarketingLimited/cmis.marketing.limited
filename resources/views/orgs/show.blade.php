@@ -284,6 +284,12 @@ function orgDetails(serverOrg, serverStats, serverCampaigns, serverTeamMembers, 
         },
 
         renderPerformanceChart() {
+            // Check if Chart.js is loaded
+            if (typeof Chart === 'undefined') {
+                console.warn('Chart.js is not loaded. Skipping chart rendering.');
+                return;
+            }
+
             const ctx = document.getElementById('performanceChart');
             if (!ctx || !ctx.getContext) return;
 
