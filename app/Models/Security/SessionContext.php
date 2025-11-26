@@ -2,7 +2,6 @@
 
 namespace App\Models\Security;
 
-use App\Models\Concerns\HasOrganization;
 use App\Models\Core\Org;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use App\Models\BaseModel;
@@ -12,7 +11,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 class SessionContext extends BaseModel
 {
     use HasFactory, SoftDeletes, HasUuids;
-    use HasOrganization;
+    // Note: Removed HasOrganization trait - SessionContext doesn't need org relationship methods
 
     protected $table = 'cmis.session_context';
     protected $primaryKey = 'session_id';
@@ -49,14 +48,6 @@ class SessionContext extends BaseModel
     public function scopeActive($query)
     {
         return $query->whereNull('deleted_at');
-    }
-
-    /**
-     * Scope to get sessions for a specific org
-     */
-    public function scopeForOrg($query, string $orgId)
-    {
-        return $query->where('active_org_id', $orgId);
     }
 
     /**
