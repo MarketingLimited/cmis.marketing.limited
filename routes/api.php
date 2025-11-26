@@ -154,20 +154,20 @@ Route::middleware('auth:sanctum')->group(function () {
     // قائمة الشركات للمستخدم
     Route::get('/user/orgs', [OrgController::class, 'listUserOrgs'])->name('user.orgs');
 
-    // Organization Switcher APIs
-    Route::get('/user/organizations', [UserOrganizationController::class, 'index'])->name('user.organizations.index');
-    Route::post('/user/switch-organization', [UserOrganizationController::class, 'switch'])->name('user.organizations.switch');
+    // Organization Switcher APIs (DEPRECATED: Duplicate of lines 164-170)
+    // Route::get('/user/organizations', [UserOrganizationController::class, 'index'])->name('user.organizations.index');
+    // Route::post('/user/switch-organization', [UserOrganizationController::class, 'switch'])->name('user.organizations.switch');
 
     // إنشاء شركة جديدة
-    Route::post('/orgs', [OrgController::class, 'store'])->name('orgs.store');
+    Route::post('/orgs', [OrgController::class, 'store'])->name('api.orgs.store');
 
     // Organization Switcher (NEW: P1 - Multi-Org UI)
     Route::get('/user/organizations', [\App\Http\Controllers\Core\OrgSwitcherController::class, 'getUserOrganizations'])
-        ->name('user.organizations');
+        ->name('api.user.organizations');
     Route::post('/user/switch-organization', [\App\Http\Controllers\Core\OrgSwitcherController::class, 'switchOrganization'])
-        ->name('user.switch-organization');
+        ->name('api.user.switch-organization');
     Route::get('/user/active-organization', [\App\Http\Controllers\Core\OrgSwitcherController::class, 'getActiveOrganization'])
-        ->name('user.active-organization');
+        ->name('api.user.active-organization');
 
     // Context API (Phase 2 - Option 2: Context System UI)
     Route::prefix('context')->name('context.')->group(function () {
@@ -1191,7 +1191,7 @@ Route::middleware(['auth:sanctum', 'validate.org.access', 'org.context'])
         Route::get('/engagement', [AnalyticsController::class, 'getEngagementAnalytics'])->name('engagement');
 
         // Export Reports
-        Route::post('/export', [AnalyticsController::class, 'exportReport'])->name('export');
+        Route::post('/export', [AnalyticsController::class, 'exportReport'])->name('export.legacy'); // Renamed to avoid collision with line 1898
 
         // Legacy KPI Routes (backward compatible)
         Route::get('/kpis', [KpiController::class, 'index'])->name('kpis');
@@ -1404,7 +1404,7 @@ Route::middleware(['auth:sanctum', 'validate.org.access', 'org.context'])
     | Unified Dashboard & Sync Management (من Phase 2)
     |----------------------------------------------------------------------
     */
-    Route::prefix('orgs/{org}')->name('orgs.')->group(function () {
+    Route::prefix('orgs/{org}')->name('api.orgs.')->group(function () {
         // Unified Dashboard
         Route::get('/dashboard', [App\Http\Controllers\API\DashboardController::class, 'index'])->name('dashboard.index');
         Route::post('/dashboard/refresh', [App\Http\Controllers\API\DashboardController::class, 'refresh'])->name('dashboard.refresh');
@@ -1626,8 +1626,8 @@ Route::middleware(['auth:sanctum'])->prefix('orgs/{org_id}/analytics')->name('an
     // Advanced Analytics Features (Phase 11)
     Route::get('/campaigns/{campaign_id}/insights', [App\Http\Controllers\Analytics\AdvancedAnalyticsController::class, 'getCampaignInsights'])->name('campaigns.insights');
     Route::post('/campaigns/{campaign_id}/export', [App\Http\Controllers\Analytics\AdvancedAnalyticsController::class, 'exportCampaignReport'])->name('campaigns.export');
-    Route::post('/export', [App\Http\Controllers\Analytics\AdvancedAnalyticsController::class, 'exportOrganizationReport'])->name('export');
-    Route::post('/compare', [App\Http\Controllers\Analytics\AdvancedAnalyticsController::class, 'compareCampaigns'])->name('compare');
+    Route::post('/export', [App\Http\Controllers\Analytics\AdvancedAnalyticsController::class, 'exportOrganizationReport'])->name('advanced.export');
+    Route::post('/compare', [App\Http\Controllers\Analytics\AdvancedAnalyticsController::class, 'compareCampaigns'])->name('advanced.compare');
 
     // Scheduled Reports (Phase 12)
     Route::prefix('scheduled-reports')->name('scheduled-reports.')->group(function () {
@@ -1714,7 +1714,7 @@ Route::middleware(['auth:sanctum'])->prefix('orgs/{org_id}/analytics')->name('an
     });
 
     // ===== Predictive Analytics Routes (Phase 16) =====
-    Route::prefix('analytics')->name('analytics.')->group(function () {
+    Route::prefix('analytics')->name('analytics.predictive.')->group(function () {
         // Forecasting
         Route::post('/forecasts', [App\Http\Controllers\Analytics\PredictiveAnalyticsController::class, 'generateForecast'])->name('forecasts.generate');
         Route::get('/forecasts', [App\Http\Controllers\Analytics\PredictiveAnalyticsController::class, 'listForecasts'])->name('forecasts.index');
