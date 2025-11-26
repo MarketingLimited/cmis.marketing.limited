@@ -727,7 +727,11 @@
                         console.log('Load organizations response:', response.status, response.statusText);
 
                         if (response.ok) {
-                            const data = await response.json();
+                            const result = await response.json();
+                            console.log('Organizations API response:', result);
+
+                            // Extract data from ApiResponse format {success, message, data: {...}}
+                            const data = result.data || result;
                             console.log('Organizations data:', data);
 
                             // Get current org from URL, not from API response

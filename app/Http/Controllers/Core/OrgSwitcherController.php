@@ -22,10 +22,11 @@ class OrgSwitcherController extends Controller
 
     /**
      * Constructor - Apply authentication middleware
+     * Support both web session and API token authentication
      */
     public function __construct()
     {
-        $this->middleware('auth:sanctum');
+        $this->middleware('auth:sanctum,web');
     }
 
     /**
