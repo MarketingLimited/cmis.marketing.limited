@@ -1,0 +1,373 @@
+@extends('layouts.app')
+
+@section('title', ($connection ? __('Edit') : __('Add')) . ' Google Connection - Settings')
+
+@section('content')
+<div class="max-w-3xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+    {{-- Breadcrumb --}}
+    <nav class="flex mb-6" aria-label="Breadcrumb">
+        <ol class="inline-flex items-center space-x-1 md:space-x-3 text-sm">
+            <li>
+                <a href="{{ route('orgs.settings.platform-connections.index', $currentOrg) }}" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-cog mr-1"></i> Platform Connections
+                </a>
+            </li>
+            <li>
+                <div class="flex items-center">
+                    <i class="fas fa-chevron-right text-gray-400 mx-2"></i>
+                    <span class="text-gray-700 font-medium">{{ $connection ? 'Edit' : 'Add' }} Google Connection</span>
+                </div>
+            </li>
+        </ol>
+    </nav>
+
+    {{-- Header --}}
+    <div class="mb-6">
+        <div class="flex items-center">
+            <div class="flex-shrink-0 w-12 h-12 bg-white rounded-lg shadow flex items-center justify-center">
+                <svg class="w-8 h-8" viewBox="0 0 24 24">
+                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                </svg>
+            </div>
+            <div class="ml-4">
+                <h1 class="text-2xl font-bold text-gray-900">
+                    {{ $connection ? 'Edit Google Connection' : 'Add Google Service Account' }}
+                </h1>
+                <p class="mt-1 text-sm text-gray-500">
+                    Connect your Google account using a Service Account or OAuth credentials
+                </p>
+            </div>
+        </div>
+    </div>
+
+    {{-- Error Messages --}}
+    @if($errors->any())
+        <div class="mb-6 rounded-md bg-red-50 p-4">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <i class="fas fa-exclamation-circle text-red-400"></i>
+                </div>
+                <div class="ml-3">
+                    <h3 class="text-sm font-medium text-red-800">Please fix the following errors:</h3>
+                    <ul class="mt-2 text-sm text-red-700 list-disc list-inside">
+                        @foreach($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    @if(!$connection)
+    {{-- Quick Connect with Google OAuth --}}
+    @php
+        $googleConfig = config('social-platforms.google');
+        $hasGoogleCredentials = !empty($googleConfig['client_id']) && !empty($googleConfig['client_secret']);
+    @endphp
+
+    <div class="bg-white shadow sm:rounded-lg mb-6">
+        <div class="px-4 py-5 sm:p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="text-lg font-medium text-gray-900">
+                        <i class="fab fa-google text-blue-500 mr-2"></i>Quick Connect with Google
+                    </h3>
+                    <p class="mt-1 text-sm text-gray-500">
+                        Connect instantly using your Google account. This grants access to YouTube, Analytics, Ads, and more.
+                    </p>
+                </div>
+                @if($hasGoogleCredentials)
+                    <a href="{{ route('orgs.settings.platform-connections.google.authorize', $currentOrg) }}"
+                       class="inline-flex items-center px-6 py-3 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition">
+                        <svg class="w-5 h-5 mr-2" viewBox="0 0 24 24">
+                            <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                            <path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                            <path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                            <path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                        </svg>
+                        Connect with Google
+                    </a>
+                @else
+                    <div class="text-right">
+                        <span class="inline-flex items-center px-4 py-2 text-sm text-gray-500 bg-gray-100 rounded-lg">
+                            <i class="fas fa-info-circle mr-2"></i>Google API not configured
+                        </span>
+                        <p class="text-xs text-gray-400 mt-1">Add GOOGLE_CLIENT_ID to .env</p>
+                    </div>
+                @endif
+            </div>
+
+            @if($hasGoogleCredentials)
+            <div class="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                <p class="text-xs text-blue-700">
+                    <i class="fas fa-shield-alt mr-1"></i>
+                    <strong>Recommended:</strong> OAuth connection is more secure and doesn't require manual credential management.
+                </p>
+            </div>
+            @endif
+        </div>
+    </div>
+
+    <div class="relative mb-6">
+        <div class="absolute inset-0 flex items-center">
+            <div class="w-full border-t border-gray-300"></div>
+        </div>
+        <div class="relative flex justify-center text-sm">
+            <span class="px-3 bg-gray-100 text-gray-500">Or add credentials manually</span>
+        </div>
+    </div>
+    @endif
+
+    {{-- Form --}}
+    <form action="{{ $connection
+            ? route('orgs.settings.platform-connections.google.update', [$currentOrg, $connection->connection_id])
+            : route('orgs.settings.platform-connections.google.store', $currentOrg) }}"
+          method="POST" class="space-y-6">
+        @csrf
+        @if($connection)
+            @method('PUT')
+        @endif
+
+        {{-- Account Name --}}
+        <div class="bg-white shadow sm:rounded-lg">
+            <div class="px-4 py-5 sm:p-6">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">Connection Details</h3>
+
+                <div class="space-y-4">
+                    <div>
+                        <label for="account_name" class="block text-sm font-medium text-gray-700">
+                            Connection Name *
+                        </label>
+                        <input type="text" name="account_name" id="account_name"
+                               value="{{ old('account_name', $connection->account_name ?? '') }}"
+                               placeholder="e.g., My Business Google Account"
+                               required
+                               class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                        <p class="mt-1 text-xs text-gray-500">A friendly name to identify this connection</p>
+                    </div>
+
+                    @if($connection)
+                        <div class="p-4 bg-gray-50 rounded-lg">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm font-medium text-gray-700">Current Status</p>
+                                    <p class="text-xs text-gray-500">
+                                        @if($connection->status === 'active')
+                                            <span class="text-green-600"><i class="fas fa-check-circle mr-1"></i>Active</span>
+                                        @elseif($connection->status === 'error')
+                                            <span class="text-red-600"><i class="fas fa-exclamation-circle mr-1"></i>Error</span>
+                                        @else
+                                            <span class="text-yellow-600"><i class="fas fa-clock mr-1"></i>{{ ucfirst($connection->status) }}</span>
+                                        @endif
+                                        @if($connection->last_sync_at)
+                                            &bull; Last synced {{ $connection->last_sync_at->diffForHumans() }}
+                                        @endif
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    @endif
+                </div>
+            </div>
+        </div>
+
+        {{-- Credentials Type Selection --}}
+        <div class="bg-white shadow sm:rounded-lg" x-data="{ credentialType: '{{ old('credential_type', 'service_account') }}' }">
+            <div class="px-4 py-5 sm:p-6">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">Authentication Method</h3>
+
+                <div class="space-y-4">
+                    {{-- Credential Type Selection --}}
+                    <div class="grid grid-cols-2 gap-4">
+                        <label class="relative flex cursor-pointer rounded-lg border p-4"
+                               :class="{ 'border-blue-500 bg-blue-50 ring-2 ring-blue-500': credentialType === 'service_account', 'border-gray-300': credentialType !== 'service_account' }">
+                            <input type="radio" name="credential_type" value="service_account" x-model="credentialType" class="sr-only">
+                            <div class="flex flex-col">
+                                <span class="text-sm font-medium text-gray-900">Service Account</span>
+                                <span class="text-xs text-gray-500 mt-1">For server-to-server apps (recommended)</span>
+                            </div>
+                        </label>
+                        <label class="relative flex cursor-pointer rounded-lg border p-4"
+                               :class="{ 'border-blue-500 bg-blue-50 ring-2 ring-blue-500': credentialType === 'oauth', 'border-gray-300': credentialType !== 'oauth' }">
+                            <input type="radio" name="credential_type" value="oauth" x-model="credentialType" class="sr-only">
+                            <div class="flex flex-col">
+                                <span class="text-sm font-medium text-gray-900">OAuth 2.0</span>
+                                <span class="text-xs text-gray-500 mt-1">For user-authorized access</span>
+                            </div>
+                        </label>
+                    </div>
+
+                    {{-- Service Account Credentials --}}
+                    <div x-show="credentialType === 'service_account'" x-cloak class="space-y-4 mt-4">
+                        <div>
+                            <label for="service_account_json" class="block text-sm font-medium text-gray-700">
+                                Service Account JSON {{ $connection ? '' : '*' }}
+                            </label>
+                            <div class="mt-1">
+                                <textarea name="service_account_json" id="service_account_json" rows="6"
+                                          placeholder='Paste your service account JSON key here...'
+                                          {{ $connection ? '' : 'required' }}
+                                          class="block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm font-mono text-xs">{{ old('service_account_json') }}</textarea>
+                            </div>
+                            <p class="mt-1 text-xs text-gray-500">
+                                <i class="fas fa-lock mr-1"></i>
+                                Your credentials will be encrypted before storage
+                            </p>
+                        </div>
+
+                        @if($connection)
+                            <div class="p-3 bg-blue-50 rounded-lg">
+                                <p class="text-sm text-blue-800">
+                                    <i class="fas fa-info-circle mr-1"></i>
+                                    Leave empty to keep current credentials
+                                </p>
+                            </div>
+                        @endif
+                    </div>
+
+                    {{-- OAuth Credentials --}}
+                    <div x-show="credentialType === 'oauth'" x-cloak class="space-y-4 mt-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label for="client_id" class="block text-sm font-medium text-gray-700">
+                                    Client ID {{ $connection ? '' : '*' }}
+                                </label>
+                                <input type="text" name="client_id" id="client_id"
+                                       value="{{ old('client_id') }}"
+                                       placeholder="Your OAuth Client ID"
+                                       class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                            </div>
+                            <div>
+                                <label for="client_secret" class="block text-sm font-medium text-gray-700">
+                                    Client Secret {{ $connection ? '' : '*' }}
+                                </label>
+                                <input type="password" name="client_secret" id="client_secret"
+                                       placeholder="Your OAuth Client Secret"
+                                       class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label for="refresh_token" class="block text-sm font-medium text-gray-700">
+                                Refresh Token
+                            </label>
+                            <input type="text" name="refresh_token" id="refresh_token"
+                                   value="{{ old('refresh_token') }}"
+                                   placeholder="OAuth Refresh Token (if available)"
+                                   class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm font-mono text-xs">
+                            <p class="mt-1 text-xs text-gray-500">Optional: Provide if you already have a refresh token</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{-- Required Scopes Info --}}
+        <div class="bg-blue-50 rounded-lg p-4">
+            <h4 class="text-sm font-medium text-blue-900 mb-2">
+                <i class="fas fa-key mr-1"></i> Required API Scopes
+            </h4>
+            <p class="text-sm text-blue-800 mb-3">
+                Make sure your Google credentials have access to the following APIs:
+            </p>
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-2">
+                <div class="flex items-center gap-2 p-2 bg-blue-100 rounded text-xs text-blue-800">
+                    <i class="fab fa-youtube text-red-500"></i>
+                    <span>YouTube Data API</span>
+                </div>
+                <div class="flex items-center gap-2 p-2 bg-blue-100 rounded text-xs text-blue-800">
+                    <i class="fas fa-ad text-green-500"></i>
+                    <span>Google Ads API</span>
+                </div>
+                <div class="flex items-center gap-2 p-2 bg-blue-100 rounded text-xs text-blue-800">
+                    <i class="fas fa-chart-line text-orange-500"></i>
+                    <span>Google Analytics</span>
+                </div>
+                <div class="flex items-center gap-2 p-2 bg-blue-100 rounded text-xs text-blue-800">
+                    <i class="fas fa-code text-purple-500"></i>
+                    <span>Tag Manager API</span>
+                </div>
+                <div class="flex items-center gap-2 p-2 bg-blue-100 rounded text-xs text-blue-800">
+                    <i class="fas fa-store text-blue-500"></i>
+                    <span>Google Business Profile</span>
+                </div>
+                <div class="flex items-center gap-2 p-2 bg-blue-100 rounded text-xs text-blue-800">
+                    <i class="fas fa-shopping-cart text-teal-500"></i>
+                    <span>Merchant Center</span>
+                </div>
+                <div class="flex items-center gap-2 p-2 bg-blue-100 rounded text-xs text-blue-800">
+                    <i class="fas fa-search text-indigo-500"></i>
+                    <span>Search Console</span>
+                </div>
+                <div class="flex items-center gap-2 p-2 bg-blue-100 rounded text-xs text-blue-800">
+                    <i class="fas fa-calendar text-cyan-500"></i>
+                    <span>Calendar API</span>
+                </div>
+                <div class="flex items-center gap-2 p-2 bg-blue-100 rounded text-xs text-blue-800">
+                    <i class="fas fa-folder text-yellow-600"></i>
+                    <span>Drive API</span>
+                </div>
+            </div>
+            <p class="mt-3 text-xs text-blue-600">
+                <i class="fas fa-info-circle mr-1"></i>
+                Not all APIs are required. Enable only those you plan to use.
+            </p>
+        </div>
+
+        {{-- Actions --}}
+        <div class="flex justify-end space-x-3">
+            <a href="{{ route('orgs.settings.platform-connections.index', $currentOrg) }}"
+               class="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                Cancel
+            </a>
+            <button type="submit"
+                    class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                <i class="fas fa-save mr-2"></i>
+                {{ $connection ? 'Update Connection' : 'Save & Validate' }}
+            </button>
+        </div>
+    </form>
+
+    {{-- Help Section --}}
+    <div class="mt-8 border-t border-gray-200 pt-8">
+        <h3 class="text-lg font-medium text-gray-900 mb-4">How to Create Google Credentials</h3>
+
+        <div class="prose prose-sm text-gray-600">
+            <h4 class="text-md font-medium text-gray-800">Service Account (Recommended)</h4>
+            <ol class="space-y-2">
+                <li>
+                    <strong>Go to Google Cloud Console</strong>
+                    <p class="text-gray-500">Navigate to <a href="https://console.cloud.google.com/iam-admin/serviceaccounts" target="_blank" class="text-blue-600 hover:underline">Service Accounts</a></p>
+                </li>
+                <li>
+                    <strong>Create a Service Account</strong>
+                    <p class="text-gray-500">Click "Create Service Account" and follow the wizard</p>
+                </li>
+                <li>
+                    <strong>Enable Required APIs</strong>
+                    <p class="text-gray-500">Go to "APIs & Services" &rarr; "Enable APIs" and enable the APIs you need</p>
+                </li>
+                <li>
+                    <strong>Create JSON Key</strong>
+                    <p class="text-gray-500">Click on the service account, go to "Keys" tab, and create a JSON key</p>
+                </li>
+                <li>
+                    <strong>Grant Permissions</strong>
+                    <p class="text-gray-500">Share access to your assets (Analytics, Ads, etc.) with the service account email</p>
+                </li>
+            </ol>
+        </div>
+
+        <div class="mt-4 p-4 bg-yellow-50 rounded-lg">
+            <p class="text-sm text-yellow-800">
+                <i class="fas fa-exclamation-triangle mr-1"></i>
+                <strong>Security Note:</strong> Keep your credentials private. Service account keys provide full access to your Google assets.
+            </p>
+        </div>
+    </div>
+</div>
+@endsection
