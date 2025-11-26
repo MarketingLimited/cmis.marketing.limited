@@ -25,6 +25,99 @@ class OrgController extends Controller
         return view('orgs.index', compact('orgs'));
     }
 
+    /**
+     * Get user's organizations for the switcher component.
+     * Returns all organizations with current org marked.
+     */
+    public function getUserOrganizations()
+    {
+        try {
+            $currentOrgId = session('current_org_id') ?? auth()->user()->current_org_id;
+
+            $orgs = Org::query()
+                ->select('org_id', 'name', 'default_locale', 'currency', 'created_at')
+                ->orderBy('name')
+                ->get()
+                ->map(function ($org) use ($currentOrgId) {
+                    return [
+                        'org_id' => $org->org_id,
+                        'name' => $org->name,
+                        'default_locale' => $org->default_locale,
+                        'currency' => $org->currency,
+                        'is_current' => $org->org_id === $currentOrgId,
+                    ];
+                });
+
+            return response()->json([
+                'success' => true,
+                'organizations' => $orgs,
+                'current_org_id' => $currentOrgId,
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Failed to fetch user organizations', [
+                'user_id' => auth()->id(),
+                'error' => $e->getMessage()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'فشل جلب المؤسسات',
+            ], 500);
+        }
+    }
+
+    /**
+     * Switch to a different organization.
+     */
+    public function switchOrganization(Request $request)
+    {
+        $request->validate([
+            'org_id' => 'required|uuid|exists:cmis.orgs,org_id'
+        ]);
+
+        try {
+            $orgId = $request->input('org_id');
+            $user = auth()->user();
+
+            // Update session
+            session(['current_org_id' => $orgId]);
+
+            // Update user's current_org_id field
+            $user->update(['current_org_id' => $orgId]);
+
+            // Get the organization details
+            $org = Org::find($orgId);
+
+            \Log::info('User switched organization', [
+                'user_id' => $user->user_id,
+                'org_id' => $orgId,
+                'org_name' => $org->name ?? 'Unknown'
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'تم تبديل المؤسسة بنجاح',
+                'org_id' => $orgId,
+                'org_name' => $org->name ?? 'Unknown',
+                'default_locale' => $org->default_locale ?? 'ar-BH',
+                'currency' => $org->currency ?? 'BHD',
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Failed to switch organization', [
+                'user_id' => auth()->id(),
+                'org_id' => $request->input('org_id'),
+                'error' => $e->getMessage()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'فشل تبديل المؤسسة',
+            ], 500);
+        }
+    }
+
     public function create()
     {
         return view('orgs.create');
