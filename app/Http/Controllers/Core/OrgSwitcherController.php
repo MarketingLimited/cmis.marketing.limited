@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Core;
 
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Concerns\ApiResponse;
-use App\Models\Security\SessionContext;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -50,13 +49,12 @@ class OrgSwitcherController extends Controller
             ->orderBy('cmis.orgs.name')
             ->get();
 
-        // Get current active org from session context
-        $sessionContext = SessionContext::where('session_id', session()->getId())->first();
-        $activeOrgId = $sessionContext?->active_org_id ?? $user->org_id;
+        // Get current org from user (frontend determines current org from URL)
+        $currentOrgId = $user->current_org_id ?? $user->org_id;
 
         return $this->success([
             'organizations' => $organizations,
-            'active_org_id' => $activeOrgId,
+            'current_org_id' => $currentOrgId,
         ], 'Organizations retrieved successfully');
     }
 
@@ -89,15 +87,7 @@ class OrgSwitcherController extends Controller
         }
 
         try {
-            // Get or create session context
-            $sessionContext = SessionContext::getOrCreate(
-                session()->getId(),
-                $newOrgId,
-                'web'
-            );
-
-            // Switch to new org
-            $sessionContext->switchOrg($newOrgId);
+            $oldOrgId = $user->org_id;
 
             // Set PostgreSQL session variable for RLS
             DB::statement(
@@ -105,7 +95,7 @@ class OrgSwitcherController extends Controller
                 [$newOrgId]
             );
 
-            // Update user's default org_id (optional - keeps last selected org)
+            // Update user's current org
             $user->update(['org_id' => $newOrgId]);
 
             // Sync to Redis for cross-interface org context (Issue #63)
@@ -113,7 +103,7 @@ class OrgSwitcherController extends Controller
 
             Log::info('User switched organization', [
                 'user_id' => $user->user_id,
-                'old_org_id' => $sessionContext->getOriginal('active_org_id'),
+                'old_org_id' => $oldOrgId,
                 'new_org_id' => $newOrgId,
             ]);
 
@@ -157,8 +147,8 @@ class OrgSwitcherController extends Controller
         // Check Redis cache first for cross-interface consistency (Issue #63)
         $cachedOrgId = \Cache::get('user:' . $user->user_id . ':active_org');
 
-        $sessionContext = SessionContext::where('session_id', session()->getId())->first();
-        $activeOrgId = $cachedOrgId ?? $sessionContext?->active_org_id ?? $user->org_id;
+        // Use cached org or user's current/default org
+        $activeOrgId = $cachedOrgId ?? $user->current_org_id ?? $user->org_id;
 
         $activeOrg = $user->orgs()
             ->withoutGlobalScopes()
