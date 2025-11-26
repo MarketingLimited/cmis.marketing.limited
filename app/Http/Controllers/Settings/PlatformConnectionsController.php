@@ -1081,9 +1081,13 @@ class PlatformConnectionsController extends Controller
                 $accountId = $account['id'] ?? null;
                 if (!$accountId) continue;
 
-                $response = Http::timeout(15)->get("https://graph.facebook.com/v21.0/{$accountId}/adspixels", [
+                // Ensure account ID has act_ prefix for ad account endpoints
+                $formattedAccountId = str_starts_with($accountId, 'act_') ? $accountId : 'act_' . $accountId;
+
+                // Use only basic fields - some fields may be deprecated or require advanced access
+                $response = Http::timeout(15)->get("https://graph.facebook.com/v21.0/{$formattedAccountId}/adspixels", [
                     'access_token' => $accessToken,
-                    'fields' => 'id,name,code,creation_time,is_created_by_business,last_fired_time',
+                    'fields' => 'id,name,creation_time,last_fired_time',
                     'limit' => 50,
                 ]);
 
@@ -1099,17 +1103,17 @@ class PlatformConnectionsController extends Controller
                                 'ad_account_name' => $account['name'] ?? 'Unknown',
                                 'creation_time' => $pixel['creation_time'] ?? null,
                                 'last_fired_time' => $pixel['last_fired_time'] ?? null,
-                                'is_created_by_business' => $pixel['is_created_by_business'] ?? false,
                             ];
                         }
                     }
                 } else {
                     Log::warning('Failed to fetch pixels for ad account', [
-                        'ad_account_id' => $accountId,
+                        'ad_account_id' => $formattedAccountId,
                         'status' => $response->status(),
                         'error' => $response->json('error.message'),
                         'error_code' => $response->json('error.code'),
                         'error_type' => $response->json('error.type'),
+                        'error_subcode' => $response->json('error.error_subcode'),
                     ]);
                 }
             }
@@ -1123,70 +1127,106 @@ class PlatformConnectionsController extends Controller
 
     /**
      * Get Product Catalogs.
+     *
+     * According to Meta Graph API documentation:
+     * 1. First get user's businesses: GET /me/businesses
+     * 2. Then get catalogs for each business: GET /{businessId}/owned_product_catalogs
+     *
+     * @see https://developers.facebook.com/docs/marketing-api/reference/product-catalog
      */
     private function getMetaCatalogs(string $accessToken): array
     {
+        $catalogs = [];
+
         try {
-            // First try business owned catalogs
-            $response = Http::timeout(30)->get('https://graph.facebook.com/v21.0/me/owned_product_catalogs', [
+            // Step 1: Get user's businesses first
+            $businessesResponse = Http::timeout(15)->get('https://graph.facebook.com/v21.0/me/businesses', [
                 'access_token' => $accessToken,
-                'fields' => 'id,name,product_count,vertical,business',
+                'fields' => 'id,name',
                 'limit' => 50,
             ]);
 
-            $catalogs = [];
-
-            if ($response->successful()) {
-                foreach ($response->json('data', []) as $catalog) {
-                    $catalogs[] = [
-                        'id' => $catalog['id'],
-                        'name' => $catalog['name'] ?? 'Unnamed Catalog',
-                        'product_count' => $catalog['product_count'] ?? 0,
-                        'vertical' => $catalog['vertical'] ?? 'commerce',
-                        'business_id' => $catalog['business']['id'] ?? null,
-                        'business_name' => $catalog['business']['name'] ?? null,
-                    ];
-                }
+            $businesses = [];
+            if ($businessesResponse->successful()) {
+                $businesses = $businessesResponse->json('data', []);
+                Log::info('Fetched businesses for catalog lookup', ['count' => count($businesses)]);
             } else {
-                Log::warning('Failed to fetch owned product catalogs', [
-                    'status' => $response->status(),
-                    'error' => $response->json('error.message'),
-                    'error_code' => $response->json('error.code'),
-                    'error_type' => $response->json('error.type'),
+                Log::warning('Failed to fetch businesses for catalog lookup', [
+                    'status' => $businessesResponse->status(),
+                    'error' => $businessesResponse->json('error.message'),
+                    'error_code' => $businessesResponse->json('error.code'),
+                    'error_type' => $businessesResponse->json('error.type'),
                 ]);
             }
 
-            // Also try client catalogs if business_management scope available
-            $clientResponse = Http::timeout(30)->get('https://graph.facebook.com/v21.0/me/client_product_catalogs', [
-                'access_token' => $accessToken,
-                'fields' => 'id,name,product_count,vertical',
-                'limit' => 50,
-            ]);
+            // Step 2: For each business, fetch owned product catalogs
+            foreach ($businesses as $business) {
+                $businessId = $business['id'] ?? null;
+                $businessName = $business['name'] ?? 'Unknown Business';
+                if (!$businessId) continue;
 
-            if ($clientResponse->successful()) {
-                foreach ($clientResponse->json('data', []) as $catalog) {
-                    $existingIds = array_column($catalogs, 'id');
-                    if (!in_array($catalog['id'], $existingIds)) {
-                        $catalogs[] = [
-                            'id' => $catalog['id'],
-                            'name' => $catalog['name'] ?? 'Unnamed Catalog',
-                            'product_count' => $catalog['product_count'] ?? 0,
-                            'vertical' => $catalog['vertical'] ?? 'commerce',
-                            'business_id' => null,
-                            'business_name' => null,
-                            'is_client_catalog' => true,
-                        ];
+                $catalogResponse = Http::timeout(15)->get("https://graph.facebook.com/v21.0/{$businessId}/owned_product_catalogs", [
+                    'access_token' => $accessToken,
+                    'fields' => 'id,name,product_count,vertical',
+                    'limit' => 50,
+                ]);
+
+                if ($catalogResponse->successful()) {
+                    foreach ($catalogResponse->json('data', []) as $catalog) {
+                        $existingIds = array_column($catalogs, 'id');
+                        if (!in_array($catalog['id'], $existingIds)) {
+                            $catalogs[] = [
+                                'id' => $catalog['id'],
+                                'name' => $catalog['name'] ?? 'Unnamed Catalog',
+                                'product_count' => $catalog['product_count'] ?? 0,
+                                'vertical' => $catalog['vertical'] ?? 'commerce',
+                                'business_id' => $businessId,
+                                'business_name' => $businessName,
+                            ];
+                        }
+                    }
+                } else {
+                    Log::warning('Failed to fetch catalogs for business', [
+                        'business_id' => $businessId,
+                        'business_name' => $businessName,
+                        'status' => $catalogResponse->status(),
+                        'error' => $catalogResponse->json('error.message'),
+                        'error_code' => $catalogResponse->json('error.code'),
+                    ]);
+                }
+            }
+
+            // Step 3: Also try client catalogs (catalogs shared with you)
+            foreach ($businesses as $business) {
+                $businessId = $business['id'] ?? null;
+                if (!$businessId) continue;
+
+                $clientResponse = Http::timeout(15)->get("https://graph.facebook.com/v21.0/{$businessId}/client_product_catalogs", [
+                    'access_token' => $accessToken,
+                    'fields' => 'id,name,product_count,vertical',
+                    'limit' => 50,
+                ]);
+
+                if ($clientResponse->successful()) {
+                    foreach ($clientResponse->json('data', []) as $catalog) {
+                        $existingIds = array_column($catalogs, 'id');
+                        if (!in_array($catalog['id'], $existingIds)) {
+                            $catalogs[] = [
+                                'id' => $catalog['id'],
+                                'name' => $catalog['name'] ?? 'Unnamed Catalog',
+                                'product_count' => $catalog['product_count'] ?? 0,
+                                'vertical' => $catalog['vertical'] ?? 'commerce',
+                                'business_id' => $businessId,
+                                'business_name' => $business['name'] ?? 'Unknown',
+                                'is_client_catalog' => true,
+                            ];
+                        }
                     }
                 }
-            } else {
-                Log::warning('Failed to fetch client product catalogs', [
-                    'status' => $clientResponse->status(),
-                    'error' => $clientResponse->json('error.message'),
-                    'error_code' => $clientResponse->json('error.code'),
-                    'error_type' => $clientResponse->json('error.type'),
-                ]);
+                // Don't log warning for client catalogs as they're optional
             }
 
+            Log::info('Total catalogs fetched', ['count' => count($catalogs)]);
             return $catalogs;
         } catch (\Exception $e) {
             Log::error('Failed to fetch Meta catalogs', ['error' => $e->getMessage()]);
@@ -1478,11 +1518,30 @@ class PlatformConnectionsController extends Controller
 
     /**
      * Get Threads accounts associated with Instagram Business accounts.
-     * Threads uses the same user ID as Instagram.
+     *
+     * IMPORTANT: Threads API (graph.threads.net) requires SEPARATE OAuth authentication!
+     * - Threads uses a different API domain: https://graph.threads.net
+     * - Requires separate OAuth flow with Threads-specific scopes (threads_basic, threads_content_publish)
+     * - Facebook/Meta access tokens CANNOT be used with Threads API
+     *
+     * This method attempts to fetch Threads data but will likely fail unless:
+     * 1. A separate Threads OAuth flow has been implemented
+     * 2. The access token includes Threads scopes
+     *
+     * For now, users should use "Add manually" to enter their Threads account ID.
+     *
+     * @see https://developers.facebook.com/docs/threads/overview
+     * @see https://developers.facebook.com/docs/threads/get-started/get-access-tokens-and-permissions
      */
     private function getThreadsAccounts(string $accessToken, array $instagramAccounts = []): array
     {
         $threadsAccounts = [];
+
+        // Log explanation for why Threads likely won't work
+        Log::info('Attempting to fetch Threads accounts', [
+            'note' => 'Threads API requires separate OAuth with threads_* scopes. Meta tokens typically do not include these scopes.',
+            'instagram_accounts_count' => count($instagramAccounts),
+        ]);
 
         try {
             foreach ($instagramAccounts as $ig) {
@@ -1490,7 +1549,7 @@ class PlatformConnectionsController extends Controller
                 if (!$igId) continue;
 
                 // Try to get Threads profile using the Instagram account ID
-                // Threads API uses the same user ID as Instagram Business Account
+                // NOTE: This will likely fail because Threads API requires separate OAuth
                 $response = Http::timeout(15)->get("https://graph.threads.net/v1.0/{$igId}", [
                     'access_token' => $accessToken,
                     'fields' => 'id,username,name,threads_profile_picture_url,threads_biography',
@@ -1510,16 +1569,15 @@ class PlatformConnectionsController extends Controller
                         ];
                     }
                 } else {
-                    // If Threads API fails, the Instagram account might not have Threads enabled
-                    // or the token doesn't have Threads permissions
-                    // NOTE: Meta access tokens don't include Threads scopes by default
-                    Log::warning('Threads account not found for Instagram', [
+                    // Expected: Threads API requires separate OAuth with threads_* scopes
+                    // The Meta/Facebook access token will not work with graph.threads.net
+                    Log::info('Threads API requires separate OAuth authentication', [
                         'instagram_id' => $igId,
                         'instagram_username' => $ig['username'] ?? null,
                         'status' => $response->status(),
                         'error' => $response->json('error.message'),
                         'error_code' => $response->json('error.code'),
-                        'error_type' => $response->json('error.type'),
+                        'hint' => 'Use "Add manually" button to enter Threads account ID, or implement separate Threads OAuth flow',
                     ]);
                 }
             }
