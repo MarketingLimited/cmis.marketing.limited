@@ -252,7 +252,8 @@
             <!-- Navigation -->
             <nav class="px-3 sm:px-4 py-4 sm:py-6 space-y-1 sm:space-y-2 overflow-y-auto h-[calc(100vh-4rem)]">
                 @php
-                    $currentOrg = auth()->user()->active_org_id ?? auth()->user()->current_org_id ?? auth()->user()->org_id ?? request()->route('org');
+                    // Priority: URL route parameter > user's current org > user's default org
+                    $currentOrg = request()->route('org') ?? auth()->user()->current_org_id ?? auth()->user()->org_id;
                 @endphp
 
                 @if($currentOrg)
@@ -363,7 +364,7 @@
                         <!-- Desktop: Dropdown | Mobile: Bottom Sheet -->
                         <div x-show="orgMenuOpen"
                              @click.away="orgMenuOpen = false"
-                             class="fixed left-0 right-0 bottom-0 sm:absolute sm:left-0 sm:right-auto sm:top-full sm:mt-2
+                             class="fixed left-0 right-0 bottom-0 sm:absolute sm:right-0 sm:left-auto sm:top-full sm:mt-2
                                     w-full sm:w-80
                                     bg-white dark:bg-gray-800
                                     rounded-t-2xl sm:rounded-lg
@@ -524,7 +525,7 @@
 
                             <div class="p-3 text-center border-t border-gray-200 dark:border-gray-700">
                                 @php
-                                    $currentOrg = auth()->user()->active_org_id ?? auth()->user()->current_org_id ?? auth()->user()->org_id ?? request()->route('org');
+                                    $currentOrg = request()->route('org') ?? auth()->user()->current_org_id ?? auth()->user()->org_id;
                                 @endphp
                                 @if($currentOrg)
                                 <a href="{{ route('orgs.settings.index', ['org' => $currentOrg]) }}" class="text-sm text-blue-600 hover:text-blue-700">عرض جميع الإشعارات</a>
@@ -600,7 +601,7 @@
                             </div>
 
                             @php
-                                $currentOrg = auth()->user()->active_org_id ?? auth()->user()->current_org_id ?? auth()->user()->org_id ?? request()->route('org');
+                                $currentOrg = request()->route('org') ?? auth()->user()->current_org_id ?? auth()->user()->org_id;
                             @endphp
 
                             <!-- Menu Items -->
@@ -697,7 +698,12 @@
                 searchQuery: '',
 
                 async init() {
-                    await this.loadOrganizations();
+                    try {
+                        await this.loadOrganizations();
+                    } catch (error) {
+                        console.error('Failed to initialize org switcher:', error);
+                        // Continue even if loading fails - allow manual toggle
+                    }
                 },
 
                 async loadOrganizations() {
@@ -718,8 +724,18 @@
                         if (response.ok) {
                             const data = await response.json();
                             console.log('Organizations data:', data);
-                            this.organizations = data.organizations || [];
+
+                            // Get current org from URL, not from API response
+                            const urlOrgId = this.getCurrentOrgFromUrl();
+                            console.log('URL org ID:', urlOrgId);
+
+                            // Mark the URL org as current, not the API response
+                            this.organizations = (data.organizations || []).map(org => ({
+                                ...org,
+                                is_current: urlOrgId ? (org.org_id === urlOrgId) : org.is_current
+                            }));
                             this.filteredOrgs = this.organizations;
+
                             this.currentOrg = this.organizations.find(org => org.is_current) || null;
                             console.log('Current org:', this.currentOrg);
                         } else {
@@ -735,9 +751,19 @@
                     }
                 },
 
+                getCurrentOrgFromUrl() {
+                    // Extract org ID from URL path /orgs/{org-id}/...
+                    const urlPath = window.location.pathname;
+                    const match = urlPath.match(/\/orgs\/([a-f0-9-]+)/i);
+                    return match ? match[1] : null;
+                },
+
                 toggleOrgMenu() {
+                    console.log('toggleOrgMenu called, current state:', this.orgMenuOpen);
                     this.orgMenuOpen = !this.orgMenuOpen;
+                    console.log('toggleOrgMenu new state:', this.orgMenuOpen);
                     if (this.orgMenuOpen && this.organizations.length === 0) {
+                        console.log('Loading organizations...');
                         this.loadOrganizations();
                     }
                 },
