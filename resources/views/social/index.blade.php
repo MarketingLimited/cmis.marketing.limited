@@ -2039,6 +2039,7 @@ function socialManager() {
                 locationId: '', // Facebook Places ID
                 userTags: [], // Tagged users [{username, x, y}] (API: user_tags)
                 collaborators: [], // Collaborators up to 3 (API: collaborators)
+                productTags: [], // Product tags for shopping posts
                 altText: '', // Alt text for accessibility (API: alt_text)
                 firstComment: '', // Auto-post first comment (API: /comments endpoint)
             },
