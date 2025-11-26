@@ -715,59 +715,6 @@
                                     </label>
                                 </div>
 
-                                <!-- Pin to Reels Tab -->
-                                <div class="flex items-center justify-between p-3 bg-white dark:bg-gray-800 rounded-lg">
-                                    <div>
-                                        <p class="font-medium text-gray-700 dark:text-gray-300 text-sm">تثبيت في تبويب الريلز</p>
-                                        <p class="text-xs text-gray-500">سيظهر الريل في أعلى تبويب الريلز</p>
-                                    </div>
-                                    <label class="relative inline-flex items-center cursor-pointer">
-                                        <input type="checkbox" x-model="postOptions.instagram.pinToReelsTab" class="sr-only peer">
-                                        <div class="w-11 h-6 bg-gray-200 peer-focus:ring-2 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:-translate-x-full peer-checked:bg-purple-600 after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
-                                    </label>
-                                </div>
-                            </div>
-
-                            <!-- Remix & Interaction Options -->
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                <!-- Allow Remix -->
-                                <div class="flex items-center justify-between p-3 bg-white dark:bg-gray-800 rounded-lg">
-                                    <div>
-                                        <p class="font-medium text-gray-700 dark:text-gray-300 text-sm">السماح بالريميكس</p>
-                                        <p class="text-xs text-gray-500">يمكن للآخرين إنشاء ريلز باستخدام هذا</p>
-                                    </div>
-                                    <label class="relative inline-flex items-center cursor-pointer">
-                                        <input type="checkbox" x-model="postOptions.reel.allowRemix" class="sr-only peer">
-                                        <div class="w-11 h-6 bg-gray-200 peer-focus:ring-2 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:-translate-x-full peer-checked:bg-purple-600 after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
-                                    </label>
-                                </div>
-
-                                <!-- Allow Download -->
-                                <div class="flex items-center justify-between p-3 bg-white dark:bg-gray-800 rounded-lg">
-                                    <div>
-                                        <p class="font-medium text-gray-700 dark:text-gray-300 text-sm">السماح بالتحميل</p>
-                                        <p class="text-xs text-gray-500">يمكن للآخرين تحميل الريل</p>
-                                    </div>
-                                    <label class="relative inline-flex items-center cursor-pointer">
-                                        <input type="checkbox" x-model="postOptions.instagram.allowDownload" class="sr-only peer">
-                                        <div class="w-11 h-6 bg-gray-200 peer-focus:ring-2 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:-translate-x-full peer-checked:bg-purple-600 after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
-                                    </label>
-                                </div>
-                            </div>
-
-                            <!-- Audio/Music Options -->
-                            <div class="border-t border-purple-200 dark:border-purple-700 pt-4">
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                    <i class="fas fa-music ml-1 text-purple-500"></i>
-                                    الموسيقى والصوت
-                                </label>
-                                <input type="text" x-model="postOptions.reel.audioName"
-                                       placeholder="اسم المقطع الصوتي (اختياري)"
-                                       class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm mb-2">
-                                <p class="text-xs text-gray-400">
-                                    <i class="fas fa-info-circle ml-1"></i>
-                                    ملاحظة: إضافة الموسيقى من مكتبة Instagram غير متاحة عبر API. يمكنك إضافتها من التطبيق بعد النشر أو تضمينها في الفيديو مباشرة.
-                                </p>
                             </div>
                         </div>
 
@@ -857,18 +804,6 @@
                                        placeholder="وصف الصورة للقارئات الصوتية"
                                        class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
                             </div>
-
-                            <!-- Pin to Profile -->
-                            <div class="flex items-center justify-between p-3 bg-white dark:bg-gray-800 rounded-lg">
-                                <div>
-                                    <p class="font-medium text-gray-700 dark:text-gray-300 text-sm">تثبيت في البروفايل</p>
-                                    <p class="text-xs text-gray-500">سيظهر المنشور في أعلى صفحتك</p>
-                                </div>
-                                <label class="relative inline-flex items-center cursor-pointer">
-                                    <input type="checkbox" x-model="postOptions.instagram.pinToProfile" class="sr-only peer">
-                                    <div class="w-11 h-6 bg-gray-200 peer-focus:ring-2 peer-focus:ring-green-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:-translate-x-full peer-checked:bg-green-600 after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
-                                </label>
-                            </div>
                         </div>
 
                         <!-- ==================== INSTAGRAM/FACEBOOK COMMON OPTIONS ==================== -->
@@ -878,15 +813,79 @@
                                 <span>خيارات Meta (Instagram/Facebook)</span>
                             </div>
 
-                            <!-- Location -->
-                            <div>
+                            <!-- Location with Autocomplete -->
+                            <div class="relative">
                                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                     <i class="fas fa-map-marker-alt ml-1 text-red-500"></i>
                                     الموقع
                                 </label>
-                                <input type="text" x-model="postOptions.instagram.location"
-                                       placeholder="أضف موقعاً... (مثال: دبي، الإمارات)"
-                                       class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+
+                                <!-- Selected Location Display -->
+                                <div x-show="selectedLocation" class="flex items-center justify-between p-3 bg-green-50 dark:bg-green-900/30 border border-green-300 rounded-lg mb-2">
+                                    <div class="flex items-center gap-2">
+                                        <i class="fas fa-map-marker-alt text-green-600"></i>
+                                        <div>
+                                            <p class="font-medium text-green-800 dark:text-green-200 text-sm" x-text="selectedLocation?.name"></p>
+                                            <p class="text-xs text-green-600 dark:text-green-400" x-text="selectedLocation?.address"></p>
+                                        </div>
+                                    </div>
+                                    <button type="button" @click="clearLocation()" class="text-green-600 hover:text-red-600 transition">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+
+                                <!-- Search Input -->
+                                <div x-show="!selectedLocation" class="relative">
+                                    <input type="text"
+                                           x-model="locationQuery"
+                                           @input="searchLocations()"
+                                           @focus="showLocationDropdown = locationResults.length > 0"
+                                           @click.away="showLocationDropdown = false"
+                                           placeholder="ابحث عن موقع... (مثال: برج خليفة، دبي)"
+                                           class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm pr-10">
+
+                                    <!-- Loading Spinner -->
+                                    <div x-show="isSearchingLocations" class="absolute left-3 top-1/2 transform -translate-y-1/2">
+                                        <i class="fas fa-spinner fa-spin text-gray-400"></i>
+                                    </div>
+
+                                    <!-- Search Icon -->
+                                    <div x-show="!isSearchingLocations" class="absolute left-3 top-1/2 transform -translate-y-1/2">
+                                        <i class="fas fa-search text-gray-400"></i>
+                                    </div>
+
+                                    <!-- Autocomplete Dropdown -->
+                                    <div x-show="showLocationDropdown && locationResults.length > 0"
+                                         x-transition:enter="transition ease-out duration-100"
+                                         x-transition:enter-start="opacity-0 scale-95"
+                                         x-transition:enter-end="opacity-100 scale-100"
+                                         x-transition:leave="transition ease-in duration-75"
+                                         x-transition:leave-start="opacity-100 scale-100"
+                                         x-transition:leave-end="opacity-0 scale-95"
+                                         class="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+
+                                        <template x-for="location in locationResults" :key="location.id">
+                                            <button type="button"
+                                                    @click="selectLocation(location)"
+                                                    class="w-full text-right px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 border-b border-gray-100 dark:border-gray-700 last:border-b-0 transition">
+                                                <div class="flex items-start gap-3">
+                                                    <i class="fas fa-map-marker-alt text-red-500 mt-1"></i>
+                                                    <div class="flex-1">
+                                                        <p class="font-medium text-gray-800 dark:text-gray-200 text-sm" x-text="location.name"></p>
+                                                        <p class="text-xs text-gray-500 dark:text-gray-400" x-text="location.address || location.category"></p>
+                                                    </div>
+                                                </div>
+                                            </button>
+                                        </template>
+                                    </div>
+
+                                    <!-- No Results Message -->
+                                    <div x-show="showLocationDropdown && locationQuery.length >= 2 && locationResults.length === 0 && !isSearchingLocations"
+                                         class="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg p-4 text-center">
+                                        <i class="fas fa-map-marker-alt text-gray-300 text-2xl mb-2"></i>
+                                        <p class="text-sm text-gray-500">لم يتم العثور على نتائج</p>
+                                    </div>
+                                </div>
                             </div>
 
                             <!-- First Comment -->
@@ -925,130 +924,67 @@
                                 <p class="text-xs text-gray-400 mt-1">يمكنك الإشارة لما يصل إلى 20 شخص في الصورة</p>
                             </div>
 
-                            <!-- Collaborators -->
-                            <div>
+                            <!-- Collaborators with Suggestions and Validation -->
+                            <div class="relative">
                                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                     <i class="fas fa-user-friends ml-1"></i>
                                     المتعاونون (حتى 3)
                                 </label>
-                                <input type="text" x-model="collaboratorInput"
-                                       @keydown.enter.prevent="if(collaboratorInput && postOptions.instagram.collaborators.length < 3) { postOptions.instagram.collaborators.push(collaboratorInput); collaboratorInput = ''; }"
-                                       placeholder="@username ثم اضغط Enter"
-                                       class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                                <div class="relative">
+                                    <input type="text" x-model="collaboratorInput"
+                                           @input="searchCollaborators()"
+                                           @focus="showCollaboratorSuggestions = collaboratorSuggestions.length > 0"
+                                           @keydown.enter.prevent="addCollaborator(collaboratorInput)"
+                                           @keydown.escape="showCollaboratorSuggestions = false"
+                                           placeholder="@username ثم اضغط Enter"
+                                           class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm pr-10">
+                                    <!-- Validation indicator -->
+                                    <div class="absolute left-3 top-1/2 -translate-y-1/2">
+                                        <template x-if="isValidatingUsername">
+                                            <i class="fas fa-spinner fa-spin text-gray-400"></i>
+                                        </template>
+                                        <template x-if="!isValidatingUsername && usernameValidationResult === true">
+                                            <i class="fas fa-check-circle text-green-500" title="اسم مستخدم صحيح"></i>
+                                        </template>
+                                        <template x-if="!isValidatingUsername && usernameValidationResult === false">
+                                            <i class="fas fa-exclamation-circle text-yellow-500" title="لم يتم العثور على المستخدم"></i>
+                                        </template>
+                                    </div>
+                                </div>
+
+                                <!-- Suggestions Dropdown -->
+                                <div x-show="showCollaboratorSuggestions && filteredCollaboratorSuggestions.length > 0"
+                                     @click.away="showCollaboratorSuggestions = false"
+                                     x-transition
+                                     class="absolute z-20 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                                    <div class="py-1">
+                                        <p class="px-3 py-1 text-xs text-gray-500 dark:text-gray-400">اقتراحات من المنشورات السابقة:</p>
+                                        <template x-for="suggestion in filteredCollaboratorSuggestions" :key="suggestion">
+                                            <button type="button"
+                                                    @click="addCollaborator(suggestion)"
+                                                    class="w-full text-right px-3 py-2 text-sm hover:bg-purple-50 dark:hover:bg-purple-900/20 flex items-center gap-2">
+                                                <i class="fab fa-instagram text-pink-500"></i>
+                                                <span x-text="'@' + suggestion"></span>
+                                            </button>
+                                        </template>
+                                    </div>
+                                </div>
+
+                                <!-- Added Collaborators -->
                                 <div class="flex flex-wrap gap-2 mt-2" x-show="postOptions.instagram.collaborators.length > 0">
                                     <template x-for="(collab, index) in postOptions.instagram.collaborators" :key="index">
                                         <span class="inline-flex items-center gap-1 px-2 py-1 bg-purple-100 text-purple-700 rounded-full text-sm">
-                                            <span x-text="collab"></span>
+                                            <span x-text="collab.startsWith('@') ? collab : '@' + collab"></span>
                                             <button type="button" @click="postOptions.instagram.collaborators.splice(index, 1)" class="hover:text-red-600">
                                                 <i class="fas fa-times text-xs"></i>
                                             </button>
                                         </span>
                                     </template>
                                 </div>
-                                <p class="text-xs text-gray-400 mt-1">دعوة أشخاص آخرين لنشر المحتوى معك</p>
+                                <p class="text-xs text-gray-400 mt-1">دعوة أشخاص آخرين لنشر المحتوى معك (يتم التحقق تلقائياً)</p>
                             </div>
 
-                            <!-- Engagement & Privacy Settings -->
-                            <div class="border-t border-gray-200 dark:border-gray-700 pt-4">
-                                <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-                                    <i class="fas fa-sliders-h ml-1"></i>
-                                    إعدادات التفاعل والخصوصية
-                                </p>
-
-                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                    <!-- Comments Toggle -->
-                                    <div class="flex items-center justify-between p-3 bg-white dark:bg-gray-800 rounded-lg">
-                                        <div>
-                                            <p class="font-medium text-gray-700 dark:text-gray-300 text-sm">السماح بالتعليقات</p>
-                                        </div>
-                                        <label class="relative inline-flex items-center cursor-pointer">
-                                            <input type="checkbox" x-model="postOptions.instagram.commentsEnabled" class="sr-only peer">
-                                            <div class="w-11 h-6 bg-gray-200 peer-focus:ring-2 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:-translate-x-full peer-checked:bg-purple-600 after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
-                                        </label>
-                                    </div>
-
-                                    <!-- Hide Like Count -->
-                                    <div class="flex items-center justify-between p-3 bg-white dark:bg-gray-800 rounded-lg">
-                                        <div>
-                                            <p class="font-medium text-gray-700 dark:text-gray-300 text-sm">إخفاء عدد الإعجابات</p>
-                                        </div>
-                                        <label class="relative inline-flex items-center cursor-pointer">
-                                            <input type="checkbox" x-model="postOptions.instagram.hideLikeCount" class="sr-only peer">
-                                            <div class="w-11 h-6 bg-gray-200 peer-focus:ring-2 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:-translate-x-full peer-checked:bg-purple-600 after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
-                                        </label>
-                                    </div>
-
-                                    <!-- Hide Share Count (Reels) -->
-                                    <div x-show="newPost.postType === 'reel'" class="flex items-center justify-between p-3 bg-white dark:bg-gray-800 rounded-lg">
-                                        <div>
-                                            <p class="font-medium text-gray-700 dark:text-gray-300 text-sm">إخفاء عدد المشاركات</p>
-                                        </div>
-                                        <label class="relative inline-flex items-center cursor-pointer">
-                                            <input type="checkbox" x-model="postOptions.instagram.hideShareCount" class="sr-only peer">
-                                            <div class="w-11 h-6 bg-gray-200 peer-focus:ring-2 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:-translate-x-full peer-checked:bg-purple-600 after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
-                                        </label>
-                                    </div>
-
-                                    <!-- Archive After Post -->
-                                    <div class="flex items-center justify-between p-3 bg-white dark:bg-gray-800 rounded-lg">
-                                        <div>
-                                            <p class="font-medium text-gray-700 dark:text-gray-300 text-sm">نقل للأرشيف بعد النشر</p>
-                                        </div>
-                                        <label class="relative inline-flex items-center cursor-pointer">
-                                            <input type="checkbox" x-model="postOptions.instagram.archiveAfterPost" class="sr-only peer">
-                                            <div class="w-11 h-6 bg-gray-200 peer-focus:ring-2 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:-translate-x-full peer-checked:bg-purple-600 after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
-                                        </label>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- AI & Accessibility Settings -->
-                            <div class="border-t border-gray-200 dark:border-gray-700 pt-4">
-                                <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-                                    <i class="fas fa-robot ml-1"></i>
-                                    الذكاء الاصطناعي وإمكانية الوصول
-                                </p>
-
-                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                    <!-- AI Label -->
-                                    <div class="flex items-center justify-between p-3 bg-white dark:bg-gray-800 rounded-lg">
-                                        <div>
-                                            <p class="font-medium text-gray-700 dark:text-gray-300 text-sm">علامة "مصنوع بالذكاء الاصطناعي"</p>
-                                            <p class="text-xs text-gray-500">إذا كان المحتوى مُنشأ بـ AI</p>
-                                        </div>
-                                        <label class="relative inline-flex items-center cursor-pointer">
-                                            <input type="checkbox" x-model="postOptions.instagram.aiLabel" class="sr-only peer">
-                                            <div class="w-11 h-6 bg-gray-200 peer-focus:ring-2 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:-translate-x-full peer-checked:bg-purple-600 after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
-                                        </label>
-                                    </div>
-
-                                    <!-- Closed Captions -->
-                                    <div x-show="newPost.postType === 'reel'" class="flex items-center justify-between p-3 bg-white dark:bg-gray-800 rounded-lg">
-                                        <div>
-                                            <p class="font-medium text-gray-700 dark:text-gray-300 text-sm">تفعيل الترجمة التلقائية</p>
-                                            <p class="text-xs text-gray-500">إضافة ترجمة نصية للصوت</p>
-                                        </div>
-                                        <label class="relative inline-flex items-center cursor-pointer">
-                                            <input type="checkbox" x-model="postOptions.instagram.enableCaptions" class="sr-only peer">
-                                            <div class="w-11 h-6 bg-gray-200 peer-focus:ring-2 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:-translate-x-full peer-checked:bg-purple-600 after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
-                                        </label>
-                                    </div>
-
-                                    <!-- Translate Captions -->
-                                    <div x-show="newPost.postType === 'reel' && postOptions.instagram.enableCaptions" class="flex items-center justify-between p-3 bg-white dark:bg-gray-800 rounded-lg">
-                                        <div>
-                                            <p class="font-medium text-gray-700 dark:text-gray-300 text-sm">ترجمة الترجمات</p>
-                                            <p class="text-xs text-gray-500">ترجمة تلقائية للغات أخرى</p>
-                                        </div>
-                                        <label class="relative inline-flex items-center cursor-pointer">
-                                            <input type="checkbox" x-model="postOptions.instagram.translateCaptions" class="sr-only peer">
-                                            <div class="w-11 h-6 bg-gray-200 peer-focus:ring-2 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:-translate-x-full peer-checked:bg-purple-600 after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
-                                        </label>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Product Tags (for Shopping) -->
+                            <!-- Product Tags (for Shopping - requires Instagram Shopping setup) -->
                             <div class="border-t border-gray-200 dark:border-gray-700 pt-4">
                                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                     <i class="fas fa-shopping-bag ml-1 text-pink-500"></i>
@@ -1070,6 +1006,88 @@
                                     </template>
                                 </div>
                                 <p class="text-xs text-gray-400 mt-1">يتطلب تفعيل Instagram Shopping في حسابك</p>
+                            </div>
+
+                            <!-- Product Details (DM-based orders - No Shopping required) -->
+                            <div class="border-t border-gray-200 dark:border-gray-700 pt-4">
+                                <div class="flex items-center justify-between mb-3">
+                                    <label class="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                                        <i class="fas fa-box-open ml-1 text-orange-500"></i>
+                                        تفاصيل المنتج (للطلب عبر الرسائل)
+                                    </label>
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" x-model="postOptions.product.enabled" class="sr-only peer">
+                                        <div class="w-11 h-6 bg-gray-200 peer-focus:ring-2 peer-focus:ring-orange-500 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:-translate-x-full peer-checked:bg-orange-500 after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
+                                    </label>
+                                </div>
+
+                                <div x-show="postOptions.product.enabled" x-collapse class="space-y-3">
+                                    <!-- Product Title -->
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">اسم المنتج</label>
+                                        <input type="text" x-model="postOptions.product.title"
+                                               placeholder="مثال: حقيبة يد جلدية فاخرة"
+                                               class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                                    </div>
+
+                                    <!-- Price and Currency -->
+                                    <div class="grid grid-cols-2 gap-3">
+                                        <div>
+                                            <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">السعر</label>
+                                            <input type="number" x-model="postOptions.product.price"
+                                                   placeholder="0.00"
+                                                   step="0.01"
+                                                   min="0"
+                                                   class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">العملة</label>
+                                            <select x-model="postOptions.product.currency"
+                                                    class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                                                <template x-for="curr in currencies" :key="curr.code">
+                                                    <option :value="curr.code" x-text="curr.symbol + ' - ' + curr.name"></option>
+                                                </template>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <!-- Product Description (optional) -->
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">وصف المنتج (اختياري)</label>
+                                        <textarea x-model="postOptions.product.description"
+                                                  placeholder="وصف مختصر للمنتج..."
+                                                  rows="2"
+                                                  class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"></textarea>
+                                    </div>
+
+                                    <!-- Order CTA Message -->
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">رسالة الطلب</label>
+                                        <input type="text" x-model="postOptions.product.orderMessage"
+                                               placeholder="للطلب، أرسل رسالة مباشرة 📩"
+                                               class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                                        <p class="text-xs text-gray-400 mt-1">ستضاف هذه الرسالة لنهاية المنشور</p>
+                                    </div>
+
+                                    <!-- Preview -->
+                                    <div x-show="postOptions.product.title || postOptions.product.price" class="bg-orange-50 dark:bg-orange-900/20 rounded-lg p-3 mt-2">
+                                        <p class="text-xs font-medium text-orange-700 dark:text-orange-300 mb-1">معاينة:</p>
+                                        <p class="text-sm text-gray-700 dark:text-gray-300">
+                                            <span x-text="postOptions.product.title"></span>
+                                            <template x-if="postOptions.product.price">
+                                                <span class="font-semibold">
+                                                    - <span x-text="postOptions.product.price"></span>
+                                                    <span x-text="currencies.find(c => c.code === postOptions.product.currency)?.symbol || postOptions.product.currency"></span>
+                                                </span>
+                                            </template>
+                                        </p>
+                                        <p class="text-xs text-gray-500 mt-1" x-text="postOptions.product.orderMessage"></p>
+                                    </div>
+                                </div>
+                                <p class="text-xs text-gray-400 mt-2">
+                                    <i class="fas fa-lightbulb ml-1 text-yellow-500"></i>
+                                    لا يتطلب Instagram Shopping - الطلبات ستصل عبر الرسائل المباشرة
+                                </p>
                             </div>
                         </div>
 
@@ -1119,15 +1137,6 @@
                                     <label class="relative inline-flex items-center cursor-pointer">
                                         <input type="checkbox" :checked="!postOptions.tiktok.disableStitch"
                                                @change="postOptions.tiktok.disableStitch = !$event.target.checked" class="sr-only peer">
-                                        <div class="w-11 h-6 bg-gray-700 peer-focus:ring-2 peer-focus:ring-pink-500 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:-translate-x-full peer-checked:bg-pink-500 after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
-                                    </label>
-                                </div>
-
-                                <!-- Allow Download -->
-                                <div class="flex items-center justify-between p-3 bg-gray-800 rounded-lg">
-                                    <span class="text-sm text-gray-300">السماح بالتحميل</span>
-                                    <label class="relative inline-flex items-center cursor-pointer">
-                                        <input type="checkbox" x-model="postOptions.tiktok.allowDownload" class="sr-only peer">
                                         <div class="w-11 h-6 bg-gray-700 peer-focus:ring-2 peer-focus:ring-pink-500 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:-translate-x-full peer-checked:bg-pink-500 after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
                                     </label>
                                 </div>
@@ -1991,172 +2000,100 @@ function socialManager() {
         productTagInput: '',
         userTagInput: '',
 
-        // Post type specific options
+        // Location autocomplete state
+        locationQuery: '',
+        locationResults: [],
+        showLocationDropdown: false,
+        isSearchingLocations: false,
+        selectedLocation: null,
+        locationSearchTimeout: null,
+
+        // Collaborator suggestions state
+        collaboratorSuggestions: [],
+        showCollaboratorSuggestions: false,
+        isValidatingUsername: false,
+        usernameValidationResult: null,
+        usernameValidationTimeout: null,
+        validatedUserInfo: null,
+
+        // Product details state
+        showProductDetails: false,
+        currencies: [
+            { code: 'SAR', symbol: 'ر.س', name: 'ريال سعودي' },
+            { code: 'AED', symbol: 'د.إ', name: 'درهم إماراتي' },
+            { code: 'USD', symbol: '$', name: 'دولار أمريكي' },
+            { code: 'EUR', symbol: '€', name: 'يورو' },
+            { code: 'GBP', symbol: '£', name: 'جنيه إسترليني' },
+            { code: 'EGP', symbol: 'ج.م', name: 'جنيه مصري' },
+            { code: 'KWD', symbol: 'د.ك', name: 'دينار كويتي' },
+            { code: 'QAR', symbol: 'ر.ق', name: 'ريال قطري' },
+            { code: 'BHD', symbol: 'د.ب', name: 'دينار بحريني' },
+            { code: 'OMR', symbol: 'ر.ع', name: 'ريال عماني' },
+        ],
+
+        // Post type specific options (API-supported only)
         postOptions: {
-            // Common Instagram/Facebook Options (apply to all Meta post types)
+            // Instagram/Facebook API-Supported Options
             instagram: {
-                // Location & Tags
-                location: '', // Location name
+                location: '', // Location name (API: location_id)
                 locationId: '', // Facebook Places ID
-                userTags: [], // Tagged users [{username, x, y}]
-                collaborators: [], // Collaborators (up to 3)
-                productTags: [], // Product tags for shopping
-
-                // Accessibility
-                altText: '', // Alt text for accessibility
-
-                // AI & Captions
-                aiLabel: false, // Show "Made with AI" label
-                enableCaptions: true, // Enable closed captions
-                translateCaptions: false, // Auto-translate captions
-
-                // Engagement Settings
-                commentsEnabled: true, // Allow comments
-                hideLikeCount: false, // Hide like count
-                hideShareCount: false, // Hide share count (Reels)
-
-                // Post Actions
-                pinToProfile: false, // Pin to profile grid
-                pinToReelsTab: false, // Pin to Reels tab
-                allowDownload: true, // Allow others to download (Reels)
-                archiveAfterPost: false, // Move to archive after posting
-
-                // First Comment
-                firstComment: '', // Auto-post first comment
+                userTags: [], // Tagged users [{username, x, y}] (API: user_tags)
+                collaborators: [], // Collaborators up to 3 (API: collaborators)
+                altText: '', // Alt text for accessibility (API: alt_text)
+                firstComment: '', // Auto-post first comment (API: /comments endpoint)
             },
 
-            // Reel-Specific Options
+            // Product Details (for DM-based orders - no Instagram Shopping required)
+            product: {
+                enabled: false,
+                title: '',
+                price: '',
+                currency: 'SAR',
+                description: '',
+                orderMessage: 'للطلب، أرسل رسالة مباشرة 📩', // Default CTA
+            },
+
+            // Reel API-Supported Options
             reel: {
                 coverType: 'frame', // 'frame' or 'custom'
-                coverFrameOffset: 0, // milliseconds offset for cover frame
-                coverImageUrl: '', // custom cover image URL
-                shareToFeed: true, // Show reel in feed
-                shareToStory: false, // Also share to story
-                audioName: '', // Audio/music name (display only)
-                // Remix settings
-                allowRemix: true, // Allow others to remix
-                allowSequencing: true, // Allow in sequences
+                coverFrameOffset: 0, // milliseconds (API: thumb_offset)
+                coverImageUrl: '', // custom cover (API: cover_url)
+                shareToFeed: true, // Show reel in feed (API: share_to_feed)
             },
 
-            // Story-Specific Options
+            // Story Options (limited API support)
             story: {
-                duration: 5, // seconds per slide (for images)
-                linkUrl: '', // Swipe up link (requires 10k+ followers)
-                linkText: '', // Link sticker text
-                pollQuestion: '', // Add poll sticker
-                pollOptions: ['', ''], // Poll options
-                questionSticker: '', // Question sticker text
-                quizQuestion: '', // Quiz sticker
-                quizOptions: [], // Quiz options with correct answer
-                countdownTitle: '', // Countdown sticker title
-                countdownDate: '', // Countdown end date
+                duration: 5, // seconds per slide (for reference only)
             },
 
-            // Carousel-Specific Options
+            // Carousel API-Supported Options
             carousel: {
-                altTexts: [], // Alt text for each image
-                itemTags: [], // User tags per item [{item_index, tags: [{username, x, y}]}]
-                itemProductTags: [], // Product tags per item
+                altTexts: [], // Alt text for each image (API: alt_text per child)
             },
 
-            // Feed Post-Specific Options
-            feed: {
-                aspectRatio: 'original', // original, 1:1, 4:5, 16:9
-            },
-
-            // TikTok Options
+            // TikTok Content Posting API Options
             tiktok: {
-                // Privacy & Visibility
-                viewerSetting: 'public', // public, friends, private
-                disableComments: false,
-                disableDuet: false,
-                disableStitch: false,
-                allowDownload: true,
-
-                // Music & Sound
-                musicId: '', // TikTok sound ID
-                musicVolume: 100, // 0-100
-
-                // Disclosure
-                brandContentToggle: false, // Mark as branded content
-                brandOrganicToggle: false, // Mark as organic promotion
-                aiGenerated: false, // Mark as AI generated
-
-                // Schedule
-                scheduleTime: '', // ISO timestamp for scheduling
+                viewerSetting: 'public', // API: privacy_level (PUBLIC_TO_EVERYONE, MUTUAL_FOLLOW_FRIENDS, SELF_ONLY)
+                disableComments: false, // API: disable_comment
+                disableDuet: false, // API: disable_duet
+                disableStitch: false, // API: disable_stitch
+                brandContentToggle: false, // API: brand_content_toggle
+                aiGenerated: false, // API: ai_disclosure
             },
 
-            // LinkedIn Options
+            // LinkedIn Posts API Options
             linkedin: {
-                // Post Types
-                articleTitle: '',
-                articleDescription: '',
-                articleThumbnail: '',
-
-                // Poll
-                pollQuestion: '',
-                pollOptions: ['', ''],
-                pollDuration: 'THREE_DAYS', // ONE_DAY, THREE_DAYS, SEVEN_DAYS, FOURTEEN_DAYS
-
-                // Document
-                documentTitle: '',
-                documentUrl: '',
-
-                // Visibility
-                visibility: 'PUBLIC', // PUBLIC, CONNECTIONS
-                allowComments: true,
-
-                // Hashtags
-                autoHashtags: true, // Auto-suggest hashtags
+                visibility: 'PUBLIC', // API: visibility (PUBLIC, CONNECTIONS)
+                articleTitle: '', // API: article title
+                articleDescription: '', // API: article description
+                allowComments: true, // API: allowComments
             },
 
-            // Twitter/X Options
+            // Twitter/X API Options
             twitter: {
-                // Thread
-                threadTweets: [''], // Array of tweets for thread
-                threadContinuationText: '', // "Show this thread" text
-
-                // Poll
-                pollOptions: ['', ''],
-                pollDuration: 1440, // minutes (max 7 days = 10080)
-
-                // Quote Tweet
-                quoteTweetUrl: '',
-                quoteTweetId: '',
-
-                // Reply Settings
-                replyRestriction: 'everyone', // everyone, following, mentioned
-
-                // Media
-                sensitiveContent: false, // Mark as sensitive
-                altText: '', // Alt text for media
-            },
-
-            // Facebook-Specific Options
-            facebook: {
-                // Audience
-                audience: 'public', // public, friends, only_me, custom
-                customAudience: [], // Custom audience list IDs
-
-                // Feeling/Activity
-                feeling: '', // Feeling emoji/text
-                activity: '', // Activity type
-
-                // Tags
-                taggedPages: [], // Tagged Facebook pages
-                taggedPeople: [], // Tagged Facebook users
-
-                // Location
-                checkIn: '', // Check-in location
-                checkInId: '', // Place ID
-
-                // Scheduling
-                backdateTime: '', // Backdate post (for pages)
-                expirationTime: '', // Auto-delete time
-
-                // Page-Specific
-                unpublished: false, // Create as unpublished (pages only)
-                sponsorId: '', // Sponsor page ID (branded content)
+                threadTweets: [''], // Multiple tweets for thread
+                replyRestriction: 'everyone', // API: reply_settings (everyone, mentionedUsers, following)
+                altText: '', // API: alt_text for media
             },
         },
 
@@ -2465,13 +2402,15 @@ function socialManager() {
             // Debug: v2025.11.26.1040 - Added dynamic filters
             console.log('[CMIS Social] v1.0.2 - Initializing, orgId:', this.orgId);
 
-            // Load posts and connected platforms in parallel
+            // Load posts, connected platforms, and collaborator suggestions in parallel
             await Promise.all([
                 this.fetchPosts(),
-                this.loadConnectedPlatforms()
+                this.loadConnectedPlatforms(),
+                this.loadCollaboratorSuggestions()
             ]);
             console.log('[CMIS Social] Posts loaded:', this.posts.length, 'posts');
             console.log('[CMIS Social] Platforms loaded:', this.connectedPlatforms.length, 'platforms');
+            console.log('[CMIS Social] Collaborator suggestions loaded:', this.collaboratorSuggestions.length);
 
             // Set default schedule time to tomorrow 10 AM
             const tomorrow = new Date();
@@ -2717,6 +2656,186 @@ function socialManager() {
 
         removeMedia(index) {
             this.uploadedMedia.splice(index, 1);
+        },
+
+        // Location Search Methods
+        searchLocations() {
+            // Clear previous timeout
+            if (this.locationSearchTimeout) {
+                clearTimeout(this.locationSearchTimeout);
+            }
+
+            // Don't search if query is too short
+            if (this.locationQuery.length < 2) {
+                this.locationResults = [];
+                this.showLocationDropdown = false;
+                return;
+            }
+
+            // Debounce search by 300ms
+            this.locationSearchTimeout = setTimeout(async () => {
+                this.isSearchingLocations = true;
+                try {
+                    const response = await fetch(`/api/orgs/${this.orgId}/social/locations?query=${encodeURIComponent(this.locationQuery)}`, {
+                        headers: {
+                            'Accept': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content,
+                        }
+                    });
+
+                    const result = await response.json();
+
+                    if (response.ok && result.data) {
+                        this.locationResults = result.data;
+                        this.showLocationDropdown = true;
+                    } else {
+                        this.locationResults = [];
+                        console.warn('Location search failed:', result.message);
+                    }
+                } catch (error) {
+                    console.error('Location search error:', error);
+                    this.locationResults = [];
+                } finally {
+                    this.isSearchingLocations = false;
+                }
+            }, 300);
+        },
+
+        selectLocation(location) {
+            this.selectedLocation = location;
+            this.postOptions.instagram.location = location.name;
+            this.postOptions.instagram.locationId = location.id;
+            this.locationQuery = '';
+            this.locationResults = [];
+            this.showLocationDropdown = false;
+        },
+
+        clearLocation() {
+            this.selectedLocation = null;
+            this.postOptions.instagram.location = '';
+            this.postOptions.instagram.locationId = '';
+            this.locationQuery = '';
+        },
+
+        // Collaborator Methods
+        async loadCollaboratorSuggestions() {
+            try {
+                const response = await fetch(`/api/orgs/${this.orgId}/social/collaborators/suggestions`, {
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content,
+                    }
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    this.collaboratorSuggestions = result.data?.collaborators || [];
+                }
+            } catch (error) {
+                console.error('Failed to load collaborator suggestions:', error);
+            }
+        },
+
+        get filteredCollaboratorSuggestions() {
+            const input = this.collaboratorInput?.replace('@', '').toLowerCase() || '';
+            const existing = this.postOptions.instagram.collaborators.map(c => c.replace('@', '').toLowerCase());
+
+            return this.collaboratorSuggestions.filter(s => {
+                const lowerS = s.toLowerCase();
+                return !existing.includes(lowerS) &&
+                       (input === '' || lowerS.includes(input));
+            }).slice(0, 5);
+        },
+
+        searchCollaborators() {
+            // Show suggestions dropdown when typing
+            this.showCollaboratorSuggestions = true;
+            this.usernameValidationResult = null;
+
+            // Debounce validation
+            if (this.usernameValidationTimeout) {
+                clearTimeout(this.usernameValidationTimeout);
+            }
+
+            const username = this.collaboratorInput?.replace('@', '').trim();
+            if (username && username.length >= 2) {
+                this.usernameValidationTimeout = setTimeout(() => {
+                    this.validateUsername(username);
+                }, 800);
+            }
+        },
+
+        async validateUsername(username) {
+            if (!username || username.length < 2) return;
+
+            this.isValidatingUsername = true;
+            this.usernameValidationResult = null;
+
+            try {
+                const response = await fetch(`/api/orgs/${this.orgId}/social/instagram/validate-username`, {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content,
+                    },
+                    body: JSON.stringify({ username: username })
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    this.usernameValidationResult = result.data?.valid || false;
+                    this.validatedUserInfo = result.data?.user || null;
+                } else {
+                    this.usernameValidationResult = null;
+                }
+            } catch (error) {
+                console.error('Username validation failed:', error);
+                this.usernameValidationResult = null;
+            } finally {
+                this.isValidatingUsername = false;
+            }
+        },
+
+        async addCollaborator(username) {
+            if (!username) return;
+
+            // Clean the username
+            username = username.replace('@', '').trim();
+            if (!username) return;
+
+            // Check if already added
+            const existing = this.postOptions.instagram.collaborators.map(c => c.replace('@', '').toLowerCase());
+            if (existing.includes(username.toLowerCase())) {
+                this.collaboratorInput = '';
+                this.showCollaboratorSuggestions = false;
+                return;
+            }
+
+            // Check limit (max 3)
+            if (this.postOptions.instagram.collaborators.length >= 3) {
+                if (window.notify) {
+                    window.notify('يمكنك إضافة 3 متعاونين كحد أقصى', 'warning');
+                }
+                return;
+            }
+
+            // Add to list
+            this.postOptions.instagram.collaborators.push(username);
+            this.collaboratorInput = '';
+            this.showCollaboratorSuggestions = false;
+            this.usernameValidationResult = null;
+
+            // Store for future suggestions (async, don't wait)
+            fetch(`/api/orgs/${this.orgId}/social/collaborators`, {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content,
+                },
+                body: JSON.stringify({ username: username })
+            }).catch(() => {}); // Silently ignore errors
         },
 
         async savePost() {
