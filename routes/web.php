@@ -43,6 +43,21 @@ Route::prefix('invitations')->name('invitations.')->group(function () {
     Route::get('/decline/{token}', [InvitationController::class, 'decline'])->name('decline');
 });
 
+// ==================== OAuth Callback Routes (Public) ====================
+// These routes handle OAuth callbacks from external platforms
+// The org_id is encoded in the 'state' parameter
+Route::prefix('integrations')->name('integrations.')->group(function () {
+    Route::get('/youtube/callback', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'callbackYouTube'])->name('youtube.callback');
+    Route::get('/linkedin/callback', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'callbackLinkedIn'])->name('linkedin.callback');
+    Route::get('/twitter/callback', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'callbackTwitter'])->name('twitter.callback');
+    Route::get('/pinterest/callback', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'callbackPinterest'])->name('pinterest.callback');
+    Route::get('/tiktok/callback', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'callbackTikTok'])->name('tiktok.callback');
+    Route::get('/tumblr/callback', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'callbackTumblr'])->name('tumblr.callback');
+    Route::get('/reddit/callback', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'callbackReddit'])->name('reddit.callback');
+    Route::get('/google-business/callback', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'callbackGoogleBusiness'])->name('google-business.callback');
+    Route::get('/snapchat/callback', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'callbackSnapchat'])->name('snapchat.callback');
+});
+
 Route::post('/logout', [LoginController::class, 'destroy'])
     ->middleware('auth')
     ->name('logout');
