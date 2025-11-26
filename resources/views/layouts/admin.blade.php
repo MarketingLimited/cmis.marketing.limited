@@ -338,9 +338,9 @@
                     </button>
 
                     <!-- Organization Switcher -->
-                    <div class="relative" x-data="orgSwitcher()" x-init="init()">
+                    <div class="relative" x-data="orgSwitcher()" x-init="init()" @click="console.log('Alpine.js is working!')">
                         <!-- Desktop & Tablet: Dropdown Button -->
-                        <button @click="toggleOrgMenu()"
+                        <button @click="console.log('Button clicked!'); toggleOrgMenu();"
                                 :aria-expanded="orgMenuOpen"
                                 aria-label="تبديل المؤسسة"
                                 class="hidden sm:flex items-center gap-2 px-3 py-2 text-sm bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 border border-blue-200 dark:border-blue-800 text-gray-700 dark:text-gray-300 rounded-lg hover:shadow-md transition-all">
@@ -701,10 +701,12 @@
                 searchQuery: '',
 
                 async init() {
+                    console.log('[ORG SWITCHER] Initializing...');
                     try {
                         await this.loadOrganizations();
+                        console.log('[ORG SWITCHER] Initialization complete');
                     } catch (error) {
-                        console.error('Failed to initialize org switcher:', error);
+                        console.error('[ORG SWITCHER] Failed to initialize:', error);
                         // Continue even if loading fails - allow manual toggle
                     }
                 },
