@@ -1103,6 +1103,14 @@ class PlatformConnectionsController extends Controller
                             ];
                         }
                     }
+                } else {
+                    Log::warning('Failed to fetch pixels for ad account', [
+                        'ad_account_id' => $accountId,
+                        'status' => $response->status(),
+                        'error' => $response->json('error.message'),
+                        'error_code' => $response->json('error.code'),
+                        'error_type' => $response->json('error.type'),
+                    ]);
                 }
             }
 
@@ -1139,6 +1147,13 @@ class PlatformConnectionsController extends Controller
                         'business_name' => $catalog['business']['name'] ?? null,
                     ];
                 }
+            } else {
+                Log::warning('Failed to fetch owned product catalogs', [
+                    'status' => $response->status(),
+                    'error' => $response->json('error.message'),
+                    'error_code' => $response->json('error.code'),
+                    'error_type' => $response->json('error.type'),
+                ]);
             }
 
             // Also try client catalogs if business_management scope available
@@ -1163,6 +1178,13 @@ class PlatformConnectionsController extends Controller
                         ];
                     }
                 }
+            } else {
+                Log::warning('Failed to fetch client product catalogs', [
+                    'status' => $clientResponse->status(),
+                    'error' => $clientResponse->json('error.message'),
+                    'error_code' => $clientResponse->json('error.code'),
+                    'error_type' => $clientResponse->json('error.type'),
+                ]);
             }
 
             return $catalogs;
@@ -1490,9 +1512,14 @@ class PlatformConnectionsController extends Controller
                 } else {
                     // If Threads API fails, the Instagram account might not have Threads enabled
                     // or the token doesn't have Threads permissions
-                    Log::debug('Threads account not found for Instagram', [
+                    // NOTE: Meta access tokens don't include Threads scopes by default
+                    Log::warning('Threads account not found for Instagram', [
                         'instagram_id' => $igId,
-                        'error' => $response->json('error', []),
+                        'instagram_username' => $ig['username'] ?? null,
+                        'status' => $response->status(),
+                        'error' => $response->json('error.message'),
+                        'error_code' => $response->json('error.code'),
+                        'error_type' => $response->json('error.type'),
                     ]);
                 }
             }
