@@ -43,7 +43,9 @@ class OrgSwitcherController extends Controller
         }
 
         // Get all organizations the user belongs to
+        // Note: Disable global scopes (SoftDeletes, OrgScope) as cmis.orgs table doesn't have deleted_at
         $organizations = $user->orgs()
+            ->withoutGlobalScopes()
             ->select('cmis.orgs.org_id', 'cmis.orgs.name', 'cmis.orgs.slug')
             ->orderBy('cmis.orgs.name')
             ->get();
