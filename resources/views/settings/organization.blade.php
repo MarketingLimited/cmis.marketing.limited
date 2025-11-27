@@ -51,64 +51,149 @@
         </div>
     @endif
 
+    {{-- Mobile Tabs (visible on mobile/tablet) --}}
+    <div class="lg:hidden mb-6">
+        <div class="bg-white rounded-xl shadow-sm p-2">
+            <nav class="flex gap-2 overflow-x-auto scrollbar-hide" role="tablist">
+                <button @click="activeTab = 'general'"
+                        :class="activeTab === 'general' ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-md' : 'bg-gray-50 text-gray-700 hover:bg-gray-100'"
+                        class="flex-shrink-0 flex flex-col items-center gap-1 px-4 py-3 rounded-lg transition-all duration-200 min-w-[80px]"
+                        role="tab"
+                        :aria-selected="activeTab === 'general'">
+                    <i class="fas fa-cog text-lg"></i>
+                    <span class="text-xs font-medium">{{ __('settings.general') }}</span>
+                </button>
+                <button @click="activeTab = 'team'"
+                        :class="activeTab === 'team' ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-md' : 'bg-gray-50 text-gray-700 hover:bg-gray-100'"
+                        class="flex-shrink-0 flex flex-col items-center gap-1 px-4 py-3 rounded-lg transition-all duration-200 min-w-[80px]"
+                        role="tab"
+                        :aria-selected="activeTab === 'team'">
+                    <i class="fas fa-users text-lg"></i>
+                    <span class="text-xs font-medium">{{ __('settings.team_members') }}</span>
+                </button>
+                <a href="{{ route('orgs.settings.platform-connections.index', $currentOrg) }}"
+                   class="flex-shrink-0 flex flex-col items-center gap-1 px-4 py-3 rounded-lg transition-all duration-200 min-w-[80px] bg-gray-50 text-gray-700 hover:bg-gray-100">
+                    <i class="fas fa-plug text-lg"></i>
+                    <span class="text-xs font-medium">{{ __('settings.platform_connections') }}</span>
+                </a>
+                <button @click="activeTab = 'api'"
+                        :class="activeTab === 'api' ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-md' : 'bg-gray-50 text-gray-700 hover:bg-gray-100'"
+                        class="flex-shrink-0 flex flex-col items-center gap-1 px-4 py-3 rounded-lg transition-all duration-200 min-w-[80px]"
+                        role="tab"
+                        :aria-selected="activeTab === 'api'">
+                    <i class="fas fa-code text-lg"></i>
+                    <span class="text-xs font-medium">{{ __('settings.api_keys') }}</span>
+                </button>
+                <button @click="activeTab = 'billing'"
+                        :class="activeTab === 'billing' ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-md' : 'bg-gray-50 text-gray-700 hover:bg-gray-100'"
+                        class="flex-shrink-0 flex flex-col items-center gap-1 px-4 py-3 rounded-lg transition-all duration-200 min-w-[80px]"
+                        role="tab"
+                        :aria-selected="activeTab === 'billing'">
+                    <i class="fas fa-credit-card text-lg"></i>
+                    <span class="text-xs font-medium">{{ __('settings.billing') }}</span>
+                </button>
+            </nav>
+        </div>
+        {{-- Link to User Settings (Mobile) --}}
+        <div class="mt-3">
+            <a href="{{ route('orgs.settings.user', $currentOrg) }}"
+               class="flex items-center justify-between px-4 py-3 bg-gradient-to-{{ $isRtl ? 'l' : 'r' }} from-gray-50 to-gray-100 rounded-xl hover:from-blue-50 hover:to-purple-50 transition {{ $isRtl ? 'flex-row-reverse' : '' }} group">
+                <div class="flex items-center gap-3 {{ $isRtl ? 'flex-row-reverse' : '' }}">
+                    <div class="w-10 h-10 rounded-lg bg-white shadow-sm flex items-center justify-center group-hover:bg-gradient-to-br group-hover:from-blue-500 group-hover:to-purple-500 group-hover:text-white transition">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="{{ $isRtl ? 'text-right' : '' }}">
+                        <p class="text-sm font-medium text-gray-900">{{ __('settings.user_settings') }}</p>
+                        <p class="text-xs text-gray-500">{{ __('settings.manage_personal_settings') }}</p>
+                    </div>
+                </div>
+                <i class="fas fa-chevron-{{ $isRtl ? 'left' : 'right' }} text-gray-400 group-hover:text-blue-600 transition"></i>
+            </a>
+        </div>
+    </div>
+
     <div class="flex flex-col lg:flex-row gap-6 {{ $isRtl ? 'lg:flex-row-reverse' : '' }}">
-        {{-- Sidebar Navigation --}}
-        <div class="lg:w-56 flex-shrink-0">
+        {{-- Desktop Sidebar Navigation (hidden on mobile) --}}
+        <div class="hidden lg:block lg:w-64 flex-shrink-0">
             <nav class="bg-white shadow-sm rounded-xl overflow-hidden sticky top-24">
-                <div class="px-4 py-3 bg-gradient-to-{{ $isRtl ? 'l' : 'r' }} from-blue-600 to-purple-600">
+                <div class="px-5 py-4 bg-gradient-to-{{ $isRtl ? 'l' : 'r' }} from-blue-600 to-purple-600">
                     <h3 class="text-sm font-semibold text-white flex items-center gap-2 {{ $isRtl ? 'flex-row-reverse' : '' }}">
-                        <i class="fas fa-building"></i>
+                        <i class="fas fa-building text-lg"></i>
                         <span>{{ __('settings.organization_settings') }}</span>
                     </h3>
                 </div>
-                <ul class="divide-y divide-gray-100">
+                <ul class="p-2 space-y-1">
                     <li>
                         <button @click="activeTab = 'general'"
-                                :class="activeTab === 'general' ? 'bg-blue-50 text-blue-700 border-{{ $isRtl ? 'l' : 'r' }}-4 border-blue-600' : 'text-gray-700 hover:bg-gray-50 border-{{ $isRtl ? 'l' : 'r' }}-4 border-transparent'"
-                                class="w-full flex items-center px-4 py-3 text-sm font-medium transition-colors {{ $isRtl ? 'flex-row-reverse' : '' }}">
-                            <i class="fas fa-cog w-5 {{ $isRtl ? 'mr-3' : 'ml-3' }}"></i>
-                            <span>{{ __('settings.general') }}</span>
+                                :class="activeTab === 'general' ? 'bg-gradient-to-{{ $isRtl ? 'l' : 'r' }} from-blue-50 to-purple-50 text-blue-700 border-{{ $isRtl ? 'l' : 'r' }}-4 border-blue-600 shadow-sm' : 'text-gray-700 hover:bg-gray-50 border-{{ $isRtl ? 'l' : 'r' }}-4 border-transparent hover:border-gray-200'"
+                                class="w-full flex items-start gap-3 px-3 py-3 rounded-lg text-sm font-medium transition-all duration-200 {{ $isRtl ? 'flex-row-reverse text-right' : '' }}"
+                                role="tab"
+                                :aria-selected="activeTab === 'general'">
+                            <i class="fas fa-cog text-base mt-0.5" :class="activeTab === 'general' ? 'text-blue-600' : 'text-gray-400'"></i>
+                            <div class="flex-1">
+                                <div class="font-semibold">{{ __('settings.general') }}</div>
+                                <div class="text-xs mt-0.5" :class="activeTab === 'general' ? 'text-blue-600' : 'text-gray-500'">{{ __('settings.manage_organization_info') }}</div>
+                            </div>
                         </button>
                     </li>
                     <li>
                         <button @click="activeTab = 'team'"
-                                :class="activeTab === 'team' ? 'bg-blue-50 text-blue-700 border-{{ $isRtl ? 'l' : 'r' }}-4 border-blue-600' : 'text-gray-700 hover:bg-gray-50 border-{{ $isRtl ? 'l' : 'r' }}-4 border-transparent'"
-                                class="w-full flex items-center px-4 py-3 text-sm font-medium transition-colors {{ $isRtl ? 'flex-row-reverse' : '' }}">
-                            <i class="fas fa-users w-5 {{ $isRtl ? 'mr-3' : 'ml-3' }}"></i>
-                            <span>{{ __('settings.team_members') }}</span>
+                                :class="activeTab === 'team' ? 'bg-gradient-to-{{ $isRtl ? 'l' : 'r' }} from-blue-50 to-purple-50 text-blue-700 border-{{ $isRtl ? 'l' : 'r' }}-4 border-blue-600 shadow-sm' : 'text-gray-700 hover:bg-gray-50 border-{{ $isRtl ? 'l' : 'r' }}-4 border-transparent hover:border-gray-200'"
+                                class="w-full flex items-start gap-3 px-3 py-3 rounded-lg text-sm font-medium transition-all duration-200 {{ $isRtl ? 'flex-row-reverse text-right' : '' }}"
+                                role="tab"
+                                :aria-selected="activeTab === 'team'">
+                            <i class="fas fa-users text-base mt-0.5" :class="activeTab === 'team' ? 'text-blue-600' : 'text-gray-400'"></i>
+                            <div class="flex-1">
+                                <div class="font-semibold">{{ __('settings.team_members') }}</div>
+                                <div class="text-xs mt-0.5" :class="activeTab === 'team' ? 'text-blue-600' : 'text-gray-500'">{{ __('settings.manage_team_access') }}</div>
+                            </div>
                         </button>
                     </li>
                     <li>
                         <a href="{{ route('orgs.settings.platform-connections.index', $currentOrg) }}"
-                           class="flex items-center px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 border-{{ $isRtl ? 'l' : 'r' }}-4 border-transparent transition-colors {{ $isRtl ? 'flex-row-reverse' : '' }}">
-                            <i class="fas fa-plug w-5 {{ $isRtl ? 'mr-3' : 'ml-3' }}"></i>
-                            <span>{{ __('settings.platform_connections') }}</span>
+                           class="flex items-start gap-3 px-3 py-3 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 border-{{ $isRtl ? 'l' : 'r' }}-4 border-transparent hover:border-gray-200 transition-all duration-200 {{ $isRtl ? 'flex-row-reverse text-right' : '' }} group">
+                            <i class="fas fa-plug text-base mt-0.5 text-gray-400 group-hover:text-blue-600 transition"></i>
+                            <div class="flex-1">
+                                <div class="font-semibold">{{ __('settings.platform_connections') }}</div>
+                                <div class="text-xs text-gray-500 mt-0.5">{{ __('settings.platform_connections_description') }}</div>
+                            </div>
                         </a>
                     </li>
                     <li>
                         <button @click="activeTab = 'api'"
-                                :class="activeTab === 'api' ? 'bg-blue-50 text-blue-700 border-{{ $isRtl ? 'l' : 'r' }}-4 border-blue-600' : 'text-gray-700 hover:bg-gray-50 border-{{ $isRtl ? 'l' : 'r' }}-4 border-transparent'"
-                                class="w-full flex items-center px-4 py-3 text-sm font-medium transition-colors {{ $isRtl ? 'flex-row-reverse' : '' }}">
-                            <i class="fas fa-code w-5 {{ $isRtl ? 'mr-3' : 'ml-3' }}"></i>
-                            <span>{{ __('settings.api_keys') }}</span>
+                                :class="activeTab === 'api' ? 'bg-gradient-to-{{ $isRtl ? 'l' : 'r' }} from-blue-50 to-purple-50 text-blue-700 border-{{ $isRtl ? 'l' : 'r' }}-4 border-blue-600 shadow-sm' : 'text-gray-700 hover:bg-gray-50 border-{{ $isRtl ? 'l' : 'r' }}-4 border-transparent hover:border-gray-200'"
+                                class="w-full flex items-start gap-3 px-3 py-3 rounded-lg text-sm font-medium transition-all duration-200 {{ $isRtl ? 'flex-row-reverse text-right' : '' }}"
+                                role="tab"
+                                :aria-selected="activeTab === 'api'">
+                            <i class="fas fa-code text-base mt-0.5" :class="activeTab === 'api' ? 'text-blue-600' : 'text-gray-400'"></i>
+                            <div class="flex-1">
+                                <div class="font-semibold">{{ __('settings.api_keys') }}</div>
+                                <div class="text-xs mt-0.5" :class="activeTab === 'api' ? 'text-blue-600' : 'text-gray-500'">{{ __('settings.manage_api_keys') }}</div>
+                            </div>
                         </button>
                     </li>
                     <li>
                         <button @click="activeTab = 'billing'"
-                                :class="activeTab === 'billing' ? 'bg-blue-50 text-blue-700 border-{{ $isRtl ? 'l' : 'r' }}-4 border-blue-600' : 'text-gray-700 hover:bg-gray-50 border-{{ $isRtl ? 'l' : 'r' }}-4 border-transparent'"
-                                class="w-full flex items-center px-4 py-3 text-sm font-medium transition-colors {{ $isRtl ? 'flex-row-reverse' : '' }}">
-                            <i class="fas fa-credit-card w-5 {{ $isRtl ? 'mr-3' : 'ml-3' }}"></i>
-                            <span>{{ __('settings.billing') }}</span>
+                                :class="activeTab === 'billing' ? 'bg-gradient-to-{{ $isRtl ? 'l' : 'r' }} from-blue-50 to-purple-50 text-blue-700 border-{{ $isRtl ? 'l' : 'r' }}-4 border-blue-600 shadow-sm' : 'text-gray-700 hover:bg-gray-50 border-{{ $isRtl ? 'l' : 'r' }}-4 border-transparent hover:border-gray-200'"
+                                class="w-full flex items-start gap-3 px-3 py-3 rounded-lg text-sm font-medium transition-all duration-200 {{ $isRtl ? 'flex-row-reverse text-right' : '' }}"
+                                role="tab"
+                                :aria-selected="activeTab === 'billing'">
+                            <i class="fas fa-credit-card text-base mt-0.5" :class="activeTab === 'billing' ? 'text-blue-600' : 'text-gray-400'"></i>
+                            <div class="flex-1">
+                                <div class="font-semibold">{{ __('settings.billing') }}</div>
+                                <div class="text-xs mt-0.5" :class="activeTab === 'billing' ? 'text-blue-600' : 'text-gray-500'">{{ __('settings.current_plan') }}</div>
+                            </div>
                         </button>
                     </li>
                 </ul>
 
-                {{-- Link to User Settings --}}
-                <div class="px-4 py-3 bg-gray-50 border-t border-gray-200">
-                    <a href="{{ route('orgs.settings.user', $currentOrg) }}" class="flex items-center text-sm text-gray-600 hover:text-blue-600 transition {{ $isRtl ? 'flex-row-reverse' : '' }}">
-                        <i class="fas fa-user w-5 {{ $isRtl ? 'mr-2' : 'ml-2' }}"></i>
+                {{-- Link to User Settings (Desktop) --}}
+                <div class="px-3 py-3 border-t border-gray-200 bg-gray-50">
+                    <a href="{{ route('orgs.settings.user', $currentOrg) }}"
+                       class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-700 hover:bg-white hover:text-blue-600 transition-all group {{ $isRtl ? 'flex-row-reverse text-right' : '' }}">
+                        <i class="fas fa-user text-base text-gray-400 group-hover:text-blue-600 transition"></i>
                         <span class="flex-1">{{ __('settings.user_settings') }}</span>
-                        <i class="fas fa-arrow-{{ $isRtl ? 'right' : 'left' }} text-xs"></i>
+                        <i class="fas fa-arrow-{{ $isRtl ? 'left' : 'right' }} text-xs text-gray-400 group-hover:text-blue-600 group-hover:translate-{{ $isRtl ? '-' : '' }}x-1 transition-all"></i>
                     </a>
                 </div>
             </nav>
@@ -172,7 +257,7 @@
                                 </div>
                                 <div class="{{ $isRtl ? 'text-right' : '' }}">
                                     <dt class="text-gray-500">{{ __('settings.created') }}</dt>
-                                    <dd class="mt-1 text-gray-700">{{ $organization->created_at?->format('M d, Y') ?? 'N/A' }}</dd>
+                                    <dd class="mt-1 text-gray-700">{{ $organization->created_at?->format('M d, Y') ?? __('settings.not_available') }}</dd>
                                 </div>
                                 <div class="{{ $isRtl ? 'text-right' : '' }}">
                                     <dt class="text-gray-500">{{ __('settings.team_members') }}</dt>
@@ -333,8 +418,8 @@
                         <div class="p-6">
                             <div class="flex items-center justify-between {{ $isRtl ? 'flex-row-reverse' : '' }}">
                                 <div class="{{ $isRtl ? 'text-right' : '' }}">
-                                    <p class="text-2xl font-bold text-gray-900">{{ $currentPlan ?? 'Professional' }}</p>
-                                    <p class="text-sm text-gray-500 mt-1">{{ __('settings.subscription_renews_on') }} {{ $renewalDate ?? 'January 1, 2026' }}</p>
+                                    <p class="text-2xl font-bold text-gray-900">{{ $currentPlan ?? __('settings.professional') }}</p>
+                                    <p class="text-sm text-gray-500 mt-1">{{ __('settings.subscription_renews_on') }} {{ $renewalDate ?? __('settings.january') . ' 1, 2026' }}</p>
                                 </div>
                                 <button class="px-4 py-2 text-sm font-medium text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50 transition">
                                     {{ __('settings.upgrade_plan') }}
@@ -344,7 +429,7 @@
                             <div class="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-4">
                                 <div class="p-4 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl {{ $isRtl ? 'text-right' : '' }}">
                                     <p class="text-sm text-blue-600">{{ __('settings.campaigns') }}</p>
-                                    <p class="text-xl font-semibold text-gray-900">{{ $usage['campaigns'] ?? 0 }} / {{ $limits['campaigns'] ?? 'Unlimited' }}</p>
+                                    <p class="text-xl font-semibold text-gray-900">{{ $usage['campaigns'] ?? 0 }} / {{ $limits['campaigns'] ?? __('settings.unlimited') }}</p>
                                 </div>
                                 <div class="p-4 bg-gradient-to-br from-green-50 to-green-100 rounded-xl {{ $isRtl ? 'text-right' : '' }}">
                                     <p class="text-sm text-green-600">{{ __('settings.team_members') }}</p>
@@ -381,25 +466,29 @@
                     <div class="bg-white shadow-sm rounded-xl overflow-hidden">
                         <div class="px-6 py-4 border-b border-gray-200">
                             <h2 class="text-lg font-semibold text-gray-900">{{ __('settings.billing_history') }}</h2>
+                            <p class="text-xs text-gray-500 mt-1 lg:hidden">{{ __('settings.swipe_to_view_more') }}</p>
                         </div>
-                        <div class="overflow-x-auto">
+                        <div class="overflow-x-auto relative">
+                            {{-- Scroll indicator shadows --}}
+                            <div class="absolute inset-y-0 left-0 w-8 bg-gradient-to-r from-white to-transparent pointer-events-none z-10 lg:hidden"></div>
+                            <div class="absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-white to-transparent pointer-events-none z-10 lg:hidden"></div>
                             <table class="min-w-full divide-y divide-gray-200">
                                 <thead class="bg-gray-50">
                                     <tr>
-                                        <th class="px-6 py-3 {{ $isRtl ? 'text-left' : 'text-right' }} text-xs font-medium text-gray-500 uppercase">{{ __('settings.date') }}</th>
-                                        <th class="px-6 py-3 {{ $isRtl ? 'text-left' : 'text-right' }} text-xs font-medium text-gray-500 uppercase">{{ __('settings.description') }}</th>
-                                        <th class="px-6 py-3 {{ $isRtl ? 'text-left' : 'text-right' }} text-xs font-medium text-gray-500 uppercase">{{ __('settings.amount') }}</th>
-                                        <th class="px-6 py-3 {{ $isRtl ? 'text-left' : 'text-right' }} text-xs font-medium text-gray-500 uppercase">{{ __('settings.status') }}</th>
+                                        <th class="px-6 py-3 {{ $isRtl ? 'text-right' : 'text-left' }} text-xs font-medium text-gray-500 uppercase">{{ __('settings.date') }}</th>
+                                        <th class="px-6 py-3 {{ $isRtl ? 'text-right' : 'text-left' }} text-xs font-medium text-gray-500 uppercase">{{ __('settings.description') }}</th>
+                                        <th class="px-6 py-3 {{ $isRtl ? 'text-right' : 'text-left' }} text-xs font-medium text-gray-500 uppercase">{{ __('settings.amount') }}</th>
+                                        <th class="px-6 py-3 {{ $isRtl ? 'text-right' : 'text-left' }} text-xs font-medium text-gray-500 uppercase">{{ __('settings.status') }}</th>
                                         <th class="px-6 py-3 {{ $isRtl ? 'text-right' : 'text-left' }} text-xs font-medium text-gray-500 uppercase">{{ __('settings.invoice') }}</th>
                                     </tr>
                                 </thead>
                                 <tbody class="bg-white divide-y divide-gray-200">
                                     @forelse($invoices ?? [] as $invoice)
                                         <tr>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 {{ $isRtl ? 'text-left' : '' }}">{{ $invoice->date }}</td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 {{ $isRtl ? 'text-left' : '' }}">{{ $invoice->description }}</td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 {{ $isRtl ? 'text-left' : '' }}">{{ $invoice->amount }}</td>
-                                            <td class="px-6 py-4 whitespace-nowrap {{ $isRtl ? 'text-left' : '' }}">
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 {{ $isRtl ? 'text-right' : '' }}">{{ $invoice->date }}</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 {{ $isRtl ? 'text-right' : '' }}">{{ $invoice->description }}</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 {{ $isRtl ? 'text-right' : '' }}">{{ $invoice->amount }}</td>
+                                            <td class="px-6 py-4 whitespace-nowrap {{ $isRtl ? 'text-right' : '' }}">
                                                 <span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">{{ $invoice->status }}</span>
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap {{ $isRtl ? 'text-right' : 'text-left' }} text-sm">
@@ -502,7 +591,7 @@
                         <div>
                             <label for="invite_email" class="block text-sm font-medium text-gray-700 {{ $isRtl ? 'text-right' : '' }}">{{ __('settings.email_address') }} *</label>
                             <input type="email" name="email" id="invite_email" required
-                                   placeholder="colleague@example.com"
+                                   placeholder="{{ __('settings.email_placeholder') }}"
                                    class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm {{ $isRtl ? 'text-right' : '' }}">
                         </div>
 
@@ -558,6 +647,27 @@ function orgSettingsPage() {
 .rtl-layout {
     direction: rtl;
     text-align: right;
+}
+
+/* Hide scrollbar for mobile tabs */
+.scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+    display: none;
+}
+
+/* Smooth tab transitions */
+[x-cloak] {
+    display: none !important;
+}
+
+/* Focus visible for accessibility */
+button:focus-visible, a:focus-visible {
+    outline: 2px solid #3b82f6;
+    outline-offset: 2px;
 }
 </style>
 @endpush

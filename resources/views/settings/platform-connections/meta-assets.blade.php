@@ -1,45 +1,49 @@
 @extends('layouts.admin')
 
+@php
+    $isRtl = app()->getLocale() === 'ar';
+@endphp
+
 @section('title', __('Select Meta Assets') . ' - ' . __('Settings'))
 
 @section('content')
-<div class="space-y-6" x-data="metaAssetsPage()">
+<div class="space-y-6" x-data="metaAssetsPage()" dir="{{ $isRtl ? 'rtl' : 'ltr' }}">
     {{-- Page Header with Breadcrumb --}}
     <div class="mb-6">
-        <nav class="text-sm text-gray-500 mb-2 flex items-center gap-2">
+        <nav class="text-sm text-gray-500 mb-2 flex items-center gap-2 {{ $isRtl ? 'flex-row-reverse' : '' }}">
             <a href="{{ route('orgs.dashboard.index', $currentOrg) }}" class="hover:text-blue-600 transition">
                 <i class="fas fa-home"></i>
             </a>
-            <span class="text-gray-400">/</span>
+            <span class="text-gray-400">{{ $isRtl ? '\\' : '/' }}</span>
             <a href="{{ route('orgs.settings.index', $currentOrg) }}" class="hover:text-blue-600 transition">{{ __('Settings') }}</a>
-            <span class="text-gray-400">/</span>
+            <span class="text-gray-400">{{ $isRtl ? '\\' : '/' }}</span>
             <a href="{{ route('orgs.settings.platform-connections.index', $currentOrg) }}" class="hover:text-blue-600 transition">{{ __('Platform Connections') }}</a>
-            <span class="text-gray-400">/</span>
+            <span class="text-gray-400">{{ $isRtl ? '\\' : '/' }}</span>
             <span class="text-gray-900 font-medium">{{ __('Meta Assets') }}</span>
         </nav>
-        <h1 class="text-2xl font-bold text-gray-900">{{ __('Configure Meta Assets') }}</h1>
-        <p class="mt-1 text-sm text-gray-500">
+        <h1 class="text-2xl font-bold text-gray-900 {{ $isRtl ? 'text-right' : '' }}">{{ __('Configure Meta Assets') }}</h1>
+        <p class="mt-1 text-sm text-gray-500 {{ $isRtl ? 'text-right' : '' }}">
             {{ __('Select multiple assets: Facebook Pages, Instagram accounts, Threads accounts, Ad Accounts, Pixels, and Catalogs for this organization.') }}
         </p>
-        <div class="mt-2 p-2 bg-blue-50 border border-blue-200 rounded text-xs text-blue-700">
-            <i class="fas fa-info-circle mr-1"></i>
+        <div class="mt-2 p-2 bg-blue-50 border border-blue-200 rounded text-xs text-blue-700 {{ $isRtl ? 'text-right' : '' }}">
+            <i class="fas fa-info-circle {{ $isRtl ? 'ml-1' : 'mr-1' }}"></i>
             {{ __('You can select multiple accounts per asset type (e.g., multiple Pages, Ad Accounts).') }}
         </div>
     </div>
 
     {{-- Connection Info --}}
     <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-        <div class="flex items-center gap-3">
+        <div class="flex items-center gap-3 {{ $isRtl ? 'flex-row-reverse' : '' }}">
             <div class="flex-shrink-0 w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
                 <i class="fab fa-facebook text-blue-600 text-xl"></i>
             </div>
-            <div>
+            <div class="{{ $isRtl ? 'text-right' : '' }}">
                 <p class="font-medium text-blue-900">{{ $connection->account_name }}</p>
                 <p class="text-sm text-blue-700">
                     @if($connection->account_metadata['is_system_user'] ?? false)
-                        <i class="fas fa-check-circle mr-1"></i>System User Token
+                        <i class="fas fa-check-circle {{ $isRtl ? 'ml-1' : 'mr-1' }}"></i>{{ __('System User Token') }}
                     @endif
-                    &bull; Connected {{ $connection->created_at->diffForHumans() }}
+                    &bull; {{ __('Connected') }} {{ $connection->created_at->diffForHumans() }}
                 </p>
             </div>
         </div>
@@ -51,7 +55,7 @@
 
         <div class="space-y-6">
             {{-- Facebook Pages --}}
-            <div class="bg-white shadow sm:rounded-lg overflow-hidden">
+            <div class="bg-white shadow sm:rounded-lg overflow-hidden" dir="{{ $isRtl ? 'rtl' : 'ltr' }}">
                 <div class="px-4 py-5 sm:p-6">
                     <div class="flex items-center justify-between mb-4">
                         <div class="flex items-center gap-3">
@@ -63,8 +67,8 @@
                                 <p class="text-sm text-gray-500" x-text="filteredPagesCount + ' ' + '{{ __("page(s) available") }}'"></p>
                             </div>
                         </div>
-                        <button type="button" @click="showManualPage = !showManualPage" class="text-sm text-blue-600 hover:text-blue-800">
-                            <i class="fas fa-plus mr-1"></i>{{ __('Add manually') }}
+                        <button type="button" @click="showManualPage = !showManualPage" class="text-sm text-blue-600 hover:text-blue-800 inline-flex items-center gap-1">
+                            <i class="fas fa-plus"></i>{{ __('Add manually') }}
                         </button>
                     </div>
 
@@ -74,11 +78,11 @@
                             <input type="text" x-model="pagesSearch" placeholder="{{ __('Search pages by name...') }}"
                                    class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm">
                             <div class="flex gap-2">
-                                <button type="button" @click="selectAllPages" class="text-xs text-blue-600 hover:text-blue-800">
-                                    <i class="fas fa-check-square mr-1"></i>{{ __('Select All Visible') }}
+                                <button type="button" @click="selectAllPages" class="text-xs text-blue-600 hover:text-blue-800 inline-flex items-center gap-1">
+                                    <i class="fas fa-check-square"></i>{{ __('Select All Visible') }}
                                 </button>
-                                <button type="button" @click="deselectAllPages" class="text-xs text-blue-600 hover:text-blue-800">
-                                    <i class="fas fa-square mr-1"></i>{{ __('Deselect All') }}
+                                <button type="button" @click="deselectAllPages" class="text-xs text-blue-600 hover:text-blue-800 inline-flex items-center gap-1">
+                                    <i class="fas fa-square"></i>{{ __('Deselect All') }}
                                 </button>
                                 <span class="text-xs text-gray-500" x-show="selectedPages.length > 0">
                                     (<span x-text="selectedPages.length"></span> {{ __('selected') }})
@@ -87,27 +91,27 @@
                         </div>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                             @foreach($pages as $page)
-                                <label x-show="matchesPagesSearch('{{ $page['name'] }}')" class="flex items-center p-3 border rounded-lg hover:bg-gray-50 cursor-pointer transition"
-                                       :class="{ 'border-blue-500 bg-blue-50': selectedPages.includes('{{ $page['id'] }}' }">
+                                <label x-show="matchesPagesSearch('{{ $page['name'] }}')" class="flex items-center p-3 border rounded-lg hover:bg-gray-50 cursor-pointer transition gap-3"
+                                       :class="{ 'border-blue-500 bg-blue-50': selectedPages.includes('{{ $page['id'] }}') }">
                                     <input type="checkbox" name="page[]" value="{{ $page['id'] }}"
                                            {{ in_array($page['id'], (array) ($selectedAssets['page'] ?? [])) ? 'checked' : '' }}
                                            x-model="selectedPages"
-                                           class="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500">
-                                    <div class="ml-3 flex items-center gap-3">
+                                           class="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500 flex-shrink-0">
+                                    <div class="flex items-center gap-3 flex-1 min-w-0">
                                         @if($page['picture'])
-                                            <img src="{{ $page['picture'] }}" alt="" class="w-8 h-8 rounded-full">
+                                            <img src="{{ $page['picture'] }}" alt="" class="w-8 h-8 rounded-full flex-shrink-0">
                                         @else
-                                            <div class="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
+                                            <div class="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center flex-shrink-0">
                                                 <i class="fas fa-flag text-gray-400"></i>
                                             </div>
                                         @endif
-                                        <div>
-                                            <span class="text-sm font-medium text-gray-900">{{ $page['name'] }}</span>
+                                        <div class="min-w-0">
+                                            <span class="text-sm font-medium text-gray-900 block truncate">{{ $page['name'] }}</span>
                                             @if($page['category'])
                                                 <span class="block text-xs text-gray-500">{{ $page['category'] }}</span>
                                             @endif
                                             @if($page['has_instagram'])
-                                                <span class="text-xs text-pink-600"><i class="fab fa-instagram mr-1"></i>Instagram connected</span>
+                                                <span class="text-xs text-pink-600 inline-flex items-center gap-1"><i class="fab fa-instagram"></i>{{ __('Instagram connected') }}</span>
                                             @endif
                                         </div>
                                     </div>
@@ -572,49 +576,49 @@
         {{-- Summary & Submit --}}
         <div class="mt-8 bg-white shadow sm:rounded-lg overflow-hidden">
             <div class="px-4 py-5 sm:p-6">
-                <div class="flex items-center justify-between">
-                    <div>
+                <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 {{ $isRtl ? 'lg:flex-row-reverse' : '' }}">
+                    <div class="{{ $isRtl ? 'text-right' : '' }}">
                         <h3 class="text-lg font-medium text-gray-900">{{ __('Selection Summary') }}</h3>
-                        <p class="text-sm text-gray-500 mt-1">
+                        <p class="text-sm text-gray-500 mt-1 flex flex-wrap gap-2 {{ $isRtl ? 'flex-row-reverse justify-end' : '' }}">
                             <span :class="{ 'text-green-600 font-medium': selectedPages.length > 0 }">
                                 <i class="fas" :class="selectedPages.length > 0 ? 'fa-check-circle' : 'fa-circle'"></i>
-                                <span x-text="selectedPages.length > 0 ? `${selectedPages.length} Page(s)` : 'Page'"></span>
+                                <span x-text="selectedPages.length > 0 ? `${selectedPages.length} {{ __('Page(s)') }}` : '{{ __('Page') }}'"></span>
                             </span>
                             <span class="mx-1">•</span>
                             <span :class="{ 'text-green-600 font-medium': selectedInstagrams.length > 0 }">
                                 <i class="fas" :class="selectedInstagrams.length > 0 ? 'fa-check-circle' : 'fa-circle'"></i>
-                                <span x-text="selectedInstagrams.length > 0 ? `${selectedInstagrams.length} Instagram` : 'Instagram'"></span>
+                                <span x-text="selectedInstagrams.length > 0 ? `${selectedInstagrams.length} {{ __('Instagram') }}` : '{{ __('Instagram') }}'"></span>
                             </span>
                             <span class="mx-1">•</span>
                             <span :class="{ 'text-green-600 font-medium': selectedThreadsAccounts.length > 0 }">
                                 <i class="fas" :class="selectedThreadsAccounts.length > 0 ? 'fa-check-circle' : 'fa-circle'"></i>
-                                <span x-text="selectedThreadsAccounts.length > 0 ? `${selectedThreadsAccounts.length} Threads` : 'Threads'"></span>
+                                <span x-text="selectedThreadsAccounts.length > 0 ? `${selectedThreadsAccounts.length} {{ __('Threads') }}` : '{{ __('Threads') }}'"></span>
                             </span>
                             <span class="mx-1">•</span>
                             <span :class="{ 'text-green-600 font-medium': selectedAdAccounts.length > 0 }">
                                 <i class="fas" :class="selectedAdAccounts.length > 0 ? 'fa-check-circle' : 'fa-circle'"></i>
-                                <span x-text="selectedAdAccounts.length > 0 ? `${selectedAdAccounts.length} Ad Account(s)` : 'Ad Account'"></span>
+                                <span x-text="selectedAdAccounts.length > 0 ? `${selectedAdAccounts.length} {{ __('Ad Account(s)') }}` : '{{ __('Ad Account') }}'"></span>
                             </span>
                             <span class="mx-1">•</span>
                             <span :class="{ 'text-green-600 font-medium': selectedPixels.length > 0 }">
                                 <i class="fas" :class="selectedPixels.length > 0 ? 'fa-check-circle' : 'fa-circle'"></i>
-                                <span x-text="selectedPixels.length > 0 ? `${selectedPixels.length} Pixel(s)` : 'Pixel'"></span>
+                                <span x-text="selectedPixels.length > 0 ? `${selectedPixels.length} {{ __('Pixel(s)') }}` : '{{ __('Pixel') }}'"></span>
                             </span>
                             <span class="mx-1">•</span>
                             <span :class="{ 'text-green-600 font-medium': selectedCatalogs.length > 0 }">
                                 <i class="fas" :class="selectedCatalogs.length > 0 ? 'fa-check-circle' : 'fa-circle'"></i>
-                                <span x-text="selectedCatalogs.length > 0 ? `${selectedCatalogs.length} Catalog(s)` : 'Catalog'"></span>
+                                <span x-text="selectedCatalogs.length > 0 ? `${selectedCatalogs.length} {{ __('Catalog(s)') }}` : '{{ __('Catalog') }}'"></span>
                             </span>
                         </p>
                     </div>
-                    <div class="flex gap-3">
+                    <div class="flex gap-3 {{ $isRtl ? 'flex-row-reverse' : '' }}">
                         <a href="{{ route('orgs.settings.platform-connections.index', $currentOrg) }}"
                            class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
                             {{ __('Cancel') }}
                         </a>
                         <button type="submit"
-                                class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700">
-                            <i class="fas fa-save mr-2"></i>{{ __('Save Selection') }}
+                                class="inline-flex items-center {{ $isRtl ? 'flex-row-reverse' : '' }} px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700">
+                            <i class="fas fa-save {{ $isRtl ? 'ml-2' : 'mr-2' }}"></i>{{ __('Save Selection') }}
                         </button>
                     </div>
                 </div>

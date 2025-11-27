@@ -2,45 +2,46 @@
 
 @php
     $currentOrg = $currentOrg ?? request()->route('org') ?? auth()->user()->active_org_id ?? auth()->user()->org_id;
+    $isRtl = app()->getLocale() === 'ar';
 @endphp
 
 @section('title', __('Select LinkedIn Assets') . ' - ' . __('Settings'))
 
 @section('content')
-<div class="space-y-6" x-data="linkedinAssetsPage()">
+<div class="space-y-6" x-data="linkedinAssetsPage()" dir="{{ $isRtl ? 'rtl' : 'ltr' }}">
     {{-- Page Header with Breadcrumb --}}
     <div class="mb-6">
-        <nav class="text-sm text-gray-500 mb-2 flex items-center gap-2">
+        <nav class="text-sm text-gray-500 mb-2 flex items-center gap-2 {{ $isRtl ? 'flex-row-reverse' : '' }}">
             <a href="{{ route('orgs.dashboard.index', $currentOrg) }}" class="hover:text-blue-600 transition">
                 <i class="fas fa-home"></i>
             </a>
-            <span class="text-gray-400">/</span>
+            <span class="text-gray-400">{{ $isRtl ? '\\' : '/' }}</span>
             <a href="{{ route('orgs.settings.index', $currentOrg) }}" class="hover:text-blue-600 transition">{{ __('Settings') }}</a>
-            <span class="text-gray-400">/</span>
+            <span class="text-gray-400">{{ $isRtl ? '\\' : '/' }}</span>
             <a href="{{ route('orgs.settings.platform-connections.index', $currentOrg) }}" class="hover:text-blue-600 transition">{{ __('Platform Connections') }}</a>
-            <span class="text-gray-400">/</span>
+            <span class="text-gray-400">{{ $isRtl ? '\\' : '/' }}</span>
             <span class="text-gray-900 font-medium">{{ __('LinkedIn Assets') }}</span>
         </nav>
-        <h1 class="text-2xl font-bold text-gray-900">{{ __('Configure LinkedIn Assets') }}</h1>
-        <p class="mt-1 text-sm text-gray-500">
+        <h1 class="text-2xl font-bold text-gray-900 {{ $isRtl ? 'text-right' : '' }}">{{ __('Configure LinkedIn Assets') }}</h1>
+        <p class="mt-1 text-sm text-gray-500 {{ $isRtl ? 'text-right' : '' }}">
             {{ __('Select one of each: LinkedIn Account, Company Page, Ad Account, and Insight Tag for this organization.') }}
         </p>
-        <div class="mt-2 p-2 bg-blue-50 border border-blue-200 rounded text-xs text-blue-700">
-            <i class="fas fa-info-circle mr-1"></i>
+        <div class="mt-2 p-2 bg-blue-50 border border-blue-200 rounded text-xs text-blue-700 {{ $isRtl ? 'text-right' : '' }}">
+            <i class="fas fa-info-circle {{ $isRtl ? 'ml-1' : 'mr-1' }}"></i>
             {{ __('Each organization can have only one account per asset type.') }}
         </div>
     </div>
 
     {{-- Connection Info --}}
     <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-        <div class="flex items-center gap-3">
+        <div class="flex items-center gap-3 {{ $isRtl ? 'flex-row-reverse' : '' }}">
             <div class="flex-shrink-0 w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
                 <i class="fab fa-linkedin text-blue-700 text-xl"></i>
             </div>
-            <div>
+            <div class="{{ $isRtl ? 'text-right' : '' }}">
                 <p class="font-medium text-blue-900">{{ $connection->account_name }}</p>
                 <p class="text-sm text-blue-700">
-                    Connected {{ $connection->created_at->diffForHumans() }}
+                    {{ __('Connected') }} {{ $connection->created_at->diffForHumans() }}
                 </p>
             </div>
         </div>
@@ -105,18 +106,18 @@
             {{-- LinkedIn Company Pages --}}
             <div class="bg-white shadow sm:rounded-lg overflow-hidden">
                 <div class="px-4 py-5 sm:p-6">
-                    <div class="flex items-center justify-between mb-4">
-                        <div class="flex items-center gap-3">
+                    <div class="flex items-center justify-between mb-4 {{ $isRtl ? 'flex-row-reverse' : '' }}">
+                        <div class="flex items-center gap-3 {{ $isRtl ? 'flex-row-reverse' : '' }}">
                             <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
                                 <i class="fas fa-building text-blue-700"></i>
                             </div>
-                            <div>
+                            <div class="{{ $isRtl ? 'text-right' : '' }}">
                                 <h3 class="text-lg font-medium text-gray-900">{{ __('Company Page') }}</h3>
                                 <p class="text-sm text-gray-500">{{ count($pages ?? []) }} {{ __('available') }}</p>
                             </div>
                         </div>
-                        <button type="button" @click="showManualPage = !showManualPage" class="text-sm text-blue-600 hover:text-blue-800">
-                            <i class="fas fa-plus mr-1"></i>{{ __('Add manually') }}
+                        <button type="button" @click="showManualPage = !showManualPage" class="text-sm text-blue-600 hover:text-blue-800 flex items-center {{ $isRtl ? 'flex-row-reverse' : '' }}">
+                            <i class="fas fa-plus {{ $isRtl ? 'ml-1' : 'mr-1' }}"></i>{{ __('Add manually') }}
                         </button>
                     </div>
 
@@ -171,18 +172,18 @@
             {{-- LinkedIn Ad Account --}}
             <div class="bg-white shadow sm:rounded-lg overflow-hidden">
                 <div class="px-4 py-5 sm:p-6">
-                    <div class="flex items-center justify-between mb-4">
-                        <div class="flex items-center gap-3">
+                    <div class="flex items-center justify-between mb-4 {{ $isRtl ? 'flex-row-reverse' : '' }}">
+                        <div class="flex items-center gap-3 {{ $isRtl ? 'flex-row-reverse' : '' }}">
                             <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
                                 <i class="fas fa-ad text-green-600"></i>
                             </div>
-                            <div>
+                            <div class="{{ $isRtl ? 'text-right' : '' }}">
                                 <h3 class="text-lg font-medium text-gray-900">{{ __('Ad Account') }}</h3>
                                 <p class="text-sm text-gray-500">{{ count($adAccounts ?? []) }} {{ __('available') }}</p>
                             </div>
                         </div>
-                        <button type="button" @click="showManualAdAccount = !showManualAdAccount" class="text-sm text-green-600 hover:text-green-800">
-                            <i class="fas fa-plus mr-1"></i>{{ __('Add manually') }}
+                        <button type="button" @click="showManualAdAccount = !showManualAdAccount" class="text-sm text-green-600 hover:text-green-800 flex items-center {{ $isRtl ? 'flex-row-reverse' : '' }}">
+                            <i class="fas fa-plus {{ $isRtl ? 'ml-1' : 'mr-1' }}"></i>{{ __('Add manually') }}
                         </button>
                     </div>
 
@@ -236,18 +237,18 @@
             {{-- LinkedIn Insight Tag (Pixel) --}}
             <div class="bg-white shadow sm:rounded-lg overflow-hidden">
                 <div class="px-4 py-5 sm:p-6">
-                    <div class="flex items-center justify-between mb-4">
-                        <div class="flex items-center gap-3">
+                    <div class="flex items-center justify-between mb-4 {{ $isRtl ? 'flex-row-reverse' : '' }}">
+                        <div class="flex items-center gap-3 {{ $isRtl ? 'flex-row-reverse' : '' }}">
                             <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
                                 <i class="fas fa-code text-purple-600"></i>
                             </div>
-                            <div>
+                            <div class="{{ $isRtl ? 'text-right' : '' }}">
                                 <h3 class="text-lg font-medium text-gray-900">{{ __('Insight Tag (Pixel)') }}</h3>
                                 <p class="text-sm text-gray-500">{{ count($insightTags ?? []) }} {{ __('available') }}</p>
                             </div>
                         </div>
-                        <button type="button" @click="showManualPixel = !showManualPixel" class="text-sm text-purple-600 hover:text-purple-800">
-                            <i class="fas fa-plus mr-1"></i>{{ __('Add manually') }}
+                        <button type="button" @click="showManualPixel = !showManualPixel" class="text-sm text-purple-600 hover:text-purple-800 flex items-center {{ $isRtl ? 'flex-row-reverse' : '' }}">
+                            <i class="fas fa-plus {{ $isRtl ? 'ml-1' : 'mr-1' }}"></i>{{ __('Add manually') }}
                         </button>
                     </div>
 
@@ -292,10 +293,10 @@
         {{-- Summary & Submit --}}
         <div class="mt-8 bg-white shadow sm:rounded-lg overflow-hidden">
             <div class="px-4 py-5 sm:p-6">
-                <div class="flex items-center justify-between">
-                    <div>
+                <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 {{ $isRtl ? 'lg:flex-row-reverse' : '' }}">
+                    <div class="{{ $isRtl ? 'text-right' : '' }}">
                         <h3 class="text-lg font-medium text-gray-900">{{ __('Selection Summary') }}</h3>
-                        <p class="text-sm text-gray-500 mt-1">
+                        <p class="text-sm text-gray-500 mt-1 flex flex-wrap gap-2 {{ $isRtl ? 'flex-row-reverse justify-end' : '' }}">
                             <span :class="{ 'text-green-600 font-medium': selectedProfile }">
                                 <i class="fas" :class="selectedProfile ? 'fa-check-circle' : 'fa-circle'"></i> {{ __('Profile') }}
                             </span>
@@ -313,14 +314,14 @@
                             </span>
                         </p>
                     </div>
-                    <div class="flex gap-3">
+                    <div class="flex gap-3 {{ $isRtl ? 'flex-row-reverse' : '' }}">
                         <a href="{{ route('orgs.settings.platform-connections.index', $currentOrg) }}"
                            class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
                             {{ __('Cancel') }}
                         </a>
                         <button type="submit"
-                                class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700">
-                            <i class="fas fa-save mr-2"></i>{{ __('Save Selection') }}
+                                class="inline-flex items-center {{ $isRtl ? 'flex-row-reverse' : '' }} px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700">
+                            <i class="fas fa-save {{ $isRtl ? 'ml-2' : 'mr-2' }}"></i>{{ __('Save Selection') }}
                         </button>
                     </div>
                 </div>
