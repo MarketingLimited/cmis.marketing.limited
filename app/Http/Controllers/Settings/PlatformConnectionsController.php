@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Settings;
 
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Concerns\ApiResponse;
+use App\Models\Integration;
 use App\Models\Platform\PlatformConnection;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -1128,6 +1129,9 @@ class PlatformConnectionsController extends Controller
 
         $connection->update(['account_metadata' => $metadata]);
 
+        // Create/update Integration records for each selected asset
+        $this->syncIntegrationRecords($org, $connection, $selectedAssets);
+
         if ($request->wantsJson()) {
             return $this->success([
                 'connection' => $connection->fresh(),
@@ -1733,6 +1737,9 @@ class PlatformConnectionsController extends Controller
         $metadata['assets_updated_at'] = now()->toIso8601String();
 
         $connection->update(['account_metadata' => $metadata]);
+
+        // Create/update Integration records for each selected asset
+        $this->syncGoogleIntegrationRecords($org, $connection, $selectedAssets);
 
         // Build success message with counts
         $assetLabels = [
@@ -3725,5 +3732,210 @@ class PlatformConnectionsController extends Controller
 
         return redirect()->route('orgs.settings.platform-connections.index', $orgId)
             ->with('success', 'Snapchat account connected successfully');
+    }
+
+    /**
+     * Sync Integration records for selected Meta assets.
+     * Creates individual Integration records for each selected asset (Page, Instagram, Threads, etc.)
+     */
+    private function syncIntegrationRecords(string $orgId, PlatformConnection $connection, array $selectedAssets): void
+    {
+        $accessToken = $connection->access_token;
+        $metadata = $connection->account_metadata ?? [];
+
+        // Mapping of asset types to platform names and methods to fetch details
+        $assetTypeMapping = [
+            'page' => ['platform' => 'facebook', 'method' => 'getMetaPages'],
+            'instagram_account' => ['platform' => 'instagram', 'method' => 'getMetaInstagramAccounts'],
+            'threads_account' => ['platform' => 'threads', 'method' => 'getThreadsAccounts'],
+        ];
+
+        // Track all integration IDs that should exist after sync
+        $expectedIntegrationIds = [];
+
+        foreach ($assetTypeMapping as $assetType => $config) {
+            if (empty($selectedAssets[$assetType])) {
+                continue;
+            }
+
+            $platform = $config['platform'];
+            $method = $config['method'];
+
+            // Fetch asset details from Meta API
+            $assets = [];
+            try {
+                if ($method === 'getMetaPages') {
+                    $assets = $this->getMetaPages($accessToken);
+                } elseif ($method === 'getMetaInstagramAccounts') {
+                    $pages = $this->getMetaPages($accessToken);
+                    $assets = $this->getMetaInstagramAccounts($accessToken, $pages);
+                } elseif ($method === 'getThreadsAccounts') {
+                    $pages = $this->getMetaPages($accessToken);
+                    $igAccounts = $this->getMetaInstagramAccounts($accessToken, $pages);
+                    $assets = $this->getThreadsAccounts($accessToken, $igAccounts);
+                }
+            } catch (\Exception $e) {
+                Log::error("Failed to fetch {$platform} assets", ['error' => $e->getMessage()]);
+                continue;
+            }
+
+            // Create array keyed by asset ID for easy lookup
+            $assetsById = collect($assets)->keyBy('id')->toArray();
+
+            foreach ($selectedAssets[$assetType] as $assetId) {
+                $assetData = $assetsById[$assetId] ?? null;
+
+                // Determine account name
+                $accountName = 'Unknown';
+                $accountUsername = null;
+                $avatarUrl = null;
+
+                if ($assetData) {
+                    if ($platform === 'facebook') {
+                        $accountName = $assetData['name'] ?? 'Unknown Page';
+                        $avatarUrl = $assetData['picture'] ?? null;
+                    } elseif ($platform === 'instagram') {
+                        $accountName = $assetData['name'] ?? $assetData['username'] ?? 'Unknown Account';
+                        $accountUsername = $assetData['username'] ?? null;
+                        $avatarUrl = $assetData['profile_picture'] ?? null;
+                    } elseif ($platform === 'threads') {
+                        $accountName = $assetData['name'] ?? $assetData['username'] ?? 'Unknown Account';
+                        $accountUsername = $assetData['username'] ?? null;
+                        $avatarUrl = $assetData['profile_picture'] ?? null;
+                    }
+                }
+
+                // Create or update Integration record
+                $integration = Integration::updateOrCreate(
+                    [
+                        'org_id' => $orgId,
+                        'platform' => $platform,
+                        'account_id' => $assetId,
+                    ],
+                    [
+                        'account_name' => $accountName,
+                        'account_username' => $accountUsername,
+                        'avatar_url' => $avatarUrl,
+                        'status' => 'active',
+                        'is_active' => true,
+                        'access_token' => $accessToken, // Share the same access token from platform connection
+                        'metadata' => array_merge($assetData ?? [], [
+                            'connection_id' => $connection->connection_id,
+                            'synced_at' => now()->toIso8601String(),
+                        ]),
+                    ]
+                );
+
+                $expectedIntegrationIds[] = $integration->integration_id;
+            }
+        }
+
+        // Deactivate Integration records that are no longer selected
+        // Only deactivate integrations that were created from this connection
+        Integration::where('org_id', $orgId)
+            ->whereIn('platform', ['facebook', 'instagram', 'threads'])
+            ->where('metadata->connection_id', $connection->connection_id)
+            ->whereNotIn('integration_id', $expectedIntegrationIds)
+            ->update([
+                'is_active' => false,
+                'status' => 'inactive',
+            ]);
+    }
+
+    /**
+     * Sync Integration records for selected Google assets.
+     * Creates individual Integration records for each selected asset (YouTube, Business Profile, etc.)
+     */
+    private function syncGoogleIntegrationRecords(string $orgId, PlatformConnection $connection, array $selectedAssets): void
+    {
+        $accessToken = $connection->access_token;
+
+        // Mapping of asset types to platform names and methods to fetch details
+        $assetTypeMapping = [
+            'youtube_channel' => ['platform' => 'youtube', 'method' => 'getGoogleYouTubeChannels'],
+            'business_profile' => ['platform' => 'google_business', 'method' => 'getGoogleBusinessProfiles'],
+        ];
+
+        // Track all integration IDs that should exist after sync
+        $expectedIntegrationIds = [];
+
+        foreach ($assetTypeMapping as $assetType => $config) {
+            if (empty($selectedAssets[$assetType])) {
+                continue;
+            }
+
+            $platform = $config['platform'];
+            $method = $config['method'];
+
+            // Fetch asset details from Google API
+            $assets = [];
+            try {
+                if ($method === 'getGoogleYouTubeChannels') {
+                    $assets = $this->getGoogleYouTubeChannels($connection);
+                } elseif ($method === 'getGoogleBusinessProfiles') {
+                    $assets = $this->getGoogleBusinessProfiles($connection);
+                }
+            } catch (\Exception $e) {
+                Log::error("Failed to fetch {$platform} assets", ['error' => $e->getMessage()]);
+                continue;
+            }
+
+            // Create array keyed by asset ID for easy lookup
+            $assetsById = collect($assets)->keyBy('id')->toArray();
+
+            foreach ($selectedAssets[$assetType] as $assetId) {
+                $assetData = $assetsById[$assetId] ?? null;
+
+                // Determine account name
+                $accountName = 'Unknown';
+                $accountUsername = null;
+                $avatarUrl = null;
+
+                if ($assetData) {
+                    if ($platform === 'youtube') {
+                        $accountName = $assetData['title'] ?? $assetData['name'] ?? 'Unknown Channel';
+                        $accountUsername = $assetData['custom_url'] ?? $assetData['customUrl'] ?? $assetData['handle'] ?? null;
+                        $avatarUrl = $assetData['thumbnail'] ?? $assetData['thumbnails']['default']['url'] ?? null;
+                    } elseif ($platform === 'google_business') {
+                        $accountName = $assetData['title'] ?? $assetData['name'] ?? 'Unknown Business';
+                        $avatarUrl = $assetData['profile_photo_url'] ?? null;
+                    }
+                }
+
+                // Create or update Integration record
+                $integration = Integration::updateOrCreate(
+                    [
+                        'org_id' => $orgId,
+                        'platform' => $platform,
+                        'account_id' => $assetId,
+                    ],
+                    [
+                        'account_name' => $accountName,
+                        'account_username' => $accountUsername,
+                        'avatar_url' => $avatarUrl,
+                        'status' => 'active',
+                        'is_active' => true,
+                        'access_token' => $accessToken, // Share the same access token from platform connection
+                        'metadata' => array_merge($assetData ?? [], [
+                            'connection_id' => $connection->connection_id,
+                            'synced_at' => now()->toIso8601String(),
+                        ]),
+                    ]
+                );
+
+                $expectedIntegrationIds[] = $integration->integration_id;
+            }
+        }
+
+        // Deactivate Integration records that are no longer selected
+        // Only deactivate integrations that were created from this connection
+        Integration::where('org_id', $orgId)
+            ->whereIn('platform', ['youtube', 'google_business'])
+            ->where('metadata->connection_id', $connection->connection_id)
+            ->whereNotIn('integration_id', $expectedIntegrationIds)
+            ->update([
+                'is_active' => false,
+                'status' => 'inactive',
+            ]);
     }
 }
