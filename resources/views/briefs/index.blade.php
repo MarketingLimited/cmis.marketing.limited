@@ -76,7 +76,7 @@
             </select>
         </div>
 
-        <a href="{{ route('orgs.briefs.create', ['org' => $currentOrg]) }}"
+        <a href="{{ route('orgs.creative.briefs.create', ['org' => $currentOrg]) }}"
            class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 py-3 rounded-lg font-medium hover:shadow-lg transition">
             <i class="fas fa-plus ml-2"></i>
             بريف جديد
@@ -147,12 +147,12 @@
 
                     <!-- Actions -->
                     <div class="flex gap-2 pt-4 border-t">
-                        <a :href="`{{ route('orgs.briefs.show', ['org' => $currentOrg, 'brief' => '']) }}`.slice(0, -1) + brief.brief_id"
+                        <a :href="`/orgs/{{ $currentOrg }}/creative/briefs/${brief.brief_id}`"
                            class="flex-1 bg-indigo-50 text-indigo-600 text-center py-2 rounded-lg font-medium hover:bg-indigo-100 transition">
                             <i class="fas fa-eye ml-2"></i>
                             عرض التفاصيل
                         </a>
-                        <a :href="`{{ route('orgs.briefs.edit', ['org' => $currentOrg, 'brief' => '']) }}`.slice(0, -1) + brief.brief_id"
+                        <a :href="`/orgs/{{ $currentOrg }}/creative/briefs/${brief.brief_id}/edit`"
                            class="bg-gray-50 text-gray-600 px-4 py-2 rounded-lg hover:bg-gray-100 transition">
                             <i class="fas fa-edit"></i>
                         </a>
@@ -173,7 +173,7 @@
             title="لا توجد بريفات"
             description="ابدأ بإنشاء بريف جديد لحملتك التسويقية"
             action-text="إنشاء بريف"
-            :action-url="route('orgs.briefs.create', ['org' => $currentOrg])"
+            :action-url="route('orgs.creative.briefs.create', ['org' => $currentOrg])"
         />
     </template>
 </div>
@@ -240,7 +240,7 @@ function briefsManager() {
             if (!confirm('هل أنت متأكد من حذف هذا البريف؟')) return;
 
             try {
-                const response = await fetch(`{{ route('orgs.briefs.destroy', ['org' => $currentOrg, 'brief' => '']) }}`.slice(0, -1) + briefId, {
+                const response = await fetch(`/orgs/{{ $currentOrg }}/creative/briefs/${briefId}`, {
                     method: 'DELETE',
                     headers: {
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
