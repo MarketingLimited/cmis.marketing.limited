@@ -9,7 +9,7 @@ use App\Models\BaseModel;
 class AiModel extends BaseModel
 {
     use HasOrganization;
-protected $table = 'cmis_refactored.ai_models';
+protected $table = 'cmis.ai_models';
 
     protected $primaryKey = 'model_id';
 

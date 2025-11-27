@@ -109,7 +109,11 @@ class RolesSeeder extends Seeder
         ];
 
         foreach ($roles as $role) {
-            DB::table('cmis.roles')->insert($role);
+            DB::table('cmis.roles')->upsert(
+                $role,
+                ['role_id'], // unique key
+                ['role_name', 'role_code', 'description', 'is_system', 'is_active'] // columns to update
+            );
         }
 
         $this->command->info('Roles seeded successfully!');

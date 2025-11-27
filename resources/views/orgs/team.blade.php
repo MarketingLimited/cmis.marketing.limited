@@ -1,15 +1,26 @@
-@extends('layouts.app')
+@extends('layouts.admin')
 
-@section('title', 'Team Management - ' . $org->name)
+@section('title', __('Team Management') . ' - ' . $orgModel->name)
+
+@php
+    $currentOrg = $currentOrg ?? request()->route('org') ?? auth()->user()->active_org_id ?? auth()->user()->org_id;
+@endphp
 
 @section('content')
-<div class="container mx-auto px-4 py-8" x-data="teamManagement()">
-    {{-- Header --}}
-    <div class="mb-8">
+<div class="space-y-6" x-data="teamManagement()">
+    {{-- Page Header with Breadcrumb --}}
+    <div class="mb-6">
+        <nav class="text-sm text-gray-500 mb-2 flex items-center gap-2">
+            <a href="{{ route('orgs.dashboard.index', $currentOrg) }}" class="hover:text-blue-600 transition">
+                <i class="fas fa-home"></i>
+            </a>
+            <span class="text-gray-400">/</span>
+            <span class="text-gray-900 font-medium">{{ __('Team') }}</span>
+        </nav>
         <div class="flex justify-between items-center">
             <div>
-                <h1 class="text-3xl font-bold text-gray-900">Team Management</h1>
-                <p class="text-gray-600 mt-2">Manage team members and invitations for {{ $org->name }}</p>
+                <h1 class="text-2xl font-bold text-gray-900">{{ __('Team Management') }}</h1>
+                <p class="text-gray-600 mt-1">{{ __('Manage team members and invitations for') }} {{ $orgModel->name }}</p>
             </div>
             <button @click="showInviteModal = true"
                     class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold shadow-lg transition duration-200">
@@ -104,23 +115,23 @@
                                 <div class="flex items-center">
                                     <div class="flex-shrink-0 h-10 w-10">
                                         <div class="h-10 w-10 rounded-full bg-gradient-to-r from-blue-400 to-blue-600 flex items-center justify-center text-white font-bold">
-                                            {{ strtoupper(substr($member->user->name ?? $member->user->email, 0, 2)) }}
+                                            {{ strtoupper(substr($member->user?->name ?? $member->user?->email ?? 'UN', 0, 2)) }}
                                         </div>
                                     </div>
                                     <div class="ml-4">
                                         <div class="text-sm font-medium text-gray-900">
-                                            {{ $member->user->name ?? 'Unknown' }}
+                                            {{ $member->user?->name ?? 'Unknown' }}
                                         </div>
                                         <div class="text-sm text-gray-500">
-                                            {{ $member->user->email }}
+                                            {{ $member->user?->email ?? '-' }}
                                         </div>
                                     </div>
                                 </div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full
-                                    {{ $member->role->name === 'admin' ? 'bg-purple-100 text-purple-800' : 'bg-gray-100 text-gray-800' }}">
-                                    {{ ucfirst($member->role->name ?? 'Member') }}
+                                    {{ ($member->role?->role_code ?? '') === 'admin' ? 'bg-purple-100 text-purple-800' : 'bg-gray-100 text-gray-800' }}">
+                                    {{ $member->role?->role_name ?? 'Member' }}
                                 </span>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
@@ -130,13 +141,13 @@
                                 </span>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                {{ $member->created_at->diffForHumans() }}
+                                {{ $member->joined_at ? $member->joined_at->diffForHumans() : '-' }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                 @if($member->user_id !== auth()->id())
-                                    <button @click="editRole('{{ $member->user_id }}', '{{ $member->role->role_id }}', '{{ $member->user->name ?? $member->user->email }}')"
+                                    <button @click="editRole('{{ $member->user_id }}', '{{ $member->role?->role_id ?? '' }}', '{{ $member->user?->name ?? $member->user?->email ?? '' }}')"
                                             class="text-blue-600 hover:text-blue-900 mr-3">Edit Role</button>
-                                    <button @click="removeMember('{{ $member->user_id }}', '{{ $member->user->name ?? $member->user->email }}')"
+                                    <button @click="removeMember('{{ $member->user_id }}', '{{ $member->user?->name ?? $member->user?->email ?? '' }}')"
                                             class="text-red-600 hover:text-red-900">Remove</button>
                                 @else
                                     <span class="text-gray-400">You</span>
@@ -184,18 +195,18 @@
                     <tbody class="bg-white divide-y divide-gray-200">
                         @foreach($pendingInvitations as $invitation)
                             <tr>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $invitation->email }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $invitation->invited_email }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    {{ $roles->firstWhere('role_id', $invitation->role_id)->name ?? 'Unknown' }}
+                                    {{ $roles->firstWhere('role_id', $invitation->role_id)->role_name ?? 'Unknown' }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    {{ \Carbon\Carbon::parse($invitation->created_at)->diffForHumans() }}
+                                    {{ $invitation->sent_at ? \Carbon\Carbon::parse($invitation->sent_at)->diffForHumans() : '-' }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    {{ \Carbon\Carbon::parse($invitation->expires_at)->diffForHumans() }}
+                                    {{ $invitation->expires_at ? \Carbon\Carbon::parse($invitation->expires_at)->diffForHumans() : '-' }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                    <button @click="cancelInvitation('{{ $invitation->email }}')"
+                                    <button @click="cancelInvitation('{{ $invitation->invited_email }}')"
                                             class="text-red-600 hover:text-red-900">Cancel</button>
                                 </td>
                             </tr>
@@ -233,7 +244,7 @@
                  x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
                  class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
 
-                <form method="POST" action="{{ route('orgs.team.invite', $org->org_id) }}">
+                <form method="POST" action="{{ route('orgs.team.invite', $orgModel->org_id) }}">
                     @csrf
                     <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                         <div class="sm:flex sm:items-start">
@@ -257,7 +268,7 @@
                                                 required
                                                 class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
                                             @foreach($roles as $role)
-                                                <option value="{{ $role->role_id }}">{{ ucfirst($role->name) }}</option>
+                                                <option value="{{ $role->role_id }}">{{ $role->role_name }}</option>
                                             @endforeach
                                         </select>
                                     </div>
@@ -332,7 +343,7 @@
                                             id="edit_role_id"
                                             class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
                                         @foreach($roles as $role)
-                                            <option value="{{ $role->role_id }}">{{ ucfirst($role->name) }}</option>
+                                            <option value="{{ $role->role_id }}">{{ $role->role_name }}</option>
                                         @endforeach
                                     </select>
                                 </div>
@@ -397,7 +408,7 @@ function teamManagement() {
             }
 
             try {
-                const orgId = '{{ $org->org_id }}';
+                const orgId = '{{ $orgModel->org_id }}';
                 const response = await fetch(`/api/orgs/${orgId}/members/${this.editingUser.id}/role`, {
                     method: 'PUT',
                     headers: {
@@ -434,7 +445,7 @@ function teamManagement() {
             }
 
             try {
-                const orgId = '{{ $org->org_id }}';
+                const orgId = '{{ $orgModel->org_id }}';
                 const response = await fetch(`/api/orgs/${orgId}/members/${userId}`, {
                     method: 'DELETE',
                     headers: {
@@ -467,7 +478,7 @@ function teamManagement() {
             }
 
             try {
-                const orgId = '{{ $org->org_id }}';
+                const orgId = '{{ $orgModel->org_id }}';
                 const response = await fetch(`/api/orgs/${orgId}/invitations/${encodeURIComponent(email)}`, {
                     method: 'DELETE',
                     headers: {

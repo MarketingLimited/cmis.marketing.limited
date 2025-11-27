@@ -58,6 +58,29 @@
             background: #555;
         }
 
+        /* Dark sidebar scrollbar */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(100, 116, 139, 0.3);
+            border-radius: 4px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: rgba(100, 116, 139, 0.5);
+        }
+
+        /* Sidebar menu item hover glow effect */
+        .sidebar-item-glow {
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+        }
+
         /* Animation classes */
         .fade-in {
             animation: fadeIn 0.3s ease-in;
@@ -184,6 +207,51 @@
         .z-\[70\] {
             z-index: 70;
         }
+
+        /* Mobile sidebar optimizations */
+        @media (max-width: 1023px) {
+            /* iOS safe area support for sidebar */
+            aside {
+                padding-bottom: env(safe-area-inset-bottom, 0);
+            }
+
+            /* Momentum scrolling for iOS */
+            .custom-scrollbar {
+                -webkit-overflow-scrolling: touch;
+            }
+
+            /* Prevent rubber-banding while scrolling */
+            .overscroll-contain {
+                overscroll-behavior: contain;
+            }
+
+            /* Better touch target sizing for menu items */
+            aside a, aside button {
+                min-height: 48px;
+            }
+        }
+
+        /* Sidebar swipe indicator (visual hint) */
+        aside::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            right: 0;
+            transform: translateY(-50%);
+            width: 4px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px 0 0 4px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        @media (max-width: 1023px) {
+            aside:hover::before,
+            aside:active::before {
+                opacity: 1;
+            }
+        }
     </style>
 
     @stack('styles')
@@ -221,7 +289,7 @@
     </div>
 
     <!-- Main Container -->
-    <div class="flex h-screen overflow-hidden">
+    <div class="flex h-screen overflow-hidden" @close-sidebar.window="sidebarOpen = false">
 
         <!-- Mobile Overlay -->
         <div x-show="sidebarOpen"
@@ -237,93 +305,269 @@
 
         <!-- Sidebar -->
         <aside :class="sidebarOpen ? 'translate-x-0' : 'translate-x-full'"
-               class="fixed inset-y-0 right-0 z-40 w-80 lg:w-64 bg-white dark:bg-gray-800 shadow-xl transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0">
+               class="fixed inset-y-0 right-0 z-40 w-72 lg:w-64 bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 shadow-2xl transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0"
+               x-data="sidebarMenu()"
+               @touchstart.passive="handleTouchStart($event)"
+               @touchmove.passive="handleTouchMove($event)"
+               @touchend="handleTouchEnd($event)">
 
-            <!-- Logo -->
-            <div class="flex items-center justify-between h-16 px-6 bg-gradient-to-r from-blue-600 to-purple-600">
-                <div class="flex items-center space-x-3 space-x-reverse">
-                    <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center">
-                        <i class="fas fa-brain text-blue-600 text-xl"></i>
+            <!-- Logo Section -->
+            <div class="flex items-center justify-between h-16 px-4 border-b border-slate-700/50">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/25">
+                        <i class="fas fa-brain text-white text-lg"></i>
                     </div>
-                    <h1 class="text-xl font-bold text-white">CMIS</h1>
+                    <div>
+                        <h1 class="text-lg font-bold text-white tracking-wide">CMIS</h1>
+                        <p class="text-[10px] text-slate-400 -mt-0.5">Marketing Intelligence</p>
+                    </div>
                 </div>
-                <button @click="toggleSidebar()" class="lg:hidden text-white hover:bg-white/10 p-2 rounded-lg transition-colors">
-                    <i class="fas fa-times text-xl"></i>
+                <button @click="toggleSidebar()" class="lg:hidden text-slate-400 hover:text-white hover:bg-slate-700/50 p-2 rounded-lg transition-all">
+                    <i class="fas fa-times text-lg"></i>
                 </button>
             </div>
 
+            <!-- Quick Search -->
+            <div class="px-4 py-3">
+                <div class="relative">
+                    <input type="text"
+                           x-model="searchQuery"
+                           @input="performSearch()"
+                           @keydown.escape="clearSearch()"
+                           placeholder="بحث سريع..."
+                           class="w-full bg-slate-800/50 border border-slate-700/50 text-slate-300 text-sm rounded-lg pr-9 pl-8 py-2 placeholder-slate-500 focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all">
+                    <i class="fas fa-search absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm"></i>
+                    <button x-show="searchQuery.length > 0"
+                            @click="clearSearch()"
+                            class="absolute left-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200 transition-colors">
+                        <i class="fas fa-times text-xs"></i>
+                    </button>
+                </div>
+
+                <!-- Search Results Dropdown -->
+                <div x-show="isSearching && searchResults.length > 0"
+                     x-transition:enter="transition ease-out duration-200"
+                     x-transition:enter-start="opacity-0 transform -translate-y-2"
+                     x-transition:enter-end="opacity-100 transform translate-y-0"
+                     x-transition:leave="transition ease-in duration-150"
+                     x-transition:leave-start="opacity-100"
+                     x-transition:leave-end="opacity-0"
+                     class="mt-2 bg-slate-800 border border-slate-700/50 rounded-lg overflow-hidden shadow-xl">
+                    <template x-for="result in searchResults" :key="result.route">
+                        <button @click="navigateTo(result.route)"
+                                class="w-full flex items-center gap-3 px-3 py-2.5 text-slate-300 hover:bg-slate-700/50 hover:text-white transition-all text-sm">
+                            <div class="w-8 h-8 rounded-lg bg-slate-700/50 flex items-center justify-center text-slate-400">
+                                <i class="fas" :class="result.icon"></i>
+                            </div>
+                            <span x-text="result.name"></span>
+                        </button>
+                    </template>
+                </div>
+
+                <!-- No Results -->
+                <div x-show="isSearching && searchQuery.length > 0 && searchResults.length === 0"
+                     class="mt-2 p-3 bg-slate-800/50 border border-slate-700/50 rounded-lg text-center">
+                    <p class="text-slate-500 text-xs">لا توجد نتائج لـ "<span x-text="searchQuery" class="text-slate-400"></span>"</p>
+                </div>
+            </div>
+
             <!-- Navigation -->
-            <nav class="px-3 sm:px-4 py-4 sm:py-6 space-y-1 sm:space-y-2 overflow-y-auto h-[calc(100vh-4rem)]">
+            <nav class="px-3 py-2 overflow-y-auto h-[calc(100vh-14rem)] pb-20 custom-scrollbar overscroll-contain">
                 @php
-                    // Priority: URL route parameter > user's current org > user's default org
                     $currentOrg = request()->route('org') ?? auth()->user()->current_org_id ?? auth()->user()->org_id;
                 @endphp
 
                 @if($currentOrg)
+
+                <!-- Dashboard -->
                 <a href="{{ route('orgs.dashboard.index', ['org' => $currentOrg]) }}"
-                   class="flex items-center px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base text-gray-700 dark:text-gray-300 rounded-lg hover:bg-blue-50 dark:hover:bg-gray-700 transition {{ request()->routeIs('dashboard.*') ? 'bg-blue-50 text-blue-600 font-semibold' : '' }}">
-                    <i class="fas fa-home text-base sm:text-lg w-5 sm:w-6"></i>
-                    <span class="mr-2 sm:mr-3">الرئيسية</span>
+                   class="group flex items-center gap-3 px-3 py-2.5 rounded-xl mb-1 transition-all duration-200
+                          {{ request()->routeIs('orgs.dashboard.*') ? 'bg-gradient-to-l from-blue-600/20 to-purple-600/20 text-white border-r-2 border-blue-500' : 'text-slate-400 hover:text-white hover:bg-slate-700/30' }}">
+                    <div class="w-9 h-9 rounded-lg flex items-center justify-center transition-all
+                                {{ request()->routeIs('orgs.dashboard.*') ? 'bg-gradient-to-br from-blue-500 to-purple-600 text-white shadow-lg shadow-blue-500/25' : 'bg-slate-800 text-slate-400 group-hover:bg-slate-700 group-hover:text-white' }}">
+                        <i class="fas fa-home text-sm"></i>
+                    </div>
+                    <span class="font-medium text-sm">الرئيسية</span>
                 </a>
 
-                <div class="pt-3 sm:pt-4 pb-1 sm:pb-2 text-[10px] sm:text-xs font-semibold text-gray-400 uppercase px-3 sm:px-4">الإدارة</div>
+                <!-- Marketing Section -->
+                <div class="mt-4 mb-2">
+                    <p class="px-3 text-[10px] font-semibold text-slate-500 uppercase tracking-wider">التسويق</p>
+                </div>
 
-                <a href="{{ route('orgs.index') }}"
-                   class="flex items-center px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base text-gray-700 dark:text-gray-300 rounded-lg hover:bg-blue-50 dark:hover:bg-gray-700 transition {{ request()->routeIs('orgs.*') ? 'bg-blue-50 text-blue-600 font-semibold' : '' }}">
-                    <i class="fas fa-building text-base sm:text-lg w-5 sm:w-6"></i>
-                    <span class="mr-2 sm:mr-3">المؤسسات</span>
-                </a>
+                <!-- Campaigns with submenu -->
+                <div x-data="{ open: {{ request()->routeIs('orgs.campaigns.*') ? 'true' : 'false' }} }">
+                    <button @click="open = !open"
+                            class="group w-full flex items-center justify-between gap-3 px-3 py-2.5 rounded-xl mb-1 transition-all duration-200
+                                   {{ request()->routeIs('orgs.campaigns.*') ? 'bg-gradient-to-l from-blue-600/20 to-purple-600/20 text-white' : 'text-slate-400 hover:text-white hover:bg-slate-700/30' }}">
+                        <div class="flex items-center gap-3">
+                            <div class="w-9 h-9 rounded-lg flex items-center justify-center transition-all
+                                        {{ request()->routeIs('orgs.campaigns.*') ? 'bg-gradient-to-br from-orange-500 to-pink-600 text-white shadow-lg shadow-orange-500/25' : 'bg-slate-800 text-slate-400 group-hover:bg-slate-700 group-hover:text-white' }}">
+                                <i class="fas fa-bullhorn text-sm"></i>
+                            </div>
+                            <span class="font-medium text-sm">الحملات</span>
+                        </div>
+                        <i class="fas fa-chevron-down text-xs transition-transform duration-200" :class="{ 'rotate-180': open }"></i>
+                    </button>
+                    <div x-show="open" x-collapse class="mr-6 space-y-1">
+                        <a href="{{ route('orgs.campaigns.index', ['org' => $currentOrg]) }}"
+                           class="flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition-all
+                                  {{ request()->routeIs('orgs.campaigns.index') ? 'text-blue-400 bg-slate-800/50' : 'text-slate-400 hover:text-white hover:bg-slate-800/30' }}">
+                            <i class="fas fa-list text-xs w-4"></i>
+                            <span>جميع الحملات</span>
+                        </a>
+                        <a href="{{ route('orgs.campaigns.create', ['org' => $currentOrg]) }}"
+                           class="flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition-all text-slate-400 hover:text-white hover:bg-slate-800/30">
+                            <i class="fas fa-plus text-xs w-4"></i>
+                            <span>حملة جديدة</span>
+                        </a>
+                    </div>
+                </div>
 
-                <a href="{{ route('orgs.campaigns.index', ['org' => $currentOrg]) }}"
-                   class="flex items-center px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base text-gray-700 dark:text-gray-300 rounded-lg hover:bg-blue-50 dark:hover:bg-gray-700 transition {{ request()->routeIs('campaigns.*') ? 'bg-blue-50 text-blue-600 font-semibold' : '' }}">
-                    <i class="fas fa-bullhorn text-base sm:text-lg w-5 sm:w-6"></i>
-                    <span class="mr-2 sm:mr-3">الحملات</span>
-                </a>
-
-                <div class="pt-3 sm:pt-4 pb-1 sm:pb-2 text-[10px] sm:text-xs font-semibold text-gray-400 uppercase px-3 sm:px-4">المحتوى</div>
-
-                <a href="{{ route('orgs.creative.assets.index', ['org' => $currentOrg]) }}"
-                   class="flex items-center px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base text-gray-700 dark:text-gray-300 rounded-lg hover:bg-blue-50 dark:hover:bg-gray-700 transition {{ request()->routeIs('creative.*') ? 'bg-blue-50 text-blue-600 font-semibold' : '' }}">
-                    <i class="fas fa-palette text-base sm:text-lg w-5 sm:w-6"></i>
-                    <span class="mr-2 sm:mr-3">الإبداع</span>
-                </a>
-
-                <a href="{{ route('orgs.social.index', ['org' => $currentOrg]) }}"
-                   class="flex items-center px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base text-gray-700 dark:text-gray-300 rounded-lg hover:bg-blue-50 dark:hover:bg-gray-700 transition {{ request()->routeIs('social.*') ? 'bg-blue-50 text-blue-600 font-semibold' : '' }}">
-                    <i class="fas fa-share-alt text-base sm:text-lg w-5 sm:w-6"></i>
-                    <span class="mr-2 sm:mr-3 text-sm sm:text-base">القنوات الاجتماعية</span>
-                </a>
-
-                <div class="pt-3 sm:pt-4 pb-1 sm:pb-2 text-[10px] sm:text-xs font-semibold text-gray-400 uppercase px-3 sm:px-4">التحليلات</div>
-
+                <!-- Analytics -->
                 <a href="{{ route('orgs.analytics.index', ['org' => $currentOrg]) }}"
-                   class="flex items-center px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base text-gray-700 dark:text-gray-300 rounded-lg hover:bg-blue-50 dark:hover:bg-gray-700 transition {{ request()->routeIs('analytics.*') ? 'bg-blue-50 text-blue-600 font-semibold' : '' }}">
-                    <i class="fas fa-chart-line text-base sm:text-lg w-5 sm:w-6"></i>
-                    <span class="mr-2 sm:mr-3">التحليلات</span>
+                   class="group flex items-center gap-3 px-3 py-2.5 rounded-xl mb-1 transition-all duration-200
+                          {{ request()->routeIs('orgs.analytics.*') ? 'bg-gradient-to-l from-blue-600/20 to-purple-600/20 text-white border-r-2 border-blue-500' : 'text-slate-400 hover:text-white hover:bg-slate-700/30' }}">
+                    <div class="w-9 h-9 rounded-lg flex items-center justify-center transition-all
+                                {{ request()->routeIs('orgs.analytics.*') ? 'bg-gradient-to-br from-green-500 to-emerald-600 text-white shadow-lg shadow-green-500/25' : 'bg-slate-800 text-slate-400 group-hover:bg-slate-700 group-hover:text-white' }}">
+                        <i class="fas fa-chart-line text-sm"></i>
+                    </div>
+                    <span class="font-medium text-sm">التحليلات</span>
+                    <span class="mr-auto px-2 py-0.5 text-[10px] font-bold bg-green-500/20 text-green-400 rounded-full">Live</span>
                 </a>
 
-                <div class="pt-3 sm:pt-4 pb-1 sm:pb-2 text-[10px] sm:text-xs font-semibold text-gray-400 uppercase px-3 sm:px-4">الذكاء الاصطناعي</div>
+                <!-- Content Section -->
+                <div class="mt-4 mb-2">
+                    <p class="px-3 text-[10px] font-semibold text-slate-500 uppercase tracking-wider">المحتوى</p>
+                </div>
+
+                <!-- Creative Assets -->
+                <a href="{{ route('orgs.creative.assets.index', ['org' => $currentOrg]) }}"
+                   class="group flex items-center gap-3 px-3 py-2.5 rounded-xl mb-1 transition-all duration-200
+                          {{ request()->routeIs('orgs.creative.*') ? 'bg-gradient-to-l from-blue-600/20 to-purple-600/20 text-white border-r-2 border-blue-500' : 'text-slate-400 hover:text-white hover:bg-slate-700/30' }}">
+                    <div class="w-9 h-9 rounded-lg flex items-center justify-center transition-all
+                                {{ request()->routeIs('orgs.creative.*') ? 'bg-gradient-to-br from-pink-500 to-rose-600 text-white shadow-lg shadow-pink-500/25' : 'bg-slate-800 text-slate-400 group-hover:bg-slate-700 group-hover:text-white' }}">
+                        <i class="fas fa-palette text-sm"></i>
+                    </div>
+                    <span class="font-medium text-sm">الأصول الإبداعية</span>
+                </a>
+
+                <!-- Social Media -->
+                <a href="{{ route('orgs.social.index', ['org' => $currentOrg]) }}"
+                   class="group flex items-center gap-3 px-3 py-2.5 rounded-xl mb-1 transition-all duration-200
+                          {{ request()->routeIs('orgs.social.*') ? 'bg-gradient-to-l from-blue-600/20 to-purple-600/20 text-white border-r-2 border-blue-500' : 'text-slate-400 hover:text-white hover:bg-slate-700/30' }}">
+                    <div class="w-9 h-9 rounded-lg flex items-center justify-center transition-all
+                                {{ request()->routeIs('orgs.social.*') ? 'bg-gradient-to-br from-blue-500 to-cyan-600 text-white shadow-lg shadow-blue-500/25' : 'bg-slate-800 text-slate-400 group-hover:bg-slate-700 group-hover:text-white' }}">
+                        <i class="fas fa-share-nodes text-sm"></i>
+                    </div>
+                    <span class="font-medium text-sm">التواصل الاجتماعي</span>
+                </a>
+
+                <!-- Products -->
+                <a href="{{ route('orgs.products', ['org' => $currentOrg]) }}"
+                   class="group flex items-center gap-3 px-3 py-2.5 rounded-xl mb-1 transition-all duration-200
+                          {{ request()->routeIs('orgs.products*') ? 'bg-gradient-to-l from-blue-600/20 to-purple-600/20 text-white border-r-2 border-blue-500' : 'text-slate-400 hover:text-white hover:bg-slate-700/30' }}">
+                    <div class="w-9 h-9 rounded-lg flex items-center justify-center transition-all
+                                {{ request()->routeIs('orgs.products*') ? 'bg-gradient-to-br from-amber-500 to-orange-600 text-white shadow-lg shadow-amber-500/25' : 'bg-slate-800 text-slate-400 group-hover:bg-slate-700 group-hover:text-white' }}">
+                        <i class="fas fa-box text-sm"></i>
+                    </div>
+                    <span class="font-medium text-sm">المنتجات</span>
+                </a>
+
+                <!-- AI Section -->
+                <div class="mt-4 mb-2">
+                    <p class="px-3 text-[10px] font-semibold text-slate-500 uppercase tracking-wider">الذكاء الاصطناعي</p>
+                </div>
 
                 <a href="{{ route('orgs.ai.index', ['org' => $currentOrg]) }}"
-                   class="flex items-center px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base text-gray-700 dark:text-gray-300 rounded-lg hover:bg-blue-50 dark:hover:bg-gray-700 transition {{ request()->routeIs('ai.*') ? 'bg-blue-50 text-blue-600 font-semibold' : '' }}">
-                    <i class="fas fa-robot text-base sm:text-lg w-5 sm:w-6"></i>
-                    <span class="mr-2 sm:mr-3">الذكاء الاصطناعي</span>
+                   class="group flex items-center gap-3 px-3 py-2.5 rounded-xl mb-1 transition-all duration-200
+                          {{ request()->routeIs('orgs.ai.*') ? 'bg-gradient-to-l from-blue-600/20 to-purple-600/20 text-white border-r-2 border-blue-500' : 'text-slate-400 hover:text-white hover:bg-slate-700/30' }}">
+                    <div class="w-9 h-9 rounded-lg flex items-center justify-center transition-all
+                                {{ request()->routeIs('orgs.ai.*') ? 'bg-gradient-to-br from-violet-500 to-purple-600 text-white shadow-lg shadow-violet-500/25' : 'bg-slate-800 text-slate-400 group-hover:bg-slate-700 group-hover:text-white' }}">
+                        <i class="fas fa-robot text-sm"></i>
+                    </div>
+                    <span class="font-medium text-sm">مساعد الذكاء</span>
+                    <span class="mr-auto px-2 py-0.5 text-[10px] font-bold bg-purple-500/20 text-purple-400 rounded-full">AI</span>
                 </a>
 
-                <div class="pt-3 sm:pt-4 pb-1 sm:pb-2 text-[10px] sm:text-xs font-semibold text-gray-400 uppercase px-3 sm:px-4">الإعدادات</div>
+                <!-- Communication Section -->
+                <div class="mt-4 mb-2">
+                    <p class="px-3 text-[10px] font-semibold text-slate-500 uppercase tracking-wider">التواصل</p>
+                </div>
 
-                <a href="{{ route('orgs.products', ['org' => $currentOrg]) }}"
-                   class="flex items-center px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base text-gray-700 dark:text-gray-300 rounded-lg hover:bg-blue-50 dark:hover:bg-gray-700 transition {{ request()->routeIs('orgs.products') || request()->routeIs('orgs.services') ? 'bg-blue-50 text-blue-600 font-semibold' : '' }}">
-                    <i class="fas fa-box text-base sm:text-lg w-5 sm:w-6"></i>
-                    <span class="mr-2 sm:mr-3">المنتجات</span>
+                <a href="{{ route('orgs.inbox.index', ['org' => $currentOrg]) }}"
+                   class="group flex items-center gap-3 px-3 py-2.5 rounded-xl mb-1 transition-all duration-200
+                          {{ request()->routeIs('orgs.inbox.*') ? 'bg-gradient-to-l from-blue-600/20 to-purple-600/20 text-white border-r-2 border-blue-500' : 'text-slate-400 hover:text-white hover:bg-slate-700/30' }}">
+                    <div class="w-9 h-9 rounded-lg flex items-center justify-center transition-all relative
+                                {{ request()->routeIs('orgs.inbox.*') ? 'bg-gradient-to-br from-indigo-500 to-blue-600 text-white shadow-lg shadow-indigo-500/25' : 'bg-slate-800 text-slate-400 group-hover:bg-slate-700 group-hover:text-white' }}">
+                        <i class="fas fa-inbox text-sm"></i>
+                    </div>
+                    <span class="font-medium text-sm">صندوق الوارد</span>
+                    <span class="mr-auto w-5 h-5 flex items-center justify-center text-[10px] font-bold bg-red-500 text-white rounded-full">3</span>
                 </a>
+
+                <!-- Settings Section -->
+                <div class="mt-4 mb-2">
+                    <p class="px-3 text-[10px] font-semibold text-slate-500 uppercase tracking-wider">الإعدادات</p>
+                </div>
+
+                <a href="{{ route('orgs.settings.index', ['org' => $currentOrg]) }}"
+                   class="group flex items-center gap-3 px-3 py-2.5 rounded-xl mb-1 transition-all duration-200
+                          {{ request()->routeIs('orgs.settings.*') ? 'bg-gradient-to-l from-blue-600/20 to-purple-600/20 text-white border-r-2 border-blue-500' : 'text-slate-400 hover:text-white hover:bg-slate-700/30' }}">
+                    <div class="w-9 h-9 rounded-lg flex items-center justify-center transition-all
+                                {{ request()->routeIs('orgs.settings.*') ? 'bg-gradient-to-br from-slate-500 to-slate-600 text-white shadow-lg shadow-slate-500/25' : 'bg-slate-800 text-slate-400 group-hover:bg-slate-700 group-hover:text-white' }}">
+                        <i class="fas fa-cog text-sm"></i>
+                    </div>
+                    <span class="font-medium text-sm">الإعدادات</span>
+                </a>
+
+                <a href="{{ route('orgs.team.index', ['org' => $currentOrg]) }}"
+                   class="group flex items-center gap-3 px-3 py-2.5 rounded-xl mb-1 transition-all duration-200
+                          {{ request()->routeIs('orgs.team.*') ? 'bg-gradient-to-l from-blue-600/20 to-purple-600/20 text-white border-r-2 border-blue-500' : 'text-slate-400 hover:text-white hover:bg-slate-700/30' }}">
+                    <div class="w-9 h-9 rounded-lg flex items-center justify-center transition-all
+                                {{ request()->routeIs('orgs.team.*') ? 'bg-gradient-to-br from-teal-500 to-cyan-600 text-white shadow-lg shadow-teal-500/25' : 'bg-slate-800 text-slate-400 group-hover:bg-slate-700 group-hover:text-white' }}">
+                        <i class="fas fa-users text-sm"></i>
+                    </div>
+                    <span class="font-medium text-sm">الفريق</span>
+                </a>
+
+                <a href="{{ route('orgs.index') }}"
+                   class="group flex items-center gap-3 px-3 py-2.5 rounded-xl mb-1 transition-all duration-200 text-slate-400 hover:text-white hover:bg-slate-700/30">
+                    <div class="w-9 h-9 rounded-lg flex items-center justify-center transition-all bg-slate-800 text-slate-400 group-hover:bg-slate-700 group-hover:text-white">
+                        <i class="fas fa-building text-sm"></i>
+                    </div>
+                    <span class="font-medium text-sm">كل المؤسسات</span>
+                </a>
+
                 @else
-                <div class="px-4 py-3 text-gray-600 dark:text-gray-400 text-sm">
-                    الرجاء اختيار منظمة للمتابعة
+                <div class="px-4 py-8 text-center">
+                    <div class="w-16 h-16 bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <i class="fas fa-building text-2xl text-slate-500"></i>
+                    </div>
+                    <p class="text-slate-400 text-sm">الرجاء اختيار مؤسسة للمتابعة</p>
                 </div>
                 @endif
 
             </nav>
+
+            <!-- User Profile Section (Bottom) -->
+            <div class="absolute bottom-0 left-0 right-0 p-3 border-t border-slate-700/50 bg-slate-900/50 backdrop-blur-sm">
+                <div class="flex items-center gap-3 p-2 rounded-xl hover:bg-slate-800/50 transition-all cursor-pointer">
+                    <img src="https://ui-avatars.com/api/?name={{ urlencode(auth()->user()->name ?? 'User') }}&background=6366f1&color=fff&size=40"
+                         class="w-10 h-10 rounded-xl ring-2 ring-slate-700"
+                         alt="صورة المستخدم">
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-medium text-white truncate">{{ auth()->user()->name ?? 'المستخدم' }}</p>
+                        <p class="text-xs text-slate-400 truncate">{{ auth()->user()->email ?? '' }}</p>
+                    </div>
+                    <form method="POST" action="{{ route('logout') }}">
+                        @csrf
+                        <button type="submit" class="p-2 text-slate-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all" title="تسجيل الخروج">
+                            <i class="fas fa-sign-out-alt"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
         </aside>
 
         <!-- Main Content -->
@@ -338,9 +582,9 @@
                     </button>
 
                     <!-- Organization Switcher -->
-                    <div class="relative" x-data="orgSwitcher()" x-init="init()" @click="console.log('Alpine.js is working!')">
+                    <div class="relative" x-data="orgSwitcher()" x-init="init()">
                         <!-- Desktop & Tablet: Dropdown Button -->
-                        <button @click="console.log('Button clicked!'); toggleOrgMenu();"
+                        <button @click.stop="toggleOrgMenu()"
                                 :aria-expanded="orgMenuOpen"
                                 aria-label="تبديل المؤسسة"
                                 class="hidden sm:flex items-center gap-2 px-3 py-2 text-sm bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 border border-blue-200 dark:border-blue-800 text-gray-700 dark:text-gray-300 rounded-lg hover:shadow-md transition-all">
@@ -351,7 +595,7 @@
                         </button>
 
                         <!-- Mobile: Compact Button -->
-                        <button @click="toggleOrgMenu()"
+                        <button @click.stop="toggleOrgMenu()"
                                 :aria-expanded="orgMenuOpen"
                                 aria-label="تبديل المؤسسة"
                                 class="sm:hidden flex items-center justify-center w-10 h-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg text-white font-bold text-sm shadow-md">
@@ -365,10 +609,19 @@
                              x-cloak></div>
 
                         <!-- Desktop: Dropdown | Mobile: Bottom Sheet -->
+                        <!-- RTL Fix: Use right-0 to align dropdown's right edge with button's right edge -->
+                        <!-- This makes the dropdown extend LEFTWARD (towards center) where there's viewport space -->
                         <div x-show="orgMenuOpen"
-                             @click.away="orgMenuOpen = false"
-                             class="fixed left-0 right-0 bottom-0 sm:absolute sm:right-0 sm:left-auto sm:top-full sm:mt-2
-                                    w-full sm:w-80
+                             x-transition:enter="transition ease-out duration-200"
+                             x-transition:enter-start="opacity-0 transform scale-95"
+                             x-transition:enter-end="opacity-100 transform scale-100"
+                             x-transition:leave="transition ease-in duration-100"
+                             x-transition:leave-start="opacity-100 transform scale-100"
+                             x-transition:leave-end="opacity-0 transform scale-95"
+                             @click.outside="orgMenuOpen = false"
+                             class="fixed inset-x-0 bottom-0
+                                    sm:absolute sm:inset-auto sm:right-0 sm:top-full sm:mt-2
+                                    w-full sm:w-80 sm:max-w-[calc(100vw-2rem)]
                                     bg-white dark:bg-gray-800
                                     rounded-t-2xl sm:rounded-lg
                                     shadow-2xl sm:shadow-xl
@@ -392,8 +645,9 @@
                                            x-model="searchQuery"
                                            @input="filterOrgs()"
                                            placeholder="البحث عن مؤسسة..."
-                                           class="w-full px-3 py-2 text-sm bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                                    <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+                                           class="w-full pr-10 pl-3 py-2 text-sm bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                    <!-- Search icon on right (natural position for RTL Arabic UI) -->
+                                    <i class="fas fa-search absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm pointer-events-none"></i>
                                 </div>
                             </div>
 
@@ -414,7 +668,7 @@
                                 </template>
 
                                 <!-- Organizations -->
-                                <template x-for="org in filteredOrgs" :key="org.org_id">
+                                <template x-for="(org, index) in filteredOrgs" :key="index">
                                     <button @click="switchOrg(org.org_id)"
                                             :disabled="org.is_current || switching"
                                             class="w-full px-4 py-3 sm:py-4 flex items-center gap-3 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors border-b border-gray-100 dark:border-gray-700 last:border-0 disabled:opacity-50"
@@ -701,6 +955,10 @@
                 searchQuery: '',
 
                 async init() {
+                    // Prevent double initialization
+                    if (this._initialized) return;
+                    this._initialized = true;
+
                     console.log('[ORG SWITCHER] Initializing...');
                     try {
                         await this.loadOrganizations();
@@ -739,10 +997,18 @@
                             console.log('URL org ID:', urlOrgId);
 
                             // Mark the URL org as current, not the API response
-                            this.organizations = (data.organizations || []).map(org => ({
-                                ...org,
-                                is_current: urlOrgId ? (org.org_id === urlOrgId) : org.is_current
-                            }));
+                            // Also remove duplicates by org_id
+                            const seen = new Set();
+                            this.organizations = (data.organizations || [])
+                                .filter(org => {
+                                    if (!org.org_id || seen.has(org.org_id)) return false;
+                                    seen.add(org.org_id);
+                                    return true;
+                                })
+                                .map(org => ({
+                                    ...org,
+                                    is_current: urlOrgId ? (org.org_id === urlOrgId) : org.is_current
+                                }));
                             this.filteredOrgs = this.organizations;
 
                             this.currentOrg = this.organizations.find(org => org.is_current) || null;
@@ -1022,6 +1288,105 @@
                         'system': 'bg-gray-100 text-gray-600'
                     };
                     return colors[type] || 'bg-gray-100 text-gray-600';
+                }
+            };
+        }
+
+        // Sidebar Menu Controller
+        function sidebarMenu() {
+            return {
+                searchQuery: '',
+                searchResults: [],
+                isSearching: false,
+                touchStartX: 0,
+                touchStartY: 0,
+                touchEndX: 0,
+                swipeThreshold: 50, // minimum swipe distance
+
+                // Touch gesture handlers for swipe-to-close on mobile (RTL: swipe left to close)
+                handleTouchStart(event) {
+                    this.touchStartX = event.touches[0].clientX;
+                    this.touchStartY = event.touches[0].clientY;
+                },
+
+                handleTouchMove(event) {
+                    this.touchEndX = event.touches[0].clientX;
+                },
+
+                handleTouchEnd(event) {
+                    // Only handle swipe on mobile
+                    if (window.innerWidth >= 1024) return;
+
+                    const deltaX = this.touchEndX - this.touchStartX;
+                    const deltaY = Math.abs(event.changedTouches[0].clientY - this.touchStartY);
+
+                    // Ensure it's a horizontal swipe (not vertical scrolling)
+                    if (deltaY > 50) return;
+
+                    // RTL layout: swipe LEFT (negative deltaX) to close sidebar
+                    if (deltaX < -this.swipeThreshold) {
+                        // Close sidebar via parent component
+                        this.$dispatch('close-sidebar');
+                    }
+                },
+
+                // Menu items for quick search
+                menuItems: [
+                    { name: 'الرئيسية', icon: 'fa-home', route: 'dashboard', keywords: ['رئيسية', 'home', 'dashboard', 'لوحة'] },
+                    { name: 'الحملات', icon: 'fa-bullhorn', route: 'campaigns', keywords: ['حملات', 'campaigns', 'اعلانات', 'تسويق'] },
+                    { name: 'التحليلات', icon: 'fa-chart-line', route: 'analytics', keywords: ['تحليلات', 'analytics', 'احصائيات', 'تقارير'] },
+                    { name: 'الأصول الإبداعية', icon: 'fa-palette', route: 'creative', keywords: ['اصول', 'ابداعية', 'creative', 'assets', 'صور', 'فيديو'] },
+                    { name: 'التواصل الاجتماعي', icon: 'fa-share-nodes', route: 'social', keywords: ['تواصل', 'اجتماعي', 'social', 'فيسبوك', 'تويتر', 'انستغرام'] },
+                    { name: 'المنتجات', icon: 'fa-box', route: 'products', keywords: ['منتجات', 'products', 'سلع', 'خدمات'] },
+                    { name: 'مساعد الذكاء', icon: 'fa-robot', route: 'ai', keywords: ['ذكاء', 'اصطناعي', 'ai', 'مساعد', 'روبوت'] },
+                    { name: 'صندوق الوارد', icon: 'fa-inbox', route: 'inbox', keywords: ['صندوق', 'وارد', 'inbox', 'رسائل', 'بريد'] },
+                    { name: 'الإعدادات', icon: 'fa-cog', route: 'settings', keywords: ['اعدادات', 'settings', 'تهيئة', 'ضبط'] },
+                    { name: 'الفريق', icon: 'fa-users', route: 'team', keywords: ['فريق', 'team', 'اعضاء', 'مستخدمين'] },
+                    { name: 'المؤسسات', icon: 'fa-building', route: 'orgs', keywords: ['مؤسسات', 'organizations', 'شركات', 'منظمات'] }
+                ],
+
+                performSearch() {
+                    const query = this.searchQuery.toLowerCase().trim();
+
+                    if (!query) {
+                        this.searchResults = [];
+                        this.isSearching = false;
+                        return;
+                    }
+
+                    this.isSearching = true;
+
+                    // Filter menu items based on query
+                    this.searchResults = this.menuItems.filter(item => {
+                        // Check item name
+                        if (item.name.toLowerCase().includes(query)) return true;
+
+                        // Check keywords
+                        return item.keywords.some(keyword =>
+                            keyword.toLowerCase().includes(query)
+                        );
+                    }).slice(0, 5); // Limit to 5 results
+                },
+
+                clearSearch() {
+                    this.searchQuery = '';
+                    this.searchResults = [];
+                    this.isSearching = false;
+                },
+
+                navigateTo(route) {
+                    // Get current org from URL
+                    const urlPath = window.location.pathname;
+                    const match = urlPath.match(/\/orgs\/([a-f0-9-]+)/i);
+                    const orgId = match ? match[1] : null;
+
+                    if (orgId && route !== 'orgs') {
+                        window.location.href = `/orgs/${orgId}/${route}`;
+                    } else if (route === 'orgs') {
+                        window.location.href = '/orgs';
+                    }
+
+                    this.clearSearch();
                 }
             };
         }

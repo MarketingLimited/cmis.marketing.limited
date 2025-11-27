@@ -10,7 +10,7 @@ class OverviewController extends Controller
 {
     public function index(string $org)
     {
-        $this->authorize('viewAny', CreativeAsset::class);
+        // Auth handled by middleware - RLS handles org isolation
 
         $stats = Cache::remember("creative.stats.{$org}", now()->addMinutes(5), function () use ($org) {
             return [

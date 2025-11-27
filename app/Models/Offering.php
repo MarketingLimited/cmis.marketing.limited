@@ -15,7 +15,7 @@ class Offering extends BaseModel
     use HasFactory, HasUuids;
     use HasOrganization;
 
-    protected $table = 'cmis.offerings';
+    protected $table = 'cmis.offerings_old';
 
     protected $primaryKey = 'offering_id';
 
@@ -26,6 +26,7 @@ class Offering extends BaseModel
         'kind',
         'name',
         'description',
+        'provider',
     ];
 
     protected $casts = [
@@ -43,4 +44,6 @@ class Offering extends BaseModel
             'cmis.campaign_offerings',
             'offering_id',
             'campaign_id'
+        );
+    }
 }

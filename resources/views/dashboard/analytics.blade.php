@@ -1,15 +1,27 @@
-@extends('layouts.app')
+@extends('layouts.admin')
 
-@section('title', 'AI Analytics Dashboard')
+@section('title', __('AI Analytics Dashboard'))
+
+@php
+    $currentOrg = $currentOrg ?? request()->route('org') ?? auth()->user()->active_org_id ?? auth()->user()->org_id;
+@endphp
 
 @section('content')
-<div x-data="analyticsDashboard()" x-init="init()" class="container mx-auto px-4 py-6">
-    <!-- Header -->
-    <div class="flex justify-between items-center mb-6">
-        <div>
-            <h1 class="text-3xl font-bold text-gray-900">AI Analytics Dashboard</h1>
-            <p class="text-gray-600 mt-1">Monitor AI usage, costs, and quota status</p>
-        </div>
+<div x-data="analyticsDashboard()" x-init="init()" class="space-y-6">
+    {{-- Page Header with Breadcrumb --}}
+    <div class="mb-6">
+        <nav class="text-sm text-gray-500 mb-2 flex items-center gap-2">
+            <a href="{{ route('orgs.dashboard.index', $currentOrg) }}" class="hover:text-blue-600 transition">
+                <i class="fas fa-home"></i>
+            </a>
+            <span class="text-gray-400">/</span>
+            <span class="text-gray-900 font-medium">{{ __('AI Analytics') }}</span>
+        </nav>
+        <div class="flex justify-between items-center">
+            <div>
+                <h1 class="text-2xl font-bold text-gray-900">{{ __('AI Analytics Dashboard') }}</h1>
+                <p class="text-gray-600 mt-1">{{ __('Monitor AI usage, costs, and quota status') }}</p>
+            </div>
         <div class="flex space-x-3">
             <button @click="refreshData()"
                     class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"

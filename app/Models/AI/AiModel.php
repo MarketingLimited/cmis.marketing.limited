@@ -45,21 +45,13 @@ class AiModel extends BaseModel
         'deleted_at' => 'datetime',
     ];
 
-    
-
-    /**
-     * Scope to get models for a specific org
-     */
-    public function scopeForOrg($query, string $orgId)
-    {
-        return $query->where('org_id', $orgId);
-
     /**
      * Scope to filter by status
      */
     public function scopeWithStatus($query, string $status)
     {
         return $query->where('status', $status);
+    }
 
     /**
      * Scope to filter by provider
@@ -67,4 +59,5 @@ class AiModel extends BaseModel
     public function scopeByProvider($query, string $provider)
     {
         return $query->where('provider', $provider);
+    }
 }

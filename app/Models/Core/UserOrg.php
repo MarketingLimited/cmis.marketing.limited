@@ -19,7 +19,10 @@ class UserOrg extends BaseModel
 
     protected $primaryKey = 'id';
 
-    public $timestamps = true;
+    public $timestamps = false;
+
+    const CREATED_AT = 'joined_at';
+    const UPDATED_AT = null;
 
     protected $fillable = [
         'id',
@@ -55,6 +58,7 @@ class UserOrg extends BaseModel
     public function role(): BelongsTo
     {
         return $this->belongsTo(Role::class, 'role_id', 'role_id');
+    }
 
     /**
      * Get the user who invited this user to the organization.
@@ -64,4 +68,15 @@ class UserOrg extends BaseModel
     public function inviter(): BelongsTo
     {
         return $this->belongsTo(\App\Models\User::class, 'invited_by', 'user_id');
+    }
+
+    /**
+     * Get the user for this user-org relationship.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(\App\Models\User::class, 'user_id', 'user_id');
+    }
 }

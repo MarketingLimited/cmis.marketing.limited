@@ -1,3 +1,22 @@
+{{--
+    ============================================================================
+    DEPRECATED LAYOUT - DO NOT USE
+    ============================================================================
+    This layout has been deprecated as part of the theme unification project.
+    All analytics pages have been migrated to use layouts.admin instead.
+
+    Migration Date: 2025-11-26
+    Migrated Pages:
+    - analytics/enterprise.blade.php
+    - analytics/realtime.blade.php
+    - analytics/kpis.blade.php
+    - analytics/campaign.blade.php
+    - analytics/campaigns.blade.php
+
+    Use @extends('layouts.admin') for all new pages.
+    This file can be safely deleted once confirmed no pages reference it.
+    ============================================================================
+--}}
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
@@ -6,14 +25,14 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ config('app.name', 'CMIS') }} - @yield('title', 'Analytics Dashboard')</title>
 
-    <!-- Tailwind CSS (via Vite) -->
-    @vite(['resources/css/app.css'])
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
 
     <!-- Alpine.js (v3.x) -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
     <!-- Chart.js (v4.x) -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.x.x/dist/chart.umd.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -71,6 +90,11 @@
     </style>
 </head>
 <body class="bg-gray-50 min-h-screen">
+    @php
+        // Get org ID from route parameter, view data, or user context
+        $orgId = $orgId ?? request()->route('org') ?? auth()->user()->current_org_id ?? auth()->user()->org_id;
+    @endphp
+
     <div x-data="{ sidebarOpen: true, notificationsOpen: false }" class="min-h-screen flex">
         <!-- Sidebar -->
         <div :class="sidebarOpen ? 'w-64' : 'w-20'"
@@ -94,26 +118,26 @@
 
             <!-- Navigation -->
             <nav class="mt-6 px-4 space-y-2 flex-1 overflow-y-auto">
-                <a href="{{ route('analytics.enterprise') }}"
-                   class="flex items-center gap-3 px-4 py-3 rounded-xl {{ request()->routeIs('analytics.enterprise') ? 'bg-white/20 text-white shadow-lg' : 'text-white/80 hover:bg-white/10' }} transition">
+                <a href="{{ route('orgs.analytics.enterprise', ['org' => $orgId]) }}"
+                   class="flex items-center gap-3 px-4 py-3 rounded-xl {{ request()->routeIs('orgs.analytics.enterprise') || request()->routeIs('orgs.analytics.index') ? 'bg-white/20 text-white shadow-lg' : 'text-white/80 hover:bg-white/10' }} transition">
                     <i class="fas fa-th-large text-lg w-6"></i>
                     <span x-show="sidebarOpen" x-transition class="font-medium">Enterprise Dashboard</span>
                 </a>
 
-                <a href="{{ route('analytics.realtime') }}"
-                   class="flex items-center gap-3 px-4 py-3 rounded-xl {{ request()->routeIs('analytics.realtime') ? 'bg-white/20 text-white shadow-lg' : 'text-white/80 hover:bg-white/10' }} transition">
+                <a href="{{ route('orgs.analytics.realtime', ['org' => $orgId]) }}"
+                   class="flex items-center gap-3 px-4 py-3 rounded-xl {{ request()->routeIs('orgs.analytics.realtime') ? 'bg-white/20 text-white shadow-lg' : 'text-white/80 hover:bg-white/10' }} transition">
                     <i class="fas fa-bolt text-lg w-6"></i>
                     <span x-show="sidebarOpen" x-transition class="font-medium">Real-Time</span>
                 </a>
 
-                <a href="{{ route('analytics.campaigns') }}"
-                   class="flex items-center gap-3 px-4 py-3 rounded-xl {{ request()->routeIs('analytics.campaigns') || request()->routeIs('analytics.campaign') ? 'bg-white/20 text-white shadow-lg' : 'text-white/80 hover:bg-white/10' }} transition">
+                <a href="{{ route('orgs.analytics.campaigns', ['org' => $orgId]) }}"
+                   class="flex items-center gap-3 px-4 py-3 rounded-xl {{ request()->routeIs('orgs.analytics.campaigns') || request()->routeIs('orgs.analytics.campaign') ? 'bg-white/20 text-white shadow-lg' : 'text-white/80 hover:bg-white/10' }} transition">
                     <i class="fas fa-bullhorn text-lg w-6"></i>
                     <span x-show="sidebarOpen" x-transition class="font-medium">Campaigns</span>
                 </a>
 
-                <a href="{{ route('analytics.kpis') }}"
-                   class="flex items-center gap-3 px-4 py-3 rounded-xl {{ request()->routeIs('analytics.kpis') ? 'bg-white/20 text-white shadow-lg' : 'text-white/80 hover:bg-white/10' }} transition">
+                <a href="{{ route('orgs.analytics.kpis', ['org' => $orgId]) }}"
+                   class="flex items-center gap-3 px-4 py-3 rounded-xl {{ request()->routeIs('orgs.analytics.kpis') ? 'bg-white/20 text-white shadow-lg' : 'text-white/80 hover:bg-white/10' }} transition">
                     <i class="fas fa-tachometer-alt text-lg w-6"></i>
                     <span x-show="sidebarOpen" x-transition class="font-medium">KPIs</span>
                 </a>
@@ -121,19 +145,19 @@
                 <div class="pt-4 border-t border-white/20 mt-4">
                     <p x-show="sidebarOpen" x-transition class="text-white/50 text-xs font-medium px-4 mb-2">Main App</p>
 
-                    <a href="{{ route('dashboard.index') }}"
+                    <a href="{{ route('orgs.dashboard.index', ['org' => $orgId]) }}"
                        class="flex items-center gap-3 px-4 py-3 rounded-xl text-white/80 hover:bg-white/10 transition">
                         <i class="fas fa-home text-lg w-6"></i>
                         <span x-show="sidebarOpen" x-transition class="font-medium">Dashboard</span>
                     </a>
 
-                    <a href="{{ route('campaigns.index') }}"
+                    <a href="{{ route('orgs.campaigns.index', ['org' => $orgId]) }}"
                        class="flex items-center gap-3 px-4 py-3 rounded-xl text-white/80 hover:bg-white/10 transition">
                         <i class="fas fa-folder text-lg w-6"></i>
                         <span x-show="sidebarOpen" x-transition class="font-medium">Campaigns</span>
                     </a>
 
-                    <a href="{{ route('settings.index') }}"
+                    <a href="{{ route('orgs.settings.index', ['org' => $orgId]) }}"
                        class="flex items-center gap-3 px-4 py-3 rounded-xl text-white/80 hover:bg-white/10 transition">
                         <i class="fas fa-cog text-lg w-6"></i>
                         <span x-show="sidebarOpen" x-transition class="font-medium">Settings</span>
@@ -173,11 +197,6 @@
 
                         <!-- Right Actions -->
                         <div class="flex items-center gap-3">
-                            <!-- Org Switcher -->
-                            @auth
-                            <x-org-switcher />
-                            @endauth
-
                             <!-- Time Range Selector (Optional) -->
                             @stack('header-actions')
 
@@ -189,22 +208,23 @@
                             </button>
 
                             <!-- User Menu -->
+                            @auth
                             <div x-data="{ open: false }" class="relative">
                                 <button @click="open = !open" class="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-100 transition">
                                     <div class="bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg w-9 h-9 flex items-center justify-center font-bold">
-                                        {{ Auth::check() ? substr(Auth::user()->name, 0, 1) : 'G' }}
+                                        {{ substr(Auth::user()->name, 0, 1) }}
                                     </div>
                                     <i class="fas fa-chevron-down text-gray-600 text-xs"></i>
                                 </button>
 
                                 <div x-show="open" @click.away="open = false" x-transition x-cloak
-                                     class="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-2xl border border-gray-100 overflow-hidden">
+                                     class="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-2xl border border-gray-100 overflow-hidden z-50">
                                     <div class="p-4 bg-gradient-to-r from-indigo-500 to-purple-600">
-                                        <p class="text-white font-bold">{{ Auth::user()->name ?? 'Guest' }}</p>
-                                        <p class="text-white/80 text-xs">{{ Auth::user()->email ?? '' }}</p>
+                                        <p class="text-white font-bold">{{ Auth::user()->name }}</p>
+                                        <p class="text-white/80 text-xs">{{ Auth::user()->email }}</p>
                                     </div>
                                     <div class="p-2">
-                                        <a href="{{ route('settings.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-50 transition">
+                                        <a href="{{ route('orgs.settings.index', ['org' => $orgId]) }}" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-50 transition">
                                             <i class="fas fa-cog text-gray-600 w-5"></i>
                                             <span class="text-sm text-gray-700">Settings</span>
                                         </a>
@@ -219,6 +239,7 @@
                                     </div>
                                 </div>
                             </div>
+                            @endauth
                         </div>
                     </div>
                 </div>
@@ -264,32 +285,6 @@
             </footer>
         </div>
     </div>
-
-    <!-- Alpine.js Components -->
-    <script type="module">
-        // Import Phase 8 components
-        import {
-            realtimeDashboard,
-            campaignAnalytics,
-            kpiDashboard,
-            notificationCenter
-        } from '/resources/js/components/index.js';
-
-        // Register with Alpine (auto-registration happens in index.js)
-        // This is a fallback if auto-registration fails
-        if (window.Alpine) {
-            window.Alpine.data('realtimeDashboard', realtimeDashboard);
-            window.Alpine.data('campaignAnalytics', campaignAnalytics);
-            window.Alpine.data('kpiDashboard', kpiDashboard);
-            window.Alpine.data('notificationCenter', notificationCenter);
-        }
-
-        // Store auth token in localStorage for components
-        @auth
-        localStorage.setItem('auth_token', '{{ Auth::user()->currentAccessToken()?->plainTextToken ?? session('api_token') ?? '' }}');
-        localStorage.setItem('user_id', '{{ Auth::user()->user_id }}');
-        @endauth
-    </script>
 
     <!-- Additional Scripts -->
     @stack('scripts')

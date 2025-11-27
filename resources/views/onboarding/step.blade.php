@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.admin')
 
 @section('title', __('onboarding.step_x', ['number' => $step]))
 
@@ -6,7 +6,19 @@
 @php
     $currentOrg = $currentOrg ?? request()->route('org') ?? auth()->user()->active_org_id ?? auth()->user()->org_id;
 @endphp
-<div class="max-w-4xl mx-auto py-8 px-4" x-data="onboardingStep()">
+<div class="space-y-6" x-data="onboardingStep()">
+    {{-- Page Header with Breadcrumb --}}
+    <div class="mb-6">
+        <nav class="text-sm text-gray-500 mb-2 flex items-center gap-2">
+            <a href="{{ route('orgs.dashboard.index', $currentOrg) }}" class="hover:text-blue-600 transition">
+                <i class="fas fa-home"></i>
+            </a>
+            <span class="text-gray-400">/</span>
+            <a href="{{ route('onboarding.index') }}" class="hover:text-blue-600 transition">{{ __('Onboarding') }}</a>
+            <span class="text-gray-400">/</span>
+            <span class="text-gray-900 font-medium">{{ __('onboarding.step_x', ['number' => $step]) }}</span>
+        </nav>
+    </div>
     {{-- Progress Bar --}}
     <div class="mb-8">
         <div class="flex items-center justify-between mb-2">

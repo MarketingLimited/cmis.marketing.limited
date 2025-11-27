@@ -23,8 +23,8 @@ class EnterpriseAnalyticsController extends Controller
      */
     public function __construct()
     {
-        $this->middleware('auth:sanctum');
-        $this->middleware('tenant'); // Ensure multi-tenancy context
+        // Auth middleware is already applied at route level via 'auth' and 'auth:sanctum'
+        // Multi-tenancy context is handled by 'org.context' middleware at route level
     }
 
     /**

@@ -1,17 +1,24 @@
-@extends('layouts.app')
+@extends('layouts.admin')
 
-@section('title', 'Unified Inbox')
+@section('title', __('Unified Inbox'))
 
 @php
     $currentOrg = $currentOrg ?? request()->route('org') ?? auth()->user()->active_org_id ?? auth()->user()->org_id;
 @endphp
 
 @section('content')
-<div class="container mx-auto px-4 py-8" x-data="unifiedInbox()">
-    {{-- Header --}}
-    <div class="mb-8">
-        <h1 class="text-3xl font-bold text-gray-900">Unified Inbox</h1>
-        <p class="text-gray-600 mt-2">Manage all your messages and comments from one place</p>
+<div class="space-y-6" x-data="unifiedInbox()">
+    {{-- Page Header with Breadcrumb --}}
+    <div class="mb-6">
+        <nav class="text-sm text-gray-500 mb-2 flex items-center gap-2">
+            <a href="{{ route('orgs.dashboard.index', $currentOrg) }}" class="hover:text-blue-600 transition">
+                <i class="fas fa-home"></i>
+            </a>
+            <span class="text-gray-400">/</span>
+            <span class="text-gray-900 font-medium">{{ __('Inbox') }}</span>
+        </nav>
+        <h1 class="text-2xl font-bold text-gray-900">{{ __('Unified Inbox') }}</h1>
+        <p class="text-gray-600 mt-1">{{ __('Manage all your messages and comments from one place') }}</p>
     </div>
 
     {{-- Tabs --}}

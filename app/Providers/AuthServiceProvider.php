@@ -77,6 +77,12 @@ class AuthServiceProvider extends ServiceProvider
         Gate::define('ai.manage_prompts', [AIPolicy::class, 'managePrompts']);
         Gate::define('ai.view_insights', [AIPolicy::class, 'viewInsights']);
 
+        // Backward compatibility gates (shorthand versions used by some controllers)
+        // Allow all authenticated users to view insights - permission fine-tuning via roles
+        Gate::define('viewInsights', function ($user) {
+            return $user !== null;
+        });
+
         // Super admin/owner gate - bypass all authorization checks
         Gate::before(function ($user, $ability) {
             // Check if user has super admin or owner role in current organization

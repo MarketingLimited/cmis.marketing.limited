@@ -1,9 +1,10 @@
-@extends('layouts.app')
+@extends('layouts.admin')
 
-@section('title', __('Select :platform Assets', ['platform' => $platformName]) . ' - Settings')
+@section('title', __('Select :platform Assets', ['platform' => $platformName]) . ' - ' . __('Settings'))
 
 @section('content')
 @php
+    $currentOrg = $currentOrg ?? request()->route('org') ?? auth()->user()->active_org_id ?? auth()->user()->org_id;
     // Platform configuration
     $platformConfigs = [
         'twitter' => [
@@ -100,13 +101,19 @@
     $config = $platformConfigs[$platform] ?? $platformConfigs['twitter'];
 @endphp
 
-<div class="max-w-5xl mx-auto py-8 px-4 sm:px-6 lg:px-8" x-data="platformAssetsPage()">
-    {{-- Header --}}
-    <div class="mb-8">
-        <nav class="text-sm text-gray-500 mb-2">
-            <a href="{{ route('orgs.settings.platform-connections.index', $currentOrg) }}" class="hover:text-gray-700">{{ __('Platform Connections') }}</a>
-            <span class="mx-2">/</span>
-            <span class="text-gray-900">{{ $config['name'] }} {{ __('Assets') }}</span>
+<div class="space-y-6" x-data="platformAssetsPage()">
+    {{-- Page Header with Breadcrumb --}}
+    <div class="mb-6">
+        <nav class="text-sm text-gray-500 mb-2 flex items-center gap-2">
+            <a href="{{ route('orgs.dashboard.index', $currentOrg) }}" class="hover:text-blue-600 transition">
+                <i class="fas fa-home"></i>
+            </a>
+            <span class="text-gray-400">/</span>
+            <a href="{{ route('orgs.settings.index', $currentOrg) }}" class="hover:text-blue-600 transition">{{ __('Settings') }}</a>
+            <span class="text-gray-400">/</span>
+            <a href="{{ route('orgs.settings.platform-connections.index', $currentOrg) }}" class="hover:text-blue-600 transition">{{ __('Platform Connections') }}</a>
+            <span class="text-gray-400">/</span>
+            <span class="text-gray-900 font-medium">{{ $config['name'] }} {{ __('Assets') }}</span>
         </nav>
         <h1 class="text-2xl font-bold text-gray-900">{{ __('Configure :platform Assets', ['platform' => $config['name']]) }}</h1>
         <p class="mt-1 text-sm text-gray-500">

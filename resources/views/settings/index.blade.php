@@ -1,15 +1,21 @@
-@extends('layouts.app')
+@extends('layouts.admin')
 
 @section('title', __('Settings'))
 
 @section('content')
-<div class="min-h-screen bg-gray-50" x-data="settingsPage()">
-    <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-        {{-- Page Header --}}
-        <div class="mb-8">
-            <h1 class="text-3xl font-bold text-gray-900">{{ __('Settings') }}</h1>
-            <p class="mt-2 text-gray-600">{{ __('Manage your account, organization, and application settings') }}</p>
-        </div>
+<div class="space-y-6" x-data="settingsPage()">
+    {{-- Page Header with Breadcrumb --}}
+    <div class="mb-6">
+        <nav class="text-sm text-gray-500 mb-2 flex items-center gap-2">
+            <a href="{{ route('orgs.dashboard.index', $currentOrg) }}" class="hover:text-blue-600 transition">
+                <i class="fas fa-home"></i>
+            </a>
+            <span class="text-gray-400">/</span>
+            <span class="text-gray-900 font-medium">{{ __('Settings') }}</span>
+        </nav>
+        <h1 class="text-2xl font-bold text-gray-900">{{ __('Settings') }}</h1>
+        <p class="mt-1 text-gray-600">{{ __('Manage your account, organization, and application settings') }}</p>
+    </div>
 
         {{-- Flash Messages --}}
         @if(session('success'))

@@ -420,7 +420,6 @@ class OrgController extends Controller
         $org = $this->resolveOrg($org);
 
         $products = $org->offerings()
-            ->select('offering_id', 'name', 'kind')
             ->where('kind', 'product')
             ->orderBy('name')
             ->get();
@@ -429,6 +428,59 @@ class OrgController extends Controller
             'org' => $org,
             'products' => $products,
         ]);
+    }
+
+    public function storeProduct(Request $request, $org)
+    {
+        $org = $this->resolveOrg($org);
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'provider' => 'nullable|string|max:255',
+            'kind' => 'required|in:product,service,bundle',
+        ]);
+
+        $validated['org_id'] = $org->org_id;
+
+        \App\Models\Offering::create($validated);
+
+        return redirect()->route('orgs.products', $org->org_id)
+            ->with('success', __('Product created successfully'));
+    }
+
+    public function updateProduct(Request $request, $org, $product)
+    {
+        $org = $this->resolveOrg($org);
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'provider' => 'nullable|string|max:255',
+        ]);
+
+        $offering = \App\Models\Offering::where('offering_id', $product)
+            ->where('org_id', $org->org_id)
+            ->firstOrFail();
+
+        $offering->update($validated);
+
+        return redirect()->route('orgs.products', $org->org_id)
+            ->with('success', __('Product updated successfully'));
+    }
+
+    public function destroyProduct($org, $product)
+    {
+        $org = $this->resolveOrg($org);
+
+        $offering = \App\Models\Offering::where('offering_id', $product)
+            ->where('org_id', $org->org_id)
+            ->firstOrFail();
+
+        $offering->delete();
+
+        return redirect()->route('orgs.products', $org->org_id)
+            ->with('success', __('Product deleted successfully'));
     }
 
     public function compareCampaigns(Request $request, $org)
