@@ -43,6 +43,7 @@ class Integration extends BaseModel
         'account_id',
         'account_name',
         'account_username',
+        'username',
         'platform_handle',
         'avatar_url',
         'access_token',

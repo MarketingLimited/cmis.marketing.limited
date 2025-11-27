@@ -514,6 +514,17 @@
                     </div>
                 </div>
 
+                <!-- Historical Content / Brand Knowledge Base -->
+                <a href="{{ route('orgs.social.history.index', ['org' => $currentOrg]) }}"
+                   class="group flex items-center gap-3 px-3 py-2.5 rounded-xl mb-1 transition-all duration-200
+                          {{ request()->routeIs('orgs.social.history.*') ? 'bg-gradient-to-l from-blue-600/20 to-purple-600/20 text-white border-r-2 border-blue-500' : 'text-slate-400 hover:text-white hover:bg-slate-700/30' }}">
+                    <div class="w-9 h-9 rounded-lg flex items-center justify-center transition-all
+                                {{ request()->routeIs('orgs.social.history.*') ? 'bg-gradient-to-br from-indigo-500 to-blue-600 text-white shadow-lg shadow-indigo-500/25' : 'bg-slate-800 text-slate-400 group-hover:bg-slate-700 group-hover:text-white' }}">
+                        <i class="fas fa-clock-rotate-left text-sm"></i>
+                    </div>
+                    <span class="font-medium text-sm">المحتوى التاريخي</span>
+                </a>
+
                 <!-- Social Media -->
                 <a href="{{ route('orgs.social.index', ['org' => $currentOrg]) }}"
                    class="group flex items-center gap-3 px-3 py-2.5 rounded-xl mb-1 transition-all duration-200
@@ -1633,6 +1644,7 @@
                     { name: 'المؤثرين', icon: 'fa-user-tie', route: 'influencer', keywords: ['مؤثرين', 'influencer', 'influencers', 'شراكات', 'partnerships'] },
                     { name: 'الأصول الإبداعية', icon: 'fa-palette', route: 'creative/assets', keywords: ['اصول', 'ابداعية', 'creative', 'assets', 'صور', 'فيديو'] },
                     { name: 'الموجزات الإبداعية', icon: 'fa-file-alt', route: 'creative/briefs', keywords: ['موجزات', 'briefs', 'creative', 'ابداعي'] },
+                    { name: 'المحتوى التاريخي', icon: 'fa-clock-rotate-left', route: 'social/history', keywords: ['محتوى', 'تاريخي', 'historical', 'content', 'brand', 'knowledge', 'معرفة', 'علامة', 'تجارية'] },
                     { name: 'التواصل الاجتماعي', icon: 'fa-share-nodes', route: 'social', keywords: ['تواصل', 'اجتماعي', 'social', 'فيسبوك', 'تويتر', 'انستغرام'] },
                     { name: 'مجموعات الحسابات', icon: 'fa-layer-group', route: 'settings/profile-groups', keywords: ['مجموعات', 'حسابات', 'profile', 'groups'] },
                     { name: 'المنتجات', icon: 'fa-box', route: 'products', keywords: ['منتجات', 'products', 'سلع', 'خدمات'] },

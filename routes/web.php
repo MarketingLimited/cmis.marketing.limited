@@ -220,6 +220,9 @@ Route::middleware(['auth'])->group(function () {
                 Route::get('/create', [App\Http\Controllers\CreativeBriefController::class, 'create'])->name('create');
                 Route::post('/', [App\Http\Controllers\CreativeBriefController::class, 'store'])->name('store');
                 Route::get('/{briefId}', [App\Http\Controllers\CreativeBriefController::class, 'show'])->name('show');
+                Route::get('/{briefId}/edit', [App\Http\Controllers\CreativeBriefController::class, 'edit'])->name('edit');
+                Route::put('/{briefId}', [App\Http\Controllers\CreativeBriefController::class, 'update'])->name('update');
+                Route::delete('/{briefId}', [App\Http\Controllers\CreativeBriefController::class, 'destroy'])->name('destroy');
                 Route::post('/{briefId}/approve', [App\Http\Controllers\CreativeBriefController::class, 'approve'])->name('approve');
             });
         });
@@ -281,6 +284,7 @@ Route::middleware(['auth'])->group(function () {
         // ==================== Knowledge Base ====================
         Route::prefix('knowledge')->name('knowledge.')->group(function () {
             Route::get('/', [App\Http\Controllers\KnowledgeController::class, 'index'])->name('index');
+            Route::get('/create', [App\Http\Controllers\KnowledgeController::class, 'create'])->name('create');
             Route::post('/search', [App\Http\Controllers\KnowledgeController::class, 'search'])->name('search');
             Route::post('/', [App\Http\Controllers\KnowledgeController::class, 'store'])->name('store');
             Route::get('/domains', [App\Http\Controllers\KnowledgeController::class, 'domains'])->name('domains');
@@ -351,6 +355,52 @@ Route::middleware(['auth'])->group(function () {
 
             // AI Content Transformation
             Route::post('/ai/transform-content', [App\Http\Controllers\API\AIAssistantController::class, 'transformSocialContent'])->name('ai.transform-content');
+
+            // ==================== Historical Content & Brand Knowledge ====================
+            Route::prefix('history')->name('history.')->group(function () {
+                // Web Views
+                Route::get('/', function () { return view('social.history.index'); })->name('index');
+                Route::get('/analytics', function () { return view('social.history.analytics'); })->name('analytics');
+                Route::get('/knowledge-base', function () { return view('social.history.knowledge-base'); })->name('knowledge-base');
+
+                // API Endpoints (JSON responses)
+                Route::prefix('api')->name('api.')->group(function () {
+                    // Historical posts
+                    Route::get('/posts', [App\Http\Controllers\Social\HistoricalContentController::class, 'index'])->name('posts.index');
+                    Route::get('/posts/{id}', [App\Http\Controllers\Social\HistoricalContentController::class, 'show'])->name('posts.show');
+                    Route::post('/import', [App\Http\Controllers\Social\HistoricalContentController::class, 'import'])->name('import');
+                    Route::post('/posts/{id}/analyze', [App\Http\Controllers\Social\HistoricalContentController::class, 'analyze'])->name('posts.analyze');
+                    Route::post('/batch-analyze', [App\Http\Controllers\Social\HistoricalContentController::class, 'batchAnalyze'])->name('batch-analyze');
+                    Route::get('/progress', [App\Http\Controllers\Social\HistoricalContentController::class, 'getProgress'])->name('progress');
+
+                    // Knowledge base operations
+                    Route::post('/kb/add', [App\Http\Controllers\Social\HistoricalContentController::class, 'addToKnowledgeBase'])->name('kb.add');
+                    Route::post('/kb/remove', [App\Http\Controllers\Social\HistoricalContentController::class, 'removeFromKnowledgeBase'])->name('kb.remove');
+                    Route::post('/kb/build', [App\Http\Controllers\Social\HistoricalContentController::class, 'buildKnowledgeBase'])->name('kb.build');
+                    Route::get('/kb/summary', [App\Http\Controllers\Social\HistoricalContentController::class, 'getKBSummary'])->name('kb.summary');
+                    Route::post('/kb/query', [App\Http\Controllers\Social\HistoricalContentController::class, 'queryKB'])->name('kb.query');
+                    Route::post('/kb/recommendations', [App\Http\Controllers\Social\HistoricalContentController::class, 'getRecommendations'])->name('kb.recommendations');
+                    Route::get('/kb/export', [App\Http\Controllers\Social\HistoricalContentController::class, 'exportKB'])->name('kb.export');
+
+                    // Brand DNA & configuration
+                    Route::get('/brand-dna', [App\Http\Controllers\Social\HistoricalContentController::class, 'getBrandDNA'])->name('brand-dna');
+                    Route::get('/kb/config', [App\Http\Controllers\Social\HistoricalContentController::class, 'getKBConfig'])->name('kb.config.get');
+                    Route::put('/kb/config', [App\Http\Controllers\Social\HistoricalContentController::class, 'updateKBConfig'])->name('kb.config.update');
+
+                    // KB-Enhanced Content Generation
+                    Route::post('/kb-content/generate-post', [App\Http\Controllers\Social\KBContentGenerationController::class, 'generatePost'])->name('kb-content.generate-post');
+                    Route::post('/kb-content/generate-ad-copy', [App\Http\Controllers\Social\KBContentGenerationController::class, 'generateAdCopy'])->name('kb-content.generate-ad-copy');
+                    Route::post('/kb-content/generate-variations', [App\Http\Controllers\Social\KBContentGenerationController::class, 'generateVariations'])->name('kb-content.generate-variations');
+                    Route::get('/kb-content/suggestions', [App\Http\Controllers\Social\KBContentGenerationController::class, 'getSuggestions'])->name('kb-content.suggestions');
+                    Route::post('/kb-content/analyze-fit', [App\Http\Controllers\Social\KBContentGenerationController::class, 'analyzeContentFit'])->name('kb-content.analyze-fit');
+
+                    // Boost & Campaign Integration
+                    Route::post('/posts/{id}/boost', [App\Http\Controllers\Social\HistoricalContentController::class, 'boostPost'])->name('posts.boost');
+                    Route::post('/posts/{id}/add-to-campaign', [App\Http\Controllers\Social\HistoricalContentController::class, 'addToCampaign'])->name('posts.add-to-campaign');
+                    Route::post('/posts/{id}/create-campaign', [App\Http\Controllers\Social\HistoricalContentController::class, 'createCampaignFromPost'])->name('posts.create-campaign');
+                    Route::get('/posts/{id}/available-boost-rules', [App\Http\Controllers\Social\HistoricalContentController::class, 'getAvailableBoostRules'])->name('posts.available-boost-rules');
+                });
+            });
         });
 
         // ==================== Unified Inbox / Comments ====================

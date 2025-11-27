@@ -3814,7 +3814,7 @@ class PlatformConnectionsController extends Controller
                     ],
                     [
                         'account_name' => $accountName,
-                        'account_username' => $accountUsername,
+                        'username' => $accountUsername,
                         'avatar_url' => $avatarUrl,
                         'status' => 'active',
                         'is_active' => true,
@@ -3911,7 +3911,7 @@ class PlatformConnectionsController extends Controller
                     ],
                     [
                         'account_name' => $accountName,
-                        'account_username' => $accountUsername,
+                        'username' => $accountUsername,
                         'avatar_url' => $avatarUrl,
                         'status' => 'active',
                         'is_active' => true,

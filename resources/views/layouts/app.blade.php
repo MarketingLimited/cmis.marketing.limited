@@ -87,6 +87,11 @@
                     <span class="font-medium">الملفات الإبداعية</span>
                 </a>
 
+                <a href="{{ route('orgs.social.history.index', ['org' => $currentOrg]) }}" class="sidebar-item flex items-center gap-3 px-4 py-3 rounded-xl {{ request()->routeIs('orgs.social.history.*') ? 'bg-white/20 text-white shadow-lg' : 'text-white/80 hover:bg-white/10' }}">
+                    <i class="fas fa-clock-rotate-left text-lg w-6"></i>
+                    <span class="font-medium">المحتوى التاريخي</span>
+                </a>
+
                 @can('viewAny', App\Models\User::class)
                 <a href="{{ route('orgs.analytics.index', ['org' => $currentOrg]) }}" class="sidebar-item flex items-center gap-3 px-4 py-3 rounded-xl {{ request()->routeIs('orgs.analytics.*') ? 'bg-white/20 text-white shadow-lg' : 'text-white/80 hover:bg-white/10' }}">
                     <i class="fas fa-chart-line text-lg w-6"></i>
