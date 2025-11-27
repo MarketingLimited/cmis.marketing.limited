@@ -1,7 +1,48 @@
 # Google AI Integration Guide for CMIS
-**Created:** 2025-11-21
+**Version:** 1.1
+**Last Updated:** 2025-11-27
 **APIs:** Gemini 3 (Image Generation) + Veo 3.1 (Video Generation)
 **Purpose:** AI-powered ad design and video creation for multi-platform campaigns
+**Prerequisites:** Basic understanding of Google Cloud Platform and API integration
+
+---
+
+## ⚠️ IMPORTANT: API Configuration
+
+**NEVER hardcode API keys in code or commit them to version control. ALWAYS use `.env` and Laravel config files.**
+
+### Secure API Key Management
+
+```bash
+# Read API configuration from .env
+cat .env | grep GOOGLE_AI
+
+# Example .env configuration
+GOOGLE_AI_API_KEY=AIza...your-key
+GOOGLE_CLOUD_PROJECT=your-project-id
+GOOGLE_APPLICATION_CREDENTIALS=/path/to/service-account.json
+```
+
+**In Laravel Code:**
+```php
+// ✅ CORRECT: Use config() helper
+$apiKey = config('services.google_ai.api_key');
+
+// ❌ WRONG: Hardcoded
+$apiKey = 'AIza...';
+
+// ❌ WRONG: Direct env() outside config files
+$apiKey = env('GOOGLE_AI_API_KEY');
+```
+
+**Best Practices:**
+- ✅ Store API keys in `.env` file
+- ✅ Access via `config('services.google_ai.api_key')`
+- ✅ Use different keys for development/staging/production
+- ✅ Rotate keys regularly
+- ❌ NEVER commit `.env` to version control
+- ❌ NEVER hardcode API keys in code
+- ❌ NEVER share keys in documentation or screenshots
 
 ---
 
@@ -749,11 +790,39 @@ GOOGLE_USE_ORG_KEYS=false
 
 ---
 
-## 📚 Resources
+## 🔍 Quick Reference
 
+| I Need To... | How To Do It | Details |
+|--------------|--------------|---------|
+| Generate 4K ad image | Use `gemini-3-pro-image-preview` with `media_resolution_high` | Gemini 3 - Image Generation |
+| Create video ad | Use `veo-3-1` model via Vertex AI | Veo 3.1 - Video Generation |
+| Get API key | Google AI Studio → Get API Key | API Access |
+| Configure in Laravel | `config('services.google_ai.api_key')` | API Configuration section |
+| Set resolution | Use `media_resolution` parameter (low/medium/high) | Media Resolution Control |
+| Add grounding | Enable Google Search grounding for facts | Grounded Generation |
+| Estimate costs | Image: $0.007/request, Video: $0.50/30s | Pricing |
+| Check quota limits | Monitor `x-ratelimit-*` headers | Rate Limiting |
+
+---
+
+## 📚 Related Knowledge
+
+**Prerequisites:**
+- **DISCOVERY_PROTOCOLS.md** - Discovery methodology
+- **META_COGNITIVE_FRAMEWORK.md** - Adaptive intelligence principles
+
+**Related Files:**
+- **CMIS_PROJECT_KNOWLEDGE.md** - Core project architecture with AI capabilities
+- **LARAVEL_CONVENTIONS.md** - Configuration best practices (use config(), not env())
+- **PATTERN_RECOGNITION.md** - Service layer patterns
+
+**See Also:**
+- **CLAUDE.md** - Main project guidelines
+
+**External Resources:**
 - **Gemini 3 Documentation:** https://ai.google.dev/gemini-api/docs/gemini-3
-- **Veo 3.1 Blog Post:** https://developers.googleblog.com/en/introducing-veo-3-1-and-new-creative-capabilities-in-the-gemini-api/
-- **Vertex AI Veo Reference:** https://docs.cloud.google.com/vertex-ai/generative-ai/docs/model-reference/veo-video-generation
+- **Veo 3.1 Blog:** https://developers.googleblog.com/en/introducing-veo-3-1-and-new-creative-capabilities-in-the-gemini-api/
+- **Vertex AI Veo:** https://docs.cloud.google.com/vertex-ai/generative-ai/docs/model-reference/veo-video-generation
 - **Google AI Studio:** https://aistudio.google.com/
 - **Pricing Calculator:** https://cloud.google.com/products/calculator
 
@@ -774,6 +843,7 @@ GOOGLE_USE_ORG_KEYS=false
 
 ---
 
-**Last Updated:** 2025-11-21
-**Author:** Claude Code AI Assistant
+**Last Updated:** 2025-11-27
+**Version:** 1.1
+**Maintained By:** CMIS AI Agent Development Team
 **Status:** Research Complete - Ready for Implementation

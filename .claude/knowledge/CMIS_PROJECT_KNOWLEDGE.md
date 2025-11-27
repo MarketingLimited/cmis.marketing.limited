@@ -1,9 +1,26 @@
 # CMIS Project Knowledge - Discovery Guide
 ## Cognitive Marketing Information System - Teaching Agents HOW to Learn the System
 
-**Last Updated:** 2025-11-20
+**Version:** 2.1
+**Last Updated:** 2025-11-27
 **Framework:** META_COGNITIVE_FRAMEWORK v2.0
 **Philosophy:** Discovery Over Documentation
+**Prerequisites:** Read `META_COGNITIVE_FRAMEWORK.md` first
+
+---
+
+## ⚠️ IMPORTANT: Environment Configuration
+
+**ALWAYS read database configuration from `.env` before running discovery commands.**
+
+```bash
+# Read current environment
+cat .env | grep DB_
+
+# Use .env values in commands (see examples throughout this document)
+```
+
+**Never use hardcoded database names or credentials.** All examples in this document use `.env` placeholder syntax.
 
 ---
 
@@ -57,20 +74,24 @@ grep -o "Route::.*" routes/api.php | head -20
 **Discovery Protocol:**
 
 ```bash
-# 1. Check for unusual database features
-PGPASSWORD='123@Marketing@321' psql -h 127.0.0.1 -U begin -d cmis -c "
-SELECT nspname FROM pg_namespace WHERE nspname LIKE 'cmis%';
-"
+# 1. Check for unusual database features (using .env credentials)
+PGPASSWORD="$(grep DB_PASSWORD .env | cut -d '=' -f2)" psql \
+  -h "$(grep DB_HOST .env | cut -d '=' -f2)" \
+  -U "$(grep DB_USERNAME .env | cut -d '=' -f2)" \
+  -d "$(grep DB_DATABASE .env | cut -d '=' -f2)" \
+  -c "SELECT nspname FROM pg_namespace WHERE nspname LIKE 'cmis%';"
 # If multiple schemas → Domain-driven design
 
-# 2. Check for RLS policies
-PGPASSWORD='123@Marketing@321' psql -h 127.0.0.1 -U begin -d cmis -c "
-SELECT schemaname, tablename, COUNT(*)
-FROM pg_policies
-WHERE schemaname LIKE 'cmis%'
-GROUP BY schemaname, tablename
-LIMIT 10;
-"
+# 2. Check for RLS policies (using .env credentials)
+PGPASSWORD="$(grep DB_PASSWORD .env | cut -d '=' -f2)" psql \
+  -h "$(grep DB_HOST .env | cut -d '=' -f2)" \
+  -U "$(grep DB_USERNAME .env | cut -d '=' -f2)" \
+  -d "$(grep DB_DATABASE .env | cut -d '=' -f2)" \
+  -c "SELECT schemaname, tablename, COUNT(*)
+      FROM pg_policies
+      WHERE schemaname LIKE 'cmis%'
+      GROUP BY schemaname, tablename
+      LIMIT 10;"
 # If many policies → RLS-based multi-tenancy
 
 # 3. Check for AI/ML features
@@ -104,7 +125,10 @@ ls -la app/Http/Middleware/*Org*.php
 
 ```sql
 -- Find context functions
-PGPASSWORD='123@Marketing@321' psql -h 127.0.0.1 -U begin -d cmis -c "
+PGPASSWORD="$(grep DB_PASSWORD .env | cut -d '=' -f2)" psql \
+  -h "$(grep DB_HOST .env | cut -d '=' -f2)" \
+  -U "$(grep DB_USERNAME .env | cut -d '=' -f2)" \
+  -d "$(grep DB_DATABASE .env | cut -d '=' -f2)" -c "
 SELECT
     proname as function_name,
     prosrc as source_code
@@ -137,7 +161,10 @@ grep -A 20 "class.*Context.*Middleware" app/Http/Middleware/*.php
 
 ```sql
 -- List all schemas
-PGPASSWORD='123@Marketing@321' psql -h 127.0.0.1 -U begin -d cmis -c "
+PGPASSWORD="$(grep DB_PASSWORD .env | cut -d '=' -f2)" psql \
+  -h "$(grep DB_HOST .env | cut -d '=' -f2)" \
+  -U "$(grep DB_USERNAME .env | cut -d '=' -f2)" \
+  -d "$(grep DB_DATABASE .env | cut -d '=' -f2)" -c "
 SELECT
     nspname as schema_name,
     nspowner::regrole as owner
@@ -148,7 +175,10 @@ ORDER BY nspname;
 "
 
 -- Tables per schema
-PGPASSWORD='123@Marketing@321' psql -h 127.0.0.1 -U begin -d cmis -c "
+PGPASSWORD="$(grep DB_PASSWORD .env | cut -d '=' -f2)" psql \
+  -h "$(grep DB_HOST .env | cut -d '=' -f2)" \
+  -U "$(grep DB_USERNAME .env | cut -d '=' -f2)" \
+  -d "$(grep DB_DATABASE .env | cut -d '=' -f2)" -c "
 SELECT
     schemaname,
     COUNT(*) as table_count
@@ -167,7 +197,10 @@ ORDER BY table_count DESC;
 # → Each schema represents a business domain
 
 # If most tables have org_id column:
-PGPASSWORD='123@Marketing@321' psql -h 127.0.0.1 -U begin -d cmis -c "
+PGPASSWORD="$(grep DB_PASSWORD .env | cut -d '=' -f2)" psql \
+  -h "$(grep DB_HOST .env | cut -d '=' -f2)" \
+  -U "$(grep DB_USERNAME .env | cut -d '=' -f2)" \
+  -d "$(grep DB_DATABASE .env | cut -d '=' -f2)" -c "
 SELECT
     table_schema,
     table_name
@@ -217,7 +250,10 @@ cat package.json | jq '.dependencies | keys[]' | grep -i "chart\|graph\|viz"
 
 ```bash
 # Check for vector extensions
-PGPASSWORD='123@Marketing@321' psql -h 127.0.0.1 -U begin -d cmis -c "
+PGPASSWORD="$(grep DB_PASSWORD .env | cut -d '=' -f2)" psql \
+  -h "$(grep DB_HOST .env | cut -d '=' -f2)" \
+  -U "$(grep DB_USERNAME .env | cut -d '=' -f2)" \
+  -d "$(grep DB_DATABASE .env | cut -d '=' -f2)" -c "
 SELECT * FROM pg_extension WHERE extname LIKE '%vector%';
 "
 
@@ -226,7 +262,10 @@ grep -r "class.*Embedding" app/Services/
 grep -r "Gemini\|OpenAI\|Anthropic" app/ config/
 
 # Check vector dimensions
-PGPASSWORD='123@Marketing@321' psql -h 127.0.0.1 -U begin -d cmis -c "
+PGPASSWORD="$(grep DB_PASSWORD .env | cut -d '=' -f2)" psql \
+  -h "$(grep DB_HOST .env | cut -d '=' -f2)" \
+  -U "$(grep DB_USERNAME .env | cut -d '=' -f2)" \
+  -d "$(grep DB_DATABASE .env | cut -d '=' -f2)" -c "
 SELECT
     table_schema,
     table_name,
@@ -272,7 +311,10 @@ grep "public function" app/Models/Core/Campaign.php | grep -v "__construct"
 
 ```sql
 -- Find largest tables (business importance)
-PGPASSWORD='123@Marketing@321' psql -h 127.0.0.1 -U begin -d cmis -c "
+PGPASSWORD="$(grep DB_PASSWORD .env | cut -d '=' -f2)" psql \
+  -h "$(grep DB_HOST .env | cut -d '=' -f2)" \
+  -U "$(grep DB_USERNAME .env | cut -d '=' -f2)" \
+  -d "$(grep DB_DATABASE .env | cut -d '=' -f2)" -c "
 SELECT
     schemaname,
     tablename,
@@ -490,7 +532,10 @@ grep -r "authorize\|can(" app/Http/Controllers/ | head -10
 
 ```sql
 -- All RLS policies
-PGPASSWORD='123@Marketing@321' psql -h 127.0.0.1 -U begin -d cmis -c "
+PGPASSWORD="$(grep DB_PASSWORD .env | cut -d '=' -f2)" psql \
+  -h "$(grep DB_HOST .env | cut -d '=' -f2)" \
+  -U "$(grep DB_USERNAME .env | cut -d '=' -f2)" \
+  -d "$(grep DB_DATABASE .env | cut -d '=' -f2)" -c "
 SELECT
     schemaname,
     tablename,
@@ -504,7 +549,10 @@ LIMIT 20;
 "
 
 -- Tables WITH RLS enabled
-PGPASSWORD='123@Marketing@321' psql -h 127.0.0.1 -U begin -d cmis -c "
+PGPASSWORD="$(grep DB_PASSWORD .env | cut -d '=' -f2)" psql \
+  -h "$(grep DB_HOST .env | cut -d '=' -f2)" \
+  -U "$(grep DB_USERNAME .env | cut -d '=' -f2)" \
+  -d "$(grep DB_DATABASE .env | cut -d '=' -f2)" -c "
 SELECT
     schemaname,
     tablename,
@@ -516,7 +564,10 @@ LIMIT 20;
 "
 
 -- Tables WITHOUT RLS (potential issues)
-PGPASSWORD='123@Marketing@321' psql -h 127.0.0.1 -U begin -d cmis -c "
+PGPASSWORD="$(grep DB_PASSWORD .env | cut -d '=' -f2)" psql \
+  -h "$(grep DB_HOST .env | cut -d '=' -f2)" \
+  -U "$(grep DB_USERNAME .env | cut -d '=' -f2)" \
+  -d "$(grep DB_DATABASE .env | cut -d '=' -f2)" -c "
 SELECT
     schemaname,
     tablename
@@ -623,7 +674,10 @@ grep -r "failed\|retry" app/Jobs/ | head -10
 
 ```sql
 -- Indexes
-PGPASSWORD='123@Marketing@321' psql -h 127.0.0.1 -U begin -d cmis -c "
+PGPASSWORD="$(grep DB_PASSWORD .env | cut -d '=' -f2)" psql \
+  -h "$(grep DB_HOST .env | cut -d '=' -f2)" \
+  -U "$(grep DB_USERNAME .env | cut -d '=' -f2)" \
+  -d "$(grep DB_DATABASE .env | cut -d '=' -f2)" -c "
 SELECT
     schemaname,
     tablename,
@@ -636,7 +690,10 @@ LIMIT 20;
 "
 
 -- Table sizes (performance indicators)
-PGPASSWORD='123@Marketing@321' psql -h 127.0.0.1 -U begin -d cmis -c "
+PGPASSWORD="$(grep DB_PASSWORD .env | cut -d '=' -f2)" psql \
+  -h "$(grep DB_HOST .env | cut -d '=' -f2)" \
+  -U "$(grep DB_USERNAME .env | cut -d '=' -f2)" \
+  -d "$(grep DB_DATABASE .env | cut -d '=' -f2)" -c "
 SELECT
     schemaname,
     tablename,
@@ -679,7 +736,10 @@ cat app/Http/Controllers/API/CampaignController.php | grep "public function"
 **Step 4: Check Database**
 
 ```sql
-PGPASSWORD='123@Marketing@321' psql -h 127.0.0.1 -U begin -d cmis -c "
+PGPASSWORD="$(grep DB_PASSWORD .env | cut -d '=' -f2)" psql \
+  -h "$(grep DB_HOST .env | cut -d '=' -f2)" \
+  -U "$(grep DB_USERNAME .env | cut -d '=' -f2)" \
+  -d "$(grep DB_DATABASE .env | cut -d '=' -f2)" -c "
 \d cmis.campaigns
 "
 ```
@@ -716,7 +776,10 @@ grep "public function" app/Models/Core/Campaign.php | grep "belongsTo\|hasMany\|
 
 ```sql
 -- Check if context is being set
-PGPASSWORD='123@Marketing@321' psql -h 127.0.0.1 -U begin -d cmis -c "
+PGPASSWORD="$(grep DB_PASSWORD .env | cut -d '=' -f2)" psql \
+  -h "$(grep DB_HOST .env | cut -d '=' -f2)" \
+  -U "$(grep DB_USERNAME .env | cut -d '=' -f2)" \
+  -d "$(grep DB_DATABASE .env | cut -d '=' -f2)" -c "
 SELECT cmis.get_current_user_id(), cmis.get_current_org_id();
 "
 ```
@@ -735,7 +798,10 @@ cat app/Http/Kernel.php | grep -i context
 
 ```sql
 -- Check table has RLS enabled
-PGPASSWORD='123@Marketing@321' psql -h 127.0.0.1 -U begin -d cmis -c "
+PGPASSWORD="$(grep DB_PASSWORD .env | cut -d '=' -f2)" psql \
+  -h "$(grep DB_HOST .env | cut -d '=' -f2)" \
+  -U "$(grep DB_USERNAME .env | cut -d '=' -f2)" \
+  -d "$(grep DB_DATABASE .env | cut -d '=' -f2)" -c "
 SELECT
     schemaname,
     tablename,
@@ -745,7 +811,10 @@ WHERE tablename = 'campaigns';
 "
 
 -- Check policies exist
-PGPASSWORD='123@Marketing@321' psql -h 127.0.0.1 -U begin -d cmis -c "
+PGPASSWORD="$(grep DB_PASSWORD .env | cut -d '=' -f2)" psql \
+  -h "$(grep DB_HOST .env | cut -d '=' -f2)" \
+  -U "$(grep DB_USERNAME .env | cut -d '=' -f2)" \
+  -d "$(grep DB_DATABASE .env | cut -d '=' -f2)" -c "
 SELECT
     policyname,
     cmd,
@@ -759,7 +828,10 @@ WHERE tablename = 'campaigns';
 
 ```sql
 -- Set context manually
-PGPASSWORD='123@Marketing@321' psql -h 127.0.0.1 -U begin -d cmis -c "
+PGPASSWORD="$(grep DB_PASSWORD .env | cut -d '=' -f2)" psql \
+  -h "$(grep DB_HOST .env | cut -d '=' -f2)" \
+  -U "$(grep DB_USERNAME .env | cut -d '=' -f2)" \
+  -d "$(grep DB_DATABASE .env | cut -d '=' -f2)" -c "
 SELECT cmis.init_transaction_context('<user_id>', '<org_id>');
 SELECT * FROM cmis.campaigns LIMIT 5;
 "
@@ -808,12 +880,18 @@ cat app/Http/Controllers/API/CampaignController.php
 
 ```sql
 -- After migration, verify RLS is enabled
-PGPASSWORD='123@Marketing@321' psql -h 127.0.0.1 -U begin -d cmis -c "
+PGPASSWORD="$(grep DB_PASSWORD .env | cut -d '=' -f2)" psql \
+  -h "$(grep DB_HOST .env | cut -d '=' -f2)" \
+  -U "$(grep DB_USERNAME .env | cut -d '=' -f2)" \
+  -d "$(grep DB_DATABASE .env | cut -d '=' -f2)" -c "
 SELECT rowsecurity FROM pg_tables WHERE tablename = 'your_new_table';
 "
 
 -- Verify policies exist
-PGPASSWORD='123@Marketing@321' psql -h 127.0.0.1 -U begin -d cmis -c "
+PGPASSWORD="$(grep DB_PASSWORD .env | cut -d '=' -f2)" psql \
+  -h "$(grep DB_HOST .env | cut -d '=' -f2)" \
+  -U "$(grep DB_USERNAME .env | cut -d '=' -f2)" \
+  -d "$(grep DB_DATABASE .env | cut -d '=' -f2)" -c "
 SELECT COUNT(*) FROM pg_policies WHERE tablename = 'your_new_table';
 "
 # Should be 4 (SELECT, INSERT, UPDATE, DELETE)
@@ -866,17 +944,26 @@ find resources/views -name "*.blade.php" | wc -l
 
 ```sql
 -- Schemas
-PGPASSWORD='123@Marketing@321' psql -h 127.0.0.1 -U begin -d cmis -c "
+PGPASSWORD="$(grep DB_PASSWORD .env | cut -d '=' -f2)" psql \
+  -h "$(grep DB_HOST .env | cut -d '=' -f2)" \
+  -U "$(grep DB_USERNAME .env | cut -d '=' -f2)" \
+  -d "$(grep DB_DATABASE .env | cut -d '=' -f2)" -c "
 SELECT nspname FROM pg_namespace WHERE nspname LIKE 'cmis%';
 "
 
 -- Tables
-PGPASSWORD='123@Marketing@321' psql -h 127.0.0.1 -U begin -d cmis -c "
+PGPASSWORD="$(grep DB_PASSWORD .env | cut -d '=' -f2)" psql \
+  -h "$(grep DB_HOST .env | cut -d '=' -f2)" \
+  -U "$(grep DB_USERNAME .env | cut -d '=' -f2)" \
+  -d "$(grep DB_DATABASE .env | cut -d '=' -f2)" -c "
 SELECT schemaname, COUNT(*) FROM pg_tables WHERE schemaname LIKE 'cmis%' GROUP BY schemaname;
 "
 
 -- RLS policies
-PGPASSWORD='123@Marketing@321' psql -h 127.0.0.1 -U begin -d cmis -c "
+PGPASSWORD="$(grep DB_PASSWORD .env | cut -d '=' -f2)" psql \
+  -h "$(grep DB_HOST .env | cut -d '=' -f2)" \
+  -U "$(grep DB_USERNAME .env | cut -d '=' -f2)" \
+  -d "$(grep DB_DATABASE .env | cut -d '=' -f2)" -c "
 SELECT COUNT(*) FROM pg_policies WHERE schemaname LIKE 'cmis%';
 "
 ```
@@ -1040,8 +1127,47 @@ git branch -a
 
 ---
 
-**Version:** 2.0 - Discovery-Oriented Knowledge
-**Framework:** META_COGNITIVE_FRAMEWORK
+## 🔍 Quick Reference
+
+| I Need To... | Discovery Command | Section |
+|--------------|-------------------|---------|
+| Check database schemas | `SELECT nspname FROM pg_namespace WHERE nspname LIKE 'cmis%'` (use .env) | Architectural Discovery |
+| Verify multi-tenancy | `SELECT COUNT(*) FROM pg_policies WHERE schemaname LIKE 'cmis%'` | Discovering Multi-Tenancy |
+| Find platform integrations | `find app/Services -name "*Platform*.php"` | Platform Integration Discovery |
+| Check AI features | `grep -r "vector\|embedding" app/ database/` | AI Capabilities Discovery |
+| List all models | `find app/Models -name "*.php"` | Laravel Structure Discovery |
+| Check frontend stack | `cat package.json \| jq '.dependencies'` | Frontend Discovery |
+| Verify RLS context | `SELECT cmis.init_transaction_context(...)` | Multi-Tenancy Patterns |
+| Count tables | `SELECT COUNT(*) FROM information_schema.tables WHERE table_schema LIKE 'cmis%'` | Database Discovery |
+
+---
+
+## 📚 Related Knowledge
+
+**Prerequisites:**
+- **META_COGNITIVE_FRAMEWORK.md** - Read this FIRST to understand the discovery approach
+
+**Core Related Files:**
+- **DISCOVERY_PROTOCOLS.md** - Detailed discovery commands for all aspects
+- **MULTI_TENANCY_PATTERNS.md** - Deep dive into RLS implementation
+- **LARAVEL_CONVENTIONS.md** - CMIS-specific Laravel patterns
+- **PATTERN_RECOGNITION.md** - Architectural patterns used in CMIS
+
+**Supplementary Files:**
+- **CMIS_DATA_PATTERNS.md** - Data modeling patterns
+- **CMIS_SQL_INSIGHTS.md** - Advanced SQL patterns
+- **CMIS_REFERENCE_DATA.md** - Table reference catalog
+
+**See Also:**
+- Main project guidelines: `CLAUDE.md`
+- Agent infrastructure: `.claude/agents/_shared/infrastructure-preflight.md`
+
+---
+
+**Version:** 2.1 - Discovery-Oriented Knowledge
+**Last Updated:** 2025-11-27
+**Framework:** META_COGNITIVE_FRAMEWORK v2.0
 **Approach:** Discover > Verify > Apply
+**Maintained By:** CMIS AI Agent Development Team
 
 *"Understanding comes from discovery, not documentation."*

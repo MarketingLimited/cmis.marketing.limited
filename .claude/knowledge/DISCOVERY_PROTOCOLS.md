@@ -1,10 +1,44 @@
 # CMIS Discovery Protocols
 ## Comprehensive Command Reference for Dynamic Codebase Exploration
 
-**Version:** 2.0
-**Last Updated:** 2025-11-18
+**Version:** 2.1
+**Last Updated:** 2025-11-27
 **Purpose:** Provide specific, executable commands for discovering current system state
 **Prerequisite:** Read META_COGNITIVE_FRAMEWORK.md first
+
+---
+
+## ⚠️ IMPORTANT: Environment Configuration
+
+**NEVER use hardcoded database names or credentials.** Always read from `.env` file first.
+
+### Before Running Any Database Commands
+
+```bash
+# 1. Read database configuration from .env
+cat .env | grep DB_
+
+# 2. Extract values for use in commands
+DB_HOST=$(grep DB_HOST .env | cut -d '=' -f2)
+DB_PORT=$(grep DB_PORT .env | cut -d '=' -f2)
+DB_DATABASE=$(grep DB_DATABASE .env | cut -d '=' -f2)
+DB_USERNAME=$(grep DB_USERNAME .env | cut -d '=' -f2)
+DB_PASSWORD=$(grep DB_PASSWORD .env | cut -d '=' -f2)
+
+# 3. Connect to PostgreSQL using .env values
+PGPASSWORD="$DB_PASSWORD" psql -h "$DB_HOST" -U "$DB_USERNAME" -d "$DB_DATABASE"
+
+# Or as one-liner:
+PGPASSWORD="$(grep DB_PASSWORD .env | cut -d '=' -f2)" psql \
+  -h "$(grep DB_HOST .env | cut -d '=' -f2)" \
+  -U "$(grep DB_USERNAME .env | cut -d '=' -f2)" \
+  -d "$(grep DB_DATABASE .env | cut -d '=' -f2)"
+```
+
+**Database Name vs Schema Name:**
+- `DB_DATABASE` in `.env` = The PostgreSQL database name (e.g., `cmis-test`, `cmis-prod`)
+- `cmis`, `cmis_meta`, `cmis_analytics` = Schema names within the database
+- Always use schema-qualified table names: `cmis.campaigns`, not just `campaigns`
 
 ---
 

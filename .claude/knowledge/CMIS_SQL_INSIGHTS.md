@@ -1,9 +1,51 @@
 # CMIS Database Discovery Guide
-## Learning Database Structure Through SQL Analysis
-
-**Last Updated:** 2025-11-18
+**Version:** 2.1
+**Last Updated:** 2025-11-27
+**Purpose:** Learning database structure through SQL analysis and discovery commands
+**Prerequisites:** Read `.claude/knowledge/DISCOVERY_PROTOCOLS.md` for discovery methodology
 **Framework:** META_COGNITIVE_FRAMEWORK v2.0
-**Philosophy:** Discover Structure, Don't Memorize Facts
+
+---
+
+## ⚠️ IMPORTANT: Environment Configuration
+
+**ALWAYS read from `.env` for database credentials. NEVER use hardcoded values.**
+
+### Quick .env Extraction
+
+```bash
+# Read database configuration
+cat .env | grep DB_
+
+# Extract for use in commands
+DB_HOST=$(grep DB_HOST .env | cut -d '=' -f2)
+DB_DATABASE=$(grep DB_DATABASE .env | cut -d '=' -f2)
+DB_USERNAME=$(grep DB_USERNAME .env | cut -d '=' -f2)
+DB_PASSWORD=$(grep DB_PASSWORD .env | cut -d '=' -f2)
+
+# Use in PostgreSQL commands
+PGPASSWORD="$DB_PASSWORD" psql -h "$DB_HOST" -U "$DB_USERNAME" -d "$DB_DATABASE"
+```
+
+**Note:** Database name varies by environment (e.g., `cmis-test`, `cmis-prod`). Always read from `.env`.
+
+---
+
+## 📑 Table of Contents
+
+1. [Philosophy: Discover Database Patterns](#-philosophy-discover-database-patterns)
+2. [Discovering RLS Policies](#-discovering-rls-policies)
+3. [Discovering Constraints & Enums](#-discovering-constraints--enums)
+4. [Discovering Foreign Key Relationships](#-discovering-foreign-key-relationships)
+5. [Discovering AI/ML Features](#-discovering-aiml-features)
+6. [Discovering Bilingual Support](#-discovering-bilingual-support)
+7. [Discovering Soft Delete Patterns](#-discovering-soft-delete-patterns)
+8. [Discovering Schema Organization](#-discovering-schema-organization)
+9. [Discovering Indexes](#-discovering-indexes)
+10. [Practical Discovery Workflows](#-practical-discovery-workflows)
+11. [Discovery Commands Cheat Sheet](#-discovery-commands-cheat-sheet)
+12. [Critical Patterns](#-critical-patterns)
+13. [Key Takeaways](#-key-takeaways)
 
 ---
 
@@ -24,37 +66,35 @@
 
 ### How to Find RLS Policies
 
-```sql
--- Count total RLS policies
-PGPASSWORD='123@Marketing@321' psql -h 127.0.0.1 -U begin -d cmis -c "
-SELECT COUNT(*) as total_policies
-FROM pg_policies
-WHERE schemaname LIKE 'cmis%';
-"
+```bash
+# Count total RLS policies
+PGPASSWORD="$(grep DB_PASSWORD .env | cut -d '=' -f2)" psql \
+  -h "$(grep DB_HOST .env | cut -d '=' -f2)" \
+  -U "$(grep DB_USERNAME .env | cut -d '=' -f2)" \
+  -d "$(grep DB_DATABASE .env | cut -d '=' -f2)" \
+  -c "SELECT COUNT(*) as total_policies
+      FROM pg_policies
+      WHERE schemaname LIKE 'cmis%';"
 
--- List all RLS policies
-PGPASSWORD='123@Marketing@321' psql -h 127.0.0.1 -U begin -d cmis -c "
-SELECT
-    schemaname,
-    tablename,
-    policyname,
-    cmd as command,
-    qual as using_expression
-FROM pg_policies
-WHERE schemaname LIKE 'cmis%'
-ORDER BY tablename, cmd;
-"
+# List all RLS policies
+PGPASSWORD="$(grep DB_PASSWORD .env | cut -d '=' -f2)" psql \
+  -h "$(grep DB_HOST .env | cut -d '=' -f2)" \
+  -U "$(grep DB_USERNAME .env | cut -d '=' -f2)" \
+  -d "$(grep DB_DATABASE .env | cut -d '=' -f2)" \
+  -c "SELECT schemaname, tablename, policyname, cmd as command, qual as using_expression
+      FROM pg_policies
+      WHERE schemaname LIKE 'cmis%'
+      ORDER BY tablename, cmd;"
 
--- Policies for specific table
-PGPASSWORD='123@Marketing@321' psql -h 127.0.0.1 -U begin -d cmis -c "
-SELECT
-    policyname,
-    cmd,
-    qual
-FROM pg_policies
-WHERE tablename = 'campaigns'
-ORDER BY cmd;
-"
+# Policies for specific table
+PGPASSWORD="$(grep DB_PASSWORD .env | cut -d '=' -f2)" psql \
+  -h "$(grep DB_HOST .env | cut -d '=' -f2)" \
+  -U "$(grep DB_USERNAME .env | cut -d '=' -f2)" \
+  -d "$(grep DB_DATABASE .env | cut -d '=' -f2)" \
+  -c "SELECT policyname, cmd, qual
+      FROM pg_policies
+      WHERE tablename = 'campaigns'
+      ORDER BY cmd;"
 ```
 
 ### Pattern Recognition: RLS Policy Structure
@@ -77,7 +117,11 @@ FOR DELETE: org_id = get_current_org_id() AND check_permission(user, org, 'table
 
 ```sql
 -- Find RLS-related functions
-PGPASSWORD='123@Marketing@321' psql -h 127.0.0.1 -U begin -d cmis -c "
+PGPASSWORD="$(grep DB_PASSWORD .env | cut -d '=' -f2)" psql \
+  -h "$(grep DB_HOST .env | cut -d '=' -f2)" \
+  -U "$(grep DB_USERNAME .env | cut -d '=' -f2)" \
+  -d "$(grep DB_DATABASE .env | cut -d '=' -f2)" \
+  -c "
 SELECT
     proname as function_name,
     pg_get_function_arguments(p.oid) as arguments,
@@ -109,7 +153,11 @@ ORDER BY proname;
 
 ```sql
 -- List all constraints on a table
-PGPASSWORD='123@Marketing@321' psql -h 127.0.0.1 -U begin -d cmis -c "
+PGPASSWORD="$(grep DB_PASSWORD .env | cut -d '=' -f2)" psql \
+  -h "$(grep DB_HOST .env | cut -d '=' -f2)" \
+  -U "$(grep DB_USERNAME .env | cut -d '=' -f2)" \
+  -d "$(grep DB_DATABASE .env | cut -d '=' -f2)" \
+  -c "
 SELECT
     conname as constraint_name,
     pg_get_constraintdef(oid) as constraint_definition
@@ -119,7 +167,11 @@ ORDER BY conname;
 "
 
 -- Find enum constraints (status fields, etc.)
-PGPASSWORD='123@Marketing@321' psql -h 127.0.0.1 -U begin -d cmis -c "
+PGPASSWORD="$(grep DB_PASSWORD .env | cut -d '=' -f2)" psql \
+  -h "$(grep DB_HOST .env | cut -d '=' -f2)" \
+  -U "$(grep DB_USERNAME .env | cut -d '=' -f2)" \
+  -d "$(grep DB_DATABASE .env | cut -d '=' -f2)" \
+  -c "
 SELECT
     table_name,
     constraint_name,
@@ -167,7 +219,11 @@ $campaign->status = Campaign::STATUS_ACTIVE;
 
 ```sql
 -- List all enum types
-PGPASSWORD='123@Marketing@321' psql -h 127.0.0.1 -U begin -d cmis -c "
+PGPASSWORD="$(grep DB_PASSWORD .env | cut -d '=' -f2)" psql \
+  -h "$(grep DB_HOST .env | cut -d '=' -f2)" \
+  -U "$(grep DB_USERNAME .env | cut -d '=' -f2)" \
+  -d "$(grep DB_DATABASE .env | cut -d '=' -f2)" \
+  -c "
 SELECT
     t.typname as enum_name,
     array_agg(e.enumlabel ORDER BY e.enumsortorder) as allowed_values
@@ -188,7 +244,11 @@ ORDER BY t.typname;
 
 ```sql
 -- All foreign keys in cmis schema
-PGPASSWORD='123@Marketing@321' psql -h 127.0.0.1 -U begin -d cmis -c "
+PGPASSWORD="$(grep DB_PASSWORD .env | cut -d '=' -f2)" psql \
+  -h "$(grep DB_HOST .env | cut -d '=' -f2)" \
+  -U "$(grep DB_USERNAME .env | cut -d '=' -f2)" \
+  -d "$(grep DB_DATABASE .env | cut -d '=' -f2)" \
+  -c "
 SELECT
     tc.table_name,
     kcu.column_name,
@@ -211,7 +271,11 @@ ORDER BY tc.table_name, kcu.column_name;
 "
 
 -- Foreign keys for specific table
-PGPASSWORD='123@Marketing@321' psql -h 127.0.0.1 -U begin -d cmis -c "
+PGPASSWORD="$(grep DB_PASSWORD .env | cut -d '=' -f2)" psql \
+  -h "$(grep DB_HOST .env | cut -d '=' -f2)" \
+  -U "$(grep DB_USERNAME .env | cut -d '=' -f2)" \
+  -d "$(grep DB_DATABASE .env | cut -d '=' -f2)" \
+  -c "
 SELECT
     tc.constraint_name,
     kcu.column_name,
@@ -256,7 +320,11 @@ Most relationships use this to prevent accidental data loss
 
 ```sql
 -- Tables that reference a given table
-PGPASSWORD='123@Marketing@321' psql -h 127.0.0.1 -U begin -d cmis -c "
+PGPASSWORD="$(grep DB_PASSWORD .env | cut -d '=' -f2)" psql \
+  -h "$(grep DB_HOST .env | cut -d '=' -f2)" \
+  -U "$(grep DB_USERNAME .env | cut -d '=' -f2)" \
+  -d "$(grep DB_DATABASE .env | cut -d '=' -f2)" \
+  -c "
 SELECT DISTINCT
     tc.table_name as dependent_table,
     kcu.column_name as foreign_key_column
@@ -280,7 +348,11 @@ ORDER BY tc.table_name;
 
 ```sql
 -- Find all vector columns
-PGPASSWORD='123@Marketing@321' psql -h 127.0.0.1 -U begin -d cmis -c "
+PGPASSWORD="$(grep DB_PASSWORD .env | cut -d '=' -f2)" psql \
+  -h "$(grep DB_HOST .env | cut -d '=' -f2)" \
+  -U "$(grep DB_USERNAME .env | cut -d '=' -f2)" \
+  -d "$(grep DB_DATABASE .env | cut -d '=' -f2)" \
+  -c "
 SELECT
     table_schema,
     table_name,
@@ -294,7 +366,11 @@ ORDER BY table_name, column_name;
 "
 
 -- Get vector dimensions
-PGPASSWORD='123@Marketing@321' psql -h 127.0.0.1 -U begin -d cmis -c "
+PGPASSWORD="$(grep DB_PASSWORD .env | cut -d '=' -f2)" psql \
+  -h "$(grep DB_HOST .env | cut -d '=' -f2)" \
+  -U "$(grep DB_USERNAME .env | cut -d '=' -f2)" \
+  -d "$(grep DB_DATABASE .env | cut -d '=' -f2)" \
+  -c "
 \d+ cmis_knowledge.embeddings_cache
 "
 # Look for vector(768) or similar
@@ -349,7 +425,11 @@ $cached->increment('usage_count');
 
 ```bash
 # Find AI/ML related tables
-PGPASSWORD='123@Marketing@321' psql -h 127.0.0.1 -U begin -d cmis -c "
+PGPASSWORD="$(grep DB_PASSWORD .env | cut -d '=' -f2)" psql \
+  -h "$(grep DB_HOST .env | cut -d '=' -f2)" \
+  -U "$(grep DB_USERNAME .env | cut -d '=' -f2)" \
+  -d "$(grep DB_DATABASE .env | cut -d '=' -f2)" \
+  -c "
 SELECT tablename
 FROM pg_tables
 WHERE schemaname LIKE 'cmis%'
@@ -372,7 +452,11 @@ ORDER BY schemaname, tablename;
 
 ```sql
 -- Find tables with Arabic (_ar) columns
-PGPASSWORD='123@Marketing@321' psql -h 127.0.0.1 -U begin -d cmis -c "
+PGPASSWORD="$(grep DB_PASSWORD .env | cut -d '=' -f2)" psql \
+  -h "$(grep DB_HOST .env | cut -d '=' -f2)" \
+  -U "$(grep DB_USERNAME .env | cut -d '=' -f2)" \
+  -d "$(grep DB_DATABASE .env | cut -d '=' -f2)" \
+  -c "
 SELECT
     table_name,
     column_name
@@ -383,7 +467,11 @@ ORDER BY table_name, column_name;
 "
 
 -- Find paired bilingual columns
-PGPASSWORD='123@Marketing@321' psql -h 127.0.0.1 -U begin -d cmis -c "
+PGPASSWORD="$(grep DB_PASSWORD .env | cut -d '=' -f2)" psql \
+  -h "$(grep DB_HOST .env | cut -d '=' -f2)" \
+  -U "$(grep DB_USERNAME .env | cut -d '=' -f2)" \
+  -d "$(grep DB_DATABASE .env | cut -d '=' -f2)" \
+  -c "
 SELECT
     table_name,
     array_agg(column_name ORDER BY column_name) as bilingual_columns
@@ -422,7 +510,11 @@ related_keywords_ar   (Arabic array)
 
 ```sql
 -- Tables with soft delete
-PGPASSWORD='123@Marketing@321' psql -h 127.0.0.1 -U begin -d cmis -c "
+PGPASSWORD="$(grep DB_PASSWORD .env | cut -d '=' -f2)" psql \
+  -h "$(grep DB_HOST .env | cut -d '=' -f2)" \
+  -U "$(grep DB_USERNAME .env | cut -d '=' -f2)" \
+  -d "$(grep DB_DATABASE .env | cut -d '=' -f2)" \
+  -c "
 SELECT
     table_name,
     column_name
@@ -434,7 +526,11 @@ ORDER BY table_name, column_name;
 "
 
 -- Tables with both deleted_at AND deleted_by (advanced soft delete)
-PGPASSWORD='123@Marketing@321' psql -h 127.0.0.1 -U begin -d cmis -c "
+PGPASSWORD="$(grep DB_PASSWORD .env | cut -d '=' -f2)" psql \
+  -h "$(grep DB_HOST .env | cut -d '=' -f2)" \
+  -U "$(grep DB_USERNAME .env | cut -d '=' -f2)" \
+  -d "$(grep DB_DATABASE .env | cut -d '=' -f2)" \
+  -c "
 SELECT
     table_name
 FROM information_schema.columns
@@ -495,7 +591,11 @@ protected static function boot()
 
 ```sql
 -- List all schemas
-PGPASSWORD='123@Marketing@321' psql -h 127.0.0.1 -U begin -d cmis -c "
+PGPASSWORD="$(grep DB_PASSWORD .env | cut -d '=' -f2)" psql \
+  -h "$(grep DB_HOST .env | cut -d '=' -f2)" \
+  -U "$(grep DB_USERNAME .env | cut -d '=' -f2)" \
+  -d "$(grep DB_DATABASE .env | cut -d '=' -f2)" \
+  -c "
 SELECT
     nspname as schema_name,
     nspowner::regrole as owner
@@ -506,7 +606,11 @@ ORDER BY nspname;
 "
 
 -- Table count per schema
-PGPASSWORD='123@Marketing@321' psql -h 127.0.0.1 -U begin -d cmis -c "
+PGPASSWORD="$(grep DB_PASSWORD .env | cut -d '=' -f2)" psql \
+  -h "$(grep DB_HOST .env | cut -d '=' -f2)" \
+  -U "$(grep DB_USERNAME .env | cut -d '=' -f2)" \
+  -d "$(grep DB_DATABASE .env | cut -d '=' -f2)" \
+  -c "
 SELECT
     schemaname,
     COUNT(*) as table_count
@@ -518,7 +622,11 @@ ORDER BY table_count DESC;
 "
 
 -- Total database size
-PGPASSWORD='123@Marketing@321' psql -h 127.0.0.1 -U begin -d cmis -c "
+PGPASSWORD="$(grep DB_PASSWORD .env | cut -d '=' -f2)" psql \
+  -h "$(grep DB_HOST .env | cut -d '=' -f2)" \
+  -U "$(grep DB_USERNAME .env | cut -d '=' -f2)" \
+  -d "$(grep DB_DATABASE .env | cut -d '=' -f2)" \
+  -c "
 SELECT
     schemaname,
     pg_size_pretty(SUM(pg_total_relation_size(schemaname||'.'||tablename))) as schema_size
@@ -557,7 +665,11 @@ lab               → Experimental features
 
 ```sql
 -- List all indexes
-PGPASSWORD='123@Marketing@321' psql -h 127.0.0.1 -U begin -d cmis -c "
+PGPASSWORD="$(grep DB_PASSWORD .env | cut -d '=' -f2)" psql \
+  -h "$(grep DB_HOST .env | cut -d '=' -f2)" \
+  -U "$(grep DB_USERNAME .env | cut -d '=' -f2)" \
+  -d "$(grep DB_DATABASE .env | cut -d '=' -f2)" \
+  -c "
 SELECT
     schemaname,
     tablename,
@@ -569,7 +681,11 @@ ORDER BY tablename, indexname;
 "
 
 -- Find vector indexes (for similarity search)
-PGPASSWORD='123@Marketing@321' psql -h 127.0.0.1 -U begin -d cmis -c "
+PGPASSWORD="$(grep DB_PASSWORD .env | cut -d '=' -f2)" psql \
+  -h "$(grep DB_HOST .env | cut -d '=' -f2)" \
+  -U "$(grep DB_USERNAME .env | cut -d '=' -f2)" \
+  -d "$(grep DB_DATABASE .env | cut -d '=' -f2)" \
+  -c "
 SELECT
     schemaname,
     tablename,
@@ -582,7 +698,11 @@ ORDER BY tablename;
 "
 
 -- Missing indexes (tables without indexes on foreign keys)
-PGPASSWORD='123@Marketing@321' psql -h 127.0.0.1 -U begin -d cmis -c "
+PGPASSWORD="$(grep DB_PASSWORD .env | cut -d '=' -f2)" psql \
+  -h "$(grep DB_HOST .env | cut -d '=' -f2)" \
+  -U "$(grep DB_USERNAME .env | cut -d '=' -f2)" \
+  -d "$(grep DB_DATABASE .env | cut -d '=' -f2)" \
+  -c "
 SELECT
     t.schemaname,
     t.tablename,
@@ -802,17 +922,44 @@ $campaign->status = Campaign::STATUS_ACTIVE; // 'active'
 
 ---
 
-## 📚 RELATED KNOWLEDGE
+## 🔍 Quick Reference
 
-- **MULTI_TENANCY_PATTERNS.md** - Deep dive into RLS implementation
-- **CMIS_DATA_PATTERNS.md** - Data structure patterns
-- **CMIS_DISCOVERY_GUIDE.md** - General discovery methodology
-- **PATTERN_RECOGNITION.md** - Architectural patterns
+| I Need To... | Discovery Command | Section |
+|--------------|-------------------|---------|
+| Count RLS policies | `SELECT COUNT(*) FROM pg_policies WHERE schemaname LIKE 'cmis%'` (use .env) | Discovering RLS Policies |
+| Find foreign keys | `\d+ cmis.table_name` or query `information_schema.table_constraints` | Discovering Foreign Keys |
+| List vector columns | `SELECT * FROM information_schema.columns WHERE udt_name = 'vector'` | Discovering AI/ML Features |
+| Find soft delete tables | `SELECT table_name FROM information_schema.columns WHERE column_name = 'deleted_at'` | Discovering Soft Delete |
+| Check RLS context | `SELECT cmis.get_current_user_id(), cmis.get_current_org_id();` | Workflow: Debugging RLS |
+| Find missing indexes | Query foreign keys without indexes | Discovering Indexes |
+| List all schemas | `SELECT nspname FROM pg_namespace WHERE nspname LIKE 'cmis%'` (use .env) | Discovering Schema Organization |
+| Find bilingual columns | `SELECT * FROM information_schema.columns WHERE column_name LIKE '%_ar'` | Discovering Bilingual Support |
 
 ---
 
-**Version:** 2.0 - Discovery-Oriented Database Analysis
-**Framework:** META_COGNITIVE_FRAMEWORK
-**Approach:** Explore, Discover, Understand
+## 📚 Related Knowledge
 
-*"Database structure reveals system architecture."*
+**Prerequisites:**
+- **DISCOVERY_PROTOCOLS.md** - Discovery methodology and executable commands
+- **META_COGNITIVE_FRAMEWORK.md** - Adaptive intelligence principles
+
+**Related Files:**
+- **MULTI_TENANCY_PATTERNS.md** - Deep dive into RLS implementation patterns
+- **CMIS_DATA_PATTERNS.md** - Data structure and modeling patterns
+- **CMIS_DISCOVERY_GUIDE.md** - General discovery methodology for codebase
+- **PATTERN_RECOGNITION.md** - Architectural and code patterns
+- **CMIS_REFERENCE_DATA.md** - Quick reference for schemas and tables
+
+**See Also:**
+- **CLAUDE.md** - Main project guidelines with environment configuration
+- **CMIS_PROJECT_KNOWLEDGE.md** - Core project architecture overview
+
+---
+
+**Last Updated:** 2025-11-27
+**Version:** 2.1
+**Maintained By:** CMIS AI Agent Development Team
+**Framework:** META_COGNITIVE_FRAMEWORK
+**Philosophy:** Discover Structure, Don't Memorize Facts
+
+*"Database structure reveals system architecture. Use discovery commands, not assumptions."*
