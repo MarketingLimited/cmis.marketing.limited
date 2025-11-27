@@ -1,236 +1,252 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
+    /**
+     * Helper to check if table exists
+     */
+    private function tableExists(string $schema, string $table): bool
+    {
+        $result = DB::selectOne("
+            SELECT COUNT(*) as count
+            FROM information_schema.tables
+            WHERE table_schema = ?
+            AND table_name = ?
+        ", [$schema, $table]);
+        return $result->count > 0;
+    }
+
     /**
      * Run the migrations (Phase 20: AI-Powered Campaign Optimization Engine).
      */
     public function up(): void
     {
         // ===== Optimization Models Table =====
-        Schema::create('cmis.optimization_models', function (Blueprint $table) {
-            $table->uuid('model_id')->primary()->default(DB::raw('gen_random_uuid()'));
-            $table->uuid('org_id')->index();
-            $table->string('model_name', 255);
-            $table->string('model_type', 50); // budget_allocation, bid_optimization, audience_targeting, creative_optimization
-            $table->string('algorithm', 100); // gradient_descent, genetic_algorithm, bayesian_optimization, reinforcement_learning
-            $table->string('objective', 50); // maximize_roas, minimize_cpa, maximize_conversions, maximize_revenue
-            $table->jsonb('hyperparameters')->nullable();
-            $table->jsonb('feature_config'); // Which features to use for optimization
-            $table->decimal('performance_score', 8, 4)->nullable(); // Model accuracy/performance
-            $table->integer('training_samples')->default(0);
-            $table->timestamp('trained_at')->nullable();
-            $table->timestamp('last_used_at')->nullable();
-            $table->string('status', 30)->default('training'); // training, ready, deprecated
-            $table->timestamps();
+        if (!$this->tableExists('cmis', 'optimization_models')) {
+            DB::statement("
+                CREATE TABLE cmis.optimization_models (
+                    model_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                    org_id UUID NOT NULL REFERENCES cmis.orgs(org_id) ON DELETE CASCADE,
+                    model_name VARCHAR(255) NOT NULL,
+                    model_type VARCHAR(50) NOT NULL,
+                    algorithm VARCHAR(100) NOT NULL,
+                    objective VARCHAR(50) NOT NULL,
+                    hyperparameters JSONB NULL,
+                    feature_config JSONB NOT NULL DEFAULT '{}',
+                    performance_score DECIMAL(8, 4) NULL,
+                    training_samples INTEGER NOT NULL DEFAULT 0,
+                    trained_at TIMESTAMP NULL,
+                    last_used_at TIMESTAMP NULL,
+                    status VARCHAR(30) NOT NULL DEFAULT 'training' CHECK (status IN ('training', 'ready', 'deprecated')),
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            ");
 
-            $table->foreign('org_id')->references('org_id')->on('cmis.orgs')->onDelete('cascade');
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_optimization_models_org_id ON cmis.optimization_models(org_id)");
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_optimization_models_type ON cmis.optimization_models(org_id, model_type)");
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_optimization_models_status ON cmis.optimization_models(status)");
 
-            $table->index(['org_id', 'model_type']);
-            $table->index('status');
-        });
-
-        // RLS Policy
-        DB::statement("ALTER TABLE cmis.optimization_models ENABLE ROW LEVEL SECURITY");
-        DB::statement("
-            CREATE POLICY org_isolation ON cmis.optimization_models
-            USING (org_id = current_setting('app.current_org_id')::uuid)
-        ");
+            DB::statement('ALTER TABLE cmis.optimization_models ENABLE ROW LEVEL SECURITY');
+            DB::statement("DROP POLICY IF EXISTS org_isolation ON cmis.optimization_models");
+            DB::statement("CREATE POLICY org_isolation ON cmis.optimization_models USING (org_id = NULLIF(current_setting('app.current_org_id', true), '')::uuid)");
+        }
 
         // ===== Optimization Runs Table =====
-        Schema::create('cmis.optimization_runs', function (Blueprint $table) {
-            $table->uuid('run_id')->primary()->default(DB::raw('gen_random_uuid()'));
-            $table->uuid('org_id')->index();
-            $table->uuid('model_id')->nullable();
-            $table->string('optimization_type', 50); // budget, bid, audience, creative, multi_objective
-            $table->string('scope', 50); // account, campaign, ad_set, ad
-            $table->jsonb('scope_entities'); // Entity IDs being optimized
-            $table->jsonb('constraints'); // Min/max budgets, target CPA, etc.
-            $table->jsonb('current_state'); // Current configuration
-            $table->jsonb('optimized_state'); // Recommended configuration
-            $table->jsonb('performance_metrics'); // Expected improvement
-            $table->string('status', 30)->default('running'); // running, completed, failed, applied
-            $table->timestamp('started_at')->default(DB::raw('NOW()'));
-            $table->timestamp('completed_at')->nullable();
-            $table->integer('duration_ms')->nullable();
-            $table->integer('iterations')->default(0);
-            $table->decimal('improvement_score', 8, 2)->nullable(); // Expected % improvement
-            $table->boolean('auto_apply')->default(false);
-            $table->timestamp('applied_at')->nullable();
-            $table->timestamps();
+        if (!$this->tableExists('cmis', 'optimization_runs')) {
+            DB::statement("
+                CREATE TABLE cmis.optimization_runs (
+                    run_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                    org_id UUID NOT NULL REFERENCES cmis.orgs(org_id) ON DELETE CASCADE,
+                    model_id UUID NULL REFERENCES cmis.optimization_models(model_id) ON DELETE SET NULL,
+                    optimization_type VARCHAR(50) NOT NULL,
+                    scope VARCHAR(50) NOT NULL,
+                    scope_entities JSONB NOT NULL DEFAULT '[]',
+                    constraints JSONB NOT NULL DEFAULT '{}',
+                    current_state JSONB NOT NULL DEFAULT '{}',
+                    optimized_state JSONB NOT NULL DEFAULT '{}',
+                    performance_metrics JSONB NOT NULL DEFAULT '{}',
+                    status VARCHAR(30) NOT NULL DEFAULT 'running' CHECK (status IN ('running', 'completed', 'failed', 'applied')),
+                    started_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    completed_at TIMESTAMP NULL,
+                    duration_ms INTEGER NULL,
+                    iterations INTEGER NOT NULL DEFAULT 0,
+                    improvement_score DECIMAL(8, 2) NULL,
+                    auto_apply BOOLEAN NOT NULL DEFAULT FALSE,
+                    applied_at TIMESTAMP NULL,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            ");
 
-            $table->foreign('org_id')->references('org_id')->on('cmis.orgs')->onDelete('cascade');
-            $table->foreign('model_id')->references('model_id')->on('cmis.optimization_models')->onDelete('set null');
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_optimization_runs_org_id ON cmis.optimization_runs(org_id)");
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_optimization_runs_type ON cmis.optimization_runs(org_id, optimization_type)");
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_optimization_runs_status ON cmis.optimization_runs(status)");
 
-            $table->index(['org_id', 'optimization_type']);
-            $table->index('status');
-        });
-
-        // RLS Policy
-        DB::statement("ALTER TABLE cmis.optimization_runs ENABLE ROW LEVEL SECURITY");
-        DB::statement("
-            CREATE POLICY org_isolation ON cmis.optimization_runs
-            USING (org_id = current_setting('app.current_org_id')::uuid)
-        ");
+            DB::statement('ALTER TABLE cmis.optimization_runs ENABLE ROW LEVEL SECURITY');
+            DB::statement("DROP POLICY IF EXISTS org_isolation ON cmis.optimization_runs");
+            DB::statement("CREATE POLICY org_isolation ON cmis.optimization_runs USING (org_id = NULLIF(current_setting('app.current_org_id', true), '')::uuid)");
+        }
 
         // ===== Budget Allocations Table =====
-        Schema::create('cmis.budget_allocations', function (Blueprint $table) {
-            $table->uuid('allocation_id')->primary()->default(DB::raw('gen_random_uuid()'));
-            $table->uuid('org_id')->index();
-            $table->uuid('optimization_run_id')->nullable();
-            $table->string('allocation_period', 50); // daily, weekly, monthly
-            $table->date('period_start');
-            $table->date('period_end');
-            $table->decimal('total_budget', 15, 2);
-            $table->jsonb('allocations'); // Per-campaign/platform budget distribution
-            $table->jsonb('allocation_strategy'); // Algorithm used, constraints applied
-            $table->decimal('expected_roas', 8, 2)->nullable();
-            $table->decimal('expected_conversions', 10, 2)->nullable();
-            $table->decimal('actual_roas', 8, 2)->nullable();
-            $table->decimal('actual_conversions', 10, 2)->nullable();
-            $table->string('status', 30)->default('proposed'); // proposed, active, completed, cancelled
-            $table->boolean('auto_adjust')->default(false);
-            $table->timestamps();
+        if (!$this->tableExists('cmis', 'budget_allocations')) {
+            DB::statement("
+                CREATE TABLE cmis.budget_allocations (
+                    allocation_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                    org_id UUID NOT NULL REFERENCES cmis.orgs(org_id) ON DELETE CASCADE,
+                    optimization_run_id UUID NULL REFERENCES cmis.optimization_runs(run_id) ON DELETE SET NULL,
+                    allocation_period VARCHAR(50) NOT NULL,
+                    period_start DATE NOT NULL,
+                    period_end DATE NOT NULL,
+                    total_budget DECIMAL(15, 2) NOT NULL,
+                    allocations JSONB NOT NULL DEFAULT '{}',
+                    allocation_strategy JSONB NOT NULL DEFAULT '{}',
+                    expected_roas DECIMAL(8, 2) NULL,
+                    expected_conversions DECIMAL(10, 2) NULL,
+                    actual_roas DECIMAL(8, 2) NULL,
+                    actual_conversions DECIMAL(10, 2) NULL,
+                    status VARCHAR(30) NOT NULL DEFAULT 'proposed' CHECK (status IN ('proposed', 'active', 'completed', 'cancelled')),
+                    auto_adjust BOOLEAN NOT NULL DEFAULT FALSE,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            ");
 
-            $table->foreign('org_id')->references('org_id')->on('cmis.orgs')->onDelete('cascade');
-            $table->foreign('optimization_run_id')->references('run_id')->on('cmis.optimization_runs')->onDelete('set null');
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_budget_allocations_org_id ON cmis.budget_allocations(org_id)");
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_budget_allocations_status ON cmis.budget_allocations(org_id, status)");
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_budget_allocations_period ON cmis.budget_allocations(period_start, period_end)");
 
-            $table->index(['org_id', 'status']);
-            $table->index(['period_start', 'period_end']);
-        });
-
-        // RLS Policy
-        DB::statement("ALTER TABLE cmis.budget_allocations ENABLE ROW LEVEL SECURITY");
-        DB::statement("
-            CREATE POLICY org_isolation ON cmis.budget_allocations
-            USING (org_id = current_setting('app.current_org_id')::uuid)
-        ");
+            DB::statement('ALTER TABLE cmis.budget_allocations ENABLE ROW LEVEL SECURITY');
+            DB::statement("DROP POLICY IF EXISTS org_isolation ON cmis.budget_allocations");
+            DB::statement("CREATE POLICY org_isolation ON cmis.budget_allocations USING (org_id = NULLIF(current_setting('app.current_org_id', true), '')::uuid)");
+        }
 
         // ===== Audience Overlaps Table =====
-        Schema::create('cmis.audience_overlaps', function (Blueprint $table) {
-            $table->uuid('overlap_id')->primary()->default(DB::raw('gen_random_uuid()'));
-            $table->uuid('org_id')->index();
-            $table->uuid('campaign_a_id');
-            $table->uuid('campaign_b_id');
-            $table->string('platform', 50); // meta, google, tiktok, etc.
-            $table->integer('audience_a_size')->default(0);
-            $table->integer('audience_b_size')->default(0);
-            $table->integer('overlap_size')->default(0);
-            $table->decimal('overlap_percentage', 5, 2)->default(0.00);
-            $table->decimal('competition_score', 5, 2)->default(0.00); // How much campaigns compete for same audience
-            $table->jsonb('overlap_segments')->nullable(); // Demographic overlap details
-            $table->jsonb('recommendations')->nullable(); // Deduplication suggestions
-            $table->timestamp('analyzed_at')->default(DB::raw('NOW()'));
-            $table->timestamps();
+        if (!$this->tableExists('cmis', 'audience_overlaps')) {
+            DB::statement("
+                CREATE TABLE cmis.audience_overlaps (
+                    overlap_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                    org_id UUID NOT NULL REFERENCES cmis.orgs(org_id) ON DELETE CASCADE,
+                    campaign_a_id UUID NOT NULL,
+                    campaign_b_id UUID NOT NULL,
+                    platform VARCHAR(50) NOT NULL,
+                    audience_a_size INTEGER NOT NULL DEFAULT 0,
+                    audience_b_size INTEGER NOT NULL DEFAULT 0,
+                    overlap_size INTEGER NOT NULL DEFAULT 0,
+                    overlap_percentage DECIMAL(5, 2) NOT NULL DEFAULT 0.00,
+                    competition_score DECIMAL(5, 2) NOT NULL DEFAULT 0.00,
+                    overlap_segments JSONB NULL,
+                    recommendations JSONB NULL,
+                    analyzed_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            ");
 
-            $table->foreign('org_id')->references('org_id')->on('cmis.orgs')->onDelete('cascade');
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_audience_overlaps_org_id ON cmis.audience_overlaps(org_id)");
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_audience_overlaps_platform ON cmis.audience_overlaps(org_id, platform)");
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_audience_overlaps_campaigns ON cmis.audience_overlaps(campaign_a_id, campaign_b_id)");
 
-            $table->index(['org_id', 'platform']);
-            $table->index(['campaign_a_id', 'campaign_b_id']);
-        });
-
-        // RLS Policy
-        DB::statement("ALTER TABLE cmis.audience_overlaps ENABLE ROW LEVEL SECURITY");
-        DB::statement("
-            CREATE POLICY org_isolation ON cmis.audience_overlaps
-            USING (org_id = current_setting('app.current_org_id')::uuid)
-        ");
+            DB::statement('ALTER TABLE cmis.audience_overlaps ENABLE ROW LEVEL SECURITY');
+            DB::statement("DROP POLICY IF EXISTS org_isolation ON cmis.audience_overlaps");
+            DB::statement("CREATE POLICY org_isolation ON cmis.audience_overlaps USING (org_id = NULLIF(current_setting('app.current_org_id', true), '')::uuid)");
+        }
 
         // ===== Attribution Models Table =====
-        Schema::create('cmis.attribution_models', function (Blueprint $table) {
-            $table->uuid('attribution_id')->primary()->default(DB::raw('gen_random_uuid()'));
-            $table->uuid('org_id')->index();
-            $table->string('model_type', 50); // first_touch, last_touch, linear, time_decay, position_based, data_driven
-            $table->string('conversion_window', 20)->default('30d'); // 1d, 7d, 30d, 90d
-            $table->jsonb('touchpoint_weights'); // Weight assigned to each touchpoint
-            $table->jsonb('channel_attribution'); // Revenue/conversions attributed to each channel
-            $table->jsonb('campaign_attribution'); // Attribution per campaign
-            $table->decimal('total_attributed_revenue', 15, 2)->default(0.00);
-            $table->integer('total_attributed_conversions')->default(0);
-            $table->date('analysis_start_date');
-            $table->date('analysis_end_date');
-            $table->boolean('is_active')->default(true);
-            $table->timestamps();
+        if (!$this->tableExists('cmis', 'attribution_models')) {
+            DB::statement("
+                CREATE TABLE cmis.attribution_models (
+                    attribution_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                    org_id UUID NOT NULL REFERENCES cmis.orgs(org_id) ON DELETE CASCADE,
+                    model_type VARCHAR(50) NOT NULL,
+                    conversion_window VARCHAR(20) NOT NULL DEFAULT '30d',
+                    touchpoint_weights JSONB NOT NULL DEFAULT '{}',
+                    channel_attribution JSONB NOT NULL DEFAULT '{}',
+                    campaign_attribution JSONB NOT NULL DEFAULT '{}',
+                    total_attributed_revenue DECIMAL(15, 2) NOT NULL DEFAULT 0.00,
+                    total_attributed_conversions INTEGER NOT NULL DEFAULT 0,
+                    analysis_start_date DATE NOT NULL,
+                    analysis_end_date DATE NOT NULL,
+                    is_active BOOLEAN NOT NULL DEFAULT TRUE,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            ");
 
-            $table->foreign('org_id')->references('org_id')->on('cmis.orgs')->onDelete('cascade');
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_attribution_models_org_id ON cmis.attribution_models(org_id)");
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_attribution_models_type ON cmis.attribution_models(org_id, model_type)");
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_attribution_models_active ON cmis.attribution_models(is_active)");
 
-            $table->index(['org_id', 'model_type']);
-            $table->index('is_active');
-        });
-
-        // RLS Policy
-        DB::statement("ALTER TABLE cmis.attribution_models ENABLE ROW LEVEL SECURITY");
-        DB::statement("
-            CREATE POLICY org_isolation ON cmis.attribution_models
-            USING (org_id = current_setting('app.current_org_id')::uuid)
-        ");
+            DB::statement('ALTER TABLE cmis.attribution_models ENABLE ROW LEVEL SECURITY');
+            DB::statement("DROP POLICY IF EXISTS org_isolation ON cmis.attribution_models");
+            DB::statement("CREATE POLICY org_isolation ON cmis.attribution_models USING (org_id = NULLIF(current_setting('app.current_org_id', true), '')::uuid)");
+        }
 
         // ===== Creative Performance Table =====
-        Schema::create('cmis.creative_performance', function (Blueprint $table) {
-            $table->uuid('performance_id')->primary()->default(DB::raw('gen_random_uuid()'));
-            $table->uuid('org_id')->index();
-            $table->uuid('campaign_id');
-            $table->uuid('creative_id');
-            $table->string('creative_type', 50); // image, video, carousel, collection
-            $table->jsonb('creative_elements'); // Headlines, descriptions, CTAs, colors, etc.
-            $table->jsonb('performance_metrics'); // CTR, CVR, engagement rate, etc.
-            $table->decimal('engagement_score', 8, 4)->default(0.0000);
-            $table->decimal('conversion_score', 8, 4)->default(0.0000);
-            $table->jsonb('audience_segments'); // Which audiences perform best
-            $table->jsonb('recommendations'); // Creative optimization suggestions
-            $table->date('analysis_date');
-            $table->timestamps();
+        if (!$this->tableExists('cmis', 'creative_performance')) {
+            DB::statement("
+                CREATE TABLE cmis.creative_performance (
+                    performance_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                    org_id UUID NOT NULL REFERENCES cmis.orgs(org_id) ON DELETE CASCADE,
+                    campaign_id UUID NOT NULL,
+                    creative_id UUID NOT NULL,
+                    creative_type VARCHAR(50) NOT NULL,
+                    creative_elements JSONB NOT NULL DEFAULT '{}',
+                    performance_metrics JSONB NOT NULL DEFAULT '{}',
+                    engagement_score DECIMAL(8, 4) NOT NULL DEFAULT 0.0000,
+                    conversion_score DECIMAL(8, 4) NOT NULL DEFAULT 0.0000,
+                    audience_segments JSONB NOT NULL DEFAULT '{}',
+                    recommendations JSONB NULL,
+                    analysis_date DATE NOT NULL,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            ");
 
-            $table->foreign('org_id')->references('org_id')->on('cmis.orgs')->onDelete('cascade');
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_creative_performance_org_id ON cmis.creative_performance(org_id)");
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_creative_performance_campaign ON cmis.creative_performance(org_id, campaign_id)");
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_creative_performance_type ON cmis.creative_performance(creative_type)");
 
-            $table->index(['org_id', 'campaign_id']);
-            $table->index('creative_type');
-        });
-
-        // RLS Policy
-        DB::statement("ALTER TABLE cmis.creative_performance ENABLE ROW LEVEL SECURITY");
-        DB::statement("
-            CREATE POLICY org_isolation ON cmis.creative_performance
-            USING (org_id = current_setting('app.current_org_id')::uuid)
-        ");
+            DB::statement('ALTER TABLE cmis.creative_performance ENABLE ROW LEVEL SECURITY');
+            DB::statement("DROP POLICY IF EXISTS org_isolation ON cmis.creative_performance");
+            DB::statement("CREATE POLICY org_isolation ON cmis.creative_performance USING (org_id = NULLIF(current_setting('app.current_org_id', true), '')::uuid)");
+        }
 
         // ===== Optimization Insights Table =====
-        Schema::create('cmis.optimization_insights', function (Blueprint $table) {
-            $table->uuid('insight_id')->primary()->default(DB::raw('gen_random_uuid()'));
-            $table->uuid('org_id')->index();
-            $table->uuid('optimization_run_id')->nullable();
-            $table->string('insight_type', 50); // opportunity, warning, recommendation, trend
-            $table->string('category', 50); // budget, audience, creative, bidding, scheduling
-            $table->string('severity', 20)->default('medium'); // low, medium, high, critical
-            $table->string('title', 255);
-            $table->text('description');
-            $table->jsonb('data'); // Supporting data for the insight
-            $table->jsonb('actions'); // Recommended actions
-            $table->decimal('potential_impact', 8, 2)->nullable(); // Expected improvement %
-            $table->decimal('confidence_score', 5, 2)->default(75.00); // Confidence in insight
-            $table->boolean('auto_apply_eligible')->default(false);
-            $table->string('status', 30)->default('new'); // new, reviewed, applied, dismissed
-            $table->timestamp('expires_at')->nullable();
-            $table->timestamps();
+        if (!$this->tableExists('cmis', 'optimization_insights')) {
+            DB::statement("
+                CREATE TABLE cmis.optimization_insights (
+                    insight_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                    org_id UUID NOT NULL REFERENCES cmis.orgs(org_id) ON DELETE CASCADE,
+                    optimization_run_id UUID NULL REFERENCES cmis.optimization_runs(run_id) ON DELETE SET NULL,
+                    insight_type VARCHAR(50) NOT NULL,
+                    category VARCHAR(50) NOT NULL,
+                    severity VARCHAR(20) NOT NULL DEFAULT 'medium' CHECK (severity IN ('low', 'medium', 'high', 'critical')),
+                    title VARCHAR(255) NOT NULL,
+                    description TEXT NOT NULL,
+                    data JSONB NOT NULL DEFAULT '{}',
+                    actions JSONB NOT NULL DEFAULT '[]',
+                    potential_impact DECIMAL(8, 2) NULL,
+                    confidence_score DECIMAL(5, 2) NOT NULL DEFAULT 75.00,
+                    auto_apply_eligible BOOLEAN NOT NULL DEFAULT FALSE,
+                    status VARCHAR(30) NOT NULL DEFAULT 'new' CHECK (status IN ('new', 'reviewed', 'applied', 'dismissed')),
+                    expires_at TIMESTAMP NULL,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            ");
 
-            $table->foreign('org_id')->references('org_id')->on('cmis.orgs')->onDelete('cascade');
-            $table->foreign('optimization_run_id')->references('run_id')->on('cmis.optimization_runs')->onDelete('set null');
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_optimization_insights_org_id ON cmis.optimization_insights(org_id)");
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_optimization_insights_status ON cmis.optimization_insights(org_id, status)");
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_optimization_insights_category ON cmis.optimization_insights(category, severity)");
 
-            $table->index(['org_id', 'status']);
-            $table->index(['category', 'severity']);
-        });
-
-        // RLS Policy
-        DB::statement("ALTER TABLE cmis.optimization_insights ENABLE ROW LEVEL SECURITY");
-        DB::statement("
-            CREATE POLICY org_isolation ON cmis.optimization_insights
-            USING (org_id = current_setting('app.current_org_id')::uuid)
-        ");
+            DB::statement('ALTER TABLE cmis.optimization_insights ENABLE ROW LEVEL SECURITY');
+            DB::statement("DROP POLICY IF EXISTS org_isolation ON cmis.optimization_insights");
+            DB::statement("CREATE POLICY org_isolation ON cmis.optimization_insights USING (org_id = NULLIF(current_setting('app.current_org_id', true), '')::uuid)");
+        }
     }
 
     /**
@@ -238,12 +254,12 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('cmis.optimization_insights');
-        Schema::dropIfExists('cmis.creative_performance');
-        Schema::dropIfExists('cmis.attribution_models');
-        Schema::dropIfExists('cmis.audience_overlaps');
-        Schema::dropIfExists('cmis.budget_allocations');
-        Schema::dropIfExists('cmis.optimization_runs');
-        Schema::dropIfExists('cmis.optimization_models');
+        DB::statement('DROP TABLE IF EXISTS cmis.optimization_insights CASCADE');
+        DB::statement('DROP TABLE IF EXISTS cmis.creative_performance CASCADE');
+        DB::statement('DROP TABLE IF EXISTS cmis.attribution_models CASCADE');
+        DB::statement('DROP TABLE IF EXISTS cmis.audience_overlaps CASCADE');
+        DB::statement('DROP TABLE IF EXISTS cmis.budget_allocations CASCADE');
+        DB::statement('DROP TABLE IF EXISTS cmis.optimization_runs CASCADE');
+        DB::statement('DROP TABLE IF EXISTS cmis.optimization_models CASCADE');
     }
 };

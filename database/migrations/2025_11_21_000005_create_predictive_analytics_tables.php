@@ -1,182 +1,202 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
+    /**
+     * Helper to check if table exists
+     */
+    private function tableExists(string $schema, string $table): bool
+    {
+        $result = DB::selectOne("
+            SELECT COUNT(*) as count
+            FROM information_schema.tables
+            WHERE table_schema = ?
+            AND table_name = ?
+        ", [$schema, $table]);
+        return $result->count > 0;
+    }
+
     /**
      * Run the migrations (Phase 16 - Predictive Analytics & Forecasting)
      */
     public function up(): void
     {
         // Forecasts table - time-series predictions
-        Schema::create('cmis.forecasts', function (Blueprint $table) {
-            $table->uuid('forecast_id')->primary();
-            $table->uuid('org_id')->index();
-            $table->string('entity_type', 50); // campaign, org, ad_set
-            $table->uuid('entity_id')->nullable();
-            $table->string('metric', 100); // revenue, conversions, spend, roi
-            $table->string('forecast_type', 50)->default('time_series'); // time_series, linear_regression, arima
-            $table->date('forecast_date');
-            $table->decimal('predicted_value', 15, 2);
-            $table->decimal('confidence_lower', 15, 2)->nullable();
-            $table->decimal('confidence_upper', 15, 2)->nullable();
-            $table->decimal('confidence_level', 5, 2)->default(95.00);
-            $table->decimal('actual_value', 15, 2)->nullable();
-            $table->decimal('error', 15, 2)->nullable(); // prediction error
-            $table->jsonb('model_params')->nullable();
-            $table->timestamp('generated_at')->index();
-            $table->timestamps();
+        if (!$this->tableExists('cmis', 'forecasts')) {
+            DB::statement("
+                CREATE TABLE cmis.forecasts (
+                    forecast_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                    org_id UUID NOT NULL REFERENCES cmis.orgs(org_id) ON DELETE CASCADE,
+                    entity_type VARCHAR(50) NOT NULL,
+                    entity_id UUID NULL,
+                    metric VARCHAR(100) NOT NULL,
+                    forecast_type VARCHAR(50) NOT NULL DEFAULT 'time_series' CHECK (forecast_type IN ('time_series', 'linear_regression', 'arima')),
+                    forecast_date DATE NOT NULL,
+                    predicted_value DECIMAL(15, 2) NOT NULL,
+                    confidence_lower DECIMAL(15, 2) NULL,
+                    confidence_upper DECIMAL(15, 2) NULL,
+                    confidence_level DECIMAL(5, 2) NOT NULL DEFAULT 95.00,
+                    actual_value DECIMAL(15, 2) NULL,
+                    error DECIMAL(15, 2) NULL,
+                    model_params JSONB NULL,
+                    generated_at TIMESTAMP NOT NULL,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            ");
 
-            $table->foreign('org_id')->references('org_id')->on('cmis.orgs')->onDelete('cascade');
-        });
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_forecasts_org_id ON cmis.forecasts(org_id)");
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_forecasts_entity ON cmis.forecasts(entity_type, entity_id)");
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_forecasts_date ON cmis.forecasts(forecast_date DESC)");
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_forecasts_metric ON cmis.forecasts(metric)");
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_forecasts_generated ON cmis.forecasts(generated_at)");
+
+            DB::statement('ALTER TABLE cmis.forecasts ENABLE ROW LEVEL SECURITY');
+            DB::statement("DROP POLICY IF EXISTS org_isolation ON cmis.forecasts");
+            DB::statement("CREATE POLICY org_isolation ON cmis.forecasts USING (org_id = NULLIF(current_setting('app.current_org_id', true), '')::uuid)");
+        }
 
         // Anomalies table - unusual pattern detection
-        Schema::create('cmis.anomalies', function (Blueprint $table) {
-            $table->uuid('anomaly_id')->primary();
-            $table->uuid('org_id')->index();
-            $table->string('entity_type', 50);
-            $table->uuid('entity_id')->nullable();
-            $table->string('metric', 100);
-            $table->string('anomaly_type', 50); // spike, drop, trend_change, outlier
-            $table->string('severity', 20); // critical, high, medium, low
-            $table->decimal('expected_value', 15, 2);
-            $table->decimal('actual_value', 15, 2);
-            $table->decimal('deviation_percentage', 8, 2);
-            $table->decimal('confidence_score', 5, 2); // 0-100
-            $table->date('detected_date');
-            $table->text('description')->nullable();
-            $table->string('status', 20)->default('new'); // new, acknowledged, resolved, false_positive
-            $table->uuid('acknowledged_by')->nullable();
-            $table->timestamp('acknowledged_at')->nullable();
-            $table->text('resolution_notes')->nullable();
-            $table->timestamps();
+        if (!$this->tableExists('cmis', 'anomalies')) {
+            DB::statement("
+                CREATE TABLE cmis.anomalies (
+                    anomaly_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                    org_id UUID NOT NULL REFERENCES cmis.orgs(org_id) ON DELETE CASCADE,
+                    entity_type VARCHAR(50) NOT NULL,
+                    entity_id UUID NULL,
+                    metric VARCHAR(100) NOT NULL,
+                    anomaly_type VARCHAR(50) NOT NULL CHECK (anomaly_type IN ('spike', 'drop', 'trend_change', 'outlier')),
+                    severity VARCHAR(20) NOT NULL CHECK (severity IN ('critical', 'high', 'medium', 'low')),
+                    expected_value DECIMAL(15, 2) NOT NULL,
+                    actual_value DECIMAL(15, 2) NOT NULL,
+                    deviation_percentage DECIMAL(8, 2) NOT NULL,
+                    confidence_score DECIMAL(5, 2) NOT NULL,
+                    detected_date DATE NOT NULL,
+                    description TEXT NULL,
+                    status VARCHAR(20) NOT NULL DEFAULT 'new' CHECK (status IN ('new', 'acknowledged', 'resolved', 'false_positive')),
+                    acknowledged_by UUID NULL REFERENCES cmis.users(user_id),
+                    acknowledged_at TIMESTAMP NULL,
+                    resolution_notes TEXT NULL,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            ");
 
-            $table->foreign('org_id')->references('org_id')->on('cmis.orgs')->onDelete('cascade');
-            $table->foreign('acknowledged_by')->references('user_id')->on('cmis.users');
-        });
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_anomalies_org_id ON cmis.anomalies(org_id)");
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_anomalies_detected ON cmis.anomalies(detected_date DESC)");
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_anomalies_status ON cmis.anomalies(status)");
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_anomalies_severity ON cmis.anomalies(severity)");
+
+            DB::statement('ALTER TABLE cmis.anomalies ENABLE ROW LEVEL SECURITY');
+            DB::statement("DROP POLICY IF EXISTS org_isolation ON cmis.anomalies");
+            DB::statement("CREATE POLICY org_isolation ON cmis.anomalies USING (org_id = NULLIF(current_setting('app.current_org_id', true), '')::uuid)");
+        }
 
         // Recommendations table - AI-powered suggestions
-        Schema::create('cmis.recommendations', function (Blueprint $table) {
-            $table->uuid('recommendation_id')->primary();
-            $table->uuid('org_id')->index();
-            $table->string('entity_type', 50);
-            $table->uuid('entity_id')->nullable();
-            $table->string('recommendation_type', 50); // budget_increase, bid_adjustment, pause_campaign, creative_refresh
-            $table->string('category', 50); // performance, budget, targeting, creative
-            $table->string('priority', 20); // critical, high, medium, low
-            $table->decimal('confidence_score', 5, 2); // 0-100
-            $table->decimal('potential_impact', 15, 2)->nullable(); // Expected improvement ($)
-            $table->string('impact_metric', 50)->nullable(); // roi, conversions, revenue
-            $table->text('title');
-            $table->text('description');
-            $table->jsonb('action_details'); // Specific actions to take
-            $table->jsonb('supporting_data')->nullable(); // Evidence/reasoning
-            $table->string('status', 20)->default('pending'); // pending, accepted, rejected, implemented
-            $table->uuid('actioned_by')->nullable();
-            $table->timestamp('actioned_at')->nullable();
-            $table->text('action_notes')->nullable();
-            $table->timestamp('expires_at')->nullable();
-            $table->timestamps();
+        if (!$this->tableExists('cmis', 'recommendations')) {
+            DB::statement("
+                CREATE TABLE cmis.recommendations (
+                    recommendation_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                    org_id UUID NOT NULL REFERENCES cmis.orgs(org_id) ON DELETE CASCADE,
+                    entity_type VARCHAR(50) NOT NULL,
+                    entity_id UUID NULL,
+                    recommendation_type VARCHAR(50) NOT NULL,
+                    category VARCHAR(50) NOT NULL CHECK (category IN ('performance', 'budget', 'targeting', 'creative')),
+                    priority VARCHAR(20) NOT NULL CHECK (priority IN ('critical', 'high', 'medium', 'low')),
+                    confidence_score DECIMAL(5, 2) NOT NULL,
+                    potential_impact DECIMAL(15, 2) NULL,
+                    impact_metric VARCHAR(50) NULL,
+                    title TEXT NOT NULL,
+                    description TEXT NOT NULL,
+                    action_details JSONB NOT NULL DEFAULT '{}',
+                    supporting_data JSONB NULL,
+                    status VARCHAR(20) NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'accepted', 'rejected', 'implemented')),
+                    actioned_by UUID NULL REFERENCES cmis.users(user_id),
+                    actioned_at TIMESTAMP NULL,
+                    action_notes TEXT NULL,
+                    expires_at TIMESTAMP NULL,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            ");
 
-            $table->foreign('org_id')->references('org_id')->on('cmis.orgs')->onDelete('cascade');
-            $table->foreign('actioned_by')->references('user_id')->on('cmis.users');
-        });
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_recommendations_org_id ON cmis.recommendations(org_id)");
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_recommendations_status ON cmis.recommendations(status)");
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_recommendations_priority ON cmis.recommendations(priority)");
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_recommendations_expires ON cmis.recommendations(expires_at)");
+
+            DB::statement('ALTER TABLE cmis.recommendations ENABLE ROW LEVEL SECURITY');
+            DB::statement("DROP POLICY IF EXISTS org_isolation ON cmis.recommendations");
+            DB::statement("CREATE POLICY org_isolation ON cmis.recommendations USING (org_id = NULLIF(current_setting('app.current_org_id', true), '')::uuid)");
+        }
 
         // Trend Analysis table - pattern detection
-        Schema::create('cmis.trend_analysis', function (Blueprint $table) {
-            $table->uuid('trend_id')->primary();
-            $table->uuid('org_id')->index();
-            $table->string('entity_type', 50);
-            $table->uuid('entity_id')->nullable();
-            $table->string('metric', 100);
-            $table->string('trend_type', 50); // upward, downward, stable, seasonal, volatile
-            $table->decimal('trend_strength', 5, 2); // -100 to 100
-            $table->decimal('confidence', 5, 2); // 0-100
-            $table->date('period_start');
-            $table->date('period_end');
-            $table->integer('data_points');
-            $table->decimal('slope', 15, 4)->nullable(); // Rate of change
-            $table->jsonb('seasonality_detected')->nullable();
-            $table->jsonb('pattern_details')->nullable();
-            $table->text('interpretation')->nullable();
-            $table->timestamps();
+        if (!$this->tableExists('cmis', 'trend_analysis')) {
+            DB::statement("
+                CREATE TABLE cmis.trend_analysis (
+                    trend_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                    org_id UUID NOT NULL REFERENCES cmis.orgs(org_id) ON DELETE CASCADE,
+                    entity_type VARCHAR(50) NOT NULL,
+                    entity_id UUID NULL,
+                    metric VARCHAR(100) NOT NULL,
+                    trend_type VARCHAR(50) NOT NULL CHECK (trend_type IN ('upward', 'downward', 'stable', 'seasonal', 'volatile')),
+                    trend_strength DECIMAL(5, 2) NOT NULL,
+                    confidence DECIMAL(5, 2) NOT NULL,
+                    period_start DATE NOT NULL,
+                    period_end DATE NOT NULL,
+                    data_points INTEGER NOT NULL,
+                    slope DECIMAL(15, 4) NULL,
+                    seasonality_detected JSONB NULL,
+                    pattern_details JSONB NULL,
+                    interpretation TEXT NULL,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            ");
 
-            $table->foreign('org_id')->references('org_id')->on('cmis.orgs')->onDelete('cascade');
-        });
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_trends_org_id ON cmis.trend_analysis(org_id)");
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_trends_period ON cmis.trend_analysis(period_start, period_end)");
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_trends_type ON cmis.trend_analysis(trend_type)");
+
+            DB::statement('ALTER TABLE cmis.trend_analysis ENABLE ROW LEVEL SECURITY');
+            DB::statement("DROP POLICY IF EXISTS org_isolation ON cmis.trend_analysis");
+            DB::statement("CREATE POLICY org_isolation ON cmis.trend_analysis USING (org_id = NULLIF(current_setting('app.current_org_id', true), '')::uuid)");
+        }
 
         // Model Performance Tracking
-        Schema::create('cmis.prediction_models', function (Blueprint $table) {
-            $table->uuid('model_id')->primary();
-            $table->uuid('org_id')->index();
-            $table->string('model_type', 50); // time_series, regression, classification, neural_network
-            $table->string('metric', 100); // What it predicts
-            $table->string('algorithm', 50); // arima, linear_regression, random_forest, lstm
-            $table->jsonb('hyperparameters')->nullable();
-            $table->decimal('accuracy_score', 5, 2)->nullable(); // 0-100
-            $table->decimal('mae', 15, 2)->nullable(); // Mean Absolute Error
-            $table->decimal('rmse', 15, 2)->nullable(); // Root Mean Square Error
-            $table->decimal('r_squared', 5, 4)->nullable(); // R² score
-            $table->integer('training_samples')->nullable();
-            $table->date('trained_at')->nullable();
-            $table->date('last_evaluated_at')->nullable();
-            $table->string('status', 20)->default('active'); // active, deprecated, retraining
-            $table->timestamps();
+        if (!$this->tableExists('cmis', 'prediction_models')) {
+            DB::statement("
+                CREATE TABLE cmis.prediction_models (
+                    model_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                    org_id UUID NOT NULL REFERENCES cmis.orgs(org_id) ON DELETE CASCADE,
+                    model_type VARCHAR(50) NOT NULL CHECK (model_type IN ('time_series', 'regression', 'classification', 'neural_network')),
+                    metric VARCHAR(100) NOT NULL,
+                    algorithm VARCHAR(50) NOT NULL,
+                    hyperparameters JSONB NULL,
+                    accuracy_score DECIMAL(5, 2) NULL,
+                    mae DECIMAL(15, 2) NULL,
+                    rmse DECIMAL(15, 2) NULL,
+                    r_squared DECIMAL(5, 4) NULL,
+                    training_samples INTEGER NULL,
+                    trained_at DATE NULL,
+                    last_evaluated_at DATE NULL,
+                    status VARCHAR(20) NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'deprecated', 'retraining')),
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            ");
 
-            $table->foreign('org_id')->references('org_id')->on('cmis.orgs')->onDelete('cascade');
-        });
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_models_org_id ON cmis.prediction_models(org_id)");
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_models_type ON cmis.prediction_models(model_type)");
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_models_status ON cmis.prediction_models(status)");
 
-        // Create indexes
-        DB::statement('CREATE INDEX idx_forecasts_entity ON cmis.forecasts(entity_type, entity_id)');
-        DB::statement('CREATE INDEX idx_forecasts_date ON cmis.forecasts(forecast_date DESC)');
-        DB::statement('CREATE INDEX idx_forecasts_metric ON cmis.forecasts(metric)');
-
-        DB::statement('CREATE INDEX idx_anomalies_detected ON cmis.anomalies(detected_date DESC)');
-        DB::statement('CREATE INDEX idx_anomalies_status ON cmis.anomalies(status)');
-        DB::statement('CREATE INDEX idx_anomalies_severity ON cmis.anomalies(severity)');
-
-        DB::statement('CREATE INDEX idx_recommendations_status ON cmis.recommendations(status)');
-        DB::statement('CREATE INDEX idx_recommendations_priority ON cmis.recommendations(priority)');
-        DB::statement('CREATE INDEX idx_recommendations_expires ON cmis.recommendations(expires_at)');
-
-        DB::statement('CREATE INDEX idx_trends_period ON cmis.trend_analysis(period_start, period_end)');
-        DB::statement('CREATE INDEX idx_trends_type ON cmis.trend_analysis(trend_type)');
-
-        // Enable Row Level Security
-        DB::statement('ALTER TABLE cmis.forecasts ENABLE ROW LEVEL SECURITY');
-        DB::statement('ALTER TABLE cmis.anomalies ENABLE ROW LEVEL SECURITY');
-        DB::statement('ALTER TABLE cmis.recommendations ENABLE ROW LEVEL SECURITY');
-        DB::statement('ALTER TABLE cmis.trend_analysis ENABLE ROW LEVEL SECURITY');
-        DB::statement('ALTER TABLE cmis.prediction_models ENABLE ROW LEVEL SECURITY');
-
-        // Create RLS policies
-        DB::statement("
-            CREATE POLICY org_isolation ON cmis.forecasts
-            USING (org_id = current_setting('app.current_org_id')::uuid)
-        ");
-
-        DB::statement("
-            CREATE POLICY org_isolation ON cmis.anomalies
-            USING (org_id = current_setting('app.current_org_id')::uuid)
-        ");
-
-        DB::statement("
-            CREATE POLICY org_isolation ON cmis.recommendations
-            USING (org_id = current_setting('app.current_org_id')::uuid)
-        ");
-
-        DB::statement("
-            CREATE POLICY org_isolation ON cmis.trend_analysis
-            USING (org_id = current_setting('app.current_org_id')::uuid)
-        ");
-
-        DB::statement("
-            CREATE POLICY org_isolation ON cmis.prediction_models
-            USING (org_id = current_setting('app.current_org_id')::uuid)
-        ");
+            DB::statement('ALTER TABLE cmis.prediction_models ENABLE ROW LEVEL SECURITY');
+            DB::statement("DROP POLICY IF EXISTS org_isolation ON cmis.prediction_models");
+            DB::statement("CREATE POLICY org_isolation ON cmis.prediction_models USING (org_id = NULLIF(current_setting('app.current_org_id', true), '')::uuid)");
+        }
     }
 
     /**
@@ -184,10 +204,10 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('cmis.prediction_models');
-        Schema::dropIfExists('cmis.trend_analysis');
-        Schema::dropIfExists('cmis.recommendations');
-        Schema::dropIfExists('cmis.anomalies');
-        Schema::dropIfExists('cmis.forecasts');
+        DB::statement('DROP TABLE IF EXISTS cmis.prediction_models CASCADE');
+        DB::statement('DROP TABLE IF EXISTS cmis.trend_analysis CASCADE');
+        DB::statement('DROP TABLE IF EXISTS cmis.recommendations CASCADE');
+        DB::statement('DROP TABLE IF EXISTS cmis.anomalies CASCADE');
+        DB::statement('DROP TABLE IF EXISTS cmis.forecasts CASCADE');
     }
 };

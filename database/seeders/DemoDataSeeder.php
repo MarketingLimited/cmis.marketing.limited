@@ -1026,12 +1026,12 @@ class DemoDataSeeder extends Seeder
                 ->get();
 
             foreach ($userOrgs as $userOrg) {
-                // Create welcome notification
+                // Create welcome notification (using 'system' type which is allowed by CHECK constraint)
                 DB::table('cmis.notifications')->insert([
                     'notification_id' => Str::uuid(),
                     'user_id' => $userId,
                     'org_id' => $userOrg->org_id,
-                    'type' => 'welcome',
+                    'type' => 'system',
                     'title' => 'Welcome to CMIS!',
                     'message' => 'You have been added to the organization. Explore campaigns and start creating content.',
                     'data' => json_encode([

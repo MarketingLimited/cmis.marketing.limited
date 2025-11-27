@@ -81,36 +81,9 @@ return new class extends Migration
             }
         }
 
-        // Skip table dropping in parallel test environment
-        // RefreshDatabase already handles database state
-        // Dropping tables causes race conditions in parallel execution
-        $isParallelTest = env('TEST_TOKEN') !== null;
-
-        if (!$isParallelTest) {
-            // Only drop tables in non-parallel environments
-            // Exclude 'migrations' table as Laravel manages it
-            $schemas = ['public', 'cmis', 'cmis_ai_analytics', 'cmis_analytics', 'cmis_audit', 'cmis_dev',
-                        'cmis_knowledge', 'cmis_marketing', 'cmis_ops', 'cmis_security_backup_20251111_202413',
-                        'cmis_staging', 'cmis_system_health', 'archive', 'lab', 'operations'];
-
-            foreach ($schemas as $schema) {
-                // Drop all tables in schema except migrations (Laravel managed)
-                try {
-                    DB::unprepared("
-                        DO $$
-                        DECLARE
-                            r RECORD;
-                        BEGIN
-                            FOR r IN (SELECT tablename FROM pg_tables WHERE schemaname = '{$schema}' AND tablename != 'migrations') LOOP
-                                EXECUTE 'DROP TABLE IF EXISTS {$schema}.' || quote_ident(r.tablename) || ' CASCADE';
-                            END LOOP;
-                        END $$;
-                    ");
-                } catch (\Exception $e) {
-                    // Ignore errors during drop (tables may not exist)
-                }
-            }
-        }
+        // NOTE: Table dropping is now handled by migrate:fresh command itself
+        // Manual dropping was causing issues with Laravel's migrations table
+        // The migrate:fresh command already handles dropping all tables properly
 
         $sql = file_get_contents(database_path('sql/complete_tables.sql'));
 

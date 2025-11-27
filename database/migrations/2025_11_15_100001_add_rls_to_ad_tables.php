@@ -21,6 +21,14 @@ return new class extends Migration
         DB::statement('ALTER TABLE cmis.ad_metrics ENABLE ROW LEVEL SECURITY');
         DB::statement('ALTER TABLE cmis.ad_audiences ENABLE ROW LEVEL SECURITY');
 
+        // Drop existing policies if they exist (to handle re-runs)
+        DB::statement('DROP POLICY IF EXISTS ad_campaigns_org_isolation ON cmis.ad_campaigns');
+        DB::statement('DROP POLICY IF EXISTS ad_accounts_org_isolation ON cmis.ad_accounts');
+        DB::statement('DROP POLICY IF EXISTS ad_sets_org_isolation ON cmis.ad_sets');
+        DB::statement('DROP POLICY IF EXISTS ad_entities_org_isolation ON cmis.ad_entities');
+        DB::statement('DROP POLICY IF EXISTS ad_metrics_org_isolation ON cmis.ad_metrics');
+        DB::statement('DROP POLICY IF EXISTS ad_audiences_org_isolation ON cmis.ad_audiences');
+
         // Create RLS policies for ad_campaigns
         DB::statement("
             CREATE POLICY ad_campaigns_org_isolation ON cmis.ad_campaigns

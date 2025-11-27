@@ -146,7 +146,7 @@ class CampaignController extends Controller
 
             return redirect()
                 ->route('orgs.campaigns.show', ['org' => $org, 'campaign' => $campaign->campaign_id])
-                ->with('success', 'Campaign created successfully!');
+                ->with('success', __('campaigns.created_successfully'));
 
         } catch (\Illuminate\Validation\ValidationException $e) {
             if ($request->wantsJson()) {

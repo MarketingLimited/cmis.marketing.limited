@@ -1,168 +1,192 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
+    /**
+     * Helper to check if table exists
+     */
+    private function tableExists(string $schema, string $table): bool
+    {
+        $result = DB::selectOne("
+            SELECT COUNT(*) as count
+            FROM information_schema.tables
+            WHERE table_schema = ?
+            AND table_name = ?
+        ", [$schema, $table]);
+        return $result->count > 0;
+    }
+
     /**
      * Run the migrations (Phase 15 - A/B Testing & Experimentation)
      */
     public function up(): void
     {
         // Experiments table
-        Schema::create('cmis.experiments', function (Blueprint $table) {
-            $table->uuid('experiment_id')->primary();
-            $table->uuid('org_id')->index();
-            $table->uuid('created_by');
-            $table->string('name', 255);
-            $table->text('description')->nullable();
-            $table->string('experiment_type', 50); // campaign, content, audience, budget
-            $table->string('entity_type', 50); // campaign, ad_set, ad, content_plan
-            $table->uuid('entity_id')->nullable(); // Related entity ID
-            $table->string('metric', 100); // Primary metric to optimize
-            $table->jsonb('metrics')->nullable(); // Additional metrics to track
-            $table->string('hypothesis', 500)->nullable();
-            $table->string('status', 20)->default('draft'); // draft, running, paused, completed, cancelled
-            $table->date('start_date')->nullable();
-            $table->date('end_date')->nullable();
-            $table->integer('duration_days')->nullable();
-            $table->integer('sample_size_per_variant')->nullable();
-            $table->decimal('confidence_level', 5, 2)->default(95.00); // 95%
-            $table->decimal('minimum_detectable_effect', 5, 2)->default(5.00); // 5%
-            $table->string('traffic_allocation', 20)->default('equal'); // equal, weighted, adaptive
-            $table->jsonb('config')->nullable(); // Additional configuration
-            $table->timestamp('started_at')->nullable();
-            $table->timestamp('completed_at')->nullable();
-            $table->string('winner_variant_id')->nullable();
-            $table->decimal('statistical_significance', 5, 2)->nullable();
-            $table->jsonb('results')->nullable();
-            $table->timestamps();
+        if (!$this->tableExists('cmis', 'experiments')) {
+            DB::statement("
+                CREATE TABLE cmis.experiments (
+                    experiment_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                    org_id UUID NOT NULL REFERENCES cmis.orgs(org_id) ON DELETE CASCADE,
+                    created_by UUID NOT NULL REFERENCES cmis.users(user_id),
+                    name VARCHAR(255) NOT NULL,
+                    description TEXT NULL,
+                    experiment_type VARCHAR(50) NOT NULL,
+                    entity_type VARCHAR(50) NOT NULL,
+                    entity_id UUID NULL,
+                    metric VARCHAR(100) NOT NULL,
+                    metrics JSONB NULL,
+                    hypothesis VARCHAR(500) NULL,
+                    status VARCHAR(20) NOT NULL DEFAULT 'draft' CHECK (status IN ('draft', 'running', 'paused', 'completed', 'cancelled')),
+                    start_date DATE NULL,
+                    end_date DATE NULL,
+                    duration_days INTEGER NULL,
+                    sample_size_per_variant INTEGER NULL,
+                    confidence_level DECIMAL(5, 2) NOT NULL DEFAULT 95.00,
+                    minimum_detectable_effect DECIMAL(5, 2) NOT NULL DEFAULT 5.00,
+                    traffic_allocation VARCHAR(20) NOT NULL DEFAULT 'equal' CHECK (traffic_allocation IN ('equal', 'weighted', 'adaptive')),
+                    config JSONB NULL,
+                    started_at TIMESTAMP NULL,
+                    completed_at TIMESTAMP NULL,
+                    winner_variant_id VARCHAR(255) NULL,
+                    statistical_significance DECIMAL(5, 2) NULL,
+                    results JSONB NULL,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            ");
 
-            $table->foreign('org_id')->references('org_id')->on('cmis.orgs')->onDelete('cascade');
-            $table->foreign('created_by')->references('user_id')->on('cmis.users');
-        });
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_experiments_org_id ON cmis.experiments(org_id)");
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_experiments_status ON cmis.experiments(status)");
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_experiments_dates ON cmis.experiments(start_date, end_date)");
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_experiments_entity ON cmis.experiments(entity_type, entity_id)");
+
+            DB::statement('ALTER TABLE cmis.experiments ENABLE ROW LEVEL SECURITY');
+            DB::statement("DROP POLICY IF EXISTS org_isolation ON cmis.experiments");
+            DB::statement("CREATE POLICY org_isolation ON cmis.experiments USING (org_id = NULLIF(current_setting('app.current_org_id', true), '')::uuid)");
+        }
 
         // Experiment Variants table
-        Schema::create('cmis.experiment_variants', function (Blueprint $table) {
-            $table->uuid('variant_id')->primary();
-            $table->uuid('experiment_id')->index();
-            $table->string('name', 100); // Control, Variant A, Variant B, etc.
-            $table->text('description')->nullable();
-            $table->boolean('is_control')->default(false);
-            $table->decimal('traffic_percentage', 5, 2)->default(50.00);
-            $table->jsonb('config'); // Variant-specific configuration
-            $table->integer('impressions')->default(0);
-            $table->integer('clicks')->default(0);
-            $table->integer('conversions')->default(0);
-            $table->decimal('spend', 15, 2)->default(0);
-            $table->decimal('revenue', 15, 2)->default(0);
-            $table->jsonb('metrics')->nullable(); // Additional metrics
-            $table->decimal('conversion_rate', 8, 4)->nullable();
-            $table->decimal('improvement_over_control', 8, 2)->nullable();
-            $table->decimal('confidence_interval_lower', 8, 4)->nullable();
-            $table->decimal('confidence_interval_upper', 8, 4)->nullable();
-            $table->string('status', 20)->default('active'); // active, paused, stopped
-            $table->timestamps();
+        if (!$this->tableExists('cmis', 'experiment_variants')) {
+            DB::statement("
+                CREATE TABLE cmis.experiment_variants (
+                    variant_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                    experiment_id UUID NOT NULL REFERENCES cmis.experiments(experiment_id) ON DELETE CASCADE,
+                    name VARCHAR(100) NOT NULL,
+                    description TEXT NULL,
+                    is_control BOOLEAN NOT NULL DEFAULT FALSE,
+                    traffic_percentage DECIMAL(5, 2) NOT NULL DEFAULT 50.00,
+                    config JSONB NOT NULL DEFAULT '{}',
+                    impressions INTEGER NOT NULL DEFAULT 0,
+                    clicks INTEGER NOT NULL DEFAULT 0,
+                    conversions INTEGER NOT NULL DEFAULT 0,
+                    spend DECIMAL(15, 2) NOT NULL DEFAULT 0,
+                    revenue DECIMAL(15, 2) NOT NULL DEFAULT 0,
+                    metrics JSONB NULL,
+                    conversion_rate DECIMAL(8, 4) NULL,
+                    improvement_over_control DECIMAL(8, 2) NULL,
+                    confidence_interval_lower DECIMAL(8, 4) NULL,
+                    confidence_interval_upper DECIMAL(8, 4) NULL,
+                    status VARCHAR(20) NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'paused', 'stopped')),
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            ");
 
-            $table->foreign('experiment_id')->references('experiment_id')->on('cmis.experiments')->onDelete('cascade');
-        });
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_variants_experiment_id ON cmis.experiment_variants(experiment_id)");
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_variants_experiment ON cmis.experiment_variants(experiment_id, is_control)");
+
+            DB::statement('ALTER TABLE cmis.experiment_variants ENABLE ROW LEVEL SECURITY');
+            DB::statement("DROP POLICY IF EXISTS org_isolation ON cmis.experiment_variants");
+            DB::statement("
+                CREATE POLICY org_isolation ON cmis.experiment_variants
+                USING (
+                    experiment_id IN (
+                        SELECT experiment_id FROM cmis.experiments
+                        WHERE org_id = NULLIF(current_setting('app.current_org_id', true), '')::uuid
+                    )
+                )
+            ");
+        }
 
         // Experiment Results (detailed time-series data)
-        Schema::create('cmis.experiment_results', function (Blueprint $table) {
-            $table->uuid('result_id')->primary();
-            $table->uuid('experiment_id')->index();
-            $table->uuid('variant_id')->index();
-            $table->date('date');
-            $table->integer('impressions')->default(0);
-            $table->integer('clicks')->default(0);
-            $table->integer('conversions')->default(0);
-            $table->decimal('spend', 15, 2)->default(0);
-            $table->decimal('revenue', 15, 2)->default(0);
-            $table->decimal('ctr', 8, 4)->nullable();
-            $table->decimal('cpc', 10, 4)->nullable();
-            $table->decimal('conversion_rate', 8, 4)->nullable();
-            $table->decimal('roi', 10, 2)->nullable();
-            $table->jsonb('additional_metrics')->nullable();
-            $table->timestamps();
+        if (!$this->tableExists('cmis', 'experiment_results')) {
+            DB::statement("
+                CREATE TABLE cmis.experiment_results (
+                    result_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                    experiment_id UUID NOT NULL REFERENCES cmis.experiments(experiment_id) ON DELETE CASCADE,
+                    variant_id UUID NOT NULL REFERENCES cmis.experiment_variants(variant_id) ON DELETE CASCADE,
+                    date DATE NOT NULL,
+                    impressions INTEGER NOT NULL DEFAULT 0,
+                    clicks INTEGER NOT NULL DEFAULT 0,
+                    conversions INTEGER NOT NULL DEFAULT 0,
+                    spend DECIMAL(15, 2) NOT NULL DEFAULT 0,
+                    revenue DECIMAL(15, 2) NOT NULL DEFAULT 0,
+                    ctr DECIMAL(8, 4) NULL,
+                    cpc DECIMAL(10, 4) NULL,
+                    conversion_rate DECIMAL(8, 4) NULL,
+                    roi DECIMAL(10, 2) NULL,
+                    additional_metrics JSONB NULL,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    CONSTRAINT uq_experiment_results UNIQUE (experiment_id, variant_id, date)
+                )
+            ");
 
-            $table->foreign('experiment_id')->references('experiment_id')->on('cmis.experiments')->onDelete('cascade');
-            $table->foreign('variant_id')->references('variant_id')->on('cmis.experiment_variants')->onDelete('cascade');
-            $table->unique(['experiment_id', 'variant_id', 'date']);
-        });
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_results_experiment_id ON cmis.experiment_results(experiment_id)");
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_results_variant_id ON cmis.experiment_results(variant_id)");
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_results_date ON cmis.experiment_results(date DESC)");
+
+            DB::statement('ALTER TABLE cmis.experiment_results ENABLE ROW LEVEL SECURITY');
+            DB::statement("DROP POLICY IF EXISTS org_isolation ON cmis.experiment_results");
+            DB::statement("
+                CREATE POLICY org_isolation ON cmis.experiment_results
+                USING (
+                    experiment_id IN (
+                        SELECT experiment_id FROM cmis.experiments
+                        WHERE org_id = NULLIF(current_setting('app.current_org_id', true), '')::uuid
+                    )
+                )
+            ");
+        }
 
         // Experiment Events (user interactions, conversions)
-        Schema::create('cmis.experiment_events', function (Blueprint $table) {
-            $table->uuid('event_id')->primary();
-            $table->uuid('experiment_id')->index();
-            $table->uuid('variant_id')->index();
-            $table->string('event_type', 50); // impression, click, conversion, custom
-            $table->string('user_id', 255)->nullable(); // External user identifier
-            $table->string('session_id', 255)->nullable();
-            $table->decimal('value', 15, 2)->nullable(); // Conversion value
-            $table->jsonb('properties')->nullable(); // Event properties
-            $table->timestamp('occurred_at')->index();
-            $table->timestamps();
-
-            $table->foreign('experiment_id')->references('experiment_id')->on('cmis.experiments')->onDelete('cascade');
-            $table->foreign('variant_id')->references('variant_id')->on('cmis.experiment_variants')->onDelete('cascade');
-        });
-
-        // Create indexes
-        DB::statement('CREATE INDEX idx_experiments_status ON cmis.experiments(status)');
-        DB::statement('CREATE INDEX idx_experiments_dates ON cmis.experiments(start_date, end_date)');
-        DB::statement('CREATE INDEX idx_experiments_entity ON cmis.experiments(entity_type, entity_id)');
-        DB::statement('CREATE INDEX idx_variants_experiment ON cmis.experiment_variants(experiment_id, is_control)');
-        DB::statement('CREATE INDEX idx_results_date ON cmis.experiment_results(date DESC)');
-        DB::statement('CREATE INDEX idx_events_occurred_at ON cmis.experiment_events(occurred_at DESC)');
-        DB::statement('CREATE INDEX idx_events_type ON cmis.experiment_events(event_type)');
-
-        // Enable Row Level Security on all tables
-        DB::statement('ALTER TABLE cmis.experiments ENABLE ROW LEVEL SECURITY');
-        DB::statement('ALTER TABLE cmis.experiment_variants ENABLE ROW LEVEL SECURITY');
-        DB::statement('ALTER TABLE cmis.experiment_results ENABLE ROW LEVEL SECURITY');
-        DB::statement('ALTER TABLE cmis.experiment_events ENABLE ROW LEVEL SECURITY');
-
-        // Create RLS policies
-        DB::statement("
-            CREATE POLICY org_isolation ON cmis.experiments
-            USING (org_id = current_setting('app.current_org_id')::uuid)
-        ");
-
-        // Variants inherit org_id from experiment
-        DB::statement("
-            CREATE POLICY org_isolation ON cmis.experiment_variants
-            USING (
-                experiment_id IN (
-                    SELECT experiment_id FROM cmis.experiments
-                    WHERE org_id = current_setting('app.current_org_id')::uuid
+        if (!$this->tableExists('cmis', 'experiment_events')) {
+            DB::statement("
+                CREATE TABLE cmis.experiment_events (
+                    event_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                    experiment_id UUID NOT NULL REFERENCES cmis.experiments(experiment_id) ON DELETE CASCADE,
+                    variant_id UUID NOT NULL REFERENCES cmis.experiment_variants(variant_id) ON DELETE CASCADE,
+                    event_type VARCHAR(50) NOT NULL,
+                    user_id VARCHAR(255) NULL,
+                    session_id VARCHAR(255) NULL,
+                    value DECIMAL(15, 2) NULL,
+                    properties JSONB NULL,
+                    occurred_at TIMESTAMP NOT NULL,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 )
-            )
-        ");
+            ");
 
-        // Results inherit org_id from experiment
-        DB::statement("
-            CREATE POLICY org_isolation ON cmis.experiment_results
-            USING (
-                experiment_id IN (
-                    SELECT experiment_id FROM cmis.experiments
-                    WHERE org_id = current_setting('app.current_org_id')::uuid
-                )
-            )
-        ");
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_events_experiment_id ON cmis.experiment_events(experiment_id)");
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_events_variant_id ON cmis.experiment_events(variant_id)");
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_events_occurred_at ON cmis.experiment_events(occurred_at DESC)");
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_events_type ON cmis.experiment_events(event_type)");
 
-        // Events inherit org_id from experiment
-        DB::statement("
-            CREATE POLICY org_isolation ON cmis.experiment_events
-            USING (
-                experiment_id IN (
-                    SELECT experiment_id FROM cmis.experiments
-                    WHERE org_id = current_setting('app.current_org_id')::uuid
+            DB::statement('ALTER TABLE cmis.experiment_events ENABLE ROW LEVEL SECURITY');
+            DB::statement("DROP POLICY IF EXISTS org_isolation ON cmis.experiment_events");
+            DB::statement("
+                CREATE POLICY org_isolation ON cmis.experiment_events
+                USING (
+                    experiment_id IN (
+                        SELECT experiment_id FROM cmis.experiments
+                        WHERE org_id = NULLIF(current_setting('app.current_org_id', true), '')::uuid
+                    )
                 )
-            )
-        ");
+            ");
+        }
     }
 
     /**
@@ -170,9 +194,9 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('cmis.experiment_events');
-        Schema::dropIfExists('cmis.experiment_results');
-        Schema::dropIfExists('cmis.experiment_variants');
-        Schema::dropIfExists('cmis.experiments');
+        DB::statement('DROP TABLE IF EXISTS cmis.experiment_events CASCADE');
+        DB::statement('DROP TABLE IF EXISTS cmis.experiment_results CASCADE');
+        DB::statement('DROP TABLE IF EXISTS cmis.experiment_variants CASCADE');
+        DB::statement('DROP TABLE IF EXISTS cmis.experiments CASCADE');
     }
 };

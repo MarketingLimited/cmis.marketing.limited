@@ -108,12 +108,11 @@ class RolesSeeder extends Seeder
             ],
         ];
 
+        // Delete existing system roles and re-insert for clean seeding
+        DB::table('cmis.roles')->whereIn('role_id', array_column($roles, 'role_id'))->delete();
+
         foreach ($roles as $role) {
-            DB::table('cmis.roles')->upsert(
-                $role,
-                ['role_id'], // unique key
-                ['role_name', 'role_code', 'description', 'is_system', 'is_active'] // columns to update
-            );
+            DB::table('cmis.roles')->insert($role);
         }
 
         $this->command->info('Roles seeded successfully!');

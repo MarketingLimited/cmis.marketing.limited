@@ -1,9 +1,11 @@
 @extends('layouts.admin')
 
-@section('title', __('Campaign Performance Dashboard'))
+@section('title', __('campaigns.performance_dashboard'))
 
 @php
     $currentOrg = $currentOrg ?? request()->route('org') ?? auth()->user()->active_org_id ?? auth()->user()->org_id;
+    $isRtl = app()->getLocale() === 'ar';
+    $dir = $isRtl ? 'rtl' : 'ltr';
 @endphp
 
 @push('styles')
@@ -56,57 +58,59 @@
 @endpush
 
 @section('content')
-<div x-data="campaignDashboard()" x-init="init()" class="campaign-performance-dashboard">
+<div x-data="campaignDashboard()" x-init="init()" class="campaign-performance-dashboard" dir="{{ $dir }}">
     <!-- Header Section -->
     <div class="mb-8">
-        <div class="flex items-center justify-between">
-            <div>
-                <h1 class="text-3xl font-bold text-gray-900">Campaign Performance Dashboard</h1>
-                <p class="mt-2 text-sm text-gray-600">Analyze and compare campaign performance metrics</p>
+        <div class="flex items-center justify-between {{ $isRtl ? 'flex-row-reverse' : '' }}">
+            <div class="{{ $isRtl ? 'text-right' : '' }}">
+                <h1 class="text-3xl font-bold text-gray-900">{{ __('campaigns.performance_dashboard') }}</h1>
+                <p class="mt-2 text-sm text-gray-600">{{ __('campaigns.analyze_compare_performance') }}</p>
             </div>
 
             <!-- Date Range Picker -->
-            <div class="flex items-center space-x-4">
+            <div class="flex items-center {{ $isRtl ? 'flex-row-reverse space-x-reverse space-x-4' : 'space-x-4' }}">
                 <div class="relative">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Date Range</label>
-                    <div class="flex items-center space-x-2">
+                    <label class="block text-sm font-medium text-gray-700 mb-1 {{ $isRtl ? 'text-right' : '' }}">{{ __('campaigns.date_range') }}</label>
+                    <div class="flex items-center {{ $isRtl ? 'flex-row-reverse space-x-reverse space-x-2' : 'space-x-2' }}">
                         <input
                             type="date"
                             x-model="dateRange.start"
                             @change="loadDashboardData()"
-                            class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                            class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm {{ $isRtl ? 'text-right' : '' }}"
+                            dir="ltr"
                         >
-                        <span class="text-gray-500">to</span>
+                        <span class="text-gray-500">{{ __('campaigns.to') }}</span>
                         <input
                             type="date"
                             x-model="dateRange.end"
                             @change="loadDashboardData()"
-                            class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                            class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm {{ $isRtl ? 'text-right' : '' }}"
+                            dir="ltr"
                         >
                     </div>
                 </div>
 
-                <div class="flex space-x-2 pt-6">
+                <div class="flex {{ $isRtl ? 'flex-row-reverse space-x-reverse space-x-2' : 'space-x-2' }} pt-6">
                     <button
                         @click="setDateRange('7d')"
                         class="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
                         :class="{'bg-blue-50 border-blue-500': datePreset === '7d'}"
                     >
-                        Last 7 Days
+                        {{ __('campaigns.last_7_days') }}
                     </button>
                     <button
                         @click="setDateRange('30d')"
                         class="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
                         :class="{'bg-blue-50 border-blue-500': datePreset === '30d'}"
                     >
-                        Last 30 Days
+                        {{ __('campaigns.last_30_days') }}
                     </button>
                     <button
                         @click="setDateRange('90d')"
                         class="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
                         :class="{'bg-blue-50 border-blue-500': datePreset === '90d'}"
                     >
-                        Last 90 Days
+                        {{ __('campaigns.last_90_days') }}
                     </button>
                 </div>
             </div>
@@ -120,13 +124,13 @@
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
-            <p class="mt-4 text-sm font-medium text-gray-600">Loading dashboard...</p>
+            <p class="mt-4 text-sm font-medium text-gray-600">{{ __('campaigns.loading_dashboard') }}</p>
         </div>
     </div>
 
     <!-- Campaign Selector -->
     <div class="mb-8">
-        <h2 class="text-xl font-semibold text-gray-900 mb-4">Select Campaign</h2>
+        <h2 class="text-xl font-semibold text-gray-900 mb-4 {{ $isRtl ? 'text-right' : '' }}">{{ __('campaigns.select_campaign') }}</h2>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             <template x-for="campaign in campaigns" :key="campaign.campaign_id">
                 <div
@@ -134,8 +138,8 @@
                     :class="{'selected': selectedCampaignId === campaign.campaign_id}"
                     @click="selectCampaign(campaign.campaign_id)"
                 >
-                    <div class="flex items-center justify-between mb-2">
-                        <h3 class="font-semibold text-gray-900" x-text="campaign.name"></h3>
+                    <div class="flex items-center justify-between mb-2 {{ $isRtl ? 'flex-row-reverse' : '' }}">
+                        <h3 class="font-semibold text-gray-900 {{ $isRtl ? 'text-right' : '' }}" x-text="campaign.name"></h3>
                         <span
                             class="px-2 py-1 text-xs font-medium rounded-full"
                             :class="{
@@ -146,9 +150,9 @@
                             x-text="campaign.status"
                         ></span>
                     </div>
-                    <p class="text-sm text-gray-600 mb-2" x-text="campaign.description"></p>
-                    <div class="flex items-center justify-between text-xs text-gray-500">
-                        <span x-text="'Budget: $' + (campaign.budget || 0).toLocaleString()"></span>
+                    <p class="text-sm text-gray-600 mb-2 {{ $isRtl ? 'text-right' : '' }}" x-text="campaign.description"></p>
+                    <div class="flex items-center justify-between text-xs text-gray-500 {{ $isRtl ? 'flex-row-reverse' : '' }}">
+                        <span x-text="'{{ __('campaigns.budget') }}: ' + ('{{ $isRtl ? 'ر.س' : '$' }}') + (campaign.budget || 0).toLocaleString()"></span>
                         <span x-text="campaign.platform"></span>
                     </div>
                 </div>
@@ -158,13 +162,13 @@
 
     <!-- Key Metrics Cards -->
     <div x-show="selectedCampaignId && currentMetrics" class="mb-8">
-        <h2 class="text-xl font-semibold text-gray-900 mb-4">Key Performance Indicators</h2>
+        <h2 class="text-xl font-semibold text-gray-900 mb-4 {{ $isRtl ? 'text-right' : '' }}">{{ __('campaigns.key_performance_indicators') }}</h2>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <!-- Impressions -->
             <div class="metric-card">
-                <div class="metric-card-header">
-                    <div>
-                        <p class="metric-label">Impressions</p>
+                <div class="metric-card-header {{ $isRtl ? 'flex-row-reverse' : '' }}">
+                    <div class="{{ $isRtl ? 'text-right' : '' }}">
+                        <p class="metric-label">{{ __('campaigns.metrics.impressions') }}</p>
                         <p class="metric-value" x-text="formatNumber(currentMetrics?.metrics?.impressions || 0)"></p>
                     </div>
                     <div class="p-3 bg-blue-100 rounded-lg">
@@ -175,49 +179,49 @@
 
             <!-- Clicks -->
             <div class="metric-card">
-                <div class="metric-card-header">
-                    <div>
-                        <p class="metric-label">Clicks</p>
+                <div class="metric-card-header {{ $isRtl ? 'flex-row-reverse' : '' }}">
+                    <div class="{{ $isRtl ? 'text-right' : '' }}">
+                        <p class="metric-label">{{ __('campaigns.metrics.clicks') }}</p>
                         <p class="metric-value" x-text="formatNumber(currentMetrics?.metrics?.clicks || 0)"></p>
                     </div>
                     <div class="p-3 bg-green-100 rounded-lg">
                         <i class="fas fa-mouse-pointer text-2xl text-green-600"></i>
                     </div>
                 </div>
-                <p class="text-sm text-gray-600 mt-2">
-                    CTR: <span class="font-semibold" x-text="(currentMetrics?.metrics?.ctr || 0).toFixed(2) + '%'"></span>
+                <p class="text-sm text-gray-600 mt-2 {{ $isRtl ? 'text-right' : '' }}">
+                    {{ __('campaigns.metrics.ctr') }}: <span class="font-semibold" x-text="(currentMetrics?.metrics?.ctr || 0).toFixed(2) + '%'"></span>
                 </p>
             </div>
 
             <!-- Conversions -->
             <div class="metric-card">
-                <div class="metric-card-header">
-                    <div>
-                        <p class="metric-label">Conversions</p>
+                <div class="metric-card-header {{ $isRtl ? 'flex-row-reverse' : '' }}">
+                    <div class="{{ $isRtl ? 'text-right' : '' }}">
+                        <p class="metric-label">{{ __('campaigns.metrics.conversions') }}</p>
                         <p class="metric-value" x-text="formatNumber(currentMetrics?.metrics?.conversions || 0)"></p>
                     </div>
                     <div class="p-3 bg-purple-100 rounded-lg">
                         <i class="fas fa-check-circle text-2xl text-purple-600"></i>
                     </div>
                 </div>
-                <p class="text-sm text-gray-600 mt-2">
-                    CPA: <span class="font-semibold" x-text="'$' + (currentMetrics?.metrics?.cpa || 0).toFixed(2)"></span>
+                <p class="text-sm text-gray-600 mt-2 {{ $isRtl ? 'text-right' : '' }}">
+                    {{ __('campaigns.metrics.cost_per_conversion') }}: <span class="font-semibold" x-text="'{{ $isRtl ? 'ر.س' : '$' }}' + (currentMetrics?.metrics?.cpa || 0).toFixed(2)"></span>
                 </p>
             </div>
 
             <!-- ROI -->
             <div class="metric-card">
-                <div class="metric-card-header">
-                    <div>
-                        <p class="metric-label">ROI</p>
+                <div class="metric-card-header {{ $isRtl ? 'flex-row-reverse' : '' }}">
+                    <div class="{{ $isRtl ? 'text-right' : '' }}">
+                        <p class="metric-label">{{ __('campaigns.metrics.roas') }}</p>
                         <p class="metric-value" x-text="(currentMetrics?.metrics?.roi || 0).toFixed(1) + '%'"></p>
                     </div>
                     <div class="p-3 bg-yellow-100 rounded-lg">
                         <i class="fas fa-chart-line text-2xl text-yellow-600"></i>
                     </div>
                 </div>
-                <p class="text-sm text-gray-600 mt-2">
-                    Spend: <span class="font-semibold" x-text="'$' + formatNumber(currentMetrics?.metrics?.spend || 0)"></span>
+                <p class="text-sm text-gray-600 mt-2 {{ $isRtl ? 'text-right' : '' }}">
+                    {{ __('campaigns.spent') }}: <span class="font-semibold" x-text="'{{ $isRtl ? 'ر.س' : '$' }}' + formatNumber(currentMetrics?.metrics?.spend || 0)"></span>
                 </p>
             </div>
         </div>
@@ -226,29 +230,29 @@
     <!-- Performance Trends Chart -->
     <div x-show="selectedCampaignId" class="mb-8">
         <div class="chart-container">
-            <div class="flex items-center justify-between mb-4">
-                <h2 class="text-xl font-semibold text-gray-900">Performance Trends</h2>
-                <div class="flex space-x-2">
+            <div class="flex items-center justify-between mb-4 {{ $isRtl ? 'flex-row-reverse' : '' }}">
+                <h2 class="text-xl font-semibold text-gray-900">{{ __('campaigns.performance_trends') }}</h2>
+                <div class="flex {{ $isRtl ? 'flex-row-reverse space-x-reverse space-x-2' : 'space-x-2' }}">
                     <button
                         @click="setTrendInterval('day')"
                         class="px-3 py-1 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
                         :class="{'bg-blue-50 border-blue-500': trendInterval === 'day'}"
                     >
-                        Daily
+                        {{ __('campaigns.daily') }}
                     </button>
                     <button
                         @click="setTrendInterval('week')"
                         class="px-3 py-1 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
                         :class="{'bg-blue-50 border-blue-500': trendInterval === 'week'}"
                     >
-                        Weekly
+                        {{ __('campaigns.weekly') }}
                     </button>
                     <button
                         @click="setTrendInterval('month')"
                         class="px-3 py-1 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
                         :class="{'bg-blue-50 border-blue-500': trendInterval === 'month'}"
                     >
-                        Monthly
+                        {{ __('campaigns.monthly') }}
                     </button>
                 </div>
             </div>
@@ -259,18 +263,18 @@
     <!-- Top Performing Campaigns -->
     <div class="mb-8">
         <div class="chart-container">
-            <div class="flex items-center justify-between mb-4">
-                <h2 class="text-xl font-semibold text-gray-900">Top Performing Campaigns</h2>
+            <div class="flex items-center justify-between mb-4 {{ $isRtl ? 'flex-row-reverse' : '' }}">
+                <h2 class="text-xl font-semibold text-gray-900">{{ __('campaigns.top_performing_campaigns') }}</h2>
                 <select
                     x-model="topCampaignsMetric"
                     @change="loadTopCampaigns()"
-                    class="block w-48 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                    class="block w-48 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm {{ $isRtl ? 'text-right' : '' }}"
                 >
-                    <option value="conversions">By Conversions</option>
-                    <option value="clicks">By Clicks</option>
-                    <option value="impressions">By Impressions</option>
-                    <option value="roi">By ROI</option>
-                    <option value="spend">By Spend</option>
+                    <option value="conversions">{{ __('campaigns.by_conversions') }}</option>
+                    <option value="clicks">{{ __('campaigns.by_clicks') }}</option>
+                    <option value="impressions">{{ __('campaigns.by_impressions') }}</option>
+                    <option value="roi">{{ __('campaigns.by_roi') }}</option>
+                    <option value="spend">{{ __('campaigns.by_spend') }}</option>
                 </select>
             </div>
             <canvas id="topCampaignsChart" width="400" height="200"></canvas>
@@ -280,14 +284,14 @@
     <!-- Campaign Comparison -->
     <div class="mb-8">
         <div class="chart-container">
-            <div class="flex items-center justify-between mb-4">
-                <h2 class="text-xl font-semibold text-gray-900">Campaign Comparison</h2>
+            <div class="flex items-center justify-between mb-4 {{ $isRtl ? 'flex-row-reverse' : '' }}">
+                <h2 class="text-xl font-semibold text-gray-900">{{ __('campaigns.campaign_comparison') }}</h2>
                 <button
                     @click="showComparisonModal = true"
-                    class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                    class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 inline-flex items-center {{ $isRtl ? 'flex-row-reverse' : '' }}"
                 >
-                    <i class="fas fa-plus mr-2"></i>
-                    Select Campaigns to Compare
+                    <i class="fas fa-plus {{ $isRtl ? 'ml-2' : 'mr-2' }}"></i>
+                    {{ __('campaigns.select_campaigns_to_compare') }}
                 </button>
             </div>
             <div x-show="comparedCampaigns.length > 0">
@@ -295,7 +299,7 @@
             </div>
             <div x-show="comparedCampaigns.length === 0" class="text-center py-12">
                 <i class="fas fa-chart-bar text-6xl text-gray-300 mb-4"></i>
-                <p class="text-gray-500">Select campaigns to compare their performance</p>
+                <p class="text-gray-500">{{ __('campaigns.select_campaigns_compare_performance') }}</p>
             </div>
         </div>
     </div>
@@ -311,8 +315,8 @@
             <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"></div>
 
             <div class="relative bg-white rounded-lg shadow-xl max-w-3xl w-full p-6">
-                <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-lg font-semibold text-gray-900">Select Campaigns to Compare</h3>
+                <div class="flex items-center justify-between mb-4 {{ $isRtl ? 'flex-row-reverse' : '' }}">
+                    <h3 class="text-lg font-semibold text-gray-900">{{ __('campaigns.select_campaigns_to_compare') }}</h3>
                     <button @click="showComparisonModal = false" class="text-gray-400 hover:text-gray-500">
                         <i class="fas fa-times text-xl"></i>
                     </button>
@@ -320,40 +324,40 @@
 
                 <div class="max-h-96 overflow-y-auto">
                     <template x-for="campaign in campaigns" :key="campaign.campaign_id">
-                        <label class="flex items-center p-3 hover:bg-gray-50 rounded cursor-pointer">
+                        <label class="flex items-center p-3 hover:bg-gray-50 rounded cursor-pointer {{ $isRtl ? 'flex-row-reverse' : '' }}">
                             <input
                                 type="checkbox"
                                 :value="campaign.campaign_id"
                                 :checked="selectedComparisonCampaigns.includes(campaign.campaign_id)"
                                 @change="toggleComparisonCampaign(campaign.campaign_id)"
                                 :disabled="selectedComparisonCampaigns.length >= 10 && !selectedComparisonCampaigns.includes(campaign.campaign_id)"
-                                class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded {{ $isRtl ? 'ml-3' : 'mr-3' }}"
                             >
-                            <span class="ml-3 flex-1">
+                            <span class="flex-1 {{ $isRtl ? 'text-right mr-3' : '' }}">
                                 <span class="font-medium text-gray-900" x-text="campaign.name"></span>
-                                <span class="ml-2 text-sm text-gray-500" x-text="'(' + campaign.platform + ')'"></span>
+                                <span class="{{ $isRtl ? 'mr-2' : 'ml-2' }} text-sm text-gray-500" x-text="'(' + campaign.platform + ')'"></span>
                             </span>
                         </label>
                     </template>
                 </div>
 
-                <div class="mt-4 flex items-center justify-between">
-                    <p class="text-sm text-gray-600">
-                        Selected: <span class="font-semibold" x-text="selectedComparisonCampaigns.length"></span> / 10
+                <div class="mt-4 flex items-center justify-between {{ $isRtl ? 'flex-row-reverse' : '' }}">
+                    <p class="text-sm text-gray-600 {{ $isRtl ? 'text-right' : '' }}">
+                        {{ __('campaigns.selected') }}: <span class="font-semibold" x-text="selectedComparisonCampaigns.length"></span> / 10
                     </p>
-                    <div class="flex space-x-3">
+                    <div class="flex {{ $isRtl ? 'flex-row-reverse space-x-reverse space-x-3' : 'space-x-3' }}">
                         <button
                             @click="showComparisonModal = false"
                             class="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50"
                         >
-                            Cancel
+                            {{ __('campaigns.cancel') }}
                         </button>
                         <button
                             @click="compareCampaigns()"
                             :disabled="selectedComparisonCampaigns.length < 2"
                             class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                            Compare Campaigns
+                            {{ __('campaigns.compare_campaigns') }}
                         </button>
                     </div>
                 </div>
@@ -431,7 +435,7 @@ function campaignDashboard() {
                     }
                 });
 
-                if (!response.ok) throw new Error('Failed to load campaigns');
+                if (!response.ok) throw new Error('{{ __('campaigns.failed_load_campaigns') }}');
 
                 const data = await response.json();
                 this.campaigns = data.data || data;
@@ -442,7 +446,7 @@ function campaignDashboard() {
                 }
             } catch (error) {
                 console.error('Failed to load campaigns:', error);
-                this.showError('Failed to load campaigns');
+                this.showError('{{ __('campaigns.failed_load_campaigns') }}');
             } finally {
                 this.loading = false;
             }
@@ -477,7 +481,7 @@ function campaignDashboard() {
                     }
                 });
 
-                if (!response.ok) throw new Error('Failed to load metrics');
+                if (!response.ok) throw new Error('{{ __('campaigns.failed_load_metrics') }}');
 
                 const data = await response.json();
                 this.currentMetrics = data.data;
@@ -500,7 +504,7 @@ function campaignDashboard() {
                     }
                 });
 
-                if (!response.ok) throw new Error('Failed to load trends');
+                if (!response.ok) throw new Error('{{ __('campaigns.failed_load_trends') }}');
 
                 const data = await response.json();
                 this.renderTrendsChart(data.data);
@@ -525,7 +529,7 @@ function campaignDashboard() {
                     }
                 });
 
-                if (!response.ok) throw new Error('Failed to load top campaigns');
+                if (!response.ok) throw new Error('{{ __('campaigns.failed_load_top_campaigns') }}');
 
                 const data = await response.json();
                 this.renderTopCampaignsChart(data.data);
@@ -567,7 +571,7 @@ function campaignDashboard() {
                     })
                 });
 
-                if (!response.ok) throw new Error('Failed to compare campaigns');
+                if (!response.ok) throw new Error('{{ __('campaigns.failed_compare_campaigns') }}');
 
                 const data = await response.json();
                 this.comparedCampaigns = data.data.campaigns;
@@ -575,7 +579,7 @@ function campaignDashboard() {
                 this.showComparisonModal = false;
             } catch (error) {
                 console.error('Failed to compare campaigns:', error);
-                this.showError('Failed to compare campaigns');
+                this.showError('{{ __('campaigns.failed_compare_campaigns') }}');
             } finally {
                 this.loading = false;
             }
@@ -595,21 +599,21 @@ function campaignDashboard() {
                     labels: data.trends?.map(t => t.period) || [],
                     datasets: [
                         {
-                            label: 'Impressions',
+                            label: '{{ __('campaigns.metrics.impressions') }}',
                             data: data.trends?.map(t => t.metrics.impressions) || [],
                             borderColor: 'rgb(59, 130, 246)',
                             backgroundColor: 'rgba(59, 130, 246, 0.1)',
                             yAxisID: 'y'
                         },
                         {
-                            label: 'Clicks',
+                            label: '{{ __('campaigns.metrics.clicks') }}',
                             data: data.trends?.map(t => t.metrics.clicks) || [],
                             borderColor: 'rgb(16, 185, 129)',
                             backgroundColor: 'rgba(16, 185, 129, 0.1)',
                             yAxisID: 'y'
                         },
                         {
-                            label: 'Conversions',
+                            label: '{{ __('campaigns.metrics.conversions') }}',
                             data: data.trends?.map(t => t.metrics.conversions) || [],
                             borderColor: 'rgb(139, 92, 246)',
                             backgroundColor: 'rgba(139, 92, 246, 0.1)',
@@ -628,19 +632,19 @@ function campaignDashboard() {
                         y: {
                             type: 'linear',
                             display: true,
-                            position: 'left',
+                            position: '{{ $isRtl ? 'right' : 'left' }}',
                             title: {
                                 display: true,
-                                text: 'Impressions / Clicks'
+                                text: '{{ __('campaigns.impressions_clicks') }}'
                             }
                         },
                         y1: {
                             type: 'linear',
                             display: true,
-                            position: 'right',
+                            position: '{{ $isRtl ? 'left' : 'right' }}',
                             title: {
                                 display: true,
-                                text: 'Conversions'
+                                text: '{{ __('campaigns.metrics.conversions') }}'
                             },
                             grid: {
                                 drawOnChartArea: false
@@ -707,17 +711,17 @@ function campaignDashboard() {
                     labels: campaigns.map(c => c.campaign_name),
                     datasets: [
                         {
-                            label: 'Impressions',
+                            label: '{{ __('campaigns.metrics.impressions') }}',
                             data: campaigns.map(c => c.metrics.impressions),
                             backgroundColor: 'rgba(59, 130, 246, 0.8)'
                         },
                         {
-                            label: 'Clicks',
+                            label: '{{ __('campaigns.metrics.clicks') }}',
                             data: campaigns.map(c => c.metrics.clicks),
                             backgroundColor: 'rgba(16, 185, 129, 0.8)'
                         },
                         {
-                            label: 'Conversions',
+                            label: '{{ __('campaigns.metrics.conversions') }}',
                             data: campaigns.map(c => c.metrics.conversions),
                             backgroundColor: 'rgba(139, 92, 246, 0.8)'
                         }
@@ -729,7 +733,7 @@ function campaignDashboard() {
                     plugins: {
                         title: {
                             display: true,
-                            text: 'Campaign Performance Comparison'
+                            text: '{{ __('campaigns.campaign_performance_comparison') }}'
                         }
                     },
                     scales: {
@@ -742,7 +746,7 @@ function campaignDashboard() {
         },
 
         formatNumber(num) {
-            return new Intl.NumberFormat('en-US').format(num);
+            return new Intl.NumberFormat('{{ app()->getLocale() }}').format(num);
         },
 
         getAuthToken() {

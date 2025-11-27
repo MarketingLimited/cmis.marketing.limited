@@ -238,6 +238,46 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/models', [AIDashboardController::class, 'index'])->name('models');
         });
 
+        // ==================== Predictive Analytics ====================
+        Route::prefix('predictive')->name('predictive.')->group(function () {
+            Route::get('/', [App\Http\Controllers\Intelligence\PredictiveController::class, 'index'])->name('index');
+        });
+
+        // ==================== A/B Testing & Experiments ====================
+        Route::prefix('experiments')->name('experiments.')->group(function () {
+            Route::get('/', [App\Http\Controllers\Testing\ExperimentsController::class, 'index'])->name('index');
+        });
+
+        // ==================== Optimization Engine ====================
+        Route::prefix('optimization')->name('optimization.')->group(function () {
+            Route::get('/', [App\Http\Controllers\Optimization\OptimizationDashboardController::class, 'index'])->name('index');
+        });
+
+        // ==================== Automation ====================
+        Route::prefix('automation')->name('automation.')->group(function () {
+            Route::get('/', [App\Http\Controllers\Automation\AutomationDashboardController::class, 'index'])->name('index');
+        });
+
+        // ==================== System: Alerts ====================
+        Route::prefix('alerts')->name('alerts.')->group(function () {
+            Route::get('/', [App\Http\Controllers\System\AlertsController::class, 'index'])->name('index');
+        });
+
+        // ==================== System: Data Exports ====================
+        Route::prefix('exports')->name('exports.')->group(function () {
+            Route::get('/', [App\Http\Controllers\System\ExportsController::class, 'index'])->name('index');
+        });
+
+        // ==================== System: Dashboard Builder ====================
+        Route::prefix('dashboard-builder')->name('dashboard-builder.')->group(function () {
+            Route::get('/', [App\Http\Controllers\System\DashboardBuilderController::class, 'index'])->name('index');
+        });
+
+        // ==================== System: Feature Flags ====================
+        Route::prefix('feature-flags')->name('feature-flags.')->group(function () {
+            Route::get('/', [App\Http\Controllers\System\FeatureFlagsController::class, 'index'])->name('index');
+        });
+
         // ==================== Knowledge Base ====================
         Route::prefix('knowledge')->name('knowledge.')->group(function () {
             Route::get('/', [App\Http\Controllers\KnowledgeController::class, 'index'])->name('index');
@@ -255,6 +295,27 @@ Route::middleware(['auth'])->group(function () {
             Route::post('/{flowId}/steps/{stepNumber}/complete', [App\Http\Controllers\WorkflowController::class, 'completeStep'])->name('complete-step');
             Route::post('/{flowId}/steps/{stepNumber}/assign', [App\Http\Controllers\WorkflowController::class, 'assignStep'])->name('assign-step');
             Route::post('/{flowId}/steps/{stepNumber}/comment', [App\Http\Controllers\WorkflowController::class, 'addComment'])->name('add-comment');
+        });
+
+        // ==================== Influencer Marketing ====================
+        Route::prefix('influencer')->name('influencer.')->group(function () {
+            Route::get('/', [App\Http\Controllers\Influencer\InfluencerController::class, 'index'])->name('index');
+            Route::get('/create', [App\Http\Controllers\Influencer\InfluencerController::class, 'create'])->name('create');
+            Route::post('/', [App\Http\Controllers\Influencer\InfluencerController::class, 'store'])->name('store');
+            Route::get('/{influencer}', [App\Http\Controllers\Influencer\InfluencerController::class, 'show'])->name('show');
+            Route::get('/{influencer}/edit', [App\Http\Controllers\Influencer\InfluencerController::class, 'edit'])->name('edit');
+            Route::put('/{influencer}', [App\Http\Controllers\Influencer\InfluencerController::class, 'update'])->name('update');
+            Route::delete('/{influencer}', [App\Http\Controllers\Influencer\InfluencerController::class, 'destroy'])->name('destroy');
+        });
+
+        // ==================== Campaign Orchestration ====================
+        Route::prefix('orchestration')->name('orchestration.')->group(function () {
+            Route::get('/', [App\Http\Controllers\Orchestration\OrchestrationController::class, 'index'])->name('index');
+        });
+
+        // ==================== Social Listening ====================
+        Route::prefix('listening')->name('listening.')->group(function () {
+            Route::get('/', [App\Http\Controllers\Listening\SocialListeningController::class, 'index'])->name('index');
         });
 
         // ==================== Social Media ====================
@@ -276,6 +337,17 @@ Route::middleware(['auth'])->group(function () {
 
             // Post types
             Route::get('/post-types', [App\Http\Controllers\Social\SocialPostController::class, 'getPostTypes'])->name('post-types.index');
+
+            // ==================== Publishing Modal API (JSON) ====================
+            Route::prefix('publish-modal')->name('publish-modal.')->group(function () {
+                Route::get('/profile-groups', [App\Http\Controllers\API\PublishingModalController::class, 'getProfileGroupsWithProfiles'])->name('profile-groups');
+                Route::get('/brand-voices', [App\Http\Controllers\API\PublishingModalController::class, 'getBrandVoices'])->name('brand-voices');
+                Route::post('/validate-safety', [App\Http\Controllers\API\PublishingModalController::class, 'validateBrandSafety'])->name('validate-safety');
+                Route::post('/create', [App\Http\Controllers\API\PublishingModalController::class, 'createPost'])->name('create');
+                Route::post('/save-draft', [App\Http\Controllers\API\PublishingModalController::class, 'saveDraft'])->name('save-draft');
+                Route::get('/best-times', [App\Http\Controllers\API\PublishingModalController::class, 'getBestTimes'])->name('best-times');
+                Route::get('/character-limits', [App\Http\Controllers\API\PublishingModalController::class, 'getCharacterLimits'])->name('character-limits');
+            });
 
             // AI Content Transformation
             Route::post('/ai/transform-content', [App\Http\Controllers\API\AIAssistantController::class, 'transformSocialContent'])->name('ai.transform-content');
@@ -413,6 +485,89 @@ Route::middleware(['auth'])->group(function () {
                 // Generic Connection Actions
                 Route::post('/{connection}/test', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'testConnection'])->name('test');
                 Route::delete('/{connection}', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'destroy'])->name('destroy');
+            });
+
+            // ==================== Profile Groups (Publishing Management) ====================
+            Route::prefix('profile-groups')->name('profile-groups.')->group(function () {
+                Route::get('/', [App\Http\Controllers\Settings\ProfileGroupSettingsController::class, 'index'])->name('index');
+                Route::get('/create', [App\Http\Controllers\Settings\ProfileGroupSettingsController::class, 'create'])->name('create');
+                Route::post('/', [App\Http\Controllers\Settings\ProfileGroupSettingsController::class, 'store'])->name('store');
+                Route::get('/{group}', [App\Http\Controllers\Settings\ProfileGroupSettingsController::class, 'show'])->name('show');
+                Route::get('/{group}/edit', [App\Http\Controllers\Settings\ProfileGroupSettingsController::class, 'edit'])->name('edit');
+                Route::put('/{group}', [App\Http\Controllers\Settings\ProfileGroupSettingsController::class, 'update'])->name('update');
+                Route::delete('/{group}', [App\Http\Controllers\Settings\ProfileGroupSettingsController::class, 'destroy'])->name('destroy');
+
+                // Profile Group Members
+                Route::get('/{group}/members', [App\Http\Controllers\Settings\ProfileGroupSettingsController::class, 'members'])->name('members');
+                Route::post('/{group}/members', [App\Http\Controllers\Settings\ProfileGroupSettingsController::class, 'addMember'])->name('members.add');
+                Route::put('/{group}/members/{member}', [App\Http\Controllers\Settings\ProfileGroupSettingsController::class, 'updateMember'])->name('members.update');
+                Route::delete('/{group}/members/{member}', [App\Http\Controllers\Settings\ProfileGroupSettingsController::class, 'removeMember'])->name('members.remove');
+
+                // Profile Group Social Profiles
+                Route::get('/{group}/profiles', [App\Http\Controllers\Settings\ProfileGroupSettingsController::class, 'profiles'])->name('profiles');
+                Route::post('/{group}/profiles', [App\Http\Controllers\Settings\ProfileGroupSettingsController::class, 'attachProfile'])->name('profiles.attach');
+                Route::delete('/{group}/profiles/{profile}', [App\Http\Controllers\Settings\ProfileGroupSettingsController::class, 'detachProfile'])->name('profiles.detach');
+            });
+
+            // ==================== Brand Voices ====================
+            Route::prefix('brand-voices')->name('brand-voices.')->group(function () {
+                Route::get('/', [App\Http\Controllers\Settings\BrandVoiceSettingsController::class, 'index'])->name('index');
+                Route::get('/create', [App\Http\Controllers\Settings\BrandVoiceSettingsController::class, 'create'])->name('create');
+                Route::post('/', [App\Http\Controllers\Settings\BrandVoiceSettingsController::class, 'store'])->name('store');
+                Route::get('/{voice}', [App\Http\Controllers\Settings\BrandVoiceSettingsController::class, 'show'])->name('show');
+                Route::get('/{voice}/edit', [App\Http\Controllers\Settings\BrandVoiceSettingsController::class, 'edit'])->name('edit');
+                Route::put('/{voice}', [App\Http\Controllers\Settings\BrandVoiceSettingsController::class, 'update'])->name('update');
+                Route::delete('/{voice}', [App\Http\Controllers\Settings\BrandVoiceSettingsController::class, 'destroy'])->name('destroy');
+                Route::post('/{voice}/duplicate', [App\Http\Controllers\Settings\BrandVoiceSettingsController::class, 'duplicate'])->name('duplicate');
+            });
+
+            // ==================== Brand Safety Policies ====================
+            Route::prefix('brand-safety')->name('brand-safety.')->group(function () {
+                Route::get('/', [App\Http\Controllers\Settings\BrandSafetySettingsController::class, 'index'])->name('index');
+                Route::get('/create', [App\Http\Controllers\Settings\BrandSafetySettingsController::class, 'create'])->name('create');
+                Route::post('/', [App\Http\Controllers\Settings\BrandSafetySettingsController::class, 'store'])->name('store');
+                Route::get('/{policy}', [App\Http\Controllers\Settings\BrandSafetySettingsController::class, 'show'])->name('show');
+                Route::get('/{policy}/edit', [App\Http\Controllers\Settings\BrandSafetySettingsController::class, 'edit'])->name('edit');
+                Route::put('/{policy}', [App\Http\Controllers\Settings\BrandSafetySettingsController::class, 'update'])->name('update');
+                Route::delete('/{policy}', [App\Http\Controllers\Settings\BrandSafetySettingsController::class, 'destroy'])->name('destroy');
+                Route::post('/{policy}/validate', [App\Http\Controllers\Settings\BrandSafetySettingsController::class, 'validateContent'])->name('validate');
+            });
+
+            // ==================== Approval Workflows ====================
+            Route::prefix('approval-workflows')->name('approval-workflows.')->group(function () {
+                Route::get('/', [App\Http\Controllers\Settings\ApprovalWorkflowSettingsController::class, 'index'])->name('index');
+                Route::get('/create', [App\Http\Controllers\Settings\ApprovalWorkflowSettingsController::class, 'create'])->name('create');
+                Route::post('/', [App\Http\Controllers\Settings\ApprovalWorkflowSettingsController::class, 'store'])->name('store');
+                Route::get('/{workflow}', [App\Http\Controllers\Settings\ApprovalWorkflowSettingsController::class, 'show'])->name('show');
+                Route::get('/{workflow}/edit', [App\Http\Controllers\Settings\ApprovalWorkflowSettingsController::class, 'edit'])->name('edit');
+                Route::put('/{workflow}', [App\Http\Controllers\Settings\ApprovalWorkflowSettingsController::class, 'update'])->name('update');
+                Route::delete('/{workflow}', [App\Http\Controllers\Settings\ApprovalWorkflowSettingsController::class, 'destroy'])->name('destroy');
+                Route::post('/{workflow}/toggle', [App\Http\Controllers\Settings\ApprovalWorkflowSettingsController::class, 'toggle'])->name('toggle');
+            });
+
+            // ==================== Boost Rules ====================
+            Route::prefix('boost-rules')->name('boost-rules.')->group(function () {
+                Route::get('/', [App\Http\Controllers\Settings\BoostRuleSettingsController::class, 'index'])->name('index');
+                Route::get('/create', [App\Http\Controllers\Settings\BoostRuleSettingsController::class, 'create'])->name('create');
+                Route::post('/', [App\Http\Controllers\Settings\BoostRuleSettingsController::class, 'store'])->name('store');
+                Route::get('/{rule}', [App\Http\Controllers\Settings\BoostRuleSettingsController::class, 'show'])->name('show');
+                Route::get('/{rule}/edit', [App\Http\Controllers\Settings\BoostRuleSettingsController::class, 'edit'])->name('edit');
+                Route::put('/{rule}', [App\Http\Controllers\Settings\BoostRuleSettingsController::class, 'update'])->name('update');
+                Route::delete('/{rule}', [App\Http\Controllers\Settings\BoostRuleSettingsController::class, 'destroy'])->name('destroy');
+                Route::post('/{rule}/toggle', [App\Http\Controllers\Settings\BoostRuleSettingsController::class, 'toggle'])->name('toggle');
+            });
+
+            // ==================== Ad Accounts ====================
+            Route::prefix('ad-accounts')->name('ad-accounts.')->group(function () {
+                Route::get('/', [App\Http\Controllers\Settings\AdAccountSettingsController::class, 'index'])->name('index');
+                Route::get('/create', [App\Http\Controllers\Settings\AdAccountSettingsController::class, 'create'])->name('create');
+                Route::post('/', [App\Http\Controllers\Settings\AdAccountSettingsController::class, 'store'])->name('store');
+                Route::get('/{account}', [App\Http\Controllers\Settings\AdAccountSettingsController::class, 'show'])->name('show');
+                Route::get('/{account}/edit', [App\Http\Controllers\Settings\AdAccountSettingsController::class, 'edit'])->name('edit');
+                Route::put('/{account}', [App\Http\Controllers\Settings\AdAccountSettingsController::class, 'update'])->name('update');
+                Route::delete('/{account}', [App\Http\Controllers\Settings\AdAccountSettingsController::class, 'destroy'])->name('destroy');
+                Route::post('/{account}/sync', [App\Http\Controllers\Settings\AdAccountSettingsController::class, 'sync'])->name('sync');
+                Route::post('/{connection}/import', [App\Http\Controllers\Settings\AdAccountSettingsController::class, 'import'])->name('import');
             });
         });
 

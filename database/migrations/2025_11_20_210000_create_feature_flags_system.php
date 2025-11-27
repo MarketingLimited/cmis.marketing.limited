@@ -1,196 +1,193 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
     /**
+     * Helper to check if table exists
+     */
+    private function tableExists(string $schema, string $table): bool
+    {
+        $result = DB::selectOne("
+            SELECT COUNT(*) as count
+            FROM information_schema.tables
+            WHERE table_schema = ?
+            AND table_name = ?
+        ", [$schema, $table]);
+        return $result->count > 0;
+    }
+
+    /**
      * Run the migrations.
-     *
-     * @return void
      */
     public function up()
     {
-        // Create feature_flags table in cmis schema
-        Schema::create('cmis.feature_flags', function (Blueprint $table) {
-            $table->uuid('id')->primary();
-            $table->string('feature_key', 255)->comment('Unique feature key (e.g., scheduling.meta.enabled)');
-            $table->enum('scope_type', ['system', 'organization', 'platform', 'user'])->default('system');
-            $table->uuid('scope_id')->nullable()->comment('References org_id, platform_id, or user_id depending on scope_type');
-            $table->boolean('value')->default(false)->comment('Feature enabled (true) or disabled (false)');
-            $table->text('description')->nullable()->comment('Human-readable description');
-            $table->jsonb('metadata')->nullable()->comment('Additional metadata (rollout percentage, conditions, etc.)');
-            $table->timestamp('created_at')->useCurrent();
-            $table->timestamp('updated_at')->useCurrent();
+        // Create feature_flags table if not exists
+        if (!$this->tableExists('cmis', 'feature_flags')) {
+            DB::statement("
+                CREATE TABLE cmis.feature_flags (
+                    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                    feature_key VARCHAR(255) NOT NULL,
+                    scope_type VARCHAR(20) NOT NULL DEFAULT 'system' CHECK (scope_type IN ('system', 'organization', 'platform', 'user')),
+                    scope_id UUID NULL,
+                    value BOOLEAN NOT NULL DEFAULT FALSE,
+                    description TEXT NULL,
+                    metadata JSONB NULL,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    CONSTRAINT feature_flags_unique_scope UNIQUE (feature_key, scope_type, scope_id)
+                )
+            ");
 
-            // Unique constraint: one flag per scope
-            $table->unique(['feature_key', 'scope_type', 'scope_id'], 'feature_flags_unique_scope');
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_feature_flags_key_scope ON cmis.feature_flags(feature_key, scope_type)");
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_feature_flags_scope_id ON cmis.feature_flags(scope_id)");
 
-            // Index for fast lookups
-            $table->index(['feature_key', 'scope_type'], 'idx_feature_flags_key_scope');
-            $table->index('scope_id', 'idx_feature_flags_scope_id');
-        });
+            // Add comments
+            DB::statement("COMMENT ON TABLE cmis.feature_flags IS 'Feature toggle/flag configuration for multi-tenant control'");
 
-        // Add comments
-        DB::statement("COMMENT ON TABLE cmis.feature_flags IS 'Feature toggle/flag configuration for multi-tenant control'");
-        DB::statement("COMMENT ON COLUMN cmis.feature_flags.feature_key IS 'Hierarchical key: {category}.{platform}.{action} (e.g., scheduling.meta.enabled)'");
-        DB::statement("COMMENT ON COLUMN cmis.feature_flags.scope_type IS 'Level of the flag: system (global), organization (per-tenant), platform (per-integration), user (per-user)'");
-        DB::statement("COMMENT ON COLUMN cmis.feature_flags.value IS 'Boolean flag status: true = enabled, false = disabled'");
+            // Enable Row-Level Security
+            DB::statement("ALTER TABLE cmis.feature_flags ENABLE ROW LEVEL SECURITY");
 
-        // Enable Row-Level Security
-        DB::statement("ALTER TABLE cmis.feature_flags ENABLE ROW LEVEL SECURITY");
+            // Create RLS policies
+            DB::statement("DROP POLICY IF EXISTS feature_flags_system_visible ON cmis.feature_flags");
+            DB::statement("
+                CREATE POLICY feature_flags_system_visible ON cmis.feature_flags
+                FOR SELECT USING (scope_type = 'system')
+            ");
 
-        // RLS Policy: System-level flags are visible to all
-        DB::statement("
-            CREATE POLICY feature_flags_system_visible ON cmis.feature_flags
-            FOR SELECT
-            USING (scope_type = 'system');
-        ");
+            DB::statement("DROP POLICY IF EXISTS feature_flags_org_isolation ON cmis.feature_flags");
+            DB::statement("
+                CREATE POLICY feature_flags_org_isolation ON cmis.feature_flags
+                FOR SELECT USING (
+                    scope_type = 'organization'
+                    AND scope_id = NULLIF(current_setting('app.current_org_id', true), '')::uuid
+                )
+            ");
 
-        // RLS Policy: Organization-level flags visible to members of that org
-        DB::statement("
-            CREATE POLICY feature_flags_org_isolation ON cmis.feature_flags
-            FOR SELECT
-            USING (
-                scope_type = 'organization'
-                AND scope_id = current_setting('app.current_org_id', true)::uuid
-            );
-        ");
+            DB::statement("DROP POLICY IF EXISTS feature_flags_user_isolation ON cmis.feature_flags");
+            DB::statement("
+                CREATE POLICY feature_flags_user_isolation ON cmis.feature_flags
+                FOR SELECT USING (
+                    scope_type = 'user'
+                    AND scope_id = NULLIF(current_setting('app.current_user_id', true), '')::uuid
+                )
+            ");
 
-        // RLS Policy: User-level flags visible to that user only
-        DB::statement("
-            CREATE POLICY feature_flags_user_isolation ON cmis.feature_flags
-            FOR SELECT
-            USING (
-                scope_type = 'user'
-                AND scope_id = current_setting('app.current_user_id', true)::uuid
-            );
-        ");
+            DB::statement("DROP POLICY IF EXISTS feature_flags_platform_visible ON cmis.feature_flags");
+            DB::statement("
+                CREATE POLICY feature_flags_platform_visible ON cmis.feature_flags
+                FOR SELECT USING (scope_type = 'platform')
+            ");
 
-        // RLS Policy: Platform-level flags visible to all (managed by system admins)
-        DB::statement("
-            CREATE POLICY feature_flags_platform_visible ON cmis.feature_flags
-            FOR SELECT
-            USING (scope_type = 'platform');
-        ");
+            DB::statement("DROP POLICY IF EXISTS feature_flags_admin_modify ON cmis.feature_flags");
+            DB::statement("
+                CREATE POLICY feature_flags_admin_modify ON cmis.feature_flags
+                FOR ALL USING (current_setting('app.is_admin', true)::boolean = true)
+                WITH CHECK (current_setting('app.is_admin', true)::boolean = true)
+            ");
+        }
 
-        // RLS Policy: Allow insert/update/delete for system admins only
-        DB::statement("
-            CREATE POLICY feature_flags_admin_modify ON cmis.feature_flags
-            FOR ALL
-            USING (current_setting('app.is_admin', true)::boolean = true)
-            WITH CHECK (current_setting('app.is_admin', true)::boolean = true);
-        ");
+        // Create feature_flag_overrides table if not exists
+        if (!$this->tableExists('cmis', 'feature_flag_overrides')) {
+            DB::statement("
+                CREATE TABLE cmis.feature_flag_overrides (
+                    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                    feature_flag_id UUID NOT NULL REFERENCES cmis.feature_flags(id) ON DELETE CASCADE,
+                    target_id UUID NOT NULL,
+                    target_type VARCHAR(20) NOT NULL DEFAULT 'user' CHECK (target_type IN ('user', 'organization')),
+                    value BOOLEAN NOT NULL,
+                    reason TEXT NULL,
+                    expires_at TIMESTAMP NULL,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    CONSTRAINT feature_flag_overrides_unique UNIQUE (feature_flag_id, target_id, target_type)
+                )
+            ");
 
-        // Create feature_flag_overrides table for temporary or user-specific overrides
-        Schema::create('cmis.feature_flag_overrides', function (Blueprint $table) {
-            $table->uuid('id')->primary();
-            $table->uuid('feature_flag_id')->comment('References cmis.feature_flags.id');
-            $table->uuid('target_id')->comment('User ID or Org ID being overridden');
-            $table->enum('target_type', ['user', 'organization'])->default('user');
-            $table->boolean('value')->comment('Override value');
-            $table->text('reason')->nullable()->comment('Reason for override (beta testing, premium feature, etc.)');
-            $table->timestamp('expires_at')->nullable()->comment('Optional expiration for temporary overrides');
-            $table->timestamp('created_at')->useCurrent();
-            $table->timestamp('updated_at')->useCurrent();
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_feature_overrides_target ON cmis.feature_flag_overrides(target_id, target_type)");
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_feature_overrides_expiry ON cmis.feature_flag_overrides(expires_at)");
 
-            // Foreign key
-            $table->foreign('feature_flag_id')->references('id')->on('cmis.feature_flags')->onDelete('cascade');
+            DB::statement("COMMENT ON TABLE cmis.feature_flag_overrides IS 'User or org-specific overrides for feature flags'");
 
-            // Unique constraint
-            $table->unique(['feature_flag_id', 'target_id', 'target_type'], 'feature_flag_overrides_unique');
+            // Enable RLS
+            DB::statement("ALTER TABLE cmis.feature_flag_overrides ENABLE ROW LEVEL SECURITY");
 
-            // Indexes
-            $table->index(['target_id', 'target_type'], 'idx_feature_overrides_target');
-            $table->index('expires_at', 'idx_feature_overrides_expiry');
-        });
+            DB::statement("DROP POLICY IF EXISTS feature_flag_overrides_user_visible ON cmis.feature_flag_overrides");
+            DB::statement("
+                CREATE POLICY feature_flag_overrides_user_visible ON cmis.feature_flag_overrides
+                FOR SELECT USING (
+                    target_type = 'user'
+                    AND target_id = NULLIF(current_setting('app.current_user_id', true), '')::uuid
+                )
+            ");
 
-        DB::statement("COMMENT ON TABLE cmis.feature_flag_overrides IS 'User or org-specific overrides for feature flags (beta access, premium features)'");
+            DB::statement("DROP POLICY IF EXISTS feature_flag_overrides_org_visible ON cmis.feature_flag_overrides");
+            DB::statement("
+                CREATE POLICY feature_flag_overrides_org_visible ON cmis.feature_flag_overrides
+                FOR SELECT USING (
+                    target_type = 'organization'
+                    AND target_id = NULLIF(current_setting('app.current_org_id', true), '')::uuid
+                )
+            ");
 
-        // Enable RLS on overrides
-        DB::statement("ALTER TABLE cmis.feature_flag_overrides ENABLE ROW LEVEL SECURITY");
+            DB::statement("DROP POLICY IF EXISTS feature_flag_overrides_admin_modify ON cmis.feature_flag_overrides");
+            DB::statement("
+                CREATE POLICY feature_flag_overrides_admin_modify ON cmis.feature_flag_overrides
+                FOR ALL USING (current_setting('app.is_admin', true)::boolean = true)
+                WITH CHECK (current_setting('app.is_admin', true)::boolean = true)
+            ");
+        }
 
-        // RLS Policy: Users can see their own overrides
-        DB::statement("
-            CREATE POLICY feature_flag_overrides_user_visible ON cmis.feature_flag_overrides
-            FOR SELECT
-            USING (
-                target_type = 'user'
-                AND target_id = current_setting('app.current_user_id', true)::uuid
-            );
-        ");
+        // Create feature_flag_audit_log table if not exists
+        if (!$this->tableExists('cmis', 'feature_flag_audit_log')) {
+            DB::statement("
+                CREATE TABLE cmis.feature_flag_audit_log (
+                    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                    feature_flag_id UUID NULL REFERENCES cmis.feature_flags(id) ON DELETE SET NULL,
+                    feature_key VARCHAR(255) NOT NULL,
+                    action VARCHAR(20) NOT NULL DEFAULT 'updated' CHECK (action IN ('created', 'updated', 'deleted', 'accessed')),
+                    old_value BOOLEAN NULL,
+                    new_value BOOLEAN NULL,
+                    changed_by_user_id UUID NULL,
+                    changed_by_user_email VARCHAR(255) NULL,
+                    metadata JSONB NULL,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            ");
 
-        // RLS Policy: Org overrides visible to org members
-        DB::statement("
-            CREATE POLICY feature_flag_overrides_org_visible ON cmis.feature_flag_overrides
-            FOR SELECT
-            USING (
-                target_type = 'organization'
-                AND target_id = current_setting('app.current_org_id', true)::uuid
-            );
-        ");
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_feature_audit_flag_id ON cmis.feature_flag_audit_log(feature_flag_id)");
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_feature_audit_key ON cmis.feature_flag_audit_log(feature_key)");
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_feature_audit_user ON cmis.feature_flag_audit_log(changed_by_user_id)");
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_feature_audit_timestamp ON cmis.feature_flag_audit_log(created_at)");
 
-        // RLS Policy: Only admins can modify
-        DB::statement("
-            CREATE POLICY feature_flag_overrides_admin_modify ON cmis.feature_flag_overrides
-            FOR ALL
-            USING (current_setting('app.is_admin', true)::boolean = true)
-            WITH CHECK (current_setting('app.is_admin', true)::boolean = true);
-        ");
+            DB::statement("COMMENT ON TABLE cmis.feature_flag_audit_log IS 'Audit trail for all feature flag changes'");
 
-        // Create audit log table for feature flag changes
-        Schema::create('cmis.feature_flag_audit_log', function (Blueprint $table) {
-            $table->uuid('id')->primary();
-            $table->uuid('feature_flag_id')->nullable();
-            $table->string('feature_key', 255);
-            $table->enum('action', ['created', 'updated', 'deleted', 'accessed'])->default('updated');
-            $table->boolean('old_value')->nullable();
-            $table->boolean('new_value')->nullable();
-            $table->uuid('changed_by_user_id')->nullable()->comment('User who made the change');
-            $table->string('changed_by_user_email', 255)->nullable();
-            $table->jsonb('metadata')->nullable()->comment('Additional context about the change');
-            $table->timestamp('created_at')->useCurrent();
+            // Enable RLS
+            DB::statement("ALTER TABLE cmis.feature_flag_audit_log ENABLE ROW LEVEL SECURITY");
 
-            // Foreign key (nullable for deleted flags)
-            $table->foreign('feature_flag_id')->references('id')->on('cmis.feature_flags')->onDelete('set null');
+            DB::statement("DROP POLICY IF EXISTS feature_flag_audit_visible ON cmis.feature_flag_audit_log");
+            DB::statement("
+                CREATE POLICY feature_flag_audit_visible ON cmis.feature_flag_audit_log
+                FOR SELECT USING (true)
+            ");
 
-            // Indexes
-            $table->index('feature_flag_id', 'idx_feature_audit_flag_id');
-            $table->index('feature_key', 'idx_feature_audit_key');
-            $table->index('changed_by_user_id', 'idx_feature_audit_user');
-            $table->index('created_at', 'idx_feature_audit_timestamp');
-        });
+            DB::statement("DROP POLICY IF EXISTS feature_flag_audit_system_insert ON cmis.feature_flag_audit_log");
+            DB::statement("
+                CREATE POLICY feature_flag_audit_system_insert ON cmis.feature_flag_audit_log
+                FOR INSERT WITH CHECK (true)
+            ");
+        }
 
-        DB::statement("COMMENT ON TABLE cmis.feature_flag_audit_log IS 'Audit trail for all feature flag changes (compliance and debugging)'");
-
-        // Enable RLS on audit log
-        DB::statement("ALTER TABLE cmis.feature_flag_audit_log ENABLE ROW LEVEL SECURITY");
-
-        // RLS Policy: All authenticated users can read audit logs (for transparency)
-        DB::statement("
-            CREATE POLICY feature_flag_audit_visible ON cmis.feature_flag_audit_log
-            FOR SELECT
-            USING (true);
-        ");
-
-        // RLS Policy: Only system can insert audit logs (via triggers or service layer)
-        DB::statement("
-            CREATE POLICY feature_flag_audit_system_insert ON cmis.feature_flag_audit_log
-            FOR INSERT
-            WITH CHECK (true);
-        ");
-
-        // Create trigger function to automatically log changes
+        // Create trigger function
         DB::statement("
             CREATE OR REPLACE FUNCTION cmis.feature_flag_audit_trigger()
-            RETURNS TRIGGER AS $$
+            RETURNS TRIGGER AS \$\$
             BEGIN
                 IF (TG_OP = 'INSERT') THEN
                     INSERT INTO cmis.feature_flag_audit_log (
-                        id, feature_flag_id, feature_key, action, old_value, new_value, changed_by_user_id, metadata, created_at
+                        id, feature_flag_id, feature_key, action, old_value, new_value, metadata, created_at
                     ) VALUES (
                         gen_random_uuid(),
                         NEW.id,
@@ -198,7 +195,6 @@ return new class extends Migration
                         'created',
                         NULL,
                         NEW.value,
-                        current_setting('app.current_user_id', true)::uuid,
                         jsonb_build_object('scope_type', NEW.scope_type, 'scope_id', NEW.scope_id),
                         NOW()
                     );
@@ -206,7 +202,7 @@ return new class extends Migration
                 ELSIF (TG_OP = 'UPDATE') THEN
                     IF (OLD.value IS DISTINCT FROM NEW.value) THEN
                         INSERT INTO cmis.feature_flag_audit_log (
-                            id, feature_flag_id, feature_key, action, old_value, new_value, changed_by_user_id, metadata, created_at
+                            id, feature_flag_id, feature_key, action, old_value, new_value, metadata, created_at
                         ) VALUES (
                             gen_random_uuid(),
                             NEW.id,
@@ -214,7 +210,6 @@ return new class extends Migration
                             'updated',
                             OLD.value,
                             NEW.value,
-                            current_setting('app.current_user_id', true)::uuid,
                             jsonb_build_object('old_metadata', OLD.metadata, 'new_metadata', NEW.metadata),
                             NOW()
                         );
@@ -222,7 +217,7 @@ return new class extends Migration
                     RETURN NEW;
                 ELSIF (TG_OP = 'DELETE') THEN
                     INSERT INTO cmis.feature_flag_audit_log (
-                        id, feature_flag_id, feature_key, action, old_value, new_value, changed_by_user_id, metadata, created_at
+                        id, feature_flag_id, feature_key, action, old_value, new_value, metadata, created_at
                     ) VALUES (
                         gen_random_uuid(),
                         OLD.id,
@@ -230,47 +225,34 @@ return new class extends Migration
                         'deleted',
                         OLD.value,
                         NULL,
-                        current_setting('app.current_user_id', true)::uuid,
                         jsonb_build_object('scope_type', OLD.scope_type, 'scope_id', OLD.scope_id),
                         NOW()
                     );
                     RETURN OLD;
                 END IF;
             END;
-            $$ LANGUAGE plpgsql SECURITY DEFINER;
+            \$\$ LANGUAGE plpgsql SECURITY DEFINER
         ");
 
-        // Create trigger on feature_flags table
+        // Create trigger if not exists
+        DB::statement("DROP TRIGGER IF EXISTS feature_flag_audit_changes ON cmis.feature_flags");
         DB::statement("
             CREATE TRIGGER feature_flag_audit_changes
             AFTER INSERT OR UPDATE OR DELETE ON cmis.feature_flags
             FOR EACH ROW
-            EXECUTE FUNCTION cmis.feature_flag_audit_trigger();
+            EXECUTE FUNCTION cmis.feature_flag_audit_trigger()
         ");
-
-        // Grant permissions (only if role exists)
-        $roleExists = DB::select("SELECT 1 FROM pg_roles WHERE rolname = 'cmis_app_role'");
-        if (!empty($roleExists)) {
-            DB::statement("GRANT SELECT ON cmis.feature_flags TO cmis_app_role");
-            DB::statement("GRANT SELECT ON cmis.feature_flag_overrides TO cmis_app_role");
-            DB::statement("GRANT SELECT, INSERT ON cmis.feature_flag_audit_log TO cmis_app_role");
-        }
     }
 
     /**
      * Reverse the migrations.
-     *
-     * @return void
      */
     public function down()
     {
-        // Drop trigger first
         DB::statement("DROP TRIGGER IF EXISTS feature_flag_audit_changes ON cmis.feature_flags");
         DB::statement("DROP FUNCTION IF EXISTS cmis.feature_flag_audit_trigger()");
-
-        // Drop tables in reverse order
-        Schema::dropIfExists('cmis.feature_flag_audit_log');
-        Schema::dropIfExists('cmis.feature_flag_overrides');
-        Schema::dropIfExists('cmis.feature_flags');
+        DB::statement("DROP TABLE IF EXISTS cmis.feature_flag_audit_log CASCADE");
+        DB::statement("DROP TABLE IF EXISTS cmis.feature_flag_overrides CASCADE");
+        DB::statement("DROP TABLE IF EXISTS cmis.feature_flags CASCADE");
     }
 };

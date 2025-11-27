@@ -37,6 +37,7 @@ New to CMIS? Start here:
 - **[Quick Start Guide](guides/quick-start.md)** - Get up and running quickly
 - **[Main README](../README.md)** - Project overview and introduction
 - **[Arabic Guide](guides/start-here.md)** - دليل شامل بالعربية
+- **[RTL Implementation Guide](guides/RTL-IMPLEMENTATION-GUIDE.md)** - Right-to-left layout implementation
 - **[Installation Guide](getting-started/)** - Detailed installation instructions
 - **[Configuration Guide](getting-started/)** - System configuration
 
@@ -146,6 +147,7 @@ Guides for developers working on CMIS:
 - **[Code Style](development/)** - Coding standards and conventions
 - **[Git Workflow](development/)** - Git branching and workflow
 - **[Contributing](development/)** - How to contribute to CMIS
+- **[RTL Implementation Guide](guides/RTL-IMPLEMENTATION-GUIDE.md)** - Right-to-left layout implementation
 
 ### Related Documentation
 - **[Repository Pattern Guide](../app/Repositories/README.md)** - Repository pattern usage

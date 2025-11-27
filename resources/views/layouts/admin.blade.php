@@ -1,5 +1,11 @@
+@php
+    $locale = app()->getLocale();
+    $isRtl = $locale === 'ar';
+    $dir = $isRtl ? 'rtl' : 'ltr';
+    $lang = $locale === 'ar' ? 'ar' : 'en';
+@endphp
 <!DOCTYPE html>
-<html lang="ar" dir="rtl" x-data="appLayout()" :class="{ 'dark': darkMode }">
+<html lang="{{ $lang }}" dir="{{ $dir }}" x-data="appLayout()" :class="{ 'dark': darkMode }">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
@@ -261,7 +267,7 @@
     <!-- Notification Toast Container -->
     <div x-data="notificationManager()"
          @notify.window="addNotification($event.detail)"
-         class="fixed top-4 left-4 z-50 space-y-2"
+         class="fixed top-4 {{ $isRtl ? 'right-4' : 'left-4' }} z-50 space-y-2"
          x-cloak>
         <template x-for="notification in notifications" :key="notification.id">
             <div x-show="notification.show"
@@ -304,8 +310,8 @@
              x-cloak></div>
 
         <!-- Sidebar -->
-        <aside :class="sidebarOpen ? 'translate-x-0' : 'translate-x-full'"
-               class="fixed inset-y-0 right-0 z-40 w-72 lg:w-64 bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 shadow-2xl transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0"
+        <aside :class="sidebarOpen ? 'translate-x-0' : '{{ $isRtl ? 'translate-x-full' : '-translate-x-full' }}'"
+               class="fixed inset-y-0 {{ $isRtl ? 'right-0' : 'left-0' }} z-40 w-72 lg:w-64 bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 shadow-2xl transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0"
                x-data="sidebarMenu()"
                @touchstart.passive="handleTouchStart($event)"
                @touchmove.passive="handleTouchMove($event)"
@@ -334,12 +340,13 @@
                            x-model="searchQuery"
                            @input="performSearch()"
                            @keydown.escape="clearSearch()"
-                           placeholder="بحث سريع..."
-                           class="w-full bg-slate-800/50 border border-slate-700/50 text-slate-300 text-sm rounded-lg pr-9 pl-8 py-2 placeholder-slate-500 focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all">
-                    <i class="fas fa-search absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm"></i>
+                           placeholder="{{ __('sidebar.quick_search') }}"
+                           dir="{{ $dir }}"
+                           class="w-full bg-slate-800/50 border border-slate-700/50 text-slate-300 text-sm rounded-lg {{ $isRtl ? 'pr-9 pl-8 text-right' : 'pl-9 pr-8' }} py-2 placeholder-slate-500 focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all">
+                    <i class="fas fa-search absolute {{ $isRtl ? 'right-3' : 'left-3' }} top-1/2 -translate-y-1/2 text-slate-500 text-sm"></i>
                     <button x-show="searchQuery.length > 0"
                             @click="clearSearch()"
-                            class="absolute left-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200 transition-colors">
+                            class="absolute {{ $isRtl ? 'left-2' : 'right-2' }} top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200 transition-colors">
                         <i class="fas fa-times text-xs"></i>
                     </button>
                 </div>
@@ -436,21 +443,76 @@
                     <span class="mr-auto px-2 py-0.5 text-[10px] font-bold bg-green-500/20 text-green-400 rounded-full">Live</span>
                 </a>
 
+                <!-- Influencer Marketing -->
+                <a href="{{ route('orgs.influencer.index', ['org' => $currentOrg]) }}"
+                   class="group flex items-center gap-3 px-3 py-2.5 rounded-xl mb-1 transition-all duration-200
+                          {{ request()->routeIs('orgs.influencer.*') ? 'bg-gradient-to-l from-blue-600/20 to-purple-600/20 text-white border-r-2 border-blue-500' : 'text-slate-400 hover:text-white hover:bg-slate-700/30' }}">
+                    <div class="w-9 h-9 rounded-lg flex items-center justify-center transition-all
+                                {{ request()->routeIs('orgs.influencer.*') ? 'bg-gradient-to-br from-purple-500 to-pink-600 text-white shadow-lg shadow-purple-500/25' : 'bg-slate-800 text-slate-400 group-hover:bg-slate-700 group-hover:text-white' }}">
+                        <i class="fas fa-user-tie text-sm"></i>
+                    </div>
+                    <span class="font-medium text-sm">المؤثرين</span>
+                    <span class="mr-auto px-2 py-0.5 text-[10px] font-bold bg-pink-500/20 text-pink-400 rounded-full">60%</span>
+                </a>
+
+                <!-- Campaign Orchestration -->
+                <a href="{{ route('orgs.orchestration.index', ['org' => $currentOrg]) }}"
+                   class="group flex items-center gap-3 px-3 py-2.5 rounded-xl mb-1 transition-all duration-200
+                          {{ request()->routeIs('orgs.orchestration.*') ? 'bg-gradient-to-l from-blue-600/20 to-purple-600/20 text-white border-r-2 border-blue-500' : 'text-slate-400 hover:text-white hover:bg-slate-700/30' }}">
+                    <div class="w-9 h-9 rounded-lg flex items-center justify-center transition-all
+                                {{ request()->routeIs('orgs.orchestration.*') ? 'bg-gradient-to-br from-cyan-500 to-blue-600 text-white shadow-lg shadow-cyan-500/25' : 'bg-slate-800 text-slate-400 group-hover:bg-slate-700 group-hover:text-white' }}">
+                        <i class="fas fa-sitemap text-sm"></i>
+                    </div>
+                    <span class="font-medium text-sm">تنسيق الحملات</span>
+                    <span class="mr-auto px-2 py-0.5 text-[10px] font-bold bg-orange-500/20 text-orange-400 rounded-full">40%</span>
+                </a>
+
+                <!-- Social Listening -->
+                <a href="{{ route('orgs.listening.index', ['org' => $currentOrg]) }}"
+                   class="group flex items-center gap-3 px-3 py-2.5 rounded-xl mb-1 transition-all duration-200
+                          {{ request()->routeIs('orgs.listening.*') ? 'bg-gradient-to-l from-blue-600/20 to-purple-600/20 text-white border-r-2 border-blue-500' : 'text-slate-400 hover:text-white hover:bg-slate-700/30' }}">
+                    <div class="w-9 h-9 rounded-lg flex items-center justify-center transition-all
+                                {{ request()->routeIs('orgs.listening.*') ? 'bg-gradient-to-br from-teal-500 to-green-600 text-white shadow-lg shadow-teal-500/25' : 'bg-slate-800 text-slate-400 group-hover:bg-slate-700 group-hover:text-white' }}">
+                        <i class="fas fa-ear-listen text-sm"></i>
+                    </div>
+                    <span class="font-medium text-sm">الاستماع الاجتماعي</span>
+                    <span class="mr-auto px-2 py-0.5 text-[10px] font-bold bg-orange-500/20 text-orange-400 rounded-full">35%</span>
+                </a>
+
                 <!-- Content Section -->
                 <div class="mt-4 mb-2">
                     <p class="px-3 text-[10px] font-semibold text-slate-500 uppercase tracking-wider">المحتوى</p>
                 </div>
 
-                <!-- Creative Assets -->
-                <a href="{{ route('orgs.creative.assets.index', ['org' => $currentOrg]) }}"
-                   class="group flex items-center gap-3 px-3 py-2.5 rounded-xl mb-1 transition-all duration-200
-                          {{ request()->routeIs('orgs.creative.*') ? 'bg-gradient-to-l from-blue-600/20 to-purple-600/20 text-white border-r-2 border-blue-500' : 'text-slate-400 hover:text-white hover:bg-slate-700/30' }}">
-                    <div class="w-9 h-9 rounded-lg flex items-center justify-center transition-all
-                                {{ request()->routeIs('orgs.creative.*') ? 'bg-gradient-to-br from-pink-500 to-rose-600 text-white shadow-lg shadow-pink-500/25' : 'bg-slate-800 text-slate-400 group-hover:bg-slate-700 group-hover:text-white' }}">
-                        <i class="fas fa-palette text-sm"></i>
+                <!-- Creative with submenu -->
+                <div x-data="{ open: {{ request()->routeIs('orgs.creative.*') ? 'true' : 'false' }} }">
+                    <button @click="open = !open"
+                            class="group w-full flex items-center justify-between gap-3 px-3 py-2.5 rounded-xl mb-1 transition-all duration-200
+                                   {{ request()->routeIs('orgs.creative.*') ? 'bg-gradient-to-l from-blue-600/20 to-purple-600/20 text-white' : 'text-slate-400 hover:text-white hover:bg-slate-700/30' }}">
+                        <div class="flex items-center gap-3">
+                            <div class="w-9 h-9 rounded-lg flex items-center justify-center transition-all
+                                        {{ request()->routeIs('orgs.creative.*') ? 'bg-gradient-to-br from-pink-500 to-rose-600 text-white shadow-lg shadow-pink-500/25' : 'bg-slate-800 text-slate-400 group-hover:bg-slate-700 group-hover:text-white' }}">
+                                <i class="fas fa-palette text-sm"></i>
+                            </div>
+                            <span class="font-medium text-sm">المحتوى الإبداعي</span>
+                        </div>
+                        <i class="fas fa-chevron-down text-xs transition-transform duration-200" :class="{ 'rotate-180': open }"></i>
+                    </button>
+                    <div x-show="open" x-collapse class="mr-6 space-y-1">
+                        <a href="{{ route('orgs.creative.assets.index', ['org' => $currentOrg]) }}"
+                           class="flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition-all
+                                  {{ request()->routeIs('orgs.creative.assets.*') ? 'text-blue-400 bg-slate-800/50' : 'text-slate-400 hover:text-white hover:bg-slate-800/30' }}">
+                            <i class="fas fa-images text-xs w-4"></i>
+                            <span>الأصول الإبداعية</span>
+                        </a>
+                        <a href="{{ route('orgs.creative.briefs.index', ['org' => $currentOrg]) }}"
+                           class="flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition-all
+                                  {{ request()->routeIs('orgs.creative.briefs.*') ? 'text-blue-400 bg-slate-800/50' : 'text-slate-400 hover:text-white hover:bg-slate-800/30' }}">
+                            <i class="fas fa-file-alt text-xs w-4"></i>
+                            <span>الموجزات الإبداعية</span>
+                        </a>
                     </div>
-                    <span class="font-medium text-sm">الأصول الإبداعية</span>
-                </a>
+                </div>
 
                 <!-- Social Media -->
                 <a href="{{ route('orgs.social.index', ['org' => $currentOrg]) }}"
@@ -463,6 +525,17 @@
                     <span class="font-medium text-sm">التواصل الاجتماعي</span>
                 </a>
 
+                <!-- Profile Groups -->
+                <a href="{{ route('orgs.settings.profile-groups.index', ['org' => $currentOrg]) }}"
+                   class="group flex items-center gap-3 px-3 py-2.5 rounded-xl mb-1 transition-all duration-200
+                          {{ request()->routeIs('orgs.settings.profile-groups.*') ? 'bg-gradient-to-l from-blue-600/20 to-purple-600/20 text-white border-r-2 border-blue-500' : 'text-slate-400 hover:text-white hover:bg-slate-700/30' }}">
+                    <div class="w-9 h-9 rounded-lg flex items-center justify-center transition-all
+                                {{ request()->routeIs('orgs.settings.profile-groups.*') ? 'bg-gradient-to-br from-purple-500 to-indigo-600 text-white shadow-lg shadow-purple-500/25' : 'bg-slate-800 text-slate-400 group-hover:bg-slate-700 group-hover:text-white' }}">
+                        <i class="fas fa-layer-group text-sm"></i>
+                    </div>
+                    <span class="font-medium text-sm">مجموعات الحسابات</span>
+                </a>
+
                 <!-- Products -->
                 <a href="{{ route('orgs.products', ['org' => $currentOrg]) }}"
                    class="group flex items-center gap-3 px-3 py-2.5 rounded-xl mb-1 transition-all duration-200
@@ -472,6 +545,17 @@
                         <i class="fas fa-box text-sm"></i>
                     </div>
                     <span class="font-medium text-sm">المنتجات</span>
+                </a>
+
+                <!-- Workflows -->
+                <a href="{{ route('orgs.workflows.index', ['org' => $currentOrg]) }}"
+                   class="group flex items-center gap-3 px-3 py-2.5 rounded-xl mb-1 transition-all duration-200
+                          {{ request()->routeIs('orgs.workflows.*') ? 'bg-gradient-to-l from-blue-600/20 to-purple-600/20 text-white border-r-2 border-blue-500' : 'text-slate-400 hover:text-white hover:bg-slate-700/30' }}">
+                    <div class="w-9 h-9 rounded-lg flex items-center justify-center transition-all
+                                {{ request()->routeIs('orgs.workflows.*') ? 'bg-gradient-to-br from-red-500 to-pink-600 text-white shadow-lg shadow-red-500/25' : 'bg-slate-800 text-slate-400 group-hover:bg-slate-700 group-hover:text-white' }}">
+                        <i class="fas fa-project-diagram text-sm"></i>
+                    </div>
+                    <span class="font-medium text-sm">سير العمل</span>
                 </a>
 
                 <!-- AI Section -->
@@ -488,6 +572,127 @@
                     </div>
                     <span class="font-medium text-sm">مساعد الذكاء</span>
                     <span class="mr-auto px-2 py-0.5 text-[10px] font-bold bg-purple-500/20 text-purple-400 rounded-full">AI</span>
+                </a>
+
+                <a href="{{ route('orgs.knowledge.index', ['org' => $currentOrg]) }}"
+                   class="group flex items-center gap-3 px-3 py-2.5 rounded-xl mb-1 transition-all duration-200
+                          {{ request()->routeIs('orgs.knowledge.*') ? 'bg-gradient-to-l from-blue-600/20 to-purple-600/20 text-white border-r-2 border-blue-500' : 'text-slate-400 hover:text-white hover:bg-slate-700/30' }}">
+                    <div class="w-9 h-9 rounded-lg flex items-center justify-center transition-all
+                                {{ request()->routeIs('orgs.knowledge.*') ? 'bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-lg shadow-indigo-500/25' : 'bg-slate-800 text-slate-400 group-hover:bg-slate-700 group-hover:text-white' }}">
+                        <i class="fas fa-book text-sm"></i>
+                    </div>
+                    <span class="font-medium text-sm">قاعدة المعرفة</span>
+                </a>
+
+                <!-- Intelligence Section -->
+                <div class="mt-4 mb-2">
+                    <p class="px-3 text-[10px] font-semibold text-slate-500 uppercase tracking-wider">الذكاء التحليلي</p>
+                </div>
+
+                <!-- Predictive Analytics -->
+                <a href="{{ route('orgs.predictive.index', ['org' => $currentOrg]) }}"
+                   class="group flex items-center gap-3 px-3 py-2.5 rounded-xl mb-1 transition-all duration-200
+                          {{ request()->routeIs('orgs.predictive.*') ? 'bg-gradient-to-l from-blue-600/20 to-purple-600/20 text-white border-r-2 border-blue-500' : 'text-slate-400 hover:text-white hover:bg-slate-700/30' }}">
+                    <div class="w-9 h-9 rounded-lg flex items-center justify-center transition-all
+                                {{ request()->routeIs('orgs.predictive.*') ? 'bg-gradient-to-br from-fuchsia-500 to-pink-600 text-white shadow-lg shadow-fuchsia-500/25' : 'bg-slate-800 text-slate-400 group-hover:bg-slate-700 group-hover:text-white' }}">
+                        <i class="fas fa-crystal-ball text-sm"></i>
+                    </div>
+                    <span class="font-medium text-sm">التحليلات التنبؤية</span>
+                    <span class="mr-auto px-2 py-0.5 text-[10px] font-bold bg-red-500/20 text-red-400 rounded-full">15%</span>
+                </a>
+
+                <!-- A/B Testing -->
+                <a href="{{ route('orgs.experiments.index', ['org' => $currentOrg]) }}"
+                   class="group flex items-center gap-3 px-3 py-2.5 rounded-xl mb-1 transition-all duration-200
+                          {{ request()->routeIs('orgs.experiments.*') ? 'bg-gradient-to-l from-blue-600/20 to-purple-600/20 text-white border-r-2 border-blue-500' : 'text-slate-400 hover:text-white hover:bg-slate-700/30' }}">
+                    <div class="w-9 h-9 rounded-lg flex items-center justify-center transition-all
+                                {{ request()->routeIs('orgs.experiments.*') ? 'bg-gradient-to-br from-lime-500 to-green-600 text-white shadow-lg shadow-lime-500/25' : 'bg-slate-800 text-slate-400 group-hover:bg-slate-700 group-hover:text-white' }}">
+                        <i class="fas fa-flask text-sm"></i>
+                    </div>
+                    <span class="font-medium text-sm">اختبار A/B</span>
+                    <span class="mr-auto px-2 py-0.5 text-[10px] font-bold bg-orange-500/20 text-orange-400 rounded-full">40%</span>
+                </a>
+
+                <!-- Optimization Engine -->
+                <a href="{{ route('orgs.optimization.index', ['org' => $currentOrg]) }}"
+                   class="group flex items-center gap-3 px-3 py-2.5 rounded-xl mb-1 transition-all duration-200
+                          {{ request()->routeIs('orgs.optimization.*') ? 'bg-gradient-to-l from-blue-600/20 to-purple-600/20 text-white border-r-2 border-blue-500' : 'text-slate-400 hover:text-white hover:bg-slate-700/30' }}">
+                    <div class="w-9 h-9 rounded-lg flex items-center justify-center transition-all
+                                {{ request()->routeIs('orgs.optimization.*') ? 'bg-gradient-to-br from-yellow-500 to-orange-600 text-white shadow-lg shadow-yellow-500/25' : 'bg-slate-800 text-slate-400 group-hover:bg-slate-700 group-hover:text-white' }}">
+                        <i class="fas fa-gauge-high text-sm"></i>
+                    </div>
+                    <span class="font-medium text-sm">محرك التحسين</span>
+                    <span class="mr-auto px-2 py-0.5 text-[10px] font-bold bg-yellow-500/20 text-yellow-400 rounded-full">50%</span>
+                </a>
+
+                <!-- Automation Section -->
+                <div class="mt-4 mb-2">
+                    <p class="px-3 text-[10px] font-semibold text-slate-500 uppercase tracking-wider">الأتمتة</p>
+                </div>
+
+                <!-- Automation Dashboard -->
+                <a href="{{ route('orgs.automation.index', ['org' => $currentOrg]) }}"
+                   class="group flex items-center gap-3 px-3 py-2.5 rounded-xl mb-1 transition-all duration-200
+                          {{ request()->routeIs('orgs.automation.*') ? 'bg-gradient-to-l from-blue-600/20 to-purple-600/20 text-white border-r-2 border-blue-500' : 'text-slate-400 hover:text-white hover:bg-slate-700/30' }}">
+                    <div class="w-9 h-9 rounded-lg flex items-center justify-center transition-all
+                                {{ request()->routeIs('orgs.automation.*') ? 'bg-gradient-to-br from-indigo-500 to-violet-600 text-white shadow-lg shadow-indigo-500/25' : 'bg-slate-800 text-slate-400 group-hover:bg-slate-700 group-hover:text-white' }}">
+                        <i class="fas fa-gears text-sm"></i>
+                    </div>
+                    <span class="font-medium text-sm">لوحة الأتمتة</span>
+                    <span class="mr-auto px-2 py-0.5 text-[10px] font-bold bg-green-500/20 text-green-400 rounded-full">55%</span>
+                </a>
+
+                <!-- System Section -->
+                <div class="mt-4 mb-2">
+                    <p class="px-3 text-[10px] font-semibold text-slate-500 uppercase tracking-wider">النظام</p>
+                </div>
+
+                <!-- Alerts -->
+                <a href="{{ route('orgs.alerts.index', ['org' => $currentOrg]) }}"
+                   class="group flex items-center gap-3 px-3 py-2.5 rounded-xl mb-1 transition-all duration-200
+                          {{ request()->routeIs('orgs.alerts.*') ? 'bg-gradient-to-l from-blue-600/20 to-purple-600/20 text-white border-r-2 border-blue-500' : 'text-slate-400 hover:text-white hover:bg-slate-700/30' }}">
+                    <div class="w-9 h-9 rounded-lg flex items-center justify-center transition-all
+                                {{ request()->routeIs('orgs.alerts.*') ? 'bg-gradient-to-br from-red-500 to-rose-600 text-white shadow-lg shadow-red-500/25' : 'bg-slate-800 text-slate-400 group-hover:bg-slate-700 group-hover:text-white' }}">
+                        <i class="fas fa-bell text-sm"></i>
+                    </div>
+                    <span class="font-medium text-sm">التنبيهات</span>
+                    <span class="mr-auto px-2 py-0.5 text-[10px] font-bold bg-orange-500/20 text-orange-400 rounded-full">45%</span>
+                </a>
+
+                <!-- Data Exports -->
+                <a href="{{ route('orgs.exports.index', ['org' => $currentOrg]) }}"
+                   class="group flex items-center gap-3 px-3 py-2.5 rounded-xl mb-1 transition-all duration-200
+                          {{ request()->routeIs('orgs.exports.*') ? 'bg-gradient-to-l from-blue-600/20 to-purple-600/20 text-white border-r-2 border-blue-500' : 'text-slate-400 hover:text-white hover:bg-slate-700/30' }}">
+                    <div class="w-9 h-9 rounded-lg flex items-center justify-center transition-all
+                                {{ request()->routeIs('orgs.exports.*') ? 'bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-lg shadow-emerald-500/25' : 'bg-slate-800 text-slate-400 group-hover:bg-slate-700 group-hover:text-white' }}">
+                        <i class="fas fa-download text-sm"></i>
+                    </div>
+                    <span class="font-medium text-sm">تصدير البيانات</span>
+                    <span class="mr-auto px-2 py-0.5 text-[10px] font-bold bg-yellow-500/20 text-yellow-400 rounded-full">50%</span>
+                </a>
+
+                <!-- Dashboard Builder -->
+                <a href="{{ route('orgs.dashboard-builder.index', ['org' => $currentOrg]) }}"
+                   class="group flex items-center gap-3 px-3 py-2.5 rounded-xl mb-1 transition-all duration-200
+                          {{ request()->routeIs('orgs.dashboard-builder.*') ? 'bg-gradient-to-l from-blue-600/20 to-purple-600/20 text-white border-r-2 border-blue-500' : 'text-slate-400 hover:text-white hover:bg-slate-700/30' }}">
+                    <div class="w-9 h-9 rounded-lg flex items-center justify-center transition-all
+                                {{ request()->routeIs('orgs.dashboard-builder.*') ? 'bg-gradient-to-br from-sky-500 to-blue-600 text-white shadow-lg shadow-sky-500/25' : 'bg-slate-800 text-slate-400 group-hover:bg-slate-700 group-hover:text-white' }}">
+                        <i class="fas fa-dashboard text-sm"></i>
+                    </div>
+                    <span class="font-medium text-sm">منشئ اللوحات</span>
+                    <span class="mr-auto px-2 py-0.5 text-[10px] font-bold bg-red-500/20 text-red-400 rounded-full">30%</span>
+                </a>
+
+                <!-- Feature Flags -->
+                <a href="{{ route('orgs.feature-flags.index', ['org' => $currentOrg]) }}"
+                   class="group flex items-center gap-3 px-3 py-2.5 rounded-xl mb-1 transition-all duration-200
+                          {{ request()->routeIs('orgs.feature-flags.*') ? 'bg-gradient-to-l from-blue-600/20 to-purple-600/20 text-white border-r-2 border-blue-500' : 'text-slate-400 hover:text-white hover:bg-slate-700/30' }}">
+                    <div class="w-9 h-9 rounded-lg flex items-center justify-center transition-all
+                                {{ request()->routeIs('orgs.feature-flags.*') ? 'bg-gradient-to-br from-violet-500 to-purple-600 text-white shadow-lg shadow-violet-500/25' : 'bg-slate-800 text-slate-400 group-hover:bg-slate-700 group-hover:text-white' }}">
+                        <i class="fas fa-flag text-sm"></i>
+                    </div>
+                    <span class="font-medium text-sm">علامات الميزات</span>
+                    <span class="mr-auto px-2 py-0.5 text-[10px] font-bold bg-red-500/20 text-red-400 rounded-full">20%</span>
                 </a>
 
                 <!-- Communication Section -->
@@ -511,15 +716,71 @@
                     <p class="px-3 text-[10px] font-semibold text-slate-500 uppercase tracking-wider">الإعدادات</p>
                 </div>
 
-                <a href="{{ route('orgs.settings.index', ['org' => $currentOrg]) }}"
-                   class="group flex items-center gap-3 px-3 py-2.5 rounded-xl mb-1 transition-all duration-200
-                          {{ request()->routeIs('orgs.settings.*') ? 'bg-gradient-to-l from-blue-600/20 to-purple-600/20 text-white border-r-2 border-blue-500' : 'text-slate-400 hover:text-white hover:bg-slate-700/30' }}">
-                    <div class="w-9 h-9 rounded-lg flex items-center justify-center transition-all
-                                {{ request()->routeIs('orgs.settings.*') ? 'bg-gradient-to-br from-slate-500 to-slate-600 text-white shadow-lg shadow-slate-500/25' : 'bg-slate-800 text-slate-400 group-hover:bg-slate-700 group-hover:text-white' }}">
-                        <i class="fas fa-cog text-sm"></i>
+                <!-- Settings with submenu -->
+                <div x-data="{ open: {{ request()->routeIs('orgs.settings.*') ? 'true' : 'false' }} }">
+                    <button @click="open = !open"
+                            class="group w-full flex items-center justify-between gap-3 px-3 py-2.5 rounded-xl mb-1 transition-all duration-200
+                                   {{ request()->routeIs('orgs.settings.*') ? 'bg-gradient-to-l from-blue-600/20 to-purple-600/20 text-white' : 'text-slate-400 hover:text-white hover:bg-slate-700/30' }}">
+                        <div class="flex items-center gap-3">
+                            <div class="w-9 h-9 rounded-lg flex items-center justify-center transition-all
+                                        {{ request()->routeIs('orgs.settings.*') ? 'bg-gradient-to-br from-slate-500 to-slate-600 text-white shadow-lg shadow-slate-500/25' : 'bg-slate-800 text-slate-400 group-hover:bg-slate-700 group-hover:text-white' }}">
+                                <i class="fas fa-cog text-sm"></i>
+                            </div>
+                            <span class="font-medium text-sm">الإعدادات</span>
+                        </div>
+                        <i class="fas fa-chevron-down text-xs transition-transform duration-200" :class="{ 'rotate-180': open }"></i>
+                    </button>
+                    <div x-show="open" x-collapse class="mr-6 space-y-1">
+                        <a href="{{ route('orgs.settings.user', ['org' => $currentOrg]) }}"
+                           class="flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition-all
+                                  {{ request()->routeIs('orgs.settings.user') ? 'text-blue-400 bg-slate-800/50' : 'text-slate-400 hover:text-white hover:bg-slate-800/30' }}">
+                            <i class="fas fa-user-cog text-xs w-4"></i>
+                            <span>إعدادات المستخدم</span>
+                        </a>
+                        <a href="{{ route('orgs.settings.organization', ['org' => $currentOrg]) }}"
+                           class="flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition-all
+                                  {{ request()->routeIs('orgs.settings.organization') ? 'text-blue-400 bg-slate-800/50' : 'text-slate-400 hover:text-white hover:bg-slate-800/30' }}">
+                            <i class="fas fa-building text-xs w-4"></i>
+                            <span>إعدادات المؤسسة</span>
+                        </a>
+                        <a href="{{ route('orgs.settings.platform-connections.index', ['org' => $currentOrg]) }}"
+                           class="flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition-all
+                                  {{ request()->routeIs('orgs.settings.platform-connections.*') ? 'text-blue-400 bg-slate-800/50' : 'text-slate-400 hover:text-white hover:bg-slate-800/30' }}">
+                            <i class="fas fa-plug text-xs w-4"></i>
+                            <span>ربط المنصات</span>
+                        </a>
+                        <a href="{{ route('orgs.settings.ad-accounts.index', ['org' => $currentOrg]) }}"
+                           class="flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition-all
+                                  {{ request()->routeIs('orgs.settings.ad-accounts.*') ? 'text-blue-400 bg-slate-800/50' : 'text-slate-400 hover:text-white hover:bg-slate-800/30' }}">
+                            <i class="fas fa-ad text-xs w-4"></i>
+                            <span>حسابات الإعلانات</span>
+                        </a>
+                        <a href="{{ route('orgs.settings.brand-voices.index', ['org' => $currentOrg]) }}"
+                           class="flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition-all
+                                  {{ request()->routeIs('orgs.settings.brand-voices.*') ? 'text-blue-400 bg-slate-800/50' : 'text-slate-400 hover:text-white hover:bg-slate-800/30' }}">
+                            <i class="fas fa-microphone text-xs w-4"></i>
+                            <span>صوت العلامة التجارية</span>
+                        </a>
+                        <a href="{{ route('orgs.settings.brand-safety.index', ['org' => $currentOrg]) }}"
+                           class="flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition-all
+                                  {{ request()->routeIs('orgs.settings.brand-safety.*') ? 'text-blue-400 bg-slate-800/50' : 'text-slate-400 hover:text-white hover:bg-slate-800/30' }}">
+                            <i class="fas fa-shield-alt text-xs w-4"></i>
+                            <span>أمان العلامة التجارية</span>
+                        </a>
+                        <a href="{{ route('orgs.settings.approval-workflows.index', ['org' => $currentOrg]) }}"
+                           class="flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition-all
+                                  {{ request()->routeIs('orgs.settings.approval-workflows.*') ? 'text-blue-400 bg-slate-800/50' : 'text-slate-400 hover:text-white hover:bg-slate-800/30' }}">
+                            <i class="fas fa-tasks text-xs w-4"></i>
+                            <span>سير عمل الموافقات</span>
+                        </a>
+                        <a href="{{ route('orgs.settings.boost-rules.index', ['org' => $currentOrg]) }}"
+                           class="flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition-all
+                                  {{ request()->routeIs('orgs.settings.boost-rules.*') ? 'text-blue-400 bg-slate-800/50' : 'text-slate-400 hover:text-white hover:bg-slate-800/30' }}">
+                            <i class="fas fa-rocket text-xs w-4"></i>
+                            <span>قواعد التعزيز</span>
+                        </a>
                     </div>
-                    <span class="font-medium text-sm">الإعدادات</span>
-                </a>
+                </div>
 
                 <a href="{{ route('orgs.team.index', ['org' => $currentOrg]) }}"
                    class="group flex items-center gap-3 px-3 py-2.5 rounded-xl mb-1 transition-all duration-200
@@ -576,7 +837,7 @@
             <!-- Top Navigation Bar -->
             <header class="flex items-center justify-between h-14 sm:h-16 px-3 sm:px-6 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-sm">
 
-                <div class="flex items-center space-x-2 sm:space-x-4 space-x-reverse">
+                <div class="flex items-center space-x-2 sm:space-x-4 {{ $isRtl ? 'space-x-reverse' : '' }}">
                     <button @click="toggleSidebar()" class="p-2 text-gray-600 dark:text-gray-300 lg:hidden hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
                         <i class="fas fa-bars text-lg sm:text-xl"></i>
                     </button>
@@ -716,7 +977,7 @@
                     </div>
                 </div>
 
-                <div class="flex items-center space-x-1.5 sm:space-x-4 space-x-reverse">
+                <div class="flex items-center space-x-1.5 sm:space-x-4 {{ $isRtl ? 'space-x-reverse' : '' }}">
 
                     <!-- Dark Mode Toggle -->
                     <button @click="toggleDarkMode()" class="p-1.5 sm:p-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
@@ -794,9 +1055,9 @@
                     <!-- User Menu -->
                     <div class="relative" x-data="{ userMenuOpen: false }">
                         <button @click="userMenuOpen = !userMenuOpen"
-                                class="flex items-center space-x-1 sm:space-x-2 space-x-reverse p-1 sm:p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition"
+                                class="flex items-center space-x-1 sm:space-x-2 {{ $isRtl ? 'space-x-reverse' : '' }} p-1 sm:p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition"
                                 :aria-expanded="userMenuOpen"
-                                aria-label="قائمة المستخدم">
+                                aria-label="{{ __('sidebar.user_menu') }}">
                             <img src="https://ui-avatars.com/api/?name=Admin&background=667eea&color=fff"
                                  class="w-7 h-7 sm:w-8 sm:h-8 rounded-full"
                                  alt="صورة المستخدم">
@@ -902,8 +1163,37 @@
         </div>
     </div>
 
+    {{-- Publishing Modal Component --}}
+    @if($currentOrg ?? false)
+        @include('components.publish-modal')
+
+        {{-- Floating Action Button for Publishing --}}
+        <div x-data="{ showFab: true }"
+             x-show="showFab"
+             class="fixed bottom-6 {{ $isRtl ? 'right-6' : 'left-6' }} z-40 group">
+            <button @click="window.dispatchEvent(new CustomEvent('open-publish-modal'))"
+                    class="w-14 h-14 bg-gradient-to-br from-blue-600 to-purple-600 text-white rounded-full shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-200 flex items-center justify-center group-hover:rotate-90"
+                    title="Create New Post">
+                <i class="fas fa-plus text-xl"></i>
+            </button>
+            {{-- Tooltip --}}
+            <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 bg-gray-900 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+                Create New Post
+                <div class="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900"></div>
+            </div>
+        </div>
+    @endif
+
     <!-- Scripts -->
     <script>
+        // Set current org ID for API calls
+        @if($currentOrg ?? false)
+            window.currentOrgId = '{{ $currentOrg }}';
+        @endif
+
+        // Set RTL state for JavaScript
+        window.isRtl = {{ $isRtl ? 'true' : 'false' }};
+
         // App Layout Controller
         function appLayout() {
             return {
@@ -1324,7 +1614,12 @@
                     if (deltaY > 50) return;
 
                     // RTL layout: swipe LEFT (negative deltaX) to close sidebar
-                    if (deltaX < -this.swipeThreshold) {
+                    // LTR layout: swipe RIGHT (positive deltaX) to close sidebar
+                    const shouldClose = window.isRtl
+                        ? (deltaX < -this.swipeThreshold)
+                        : (deltaX > this.swipeThreshold);
+
+                    if (shouldClose) {
                         // Close sidebar via parent component
                         this.$dispatch('close-sidebar');
                     }
@@ -1335,14 +1630,35 @@
                     { name: 'الرئيسية', icon: 'fa-home', route: 'dashboard', keywords: ['رئيسية', 'home', 'dashboard', 'لوحة'] },
                     { name: 'الحملات', icon: 'fa-bullhorn', route: 'campaigns', keywords: ['حملات', 'campaigns', 'اعلانات', 'تسويق'] },
                     { name: 'التحليلات', icon: 'fa-chart-line', route: 'analytics', keywords: ['تحليلات', 'analytics', 'احصائيات', 'تقارير'] },
-                    { name: 'الأصول الإبداعية', icon: 'fa-palette', route: 'creative', keywords: ['اصول', 'ابداعية', 'creative', 'assets', 'صور', 'فيديو'] },
+                    { name: 'المؤثرين', icon: 'fa-user-tie', route: 'influencer', keywords: ['مؤثرين', 'influencer', 'influencers', 'شراكات', 'partnerships'] },
+                    { name: 'الأصول الإبداعية', icon: 'fa-palette', route: 'creative/assets', keywords: ['اصول', 'ابداعية', 'creative', 'assets', 'صور', 'فيديو'] },
+                    { name: 'الموجزات الإبداعية', icon: 'fa-file-alt', route: 'creative/briefs', keywords: ['موجزات', 'briefs', 'creative', 'ابداعي'] },
                     { name: 'التواصل الاجتماعي', icon: 'fa-share-nodes', route: 'social', keywords: ['تواصل', 'اجتماعي', 'social', 'فيسبوك', 'تويتر', 'انستغرام'] },
+                    { name: 'مجموعات الحسابات', icon: 'fa-layer-group', route: 'settings/profile-groups', keywords: ['مجموعات', 'حسابات', 'profile', 'groups'] },
                     { name: 'المنتجات', icon: 'fa-box', route: 'products', keywords: ['منتجات', 'products', 'سلع', 'خدمات'] },
+                    { name: 'سير العمل', icon: 'fa-project-diagram', route: 'workflows', keywords: ['سير', 'عمل', 'workflows', 'workflow'] },
                     { name: 'مساعد الذكاء', icon: 'fa-robot', route: 'ai', keywords: ['ذكاء', 'اصطناعي', 'ai', 'مساعد', 'روبوت'] },
+                    { name: 'قاعدة المعرفة', icon: 'fa-book', route: 'knowledge', keywords: ['قاعدة', 'معرفة', 'knowledge', 'base'] },
                     { name: 'صندوق الوارد', icon: 'fa-inbox', route: 'inbox', keywords: ['صندوق', 'وارد', 'inbox', 'رسائل', 'بريد'] },
-                    { name: 'الإعدادات', icon: 'fa-cog', route: 'settings', keywords: ['اعدادات', 'settings', 'تهيئة', 'ضبط'] },
+                    { name: 'الإعدادات', icon: 'fa-cog', route: 'settings/user', keywords: ['اعدادات', 'settings', 'تهيئة', 'ضبط'] },
+                    { name: 'ربط المنصات', icon: 'fa-plug', route: 'settings/platform-connections', keywords: ['ربط', 'منصات', 'platforms', 'connections', 'integrations'] },
+                    { name: 'حسابات الإعلانات', icon: 'fa-ad', route: 'settings/ad-accounts', keywords: ['حسابات', 'اعلانات', 'ad', 'accounts'] },
+                    { name: 'صوت العلامة التجارية', icon: 'fa-microphone', route: 'settings/brand-voices', keywords: ['صوت', 'علامة', 'brand', 'voice', 'تجارية'] },
+                    { name: 'أمان العلامة التجارية', icon: 'fa-shield-alt', route: 'settings/brand-safety', keywords: ['امان', 'علامة', 'brand', 'safety', 'تجارية'] },
+                    { name: 'سير عمل الموافقات', icon: 'fa-tasks', route: 'settings/approval-workflows', keywords: ['موافقات', 'approval', 'workflows', 'سير', 'عمل'] },
+                    { name: 'قواعد التعزيز', icon: 'fa-rocket', route: 'settings/boost-rules', keywords: ['قواعد', 'تعزيز', 'boost', 'rules'] },
                     { name: 'الفريق', icon: 'fa-users', route: 'team', keywords: ['فريق', 'team', 'اعضاء', 'مستخدمين'] },
-                    { name: 'المؤسسات', icon: 'fa-building', route: 'orgs', keywords: ['مؤسسات', 'organizations', 'شركات', 'منظمات'] }
+                    { name: 'المؤسسات', icon: 'fa-building', route: 'orgs', keywords: ['مؤسسات', 'organizations', 'شركات', 'منظمات'] },
+                    { name: 'تنسيق الحملات', icon: 'fa-sitemap', route: 'orchestration', keywords: ['تنسيق', 'حملات', 'orchestration', 'campaigns'] },
+                    { name: 'الاستماع الاجتماعي', icon: 'fa-ear-listen', route: 'listening', keywords: ['استماع', 'اجتماعي', 'listening', 'social', 'monitoring'] },
+                    { name: 'التحليلات التنبؤية', icon: 'fa-crystal-ball', route: 'predictive', keywords: ['تحليلات', 'تنبؤية', 'predictive', 'analytics', 'forecast'] },
+                    { name: 'اختبار A/B', icon: 'fa-flask', route: 'experiments', keywords: ['اختبار', 'تجارب', 'experiments', 'ab', 'testing'] },
+                    { name: 'محرك التحسين', icon: 'fa-gauge-high', route: 'optimization', keywords: ['تحسين', 'محرك', 'optimization', 'engine'] },
+                    { name: 'لوحة الأتمتة', icon: 'fa-gears', route: 'automation', keywords: ['اتمتة', 'automation', 'auto', 'rules'] },
+                    { name: 'التنبيهات', icon: 'fa-bell', route: 'alerts', keywords: ['تنبيهات', 'alerts', 'notifications', 'اشعارات'] },
+                    { name: 'تصدير البيانات', icon: 'fa-download', route: 'exports', keywords: ['تصدير', 'بيانات', 'export', 'data', 'download'] },
+                    { name: 'منشئ اللوحات', icon: 'fa-dashboard', route: 'dashboard-builder', keywords: ['منشئ', 'لوحات', 'dashboard', 'builder', 'custom'] },
+                    { name: 'علامات الميزات', icon: 'fa-flag', route: 'feature-flags', keywords: ['علامات', 'ميزات', 'feature', 'flags', 'toggles'] }
                 ],
 
                 performSearch() {

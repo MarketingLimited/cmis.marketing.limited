@@ -1,110 +1,127 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
+    /**
+     * Helper to check if table exists
+     */
+    private function tableExists(string $schema, string $table): bool
+    {
+        $result = DB::selectOne("
+            SELECT COUNT(*) as count
+            FROM information_schema.tables
+            WHERE table_schema = ?
+            AND table_name = ?
+        ", [$schema, $table]);
+        return $result->count > 0;
+    }
+
     public function up(): void
     {
         // API tokens for external integrations
-        Schema::create('cmis.api_tokens', function (Blueprint $table) {
-            $table->uuid('token_id')->primary();
-            $table->uuid('org_id');
-            $table->uuid('created_by');
-            $table->string('name', 255);
-            $table->text('token_hash'); // Hashed token
-            $table->text('token_prefix', 16); // First 16 chars for identification
-            $table->jsonb('scopes'); // Permissions: ['analytics:read', 'campaigns:read']
-            $table->jsonb('rate_limits')->nullable(); // Custom rate limits
-            $table->timestamp('last_used_at')->nullable();
-            $table->integer('usage_count')->default(0);
-            $table->timestamp('expires_at')->nullable();
-            $table->boolean('is_active')->default(true);
-            $table->timestamps();
+        if (!$this->tableExists('cmis', 'api_tokens')) {
+            DB::statement("
+                CREATE TABLE cmis.api_tokens (
+                    token_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                    org_id UUID NOT NULL REFERENCES cmis.orgs(org_id) ON DELETE CASCADE,
+                    created_by UUID NOT NULL REFERENCES cmis.users(user_id) ON DELETE CASCADE,
+                    name VARCHAR(255) NOT NULL,
+                    token_hash TEXT NOT NULL,
+                    token_prefix TEXT NOT NULL,
+                    scopes JSONB NOT NULL DEFAULT '[]',
+                    rate_limits JSONB NULL,
+                    last_used_at TIMESTAMP NULL,
+                    usage_count INTEGER NOT NULL DEFAULT 0,
+                    expires_at TIMESTAMP NULL,
+                    is_active BOOLEAN NOT NULL DEFAULT TRUE,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            ");
 
-            $table->index('org_id');
-            $table->index('token_prefix');
-            $table->index(['is_active', 'expires_at']);
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_api_tokens_org_id ON cmis.api_tokens(org_id)");
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_api_tokens_prefix ON cmis.api_tokens(token_prefix)");
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_api_tokens_active ON cmis.api_tokens(is_active, expires_at)");
 
-            $table->foreign('org_id')->references('org_id')->on('cmis.orgs')->onDelete('cascade');
-            $table->foreign('created_by')->references('user_id')->on('cmis.users')->onDelete('cascade');
-        });
-
-        DB::statement('ALTER TABLE cmis.api_tokens ENABLE ROW LEVEL SECURITY');
-        DB::statement("CREATE POLICY org_isolation ON cmis.api_tokens USING (org_id = current_setting('app.current_org_id')::uuid)");
+            DB::statement('ALTER TABLE cmis.api_tokens ENABLE ROW LEVEL SECURITY');
+            DB::statement("DROP POLICY IF EXISTS org_isolation ON cmis.api_tokens");
+            DB::statement("CREATE POLICY org_isolation ON cmis.api_tokens USING (org_id = NULLIF(current_setting('app.current_org_id', true), '')::uuid)");
+        }
 
         // Data export configurations
-        Schema::create('cmis.data_export_configs', function (Blueprint $table) {
-            $table->uuid('config_id')->primary();
-            $table->uuid('org_id');
-            $table->uuid('created_by');
-            $table->string('name', 255);
-            $table->text('description')->nullable();
-            $table->string('export_type', 50); // analytics, campaigns, metrics, custom
-            $table->enum('format', ['json', 'csv', 'xlsx', 'parquet'])->default('json');
-            $table->enum('delivery_method', ['download', 'webhook', 'sftp', 's3'])->default('download');
-            $table->jsonb('data_config'); // What data to export
-            $table->jsonb('delivery_config'); // Where/how to deliver
-            $table->jsonb('schedule')->nullable(); // Cron-like schedule
-            $table->boolean('is_active')->default(true);
-            $table->timestamp('last_export_at')->nullable();
-            $table->integer('export_count')->default(0);
-            $table->timestamps();
+        if (!$this->tableExists('cmis', 'data_export_configs')) {
+            DB::statement("
+                CREATE TABLE cmis.data_export_configs (
+                    config_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                    org_id UUID NOT NULL REFERENCES cmis.orgs(org_id) ON DELETE CASCADE,
+                    created_by UUID NOT NULL REFERENCES cmis.users(user_id) ON DELETE CASCADE,
+                    name VARCHAR(255) NOT NULL,
+                    description TEXT NULL,
+                    export_type VARCHAR(50) NOT NULL,
+                    format VARCHAR(20) NOT NULL DEFAULT 'json' CHECK (format IN ('json', 'csv', 'xlsx', 'parquet')),
+                    delivery_method VARCHAR(20) NOT NULL DEFAULT 'download' CHECK (delivery_method IN ('download', 'webhook', 'sftp', 's3')),
+                    data_config JSONB NOT NULL DEFAULT '{}',
+                    delivery_config JSONB NOT NULL DEFAULT '{}',
+                    schedule JSONB NULL,
+                    is_active BOOLEAN NOT NULL DEFAULT TRUE,
+                    last_export_at TIMESTAMP NULL,
+                    export_count INTEGER NOT NULL DEFAULT 0,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            ");
 
-            $table->index('org_id');
-            $table->index('export_type');
-            $table->index(['is_active', 'last_export_at']);
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_export_configs_org_id ON cmis.data_export_configs(org_id)");
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_export_configs_type ON cmis.data_export_configs(export_type)");
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_export_configs_active ON cmis.data_export_configs(is_active, last_export_at)");
 
-            $table->foreign('org_id')->references('org_id')->on('cmis.orgs')->onDelete('cascade');
-            $table->foreign('created_by')->references('user_id')->on('cmis.users')->onDelete('cascade');
-        });
-
-        DB::statement('ALTER TABLE cmis.data_export_configs ENABLE ROW LEVEL SECURITY');
-        DB::statement("CREATE POLICY org_isolation ON cmis.data_export_configs USING (org_id = current_setting('app.current_org_id')::uuid)");
+            DB::statement('ALTER TABLE cmis.data_export_configs ENABLE ROW LEVEL SECURITY');
+            DB::statement("DROP POLICY IF EXISTS org_isolation ON cmis.data_export_configs");
+            DB::statement("CREATE POLICY org_isolation ON cmis.data_export_configs USING (org_id = NULLIF(current_setting('app.current_org_id', true), '')::uuid)");
+        }
 
         // Export execution logs
-        Schema::create('cmis.data_export_logs', function (Blueprint $table) {
-            $table->uuid('log_id')->primary();
-            $table->uuid('config_id')->nullable(); // NULL for manual exports
-            $table->uuid('org_id');
-            $table->timestamp('started_at');
-            $table->timestamp('completed_at')->nullable();
-            $table->enum('status', ['pending', 'processing', 'completed', 'failed'])->default('pending');
-            $table->string('format', 20);
-            $table->integer('records_count')->default(0);
-            $table->bigInteger('file_size')->default(0); // bytes
-            $table->text('file_path')->nullable();
-            $table->text('file_url')->nullable();
-            $table->text('delivery_url')->nullable(); // Webhook/S3 URL
-            $table->text('error_message')->nullable();
-            $table->integer('execution_time_ms')->nullable();
-            $table->jsonb('metadata')->nullable();
-            $table->timestamps();
+        if (!$this->tableExists('cmis', 'data_export_logs')) {
+            DB::statement("
+                CREATE TABLE cmis.data_export_logs (
+                    log_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                    config_id UUID NULL REFERENCES cmis.data_export_configs(config_id) ON DELETE SET NULL,
+                    org_id UUID NOT NULL REFERENCES cmis.orgs(org_id) ON DELETE CASCADE,
+                    started_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    completed_at TIMESTAMP NULL,
+                    status VARCHAR(20) NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'processing', 'completed', 'failed')),
+                    format VARCHAR(20) NOT NULL,
+                    records_count INTEGER NOT NULL DEFAULT 0,
+                    file_size BIGINT NOT NULL DEFAULT 0,
+                    file_path TEXT NULL,
+                    file_url TEXT NULL,
+                    delivery_url TEXT NULL,
+                    error_message TEXT NULL,
+                    execution_time_ms INTEGER NULL,
+                    metadata JSONB NULL,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            ");
 
-            $table->index('config_id');
-            $table->index('org_id');
-            $table->index('status');
-            $table->index('started_at');
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_export_logs_config ON cmis.data_export_logs(config_id)");
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_export_logs_org ON cmis.data_export_logs(org_id)");
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_export_logs_status ON cmis.data_export_logs(status)");
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_export_logs_started ON cmis.data_export_logs(started_at)");
 
-            $table->foreign('config_id')->references('config_id')->on('cmis.data_export_configs')->onDelete('set null');
-            $table->foreign('org_id')->references('org_id')->on('cmis.orgs')->onDelete('cascade');
-        });
-
-        DB::statement('ALTER TABLE cmis.data_export_logs ENABLE ROW LEVEL SECURITY');
-        DB::statement("CREATE POLICY org_isolation ON cmis.data_export_logs USING (org_id = current_setting('app.current_org_id')::uuid)");
+            DB::statement('ALTER TABLE cmis.data_export_logs ENABLE ROW LEVEL SECURITY');
+            DB::statement("DROP POLICY IF EXISTS org_isolation ON cmis.data_export_logs");
+            DB::statement("CREATE POLICY org_isolation ON cmis.data_export_logs USING (org_id = NULLIF(current_setting('app.current_org_id', true), '')::uuid)");
+        }
     }
 
     public function down(): void
     {
-        DB::statement('DROP POLICY IF EXISTS org_isolation ON cmis.data_export_logs');
-        DB::statement('DROP POLICY IF EXISTS org_isolation ON cmis.data_export_configs');
-        DB::statement('DROP POLICY IF EXISTS org_isolation ON cmis.api_tokens');
-
-        Schema::dropIfExists('cmis.data_export_logs');
-        Schema::dropIfExists('cmis.data_export_configs');
-        Schema::dropIfExists('cmis.api_tokens');
+        DB::statement('DROP TABLE IF EXISTS cmis.data_export_logs CASCADE');
+        DB::statement('DROP TABLE IF EXISTS cmis.data_export_configs CASCADE');
+        DB::statement('DROP TABLE IF EXISTS cmis.api_tokens CASCADE');
     }
 };
