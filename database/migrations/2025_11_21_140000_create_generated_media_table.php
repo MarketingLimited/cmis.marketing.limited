@@ -78,19 +78,27 @@ return new class extends Migration
             USING (org_id = current_setting('app.current_org_id')::uuid);
         ");
 
-        // Add foreign key constraint to orgs (if table has primary key)
-        $orgPkExists = DB::select("
+        // Add foreign key constraint to orgs (if table has primary key and FK doesn't exist)
+        $fkExists = DB::select("
             SELECT 1 FROM information_schema.table_constraints
-            WHERE table_schema = 'cmis' AND table_name = 'orgs'
-            AND constraint_type = 'PRIMARY KEY'
+            WHERE table_schema = 'cmis_ai' AND table_name = 'generated_media'
+            AND constraint_name = 'fk_generated_media_org'
         ");
 
-        if (!empty($orgPkExists)) {
-            DB::statement("
-                ALTER TABLE cmis_ai.generated_media
-                ADD CONSTRAINT fk_generated_media_org
-                FOREIGN KEY (org_id) REFERENCES cmis.orgs(org_id) ON DELETE CASCADE;
+        if (empty($fkExists)) {
+            $orgPkExists = DB::select("
+                SELECT 1 FROM information_schema.table_constraints
+                WHERE table_schema = 'cmis' AND table_name = 'orgs'
+                AND constraint_type = 'PRIMARY KEY'
             ");
+
+            if (!empty($orgPkExists)) {
+                DB::statement("
+                    ALTER TABLE cmis_ai.generated_media
+                    ADD CONSTRAINT fk_generated_media_org
+                    FOREIGN KEY (org_id) REFERENCES cmis.orgs(org_id) ON DELETE CASCADE;
+                ");
+            }
         }
 
         // Create updated_at trigger

@@ -46,6 +46,7 @@ class DatabaseSeeder extends Seeder
             RolesSeeder::class,
             UsersSeeder::class,
             PlatformConnectionsSeeder::class,
+            ProfileGroupSeeder::class,
         ]);
 
         $this->command->newLine();

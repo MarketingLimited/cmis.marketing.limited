@@ -13,7 +13,7 @@ return new class extends Migration
     public function up(): void
     {
         // 1. Dashboard Configurations - Custom dashboard layouts
-        Schema::create('cmis.dashboard_configs', function (Blueprint $table) {
+        if (!Schema::hasTable('cmis.dashboard_configs')) { Schema::create('cmis.dashboard_configs', function (Blueprint $table) {
             $table->uuid('dashboard_id')->primary()->default(DB::raw('gen_random_uuid()'));
             $table->uuid('org_id')->nullable(false);
             $table->uuid('created_by')->nullable(false);
@@ -60,13 +60,15 @@ return new class extends Migration
 
         // RLS Policy
         DB::statement("ALTER TABLE cmis.dashboard_configs ENABLE ROW LEVEL SECURITY");
+        DB::statement("DROP POLICY IF EXISTS org_isolation ON cmis.dashboard_configs");
         DB::statement("
             CREATE POLICY org_isolation ON cmis.dashboard_configs
             USING (org_id = current_setting('app.current_org_id', true)::uuid)
         ");
+        }
 
         // 2. Custom Reports - Saved report configurations
-        Schema::create('cmis.custom_reports', function (Blueprint $table) {
+        if (!Schema::hasTable('cmis.custom_reports')) { Schema::create('cmis.custom_reports', function (Blueprint $table) {
             $table->uuid('report_id')->primary()->default(DB::raw('gen_random_uuid()'));
             $table->uuid('org_id')->nullable(false);
             $table->uuid('created_by')->nullable(false);
@@ -126,13 +128,15 @@ return new class extends Migration
 
         // RLS Policy
         DB::statement("ALTER TABLE cmis.custom_reports ENABLE ROW LEVEL SECURITY");
+        DB::statement("DROP POLICY IF EXISTS org_isolation ON cmis.custom_reports");
         DB::statement("
             CREATE POLICY org_isolation ON cmis.custom_reports
             USING (org_id = current_setting('app.current_org_id', true)::uuid)
         ");
+        }
 
         // 3. Data Snapshots - Historical data for comparisons
-        Schema::create('cmis.data_snapshots', function (Blueprint $table) {
+        if (!Schema::hasTable('cmis.data_snapshots')) { Schema::create('cmis.data_snapshots', function (Blueprint $table) {
             $table->uuid('snapshot_id')->primary()->default(DB::raw('gen_random_uuid()'));
             $table->uuid('org_id')->nullable(false);
 
@@ -177,13 +181,15 @@ return new class extends Migration
 
         // RLS Policy
         DB::statement("ALTER TABLE cmis.data_snapshots ENABLE ROW LEVEL SECURITY");
+        DB::statement("DROP POLICY IF EXISTS org_isolation ON cmis.data_snapshots");
         DB::statement("
             CREATE POLICY org_isolation ON cmis.data_snapshots
             USING (org_id = current_setting('app.current_org_id', true)::uuid)
         ");
+        }
 
         // 4. Analytics Metrics - Real-time aggregated metrics
-        Schema::create('cmis.analytics_metrics', function (Blueprint $table) {
+        if (!Schema::hasTable('cmis.analytics_metrics')) { Schema::create('cmis.analytics_metrics', function (Blueprint $table) {
             $table->uuid('metric_id')->primary()->default(DB::raw('gen_random_uuid()'));
             $table->uuid('org_id')->nullable(false);
 
@@ -227,14 +233,16 @@ return new class extends Migration
 
         // RLS Policy
         DB::statement("ALTER TABLE cmis.analytics_metrics ENABLE ROW LEVEL SECURITY");
+        DB::statement("DROP POLICY IF EXISTS org_isolation ON cmis.analytics_metrics");
         DB::statement("
             CREATE POLICY org_isolation ON cmis.analytics_metrics
             USING (org_id = current_setting('app.current_org_id', true)::uuid)
         ");
+        }
 
         // COMMENTED OUT: Table already created by migration 2025_11_21_000008 with RLS policies
         // 5. Report Schedules - Automated report generation
-        // Schema::create('cmis.report_schedules', function (Blueprint $table) {
+        // if (!Schema::hasTable('cmis.report_schedules')) { Schema::create('cmis.report_schedules', function (Blueprint $table) {
         //     $table->uuid('schedule_id')->primary()->default(DB::raw('gen_random_uuid()'));
         //     $table->uuid('org_id')->nullable(false);
         //     $table->uuid('report_id')->nullable(false);
@@ -288,7 +296,7 @@ return new class extends Migration
         // ");
 
         // 6. Data Exports - Export history and downloads
-        Schema::create('cmis.data_exports', function (Blueprint $table) {
+        if (!Schema::hasTable('cmis.data_exports')) { Schema::create('cmis.data_exports', function (Blueprint $table) {
             $table->uuid('export_id')->primary()->default(DB::raw('gen_random_uuid()'));
             $table->uuid('org_id')->nullable(false);
             $table->uuid('exported_by')->nullable(false);
@@ -335,10 +343,12 @@ return new class extends Migration
 
         // RLS Policy
         DB::statement("ALTER TABLE cmis.data_exports ENABLE ROW LEVEL SECURITY");
+        DB::statement("DROP POLICY IF EXISTS org_isolation ON cmis.data_exports");
         DB::statement("
             CREATE POLICY org_isolation ON cmis.data_exports
             USING (org_id = current_setting('app.current_org_id', true)::uuid)
         ");
+        }
 
         // COMMENTED OUT: Analytics views reference columns that don't exist in current table schema
         // These views can be recreated later with correct column references

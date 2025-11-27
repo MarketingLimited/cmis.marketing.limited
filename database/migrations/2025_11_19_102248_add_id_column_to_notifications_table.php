@@ -12,6 +12,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Always ensure sequence exists
+        DB::statement("CREATE SEQUENCE IF NOT EXISTS cmis.notifications_id_seq");
+
         // Check if id column already exists
         $hasId = DB::selectOne("
             SELECT EXISTS (
@@ -24,14 +27,26 @@ return new class extends Migration
         ");
 
         if (!$hasId->exists) {
-            // Add id column as an auto-incrementing serial column
+            // Add id column with default from sequence
             DB::statement("
                 ALTER TABLE cmis.notifications
-                ADD COLUMN id SERIAL UNIQUE
+                ADD COLUMN id INTEGER NOT NULL DEFAULT nextval('cmis.notifications_id_seq')
             ");
 
             echo "✓ Added id column to cmis.notifications\n";
+        } else {
+            // Column exists - ensure it has the correct default
+            DB::statement("
+                ALTER TABLE cmis.notifications
+                ALTER COLUMN id SET DEFAULT nextval('cmis.notifications_id_seq')
+            ");
         }
+
+        // Set sequence ownership (idempotent)
+        DB::statement("ALTER SEQUENCE cmis.notifications_id_seq OWNED BY cmis.notifications.id");
+
+        // Add unique constraint (if not exists)
+        DB::statement("CREATE UNIQUE INDEX IF NOT EXISTS notifications_id_unique ON cmis.notifications (id)");
     }
 
     /**

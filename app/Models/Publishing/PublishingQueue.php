@@ -3,22 +3,20 @@
 namespace App\Models\Publishing;
 
 use App\Models\Concerns\HasOrganization;
-
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use App\Models\BaseModel;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use App\Models\Core\Org;
 use App\Models\Social\SocialAccount;
 
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
 class PublishingQueue extends BaseModel
 {
-    use HasFactory, SoftDeletes, HasUuids;
+    use HasFactory;
     use HasOrganization;
 
     protected $table = 'cmis.publishing_queues';
     protected $primaryKey = 'queue_id';
+
     protected $fillable = [
         'queue_id',
         'org_id',
@@ -39,14 +37,13 @@ class PublishingQueue extends BaseModel
         'deleted_at' => 'datetime',
     ];
 
-    
-
     /**
      * Get the social account for this queue
      */
     public function socialAccount(): BelongsTo
     {
         return $this->belongsTo(SocialAccount::class, 'social_account_id', 'account_id');
+    }
 
     /**
      * Scope to get active queues only
@@ -54,6 +51,7 @@ class PublishingQueue extends BaseModel
     public function scopeActive($query)
     {
         return $query->where('is_active', true);
+    }
 
     /**
      * Scope by organization
@@ -61,6 +59,7 @@ class PublishingQueue extends BaseModel
     public function scopeForOrg($query, string $orgId)
     {
         return $query->where('org_id', $orgId);
+    }
 
     /**
      * Scope by social account
@@ -68,6 +67,7 @@ class PublishingQueue extends BaseModel
     public function scopeForAccount($query, string $accountId)
     {
         return $query->where('social_account_id', $accountId);
+    }
 
     /**
      * Check if a specific weekday is enabled
@@ -77,8 +77,10 @@ class PublishingQueue extends BaseModel
         // dayIndex: 0=Monday, 6=Sunday
         if ($dayIndex < 0 || $dayIndex > 6) {
             return false;
+        }
 
         return isset($this->weekdays_enabled[$dayIndex]) && $this->weekdays_enabled[$dayIndex] === '1';
+    }
 
     /**
      * Get enabled time slots for a specific day
@@ -87,9 +89,12 @@ class PublishingQueue extends BaseModel
     {
         if (!$this->isWeekdayEnabled($dayIndex)) {
             return [];
+        }
 
         return array_filter($this->time_slots ?? [], function ($slot) {
             return isset($slot['enabled']) && $slot['enabled'] === true;
+        });
+    }
 
     /**
      * Get all enabled time slots
@@ -98,6 +103,8 @@ class PublishingQueue extends BaseModel
     {
         return array_filter($this->time_slots ?? [], function ($slot) {
             return isset($slot['enabled']) && $slot['enabled'] === true;
+        });
+    }
 
     /**
      * Get next available posting time
@@ -106,14 +113,17 @@ class PublishingQueue extends BaseModel
     {
         if (!$this->is_active) {
             return null;
+        }
 
         $after = $after ?? new \DateTime('now', new \DateTimeZone($this->timezone));
         $enabledSlots = $this->getAllEnabledTimeSlots();
 
         if (empty($enabledSlots)) {
             return null;
+        }
 
         // Find next available slot (implementation would go here)
         // This is a simplified version
         return $after->modify('+1 hour');
+    }
 }

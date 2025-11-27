@@ -64,7 +64,7 @@ class OrgsSeeder extends Seeder
         ];
 
         foreach ($orgs as $org) {
-            DB::table('cmis.orgs')->insert($org);
+            DB::table('cmis.orgs')->insertOrIgnore($org);
         }
 
         $this->command->info('Organizations seeded successfully!');

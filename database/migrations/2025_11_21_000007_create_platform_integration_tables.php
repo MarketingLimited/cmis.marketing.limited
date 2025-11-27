@@ -1,208 +1,221 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
+    /**
+     * Helper to check if table exists
+     */
+    private function tableExists(string $schema, string $table): bool
+    {
+        $result = DB::selectOne("
+            SELECT COUNT(*) as count
+            FROM information_schema.tables
+            WHERE table_schema = ?
+            AND table_name = ?
+        ", [$schema, $table]);
+        return $result->count > 0;
+    }
+
     /**
      * Run the migrations (Phase 18: Platform Integration & API Orchestration).
      */
     public function up(): void
     {
         // ===== Platform Connections Table =====
-        Schema::create('cmis.platform_connections', function (Blueprint $table) {
-            $table->uuid('connection_id')->primary()->default(DB::raw('gen_random_uuid()'));
-            $table->uuid('org_id')->index();
-            $table->string('platform', 50); // meta, google, tiktok, linkedin, twitter, snapchat
-            $table->string('account_id', 255); // Platform-specific account ID
-            $table->string('account_name', 255)->nullable();
-            $table->string('status', 30)->default('active'); // active, expired, revoked, error
-            $table->text('access_token')->nullable(); // Encrypted
-            $table->text('refresh_token')->nullable(); // Encrypted
-            $table->timestamp('token_expires_at')->nullable();
-            $table->jsonb('scopes')->nullable(); // OAuth scopes granted
-            $table->jsonb('account_metadata')->nullable(); // Platform-specific data
-            $table->timestamp('last_sync_at')->nullable();
-            $table->timestamp('last_error_at')->nullable();
-            $table->text('last_error_message')->nullable();
-            $table->boolean('auto_sync')->default(true);
-            $table->integer('sync_frequency_minutes')->default(15);
-            $table->timestamps();
+        if (!$this->tableExists('cmis', 'platform_connections')) {
+            DB::statement("
+                CREATE TABLE cmis.platform_connections (
+                    connection_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                    org_id UUID NOT NULL REFERENCES cmis.orgs(org_id) ON DELETE CASCADE,
+                    platform VARCHAR(50) NOT NULL,
+                    account_id VARCHAR(255) NOT NULL,
+                    account_name VARCHAR(255) NULL,
+                    status VARCHAR(30) NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'expired', 'revoked', 'error')),
+                    access_token TEXT NULL,
+                    refresh_token TEXT NULL,
+                    token_expires_at TIMESTAMP NULL,
+                    scopes JSONB NULL,
+                    account_metadata JSONB NULL,
+                    last_sync_at TIMESTAMP NULL,
+                    last_error_at TIMESTAMP NULL,
+                    last_error_message TEXT NULL,
+                    auto_sync BOOLEAN NOT NULL DEFAULT TRUE,
+                    sync_frequency_minutes INTEGER NOT NULL DEFAULT 15,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    CONSTRAINT uq_platform_connections UNIQUE (org_id, platform, account_id)
+                )
+            ");
 
-            $table->foreign('org_id')->references('org_id')->on('cmis.orgs')->onDelete('cascade');
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_platform_connections_org_id ON cmis.platform_connections(org_id)");
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_platform_connections_platform_status ON cmis.platform_connections(platform, status)");
 
-            $table->unique(['org_id', 'platform', 'account_id']);
-            $table->index(['platform', 'status']);
-        });
-
-        // RLS Policy
-        DB::statement("ALTER TABLE cmis.platform_connections ENABLE ROW LEVEL SECURITY");
-        DB::statement("
-            CREATE POLICY org_isolation ON cmis.platform_connections
-            USING (org_id = current_setting('app.current_org_id')::uuid)
-        ");
+            DB::statement('ALTER TABLE cmis.platform_connections ENABLE ROW LEVEL SECURITY');
+            DB::statement("DROP POLICY IF EXISTS org_isolation ON cmis.platform_connections");
+            DB::statement("CREATE POLICY org_isolation ON cmis.platform_connections USING (org_id = NULLIF(current_setting('app.current_org_id', true), '')::uuid)");
+        }
 
         // ===== Platform Sync Logs Table =====
-        Schema::create('cmis.platform_sync_logs', function (Blueprint $table) {
-            $table->uuid('sync_id')->primary()->default(DB::raw('gen_random_uuid()'));
-            $table->uuid('org_id')->index();
-            $table->uuid('connection_id');
-            $table->string('sync_type', 50); // full, incremental, entity_specific
-            $table->string('entity_type', 50)->nullable(); // campaigns, ad_sets, ads, audiences
-            $table->string('direction', 20); // import, export, bidirectional
-            $table->string('status', 30); // running, completed, failed, partial
-            $table->timestamp('started_at')->default(DB::raw('NOW()'));
-            $table->timestamp('completed_at')->nullable();
-            $table->integer('duration_ms')->nullable();
-            $table->integer('entities_processed')->default(0);
-            $table->integer('entities_created')->default(0);
-            $table->integer('entities_updated')->default(0);
-            $table->integer('entities_failed')->default(0);
-            $table->jsonb('summary')->nullable();
-            $table->text('error_message')->nullable();
-            $table->jsonb('error_details')->nullable();
-            $table->timestamps();
+        if (!$this->tableExists('cmis', 'platform_sync_logs')) {
+            DB::statement("
+                CREATE TABLE cmis.platform_sync_logs (
+                    sync_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                    org_id UUID NOT NULL REFERENCES cmis.orgs(org_id) ON DELETE CASCADE,
+                    connection_id UUID NOT NULL REFERENCES cmis.platform_connections(connection_id) ON DELETE CASCADE,
+                    sync_type VARCHAR(50) NOT NULL CHECK (sync_type IN ('full', 'incremental', 'entity_specific')),
+                    entity_type VARCHAR(50) NULL,
+                    direction VARCHAR(20) NOT NULL CHECK (direction IN ('import', 'export', 'bidirectional')),
+                    status VARCHAR(30) NOT NULL CHECK (status IN ('running', 'completed', 'failed', 'partial')),
+                    started_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    completed_at TIMESTAMP NULL,
+                    duration_ms INTEGER NULL,
+                    entities_processed INTEGER NOT NULL DEFAULT 0,
+                    entities_created INTEGER NOT NULL DEFAULT 0,
+                    entities_updated INTEGER NOT NULL DEFAULT 0,
+                    entities_failed INTEGER NOT NULL DEFAULT 0,
+                    summary JSONB NULL,
+                    error_message TEXT NULL,
+                    error_details JSONB NULL,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            ");
 
-            $table->foreign('org_id')->references('org_id')->on('cmis.orgs')->onDelete('cascade');
-            $table->foreign('connection_id')->references('connection_id')->on('cmis.platform_connections')->onDelete('cascade');
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_platform_sync_logs_org_id ON cmis.platform_sync_logs(org_id)");
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_platform_sync_logs_connection ON cmis.platform_sync_logs(org_id, connection_id)");
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_platform_sync_logs_started ON cmis.platform_sync_logs(started_at)");
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_platform_sync_logs_status ON cmis.platform_sync_logs(status)");
 
-            $table->index(['org_id', 'connection_id']);
-            $table->index('started_at');
-            $table->index('status');
-        });
-
-        // RLS Policy
-        DB::statement("ALTER TABLE cmis.platform_sync_logs ENABLE ROW LEVEL SECURITY");
-        DB::statement("
-            CREATE POLICY org_isolation ON cmis.platform_sync_logs
-            USING (org_id = current_setting('app.current_org_id')::uuid)
-        ");
+            DB::statement('ALTER TABLE cmis.platform_sync_logs ENABLE ROW LEVEL SECURITY');
+            DB::statement("DROP POLICY IF EXISTS org_isolation ON cmis.platform_sync_logs");
+            DB::statement("CREATE POLICY org_isolation ON cmis.platform_sync_logs USING (org_id = NULLIF(current_setting('app.current_org_id', true), '')::uuid)");
+        }
 
         // ===== Platform API Calls Table =====
-        Schema::create('cmis.platform_api_calls', function (Blueprint $table) {
-            $table->uuid('call_id')->primary()->default(DB::raw('gen_random_uuid()'));
-            $table->uuid('org_id')->index();
-            $table->uuid('connection_id');
-            $table->string('platform', 50);
-            $table->string('endpoint', 500);
-            $table->string('method', 10); // GET, POST, PUT, DELETE
-            $table->string('action_type', 100)->nullable(); // create_campaign, update_budget, etc.
-            $table->integer('http_status')->nullable();
-            $table->integer('duration_ms')->nullable();
-            $table->boolean('success')->default(false);
-            $table->text('error_message')->nullable();
-            $table->jsonb('request_payload')->nullable();
-            $table->jsonb('response_data')->nullable();
-            $table->integer('rate_limit_remaining')->nullable();
-            $table->timestamp('rate_limit_reset_at')->nullable();
-            $table->timestamp('called_at')->default(DB::raw('NOW()'));
-            $table->timestamps();
+        if (!$this->tableExists('cmis', 'platform_api_calls')) {
+            DB::statement("
+                CREATE TABLE cmis.platform_api_calls (
+                    call_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                    org_id UUID NOT NULL REFERENCES cmis.orgs(org_id) ON DELETE CASCADE,
+                    connection_id UUID NOT NULL REFERENCES cmis.platform_connections(connection_id) ON DELETE CASCADE,
+                    platform VARCHAR(50) NOT NULL,
+                    endpoint VARCHAR(500) NOT NULL,
+                    method VARCHAR(10) NOT NULL CHECK (method IN ('GET', 'POST', 'PUT', 'DELETE', 'PATCH')),
+                    action_type VARCHAR(100) NULL,
+                    http_status INTEGER NULL,
+                    duration_ms INTEGER NULL,
+                    success BOOLEAN NOT NULL DEFAULT FALSE,
+                    error_message TEXT NULL,
+                    request_payload JSONB NULL,
+                    response_data JSONB NULL,
+                    rate_limit_remaining INTEGER NULL,
+                    rate_limit_reset_at TIMESTAMP NULL,
+                    called_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            ");
 
-            $table->foreign('org_id')->references('org_id')->on('cmis.orgs')->onDelete('cascade');
-            $table->foreign('connection_id')->references('connection_id')->on('cmis.platform_connections')->onDelete('cascade');
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_platform_api_calls_org_id ON cmis.platform_api_calls(org_id)");
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_platform_api_calls_platform ON cmis.platform_api_calls(org_id, platform)");
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_platform_api_calls_connection ON cmis.platform_api_calls(connection_id, called_at)");
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_platform_api_calls_success ON cmis.platform_api_calls(success)");
 
-            $table->index(['org_id', 'platform']);
-            $table->index(['connection_id', 'called_at']);
-            $table->index('success');
-        });
-
-        // RLS Policy
-        DB::statement("ALTER TABLE cmis.platform_api_calls ENABLE ROW LEVEL SECURITY");
-        DB::statement("
-            CREATE POLICY org_isolation ON cmis.platform_api_calls
-            USING (org_id = current_setting('app.current_org_id')::uuid)
-        ");
+            DB::statement('ALTER TABLE cmis.platform_api_calls ENABLE ROW LEVEL SECURITY');
+            DB::statement("DROP POLICY IF EXISTS org_isolation ON cmis.platform_api_calls");
+            DB::statement("CREATE POLICY org_isolation ON cmis.platform_api_calls USING (org_id = NULLIF(current_setting('app.current_org_id', true), '')::uuid)");
+        }
 
         // ===== Platform Rate Limits Table =====
-        Schema::create('cmis.platform_rate_limits', function (Blueprint $table) {
-            $table->uuid('limit_id')->primary()->default(DB::raw('gen_random_uuid()'));
-            $table->uuid('org_id')->index();
-            $table->uuid('connection_id');
-            $table->string('platform', 50);
-            $table->string('limit_type', 50); // hourly, daily, per_call, burst
-            $table->integer('limit_max');
-            $table->integer('limit_current')->default(0);
-            $table->timestamp('window_start')->default(DB::raw('NOW()'));
-            $table->timestamp('window_end');
-            $table->timestamp('resets_at');
-            $table->timestamps();
+        if (!$this->tableExists('cmis', 'platform_rate_limits')) {
+            DB::statement("
+                CREATE TABLE cmis.platform_rate_limits (
+                    limit_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                    org_id UUID NOT NULL REFERENCES cmis.orgs(org_id) ON DELETE CASCADE,
+                    connection_id UUID NOT NULL REFERENCES cmis.platform_connections(connection_id) ON DELETE CASCADE,
+                    platform VARCHAR(50) NOT NULL,
+                    limit_type VARCHAR(50) NOT NULL CHECK (limit_type IN ('hourly', 'daily', 'per_call', 'burst')),
+                    limit_max INTEGER NOT NULL,
+                    limit_current INTEGER NOT NULL DEFAULT 0,
+                    window_start TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    window_end TIMESTAMP NOT NULL,
+                    resets_at TIMESTAMP NOT NULL,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            ");
 
-            $table->foreign('org_id')->references('org_id')->on('cmis.orgs')->onDelete('cascade');
-            $table->foreign('connection_id')->references('connection_id')->on('cmis.platform_connections')->onDelete('cascade');
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_platform_rate_limits_org_id ON cmis.platform_rate_limits(org_id)");
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_platform_rate_limits_connection ON cmis.platform_rate_limits(connection_id, limit_type)");
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_platform_rate_limits_resets ON cmis.platform_rate_limits(resets_at)");
 
-            $table->index(['connection_id', 'limit_type']);
-            $table->index('resets_at');
-        });
-
-        // RLS Policy
-        DB::statement("ALTER TABLE cmis.platform_rate_limits ENABLE ROW LEVEL SECURITY");
-        DB::statement("
-            CREATE POLICY org_isolation ON cmis.platform_rate_limits
-            USING (org_id = current_setting('app.current_org_id')::uuid)
-        ");
+            DB::statement('ALTER TABLE cmis.platform_rate_limits ENABLE ROW LEVEL SECURITY');
+            DB::statement("DROP POLICY IF EXISTS org_isolation ON cmis.platform_rate_limits");
+            DB::statement("CREATE POLICY org_isolation ON cmis.platform_rate_limits USING (org_id = NULLIF(current_setting('app.current_org_id', true), '')::uuid)");
+        }
 
         // ===== Platform Webhooks Table =====
-        Schema::create('cmis.platform_webhooks', function (Blueprint $table) {
-            $table->uuid('webhook_id')->primary()->default(DB::raw('gen_random_uuid()'));
-            $table->uuid('org_id')->index();
-            $table->uuid('connection_id');
-            $table->string('platform', 50);
-            $table->string('event_type', 100); // campaign.update, ad.status_change, etc.
-            $table->string('platform_webhook_id', 255)->nullable();
-            $table->text('callback_url');
-            $table->text('verify_token')->nullable();
-            $table->string('status', 30)->default('active'); // active, paused, failed
-            $table->jsonb('event_filters')->nullable();
-            $table->timestamp('last_triggered_at')->nullable();
-            $table->integer('trigger_count')->default(0);
-            $table->timestamps();
+        if (!$this->tableExists('cmis', 'platform_webhooks')) {
+            DB::statement("
+                CREATE TABLE cmis.platform_webhooks (
+                    webhook_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                    org_id UUID NOT NULL REFERENCES cmis.orgs(org_id) ON DELETE CASCADE,
+                    connection_id UUID NOT NULL REFERENCES cmis.platform_connections(connection_id) ON DELETE CASCADE,
+                    platform VARCHAR(50) NOT NULL,
+                    event_type VARCHAR(100) NOT NULL,
+                    platform_webhook_id VARCHAR(255) NULL,
+                    callback_url TEXT NOT NULL,
+                    verify_token TEXT NULL,
+                    status VARCHAR(30) NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'paused', 'failed')),
+                    event_filters JSONB NULL,
+                    last_triggered_at TIMESTAMP NULL,
+                    trigger_count INTEGER NOT NULL DEFAULT 0,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            ");
 
-            $table->foreign('org_id')->references('org_id')->on('cmis.orgs')->onDelete('cascade');
-            $table->foreign('connection_id')->references('connection_id')->on('cmis.platform_connections')->onDelete('cascade');
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_platform_webhooks_org_id ON cmis.platform_webhooks(org_id)");
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_platform_webhooks_connection ON cmis.platform_webhooks(org_id, connection_id)");
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_platform_webhooks_platform_event ON cmis.platform_webhooks(platform, event_type)");
 
-            $table->index(['org_id', 'connection_id']);
-            $table->index(['platform', 'event_type']);
-        });
-
-        // RLS Policy
-        DB::statement("ALTER TABLE cmis.platform_webhooks ENABLE ROW LEVEL SECURITY");
-        DB::statement("
-            CREATE POLICY org_isolation ON cmis.platform_webhooks
-            USING (org_id = current_setting('app.current_org_id')::uuid)
-        ");
+            DB::statement('ALTER TABLE cmis.platform_webhooks ENABLE ROW LEVEL SECURITY');
+            DB::statement("DROP POLICY IF EXISTS org_isolation ON cmis.platform_webhooks");
+            DB::statement("CREATE POLICY org_isolation ON cmis.platform_webhooks USING (org_id = NULLIF(current_setting('app.current_org_id', true), '')::uuid)");
+        }
 
         // ===== Platform Entity Mappings Table =====
-        Schema::create('cmis.platform_entity_mappings', function (Blueprint $table) {
-            $table->uuid('mapping_id')->primary()->default(DB::raw('gen_random_uuid()'));
-            $table->uuid('org_id')->index();
-            $table->uuid('connection_id');
-            $table->string('platform', 50);
-            $table->uuid('cmis_entity_id'); // ID in CMIS
-            $table->string('cmis_entity_type', 50); // campaign, ad_set, ad, audience
-            $table->string('platform_entity_id', 255); // ID on platform
-            $table->string('platform_entity_type', 50)->nullable();
-            $table->timestamp('first_synced_at')->default(DB::raw('NOW()'));
-            $table->timestamp('last_synced_at')->default(DB::raw('NOW()'));
-            $table->jsonb('sync_metadata')->nullable();
-            $table->timestamps();
+        if (!$this->tableExists('cmis', 'platform_entity_mappings')) {
+            DB::statement("
+                CREATE TABLE cmis.platform_entity_mappings (
+                    mapping_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                    org_id UUID NOT NULL REFERENCES cmis.orgs(org_id) ON DELETE CASCADE,
+                    connection_id UUID NOT NULL REFERENCES cmis.platform_connections(connection_id) ON DELETE CASCADE,
+                    platform VARCHAR(50) NOT NULL,
+                    cmis_entity_id UUID NOT NULL,
+                    cmis_entity_type VARCHAR(50) NOT NULL,
+                    platform_entity_id VARCHAR(255) NOT NULL,
+                    platform_entity_type VARCHAR(50) NULL,
+                    first_synced_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    last_synced_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    sync_metadata JSONB NULL,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    CONSTRAINT uq_platform_entity_mappings UNIQUE (connection_id, cmis_entity_id, cmis_entity_type)
+                )
+            ");
 
-            $table->foreign('org_id')->references('org_id')->on('cmis.orgs')->onDelete('cascade');
-            $table->foreign('connection_id')->references('connection_id')->on('cmis.platform_connections')->onDelete('cascade');
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_platform_entity_mappings_org_id ON cmis.platform_entity_mappings(org_id)");
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_platform_entity_mappings_platform ON cmis.platform_entity_mappings(platform, platform_entity_id)");
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_platform_entity_mappings_cmis ON cmis.platform_entity_mappings(cmis_entity_type, cmis_entity_id)");
 
-            $table->unique(['connection_id', 'cmis_entity_id', 'cmis_entity_type']);
-            $table->index(['platform', 'platform_entity_id']);
-            $table->index(['cmis_entity_type', 'cmis_entity_id']);
-        });
-
-        // RLS Policy
-        DB::statement("ALTER TABLE cmis.platform_entity_mappings ENABLE ROW LEVEL SECURITY");
-        DB::statement("
-            CREATE POLICY org_isolation ON cmis.platform_entity_mappings
-            USING (org_id = current_setting('app.current_org_id')::uuid)
-        ");
+            DB::statement('ALTER TABLE cmis.platform_entity_mappings ENABLE ROW LEVEL SECURITY');
+            DB::statement("DROP POLICY IF EXISTS org_isolation ON cmis.platform_entity_mappings");
+            DB::statement("CREATE POLICY org_isolation ON cmis.platform_entity_mappings USING (org_id = NULLIF(current_setting('app.current_org_id', true), '')::uuid)");
+        }
     }
 
     /**
@@ -210,11 +223,11 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('cmis.platform_entity_mappings');
-        Schema::dropIfExists('cmis.platform_webhooks');
-        Schema::dropIfExists('cmis.platform_rate_limits');
-        Schema::dropIfExists('cmis.platform_api_calls');
-        Schema::dropIfExists('cmis.platform_sync_logs');
-        Schema::dropIfExists('cmis.platform_connections');
+        DB::statement('DROP TABLE IF EXISTS cmis.platform_entity_mappings CASCADE');
+        DB::statement('DROP TABLE IF EXISTS cmis.platform_webhooks CASCADE');
+        DB::statement('DROP TABLE IF EXISTS cmis.platform_rate_limits CASCADE');
+        DB::statement('DROP TABLE IF EXISTS cmis.platform_api_calls CASCADE');
+        DB::statement('DROP TABLE IF EXISTS cmis.platform_sync_logs CASCADE');
+        DB::statement('DROP TABLE IF EXISTS cmis.platform_connections CASCADE');
     }
 };

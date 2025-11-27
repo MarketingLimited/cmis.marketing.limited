@@ -13,7 +13,7 @@ return new class extends Migration
     public function up(): void
     {
         // 1. Workflow Templates - Reusable workflow definitions
-        Schema::create('cmis.workflow_templates', function (Blueprint $table) {
+        if (!Schema::hasTable('cmis.workflow_templates')) { Schema::create('cmis.workflow_templates', function (Blueprint $table) {
             $table->uuid('template_id')->primary()->default(DB::raw('gen_random_uuid()'));
             $table->uuid('org_id')->nullable(false);
             $table->uuid('created_by')->nullable(false);
@@ -51,13 +51,15 @@ return new class extends Migration
 
         // RLS Policy
         DB::statement("ALTER TABLE cmis.workflow_templates ENABLE ROW LEVEL SECURITY");
+        DB::statement("DROP POLICY IF EXISTS org_isolation ON cmis.workflow_templates");
         DB::statement("
             CREATE POLICY org_isolation ON cmis.workflow_templates
             USING (org_id = current_setting('app.current_org_id', true)::uuid)
         ");
+        }
 
         // 2. Workflow Instances - Active workflow executions
-        Schema::create('cmis.workflow_instances', function (Blueprint $table) {
+        if (!Schema::hasTable('cmis.workflow_instances')) { Schema::create('cmis.workflow_instances', function (Blueprint $table) {
             $table->uuid('instance_id')->primary()->default(DB::raw('gen_random_uuid()'));
             $table->uuid('org_id')->nullable(false);
             $table->uuid('template_id')->nullable();
@@ -105,13 +107,15 @@ return new class extends Migration
 
         // RLS Policy
         DB::statement("ALTER TABLE cmis.workflow_instances ENABLE ROW LEVEL SECURITY");
+        DB::statement("DROP POLICY IF EXISTS org_isolation ON cmis.workflow_instances");
         DB::statement("
             CREATE POLICY org_isolation ON cmis.workflow_instances
             USING (org_id = current_setting('app.current_org_id', true)::uuid)
         ");
+        }
 
         // 3. Workflow Steps - Individual steps in workflow execution
-        Schema::create('cmis.workflow_steps', function (Blueprint $table) {
+        if (!Schema::hasTable('cmis.workflow_steps')) { Schema::create('cmis.workflow_steps', function (Blueprint $table) {
             $table->uuid('step_id')->primary()->default(DB::raw('gen_random_uuid()'));
             $table->uuid('org_id')->nullable(false);
             $table->uuid('instance_id')->nullable(false);
@@ -153,14 +157,16 @@ return new class extends Migration
 
         // RLS Policy
         DB::statement("ALTER TABLE cmis.workflow_steps ENABLE ROW LEVEL SECURITY");
+        DB::statement("DROP POLICY IF EXISTS org_isolation ON cmis.workflow_steps");
         DB::statement("
             CREATE POLICY org_isolation ON cmis.workflow_steps
             USING (org_id = current_setting('app.current_org_id', true)::uuid)
         ");
+        }
 
         // COMMENTED OUT: Table already created by migration 2025_11_21_000006 with RLS policies
         // 4. Automation Rules - Simple if-this-then-that rules
-        // Schema::create('cmis.automation_rules', function (Blueprint $table) {
+        // if (!Schema::hasTable('cmis.automation_rules')) { Schema::create('cmis.automation_rules', function (Blueprint $table) {
         //     $table->uuid('rule_id')->primary()->default(DB::raw('gen_random_uuid()'));
         //     $table->uuid('org_id')->nullable(false);
         //     $table->uuid('created_by')->nullable(false);
@@ -214,7 +220,7 @@ return new class extends Migration
 
         // COMMENTED OUT: Table already created by migration 2025_11_21_000006 with RLS policies
         // 5. Automation Executions - Execution history
-        // Schema::create('cmis.automation_executions', function (Blueprint $table) {
+        // if (!Schema::hasTable('cmis.automation_executions')) { Schema::create('cmis.automation_executions', function (Blueprint $table) {
         //     $table->uuid('execution_id')->primary()->default(DB::raw('gen_random_uuid()'));
         //     $table->uuid('org_id')->nullable(false);
         //     $table->uuid('rule_id')->nullable();
@@ -261,7 +267,7 @@ return new class extends Migration
         // ");
 
         // 6. Scheduled Jobs - Time-based automation triggers
-        Schema::create('cmis.scheduled_jobs', function (Blueprint $table) {
+        if (!Schema::hasTable('cmis.scheduled_jobs')) { Schema::create('cmis.scheduled_jobs', function (Blueprint $table) {
             $table->uuid('job_id')->primary()->default(DB::raw('gen_random_uuid()'));
             $table->uuid('org_id')->nullable(false);
             $table->uuid('workflow_template_id')->nullable();
@@ -300,15 +306,17 @@ return new class extends Migration
             // Foreign keys
             $table->foreign('org_id')->references('org_id')->on('cmis.orgs')->onDelete('cascade');
             $table->foreign('workflow_template_id')->references('template_id')->on('cmis.workflow_templates')->onDelete('cascade');
-            $table->foreign('automation_rule_id')->references('rule_id')->on('cmis.automation_rules')->onDelete('cascade');
+            // NOTE: automation_rule_id FK removed since automation_rules table is created in earlier migration
         });
 
         // RLS Policy
         DB::statement("ALTER TABLE cmis.scheduled_jobs ENABLE ROW LEVEL SECURITY");
+        DB::statement("DROP POLICY IF EXISTS org_isolation ON cmis.scheduled_jobs");
         DB::statement("
             CREATE POLICY org_isolation ON cmis.scheduled_jobs
             USING (org_id = current_setting('app.current_org_id', true)::uuid)
         ");
+        }
 
         // Create Performance Views
 

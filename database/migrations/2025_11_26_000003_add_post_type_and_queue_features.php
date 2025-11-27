@@ -12,14 +12,22 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Add post_type and is_queued columns to scheduled_social_posts
-        Schema::table('cmis.scheduled_social_posts', function (Blueprint $table) {
-            $table->string('post_type', 50)->default('feed')->after('platforms');
-            $table->boolean('is_queued')->default(false)->after('status');
-        });
+        // Add post_type and is_queued columns to scheduled_social_posts (if not exists)
+        DB::statement("
+            DO \$\$
+            BEGIN
+                IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'cmis' AND table_name = 'scheduled_social_posts' AND column_name = 'post_type') THEN
+                    ALTER TABLE cmis.scheduled_social_posts ADD COLUMN post_type VARCHAR(50) NOT NULL DEFAULT 'feed';
+                END IF;
+                IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'cmis' AND table_name = 'scheduled_social_posts' AND column_name = 'is_queued') THEN
+                    ALTER TABLE cmis.scheduled_social_posts ADD COLUMN is_queued BOOLEAN NOT NULL DEFAULT false;
+                END IF;
+            END \$\$;
+        ");
 
         // Create integration_queue_settings table for Buffer-style scheduling
-        Schema::create('cmis.integration_queue_settings', function (Blueprint $table) {
+        $tableExists = DB::selectOne("SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'cmis' AND table_name = 'integration_queue_settings') as exists");
+        if (!$tableExists->exists) { Schema::create('cmis.integration_queue_settings', function (Blueprint $table) {
             $table->uuid('id')->primary()->default(DB::raw('public.gen_random_uuid()'));
             $table->uuid('org_id')->index();
             $table->uuid('integration_id')->index();
@@ -49,14 +57,16 @@ return new class extends Migration
         DB::statement('ALTER TABLE cmis.integration_queue_settings ENABLE ROW LEVEL SECURITY');
 
         // Create RLS policy
+        DB::statement("DROP POLICY IF EXISTS integration_queue_settings_org_isolation ON cmis.integration_queue_settings");
         DB::statement("
             CREATE POLICY integration_queue_settings_org_isolation ON cmis.integration_queue_settings
             USING (org_id = current_setting('app.current_org_id', true)::uuid)
         ");
+        }
 
-        // Add index for queue processing
+        // Add index for queue processing (if not exists)
         DB::statement('
-            CREATE INDEX idx_scheduled_posts_queue ON cmis.scheduled_social_posts (org_id, is_queued, status, created_at)
+            CREATE INDEX IF NOT EXISTS idx_scheduled_posts_queue ON cmis.scheduled_social_posts (org_id, is_queued, status, created_at)
             WHERE deleted_at IS NULL AND is_queued = true
         ');
     }

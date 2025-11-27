@@ -1,175 +1,187 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
+    /**
+     * Helper to check if table exists
+     */
+    private function tableExists(string $schema, string $table): bool
+    {
+        $result = DB::selectOne("
+            SELECT COUNT(*) as count
+            FROM information_schema.tables
+            WHERE table_schema = ?
+            AND table_name = ?
+        ", [$schema, $table]);
+        return $result->count > 0;
+    }
+
     /**
      * Run the migrations (Phase 17: Campaign Automation & Orchestration).
      */
     public function up(): void
     {
         // ===== Automation Rules Table =====
-        Schema::create('cmis.automation_rules', function (Blueprint $table) {
-            $table->uuid('rule_id')->primary()->default(DB::raw('gen_random_uuid()'));
-            $table->uuid('org_id')->index();
-            $table->uuid('created_by');
-            $table->string('name', 255);
-            $table->text('description')->nullable();
-            $table->string('rule_type', 50); // campaign_performance, budget_pacing, anomaly_response, recommendation, schedule
-            $table->string('entity_type', 50)->nullable(); // campaign, ad_set, ad, account
-            $table->uuid('entity_id')->nullable();
-            $table->jsonb('conditions'); // Array of condition objects
-            $table->string('condition_logic', 10)->default('and'); // and, or
-            $table->jsonb('actions'); // Array of action objects
-            $table->string('priority', 20)->default('medium'); // low, medium, high, critical
-            $table->string('status', 30)->default('active'); // active, paused, archived
-            $table->boolean('enabled')->default(true);
-            $table->integer('max_executions_per_day')->nullable();
-            $table->integer('cooldown_minutes')->default(60);
-            $table->timestamp('last_executed_at')->nullable();
-            $table->integer('execution_count')->default(0);
-            $table->integer('success_count')->default(0);
-            $table->integer('failure_count')->default(0);
-            $table->timestamps();
+        if (!$this->tableExists('cmis', 'automation_rules')) {
+            DB::statement("
+                CREATE TABLE cmis.automation_rules (
+                    rule_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                    org_id UUID NOT NULL REFERENCES cmis.orgs(org_id) ON DELETE CASCADE,
+                    created_by UUID NOT NULL REFERENCES cmis.users(user_id) ON DELETE CASCADE,
+                    name VARCHAR(255) NOT NULL,
+                    description TEXT NULL,
+                    rule_type VARCHAR(50) NOT NULL,
+                    entity_type VARCHAR(50) NULL,
+                    entity_id UUID NULL,
+                    conditions JSONB NOT NULL DEFAULT '[]',
+                    condition_logic VARCHAR(10) NOT NULL DEFAULT 'and' CHECK (condition_logic IN ('and', 'or')),
+                    actions JSONB NOT NULL DEFAULT '[]',
+                    priority VARCHAR(20) NOT NULL DEFAULT 'medium' CHECK (priority IN ('low', 'medium', 'high', 'critical')),
+                    status VARCHAR(30) NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'paused', 'archived')),
+                    enabled BOOLEAN NOT NULL DEFAULT TRUE,
+                    max_executions_per_day INTEGER NULL,
+                    cooldown_minutes INTEGER NOT NULL DEFAULT 60,
+                    last_executed_at TIMESTAMP NULL,
+                    execution_count INTEGER NOT NULL DEFAULT 0,
+                    success_count INTEGER NOT NULL DEFAULT 0,
+                    failure_count INTEGER NOT NULL DEFAULT 0,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            ");
 
-            $table->foreign('org_id')->references('org_id')->on('cmis.orgs')->onDelete('cascade');
-            $table->foreign('created_by')->references('user_id')->on('cmis.users')->onDelete('cascade');
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_automation_rules_org_id ON cmis.automation_rules(org_id)");
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_automation_rules_entity ON cmis.automation_rules(org_id, entity_type, entity_id)");
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_automation_rules_status ON cmis.automation_rules(status, enabled)");
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_automation_rules_type ON cmis.automation_rules(rule_type)");
 
-            $table->index(['org_id', 'entity_type', 'entity_id']);
-            $table->index(['status', 'enabled']);
-            $table->index('rule_type');
-        });
-
-        // RLS Policy
-        DB::statement("ALTER TABLE cmis.automation_rules ENABLE ROW LEVEL SECURITY");
-        DB::statement("
-            CREATE POLICY org_isolation ON cmis.automation_rules
-            USING (org_id = current_setting('app.current_org_id')::uuid)
-        ");
+            DB::statement('ALTER TABLE cmis.automation_rules ENABLE ROW LEVEL SECURITY');
+            DB::statement("DROP POLICY IF EXISTS org_isolation ON cmis.automation_rules");
+            DB::statement("CREATE POLICY org_isolation ON cmis.automation_rules USING (org_id = NULLIF(current_setting('app.current_org_id', true), '')::uuid)");
+        }
 
         // ===== Automation Executions Table =====
-        Schema::create('cmis.automation_executions', function (Blueprint $table) {
-            $table->uuid('execution_id')->primary()->default(DB::raw('gen_random_uuid()'));
-            $table->uuid('org_id')->index();
-            $table->uuid('rule_id');
-            $table->uuid('entity_id')->nullable();
-            $table->string('status', 30); // success, failure, partial, skipped
-            $table->timestamp('executed_at')->default(DB::raw('NOW()'));
-            $table->integer('duration_ms')->nullable();
-            $table->jsonb('conditions_evaluated'); // Which conditions were checked
-            $table->jsonb('actions_executed'); // Which actions were taken
-            $table->jsonb('results'); // Results of each action
-            $table->text('error_message')->nullable();
-            $table->jsonb('context')->nullable(); // Additional context data
-            $table->timestamps();
+        if (!$this->tableExists('cmis', 'automation_executions')) {
+            DB::statement("
+                CREATE TABLE cmis.automation_executions (
+                    execution_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                    org_id UUID NOT NULL REFERENCES cmis.orgs(org_id) ON DELETE CASCADE,
+                    rule_id UUID NOT NULL REFERENCES cmis.automation_rules(rule_id) ON DELETE CASCADE,
+                    entity_id UUID NULL,
+                    status VARCHAR(30) NOT NULL CHECK (status IN ('success', 'failure', 'partial', 'skipped')),
+                    executed_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    duration_ms INTEGER NULL,
+                    conditions_evaluated JSONB NOT NULL DEFAULT '[]',
+                    actions_executed JSONB NOT NULL DEFAULT '[]',
+                    results JSONB NOT NULL DEFAULT '{}',
+                    error_message TEXT NULL,
+                    context JSONB NULL,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            ");
 
-            $table->foreign('org_id')->references('org_id')->on('cmis.orgs')->onDelete('cascade');
-            $table->foreign('rule_id')->references('rule_id')->on('cmis.automation_rules')->onDelete('cascade');
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_automation_executions_org_id ON cmis.automation_executions(org_id)");
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_automation_executions_rule ON cmis.automation_executions(org_id, rule_id)");
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_automation_executions_executed ON cmis.automation_executions(executed_at)");
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_automation_executions_status ON cmis.automation_executions(status)");
 
-            $table->index(['org_id', 'rule_id']);
-            $table->index('executed_at');
-            $table->index('status');
-        });
-
-        // RLS Policy
-        DB::statement("ALTER TABLE cmis.automation_executions ENABLE ROW LEVEL SECURITY");
-        DB::statement("
-            CREATE POLICY org_isolation ON cmis.automation_executions
-            USING (org_id = current_setting('app.current_org_id')::uuid)
-        ");
+            DB::statement('ALTER TABLE cmis.automation_executions ENABLE ROW LEVEL SECURITY');
+            DB::statement("DROP POLICY IF EXISTS org_isolation ON cmis.automation_executions");
+            DB::statement("CREATE POLICY org_isolation ON cmis.automation_executions USING (org_id = NULLIF(current_setting('app.current_org_id', true), '')::uuid)");
+        }
 
         // ===== Automation Workflows Table =====
-        Schema::create('cmis.automation_workflows', function (Blueprint $table) {
-            $table->uuid('workflow_id')->primary()->default(DB::raw('gen_random_uuid()'));
-            $table->uuid('org_id')->nullable(); // NULL for global templates
-            $table->uuid('created_by')->nullable();
-            $table->string('name', 255);
-            $table->text('description')->nullable();
-            $table->string('category', 50); // performance, budget, creative, scheduling
-            $table->boolean('is_template')->default(false);
-            $table->jsonb('rules'); // Array of rule configurations
-            $table->jsonb('config')->nullable();
-            $table->string('status', 30)->default('draft'); // draft, active, archived
-            $table->integer('usage_count')->default(0);
-            $table->timestamps();
+        if (!$this->tableExists('cmis', 'automation_workflows')) {
+            DB::statement("
+                CREATE TABLE cmis.automation_workflows (
+                    workflow_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                    org_id UUID NULL REFERENCES cmis.orgs(org_id) ON DELETE CASCADE,
+                    created_by UUID NULL REFERENCES cmis.users(user_id),
+                    name VARCHAR(255) NOT NULL,
+                    description TEXT NULL,
+                    category VARCHAR(50) NOT NULL CHECK (category IN ('performance', 'budget', 'creative', 'scheduling')),
+                    is_template BOOLEAN NOT NULL DEFAULT FALSE,
+                    rules JSONB NOT NULL DEFAULT '[]',
+                    config JSONB NULL,
+                    status VARCHAR(30) NOT NULL DEFAULT 'draft' CHECK (status IN ('draft', 'active', 'archived')),
+                    usage_count INTEGER NOT NULL DEFAULT 0,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            ");
 
-            $table->index(['org_id', 'category']);
-            $table->index(['is_template', 'status']);
-        });
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_automation_workflows_org ON cmis.automation_workflows(org_id, category)");
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_automation_workflows_template ON cmis.automation_workflows(is_template, status)");
 
-        // RLS Policy
-        DB::statement("ALTER TABLE cmis.automation_workflows ENABLE ROW LEVEL SECURITY");
-        DB::statement("
-            CREATE POLICY org_isolation ON cmis.automation_workflows
-            USING (org_id IS NULL OR org_id = current_setting('app.current_org_id')::uuid)
-        ");
+            DB::statement('ALTER TABLE cmis.automation_workflows ENABLE ROW LEVEL SECURITY');
+            DB::statement("DROP POLICY IF EXISTS org_isolation ON cmis.automation_workflows");
+            DB::statement("CREATE POLICY org_isolation ON cmis.automation_workflows USING (org_id IS NULL OR org_id = NULLIF(current_setting('app.current_org_id', true), '')::uuid)");
+        }
 
         // ===== Automation Schedules Table =====
-        Schema::create('cmis.automation_schedules', function (Blueprint $table) {
-            $table->uuid('schedule_id')->primary()->default(DB::raw('gen_random_uuid()'));
-            $table->uuid('org_id')->index();
-            $table->uuid('rule_id');
-            $table->string('frequency', 50); // once, hourly, daily, weekly, monthly, custom
-            $table->string('cron_expression', 100)->nullable();
-            $table->time('time_of_day')->nullable();
-            $table->jsonb('days_of_week')->nullable(); // [0-6] for weekly schedules
-            $table->integer('day_of_month')->nullable(); // 1-31 for monthly schedules
-            $table->string('timezone', 50)->default('UTC');
-            $table->timestamp('starts_at')->nullable();
-            $table->timestamp('ends_at')->nullable();
-            $table->timestamp('last_run_at')->nullable();
-            $table->timestamp('next_run_at')->nullable();
-            $table->boolean('enabled')->default(true);
-            $table->timestamps();
+        if (!$this->tableExists('cmis', 'automation_schedules')) {
+            DB::statement("
+                CREATE TABLE cmis.automation_schedules (
+                    schedule_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                    org_id UUID NOT NULL REFERENCES cmis.orgs(org_id) ON DELETE CASCADE,
+                    rule_id UUID NOT NULL REFERENCES cmis.automation_rules(rule_id) ON DELETE CASCADE,
+                    frequency VARCHAR(50) NOT NULL CHECK (frequency IN ('once', 'hourly', 'daily', 'weekly', 'monthly', 'custom')),
+                    cron_expression VARCHAR(100) NULL,
+                    time_of_day TIME NULL,
+                    days_of_week JSONB NULL,
+                    day_of_month INTEGER NULL,
+                    timezone VARCHAR(50) NOT NULL DEFAULT 'UTC',
+                    starts_at TIMESTAMP NULL,
+                    ends_at TIMESTAMP NULL,
+                    last_run_at TIMESTAMP NULL,
+                    next_run_at TIMESTAMP NULL,
+                    enabled BOOLEAN NOT NULL DEFAULT TRUE,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            ");
 
-            $table->foreign('org_id')->references('org_id')->on('cmis.orgs')->onDelete('cascade');
-            $table->foreign('rule_id')->references('rule_id')->on('cmis.automation_rules')->onDelete('cascade');
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_automation_schedules_org_id ON cmis.automation_schedules(org_id)");
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_automation_schedules_rule ON cmis.automation_schedules(org_id, rule_id)");
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_automation_schedules_next_run ON cmis.automation_schedules(next_run_at, enabled)");
 
-            $table->index(['org_id', 'rule_id']);
-            $table->index(['next_run_at', 'enabled']);
-        });
-
-        // RLS Policy
-        DB::statement("ALTER TABLE cmis.automation_schedules ENABLE ROW LEVEL SECURITY");
-        DB::statement("
-            CREATE POLICY org_isolation ON cmis.automation_schedules
-            USING (org_id = current_setting('app.current_org_id')::uuid)
-        ");
+            DB::statement('ALTER TABLE cmis.automation_schedules ENABLE ROW LEVEL SECURITY');
+            DB::statement("DROP POLICY IF EXISTS org_isolation ON cmis.automation_schedules");
+            DB::statement("CREATE POLICY org_isolation ON cmis.automation_schedules USING (org_id = NULLIF(current_setting('app.current_org_id', true), '')::uuid)");
+        }
 
         // ===== Automation Audit Log Table =====
-        Schema::create('cmis.automation_audit_log', function (Blueprint $table) {
-            $table->uuid('audit_id')->primary()->default(DB::raw('gen_random_uuid()'));
-            $table->uuid('org_id')->index();
-            $table->uuid('rule_id')->nullable();
-            $table->uuid('execution_id')->nullable();
-            $table->uuid('user_id')->nullable();
-            $table->string('action', 100); // rule_created, rule_updated, rule_executed, action_taken
-            $table->string('entity_type', 50)->nullable();
-            $table->uuid('entity_id')->nullable();
-            $table->jsonb('changes')->nullable(); // Before/after for updates
-            $table->jsonb('metadata')->nullable();
-            $table->string('ip_address', 45)->nullable();
-            $table->timestamp('created_at')->default(DB::raw('NOW()'));
+        if (!$this->tableExists('cmis', 'automation_audit_log')) {
+            DB::statement("
+                CREATE TABLE cmis.automation_audit_log (
+                    audit_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                    org_id UUID NOT NULL REFERENCES cmis.orgs(org_id) ON DELETE CASCADE,
+                    rule_id UUID NULL REFERENCES cmis.automation_rules(rule_id) ON DELETE SET NULL,
+                    execution_id UUID NULL REFERENCES cmis.automation_executions(execution_id) ON DELETE SET NULL,
+                    user_id UUID NULL,
+                    action VARCHAR(100) NOT NULL,
+                    entity_type VARCHAR(50) NULL,
+                    entity_id UUID NULL,
+                    changes JSONB NULL,
+                    metadata JSONB NULL,
+                    ip_address VARCHAR(45) NULL,
+                    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+                )
+            ");
 
-            $table->foreign('org_id')->references('org_id')->on('cmis.orgs')->onDelete('cascade');
-            $table->foreign('rule_id')->references('rule_id')->on('cmis.automation_rules')->onDelete('set null');
-            $table->foreign('execution_id')->references('execution_id')->on('cmis.automation_executions')->onDelete('set null');
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_automation_audit_org_id ON cmis.automation_audit_log(org_id)");
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_automation_audit_rule ON cmis.automation_audit_log(org_id, rule_id)");
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_automation_audit_created ON cmis.automation_audit_log(created_at)");
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_automation_audit_action ON cmis.automation_audit_log(action)");
 
-            $table->index(['org_id', 'rule_id']);
-            $table->index('created_at');
-            $table->index('action');
-        });
-
-        // RLS Policy
-        DB::statement("ALTER TABLE cmis.automation_audit_log ENABLE ROW LEVEL SECURITY");
-        DB::statement("
-            CREATE POLICY org_isolation ON cmis.automation_audit_log
-            USING (org_id = current_setting('app.current_org_id')::uuid)
-        ");
+            DB::statement('ALTER TABLE cmis.automation_audit_log ENABLE ROW LEVEL SECURITY');
+            DB::statement("DROP POLICY IF EXISTS org_isolation ON cmis.automation_audit_log");
+            DB::statement("CREATE POLICY org_isolation ON cmis.automation_audit_log USING (org_id = NULLIF(current_setting('app.current_org_id', true), '')::uuid)");
+        }
     }
 
     /**
@@ -177,10 +189,10 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('cmis.automation_audit_log');
-        Schema::dropIfExists('cmis.automation_schedules');
-        Schema::dropIfExists('cmis.automation_workflows');
-        Schema::dropIfExists('cmis.automation_executions');
-        Schema::dropIfExists('cmis.automation_rules');
+        DB::statement('DROP TABLE IF EXISTS cmis.automation_audit_log CASCADE');
+        DB::statement('DROP TABLE IF EXISTS cmis.automation_schedules CASCADE');
+        DB::statement('DROP TABLE IF EXISTS cmis.automation_workflows CASCADE');
+        DB::statement('DROP TABLE IF EXISTS cmis.automation_executions CASCADE');
+        DB::statement('DROP TABLE IF EXISTS cmis.automation_rules CASCADE');
     }
 };

@@ -7,6 +7,7 @@ use App\Models\Security\Permission;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
@@ -143,6 +144,16 @@ class User extends Authenticatable
     public function belongsToOrg(string $orgId): bool
     {
         return $this->orgs()->where('cmis.orgs.org_id', $orgId)->exists();
+    }
+
+    /**
+     * Get the user's organization memberships (user_orgs pivot records).
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function orgMemberships(): HasMany
+    {
+        return $this->hasMany(\App\Models\Core\UserOrg::class, 'user_id', 'user_id');
     }
 
     /**

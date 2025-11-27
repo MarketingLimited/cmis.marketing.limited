@@ -1,8 +1,7 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
@@ -11,16 +10,39 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('cmis.user_orgs', function (Blueprint $table) {
-            $table->string('invitation_token', 64)->nullable()->after('invited_by');
-            $table->timestamp('invitation_accepted_at')->nullable()->after('invitation_token');
-            $table->timestamp('invitation_expires_at')->nullable()->after('invitation_accepted_at');
-        });
+        // Helper function to check if column exists
+        $columnExists = function ($table, $column) {
+            $result = DB::selectOne("
+                SELECT COUNT(*) as count
+                FROM information_schema.columns
+                WHERE table_schema = 'cmis'
+                AND table_name = ?
+                AND column_name = ?
+            ", [$table, $column]);
+            return $result->count > 0;
+        };
 
-        // Add index for faster token lookups
-        Schema::table('cmis.user_orgs', function (Blueprint $table) {
-            $table->index('invitation_token');
-        });
+        // Add invitation_token if not exists
+        if (!$columnExists('user_orgs', 'invitation_token')) {
+            DB::statement("ALTER TABLE cmis.user_orgs ADD COLUMN invitation_token VARCHAR(64) NULL");
+        }
+
+        // Add invitation_accepted_at if not exists
+        if (!$columnExists('user_orgs', 'invitation_accepted_at')) {
+            DB::statement("ALTER TABLE cmis.user_orgs ADD COLUMN invitation_accepted_at TIMESTAMP NULL");
+        }
+
+        // Add invitation_expires_at if not exists
+        if (!$columnExists('user_orgs', 'invitation_expires_at')) {
+            DB::statement("ALTER TABLE cmis.user_orgs ADD COLUMN invitation_expires_at TIMESTAMP NULL");
+        }
+
+        // Add index for faster token lookups (if not exists)
+        try {
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_user_orgs_invitation_token ON cmis.user_orgs(invitation_token)");
+        } catch (\Exception $e) {
+            // Index might already exist
+        }
     }
 
     /**
@@ -28,9 +50,9 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('cmis.user_orgs', function (Blueprint $table) {
-            $table->dropIndex(['invitation_token']);
-            $table->dropColumn(['invitation_token', 'invitation_accepted_at', 'invitation_expires_at']);
-        });
+        DB::statement("DROP INDEX IF EXISTS cmis.idx_user_orgs_invitation_token");
+        DB::statement("ALTER TABLE cmis.user_orgs DROP COLUMN IF EXISTS invitation_token");
+        DB::statement("ALTER TABLE cmis.user_orgs DROP COLUMN IF EXISTS invitation_accepted_at");
+        DB::statement("ALTER TABLE cmis.user_orgs DROP COLUMN IF EXISTS invitation_expires_at");
     }
 };

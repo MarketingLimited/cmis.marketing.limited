@@ -138,7 +138,7 @@ return new class extends Migration
         // 5. Create Metric Definitions Table (Lookup/Reference)
         // ==================================================================
 
-        Schema::create('cmis.metric_definitions', function (Blueprint $table) {
+        if (!Schema::hasTable('cmis.metric_definitions')) { Schema::create('cmis.metric_definitions', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->string('metric_name', 100)->unique();
             $table->string('metric_category', 100);
@@ -160,13 +160,15 @@ return new class extends Migration
         $this->enablePublicRLS('cmis.metric_definitions');
 
         // Create index
-        DB::statement("CREATE INDEX idx_metric_defs_category ON cmis.metric_definitions (metric_category, sort_order);");
-        DB::statement("CREATE INDEX idx_metric_defs_active ON cmis.metric_definitions (is_active, sort_order) WHERE is_active = true;");
+        DB::statement("CREATE INDEX IF NOT EXISTS idx_metric_defs_category ON cmis.metric_definitions (metric_category, sort_order);");
+        DB::statement("CREATE INDEX IF NOT EXISTS idx_metric_defs_active ON cmis.metric_definitions (is_active, sort_order) WHERE is_active = true;");
+        }
 
         // ==================================================================
-        // 6. Insert Common Metric Definitions
+        // 6. Insert Common Metric Definitions (only if not exists)
         // ==================================================================
 
+        if (DB::table('cmis.metric_definitions')->count() === 0) {
         $commonMetrics = [
             // Performance Metrics
             ['impressions', 'performance', 'Impressions', 'numeric', 'count'],
@@ -219,6 +221,7 @@ return new class extends Migration
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
+        }
         }
 
         // ==================================================================

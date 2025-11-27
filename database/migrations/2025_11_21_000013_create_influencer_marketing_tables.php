@@ -13,7 +13,7 @@ return new class extends Migration
     public function up(): void
     {
         // 1. Influencer Profiles - Influencer database
-        Schema::create('cmis.influencer_profiles', function (Blueprint $table) {
+        if (!Schema::hasTable('cmis.influencer_profiles')) { Schema::create('cmis.influencer_profiles', function (Blueprint $table) {
             $table->uuid('influencer_id')->primary()->default(DB::raw('gen_random_uuid()'));
             $table->uuid('org_id')->nullable(false);
             $table->uuid('added_by')->nullable(false);
@@ -82,13 +82,15 @@ return new class extends Migration
 
         // RLS Policy
         DB::statement("ALTER TABLE cmis.influencer_profiles ENABLE ROW LEVEL SECURITY");
+        DB::statement("DROP POLICY IF EXISTS org_isolation ON cmis.influencer_profiles");
         DB::statement("
             CREATE POLICY org_isolation ON cmis.influencer_profiles
             USING (org_id = current_setting('app.current_org_id', true)::uuid)
         ");
+        }
 
         // 2. Influencer Partnerships - Partnership agreements
-        Schema::create('cmis.influencer_partnerships', function (Blueprint $table) {
+        if (!Schema::hasTable('cmis.influencer_partnerships')) { Schema::create('cmis.influencer_partnerships', function (Blueprint $table) {
             $table->uuid('partnership_id')->primary()->default(DB::raw('gen_random_uuid()'));
             $table->uuid('org_id')->nullable(false);
             $table->uuid('influencer_id')->nullable(false);
@@ -151,13 +153,15 @@ return new class extends Migration
 
         // RLS Policy
         DB::statement("ALTER TABLE cmis.influencer_partnerships ENABLE ROW LEVEL SECURITY");
+        DB::statement("DROP POLICY IF EXISTS org_isolation ON cmis.influencer_partnerships");
         DB::statement("
             CREATE POLICY org_isolation ON cmis.influencer_partnerships
             USING (org_id = current_setting('app.current_org_id', true)::uuid)
         ");
+        }
 
         // 3. Influencer Campaigns - Campaigns with influencers
-        Schema::create('cmis.influencer_campaigns', function (Blueprint $table) {
+        if (!Schema::hasTable('cmis.influencer_campaigns')) { Schema::create('cmis.influencer_campaigns', function (Blueprint $table) {
             $table->uuid('campaign_id')->primary()->default(DB::raw('gen_random_uuid()'));
             $table->uuid('org_id')->nullable(false);
             $table->uuid('partnership_id')->nullable(false);
@@ -223,13 +227,15 @@ return new class extends Migration
 
         // RLS Policy
         DB::statement("ALTER TABLE cmis.influencer_campaigns ENABLE ROW LEVEL SECURITY");
+        DB::statement("DROP POLICY IF EXISTS org_isolation ON cmis.influencer_campaigns");
         DB::statement("
             CREATE POLICY org_isolation ON cmis.influencer_campaigns
             USING (org_id = current_setting('app.current_org_id', true)::uuid)
         ");
+        }
 
         // 4. Campaign Deliverables - Content deliverables and approvals
-        Schema::create('cmis.campaign_deliverables', function (Blueprint $table) {
+        if (!Schema::hasTable('cmis.campaign_deliverables')) { Schema::create('cmis.campaign_deliverables', function (Blueprint $table) {
             $table->uuid('deliverable_id')->primary()->default(DB::raw('gen_random_uuid()'));
             $table->uuid('org_id')->nullable(false);
             $table->uuid('campaign_id')->nullable(false);
@@ -288,13 +294,15 @@ return new class extends Migration
 
         // RLS Policy
         DB::statement("ALTER TABLE cmis.campaign_deliverables ENABLE ROW LEVEL SECURITY");
+        DB::statement("DROP POLICY IF EXISTS org_isolation ON cmis.campaign_deliverables");
         DB::statement("
             CREATE POLICY org_isolation ON cmis.campaign_deliverables
             USING (org_id = current_setting('app.current_org_id', true)::uuid)
         ");
+        }
 
         // 5. Influencer Payments - Payment tracking and history
-        Schema::create('cmis.influencer_payments', function (Blueprint $table) {
+        if (!Schema::hasTable('cmis.influencer_payments')) { Schema::create('cmis.influencer_payments', function (Blueprint $table) {
             $table->uuid('payment_id')->primary()->default(DB::raw('gen_random_uuid()'));
             $table->uuid('org_id')->nullable(false);
             $table->uuid('partnership_id')->nullable(false);
@@ -340,13 +348,15 @@ return new class extends Migration
 
         // RLS Policy
         DB::statement("ALTER TABLE cmis.influencer_payments ENABLE ROW LEVEL SECURITY");
+        DB::statement("DROP POLICY IF EXISTS org_isolation ON cmis.influencer_payments");
         DB::statement("
             CREATE POLICY org_isolation ON cmis.influencer_payments
             USING (org_id = current_setting('app.current_org_id', true)::uuid)
         ");
+        }
 
         // 6. Influencer Applications - Applications to campaigns
-        Schema::create('cmis.influencer_applications', function (Blueprint $table) {
+        if (!Schema::hasTable('cmis.influencer_applications')) { Schema::create('cmis.influencer_applications', function (Blueprint $table) {
             $table->uuid('application_id')->primary()->default(DB::raw('gen_random_uuid()'));
             $table->uuid('org_id')->nullable(false);
             $table->uuid('influencer_id')->nullable(false);
@@ -384,13 +394,15 @@ return new class extends Migration
 
         // RLS Policy
         DB::statement("ALTER TABLE cmis.influencer_applications ENABLE ROW LEVEL SECURITY");
+        DB::statement("DROP POLICY IF EXISTS org_isolation ON cmis.influencer_applications");
         DB::statement("
             CREATE POLICY org_isolation ON cmis.influencer_applications
             USING (org_id = current_setting('app.current_org_id', true)::uuid)
         ");
+        }
 
         // 7. Influencer Performance History - Historical performance data
-        Schema::create('cmis.influencer_performance', function (Blueprint $table) {
+        if (!Schema::hasTable('cmis.influencer_performance')) { Schema::create('cmis.influencer_performance', function (Blueprint $table) {
             $table->uuid('performance_id')->primary()->default(DB::raw('gen_random_uuid()'));
             $table->uuid('org_id')->nullable(false);
             $table->uuid('influencer_id')->nullable(false);
@@ -436,10 +448,12 @@ return new class extends Migration
 
         // RLS Policy
         DB::statement("ALTER TABLE cmis.influencer_performance ENABLE ROW LEVEL SECURITY");
+        DB::statement("DROP POLICY IF EXISTS org_isolation ON cmis.influencer_performance");
         DB::statement("
             CREATE POLICY org_isolation ON cmis.influencer_performance
             USING (org_id = current_setting('app.current_org_id', true)::uuid)
         ");
+        }
 
         // Create Performance Views
 

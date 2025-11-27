@@ -18,7 +18,7 @@ return new class extends Migration
     public function up()
     {
         // 1. Create user onboarding progress table
-        Schema::create('cmis.user_onboarding_progress', function (Blueprint $table) {
+        if (!Schema::hasTable('cmis.user_onboarding_progress')) { Schema::create('cmis.user_onboarding_progress', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->uuid('user_id')->unique();
 
@@ -54,6 +54,7 @@ return new class extends Migration
         DB::statement("ALTER TABLE cmis.user_onboarding_progress ENABLE ROW LEVEL SECURITY");
 
         // Users can only see their own onboarding progress
+        DB::statement("DROP POLICY IF EXISTS user_own_onboarding ON cmis.user_onboarding_progress");
         DB::statement("
             CREATE POLICY user_own_onboarding ON cmis.user_onboarding_progress
             USING (
@@ -61,9 +62,10 @@ return new class extends Migration
                 OR current_setting('app.is_admin', true)::boolean = true
             )
         ");
+        }
 
         // 3. Create onboarding tips table (optional contextual help)
-        Schema::create('cmis.onboarding_tips', function (Blueprint $table) {
+        if (!Schema::hasTable('cmis.onboarding_tips')) { Schema::create('cmis.onboarding_tips', function (Blueprint $table) {
             $table->uuid('id')->primary();
 
             $table->string('step_key')->comment('Associated onboarding step');
@@ -84,10 +86,12 @@ return new class extends Migration
             $table->index('step_key');
             $table->index('is_active');
         });
+        }
 
         // No RLS for tips table (public read-only data)
 
-        // 4. Insert default onboarding tips
+        // 4. Insert default onboarding tips (only if not exists)
+        if (DB::table('cmis.onboarding_tips')->count() === 0) {
         DB::table('cmis.onboarding_tips')->insert([
             [
                 'id' => DB::raw('gen_random_uuid()'),
@@ -147,6 +151,7 @@ return new class extends Migration
                 'updated_at' => now(),
             ],
         ]);
+        }
     }
 
     /**

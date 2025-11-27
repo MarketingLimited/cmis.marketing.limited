@@ -7,6 +7,7 @@ use App\Http\Controllers\Creative\CreativeAssetController;
 use App\Http\Controllers\Creative\ContentPlanController;
 use App\Http\Controllers\Channels\ChannelController;
 use App\Http\Controllers\Social\SocialSchedulerController;
+use App\Http\Controllers\Social\ProfileGroupController;
 use App\Http\Controllers\Integration\IntegrationController;
 use App\Http\Controllers\IntegrationHubController;
 use App\Http\Controllers\AI\AIGenerationController;
@@ -362,6 +363,73 @@ Route::middleware(['auth:sanctum', 'validate.org.access', 'org.context'])
             Route::post('/{post_id}/publish-now', [SocialSchedulerController::class, 'publishNow'])->name('publish-now');
             Route::post('/{post_id}/reschedule', [SocialSchedulerController::class, 'reschedule'])->name('reschedule');
         });
+    });
+
+    /*
+    |----------------------------------------------------------------------
+    | Profile Groups - Social Media Organization by Client/Brand
+    |----------------------------------------------------------------------
+    */
+    Route::prefix('profile-groups')->name('profile-groups.')->group(function () {
+        // Profile Groups CRUD
+        Route::get('/', [\App\Http\Controllers\Social\ProfileGroupController::class, 'index'])->name('index');
+        Route::post('/', [\App\Http\Controllers\Social\ProfileGroupController::class, 'store'])->name('store');
+        Route::get('/{group_id}', [\App\Http\Controllers\Social\ProfileGroupController::class, 'show'])->name('show');
+        Route::put('/{group_id}', [\App\Http\Controllers\Social\ProfileGroupController::class, 'update'])->name('update');
+        Route::delete('/{group_id}', [\App\Http\Controllers\Social\ProfileGroupController::class, 'destroy'])->name('destroy');
+
+        // Team Members Management
+        Route::get('/{group_id}/members', [\App\Http\Controllers\Social\ProfileGroupController::class, 'members'])->name('members');
+        Route::post('/{group_id}/members', [\App\Http\Controllers\Social\ProfileGroupController::class, 'addMember'])->name('members.add');
+        Route::put('/{group_id}/members/{member_id}', [\App\Http\Controllers\Social\ProfileGroupController::class, 'updateMember'])->name('members.update');
+        Route::delete('/{group_id}/members/{member_id}', [\App\Http\Controllers\Social\ProfileGroupController::class, 'removeMember'])->name('members.remove');
+
+        // Approval Workflows (nested under profile groups)
+        Route::prefix('{group_id}/approval-workflows')->name('approval-workflows.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Social\ApprovalWorkflowController::class, 'index'])->name('index');
+            Route::post('/', [\App\Http\Controllers\Social\ApprovalWorkflowController::class, 'store'])->name('store');
+            Route::get('/{workflow_id}', [\App\Http\Controllers\Social\ApprovalWorkflowController::class, 'show'])->name('show');
+            Route::put('/{workflow_id}', [\App\Http\Controllers\Social\ApprovalWorkflowController::class, 'update'])->name('update');
+            Route::delete('/{workflow_id}', [\App\Http\Controllers\Social\ApprovalWorkflowController::class, 'destroy'])->name('destroy');
+            Route::post('/{workflow_id}/toggle', [\App\Http\Controllers\Social\ApprovalWorkflowController::class, 'toggle'])->name('toggle');
+        });
+
+        // Boost Rules (nested under profile groups)
+        Route::prefix('{group_id}/boost-rules')->name('boost-rules.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Social\BoostRuleController::class, 'index'])->name('index');
+            Route::post('/', [\App\Http\Controllers\Social\BoostRuleController::class, 'store'])->name('store');
+            Route::get('/{rule_id}', [\App\Http\Controllers\Social\BoostRuleController::class, 'show'])->name('show');
+            Route::put('/{rule_id}', [\App\Http\Controllers\Social\BoostRuleController::class, 'update'])->name('update');
+            Route::delete('/{rule_id}', [\App\Http\Controllers\Social\BoostRuleController::class, 'destroy'])->name('destroy');
+            Route::post('/{rule_id}/toggle', [\App\Http\Controllers\Social\BoostRuleController::class, 'toggle'])->name('toggle');
+        });
+    });
+
+    /*
+    |----------------------------------------------------------------------
+    | Brand Voices - AI-powered content generation profiles
+    |----------------------------------------------------------------------
+    */
+    Route::prefix('brand-voices')->name('brand-voices.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Social\BrandVoiceController::class, 'index'])->name('index');
+        Route::post('/', [\App\Http\Controllers\Social\BrandVoiceController::class, 'store'])->name('store');
+        Route::get('/{voice_id}', [\App\Http\Controllers\Social\BrandVoiceController::class, 'show'])->name('show');
+        Route::put('/{voice_id}', [\App\Http\Controllers\Social\BrandVoiceController::class, 'update'])->name('update');
+        Route::delete('/{voice_id}', [\App\Http\Controllers\Social\BrandVoiceController::class, 'destroy'])->name('destroy');
+    });
+
+    /*
+    |----------------------------------------------------------------------
+    | Brand Safety Policies - Content compliance and safety rules
+    |----------------------------------------------------------------------
+    */
+    Route::prefix('brand-safety-policies')->name('brand-safety-policies.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Social\BrandSafetyPolicyController::class, 'index'])->name('index');
+        Route::post('/', [\App\Http\Controllers\Social\BrandSafetyPolicyController::class, 'store'])->name('store');
+        Route::get('/{policy_id}', [\App\Http\Controllers\Social\BrandSafetyPolicyController::class, 'show'])->name('show');
+        Route::put('/{policy_id}', [\App\Http\Controllers\Social\BrandSafetyPolicyController::class, 'update'])->name('update');
+        Route::delete('/{policy_id}', [\App\Http\Controllers\Social\BrandSafetyPolicyController::class, 'destroy'])->name('destroy');
+        Route::post('/{policy_id}/validate', [\App\Http\Controllers\Social\BrandSafetyPolicyController::class, 'validateContent'])->name('validate');
     });
 
     /*
@@ -1404,7 +1472,7 @@ Route::middleware(['auth:sanctum', 'validate.org.access', 'org.context'])
     | Unified Dashboard & Sync Management (من Phase 2)
     |----------------------------------------------------------------------
     */
-    Route::prefix('orgs/{org}')->name('api.orgs.')->group(function () {
+    Route::middleware(['web', 'auth', 'org.context'])->prefix('orgs/{org}')->name('api.orgs.')->group(function () {
         // Unified Dashboard
         Route::get('/dashboard', [App\Http\Controllers\API\DashboardController::class, 'index'])->name('dashboard.index');
         Route::post('/dashboard/refresh', [App\Http\Controllers\API\DashboardController::class, 'refresh'])->name('dashboard.refresh');
@@ -1539,6 +1607,17 @@ Route::middleware(['auth:sanctum', 'validate.org.access', 'org.context'])
             Route::put('/{post}', [App\Http\Controllers\Social\SocialPostController::class, 'update'])->name('update');
             Route::delete('/{post}', [App\Http\Controllers\Social\SocialPostController::class, 'destroy'])->name('destroy');
             Route::post('/{post}/publish', [App\Http\Controllers\Social\SocialPostController::class, 'publish'])->name('publish');
+        });
+
+        // Publishing Modal API (for publish-modal component)
+        Route::prefix('publish-modal')->name('publish-modal.')->group(function () {
+            Route::get('/profile-groups', [App\Http\Controllers\API\PublishingModalController::class, 'getProfileGroupsWithProfiles'])->name('profile-groups');
+            Route::get('/brand-voices', [App\Http\Controllers\API\PublishingModalController::class, 'getBrandVoices'])->name('brand-voices');
+            Route::post('/validate-safety', [App\Http\Controllers\API\PublishingModalController::class, 'validateBrandSafety'])->name('validate-safety');
+            Route::post('/create', [App\Http\Controllers\API\PublishingModalController::class, 'createPost'])->name('create');
+            Route::post('/save-draft', [App\Http\Controllers\API\PublishingModalController::class, 'saveDraft'])->name('save-draft');
+            Route::get('/best-times', [App\Http\Controllers\API\PublishingModalController::class, 'getBestTimes'])->name('best-times');
+            Route::get('/character-limits', [App\Http\Controllers\API\PublishingModalController::class, 'getCharacterLimits'])->name('character-limits');
         });
     });
 

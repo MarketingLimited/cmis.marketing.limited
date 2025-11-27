@@ -6,6 +6,12 @@ use Illuminate\Support\Facades\DB;
 return new class extends Migration
 {
     /**
+     * Disable wrapping this migration in a transaction.
+     * Individual statements may fail (already exists) and we want to continue.
+     */
+    public $withinTransaction = false;
+
+    /**
      * Run the migrations.
      *
      * Add Foreign Key Constraints and Performance Indexes to Ad Platform Tables
@@ -14,69 +20,46 @@ return new class extends Migration
     {
         // Ensure the orgs table has its primary key constraint
         // This might be missing during fresh migrations
-        $pkExists = DB::selectOne("
-            SELECT COUNT(*) as count
-            FROM information_schema.table_constraints
-            WHERE table_schema = 'cmis'
-            AND table_name = 'orgs'
-            AND constraint_type = 'PRIMARY KEY'
-        ");
-
-        if ($pkExists->count == 0) {
+        // Use try-catch to handle "already exists" errors gracefully
+        try {
             DB::statement('ALTER TABLE cmis.orgs ADD CONSTRAINT orgs_pkey PRIMARY KEY (org_id)');
+        } catch (\Exception $e) {
+            // Primary key already exists - ignore
+            if (!str_contains($e->getMessage(), 'multiple primary keys') &&
+                !str_contains($e->getMessage(), 'already exists')) {
+                throw $e;
+            }
         }
 
         // Ensure integrations table has its primary key constraint
-        $pkExists = DB::selectOne("
-            SELECT COUNT(*) as count
-            FROM information_schema.table_constraints
-            WHERE table_schema = 'cmis'
-            AND table_name = 'integrations'
-            AND constraint_type = 'PRIMARY KEY'
-        ");
-
-        if ($pkExists->count == 0) {
+        try {
             DB::statement('ALTER TABLE cmis.integrations ADD CONSTRAINT integrations_pkey PRIMARY KEY (integration_id)');
+        } catch (\Exception $e) {
+            // Primary key already exists - ignore
+            if (!str_contains($e->getMessage(), 'multiple primary keys') &&
+                !str_contains($e->getMessage(), 'already exists')) {
+                throw $e;
+            }
         }
 
-        // Ensure ad_campaigns table has its primary key on campaign_external_id
-        $pkExists = DB::selectOne("
-            SELECT COUNT(*) as count
-            FROM information_schema.key_column_usage
-            WHERE table_schema = 'cmis'
-            AND table_name = 'ad_campaigns'
-            AND column_name = 'campaign_external_id'
-            AND constraint_name IN (
-                SELECT constraint_name FROM information_schema.table_constraints
-                WHERE table_schema = 'cmis'
-                AND table_name = 'ad_campaigns'
-                AND constraint_type IN ('PRIMARY KEY', 'UNIQUE')
-            )
-        ");
-
-        if ($pkExists->count == 0) {
-            // Add a unique constraint on campaign_external_id if it doesn't exist
+        // Ensure ad_campaigns table has its unique constraint on campaign_external_id
+        try {
             DB::statement('ALTER TABLE cmis.ad_campaigns ADD CONSTRAINT ad_campaigns_campaign_external_id_key UNIQUE (campaign_external_id)');
+        } catch (\Exception $e) {
+            // Constraint already exists - ignore
+            if (!str_contains($e->getMessage(), 'already exists')) {
+                throw $e;
+            }
         }
 
-        // Ensure ad_sets table has constraint on adset_external_id
-        $pkExists = DB::selectOne("
-            SELECT COUNT(*) as count
-            FROM information_schema.key_column_usage
-            WHERE table_schema = 'cmis'
-            AND table_name = 'ad_sets'
-            AND column_name = 'adset_external_id'
-            AND constraint_name IN (
-                SELECT constraint_name FROM information_schema.table_constraints
-                WHERE table_schema = 'cmis'
-                AND table_name = 'ad_sets'
-                AND constraint_type IN ('PRIMARY KEY', 'UNIQUE')
-            )
-        ");
-
-        if ($pkExists->count == 0) {
-            // Add a unique constraint on adset_external_id if it doesn't exist
+        // Ensure ad_sets table has unique constraint on adset_external_id
+        try {
             DB::statement('ALTER TABLE cmis.ad_sets ADD CONSTRAINT ad_sets_adset_external_id_key UNIQUE (adset_external_id)');
+        } catch (\Exception $e) {
+            // Constraint already exists - ignore
+            if (!str_contains($e->getMessage(), 'already exists')) {
+                throw $e;
+            }
         }
 
         // Add Foreign Key Constraints

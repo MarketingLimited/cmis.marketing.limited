@@ -32,7 +32,7 @@ return [
     /**
      * Default locale
      */
-    'default' => env('APP_LOCALE', 'en'),
+    'default' => env('APP_LOCALE', 'ar'),
 
     /**
      * Fallback locale

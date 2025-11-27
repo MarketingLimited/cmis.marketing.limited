@@ -2,12 +2,25 @@
 
 use Database\Migrations\Concerns\HasRLSPolicies;
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
     use HasRLSPolicies;
+
+    /**
+     * Helper to check if table exists
+     */
+    private function tableExists(string $schema, string $table): bool
+    {
+        $result = DB::selectOne("
+            SELECT COUNT(*) as count
+            FROM information_schema.tables
+            WHERE table_schema = ?
+            AND table_name = ?
+        ", [$schema, $table]);
+        return $result->count > 0;
+    }
 
     /**
      * Run the migrations.
@@ -15,185 +28,155 @@ return new class extends Migration
     public function up(): void
     {
         // Create alert_rules table
-        Schema::create('cmis.alert_rules', function (Blueprint $table) {
-            $table->uuid('rule_id')->primary();
-            $table->uuid('org_id');
-            $table->uuid('created_by'); // User who created the rule
-            $table->string('name', 255);
-            $table->text('description')->nullable();
-            $table->string('entity_type', 50); // campaign, organization, ad, post, etc.
-            $table->uuid('entity_id')->nullable(); // NULL = applies to all entities of type
-            $table->string('metric', 100); // ctr, roi, spend, impressions, etc.
-            $table->enum('condition', ['gt', 'gte', 'lt', 'lte', 'eq', 'ne', 'change_pct']); // Comparison operators
-            $table->decimal('threshold', 20, 4); // Threshold value
-            $table->integer('time_window_minutes')->default(60); // Evaluation window
-            $table->enum('severity', ['critical', 'high', 'medium', 'low'])->default('medium');
-            $table->jsonb('notification_channels'); // ['email', 'in_app', 'slack', 'webhook']
-            $table->jsonb('notification_config'); // Channel-specific configs
-            $table->integer('cooldown_minutes')->default(60); // Minimum time between alerts
-            $table->boolean('is_active')->default(true);
-            $table->timestamp('last_triggered_at')->nullable();
-            $table->integer('trigger_count')->default(0);
-            $table->timestamps();
-            $table->softDeletes();
+        if (!$this->tableExists('cmis', 'alert_rules')) {
+            DB::statement("
+                CREATE TABLE cmis.alert_rules (
+                    rule_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                    org_id UUID NOT NULL REFERENCES cmis.orgs(org_id) ON DELETE CASCADE,
+                    created_by UUID NOT NULL REFERENCES cmis.users(user_id) ON DELETE CASCADE,
+                    name VARCHAR(255) NOT NULL,
+                    description TEXT NULL,
+                    entity_type VARCHAR(50) NOT NULL,
+                    entity_id UUID NULL,
+                    metric VARCHAR(100) NOT NULL,
+                    condition VARCHAR(20) NOT NULL CHECK (condition IN ('gt', 'gte', 'lt', 'lte', 'eq', 'ne', 'change_pct')),
+                    threshold DECIMAL(20, 4) NOT NULL,
+                    time_window_minutes INTEGER NOT NULL DEFAULT 60,
+                    severity VARCHAR(20) NOT NULL DEFAULT 'medium' CHECK (severity IN ('critical', 'high', 'medium', 'low')),
+                    notification_channels JSONB NOT NULL DEFAULT '[]',
+                    notification_config JSONB NOT NULL DEFAULT '{}',
+                    cooldown_minutes INTEGER NOT NULL DEFAULT 60,
+                    is_active BOOLEAN NOT NULL DEFAULT TRUE,
+                    last_triggered_at TIMESTAMP NULL,
+                    trigger_count INTEGER NOT NULL DEFAULT 0,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    deleted_at TIMESTAMP NULL
+                )
+            ");
 
-            // Indexes
-            $table->index('org_id');
-            $table->index('created_by');
-            $table->index(['entity_type', 'entity_id']);
-            $table->index(['is_active', 'last_triggered_at']);
-            $table->index('severity');
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_alert_rules_org_id ON cmis.alert_rules(org_id)");
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_alert_rules_created_by ON cmis.alert_rules(created_by)");
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_alert_rules_entity ON cmis.alert_rules(entity_type, entity_id)");
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_alert_rules_active ON cmis.alert_rules(is_active, last_triggered_at)");
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_alert_rules_severity ON cmis.alert_rules(severity)");
 
-            // Foreign keys
-            $table->foreign('org_id')
-                ->references('org_id')
-                ->on('cmis.orgs')
-                ->onDelete('cascade');
+            $this->enableRLS('cmis.alert_rules');
+        }
 
-            $table->foreign('created_by')
-                ->references('user_id')
-                ->on('cmis.users')
-                ->onDelete('cascade');
-        });
+        // Create alert_history table
+        if (!$this->tableExists('cmis', 'alert_history')) {
+            DB::statement("
+                CREATE TABLE cmis.alert_history (
+                    alert_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                    rule_id UUID NOT NULL REFERENCES cmis.alert_rules(rule_id) ON DELETE CASCADE,
+                    org_id UUID NOT NULL REFERENCES cmis.orgs(org_id) ON DELETE CASCADE,
+                    triggered_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    entity_type VARCHAR(50) NOT NULL,
+                    entity_id UUID NULL,
+                    metric VARCHAR(100) NOT NULL,
+                    actual_value DECIMAL(20, 4) NOT NULL,
+                    threshold_value DECIMAL(20, 4) NOT NULL,
+                    condition VARCHAR(20) NOT NULL,
+                    severity VARCHAR(20) NOT NULL CHECK (severity IN ('critical', 'high', 'medium', 'low')),
+                    message TEXT NOT NULL,
+                    metadata JSONB NULL,
+                    status VARCHAR(20) NOT NULL DEFAULT 'new' CHECK (status IN ('new', 'acknowledged', 'resolved', 'snoozed')),
+                    acknowledged_by UUID NULL REFERENCES cmis.users(user_id) ON DELETE SET NULL,
+                    acknowledged_at TIMESTAMP NULL,
+                    resolved_at TIMESTAMP NULL,
+                    snoozed_until TIMESTAMP NULL,
+                    resolution_notes TEXT NULL,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            ");
 
-        // Enable RLS for alert_rules
-        $this->enableRLS('cmis.alert_rules');
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_alert_history_rule_id ON cmis.alert_history(rule_id)");
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_alert_history_org_id ON cmis.alert_history(org_id)");
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_alert_history_entity ON cmis.alert_history(entity_type, entity_id)");
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_alert_history_triggered ON cmis.alert_history(triggered_at)");
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_alert_history_status ON cmis.alert_history(status)");
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_alert_history_severity ON cmis.alert_history(severity)");
 
-        // Create alert_history table (triggered alerts)
-        Schema::create('cmis.alert_history', function (Blueprint $table) {
-            $table->uuid('alert_id')->primary();
-            $table->uuid('rule_id');
-            $table->uuid('org_id');
-            $table->timestamp('triggered_at');
-            $table->string('entity_type', 50);
-            $table->uuid('entity_id')->nullable();
-            $table->string('metric', 100);
-            $table->decimal('actual_value', 20, 4); // Value that triggered alert
-            $table->decimal('threshold_value', 20, 4); // Threshold that was exceeded
-            $table->string('condition', 20);
-            $table->enum('severity', ['critical', 'high', 'medium', 'low']);
-            $table->text('message'); // Alert message
-            $table->jsonb('metadata')->nullable(); // Additional context
-            $table->enum('status', ['new', 'acknowledged', 'resolved', 'snoozed'])->default('new');
-            $table->uuid('acknowledged_by')->nullable();
-            $table->timestamp('acknowledged_at')->nullable();
-            $table->timestamp('resolved_at')->nullable();
-            $table->timestamp('snoozed_until')->nullable();
-            $table->text('resolution_notes')->nullable();
-            $table->timestamps();
+            $this->enableRLS('cmis.alert_history');
+        }
 
-            // Indexes
-            $table->index('rule_id');
-            $table->index('org_id');
-            $table->index(['entity_type', 'entity_id']);
-            $table->index('triggered_at');
-            $table->index('status');
-            $table->index('severity');
-            $table->index('snoozed_until');
+        // Create alert_notifications table
+        if (!$this->tableExists('cmis', 'alert_notifications')) {
+            DB::statement("
+                CREATE TABLE cmis.alert_notifications (
+                    notification_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                    alert_id UUID NOT NULL REFERENCES cmis.alert_history(alert_id) ON DELETE CASCADE,
+                    org_id UUID NOT NULL REFERENCES cmis.orgs(org_id) ON DELETE CASCADE,
+                    channel VARCHAR(50) NOT NULL,
+                    recipient TEXT NOT NULL,
+                    sent_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    status VARCHAR(20) NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'sent', 'failed', 'delivered', 'read')),
+                    error_message TEXT NULL,
+                    retry_count INTEGER NOT NULL DEFAULT 0,
+                    delivered_at TIMESTAMP NULL,
+                    read_at TIMESTAMP NULL,
+                    metadata JSONB NULL,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            ");
 
-            // Foreign keys
-            $table->foreign('rule_id')
-                ->references('rule_id')
-                ->on('cmis.alert_rules')
-                ->onDelete('cascade');
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_alert_notifications_alert_id ON cmis.alert_notifications(alert_id)");
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_alert_notifications_org_id ON cmis.alert_notifications(org_id)");
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_alert_notifications_channel_status ON cmis.alert_notifications(channel, status)");
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_alert_notifications_sent_at ON cmis.alert_notifications(sent_at)");
 
-            $table->foreign('org_id')
-                ->references('org_id')
-                ->on('cmis.orgs')
-                ->onDelete('cascade');
+            $this->enableRLS('cmis.alert_notifications');
+        }
 
-            $table->foreign('acknowledged_by')
-                ->references('user_id')
-                ->on('cmis.users')
-                ->onDelete('set null');
-        });
+        // Create alert_templates table
+        if (!$this->tableExists('cmis', 'alert_templates')) {
+            DB::statement("
+                CREATE TABLE cmis.alert_templates (
+                    template_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                    created_by UUID NULL REFERENCES cmis.users(user_id) ON DELETE SET NULL,
+                    name VARCHAR(255) NOT NULL,
+                    description TEXT NULL,
+                    category VARCHAR(50) NOT NULL,
+                    entity_type VARCHAR(50) NOT NULL,
+                    default_config JSONB NOT NULL DEFAULT '{}',
+                    is_public BOOLEAN NOT NULL DEFAULT FALSE,
+                    is_system BOOLEAN NOT NULL DEFAULT FALSE,
+                    usage_count INTEGER NOT NULL DEFAULT 0,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            ");
 
-        // Enable RLS for alert_history
-        $this->enableRLS('cmis.alert_history');
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_alert_templates_category ON cmis.alert_templates(category)");
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_alert_templates_entity_type ON cmis.alert_templates(entity_type)");
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_alert_templates_is_public ON cmis.alert_templates(is_public)");
 
-        // Create alert_notifications table (delivery tracking)
-        Schema::create('cmis.alert_notifications', function (Blueprint $table) {
-            $table->uuid('notification_id')->primary();
-            $table->uuid('alert_id');
-            $table->uuid('org_id');
-            $table->string('channel', 50); // email, in_app, slack, webhook
-            $table->text('recipient'); // Email address, Slack channel, webhook URL, or user_id
-            $table->timestamp('sent_at');
-            $table->enum('status', ['pending', 'sent', 'failed', 'delivered', 'read'])->default('pending');
-            $table->text('error_message')->nullable();
-            $table->integer('retry_count')->default(0);
-            $table->timestamp('delivered_at')->nullable();
-            $table->timestamp('read_at')->nullable();
-            $table->jsonb('metadata')->nullable(); // Channel-specific delivery info
-            $table->timestamps();
-
-            // Indexes
-            $table->index('alert_id');
-            $table->index('org_id');
-            $table->index(['channel', 'status']);
-            $table->index('sent_at');
-
-            // Foreign key
-            $table->foreign('alert_id')
-                ->references('alert_id')
-                ->on('cmis.alert_history')
-                ->onDelete('cascade');
-
-            $table->foreign('org_id')
-                ->references('org_id')
-                ->on('cmis.orgs')
-                ->onDelete('cascade');
-        });
-
-        // Enable RLS for alert_notifications
-        $this->enableRLS('cmis.alert_notifications');
-
-        // Create alert_templates table (pre-built alert configurations)
-        Schema::create('cmis.alert_templates', function (Blueprint $table) {
-            $table->uuid('template_id')->primary();
-            $table->uuid('created_by')->nullable(); // NULL = system template
-            $table->string('name', 255);
-            $table->text('description')->nullable();
-            $table->string('category', 50); // performance, budget, engagement, anomaly
-            $table->string('entity_type', 50);
-            $table->jsonb('default_config'); // Template configuration
-            $table->boolean('is_public')->default(false);
-            $table->boolean('is_system')->default(false);
-            $table->integer('usage_count')->default(0);
-            $table->timestamps();
-
-            // Indexes
-            $table->index('category');
-            $table->index('entity_type');
-            $table->index('is_public');
-        });
-
-        // Alert templates are public/shared across orgs, so use public RLS
-        $this->enablePublicRLS('cmis.alert_templates');
+            $this->enablePublicRLS('cmis.alert_templates');
+        }
 
         // Create escalation_policies table
-        Schema::create('cmis.escalation_policies', function (Blueprint $table) {
-            $table->uuid('policy_id')->primary();
-            $table->uuid('org_id');
-            $table->string('name', 255);
-            $table->text('description')->nullable();
-            $table->jsonb('escalation_levels'); // Array of escalation steps
-            $table->boolean('is_active')->default(true);
-            $table->timestamps();
+        if (!$this->tableExists('cmis', 'escalation_policies')) {
+            DB::statement("
+                CREATE TABLE cmis.escalation_policies (
+                    policy_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                    org_id UUID NOT NULL REFERENCES cmis.orgs(org_id) ON DELETE CASCADE,
+                    name VARCHAR(255) NOT NULL,
+                    description TEXT NULL,
+                    escalation_levels JSONB NOT NULL DEFAULT '[]',
+                    is_active BOOLEAN NOT NULL DEFAULT TRUE,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            ");
 
-            // Indexes
-            $table->index('org_id');
-            $table->index('is_active');
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_escalation_policies_org_id ON cmis.escalation_policies(org_id)");
+            DB::statement("CREATE INDEX IF NOT EXISTS idx_escalation_policies_is_active ON cmis.escalation_policies(is_active)");
 
-            // Foreign key
-            $table->foreign('org_id')
-                ->references('org_id')
-                ->on('cmis.orgs')
-                ->onDelete('cascade');
-        });
-
-        // Enable RLS for escalation_policies
-        $this->enableRLS('cmis.escalation_policies');
+            $this->enableRLS('cmis.escalation_policies');
+        }
     }
 
     /**
@@ -201,20 +184,10 @@ return new class extends Migration
      */
     public function down(): void
     {
-        // Disable RLS and drop tables
-        $this->disableRLS('cmis.escalation_policies');
-        Schema::dropIfExists('cmis.escalation_policies');
-
-        $this->disableRLS('cmis.alert_templates', ['allow_all']);
-        Schema::dropIfExists('cmis.alert_templates');
-
-        $this->disableRLS('cmis.alert_notifications');
-        Schema::dropIfExists('cmis.alert_notifications');
-
-        $this->disableRLS('cmis.alert_history');
-        Schema::dropIfExists('cmis.alert_history');
-
-        $this->disableRLS('cmis.alert_rules');
-        Schema::dropIfExists('cmis.alert_rules');
+        DB::statement("DROP TABLE IF EXISTS cmis.escalation_policies CASCADE");
+        DB::statement("DROP TABLE IF EXISTS cmis.alert_templates CASCADE");
+        DB::statement("DROP TABLE IF EXISTS cmis.alert_notifications CASCADE");
+        DB::statement("DROP TABLE IF EXISTS cmis.alert_history CASCADE");
+        DB::statement("DROP TABLE IF EXISTS cmis.alert_rules CASCADE");
     }
 };

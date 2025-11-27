@@ -136,7 +136,7 @@
                     <i class="fas fa-cog"></i>
                     <span class="hidden sm:inline">إعدادات الطابور</span>
                 </button>
-                <button @click="showNewPostModal = true"
+                <button @click="$dispatch('open-publish-modal')"
                         class="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white px-4 sm:px-6 py-2.5 rounded-xl font-medium shadow-lg shadow-indigo-500/25 hover:shadow-xl hover:shadow-indigo-500/30 transition-all flex items-center gap-2">
                     <i class="fas fa-plus"></i>
                     <span class="hidden sm:inline">منشور جديد</span>
@@ -567,1125 +567,13 @@
             </div>
             <h3 class="text-xl font-bold text-gray-800 dark:text-white mb-2">لا توجد منشورات</h3>
             <p class="text-gray-500 dark:text-gray-400 mb-8 max-w-sm mx-auto">ابدأ بإنشاء منشور جديد لجدولته على وسائل التواصل الاجتماعي</p>
-            <button @click="showNewPostModal = true"
+            <button @click="$dispatch('open-publish-modal')"
                     class="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white px-8 py-3.5 rounded-xl font-semibold shadow-lg shadow-indigo-500/25 hover:shadow-xl hover:shadow-indigo-500/30 transition-all">
                 <i class="fas fa-plus ml-2"></i>
                 إنشاء منشور جديد
             </button>
         </div>
     </template>
-
-    <!-- Enhanced New Post Modal -->
-    <div x-show="showNewPostModal" x-cloak
-         class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
-         @click.self="showNewPostModal = false"
-         x-transition:enter="transition ease-out duration-300"
-         x-transition:enter-start="opacity-0"
-         x-transition:enter-end="opacity-100">
-        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
-            <!-- Header -->
-            <div class="p-6 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between bg-gradient-to-r from-indigo-600 to-purple-600 text-white">
-                <div>
-                    <h3 class="text-xl font-bold">
-                        <i class="fas fa-plus-circle ml-2"></i>
-                        إنشاء منشور جديد
-                    </h3>
-                    <p class="text-indigo-100 text-sm mt-1">قم بإنشاء ونشر محتواك على جميع منصات التواصل</p>
-                </div>
-                <button @click="showNewPostModal = false" class="text-white/80 hover:text-white p-2">
-                    <i class="fas fa-times text-xl"></i>
-                </button>
-            </div>
-
-            <!-- Body with Two Columns -->
-            <div class="flex-1 overflow-y-auto">
-                <div class="grid grid-cols-1 lg:grid-cols-2 divide-y lg:divide-y-0 lg:divide-x divide-gray-200 dark:divide-gray-700">
-                    <!-- Left Column: Content Creation -->
-                    <div class="p-6 space-y-6">
-                        <!-- Loading connected platforms -->
-                        <div x-show="loadingPlatforms" class="text-center py-8">
-                            <i class="fas fa-spinner fa-spin text-4xl text-indigo-600"></i>
-                            <p class="mt-3 text-gray-600">جاري تحميل المنصات المتصلة...</p>
-                        </div>
-
-                        <!-- No platforms connected warning -->
-                        <div x-show="!loadingPlatforms && connectedPlatforms.length === 0" class="bg-yellow-50 border border-yellow-200 rounded-xl p-4">
-                            <div class="flex items-center gap-3">
-                                <i class="fas fa-exclamation-triangle text-yellow-600 text-2xl"></i>
-                                <div>
-                                    <p class="font-medium text-yellow-800">لا توجد منصات متصلة</p>
-                                    <p class="text-sm text-yellow-700 mt-1">يرجى ربط حساباتك من صفحة <a href="{{ route('orgs.settings.platform-connections.index', request()->route('org')) }}" class="underline font-medium">إعدادات المنصات</a></p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Platform Selection -->
-                        <div x-show="!loadingPlatforms && connectedPlatforms.length > 0">
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-                                <i class="fas fa-share-alt ml-1 text-indigo-600"></i>
-                                اختر المنصات للنشر
-                            </label>
-                            <div class="flex flex-wrap gap-2">
-                                <template x-for="platform in connectedPlatforms" :key="platform.id">
-                                    <button type="button"
-                                            @click="togglePlatformSelection(platform)"
-                                            class="flex items-center gap-2 px-4 py-2 rounded-full border-2 transition"
-                                            :class="selectedPlatformIds.includes(platform.id)
-                                                ? 'border-indigo-500 bg-indigo-50 text-indigo-700'
-                                                : 'border-gray-200 hover:border-gray-300 text-gray-600'">
-                                        <i :class="{
-                                            'fab fa-facebook-f text-blue-600': platform.type === 'facebook',
-                                            'fab fa-instagram text-pink-600': platform.type === 'instagram',
-                                            'fab fa-twitter text-sky-500': platform.type === 'twitter',
-                                            'fab fa-linkedin-in text-blue-700': platform.type === 'linkedin'
-                                        }"></i>
-                                        <span class="text-sm font-medium" x-text="platform.name"></span>
-                                        <i x-show="selectedPlatformIds.includes(platform.id)" class="fas fa-check text-indigo-600"></i>
-                                    </button>
-                                </template>
-                            </div>
-                        </div>
-
-                        <!-- Post Type Selection (Feed/Reel/Story) -->
-                        <div x-show="selectedPlatformIds.length > 0">
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-                                <i class="fas fa-layer-group ml-1 text-indigo-600"></i>
-                                نوع المنشور
-                            </label>
-                            <div class="flex flex-wrap gap-2">
-                                <!-- Show post types based on selected platforms -->
-                                <template x-for="type in availablePostTypes" :key="type.value">
-                                    <button type="button"
-                                            @click="newPost.postType = type.value"
-                                            class="flex items-center gap-2 px-4 py-2 rounded-lg border-2 transition"
-                                            :class="newPost.postType === type.value
-                                                ? 'border-indigo-500 bg-indigo-50 text-indigo-700'
-                                                : 'border-gray-200 hover:border-gray-300 text-gray-600'">
-                                        <i :class="'fas ' + type.icon"></i>
-                                        <span class="text-sm font-medium" x-text="type.label"></span>
-                                        <i x-show="newPost.postType === type.value" class="fas fa-check text-indigo-600"></i>
-                                    </button>
-                                </template>
-                            </div>
-                        </div>
-
-                        <!-- ========================================== -->
-                        <!-- POST TYPE SPECIFIC OPTIONS -->
-                        <!-- ========================================== -->
-
-                        <!-- ==================== REEL OPTIONS ==================== -->
-                        <div x-show="newPost.postType === 'reel'" x-collapse class="bg-purple-50 dark:bg-purple-900/20 rounded-xl p-4 space-y-4">
-                            <div class="flex items-center gap-2 text-purple-700 dark:text-purple-300 font-medium mb-2">
-                                <i class="fas fa-video"></i>
-                                <span>خيارات الريل</span>
-                            </div>
-
-                            <!-- Cover Image Selection -->
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                    <i class="fas fa-image ml-1"></i>
-                                    صورة الغلاف
-                                </label>
-                                <div class="flex gap-3">
-                                    <button type="button" @click="postOptions.reel.coverType = 'frame'"
-                                            :class="postOptions.reel.coverType === 'frame' ? 'border-purple-500 bg-purple-100' : 'border-gray-200'"
-                                            class="flex-1 p-3 rounded-lg border-2 text-center transition">
-                                        <i class="fas fa-film text-purple-600 mb-1"></i>
-                                        <p class="text-sm font-medium">إطار من الفيديو</p>
-                                    </button>
-                                    <button type="button" @click="postOptions.reel.coverType = 'custom'"
-                                            :class="postOptions.reel.coverType === 'custom' ? 'border-purple-500 bg-purple-100' : 'border-gray-200'"
-                                            class="flex-1 p-3 rounded-lg border-2 text-center transition">
-                                        <i class="fas fa-upload text-purple-600 mb-1"></i>
-                                        <p class="text-sm font-medium">صورة مخصصة</p>
-                                    </button>
-                                </div>
-
-                                <!-- Frame Offset Slider -->
-                                <div x-show="postOptions.reel.coverType === 'frame'" class="mt-3">
-                                    <label class="text-xs text-gray-500">موضع الإطار (بالثانية)</label>
-                                    <input type="range" x-model="postOptions.reel.coverFrameOffset" min="0" max="90000" step="1000"
-                                           class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-purple-600">
-                                    <div class="flex justify-between text-xs text-gray-400">
-                                        <span>0 ث</span>
-                                        <span x-text="Math.round(postOptions.reel.coverFrameOffset / 1000) + ' ث'"></span>
-                                        <span>90 ث</span>
-                                    </div>
-                                </div>
-
-                                <!-- Custom Cover Upload -->
-                                <div x-show="postOptions.reel.coverType === 'custom'" class="mt-3">
-                                    <input type="url" x-model="postOptions.reel.coverImageUrl"
-                                           placeholder="رابط صورة الغلاف (9:16)"
-                                           class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
-                                    <p class="text-xs text-gray-400 mt-1">يُفضل استخدام صورة بأبعاد 9:16</p>
-                                </div>
-                            </div>
-
-                            <!-- Reel Display Options -->
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                <!-- Share to Feed -->
-                                <div class="flex items-center justify-between p-3 bg-white dark:bg-gray-800 rounded-lg">
-                                    <div>
-                                        <p class="font-medium text-gray-700 dark:text-gray-300 text-sm">عرض في الصفحة الرئيسية</p>
-                                        <p class="text-xs text-gray-500">سيظهر الريل في صفحة البروفايل</p>
-                                    </div>
-                                    <label class="relative inline-flex items-center cursor-pointer">
-                                        <input type="checkbox" x-model="postOptions.reel.shareToFeed" class="sr-only peer">
-                                        <div class="w-11 h-6 bg-gray-200 peer-focus:ring-2 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:-translate-x-full peer-checked:bg-purple-600 after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
-                                    </label>
-                                </div>
-
-                            </div>
-                        </div>
-
-                        <!-- ==================== STORY OPTIONS ==================== -->
-                        <div x-show="newPost.postType === 'story'" x-collapse class="bg-pink-50 dark:bg-pink-900/20 rounded-xl p-4 space-y-4">
-                            <div class="flex items-center gap-2 text-pink-700 dark:text-pink-300 font-medium mb-2">
-                                <i class="fas fa-circle"></i>
-                                <span>خيارات القصة</span>
-                            </div>
-
-                            <!-- Story Duration -->
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                    <i class="fas fa-clock ml-1"></i>
-                                    مدة العرض (للصور)
-                                </label>
-                                <div class="flex gap-2">
-                                    <template x-for="duration in [3, 5, 7, 10]" :key="duration">
-                                        <button type="button" @click="postOptions.story.duration = duration"
-                                                :class="postOptions.story.duration === duration ? 'border-pink-500 bg-pink-100 text-pink-700' : 'border-gray-200'"
-                                                class="px-4 py-2 rounded-lg border-2 text-sm font-medium transition"
-                                                x-text="duration + ' ث'">
-                                        </button>
-                                    </template>
-                                </div>
-                            </div>
-
-                            <!-- Story Stickers Info -->
-                            <div class="p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
-                                <div class="flex items-start gap-2">
-                                    <i class="fas fa-info-circle text-yellow-600 mt-0.5"></i>
-                                    <div>
-                                        <p class="text-sm font-medium text-yellow-800 dark:text-yellow-300">ملاحظة</p>
-                                        <p class="text-xs text-yellow-700 dark:text-yellow-400">إضافة الروابط والملصقات (استطلاع، سؤال، العد التنازلي) غير متاحة عبر API. يمكنك إضافتها يدوياً من التطبيق.</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- ==================== CAROUSEL OPTIONS ==================== -->
-                        <div x-show="newPost.postType === 'carousel'" x-collapse class="bg-orange-50 dark:bg-orange-900/20 rounded-xl p-4 space-y-4">
-                            <div class="flex items-center gap-2 text-orange-700 dark:text-orange-300 font-medium mb-2">
-                                <i class="fas fa-images"></i>
-                                <span>خيارات الكاروسيل</span>
-                            </div>
-
-                            <!-- Alt Text for Each Image -->
-                            <div x-show="uploadedMedia.length > 0">
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                    <i class="fas fa-universal-access ml-1"></i>
-                                    النص البديل لكل صورة
-                                </label>
-                                <template x-for="(media, index) in uploadedMedia" :key="index">
-                                    <div class="flex items-center gap-2 mb-2">
-                                        <img :src="media.preview" class="w-10 h-10 rounded object-cover">
-                                        <input type="text"
-                                               x-model="postOptions.carousel.altTexts[index]"
-                                               :placeholder="'وصف الصورة ' + (index + 1) + ' للقارئات الصوتية'"
-                                               class="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm">
-                                    </div>
-                                </template>
-                                <p class="text-xs text-gray-400">النص البديل يساعد ذوي الاحتياجات الخاصة على فهم محتوى الصور</p>
-                            </div>
-
-                            <div class="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                                <p class="text-sm text-blue-700 dark:text-blue-300">
-                                    <i class="fas fa-lightbulb ml-1"></i>
-                                    يمكنك إضافة حتى 10 صور/فيديوهات في الكاروسيل
-                                </p>
-                            </div>
-                        </div>
-
-                        <!-- ==================== FEED POST OPTIONS ==================== -->
-                        <div x-show="newPost.postType === 'feed' || newPost.postType === 'post'" x-collapse class="bg-green-50 dark:bg-green-900/20 rounded-xl p-4 space-y-4">
-                            <div class="flex items-center gap-2 text-green-700 dark:text-green-300 font-medium mb-2">
-                                <i class="fas fa-newspaper"></i>
-                                <span>خيارات المنشور</span>
-                            </div>
-
-                            <!-- Alt Text -->
-                            <div x-show="uploadedMedia.length > 0">
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                    <i class="fas fa-universal-access ml-1"></i>
-                                    النص البديل
-                                </label>
-                                <input type="text" x-model="postOptions.instagram.altText"
-                                       placeholder="وصف الصورة للقارئات الصوتية"
-                                       class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
-                            </div>
-                        </div>
-
-                        <!-- ==================== INSTAGRAM/FACEBOOK COMMON OPTIONS ==================== -->
-                        <div x-show="(hasInstagramSelected || hasFacebookSelected) && newPost.postType !== 'story'" x-collapse class="bg-gradient-to-r from-pink-50 to-purple-50 dark:from-pink-900/20 dark:to-purple-900/20 rounded-xl p-4 space-y-4">
-                            <div class="flex items-center gap-2 text-purple-700 dark:text-purple-300 font-medium mb-2">
-                                <i class="fab fa-instagram"></i>
-                                <span>خيارات Meta (Instagram/Facebook)</span>
-                            </div>
-
-                            <!-- Location with Autocomplete -->
-                            <div class="relative">
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                    <i class="fas fa-map-marker-alt ml-1 text-red-500"></i>
-                                    الموقع
-                                </label>
-
-                                <!-- Selected Location Display -->
-                                <div x-show="selectedLocation" class="flex items-center justify-between p-3 bg-green-50 dark:bg-green-900/30 border border-green-300 rounded-lg mb-2">
-                                    <div class="flex items-center gap-2">
-                                        <i class="fas fa-map-marker-alt text-green-600"></i>
-                                        <div>
-                                            <p class="font-medium text-green-800 dark:text-green-200 text-sm" x-text="selectedLocation?.name"></p>
-                                            <p class="text-xs text-green-600 dark:text-green-400" x-text="selectedLocation?.address"></p>
-                                        </div>
-                                    </div>
-                                    <button type="button" @click="clearLocation()" class="text-green-600 hover:text-red-600 transition">
-                                        <i class="fas fa-times"></i>
-                                    </button>
-                                </div>
-
-                                <!-- Search Input -->
-                                <div x-show="!selectedLocation" class="relative">
-                                    <input type="text"
-                                           x-model="locationQuery"
-                                           @input="searchLocations()"
-                                           @focus="showLocationDropdown = locationResults.length > 0"
-                                           @click.away="showLocationDropdown = false"
-                                           placeholder="ابحث عن موقع... (مثال: برج خليفة، دبي)"
-                                           class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm pr-10">
-
-                                    <!-- Loading Spinner -->
-                                    <div x-show="isSearchingLocations" class="absolute left-3 top-1/2 transform -translate-y-1/2">
-                                        <i class="fas fa-spinner fa-spin text-gray-400"></i>
-                                    </div>
-
-                                    <!-- Search Icon -->
-                                    <div x-show="!isSearchingLocations" class="absolute left-3 top-1/2 transform -translate-y-1/2">
-                                        <i class="fas fa-search text-gray-400"></i>
-                                    </div>
-
-                                    <!-- Autocomplete Dropdown -->
-                                    <div x-show="showLocationDropdown && locationResults.length > 0"
-                                         x-transition:enter="transition ease-out duration-100"
-                                         x-transition:enter-start="opacity-0 scale-95"
-                                         x-transition:enter-end="opacity-100 scale-100"
-                                         x-transition:leave="transition ease-in duration-75"
-                                         x-transition:leave-start="opacity-100 scale-100"
-                                         x-transition:leave-end="opacity-0 scale-95"
-                                         class="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg max-h-60 overflow-y-auto">
-
-                                        <template x-for="location in locationResults" :key="location.id">
-                                            <button type="button"
-                                                    @click="selectLocation(location)"
-                                                    class="w-full text-right px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 border-b border-gray-100 dark:border-gray-700 last:border-b-0 transition">
-                                                <div class="flex items-start gap-3">
-                                                    <i class="fas fa-map-marker-alt text-red-500 mt-1"></i>
-                                                    <div class="flex-1">
-                                                        <p class="font-medium text-gray-800 dark:text-gray-200 text-sm" x-text="location.name"></p>
-                                                        <p class="text-xs text-gray-500 dark:text-gray-400" x-text="location.address || location.category"></p>
-                                                    </div>
-                                                </div>
-                                            </button>
-                                        </template>
-                                    </div>
-
-                                    <!-- No Results Message -->
-                                    <div x-show="showLocationDropdown && locationQuery.length >= 2 && locationResults.length === 0 && !isSearchingLocations"
-                                         class="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg p-4 text-center">
-                                        <i class="fas fa-map-marker-alt text-gray-300 text-2xl mb-2"></i>
-                                        <p class="text-sm text-gray-500">لم يتم العثور على نتائج</p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- First Comment -->
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                    <i class="fas fa-comment ml-1"></i>
-                                    أول تعليق
-                                </label>
-                                <input type="text" x-model="postOptions.instagram.firstComment"
-                                       placeholder="أضف الهاشتاقات أو تعليق أول هنا..."
-                                       class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
-                                <p class="text-xs text-gray-400 mt-1">سيتم نشر هذا كأول تعليق على المنشور</p>
-                            </div>
-
-                            <!-- Tag People -->
-                            <div x-show="uploadedMedia.length > 0">
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                    <i class="fas fa-user-tag ml-1"></i>
-                                    الإشارة للأشخاص في الصورة
-                                </label>
-                                <input type="text" x-model="userTagInput"
-                                       @keydown.enter.prevent="if(userTagInput) { postOptions.instagram.userTags.push({username: userTagInput, x: 0.5, y: 0.5}); userTagInput = ''; }"
-                                       placeholder="@username ثم اضغط Enter"
-                                       class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
-                                <div class="flex flex-wrap gap-2 mt-2" x-show="postOptions.instagram.userTags.length > 0">
-                                    <template x-for="(tag, index) in postOptions.instagram.userTags" :key="index">
-                                        <span class="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-sm">
-                                            <i class="fas fa-user text-xs"></i>
-                                            <span x-text="tag.username"></span>
-                                            <button type="button" @click="postOptions.instagram.userTags.splice(index, 1)" class="hover:text-red-600">
-                                                <i class="fas fa-times text-xs"></i>
-                                            </button>
-                                        </span>
-                                    </template>
-                                </div>
-                                <p class="text-xs text-gray-400 mt-1">يمكنك الإشارة لما يصل إلى 20 شخص في الصورة</p>
-                            </div>
-
-                            <!-- Collaborators with Suggestions and Validation -->
-                            <div class="relative">
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                    <i class="fas fa-user-friends ml-1"></i>
-                                    المتعاونون (حتى 3)
-                                </label>
-                                <div class="relative">
-                                    <input type="text" x-model="collaboratorInput"
-                                           @input="searchCollaborators()"
-                                           @focus="showCollaboratorSuggestions = collaboratorSuggestions.length > 0"
-                                           @keydown.enter.prevent="addCollaborator(collaboratorInput)"
-                                           @keydown.escape="showCollaboratorSuggestions = false"
-                                           placeholder="@username ثم اضغط Enter"
-                                           class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm pr-10">
-                                    <!-- Validation indicator -->
-                                    <div class="absolute left-3 top-1/2 -translate-y-1/2">
-                                        <template x-if="isValidatingUsername">
-                                            <i class="fas fa-spinner fa-spin text-gray-400"></i>
-                                        </template>
-                                        <template x-if="!isValidatingUsername && usernameValidationResult === true">
-                                            <i class="fas fa-check-circle text-green-500" title="اسم مستخدم صحيح"></i>
-                                        </template>
-                                        <template x-if="!isValidatingUsername && usernameValidationResult === false">
-                                            <i class="fas fa-exclamation-circle text-yellow-500" title="لم يتم العثور على المستخدم"></i>
-                                        </template>
-                                    </div>
-                                </div>
-
-                                <!-- Suggestions Dropdown -->
-                                <div x-show="showCollaboratorSuggestions && filteredCollaboratorSuggestions.length > 0"
-                                     @click.away="showCollaboratorSuggestions = false"
-                                     x-transition
-                                     class="absolute z-20 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg max-h-48 overflow-y-auto">
-                                    <div class="py-1">
-                                        <p class="px-3 py-1 text-xs text-gray-500 dark:text-gray-400">اقتراحات من المنشورات السابقة:</p>
-                                        <template x-for="suggestion in filteredCollaboratorSuggestions" :key="suggestion">
-                                            <button type="button"
-                                                    @click="addCollaborator(suggestion)"
-                                                    class="w-full text-right px-3 py-2 text-sm hover:bg-purple-50 dark:hover:bg-purple-900/20 flex items-center gap-2">
-                                                <i class="fab fa-instagram text-pink-500"></i>
-                                                <span x-text="'@' + suggestion"></span>
-                                            </button>
-                                        </template>
-                                    </div>
-                                </div>
-
-                                <!-- Added Collaborators -->
-                                <div class="flex flex-wrap gap-2 mt-2" x-show="postOptions.instagram.collaborators.length > 0">
-                                    <template x-for="(collab, index) in postOptions.instagram.collaborators" :key="index">
-                                        <span class="inline-flex items-center gap-1 px-2 py-1 bg-purple-100 text-purple-700 rounded-full text-sm">
-                                            <span x-text="collab.startsWith('@') ? collab : '@' + collab"></span>
-                                            <button type="button" @click="postOptions.instagram.collaborators.splice(index, 1)" class="hover:text-red-600">
-                                                <i class="fas fa-times text-xs"></i>
-                                            </button>
-                                        </span>
-                                    </template>
-                                </div>
-                                <p class="text-xs text-gray-400 mt-1">دعوة أشخاص آخرين لنشر المحتوى معك (يتم التحقق تلقائياً)</p>
-                            </div>
-
-                            <!-- Product Tags (for Shopping - requires Instagram Shopping setup) -->
-                            <div class="border-t border-gray-200 dark:border-gray-700 pt-4">
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                    <i class="fas fa-shopping-bag ml-1 text-pink-500"></i>
-                                    تفاصيل المنتج (للتسوق)
-                                </label>
-                                <input type="text" x-model="productTagInput"
-                                       @keydown.enter.prevent="if(productTagInput) { postOptions.instagram.productTags.push(productTagInput); productTagInput = ''; }"
-                                       placeholder="أدخل معرف المنتج أو الرابط ثم اضغط Enter"
-                                       class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
-                                <div class="flex flex-wrap gap-2 mt-2" x-show="postOptions.instagram.productTags.length > 0">
-                                    <template x-for="(tag, index) in postOptions.instagram.productTags" :key="index">
-                                        <span class="inline-flex items-center gap-1 px-2 py-1 bg-pink-100 text-pink-700 rounded-full text-sm">
-                                            <i class="fas fa-tag text-xs"></i>
-                                            <span x-text="tag"></span>
-                                            <button type="button" @click="postOptions.instagram.productTags.splice(index, 1)" class="hover:text-red-600">
-                                                <i class="fas fa-times text-xs"></i>
-                                            </button>
-                                        </span>
-                                    </template>
-                                </div>
-                                <p class="text-xs text-gray-400 mt-1">يتطلب تفعيل Instagram Shopping في حسابك</p>
-                            </div>
-
-                            <!-- Product Details (DM-based orders - No Shopping required) -->
-                            <div class="border-t border-gray-200 dark:border-gray-700 pt-4">
-                                <div class="flex items-center justify-between mb-3">
-                                    <label class="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-                                        <i class="fas fa-box-open ml-1 text-orange-500"></i>
-                                        تفاصيل المنتج (للطلب عبر الرسائل)
-                                    </label>
-                                    <label class="relative inline-flex items-center cursor-pointer">
-                                        <input type="checkbox" x-model="postOptions.product.enabled" class="sr-only peer">
-                                        <div class="w-11 h-6 bg-gray-200 peer-focus:ring-2 peer-focus:ring-orange-500 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:-translate-x-full peer-checked:bg-orange-500 after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
-                                    </label>
-                                </div>
-
-                                <div x-show="postOptions.product.enabled" x-collapse class="space-y-3">
-                                    <!-- Product Title -->
-                                    <div>
-                                        <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">اسم المنتج</label>
-                                        <input type="text" x-model="postOptions.product.title"
-                                               placeholder="مثال: حقيبة يد جلدية فاخرة"
-                                               class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
-                                    </div>
-
-                                    <!-- Price and Currency -->
-                                    <div class="grid grid-cols-2 gap-3">
-                                        <div>
-                                            <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">السعر</label>
-                                            <input type="number" x-model="postOptions.product.price"
-                                                   placeholder="0.00"
-                                                   step="0.01"
-                                                   min="0"
-                                                   class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
-                                        </div>
-                                        <div>
-                                            <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">العملة</label>
-                                            <select x-model="postOptions.product.currency"
-                                                    class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
-                                                <template x-for="curr in currencies" :key="curr.code">
-                                                    <option :value="curr.code" x-text="curr.symbol + ' - ' + curr.name"></option>
-                                                </template>
-                                            </select>
-                                        </div>
-                                    </div>
-
-                                    <!-- Product Description (optional) -->
-                                    <div>
-                                        <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">وصف المنتج (اختياري)</label>
-                                        <textarea x-model="postOptions.product.description"
-                                                  placeholder="وصف مختصر للمنتج..."
-                                                  rows="2"
-                                                  class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"></textarea>
-                                    </div>
-
-                                    <!-- Order CTA Message -->
-                                    <div>
-                                        <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">رسالة الطلب</label>
-                                        <input type="text" x-model="postOptions.product.orderMessage"
-                                               placeholder="للطلب، أرسل رسالة مباشرة 📩"
-                                               class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
-                                        <p class="text-xs text-gray-400 mt-1">ستضاف هذه الرسالة لنهاية المنشور</p>
-                                    </div>
-
-                                    <!-- Preview -->
-                                    <div x-show="postOptions.product.title || postOptions.product.price" class="bg-orange-50 dark:bg-orange-900/20 rounded-lg p-3 mt-2">
-                                        <p class="text-xs font-medium text-orange-700 dark:text-orange-300 mb-1">معاينة:</p>
-                                        <p class="text-sm text-gray-700 dark:text-gray-300">
-                                            <span x-text="postOptions.product.title"></span>
-                                            <template x-if="postOptions.product.price">
-                                                <span class="font-semibold">
-                                                    - <span x-text="postOptions.product.price"></span>
-                                                    <span x-text="currencies.find(c => c.code === postOptions.product.currency)?.symbol || postOptions.product.currency"></span>
-                                                </span>
-                                            </template>
-                                        </p>
-                                        <p class="text-xs text-gray-500 mt-1" x-text="postOptions.product.orderMessage"></p>
-                                    </div>
-                                </div>
-                                <p class="text-xs text-gray-400 mt-2">
-                                    <i class="fas fa-lightbulb ml-1 text-yellow-500"></i>
-                                    لا يتطلب Instagram Shopping - الطلبات ستصل عبر الرسائل المباشرة
-                                </p>
-                            </div>
-                        </div>
-
-                        <!-- ==================== TIKTOK OPTIONS ==================== -->
-                        <div x-show="hasTikTokSelected" x-collapse class="bg-gray-900 rounded-xl p-4 space-y-4">
-                            <div class="flex items-center gap-2 text-white font-medium mb-2">
-                                <i class="fab fa-tiktok"></i>
-                                <span>خيارات تيك توك</span>
-                            </div>
-
-                            <!-- Viewer Setting -->
-                            <div>
-                                <label class="block text-sm font-medium text-gray-300 mb-2">من يمكنه المشاهدة</label>
-                                <select x-model="postOptions.tiktok.viewerSetting"
-                                        class="w-full bg-gray-800 border border-gray-600 rounded-lg px-3 py-2 text-sm text-white">
-                                    <option value="public">الجميع (عام)</option>
-                                    <option value="friends">الأصدقاء فقط</option>
-                                    <option value="private">أنا فقط (خاص)</option>
-                                </select>
-                            </div>
-
-                            <!-- Interaction Settings -->
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                <!-- Allow Comments -->
-                                <div class="flex items-center justify-between p-3 bg-gray-800 rounded-lg">
-                                    <span class="text-sm text-gray-300">السماح بالتعليقات</span>
-                                    <label class="relative inline-flex items-center cursor-pointer">
-                                        <input type="checkbox" :checked="!postOptions.tiktok.disableComments"
-                                               @change="postOptions.tiktok.disableComments = !$event.target.checked" class="sr-only peer">
-                                        <div class="w-11 h-6 bg-gray-700 peer-focus:ring-2 peer-focus:ring-pink-500 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:-translate-x-full peer-checked:bg-pink-500 after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
-                                    </label>
-                                </div>
-
-                                <!-- Allow Duet -->
-                                <div class="flex items-center justify-between p-3 bg-gray-800 rounded-lg">
-                                    <span class="text-sm text-gray-300">السماح بـ Duet</span>
-                                    <label class="relative inline-flex items-center cursor-pointer">
-                                        <input type="checkbox" :checked="!postOptions.tiktok.disableDuet"
-                                               @change="postOptions.tiktok.disableDuet = !$event.target.checked" class="sr-only peer">
-                                        <div class="w-11 h-6 bg-gray-700 peer-focus:ring-2 peer-focus:ring-pink-500 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:-translate-x-full peer-checked:bg-pink-500 after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
-                                    </label>
-                                </div>
-
-                                <!-- Allow Stitch -->
-                                <div class="flex items-center justify-between p-3 bg-gray-800 rounded-lg">
-                                    <span class="text-sm text-gray-300">السماح بـ Stitch</span>
-                                    <label class="relative inline-flex items-center cursor-pointer">
-                                        <input type="checkbox" :checked="!postOptions.tiktok.disableStitch"
-                                               @change="postOptions.tiktok.disableStitch = !$event.target.checked" class="sr-only peer">
-                                        <div class="w-11 h-6 bg-gray-700 peer-focus:ring-2 peer-focus:ring-pink-500 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:-translate-x-full peer-checked:bg-pink-500 after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
-                                    </label>
-                                </div>
-                            </div>
-
-                            <!-- Disclosure Settings -->
-                            <div class="border-t border-gray-700 pt-4">
-                                <p class="text-sm font-medium text-gray-300 mb-3">
-                                    <i class="fas fa-info-circle ml-1"></i>
-                                    إعدادات الإفصاح
-                                </p>
-                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                    <!-- Branded Content -->
-                                    <div class="flex items-center justify-between p-3 bg-gray-800 rounded-lg">
-                                        <div>
-                                            <p class="text-sm text-gray-300">محتوى ترويجي مدفوع</p>
-                                            <p class="text-xs text-gray-500">إعلان أو شراكة تجارية</p>
-                                        </div>
-                                        <label class="relative inline-flex items-center cursor-pointer">
-                                            <input type="checkbox" x-model="postOptions.tiktok.brandContentToggle" class="sr-only peer">
-                                            <div class="w-11 h-6 bg-gray-700 peer-focus:ring-2 peer-focus:ring-pink-500 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:-translate-x-full peer-checked:bg-pink-500 after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
-                                        </label>
-                                    </div>
-
-                                    <!-- AI Generated -->
-                                    <div class="flex items-center justify-between p-3 bg-gray-800 rounded-lg">
-                                        <div>
-                                            <p class="text-sm text-gray-300">مُنشأ بالذكاء الاصطناعي</p>
-                                            <p class="text-xs text-gray-500">محتوى AI أو صور اصطناعية</p>
-                                        </div>
-                                        <label class="relative inline-flex items-center cursor-pointer">
-                                            <input type="checkbox" x-model="postOptions.tiktok.aiGenerated" class="sr-only peer">
-                                            <div class="w-11 h-6 bg-gray-700 peer-focus:ring-2 peer-focus:ring-pink-500 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:-translate-x-full peer-checked:bg-pink-500 after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
-                                        </label>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- ==================== LINKEDIN OPTIONS ==================== -->
-                        <div x-show="hasLinkedInSelected" x-collapse class="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4 space-y-4">
-                            <div class="flex items-center gap-2 text-blue-700 dark:text-blue-300 font-medium mb-2">
-                                <i class="fab fa-linkedin"></i>
-                                <span>خيارات LinkedIn</span>
-                            </div>
-
-                            <!-- Visibility -->
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">من يمكنه المشاهدة</label>
-                                <select x-model="postOptions.linkedin.visibility"
-                                        class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
-                                    <option value="PUBLIC">الجميع (عام)</option>
-                                    <option value="CONNECTIONS">جهات الاتصال فقط</option>
-                                </select>
-                            </div>
-
-                            <!-- Article Options (when article type) -->
-                            <div x-show="newPost.postType === 'article'" class="space-y-3">
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">عنوان المقال</label>
-                                    <input type="text" x-model="postOptions.linkedin.articleTitle"
-                                           placeholder="عنوان جذاب للمقال"
-                                           class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
-                                </div>
-
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">وصف مختصر</label>
-                                    <textarea x-model="postOptions.linkedin.articleDescription" rows="2"
-                                              placeholder="وصف مختصر يظهر في المعاينة"
-                                              class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm resize-none"></textarea>
-                                </div>
-                            </div>
-
-                            <!-- Comments Toggle -->
-                            <div class="flex items-center justify-between p-3 bg-white dark:bg-gray-800 rounded-lg">
-                                <span class="text-sm text-gray-700 dark:text-gray-300">السماح بالتعليقات</span>
-                                <label class="relative inline-flex items-center cursor-pointer">
-                                    <input type="checkbox" x-model="postOptions.linkedin.allowComments" class="sr-only peer">
-                                    <div class="w-11 h-6 bg-gray-200 peer-focus:ring-2 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:-translate-x-full peer-checked:bg-blue-600 after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
-                                </label>
-                            </div>
-                        </div>
-
-                        <!-- ==================== TWITTER/X OPTIONS ==================== -->
-                        <div x-show="hasTwitterSelected" x-collapse class="bg-sky-50 dark:bg-sky-900/20 rounded-xl p-4 space-y-4">
-                            <div class="flex items-center gap-2 text-sky-700 dark:text-sky-300 font-medium mb-2">
-                                <i class="fab fa-twitter"></i>
-                                <span>خيارات Twitter/X</span>
-                            </div>
-
-                            <!-- Reply Restriction -->
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">من يمكنه الرد</label>
-                                <select x-model="postOptions.twitter.replyRestriction"
-                                        class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
-                                    <option value="everyone">الجميع</option>
-                                    <option value="following">الذين تتابعهم</option>
-                                    <option value="mentioned">المذكورون فقط</option>
-                                </select>
-                            </div>
-
-                            <!-- Alt Text for Media -->
-                            <div x-show="uploadedMedia.length > 0">
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                    <i class="fas fa-universal-access ml-1"></i>
-                                    النص البديل للوسائط
-                                </label>
-                                <input type="text" x-model="postOptions.twitter.altText"
-                                       placeholder="وصف الصورة/الفيديو للقارئات الصوتية"
-                                       class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
-                            </div>
-
-                            <!-- Thread Options -->
-                            <div x-show="newPost.postType === 'thread'" class="space-y-3">
-                                <p class="text-sm font-medium text-gray-700 dark:text-gray-300">
-                                    <i class="fas fa-list ml-1"></i>
-                                    تغريدات السلسلة
-                                </p>
-
-                                <template x-for="(tweet, index) in postOptions.twitter.threadTweets" :key="index">
-                                    <div class="relative">
-                                        <div class="flex items-start gap-2">
-                                            <span class="flex-shrink-0 w-6 h-6 rounded-full bg-sky-600 text-white text-xs flex items-center justify-center" x-text="index + 1"></span>
-                                            <textarea x-model="postOptions.twitter.threadTweets[index]" rows="2"
-                                                      :placeholder="'التغريدة ' + (index + 1)"
-                                                      class="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm resize-none"></textarea>
-                                            <button type="button" x-show="postOptions.twitter.threadTweets.length > 1"
-                                                    @click="postOptions.twitter.threadTweets.splice(index, 1)"
-                                                    class="text-red-500 hover:text-red-700">
-                                                <i class="fas fa-times"></i>
-                                            </button>
-                                        </div>
-                                        <div class="mr-8 text-xs text-gray-400 mt-1">
-                                            <span x-text="280 - (postOptions.twitter.threadTweets[index]?.length || 0)"></span> حرف متبقي
-                                        </div>
-                                    </div>
-                                </template>
-
-                                <button type="button" @click="postOptions.twitter.threadTweets.push('')"
-                                        x-show="postOptions.twitter.threadTweets.length < 25"
-                                        class="w-full py-2 border-2 border-dashed border-sky-300 rounded-lg text-sky-600 hover:bg-sky-50 transition">
-                                    <i class="fas fa-plus ml-1"></i>
-                                    إضافة تغريدة
-                                </button>
-                            </div>
-
-                            <!-- Sensitive Content -->
-                            <div class="flex items-center justify-between p-3 bg-white dark:bg-gray-800 rounded-lg">
-                                <div>
-                                    <p class="text-sm text-gray-700 dark:text-gray-300">محتوى حساس</p>
-                                    <p class="text-xs text-gray-500">وضع تحذير قبل عرض المحتوى</p>
-                                </div>
-                                <label class="relative inline-flex items-center cursor-pointer">
-                                    <input type="checkbox" x-model="postOptions.twitter.sensitiveContent" class="sr-only peer">
-                                    <div class="w-11 h-6 bg-gray-200 peer-focus:ring-2 peer-focus:ring-sky-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:-translate-x-full peer-checked:bg-sky-600 after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
-                                </label>
-                            </div>
-                        </div>
-
-                        <!-- ========================================== -->
-                        <!-- END POST TYPE SPECIFIC OPTIONS -->
-                        <!-- ========================================== -->
-
-                        <!-- Post Content with AI Assistant -->
-                        <div>
-                            <div class="flex items-center justify-between mb-2">
-                                <label class="text-sm font-medium text-gray-700 dark:text-gray-300">
-                                    <i class="fas fa-pen ml-1 text-indigo-600"></i>
-                                    محتوى المنشور
-                                </label>
-                                <button @click="showAiAssistant = !showAiAssistant"
-                                        class="text-sm text-indigo-600 hover:text-indigo-700 flex items-center gap-1">
-                                    <i class="fas fa-magic"></i>
-                                    مساعد AI
-                                </button>
-                            </div>
-
-                            <!-- AI Assistant Panel -->
-                            <div x-show="showAiAssistant" x-collapse class="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl p-4 mb-3">
-                                <div class="flex items-center gap-2 mb-3">
-                                    <i class="fas fa-robot text-indigo-600"></i>
-                                    <span class="font-medium text-indigo-800">مساعد الكتابة الذكي</span>
-                                </div>
-                                <div class="flex flex-wrap gap-2">
-                                    <button @click="aiSuggest('shorter')" class="px-3 py-1.5 bg-white text-sm rounded-full border hover:bg-gray-50 transition">
-                                        <i class="fas fa-compress-alt ml-1"></i> اختصر
-                                    </button>
-                                    <button @click="aiSuggest('longer')" class="px-3 py-1.5 bg-white text-sm rounded-full border hover:bg-gray-50 transition">
-                                        <i class="fas fa-expand-alt ml-1"></i> أطول
-                                    </button>
-                                    <button @click="aiSuggest('formal')" class="px-3 py-1.5 bg-white text-sm rounded-full border hover:bg-gray-50 transition">
-                                        <i class="fas fa-user-tie ml-1"></i> رسمي
-                                    </button>
-                                    <button @click="aiSuggest('casual')" class="px-3 py-1.5 bg-white text-sm rounded-full border hover:bg-gray-50 transition">
-                                        <i class="fas fa-smile ml-1"></i> غير رسمي
-                                    </button>
-                                    <button @click="aiSuggest('hashtags')" class="px-3 py-1.5 bg-white text-sm rounded-full border hover:bg-gray-50 transition">
-                                        <i class="fas fa-hashtag ml-1"></i> هاشتاقات
-                                    </button>
-                                    <button @click="aiSuggest('emojis')" class="px-3 py-1.5 bg-white text-sm rounded-full border hover:bg-gray-50 transition">
-                                        <i class="far fa-smile ml-1"></i> إيموجي
-                                    </button>
-                                </div>
-                            </div>
-
-                            <textarea x-model="newPost.content" rows="6"
-                                      class="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 rounded-xl p-4 resize-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                                      placeholder="اكتب محتوى المنشور هنا... ماذا تريد أن تشارك مع جمهورك؟"></textarea>
-
-                            <!-- Character Counter (Buffer style) -->
-                            <div class="flex justify-between items-center mt-2 text-xs">
-                                <div class="flex gap-3">
-                                    <span :class="newPost.content.length > 280 && hasTwitterSelected ? 'text-red-500' : 'text-gray-500'">
-                                        <i class="fab fa-twitter ml-1"></i>
-                                        <span x-text="280 - newPost.content.length"></span>
-                                    </span>
-                                    <span :class="newPost.content.length > 2200 && hasInstagramSelected ? 'text-red-500' : 'text-gray-500'">
-                                        <i class="fab fa-instagram ml-1"></i>
-                                        <span x-text="2200 - newPost.content.length"></span>
-                                    </span>
-                                    <span :class="newPost.content.length > 63206 && hasFacebookSelected ? 'text-red-500' : 'text-gray-500'">
-                                        <i class="fab fa-facebook ml-1"></i>
-                                        <span x-text="newPost.content.length"></span>/63206
-                                    </span>
-                                </div>
-                                <span class="text-gray-400" x-text="newPost.content.length + ' حرف'"></span>
-                            </div>
-                        </div>
-
-                        <!-- Media Upload -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                <i class="fas fa-image ml-1 text-indigo-600"></i>
-                                الوسائط
-                                <span x-show="hasInstagramSelected" class="text-red-500 text-xs">(مطلوب لـ Instagram)</span>
-                            </label>
-
-                            <!-- Instagram media requirement warning -->
-                            <div x-show="hasInstagramSelected && uploadedMedia.length === 0" class="bg-amber-50 border border-amber-200 rounded-xl p-3 mb-3">
-                                <div class="flex items-center gap-2 text-amber-800">
-                                    <i class="fab fa-instagram text-lg"></i>
-                                    <span class="text-sm font-medium">Instagram يتطلب صورة أو فيديو للنشر</span>
-                                </div>
-                            </div>
-
-                            <div class="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-6 text-center hover:border-indigo-400 transition cursor-pointer"
-                                 @click="$refs.mediaInput.click()"
-                                 @dragover.prevent="dragOver = true"
-                                 @dragleave="dragOver = false"
-                                 @drop.prevent="handleFileDrop($event)"
-                                 :class="[
-                                     dragOver ? 'border-indigo-500 bg-indigo-50' : '',
-                                     hasInstagramSelected && uploadedMedia.length === 0 ? 'border-amber-400' : ''
-                                 ]">
-                                <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-3"></i>
-                                <p class="text-gray-600 dark:text-gray-400">اسحب الملفات هنا أو اضغط للرفع</p>
-                                <p class="text-xs text-gray-500 mt-1">صور (JPG, PNG) أو فيديو (MP4) - الحد الأقصى 50MB</p>
-                                <input type="file" x-ref="mediaInput" class="hidden" multiple accept="image/*,video/*" @change="handleFileSelect($event)">
-                            </div>
-
-                            <!-- Preview uploaded files -->
-                            <div x-show="uploadedMedia.length > 0" class="mt-4 grid grid-cols-4 gap-3">
-                                <template x-for="(media, index) in uploadedMedia" :key="index">
-                                    <div class="relative group">
-                                        <img :src="media.preview" class="w-full h-20 object-cover rounded-lg">
-                                        <button @click="removeMedia(index)"
-                                                class="absolute -top-2 -left-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center shadow-lg opacity-0 group-hover:opacity-100 transition">
-                                            <i class="fas fa-times text-xs"></i>
-                                        </button>
-                                    </div>
-                                </template>
-                            </div>
-                        </div>
-
-                        <!-- Schedule Options -->
-                        <div class="bg-gray-50 dark:bg-gray-700/50 rounded-xl p-4">
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-                                <i class="fas fa-clock ml-1 text-indigo-600"></i>
-                                وقت النشر
-                            </label>
-                            <div class="flex flex-wrap gap-3">
-                                <label class="flex items-center gap-2 cursor-pointer bg-white px-4 py-2 rounded-lg border transition"
-                                       :class="newPost.publishType === 'now' ? 'border-indigo-500 bg-indigo-50' : 'border-gray-200'">
-                                    <input type="radio" x-model="newPost.publishType" value="now" class="text-indigo-600">
-                                    <i class="fas fa-paper-plane text-indigo-600"></i>
-                                    <span class="text-gray-700">نشر الآن</span>
-                                </label>
-                                <label class="flex items-center gap-2 cursor-pointer bg-white px-4 py-2 rounded-lg border transition"
-                                       :class="newPost.publishType === 'scheduled' ? 'border-indigo-500 bg-indigo-50' : 'border-gray-200'">
-                                    <input type="radio" x-model="newPost.publishType" value="scheduled" class="text-indigo-600">
-                                    <i class="fas fa-calendar-alt text-indigo-600"></i>
-                                    <span class="text-gray-700">جدولة</span>
-                                </label>
-                                <label class="flex items-center gap-2 cursor-pointer bg-white px-4 py-2 rounded-lg border transition"
-                                       :class="newPost.publishType === 'queue' ? 'border-indigo-500 bg-indigo-50' : 'border-gray-200'">
-                                    <input type="radio" x-model="newPost.publishType" value="queue" class="text-indigo-600">
-                                    <i class="fas fa-list-ol text-indigo-600"></i>
-                                    <span class="text-gray-700">إضافة للطابور</span>
-                                </label>
-                                <label class="flex items-center gap-2 cursor-pointer bg-white px-4 py-2 rounded-lg border transition"
-                                       :class="newPost.publishType === 'draft' ? 'border-indigo-500 bg-indigo-50' : 'border-gray-200'">
-                                    <input type="radio" x-model="newPost.publishType" value="draft" class="text-indigo-600">
-                                    <i class="fas fa-file-alt text-indigo-600"></i>
-                                    <span class="text-gray-700">مسودة</span>
-                                </label>
-                            </div>
-
-                            <!-- Schedule date/time picker -->
-                            <div x-show="newPost.publishType === 'scheduled'" class="mt-4 space-y-4">
-                                <div class="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label class="block text-xs text-gray-600 mb-1">التاريخ</label>
-                                        <input type="date" x-model="newPost.scheduledDate"
-                                               :min="minDate"
-                                               class="w-full border border-gray-300 rounded-lg p-2">
-                                    </div>
-                                    <div>
-                                        <label class="block text-xs text-gray-600 mb-1">الوقت</label>
-                                        <input type="time" x-model="newPost.scheduledTime"
-                                               class="w-full border border-gray-300 rounded-lg p-2">
-                                    </div>
-                                </div>
-
-                                <!-- Best Time Suggestions (Vista Social style) -->
-                                <div class="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                                    <p class="text-sm font-medium text-blue-800 mb-2">
-                                        <i class="fas fa-lightbulb ml-1"></i>
-                                        أفضل أوقات النشر
-                                    </p>
-                                    <div class="flex flex-wrap gap-2">
-                                        <template x-for="time in bestTimes" :key="time.value">
-                                            <button type="button"
-                                                    @click="setBestTime(time)"
-                                                    class="px-3 py-1 bg-white text-xs rounded-full border border-blue-200 hover:bg-blue-100 transition">
-                                                <span x-text="time.label"></span>
-                                                <span class="text-blue-600" x-text="time.engagement"></span>
-                                            </button>
-                                        </template>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Queue Info (Buffer style) -->
-                            <div x-show="newPost.publishType === 'queue'" class="mt-4">
-                                <div class="bg-purple-50 border border-purple-200 rounded-lg p-4">
-                                    <div class="flex items-center justify-between mb-3">
-                                        <p class="text-sm font-medium text-purple-800">
-                                            <i class="fas fa-info-circle ml-1"></i>
-                                            سيتم جدولة المنشور تلقائياً
-                                        </p>
-                                        <button @click="showQueueSettings = true" class="text-xs text-purple-600 hover:text-purple-700 underline">
-                                            تعديل الإعدادات
-                                        </button>
-                                    </div>
-                                    <p class="text-xs text-purple-700">
-                                        سيتم نشر المنشور في أقرب وقت متاح حسب الجدول المحدد للحساب
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Right Column: Preview -->
-                    <div class="p-6 bg-gray-50 dark:bg-gray-900/50">
-                        <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">
-                            <i class="fas fa-eye ml-1 text-indigo-600"></i>
-                            معاينة المنشور
-                        </h4>
-
-                        <!-- Platform Preview Tabs -->
-                        <div class="flex gap-2 mb-4">
-                            <template x-for="platform in selectedPlatformsForPreview" :key="platform.id">
-                                <button @click="previewPlatform = platform.type"
-                                        :class="previewPlatform === platform.type ? 'bg-white shadow text-indigo-600' : 'text-gray-500 hover:text-gray-700'"
-                                        class="px-3 py-1.5 rounded-lg text-sm font-medium transition">
-                                    <i :class="{
-                                        'fab fa-facebook-f': platform.type === 'facebook',
-                                        'fab fa-instagram': platform.type === 'instagram',
-                                        'fab fa-twitter': platform.type === 'twitter',
-                                        'fab fa-linkedin-in': platform.type === 'linkedin'
-                                    }"></i>
-                                </button>
-                            </template>
-                        </div>
-
-                        <!-- Facebook Preview -->
-                        <div x-show="previewPlatform === 'facebook'" class="bg-white rounded-xl shadow-sm overflow-hidden">
-                            <div class="p-4 border-b">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                                        <i class="fab fa-facebook-f text-blue-600"></i>
-                                    </div>
-                                    <div>
-                                        <p class="font-medium text-gray-900">صفحتك</p>
-                                        <p class="text-xs text-gray-500">الآن · <i class="fas fa-globe-americas"></i></p>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="p-4">
-                                <p class="text-gray-800 whitespace-pre-wrap" x-text="newPost.content || 'محتوى المنشور سيظهر هنا...'"></p>
-                            </div>
-                            <template x-if="uploadedMedia.length > 0">
-                                <div class="border-t">
-                                    <img :src="uploadedMedia[0].preview" class="w-full h-48 object-cover">
-                                </div>
-                            </template>
-                            <div class="p-3 border-t flex justify-around text-gray-500 text-sm">
-                                <span><i class="far fa-thumbs-up ml-1"></i> إعجاب</span>
-                                <span><i class="far fa-comment ml-1"></i> تعليق</span>
-                                <span><i class="far fa-share-square ml-1"></i> مشاركة</span>
-                            </div>
-                        </div>
-
-                        <!-- Instagram Preview -->
-                        <div x-show="previewPlatform === 'instagram'" class="bg-white rounded-xl shadow-sm overflow-hidden">
-                            <div class="p-3 border-b flex items-center justify-between">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full"></div>
-                                    <span class="font-medium text-sm">your_account</span>
-                                </div>
-                                <i class="fas fa-ellipsis-h text-gray-500"></i>
-                            </div>
-                            <template x-if="uploadedMedia.length > 0">
-                                <img :src="uploadedMedia[0].preview" class="w-full aspect-square object-cover">
-                            </template>
-                            <template x-if="uploadedMedia.length === 0">
-                                <div class="w-full aspect-square bg-gray-100 flex items-center justify-center text-gray-400">
-                                    <i class="fas fa-image text-4xl"></i>
-                                </div>
-                            </template>
-                            <div class="p-3">
-                                <div class="flex justify-between mb-2">
-                                    <div class="flex gap-4">
-                                        <i class="far fa-heart text-xl"></i>
-                                        <i class="far fa-comment text-xl"></i>
-                                        <i class="far fa-paper-plane text-xl"></i>
-                                    </div>
-                                    <i class="far fa-bookmark text-xl"></i>
-                                </div>
-                                <p class="text-sm"><span class="font-medium">your_account</span> <span x-text="newPost.content.substring(0, 100) || 'محتوى المنشور...'"></span></p>
-                            </div>
-                        </div>
-
-                        <!-- Twitter Preview -->
-                        <div x-show="previewPlatform === 'twitter'" class="bg-white rounded-xl shadow-sm p-4">
-                            <div class="flex gap-3">
-                                <div class="w-12 h-12 bg-sky-100 rounded-full flex items-center justify-center">
-                                    <i class="fab fa-twitter text-sky-500"></i>
-                                </div>
-                                <div class="flex-1">
-                                    <div class="flex items-center gap-2">
-                                        <span class="font-bold">حسابك</span>
-                                        <span class="text-gray-500">@your_handle · الآن</span>
-                                    </div>
-                                    <p class="mt-1 text-gray-800" x-text="newPost.content.substring(0, 280) || 'محتوى التغريدة...'"></p>
-                                    <template x-if="uploadedMedia.length > 0">
-                                        <img :src="uploadedMedia[0].preview" class="mt-3 rounded-xl w-full h-40 object-cover">
-                                    </template>
-                                    <div class="flex justify-between mt-3 text-gray-500">
-                                        <i class="far fa-comment"></i>
-                                        <i class="fas fa-retweet"></i>
-                                        <i class="far fa-heart"></i>
-                                        <i class="fas fa-share"></i>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- LinkedIn Preview -->
-                        <div x-show="previewPlatform === 'linkedin'" class="bg-white rounded-xl shadow-sm overflow-hidden">
-                            <div class="p-4">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                                        <i class="fab fa-linkedin-in text-blue-700"></i>
-                                    </div>
-                                    <div>
-                                        <p class="font-medium text-gray-900">اسمك</p>
-                                        <p class="text-xs text-gray-500">المسمى الوظيفي</p>
-                                        <p class="text-xs text-gray-400">الآن · <i class="fas fa-globe"></i></p>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="px-4 pb-4">
-                                <p class="text-gray-800" x-text="newPost.content || 'محتوى المنشور سيظهر هنا...'"></p>
-                            </div>
-                            <template x-if="uploadedMedia.length > 0">
-                                <img :src="uploadedMedia[0].preview" class="w-full h-48 object-cover">
-                            </template>
-                            <div class="p-3 border-t flex justify-around text-gray-500 text-xs">
-                                <span><i class="far fa-thumbs-up ml-1"></i> إعجاب</span>
-                                <span><i class="far fa-comment ml-1"></i> تعليق</span>
-                                <span><i class="fas fa-retweet ml-1"></i> إعادة نشر</span>
-                                <span><i class="far fa-paper-plane ml-1"></i> إرسال</span>
-                            </div>
-                        </div>
-
-                        <!-- No platform selected -->
-                        <div x-show="selectedPlatformIds.length === 0" class="text-center py-12 text-gray-400">
-                            <i class="fas fa-hand-pointer text-4xl mb-3"></i>
-                            <p>اختر منصة لمعاينة المنشور</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Footer -->
-            <div class="p-6 border-t border-gray-200 dark:border-gray-700 bg-gray-50 flex justify-between items-center">
-                <button @click="showNewPostModal = false"
-                        class="px-4 py-2 text-gray-600 hover:text-gray-800 font-medium">
-                    إلغاء
-                </button>
-                <button @click="savePost()"
-                        :disabled="isSubmitting || !canSubmit"
-                        class="px-8 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-medium hover:shadow-lg transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
-                    <span x-show="!isSubmitting">
-                        <i class="fas fa-paper-plane" x-show="newPost.publishType === 'now'"></i>
-                        <i class="fas fa-clock" x-show="newPost.publishType === 'scheduled'"></i>
-                        <i class="fas fa-save" x-show="newPost.publishType === 'draft'"></i>
-                        <span x-text="newPost.publishType === 'now' ? 'نشر الآن' : (newPost.publishType === 'scheduled' ? 'جدولة النشر' : 'حفظ كمسودة')"></span>
-                    </span>
-                    <span x-show="isSubmitting">
-                        <i class="fas fa-spinner fa-spin ml-2"></i>
-                        جاري الحفظ...
-                    </span>
-                </button>
-            </div>
-        </div>
-    </div>
 
     <!-- Edit Post Modal -->
     <div x-show="showEditPostModal" x-cloak
@@ -2120,8 +1008,7 @@ function socialManager() {
         // Calendar state
         currentDate: new Date(),
 
-        // New post modal state
-        showNewPostModal: false,
+        // New post state (used by global publish modal)
         loadingPlatforms: false,
         connectedPlatforms: [],
         selectedPlatformIds: [],
@@ -2565,18 +1452,6 @@ function socialManager() {
             this.newPost.scheduledDate = tomorrow.toISOString().split('T')[0];
             this.newPost.scheduledTime = '10:00';
 
-            // Watch for modal open to load platforms
-            this.$watch('showNewPostModal', async (value) => {
-                if (value && this.connectedPlatforms.length === 0) {
-                    await this.loadConnectedPlatforms();
-                }
-                if (value && this.selectedPlatformIds.length > 0) {
-                    this.previewPlatform = this.connectedPlatforms.find(p =>
-                        this.selectedPlatformIds.includes(p.id)
-                    )?.type || 'facebook';
-                }
-            });
-
             // Update preview platform when selection changes
             this.$watch('selectedPlatformIds', (ids) => {
                 if (ids.length > 0) {
@@ -2767,8 +1642,10 @@ function socialManager() {
         },
 
         duplicatePost(post) {
-            this.newPost.content = post.post_text || post.content || '';
-            this.showNewPostModal = true;
+            // Dispatch event to open global publish modal with pre-filled content
+            window.dispatchEvent(new CustomEvent('open-publish-modal', {
+                detail: { content: post.post_text || post.content || '' }
+            }));
             if (window.notify) {
                 window.notify('تم نسخ المحتوى - يمكنك تعديله ونشره', 'success');
             }
@@ -3042,7 +1919,6 @@ function socialManager() {
                     if (window.notify) {
                         window.notify(messages[this.newPost.publishType], 'success');
                     }
-                    this.showNewPostModal = false;
                     this.resetNewPost();
                     await this.fetchPosts();
                 } else {

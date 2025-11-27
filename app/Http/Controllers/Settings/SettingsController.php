@@ -14,8 +14,10 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
+use App\Mail\TeamInvitation;
 
 class SettingsController extends Controller
 {
@@ -116,7 +118,7 @@ class SettingsController extends Controller
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'display_name' => 'nullable|string|max:255',
-            'email' => 'required|email|unique:cmis.users,email,' . $user->user_id . ',user_id',
+            'email' => 'required|email|unique:users,email,' . $user->user_id . ',user_id',
             'locale' => 'nullable|string|in:ar,en',
             'timezone' => 'nullable|string|max:50',
         ]);
@@ -136,10 +138,10 @@ class SettingsController extends Controller
             $this->saveSetting($org, $user->user_id, 'user_locale', $request->input('locale', 'ar'));
             $this->saveSetting($org, $user->user_id, 'user_timezone', $request->input('timezone', 'Asia/Bahrain'));
 
-            return back()->with('success', __('Profile updated successfully'));
+            return back()->with('success', __('settings.profile_updated_success'));
         } catch (\Exception $e) {
             Log::error('Failed to update profile', ['error' => $e->getMessage()]);
-            return back()->with('error', __('Failed to update profile'));
+            return back()->with('error', __('settings.failed_update_profile'));
         }
     }
 
@@ -165,10 +167,10 @@ class SettingsController extends Controller
                 'default_locale' => $request->input('default_locale'),
             ]);
 
-            return back()->with('success', __('Organization settings updated successfully'));
+            return back()->with('success', __('settings.organization_updated_success'));
         } catch (\Exception $e) {
             Log::error('Failed to update organization', ['error' => $e->getMessage()]);
-            return back()->with('error', __('Failed to update organization settings'));
+            return back()->with('error', __('settings.failed_update_organization'));
         }
     }
 
@@ -185,10 +187,10 @@ class SettingsController extends Controller
             // Save notification settings
             $this->saveSetting($org, $user->user_id, 'notification_preferences', $notifications, 'json');
 
-            return back()->with('success', __('Notification preferences updated successfully'));
+            return back()->with('success', __('settings.notification_preferences_updated'));
         } catch (\Exception $e) {
             Log::error('Failed to update notifications', ['error' => $e->getMessage()]);
-            return back()->with('error', __('Failed to update notification preferences'));
+            return back()->with('error', __('settings.failed_update_notifications'));
         }
     }
 
@@ -209,16 +211,16 @@ class SettingsController extends Controller
         $user = Auth::user();
 
         if (!Hash::check($request->input('current_password'), $user->password)) {
-            return back()->withErrors(['current_password' => __('Current password is incorrect')]);
+            return back()->withErrors(['current_password' => __('settings.current_password_incorrect')]);
         }
 
         try {
             $user->update(['password' => Hash::make($request->input('password'))]);
 
-            return back()->with('success', __('Password updated successfully'));
+            return back()->with('success', __('settings.password_updated_success'));
         } catch (\Exception $e) {
             Log::error('Failed to update password', ['error' => $e->getMessage()]);
-            return back()->with('error', __('Failed to update password'));
+            return back()->with('error', __('settings.failed_update_password'));
         }
     }
 
@@ -233,10 +235,10 @@ class SettingsController extends Controller
                 ->where('user_id', Auth::id())
                 ->update(['is_active' => false, 'deleted_at' => now()]);
 
-            return back()->with('success', __('Session revoked successfully'));
+            return back()->with('success', __('settings.session_revoked_success'));
         } catch (\Exception $e) {
             Log::error('Failed to revoke session', ['error' => $e->getMessage()]);
-            return back()->with('error', __('Failed to revoke session'));
+            return back()->with('error', __('settings.failed_revoke_session'));
         }
     }
 
@@ -272,10 +274,10 @@ class SettingsController extends Controller
             ]);
 
             // Show the full token only once
-            return back()->with('success', __('API key created successfully. Your key: ') . $tokenData['token'] . ' ' . __('(Copy it now, it won\'t be shown again)'));
+            return back()->with('success', __('settings.api_key_created_success') . ' ' . $tokenData['token'] . ' ' . __('settings.copy_now_wont_show_again'));
         } catch (\Exception $e) {
             Log::error('Failed to create API token', ['error' => $e->getMessage()]);
-            return back()->with('error', __('Failed to create API key'));
+            return back()->with('error', __('settings.failed_create_api_key'));
         }
     }
 
@@ -289,10 +291,10 @@ class SettingsController extends Controller
                 ->where('org_id', $org)
                 ->update(['is_active' => false]);
 
-            return back()->with('success', __('API key revoked successfully'));
+            return back()->with('success', __('settings.api_key_revoked_success'));
         } catch (\Exception $e) {
             Log::error('Failed to revoke API token', ['error' => $e->getMessage()]);
-            return back()->with('error', __('Failed to revoke API key'));
+            return back()->with('error', __('settings.failed_revoke_api_key'));
         }
     }
 
@@ -329,7 +331,7 @@ class SettingsController extends Controller
                     ->first();
 
                 if ($existingMembership) {
-                    return back()->with('error', __('This user is already a member of the organization'));
+                    return back()->with('error', __('settings.user_already_member'));
                 }
 
                 // Add existing user to org
@@ -365,13 +367,34 @@ class SettingsController extends Controller
                 ]);
             }
 
-            // TODO: Send invitation email
-            // Mail::to($email)->send(new TeamInvitation($org, $invitationToken));
+            // Send invitation email
+            $organization = Org::find($org);
+            $role = Role::find($roleId);
+            $inviter = Auth::user();
 
-            return back()->with('success', __('Invitation sent successfully'));
+            if ($organization && $role && $inviter) {
+                try {
+                    Mail::to($email)->send(new TeamInvitation(
+                        email: $email,
+                        organization: $organization,
+                        roleName: $role->role_name ?? $role->name ?? 'Team Member',
+                        inviterName: $inviter->display_name ?? $inviter->name ?? $inviter->email,
+                        invitationToken: $invitationToken,
+                        isNewUser: !$existingUser
+                    ));
+                } catch (\Exception $mailError) {
+                    Log::warning('Failed to send invitation email', [
+                        'email' => $email,
+                        'error' => $mailError->getMessage()
+                    ]);
+                    // Continue even if email fails - invitation is still created
+                }
+            }
+
+            return back()->with('success', __('settings.invitation_sent_success'));
         } catch (\Exception $e) {
             Log::error('Failed to invite team member', ['error' => $e->getMessage()]);
-            return back()->with('error', __('Failed to send invitation'));
+            return back()->with('error', __('settings.failed_send_invitation'));
         }
     }
 
@@ -382,7 +405,7 @@ class SettingsController extends Controller
     {
         // Prevent removing yourself
         if ($userId === Auth::id()) {
-            return back()->with('error', __('You cannot remove yourself from the organization'));
+            return back()->with('error', __('settings.cannot_remove_yourself'));
         }
 
         try {
@@ -394,10 +417,10 @@ class SettingsController extends Controller
                     'deleted_at' => now(),
                 ]);
 
-            return back()->with('success', __('Team member removed successfully'));
+            return back()->with('success', __('settings.team_member_removed_success'));
         } catch (\Exception $e) {
             Log::error('Failed to remove team member', ['error' => $e->getMessage()]);
-            return back()->with('error', __('Failed to remove team member'));
+            return back()->with('error', __('settings.failed_remove_team_member'));
         }
     }
 
