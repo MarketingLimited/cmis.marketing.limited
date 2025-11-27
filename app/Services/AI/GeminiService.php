@@ -11,7 +11,7 @@ use Exception;
 
 class GeminiService
 {
-    private string $apiKey;
+    private ?string $apiKey = null;
     private string $baseUrl = 'https://generativelanguage.googleapis.com/v1beta';
     private array $defaultConfig = [
         'temperature' => 1.0,
@@ -25,6 +25,16 @@ class GeminiService
         $this->apiKey = config('services.google.ai_api_key');
 
         if (empty($this->apiKey)) {
+            Log::warning('Google AI API key not configured. Set GOOGLE_AI_API_KEY in .env');
+        }
+    }
+
+    /**
+     * Check if the API key is configured
+     */
+    private function ensureApiKeyConfigured(): void
+    {
+        if (empty($this->apiKey)) {
             throw new Exception('Google AI API key not configured. Set GOOGLE_AI_API_KEY in .env');
         }
     }
@@ -36,6 +46,8 @@ class GeminiService
         string $prompt,
         array $options = []
     ): array {
+        $this->ensureApiKeyConfigured();
+
         $model = $options['model'] ?? config('services.gemini.text_model', 'gemini-2.5-flash');
         $config = array_merge($this->defaultConfig, $options['config'] ?? []);
 

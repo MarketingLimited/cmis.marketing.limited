@@ -62,6 +62,45 @@ class PlatformConnectionsController extends Controller
     }
 
     /**
+     * List connected integrations for API access.
+     * Used by Historical Content Import Modal to populate platform dropdown.
+     *
+     * GET /api/list
+     */
+    public function listIntegrations(Request $request, string $org)
+    {
+        // Query Integration table - this is where synced social accounts are stored
+        // Note: 'platform' is the column name (not 'platform_type')
+        // Note: 'active' is the status (not 'connected')
+        $integrations = Integration::where('org_id', $org)
+            ->whereIn('status', ['active', 'connected']) // Include both possible statuses
+            ->whereIn('platform', ['instagram', 'facebook', 'threads', 'twitter', 'linkedin', 'tiktok', 'youtube'])
+            ->select('integration_id', 'platform as platform_type', 'account_name', 'account_username as username', 'status', 'token_expires_at as expires_at')
+            ->orderBy('platform')
+            ->get();
+
+        Log::debug('listIntegrations response', [
+            'org_id' => $org,
+            'integrations_count' => $integrations->count(),
+            'integrations' => $integrations->toArray(),
+        ]);
+
+        // Transform to ensure 'connected' status for display
+        $transformed = $integrations->map(function ($item) {
+            return [
+                'integration_id' => $item->integration_id,
+                'platform_type' => $item->platform_type,
+                'account_name' => $item->account_name ?: 'Unknown',
+                'username' => $item->username,
+                'status' => 'connected',
+                'expires_at' => $item->expires_at,
+            ];
+        });
+
+        return $this->success($transformed->values(), 'Connected integrations retrieved successfully');
+    }
+
+    /**
      * Show form for adding Meta system user token.
      */
     public function createMetaToken(Request $request, string $org)

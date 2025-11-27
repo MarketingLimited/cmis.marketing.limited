@@ -2,7 +2,7 @@
 
 namespace App\Services\AI;
 
-use App\Services\AI\EmbeddingOrchestrator;
+use App\Services\Embedding\EmbeddingOrchestrator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Cache;

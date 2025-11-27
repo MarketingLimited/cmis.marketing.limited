@@ -440,6 +440,11 @@ Route::middleware(['auth'])->group(function () {
             Route::prefix('platform-connections')->name('platform-connections.')->group(function () {
                 Route::get('/', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'index'])->name('index');
 
+                // API Routes
+                Route::prefix('api')->name('api.')->group(function () {
+                    Route::get('/list', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'listIntegrations'])->name('list');
+                });
+
                 // Meta System User Token Management
                 Route::get('/meta/add', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'createMetaToken'])->name('meta.create');
                 Route::post('/meta', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'storeMetaToken'])->name('meta.store');

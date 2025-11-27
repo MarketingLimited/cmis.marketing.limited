@@ -14,9 +14,9 @@ class VeoVideoService
 {
     private ?AIPlatformClient $client = null;
     private ?StorageClient $storageClient = null;
-    private string $projectId;
+    private ?string $projectId = null;
     private string $location = 'us-central1';
-    private string $storageBucket;
+    private ?string $storageBucket = null;
 
     public function __construct()
     {
@@ -27,6 +27,8 @@ class VeoVideoService
         $credentialsPath = config('services.google.credentials_path');
         if (!empty($credentialsPath) && file_exists($credentialsPath)) {
             $this->initializeClients();
+        } else {
+            Log::warning('Google Cloud credentials not configured for VeoVideoService');
         }
     }
 

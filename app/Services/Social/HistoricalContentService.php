@@ -356,22 +356,98 @@ class HistoricalContentService
      */
     private function getPlatformService(Integration $integration)
     {
-        // This would return the appropriate platform service
-        // For now, return a mock implementation
+        $platform = $integration->platform;
+
+        // Get the access token from the linked PlatformConnection
+        $connection = \App\Models\Platform\PlatformConnection::where('org_id', $integration->org_id)
+            ->where('platform', 'meta')
+            ->whereIn('status', ['active', 'connected', 'warning'])
+            ->first();
+
+        if (!$connection) {
+            Log::warning('No active Meta connection found for integration', [
+                'integration_id' => $integration->integration_id,
+                'org_id' => $integration->org_id,
+            ]);
+            // Return mock if no connection found
+            return new class($integration) {
+                private $integration;
+                public function __construct($integration) { $this->integration = $integration; }
+                public function fetchHistoricalPosts(array $options): array { return []; }
+            };
+        }
+
+        $accessToken = $connection->access_token;
+        $accountId = $integration->account_id; // This is the page_id or instagram_account_id
+
+        Log::debug('Getting platform service for integration', [
+            'platform' => $platform,
+            'account_id' => $accountId,
+            'connection_id' => $connection->connection_id,
+        ]);
+
+        // Return appropriate service based on platform
+        if (in_array($platform, ['facebook', 'instagram', 'threads'])) {
+            $metaService = app(\App\Services\Platform\MetaPostsService::class);
+
+            return new class($metaService, $platform, $accountId, $accessToken) {
+                private $service;
+                private string $platform;
+                private string $accountId;
+                private string $accessToken;
+
+                public function __construct($service, string $platform, string $accountId, string $accessToken)
+                {
+                    $this->service = $service;
+                    $this->platform = $platform;
+                    $this->accountId = $accountId;
+                    $this->accessToken = $accessToken;
+                }
+
+                public function fetchHistoricalPosts(array $options): array
+                {
+                    $limit = $options['limit'] ?? 100;
+
+                    try {
+                        if ($this->platform === 'facebook') {
+                            $result = $this->service->fetchFacebookPosts(
+                                $this->accountId,
+                                $this->accessToken,
+                                $limit
+                            );
+                            return $result['posts'] ?? [];
+                        } elseif ($this->platform === 'instagram') {
+                            $result = $this->service->fetchInstagramPosts(
+                                $this->accountId,
+                                $this->accessToken,
+                                $limit
+                            );
+                            return $result['posts'] ?? [];
+                        } elseif ($this->platform === 'threads') {
+                            // Threads API is separate, for now return empty
+                            \Log::info('Threads historical import not yet implemented');
+                            return [];
+                        }
+                    } catch (\Exception $e) {
+                        \Log::error('Failed to fetch historical posts from platform', [
+                            'platform' => $this->platform,
+                            'account_id' => $this->accountId,
+                            'error' => $e->getMessage(),
+                        ]);
+                        return [];
+                    }
+
+                    return [];
+                }
+            };
+        }
+
+        // For other platforms, return mock
+        Log::info("Platform {$platform} historical import not yet implemented");
         return new class($integration) {
             private $integration;
-
-            public function __construct($integration)
-            {
-                $this->integration = $integration;
-            }
-
-            public function fetchHistoricalPosts(array $options): array
-            {
-                // Mock implementation - would call actual platform API
-                // Instagram, Facebook, Twitter, LinkedIn, TikTok, etc.
-                return [];
-            }
+            public function __construct($integration) { $this->integration = $integration; }
+            public function fetchHistoricalPosts(array $options): array { return []; }
         };
     }
 

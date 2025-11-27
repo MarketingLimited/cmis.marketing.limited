@@ -18,9 +18,22 @@ class OrgController extends Controller
     public function index()
     {
         $orgs = Org::query()
+            ->withCount(['campaigns', 'users', 'creativeAssets'])
             ->select('org_id', 'name', 'default_locale', 'currency', 'created_at')
             ->orderBy('name')
-            ->get();
+            ->get()
+            ->map(function ($org) {
+                return [
+                    'org_id' => $org->org_id,
+                    'name' => $org->name,
+                    'default_locale' => $org->default_locale,
+                    'currency' => $org->currency,
+                    'created_at' => $org->created_at,
+                    'campaigns_count' => $org->campaigns_count ?? 0,
+                    'users_count' => $org->users_count ?? 0,
+                    'assets_count' => $org->creative_assets_count ?? 0,
+                ];
+            });
 
         return view('orgs.index', compact('orgs'));
     }
@@ -222,6 +235,16 @@ class OrgController extends Controller
 
             DB::commit();
 
+            // Return JSON for AJAX requests, redirect for regular form submissions
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'تم إنشاء المؤسسة بنجاح',
+                    'org' => $org,
+                    'redirect' => route('orgs.show', $org->org_id)
+                ], 201);
+            }
+
             return redirect()
                 ->route('orgs.show', $org->org_id)
                 ->with('success', 'تم إنشاء المؤسسة بنجاح');
@@ -233,6 +256,14 @@ class OrgController extends Controller
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
+
+            // Return JSON error for AJAX requests
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'فشل إنشاء المؤسسة: ' . $e->getMessage()
+                ], 500);
+            }
 
             return redirect()
                 ->back()

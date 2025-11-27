@@ -10,12 +10,15 @@ use Illuminate\Support\Facades\Cache;
 
 class SentimentAnalysisService
 {
-    protected string $apiKey;
+    protected ?string $apiKey = null;
     protected string $apiEndpoint = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent';
 
     public function __construct()
     {
         $this->apiKey = config('services.google.gemini_api_key', env('GOOGLE_GEMINI_API_KEY'));
+        if (empty($this->apiKey)) {
+            Log::warning('Gemini API key not configured for SentimentAnalysisService');
+        }
     }
 
     /**
