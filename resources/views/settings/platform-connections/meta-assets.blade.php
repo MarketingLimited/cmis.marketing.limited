@@ -91,7 +91,7 @@
                                        :class="{ 'border-blue-500 bg-blue-50': selectedPages.includes('{{ $page['id'] }}' }">
                                     <input type="checkbox" name="page[]" value="{{ $page['id'] }}"
                                            {{ in_array($page['id'], (array) ($selectedAssets['page'] ?? [])) ? 'checked' : '' }}
-                                           x-model="selectedPage"
+                                           x-model="selectedPages"
                                            class="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500">
                                     <div class="ml-3 flex items-center gap-3">
                                         @if($page['picture'])
@@ -176,7 +176,7 @@
                                        :class="{ 'border-pink-500 bg-pink-50': selectedInstagrams.includes('{{ $ig['id'] }}' }">
                                     <input type="checkbox" name="instagram_account[]" value="{{ $ig['id'] }}"
                                            {{ in_array($ig['id'], (array) ($selectedAssets['instagram_account'] ?? [])) ? 'checked' : '' }}
-                                           x-model="selectedInstagram"
+                                           x-model="selectedInstagrams"
                                            class="h-4 w-4 text-pink-600 border-gray-300 focus:ring-pink-500">
                                     <div class="ml-3 flex items-center gap-3">
                                         @if($ig['profile_picture'])
@@ -265,8 +265,8 @@
                                 <label class="flex items-center p-3 border rounded-lg hover:bg-gray-50 cursor-pointer transition"
                                        :class="{ 'border-gray-700 bg-gray-100': selectedThreadsAccounts.includes('{{ $ig['id'] }}' }">
                                     <input type="checkbox" name="threads_account[]" value="{{ $ig['id'] }}"
-                                           {{ ($selectedAssets['threads_account'] ?? null) === $ig['id'] ? 'checked' : '' }}
-                                           x-model="selectedThreads"
+                                           {{ in_array($ig['id'], (array) ($selectedAssets['threads_account'] ?? [])) ? 'checked' : '' }}
+                                           x-model="selectedThreadsAccounts"
                                            class="h-4 w-4 text-gray-700 border-gray-300 focus:ring-gray-500">
                                     <div class="ml-3 flex items-center gap-3">
                                         @if($ig['profile_picture'])
@@ -304,7 +304,7 @@
                                        :class="{ 'border-gray-700 bg-gray-50': selectedThreadsAccounts.includes('{{ $threads['id'] }}' }">
                                     <input type="checkbox" name="threads_account[]" value="{{ $threads['id'] }}"
                                            {{ in_array($threads['id'], (array) ($selectedAssets['threads_account'] ?? [])) ? 'checked' : '' }}
-                                           x-model="selectedThreads"
+                                           x-model="selectedThreadsAccounts"
                                            class="h-4 w-4 text-gray-700 border-gray-300 focus:ring-gray-500">
                                     <div class="ml-3 flex items-center gap-3">
                                         @if($threads['profile_picture'] ?? null)
@@ -364,7 +364,7 @@
                                 <div class="flex flex-wrap gap-2">
                                     @foreach($instagramAccounts as $ig)
                                         <button type="button"
-                                                @click="manualThreadsId = '{{ $ig['id'] }}'; selectedThreads = '{{ $ig['id'] }}'"
+                                                @click="manualThreadsId = '{{ $ig['id'] }}'; if (!selectedThreadsAccounts.includes('{{ $ig['id'] }}')) selectedThreadsAccounts.push('{{ $ig['id'] }}')"
                                                 class="px-2 py-1 text-xs bg-white border border-gray-300 rounded hover:bg-gray-100 transition">
                                             <i class="fab fa-instagram text-pink-500 mr-1"></i>{{ $ig['username'] ?? $ig['name'] }}
                                         </button>
@@ -401,8 +401,8 @@
                                        :class="{ 'border-green-500 bg-green-50': selectedAdAccounts.includes('{{ $account['id'] }}' }">
                                     <div class="flex items-center">
                                         <input type="checkbox" name="ad_account[]" value="{{ $account['id'] }}"
-                                               {{ ($selectedAssets['ad_account'] ?? null) === $account['id'] ? 'checked' : '' }}
-                                               x-model="selectedAdAccount"
+                                               {{ in_array($account['id'], (array) ($selectedAssets['ad_account'] ?? [])) ? 'checked' : '' }}
+                                               x-model="selectedAdAccounts"
                                                class="h-4 w-4 text-green-600 border-gray-300 focus:ring-green-500">
                                         <div class="ml-3">
                                             <span class="text-sm font-medium text-gray-900">{{ $account['name'] }}</span>
@@ -468,7 +468,7 @@
                                        :class="{ 'border-purple-500 bg-purple-50': selectedPixels.includes('{{ $pixel['id'] }}' }">
                                     <input type="checkbox" name="pixel[]" value="{{ $pixel['id'] }}"
                                            {{ in_array($pixel['id'], (array) ($selectedAssets['pixel'] ?? [])) ? 'checked' : '' }}
-                                           x-model="selectedPixel"
+                                           x-model="selectedPixels"
                                            class="h-4 w-4 text-purple-600 border-gray-300 focus:ring-purple-500">
                                     <div class="ml-3">
                                         <span class="text-sm font-medium text-gray-900">{{ $pixel['name'] }}</span>
@@ -528,7 +528,7 @@
                                        :class="{ 'border-orange-500 bg-orange-50': selectedCatalogs.includes('{{ $catalog['id'] }}' }">
                                     <input type="checkbox" name="catalog[]" value="{{ $catalog['id'] }}"
                                            {{ in_array($catalog['id'], (array) ($selectedAssets['catalog'] ?? [])) ? 'checked' : '' }}
-                                           x-model="selectedCatalog"
+                                           x-model="selectedCatalogs"
                                            class="h-4 w-4 text-orange-600 border-gray-300 focus:ring-orange-500">
                                     <div class="ml-3">
                                         <span class="text-sm font-medium text-gray-900">{{ $catalog['name'] }}</span>
@@ -576,34 +576,34 @@
                     <div>
                         <h3 class="text-lg font-medium text-gray-900">{{ __('Selection Summary') }}</h3>
                         <p class="text-sm text-gray-500 mt-1">
-                            <span :class="{ 'text-green-600 font-medium': selectedPage }">
-                                <i class="fas" :class="selectedPage ? 'fa-check-circle' : 'fa-circle'"></i>
-                                {{ __('Page') }}
+                            <span :class="{ 'text-green-600 font-medium': selectedPages.length > 0 }">
+                                <i class="fas" :class="selectedPages.length > 0 ? 'fa-check-circle' : 'fa-circle'"></i>
+                                <span x-text="selectedPages.length > 0 ? `${selectedPages.length} Page(s)` : 'Page'"></span>
                             </span>
                             <span class="mx-1">•</span>
-                            <span :class="{ 'text-green-600 font-medium': selectedInstagram }">
-                                <i class="fas" :class="selectedInstagram ? 'fa-check-circle' : 'fa-circle'"></i>
-                                {{ __('Instagram') }}
+                            <span :class="{ 'text-green-600 font-medium': selectedInstagrams.length > 0 }">
+                                <i class="fas" :class="selectedInstagrams.length > 0 ? 'fa-check-circle' : 'fa-circle'"></i>
+                                <span x-text="selectedInstagrams.length > 0 ? `${selectedInstagrams.length} Instagram` : 'Instagram'"></span>
                             </span>
                             <span class="mx-1">•</span>
-                            <span :class="{ 'text-green-600 font-medium': selectedThreads }">
-                                <i class="fas" :class="selectedThreads ? 'fa-check-circle' : 'fa-circle'"></i>
-                                {{ __('Threads') }}
+                            <span :class="{ 'text-green-600 font-medium': selectedThreadsAccounts.length > 0 }">
+                                <i class="fas" :class="selectedThreadsAccounts.length > 0 ? 'fa-check-circle' : 'fa-circle'"></i>
+                                <span x-text="selectedThreadsAccounts.length > 0 ? `${selectedThreadsAccounts.length} Threads` : 'Threads'"></span>
                             </span>
                             <span class="mx-1">•</span>
-                            <span :class="{ 'text-green-600 font-medium': selectedAdAccount }">
-                                <i class="fas" :class="selectedAdAccount ? 'fa-check-circle' : 'fa-circle'"></i>
-                                {{ __('Ad Account') }}
+                            <span :class="{ 'text-green-600 font-medium': selectedAdAccounts.length > 0 }">
+                                <i class="fas" :class="selectedAdAccounts.length > 0 ? 'fa-check-circle' : 'fa-circle'"></i>
+                                <span x-text="selectedAdAccounts.length > 0 ? `${selectedAdAccounts.length} Ad Account(s)` : 'Ad Account'"></span>
                             </span>
                             <span class="mx-1">•</span>
-                            <span :class="{ 'text-green-600 font-medium': selectedPixel }">
-                                <i class="fas" :class="selectedPixel ? 'fa-check-circle' : 'fa-circle'"></i>
-                                {{ __('Pixel') }}
+                            <span :class="{ 'text-green-600 font-medium': selectedPixels.length > 0 }">
+                                <i class="fas" :class="selectedPixels.length > 0 ? 'fa-check-circle' : 'fa-circle'"></i>
+                                <span x-text="selectedPixels.length > 0 ? `${selectedPixels.length} Pixel(s)` : 'Pixel'"></span>
                             </span>
                             <span class="mx-1">•</span>
-                            <span :class="{ 'text-green-600 font-medium': selectedCatalog }">
-                                <i class="fas" :class="selectedCatalog ? 'fa-check-circle' : 'fa-circle'"></i>
-                                {{ __('Catalog') }}
+                            <span :class="{ 'text-green-600 font-medium': selectedCatalogs.length > 0 }">
+                                <i class="fas" :class="selectedCatalogs.length > 0 ? 'fa-check-circle' : 'fa-circle'"></i>
+                                <span x-text="selectedCatalogs.length > 0 ? `${selectedCatalogs.length} Catalog(s)` : 'Catalog'"></span>
                             </span>
                         </p>
                     </div>
