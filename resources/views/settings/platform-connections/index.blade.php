@@ -2,6 +2,10 @@
 
 @section('title', __('Platform Connections') . ' - ' . __('Settings'))
 
+@php
+    $isRtl = app()->getLocale() === 'ar';
+@endphp
+
 @section('content')
 <div class="space-y-6">
     {{-- Page Header with Breadcrumb --}}
@@ -11,25 +15,25 @@
                 <i class="fas fa-home"></i>
             </a>
             <span class="text-gray-400">/</span>
-            <a href="{{ route('orgs.settings.index', $currentOrg) }}" class="hover:text-blue-600 transition">{{ __('Settings') }}</a>
+            <a href="{{ route('orgs.settings.index', $currentOrg) }}" class="hover:text-blue-600 transition">{{ __('settings.settings') }}</a>
             <span class="text-gray-400">/</span>
-            <span class="text-gray-900 font-medium">{{ __('Platform Connections') }}</span>
+            <span class="text-gray-900 font-medium">{{ __('settings.platform_connections') }}</span>
         </nav>
     </div>
 
     {{-- Header --}}
     <div class="mb-6 sm:mb-8">
-        <h1 class="text-xl sm:text-2xl font-bold text-gray-900">Platform Connections</h1>
+        <h1 class="text-xl sm:text-2xl font-bold text-gray-900">{{ __('settings.platform_connections') }}</h1>
         <p class="mt-1 text-xs sm:text-sm text-gray-500">
-            Connect your ad platform accounts to manage campaigns directly from CMIS.
+            {{ __('settings.platform_connections_description') }}
         </p>
     </div>
 
     {{-- Success/Error Messages --}}
     @if(session('success'))
         <div class="mb-6 rounded-md bg-green-50 p-4">
-            <div class="flex">
-                <i class="fas fa-check-circle text-green-400 mr-3"></i>
+            <div class="flex items-center {{ $isRtl ? 'flex-row-reverse' : '' }}">
+                <i class="fas fa-check-circle text-green-400 {{ $isRtl ? 'ml-3' : 'mr-3' }}"></i>
                 <p class="text-sm font-medium text-green-800">{{ session('success') }}</p>
             </div>
         </div>
@@ -37,8 +41,8 @@
 
     @if(session('error'))
         <div class="mb-6 rounded-md bg-red-50 p-4">
-            <div class="flex">
-                <i class="fas fa-exclamation-circle text-red-400 mr-3"></i>
+            <div class="flex items-center {{ $isRtl ? 'flex-row-reverse' : '' }}">
+                <i class="fas fa-exclamation-circle text-red-400 {{ $isRtl ? 'ml-3' : 'mr-3' }}"></i>
                 <p class="text-sm font-medium text-red-800">{{ session('error') }}</p>
             </div>
         </div>
@@ -55,22 +59,22 @@
                             <i class="fab fa-facebook text-blue-600 text-xl sm:text-2xl"></i>
                         </div>
                         <div class="ml-3 sm:ml-4 min-w-0 flex-1">
-                            <h3 class="text-base sm:text-lg font-medium text-gray-900">Meta (Facebook/Instagram/Threads)</h3>
-                            <p class="text-xs sm:text-sm text-gray-500 mt-0.5">Connect via Facebook Login or add a System User token from Business Manager</p>
+                            <h3 class="text-base sm:text-lg font-medium text-gray-900">{{ __('settings.meta_facebook_instagram_threads') }}</h3>
+                            <p class="text-xs sm:text-sm text-gray-500 mt-0.5">{{ __('settings.meta_description') }}</p>
                         </div>
                     </div>
                     <div class="flex items-center gap-2 sm:gap-2 flex-shrink-0">
                         {{-- OAuth Connect Button --}}
                         <a href="{{ route('orgs.settings.platform-connections.meta.authorize', $currentOrg) }}"
                            class="inline-flex items-center justify-center px-3 sm:px-4 py-2 border border-blue-600 rounded-md shadow-sm text-xs sm:text-sm font-medium text-blue-600 bg-white hover:bg-blue-50 flex-1 sm:flex-none min-w-0">
-                            <i class="fab fa-facebook mr-1 sm:mr-2"></i>
-                            <span class="truncate">Connect</span>
+                            <i class="fab fa-facebook {{ app()->getLocale() === 'ar' ? 'ml-1 sm:ml-2' : 'mr-1 sm:mr-2' }}"></i>
+                            <span class="truncate">{{ __('settings.connect') }}</span>
                         </a>
                         {{-- Manual Token Button --}}
                         <a href="{{ route('orgs.settings.platform-connections.meta.create', $currentOrg) }}"
                            class="inline-flex items-center justify-center px-3 sm:px-4 py-2 border border-transparent rounded-md shadow-sm text-xs sm:text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 flex-1 sm:flex-none min-w-0">
-                            <i class="fas fa-key mr-1 sm:mr-2"></i>
-                            <span class="truncate">Add Token</span>
+                            <i class="fas fa-key {{ app()->getLocale() === 'ar' ? 'ml-1 sm:ml-2' : 'mr-1 sm:mr-2' }}"></i>
+                            <span class="truncate">{{ __('settings.add_token') }}</span>
                         </a>
                     </div>
                 </div>
@@ -79,7 +83,7 @@
 
                 @if($metaConnections->count() > 0)
                     <div class="mt-4 border-t border-gray-200 pt-4">
-                        <h4 class="text-sm font-medium text-gray-700 mb-3">Connected Accounts</h4>
+                        <h4 class="text-sm font-medium text-gray-700 mb-3">{{ __('settings.connected_accounts') }}</h4>
                         <div class="space-y-3">
                             @foreach($metaConnections as $connection)
                                 @php
@@ -119,27 +123,27 @@
                                                 <div class="flex flex-wrap items-center gap-1 sm:gap-2">
                                                     <p class="text-xs sm:text-sm font-medium text-gray-900">{{ $connection->account_name }}</p>
                                                     @if($isSystemUser)
-                                                        <span class="px-1.5 py-0.5 bg-blue-100 text-blue-700 text-xs rounded whitespace-nowrap">System User</span>
+                                                        <span class="px-1.5 py-0.5 bg-blue-100 text-blue-700 text-xs rounded whitespace-nowrap">{{ __('settings.system_user') }}</span>
                                                     @endif
                                                     @if($isNeverExpires)
-                                                        <span class="px-1.5 py-0.5 bg-green-100 text-green-700 text-xs rounded whitespace-nowrap">Never Expires</span>
+                                                        <span class="px-1.5 py-0.5 bg-green-100 text-green-700 text-xs rounded whitespace-nowrap">{{ __('settings.never_expires') }}</span>
                                                     @endif
                                                 </div>
                                                 <p class="text-xs text-gray-500 mt-0.5">
-                                                    {{ $adAccountsCount }} ad account(s)
+                                                    {{ $adAccountsCount }} {{ __('settings.ad_accounts') }}
                                                     @if($activeAdAccountsCount < $adAccountsCount)
-                                                        <span class="text-yellow-600">({{ $activeAdAccountsCount }} active)</span>
+                                                        <span class="text-yellow-600">({{ $activeAdAccountsCount }} {{ __('settings.active_status') }})</span>
                                                     @endif
                                                     @if($connection->token_expires_at)
                                                         <span class="hidden sm:inline">&bull;</span>
                                                         <br class="sm:hidden">
-                                                        <span>Expires {{ $connection->token_expires_at->diffForHumans() }}</span>
+                                                        <span>{{ __('settings.expires_in') }} {{ $connection->token_expires_at->diffForHumans() }}</span>
                                                     @elseif($isNeverExpires)
                                                         <span class="hidden sm:inline">&bull;</span>
-                                                        <span class="text-green-600">Long-lived token</span>
+                                                        <span class="text-green-600">{{ __('settings.long_lived_token') }}</span>
                                                     @endif
                                                     @if($metadata['validated_at'] ?? null)
-                                                        <span class="hidden sm:inline">&bull; Validated {{ \Carbon\Carbon::parse($metadata['validated_at'])->diffForHumans() }}</span>
+                                                        <span class="hidden sm:inline">&bull; {{ __('settings.validated') }} {{ \Carbon\Carbon::parse($metadata['validated_at'])->diffForHumans() }}</span>
                                                     @endif
                                                 </p>
                                                 @if($connection->last_error_message)
@@ -154,30 +158,30 @@
                                         {{-- Desktop Actions (hidden on mobile) --}}
                                         <div class="hidden md:flex items-center gap-1 flex-shrink-0">
                                             <a href="{{ route('orgs.settings.platform-connections.meta.assets', [$currentOrg, $connection->connection_id]) }}"
-                                               class="p-2 text-gray-400 hover:text-purple-600 transition" title="Select Assets">
+                                               class="p-2 text-gray-400 hover:text-purple-600 transition" title="{{ __('settings.select_assets') }}">
                                                 <i class="fas fa-layer-group"></i>
                                             </a>
                                             <form action="{{ route('orgs.settings.platform-connections.test', [$currentOrg, $connection->connection_id]) }}" method="POST" class="inline">
                                                 @csrf
-                                                <button type="submit" class="p-2 text-gray-400 hover:text-blue-600 transition" title="Test Connection">
+                                                <button type="submit" class="p-2 text-gray-400 hover:text-blue-600 transition" title="{{ __('settings.test_connection') }}">
                                                     <i class="fas fa-sync-alt"></i>
                                                 </button>
                                             </form>
                                             <form action="{{ route('orgs.settings.platform-connections.meta.refresh-accounts', [$currentOrg, $connection->connection_id]) }}" method="POST" class="inline">
                                                 @csrf
-                                                <button type="submit" class="p-2 text-gray-400 hover:text-green-600 transition" title="Refresh Ad Accounts">
+                                                <button type="submit" class="p-2 text-gray-400 hover:text-green-600 transition" title="{{ __('settings.refresh_accounts') }}">
                                                     <i class="fas fa-redo"></i>
                                                 </button>
                                             </form>
                                             <a href="{{ route('orgs.settings.platform-connections.meta.edit', [$currentOrg, $connection->connection_id]) }}"
-                                               class="p-2 text-gray-400 hover:text-blue-600 transition" title="Edit">
+                                               class="p-2 text-gray-400 hover:text-blue-600 transition" title="{{ __('settings.edit') }}">
                                                 <i class="fas fa-edit"></i>
                                             </a>
                                             <form action="{{ route('orgs.settings.platform-connections.destroy', [$currentOrg, $connection->connection_id]) }}"
-                                                  method="POST" class="inline" onsubmit="return confirm('Are you sure you want to delete this connection?');">
+                                                  method="POST" class="inline" onsubmit="return confirm('{{ __('settings.confirm_delete_connection') }}');">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button type="submit" class="p-2 text-gray-400 hover:text-red-600 transition" title="Delete">
+                                                <button type="submit" class="p-2 text-gray-400 hover:text-red-600 transition" title="{{ __('settings.delete') }}">
                                                     <i class="fas fa-trash"></i>
                                                 </button>
                                             </form>
@@ -202,30 +206,30 @@
                                                 <div class="py-1">
                                                     <a href="{{ route('orgs.settings.platform-connections.meta.assets', [$currentOrg, $connection->connection_id]) }}"
                                                        class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                                                        <i class="fas fa-layer-group w-4 mr-2"></i>Select Assets
+                                                        <i class="fas fa-layer-group w-4 {{ app()->getLocale() === 'ar' ? 'ml-2' : 'mr-2' }}"></i>{{ __('settings.select_assets') }}
                                                     </a>
                                                     <form action="{{ route('orgs.settings.platform-connections.test', [$currentOrg, $connection->connection_id]) }}" method="POST">
                                                         @csrf
                                                         <button type="submit" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                                                            <i class="fas fa-sync-alt w-4 mr-2"></i>Test Connection
+                                                            <i class="fas fa-sync-alt w-4 {{ app()->getLocale() === 'ar' ? 'ml-2' : 'mr-2' }}"></i>{{ __('settings.test_connection') }}
                                                         </button>
                                                     </form>
                                                     <form action="{{ route('orgs.settings.platform-connections.meta.refresh-accounts', [$currentOrg, $connection->connection_id]) }}" method="POST">
                                                         @csrf
                                                         <button type="submit" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                                                            <i class="fas fa-redo w-4 mr-2"></i>Refresh Accounts
+                                                            <i class="fas fa-redo w-4 {{ app()->getLocale() === 'ar' ? 'ml-2' : 'mr-2' }}"></i>{{ __('settings.refresh_accounts') }}
                                                         </button>
                                                     </form>
                                                     <a href="{{ route('orgs.settings.platform-connections.meta.edit', [$currentOrg, $connection->connection_id]) }}"
                                                        class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                                                        <i class="fas fa-edit w-4 mr-2"></i>Edit
+                                                        <i class="fas fa-edit w-4 {{ app()->getLocale() === 'ar' ? 'ml-2' : 'mr-2' }}"></i>{{ __('settings.edit') }}
                                                     </a>
                                                     <form action="{{ route('orgs.settings.platform-connections.destroy', [$currentOrg, $connection->connection_id]) }}"
-                                                          method="POST" onsubmit="return confirm('Are you sure you want to delete this connection?');">
+                                                          method="POST" onsubmit="return confirm('{{ __('settings.confirm_delete_connection') }}');">
                                                         @csrf
                                                         @method('DELETE')
                                                         <button type="submit" class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50">
-                                                            <i class="fas fa-trash w-4 mr-2"></i>Delete
+                                                            <i class="fas fa-trash w-4 {{ app()->getLocale() === 'ar' ? 'ml-2' : 'mr-2' }}"></i>{{ __('settings.delete') }}
                                                         </button>
                                                     </form>
                                                 </div>
@@ -256,8 +260,8 @@
                                         <div class="mt-3">
                                             <details class="group">
                                                 <summary class="text-xs text-gray-500 cursor-pointer hover:text-gray-700">
-                                                    <i class="fas fa-chevron-right group-open:rotate-90 transition-transform mr-1"></i>
-                                                    {{ count($connection->scopes) }} permission(s) granted
+                                                    <i class="fas fa-chevron-right group-open:rotate-90 transition-transform {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
+                                                    {{ count($connection->scopes) }} {{ __('settings.permissions_granted') }}
                                                 </summary>
                                                 <div class="mt-2 flex flex-wrap gap-1">
                                                     @foreach($connection->scopes as $scope)
@@ -278,44 +282,44 @@
                                     <div class="ml-11 mt-3 flex flex-wrap gap-2">
                                         @if($selectedAssets['page'] ?? null)
                                             <span class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-700">
-                                                <i class="fab fa-facebook mr-1"></i>Page
+                                                <i class="fab fa-facebook {{ $isRtl ? 'ml-1' : 'mr-1' }}"></i>Page
                                             </span>
                                         @endif
                                         @if($selectedAssets['instagram_account'] ?? null)
                                             <span class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-gradient-to-r from-purple-100 to-pink-100 text-pink-700">
-                                                <i class="fab fa-instagram mr-1"></i>Instagram
+                                                <i class="fab fa-instagram {{ $isRtl ? 'ml-1' : 'mr-1' }}"></i>Instagram
                                             </span>
                                         @endif
                                         @if($selectedAssets['threads_account'] ?? null)
                                             <span class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-700">
-                                                <i class="fas fa-at mr-1"></i>Threads
+                                                <i class="fas fa-at {{ $isRtl ? 'ml-1' : 'mr-1' }}"></i>Threads
                                             </span>
                                         @endif
                                         @if($selectedAssets['ad_account'] ?? null)
                                             <span class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-green-100 text-green-700">
-                                                <i class="fas fa-ad mr-1"></i>Ad Account
+                                                <i class="fas fa-ad {{ $isRtl ? 'ml-1' : 'mr-1' }}"></i>Ad Account
                                             </span>
                                         @endif
                                         @if($selectedAssets['pixel'] ?? null)
                                             <span class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-purple-100 text-purple-700">
-                                                <i class="fas fa-code mr-1"></i>Pixel
+                                                <i class="fas fa-code {{ $isRtl ? 'ml-1' : 'mr-1' }}"></i>Pixel
                                             </span>
                                         @endif
                                         @if($selectedAssets['catalog'] ?? null)
                                             <span class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-orange-100 text-orange-700">
-                                                <i class="fas fa-shopping-bag mr-1"></i>Catalog
+                                                <i class="fas fa-shopping-bag {{ $isRtl ? 'ml-1' : 'mr-1' }}"></i>Catalog
                                             </span>
                                         @endif
                                         <a href="{{ route('orgs.settings.platform-connections.meta.assets', [$currentOrg, $connection->connection_id]) }}"
-                                           class="text-xs text-blue-600 hover:text-blue-800 ml-1">
-                                            <i class="fas fa-edit mr-1"></i>Edit Assets
+                                           class="text-xs text-blue-600 hover:text-blue-800 {{ app()->getLocale() === 'ar' ? 'mr-1' : 'ml-1' }}">
+                                            <i class="fas fa-edit {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>{{ __('settings.edit_assets') }}
                                         </a>
                                     </div>
                                 @else
                                     <div class="ml-11 mt-3">
                                         <a href="{{ route('orgs.settings.platform-connections.meta.assets', [$currentOrg, $connection->connection_id]) }}"
                                            class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-purple-700 bg-purple-50 rounded-md hover:bg-purple-100 transition">
-                                            <i class="fas fa-layer-group mr-2"></i>Select Page, Instagram, Threads, Pixels & Catalog
+                                            <i class="fas fa-layer-group {{ app()->getLocale() === 'ar' ? 'ml-2' : 'mr-2' }}"></i>{{ __('settings.select_page_instagram_threads') }}
                                         </a>
                                     </div>
                                 @endif
@@ -325,7 +329,7 @@
                                     <div class="ml-11 mt-2 mb-4">
                                         <details class="group">
                                             <summary class="text-xs text-gray-500 cursor-pointer hover:text-gray-700">
-                                                <i class="fas fa-chevron-right group-open:rotate-90 transition-transform mr-1"></i>
+                                                <i class="fas fa-chevron-right group-open:rotate-90 transition-transform {{ $isRtl ? 'ml-1' : 'mr-1' }}"></i>
                                                 View {{ count($metadata['ad_accounts']) }} ad account(s)
                                             </summary>
                                             <div class="mt-2 pl-4 space-y-2">
@@ -353,7 +357,7 @@
                                                         </div>
                                                         @if($adAccount['disable_reason'] ?? null)
                                                             <p class="text-xs text-red-500 mt-1">
-                                                                <i class="fas fa-ban mr-1"></i>{{ $adAccount['disable_reason'] }}
+                                                                <i class="fas fa-ban {{ $isRtl ? 'ml-1' : 'mr-1' }}"></i>{{ $adAccount['disable_reason'] }}
                                                             </p>
                                                         @endif
                                                         @if(($adAccount['amount_spent'] ?? '0') !== '0')
@@ -373,8 +377,8 @@
                 @else
                     <div class="mt-4 text-center py-6 bg-gray-50 rounded-lg">
                         <i class="fab fa-facebook text-gray-300 text-4xl mb-2"></i>
-                        <p class="text-sm text-gray-500">No Meta accounts connected yet</p>
-                        <p class="text-xs text-gray-400 mt-1">Add a system user access token to get started</p>
+                        <p class="text-sm text-gray-500">{{ __('settings.no_accounts_connected') }}</p>
+                        <p class="text-xs text-gray-400 mt-1">{{ __('settings.add_system_user_token') }}</p>
                     </div>
                 @endif
             </div>
@@ -394,8 +398,8 @@
                             </svg>
                         </div>
                         <div class="ml-3 sm:ml-4 min-w-0 flex-1">
-                            <h3 class="text-base sm:text-lg font-medium text-gray-900">Google Services</h3>
-                            <p class="text-xs sm:text-sm text-gray-500 mt-0.5">YouTube, Google Ads, Analytics, Tag Manager, Merchant Center, Search Console & more</p>
+                            <h3 class="text-base sm:text-lg font-medium text-gray-900">{{ __('settings.google_services') }}</h3>
+                            <p class="text-xs sm:text-sm text-gray-500 mt-0.5">{{ __('settings.google_services_description') }}</p>
                         </div>
                     </div>
                     @php
@@ -407,21 +411,21 @@
                         @if($hasGoogleApiCredentials)
                             <a href="{{ route('orgs.settings.platform-connections.google.authorize', $currentOrg) }}"
                                class="inline-flex items-center justify-center px-3 sm:px-4 py-2 border border-transparent rounded-md shadow-sm text-xs sm:text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 flex-1 sm:flex-none min-w-0">
-                                <svg class="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 flex-shrink-0" viewBox="0 0 24 24">
+                                <svg class="w-3 h-3 sm:w-4 sm:h-4 {{ app()->getLocale() === 'ar' ? 'ml-1 sm:ml-2' : 'mr-1 sm:mr-2' }} flex-shrink-0" viewBox="0 0 24 24">
                                     <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
                                     <path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
                                     <path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
                                     <path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
                                 </svg>
-                                <span class="truncate">Connect</span>
+                                <span class="truncate">{{ __('settings.connect') }}</span>
                             </a>
                         @endif
                         {{-- Add Service Account/OAuth Manually --}}
                         <a href="{{ route('orgs.settings.platform-connections.google.create', $currentOrg) }}"
                            class="inline-flex items-center justify-center px-3 sm:px-4 py-2 border border-gray-300 rounded-md shadow-sm text-xs sm:text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 flex-1 sm:flex-none min-w-0"
-                           title="Add Service Account or OAuth credentials manually">
-                            <i class="fas fa-key mr-1 sm:mr-2"></i>
-                            <span class="truncate">Add Manually</span>
+                           title="{{ __('settings.click_add_manually') }}">
+                            <i class="fas fa-key {{ app()->getLocale() === 'ar' ? 'ml-1 sm:ml-2' : 'mr-1 sm:mr-2' }}"></i>
+                            <span class="truncate">{{ __('settings.add_manually') }}</span>
                         </a>
                     </div>
                 </div>
@@ -430,7 +434,7 @@
 
                 @if($googleConnections->count() > 0)
                     <div class="mt-4 border-t border-gray-200 pt-4">
-                        <h4 class="text-sm font-medium text-gray-700 mb-3">Connected Accounts</h4>
+                        <h4 class="text-sm font-medium text-gray-700 mb-3">{{ __('settings.connected_accounts') }}</h4>
                         <div class="space-y-3">
                             @foreach($googleConnections as $connection)
                                 @php
@@ -461,9 +465,9 @@
                                                 <div class="flex flex-wrap items-center gap-1 sm:gap-2">
                                                     <p class="text-xs sm:text-sm font-medium text-gray-900">{{ $connection->account_name }}</p>
                                                     @if($credentialType === 'service_account')
-                                                        <span class="px-1.5 py-0.5 bg-blue-100 text-blue-700 text-xs rounded whitespace-nowrap">Service Account</span>
+                                                        <span class="px-1.5 py-0.5 bg-blue-100 text-blue-700 text-xs rounded whitespace-nowrap">{{ __('settings.service_account') }}</span>
                                                     @elseif($credentialType === 'oauth')
-                                                        <span class="px-1.5 py-0.5 bg-green-100 text-green-700 text-xs rounded whitespace-nowrap">OAuth</span>
+                                                        <span class="px-1.5 py-0.5 bg-green-100 text-green-700 text-xs rounded whitespace-nowrap">{{ __('settings.oauth') }}</span>
                                                     @endif
                                                 </div>
                                                 <p class="text-xs text-gray-500 mt-0.5">
@@ -471,7 +475,7 @@
                                                         {{ Str::limit($metadata['service_account_email'], 30) }}
                                                     @endif
                                                     @if($metadata['validated_at'] ?? null)
-                                                        <span class="hidden sm:inline">&bull; Validated {{ \Carbon\Carbon::parse($metadata['validated_at'])->diffForHumans() }}</span>
+                                                        <span class="hidden sm:inline">&bull; {{ __('settings.validated') }} {{ \Carbon\Carbon::parse($metadata['validated_at'])->diffForHumans() }}</span>
                                                     @endif
                                                 </p>
                                             </div>
@@ -521,25 +525,25 @@
                                                  style="display: none;">
                                                 <div class="py-1">
                                                     <a href="{{ route('orgs.settings.platform-connections.google.assets', [$currentOrg, $connection->connection_id]) }}"
-                                                       class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                                                        <i class="fas fa-layer-group w-4 mr-2"></i>Select Services
+                                                       class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 {{ $isRtl ? 'text-right' : '' }}">
+                                                        <i class="fas fa-layer-group w-4 {{ $isRtl ? 'ml-2' : 'mr-2' }}"></i>Select Services
                                                     </a>
                                                     <form action="{{ route('orgs.settings.platform-connections.test', [$currentOrg, $connection->connection_id]) }}" method="POST">
                                                         @csrf
-                                                        <button type="submit" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                                                            <i class="fas fa-sync-alt w-4 mr-2"></i>Test Connection
+                                                        <button type="submit" class="w-full {{ $isRtl ? 'text-right' : 'text-left' }} px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                                            <i class="fas fa-sync-alt w-4 {{ $isRtl ? 'ml-2' : 'mr-2' }}"></i>Test Connection
                                                         </button>
                                                     </form>
                                                     <a href="{{ route('orgs.settings.platform-connections.google.edit', [$currentOrg, $connection->connection_id]) }}"
-                                                       class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                                                        <i class="fas fa-edit w-4 mr-2"></i>Edit
+                                                       class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 {{ $isRtl ? 'text-right' : '' }}">
+                                                        <i class="fas fa-edit w-4 {{ $isRtl ? 'ml-2' : 'mr-2' }}"></i>Edit
                                                     </a>
                                                     <form action="{{ route('orgs.settings.platform-connections.destroy', [$currentOrg, $connection->connection_id]) }}"
                                                           method="POST" onsubmit="return confirm('Are you sure you want to remove this connection?');">
                                                         @csrf
                                                         @method('DELETE')
-                                                        <button type="submit" class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50">
-                                                            <i class="fas fa-trash w-4 mr-2"></i>Delete
+                                                        <button type="submit" class="w-full {{ $isRtl ? 'text-right' : 'text-left' }} px-4 py-2 text-sm text-red-600 hover:bg-red-50">
+                                                            <i class="fas fa-trash w-4 {{ $isRtl ? 'ml-2' : 'mr-2' }}"></i>Delete
                                                         </button>
                                                     </form>
                                                 </div>
@@ -552,59 +556,59 @@
                                         <div class="mt-3 flex flex-wrap gap-2">
                                             @if($selectedAssets['youtube_channel'] ?? null)
                                                 <span class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-red-100 text-red-700">
-                                                    <i class="fab fa-youtube mr-1"></i>YouTube
+                                                    <i class="fab fa-youtube {{ $isRtl ? 'ml-1' : 'mr-1' }}"></i>YouTube
                                                 </span>
                                             @endif
                                             @if($selectedAssets['google_ads'] ?? null)
                                                 <span class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-green-100 text-green-700">
-                                                    <i class="fas fa-ad mr-1"></i>Google Ads
+                                                    <i class="fas fa-ad {{ $isRtl ? 'ml-1' : 'mr-1' }}"></i>Google Ads
                                                 </span>
                                             @endif
                                             @if($selectedAssets['analytics'] ?? null)
                                                 <span class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-orange-100 text-orange-700">
-                                                    <i class="fas fa-chart-line mr-1"></i>Analytics
+                                                    <i class="fas fa-chart-line {{ $isRtl ? 'ml-1' : 'mr-1' }}"></i>Analytics
                                                 </span>
                                             @endif
                                             @if($selectedAssets['business_profile'] ?? null)
                                                 <span class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-700">
-                                                    <i class="fas fa-store mr-1"></i>Business
+                                                    <i class="fas fa-store {{ $isRtl ? 'ml-1' : 'mr-1' }}"></i>Business
                                                 </span>
                                             @endif
                                             @if($selectedAssets['tag_manager'] ?? null)
                                                 <span class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-purple-100 text-purple-700">
-                                                    <i class="fas fa-code mr-1"></i>GTM
+                                                    <i class="fas fa-code {{ $isRtl ? 'ml-1' : 'mr-1' }}"></i>GTM
                                                 </span>
                                             @endif
                                             @if($selectedAssets['merchant_center'] ?? null)
                                                 <span class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-teal-100 text-teal-700">
-                                                    <i class="fas fa-shopping-cart mr-1"></i>Merchant
+                                                    <i class="fas fa-shopping-cart {{ $isRtl ? 'ml-1' : 'mr-1' }}"></i>Merchant
                                                 </span>
                                             @endif
                                             @if($selectedAssets['search_console'] ?? null)
                                                 <span class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-indigo-100 text-indigo-700">
-                                                    <i class="fas fa-search mr-1"></i>Search Console
+                                                    <i class="fas fa-search {{ $isRtl ? 'ml-1' : 'mr-1' }}"></i>Search Console
                                                 </span>
                                             @endif
                                             @if($selectedAssets['calendar'] ?? null)
                                                 <span class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-cyan-100 text-cyan-700">
-                                                    <i class="fas fa-calendar mr-1"></i>Calendar
+                                                    <i class="fas fa-calendar {{ $isRtl ? 'ml-1' : 'mr-1' }}"></i>Calendar
                                                 </span>
                                             @endif
                                             @if($selectedAssets['drive'] ?? null)
                                                 <span class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-yellow-100 text-yellow-700">
-                                                    <i class="fas fa-folder mr-1"></i>Drive
+                                                    <i class="fas fa-folder {{ $isRtl ? 'ml-1' : 'mr-1' }}"></i>Drive
                                                 </span>
                                             @endif
                                             <a href="{{ route('orgs.settings.platform-connections.google.assets', [$currentOrg, $connection->connection_id]) }}"
-                                               class="text-xs text-blue-600 hover:text-blue-800 ml-1">
-                                                <i class="fas fa-edit mr-1"></i>Edit
+                                               class="text-xs text-blue-600 hover:text-blue-800 {{ $isRtl ? 'mr-1' : 'ml-1' }}">
+                                                <i class="fas fa-edit {{ $isRtl ? 'ml-1' : 'mr-1' }}"></i>Edit
                                             </a>
                                         </div>
                                     @else
                                         <div class="mt-3">
                                             <a href="{{ route('orgs.settings.platform-connections.google.assets', [$currentOrg, $connection->connection_id]) }}"
                                                class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-50 rounded-md hover:bg-blue-100 transition">
-                                                <i class="fas fa-layer-group mr-2"></i>Select Google Services (YouTube, Ads, Analytics, etc.)
+                                                <i class="fas fa-layer-group {{ $isRtl ? 'ml-2' : 'mr-2' }}"></i>Select Google Services (YouTube, Ads, Analytics, etc.)
                                             </a>
                                         </div>
                                     @endif
@@ -662,7 +666,7 @@
                         </div>
                         <button onclick="connectPlatform('{{ $platform }}')"
                                class="inline-flex items-center justify-center px-3 sm:px-4 py-2 border border-transparent rounded-md shadow-sm text-xs sm:text-sm font-medium text-white bg-{{ $info[2] }}-600 hover:bg-{{ $info[2] }}-700 flex-shrink-0 w-full sm:w-auto">
-                            <i class="fas fa-plug mr-1 sm:mr-2"></i>
+                            <i class="fas fa-plug {{ $isRtl ? 'ml-1 sm:ml-2' : 'mr-1 sm:mr-2' }}"></i>
                             <span>Connect</span>
                         </button>
                     </div>
@@ -785,22 +789,22 @@
                                                     <div class="py-1">
                                                         @if($assetRoute && Route::has($assetRoute))
                                                             <a href="{{ route($assetRoute, [$currentOrg, $connection->connection_id]) }}"
-                                                               class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                                                                <i class="fas fa-layer-group w-4 mr-2"></i>Select Assets
+                                                               class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 {{ $isRtl ? 'text-right' : '' }}">
+                                                                <i class="fas fa-layer-group w-4 {{ $isRtl ? 'ml-2' : 'mr-2' }}"></i>Select Assets
                                                             </a>
                                                         @endif
                                                         <form action="{{ route('orgs.settings.platform-connections.test', [$currentOrg, $connection->connection_id]) }}" method="POST">
                                                             @csrf
-                                                            <button type="submit" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                                                                <i class="fas fa-sync-alt w-4 mr-2"></i>Test Connection
+                                                            <button type="submit" class="w-full {{ $isRtl ? 'text-right' : 'text-left' }} px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                                                <i class="fas fa-sync-alt w-4 {{ $isRtl ? 'ml-2' : 'mr-2' }}"></i>Test Connection
                                                             </button>
                                                         </form>
                                                         <form action="{{ route('orgs.settings.platform-connections.destroy', [$currentOrg, $connection->connection_id]) }}"
                                                               method="POST" onsubmit="return confirm('Are you sure you want to disconnect this {{ $info[0] }} account?');">
                                                             @csrf
                                                             @method('DELETE')
-                                                            <button type="submit" class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50">
-                                                                <i class="fas fa-trash w-4 mr-2"></i>Delete
+                                                            <button type="submit" class="w-full {{ $isRtl ? 'text-right' : 'text-left' }} px-4 py-2 text-sm text-red-600 hover:bg-red-50">
+                                                                <i class="fas fa-trash w-4 {{ $isRtl ? 'ml-2' : 'mr-2' }}"></i>Delete
                                                             </button>
                                                         </form>
                                                     </div>
@@ -816,20 +820,20 @@
                                                         @if($connSelectedAssets[$assetType] ?? null)
                                                             @php $labelInfo = $assetLabels[$assetType] ?? ['Asset', 'fas fa-check', 'gray']; @endphp
                                                             <span class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-{{ $labelInfo[2] }}-100 text-{{ $labelInfo[2] }}-700">
-                                                                <i class="{{ $labelInfo[1] }} mr-1"></i>{{ $labelInfo[0] }}
+                                                                <i class="{{ $labelInfo[1] }} {{ $isRtl ? 'ml-1' : 'mr-1' }}"></i>{{ $labelInfo[0] }}
                                                             </span>
                                                         @endif
                                                     @endforeach
                                                     <a href="{{ route($assetRoute, [$currentOrg, $connection->connection_id]) }}"
-                                                       class="text-xs text-blue-600 hover:text-blue-800 ml-1">
-                                                        <i class="fas fa-edit mr-1"></i>Edit
+                                                       class="text-xs text-blue-600 hover:text-blue-800 {{ $isRtl ? 'mr-1' : 'ml-1' }}">
+                                                        <i class="fas fa-edit {{ $isRtl ? 'ml-1' : 'mr-1' }}"></i>Edit
                                                     </a>
                                                 </div>
                                             @else
                                                 <div class="ml-11 mt-3">
                                                     <a href="{{ route($assetRoute, [$currentOrg, $connection->connection_id]) }}"
                                                        class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-{{ $info[2] }}-700 bg-{{ $info[2] }}-50 rounded-md hover:bg-{{ $info[2] }}-100 transition">
-                                                        <i class="fas fa-layer-group mr-2"></i>Select Assets
+                                                        <i class="fas fa-layer-group {{ $isRtl ? 'ml-2' : 'mr-2' }}"></i>Select Assets
                                                     </a>
                                                 </div>
                                             @endif
@@ -853,7 +857,7 @@
     {{-- Help Section --}}
     <div class="mt-8 bg-blue-50 rounded-lg p-6">
         <h3 class="text-sm font-medium text-blue-900 mb-3">
-            <i class="fas fa-info-circle mr-2"></i>Platform Connection Guides
+            <i class="fas fa-info-circle {{ app()->getLocale() === 'ar' ? 'ml-2' : 'mr-2' }}"></i>{{ __('settings.platform_connection_guides') }}
         </h3>
 
         <div class="space-y-4">
@@ -982,8 +986,8 @@
         </div>
 
         <p class="mt-4 text-xs text-blue-700">
-            <i class="fas fa-lock mr-1"></i>
-            All access tokens are encrypted and stored securely using Laravel's encryption.
+            <i class="fas fa-lock {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
+            {{ __('settings.all_tokens_encrypted') }}
         </p>
     </div>
 </div>
