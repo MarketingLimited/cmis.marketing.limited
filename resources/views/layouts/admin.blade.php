@@ -20,11 +20,13 @@
 
     <title>@yield('title', 'CMIS') - لوحة التحكم</title>
 
-    <!-- Tailwind CSS CDN -->
+    <!-- Tailwind CSS CDN - TODO: Replace with compiled CSS for production -->
+    <!-- For production, run: npm install -D tailwindcss && npx tailwindcss build -->
     <script src="https://cdn.tailwindcss.com"></script>
 
-    <!-- Alpine.js Collapse Plugin - must load before Alpine core -->
+    <!-- Alpine.js Plugins - must load before Alpine core -->
     <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.x.x/dist/cdn.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/focus@3.x.x/dist/cdn.min.js"></script>
 
     <!-- Alpine.js CDN - loaded early with defer to prevent FOUC -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>

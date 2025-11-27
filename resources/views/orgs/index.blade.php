@@ -3,7 +3,10 @@
 @section('title', 'المؤسسات')
 
 @section('content')
-<div x-data="orgsManager({{ Js::from($orgs) }})" x-cloak>
+<div x-data="{
+    ...orgsManager({{ Js::from($orgs) }}),
+    orgFormData: orgForm()
+}" x-cloak>
 
     <!-- Page Header -->
     <div class="flex items-center justify-between mb-6">
@@ -159,56 +162,56 @@
         </x-ui.button>
     </div>
 
-</div>
+    <!-- Create/Edit Organization Modal -->
+    <x-ui.modal name="create-org-modal" title="مؤسسة جديدة" max-width="lg">
+        <form @submit.prevent="orgFormData.submitOrg()">
+            <x-forms.input
+                label="اسم المؤسسة"
+                name="name"
+                x-model="orgFormData.formData.name"
+                required
+                placeholder="أدخل اسم المؤسسة" />
 
-<!-- Create/Edit Organization Modal -->
-<x-ui.modal name="create-org-modal" title="مؤسسة جديدة" max-width="lg">
-    <form x-data="orgForm()" @submit.prevent="submitOrg()">
-        <x-forms.input
-            label="اسم المؤسسة"
-            name="name"
-            x-model="formData.name"
-            required
-            placeholder="أدخل اسم المؤسسة" />
+            <x-forms.textarea
+                label="الوصف"
+                name="description"
+                x-model="orgFormData.formData.description"
+                placeholder="وصف قصير عن المؤسسة" />
 
-        <x-forms.textarea
-            label="الوصف"
-            name="description"
-            x-model="formData.description"
-            placeholder="وصف قصير عن المؤسسة" />
+            <x-forms.input
+                label="البريد الإلكتروني"
+                name="email"
+                type="email"
+                x-model="orgFormData.formData.email"
+                placeholder="email@example.com" />
 
-        <x-forms.input
-            label="البريد الإلكتروني"
-            name="email"
-            type="email"
-            x-model="formData.email"
-            placeholder="email@example.com" />
+            <x-forms.input
+                label="رقم الهاتف"
+                name="phone"
+                x-model="orgFormData.formData.phone"
+                placeholder="+966 50 000 0000" />
 
-        <x-forms.input
-            label="رقم الهاتف"
-            name="phone"
-            x-model="formData.phone"
-            placeholder="+966 50 000 0000" />
-
-        <x-forms.select
-            label="الحالة"
-            name="status"
-            x-model="formData.status"
-            required>
-            <option value="active">نشط</option>
-            <option value="inactive">غير نشط</option>
-        </x-forms.select>
+            <x-forms.select
+                label="الحالة"
+                name="status"
+                x-model="orgFormData.formData.status"
+                required>
+                <option value="active">نشط</option>
+                <option value="inactive">غير نشط</option>
+            </x-forms.select>
+        </form>
 
         <x-slot name="footer">
             <x-ui.button type="button" variant="secondary" @click="closeModal('create-org-modal')">
                 إلغاء
             </x-ui.button>
-            <x-ui.button type="submit" icon="fas fa-save">
+            <x-ui.button type="button" icon="fas fa-save" @click="orgFormData.submitOrg()">
                 حفظ
             </x-ui.button>
         </x-slot>
-    </form>
-</x-ui.modal>
+    </x-ui.modal>
+
+</div>
 
 @endsection
 
@@ -223,23 +226,8 @@ function orgsManager(serverOrgs) {
         sortBy: 'name',
 
         init() {
-            // Initialize with server data
+            // Initialize with server data - counts are now provided by backend
             this.filteredOrgs = this.allOrgs;
-
-            // Fetch additional data like counts (if not provided by server)
-            this.enhanceOrgsData();
-        },
-
-        enhanceOrgsData() {
-            // Add campaigns_count, users_count, assets_count if not present
-            // This would typically come from the API, but we can add simulated data for now
-            this.allOrgs = this.allOrgs.map(org => ({
-                ...org,
-                campaigns_count: org.campaigns_count || Math.floor(Math.random() * 20),
-                users_count: org.users_count || Math.floor(Math.random() * 15),
-                assets_count: org.assets_count || Math.floor(Math.random() * 50)
-            }));
-            this.filteredOrgs = [...this.allOrgs];
         },
 
         filterOrgs() {
@@ -380,7 +368,7 @@ function orgForm() {
 
                 window.notify('جاري إنشاء المؤسسة...', 'info');
 
-                const response = await fetch('/api/orgs', {
+                const response = await fetch('/orgs', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -399,8 +387,14 @@ function orgForm() {
                 window.notify(data.message || 'تم إنشاء المؤسسة بنجاح', 'success');
                 closeModal('create-org-modal');
 
-                // Refresh the page to show new organization
-                setTimeout(() => location.reload(), 1000);
+                // Redirect to the new organization page or reload
+                setTimeout(() => {
+                    if (data.redirect) {
+                        window.location.href = data.redirect;
+                    } else {
+                        location.reload();
+                    }
+                }, 1000);
             } catch (error) {
                 console.error('Error creating organization:', error);
                 window.notify(error.message || 'حدث خطأ غير متوقع', 'error');

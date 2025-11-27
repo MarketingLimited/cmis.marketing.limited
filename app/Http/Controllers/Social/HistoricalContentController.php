@@ -45,7 +45,7 @@ class HistoricalContentController extends Controller
      *
      * GET /api/social/historical
      */
-    public function index(Request $request)
+    public function index(Request $request, string $org)
     {
         $validator = Validator::make($request->all(), [
             'profile_group_id' => 'nullable|uuid',
@@ -60,7 +60,7 @@ class HistoricalContentController extends Controller
             return $this->validationError($validator->errors());
         }
 
-        $orgId = session('current_org_id');
+        $orgId = $org;
 
         $query = SocialPost::where('org_id', $orgId)
             ->where('is_historical', true)
@@ -82,7 +82,9 @@ class HistoricalContentController extends Controller
             $query->where('is_in_knowledge_base', $request->is_in_kb);
         }
 
-        if ($request->filled('min_success_score')) {
+        // Only filter by min_success_score if explicitly provided and > 0
+        // Note: success_score is NULL for unanalyzed posts, and NULL >= 0 is false in SQL
+        if ($request->filled('min_success_score') && floatval($request->min_success_score) > 0) {
             $query->where('success_score', '>=', $request->min_success_score);
         }
 
@@ -97,9 +99,9 @@ class HistoricalContentController extends Controller
      *
      * GET /api/social/historical/{id}
      */
-    public function show(string $id)
+    public function show(Request $request, string $org, string $id)
     {
-        $orgId = session('current_org_id');
+        $orgId = $org;
 
         $post = SocialPost::where('org_id', $orgId)
             ->where('id', $id)
@@ -117,9 +119,9 @@ class HistoricalContentController extends Controller
     /**
      * Import historical posts from a platform integration
      *
-     * POST /api/social/historical/import
+     * POST /orgs/{org}/social/history/api/import
      */
-    public function import(Request $request)
+    public function import(Request $request, string $org)
     {
         $validator = Validator::make($request->all(), [
             'integration_id' => 'required|uuid',
@@ -134,12 +136,24 @@ class HistoricalContentController extends Controller
             return $this->validationError($validator->errors());
         }
 
-        $orgId = session('current_org_id');
+        // Get org_id from route parameter (not session)
+        $orgId = $org;
+
+        \Illuminate\Support\Facades\Log::debug('Historical import request', [
+            'org_id' => $orgId,
+            'integration_id' => $request->integration_id,
+        ]);
+
         $integration = Integration::where('org_id', $orgId)
             ->where('integration_id', $request->integration_id)
             ->first();
 
         if (!$integration) {
+            \Illuminate\Support\Facades\Log::warning('Integration not found', [
+                'org_id' => $orgId,
+                'integration_id' => $request->integration_id,
+                'existing_integrations' => Integration::where('org_id', $orgId)->pluck('integration_id')->toArray(),
+            ]);
             return $this->notFound('Integration not found');
         }
 
@@ -175,7 +189,7 @@ class HistoricalContentController extends Controller
      */
     public function analyze(Request $request, string $id)
     {
-        $orgId = session('current_org_id');
+        $orgId = $request->route('org');
 
         $post = SocialPost::where('org_id', $orgId)
             ->where('id', $id)
@@ -218,7 +232,7 @@ class HistoricalContentController extends Controller
             return $this->validationError($validator->errors());
         }
 
-        $orgId = session('current_org_id');
+        $orgId = $request->route('org');
 
         if ($request->filled('post_ids')) {
             // Analyze specific posts
@@ -265,7 +279,7 @@ class HistoricalContentController extends Controller
             return $this->validationError($validator->errors());
         }
 
-        $orgId = session('current_org_id');
+        $orgId = $request->route('org');
         $progress = $this->historicalService->getImportProgress(
             $orgId,
             $request->profile_group_id
@@ -291,7 +305,7 @@ class HistoricalContentController extends Controller
             return $this->validationError($validator->errors());
         }
 
-        $orgId = session('current_org_id');
+        $orgId = $request->route('org');
 
         $posts = SocialPost::where('org_id', $orgId)
             ->whereIn('id', $request->post_ids)
@@ -327,7 +341,7 @@ class HistoricalContentController extends Controller
             return $this->validationError($validator->errors());
         }
 
-        $orgId = session('current_org_id');
+        $orgId = $request->route('org');
 
         $posts = SocialPost::where('org_id', $orgId)
             ->whereIn('id', $request->post_ids)
@@ -362,7 +376,7 @@ class HistoricalContentController extends Controller
             return $this->validationError($validator->errors());
         }
 
-        $orgId = session('current_org_id');
+        $orgId = $request->route('org');
         $strategy = $request->get('strategy', 'balanced');
         $async = $request->get('async', true);
 
@@ -405,7 +419,7 @@ class HistoricalContentController extends Controller
             return $this->validationError($validator->errors());
         }
 
-        $orgId = session('current_org_id');
+        $orgId = $request->route('org');
         $summary = $this->kbService->getKnowledgeBaseSummary(
             $orgId,
             $request->profile_group_id
@@ -434,7 +448,7 @@ class HistoricalContentController extends Controller
             return $this->validationError($validator->errors());
         }
 
-        $orgId = session('current_org_id');
+        $orgId = $request->route('org');
 
         $criteria = array_filter([
             'objective' => $request->get('objective'),
@@ -471,7 +485,7 @@ class HistoricalContentController extends Controller
             return $this->validationError($validator->errors());
         }
 
-        $orgId = session('current_org_id');
+        $orgId = $request->route('org');
 
         $recommendations = $this->kbService->getRecommendationsForCampaign(
             $orgId,
@@ -499,7 +513,7 @@ class HistoricalContentController extends Controller
             return $this->validationError($validator->errors());
         }
 
-        $orgId = session('current_org_id');
+        $orgId = $request->route('org');
 
         $brandDNA = $this->brandDNAService->getBrandDNASummary(
             $orgId,
@@ -524,7 +538,7 @@ class HistoricalContentController extends Controller
             return $this->validationError($validator->errors());
         }
 
-        $orgId = session('current_org_id');
+        $orgId = $request->route('org');
 
         $config = BrandKnowledgeConfig::where('org_id', $orgId)
             ->where('profile_group_id', $request->profile_group_id)
@@ -557,7 +571,7 @@ class HistoricalContentController extends Controller
             return $this->validationError($validator->errors());
         }
 
-        $orgId = session('current_org_id');
+        $orgId = $request->route('org');
 
         $config = BrandKnowledgeConfig::updateOrCreate(
             [
@@ -592,7 +606,7 @@ class HistoricalContentController extends Controller
             return $this->validationError($validator->errors());
         }
 
-        $orgId = session('current_org_id');
+        $orgId = $request->route('org');
         $format = $request->get('format', 'json');
 
         $export = $this->kbService->exportKnowledgeBase(
@@ -629,7 +643,7 @@ class HistoricalContentController extends Controller
             return $this->validationError($validator->errors());
         }
 
-        $orgId = session('current_org_id');
+        $orgId = $request->route('org');
 
         try {
             $post = SocialPost::where('org_id', $orgId)
@@ -696,7 +710,7 @@ class HistoricalContentController extends Controller
             return $this->validationError($validator->errors());
         }
 
-        $orgId = session('current_org_id');
+        $orgId = $request->route('org');
 
         try {
             $post = SocialPost::where('org_id', $orgId)
@@ -775,7 +789,7 @@ class HistoricalContentController extends Controller
             return $this->validationError($validator->errors());
         }
 
-        $orgId = session('current_org_id');
+        $orgId = $request->route('org');
 
         try {
             $post = SocialPost::where('org_id', $orgId)
@@ -847,7 +861,7 @@ class HistoricalContentController extends Controller
      */
     public function getAvailableBoostRules(Request $request, string $id)
     {
-        $orgId = session('current_org_id');
+        $orgId = $request->route('org');
 
         try {
             $post = SocialPost::where('org_id', $orgId)

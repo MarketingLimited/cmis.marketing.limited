@@ -58,6 +58,71 @@ CMIS is a Laravel-based Campaign Management & Integration System with:
 
 ---
 
+## ⚙️ Environment Configuration
+
+### IMPORTANT: Always Check .env for Current Configuration
+
+**NEVER use hardcoded database names or environment values.** Always check the `.env` file for the current environment configuration.
+
+### How to Get Database Name and Connection Info
+
+```bash
+# View database configuration
+cat .env | grep DB_
+
+# Common variables:
+# DB_CONNECTION=pgsql          # Database driver
+# DB_HOST=127.0.0.1            # Database host
+# DB_PORT=5432                 # Database port
+# DB_DATABASE=<actual-db-name> # Database name (varies by environment)
+# DB_USERNAME=<username>        # Database username
+# DB_PASSWORD=<password>        # Database password
+```
+
+### Key Environment Variables
+
+| Variable | Purpose | Example |
+|----------|---------|---------|
+| `DB_DATABASE` | Database name (environment-specific) | Check `.env` |
+| `DB_HOST` | Database server host | `127.0.0.1` |
+| `DB_PORT` | Database server port | `5432` |
+| `DB_USERNAME` | Database user | Check `.env` |
+| `DB_PASSWORD` | Database password | Check `.env` (never commit!) |
+| `DB_SCHEMA_SEARCH_PATH` | PostgreSQL schema search path | `public,cmis,cmis_refactored,...` |
+| `APP_ENV` | Application environment | `local`, `staging`, `production` |
+| `APP_DEBUG` | Debug mode | `true` (local), `false` (production) |
+
+### Database Connection Commands
+
+```bash
+# Connect to PostgreSQL (use .env values)
+PGPASSWORD="$(grep DB_PASSWORD .env | cut -d '=' -f2)" psql \
+  -h "$(grep DB_HOST .env | cut -d '=' -f2)" \
+  -U "$(grep DB_USERNAME .env | cut -d '=' -f2)" \
+  -d "$(grep DB_DATABASE .env | cut -d '=' -f2)"
+
+# Or use Laravel tinker
+php artisan tinker
+>>> DB::connection()->getDatabaseName()  # Shows current database name
+```
+
+### Configuration Files
+
+- **`.env`** - Environment-specific configuration (NEVER commit to git)
+- **`config/database.php`** - Database connection definitions (reads from `.env`)
+- **`config/app.php`** - Application configuration (reads from `.env`)
+
+### Best Practices
+
+1. ✅ **Always read from `.env`** when you need database name or credentials
+2. ✅ **Use `env()` helper** in config files: `env('DB_DATABASE', 'fallback')`
+3. ✅ **Use `config()` helper** in application code: `config('database.connections.pgsql.database')`
+4. ❌ **NEVER hardcode** database names like `cmis-test`, `cmis-prod`, etc.
+5. ❌ **NEVER commit** `.env` file to version control
+6. ❌ **NEVER assume** database names across environments
+
+---
+
 ## 📁 Repository Structure
 
 ```
@@ -398,8 +463,11 @@ php artisan optimize:clear
 # Generate IDE helper
 php artisan ide-helper:generate
 
-# Database console
-PGPASSWORD="123@Marketing@321" psql -h 127.0.0.1 -U begin -d cmis
+# Database console (use .env values - see Environment Configuration section)
+PGPASSWORD="$(grep DB_PASSWORD .env | cut -d '=' -f2)" psql \
+  -h "$(grep DB_HOST .env | cut -d '=' -f2)" \
+  -U "$(grep DB_USERNAME .env | cut -d '=' -f2)" \
+  -d "$(grep DB_DATABASE .env | cut -d '=' -f2)"
 ```
 
 ---

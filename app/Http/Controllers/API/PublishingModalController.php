@@ -61,8 +61,7 @@ class PublishingModalController extends Controller
     public function getBrandVoices(Request $request, string $org)
     {
         $brandVoices = BrandVoice::where('org_id', $org)
-            ->where('is_active', true)
-            ->select('voice_id', 'name', 'tone', 'personality_traits', 'writing_style')
+            ->select('voice_id', 'name', 'tone', 'personality_traits', 'description')
             ->get();
 
         return $this->success($brandVoices, 'Brand voices retrieved successfully');

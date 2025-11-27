@@ -102,6 +102,26 @@ return [
             ]) : [],
         ],
 
+        // CMIS Connection (alias for pgsql - reads from same .env variables)
+        'cmis' => [
+            'driver' => 'pgsql',
+            'url' => env('DB_URL'),
+            'host' => env('DB_HOST', '127.0.0.1'),
+            'port' => env('DB_PORT', '5432'),
+            'database' => env('DB_DATABASE', 'cmis-test'),
+            'username' => env('DB_USERNAME', 'begin'),
+            'password' => env('DB_PASSWORD', ''),
+            'charset' => env('DB_CHARSET', 'utf8'),
+            'prefix' => '',
+            'prefix_indexes' => true,
+            'search_path' => env('DB_SCHEMA_SEARCH_PATH', 'public,cmis,cmis_refactored,cmis_analytics,cmis_ai_analytics,cmis_ops'),
+            'sslmode' => env('DB_SSLMODE', 'prefer'),
+            'application_name' => env('DB_APPLICATION_NAME', 'cmis-marketing'),
+            'options' => extension_loaded('pdo_pgsql') ? array_filter([
+                PDO::ATTR_TIMEOUT => env('DB_CONNECT_TIMEOUT', 5),
+            ]) : [],
+        ],
+
         'sqlsrv' => [
             'driver' => 'sqlsrv',
             'url' => env('DB_URL'),

@@ -19,6 +19,46 @@ class MetaPostsService
     }
 
     /**
+     * Get Page Access Token from User Access Token
+     */
+    public function getPageAccessToken(string $pageId, string $userAccessToken): ?string
+    {
+        try {
+            $cacheKey = "meta_page_token_{$pageId}";
+
+            return Cache::remember($cacheKey, 3600, function () use ($pageId, $userAccessToken) {
+                $url = "{$this->baseUrl}/{$this->apiVersion}/me/accounts";
+
+                $response = Http::timeout(30)->get($url, [
+                    'access_token' => $userAccessToken,
+                    'fields' => 'id,name,access_token',
+                ]);
+
+                if (!$response->successful()) {
+                    Log::error('Failed to get page accounts', ['error' => $response->body()]);
+                    return null;
+                }
+
+                $pages = $response->json()['data'] ?? [];
+
+                foreach ($pages as $page) {
+                    if ($page['id'] === $pageId) {
+                        return $page['access_token'];
+                    }
+                }
+
+                return null;
+            });
+        } catch (Exception $e) {
+            Log::error('Failed to get page access token', [
+                'page_id' => $pageId,
+                'error' => $e->getMessage()
+            ]);
+            return null;
+        }
+    }
+
+    /**
      * Fetch organic posts from Facebook Page
      */
     public function fetchFacebookPosts(
@@ -28,13 +68,23 @@ class MetaPostsService
         ?string $after = null
     ): array {
         try {
+            // First, get the Page Access Token from User Access Token
+            $pageAccessToken = $this->getPageAccessToken($pageId, $accessToken);
+
+            if (!$pageAccessToken) {
+                Log::warning('Could not get page access token, trying with user token', [
+                    'page_id' => $pageId
+                ]);
+                $pageAccessToken = $accessToken; // Fallback to user token
+            }
+
             $cacheKey = "meta_fb_posts_{$pageId}_" . md5($after ?? 'first');
 
-            return Cache::remember($cacheKey, 300, function () use ($pageId, $accessToken, $limit, $after) {
+            return Cache::remember($cacheKey, 300, function () use ($pageId, $pageAccessToken, $limit, $after) {
                 $url = "{$this->baseUrl}/{$this->apiVersion}/{$pageId}/posts";
 
                 $params = [
-                    'access_token' => $accessToken,
+                    'access_token' => $pageAccessToken,
                     'limit' => $limit,
                     'fields' => implode(',', [
                         'id',
@@ -43,15 +93,11 @@ class MetaPostsService
                         'created_time',
                         'updated_time',
                         'permalink_url',
-                        'status_type',
-                        'type',
                         'is_published',
                         'shares',
                         'likes.summary(true)',
                         'comments.summary(true)',
-                        'reactions.summary(true)',
-                        'attachments{media,media_type,type,url,title,description}',
-                        'insights.metric(post_impressions,post_engaged_users,post_reactions_by_type_total)'
+                        'reactions.summary(true)'
                     ])
                 ];
 
@@ -114,8 +160,7 @@ class MetaPostsService
                         'like_count',
                         'comments_count',
                         'is_comment_enabled',
-                        'children{id,media_type,media_url,thumbnail_url}',
-                        'insights.metric(impressions,reach,engagement,saves,video_views)'
+                        'children{id,media_type,media_url,thumbnail_url}'
                     ])
                 ];
 
