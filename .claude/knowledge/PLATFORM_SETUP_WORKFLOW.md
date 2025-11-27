@@ -1,9 +1,44 @@
 # Platform Integration Setup Workflow Guide
-## Complete Step-by-Step Guide for Setting Up Ad Platform Integrations
+**Version:** 1.1
+**Last Updated:** 2025-11-27
+**Purpose:** Complete step-by-step workflow for integrating advertising platforms in CMIS
+**Prerequisites:** Read `.claude/knowledge/MULTI_TENANCY_PATTERNS.md` for RLS understanding
 
-**Version:** 1.0
-**Last Updated:** 2025-11-22
-**Purpose:** Understand the COMPLETE workflow for integrating advertising platforms in CMIS
+---
+
+## ⚠️ IMPORTANT: Environment Configuration
+
+**Platform OAuth credentials and database access MUST be configured via `.env` and config files.**
+
+### OAuth Configuration
+
+```bash
+# Read platform credentials from .env
+cat .env | grep -E "_CLIENT_ID|_CLIENT_SECRET|_REDIRECT"
+
+# Example .env for Meta platform
+META_CLIENT_ID=your-app-id
+META_CLIENT_SECRET=your-app-secret
+META_REDIRECT_URI=https://your-domain.com/oauth/meta/callback
+
+# Database credentials (for discovery queries)
+DB_HOST=$(grep DB_HOST .env | cut -d '=' -f2)
+DB_DATABASE=$(grep DB_DATABASE .env | cut -d '=' -f2)
+DB_USERNAME=$(grep DB_USERNAME .env | cut -d '=' -f2)
+DB_PASSWORD=$(grep DB_PASSWORD .env | cut -d '=' -f2)
+```
+
+**In Laravel:**
+```php
+// ✅ CORRECT: Use config()
+$clientId = config('services.meta.client_id');
+
+// ❌ WRONG: Hardcoded
+$clientId = '123456789';
+
+// ❌ WRONG: env() outside config files
+$clientId = env('META_CLIENT_ID');
+```
 
 ---
 
@@ -652,9 +687,19 @@ Log::info("Token refreshed", ['token' => $token]); // Security breach!
 
 ---
 
-## 🎯 QUICK REFERENCE CHECKLIST
+## 🔍 Quick Reference
 
-Before implementing ANY platform feature, verify:
+| Integration Phase | Key Action | Must Have |
+|-------------------|------------|-----------|
+| 1. Schema Discovery | Query `cmis_social.social_accounts` structure | Database access via .env |
+| 2. OAuth Setup | Configure in `config/services.php` | Client ID/Secret in .env |
+| 3. OAuth Flow | Implement authorize → callback → token storage | Encryption for tokens |
+| 4. RLS Context | Call `init_transaction_context(user_id, org_id)` | Before all DB operations |
+| 5. Token Management | Implement refresh mechanism | Check `token_expires_at` |
+| 6. Platform API | Use service class with authenticated client | Decrypted access token |
+| 7. Testing | Verify multi-tenancy isolation | Multiple test orgs |
+
+### Pre-Implementation Checklist
 
 - [ ] Database schema understood (organizations, social_accounts, campaigns)
 - [ ] OAuth credentials configured in .env and config/services.php
@@ -669,13 +714,26 @@ Before implementing ANY platform feature, verify:
 
 ---
 
-## 📚 Related Documentation
+## 📚 Related Knowledge
 
-- **Multi-Tenancy:** `.claude/knowledge/MULTI_TENANCY_PATTERNS.md`
-- **Database Schema:** `docs/architecture/database-schema.md`
-- **Platform Integration:** `.claude/agents/cmis-platform-integration.md`
-- **Security:** `.claude/agents/cmis-compliance-security.md`
+**Prerequisites:**
+- **MULTI_TENANCY_PATTERNS.md** - RLS and organization isolation patterns
+- **DISCOVERY_PROTOCOLS.md** - Discovery methodology
+
+**Related Files:**
+- **LARAVEL_CONVENTIONS.md** - Configuration best practices (use config(), not env())
+- **PATTERN_RECOGNITION.md** - Service layer patterns
+- **CMIS_PROJECT_KNOWLEDGE.md** - Core architecture
+
+**See Also:**
+- **CLAUDE.md** - Main project guidelines
+- `.claude/agents/cmis-platform-integration.md` - Platform integration agent
+- `.claude/agents/cmis-compliance-security.md` - Security specialist agent
 
 ---
 
-**Remember:** ALWAYS start with understanding the database schema and OAuth flow BEFORE writing platform-specific code!
+**Last Updated:** 2025-11-27
+**Version:** 1.1
+**Maintained By:** CMIS AI Agent Development Team
+
+*"Schema first, OAuth second, RLS always. NEVER hardcode credentials."*

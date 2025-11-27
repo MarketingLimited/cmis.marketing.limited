@@ -1,10 +1,36 @@
 # Laravel Conventions for CMIS
-## Dynamic Discovery of Laravel Standards and Project-Specific Patterns
-
-**Purpose:** Teach AI agents to discover and apply Laravel conventions as implemented in CMIS, not generic Laravel documentation.
-
-**Last Updated:** 2025-11-18
+**Version:** 2.1
+**Last Updated:** 2025-11-27
+**Purpose:** Discover and apply Laravel conventions as implemented in CMIS through dynamic discovery
+**Prerequisites:** Read `.claude/knowledge/DISCOVERY_PROTOCOLS.md` for discovery methodology
 **Framework:** META_COGNITIVE_FRAMEWORK v2.0
+
+---
+
+## ⚠️ IMPORTANT: Environment Configuration
+
+**Configuration values (database, cache, services) vary by environment. ALWAYS read from `.env` or `config()` files.**
+
+### Laravel Configuration Best Practices
+
+```bash
+# Read environment variables
+cat .env | grep -E "DB_|CACHE_|QUEUE_|APP_"
+
+# Access in code - Use config() helper
+config('database.connections.pgsql.database')  # NOT env('DB_DATABASE')
+config('app.name')
+
+# Access in commands - Extract from .env
+DB_DATABASE=$(grep DB_DATABASE .env | cut -d '=' -f2)
+```
+
+**Key Principles:**
+- ✅ Use `config()` in application code (cached, safe)
+- ✅ Use `env()` ONLY in config files
+- ✅ Extract from `.env` for bash/psql commands
+- ❌ NEVER hardcode database names, credentials, or URLs
+- ❌ NEVER use `env()` outside config files (breaks config caching)
 
 ---
 
@@ -506,9 +532,11 @@ wc -l app/Http/Controllers/API/YourNewController.php  # Should be < 200
 grep "init_transaction_context" app/Jobs/YourNewJob.php
 
 # 5. RLS enabled on table?
-PGPASSWORD='123@Marketing@321' psql -h 127.0.0.1 -U begin -d cmis -c "
-SELECT rowsecurity FROM pg_tables WHERE tablename = 'your_new_table';
-"
+PGPASSWORD="$(grep DB_PASSWORD .env | cut -d '=' -f2)" psql \
+  -h "$(grep DB_HOST .env | cut -d '=' -f2)" \
+  -U "$(grep DB_USERNAME .env | cut -d '=' -f2)" \
+  -d "$(grep DB_DATABASE .env | cut -d '=' -f2)" \
+  -c "SELECT rowsecurity FROM pg_tables WHERE tablename = 'your_new_table';"
 ```
 
 ---
@@ -562,10 +590,43 @@ grep "init_transaction_context" app/Jobs/ | wc -l
 
 ---
 
-**Remember:** Laravel conventions vary by project. Discover how THIS project implements Laravel, don't assume generic patterns.
+## 🔍 Quick Reference
 
-**Version:** 2.0 - Project-Specific Convention Discovery
+| I Need To... | Discovery Command | Section |
+|--------------|-------------------|---------|
+| Check routing pattern | `cat routes/api.php \| head -50` | Routing Conventions |
+| Find controller organization | `ls -la app/Http/Controllers/` | Controller Conventions |
+| Verify UUID usage | `grep -r "HasUuids" app/Models/ \| wc -l` | UUID Primary Keys |
+| Check RLS middleware | `grep "init_transaction_context" app/Http/Middleware/` | Database Context Middleware |
+| Find service layer pattern | `cat app/Services/CampaignService.php` | Service Layer Conventions |
+| Verify multi-tenancy routes | `grep "orgs/{org_id}" routes/api.php \| wc -l` | Multi-Tenant Route Structure |
+| Check validation pattern | `test -d app/Http/Requests && echo "Form Requests" \|\| echo "Inline"` | Validation Conventions |
+| Find test structure | `ls -la tests/Feature/ tests/Unit/` | Testing Conventions |
+
+---
+
+## 📚 Related Knowledge
+
+**Prerequisites:**
+- **DISCOVERY_PROTOCOLS.md** - Discovery methodology and executable commands
+- **META_COGNITIVE_FRAMEWORK.md** - Adaptive intelligence principles
+
+**Related Files:**
+- **CMIS_PROJECT_KNOWLEDGE.md** - Core project architecture and patterns
+- **PATTERN_RECOGNITION.md** - Common architectural patterns in CMIS
+- **MULTI_TENANCY_PATTERNS.md** - RLS and multi-tenancy implementation
+- **CMIS_DATA_PATTERNS.md** - Data modeling patterns
+
+**See Also:**
+- **CLAUDE.md** - Main project guidelines with Laravel standards
+- **CMIS_DISCOVERY_GUIDE.md** - How to discover features in codebase
+
+---
+
+**Last Updated:** 2025-11-27
+**Version:** 2.1
+**Maintained By:** CMIS AI Agent Development Team
 **Framework:** META_COGNITIVE_FRAMEWORK
 **Approach:** Discover > Verify > Apply
 
-*"Conventions are discovered, not assumed."*
+*"Conventions are discovered, not assumed. Use config(), not env()."*

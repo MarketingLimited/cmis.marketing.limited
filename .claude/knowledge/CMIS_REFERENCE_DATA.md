@@ -1,9 +1,45 @@
 # CMIS Reference Data Discovery
-## Finding and Using Platform Reference Data
-
-**Last Updated:** 2025-11-18
+**Version:** 2.1
+**Last Updated:** 2025-11-27
+**Purpose:** Finding and using platform reference data through live database queries
+**Prerequisites:** Read `.claude/knowledge/DISCOVERY_PROTOCOLS.md` for discovery methodology
 **Framework:** META_COGNITIVE_FRAMEWORK v2.0
-**Philosophy:** Query Current Data, Don't Memorize Static Lists
+
+---
+
+## ⚠️ IMPORTANT: Environment Configuration
+
+**ALWAYS read from `.env` for database credentials when querying reference data.**
+
+```bash
+# Read database configuration
+cat .env | grep DB_
+
+# Extract for use in reference data queries
+DB_PASSWORD=$(grep DB_PASSWORD .env | cut -d '=' -f2)
+DB_HOST=$(grep DB_HOST .env | cut -d '=' -f2)
+DB_DATABASE=$(grep DB_DATABASE .env | cut -d '=' -f2)
+DB_USERNAME=$(grep DB_USERNAME .env | cut -d '=' -f2)
+
+# Query reference data
+PGPASSWORD="$DB_PASSWORD" psql -h "$DB_HOST" -U "$DB_USERNAME" -d "$DB_DATABASE" \
+  -c "SELECT * FROM cmis.channels;"
+```
+
+---
+
+## 📑 Table of Contents
+
+1. [Philosophy: Live Data Over Static Lists](#-philosophy-live-data-over-static-lists)
+2. [Discovering Reference Data](#-discovering-reference-data)
+3. [Channels Reference](#-channels-reference)
+4. [Markets Reference](#-markets-reference)
+5. [Permissions System](#-permissions-system)
+6. [Roles System](#-roles-system)
+7. [Industries Reference](#-industries-reference)
+8. [Using Reference Data in Code](#-using-reference-data-in-code)
+9. [Quick Reference Queries](#-quick-reference-queries)
+10. [Key Takeaways](#-key-takeaways)
 
 ---
 
@@ -45,31 +81,51 @@ ls database/seeders/*Seeder.php | grep -E "Channel|Market|Industry|Permission|Ro
 
 ```sql
 -- List all channels
-PGPASSWORD='123@Marketing@321' psql -h 127.0.0.1 -U begin -d cmis -c "
+PGPASSWORD="$(grep DB_PASSWORD .env | cut -d '=' -f2)" psql \
+  -h "$(grep DB_HOST .env | cut -d '=' -f2)" \
+  -U "$(grep DB_USERNAME .env | cut -d '=' -f2)" \
+  -d "$(grep DB_DATABASE .env | cut -d '=' -f2)" \
+  -c "
 SELECT code, name FROM cmis.channels ORDER BY code;
 "
 
 -- List all markets
-PGPASSWORD='123@Marketing@321' psql -h 127.0.0.1 -U begin -d cmis -c "
+PGPASSWORD="$(grep DB_PASSWORD .env | cut -d '=' -f2)" psql \
+  -h "$(grep DB_HOST .env | cut -d '=' -f2)" \
+  -U "$(grep DB_USERNAME .env | cut -d '=' -f2)" \
+  -d "$(grep DB_DATABASE .env | cut -d '=' -f2)" \
+  -c "
 SELECT market_name, language_code, currency_code, text_direction
 FROM cmis.markets
 ORDER BY market_name;
 "
 
 -- List all industries
-PGPASSWORD='123@Marketing@321' psql -h 127.0.0.1 -U begin -d cmis -c "
+PGPASSWORD="$(grep DB_PASSWORD .env | cut -d '=' -f2)" psql \
+  -h "$(grep DB_HOST .env | cut -d '=' -f2)" \
+  -U "$(grep DB_USERNAME .env | cut -d '=' -f2)" \
+  -d "$(grep DB_DATABASE .env | cut -d '=' -f2)" \
+  -c "
 SELECT name FROM cmis.industries ORDER BY name;
 "
 
 -- List all permissions
-PGPASSWORD='123@Marketing@321' psql -h 127.0.0.1 -U begin -d cmis -c "
+PGPASSWORD="$(grep DB_PASSWORD .env | cut -d '=' -f2)" psql \
+  -h "$(grep DB_HOST .env | cut -d '=' -f2)" \
+  -U "$(grep DB_USERNAME .env | cut -d '=' -f2)" \
+  -d "$(grep DB_DATABASE .env | cut -d '=' -f2)" \
+  -c "
 SELECT permission_code, permission_name, category, is_dangerous
 FROM cmis.permissions
 ORDER BY category, permission_code;
 "
 
 -- List all roles
-PGPASSWORD='123@Marketing@321' psql -h 127.0.0.1 -U begin -d cmis -c "
+PGPASSWORD="$(grep DB_PASSWORD .env | cut -d '=' -f2)" psql \
+  -h "$(grep DB_HOST .env | cut -d '=' -f2)" \
+  -U "$(grep DB_USERNAME .env | cut -d '=' -f2)" \
+  -d "$(grep DB_DATABASE .env | cut -d '=' -f2)" \
+  -c "
 SELECT role_code, role_name, is_system
 FROM cmis.roles
 WHERE is_system = true
@@ -85,7 +141,11 @@ ORDER BY role_name;
 
 ```sql
 -- Get channel with constraints
-PGPASSWORD='123@Marketing@321' psql -h 127.0.0.1 -U begin -d cmis -c "
+PGPASSWORD="$(grep DB_PASSWORD .env | cut -d '=' -f2)" psql \
+  -h "$(grep DB_HOST .env | cut -d '=' -f2)" \
+  -U "$(grep DB_USERNAME .env | cut -d '=' -f2)" \
+  -d "$(grep DB_DATABASE .env | cut -d '=' -f2)" \
+  -c "
 SELECT
     code,
     name,
@@ -117,12 +177,20 @@ When you query a channel, you'll see JSONB constraints like:
 
 ```bash
 # Quick count
-PGPASSWORD='123@Marketing@321' psql -h 127.0.0.1 -U begin -d cmis -c "
+PGPASSWORD="$(grep DB_PASSWORD .env | cut -d '=' -f2)" psql \
+  -h "$(grep DB_HOST .env | cut -d '=' -f2)" \
+  -U "$(grep DB_USERNAME .env | cut -d '=' -f2)" \
+  -d "$(grep DB_DATABASE .env | cut -d '=' -f2)" \
+  -c "
 SELECT COUNT(*) as total_channels FROM cmis.channels;
 "
 
 # List all with key info
-PGPASSWORD='123@Marketing@321' psql -h 127.0.0.1 -U begin -d cmis -c "
+PGPASSWORD="$(grep DB_PASSWORD .env | cut -d '=' -f2)" psql \
+  -h "$(grep DB_HOST .env | cut -d '=' -f2)" \
+  -U "$(grep DB_USERNAME .env | cut -d '=' -f2)" \
+  -d "$(grep DB_DATABASE .env | cut -d '=' -f2)" \
+  -c "
 SELECT
     code,
     name,
@@ -204,12 +272,20 @@ if (!in_array($format, $constraints->supported_formats)) {
 
 ```sql
 -- Count markets
-PGPASSWORD='123@Marketing@321' psql -h 127.0.0.1 -U begin -d cmis -c "
+PGPASSWORD="$(grep DB_PASSWORD .env | cut -d '=' -f2)" psql \
+  -h "$(grep DB_HOST .env | cut -d '=' -f2)" \
+  -U "$(grep DB_USERNAME .env | cut -d '=' -f2)" \
+  -d "$(grep DB_DATABASE .env | cut -d '=' -f2)" \
+  -c "
 SELECT COUNT(*) as total_markets FROM cmis.markets;
 "
 
 -- Group by region
-PGPASSWORD='123@Marketing@321' psql -h 127.0.0.1 -U begin -d cmis -c "
+PGPASSWORD="$(grep DB_PASSWORD .env | cut -d '=' -f2)" psql \
+  -h "$(grep DB_HOST .env | cut -d '=' -f2)" \
+  -U "$(grep DB_USERNAME .env | cut -d '=' -f2)" \
+  -d "$(grep DB_DATABASE .env | cut -d '=' -f2)" \
+  -c "
 SELECT
     region_code,
     COUNT(*) as market_count
@@ -219,7 +295,11 @@ ORDER BY market_count DESC;
 "
 
 -- RTL vs LTR markets
-PGPASSWORD='123@Marketing@321' psql -h 127.0.0.1 -U begin -d cmis -c "
+PGPASSWORD="$(grep DB_PASSWORD .env | cut -d '=' -f2)" psql \
+  -h "$(grep DB_HOST .env | cut -d '=' -f2)" \
+  -U "$(grep DB_USERNAME .env | cut -d '=' -f2)" \
+  -d "$(grep DB_DATABASE .env | cut -d '=' -f2)" \
+  -c "
 SELECT
     text_direction,
     COUNT(*) as count
@@ -232,7 +312,11 @@ GROUP BY text_direction;
 
 ```sql
 -- Sample market data
-PGPASSWORD='123@Marketing@321' psql -h 127.0.0.1 -U begin -d cmis -c "
+PGPASSWORD="$(grep DB_PASSWORD .env | cut -d '=' -f2)" psql \
+  -h "$(grep DB_HOST .env | cut -d '=' -f2)" \
+  -U "$(grep DB_USERNAME .env | cut -d '=' -f2)" \
+  -d "$(grep DB_DATABASE .env | cut -d '=' -f2)" \
+  -c "
 SELECT
     market_name,
     language_code,
@@ -299,7 +383,11 @@ Asia Pacific (APAC):
 
 ```sql
 -- Find Arabic markets
-PGPASSWORD='123@Marketing@321' psql -h 127.0.0.1 -U begin -d cmis -c "
+PGPASSWORD="$(grep DB_PASSWORD .env | cut -d '=' -f2)" psql \
+  -h "$(grep DB_HOST .env | cut -d '=' -f2)" \
+  -U "$(grep DB_USERNAME .env | cut -d '=' -f2)" \
+  -d "$(grep DB_DATABASE .env | cut -d '=' -f2)" \
+  -c "
 SELECT market_name, currency_code
 FROM cmis.markets
 WHERE language_code = 'ar'
@@ -307,7 +395,11 @@ ORDER BY market_name;
 "
 
 -- Find EUR markets
-PGPASSWORD='123@Marketing@321' psql -h 127.0.0.1 -U begin -d cmis -c "
+PGPASSWORD="$(grep DB_PASSWORD .env | cut -d '=' -f2)" psql \
+  -h "$(grep DB_HOST .env | cut -d '=' -f2)" \
+  -U "$(grep DB_USERNAME .env | cut -d '=' -f2)" \
+  -d "$(grep DB_DATABASE .env | cut -d '=' -f2)" \
+  -c "
 SELECT market_name
 FROM cmis.markets
 WHERE currency_code = 'EUR'
@@ -323,12 +415,20 @@ ORDER BY market_name;
 
 ```sql
 -- Count industries
-PGPASSWORD='123@Marketing@321' psql -h 127.0.0.1 -U begin -d cmis -c "
+PGPASSWORD="$(grep DB_PASSWORD .env | cut -d '=' -f2)" psql \
+  -h "$(grep DB_HOST .env | cut -d '=' -f2)" \
+  -U "$(grep DB_USERNAME .env | cut -d '=' -f2)" \
+  -d "$(grep DB_DATABASE .env | cut -d '=' -f2)" \
+  -c "
 SELECT COUNT(*) as total_industries FROM cmis.industries;
 "
 
 -- List all
-PGPASSWORD='123@Marketing@321' psql -h 127.0.0.1 -U begin -d cmis -c "
+PGPASSWORD="$(grep DB_PASSWORD .env | cut -d '=' -f2)" psql \
+  -h "$(grep DB_HOST .env | cut -d '=' -f2)" \
+  -U "$(grep DB_USERNAME .env | cut -d '=' -f2)" \
+  -d "$(grep DB_DATABASE .env | cut -d '=' -f2)" \
+  -c "
 SELECT
     industry_id,
     name,
@@ -376,7 +476,11 @@ $campaigns = Campaign::whereHas('segments', function ($query) use ($industry) {
 
 ```sql
 -- Discover permission pattern
-PGPASSWORD='123@Marketing@321' psql -h 127.0.0.1 -U begin -d cmis -c "
+PGPASSWORD="$(grep DB_PASSWORD .env | cut -d '=' -f2)" psql \
+  -h "$(grep DB_HOST .env | cut -d '=' -f2)" \
+  -U "$(grep DB_USERNAME .env | cut -d '=' -f2)" \
+  -d "$(grep DB_DATABASE .env | cut -d '=' -f2)" \
+  -c "
 SELECT
     permission_code,
     permission_name,
@@ -388,7 +492,11 @@ LIMIT 20;
 "
 
 -- Count by category
-PGPASSWORD='123@Marketing@321' psql -h 127.0.0.1 -U begin -d cmis -c "
+PGPASSWORD="$(grep DB_PASSWORD .env | cut -d '=' -f2)" psql \
+  -h "$(grep DB_HOST .env | cut -d '=' -f2)" \
+  -U "$(grep DB_USERNAME .env | cut -d '=' -f2)" \
+  -d "$(grep DB_DATABASE .env | cut -d '=' -f2)" \
+  -c "
 SELECT
     category,
     COUNT(*) as permission_count
@@ -398,7 +506,11 @@ ORDER BY permission_count DESC;
 "
 
 -- Find dangerous permissions
-PGPASSWORD='123@Marketing@321' psql -h 127.0.0.1 -U begin -d cmis -c "
+PGPASSWORD="$(grep DB_PASSWORD .env | cut -d '=' -f2)" psql \
+  -h "$(grep DB_HOST .env | cut -d '=' -f2)" \
+  -U "$(grep DB_USERNAME .env | cut -d '=' -f2)" \
+  -d "$(grep DB_DATABASE .env | cut -d '=' -f2)" \
+  -c "
 SELECT permission_code, permission_name
 FROM cmis.permissions
 WHERE is_dangerous = true
@@ -480,7 +592,11 @@ if (!auth()->user()->hasAllPermissions($required)) {
 
 ```sql
 -- Discover all dangerous permissions
-PGPASSWORD='123@Marketing@321' psql -h 127.0.0.1 -U begin -d cmis -c "
+PGPASSWORD="$(grep DB_PASSWORD .env | cut -d '=' -f2)" psql \
+  -h "$(grep DB_HOST .env | cut -d '=' -f2)" \
+  -U "$(grep DB_USERNAME .env | cut -d '=' -f2)" \
+  -d "$(grep DB_DATABASE .env | cut -d '=' -f2)" \
+  -c "
 SELECT
     permission_code,
     permission_name,
@@ -508,7 +624,11 @@ ORDER BY category;
 
 ```sql
 -- List system roles
-PGPASSWORD='123@Marketing@321' psql -h 127.0.0.1 -U begin -d cmis -c "
+PGPASSWORD="$(grep DB_PASSWORD .env | cut -d '=' -f2)" psql \
+  -h "$(grep DB_HOST .env | cut -d '=' -f2)" \
+  -U "$(grep DB_USERNAME .env | cut -d '=' -f2)" \
+  -d "$(grep DB_DATABASE .env | cut -d '=' -f2)" \
+  -c "
 SELECT
     role_code,
     role_name,
@@ -520,7 +640,11 @@ ORDER BY role_name;
 "
 
 -- Count roles
-PGPASSWORD='123@Marketing@321' psql -h 127.0.0.1 -U begin -d cmis -c "
+PGPASSWORD="$(grep DB_PASSWORD .env | cut -d '=' -f2)" psql \
+  -h "$(grep DB_HOST .env | cut -d '=' -f2)" \
+  -U "$(grep DB_USERNAME .env | cut -d '=' -f2)" \
+  -d "$(grep DB_DATABASE .env | cut -d '=' -f2)" \
+  -c "
 SELECT
     COUNT(*) FILTER (WHERE is_system = true) as system_roles,
     COUNT(*) FILTER (WHERE is_system = false) as custom_roles
@@ -543,7 +667,11 @@ FROM cmis.roles;
 
 ```sql
 -- Get permissions for a role
-PGPASSWORD='123@Marketing@321' psql -h 127.0.0.1 -U begin -d cmis -c "
+PGPASSWORD="$(grep DB_PASSWORD .env | cut -d '=' -f2)" psql \
+  -h "$(grep DB_HOST .env | cut -d '=' -f2)" \
+  -U "$(grep DB_USERNAME .env | cut -d '=' -f2)" \
+  -d "$(grep DB_DATABASE .env | cut -d '=' -f2)" \
+  -c "
 SELECT
     p.permission_code,
     p.permission_name
@@ -681,28 +809,60 @@ if (auth()->user()->hasPermission('system.settings')) {
 
 ```bash
 # List all channels
-PGPASSWORD='123@Marketing@321' psql -h 127.0.0.1 -U begin -d cmis -c "SELECT code, name FROM cmis.channels ORDER BY code;"
+PGPASSWORD="$(grep DB_PASSWORD .env | cut -d '=' -f2)" psql \
+  -h "$(grep DB_HOST .env | cut -d '=' -f2)" \
+  -U "$(grep DB_USERNAME .env | cut -d '=' -f2)" \
+  -d "$(grep DB_DATABASE .env | cut -d '=' -f2)" \
+  -c "SELECT code, name FROM cmis.channels ORDER BY code;"
 
 # List all markets
-PGPASSWORD='123@Marketing@321' psql -h 127.0.0.1 -U begin -d cmis -c "SELECT market_name, currency_code FROM cmis.markets ORDER BY market_name;"
+PGPASSWORD="$(grep DB_PASSWORD .env | cut -d '=' -f2)" psql \
+  -h "$(grep DB_HOST .env | cut -d '=' -f2)" \
+  -U "$(grep DB_USERNAME .env | cut -d '=' -f2)" \
+  -d "$(grep DB_DATABASE .env | cut -d '=' -f2)" \
+  -c "SELECT market_name, currency_code FROM cmis.markets ORDER BY market_name;"
 
 # List all industries
-PGPASSWORD='123@Marketing@321' psql -h 127.0.0.1 -U begin -d cmis -c "SELECT name FROM cmis.industries ORDER BY name;"
+PGPASSWORD="$(grep DB_PASSWORD .env | cut -d '=' -f2)" psql \
+  -h "$(grep DB_HOST .env | cut -d '=' -f2)" \
+  -U "$(grep DB_USERNAME .env | cut -d '=' -f2)" \
+  -d "$(grep DB_DATABASE .env | cut -d '=' -f2)" \
+  -c "SELECT name FROM cmis.industries ORDER BY name;"
 
 # List permissions by category
-PGPASSWORD='123@Marketing@321' psql -h 127.0.0.1 -U begin -d cmis -c "SELECT category, COUNT(*) FROM cmis.permissions GROUP BY category ORDER BY category;"
+PGPASSWORD="$(grep DB_PASSWORD .env | cut -d '=' -f2)" psql \
+  -h "$(grep DB_HOST .env | cut -d '=' -f2)" \
+  -U "$(grep DB_USERNAME .env | cut -d '=' -f2)" \
+  -d "$(grep DB_DATABASE .env | cut -d '=' -f2)" \
+  -c "SELECT category, COUNT(*) FROM cmis.permissions GROUP BY category ORDER BY category;"
 
 # List system roles
-PGPASSWORD='123@Marketing@321' psql -h 127.0.0.1 -U begin -d cmis -c "SELECT role_code, role_name FROM cmis.roles WHERE is_system = true ORDER BY role_name;"
+PGPASSWORD="$(grep DB_PASSWORD .env | cut -d '=' -f2)" psql \
+  -h "$(grep DB_HOST .env | cut -d '=' -f2)" \
+  -U "$(grep DB_USERNAME .env | cut -d '=' -f2)" \
+  -d "$(grep DB_DATABASE .env | cut -d '=' -f2)" \
+  -c "SELECT role_code, role_name FROM cmis.roles WHERE is_system = true ORDER BY role_name;"
 
 # Get channel constraints
-PGPASSWORD='123@Marketing@321' psql -h 127.0.0.1 -U begin -d cmis -c "SELECT code, jsonb_pretty(constraints) FROM cmis.channels WHERE code = 'instagram';"
+PGPASSWORD="$(grep DB_PASSWORD .env | cut -d '=' -f2)" psql \
+  -h "$(grep DB_HOST .env | cut -d '=' -f2)" \
+  -U "$(grep DB_USERNAME .env | cut -d '=' -f2)" \
+  -d "$(grep DB_DATABASE .env | cut -d '=' -f2)" \
+  -c "SELECT code, jsonb_pretty(constraints) FROM cmis.channels WHERE code = 'instagram';"
 
 # Find dangerous permissions
-PGPASSWORD='123@Marketing@321' psql -h 127.0.0.1 -U begin -d cmis -c "SELECT permission_code, permission_name FROM cmis.permissions WHERE is_dangerous = true;"
+PGPASSWORD="$(grep DB_PASSWORD .env | cut -d '=' -f2)" psql \
+  -h "$(grep DB_HOST .env | cut -d '=' -f2)" \
+  -U "$(grep DB_USERNAME .env | cut -d '=' -f2)" \
+  -d "$(grep DB_DATABASE .env | cut -d '=' -f2)" \
+  -c "SELECT permission_code, permission_name FROM cmis.permissions WHERE is_dangerous = true;"
 
 # Find RTL markets
-PGPASSWORD='123@Marketing@321' psql -h 127.0.0.1 -U begin -d cmis -c "SELECT market_name FROM cmis.markets WHERE text_direction = 'rtl';"
+PGPASSWORD="$(grep DB_PASSWORD .env | cut -d '=' -f2)" psql \
+  -h "$(grep DB_HOST .env | cut -d '=' -f2)" \
+  -U "$(grep DB_USERNAME .env | cut -d '=' -f2)" \
+  -d "$(grep DB_DATABASE .env | cut -d '=' -f2)" \
+  -c "SELECT market_name FROM cmis.markets WHERE text_direction = 'rtl';"
 ```
 
 ---
@@ -801,12 +961,37 @@ if ($permission->is_dangerous) {
 
 ---
 
-## 📚 RELATED KNOWLEDGE
+## 🔍 Quick Reference
 
+| I Need To... | Discovery Command | Section |
+|--------------|-------------------|---------|
+| List all channels | `SELECT code, name FROM cmis.channels` (use .env) | Channels |
+| Find markets | `SELECT market_name, currency_code FROM cmis.markets` (use .env) | Markets |
+| Check permissions | `SELECT permission_code FROM cmis.permissions` (use .env) | Permissions |
+| View system roles | `SELECT role_code FROM cmis.roles WHERE is_system = true` (use .env) | Roles |
+| Get channel constraints | `SELECT code, constraints FROM cmis.channels WHERE code = 'instagram'` (use .env) | Channel Constraints |
+| Find dangerous permissions | `SELECT permission_code FROM cmis.permissions WHERE is_dangerous = true` (use .env) | Dangerous Permissions |
+| List RTL markets | `SELECT market_name FROM cmis.markets WHERE text_direction = 'rtl'` (use .env) | RTL Markets |
+| Find industries | `SELECT name FROM cmis.industries ORDER BY name` (use .env) | Industries |
+
+---
+
+## 📚 Related Knowledge
+
+**Prerequisites:**
+- **DISCOVERY_PROTOCOLS.md** - Discovery methodology and executable commands
+- **META_COGNITIVE_FRAMEWORK.md** - Adaptive intelligence principles
+
+**Related Files:**
 - **CMIS_DISCOVERY_GUIDE.md** - General discovery methodology
-- **CMIS_DATA_PATTERNS.md** - Data structure patterns
-- **PATTERN_RECOGNITION.md** - Architectural patterns
-- **MULTI_TENANCY_PATTERNS.md** - RLS and multi-tenancy
+- **CMIS_DATA_PATTERNS.md** - Data structure and modeling patterns
+- **PATTERN_RECOGNITION.md** - Architectural patterns across codebase
+- **MULTI_TENANCY_PATTERNS.md** - RLS and multi-tenancy patterns
+- **CMIS_SQL_INSIGHTS.md** - SQL patterns and database queries
+
+**See Also:**
+- **CLAUDE.md** - Main project guidelines
+- **CMIS_PROJECT_KNOWLEDGE.md** - Core project architecture
 
 ---
 
@@ -822,8 +1007,10 @@ if ($permission->is_dangerous) {
 
 ---
 
-**Version:** 2.0 - Discovery-Oriented Reference
+**Last Updated:** 2025-11-27
+**Version:** 2.1
+**Maintained By:** CMIS AI Agent Development Team
 **Framework:** META_COGNITIVE_FRAMEWORK
 **Approach:** Query Current, Don't Memorize Static
 
-*"Reference data should be queried, not memorized."*
+*"Reference data should be queried, not memorized. Use .env for all database access."*

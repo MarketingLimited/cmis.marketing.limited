@@ -1,10 +1,35 @@
 # CMIS Discovery Guide
-## Teaching Agents HOW to Learn CMIS (Not WHAT CMIS Is)
-
-**Purpose:** This guide teaches AI agents HOW to discover CMIS project knowledge dynamically, not memorize static facts.
-
-**Last Updated:** 2025-11-18
+**Version:** 2.1
+**Last Updated:** 2025-11-27
+**Purpose:** Teaching agents HOW to discover CMIS knowledge dynamically through executable commands
+**Prerequisites:** Read `.claude/knowledge/META_COGNITIVE_FRAMEWORK.md` and `DISCOVERY_PROTOCOLS.md`
 **Framework:** META_COGNITIVE_FRAMEWORK v2.0
+
+---
+
+## ⚠️ IMPORTANT: Environment Configuration for Discovery
+
+**All discovery commands that access the database MUST use `.env` credentials.**
+
+```bash
+# Read database configuration before discovery
+cat .env | grep DB_
+
+# Extract for use in discovery queries
+DB_HOST=$(grep DB_HOST .env | cut -d '=' -f2)
+DB_DATABASE=$(grep DB_DATABASE .env | cut -d '=' -f2)
+DB_USERNAME=$(grep DB_USERNAME .env | cut -d '=' -f2)
+DB_PASSWORD=$(grep DB_PASSWORD .env | cut -d '=' -f2)
+
+# Use in discovery SQL commands
+PGPASSWORD="$DB_PASSWORD" psql \
+  -h "$DB_HOST" \
+  -U "$DB_USERNAME" \
+  -d "$DB_DATABASE" \
+  -c "SELECT * FROM pg_tables WHERE schemaname LIKE 'cmis%';"
+```
+
+**Discovery Principle:** Never assume database names or credentials. Always discover from `.env` first.
 
 ---
 
@@ -495,10 +520,42 @@ cat app/Models/Core/Campaign.php | head -50
 
 ---
 
-**Remember:** This guide teaches HOW to discover, not WHAT to know. Every time you need information, DISCOVER it fresh from the codebase, don't rely on memory.
+## 🔍 Quick Reference
 
-**Version:** 2.0 - Discovery-Oriented Knowledge
+| I Want To Discover... | Use This Command | Knowledge File |
+|----------------------|------------------|----------------|
+| Database schemas | `SELECT nspname FROM pg_namespace WHERE nspname LIKE 'cmis%'` (use .env) | DISCOVERY_PROTOCOLS.md |
+| Frontend stack | `cat package.json \| jq '.dependencies'` | Codebase Discovery |
+| Laravel version | `cat composer.json \| jq '.require["laravel/framework"]'` | Codebase Discovery |
+| Model structure | `find app/Models -name "*.php" \| wc -l` | Laravel Discovery |
+| Platform integrations | `find app/Services -name "*Platform*.php"` | Platform Discovery |
+| RLS policies | `SELECT COUNT(*) FROM pg_policies WHERE schemaname LIKE 'cmis%'` (use .env) | Multi-Tenancy Discovery |
+| AI capabilities | `grep -r "vector\|embedding" app/` | AI Capabilities Discovery |
+
+---
+
+## 📚 Related Knowledge
+
+**Prerequisites:**
+- **META_COGNITIVE_FRAMEWORK.md** - Adaptive intelligence and discovery principles
+- **DISCOVERY_PROTOCOLS.md** - Comprehensive executable discovery commands
+
+**Related Files:**
+- **CMIS_PROJECT_KNOWLEDGE.md** - Core project architecture overview
+- **CMIS_SQL_INSIGHTS.md** - Database discovery patterns
+- **CMIS_DATA_PATTERNS.md** - Data structure discovery
+- **LARAVEL_CONVENTIONS.md** - Laravel-specific discovery patterns
+- **MULTI_TENANCY_PATTERNS.md** - RLS discovery patterns
+
+**See Also:**
+- **CLAUDE.md** - Main project guidelines with environment configuration
+
+---
+
+**Last Updated:** 2025-11-27
+**Version:** 2.1
+**Maintained By:** CMIS AI Agent Development Team
 **Framework:** META_COGNITIVE_FRAMEWORK
 **Approach:** Dynamic Discovery > Static Documentation
 
-*"The best knowledge is knowing how to learn."*
+*"The best knowledge is knowing how to learn. Discover fresh, use .env always."*

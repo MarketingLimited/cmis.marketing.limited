@@ -1,9 +1,46 @@
 # CMIS Data Pattern Discovery
-## Learning Data Structures Through Real Examples
-
-**Last Updated:** 2025-11-18
+**Version:** 2.1
+**Last Updated:** 2025-11-27
+**Purpose:** Learning data structures through discovery of real examples and pattern recognition
+**Prerequisites:** Read `.claude/knowledge/DISCOVERY_PROTOCOLS.md` for discovery methodology
 **Framework:** META_COGNITIVE_FRAMEWORK v2.0
-**Philosophy:** Learn Patterns, Not Facts
+
+---
+
+## ⚠️ IMPORTANT: Environment Configuration
+
+**ALWAYS read from `.env` for database credentials when querying for data patterns.**
+
+```bash
+# Read database configuration
+cat .env | grep DB_
+
+# Extract for use in pattern discovery commands
+DB_PASSWORD=$(grep DB_PASSWORD .env | cut -d '=' -f2)
+DB_HOST=$(grep DB_HOST .env | cut -d '=' -f2)
+DB_DATABASE=$(grep DB_DATABASE .env | cut -d '=' -f2)
+DB_USERNAME=$(grep DB_USERNAME .env | cut -d '=' -f2)
+
+# Use in PostgreSQL commands for discovering data patterns
+PGPASSWORD="$DB_PASSWORD" psql -h "$DB_HOST" -U "$DB_USERNAME" -d "$DB_DATABASE"
+```
+
+---
+
+## 📑 Table of Contents
+
+1. [Philosophy: Patterns Over Examples](#-philosophy-patterns-over-examples)
+2. [Discovering Data Patterns](#-discovering-data-patterns)
+3. [Pattern 1: Multi-Context System](#-pattern-1-multi-context-system)
+4. [Pattern 2: JSONB Flexible Structures](#-pattern-2-jsonb-flexible-structures)
+5. [Pattern 3: Quality Scoring (0.00-1.00)](#-pattern-3-quality-scoring-000-100)
+6. [Pattern 4: Platform-Specific Data](#-pattern-4-platform-specific-data)
+7. [Pattern 5: Status Enums](#-pattern-5-status-enums)
+8. [Pattern 6: EAV (Entity-Attribute-Value)](#-pattern-6-eav-entity-attribute-value)
+9. [Pattern 7: Bilingual Data](#-pattern-7-bilingual-data)
+10. [Pattern 8: Activity Logging](#-pattern-8-activity-logging)
+11. [Practical Pattern Application](#-practical-pattern-application)
+12. [Key Takeaways](#-key-takeaways)
 
 ---
 
@@ -55,12 +92,20 @@ grep -A 5 "INSERT INTO" database/backup*.sql | head -50
 
 ```sql
 -- Sample data from key tables
-PGPASSWORD='123@Marketing@321' psql -h 127.0.0.1 -U begin -d cmis -c "
+PGPASSWORD="$(grep DB_PASSWORD .env | cut -d '=' -f2)" psql \
+  -h "$(grep DB_HOST .env | cut -d '=' -f2)" \
+  -U "$(grep DB_USERNAME .env | cut -d '=' -f2)" \
+  -d "$(grep DB_DATABASE .env | cut -d '=' -f2)" \
+  -c "
 SELECT * FROM cmis.campaigns LIMIT 3;
 "
 
 -- JSONB structure examples
-PGPASSWORD='123@Marketing@321' psql -h 127.0.0.1 -U begin -d cmis -c "
+PGPASSWORD="$(grep DB_PASSWORD .env | cut -d '=' -f2)" psql \
+  -h "$(grep DB_HOST .env | cut -d '=' -f2)" \
+  -U "$(grep DB_USERNAME .env | cut -d '=' -f2)" \
+  -d "$(grep DB_DATABASE .env | cut -d '=' -f2)" \
+  -c "
 SELECT
     campaign_id,
     name,
@@ -84,7 +129,11 @@ find app/Models -name "*Context*.php"
 grep -A 10 "type.*=>" database/seeders/*Seeder.php | grep -B2 -A2 "creative\|value\|offering"
 
 # Find context tables
-PGPASSWORD='123@Marketing@321' psql -h 127.0.0.1 -U begin -d cmis -c "
+PGPASSWORD="$(grep DB_PASSWORD .env | cut -d '=' -f2)" psql \
+  -h "$(grep DB_HOST .env | cut -d '=' -f2)" \
+  -U "$(grep DB_USERNAME .env | cut -d '=' -f2)" \
+  -d "$(grep DB_DATABASE .env | cut -d '=' -f2)" \
+  -c "
 SELECT tablename
 FROM pg_tables
 WHERE schemaname = 'cmis'
@@ -111,12 +160,20 @@ $contexts = [
 
 ```sql
 -- Discover value_contexts table structure
-PGPASSWORD='123@Marketing@321' psql -h 127.0.0.1 -U begin -d cmis -c "
+PGPASSWORD="$(grep DB_PASSWORD .env | cut -d '=' -f2)" psql \
+  -h "$(grep DB_HOST .env | cut -d '=' -f2)" \
+  -U "$(grep DB_USERNAME .env | cut -d '=' -f2)" \
+  -d "$(grep DB_DATABASE .env | cut -d '=' -f2)" \
+  -c "
 \d cmis.value_contexts
 "
 
 -- Sample real data
-PGPASSWORD='123@Marketing@321' psql -h 127.0.0.1 -U begin -d cmis -c "
+PGPASSWORD="$(grep DB_PASSWORD .env | cut -d '=' -f2)" psql \
+  -h "$(grep DB_HOST .env | cut -d '=' -f2)" \
+  -U "$(grep DB_USERNAME .env | cut -d '=' -f2)" \
+  -d "$(grep DB_DATABASE .env | cut -d '=' -f2)" \
+  -c "
 SELECT
     locale,
     awareness_stage,
@@ -150,7 +207,11 @@ From examining real data, you'll discover:
 
 ```sql
 -- Find all JSONB columns
-PGPASSWORD='123@Marketing@321' psql -h 127.0.0.1 -U begin -d cmis -c "
+PGPASSWORD="$(grep DB_PASSWORD .env | cut -d '=' -f2)" psql \
+  -h "$(grep DB_HOST .env | cut -d '=' -f2)" \
+  -U "$(grep DB_USERNAME .env | cut -d '=' -f2)" \
+  -d "$(grep DB_DATABASE .env | cut -d '=' -f2)" \
+  -c "
 SELECT
     table_schema,
     table_name,
@@ -170,7 +231,11 @@ ORDER BY table_name, column_name;
 grep -A 30 "brief_data.*=>" database/seeders/DemoDataSeeder.php | head -40
 
 # Or query real examples
-PGPASSWORD='123@Marketing@321' psql -h 127.0.0.1 -U begin -d cmis -c "
+PGPASSWORD="$(grep DB_PASSWORD .env | cut -d '=' -f2)" psql \
+  -h "$(grep DB_HOST .env | cut -d '=' -f2)" \
+  -U "$(grep DB_USERNAME .env | cut -d '=' -f2)" \
+  -d "$(grep DB_DATABASE .env | cut -d '=' -f2)" \
+  -c "
 SELECT
     name,
     jsonb_pretty(brief_data)
@@ -211,12 +276,20 @@ LIMIT 2;
 
 ```sql
 -- Discover social_posts structure
-PGPASSWORD='123@Marketing@321' psql -h 127.0.0.1 -U begin -d cmis -c "
+PGPASSWORD="$(grep DB_PASSWORD .env | cut -d '=' -f2)" psql \
+  -h "$(grep DB_HOST .env | cut -d '=' -f2)" \
+  -U "$(grep DB_USERNAME .env | cut -d '=' -f2)" \
+  -d "$(grep DB_DATABASE .env | cut -d '=' -f2)" \
+  -c "
 \d cmis.social_posts
 "
 
 -- Sample posts with metrics
-PGPASSWORD='123@Marketing@321' psql -h 127.0.0.1 -U begin -d cmis -c "
+PGPASSWORD="$(grep DB_PASSWORD .env | cut -d '=' -f2)" psql \
+  -h "$(grep DB_HOST .env | cut -d '=' -f2)" \
+  -U "$(grep DB_USERNAME .env | cut -d '=' -f2)" \
+  -d "$(grep DB_DATABASE .env | cut -d '=' -f2)" \
+  -c "
 SELECT
     caption,
     media_type,
@@ -254,7 +327,11 @@ LIMIT 3;
 grep -A 15 "CAROUSEL" database/seeders/DemoDataSeeder.php
 
 # Check for children_media field
-PGPASSWORD='123@Marketing@321' psql -h 127.0.0.1 -U begin -d cmis -c "
+PGPASSWORD="$(grep DB_PASSWORD .env | cut -d '=' -f2)" psql \
+  -h "$(grep DB_HOST .env | cut -d '=' -f2)" \
+  -U "$(grep DB_USERNAME .env | cut -d '=' -f2)" \
+  -d "$(grep DB_DATABASE .env | cut -d '=' -f2)" \
+  -c "
 SELECT
     media_type,
     jsonb_pretty(children_media)
@@ -274,12 +351,20 @@ LIMIT 1;
 
 ```sql
 -- Find field definitions table
-PGPASSWORD='123@Marketing@321' psql -h 127.0.0.1 -U begin -d cmis -c "
+PGPASSWORD="$(grep DB_PASSWORD .env | cut -d '=' -f2)" psql \
+  -h "$(grep DB_HOST .env | cut -d '=' -f2)" \
+  -U "$(grep DB_USERNAME .env | cut -d '=' -f2)" \
+  -d "$(grep DB_DATABASE .env | cut -d '=' -f2)" \
+  -c "
 \d cmis.field_definitions
 "
 
 -- Sample field definitions
-PGPASSWORD='123@Marketing@321' psql -h 127.0.0.1 -U begin -d cmis -c "
+PGPASSWORD="$(grep DB_PASSWORD .env | cut -d '=' -f2)" psql \
+  -h "$(grep DB_HOST .env | cut -d '=' -f2)" \
+  -U "$(grep DB_USERNAME .env | cut -d '=' -f2)" \
+  -d "$(grep DB_DATABASE .env | cut -d '=' -f2)" \
+  -c "
 SELECT
     module_code,
     name,
@@ -301,7 +386,11 @@ LIMIT 10;
 grep -A 5 "'module'" database/seeders/*Seeder.php | grep -o "'[a-z_]*'" | sort | uniq
 
 # Query modules
-PGPASSWORD='123@Marketing@321' psql -h 127.0.0.1 -U begin -d cmis -c "
+PGPASSWORD="$(grep DB_PASSWORD .env | cut -d '=' -f2)" psql \
+  -h "$(grep DB_HOST .env | cut -d '=' -f2)" \
+  -U "$(grep DB_USERNAME .env | cut -d '=' -f2)" \
+  -d "$(grep DB_DATABASE .env | cut -d '=' -f2)" \
+  -c "
 SELECT code, name FROM cmis.modules ORDER BY code;
 "
 ```
@@ -342,7 +431,11 @@ Field definitions are organized by modules:
 
 ```sql
 -- Find video template tables
-PGPASSWORD='123@Marketing@321' psql -h 127.0.0.1 -U begin -d cmis -c "
+PGPASSWORD="$(grep DB_PASSWORD .env | cut -d '=' -f2)" psql \
+  -h "$(grep DB_HOST .env | cut -d '=' -f2)" \
+  -U "$(grep DB_USERNAME .env | cut -d '=' -f2)" \
+  -d "$(grep DB_DATABASE .env | cut -d '=' -f2)" \
+  -c "
 SELECT tablename FROM pg_tables
 WHERE schemaname = 'cmis'
   AND tablename LIKE '%video%'
@@ -350,7 +443,11 @@ ORDER BY tablename;
 "
 
 -- Sample video template
-PGPASSWORD='123@Marketing@321' psql -h 127.0.0.1 -U begin -d cmis -c "
+PGPASSWORD="$(grep DB_PASSWORD .env | cut -d '=' -f2)" psql \
+  -h "$(grep DB_HOST .env | cut -d '=' -f2)" \
+  -U "$(grep DB_USERNAME .env | cut -d '=' -f2)" \
+  -d "$(grep DB_DATABASE .env | cut -d '=' -f2)" \
+  -c "
 SELECT
     name,
     jsonb_pretty(steps) as template_steps
@@ -398,12 +495,20 @@ Video templates use step-based structure:
 
 ```sql
 -- Discover metrics table
-PGPASSWORD='123@Marketing@321' psql -h 127.0.0.1 -U begin -d cmis -c "
+PGPASSWORD="$(grep DB_PASSWORD .env | cut -d '=' -f2)" psql \
+  -h "$(grep DB_HOST .env | cut -d '=' -f2)" \
+  -U "$(grep DB_USERNAME .env | cut -d '=' -f2)" \
+  -d "$(grep DB_DATABASE .env | cut -d '=' -f2)" \
+  -c "
 \d cmis.ad_metrics
 "
 
 -- Sample metrics with JSONB fields
-PGPASSWORD='123@Marketing@321' psql -h 127.0.0.1 -U begin -d cmis -c "
+PGPASSWORD="$(grep DB_PASSWORD .env | cut -d '=' -f2)" psql \
+  -h "$(grep DB_HOST .env | cut -d '=' -f2)" \
+  -U "$(grep DB_USERNAME .env | cut -d '=' -f2)" \
+  -d "$(grep DB_DATABASE .env | cut -d '=' -f2)" \
+  -c "
 SELECT
     entity_level,
     date_start,
@@ -462,7 +567,11 @@ LIMIT 3;
 grep -A 10 "compliance" database/seeders/*Seeder.php
 
 # Query compliance rules
-PGPASSWORD='123@Marketing@321' psql -h 127.0.0.1 -U begin -d cmis -c "
+PGPASSWORD="$(grep DB_PASSWORD .env | cut -d '=' -f2)" psql \
+  -h "$(grep DB_HOST .env | cut -d '=' -f2)" \
+  -U "$(grep DB_USERNAME .env | cut -d '=' -f2)" \
+  -d "$(grep DB_DATABASE .env | cut -d '=' -f2)" \
+  -c "
 SELECT
     code,
     description,
@@ -511,7 +620,11 @@ LIMIT 5;
 
 ```bash
 # Find tables with quality scores
-PGPASSWORD='123@Marketing@321' psql -h 127.0.0.1 -U begin -d cmis -c "
+PGPASSWORD="$(grep DB_PASSWORD .env | cut -d '=' -f2)" psql \
+  -h "$(grep DB_HOST .env | cut -d '=' -f2)" \
+  -U "$(grep DB_USERNAME .env | cut -d '=' -f2)" \
+  -d "$(grep DB_DATABASE .env | cut -d '=' -f2)" \
+  -c "
 SELECT
     table_name,
     column_name
@@ -538,7 +651,11 @@ ORDER BY table_name;
 
 ```sql
 -- Discover flow tables
-PGPASSWORD='123@Marketing@321' psql -h 127.0.0.1 -U begin -d cmis -c "
+PGPASSWORD="$(grep DB_PASSWORD .env | cut -d '=' -f2)" psql \
+  -h "$(grep DB_HOST .env | cut -d '=' -f2)" \
+  -U "$(grep DB_USERNAME .env | cut -d '=' -f2)" \
+  -d "$(grep DB_DATABASE .env | cut -d '=' -f2)" \
+  -c "
 SELECT tablename FROM pg_tables
 WHERE schemaname = 'cmis'
   AND tablename LIKE '%flow%'
@@ -546,7 +663,11 @@ ORDER BY tablename;
 "
 
 -- Sample flow with steps
-PGPASSWORD='123@Marketing@321' psql -h 127.0.0.1 -U begin -d cmis -c "
+PGPASSWORD="$(grep DB_PASSWORD .env | cut -d '=' -f2)" psql \
+  -h "$(grep DB_HOST .env | cut -d '=' -f2)" \
+  -U "$(grep DB_USERNAME .env | cut -d '=' -f2)" \
+  -d "$(grep DB_DATABASE .env | cut -d '=' -f2)" \
+  -c "
 SELECT
     f.name as flow_name,
     fs.ord as step_order,
@@ -596,7 +717,11 @@ LIMIT 10;
 **Step 1: Discover Structure**
 
 ```sql
-PGPASSWORD='123@Marketing@321' psql -h 127.0.0.1 -U begin -d cmis -c "
+PGPASSWORD="$(grep DB_PASSWORD .env | cut -d '=' -f2)" psql \
+  -h "$(grep DB_HOST .env | cut -d '=' -f2)" \
+  -U "$(grep DB_USERNAME .env | cut -d '=' -f2)" \
+  -d "$(grep DB_DATABASE .env | cut -d '=' -f2)" \
+  -c "
 \d cmis.new_table_name
 "
 ```
@@ -604,7 +729,11 @@ PGPASSWORD='123@Marketing@321' psql -h 127.0.0.1 -U begin -d cmis -c "
 **Step 2: Find Real Examples**
 
 ```sql
-PGPASSWORD='123@Marketing@321' psql -h 127.0.0.1 -U begin -d cmis -c "
+PGPASSWORD="$(grep DB_PASSWORD .env | cut -d '=' -f2)" psql \
+  -h "$(grep DB_HOST .env | cut -d '=' -f2)" \
+  -U "$(grep DB_USERNAME .env | cut -d '=' -f2)" \
+  -d "$(grep DB_DATABASE .env | cut -d '=' -f2)" \
+  -c "
 SELECT * FROM cmis.new_table_name LIMIT 3;
 "
 ```
@@ -629,7 +758,11 @@ Ask yourself:
 
 ```sql
 -- Find tables with similar columns
-PGPASSWORD='123@Marketing@321' psql -h 127.0.0.1 -U begin -d cmis -c "
+PGPASSWORD="$(grep DB_PASSWORD .env | cut -d '=' -f2)" psql \
+  -h "$(grep DB_HOST .env | cut -d '=' -f2)" \
+  -U "$(grep DB_USERNAME .env | cut -d '=' -f2)" \
+  -d "$(grep DB_DATABASE .env | cut -d '=' -f2)" \
+  -c "
 SELECT table_name
 FROM information_schema.columns
 WHERE table_schema = 'cmis'
@@ -656,7 +789,11 @@ grep -A 5 "class.*Model" app/Models/Core/YourModel.php | grep "HasUuids"
 
 ```sql
 -- Discover enum values
-PGPASSWORD='123@Marketing@321' psql -h 127.0.0.1 -U begin -d cmis -c "
+PGPASSWORD="$(grep DB_PASSWORD .env | cut -d '=' -f2)" psql \
+  -h "$(grep DB_HOST .env | cut -d '=' -f2)" \
+  -U "$(grep DB_USERNAME .env | cut -d '=' -f2)" \
+  -d "$(grep DB_DATABASE .env | cut -d '=' -f2)" \
+  -c "
 SELECT
     enumlabel as allowed_value
 FROM pg_enum
@@ -670,7 +807,11 @@ ORDER BY enumsortorder;
 
 ```sql
 -- Explore JSONB structure
-PGPASSWORD='123@Marketing@321' psql -h 127.0.0.1 -U begin -d cmis -c "
+PGPASSWORD="$(grep DB_PASSWORD .env | cut -d '=' -f2)" psql \
+  -h "$(grep DB_HOST .env | cut -d '=' -f2)" \
+  -U "$(grep DB_USERNAME .env | cut -d '=' -f2)" \
+  -d "$(grep DB_DATABASE .env | cut -d '=' -f2)" \
+  -c "
 SELECT
     jsonb_pretty(your_jsonb_column)
 FROM cmis.your_table
@@ -679,7 +820,11 @@ LIMIT 3;
 "
 
 -- Extract keys
-PGPASSWORD='123@Marketing@321' psql -h 127.0.0.1 -U begin -d cmis -c "
+PGPASSWORD="$(grep DB_PASSWORD .env | cut -d '=' -f2)" psql \
+  -h "$(grep DB_HOST .env | cut -d '=' -f2)" \
+  -U "$(grep DB_USERNAME .env | cut -d '=' -f2)" \
+  -d "$(grep DB_DATABASE .env | cut -d '=' -f2)" \
+  -c "
 SELECT DISTINCT jsonb_object_keys(your_jsonb_column)
 FROM cmis.your_table
 WHERE your_jsonb_column IS NOT NULL;
@@ -690,7 +835,11 @@ WHERE your_jsonb_column IS NOT NULL;
 
 ```sql
 -- Check timestamp usage
-PGPASSWORD='123@Marketing@321' psql -h 127.0.0.1 -U begin -d cmis -c "
+PGPASSWORD="$(grep DB_PASSWORD .env | cut -d '=' -f2)" psql \
+  -h "$(grep DB_HOST .env | cut -d '=' -f2)" \
+  -U "$(grep DB_USERNAME .env | cut -d '=' -f2)" \
+  -d "$(grep DB_DATABASE .env | cut -d '=' -f2)" \
+  -c "
 SELECT
     column_name,
     data_type
@@ -798,7 +947,11 @@ $metric = AdMetric::create([
 
 ```bash
 # Discover allowed values first
-PGPASSWORD='123@Marketing@321' psql -h 127.0.0.1 -U begin -d cmis -c "
+PGPASSWORD="$(grep DB_PASSWORD .env | cut -d '=' -f2)" psql \
+  -h "$(grep DB_HOST .env | cut -d '=' -f2)" \
+  -U "$(grep DB_USERNAME .env | cut -d '=' -f2)" \
+  -d "$(grep DB_DATABASE .env | cut -d '=' -f2)" \
+  -c "
 SELECT enumlabel FROM pg_enum
 JOIN pg_type ON pg_enum.enumtypid = pg_type.oid
 WHERE pg_type.typname = 'campaign_status'
@@ -873,12 +1026,37 @@ $campaign->value_id = $valueContext->context_id;
 
 ---
 
-## 📚 RELATED KNOWLEDGE
+## 🔍 Quick Reference
 
+| I Need To... | Discovery Method | Section |
+|--------------|------------------|---------|
+| Find data examples | Check `database/seeders/*Demo*Seeder.php` | Discovering Data Patterns |
+| Understand JSONB structure | `SELECT jsonb_pretty(column) FROM table LIMIT 1` (use .env) | JSONB Patterns |
+| See multi-context pattern | Check Campaign model for context_id, creative_id, value_id | Multi-Context System |
+| Find quality score pattern | Look for 0.00-1.00 ranges in seeders | Quality Scoring Pattern |
+| Discover enum values | `SELECT * FROM information_schema.check_constraints` (use .env) | Enum Discovery |
+| Learn EAV implementation | Query `cmis.context_fields` and `cmis.context_values` | EAV Pattern |
+| Find bilingual pattern | Look for `*_ar` columns in schema | Bilingual Data Pattern |
+
+---
+
+## 📚 Related Knowledge
+
+**Prerequisites:**
+- **DISCOVERY_PROTOCOLS.md** - Discovery methodology and executable commands
+- **META_COGNITIVE_FRAMEWORK.md** - Adaptive intelligence principles
+
+**Related Files:**
 - **MULTI_TENANCY_PATTERNS.md** - RLS and org_id patterns
-- **PATTERN_RECOGNITION.md** - Architectural patterns
+- **PATTERN_RECOGNITION.md** - Architectural patterns across codebase
 - **LARAVEL_CONVENTIONS.md** - Model, controller, migration patterns
 - **CMIS_DISCOVERY_GUIDE.md** - General discovery methodology
+- **CMIS_SQL_INSIGHTS.md** - SQL patterns and database queries
+- **CMIS_REFERENCE_DATA.md** - Quick reference for tables and schemas
+
+**See Also:**
+- **CLAUDE.md** - Main project guidelines
+- **CMIS_PROJECT_KNOWLEDGE.md** - Core project architecture
 
 ---
 
@@ -894,8 +1072,10 @@ $campaign->value_id = $valueContext->context_id;
 
 ---
 
-**Version:** 2.0 - Pattern Discovery Approach
+**Last Updated:** 2025-11-27
+**Version:** 2.1
+**Maintained By:** CMIS AI Agent Development Team
 **Framework:** META_COGNITIVE_FRAMEWORK
 **Methodology:** Learn by Example, Apply by Pattern
 
-*"Real data teaches patterns better than documentation."*
+*"Real data teaches patterns better than documentation. Discover, don't assume."*
