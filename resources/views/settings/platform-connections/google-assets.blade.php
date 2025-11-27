@@ -1,15 +1,21 @@
-@extends('layouts.app')
+@extends('layouts.admin')
 
-@section('title', __('Select Google Assets') . ' - Settings')
+@section('title', __('Select Google Assets') . ' - ' . __('Settings'))
 
 @section('content')
-<div class="max-w-5xl mx-auto py-8 px-4 sm:px-6 lg:px-8" x-data="googleAssetsPage()">
-    {{-- Header --}}
-    <div class="mb-8">
-        <nav class="text-sm text-gray-500 mb-2">
-            <a href="{{ route('orgs.settings.platform-connections.index', $currentOrg) }}" class="hover:text-gray-700">{{ __('Platform Connections') }}</a>
-            <span class="mx-2">/</span>
-            <span class="text-gray-900">{{ __('Select Google Assets') }}</span>
+<div class="space-y-6" x-data="googleAssetsPage()">
+    {{-- Page Header with Breadcrumb --}}
+    <div class="mb-6">
+        <nav class="text-sm text-gray-500 mb-2 flex items-center gap-2">
+            <a href="{{ route('orgs.dashboard.index', $currentOrg) }}" class="hover:text-blue-600 transition">
+                <i class="fas fa-home"></i>
+            </a>
+            <span class="text-gray-400">/</span>
+            <a href="{{ route('orgs.settings.index', $currentOrg) }}" class="hover:text-blue-600 transition">{{ __('Settings') }}</a>
+            <span class="text-gray-400">/</span>
+            <a href="{{ route('orgs.settings.platform-connections.index', $currentOrg) }}" class="hover:text-blue-600 transition">{{ __('Platform Connections') }}</a>
+            <span class="text-gray-400">/</span>
+            <span class="text-gray-900 font-medium">{{ __('Google Assets') }}</span>
         </nav>
         <h1 class="text-2xl font-bold text-gray-900">{{ __('Configure Google Assets') }}</h1>
         <p class="mt-1 text-sm text-gray-500">
@@ -90,7 +96,7 @@
                                 <label x-show="matchesYoutubeSearch('{{ $channel['title'] }}')" class="flex items-center p-3 border rounded-lg hover:bg-gray-50 cursor-pointer transition"
                                        :class="{ 'border-red-500 bg-red-50': selectedYoutubeChannels.includes('{{ $channel['id'] }}') }">
                                     <input type="checkbox" name="youtube_channel[]" value="{{ $channel['id'] }}"
-                                           {{ in_array($channel['id'], $selectedAssets['youtube_channel'] ?? []) ? 'checked' : '' }}
+                                           {{ in_array($channel['id'], (array)($selectedAssets['youtube_channel'] ?? [])) ? 'checked' : '' }}
                                            x-model="selectedYoutubeChannels"
                                            class="h-4 w-4 text-red-600 border-gray-300 rounded focus:ring-red-500">
                                     <div class="ml-3 flex items-center gap-3">
@@ -182,7 +188,7 @@
                                        :class="{ 'border-green-500 bg-green-50': selectedGoogleAds.includes('{{ $account['id'] }}' }">
                                     <div class="flex items-center">
                                         <input type="checkbox" name="google_ads[]" value="{{ $account['id'] }}"
-                                               {{ in_array($account['id'], $selectedAssets['google_ads'] ?? []) ? 'checked' : '' }}
+                                               {{ in_array($account['id'], (array)($selectedAssets['google_ads'] ?? [])) ? 'checked' : '' }}
                                                x-model="selectedGoogleAds"
                                                class="h-4 w-4 text-green-600 border-gray-300 focus:ring-green-500">
                                         <div class="ml-3">
@@ -266,7 +272,7 @@
                                 <label class="flex items-center p-3 border rounded-lg hover:bg-gray-50 cursor-pointer transition"
                                        :class="{ 'border-orange-500 bg-orange-50': selectedAnalytics.includes('{{ $property['id'] }}' }">
                                     <input type="checkbox" name="analytics[]" value="{{ $property['id'] }}"
-                                           {{ in_array($property['id'], $selectedAssets['analytics'] ?? []) ? 'checked' : '' }}
+                                           {{ in_array($property['id'], (array)($selectedAssets['analytics'] ?? [])) ? 'checked' : '' }}
                                            x-model="selectedAnalytics"
                                            class="h-4 w-4 text-orange-600 border-gray-300 focus:ring-orange-500">
                                     <div class="ml-3">
@@ -324,7 +330,7 @@
                                 <label class="flex items-center p-3 border rounded-lg hover:bg-gray-50 cursor-pointer transition"
                                        :class="{ 'border-blue-500 bg-blue-50': selectedBusiness.includes('{{ $profile['id'] }}' }">
                                     <input type="checkbox" name="business_profile[]" value="{{ $profile['id'] }}"
-                                           {{ in_array($profile['id'], $selectedAssets['business_profile'] ?? []) ? 'checked' : '' }}
+                                           {{ in_array($profile['id'], (array)($selectedAssets['business_profile'] ?? [])) ? 'checked' : '' }}
                                            x-model="selectedBusiness"
                                            class="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500">
                                     <div class="ml-3">
@@ -396,7 +402,7 @@
                                 <label class="flex items-center p-3 border rounded-lg hover:bg-gray-50 cursor-pointer transition"
                                        :class="{ 'border-purple-500 bg-purple-50': selectedTagManager.includes('{{ $container['containerId'] }}' }">
                                     <input type="checkbox" name="tag_manager[]" value="{{ $container['containerId'] }}"
-                                           {{ in_array($container['containerId'], $selectedAssets['tag_manager'] ?? []) ? 'checked' : '' }}
+                                           {{ in_array($container['containerId'], (array)($selectedAssets['tag_manager'] ?? [])) ? 'checked' : '' }}
                                            x-model="selectedTagManager"
                                            class="h-4 w-4 text-purple-600 border-gray-300 focus:ring-purple-500">
                                     <div class="ml-3">
@@ -454,7 +460,7 @@
                                 <label class="flex items-center p-3 border rounded-lg hover:bg-gray-50 cursor-pointer transition"
                                        :class="{ 'border-teal-500 bg-teal-50': selectedMerchant.includes('{{ $merchant['id'] }}' }">
                                     <input type="checkbox" name="merchant_center[]" value="{{ $merchant['id'] }}"
-                                           {{ in_array($merchant['id'], $selectedAssets['merchant_center'] ?? []) ? 'checked' : '' }}
+                                           {{ in_array($merchant['id'], (array)($selectedAssets['merchant_center'] ?? [])) ? 'checked' : '' }}
                                            x-model="selectedMerchant"
                                            class="h-4 w-4 text-teal-600 border-gray-300 focus:ring-teal-500">
                                     <div class="ml-3">
@@ -512,7 +518,7 @@
                                 <label class="flex items-center p-3 border rounded-lg hover:bg-gray-50 cursor-pointer transition"
                                        :class="{ 'border-indigo-500 bg-indigo-50': selectedSearchConsole.includes('{{ $site['siteUrl'] }}' }">
                                     <input type="checkbox" name="search_console[]" value="{{ $site['siteUrl'] }}"
-                                           {{ in_array($site['siteUrl'], $selectedAssets['search_console'] ?? []) ? 'checked' : '' }}
+                                           {{ in_array($site['siteUrl'], (array)($selectedAssets['search_console'] ?? [])) ? 'checked' : '' }}
                                            x-model="selectedSearchConsole"
                                            class="h-4 w-4 text-indigo-600 border-gray-300 focus:ring-indigo-500">
                                     <div class="ml-3">
@@ -567,7 +573,7 @@
                                 <label class="flex items-center p-3 border rounded-lg hover:bg-gray-50 cursor-pointer transition"
                                        :class="{ 'border-cyan-500 bg-cyan-50': selectedCalendar.includes('{{ $calendar['id'] }}' }">
                                     <input type="checkbox" name="calendar[]" value="{{ $calendar['id'] }}"
-                                           {{ in_array($calendar['id'], $selectedAssets['calendar'] ?? []) ? 'checked' : '' }}
+                                           {{ in_array($calendar['id'], (array)($selectedAssets['calendar'] ?? [])) ? 'checked' : '' }}
                                            x-model="selectedCalendar"
                                            class="h-4 w-4 text-cyan-600 border-gray-300 focus:ring-cyan-500">
                                     <div class="ml-3 flex items-center gap-2">

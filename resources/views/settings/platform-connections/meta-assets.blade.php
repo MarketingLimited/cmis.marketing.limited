@@ -1,15 +1,21 @@
-@extends('layouts.app')
+@extends('layouts.admin')
 
-@section('title', __('Select Meta Assets') . ' - Settings')
+@section('title', __('Select Meta Assets') . ' - ' . __('Settings'))
 
 @section('content')
-<div class="max-w-5xl mx-auto py-8 px-4 sm:px-6 lg:px-8" x-data="metaAssetsPage()">
-    {{-- Header --}}
-    <div class="mb-8">
-        <nav class="text-sm text-gray-500 mb-2">
-            <a href="{{ route('orgs.settings.platform-connections.index', $currentOrg) }}" class="hover:text-gray-700">{{ __('Platform Connections') }}</a>
-            <span class="mx-2">/</span>
-            <span class="text-gray-900">{{ __('Select Assets') }}</span>
+<div class="space-y-6" x-data="metaAssetsPage()">
+    {{-- Page Header with Breadcrumb --}}
+    <div class="mb-6">
+        <nav class="text-sm text-gray-500 mb-2 flex items-center gap-2">
+            <a href="{{ route('orgs.dashboard.index', $currentOrg) }}" class="hover:text-blue-600 transition">
+                <i class="fas fa-home"></i>
+            </a>
+            <span class="text-gray-400">/</span>
+            <a href="{{ route('orgs.settings.index', $currentOrg) }}" class="hover:text-blue-600 transition">{{ __('Settings') }}</a>
+            <span class="text-gray-400">/</span>
+            <a href="{{ route('orgs.settings.platform-connections.index', $currentOrg) }}" class="hover:text-blue-600 transition">{{ __('Platform Connections') }}</a>
+            <span class="text-gray-400">/</span>
+            <span class="text-gray-900 font-medium">{{ __('Meta Assets') }}</span>
         </nav>
         <h1 class="text-2xl font-bold text-gray-900">{{ __('Configure Meta Assets') }}</h1>
         <p class="mt-1 text-sm text-gray-500">
@@ -84,7 +90,7 @@
                                 <label x-show="matchesPagesSearch('{{ $page['name'] }}')" class="flex items-center p-3 border rounded-lg hover:bg-gray-50 cursor-pointer transition"
                                        :class="{ 'border-blue-500 bg-blue-50': selectedPages.includes('{{ $page['id'] }}' }">
                                     <input type="checkbox" name="page[]" value="{{ $page['id'] }}"
-                                           {{ in_array($page['id'], $selectedAssets['page'] ?? []) ? 'checked' : '' }}
+                                           {{ in_array($page['id'], (array) ($selectedAssets['page'] ?? [])) ? 'checked' : '' }}
                                            x-model="selectedPage"
                                            class="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500">
                                     <div class="ml-3 flex items-center gap-3">
@@ -169,7 +175,7 @@
                                 <label x-show="matchesInstagramSearch('{{ $ig['username'] }}')" class="flex items-center p-3 border rounded-lg hover:bg-gray-50 cursor-pointer transition"
                                        :class="{ 'border-pink-500 bg-pink-50': selectedInstagrams.includes('{{ $ig['id'] }}' }">
                                     <input type="checkbox" name="instagram_account[]" value="{{ $ig['id'] }}"
-                                           {{ in_array($ig['id'], $selectedAssets['instagram_account'] ?? []) ? 'checked' : '' }}
+                                           {{ in_array($ig['id'], (array) ($selectedAssets['instagram_account'] ?? [])) ? 'checked' : '' }}
                                            x-model="selectedInstagram"
                                            class="h-4 w-4 text-pink-600 border-gray-300 focus:ring-pink-500">
                                     <div class="ml-3 flex items-center gap-3">
@@ -297,7 +303,7 @@
                                 <label class="flex items-center p-3 border rounded-lg hover:bg-gray-50 cursor-pointer transition"
                                        :class="{ 'border-gray-700 bg-gray-50': selectedThreadsAccounts.includes('{{ $threads['id'] }}' }">
                                     <input type="checkbox" name="threads_account[]" value="{{ $threads['id'] }}"
-                                           {{ in_array($threads['id'], $selectedAssets['threads_account'] ?? []) ? 'checked' : '' }}
+                                           {{ in_array($threads['id'], (array) ($selectedAssets['threads_account'] ?? [])) ? 'checked' : '' }}
                                            x-model="selectedThreads"
                                            class="h-4 w-4 text-gray-700 border-gray-300 focus:ring-gray-500">
                                     <div class="ml-3 flex items-center gap-3">
@@ -461,7 +467,7 @@
                                 <label class="flex items-center p-3 border rounded-lg hover:bg-gray-50 cursor-pointer transition"
                                        :class="{ 'border-purple-500 bg-purple-50': selectedPixels.includes('{{ $pixel['id'] }}' }">
                                     <input type="checkbox" name="pixel[]" value="{{ $pixel['id'] }}"
-                                           {{ in_array($pixel['id'], $selectedAssets['pixel'] ?? []) ? 'checked' : '' }}
+                                           {{ in_array($pixel['id'], (array) ($selectedAssets['pixel'] ?? [])) ? 'checked' : '' }}
                                            x-model="selectedPixel"
                                            class="h-4 w-4 text-purple-600 border-gray-300 focus:ring-purple-500">
                                     <div class="ml-3">
@@ -521,7 +527,7 @@
                                 <label class="flex items-center p-3 border rounded-lg hover:bg-gray-50 cursor-pointer transition"
                                        :class="{ 'border-orange-500 bg-orange-50': selectedCatalogs.includes('{{ $catalog['id'] }}' }">
                                     <input type="checkbox" name="catalog[]" value="{{ $catalog['id'] }}"
-                                           {{ in_array($catalog['id'], $selectedAssets['catalog'] ?? []) ? 'checked' : '' }}
+                                           {{ in_array($catalog['id'], (array) ($selectedAssets['catalog'] ?? [])) ? 'checked' : '' }}
                                            x-model="selectedCatalog"
                                            class="h-4 w-4 text-orange-600 border-gray-300 focus:ring-orange-500">
                                     <div class="ml-3">
@@ -641,12 +647,12 @@ function metaAssetsPage() {
         manualThreadsId: '',
 
         // Selected items (multiple values per type - arrays)
-        selectedPages: @json($selectedAssets['page'] ?? []),
-        selectedInstagrams: @json($selectedAssets['instagram_account'] ?? []),
-        selectedThreadsAccounts: @json($selectedAssets['threads_account'] ?? []),
-        selectedAdAccounts: @json($selectedAssets['ad_account'] ?? []),
-        selectedPixels: @json($selectedAssets['pixel'] ?? []),
-        selectedCatalogs: @json($selectedAssets['catalog'] ?? []),
+        selectedPages: @json((array) ($selectedAssets['page'] ?? [])),
+        selectedInstagrams: @json((array) ($selectedAssets['instagram_account'] ?? [])),
+        selectedThreadsAccounts: @json((array) ($selectedAssets['threads_account'] ?? [])),
+        selectedAdAccounts: @json((array) ($selectedAssets['ad_account'] ?? [])),
+        selectedPixels: @json((array) ($selectedAssets['pixel'] ?? [])),
+        selectedCatalogs: @json((array) ($selectedAssets['catalog'] ?? [])),
 
         // All available assets (for search/filtering)
         allPages: @json($pages ?? []),

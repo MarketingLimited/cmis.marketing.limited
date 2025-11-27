@@ -1,35 +1,21 @@
-@extends('layouts.app')
+@extends('layouts.admin')
 
-@section('title', __('Platform Connections') . ' - Settings')
+@section('title', __('Platform Connections') . ' - ' . __('Settings'))
 
 @section('content')
-<div class="max-w-6xl mx-auto py-4 sm:py-8 px-4 sm:px-6 lg:px-8">
-    {{-- Breadcrumb Navigation --}}
-    <nav class="mb-4 sm:mb-6" aria-label="Breadcrumb">
-        <ol class="flex items-center space-x-2 text-sm">
-            <li>
-                <a href="{{ route('orgs.dashboard', $currentOrg) }}" class="text-gray-500 hover:text-gray-700 transition">
-                    <i class="fas fa-home mr-1"></i>
-                    <span class="hidden sm:inline">Organization</span>
-                </a>
-            </li>
-            <li class="flex items-center">
-                <i class="fas fa-chevron-right text-gray-400 mx-2 text-xs"></i>
-                <a href="{{ route('orgs.settings.index', $currentOrg) }}" class="text-gray-500 hover:text-gray-700 transition">
-                    <i class="fas fa-cog mr-1"></i>
-                    <span class="hidden sm:inline">Settings</span>
-                </a>
-            </li>
-            <li class="flex items-center">
-                <i class="fas fa-chevron-right text-gray-400 mx-2 text-xs"></i>
-                <span class="text-gray-900 font-medium">
-                    <i class="fas fa-plug mr-1"></i>
-                    <span class="hidden sm:inline">Platform Connections</span>
-                    <span class="sm:hidden">Platforms</span>
-                </span>
-            </li>
-        </ol>
-    </nav>
+<div class="space-y-6">
+    {{-- Page Header with Breadcrumb --}}
+    <div class="mb-6">
+        <nav class="text-sm text-gray-500 mb-2 flex items-center gap-2">
+            <a href="{{ route('orgs.dashboard.index', $currentOrg) }}" class="hover:text-blue-600 transition">
+                <i class="fas fa-home"></i>
+            </a>
+            <span class="text-gray-400">/</span>
+            <a href="{{ route('orgs.settings.index', $currentOrg) }}" class="hover:text-blue-600 transition">{{ __('Settings') }}</a>
+            <span class="text-gray-400">/</span>
+            <span class="text-gray-900 font-medium">{{ __('Platform Connections') }}</span>
+        </nav>
+    </div>
 
     {{-- Header --}}
     <div class="mb-6 sm:mb-8">

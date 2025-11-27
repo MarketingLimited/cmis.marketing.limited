@@ -1,41 +1,25 @@
-@extends('layouts.app')
+@extends('layouts.admin')
 
 @section('title', __('Ads') . ' - ' . $adSet->name)
 
 @section('content')
-<div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-    {{-- Breadcrumb --}}
-    <nav class="flex mb-6" aria-label="Breadcrumb">
-        <ol class="inline-flex items-center space-x-1 md:space-x-3">
-            <li>
-                <a href="{{ route('org.campaigns.index', $currentOrg) }}" class="text-gray-500 hover:text-gray-700">
-                    <i class="fas fa-bullhorn mr-1"></i> Campaigns
-                </a>
-            </li>
-            <li>
-                <div class="flex items-center">
-                    <i class="fas fa-chevron-right text-gray-400 mx-2"></i>
-                    <a href="{{ route('org.campaigns.show', [$currentOrg, $campaign->campaign_id]) }}" class="text-gray-500 hover:text-gray-700">
-                        {{ Str::limit($campaign->name, 20) }}
-                    </a>
-                </div>
-            </li>
-            <li>
-                <div class="flex items-center">
-                    <i class="fas fa-chevron-right text-gray-400 mx-2"></i>
-                    <a href="{{ route('org.campaigns.ad-sets.show', [$currentOrg, $campaign->campaign_id, $adSet->ad_set_id]) }}" class="text-gray-500 hover:text-gray-700">
-                        {{ Str::limit($adSet->name, 20) }}
-                    </a>
-                </div>
-            </li>
-            <li>
-                <div class="flex items-center">
-                    <i class="fas fa-chevron-right text-gray-400 mx-2"></i>
-                    <span class="text-gray-700 font-medium">Ads</span>
-                </div>
-            </li>
-        </ol>
-    </nav>
+<div class="space-y-6">
+    {{-- Page Header with Breadcrumb --}}
+    <div class="mb-6">
+        <nav class="text-sm text-gray-500 mb-2 flex items-center gap-2">
+            <a href="{{ route('orgs.dashboard.index', $currentOrg) }}" class="hover:text-blue-600 transition">
+                <i class="fas fa-home"></i>
+            </a>
+            <span class="text-gray-400">/</span>
+            <a href="{{ route('orgs.campaigns.index', $currentOrg) }}" class="hover:text-blue-600 transition">{{ __('Campaigns') }}</a>
+            <span class="text-gray-400">/</span>
+            <a href="{{ route('orgs.campaigns.show', [$currentOrg, $campaign->campaign_id]) }}" class="hover:text-blue-600 transition">{{ Str::limit($campaign->name, 20) }}</a>
+            <span class="text-gray-400">/</span>
+            <a href="{{ route('orgs.campaigns.ad-sets.show', [$currentOrg, $campaign->campaign_id, $adSet->ad_set_id]) }}" class="hover:text-blue-600 transition">{{ Str::limit($adSet->name, 20) }}</a>
+            <span class="text-gray-400">/</span>
+            <span class="text-gray-900 font-medium">{{ __('Ads') }}</span>
+        </nav>
+    </div>
 
     {{-- Header --}}
     <div class="flex justify-between items-center mb-6">

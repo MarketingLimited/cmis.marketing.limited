@@ -5,284 +5,295 @@
 
 @section('content')
 <div x-data="socialManager()" x-init="init()">
-    <!-- Quick Stats Dashboard (Buffer/Vista Social style) -->
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-        <div class="bg-gradient-to-br from-yellow-400 to-orange-500 rounded-xl p-4 text-white shadow-lg">
+    <!-- Quick Stats Dashboard - Enhanced with animations and dark mode -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 mb-6">
+        <!-- Scheduled Posts Card -->
+        <div class="group bg-gradient-to-br from-yellow-400 to-orange-500 dark:from-yellow-500 dark:to-orange-600 rounded-2xl p-4 sm:p-5 text-white shadow-lg shadow-orange-500/20 hover:shadow-xl hover:shadow-orange-500/30 hover:-translate-y-1 transition-all duration-300 cursor-pointer"
+             @click="statusFilter = 'scheduled'">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-yellow-100 text-sm font-medium">مجدول</p>
-                    <p class="text-3xl font-bold mt-1" x-text="scheduledCount">0</p>
+                    <p class="text-yellow-100 text-xs sm:text-sm font-medium">مجدول</p>
+                    <p class="text-2xl sm:text-3xl font-bold mt-1 tabular-nums" x-text="scheduledCount">0</p>
                 </div>
-                <div class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
-                    <i class="fas fa-clock text-2xl"></i>
+                <div class="w-10 h-10 sm:w-12 sm:h-12 bg-white/20 rounded-xl flex items-center justify-center group-hover:scale-110 group-hover:bg-white/30 transition-all duration-300">
+                    <i class="fas fa-clock text-xl sm:text-2xl"></i>
                 </div>
             </div>
-            <div class="mt-3 flex items-center text-yellow-100 text-xs">
+            <div class="mt-3 flex items-center text-yellow-100 text-xs opacity-80 group-hover:opacity-100 transition-opacity">
                 <i class="fas fa-calendar-alt ml-1"></i>
                 <span>في انتظار النشر</span>
             </div>
         </div>
 
-        <div class="bg-gradient-to-br from-green-400 to-emerald-500 rounded-xl p-4 text-white shadow-lg">
+        <!-- Published Posts Card -->
+        <div class="group bg-gradient-to-br from-green-400 to-emerald-500 dark:from-green-500 dark:to-emerald-600 rounded-2xl p-4 sm:p-5 text-white shadow-lg shadow-emerald-500/20 hover:shadow-xl hover:shadow-emerald-500/30 hover:-translate-y-1 transition-all duration-300 cursor-pointer"
+             @click="statusFilter = 'published'">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-green-100 text-sm font-medium">منشور</p>
-                    <p class="text-3xl font-bold mt-1" x-text="publishedCount">0</p>
+                    <p class="text-green-100 text-xs sm:text-sm font-medium">منشور</p>
+                    <p class="text-2xl sm:text-3xl font-bold mt-1 tabular-nums" x-text="publishedCount">0</p>
                 </div>
-                <div class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
-                    <i class="fas fa-check-circle text-2xl"></i>
+                <div class="w-10 h-10 sm:w-12 sm:h-12 bg-white/20 rounded-xl flex items-center justify-center group-hover:scale-110 group-hover:bg-white/30 transition-all duration-300">
+                    <i class="fas fa-check-circle text-xl sm:text-2xl"></i>
                 </div>
             </div>
-            <div class="mt-3 flex items-center text-green-100 text-xs">
+            <div class="mt-3 flex items-center text-green-100 text-xs opacity-80 group-hover:opacity-100 transition-opacity">
                 <i class="fas fa-chart-line ml-1"></i>
                 <span>تم النشر بنجاح</span>
             </div>
         </div>
 
-        <div class="bg-gradient-to-br from-gray-400 to-gray-500 rounded-xl p-4 text-white shadow-lg">
+        <!-- Draft Posts Card -->
+        <div class="group bg-gradient-to-br from-slate-400 to-slate-500 dark:from-slate-500 dark:to-slate-600 rounded-2xl p-4 sm:p-5 text-white shadow-lg shadow-slate-500/20 hover:shadow-xl hover:shadow-slate-500/30 hover:-translate-y-1 transition-all duration-300 cursor-pointer"
+             @click="statusFilter = 'draft'">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-gray-100 text-sm font-medium">مسودة</p>
-                    <p class="text-3xl font-bold mt-1" x-text="draftCount">0</p>
+                    <p class="text-slate-100 text-xs sm:text-sm font-medium">مسودة</p>
+                    <p class="text-2xl sm:text-3xl font-bold mt-1 tabular-nums" x-text="draftCount">0</p>
                 </div>
-                <div class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
-                    <i class="fas fa-file-alt text-2xl"></i>
+                <div class="w-10 h-10 sm:w-12 sm:h-12 bg-white/20 rounded-xl flex items-center justify-center group-hover:scale-110 group-hover:bg-white/30 transition-all duration-300">
+                    <i class="fas fa-file-alt text-xl sm:text-2xl"></i>
                 </div>
             </div>
-            <div class="mt-3 flex items-center text-gray-100 text-xs">
+            <div class="mt-3 flex items-center text-slate-100 text-xs opacity-80 group-hover:opacity-100 transition-opacity">
                 <i class="fas fa-edit ml-1"></i>
                 <span>جاهز للتعديل</span>
             </div>
         </div>
 
-        <div class="bg-gradient-to-br from-red-400 to-rose-500 rounded-xl p-4 text-white shadow-lg">
+        <!-- Failed Posts Card -->
+        <div class="group bg-gradient-to-br from-red-400 to-rose-500 dark:from-red-500 dark:to-rose-600 rounded-2xl p-4 sm:p-5 text-white shadow-lg shadow-rose-500/20 hover:shadow-xl hover:shadow-rose-500/30 hover:-translate-y-1 transition-all duration-300 cursor-pointer"
+             @click="statusFilter = 'failed'">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-red-100 text-sm font-medium">فشل</p>
-                    <p class="text-3xl font-bold mt-1" x-text="failedCount">0</p>
+                    <p class="text-red-100 text-xs sm:text-sm font-medium">فشل</p>
+                    <p class="text-2xl sm:text-3xl font-bold mt-1 tabular-nums" x-text="failedCount">0</p>
                 </div>
-                <div class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
-                    <i class="fas fa-exclamation-triangle text-2xl"></i>
+                <div class="w-10 h-10 sm:w-12 sm:h-12 bg-white/20 rounded-xl flex items-center justify-center group-hover:scale-110 group-hover:bg-white/30 transition-all duration-300">
+                    <i class="fas fa-exclamation-triangle text-xl sm:text-2xl"></i>
                 </div>
             </div>
-            <div class="mt-3 flex items-center text-red-100 text-xs cursor-pointer hover:text-white"
-                 x-show="failedCount > 0" @click="deleteAllFailed()">
+            <div class="mt-3 flex items-center text-red-100 text-xs cursor-pointer hover:text-white transition-colors"
+                 x-show="failedCount > 0" @click.stop="deleteAllFailed()">
                 <i class="fas fa-trash ml-1"></i>
                 <span>حذف الكل</span>
             </div>
-            <div class="mt-3 flex items-center text-red-100 text-xs" x-show="failedCount === 0">
+            <div class="mt-3 flex items-center text-red-100 text-xs opacity-80" x-show="failedCount === 0">
                 <i class="fas fa-smile ml-1"></i>
                 <span>لا توجد أخطاء</span>
             </div>
         </div>
     </div>
 
-    <!-- Main Controls Panel -->
-    <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
+    <!-- Main Controls Panel - Enhanced with dark mode -->
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-4 sm:p-6 mb-6">
         <!-- Top Row: Search, View Toggle, Actions -->
-        <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
-            <!-- Search Box (Hootsuite style) -->
-            <div class="relative flex-1 max-w-md">
+        <div class="flex flex-wrap items-center justify-between gap-3 sm:gap-4 mb-4">
+            <!-- Search Box - Enhanced -->
+            <div class="relative flex-1 max-w-md order-1 w-full sm:w-auto">
                 <input type="text"
                        x-model="searchQuery"
                        placeholder="ابحث في المنشورات..."
-                       class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                       class="w-full pl-10 pr-4 py-2.5 border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent focus:bg-white dark:focus:bg-gray-600 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition-colors">
                 <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
                 <button x-show="searchQuery" @click="searchQuery = ''"
-                        class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                        class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
 
-            <!-- View Toggle (Vista Social style) -->
-            <div class="flex items-center gap-1 bg-gray-100 p-1 rounded-lg">
+            <!-- View Toggle - Enhanced with dark mode -->
+            <div class="flex items-center gap-1 bg-gray-100 dark:bg-gray-700 p-1 rounded-xl order-3 sm:order-2">
                 <button @click="viewMode = 'grid'"
-                        :class="viewMode === 'grid' ? 'bg-white shadow text-indigo-600' : 'text-gray-600 hover:text-gray-800'"
-                        class="p-2 rounded-md transition" title="عرض شبكي">
+                        :class="viewMode === 'grid' ? 'bg-white dark:bg-gray-600 shadow-sm text-indigo-600 dark:text-indigo-400' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'"
+                        class="p-2.5 rounded-lg transition-all duration-200" title="عرض شبكي">
                     <i class="fas fa-th-large"></i>
                 </button>
                 <button @click="viewMode = 'list'"
-                        :class="viewMode === 'list' ? 'bg-white shadow text-indigo-600' : 'text-gray-600 hover:text-gray-800'"
-                        class="p-2 rounded-md transition" title="عرض قائمة">
+                        :class="viewMode === 'list' ? 'bg-white dark:bg-gray-600 shadow-sm text-indigo-600 dark:text-indigo-400' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'"
+                        class="p-2.5 rounded-lg transition-all duration-200" title="عرض قائمة">
                     <i class="fas fa-list"></i>
                 </button>
                 <button @click="viewMode = 'calendar'"
-                        :class="viewMode === 'calendar' ? 'bg-white shadow text-indigo-600' : 'text-gray-600 hover:text-gray-800'"
-                        class="p-2 rounded-md transition" title="عرض تقويم">
+                        :class="viewMode === 'calendar' ? 'bg-white dark:bg-gray-600 shadow-sm text-indigo-600 dark:text-indigo-400' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'"
+                        class="p-2.5 rounded-lg transition-all duration-200" title="عرض تقويم">
                     <i class="fas fa-calendar-alt"></i>
                 </button>
             </div>
 
-            <!-- Sort Dropdown -->
-            <select x-model="sortBy" class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500">
+            <!-- Sort Dropdown - Enhanced -->
+            <select x-model="sortBy" class="border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-indigo-500 text-gray-700 dark:text-gray-200 order-4 sm:order-3">
                 <option value="newest">الأحدث أولاً</option>
                 <option value="oldest">الأقدم أولاً</option>
                 <option value="scheduled">حسب الجدولة</option>
                 <option value="platform">حسب المنصة</option>
             </select>
 
-            <!-- Action Buttons -->
-            <div class="flex gap-3">
+            <!-- Action Buttons - Enhanced -->
+            <div class="flex gap-2 sm:gap-3 order-2 sm:order-4">
                 <button @click="showQueueSettings = true"
-                        class="bg-white text-gray-700 border border-gray-300 px-4 py-2 rounded-lg font-medium hover:bg-gray-50 transition flex items-center gap-2">
+                        class="bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-600 px-3 sm:px-4 py-2.5 rounded-xl font-medium hover:bg-gray-50 dark:hover:bg-gray-600 hover:border-gray-300 dark:hover:border-gray-500 transition-all flex items-center gap-2">
                     <i class="fas fa-cog"></i>
                     <span class="hidden sm:inline">إعدادات الطابور</span>
                 </button>
                 <button @click="showNewPostModal = true"
-                        class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 py-2 rounded-lg font-medium hover:shadow-lg transition flex items-center gap-2">
+                        class="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white px-4 sm:px-6 py-2.5 rounded-xl font-medium shadow-lg shadow-indigo-500/25 hover:shadow-xl hover:shadow-indigo-500/30 transition-all flex items-center gap-2">
                     <i class="fas fa-plus"></i>
                     <span class="hidden sm:inline">منشور جديد</span>
                 </button>
             </div>
         </div>
 
-        <!-- Platform Filters (Dynamic based on connected platforms) -->
+        <!-- Platform Filters - Enhanced with dark mode and animations -->
         <div class="flex flex-wrap gap-2 mb-4">
             <button @click="filterPlatform = 'all'"
-                    :class="filterPlatform === 'all' ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'"
-                    class="px-4 py-2 rounded-full font-medium transition text-sm">
+                    :class="filterPlatform === 'all' ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/25' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'"
+                    class="px-4 py-2 rounded-full font-medium transition-all duration-200 text-sm">
                 <i class="fas fa-globe ml-1"></i>
                 الكل
             </button>
             <template x-for="platform in uniquePlatforms" :key="platform">
                 <button @click="filterPlatform = platform"
-                        :class="filterPlatform === platform ? getPlatformFilterClass(platform, true) : 'bg-gray-100 text-gray-700 hover:bg-gray-200'"
-                        class="px-4 py-2 rounded-full font-medium transition text-sm">
+                        :class="filterPlatform === platform ? getPlatformFilterClass(platform, true) + ' shadow-md' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'"
+                        class="px-4 py-2 rounded-full font-medium transition-all duration-200 text-sm">
                     <i :class="getPlatformIcon(platform)" class="ml-1"></i>
                     <span x-text="getPlatformName(platform)"></span>
                 </button>
             </template>
         </div>
 
-        <!-- Post Type Filter -->
+        <!-- Post Type Filter - Enhanced with dark mode -->
         <div class="flex flex-wrap gap-2 mb-4">
             <button @click="filterPostType = 'all'"
-                    :class="filterPostType === 'all' ? 'bg-gray-700 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'"
-                    class="px-4 py-2 rounded-full font-medium transition text-sm">
+                    :class="filterPostType === 'all' ? 'bg-gray-800 dark:bg-gray-600 text-white shadow-md' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'"
+                    class="px-4 py-2 rounded-full font-medium transition-all duration-200 text-sm">
                 <i class="fas fa-th-large ml-1"></i>
                 الكل
             </button>
             <button @click="filterPostType = 'feed'"
-                    :class="filterPostType === 'feed' ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'"
-                    class="px-4 py-2 rounded-full font-medium transition text-sm">
+                    :class="filterPostType === 'feed' ? 'bg-green-600 text-white shadow-md shadow-green-500/25' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'"
+                    class="px-4 py-2 rounded-full font-medium transition-all duration-200 text-sm">
                 <i class="fas fa-newspaper ml-1"></i>
                 منشور
             </button>
             <button @click="filterPostType = 'reel'"
-                    :class="filterPostType === 'reel' ? 'bg-purple-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'"
-                    class="px-4 py-2 rounded-full font-medium transition text-sm">
+                    :class="filterPostType === 'reel' ? 'bg-purple-600 text-white shadow-md shadow-purple-500/25' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'"
+                    class="px-4 py-2 rounded-full font-medium transition-all duration-200 text-sm">
                 <i class="fas fa-video ml-1"></i>
                 ريل
             </button>
             <button @click="filterPostType = 'story'"
-                    :class="filterPostType === 'story' ? 'bg-pink-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'"
-                    class="px-4 py-2 rounded-full font-medium transition text-sm">
+                    :class="filterPostType === 'story' ? 'bg-pink-600 text-white shadow-md shadow-pink-500/25' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'"
+                    class="px-4 py-2 rounded-full font-medium transition-all duration-200 text-sm">
                 <i class="fas fa-circle ml-1"></i>
                 قصة
             </button>
             <button @click="filterPostType = 'carousel'"
-                    :class="filterPostType === 'carousel' ? 'bg-orange-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'"
-                    class="px-4 py-2 rounded-full font-medium transition text-sm">
+                    :class="filterPostType === 'carousel' ? 'bg-orange-600 text-white shadow-md shadow-orange-500/25' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'"
+                    class="px-4 py-2 rounded-full font-medium transition-all duration-200 text-sm">
                 <i class="fas fa-images ml-1"></i>
                 كاروسيل
             </button>
             <button @click="filterPostType = 'thread'"
-                    :class="filterPostType === 'thread' ? 'bg-sky-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'"
-                    class="px-4 py-2 rounded-full font-medium transition text-sm">
+                    :class="filterPostType === 'thread' ? 'bg-sky-600 text-white shadow-md shadow-sky-500/25' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'"
+                    class="px-4 py-2 rounded-full font-medium transition-all duration-200 text-sm">
                 <i class="fas fa-stream ml-1"></i>
                 ثريد
             </button>
         </div>
 
-        <!-- Status Tabs with Bulk Actions -->
-        <div class="flex gap-2 border-t pt-4 items-center justify-between flex-wrap">
-            <div class="flex gap-1 overflow-x-auto pb-2">
+        <!-- Status Tabs with Bulk Actions - Enhanced -->
+        <div class="flex gap-2 border-t border-gray-200 dark:border-gray-700 pt-4 items-center justify-between flex-wrap">
+            <div class="flex gap-1.5 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600">
                 <button @click="statusFilter = 'all'"
-                        :class="statusFilter === 'all' ? 'bg-indigo-100 text-indigo-700 border-indigo-300' : 'bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100'"
-                        class="px-4 py-2 rounded-lg font-medium transition text-sm border whitespace-nowrap">
-                    الكل (<span x-text="posts.length"></span>)
+                        :class="statusFilter === 'all' ? 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 border-indigo-300 dark:border-indigo-700' : 'bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-400 border-gray-200 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-600'"
+                        class="px-4 py-2 rounded-xl font-medium transition-all duration-200 text-sm border whitespace-nowrap">
+                    الكل (<span x-text="posts.length" class="tabular-nums"></span>)
                 </button>
                 <button @click="statusFilter = 'scheduled'"
-                        :class="statusFilter === 'scheduled' ? 'bg-yellow-100 text-yellow-700 border-yellow-300' : 'bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100'"
-                        class="px-4 py-2 rounded-lg font-medium transition text-sm border whitespace-nowrap">
+                        :class="statusFilter === 'scheduled' ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300 border-yellow-300 dark:border-yellow-700' : 'bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-400 border-gray-200 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-600'"
+                        class="px-4 py-2 rounded-xl font-medium transition-all duration-200 text-sm border whitespace-nowrap">
                     <i class="fas fa-clock ml-1"></i>
-                    مجدول (<span x-text="scheduledCount"></span>)
+                    مجدول (<span x-text="scheduledCount" class="tabular-nums"></span>)
                 </button>
                 <button @click="statusFilter = 'published'"
-                        :class="statusFilter === 'published' ? 'bg-green-100 text-green-700 border-green-300' : 'bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100'"
-                        class="px-4 py-2 rounded-lg font-medium transition text-sm border whitespace-nowrap">
+                        :class="statusFilter === 'published' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 border-green-300 dark:border-green-700' : 'bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-400 border-gray-200 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-600'"
+                        class="px-4 py-2 rounded-xl font-medium transition-all duration-200 text-sm border whitespace-nowrap">
                     <i class="fas fa-check-circle ml-1"></i>
-                    منشور (<span x-text="publishedCount"></span>)
+                    منشور (<span x-text="publishedCount" class="tabular-nums"></span>)
                 </button>
                 <button @click="statusFilter = 'draft'"
-                        :class="statusFilter === 'draft' ? 'bg-gray-200 text-gray-700 border-gray-300' : 'bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100'"
-                        class="px-4 py-2 rounded-lg font-medium transition text-sm border whitespace-nowrap">
+                        :class="statusFilter === 'draft' ? 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-600' : 'bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-400 border-gray-200 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-600'"
+                        class="px-4 py-2 rounded-xl font-medium transition-all duration-200 text-sm border whitespace-nowrap">
                     <i class="fas fa-file ml-1"></i>
-                    مسودة (<span x-text="draftCount"></span>)
+                    مسودة (<span x-text="draftCount" class="tabular-nums"></span>)
                 </button>
                 <button @click="statusFilter = 'failed'"
-                        :class="statusFilter === 'failed' ? 'bg-red-100 text-red-700 border-red-300' : 'bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100'"
-                        class="px-4 py-2 rounded-lg font-medium transition text-sm border whitespace-nowrap">
+                        :class="statusFilter === 'failed' ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 border-red-300 dark:border-red-700' : 'bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-400 border-gray-200 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-600'"
+                        class="px-4 py-2 rounded-xl font-medium transition-all duration-200 text-sm border whitespace-nowrap">
                     <i class="fas fa-exclamation-triangle ml-1"></i>
-                    فشل (<span x-text="failedCount"></span>)
+                    فشل (<span x-text="failedCount" class="tabular-nums"></span>)
                 </button>
             </div>
 
-            <!-- Bulk Actions -->
-            <div class="flex items-center gap-2" x-show="selectedPosts.length > 0">
-                <span class="text-sm text-gray-600">
-                    <span x-text="selectedPosts.length"></span> محدد
+            <!-- Bulk Actions - Enhanced -->
+            <div class="flex items-center gap-3 bg-indigo-50 dark:bg-indigo-900/30 px-4 py-2 rounded-xl" x-show="selectedPosts.length > 0" x-transition>
+                <span class="text-sm text-indigo-700 dark:text-indigo-300 font-medium">
+                    <span x-text="selectedPosts.length" class="tabular-nums"></span> محدد
                 </span>
-                <button @click="bulkDelete()" class="text-red-600 hover:text-red-700 text-sm font-medium">
-                    <i class="fas fa-trash ml-1"></i>
+                <button @click="bulkDelete()" class="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 text-sm font-medium flex items-center gap-1 transition-colors">
+                    <i class="fas fa-trash"></i>
                     حذف
                 </button>
-                <button @click="selectedPosts = []" class="text-gray-600 hover:text-gray-700 text-sm">
+                <button @click="selectedPosts = []" class="text-gray-600 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 text-sm transition-colors">
                     إلغاء
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- Calendar View -->
-    <div x-show="viewMode === 'calendar'" x-cloak class="bg-white rounded-xl shadow-sm p-6 mb-6">
+    <!-- Calendar View - Enhanced with dark mode -->
+    <div x-show="viewMode === 'calendar'" x-cloak class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-4 sm:p-6 mb-6">
         <div class="flex items-center justify-between mb-6">
-            <button @click="changeMonth(-1)" class="p-2 hover:bg-gray-100 rounded-lg">
+            <button @click="changeMonth(-1)" class="p-2.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl text-gray-600 dark:text-gray-400 transition-colors">
                 <i class="fas fa-chevron-right"></i>
             </button>
-            <h3 class="text-lg font-bold text-gray-800" x-text="currentMonthYear"></h3>
-            <button @click="changeMonth(1)" class="p-2 hover:bg-gray-100 rounded-lg">
+            <h3 class="text-lg font-bold text-gray-800 dark:text-white" x-text="currentMonthYear"></h3>
+            <button @click="changeMonth(1)" class="p-2.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl text-gray-600 dark:text-gray-400 transition-colors">
                 <i class="fas fa-chevron-left"></i>
             </button>
         </div>
 
-        <!-- Calendar Grid -->
-        <div class="grid grid-cols-7 gap-1">
+        <!-- Calendar Grid - Enhanced -->
+        <div class="grid grid-cols-7 gap-1 sm:gap-2">
             <!-- Day Headers -->
             <template x-for="day in ['أحد', 'إثنين', 'ثلاثاء', 'أربعاء', 'خميس', 'جمعة', 'سبت']">
-                <div class="text-center py-2 text-sm font-medium text-gray-500" x-text="day"></div>
+                <div class="text-center py-2 sm:py-3 text-xs sm:text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase" x-text="day"></div>
             </template>
 
-            <!-- Calendar Days -->
+            <!-- Calendar Days - Enhanced -->
             <template x-for="day in calendarDays" :key="day.date">
-                <div class="min-h-[100px] border border-gray-100 rounded-lg p-1 hover:bg-gray-50 transition"
-                     :class="{'bg-gray-50': !day.isCurrentMonth, 'bg-indigo-50': day.isToday}">
-                    <div class="text-xs font-medium mb-1"
-                         :class="day.isToday ? 'text-indigo-600' : (day.isCurrentMonth ? 'text-gray-700' : 'text-gray-400')"
+                <div class="min-h-[80px] sm:min-h-[100px] border border-gray-100 dark:border-gray-700 rounded-xl p-1.5 sm:p-2 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors cursor-pointer"
+                     :class="{
+                         'bg-gray-50 dark:bg-gray-800/50 opacity-60': !day.isCurrentMonth,
+                         'bg-indigo-50 dark:bg-indigo-900/20 border-indigo-200 dark:border-indigo-800': day.isToday
+                     }">
+                    <div class="text-xs sm:text-sm font-semibold mb-1.5"
+                         :class="day.isToday ? 'text-indigo-600 dark:text-indigo-400' : (day.isCurrentMonth ? 'text-gray-700 dark:text-gray-300' : 'text-gray-400 dark:text-gray-600')"
                          x-text="day.dayNumber"></div>
                     <div class="space-y-1">
                         <template x-for="post in day.posts.slice(0, 2)" :key="post.post_id">
-                            <div class="text-xs p-1 rounded truncate cursor-pointer hover:opacity-80"
+                            <div class="text-[10px] sm:text-xs p-1 sm:p-1.5 rounded-lg truncate cursor-pointer hover:opacity-90 transition-opacity font-medium"
                                  :class="{
-                                     'bg-blue-100 text-blue-800': post.platform === 'facebook',
-                                     'bg-pink-100 text-pink-800': post.platform === 'instagram',
-                                     'bg-sky-100 text-sky-800': post.platform === 'twitter',
-                                     'bg-blue-200 text-blue-900': post.platform === 'linkedin'
+                                     'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300': post.platform === 'facebook',
+                                     'bg-pink-100 dark:bg-pink-900/40 text-pink-700 dark:text-pink-300': post.platform === 'instagram',
+                                     'bg-sky-100 dark:bg-sky-900/40 text-sky-700 dark:text-sky-300': post.platform === 'twitter',
+                                     'bg-blue-200 dark:bg-blue-800/40 text-blue-800 dark:text-blue-200': post.platform === 'linkedin'
                                  }"
                                  @click="editPost(post)"
-                                 x-text="post.post_text?.substring(0, 20) + '...'"></div>
+                                 x-text="post.post_text?.substring(0, 15) + '...'"></div>
                         </template>
-                        <div x-show="day.posts.length > 2" class="text-xs text-gray-500 text-center">
+                        <div x-show="day.posts.length > 2" class="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 text-center font-medium">
                             +<span x-text="day.posts.length - 2"></span> أخرى
                         </div>
                     </div>
@@ -291,29 +302,29 @@
         </div>
     </div>
 
-    <!-- Posts Grid View -->
-    <div x-show="viewMode === 'grid'" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <!-- Posts Grid View - Enhanced with dark mode and animations -->
+    <div x-show="viewMode === 'grid'" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
         <template x-for="post in sortedFilteredPosts" :key="post.post_id">
-            <div class="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-lg transition group relative"
-                 :class="{'ring-2 ring-indigo-500': selectedPosts.includes(post.post_id)}">
-                <!-- Selection Checkbox -->
+            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden hover:shadow-xl hover:shadow-gray-200/50 dark:hover:shadow-gray-900/50 hover:-translate-y-1 transition-all duration-300 group relative"
+                 :class="{'ring-2 ring-indigo-500 dark:ring-indigo-400 ring-offset-2 dark:ring-offset-gray-900': selectedPosts.includes(post.post_id)}">
+                <!-- Selection Checkbox - Enhanced -->
                 <div class="absolute top-3 right-3 z-10">
                     <input type="checkbox"
                            :checked="selectedPosts.includes(post.post_id)"
                            @change="togglePostSelection(post.post_id)"
-                           class="w-4 h-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500 opacity-0 group-hover:opacity-100 transition"
+                           class="w-5 h-5 text-indigo-600 rounded-lg border-gray-300 dark:border-gray-600 focus:ring-indigo-500 focus:ring-offset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-pointer bg-white dark:bg-gray-700"
                            :class="{'opacity-100': selectedPosts.includes(post.post_id)}">
                 </div>
 
-                <!-- Platform Badge & Status -->
-                <div class="px-4 py-3 border-b flex items-center justify-between bg-gray-50">
-                    <div class="flex items-center gap-2">
-                        <div class="w-8 h-8 rounded-full flex items-center justify-center"
+                <!-- Platform Badge & Status - Enhanced -->
+                <div class="px-4 py-3 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between bg-gray-50/50 dark:bg-gray-900/30">
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-9 h-9 rounded-xl flex items-center justify-center shadow-sm"
                              :class="{
-                                 'bg-blue-100 text-blue-600': post.platform === 'facebook',
-                                 'bg-gradient-to-br from-purple-100 to-pink-100 text-pink-600': post.platform === 'instagram',
-                                 'bg-sky-100 text-sky-500': post.platform === 'twitter',
-                                 'bg-blue-100 text-blue-700': post.platform === 'linkedin'
+                                 'bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400': post.platform === 'facebook',
+                                 'bg-gradient-to-br from-purple-100 to-pink-100 dark:from-purple-900/40 dark:to-pink-900/40 text-pink-600 dark:text-pink-400': post.platform === 'instagram',
+                                 'bg-sky-100 dark:bg-sky-900/40 text-sky-500 dark:text-sky-400': post.platform === 'twitter',
+                                 'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300': post.platform === 'linkedin'
                              }">
                             <i :class="{
                                 'fab fa-facebook-f': post.platform === 'facebook',
@@ -323,133 +334,133 @@
                             }"></i>
                         </div>
                         <div>
-                            <span class="font-medium text-gray-700 text-sm" x-text="post.account_username || post.platform"></span>
+                            <span class="font-medium text-gray-700 dark:text-gray-200 text-sm" x-text="post.account_username || post.platform"></span>
                         </div>
                     </div>
 
-                    <!-- Status Badge -->
+                    <!-- Status Badge - Enhanced -->
                     <span :class="{
-                        'bg-yellow-100 text-yellow-800 border-yellow-200': post.status === 'scheduled',
-                        'bg-green-100 text-green-800 border-green-200': post.status === 'published',
-                        'bg-gray-100 text-gray-800 border-gray-200': post.status === 'draft',
-                        'bg-red-100 text-red-800 border-red-200': post.status === 'failed'
-                    }" class="px-2.5 py-1 rounded-full text-xs font-medium border">
+                        'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300 border-yellow-200 dark:border-yellow-800': post.status === 'scheduled',
+                        'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 border-green-200 dark:border-green-800': post.status === 'published',
+                        'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-600': post.status === 'draft',
+                        'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 border-red-200 dark:border-red-800': post.status === 'failed'
+                    }" class="px-2.5 py-1 rounded-lg text-xs font-semibold border">
                         <span x-text="getStatusLabel(post.status)"></span>
                     </span>
                 </div>
 
-                <!-- Post Content -->
+                <!-- Post Content - Enhanced -->
                 <div class="p-4">
-                    <p class="text-gray-700 text-sm line-clamp-3 mb-3" x-text="post.post_text"></p>
+                    <p class="text-gray-700 dark:text-gray-300 text-sm line-clamp-3 mb-3 leading-relaxed" x-text="post.post_text"></p>
 
-                    <!-- Media Preview -->
+                    <!-- Media Preview - Enhanced -->
                     <template x-if="post.media && post.media.length > 0">
-                        <div class="relative mb-3 rounded-lg overflow-hidden">
+                        <div class="relative mb-3 rounded-xl overflow-hidden group/media">
                             <template x-if="post.media[0].type === 'video'">
                                 <div class="relative">
                                     <video :src="post.media[0].url" class="w-full h-40 object-cover"></video>
-                                    <div class="absolute inset-0 flex items-center justify-center bg-black/30">
-                                        <i class="fas fa-play-circle text-white text-4xl"></i>
+                                    <div class="absolute inset-0 flex items-center justify-center bg-black/40 group-hover/media:bg-black/50 transition-colors">
+                                        <i class="fas fa-play-circle text-white text-5xl opacity-90 group-hover/media:opacity-100 group-hover/media:scale-110 transition-all"></i>
                                     </div>
                                 </div>
                             </template>
                             <template x-if="post.media[0].type !== 'video'">
-                                <img :src="post.media[0].url" class="w-full h-40 object-cover">
+                                <img :src="post.media[0].url" class="w-full h-40 object-cover group-hover/media:scale-105 transition-transform duration-300">
                             </template>
                             <div x-show="post.media.length > 1"
-                                 class="absolute bottom-2 left-2 bg-black/60 text-white text-xs px-2 py-1 rounded-full">
+                                 class="absolute bottom-2 left-2 bg-black/70 backdrop-blur-sm text-white text-xs px-2.5 py-1 rounded-full font-medium">
                                 <i class="fas fa-images ml-1"></i>
                                 <span x-text="post.media.length"></span>
                             </div>
                         </div>
                     </template>
 
-                    <!-- Metrics (for published posts) -->
+                    <!-- Metrics (for published posts) - Enhanced -->
                     <template x-if="post.status === 'published'">
-                        <div class="flex items-center justify-between py-2 border-t border-b mb-3 text-xs text-gray-500">
-                            <div class="flex items-center gap-1" title="إعجاب">
+                        <div class="flex items-center justify-between py-2.5 border-t border-b border-gray-100 dark:border-gray-700 mb-3 text-xs text-gray-500 dark:text-gray-400">
+                            <div class="flex items-center gap-1.5 hover:text-red-500 dark:hover:text-red-400 transition-colors cursor-pointer" title="إعجاب">
                                 <i class="far fa-heart"></i>
-                                <span x-text="formatNumber(post.likes || 0)"></span>
+                                <span class="tabular-nums" x-text="formatNumber(post.likes || 0)"></span>
                             </div>
-                            <div class="flex items-center gap-1" title="تعليق">
+                            <div class="flex items-center gap-1.5 hover:text-blue-500 dark:hover:text-blue-400 transition-colors cursor-pointer" title="تعليق">
                                 <i class="far fa-comment"></i>
-                                <span x-text="formatNumber(post.comments || 0)"></span>
+                                <span class="tabular-nums" x-text="formatNumber(post.comments || 0)"></span>
                             </div>
-                            <div class="flex items-center gap-1" title="مشاركة">
+                            <div class="flex items-center gap-1.5 hover:text-green-500 dark:hover:text-green-400 transition-colors cursor-pointer" title="مشاركة">
                                 <i class="far fa-share-square"></i>
-                                <span x-text="formatNumber(post.shares || 0)"></span>
+                                <span class="tabular-nums" x-text="formatNumber(post.shares || 0)"></span>
                             </div>
-                            <div class="flex items-center gap-1" title="وصول">
+                            <div class="flex items-center gap-1.5 hover:text-purple-500 dark:hover:text-purple-400 transition-colors cursor-pointer" title="وصول">
                                 <i class="far fa-eye"></i>
-                                <span x-text="formatNumber(post.reach || 0)"></span>
+                                <span class="tabular-nums" x-text="formatNumber(post.reach || 0)"></span>
                             </div>
                         </div>
                     </template>
 
-                    <!-- Scheduled Time -->
+                    <!-- Scheduled Time - Enhanced -->
                     <template x-if="post.scheduled_at && post.status === 'scheduled'">
-                        <div class="flex items-center gap-2 text-xs text-gray-500 mb-3 bg-yellow-50 p-2 rounded-lg">
-                            <i class="fas fa-clock text-yellow-600"></i>
+                        <div class="flex items-center gap-2 text-xs text-yellow-700 dark:text-yellow-300 mb-3 bg-yellow-50 dark:bg-yellow-900/20 p-2.5 rounded-xl border border-yellow-100 dark:border-yellow-800/30">
+                            <i class="fas fa-clock"></i>
                             <span x-text="formatDate(post.scheduled_at)"></span>
                         </div>
                     </template>
 
-                    <!-- Published Time -->
+                    <!-- Published Time - Enhanced -->
                     <template x-if="post.published_at && post.status === 'published'">
-                        <div class="flex items-center gap-2 text-xs text-gray-500 mb-3">
-                            <i class="fas fa-check-circle text-green-500"></i>
+                        <div class="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 mb-3">
+                            <i class="fas fa-check-circle text-green-500 dark:text-green-400"></i>
                             <span>نُشر: <span x-text="formatDate(post.published_at)"></span></span>
                         </div>
                     </template>
 
-                    <!-- Error Message for Failed Posts -->
+                    <!-- Error Message for Failed Posts - Enhanced -->
                     <template x-if="post.status === 'failed' && post.error_message">
-                        <div class="bg-red-50 border border-red-200 rounded-lg p-3 mb-3">
+                        <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/30 rounded-xl p-3 mb-3">
                             <div class="flex items-start gap-2">
-                                <i class="fas fa-exclamation-circle text-red-500 mt-0.5"></i>
+                                <i class="fas fa-exclamation-circle text-red-500 dark:text-red-400 mt-0.5"></i>
                                 <div class="flex-1">
-                                    <p class="text-xs font-medium text-red-800">سبب الفشل:</p>
-                                    <p class="text-xs text-red-700 mt-1" x-text="post.error_message"></p>
+                                    <p class="text-xs font-semibold text-red-800 dark:text-red-300">سبب الفشل:</p>
+                                    <p class="text-xs text-red-700 dark:text-red-400 mt-1" x-text="post.error_message"></p>
                                 </div>
                             </div>
                         </div>
                     </template>
 
-                    <!-- Quick Actions (Hootsuite style) -->
-                    <div class="flex items-center gap-1 border-t pt-3">
+                    <!-- Quick Actions - Enhanced -->
+                    <div class="flex items-center gap-1.5 border-t border-gray-100 dark:border-gray-700 pt-3">
                         <button @click="editPost(post)"
-                                class="flex-1 bg-gray-100 text-gray-700 px-3 py-2 rounded-lg text-sm font-medium hover:bg-gray-200 transition"
+                                class="flex-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-3 py-2 rounded-xl text-sm font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
                                 title="تعديل">
                             <i class="fas fa-edit"></i>
                         </button>
                         <button @click="duplicatePost(post)"
-                                class="flex-1 bg-gray-100 text-gray-700 px-3 py-2 rounded-lg text-sm font-medium hover:bg-gray-200 transition"
+                                class="flex-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-3 py-2 rounded-xl text-sm font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
                                 title="نسخ">
                             <i class="fas fa-copy"></i>
                         </button>
                         <template x-if="post.status === 'scheduled' || post.status === 'draft'">
                             <button @click="publishNow(post.post_id)"
-                                    class="flex-1 bg-green-100 text-green-700 px-3 py-2 rounded-lg text-sm font-medium hover:bg-green-200 transition"
+                                    class="flex-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 px-3 py-2 rounded-xl text-sm font-medium hover:bg-green-200 dark:hover:bg-green-900/50 transition-colors"
                                     title="نشر الآن">
                                 <i class="fas fa-paper-plane"></i>
                             </button>
                         </template>
                         <template x-if="post.status === 'failed'">
                             <button @click="retryPost(post.post_id)"
-                                    class="flex-1 bg-orange-100 text-orange-700 px-3 py-2 rounded-lg text-sm font-medium hover:bg-orange-200 transition"
+                                    class="flex-1 bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 px-3 py-2 rounded-xl text-sm font-medium hover:bg-orange-200 dark:hover:bg-orange-900/50 transition-colors"
                                     title="إعادة المحاولة">
                                 <i class="fas fa-redo"></i>
                             </button>
                         </template>
                         <template x-if="post.permalink">
                             <a :href="post.permalink" target="_blank"
-                               class="flex-1 bg-gray-100 text-gray-700 px-3 py-2 rounded-lg text-sm font-medium hover:bg-gray-200 transition text-center"
+                               class="flex-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-3 py-2 rounded-xl text-sm font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-center"
                                title="فتح المنشور">
                                 <i class="fas fa-external-link-alt"></i>
                             </a>
                         </template>
                         <button @click="deletePost(post.post_id)"
-                                class="bg-red-100 text-red-600 px-3 py-2 rounded-lg text-sm hover:bg-red-200 transition"
+                                class="bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 px-3 py-2 rounded-xl text-sm hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors"
                                 title="حذف">
                             <i class="fas fa-trash"></i>
                         </button>
@@ -459,69 +470,77 @@
         </template>
     </div>
 
-    <!-- Posts List View -->
-    <div x-show="viewMode === 'list'" x-cloak class="bg-white rounded-xl shadow-sm overflow-hidden">
+    <!-- Posts List View - Enhanced with dark mode -->
+    <div x-show="viewMode === 'list'" x-cloak class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
         <table class="w-full">
-            <thead class="bg-gray-50 border-b">
+            <thead class="bg-gray-50 dark:bg-gray-900/50 border-b border-gray-100 dark:border-gray-700">
                 <tr>
-                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">
-                        <input type="checkbox" @change="toggleAllPosts($event)" class="rounded">
+                    <th class="px-4 py-4 text-right text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                        <input type="checkbox" @change="toggleAllPosts($event)" class="rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-indigo-600">
                     </th>
-                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">المنصة</th>
-                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">المحتوى</th>
-                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">الحالة</th>
-                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">التاريخ</th>
-                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">إجراءات</th>
+                    <th class="px-4 py-4 text-right text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">المنصة</th>
+                    <th class="px-4 py-4 text-right text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">المحتوى</th>
+                    <th class="px-4 py-4 text-right text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">الحالة</th>
+                    <th class="px-4 py-4 text-right text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">التاريخ</th>
+                    <th class="px-4 py-4 text-right text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">إجراءات</th>
                 </tr>
             </thead>
-            <tbody class="divide-y divide-gray-100">
+            <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
                 <template x-for="post in sortedFilteredPosts" :key="post.post_id">
-                    <tr class="hover:bg-gray-50 transition">
-                        <td class="px-4 py-3">
+                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                        <td class="px-4 py-4">
                             <input type="checkbox"
                                    :checked="selectedPosts.includes(post.post_id)"
                                    @change="togglePostSelection(post.post_id)"
-                                   class="rounded">
+                                   class="rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-indigo-600">
                         </td>
-                        <td class="px-4 py-3">
-                            <div class="flex items-center gap-2">
-                                <i :class="{
-                                    'fab fa-facebook text-blue-600': post.platform === 'facebook',
-                                    'fab fa-instagram text-pink-600': post.platform === 'instagram',
-                                    'fab fa-twitter text-sky-500': post.platform === 'twitter',
-                                    'fab fa-linkedin text-blue-700': post.platform === 'linkedin'
-                                }" class="text-lg"></i>
-                                <span class="text-sm text-gray-600" x-text="post.account_username || post.platform"></span>
+                        <td class="px-4 py-4">
+                            <div class="flex items-center gap-2.5">
+                                <div class="w-8 h-8 rounded-lg flex items-center justify-center"
+                                     :class="{
+                                         'bg-blue-100 dark:bg-blue-900/40': post.platform === 'facebook',
+                                         'bg-pink-100 dark:bg-pink-900/40': post.platform === 'instagram',
+                                         'bg-sky-100 dark:bg-sky-900/40': post.platform === 'twitter',
+                                         'bg-blue-100 dark:bg-blue-900/40': post.platform === 'linkedin'
+                                     }">
+                                    <i :class="{
+                                        'fab fa-facebook text-blue-600 dark:text-blue-400': post.platform === 'facebook',
+                                        'fab fa-instagram text-pink-600 dark:text-pink-400': post.platform === 'instagram',
+                                        'fab fa-twitter text-sky-500 dark:text-sky-400': post.platform === 'twitter',
+                                        'fab fa-linkedin text-blue-700 dark:text-blue-300': post.platform === 'linkedin'
+                                    }"></i>
+                                </div>
+                                <span class="text-sm text-gray-700 dark:text-gray-300 font-medium" x-text="post.account_username || post.platform"></span>
                             </div>
                         </td>
-                        <td class="px-4 py-3">
+                        <td class="px-4 py-4">
                             <div class="flex items-center gap-3">
                                 <template x-if="post.media && post.media.length > 0">
-                                    <img :src="post.media[0].url" class="w-10 h-10 object-cover rounded">
+                                    <img :src="post.media[0].url" class="w-10 h-10 object-cover rounded-lg shadow-sm">
                                 </template>
-                                <p class="text-sm text-gray-700 line-clamp-2 max-w-xs" x-text="post.post_text"></p>
+                                <p class="text-sm text-gray-700 dark:text-gray-300 line-clamp-2 max-w-xs" x-text="post.post_text"></p>
                             </div>
                         </td>
-                        <td class="px-4 py-3">
+                        <td class="px-4 py-4">
                             <span :class="{
-                                'bg-yellow-100 text-yellow-800': post.status === 'scheduled',
-                                'bg-green-100 text-green-800': post.status === 'published',
-                                'bg-gray-100 text-gray-800': post.status === 'draft',
-                                'bg-red-100 text-red-800': post.status === 'failed'
-                            }" class="px-2 py-1 rounded-full text-xs font-medium" x-text="getStatusLabel(post.status)"></span>
+                                'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300': post.status === 'scheduled',
+                                'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300': post.status === 'published',
+                                'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300': post.status === 'draft',
+                                'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300': post.status === 'failed'
+                            }" class="px-2.5 py-1 rounded-lg text-xs font-semibold" x-text="getStatusLabel(post.status)"></span>
                         </td>
-                        <td class="px-4 py-3 text-sm text-gray-500">
+                        <td class="px-4 py-4 text-sm text-gray-500 dark:text-gray-400">
                             <span x-text="formatDate(post.scheduled_at || post.published_at || post.created_at)"></span>
                         </td>
-                        <td class="px-4 py-3">
+                        <td class="px-4 py-4">
                             <div class="flex items-center gap-1">
-                                <button @click="editPost(post)" class="p-1.5 text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 rounded" title="تعديل">
+                                <button @click="editPost(post)" class="p-2 text-gray-500 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-lg transition-colors" title="تعديل">
                                     <i class="fas fa-edit"></i>
                                 </button>
-                                <button @click="duplicatePost(post)" class="p-1.5 text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 rounded" title="نسخ">
+                                <button @click="duplicatePost(post)" class="p-2 text-gray-500 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-lg transition-colors" title="نسخ">
                                     <i class="fas fa-copy"></i>
                                 </button>
-                                <button @click="deletePost(post.post_id)" class="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded" title="حذف">
+                                <button @click="deletePost(post.post_id)" class="p-2 text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors" title="حذف">
                                     <i class="fas fa-trash"></i>
                                 </button>
                             </div>
@@ -531,23 +550,25 @@
             </tbody>
         </table>
 
-        <!-- Empty state for list view -->
-        <div x-show="sortedFilteredPosts.length === 0" class="py-12 text-center text-gray-500">
-            <i class="fas fa-inbox text-4xl mb-3"></i>
-            <p>لا توجد منشورات</p>
+        <!-- Empty state for list view - Enhanced -->
+        <div x-show="sortedFilteredPosts.length === 0" class="py-16 text-center">
+            <div class="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-inbox text-3xl text-gray-400 dark:text-gray-500"></i>
+            </div>
+            <p class="text-gray-500 dark:text-gray-400 font-medium">لا توجد منشورات</p>
         </div>
     </div>
 
-    <!-- Empty State -->
+    <!-- Empty State - Enhanced -->
     <template x-if="sortedFilteredPosts.length === 0 && viewMode === 'grid'">
-        <div class="bg-white rounded-xl shadow-sm p-12 text-center">
-            <div class="w-20 h-20 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <i class="fas fa-calendar-plus text-indigo-600 text-3xl"></i>
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-12 sm:p-16 text-center">
+            <div class="w-20 h-20 bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-indigo-900/30 dark:to-purple-900/30 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg shadow-indigo-500/10">
+                <i class="fas fa-calendar-plus text-indigo-600 dark:text-indigo-400 text-3xl"></i>
             </div>
-            <h3 class="text-xl font-bold text-gray-800 mb-2">لا توجد منشورات</h3>
-            <p class="text-gray-500 mb-6">ابدأ بإنشاء منشور جديد لجدولته على وسائل التواصل</p>
+            <h3 class="text-xl font-bold text-gray-800 dark:text-white mb-2">لا توجد منشورات</h3>
+            <p class="text-gray-500 dark:text-gray-400 mb-8 max-w-sm mx-auto">ابدأ بإنشاء منشور جديد لجدولته على وسائل التواصل الاجتماعي</p>
             <button @click="showNewPostModal = true"
-                    class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 py-3 rounded-lg font-medium hover:shadow-lg transition">
+                    class="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white px-8 py-3.5 rounded-xl font-semibold shadow-lg shadow-indigo-500/25 hover:shadow-xl hover:shadow-indigo-500/30 transition-all">
                 <i class="fas fa-plus ml-2"></i>
                 إنشاء منشور جديد
             </button>
@@ -1804,148 +1825,273 @@
         </div>
     </div>
 
-    <!-- Queue Settings Modal (Buffer-style) -->
+    <!-- Queue Settings Modal - Enhanced UI/UX -->
     <div x-show="showQueueSettings" x-cloak
-         class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
-         @click.self="showQueueSettings = false">
-        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
-            <!-- Header -->
-            <div class="p-6 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-purple-600 to-indigo-600 text-white">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <h3 class="text-xl font-bold">
-                            <i class="fas fa-cog ml-2"></i>
-                            إعدادات طابور النشر
-                        </h3>
-                        <p class="text-purple-100 text-sm mt-1">حدد أوقات النشر التلقائي لكل حساب</p>
-                    </div>
-                    <button @click="showQueueSettings = false" class="text-white/80 hover:text-white">
-                        <i class="fas fa-times text-xl"></i>
-                    </button>
-                </div>
-            </div>
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition ease-in duration-200"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0"
+         class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+         @click.self="showQueueSettings = false"
+         @keydown.escape.window="showQueueSettings = false">
+        <div x-show="showQueueSettings"
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0 scale-95 translate-y-4"
+             x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+             x-transition:leave="transition ease-in duration-200"
+             x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+             x-transition:leave-end="opacity-0 scale-95 translate-y-4"
+             class="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col"
+             @click.stop>
 
-            <!-- Body -->
-            <div class="flex-1 overflow-y-auto p-6">
-                <div class="max-w-3xl mx-auto space-y-6">
-                    <!-- Info Banner -->
-                    <div class="bg-blue-50 border border-blue-200 rounded-xl p-4">
-                        <div class="flex items-start gap-3">
-                            <i class="fas fa-info-circle text-blue-600 text-lg mt-0.5"></i>
-                            <div class="flex-1">
-                                <p class="text-sm font-medium text-blue-900">كيف يعمل طابور النشر؟</p>
-                                <p class="text-sm text-blue-700 mt-1">
-                                    عند تفعيل الطابور، سيتم جدولة المنشورات تلقائياً حسب الأوقات المحددة.
-                                    يمكنك تحديد أوقات متعددة في اليوم وأيام الأسبوع المفضلة.
+            <!-- Header - Enhanced with pattern and better hierarchy -->
+            <div class="relative p-6 sm:p-8 bg-gradient-to-br from-purple-600 via-purple-700 to-indigo-700 text-white overflow-hidden">
+                <!-- Subtle pattern overlay -->
+                <div class="absolute inset-0 opacity-10">
+                    <svg class="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+                        <defs>
+                            <pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse">
+                                <path d="M 10 0 L 0 0 0 10" fill="none" stroke="white" stroke-width="0.5"/>
+                            </pattern>
+                        </defs>
+                        <rect width="100" height="100" fill="url(#grid)"/>
+                    </svg>
+                </div>
+
+                <div class="relative flex items-start justify-between gap-4">
+                    <div class="flex-1">
+                        <div class="flex items-center gap-3 mb-2">
+                            <div class="w-12 h-12 bg-white/20 backdrop-blur rounded-2xl flex items-center justify-center">
+                                <i class="fas fa-rocket text-2xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-xl sm:text-2xl font-bold leading-tight">
+                                    إعدادات النشر التلقائي
+                                </h3>
+                                <p class="text-purple-200 text-sm mt-0.5 leading-relaxed">
+                                    جدولة ذكية لمنشوراتك على جميع المنصات
                                 </p>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Platform Queue Settings -->
-                    <template x-for="platform in connectedPlatforms" :key="platform.id">
-                        <div class="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
-                            <!-- Platform Header -->
-                            <div class="flex items-center justify-between mb-4">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-12 h-12 rounded-full flex items-center justify-center"
-                                         :class="{
-                                             'bg-blue-100': platform.type === 'facebook',
-                                             'bg-pink-100': platform.type === 'instagram',
-                                             'bg-sky-100': platform.type === 'twitter',
-                                             'bg-blue-100': platform.type === 'linkedin'
-                                         }">
-                                        <i :class="{
-                                            'fab fa-facebook-f text-blue-600': platform.type === 'facebook',
-                                            'fab fa-instagram text-pink-600': platform.type === 'instagram',
-                                            'fab fa-twitter text-sky-500': platform.type === 'twitter',
-                                            'fab fa-linkedin-in text-blue-700': platform.type === 'linkedin'
-                                        }" class="text-xl"></i>
-                                    </div>
-                                    <div>
-                                        <h4 class="font-bold text-gray-900" x-text="platform.name"></h4>
-                                        <p class="text-sm text-gray-500" x-text="platform.type"></p>
-                                    </div>
-                                </div>
-
-                                <!-- Enable Toggle -->
-                                <label class="relative inline-flex items-center cursor-pointer">
-                                    <input type="checkbox" class="sr-only peer"
-                                           :checked="getQueueSetting(platform.integrationId, 'enabled')"
-                                           @change="toggleQueue(platform.integrationId)">
-                                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
-                                    <span class="mr-3 text-sm font-medium text-gray-700">تفعيل الطابور</span>
-                                </label>
-                            </div>
-
-                            <!-- Queue Settings (shown when enabled) -->
-                            <div x-show="getQueueSetting(platform.integrationId, 'enabled')" class="space-y-4 pt-4 border-t border-gray-100">
-                                <!-- Posting Times -->
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                                        <i class="fas fa-clock ml-1"></i>
-                                        أوقات النشر اليومية
-                                    </label>
-                                    <div class="flex flex-wrap gap-2" x-data="{times: ['09:00', '13:00', '18:00']}">
-                                        <template x-for="(time, index) in times" :key="index">
-                                            <div class="flex items-center gap-1 bg-purple-50 border border-purple-200 rounded-lg px-3 py-1.5">
-                                                <input type="time" x-model="times[index]"
-                                                       class="border-0 bg-transparent text-sm text-gray-700 focus:ring-0">
-                                                <button @click="times.splice(index, 1)" class="text-red-500 hover:text-red-700">
-                                                    <i class="fas fa-times text-xs"></i>
-                                                </button>
-                                            </div>
-                                        </template>
-                                        <button @click="times.push('12:00')"
-                                                class="px-3 py-1.5 border-2 border-dashed border-gray-300 rounded-lg text-sm text-gray-600 hover:border-purple-400 hover:text-purple-600 transition">
-                                            <i class="fas fa-plus ml-1"></i>
-                                            إضافة وقت
-                                        </button>
-                                    </div>
-                                </div>
-
-                                <!-- Days of Week -->
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                                        <i class="fas fa-calendar-week ml-1"></i>
-                                        أيام النشر
-                                    </label>
-                                    <div class="flex flex-wrap gap-2" x-data="{days: [1, 2, 3, 4, 5]}">
-                                        <template x-for="day in [{v: 0, l: 'أحد'}, {v: 1, l: 'إثنين'}, {v: 2, l: 'ثلاثاء'}, {v: 3, l: 'أربعاء'}, {v: 4, l: 'خميس'}, {v: 5, l: 'جمعة'}, {v: 6, l: 'سبت'}]" :key="day.v">
-                                            <button @click="days.includes(day.v) ? days.splice(days.indexOf(day.v), 1) : days.push(day.v)"
-                                                    :class="days.includes(day.v) ? 'bg-purple-600 text-white' : 'bg-gray-100 text-gray-600'"
-                                                    class="px-4 py-2 rounded-lg text-sm font-medium transition hover:shadow-md">
-                                                <span x-text="day.l"></span>
-                                            </button>
-                                        </template>
-                                    </div>
-                                </div>
-
-                                <!-- Posts Per Day -->
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                                        <i class="fas fa-layer-group ml-1"></i>
-                                        عدد المنشورات في اليوم
-                                    </label>
-                                    <input type="number" min="1" max="20" value="3"
-                                           class="w-32 border border-gray-300 rounded-lg px-3 py-2 text-sm">
-                                </div>
-                            </div>
-                        </div>
-                    </template>
+                    <!-- Close Button - Enhanced -->
+                    <button @click="showQueueSettings = false"
+                            class="w-10 h-10 flex items-center justify-center rounded-xl bg-white/10 hover:bg-white/20 text-white/80 hover:text-white transition-all focus:outline-none focus:ring-2 focus:ring-white/50"
+                            aria-label="إغلاق">
+                        <i class="fas fa-times text-lg"></i>
+                    </button>
                 </div>
             </div>
 
-            <!-- Footer -->
-            <div class="p-6 border-t border-gray-200 bg-gray-50 flex justify-between items-center">
+            <!-- Body - Enhanced with better spacing -->
+            <div class="flex-1 overflow-y-auto p-4 sm:p-6 bg-gray-50 dark:bg-gray-900/50">
+                <div class="max-w-3xl mx-auto space-y-5">
+
+                    <!-- Info Banner - Collapsible with better design -->
+                    <div x-data="{ showInfo: true }"
+                         class="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-200/50 dark:border-blue-800/50 rounded-2xl overflow-hidden">
+                        <button @click="showInfo = !showInfo"
+                                class="w-full p-4 flex items-center gap-3 text-right hover:bg-blue-100/50 dark:hover:bg-blue-900/30 transition-colors focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500">
+                            <div class="w-10 h-10 bg-blue-500 dark:bg-blue-600 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg shadow-blue-500/30">
+                                <i class="fas fa-lightbulb text-white"></i>
+                            </div>
+                            <div class="flex-1 text-right">
+                                <p class="text-sm font-bold text-blue-900 dark:text-blue-100">كيف يعمل النشر التلقائي؟</p>
+                                <p class="text-xs text-blue-700 dark:text-blue-300 mt-0.5" x-show="!showInfo">اضغط لعرض التفاصيل</p>
+                            </div>
+                            <i class="fas fa-chevron-down text-blue-500 dark:text-blue-400 transition-transform duration-200" :class="{ 'rotate-180': showInfo }"></i>
+                        </button>
+                        <div x-show="showInfo" x-collapse class="px-4 pb-4">
+                            <div class="bg-white/60 dark:bg-gray-800/60 rounded-xl p-4 space-y-3">
+                                <div class="flex items-start gap-3">
+                                    <div class="w-6 h-6 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
+                                        <span class="text-xs font-bold text-purple-600 dark:text-purple-400">1</span>
+                                    </div>
+                                    <p class="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">فعّل النشر التلقائي لكل حساب تريد جدولته.</p>
+                                </div>
+                                <div class="flex items-start gap-3">
+                                    <div class="w-6 h-6 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
+                                        <span class="text-xs font-bold text-purple-600 dark:text-purple-400">2</span>
+                                    </div>
+                                    <p class="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">حدد أوقات النشر المفضلة وأيام الأسبوع.</p>
+                                </div>
+                                <div class="flex items-start gap-3">
+                                    <div class="w-6 h-6 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
+                                        <span class="text-xs font-bold text-purple-600 dark:text-purple-400">3</span>
+                                    </div>
+                                    <p class="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">سيتم نشر المنشورات تلقائياً في الأوقات المحددة.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Platform Queue Settings - Enhanced Cards -->
+                    <div class="space-y-4">
+                        <h4 class="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider flex items-center gap-2 px-1">
+                            <i class="fas fa-plug"></i>
+                            الحسابات المتصلة
+                            <span class="bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 px-2 py-0.5 rounded-full text-xs font-bold" x-text="connectedPlatforms.length"></span>
+                        </h4>
+
+                        <!-- Empty State -->
+                        <template x-if="connectedPlatforms.length === 0">
+                            <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-8 text-center">
+                                <div class="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                                    <i class="fas fa-unlink text-2xl text-gray-400 dark:text-gray-500"></i>
+                                </div>
+                                <p class="text-gray-600 dark:text-gray-400 font-medium mb-2">لا توجد حسابات متصلة</p>
+                                <p class="text-sm text-gray-500 dark:text-gray-500">قم بربط حساباتك أولاً لتفعيل النشر التلقائي</p>
+                            </div>
+                        </template>
+
+                        <template x-for="platform in connectedPlatforms" :key="platform.id">
+                            <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                                <!-- Platform Header - RTL Optimized -->
+                                <div class="p-4 sm:p-5 flex items-center gap-4">
+                                    <!-- Platform Icon -->
+                                    <div class="w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg flex-shrink-0"
+                                         :class="{
+                                             'bg-gradient-to-br from-blue-500 to-blue-600': platform.type === 'facebook',
+                                             'bg-gradient-to-br from-purple-500 via-pink-500 to-orange-400': platform.type === 'instagram',
+                                             'bg-gradient-to-br from-sky-400 to-sky-500': platform.type === 'twitter',
+                                             'bg-gradient-to-br from-blue-600 to-blue-700': platform.type === 'linkedin',
+                                             'bg-gradient-to-br from-black to-gray-800': platform.type === 'tiktok'
+                                         }">
+                                        <i :class="{
+                                            'fab fa-facebook-f': platform.type === 'facebook',
+                                            'fab fa-instagram': platform.type === 'instagram',
+                                            'fab fa-twitter': platform.type === 'twitter',
+                                            'fab fa-linkedin-in': platform.type === 'linkedin',
+                                            'fab fa-tiktok': platform.type === 'tiktok'
+                                        }" class="text-white text-xl"></i>
+                                    </div>
+
+                                    <!-- Platform Info -->
+                                    <div class="flex-1 min-w-0">
+                                        <h4 class="font-bold text-gray-900 dark:text-white truncate text-base" x-text="platform.name"></h4>
+                                        <p class="text-sm text-gray-500 dark:text-gray-400 capitalize" x-text="platform.type"></p>
+                                    </div>
+
+                                    <!-- Enable Toggle - RTL Optimized -->
+                                    <label class="relative inline-flex items-center cursor-pointer flex-shrink-0 group">
+                                        <span class="ml-3 text-sm font-semibold text-gray-700 dark:text-gray-300 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors hidden sm:inline">
+                                            تفعيل
+                                        </span>
+                                        <input type="checkbox" class="sr-only peer"
+                                               :checked="getQueueSetting(platform.integrationId, 'enabled')"
+                                               @change="toggleQueue(platform.integrationId)">
+                                        <div class="w-14 h-8 bg-gray-200 dark:bg-gray-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 dark:peer-focus:ring-purple-800 rounded-full peer peer-checked:after:-translate-x-full rtl:peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[4px] after:right-[4px] rtl:after:right-auto rtl:after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all after:shadow-sm peer-checked:bg-gradient-to-r peer-checked:from-purple-600 peer-checked:to-indigo-600"></div>
+                                    </label>
+                                </div>
+
+                                <!-- Queue Settings (shown when enabled) - Enhanced -->
+                                <div x-show="getQueueSetting(platform.integrationId, 'enabled')"
+                                     x-collapse
+                                     class="border-t border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/30">
+                                    <div class="p-4 sm:p-5 space-y-5">
+
+                                        <!-- Posting Times - Enhanced -->
+                                        <div x-data="{ times: ['09:00', '13:00', '18:00'] }">
+                                            <label class="flex items-center gap-2 text-sm font-bold text-gray-700 dark:text-gray-300 mb-3">
+                                                <div class="w-7 h-7 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
+                                                    <i class="fas fa-clock text-purple-600 dark:text-purple-400 text-xs"></i>
+                                                </div>
+                                                أوقات النشر اليومية
+                                            </label>
+                                            <div class="flex flex-wrap gap-2">
+                                                <template x-for="(time, index) in times" :key="index">
+                                                    <div class="group flex items-center gap-2 bg-white dark:bg-gray-800 border border-purple-200 dark:border-purple-800 rounded-xl px-3 py-2 shadow-sm hover:shadow-md hover:border-purple-300 dark:hover:border-purple-700 transition-all">
+                                                        <i class="fas fa-clock text-purple-500 dark:text-purple-400 text-sm"></i>
+                                                        <input type="time" x-model="times[index]"
+                                                               class="border-0 bg-transparent text-sm font-medium text-gray-800 dark:text-gray-200 focus:ring-0 w-20 text-center p-0">
+                                                        <button @click="times.splice(index, 1)"
+                                                                class="w-6 h-6 flex items-center justify-center rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all opacity-0 group-hover:opacity-100">
+                                                            <i class="fas fa-times text-xs"></i>
+                                                        </button>
+                                                    </div>
+                                                </template>
+                                                <button @click="times.push('12:00')"
+                                                        class="flex items-center gap-2 px-4 py-2 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl text-sm font-medium text-gray-500 dark:text-gray-400 hover:border-purple-400 dark:hover:border-purple-500 hover:text-purple-600 dark:hover:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-all">
+                                                    <i class="fas fa-plus text-xs"></i>
+                                                    إضافة
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <!-- Days of Week - Enhanced with circular buttons -->
+                                        <div x-data="{ days: [1, 2, 3, 4, 5] }">
+                                            <label class="flex items-center gap-2 text-sm font-bold text-gray-700 dark:text-gray-300 mb-3">
+                                                <div class="w-7 h-7 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg flex items-center justify-center">
+                                                    <i class="fas fa-calendar-week text-indigo-600 dark:text-indigo-400 text-xs"></i>
+                                                </div>
+                                                أيام النشر
+                                            </label>
+                                            <div class="flex flex-wrap gap-2 sm:gap-3">
+                                                <template x-for="day in [{v: 0, l: 'أحد', s: 'ح'}, {v: 1, l: 'إثنين', s: 'ن'}, {v: 2, l: 'ثلاثاء', s: 'ث'}, {v: 3, l: 'أربعاء', s: 'ر'}, {v: 4, l: 'خميس', s: 'خ'}, {v: 5, l: 'جمعة', s: 'ج'}, {v: 6, l: 'سبت', s: 'س'}]" :key="day.v">
+                                                    <button @click="days.includes(day.v) ? days.splice(days.indexOf(day.v), 1) : days.push(day.v)"
+                                                            :class="days.includes(day.v)
+                                                                ? 'bg-gradient-to-br from-purple-600 to-indigo-600 text-white shadow-lg shadow-purple-500/30 scale-105'
+                                                                : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 hover:border-purple-300 dark:hover:border-purple-600'"
+                                                            class="w-12 h-12 sm:w-auto sm:h-auto sm:px-4 sm:py-2.5 rounded-xl text-sm font-bold transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800">
+                                                        <span class="hidden sm:inline" x-text="day.l"></span>
+                                                        <span class="sm:hidden" x-text="day.s"></span>
+                                                    </button>
+                                                </template>
+                                            </div>
+                                        </div>
+
+                                        <!-- Posts Per Day - Enhanced with stepper -->
+                                        <div x-data="{ postsPerDay: 3 }">
+                                            <label class="flex items-center gap-2 text-sm font-bold text-gray-700 dark:text-gray-300 mb-3">
+                                                <div class="w-7 h-7 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
+                                                    <i class="fas fa-layer-group text-green-600 dark:text-green-400 text-xs"></i>
+                                                </div>
+                                                عدد المنشورات في اليوم
+                                            </label>
+                                            <div class="inline-flex items-center bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden shadow-sm">
+                                                <button @click="postsPerDay = Math.max(1, postsPerDay - 1)"
+                                                        class="w-12 h-12 flex items-center justify-center text-gray-500 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-colors border-l border-gray-200 dark:border-gray-700"
+                                                        :disabled="postsPerDay <= 1"
+                                                        :class="{ 'opacity-50 cursor-not-allowed': postsPerDay <= 1 }">
+                                                    <i class="fas fa-minus"></i>
+                                                </button>
+                                                <div class="w-16 h-12 flex items-center justify-center">
+                                                    <span class="text-xl font-bold text-gray-900 dark:text-white tabular-nums" x-text="postsPerDay"></span>
+                                                </div>
+                                                <button @click="postsPerDay = Math.min(20, postsPerDay + 1)"
+                                                        class="w-12 h-12 flex items-center justify-center text-gray-500 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-colors border-r border-gray-200 dark:border-gray-700"
+                                                        :disabled="postsPerDay >= 20"
+                                                        :class="{ 'opacity-50 cursor-not-allowed': postsPerDay >= 20 }">
+                                                    <i class="fas fa-plus"></i>
+                                                </button>
+                                            </div>
+                                            <p class="text-xs text-gray-500 dark:text-gray-500 mt-2">الحد الأقصى: 20 منشور يومياً</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer - Enhanced with clear action hierarchy -->
+            <div class="p-4 sm:p-6 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 flex flex-col-reverse sm:flex-row justify-between items-center gap-3">
+                <!-- Secondary Action -->
                 <button @click="showQueueSettings = false"
-                        class="px-4 py-2 text-gray-600 hover:text-gray-800">
+                        class="w-full sm:w-auto px-6 py-3 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-gray-300 dark:focus:ring-gray-600">
+                    <i class="fas fa-times ml-2 text-sm"></i>
                     إغلاق
                 </button>
+
+                <!-- Primary Action -->
                 <button @click="saveAllQueueSettings()"
-                        class="px-8 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl font-medium hover:shadow-lg transition">
-                    <i class="fas fa-save ml-2"></i>
-                    حفظ الإعدادات
+                        class="w-full sm:w-auto px-8 py-3.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white rounded-xl font-bold shadow-lg shadow-purple-500/25 hover:shadow-xl hover:shadow-purple-500/30 transition-all focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 flex items-center justify-center gap-2">
+                    <i class="fas fa-check-circle"></i>
+                    <span>حفظ الإعدادات</span>
                 </button>
             </div>
         </div>

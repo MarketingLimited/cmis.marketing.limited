@@ -1,9 +1,24 @@
-@extends('layouts.app')
+@extends('layouts.admin')
 
 @section('title', __('subscription.pricing_plans'))
 
+@php
+    $currentOrg = $currentOrg ?? request()->route('org') ?? auth()->user()->active_org_id ?? auth()->user()->org_id;
+@endphp
+
 @section('content')
-<div class="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+<div class="space-y-6">
+    {{-- Page Header with Breadcrumb --}}
+    <div class="mb-6">
+        <nav class="text-sm text-gray-500 mb-2 flex items-center gap-2">
+            <a href="{{ route('orgs.dashboard.index', $currentOrg) }}" class="hover:text-blue-600 transition">
+                <i class="fas fa-home"></i>
+            </a>
+            <span class="text-gray-400">/</span>
+            <span class="text-gray-900 font-medium">{{ __('Subscription Plans') }}</span>
+        </nav>
+    </div>
+
     {{-- Header --}}
     <div class="text-center mb-12">
         <h1 class="text-4xl font-bold text-gray-900 mb-4">

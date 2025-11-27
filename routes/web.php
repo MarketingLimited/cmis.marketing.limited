@@ -183,6 +183,9 @@ Route::middleware(['auth'])->group(function () {
         // ==================== Products & Services (Org-specific) ====================
         Route::get('/services', [OrgController::class, 'services'])->name('services');
         Route::get('/products', [OrgController::class, 'products'])->name('products');
+        Route::post('/products', [OrgController::class, 'storeProduct'])->name('products.store');
+        Route::put('/products/{product}', [OrgController::class, 'updateProduct'])->name('products.update');
+        Route::delete('/products/{product}', [OrgController::class, 'destroyProduct'])->name('products.destroy');
 
         // ==================== Team Management ====================
         Route::prefix('team')->name('team.')->group(function () {

@@ -1,23 +1,22 @@
-@extends('layouts.app')
+@extends('layouts.admin')
 
-@section('title', ($connection ? __('Edit') : __('Add')) . ' Google Connection - Settings')
+@section('title', ($connection ? __('Edit') : __('Add')) . ' ' . __('Google Connection') . ' - ' . __('Settings'))
 
 @section('content')
-<div class="max-w-3xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-    {{-- Breadcrumb --}}
-    <nav class="flex mb-6" aria-label="Breadcrumb">
-        <ol class="inline-flex items-center space-x-1 md:space-x-3 text-sm">
-            <li>
-                <a href="{{ route('orgs.settings.platform-connections.index', $currentOrg) }}" class="text-gray-500 hover:text-gray-700">
-                    <i class="fas fa-cog mr-1"></i> Platform Connections
-                </a>
-            </li>
-            <li>
-                <div class="flex items-center">
-                    <i class="fas fa-chevron-right text-gray-400 mx-2"></i>
-                    <span class="text-gray-700 font-medium">{{ $connection ? 'Edit' : 'Add' }} Google Connection</span>
-                </div>
-            </li>
+<div class="space-y-6">
+    {{-- Page Header with Breadcrumb --}}
+    <div class="mb-6">
+        <nav class="text-sm text-gray-500 mb-2 flex items-center gap-2">
+            <a href="{{ route('orgs.dashboard.index', $currentOrg) }}" class="hover:text-blue-600 transition">
+                <i class="fas fa-home"></i>
+            </a>
+            <span class="text-gray-400">/</span>
+            <a href="{{ route('orgs.settings.index', $currentOrg) }}" class="hover:text-blue-600 transition">{{ __('Settings') }}</a>
+            <span class="text-gray-400">/</span>
+            <a href="{{ route('orgs.settings.platform-connections.index', $currentOrg) }}" class="hover:text-blue-600 transition">{{ __('Platform Connections') }}</a>
+            <span class="text-gray-400">/</span>
+            <span class="text-gray-900 font-medium">{{ $connection ? __('Edit') : __('Add') }} {{ __('Google Connection') }}</span>
+        </nav>
         </ol>
     </nav>
 

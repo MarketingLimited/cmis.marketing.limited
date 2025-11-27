@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.admin')
 
 @section('title', __('onboarding.welcome'))
 
@@ -6,7 +6,18 @@
 @php
     $currentOrg = $currentOrg ?? request()->route('org') ?? auth()->user()->active_org_id ?? auth()->user()->org_id;
 @endphp
-<div class="max-w-4xl mx-auto py-8 px-4" x-data="onboardingDashboard()">
+<div class="space-y-6" x-data="onboardingDashboard()">
+    {{-- Page Header with Breadcrumb --}}
+    <div class="mb-6">
+        <nav class="text-sm text-gray-500 mb-2 flex items-center gap-2">
+            <a href="{{ route('orgs.dashboard.index', $currentOrg) }}" class="hover:text-blue-600 transition">
+                <i class="fas fa-home"></i>
+            </a>
+            <span class="text-gray-400">/</span>
+            <span class="text-gray-900 font-medium">{{ __('Onboarding') }}</span>
+        </nav>
+    </div>
+
     {{-- Welcome Header --}}
     <div class="bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg shadow-lg p-8 text-white mb-8">
         <h1 class="text-3xl font-bold mb-2">

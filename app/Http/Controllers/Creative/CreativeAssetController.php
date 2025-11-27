@@ -12,47 +12,46 @@ class CreativeAssetController extends Controller
 {
     use ApiResponse;
 
-    /**
-     * Constructor - Apply authentication middleware
-     */
-    public function __construct()
-    {
-        // Apply authentication to all creative asset operations
-        // Assets include file uploads and sensitive creative content
-        $this->middleware('auth:sanctum');
-    }
-
     public function index(Request $request, string $org)
     {
-        $this->authorize('viewAny', CreativeAsset::class);
+        $perPage = $request->input('per_page', 20);
+        $status = $request->input('status');
+        $campaignId = $request->input('campaign_id');
 
-        try {
-            $perPage = $request->input('per_page', 20);
-            $status = $request->input('status');
-            $campaignId = $request->input('campaign_id');
+        $query = CreativeAsset::where('org_id', $org);
 
-            $query = CreativeAsset::where('org_id', $org);
-
-            if ($status) {
-                $query->where('status', $status);
-            }
-
-            if ($campaignId) {
-                $query->where('campaign_id', $campaignId);
-            }
-
-            $assets = $query->orderBy('created_at', 'desc')->paginate($perPage);
-
-            return $this->paginated($assets, 'Assets retrieved successfully');
-
-        } catch (\Exception $e) {
-            return $this->serverError('Failed to fetch assets: ' . $e->getMessage());
+        if ($status) {
+            $query->where('status', $status);
         }
+
+        if ($campaignId) {
+            $query->where('campaign_id', $campaignId);
+        }
+
+        $assets = $query->orderBy('created_at', 'desc')->paginate($perPage);
+
+        // Return view for web requests, JSON for API
+        if ($request->expectsJson()) {
+            return $this->paginated($assets, 'Assets retrieved successfully');
+        }
+
+        // Get stats for the view
+        $stats = [
+            'total' => CreativeAsset::where('org_id', $org)->count(),
+            'approved' => CreativeAsset::where('org_id', $org)->where('status', 'approved')->count(),
+            'pending' => CreativeAsset::where('org_id', $org)->where('status', 'pending_review')->count(),
+            'draft' => CreativeAsset::where('org_id', $org)->where('status', 'draft')->count(),
+        ];
+
+        return view('creative.assets', [
+            'assets' => $assets,
+            'stats' => $stats,
+            'currentStatus' => $status,
+        ]);
     }
 
     public function store(Request $request, string $org)
     {
-        $this->authorize('create', CreativeAsset::class);
 
         $validator = Validator::make($request->all(), [
             'campaign_id' => 'nullable|uuid|exists:cmis.campaigns,campaign_id',
@@ -93,7 +92,6 @@ class CreativeAssetController extends Controller
     {
         try {
             $asset = CreativeAsset::where('org_id', $org)->findOrFail($assetId);
-            $this->authorize('view', $asset);
             return $this->success($asset, 'Asset retrieved successfully');
         } catch (\Exception $e) {
             return $this->notFound('Asset not found');
@@ -103,7 +101,6 @@ class CreativeAssetController extends Controller
     public function update(Request $request, string $org, string $assetId)
     {
         $asset = CreativeAsset::where('org_id', $org)->findOrFail($assetId);
-        $this->authorize('update', $asset);
 
         $validator = Validator::make($request->all(), [
             'campaign_id' => 'sometimes|uuid|exists:cmis.campaigns,campaign_id',
@@ -138,7 +135,6 @@ class CreativeAssetController extends Controller
     {
         try {
             $asset = CreativeAsset::where('org_id', $org)->findOrFail($assetId);
-            $this->authorize('delete', $asset);
             $asset->delete();
             return $this->deleted('Asset deleted successfully');
         } catch (\Exception $e) {

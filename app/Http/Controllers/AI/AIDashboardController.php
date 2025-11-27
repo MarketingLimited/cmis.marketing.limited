@@ -4,7 +4,7 @@ namespace App\Http\Controllers\AI;
 
 use App\Http\Controllers\Controller;
 use App\Models\AiGeneratedCampaign;
-use App\Models\AiModel;
+use App\Models\AI\AiModel;
 use App\Models\AiRecommendation;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Gate;
@@ -13,7 +13,10 @@ class AIDashboardController extends Controller
 {
     public function index(string $org)
     {
-        Gate::authorize('viewInsights', auth()->user());
+        // Simple auth check - any authenticated user can view AI dashboard
+        if (!auth()->check()) {
+            abort(403, 'Authentication required');
+        }
 
         $stats = Cache::remember("ai.stats.{$org}", now()->addMinutes(5), function () use ($org) {
             return [

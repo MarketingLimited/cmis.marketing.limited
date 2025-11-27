@@ -1,3 +1,30 @@
+{{--
+    ============================================================================
+    LEGACY LAYOUT - MIGRATION IN PROGRESS
+    ============================================================================
+    This is the legacy Arabic RTL layout. Pages should be migrated to
+    layouts.admin which has full i18n support with {{ __() }} functions.
+
+    Migrated Pages (now using layouts.admin):
+    - settings/user.blade.php
+    - settings/organization.blade.php
+
+    Remaining Pages (27 files still using this layout):
+    - settings/platform-connections/*.blade.php (6 files)
+    - settings/index.blade.php
+    - campaigns/ad-sets/*.blade.php (4 files)
+    - campaigns/ads/*.blade.php (4 files)
+    - onboarding/*.blade.php (2 files)
+    - inbox/*.blade.php (2 files)
+    - campaigns/performance-dashboard.blade.php
+    - orgs/team.blade.php
+    - campaigns/wizard/step.blade.php
+    - subscription/*.blade.php (2 files)
+    - dashboard/analytics.blade.php
+
+    Migration Priority: High - migrate remaining pages to layouts.admin
+    ============================================================================
+--}}
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="rtl">
 <head>

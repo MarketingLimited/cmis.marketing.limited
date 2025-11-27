@@ -21,24 +21,31 @@ class ValidateOrgAccess
     public function handle(Request $request, Closure $next): Response
     {
         $user = $request->user();
+        $wantsJson = $request->expectsJson() || $request->is('api/*');
 
         if (!$user) {
-            return response()->json([
-                'success' => false,
-                'message' => 'You must be authenticated to access this resource',
-                'code' => 'UNAUTHENTICATED'
-            ], 401);
+            if ($wantsJson) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'You must be authenticated to access this resource',
+                    'code' => 'UNAUTHENTICATED'
+                ], 401);
+            }
+            return redirect()->route('login');
         }
 
         // Try both 'org' and 'org_id' parameter names for flexibility
         $orgId = $request->route('org') ?? $request->route('org_id');
 
         if (!$orgId) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Organization ID is required',
-                'code' => 'ORG_ID_REQUIRED'
-            ], 400);
+            if ($wantsJson) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Organization ID is required',
+                    'code' => 'ORG_ID_REQUIRED'
+                ], 400);
+            }
+            return redirect()->route('orgs.index')->with('error', 'Organization ID is required');
         }
 
         $userId = $user->user_id ?? $user->id;
@@ -66,14 +73,17 @@ class ValidateOrgAccess
                 ]);
 
                 if (!$orgExists) {
-                    return response()->json([
-                        'success' => false,
-                        'message' => 'The requested organization does not exist or has been deleted',
-                        'code' => 'ORG_NOT_FOUND',
-                        'errors' => [
-                            'org_id' => [$orgId]
-                        ]
-                    ], 404);
+                    if ($wantsJson) {
+                        return response()->json([
+                            'success' => false,
+                            'message' => 'The requested organization does not exist or has been deleted',
+                            'code' => 'ORG_NOT_FOUND',
+                            'errors' => [
+                                'org_id' => [$orgId]
+                            ]
+                        ], 404);
+                    }
+                    return redirect()->route('orgs.index')->with('error', 'المؤسسة المطلوبة غير موجودة');
                 }
 
                 // Get org admin contact info for helpful error
@@ -94,15 +104,19 @@ class ValidateOrgAccess
                     $helpfulMessage .= 'Contact your organization administrator to request access.';
                 }
 
-                return response()->json([
-                    'success' => false,
-                    'message' => $helpfulMessage,
-                    'code' => 'ORG_ACCESS_DENIED',
-                    'errors' => [
-                        'required_permission' => ['org:access'],
-                        'contact' => $orgAdmin ? [$orgAdmin->email] : []
-                    ]
-                ], 403);
+                if ($wantsJson) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => $helpfulMessage,
+                        'code' => 'ORG_ACCESS_DENIED',
+                        'errors' => [
+                            'required_permission' => ['org:access'],
+                            'contact' => $orgAdmin ? [$orgAdmin->email] : []
+                        ]
+                    ], 403);
+                }
+
+                return redirect()->route('orgs.index')->with('error', 'ليس لديك صلاحية الوصول لهذه المؤسسة');
             }
 
             Log::debug('Organization access validated', [
@@ -124,11 +138,15 @@ class ValidateOrgAccess
                 ? $e->getMessage()
                 : 'An unexpected error occurred while validating access. Please try again.';
 
-            return response()->json([
-                'success' => false,
-                'message' => $errorMessage,
-                'code' => 'INTERNAL_ERROR'
-            ], 500);
+            if ($wantsJson) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $errorMessage,
+                    'code' => 'INTERNAL_ERROR'
+                ], 500);
+            }
+
+            return redirect()->route('orgs.index')->with('error', 'حدث خطأ أثناء التحقق من الصلاحيات');
         }
     }
 }

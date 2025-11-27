@@ -1,17 +1,26 @@
-@extends('layouts.app')
+@extends('layouts.admin')
 
-@section('title', 'Unified Comments')
+@section('title', __('Unified Comments'))
 
 @php
     $currentOrg = $currentOrg ?? request()->route('org') ?? auth()->user()->active_org_id ?? auth()->user()->org_id;
 @endphp
 
 @section('content')
-<div class="container mx-auto px-4 py-8" x-data="unifiedComments()">
-    {{-- Header --}}
-    <div class="mb-8">
-        <h1 class="text-3xl font-bold text-gray-900">Unified Comments</h1>
-        <p class="text-gray-600 mt-2">Manage all comments from social media platforms in one place</p>
+<div class="space-y-6" x-data="unifiedComments()">
+    {{-- Page Header with Breadcrumb --}}
+    <div class="mb-6">
+        <nav class="text-sm text-gray-500 mb-2 flex items-center gap-2">
+            <a href="{{ route('orgs.dashboard.index', $currentOrg) }}" class="hover:text-blue-600 transition">
+                <i class="fas fa-home"></i>
+            </a>
+            <span class="text-gray-400">/</span>
+            <a href="{{ route('orgs.inbox.index', ['org' => $currentOrg]) }}" class="hover:text-blue-600 transition">{{ __('Inbox') }}</a>
+            <span class="text-gray-400">/</span>
+            <span class="text-gray-900 font-medium">{{ __('Comments') }}</span>
+        </nav>
+        <h1 class="text-2xl font-bold text-gray-900">{{ __('Unified Comments') }}</h1>
+        <p class="text-gray-600 mt-1">{{ __('Manage all comments from social media platforms in one place') }}</p>
     </div>
 
     {{-- Tabs --}}

@@ -1,10 +1,25 @@
-@extends('layouts.app')
+@extends('layouts.admin')
+
+@php
+    $currentOrg = $currentOrg ?? request()->route('org') ?? auth()->user()->active_org_id ?? auth()->user()->org_id;
+@endphp
 
 @section('title', __('subscription.upgrade_to_pro'))
 
 @section('content')
-<div class="max-w-4xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
-    {{-- Header --}}
+<div class="space-y-6">
+    {{-- Page Header with Breadcrumb --}}
+    <div class="mb-6">
+        <nav class="text-sm text-gray-500 mb-2 flex items-center gap-2">
+            <a href="{{ route('orgs.dashboard.index', $currentOrg) }}" class="hover:text-blue-600 transition">
+                <i class="fas fa-home"></i>
+            </a>
+            <span class="text-gray-400">/</span>
+            <span class="text-gray-900 font-medium">{{ __('subscription.upgrade_to_pro') }}</span>
+        </nav>
+    </div>
+
+    {{-- Main Content --}}
     <div class="text-center mb-12">
         <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-100 mb-4">
             <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
