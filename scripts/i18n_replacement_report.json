@@ -1,0 +1,152 @@
+{
+  "summary": {
+    "files_modified": 36,
+    "total_replacements": 166
+  },
+  "modified_files": [
+    {
+      "file": "app/Http/Controllers/WorkflowController.php",
+      "replacements": 1
+    },
+    {
+      "file": "app/Http/Controllers/OrgController.php",
+      "replacements": 3
+    },
+    {
+      "file": "app/Http/Controllers/CreativeBriefController.php",
+      "replacements": 7
+    },
+    {
+      "file": "app/Http/Controllers/ProfileController.php",
+      "replacements": 1
+    },
+    {
+      "file": "app/Http/Controllers/API/AIAssistantController.php",
+      "replacements": 2
+    },
+    {
+      "file": "app/Http/Controllers/Influencer/InfluencerPaymentController.php",
+      "replacements": 3
+    },
+    {
+      "file": "app/Http/Controllers/Influencer/InfluencerController.php",
+      "replacements": 3
+    },
+    {
+      "file": "app/Http/Controllers/Influencer/InfluencerCampaignController.php",
+      "replacements": 4
+    },
+    {
+      "file": "app/Http/Controllers/Influencer/InfluencerContentController.php",
+      "replacements": 3
+    },
+    {
+      "file": "app/Http/Controllers/Core/UserManagementController.php",
+      "replacements": 1
+    },
+    {
+      "file": "app/Http/Controllers/Campaign/CampaignWizardController.php",
+      "replacements": 3
+    },
+    {
+      "file": "app/Http/Controllers/ABTesting/ABTestVariantController.php",
+      "replacements": 3
+    },
+    {
+      "file": "app/Http/Controllers/ABTesting/ABTestController.php",
+      "replacements": 3
+    },
+    {
+      "file": "app/Http/Controllers/Intelligence/RecommendationController.php",
+      "replacements": 4
+    },
+    {
+      "file": "app/Http/Controllers/Intelligence/PredictionModelController.php",
+      "replacements": 9
+    },
+    {
+      "file": "app/Http/Controllers/Intelligence/AnomalyController.php",
+      "replacements": 3
+    },
+    {
+      "file": "app/Http/Controllers/Intelligence/ForecastController.php",
+      "replacements": 3
+    },
+    {
+      "file": "app/Http/Controllers/Auth/InvitationController.php",
+      "replacements": 2
+    },
+    {
+      "file": "app/Http/Controllers/FeatureManagement/FeatureFlagVariantController.php",
+      "replacements": 5
+    },
+    {
+      "file": "app/Http/Controllers/FeatureManagement/FeatureFlagOverrideController.php",
+      "replacements": 5
+    },
+    {
+      "file": "app/Http/Controllers/FeatureManagement/FeatureFlagController.php",
+      "replacements": 7
+    },
+    {
+      "file": "app/Http/Controllers/OAuth/OAuthController.php",
+      "replacements": 4
+    },
+    {
+      "file": "app/Http/Controllers/Settings/BrandVoiceSettingsController.php",
+      "replacements": 3
+    },
+    {
+      "file": "app/Http/Controllers/Settings/BoostRuleSettingsController.php",
+      "replacements": 3
+    },
+    {
+      "file": "app/Http/Controllers/Settings/PlatformConnectionsController.php",
+      "replacements": 34
+    },
+    {
+      "file": "app/Http/Controllers/Settings/ApprovalWorkflowSettingsController.php",
+      "replacements": 3
+    },
+    {
+      "file": "app/Http/Controllers/Settings/AdAccountSettingsController.php",
+      "replacements": 4
+    },
+    {
+      "file": "app/Http/Controllers/Settings/ProfileGroupSettingsController.php",
+      "replacements": 8
+    },
+    {
+      "file": "app/Http/Controllers/Settings/BrandSafetySettingsController.php",
+      "replacements": 3
+    },
+    {
+      "file": "app/Http/Controllers/Campaigns/CampaignAdController.php",
+      "replacements": 5
+    },
+    {
+      "file": "app/Http/Controllers/Campaigns/CampaignAdSetController.php",
+      "replacements": 5
+    },
+    {
+      "file": "app/Http/Controllers/Automation/AutomationRulesController.php",
+      "replacements": 3
+    },
+    {
+      "file": "app/Http/Controllers/Optimization/OptimizationRuleController.php",
+      "replacements": 4
+    },
+    {
+      "file": "app/Http/Controllers/Web/TeamWebController.php",
+      "replacements": 1
+    },
+    {
+      "file": "app/Http/Controllers/Dashboard/DashboardController.php",
+      "replacements": 7
+    },
+    {
+      "file": "app/Http/Controllers/Dashboard/DashboardWidgetController.php",
+      "replacements": 4
+    }
+  ]
+}

@@ -1,0 +1,1731 @@
+{
+  "summary": {
+    "files_processed": 36,
+    "total_messages": 166,
+    "domains": [
+      "workflowcontroller.php",
+      "orgcontroller.php",
+      "creativebriefcontroller.php",
+      "profilecontroller.php",
+      "api",
+      "influencer",
+      "core",
+      "campaign",
+      "abtesting",
+      "intelligence",
+      "auth",
+      "featuremanagement",
+      "oauth",
+      "settings",
+      "campaigns",
+      "automation",
+      "optimization",
+      "web",
+      "dashboard"
+    ]
+  },
+  "messages_by_domain": {
+    "workflowcontroller.php": [
+      {
+        "file": "/home/cmis-test/public_html/app/Http/Controllers/WorkflowController.php",
+        "messages": [
+          {
+            "original": "with('error', 'فشل تحميل سير العمل')",
+            "type": "flash",
+            "msg_type": "error",
+            "text": "فشل تحميل سير العمل",
+            "lang": "ar",
+            "key": "workflowcontroller.php.operation_failed",
+            "replacement": "with('error', __('workflowcontroller.php.operation_failed'))"
+          }
+        ]
+      }
+    ],
+    "orgcontroller.php": [
+      {
+        "file": "/home/cmis-test/public_html/app/Http/Controllers/OrgController.php",
+        "messages": [
+          {
+            "original": "with('success', 'تم إنشاء المؤسسة بنجاح')",
+            "type": "flash",
+            "msg_type": "success",
+            "text": "تم إنشاء المؤسسة بنجاح",
+            "lang": "ar",
+            "key": "orgcontroller.php.created_success",
+            "replacement": "with('success', __('orgcontroller.php.created_success'))"
+          },
+          {
+            "original": "with('error', 'يجب اختيار حملتين على الأقل للمقارنة.')",
+            "type": "flash",
+            "msg_type": "error",
+            "text": "يجب اختيار حملتين على الأقل للمقارنة.",
+            "lang": "ar",
+            "key": "orgcontroller.php.",
+            "replacement": "with('error', __('orgcontroller.php.'))"
+          },
+          {
+            "original": "with('error', 'لم يتم العثور على الحملات المحددة.')",
+            "type": "flash",
+            "msg_type": "error",
+            "text": "لم يتم العثور على الحملات المحددة.",
+            "lang": "ar",
+            "key": "orgcontroller.php.not_found",
+            "replacement": "with('error', __('orgcontroller.php.not_found'))"
+          }
+        ]
+      }
+    ],
+    "creativebriefcontroller.php": [
+      {
+        "file": "/home/cmis-test/public_html/app/Http/Controllers/CreativeBriefController.php",
+        "messages": [
+          {
+            "original": "with('error', 'هيكل البريف غير صحيح')",
+            "type": "flash",
+            "msg_type": "error",
+            "text": "هيكل البريف غير صحيح",
+            "lang": "ar",
+            "key": "creativebriefcontroller.php.",
+            "replacement": "with('error', __('creativebriefcontroller.php.'))"
+          },
+          {
+            "original": "with('success', 'تم إنشاء البريف بنجاح')",
+            "type": "flash",
+            "msg_type": "success",
+            "text": "تم إنشاء البريف بنجاح",
+            "lang": "ar",
+            "key": "creativebriefcontroller.php.created_success",
+            "replacement": "with('success', __('creativebriefcontroller.php.created_success'))"
+          },
+          {
+            "original": "with('error', 'فشل إنشاء البريف')",
+            "type": "flash",
+            "msg_type": "error",
+            "text": "فشل إنشاء البريف",
+            "lang": "ar",
+            "key": "creativebriefcontroller.php.operation_failed",
+            "replacement": "with('error', __('creativebriefcontroller.php.operation_failed'))"
+          },
+          {
+            "original": "with('error', 'البريف غير موجود')",
+            "type": "flash",
+            "msg_type": "error",
+            "text": "البريف غير موجود",
+            "lang": "ar",
+            "key": "creativebriefcontroller.php.",
+            "replacement": "with('error', __('creativebriefcontroller.php.'))"
+          },
+          {
+            "original": "with('error', 'فشل تحميل البريف')",
+            "type": "flash",
+            "msg_type": "error",
+            "text": "فشل تحميل البريف",
+            "lang": "ar",
+            "key": "creativebriefcontroller.php.operation_failed",
+            "replacement": "with('error', __('creativebriefcontroller.php.operation_failed'))"
+          },
+          {
+            "original": "with('success', 'تمت الموافقة على البريف')",
+            "type": "flash",
+            "msg_type": "success",
+            "text": "تمت الموافقة على البريف",
+            "lang": "ar",
+            "key": "creativebriefcontroller.php.",
+            "replacement": "with('success', __('creativebriefcontroller.php.'))"
+          },
+          {
+            "original": "with('error', 'فشلت الموافقة على البريف')",
+            "type": "flash",
+            "msg_type": "error",
+            "text": "فشلت الموافقة على البريف",
+            "lang": "ar",
+            "key": "creativebriefcontroller.php.operation_failed",
+            "replacement": "with('error', __('creativebriefcontroller.php.operation_failed'))"
+          }
+        ]
+      }
+    ],
+    "profilecontroller.php": [
+      {
+        "file": "/home/cmis-test/public_html/app/Http/Controllers/ProfileController.php",
+        "messages": [
+          {
+            "original": "with('success', 'تم تحديث الملف الشخصي')",
+            "type": "flash",
+            "msg_type": "success",
+            "text": "تم تحديث الملف الشخصي",
+            "lang": "ar",
+            "key": "profilecontroller.php.updated_success",
+            "replacement": "with('success', __('profilecontroller.php.updated_success'))"
+          }
+        ]
+      }
+    ],
+    "api": [
+      {
+        "file": "/home/cmis-test/public_html/app/Http/Controllers/API/AIAssistantController.php",
+        "messages": [
+          {
+            "original": "throw new \\Exception('Gemini API key not configured')",
+            "type": "exception",
+            "text": "Gemini API key not configured",
+            "lang": "en",
+            "key": "api.gemini_api_key_not_configured",
+            "replacement": "throw new \\Exception(__('api.gemini_api_key_not_configured'))"
+          },
+          {
+            "original": "throw new \\Exception('Unexpected Gemini API response format')",
+            "type": "exception",
+            "text": "Unexpected Gemini API response format",
+            "lang": "en",
+            "key": "api.unexpected_gemini_api_response_format",
+            "replacement": "throw new \\Exception(__('api.unexpected_gemini_api_response_format'))"
+          }
+        ]
+      }
+    ],
+    "influencer": [
+      {
+        "file": "/home/cmis-test/public_html/app/Http/Controllers/Influencer/InfluencerPaymentController.php",
+        "messages": [
+          {
+            "original": "with('success', 'Payment created successfully')",
+            "type": "flash",
+            "msg_type": "success",
+            "text": "Payment created successfully",
+            "lang": "en",
+            "key": "influencer.created_success",
+            "replacement": "with('success', __('influencer.created_success'))"
+          },
+          {
+            "original": "with('success', 'Payment updated successfully')",
+            "type": "flash",
+            "msg_type": "success",
+            "text": "Payment updated successfully",
+            "lang": "en",
+            "key": "influencer.updated_success",
+            "replacement": "with('success', __('influencer.updated_success'))"
+          },
+          {
+            "original": "with('success', 'Payment deleted successfully')",
+            "type": "flash",
+            "msg_type": "success",
+            "text": "Payment deleted successfully",
+            "lang": "en",
+            "key": "influencer.deleted_success",
+            "replacement": "with('success', __('influencer.deleted_success'))"
+          }
+        ]
+      },
+      {
+        "file": "/home/cmis-test/public_html/app/Http/Controllers/Influencer/InfluencerController.php",
+        "messages": [
+          {
+            "original": "with('success', 'تم إضافة المؤثر بنجاح')",
+            "type": "flash",
+            "msg_type": "success",
+            "text": "تم إضافة المؤثر بنجاح",
+            "lang": "ar",
+            "key": "influencer.created_success",
+            "replacement": "with('success', __('influencer.created_success'))"
+          },
+          {
+            "original": "with('success', 'تم تحديث المؤثر بنجاح')",
+            "type": "flash",
+            "msg_type": "success",
+            "text": "تم تحديث المؤثر بنجاح",
+            "lang": "ar",
+            "key": "influencer.updated_success",
+            "replacement": "with('success', __('influencer.updated_success'))"
+          },
+          {
+            "original": "with('success', 'تم حذف المؤثر بنجاح')",
+            "type": "flash",
+            "msg_type": "success",
+            "text": "تم حذف المؤثر بنجاح",
+            "lang": "ar",
+            "key": "influencer.deleted_success",
+            "replacement": "with('success', __('influencer.deleted_success'))"
+          }
+        ]
+      },
+      {
+        "file": "/home/cmis-test/public_html/app/Http/Controllers/Influencer/InfluencerCampaignController.php",
+        "messages": [
+          {
+            "original": "with('success', 'Influencer campaign created successfully')",
+            "type": "flash",
+            "msg_type": "success",
+            "text": "Influencer campaign created successfully",
+            "lang": "en",
+            "key": "influencer.created_success",
+            "replacement": "with('success', __('influencer.created_success'))"
+          },
+          {
+            "original": "with('success', 'Influencer campaign updated successfully')",
+            "type": "flash",
+            "msg_type": "success",
+            "text": "Influencer campaign updated successfully",
+            "lang": "en",
+            "key": "influencer.updated_success",
+            "replacement": "with('success', __('influencer.updated_success'))"
+          },
+          {
+            "original": "with('success', 'Influencer campaign deleted successfully')",
+            "type": "flash",
+            "msg_type": "success",
+            "text": "Influencer campaign deleted successfully",
+            "lang": "en",
+            "key": "influencer.deleted_success",
+            "replacement": "with('success', __('influencer.deleted_success'))"
+          },
+          {
+            "original": "with('success', 'Campaign status updated successfully')",
+            "type": "flash",
+            "msg_type": "success",
+            "text": "Campaign status updated successfully",
+            "lang": "en",
+            "key": "influencer.updated_success",
+            "replacement": "with('success', __('influencer.updated_success'))"
+          }
+        ]
+      },
+      {
+        "file": "/home/cmis-test/public_html/app/Http/Controllers/Influencer/InfluencerContentController.php",
+        "messages": [
+          {
+            "original": "with('success', 'Content created successfully')",
+            "type": "flash",
+            "msg_type": "success",
+            "text": "Content created successfully",
+            "lang": "en",
+            "key": "influencer.created_success",
+            "replacement": "with('success', __('influencer.created_success'))"
+          },
+          {
+            "original": "with('success', 'Content updated successfully')",
+            "type": "flash",
+            "msg_type": "success",
+            "text": "Content updated successfully",
+            "lang": "en",
+            "key": "influencer.updated_success",
+            "replacement": "with('success', __('influencer.updated_success'))"
+          },
+          {
+            "original": "with('success', 'Content deleted successfully')",
+            "type": "flash",
+            "msg_type": "success",
+            "text": "Content deleted successfully",
+            "lang": "en",
+            "key": "influencer.deleted_success",
+            "replacement": "with('success', __('influencer.deleted_success'))"
+          }
+        ]
+      }
+    ],
+    "core": [
+      {
+        "file": "/home/cmis-test/public_html/app/Http/Controllers/Core/UserManagementController.php",
+        "messages": [
+          {
+            "original": "throw new \\Exception('You do not have access to this organization')",
+            "type": "exception",
+            "text": "You do not have access to this organization",
+            "lang": "en",
+            "key": "core.you_do_not_have_access_to_this_organization",
+            "replacement": "throw new \\Exception(__('core.you_do_not_have_access_to_this_organization'))"
+          }
+        ]
+      }
+    ],
+    "campaign": [
+      {
+        "file": "/home/cmis-test/public_html/app/Http/Controllers/Campaign/CampaignWizardController.php",
+        "messages": [
+          {
+            "original": "throw new WizardStepException('Invalid wizard session')",
+            "type": "exception",
+            "text": "Invalid wizard session",
+            "lang": "en",
+            "key": "campaign.invalid",
+            "replacement": "throw new WizardStepException(__('campaign.invalid'))"
+          },
+          {
+            "original": "throw new WizardStepException('Invalid wizard session')",
+            "type": "exception",
+            "text": "Invalid wizard session",
+            "lang": "en",
+            "key": "campaign.invalid",
+            "replacement": "throw new WizardStepException(__('campaign.invalid'))"
+          },
+          {
+            "original": "throw new WizardStepException('Invalid wizard session')",
+            "type": "exception",
+            "text": "Invalid wizard session",
+            "lang": "en",
+            "key": "campaign.invalid",
+            "replacement": "throw new WizardStepException(__('campaign.invalid'))"
+          }
+        ]
+      }
+    ],
+    "abtesting": [
+      {
+        "file": "/home/cmis-test/public_html/app/Http/Controllers/ABTesting/ABTestVariantController.php",
+        "messages": [
+          {
+            "original": "with('success', 'Variant created successfully')",
+            "type": "flash",
+            "msg_type": "success",
+            "text": "Variant created successfully",
+            "lang": "en",
+            "key": "abtesting.created_success",
+            "replacement": "with('success', __('abtesting.created_success'))"
+          },
+          {
+            "original": "with('success', 'Variant updated successfully')",
+            "type": "flash",
+            "msg_type": "success",
+            "text": "Variant updated successfully",
+            "lang": "en",
+            "key": "abtesting.updated_success",
+            "replacement": "with('success', __('abtesting.updated_success'))"
+          },
+          {
+            "original": "with('success', 'Variant deleted successfully')",
+            "type": "flash",
+            "msg_type": "success",
+            "text": "Variant deleted successfully",
+            "lang": "en",
+            "key": "abtesting.deleted_success",
+            "replacement": "with('success', __('abtesting.deleted_success'))"
+          }
+        ]
+      },
+      {
+        "file": "/home/cmis-test/public_html/app/Http/Controllers/ABTesting/ABTestController.php",
+        "messages": [
+          {
+            "original": "with('success', 'A/B test created successfully')",
+            "type": "flash",
+            "msg_type": "success",
+            "text": "A/B test created successfully",
+            "lang": "en",
+            "key": "abtesting.created_success",
+            "replacement": "with('success', __('abtesting.created_success'))"
+          },
+          {
+            "original": "with('success', 'A/B test updated successfully')",
+            "type": "flash",
+            "msg_type": "success",
+            "text": "A/B test updated successfully",
+            "lang": "en",
+            "key": "abtesting.updated_success",
+            "replacement": "with('success', __('abtesting.updated_success'))"
+          },
+          {
+            "original": "with('success', 'A/B test deleted successfully')",
+            "type": "flash",
+            "msg_type": "success",
+            "text": "A/B test deleted successfully",
+            "lang": "en",
+            "key": "abtesting.deleted_success",
+            "replacement": "with('success', __('abtesting.deleted_success'))"
+          }
+        ]
+      }
+    ],
+    "intelligence": [
+      {
+        "file": "/home/cmis-test/public_html/app/Http/Controllers/Intelligence/RecommendationController.php",
+        "messages": [
+          {
+            "original": "with('success', 'Recommendation applied successfully')",
+            "type": "flash",
+            "msg_type": "success",
+            "text": "Recommendation applied successfully",
+            "lang": "en",
+            "key": "intelligence.recommendation_applied_successfully",
+            "replacement": "with('success', __('intelligence.recommendation_applied_successfully'))"
+          },
+          {
+            "original": "with('success', 'Recommendation rejected')",
+            "type": "flash",
+            "msg_type": "success",
+            "text": "Recommendation rejected",
+            "lang": "en",
+            "key": "intelligence.recommendation_rejected",
+            "replacement": "with('success', __('intelligence.recommendation_rejected'))"
+          },
+          {
+            "original": "with('success', 'Recommendation dismissed')",
+            "type": "flash",
+            "msg_type": "success",
+            "text": "Recommendation dismissed",
+            "lang": "en",
+            "key": "intelligence.recommendation_dismissed",
+            "replacement": "with('success', __('intelligence.recommendation_dismissed'))"
+          },
+          {
+            "original": "with('success', 'Feedback recorded successfully')",
+            "type": "flash",
+            "msg_type": "success",
+            "text": "Feedback recorded successfully",
+            "lang": "en",
+            "key": "intelligence.feedback_recorded_successfully",
+            "replacement": "with('success', __('intelligence.feedback_recorded_successfully'))"
+          }
+        ]
+      },
+      {
+        "file": "/home/cmis-test/public_html/app/Http/Controllers/Intelligence/PredictionModelController.php",
+        "messages": [
+          {
+            "original": "with('success', 'Prediction model created successfully')",
+            "type": "flash",
+            "msg_type": "success",
+            "text": "Prediction model created successfully",
+            "lang": "en",
+            "key": "intelligence.created_success",
+            "replacement": "with('success', __('intelligence.created_success'))"
+          },
+          {
+            "original": "with('success', 'Prediction model updated successfully')",
+            "type": "flash",
+            "msg_type": "success",
+            "text": "Prediction model updated successfully",
+            "lang": "en",
+            "key": "intelligence.updated_success",
+            "replacement": "with('success', __('intelligence.updated_success'))"
+          },
+          {
+            "original": "with('success', 'Prediction model deleted successfully')",
+            "type": "flash",
+            "msg_type": "success",
+            "text": "Prediction model deleted successfully",
+            "lang": "en",
+            "key": "intelligence.deleted_success",
+            "replacement": "with('success', __('intelligence.deleted_success'))"
+          },
+          {
+            "original": "with('success', 'Model training completed successfully')",
+            "type": "flash",
+            "msg_type": "success",
+            "text": "Model training completed successfully",
+            "lang": "en",
+            "key": "intelligence.model_training_completed_successfully",
+            "replacement": "with('success', __('intelligence.model_training_completed_successfully'))"
+          },
+          {
+            "original": "with('success', 'Model retraining completed successfully')",
+            "type": "flash",
+            "msg_type": "success",
+            "text": "Model retraining completed successfully",
+            "lang": "en",
+            "key": "intelligence.model_retraining_completed_successfully",
+            "replacement": "with('success', __('intelligence.model_retraining_completed_successfully'))"
+          },
+          {
+            "original": "with('success', 'Model activated successfully')",
+            "type": "flash",
+            "msg_type": "success",
+            "text": "Model activated successfully",
+            "lang": "en",
+            "key": "intelligence.model_activated_successfully",
+            "replacement": "with('success', __('intelligence.model_activated_successfully'))"
+          },
+          {
+            "original": "with('success', 'Model deactivated successfully')",
+            "type": "flash",
+            "msg_type": "success",
+            "text": "Model deactivated successfully",
+            "lang": "en",
+            "key": "intelligence.model_deactivated_successfully",
+            "replacement": "with('success', __('intelligence.model_deactivated_successfully'))"
+          },
+          {
+            "original": "with('success', 'Model archived successfully')",
+            "type": "flash",
+            "msg_type": "success",
+            "text": "Model archived successfully",
+            "lang": "en",
+            "key": "intelligence.model_archived_successfully",
+            "replacement": "with('success', __('intelligence.model_archived_successfully'))"
+          },
+          {
+            "original": "with('success', 'Model imported successfully')",
+            "type": "flash",
+            "msg_type": "success",
+            "text": "Model imported successfully",
+            "lang": "en",
+            "key": "intelligence.model_imported_successfully",
+            "replacement": "with('success', __('intelligence.model_imported_successfully'))"
+          }
+        ]
+      },
+      {
+        "file": "/home/cmis-test/public_html/app/Http/Controllers/Intelligence/AnomalyController.php",
+        "messages": [
+          {
+            "original": "with('success', 'Anomaly resolved successfully')",
+            "type": "flash",
+            "msg_type": "success",
+            "text": "Anomaly resolved successfully",
+            "lang": "en",
+            "key": "intelligence.anomaly_resolved_successfully",
+            "replacement": "with('success', __('intelligence.anomaly_resolved_successfully'))"
+          },
+          {
+            "original": "with('success', 'Anomaly marked as false positive')",
+            "type": "flash",
+            "msg_type": "success",
+            "text": "Anomaly marked as false positive",
+            "lang": "en",
+            "key": "intelligence.anomaly_marked_as_false_positive",
+            "replacement": "with('success', __('intelligence.anomaly_marked_as_false_positive'))"
+          },
+          {
+            "original": "with('success', 'Anomaly marked as investigating')",
+            "type": "flash",
+            "msg_type": "success",
+            "text": "Anomaly marked as investigating",
+            "lang": "en",
+            "key": "intelligence.anomaly_marked_as_investigating",
+            "replacement": "with('success', __('intelligence.anomaly_marked_as_investigating'))"
+          }
+        ]
+      },
+      {
+        "file": "/home/cmis-test/public_html/app/Http/Controllers/Intelligence/ForecastController.php",
+        "messages": [
+          {
+            "original": "with('success', 'Forecast created successfully')",
+            "type": "flash",
+            "msg_type": "success",
+            "text": "Forecast created successfully",
+            "lang": "en",
+            "key": "intelligence.created_success",
+            "replacement": "with('success', __('intelligence.created_success'))"
+          },
+          {
+            "original": "with('success', 'Forecast updated successfully')",
+            "type": "flash",
+            "msg_type": "success",
+            "text": "Forecast updated successfully",
+            "lang": "en",
+            "key": "intelligence.updated_success",
+            "replacement": "with('success', __('intelligence.updated_success'))"
+          },
+          {
+            "original": "with('success', 'Forecast deleted successfully')",
+            "type": "flash",
+            "msg_type": "success",
+            "text": "Forecast deleted successfully",
+            "lang": "en",
+            "key": "intelligence.deleted_success",
+            "replacement": "with('success', __('intelligence.deleted_success'))"
+          }
+        ]
+      }
+    ],
+    "auth": [
+      {
+        "file": "/home/cmis-test/public_html/app/Http/Controllers/Auth/InvitationController.php",
+        "messages": [
+          {
+            "original": "with('error', 'This invitation link is invalid or has expired.')",
+            "type": "flash",
+            "msg_type": "error",
+            "text": "This invitation link is invalid or has expired.",
+            "lang": "en",
+            "key": "auth.invalid",
+            "replacement": "with('error', __('auth.invalid'))"
+          },
+          {
+            "original": "with('info', 'You have declined the invitation.')",
+            "type": "flash",
+            "msg_type": "info",
+            "text": "You have declined the invitation.",
+            "lang": "en",
+            "key": "auth.you_have_declined_the_invitation",
+            "replacement": "with('info', __('auth.you_have_declined_the_invitation'))"
+          }
+        ]
+      }
+    ],
+    "featuremanagement": [
+      {
+        "file": "/home/cmis-test/public_html/app/Http/Controllers/FeatureManagement/FeatureFlagVariantController.php",
+        "messages": [
+          {
+            "original": "with('success', 'Variant created successfully')",
+            "type": "flash",
+            "msg_type": "success",
+            "text": "Variant created successfully",
+            "lang": "en",
+            "key": "featuremanagement.created_success",
+            "replacement": "with('success', __('featuremanagement.created_success'))"
+          },
+          {
+            "original": "with('success', 'Variant updated successfully')",
+            "type": "flash",
+            "msg_type": "success",
+            "text": "Variant updated successfully",
+            "lang": "en",
+            "key": "featuremanagement.updated_success",
+            "replacement": "with('success', __('featuremanagement.updated_success'))"
+          },
+          {
+            "original": "with('success', 'Variant deleted successfully')",
+            "type": "flash",
+            "msg_type": "success",
+            "text": "Variant deleted successfully",
+            "lang": "en",
+            "key": "featuremanagement.deleted_success",
+            "replacement": "with('success', __('featuremanagement.deleted_success'))"
+          },
+          {
+            "original": "with('success', 'Variant activated successfully')",
+            "type": "flash",
+            "msg_type": "success",
+            "text": "Variant activated successfully",
+            "lang": "en",
+            "key": "featuremanagement.variant_activated_successfully",
+            "replacement": "with('success', __('featuremanagement.variant_activated_successfully'))"
+          },
+          {
+            "original": "with('success', 'Variant deactivated successfully')",
+            "type": "flash",
+            "msg_type": "success",
+            "text": "Variant deactivated successfully",
+            "lang": "en",
+            "key": "featuremanagement.variant_deactivated_successfully",
+            "replacement": "with('success', __('featuremanagement.variant_deactivated_successfully'))"
+          }
+        ]
+      },
+      {
+        "file": "/home/cmis-test/public_html/app/Http/Controllers/FeatureManagement/FeatureFlagOverrideController.php",
+        "messages": [
+          {
+            "original": "with('success', 'Override created successfully')",
+            "type": "flash",
+            "msg_type": "success",
+            "text": "Override created successfully",
+            "lang": "en",
+            "key": "featuremanagement.created_success",
+            "replacement": "with('success', __('featuremanagement.created_success'))"
+          },
+          {
+            "original": "with('success', 'Override updated successfully')",
+            "type": "flash",
+            "msg_type": "success",
+            "text": "Override updated successfully",
+            "lang": "en",
+            "key": "featuremanagement.updated_success",
+            "replacement": "with('success', __('featuremanagement.updated_success'))"
+          },
+          {
+            "original": "with('success', 'Override deleted successfully')",
+            "type": "flash",
+            "msg_type": "success",
+            "text": "Override deleted successfully",
+            "lang": "en",
+            "key": "featuremanagement.deleted_success",
+            "replacement": "with('success', __('featuremanagement.deleted_success'))"
+          },
+          {
+            "original": "with('success', 'Override activated successfully')",
+            "type": "flash",
+            "msg_type": "success",
+            "text": "Override activated successfully",
+            "lang": "en",
+            "key": "featuremanagement.override_activated_successfully",
+            "replacement": "with('success', __('featuremanagement.override_activated_successfully'))"
+          },
+          {
+            "original": "with('success', 'Override deactivated successfully')",
+            "type": "flash",
+            "msg_type": "success",
+            "text": "Override deactivated successfully",
+            "lang": "en",
+            "key": "featuremanagement.override_deactivated_successfully",
+            "replacement": "with('success', __('featuremanagement.override_deactivated_successfully'))"
+          }
+        ]
+      },
+      {
+        "file": "/home/cmis-test/public_html/app/Http/Controllers/FeatureManagement/FeatureFlagController.php",
+        "messages": [
+          {
+            "original": "with('success', 'Feature flag created successfully')",
+            "type": "flash",
+            "msg_type": "success",
+            "text": "Feature flag created successfully",
+            "lang": "en",
+            "key": "featuremanagement.created_success",
+            "replacement": "with('success', __('featuremanagement.created_success'))"
+          },
+          {
+            "original": "with('success', 'Feature flag updated successfully')",
+            "type": "flash",
+            "msg_type": "success",
+            "text": "Feature flag updated successfully",
+            "lang": "en",
+            "key": "featuremanagement.updated_success",
+            "replacement": "with('success', __('featuremanagement.updated_success'))"
+          },
+          {
+            "original": "with('success', 'Feature flag deleted successfully')",
+            "type": "flash",
+            "msg_type": "success",
+            "text": "Feature flag deleted successfully",
+            "lang": "en",
+            "key": "featuremanagement.deleted_success",
+            "replacement": "with('success', __('featuremanagement.deleted_success'))"
+          },
+          {
+            "original": "with('success', 'Feature flag enabled successfully')",
+            "type": "flash",
+            "msg_type": "success",
+            "text": "Feature flag enabled successfully",
+            "lang": "en",
+            "key": "featuremanagement.feature_flag_enabled_successfully",
+            "replacement": "with('success', __('featuremanagement.feature_flag_enabled_successfully'))"
+          },
+          {
+            "original": "with('success', 'Feature flag disabled successfully')",
+            "type": "flash",
+            "msg_type": "success",
+            "text": "Feature flag disabled successfully",
+            "lang": "en",
+            "key": "featuremanagement.feature_flag_disabled_successfully",
+            "replacement": "with('success', __('featuremanagement.feature_flag_disabled_successfully'))"
+          },
+          {
+            "original": "with('success', 'Feature flag archived successfully')",
+            "type": "flash",
+            "msg_type": "success",
+            "text": "Feature flag archived successfully",
+            "lang": "en",
+            "key": "featuremanagement.feature_flag_archived_successfully",
+            "replacement": "with('success', __('featuremanagement.feature_flag_archived_successfully'))"
+          },
+          {
+            "original": "with('success', 'Rollout percentage updated successfully')",
+            "type": "flash",
+            "msg_type": "success",
+            "text": "Rollout percentage updated successfully",
+            "lang": "en",
+            "key": "featuremanagement.updated_success",
+            "replacement": "with('success', __('featuremanagement.updated_success'))"
+          }
+        ]
+      }
+    ],
+    "oauth": [
+      {
+        "file": "/home/cmis-test/public_html/app/Http/Controllers/OAuth/OAuthController.php",
+        "messages": [
+          {
+            "original": "throw new \\Exception('Invalid state parameter - possible CSRF attack')",
+            "type": "exception",
+            "text": "Invalid state parameter - possible CSRF attack",
+            "lang": "en",
+            "key": "oauth.invalid",
+            "replacement": "throw new \\Exception(__('oauth.invalid'))"
+          },
+          {
+            "original": "throw new \\Exception('Platform mismatch')",
+            "type": "exception",
+            "text": "Platform mismatch",
+            "lang": "en",
+            "key": "oauth.platform_mismatch",
+            "replacement": "throw new \\Exception(__('oauth.platform_mismatch'))"
+          },
+          {
+            "original": "throw new \\Exception('Authorization code not provided')",
+            "type": "exception",
+            "text": "Authorization code not provided",
+            "lang": "en",
+            "key": "oauth.authorization_code_not_provided",
+            "replacement": "throw new \\Exception(__('oauth.authorization_code_not_provided'))"
+          },
+          {
+            "original": "throw new \\Exception('Integration ID required')",
+            "type": "exception",
+            "text": "Integration ID required",
+            "lang": "en",
+            "key": "oauth.integration_id_required",
+            "replacement": "throw new \\Exception(__('oauth.integration_id_required'))"
+          }
+        ]
+      }
+    ],
+    "settings": [
+      {
+        "file": "/home/cmis-test/public_html/app/Http/Controllers/Settings/BrandVoiceSettingsController.php",
+        "messages": [
+          {
+            "original": "with('success', 'Brand voice created successfully')",
+            "type": "flash",
+            "msg_type": "success",
+            "text": "Brand voice created successfully",
+            "lang": "en",
+            "key": "settings.created_success",
+            "replacement": "with('success', __('settings.created_success'))"
+          },
+          {
+            "original": "with('success', 'Brand voice updated successfully')",
+            "type": "flash",
+            "msg_type": "success",
+            "text": "Brand voice updated successfully",
+            "lang": "en",
+            "key": "settings.updated_success",
+            "replacement": "with('success', __('settings.updated_success'))"
+          },
+          {
+            "original": "with('success', 'Brand voice deleted successfully')",
+            "type": "flash",
+            "msg_type": "success",
+            "text": "Brand voice deleted successfully",
+            "lang": "en",
+            "key": "settings.deleted_success",
+            "replacement": "with('success', __('settings.deleted_success'))"
+          }
+        ]
+      },
+      {
+        "file": "/home/cmis-test/public_html/app/Http/Controllers/Settings/BoostRuleSettingsController.php",
+        "messages": [
+          {
+            "original": "with('success', 'Boost rule created successfully')",
+            "type": "flash",
+            "msg_type": "success",
+            "text": "Boost rule created successfully",
+            "lang": "en",
+            "key": "settings.created_success",
+            "replacement": "with('success', __('settings.created_success'))"
+          },
+          {
+            "original": "with('success', 'Boost rule updated successfully')",
+            "type": "flash",
+            "msg_type": "success",
+            "text": "Boost rule updated successfully",
+            "lang": "en",
+            "key": "settings.updated_success",
+            "replacement": "with('success', __('settings.updated_success'))"
+          },
+          {
+            "original": "with('success', 'Boost rule deleted successfully')",
+            "type": "flash",
+            "msg_type": "success",
+            "text": "Boost rule deleted successfully",
+            "lang": "en",
+            "key": "settings.deleted_success",
+            "replacement": "with('success', __('settings.deleted_success'))"
+          }
+        ]
+      },
+      {
+        "file": "/home/cmis-test/public_html/app/Http/Controllers/Settings/PlatformConnectionsController.php",
+        "messages": [
+          {
+            "original": "with('success', 'Google connection created successfully. Now select which Google services to use.')",
+            "type": "flash",
+            "msg_type": "success",
+            "text": "Google connection created successfully. Now select which Google services to use.",
+            "lang": "en",
+            "key": "settings.created_success",
+            "replacement": "with('success', __('settings.created_success'))"
+          },
+          {
+            "original": "with('success', 'Google connection updated successfully')",
+            "type": "flash",
+            "msg_type": "success",
+            "text": "Google connection updated successfully",
+            "lang": "en",
+            "key": "settings.updated_success",
+            "replacement": "with('success', __('settings.updated_success'))"
+          },
+          {
+            "original": "with('error', 'Invalid OAuth state')",
+            "type": "flash",
+            "msg_type": "error",
+            "text": "Invalid OAuth state",
+            "lang": "en",
+            "key": "settings.invalid",
+            "replacement": "with('error', __('settings.invalid'))"
+          },
+          {
+            "original": "with('error', 'Failed to obtain access token from Meta')",
+            "type": "flash",
+            "msg_type": "error",
+            "text": "Failed to obtain access token from Meta",
+            "lang": "en",
+            "key": "settings.operation_failed",
+            "replacement": "with('error', __('settings.operation_failed'))"
+          },
+          {
+            "original": "with('error', 'Invalid OAuth state')",
+            "type": "flash",
+            "msg_type": "error",
+            "text": "Invalid OAuth state",
+            "lang": "en",
+            "key": "settings.invalid",
+            "replacement": "with('error', __('settings.invalid'))"
+          },
+          {
+            "original": "with('error', 'Failed to obtain access token from YouTube')",
+            "type": "flash",
+            "msg_type": "error",
+            "text": "Failed to obtain access token from YouTube",
+            "lang": "en",
+            "key": "settings.operation_failed",
+            "replacement": "with('error', __('settings.operation_failed'))"
+          },
+          {
+            "original": "with('success', 'YouTube account connected successfully')",
+            "type": "flash",
+            "msg_type": "success",
+            "text": "YouTube account connected successfully",
+            "lang": "en",
+            "key": "settings.youtube_account_connected_successfully",
+            "replacement": "with('success', __('settings.youtube_account_connected_successfully'))"
+          },
+          {
+            "original": "with('error', 'Invalid OAuth state')",
+            "type": "flash",
+            "msg_type": "error",
+            "text": "Invalid OAuth state",
+            "lang": "en",
+            "key": "settings.invalid",
+            "replacement": "with('error', __('settings.invalid'))"
+          },
+          {
+            "original": "with('error', 'Failed to obtain access token from LinkedIn')",
+            "type": "flash",
+            "msg_type": "error",
+            "text": "Failed to obtain access token from LinkedIn",
+            "lang": "en",
+            "key": "settings.operation_failed",
+            "replacement": "with('error', __('settings.operation_failed'))"
+          },
+          {
+            "original": "with('success', 'LinkedIn account connected successfully')",
+            "type": "flash",
+            "msg_type": "success",
+            "text": "LinkedIn account connected successfully",
+            "lang": "en",
+            "key": "settings.linkedin_account_connected_successfully",
+            "replacement": "with('success', __('settings.linkedin_account_connected_successfully'))"
+          },
+          {
+            "original": "with('error', 'Invalid OAuth state')",
+            "type": "flash",
+            "msg_type": "error",
+            "text": "Invalid OAuth state",
+            "lang": "en",
+            "key": "settings.invalid",
+            "replacement": "with('error', __('settings.invalid'))"
+          },
+          {
+            "original": "with('error', 'Failed to obtain access token from Twitter')",
+            "type": "flash",
+            "msg_type": "error",
+            "text": "Failed to obtain access token from Twitter",
+            "lang": "en",
+            "key": "settings.operation_failed",
+            "replacement": "with('error', __('settings.operation_failed'))"
+          },
+          {
+            "original": "with('success', 'X (Twitter) account connected successfully')",
+            "type": "flash",
+            "msg_type": "success",
+            "text": "X (Twitter) account connected successfully",
+            "lang": "en",
+            "key": "settings.x_twitter_account_connected_successfully",
+            "replacement": "with('success', __('settings.x_twitter_account_connected_successfully'))"
+          },
+          {
+            "original": "with('error', 'Invalid OAuth state')",
+            "type": "flash",
+            "msg_type": "error",
+            "text": "Invalid OAuth state",
+            "lang": "en",
+            "key": "settings.invalid",
+            "replacement": "with('error', __('settings.invalid'))"
+          },
+          {
+            "original": "with('error', 'Failed to obtain access token from Pinterest')",
+            "type": "flash",
+            "msg_type": "error",
+            "text": "Failed to obtain access token from Pinterest",
+            "lang": "en",
+            "key": "settings.operation_failed",
+            "replacement": "with('error', __('settings.operation_failed'))"
+          },
+          {
+            "original": "with('success', 'Pinterest account connected successfully')",
+            "type": "flash",
+            "msg_type": "success",
+            "text": "Pinterest account connected successfully",
+            "lang": "en",
+            "key": "settings.pinterest_account_connected_successfully",
+            "replacement": "with('success', __('settings.pinterest_account_connected_successfully'))"
+          },
+          {
+            "original": "with('error', 'Invalid OAuth state')",
+            "type": "flash",
+            "msg_type": "error",
+            "text": "Invalid OAuth state",
+            "lang": "en",
+            "key": "settings.invalid",
+            "replacement": "with('error', __('settings.invalid'))"
+          },
+          {
+            "original": "with('error', 'Failed to obtain access token from TikTok')",
+            "type": "flash",
+            "msg_type": "error",
+            "text": "Failed to obtain access token from TikTok",
+            "lang": "en",
+            "key": "settings.operation_failed",
+            "replacement": "with('error', __('settings.operation_failed'))"
+          },
+          {
+            "original": "with('success', 'TikTok account connected successfully')",
+            "type": "flash",
+            "msg_type": "success",
+            "text": "TikTok account connected successfully",
+            "lang": "en",
+            "key": "settings.tiktok_account_connected_successfully",
+            "replacement": "with('success', __('settings.tiktok_account_connected_successfully'))"
+          },
+          {
+            "original": "with('error', 'Invalid OAuth state')",
+            "type": "flash",
+            "msg_type": "error",
+            "text": "Invalid OAuth state",
+            "lang": "en",
+            "key": "settings.invalid",
+            "replacement": "with('error', __('settings.invalid'))"
+          },
+          {
+            "original": "with('error', 'Failed to obtain access token from Reddit')",
+            "type": "flash",
+            "msg_type": "error",
+            "text": "Failed to obtain access token from Reddit",
+            "lang": "en",
+            "key": "settings.operation_failed",
+            "replacement": "with('error', __('settings.operation_failed'))"
+          },
+          {
+            "original": "with('success', 'Reddit account connected successfully')",
+            "type": "flash",
+            "msg_type": "success",
+            "text": "Reddit account connected successfully",
+            "lang": "en",
+            "key": "settings.reddit_account_connected_successfully",
+            "replacement": "with('success', __('settings.reddit_account_connected_successfully'))"
+          },
+          {
+            "original": "with('error', 'Tumblr OAuth integration coming soon. OAuth 1.0a requires additional implementation.')",
+            "type": "flash",
+            "msg_type": "error",
+            "text": "Tumblr OAuth integration coming soon. OAuth 1.0a requires additional implementation.",
+            "lang": "en",
+            "key": "settings.tumblr_oauth_integration_coming_soon_oauth_10a_req",
+            "replacement": "with('error', __('settings.tumblr_oauth_integration_coming_soon_oauth_10a_req'))"
+          },
+          {
+            "original": "with('error', 'Tumblr OAuth callback not yet implemented')",
+            "type": "flash",
+            "msg_type": "error",
+            "text": "Tumblr OAuth callback not yet implemented",
+            "lang": "en",
+            "key": "settings.tumblr_oauth_callback_not_yet_implemented",
+            "replacement": "with('error', __('settings.tumblr_oauth_callback_not_yet_implemented'))"
+          },
+          {
+            "original": "with('error', 'Invalid OAuth state')",
+            "type": "flash",
+            "msg_type": "error",
+            "text": "Invalid OAuth state",
+            "lang": "en",
+            "key": "settings.invalid",
+            "replacement": "with('error', __('settings.invalid'))"
+          },
+          {
+            "original": "with('error', 'Failed to obtain access token from Google Business Profile')",
+            "type": "flash",
+            "msg_type": "error",
+            "text": "Failed to obtain access token from Google Business Profile",
+            "lang": "en",
+            "key": "settings.operation_failed",
+            "replacement": "with('error', __('settings.operation_failed'))"
+          },
+          {
+            "original": "with('success', 'Google Business Profile connected successfully')",
+            "type": "flash",
+            "msg_type": "success",
+            "text": "Google Business Profile connected successfully",
+            "lang": "en",
+            "key": "settings.google_business_profile_connected_successfully",
+            "replacement": "with('success', __('settings.google_business_profile_connected_successfully'))"
+          },
+          {
+            "original": "with('error', 'Google API credentials are not configured. Please add GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET to your .env file.')",
+            "type": "flash",
+            "msg_type": "error",
+            "text": "Google API credentials are not configured. Please add GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET to your .env file.",
+            "lang": "en",
+            "key": "settings.google_api_credentials_are_not_configured_please_a",
+            "replacement": "with('error', __('settings.google_api_credentials_are_not_configured_please_a'))"
+          },
+          {
+            "original": "with('error', 'Invalid OAuth state')",
+            "type": "flash",
+            "msg_type": "error",
+            "text": "Invalid OAuth state",
+            "lang": "en",
+            "key": "settings.invalid",
+            "replacement": "with('error', __('settings.invalid'))"
+          },
+          {
+            "original": "with('error', 'Failed to obtain access token from Google')",
+            "type": "flash",
+            "msg_type": "error",
+            "text": "Failed to obtain access token from Google",
+            "lang": "en",
+            "key": "settings.operation_failed",
+            "replacement": "with('error', __('settings.operation_failed'))"
+          },
+          {
+            "original": "with('success', 'Google account connected successfully. Now select which Google services to use.')",
+            "type": "flash",
+            "msg_type": "success",
+            "text": "Google account connected successfully. Now select which Google services to use.",
+            "lang": "en",
+            "key": "settings.google_account_connected_successfully_now_select_w",
+            "replacement": "with('success', __('settings.google_account_connected_successfully_now_select_w'))"
+          },
+          {
+            "original": "with('error', 'Invalid OAuth state')",
+            "type": "flash",
+            "msg_type": "error",
+            "text": "Invalid OAuth state",
+            "lang": "en",
+            "key": "settings.invalid",
+            "replacement": "with('error', __('settings.invalid'))"
+          },
+          {
+            "original": "with('error', 'Failed to obtain access token from Snapchat')",
+            "type": "flash",
+            "msg_type": "error",
+            "text": "Failed to obtain access token from Snapchat",
+            "lang": "en",
+            "key": "settings.operation_failed",
+            "replacement": "with('error', __('settings.operation_failed'))"
+          },
+          {
+            "original": "with('success', 'Snapchat account connected successfully')",
+            "type": "flash",
+            "msg_type": "success",
+            "text": "Snapchat account connected successfully",
+            "lang": "en",
+            "key": "settings.snapchat_account_connected_successfully",
+            "replacement": "with('success', __('settings.snapchat_account_connected_successfully'))"
+          }
+        ]
+      },
+      {
+        "file": "/home/cmis-test/public_html/app/Http/Controllers/Settings/ApprovalWorkflowSettingsController.php",
+        "messages": [
+          {
+            "original": "with('success', 'Approval workflow created successfully')",
+            "type": "flash",
+            "msg_type": "success",
+            "text": "Approval workflow created successfully",
+            "lang": "en",
+            "key": "settings.created_success",
+            "replacement": "with('success', __('settings.created_success'))"
+          },
+          {
+            "original": "with('success', 'Approval workflow updated successfully')",
+            "type": "flash",
+            "msg_type": "success",
+            "text": "Approval workflow updated successfully",
+            "lang": "en",
+            "key": "settings.updated_success",
+            "replacement": "with('success', __('settings.updated_success'))"
+          },
+          {
+            "original": "with('success', 'Approval workflow deleted successfully')",
+            "type": "flash",
+            "msg_type": "success",
+            "text": "Approval workflow deleted successfully",
+            "lang": "en",
+            "key": "settings.deleted_success",
+            "replacement": "with('success', __('settings.deleted_success'))"
+          }
+        ]
+      },
+      {
+        "file": "/home/cmis-test/public_html/app/Http/Controllers/Settings/AdAccountSettingsController.php",
+        "messages": [
+          {
+            "original": "with('success', 'Ad account created successfully')",
+            "type": "flash",
+            "msg_type": "success",
+            "text": "Ad account created successfully",
+            "lang": "en",
+            "key": "settings.created_success",
+            "replacement": "with('success', __('settings.created_success'))"
+          },
+          {
+            "original": "with('success', 'Ad account updated successfully')",
+            "type": "flash",
+            "msg_type": "success",
+            "text": "Ad account updated successfully",
+            "lang": "en",
+            "key": "settings.updated_success",
+            "replacement": "with('success', __('settings.updated_success'))"
+          },
+          {
+            "original": "with('success', 'Ad account deleted successfully')",
+            "type": "flash",
+            "msg_type": "success",
+            "text": "Ad account deleted successfully",
+            "lang": "en",
+            "key": "settings.deleted_success",
+            "replacement": "with('success', __('settings.deleted_success'))"
+          },
+          {
+            "original": "with('success', 'Ad account synced successfully')",
+            "type": "flash",
+            "msg_type": "success",
+            "text": "Ad account synced successfully",
+            "lang": "en",
+            "key": "settings.ad_account_synced_successfully",
+            "replacement": "with('success', __('settings.ad_account_synced_successfully'))"
+          }
+        ]
+      },
+      {
+        "file": "/home/cmis-test/public_html/app/Http/Controllers/Settings/ProfileGroupSettingsController.php",
+        "messages": [
+          {
+            "original": "with('success', 'Profile group created successfully')",
+            "type": "flash",
+            "msg_type": "success",
+            "text": "Profile group created successfully",
+            "lang": "en",
+            "key": "settings.created_success",
+            "replacement": "with('success', __('settings.created_success'))"
+          },
+          {
+            "original": "with('success', 'Profile group updated successfully')",
+            "type": "flash",
+            "msg_type": "success",
+            "text": "Profile group updated successfully",
+            "lang": "en",
+            "key": "settings.updated_success",
+            "replacement": "with('success', __('settings.updated_success'))"
+          },
+          {
+            "original": "with('success', 'Profile group deleted successfully')",
+            "type": "flash",
+            "msg_type": "success",
+            "text": "Profile group deleted successfully",
+            "lang": "en",
+            "key": "settings.deleted_success",
+            "replacement": "with('success', __('settings.deleted_success'))"
+          },
+          {
+            "original": "with('success', 'Member added successfully')",
+            "type": "flash",
+            "msg_type": "success",
+            "text": "Member added successfully",
+            "lang": "en",
+            "key": "settings.member_added_successfully",
+            "replacement": "with('success', __('settings.member_added_successfully'))"
+          },
+          {
+            "original": "with('success', 'Member role updated successfully')",
+            "type": "flash",
+            "msg_type": "success",
+            "text": "Member role updated successfully",
+            "lang": "en",
+            "key": "settings.updated_success",
+            "replacement": "with('success', __('settings.updated_success'))"
+          },
+          {
+            "original": "with('success', 'Member removed successfully')",
+            "type": "flash",
+            "msg_type": "success",
+            "text": "Member removed successfully",
+            "lang": "en",
+            "key": "settings.member_removed_successfully",
+            "replacement": "with('success', __('settings.member_removed_successfully'))"
+          },
+          {
+            "original": "with('success', 'Profile attached successfully')",
+            "type": "flash",
+            "msg_type": "success",
+            "text": "Profile attached successfully",
+            "lang": "en",
+            "key": "settings.profile_attached_successfully",
+            "replacement": "with('success', __('settings.profile_attached_successfully'))"
+          },
+          {
+            "original": "with('success', 'Profile detached successfully')",
+            "type": "flash",
+            "msg_type": "success",
+            "text": "Profile detached successfully",
+            "lang": "en",
+            "key": "settings.profile_detached_successfully",
+            "replacement": "with('success', __('settings.profile_detached_successfully'))"
+          }
+        ]
+      },
+      {
+        "file": "/home/cmis-test/public_html/app/Http/Controllers/Settings/BrandSafetySettingsController.php",
+        "messages": [
+          {
+            "original": "with('success', 'Brand safety policy created successfully')",
+            "type": "flash",
+            "msg_type": "success",
+            "text": "Brand safety policy created successfully",
+            "lang": "en",
+            "key": "settings.created_success",
+            "replacement": "with('success', __('settings.created_success'))"
+          },
+          {
+            "original": "with('success', 'Brand safety policy updated successfully')",
+            "type": "flash",
+            "msg_type": "success",
+            "text": "Brand safety policy updated successfully",
+            "lang": "en",
+            "key": "settings.updated_success",
+            "replacement": "with('success', __('settings.updated_success'))"
+          },
+          {
+            "original": "with('success', 'Brand safety policy deleted successfully')",
+            "type": "flash",
+            "msg_type": "success",
+            "text": "Brand safety policy deleted successfully",
+            "lang": "en",
+            "key": "settings.deleted_success",
+            "replacement": "with('success', __('settings.deleted_success'))"
+          }
+        ]
+      }
+    ],
+    "campaigns": [
+      {
+        "file": "/home/cmis-test/public_html/app/Http/Controllers/Campaigns/CampaignAdController.php",
+        "messages": [
+          {
+            "original": "with('success', 'Ad created successfully')",
+            "type": "flash",
+            "msg_type": "success",
+            "text": "Ad created successfully",
+            "lang": "en",
+            "key": "campaigns.created_success",
+            "replacement": "with('success', __('campaigns.created_success'))"
+          },
+          {
+            "original": "with('success', 'Ad updated successfully')",
+            "type": "flash",
+            "msg_type": "success",
+            "text": "Ad updated successfully",
+            "lang": "en",
+            "key": "campaigns.updated_success",
+            "replacement": "with('success', __('campaigns.updated_success'))"
+          },
+          {
+            "original": "with('success', 'Ad deleted successfully')",
+            "type": "flash",
+            "msg_type": "success",
+            "text": "Ad deleted successfully",
+            "lang": "en",
+            "key": "campaigns.deleted_success",
+            "replacement": "with('success', __('campaigns.deleted_success'))"
+          },
+          {
+            "original": "with('success', 'Ad duplicated successfully')",
+            "type": "flash",
+            "msg_type": "success",
+            "text": "Ad duplicated successfully",
+            "lang": "en",
+            "key": "campaigns.ad_duplicated_successfully",
+            "replacement": "with('success', __('campaigns.ad_duplicated_successfully'))"
+          },
+          {
+            "original": "with('success', 'Ad status updated successfully')",
+            "type": "flash",
+            "msg_type": "success",
+            "text": "Ad status updated successfully",
+            "lang": "en",
+            "key": "campaigns.updated_success",
+            "replacement": "with('success', __('campaigns.updated_success'))"
+          }
+        ]
+      },
+      {
+        "file": "/home/cmis-test/public_html/app/Http/Controllers/Campaigns/CampaignAdSetController.php",
+        "messages": [
+          {
+            "original": "with('success', 'Ad set created successfully')",
+            "type": "flash",
+            "msg_type": "success",
+            "text": "Ad set created successfully",
+            "lang": "en",
+            "key": "campaigns.created_success",
+            "replacement": "with('success', __('campaigns.created_success'))"
+          },
+          {
+            "original": "with('success', 'Ad set updated successfully')",
+            "type": "flash",
+            "msg_type": "success",
+            "text": "Ad set updated successfully",
+            "lang": "en",
+            "key": "campaigns.updated_success",
+            "replacement": "with('success', __('campaigns.updated_success'))"
+          },
+          {
+            "original": "with('success', 'Ad set deleted successfully')",
+            "type": "flash",
+            "msg_type": "success",
+            "text": "Ad set deleted successfully",
+            "lang": "en",
+            "key": "campaigns.deleted_success",
+            "replacement": "with('success', __('campaigns.deleted_success'))"
+          },
+          {
+            "original": "with('success', 'Ad set duplicated successfully')",
+            "type": "flash",
+            "msg_type": "success",
+            "text": "Ad set duplicated successfully",
+            "lang": "en",
+            "key": "campaigns.ad_set_duplicated_successfully",
+            "replacement": "with('success', __('campaigns.ad_set_duplicated_successfully'))"
+          },
+          {
+            "original": "with('success', 'Ad set status updated successfully')",
+            "type": "flash",
+            "msg_type": "success",
+            "text": "Ad set status updated successfully",
+            "lang": "en",
+            "key": "campaigns.updated_success",
+            "replacement": "with('success', __('campaigns.updated_success'))"
+          }
+        ]
+      }
+    ],
+    "automation": [
+      {
+        "file": "/home/cmis-test/public_html/app/Http/Controllers/Automation/AutomationRulesController.php",
+        "messages": [
+          {
+            "original": "with('success', 'Automation rule created successfully')",
+            "type": "flash",
+            "msg_type": "success",
+            "text": "Automation rule created successfully",
+            "lang": "en",
+            "key": "automation.created_success",
+            "replacement": "with('success', __('automation.created_success'))"
+          },
+          {
+            "original": "with('success', 'Automation rule updated successfully')",
+            "type": "flash",
+            "msg_type": "success",
+            "text": "Automation rule updated successfully",
+            "lang": "en",
+            "key": "automation.updated_success",
+            "replacement": "with('success', __('automation.updated_success'))"
+          },
+          {
+            "original": "with('success', 'Automation rule deleted successfully')",
+            "type": "flash",
+            "msg_type": "success",
+            "text": "Automation rule deleted successfully",
+            "lang": "en",
+            "key": "automation.deleted_success",
+            "replacement": "with('success', __('automation.deleted_success'))"
+          }
+        ]
+      }
+    ],
+    "optimization": [
+      {
+        "file": "/home/cmis-test/public_html/app/Http/Controllers/Optimization/OptimizationRuleController.php",
+        "messages": [
+          {
+            "original": "with('success', 'Optimization rule created successfully')",
+            "type": "flash",
+            "msg_type": "success",
+            "text": "Optimization rule created successfully",
+            "lang": "en",
+            "key": "optimization.created_success",
+            "replacement": "with('success', __('optimization.created_success'))"
+          },
+          {
+            "original": "with('success', 'Optimization rule updated successfully')",
+            "type": "flash",
+            "msg_type": "success",
+            "text": "Optimization rule updated successfully",
+            "lang": "en",
+            "key": "optimization.updated_success",
+            "replacement": "with('success', __('optimization.updated_success'))"
+          },
+          {
+            "original": "with('success', 'Optimization rule deleted successfully')",
+            "type": "flash",
+            "msg_type": "success",
+            "text": "Optimization rule deleted successfully",
+            "lang": "en",
+            "key": "optimization.deleted_success",
+            "replacement": "with('success', __('optimization.deleted_success'))"
+          },
+          {
+            "original": "with('success', 'Rule duplicated successfully')",
+            "type": "flash",
+            "msg_type": "success",
+            "text": "Rule duplicated successfully",
+            "lang": "en",
+            "key": "optimization.rule_duplicated_successfully",
+            "replacement": "with('success', __('optimization.rule_duplicated_successfully'))"
+          }
+        ]
+      }
+    ],
+    "web": [
+      {
+        "file": "/home/cmis-test/public_html/app/Http/Controllers/Web/TeamWebController.php",
+        "messages": [
+          {
+            "original": "with('error', 'An invitation has already been sent to this email.')",
+            "type": "flash",
+            "msg_type": "error",
+            "text": "An invitation has already been sent to this email.",
+            "lang": "en",
+            "key": "web.an_invitation_has_already_been_sent_to_this_email",
+            "replacement": "with('error', __('web.an_invitation_has_already_been_sent_to_this_email'))"
+          }
+        ]
+      }
+    ],
+    "dashboard": [
+      {
+        "file": "/home/cmis-test/public_html/app/Http/Controllers/Dashboard/DashboardController.php",
+        "messages": [
+          {
+            "original": "with('success', 'Dashboard created successfully')",
+            "type": "flash",
+            "msg_type": "success",
+            "text": "Dashboard created successfully",
+            "lang": "en",
+            "key": "dashboard.created_success",
+            "replacement": "with('success', __('dashboard.created_success'))"
+          },
+          {
+            "original": "with('success', 'Dashboard updated successfully')",
+            "type": "flash",
+            "msg_type": "success",
+            "text": "Dashboard updated successfully",
+            "lang": "en",
+            "key": "dashboard.updated_success",
+            "replacement": "with('success', __('dashboard.updated_success'))"
+          },
+          {
+            "original": "with('success', 'Dashboard deleted successfully')",
+            "type": "flash",
+            "msg_type": "success",
+            "text": "Dashboard deleted successfully",
+            "lang": "en",
+            "key": "dashboard.deleted_success",
+            "replacement": "with('success', __('dashboard.deleted_success'))"
+          },
+          {
+            "original": "with('success', 'Dashboard duplicated successfully')",
+            "type": "flash",
+            "msg_type": "success",
+            "text": "Dashboard duplicated successfully",
+            "lang": "en",
+            "key": "dashboard.dashboard_duplicated_successfully",
+            "replacement": "with('success', __('dashboard.dashboard_duplicated_successfully'))"
+          },
+          {
+            "original": "with('success', 'Dashboard imported successfully')",
+            "type": "flash",
+            "msg_type": "success",
+            "text": "Dashboard imported successfully",
+            "lang": "en",
+            "key": "dashboard.dashboard_imported_successfully",
+            "replacement": "with('success', __('dashboard.dashboard_imported_successfully'))"
+          },
+          {
+            "original": "with('success', 'Dashboard created from template successfully')",
+            "type": "flash",
+            "msg_type": "success",
+            "text": "Dashboard created from template successfully",
+            "lang": "en",
+            "key": "dashboard.dashboard_created_from_template_successfully",
+            "replacement": "with('success', __('dashboard.dashboard_created_from_template_successfully'))"
+          },
+          {
+            "original": "with('success', 'Default dashboard set successfully')",
+            "type": "flash",
+            "msg_type": "success",
+            "text": "Default dashboard set successfully",
+            "lang": "en",
+            "key": "dashboard.default_dashboard_set_successfully",
+            "replacement": "with('success', __('dashboard.default_dashboard_set_successfully'))"
+          }
+        ]
+      },
+      {
+        "file": "/home/cmis-test/public_html/app/Http/Controllers/Dashboard/DashboardWidgetController.php",
+        "messages": [
+          {
+            "original": "with('success', 'Widget created successfully')",
+            "type": "flash",
+            "msg_type": "success",
+            "text": "Widget created successfully",
+            "lang": "en",
+            "key": "dashboard.created_success",
+            "replacement": "with('success', __('dashboard.created_success'))"
+          },
+          {
+            "original": "with('success', 'Widget updated successfully')",
+            "type": "flash",
+            "msg_type": "success",
+            "text": "Widget updated successfully",
+            "lang": "en",
+            "key": "dashboard.updated_success",
+            "replacement": "with('success', __('dashboard.updated_success'))"
+          },
+          {
+            "original": "with('success', 'Widget deleted successfully')",
+            "type": "flash",
+            "msg_type": "success",
+            "text": "Widget deleted successfully",
+            "lang": "en",
+            "key": "dashboard.deleted_success",
+            "replacement": "with('success', __('dashboard.deleted_success'))"
+          },
+          {
+            "original": "with('success', 'Widget duplicated successfully')",
+            "type": "flash",
+            "msg_type": "success",
+            "text": "Widget duplicated successfully",
+            "lang": "en",
+            "key": "dashboard.widget_duplicated_successfully",
+            "replacement": "with('success', __('dashboard.widget_duplicated_successfully'))"
+          }
+        ]
+      }
+    ]
+  }
+}
