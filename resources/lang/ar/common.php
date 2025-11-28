@@ -11,6 +11,7 @@ return [
     // General Actions
     'actions' => 'الإجراءات',
     'save' => 'حفظ',
+    'save_settings' => 'حفظ الإعدادات',
     'cancel' => 'إلغاء',
     'delete' => 'حذف',
     'edit' => 'تعديل',

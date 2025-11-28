@@ -9,7 +9,7 @@
 
 @section('content')
 <div class="max-w-5xl mx-auto">
-    <form method="POST" action="{{ route('orgs.briefs.store', ['org' => $currentOrg]) }}" x-data="briefForm()" @submit="validateAndSubmit">
+    <form method="POST" action="{{ route('orgs.creative.briefs.store', ['org' => $currentOrg]) }}" x-data="briefForm()" @submit="validateAndSubmit">
         @csrf
 
         <div class="space-y-6">
@@ -219,7 +219,7 @@
                         <i class="fas fa-save ms-2"></i>
                         {{ __('briefs.save_as_draft') }}
                     </button>
-                    <a href="{{ route('orgs.briefs.index', ['org' => $currentOrg]) }}"
+                    <a href="{{ route('orgs.creative.briefs.index', ['org' => $currentOrg]) }}"
                        class="bg-white border border-gray-300 text-gray-700 px-8 py-3 rounded-lg font-medium hover:bg-gray-50 transition">
                         {{ __('common.cancel') }}
                     </a>

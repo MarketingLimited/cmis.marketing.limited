@@ -47,6 +47,33 @@ class KnowledgeController extends Controller
     }
 
     /**
+     * Show form to create new knowledge entry
+     */
+    public function create(string $org)
+    {
+        try {
+            // Get existing domains for the dropdown
+            $domains = DB::select("
+                SELECT DISTINCT domain
+                FROM cmis_knowledge.index
+                WHERE org_id = ? AND deleted_at IS NULL
+                ORDER BY domain
+            ", [$org]);
+
+            return view('knowledge.create', [
+                'domains' => $domains,
+                'currentOrg' => $org
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Knowledge create form error: ' . $e->getMessage());
+            return view('knowledge.create', [
+                'domains' => [],
+                'currentOrg' => $org
+            ]);
+        }
+    }
+
+    /**
      * Search knowledge base
      */
     public function search(Request $request, string $org)

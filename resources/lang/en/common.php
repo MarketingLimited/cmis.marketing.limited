@@ -11,6 +11,7 @@ return [
     // General Actions
     'actions' => 'Actions',
     'save' => 'Save',
+    'save_settings' => 'Save Settings',
     'cancel' => 'Cancel',
     'delete' => 'Delete',
     'edit' => 'Edit',
