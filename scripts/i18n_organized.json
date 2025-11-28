@@ -1,0 +1,235 @@
+{
+  "domains": [
+    "workflows",
+    "organizations",
+    "creative_briefs",
+    "profile",
+    "api",
+    "influencers",
+    "core",
+    "campaigns",
+    "ab_testing",
+    "intelligence",
+    "auth",
+    "features",
+    "oauth",
+    "settings",
+    "campaignad",
+    "campaignadset",
+    "automation",
+    "optimization",
+    "web",
+    "dashboard",
+    "dashboardwidget"
+  ],
+  "translations": {
+    "workflows": {
+      "ar": [
+        "operation_failed"
+      ],
+      "en": []
+    },
+    "organizations": {
+      "ar": [
+        "created_success",
+        "",
+        "not_found"
+      ],
+      "en": []
+    },
+    "creative_briefs": {
+      "ar": [
+        "",
+        "created_success",
+        "operation_failed"
+      ],
+      "en": []
+    },
+    "profile": {
+      "ar": [
+        "updated_success"
+      ],
+      "en": []
+    },
+    "api": {
+      "ar": [],
+      "en": [
+        "gemini_api_key_not_configured",
+        "unexpected_gemini_api_response_format"
+      ]
+    },
+    "influencers": {
+      "ar": [
+        "created_success",
+        "updated_success",
+        "deleted_success"
+      ],
+      "en": [
+        "created_success",
+        "updated_success",
+        "deleted_success"
+      ]
+    },
+    "core": {
+      "ar": [],
+      "en": [
+        "you_do_not_have_access_to_this_organization"
+      ]
+    },
+    "campaigns": {
+      "ar": [],
+      "en": [
+        "invalid"
+      ]
+    },
+    "ab_testing": {
+      "ar": [],
+      "en": [
+        "created_success",
+        "updated_success",
+        "deleted_success"
+      ]
+    },
+    "intelligence": {
+      "ar": [],
+      "en": [
+        "recommendation_applied_successfully",
+        "recommendation_rejected",
+        "recommendation_dismissed",
+        "feedback_recorded_successfully",
+        "created_success",
+        "updated_success",
+        "deleted_success",
+        "model_training_completed_successfully",
+        "model_retraining_completed_successfully",
+        "model_activated_successfully",
+        "model_deactivated_successfully",
+        "model_archived_successfully",
+        "model_imported_successfully",
+        "anomaly_resolved_successfully",
+        "anomaly_marked_as_false_positive",
+        "anomaly_marked_as_investigating"
+      ]
+    },
+    "auth": {
+      "ar": [],
+      "en": [
+        "invalid",
+        "you_have_declined_the_invitation"
+      ]
+    },
+    "features": {
+      "ar": [],
+      "en": [
+        "created_success",
+        "updated_success",
+        "deleted_success",
+        "variant_activated_successfully",
+        "variant_deactivated_successfully",
+        "override_activated_successfully",
+        "override_deactivated_successfully",
+        "feature_flag_enabled_successfully",
+        "feature_flag_disabled_successfully",
+        "feature_flag_archived_successfully"
+      ]
+    },
+    "oauth": {
+      "ar": [],
+      "en": [
+        "invalid",
+        "platform_mismatch",
+        "authorization_code_not_provided",
+        "integration_id_required"
+      ]
+    },
+    "settings": {
+      "ar": [],
+      "en": [
+        "created_success",
+        "updated_success",
+        "deleted_success",
+        "invalid",
+        "operation_failed",
+        "youtube_account_connected_successfully",
+        "linkedin_account_connected_successfully",
+        "x_twitter_account_connected_successfully",
+        "pinterest_account_connected_successfully",
+        "tiktok_account_connected_successfully",
+        "reddit_account_connected_successfully",
+        "tumblr_oauth_integration_coming_soon_oauth_10a_req",
+        "tumblr_oauth_callback_not_yet_implemented",
+        "google_business_profile_connected_successfully",
+        "google_api_credentials_are_not_configured_please_a",
+        "google_account_connected_successfully_now_select_w",
+        "snapchat_account_connected_successfully",
+        "ad_account_synced_successfully",
+        "member_added_successfully",
+        "member_removed_successfully",
+        "profile_attached_successfully",
+        "profile_detached_successfully"
+      ]
+    },
+    "campaignad": {
+      "ar": [],
+      "en": [
+        "created_success",
+        "updated_success",
+        "deleted_success",
+        "ad_duplicated_successfully"
+      ]
+    },
+    "campaignadset": {
+      "ar": [],
+      "en": [
+        "created_success",
+        "updated_success",
+        "deleted_success",
+        "ad_set_duplicated_successfully"
+      ]
+    },
+    "automation": {
+      "ar": [],
+      "en": [
+        "created_success",
+        "updated_success",
+        "deleted_success"
+      ]
+    },
+    "optimization": {
+      "ar": [],
+      "en": [
+        "created_success",
+        "updated_success",
+        "deleted_success",
+        "rule_duplicated_successfully"
+      ]
+    },
+    "web": {
+      "ar": [],
+      "en": [
+        "an_invitation_has_already_been_sent_to_this_email"
+      ]
+    },
+    "dashboard": {
+      "ar": [],
+      "en": [
+        "created_success",
+        "updated_success",
+        "deleted_success",
+        "dashboard_duplicated_successfully",
+        "dashboard_imported_successfully",
+        "dashboard_created_from_template_successfully",
+        "default_dashboard_set_successfully"
+      ]
+    },
+    "dashboardwidget": {
+      "ar": [],
+      "en": [
+        "created_success",
+        "updated_success",
+        "deleted_success",
+        "widget_duplicated_successfully"
+      ]
+    }
+  }
+}
