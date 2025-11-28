@@ -65,7 +65,7 @@ return [
     'invalid_email' => 'البريد الإلكتروني غير صحيح',
     'invalid_phone' => 'رقم الهاتف غير صحيح (مثال: +966 50 000 0000)',
     'creating' => 'جاري إنشاء المؤسسة...',
-    'create_failed' => 'فشل إنشاء المؤسسة',
+    'create_failed' => 'فشل إنشاء المؤسسة: :error',
     'created_successfully' => 'تم إنشاء المؤسسة بنجاح',
     'unexpected_error' => 'حدث خطأ غير متوقع',
     'deleting' => 'جاري حذف المؤسسة...',
@@ -75,5 +75,64 @@ return [
     'not_available' => 'غير متوفر',
     'invalid_date' => 'تاريخ غير صالح',
     'date_error' => 'خطأ في التاريخ',
+
+    // Edit Organization
+    'edit_organization' => 'تعديل المؤسسة',
+    'edit_organization_subtitle' => 'تحديث معلومات المؤسسة',
+    'basic_info' => 'المعلومات الأساسية',
+    'unique_name_hint' => 'اسم فريد للمؤسسة',
+    'default_language' => 'اللغة الافتراضية',
+    'locale_ar_bh' => 'العربية (البحرين)',
+    'locale_en_us' => 'English (US)',
+    'locale_ar_sa' => 'العربية (السعودية)',
+    'locale_ar_ae' => 'العربية (الإمارات)',
+    'currency' => 'العملة',
+    'currency_bhd' => 'دينار بحريني (BHD)',
+    'currency_sar' => 'ريال سعودي (SAR)',
+    'currency_aed' => 'درهم إماراتي (AED)',
+    'currency_usd' => 'دولار أمريكي (USD)',
+    'provider' => 'المزود (اختياري)',
+    'provider_placeholder' => 'مثال: manual، api، integration',
+    'provider_hint' => 'مصدر إنشاء المؤسسة (اختياري)',
+    'save_changes' => 'حفظ التغييرات',
+    'updated_success' => 'تم تحديث المؤسسة بنجاح',
+    'update_failed' => 'فشل تحديث المؤسسة: :error',
+
+    // Organization Show Page
+    'edit' => 'تعديل',
+    'settings' => 'الإعدادات',
+    'team_members' => 'أعضاء الفريق',
+    'creative_assets' => 'الأصول الإبداعية',
+    'total_budget' => 'إجمالي الميزانية',
+    'quick_actions' => 'الإجراءات السريعة',
+    'products' => 'المنتجات',
+    'services' => 'الخدمات',
+    'new_campaign' => 'حملة جديدة',
+    'recent_campaigns' => 'أحدث الحملات',
+    'view_all' => 'عرض الكل',
+    'performance' => 'أداء',
+    'no_campaigns_yet' => 'لا توجد حملات بعد',
+    'org_performance' => 'أداء المؤسسة',
+    'team' => 'فريق العمل',
+    'no_members' => 'لا يوجد أعضاء',
+    'recent_activity' => 'النشاط الأخير',
+    'no_activity' => 'لا يوجد نشاط',
+    'org_info' => 'معلومات المؤسسة',
+    'identifier' => 'المعرف',
+
+    // Chart Labels
+    'impressions' => 'الانطباعات',
+    'clicks' => 'النقرات',
+    'conversions' => 'التحويلات',
+
+    // Status Labels
+    'status_active' => 'نشط',
+    'status_planning' => 'تخطيط',
+    'status_draft' => 'مسودة',
+    'status_completed' => 'مكتمل',
+    'status_paused' => 'متوقف',
+
+    // Messages
+    'invite_feature_coming_soon' => 'ميزة دعوة الأعضاء قريباً',
 
 ];

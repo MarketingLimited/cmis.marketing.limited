@@ -355,6 +355,68 @@ class OrgController extends Controller
     }
 
     /**
+     * Show the form for editing the organization.
+     */
+    public function edit($org)
+    {
+        $org = $this->resolveOrg($org);
+
+        return view('orgs.edit', compact('org'));
+    }
+
+    /**
+     * Update the organization.
+     */
+    public function update(Request $request, $org)
+    {
+        $org = $this->resolveOrg($org);
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255|unique:cmis.orgs,name,' . $org->org_id . ',org_id',
+            'default_locale' => 'nullable|string|max:10',
+            'currency' => 'nullable|string|size:3',
+            'provider' => 'nullable|string|max:255',
+        ]);
+
+        try {
+            $org->update($validated);
+
+            // Return JSON for AJAX requests, redirect for regular form submissions
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => __('organizations.updated_success'),
+                    'org' => $org,
+                ]);
+            }
+
+            return redirect()
+                ->route('orgs.show', $org->org_id)
+                ->with('success', __('organizations.updated_success'));
+
+        } catch (\Exception $e) {
+            \Log::error('Failed to update organization', [
+                'org_id' => $org->org_id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            // Return JSON error for AJAX requests
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('organizations.update_failed', ['error' => $e->getMessage()]),
+                ], 500);
+            }
+
+            return redirect()
+                ->back()
+                ->withInput()
+                ->with('error', __('organizations.update_failed', ['error' => $e->getMessage()]));
+        }
+    }
+
+    /**
      * Format audit log message for display
      */
     protected function formatAuditMessage(AuditLog $log): string

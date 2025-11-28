@@ -23,6 +23,7 @@ return [
     'all_posts' => 'All Posts',
     'create_post' => 'Create Post',
     'edit_post' => 'Edit Post',
+    'duplicate_post' => 'Duplicate Post',
     'delete_post' => 'Delete Post',
     'schedule_post' => 'Schedule Post',
     'publish_now' => 'Publish Now',
@@ -41,6 +42,18 @@ return [
         'carousel' => 'Carousel',
         'story' => 'Story',
         'reel' => 'Reel',
+        'feed' => 'Feed Post',
+        'post' => 'Post',
+        'tweet' => 'Tweet',
+        'article' => 'Article',
+    ],
+
+    // Best Times
+    'best_times' => [
+        'morning' => 'Morning',
+        'noon' => 'Noon',
+        'evening' => 'Evening',
+        'night' => 'Night',
     ],
 
     // Post Status
@@ -331,6 +344,9 @@ return [
     'start_import' => 'Start Import',
     'importing' => 'Importing',
     'close' => 'Close',
+    'connected_accounts' => 'Connected Accounts',
+    'no_connected_accounts' => 'No connected accounts',
+    'published_at' => 'Published:',
     'post_details' => 'Post Details',
     'previous' => 'Previous',
     'next' => 'Next',
@@ -440,7 +456,21 @@ return [
     'draft_saved_success' => 'Draft saved successfully!',
     'retry_failed' => 'Retry failed',
     'settings_save_failed' => 'Failed to save settings',
+    'queue_settings_saved' => 'Queue settings saved successfully',
     'duplicate' => 'Duplicate',
     'retry' => 'Retry',
+    'current_media' => 'Current Media',
+    'save_changes' => 'Save Changes',
+
+    // Days of the week
+    'days' => [
+        'sunday' => 'Sunday',
+        'monday' => 'Monday',
+        'tuesday' => 'Tuesday',
+        'wednesday' => 'Wednesday',
+        'thursday' => 'Thursday',
+        'friday' => 'Friday',
+        'saturday' => 'Saturday',
+    ],
 
 ];

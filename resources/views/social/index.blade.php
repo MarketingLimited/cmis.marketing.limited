@@ -136,7 +136,7 @@
                     <i class="fas fa-cog"></i>
                     <span class="hidden sm:inline">{{ __('social.queue_settings') }}</span>
                 </button>
-                <button @click="$dispatch('open-publish-modal')"
+                <button @click="window.dispatchEvent(new CustomEvent('open-publish-modal'))"
                         class="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white px-4 sm:px-6 py-2.5 rounded-xl font-medium shadow-lg shadow-indigo-500/25 hover:shadow-xl hover:shadow-indigo-500/30 transition-all flex items-center gap-2">
                     <i class="fas fa-plus"></i>
                     <span class="hidden sm:inline">{{ __('social.new_post') }}</span>
@@ -150,7 +150,7 @@
                     :class="filterPlatform === 'all' ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/25' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'"
                     class="px-4 py-2 rounded-full font-medium transition-all duration-200 text-sm">
                 <i class="fas fa-globe ms-1"></i>
-                الكل
+                {{ __('social.all') }}
             </button>
             <template x-for="platform in uniquePlatforms" :key="platform">
                 <button @click="filterPlatform = platform"
@@ -168,7 +168,7 @@
                     :class="filterPostType === 'all' ? 'bg-gray-800 dark:bg-gray-600 text-white shadow-md' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'"
                     class="px-4 py-2 rounded-full font-medium transition-all duration-200 text-sm">
                 <i class="fas fa-th-large ms-1"></i>
-                الكل
+                {{ __('social.all') }}
             </button>
             <button @click="filterPostType = 'feed'"
                     :class="filterPostType === 'feed' ? 'bg-green-600 text-white shadow-md shadow-green-500/25' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'"
@@ -198,7 +198,7 @@
                     :class="filterPostType === 'thread' ? 'bg-sky-600 text-white shadow-md shadow-sky-500/25' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'"
                     class="px-4 py-2 rounded-full font-medium transition-all duration-200 text-sm">
                 <i class="fas fa-stream ms-1"></i>
-                ثريد
+                {{ __('social.thread') }}
             </button>
         </div>
 
@@ -208,7 +208,7 @@
                 <button @click="statusFilter = 'all'"
                         :class="statusFilter === 'all' ? 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 border-indigo-300 dark:border-indigo-700' : 'bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-400 border-gray-200 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-600'"
                         class="px-4 py-2 rounded-xl font-medium transition-all duration-200 text-sm border whitespace-nowrap">
-                    الكل (<span x-text="posts.length" class="tabular-nums"></span>)
+                    {{ __('social.all') }} (<span x-text="posts.length" class="tabular-nums"></span>)
                 </button>
                 <button @click="statusFilter = 'scheduled'"
                         :class="statusFilter === 'scheduled' ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300 border-yellow-300 dark:border-yellow-700' : 'bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-400 border-gray-200 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-600'"
@@ -265,7 +265,7 @@
         <!-- Calendar Grid - Enhanced -->
         <div class="grid grid-cols-7 gap-1 sm:gap-2">
             <!-- Day Headers -->
-            <template x-for="day in ["{{ __("social.days.sunday") }}", "{{ __("social.days.monday") }}", "{{ __("social.days.tuesday") }}", "{{ __("social.days.wednesday") }}", "{{ __("social.days.thursday") }}", "{{ __("social.days.friday") }}", "{{ __("social.days.saturday") }}"]">
+            <template x-for="day in dayNames">
                 <div class="text-center py-2 sm:py-3 text-xs sm:text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase" x-text="day"></div>
             </template>
 
@@ -407,7 +407,7 @@
                     <template x-if="post.published_at && post.status === 'published'">
                         <div class="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 mb-3">
                             <i class="fas fa-check-circle text-green-500 dark:text-green-400"></i>
-                            <span>نُشر: <span x-text="formatDate(post.published_at)"></span></span>
+                            <span>{{ __('social.published_at') }} <span x-text="formatDate(post.published_at)"></span></span>
                         </div>
                     </template>
 
@@ -532,13 +532,13 @@
                         </td>
                         <td class="px-4 py-4">
                             <div class="flex items-center gap-1">
-                                <button @click="editPost(post)" class="p-2 text-gray-500 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-lg transition-colors" title="{{ __(\'social.edit_post\') }}">
+                                <button @click="editPost(post)" class="p-2 text-gray-500 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-lg transition-colors" title="{{ __('social.edit_post') }}">
                                     <i class="fas fa-edit"></i>
                                 </button>
-                                <button @click="duplicatePost(post)" class="p-2 text-gray-500 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-lg transition-colors" title="نسخ">
+                                <button @click="duplicatePost(post)" class="p-2 text-gray-500 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-lg transition-colors" title="{{ __('social.duplicate_post') }}">
                                     <i class="fas fa-copy"></i>
                                 </button>
-                                <button @click="deletePost(post.post_id)" class="p-2 text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors" title="{{ __("common.delete") }}">
+                                <button @click="deletePost(post.post_id)" class="p-2 text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors" title="{{ __('common.delete') }}">
                                     <i class="fas fa-trash"></i>
                                 </button>
                             </div>
@@ -565,7 +565,7 @@
             </div>
             <h3 class="text-xl font-bold text-gray-800 dark:text-white mb-2">{{ __("social.no_posts_found") }}</h3>
             <p class="text-gray-500 dark:text-gray-400 mb-8 max-w-sm mx-auto">{{ __("social.create_post_description") }}</p>
-            <button @click="$dispatch('open-publish-modal')"
+            <button @click="window.dispatchEvent(new CustomEvent('open-publish-modal'))"
                     class="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white px-8 py-3.5 rounded-xl font-semibold shadow-lg shadow-indigo-500/25 hover:shadow-xl hover:shadow-indigo-500/30 transition-all">
                 <i class="fas fa-plus ms-2"></i>
                 {{ __("social.create_new_post") }}
@@ -632,7 +632,7 @@
                               class="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 rounded-lg p-4 resize-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                               placeholder="{{ __("social.post_content_placeholder") }}"></textarea>
                     <div class="text-xs text-gray-500 mt-1">
-                        <span x-text="editingPost.content.length"></span> حرف
+                        <span x-text="editingPost.content.length"></span> {{ __('social.characters') }}
                     </div>
                 </div>
 
@@ -641,7 +641,7 @@
                     <div>
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                             <i class="fas fa-image ms-1"></i>
-                            الوسائط الحالية
+                            {{ __('social.current_media') }}
                         </label>
                         <div class="grid grid-cols-4 gap-2">
                             <template x-for="(media, index) in editingPost.media" :key="index">
@@ -672,13 +672,13 @@
                         </label>
                         <div class="grid grid-cols-2 gap-4">
                             <div>
-                                <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">التاريخ</label>
+                                <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">{{ __('social.date') }}</label>
                                 <input type="date" x-model="editingPost.scheduledDate"
                                        :min="minDate"
                                        class="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 rounded-lg p-2">
                             </div>
                             <div>
-                                <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">الوقت</label>
+                                <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">{{ __('social.time') }}</label>
                                 <input type="time" x-model="editingPost.scheduledTime"
                                        class="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 rounded-lg p-2">
                             </div>
@@ -699,11 +699,11 @@
                             class="px-6 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg font-medium hover:shadow-lg transition disabled:opacity-50 disabled:cursor-not-allowed">
                         <span x-show="!isUpdating">
                             <i class="fas fa-save ms-2"></i>
-                            حفظ التغييرات
+                            {{ __('social.save_changes') }}
                         </span>
                         <span x-show="isUpdating">
                             <i class="fas fa-spinner fa-spin ms-2"></i>
-                            جاري الحفظ...
+                            {{ __('social.saving') }}
                         </span>
                     </button>
                 </div>
@@ -766,7 +766,7 @@
                     <!-- Close Button - Enhanced -->
                     <button @click="showQueueSettings = false"
                             class="w-10 h-10 flex items-center justify-center rounded-xl bg-white/10 hover:bg-white/20 text-white/80 hover:text-white transition-all focus:outline-none focus:ring-2 focus:ring-white/50"
-                            aria-label="إغلاق">
+                            aria-label="{{ __('social.close') }}">
                         <i class="fas fa-times text-lg"></i>
                     </button>
                 </div>
@@ -818,7 +818,7 @@
                     <div class="space-y-4">
                         <h4 class="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider flex items-center gap-2 px-1">
                             <i class="fas fa-plug"></i>
-                            الحسابات المتصلة
+                            {{ __('social.connected_accounts') }}
                             <span class="bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 px-2 py-0.5 rounded-full text-xs font-bold" x-text="connectedPlatforms.length"></span>
                         </h4>
 
@@ -828,7 +828,7 @@
                                 <div class="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-2xl flex items-center justify-center mx-auto mb-4">
                                     <i class="fas fa-unlink text-2xl text-gray-400 dark:text-gray-500"></i>
                                 </div>
-                                <p class="text-gray-600 dark:text-gray-400 font-medium mb-2">لا توجد حسابات متصلة</p>
+                                <p class="text-gray-600 dark:text-gray-400 font-medium mb-2">{{ __('social.no_connected_accounts') }}</p>
                                 <p class="text-sm text-gray-500 dark:text-gray-500">{{ __("social.connect_accounts_first") }}</p>
                             </div>
                         </template>
@@ -916,7 +916,7 @@
                                                 {{ __("social.publish_days") }}
                                             </label>
                                             <div class="flex flex-wrap gap-2 sm:gap-3">
-                                                <template x-for="day in [{v: 0, l: "{{ __("social.days.sunday") }}", s: 'ح'}, {v: 1, l: "{{ __("social.days.monday") }}", s: 'ن'}, {v: 2, l: "{{ __("social.days.tuesday") }}", s: 'ث'}, {v: 3, l: "{{ __("social.days.wednesday") }}", s: 'ر'}, {v: 4, l: "{{ __("social.days.thursday") }}", s: 'خ'}, {v: 5, l: "{{ __("social.days.friday") }}", s: 'ج'}, {v: 6, l: "{{ __("social.days.saturday") }}", s: 'س'}]" :key="day.v">
+                                                <template x-for="day in [{v: 0, l: @json(__('social.days.sunday')), s: 'ح'}, {v: 1, l: @json(__('social.days.monday')), s: 'ن'}, {v: 2, l: @json(__('social.days.tuesday')), s: 'ث'}, {v: 3, l: @json(__('social.days.wednesday')), s: 'ر'}, {v: 4, l: @json(__('social.days.thursday')), s: 'خ'}, {v: 5, l: @json(__('social.days.friday')), s: 'ج'}, {v: 6, l: @json(__('social.days.saturday')), s: 'س'}]" :key="day.v">
                                                     <button @click="days.includes(day.v) ? days.splice(days.indexOf(day.v), 1) : days.push(day.v)"
                                                             :class="days.includes(day.v)
                                                                 ? 'bg-gradient-to-br from-purple-600 to-indigo-600 text-white shadow-lg shadow-purple-500/30 scale-105'
@@ -970,14 +970,14 @@
                 <button @click="showQueueSettings = false"
                         class="w-full sm:w-auto px-6 py-3 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-gray-300 dark:focus:ring-gray-600">
                     <i class="fas fa-times ms-2 text-sm"></i>
-                    إغلاق
+                    {{ __('social.close') }}
                 </button>
 
                 <!-- Primary Action -->
                 <button @click="saveAllQueueSettings()"
                         class="w-full sm:w-auto px-8 py-3.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white rounded-xl font-bold shadow-lg shadow-purple-500/25 hover:shadow-xl hover:shadow-purple-500/30 transition-all focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 flex items-center justify-center gap-2">
                     <i class="fas fa-check-circle"></i>
-                    <span>حفظ الإعدادات</span>
+                    <span>{{ __('common.save_settings') }}</span>
                 </button>
             </div>
         </div>
@@ -987,6 +987,86 @@
 
 @push('scripts')
 <script>
+// Translations object for JavaScript
+const translations = {
+    // Queue settings
+    queueSettingsSaved: @json(__('social.queue_settings_saved')),
+    settingsSaveFailed: @json(__('social.settings_save_failed')),
+
+    // Days of week
+    daySunday: @json(__('social.days.sunday')),
+    dayMonday: @json(__('social.days.monday')),
+    dayTuesday: @json(__('social.days.tuesday')),
+    dayWednesday: @json(__('social.days.wednesday')),
+    dayThursday: @json(__('social.days.thursday')),
+    dayFriday: @json(__('social.days.friday')),
+    daySaturday: @json(__('social.days.saturday')),
+
+    // Post actions
+    confirmDeletePosts: @json(__('social.confirm_delete_posts')),
+    postsDeletedSuccess: @json(__('social.posts_deleted_success')),
+    writeContentFirst: @json(__('social.write_content_first')),
+    generatingHashtags: @json(__('social.generating_hashtags')),
+    conversionFailed: @json(__('social.conversion_failed')),
+    contentCopiedSuccess: @json(__('social.content_copied_success')),
+
+    // Post status messages
+    postPublishedSuccess: @json(__('social.post_published_success')),
+    postScheduledSuccess: @json(__('social.post_scheduled_success')),
+    postQueuedSuccess: @json(__('social.post_queued_success')),
+    draftSavedSuccess: @json(__('social.draft_saved_success')),
+    postSaveFailed: @json(__('social.post_save_failed')),
+    postUpdatedSuccess: @json(__('social.post_updated_success')),
+    postUpdateFailed: @json(__('social.post_update_failed')),
+
+    // Publish actions
+    confirmPublishNow: @json(__('social.confirm_publish_now')),
+    postPublishFailed: @json(__('social.post_publish_failed')),
+    confirmRetryPublish: @json(__('social.confirm_retry_publish')),
+    retryFailed: @json(__('social.retry_failed')),
+
+    // Delete actions
+    confirmDeletePost: @json(__('social.confirm_delete_post')),
+    postDeletedSuccess: @json(__('social.post_deleted_success')),
+    postDeleteFailed: @json(__('social.post_delete_failed')),
+    confirmDeleteFailedPosts: @json(__('social.confirm_delete_failed_posts')),
+    failedPostsDeletedSuccess: @json(__('social.failed_posts_deleted_success')),
+    failedPostsDeleteFailed: @json(__('social.failed_posts_delete_failed')),
+
+    // Post types
+    postTypeFeed: @json(__('social.post_types.feed')),
+    postTypeReel: @json(__('social.post_types.reel')),
+    postTypeStory: @json(__('social.post_types.story')),
+    postTypeCarousel: @json(__('social.post_types.carousel')),
+    postTypePost: @json(__('social.post_types.post')),
+
+    // Status labels
+    statusScheduled: @json(__('social.scheduled_status')),
+    statusPublished: @json(__('social.published_status')),
+    statusDraft: @json(__('social.draft_status')),
+    statusFailed: @json(__('social.failed_status')),
+
+    // Additional post types
+    postTypeTweet: @json(__('social.post_types.tweet')),
+    postTypeThread: @json(__('social.thread')),
+    postTypeArticle: @json(__('social.post_types.article')),
+
+    // Best times
+    bestTimeMorning: @json(__('social.best_times.morning')),
+    bestTimeNoon: @json(__('social.best_times.noon')),
+    bestTimeEvening: @json(__('social.best_times.evening')),
+    bestTimeNight: @json(__('social.best_times.night'))
+};
+
+// Helper function to replace placeholders in translations
+function trans(key, replacements = {}) {
+    let translation = translations[key] || key;
+    Object.keys(replacements).forEach(placeholder => {
+        translation = translation.replace(':' + placeholder, replacements[placeholder]);
+    });
+    return translation;
+}
+
 function socialManager() {
     return {
         // Posts list state
@@ -1005,6 +1085,15 @@ function socialManager() {
 
         // Calendar state
         currentDate: new Date(),
+        dayNames: [
+            translations.daySunday,
+            translations.dayMonday,
+            translations.dayTuesday,
+            translations.dayWednesday,
+            translations.dayThursday,
+            translations.dayFriday,
+            translations.daySaturday
+        ],
 
         // New post state (used by global publish modal)
         loadingPlatforms: false,
@@ -1132,23 +1221,23 @@ function socialManager() {
         // Post types configuration
         allPostTypes: {
             'facebook': [
-                {value: 'feed', label: \'{{ __("social.post_types.feed") }}\', icon: 'fa-newspaper'},
-                {value: 'reel', label: \'{{ __("social.post_types.reel") }}\', icon: 'fa-video'},
-                {value: 'story', label: \'{{ __("social.post_types.story") }}\', icon: 'fa-circle'}
+                {value: 'feed', label: translations.postTypeFeed, icon: 'fa-newspaper'},
+                {value: 'reel', label: translations.postTypeReel, icon: 'fa-video'},
+                {value: 'story', label: translations.postTypeStory, icon: 'fa-circle'}
             ],
             'instagram': [
-                {value: 'feed', label: \'{{ __("social.post_types.feed") }}\', icon: 'fa-image'},
-                {value: 'reel', label: \'{{ __("social.post_types.reel") }}\', icon: 'fa-video'},
-                {value: 'story', label: \'{{ __("social.post_types.story") }}\', icon: 'fa-circle'},
-                {value: 'carousel', label: \'{{ __("social.post_types.carousel") }}\', icon: 'fa-images'}
+                {value: 'feed', label: translations.postTypeFeed, icon: 'fa-image'},
+                {value: 'reel', label: translations.postTypeReel, icon: 'fa-video'},
+                {value: 'story', label: translations.postTypeStory, icon: 'fa-circle'},
+                {value: 'carousel', label: translations.postTypeCarousel, icon: 'fa-images'}
             ],
             'twitter': [
-                {value: 'tweet', label: 'تغريدة (Tweet)', icon: 'fa-comment'},
-                {value: 'thread', label: 'سلسلة (Thread)', icon: 'fa-list'}
+                {value: 'tweet', label: translations.postTypeTweet, icon: 'fa-comment'},
+                {value: 'thread', label: translations.postTypeThread, icon: 'fa-list'}
             ],
             'linkedin': [
-                {value: 'post', label: \'{{ __("social.post_types.post") }}\', icon: 'fa-file-alt'},
-                {value: 'article', label: 'مقال (Article)', icon: 'fa-newspaper'}
+                {value: 'post', label: translations.postTypePost, icon: 'fa-file-alt'},
+                {value: 'article', label: translations.postTypeArticle, icon: 'fa-newspaper'}
             ]
         },
 
@@ -1158,10 +1247,10 @@ function socialManager() {
 
         // Best times suggestions
         bestTimes: [
-            { label: 'صباحاً', value: '09:00', engagement: '+23%' },
-            { label: 'ظهراً', value: '12:00', engagement: '+18%' },
-            { label: 'مساءً', value: '18:00', engagement: '+31%' },
-            { label: 'ليلاً', value: '21:00', engagement: '+15%' }
+            { label: translations.bestTimeMorning, value: '09:00', engagement: '+23%' },
+            { label: translations.bestTimeNoon, value: '12:00', engagement: '+18%' },
+            { label: translations.bestTimeEvening, value: '18:00', engagement: '+31%' },
+            { label: translations.bestTimeNight, value: '21:00', engagement: '+15%' }
         ],
 
         // Edit post modal state
@@ -1242,7 +1331,7 @@ function socialManager() {
 
                 // Get the intersection of all post types (common across all platforms)
                 if (platformPostTypes.length === 0) {
-                    return [{value: 'feed', label: \'{{ __("social.post_types.feed") }}\', icon: 'fa-newspaper'}];
+                    return [{value: 'feed', label: translations.postTypeFeed, icon: 'fa-newspaper'}];
                 }
 
                 // Find post types that exist in all platforms
@@ -1255,12 +1344,12 @@ function socialManager() {
                 // If no common types, default to feed
                 return commonPostTypes.length > 0
                     ? commonPostTypes
-                    : [{value: 'feed', label: \'{{ __("social.post_types.feed") }}\', icon: 'fa-newspaper'}];
+                    : [{value: 'feed', label: translations.postTypeFeed, icon: 'fa-newspaper'}];
             }
 
             // Single platform selected, return its specific post types
             const platform = uniquePlatforms[0];
-            return this.allPostTypes[platform] || [{value: 'feed', label: \'{{ __("social.post_types.feed") }}\', icon: 'fa-newspaper'}];
+            return this.allPostTypes[platform] || [{value: 'feed', label: translations.postTypeFeed, icon: 'fa-newspaper'}];
         },
 
         get selectedPlatformsForPreview() {
@@ -1550,7 +1639,7 @@ function socialManager() {
         },
 
         async bulkDelete() {
-            if (!confirm(__("social.confirm_delete_posts", {count: this.selectedPosts.length}))) return;
+            if (!confirm(trans('confirmDeletePosts', {count: this.selectedPosts.length}))) return;
 
             for (const postId of this.selectedPosts) {
                 await this.deletePost(postId, false);
@@ -1558,7 +1647,7 @@ function socialManager() {
             this.selectedPosts = [];
             await this.fetchPosts();
             if (window.notify) {
-                window.notify(__("social.posts_deleted_success"), 'success');
+                window.notify(translations.postsDeletedSuccess, 'success');
             }
         },
 
@@ -1573,7 +1662,7 @@ function socialManager() {
             const content = this.newPost.content;
             if (!content) {
                 if (window.notify) {
-                    window.notify(__("social.write_content_first"), 'warning');
+                    window.notify(translations.writeContentFirst, 'warning');
                 }
                 return;
             }
@@ -1584,7 +1673,7 @@ function socialManager() {
                 'longer': 'جاري التوسع...',
                 'formal': 'جاري تحويل الأسلوب...',
                 'casual': 'جاري تحويل الأسلوب...',
-                'hashtags': __("social.generating_hashtags"),
+                'hashtags': translations.generatingHashtags,
                 'emojis': 'جاري إضافة الإيموجي...',
             }[type] || 'جاري المعالجة...';
 
@@ -1622,7 +1711,7 @@ function socialManager() {
                     }
                 } else {
                     // Show detailed validation errors for debugging
-                    let errorMessage = data.message || __("social.conversion_failed");
+                    let errorMessage = data.message || translations.conversionFailed;
                     if (data.errors) {
                         const errorDetails = Object.values(data.errors).flat().join(', ');
                         errorMessage += ': ' + errorDetails;
@@ -1645,7 +1734,7 @@ function socialManager() {
                 detail: { content: post.post_text || post.content || '' }
             }));
             if (window.notify) {
-                window.notify(__("social.content_copied_success"), 'success');
+                window.notify(translations.contentCopiedSuccess, 'success');
             }
         },
 
@@ -1909,10 +1998,10 @@ function socialManager() {
 
                 if (response.ok) {
                     const messages = {
-                        'now': __("social.post_published_success"),
-                        'scheduled': __("social.post_scheduled_success"),
-                        'queue': __("social.post_queued_success"),
-                        'draft': __("social.draft_saved_success")
+                        'now': translations.postPublishedSuccess,
+                        'scheduled': translations.postScheduledSuccess,
+                        'queue': translations.postQueuedSuccess,
+                        'draft': translations.draftSavedSuccess
                     };
                     if (window.notify) {
                         window.notify(messages[this.newPost.publishType], 'success');
@@ -1920,12 +2009,12 @@ function socialManager() {
                     this.resetNewPost();
                     await this.fetchPosts();
                 } else {
-                    throw new Error(result.message || __("social.post_save_failed"));
+                    throw new Error(result.message || translations.postSaveFailed);
                 }
             } catch (error) {
                 console.error('Failed to save post:', error);
                 if (window.notify) {
-                    window.notify(error.message || __("social.post_save_failed"), 'error');
+                    window.notify(error.message || translations.postSaveFailed, 'error');
                 }
             } finally {
                 this.isSubmitting = false;
@@ -1958,10 +2047,10 @@ function socialManager() {
 
         getStatusLabel(status) {
             const labels = {
-                'scheduled': '{{ __('social.scheduled_status') }}',
-                'published': '{{ __('social.published_status') }}',
-                'draft': '{{ __('social.draft_status') }}',
-                'failed': '{{ __('social.failed_status') }}'
+                'scheduled': translations.statusScheduled,
+                'published': translations.statusPublished,
+                'draft': translations.statusDraft,
+                'failed': translations.statusFailed
             };
             return labels[status] || status;
         },
@@ -2038,17 +2127,17 @@ function socialManager() {
                     this.showEditPostModal = false;
                     await this.fetchPosts();
                     if (window.notify) {
-                        window.notify(__("social.post_updated_success"), 'success');
+                        window.notify(translations.postUpdatedSuccess, 'success');
                     }
                 } else {
                     if (window.notify) {
-                        window.notify(result.message || __("social.post_update_failed"), 'error');
+                        window.notify(result.message || translations.postUpdateFailed, 'error');
                     }
                 }
             } catch (error) {
                 console.error('Failed to update post:', error);
                 if (window.notify) {
-                    window.notify(__("social.post_update_failed"), 'error');
+                    window.notify(translations.postUpdateFailed, 'error');
                 }
             } finally {
                 this.isUpdating = false;
@@ -2056,7 +2145,7 @@ function socialManager() {
         },
 
         async publishNow(postId) {
-            if (!confirm(__("social.confirm_publish_now"))) return;
+            if (!confirm(translations.confirmPublishNow)) return;
 
             try {
                 const response = await fetch(`/api/orgs/${this.orgId}/social/posts/${postId}/publish`, {
@@ -2072,24 +2161,24 @@ function socialManager() {
                 if (response.ok && result.success) {
                     await this.fetchPosts();
                     if (window.notify) {
-                        window.notify(__("social.post_published_success"), "success");
+                        window.notify(translations.postPublishedSuccess, "success");
                     }
                 } else {
                     if (window.notify) {
-                        window.notify(result.message || __("social.post_publish_failed"), 'error');
+                        window.notify(result.message || translations.postPublishFailed, 'error');
                     }
                     await this.fetchPosts();
                 }
             } catch (error) {
                 console.error('Failed to publish post:', error);
                 if (window.notify) {
-                    window.notify(__("social.post_publish_failed"), 'error');
+                    window.notify(translations.postPublishFailed, 'error');
                 }
             }
         },
 
         async retryPost(postId) {
-            if (!confirm(__("social.confirm_retry_publish"))) return;
+            if (!confirm(translations.confirmRetryPublish)) return;
 
             try {
                 const response = await fetch(`/api/orgs/${this.orgId}/social/posts/${postId}/publish`, {
@@ -2105,24 +2194,24 @@ function socialManager() {
                 if (response.ok && result.success) {
                     await this.fetchPosts();
                     if (window.notify) {
-                        window.notify(__("social.post_published_success"), 'success');
+                        window.notify(translations.postPublishedSuccess, 'success');
                     }
                 } else {
                     if (window.notify) {
-                        window.notify(__("social.retry_failed") + ': ' + (result.message || ''), 'error');
+                        window.notify(translations.retryFailed + ': ' + (result.message || ''), 'error');
                     }
                     await this.fetchPosts();
                 }
             } catch (error) {
                 console.error('Failed to retry post:', error);
                 if (window.notify) {
-                    window.notify(__("social.retry_failed"), 'error');
+                    window.notify(translations.retryFailed, 'error');
                 }
             }
         },
 
         async deletePost(postId, showConfirm = true) {
-            if (showConfirm && !confirm(__("social.confirm_delete_post"))) return;
+            if (showConfirm && !confirm(translations.confirmDeletePost)) return;
 
             try {
                 const response = await fetch(`/orgs/${this.orgId}/social/posts/${postId}`, {
@@ -2142,24 +2231,24 @@ function socialManager() {
                     if (showConfirm) {
                         await this.fetchPosts();
                         if (window.notify) {
-                            window.notify(__("social.post_deleted_success"), "success");
+                            window.notify(translations.postDeletedSuccess, "success");
                         }
                     }
                 } else {
                     if (window.notify) {
-                        window.notify(result.message || __("social.post_delete_failed"), 'error');
+                        window.notify(result.message || translations.postDeleteFailed, 'error');
                     }
                 }
             } catch (error) {
                 console.error('Failed to delete post:', error);
                 if (window.notify) {
-                    window.notify(__("social.post_delete_failed"), 'error');
+                    window.notify(translations.postDeleteFailed, 'error');
                 }
             }
         },
 
         async deleteAllFailed() {
-            if (!confirm(__("social.confirm_delete_failed_posts", {count: this.failedCount}))) return;
+            if (!confirm(trans('confirmDeleteFailedPosts', {count: this.failedCount}))) return;
 
             this.isDeletingFailed = true;
 
@@ -2181,17 +2270,17 @@ function socialManager() {
                     const deletedCount = result.data?.deleted_count || 0;
                     await this.fetchPosts();
                     if (window.notify) {
-                        window.notify(__("social.failed_posts_deleted_success", {count: deletedCount}), "success");
+                        window.notify(trans('failedPostsDeletedSuccess', {count: deletedCount}), "success");
                     }
                 } else {
                     if (window.notify) {
-                        window.notify(result.message || __("social.failed_posts_delete_failed"), 'error');
+                        window.notify(result.message || translations.failedPostsDeleteFailed, 'error');
                     }
                 }
             } catch (error) {
                 console.error('Failed to delete all failed posts:', error);
                 if (window.notify) {
-                    window.notify(__("social.failed_posts_delete_failed"), 'error');
+                    window.notify(translations.failedPostsDeleteFailed, 'error');
                 }
             } finally {
                 this.isDeletingFailed = false;
@@ -2253,12 +2342,12 @@ function socialManager() {
 
                 this.showQueueSettings = false;
                 if (window.notify) {
-                    window.notify('تم حفظ إعدادات الطابور بنجاح', 'success');
+                    window.notify(translations.queueSettingsSaved, 'success');
                 }
             } catch (error) {
                 console.error('Failed to save queue settings:', error);
                 if (window.notify) {
-                    window.notify(__("social.settings_save_failed"), 'error');
+                    window.notify(translations.settingsSaveFailed, 'error');
                 }
             }
         }

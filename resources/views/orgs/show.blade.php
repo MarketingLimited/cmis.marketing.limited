@@ -37,12 +37,12 @@
                     <a href="{{ route('orgs.edit', ['org' => $org->org_id]) }}"
                        class="bg-white/20 hover:bg-white/30 backdrop-blur-sm px-6 py-3 rounded-xl flex items-center gap-2 transition">
                         <i class="fas fa-edit"></i>
-                        تعديل
+                        {{ __('organizations.edit') }}
                     </a>
                     <button @click="showSettings = true"
                             class="bg-white/20 hover:bg-white/30 backdrop-blur-sm px-6 py-3 rounded-xl flex items-center gap-2 transition">
                         <i class="fas fa-cog"></i>
-                        الإعدادات
+                        {{ __('organizations.settings') }}
                     </button>
                 </div>
             </div>
@@ -58,7 +58,7 @@
                 </div>
             </div>
             <h3 class="text-3xl font-bold text-gray-900 dark:text-white mb-1" x-text="stats.campaigns_count">{{ $stats['campaigns_count'] }}</h3>
-            <p class="text-gray-600 dark:text-gray-400">الحملات</p>
+            <p class="text-gray-600 dark:text-gray-400">{{ __('organizations.campaigns') }}</p>
         </div>
 
         <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 transform hover:scale-105 transition">
@@ -68,7 +68,7 @@
                 </div>
             </div>
             <h3 class="text-3xl font-bold text-gray-900 dark:text-white mb-1" x-text="stats.team_members_count">{{ $stats['team_members_count'] }}</h3>
-            <p class="text-gray-600 dark:text-gray-400">أعضاء الفريق</p>
+            <p class="text-gray-600 dark:text-gray-400">{{ __('organizations.team_members') }}</p>
         </div>
 
         <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 transform hover:scale-105 transition">
@@ -78,7 +78,7 @@
                 </div>
             </div>
             <h3 class="text-3xl font-bold text-gray-900 dark:text-white mb-1" x-text="stats.assets_count">{{ $stats['assets_count'] }}</h3>
-            <p class="text-gray-600 dark:text-gray-400">الأصول الإبداعية</p>
+            <p class="text-gray-600 dark:text-gray-400">{{ __('organizations.creative_assets') }}</p>
         </div>
 
         <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 transform hover:scale-105 transition">
@@ -88,7 +88,7 @@
                 </div>
             </div>
             <h3 class="text-3xl font-bold text-gray-900 dark:text-white mb-1" x-text="formatBudget(stats.total_budget)">{{ number_format($stats['total_budget'], 0) }}</h3>
-            <p class="text-gray-600 dark:text-gray-400">إجمالي الميزانية</p>
+            <p class="text-gray-600 dark:text-gray-400">{{ __('organizations.total_budget') }}</p>
         </div>
     </div>
 
@@ -98,35 +98,35 @@
         <div class="lg:col-span-2 space-y-8">
             <!-- Quick Actions -->
             <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
-                <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-6">الإجراءات السريعة</h3>
+                <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-6">{{ __('organizations.quick_actions') }}</h3>
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <a href="{{ route('orgs.campaigns.index', ['org' => $org->org_id]) }}"
                        class="flex flex-col items-center p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl hover:bg-blue-100 dark:hover:bg-blue-900/40 transition group">
                         <div class="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition">
                             <i class="fas fa-bullhorn text-white text-xl"></i>
                         </div>
-                        <span class="text-sm font-medium text-gray-900 dark:text-white">الحملات</span>
+                        <span class="text-sm font-medium text-gray-900 dark:text-white">{{ __('organizations.campaigns') }}</span>
                     </a>
                     <a href="{{ route('orgs.products', ['org' => $org->org_id]) }}"
                        class="flex flex-col items-center p-4 bg-green-50 dark:bg-green-900/20 rounded-xl hover:bg-green-100 dark:hover:bg-green-900/40 transition group">
                         <div class="w-12 h-12 bg-green-500 rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition">
                             <i class="fas fa-box text-white text-xl"></i>
                         </div>
-                        <span class="text-sm font-medium text-gray-900 dark:text-white">المنتجات</span>
+                        <span class="text-sm font-medium text-gray-900 dark:text-white">{{ __('organizations.products') }}</span>
                     </a>
                     <a href="{{ route('orgs.services', ['org' => $org->org_id]) }}"
                        class="flex flex-col items-center p-4 bg-purple-50 dark:bg-purple-900/20 rounded-xl hover:bg-purple-100 dark:hover:bg-purple-900/40 transition group">
                         <div class="w-12 h-12 bg-purple-500 rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition">
                             <i class="fas fa-concierge-bell text-white text-xl"></i>
                         </div>
-                        <span class="text-sm font-medium text-gray-900 dark:text-white">الخدمات</span>
+                        <span class="text-sm font-medium text-gray-900 dark:text-white">{{ __('organizations.services') }}</span>
                     </a>
                     <button @click="createCampaign()"
                             class="flex flex-col items-center p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-xl hover:bg-yellow-100 dark:hover:bg-yellow-900/40 transition group">
                         <div class="w-12 h-12 bg-yellow-500 rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition">
                             <i class="fas fa-plus text-white text-xl"></i>
                         </div>
-                        <span class="text-sm font-medium text-gray-900 dark:text-white">حملة جديدة</span>
+                        <span class="text-sm font-medium text-gray-900 dark:text-white">{{ __('organizations.new_campaign') }}</span>
                     </button>
                 </div>
             </div>
@@ -134,9 +134,9 @@
             <!-- Recent Campaigns -->
             <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
                 <div class="flex items-center justify-between mb-6">
-                    <h3 class="text-xl font-bold text-gray-900 dark:text-white">أحدث الحملات</h3>
+                    <h3 class="text-xl font-bold text-gray-900 dark:text-white">{{ __('organizations.recent_campaigns') }}</h3>
                     <a href="{{ route('orgs.campaigns.index', ['org' => $org->org_id]) }}" class="text-blue-600 hover:text-blue-700 text-sm">
-                        عرض الكل <i class="fas fa-arrow-left mr-1"></i>
+                        {{ __('organizations.view_all') }} <i class="fas fa-arrow-{{ app()->getLocale() == 'ar' ? 'left' : 'right' }} {{ app()->getLocale() == 'ar' ? 'mr' : 'ml' }}-1"></i>
                     </a>
                 </div>
                 <div class="space-y-4">
@@ -157,7 +157,7 @@
                                       :class="getStatusBadgeClass(campaign.status)"
                                       x-text="getStatusLabel(campaign.status)"></span>
                                 <p class="text-xs text-gray-500 mt-1">
-                                    <span class="font-semibold" x-text="campaign.performance + '%'"></span> أداء
+                                    <span class="font-semibold" x-text="campaign.performance + '%'"></span> {{ __('organizations.performance') }}
                                 </p>
                             </div>
                         </div>
@@ -165,7 +165,7 @@
                     <template x-if="recentCampaigns.length === 0">
                         <div class="text-center py-8 text-gray-500">
                             <i class="fas fa-bullhorn text-4xl mb-2 opacity-30"></i>
-                            <p>لا توجد حملات بعد</p>
+                            <p>{{ __('organizations.no_campaigns_yet') }}</p>
                         </div>
                     </template>
                 </div>
@@ -173,7 +173,7 @@
 
             <!-- Performance Chart -->
             <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
-                <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-6">أداء المؤسسة</h3>
+                <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-6">{{ __('organizations.org_performance') }}</h3>
                 <div class="h-64">
                     <canvas id="performanceChart"></canvas>
                 </div>
@@ -185,7 +185,7 @@
             <!-- Team Members -->
             <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
                 <div class="flex items-center justify-between mb-6">
-                    <h3 class="text-lg font-bold text-gray-900 dark:text-white">فريق العمل</h3>
+                    <h3 class="text-lg font-bold text-gray-900 dark:text-white">{{ __('organizations.team') }}</h3>
                     <button @click="inviteMember()" class="text-blue-600 hover:text-blue-700 text-sm">
                         <i class="fas fa-user-plus"></i>
                     </button>
@@ -206,7 +206,7 @@
                     <template x-if="teamMembers.length === 0">
                         <div class="text-center py-4 text-gray-500">
                             <i class="fas fa-users text-2xl mb-2 opacity-30"></i>
-                            <p class="text-sm">لا يوجد أعضاء</p>
+                            <p class="text-sm">{{ __('organizations.no_members') }}</p>
                         </div>
                     </template>
                 </div>
@@ -214,7 +214,7 @@
 
             <!-- Recent Activity -->
             <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
-                <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-6">النشاط الأخير</h3>
+                <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-6">{{ __('organizations.recent_activity') }}</h3>
                 <div class="space-y-4">
                     <template x-for="activity in activities" :key="activity.id">
                         <div class="flex items-start gap-3">
@@ -231,7 +231,7 @@
                     <template x-if="activities.length === 0">
                         <div class="text-center py-4 text-gray-500">
                             <i class="fas fa-history text-2xl mb-2 opacity-30"></i>
-                            <p class="text-sm">لا يوجد نشاط</p>
+                            <p class="text-sm">{{ __('organizations.no_activity') }}</p>
                         </div>
                     </template>
                 </div>
@@ -239,22 +239,22 @@
 
             <!-- Organization Info -->
             <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
-                <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-6">معلومات المؤسسة</h3>
+                <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-6">{{ __('organizations.org_info') }}</h3>
                 <div class="space-y-4">
                     <div class="flex items-center justify-between">
-                        <span class="text-gray-600 dark:text-gray-400">المعرف</span>
+                        <span class="text-gray-600 dark:text-gray-400">{{ __('organizations.identifier') }}</span>
                         <span class="text-sm font-mono text-gray-900 dark:text-white" x-text="org.org_id?.substring(0, 8) + '...'"></span>
                     </div>
                     <div class="flex items-center justify-between">
-                        <span class="text-gray-600 dark:text-gray-400">اللغة الافتراضية</span>
+                        <span class="text-gray-600 dark:text-gray-400">{{ __('organizations.default_language') }}</span>
                         <span class="text-sm font-semibold text-gray-900 dark:text-white" x-text="org.default_locale"></span>
                     </div>
                     <div class="flex items-center justify-between">
-                        <span class="text-gray-600 dark:text-gray-400">العملة</span>
+                        <span class="text-gray-600 dark:text-gray-400">{{ __('organizations.currency') }}</span>
                         <span class="text-sm font-semibold text-gray-900 dark:text-white" x-text="org.currency"></span>
                     </div>
                     <div class="flex items-center justify-between">
-                        <span class="text-gray-600 dark:text-gray-400">تاريخ الإنشاء</span>
+                        <span class="text-gray-600 dark:text-gray-400">{{ __('organizations.created_at') }}</span>
                         <span class="text-sm font-semibold text-gray-900 dark:text-white" x-text="formatDate(org.created_at)"></span>
                     </div>
                 </div>
@@ -266,6 +266,21 @@
 
 @push('scripts')
 <script>
+const translations = {
+    impressions: '{{ __('organizations.impressions') }}',
+    clicks: '{{ __('organizations.clicks') }}',
+    conversions: '{{ __('organizations.conversions') }}',
+    not_available: '{{ __('organizations.not_available') }}',
+    status: {
+        active: '{{ __('organizations.status_active') }}',
+        planning: '{{ __('organizations.status_planning') }}',
+        draft: '{{ __('organizations.status_draft') }}',
+        completed: '{{ __('organizations.status_completed') }}',
+        paused: '{{ __('organizations.status_paused') }}'
+    },
+    invite_feature_coming_soon: '{{ __('organizations.invite_feature_coming_soon') }}'
+};
+
 function orgDetails(serverOrg, serverStats, serverCampaigns, serverTeamMembers, serverActivities, serverPerformanceData) {
     return {
         org: serverOrg || {},
@@ -293,13 +308,15 @@ function orgDetails(serverOrg, serverStats, serverCampaigns, serverTeamMembers, 
             const ctx = document.getElementById('performanceChart');
             if (!ctx || !ctx.getContext) return;
 
+            const isRTL = '{{ app()->getLocale() }}' === 'ar';
+
             this.performanceChart = new Chart(ctx.getContext('2d'), {
                 type: 'line',
                 data: {
                     labels: this.performanceData.labels,
                     datasets: [
                         {
-                            label: 'الانطباعات',
+                            label: translations.impressions,
                             data: this.performanceData.impressions,
                             borderColor: '#3b82f6',
                             backgroundColor: 'rgba(59, 130, 246, 0.1)',
@@ -307,7 +324,7 @@ function orgDetails(serverOrg, serverStats, serverCampaigns, serverTeamMembers, 
                             tension: 0.4
                         },
                         {
-                            label: 'النقرات',
+                            label: translations.clicks,
                             data: this.performanceData.clicks,
                             borderColor: '#10b981',
                             backgroundColor: 'rgba(16, 185, 129, 0.1)',
@@ -315,7 +332,7 @@ function orgDetails(serverOrg, serverStats, serverCampaigns, serverTeamMembers, 
                             tension: 0.4
                         },
                         {
-                            label: 'التحويلات',
+                            label: translations.conversions,
                             data: this.performanceData.conversions,
                             borderColor: '#8b5cf6',
                             backgroundColor: 'rgba(139, 92, 246, 0.1)',
@@ -330,7 +347,7 @@ function orgDetails(serverOrg, serverStats, serverCampaigns, serverTeamMembers, 
                     plugins: {
                         legend: {
                             position: 'top',
-                            rtl: true
+                            rtl: isRTL
                         }
                     },
                     scales: {
@@ -341,8 +358,9 @@ function orgDetails(serverOrg, serverStats, serverCampaigns, serverTeamMembers, 
         },
 
         formatDate(dateString) {
-            if (!dateString) return 'غير متوفر';
-            return new Date(dateString).toLocaleDateString('ar-SA', {
+            if (!dateString) return translations.not_available;
+            const locale = '{{ app()->getLocale() }}' === 'ar' ? 'ar-SA' : 'en-US';
+            return new Date(dateString).toLocaleDateString(locale, {
                 year: 'numeric',
                 month: 'long',
                 day: 'numeric'
@@ -351,7 +369,8 @@ function orgDetails(serverOrg, serverStats, serverCampaigns, serverTeamMembers, 
 
         formatBudget(amount) {
             if (!amount) return '0';
-            return new Intl.NumberFormat('ar-SA').format(amount);
+            const locale = '{{ app()->getLocale() }}' === 'ar' ? 'ar-SA' : 'en-US';
+            return new Intl.NumberFormat(locale).format(amount);
         },
 
         getCampaignStatusColor(status) {
@@ -377,14 +396,7 @@ function orgDetails(serverOrg, serverStats, serverCampaigns, serverTeamMembers, 
         },
 
         getStatusLabel(status) {
-            const labels = {
-                'active': 'نشط',
-                'planning': 'تخطيط',
-                'draft': 'مسودة',
-                'completed': 'مكتمل',
-                'paused': 'متوقف'
-            };
-            return labels[status] || status;
+            return translations.status[status] || status;
         },
 
         getActivityIcon(action) {
@@ -414,7 +426,7 @@ function orgDetails(serverOrg, serverStats, serverCampaigns, serverTeamMembers, 
         },
 
         inviteMember() {
-            if (window.notify) window.notify('ميزة دعوة الأعضاء قريباً', 'info');
+            if (window.notify) window.notify(translations.invite_feature_coming_soon, 'info');
         }
     };
 }

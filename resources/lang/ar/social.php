@@ -23,6 +23,7 @@ return [
     'all_posts' => 'جميع المنشورات',
     'create_post' => 'إنشاء منشور',
     'edit_post' => 'تعديل المنشور',
+    'duplicate_post' => 'نسخ المنشور',
     'delete_post' => 'حذف المنشور',
     'schedule_post' => 'جدولة المنشور',
     'publish_now' => 'نشر الآن',
@@ -41,6 +42,18 @@ return [
         'carousel' => 'دائري (كاروسيل)',
         'story' => 'قصة',
         'reel' => 'ريل',
+        'feed' => 'منشور عادي',
+        'post' => 'منشور',
+        'tweet' => 'تغريدة',
+        'article' => 'مقال',
+    ],
+
+    // Best Times
+    'best_times' => [
+        'morning' => 'صباحاً',
+        'noon' => 'ظهراً',
+        'evening' => 'مساءً',
+        'night' => 'ليلاً',
     ],
 
     // Post Status
@@ -331,6 +344,9 @@ return [
     'start_import' => 'بدء الاستيراد',
     'importing' => 'جاري الاستيراد',
     'close' => 'إغلاق',
+    'connected_accounts' => 'الحسابات المتصلة',
+    'no_connected_accounts' => 'لا توجد حسابات متصلة',
+    'published_at' => 'نُشر:',
     'post_details' => 'تفاصيل المنشور',
     'previous' => 'السابق',
     'next' => 'التالي',
@@ -440,7 +456,21 @@ return [
     'draft_saved_success' => 'تم حفظ المسودة بنجاح!',
     'retry_failed' => 'فشلت إعادة المحاولة',
     'settings_save_failed' => 'فشل في حفظ الإعدادات',
+    'queue_settings_saved' => 'تم حفظ إعدادات الطابور بنجاح',
     'duplicate' => 'نسخ',
     'retry' => 'إعادة المحاولة',
+    'current_media' => 'الوسائط الحالية',
+    'save_changes' => 'حفظ التغييرات',
+
+    // Days of the week
+    'days' => [
+        'sunday' => 'الأحد',
+        'monday' => 'الإثنين',
+        'tuesday' => 'الثلاثاء',
+        'wednesday' => 'الأربعاء',
+        'thursday' => 'الخميس',
+        'friday' => 'الجمعة',
+        'saturday' => 'السبت',
+    ],
 
 ];
