@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CMIS Alert: {{ $rule->name }}</title>
+    <title>{{ __('emails.alert_notification.subject', ['name' => $rule->name]) }}</title>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
@@ -137,10 +137,10 @@
 <body>
     <div class="container">
         <div class="header {{ $severity }}">
-            <span class="severity-badge {{ $severity }}">{{ strtoupper($severity) }} ALERT</span>
+            <span class="severity-badge {{ $severity }}">{{ __('emails.alert_notification.severity.' . $severity) }} {{ __('emails.alert_notification.alert') }}</span>
             <h1>{{ $rule->name }}</h1>
             <p style="color: #7f8c8d; margin: 5px 0 0 0;">
-                Triggered at {{ $triggeredAt }}
+                {{ __('emails.alert_notification.triggered_at') }} {{ $triggeredAt }}
             </p>
         </div>
 
@@ -151,80 +151,80 @@
         <div class="metrics">
             <div class="metric">
                 <span class="metric-value">{{ number_format($actualValue, 2) }}</span>
-                <span class="metric-label">Actual Value</span>
+                <span class="metric-label">{{ __('emails.alert_notification.actual_value') }}</span>
             </div>
             <div class="metric">
                 <span class="metric-value">{{ number_format($threshold, 2) }}</span>
-                <span class="metric-label">Threshold</span>
+                <span class="metric-label">{{ __('emails.alert_notification.threshold') }}</span>
             </div>
         </div>
 
         <div class="details">
             <table>
                 <tr>
-                    <td>Alert Rule:</td>
+                    <td>{{ __('emails.alert_notification.alert_rule') }}:</td>
                     <td>{{ $rule->name }}</td>
                 </tr>
                 <tr>
-                    <td>Metric:</td>
+                    <td>{{ __('emails.alert_notification.metric') }}:</td>
                     <td>{{ ucfirst(str_replace('_', ' ', $alert->metric)) }}</td>
                 </tr>
                 <tr>
-                    <td>Entity Type:</td>
+                    <td>{{ __('emails.alert_notification.entity_type') }}:</td>
                     <td>{{ ucfirst($entityType) }}</td>
                 </tr>
                 @if($entityId)
                 <tr>
-                    <td>Entity ID:</td>
+                    <td>{{ __('emails.alert_notification.entity_id') }}:</td>
                     <td>{{ $entityId }}</td>
                 </tr>
                 @endif
                 <tr>
-                    <td>Condition:</td>
+                    <td>{{ __('emails.alert_notification.condition') }}:</td>
                     <td>{{ $alert->condition }}</td>
                 </tr>
                 <tr>
-                    <td>Severity:</td>
+                    <td>{{ __('emails.alert_notification.severity_label') }}:</td>
                     <td>{{ ucfirst($severity) }}</td>
                 </tr>
                 <tr>
-                    <td>Status:</td>
+                    <td>{{ __('emails.alert_notification.status') }}:</td>
                     <td>{{ ucfirst($alert->status) }}</td>
                 </tr>
             </table>
         </div>
 
         <div style="text-align: center;">
-            <a href="#" class="button">View in Dashboard</a>
+            <a href="#" class="button">{{ __('emails.alert_notification.view_in_dashboard') }}</a>
         </div>
 
         <div style="margin-top: 30px; padding: 15px; background-color: #fff3cd; border-left: 4px solid #ffc107; border-radius: 4px;">
-            <strong>📋 Recommended Actions:</strong>
+            <strong>{{ __('emails.alert_notification.recommended_actions') }}</strong>
             <ul style="margin: 10px 0; padding-left: 20px;">
                 @if($severity === 'critical')
-                    <li>Immediate action required - Review entity performance</li>
-                    <li>Check for any system issues or anomalies</li>
-                    <li>Consider pausing affected campaigns if necessary</li>
+                    <li>{{ __('emails.alert_notification.immediate_action') }}</li>
+                    <li>{{ __('emails.alert_notification.check_issues') }}</li>
+                    <li>{{ __('emails.alert_notification.consider_pausing') }}</li>
                 @elseif($severity === 'high')
-                    <li>Review entity metrics within next 24 hours</li>
-                    <li>Analyze recent changes that may have caused this alert</li>
-                    <li>Prepare corrective action plan</li>
+                    <li>{{ __('emails.alert_notification.review_24h') }}</li>
+                    <li>{{ __('emails.alert_notification.analyze_changes') }}</li>
+                    <li>{{ __('emails.alert_notification.prepare_plan') }}</li>
                 @else
-                    <li>Review during next scheduled check-in</li>
-                    <li>Monitor for continued trend</li>
-                    <li>Document findings for future reference</li>
+                    <li>{{ __('emails.alert_notification.review_scheduled') }}</li>
+                    <li>{{ __('emails.alert_notification.monitor_trend') }}</li>
+                    <li>{{ __('emails.alert_notification.document_findings') }}</li>
                 @endif
             </ul>
         </div>
 
         <div class="footer">
             <p>
-                This is an automated alert from CMIS Analytics.<br>
-                <a href="#" style="color: #4CAF50;">Manage Alert Settings</a> |
-                <a href="#" style="color: #4CAF50;">View All Alerts</a>
+                {{ __('emails.alert_notification.automated_alert') }}<br>
+                <a href="#" style="color: #4CAF50;">{{ __('emails.alert_notification.manage_alert_settings') }}</a> |
+                <a href="#" style="color: #4CAF50;">{{ __('emails.alert_notification.view_all_alerts') }}</a>
             </p>
             <p style="margin-top: 10px;">
-                © {{ date('Y') }} CMIS - Cognitive Marketing Information System
+                © {{ date('Y') }} {{ __('emails.alert_notification.copyright') }}
             </p>
         </div>
     </div>

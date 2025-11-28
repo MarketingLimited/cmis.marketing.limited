@@ -58,7 +58,7 @@ class OptimizationRuleController extends Controller
         }
 
         return redirect()->route('optimization.rules.show', $rule->rule_id)
-            ->with('success', 'Optimization rule created successfully');
+            ->with('success', __('optimization.created_success'));
     }
 
     /**
@@ -97,7 +97,7 @@ class OptimizationRuleController extends Controller
         }
 
         return redirect()->route('optimization.rules.show', $rule->rule_id)
-            ->with('success', 'Optimization rule updated successfully');
+            ->with('success', __('optimization.updated_success'));
     }
 
     /**
@@ -113,7 +113,7 @@ class OptimizationRuleController extends Controller
         }
 
         return redirect()->route('optimization.rules.index')
-            ->with('success', 'Optimization rule deleted successfully');
+            ->with('success', __('optimization.deleted_success'));
     }
 
     /**
@@ -316,7 +316,7 @@ class OptimizationRuleController extends Controller
         }
 
         return redirect()->route('optimization.rules.show', $duplicated->rule_id)
-            ->with('success', 'Rule duplicated successfully');
+            ->with('success', __('optimization.rule_duplicated_successfully'));
     }
 
     /**

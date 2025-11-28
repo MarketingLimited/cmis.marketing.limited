@@ -3,6 +3,8 @@
     $isRtl = $locale === 'ar';
     $dir = $isRtl ? 'rtl' : 'ltr';
     $lang = $locale === 'ar' ? 'ar' : 'en';
+    $defaultMetaDescription = __('navigation.platform_name') . ' - ' . __('navigation.platform_tagline');
+    $dashboardTitle = __('common.dashboard');
 @endphp
 <!DOCTYPE html>
 <html lang="{{ $lang }}" dir="{{ $dir }}" x-data="appLayout()" :class="{ 'dark': darkMode }">
@@ -10,15 +12,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <meta name="description" content="@yield('meta-description', 'نظام CMIS للتسويق الذكي - إدارة الحملات والمؤسسات')">
+    <meta name="description" content="@yield('meta-description', $defaultMetaDescription)">
     <meta name="theme-color" content="#667eea">
 
     <!-- Open Graph / Social Media -->
-    <meta property="og:title" content="@yield('title', 'CMIS') - لوحة التحكم">
-    <meta property="og:description" content="@yield('meta-description', 'نظام CMIS للتسويق الذكي')">
+    <meta property="og:title" content="@yield('title', 'CMIS') - {{ $dashboardTitle }}">
+    <meta property="og:description" content="@yield('meta-description', $defaultMetaDescription)">
     <meta property="og:type" content="website">
 
-    <title>@yield('title', 'CMIS') - لوحة التحكم</title>
+    <title>@yield('title', 'CMIS') - {{ $dashboardTitle }}</title>
 
     <!-- Tailwind CSS CDN - TODO: Replace with compiled CSS for production -->
     <!-- For production, run: npm install -D tailwindcss && npx tailwindcss build -->
@@ -38,6 +40,9 @@
     @if(request()->routeIs('analytics.*') || request()->routeIs('orgs.dashboard.*') || request()->routeIs('dashboard.*'))
     <script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     @endif
+
+    <!-- JavaScript Translations -->
+    <x-js-translations />
 
     <style>
         [x-cloak] { display: none !important; }
@@ -313,44 +318,78 @@
 
         <!-- Sidebar -->
         <aside :class="sidebarOpen ? 'translate-x-0' : '{{ $isRtl ? 'translate-x-full' : '-translate-x-full' }}'"
-               class="fixed inset-y-0 {{ $isRtl ? 'right-0' : 'left-0' }} z-40 w-72 lg:w-64 bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 shadow-2xl transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0"
+               class="fixed inset-y-0 {{ $isRtl ? 'right-0' : 'left-0' }} z-40 transition-all duration-300 ease-in-out bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 shadow-2xl transform lg:translate-x-0 lg:static lg:inset-0"
+               :class="compactMode ? 'w-20 lg:w-20' : 'w-72 lg:w-64'"
                x-data="sidebarMenu()"
+               x-init="init()"
                @touchstart.passive="handleTouchStart($event)"
                @touchmove.passive="handleTouchMove($event)"
                @touchend="handleTouchEnd($event)">
 
             <!-- Logo Section -->
             <div class="flex items-center justify-between h-16 px-4 border-b border-slate-700/50">
-                <div class="flex items-center gap-3">
+                <div class="flex items-center gap-3" x-show="!compactMode" x-transition>
                     <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/25">
                         <i class="fas fa-brain text-white text-lg"></i>
                     </div>
                     <div>
                         <h1 class="text-lg font-bold text-white tracking-wide">CMIS</h1>
-                        <p class="text-[10px] text-slate-400 -mt-0.5">Marketing Intelligence</p>
+                        <p class="text-[10px] text-slate-400 -mt-0.5">{{ __('navigation.platform_tagline') }}</p>
                     </div>
                 </div>
-                <button @click="toggleSidebar()" class="lg:hidden text-slate-400 hover:text-white hover:bg-slate-700/50 p-2 rounded-lg transition-all">
-                    <i class="fas fa-times text-lg"></i>
-                </button>
+                <div class="flex items-center gap-2">
+                    <button @click="toggleCompactMode()"
+                            class="hidden lg:block text-slate-400 hover:text-white hover:bg-slate-700/50 p-2 rounded-lg transition-all"
+                            :title="compactMode ? '{{ __('navigation.expand_menu') }}' : '{{ __('navigation.collapse_menu') }}'">
+                        <i class="fas" :class="compactMode ? 'fa-angles-right' : 'fa-angles-left'"></i>
+                    </button>
+                    <button @click="toggleSidebar()" class="lg:hidden text-slate-400 hover:text-white hover:bg-slate-700/50 p-2 rounded-lg transition-all">
+                        <i class="fas fa-times text-lg"></i>
+                    </button>
+                </div>
             </div>
 
             <!-- Quick Search -->
-            <div class="px-4 py-3">
+            <div class="px-4 py-3" x-show="!compactMode" x-transition>
                 <div class="relative">
                     <input type="text"
                            x-model="searchQuery"
                            @input="performSearch()"
                            @keydown.escape="clearSearch()"
-                           placeholder="{{ __('sidebar.quick_search') }}"
+                           @focus="showingRecent = true"
+                           placeholder="{{ __('navigation.quick_search') }} (Ctrl+K)"
                            dir="{{ $dir }}"
-                           class="w-full bg-slate-800/50 border border-slate-700/50 text-slate-300 text-sm rounded-lg {{ $isRtl ? 'pr-9 pl-8 text-right' : 'pl-9 pr-8' }} py-2 placeholder-slate-500 focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all">
+                           class="sidebar-search-input w-full bg-slate-800/50 border border-slate-700/50 text-slate-300 text-sm rounded-lg {{ $isRtl ? 'pr-9 pl-8 text-right' : 'pl-9 pr-8' }} py-2 placeholder-slate-500 focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all">
                     <i class="fas fa-search absolute {{ $isRtl ? 'right-3' : 'left-3' }} top-1/2 -translate-y-1/2 text-slate-500 text-sm"></i>
                     <button x-show="searchQuery.length > 0"
                             @click="clearSearch()"
                             class="absolute {{ $isRtl ? 'left-2' : 'right-2' }} top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200 transition-colors">
                         <i class="fas fa-times text-xs"></i>
                     </button>
+                </div>
+
+                <!-- Recent Items (when search is empty and focused) -->
+                <div x-show="showingRecent && !isSearching && recentItems.length > 0"
+                     x-transition
+                     @click.outside="showingRecent = false"
+                     class="mt-2 bg-slate-800 border border-slate-700/50 rounded-lg overflow-hidden shadow-xl">
+                    <div class="px-3 py-2 border-b border-slate-700/50">
+                        <p class="text-xs font-semibold text-slate-400">{{ __('navigation.recently_viewed') }}</p>
+                    </div>
+                    <template x-for="item in recentItems" :key="item.route">
+                        <button @click="navigateTo(item.route, item)"
+                                class="w-full flex items-center gap-3 px-3 py-2.5 text-slate-300 hover:bg-slate-700/50 hover:text-white transition-all text-sm">
+                            <div class="w-8 h-8 rounded-lg bg-slate-700/50 flex items-center justify-center text-slate-400">
+                                <i class="fas" :class="item.icon"></i>
+                            </div>
+                            <span class="flex-1 text-right" x-text="item.name"></span>
+                            <button @click.stop="toggleFavorite(item.route)"
+                                    class="p-1 hover:bg-slate-600/50 rounded transition-colors">
+                                <i class="fas fa-star text-xs"
+                                   :class="isFavorite(item.route) ? 'text-yellow-400' : 'text-slate-500'"></i>
+                            </button>
+                        </button>
+                    </template>
                 </div>
 
                 <!-- Search Results Dropdown -->
@@ -361,14 +400,19 @@
                      x-transition:leave="transition ease-in duration-150"
                      x-transition:leave-start="opacity-100"
                      x-transition:leave-end="opacity-0"
-                     class="mt-2 bg-slate-800 border border-slate-700/50 rounded-lg overflow-hidden shadow-xl">
+                     class="mt-2 bg-slate-800 border border-slate-700/50 rounded-lg overflow-hidden shadow-xl max-h-96 overflow-y-auto">
                     <template x-for="result in searchResults" :key="result.route">
-                        <button @click="navigateTo(result.route)"
+                        <button @click="navigateTo(result.route, result)"
                                 class="w-full flex items-center gap-3 px-3 py-2.5 text-slate-300 hover:bg-slate-700/50 hover:text-white transition-all text-sm">
                             <div class="w-8 h-8 rounded-lg bg-slate-700/50 flex items-center justify-center text-slate-400">
                                 <i class="fas" :class="result.icon"></i>
                             </div>
-                            <span x-text="result.name"></span>
+                            <span class="flex-1 text-right" x-text="result.name"></span>
+                            <button @click.stop="toggleFavorite(result.route)"
+                                    class="p-1 hover:bg-slate-600/50 rounded transition-colors">
+                                <i class="fas fa-star text-xs"
+                                   :class="isFavorite(result.route) ? 'text-yellow-400' : 'text-slate-500'"></i>
+                            </button>
                         </button>
                     </template>
                 </div>
@@ -376,7 +420,7 @@
                 <!-- No Results -->
                 <div x-show="isSearching && searchQuery.length > 0 && searchResults.length === 0"
                      class="mt-2 p-3 bg-slate-800/50 border border-slate-700/50 rounded-lg text-center">
-                    <p class="text-slate-500 text-xs">لا توجد نتائج لـ "<span x-text="searchQuery" class="text-slate-400"></span>"</p>
+                    <p class="text-slate-500 text-xs">{{ __('navigation.no_search_results') }} "<span x-text="searchQuery" class="text-slate-400"></span>"</p>
                 </div>
             </div>
 
@@ -390,18 +434,46 @@
 
                 <!-- Dashboard -->
                 <a href="{{ route('orgs.dashboard.index', ['org' => $currentOrg]) }}"
-                   class="group flex items-center gap-3 px-3 py-2.5 rounded-xl mb-1 transition-all duration-200
-                          {{ request()->routeIs('orgs.dashboard.*') ? 'bg-gradient-to-l from-blue-600/20 to-purple-600/20 text-white border-r-2 border-blue-500' : 'text-slate-400 hover:text-white hover:bg-slate-700/30' }}">
+                   :title="compactMode ? '{{ __('navigation.dashboard') }}' : ''"
+                   class="group flex items-center gap-3 px-3 py-2.5 rounded-xl mb-1 transition-all duration-200 {{ request()->routeIs('orgs.dashboard.*') ? 'bg-gradient-to-l from-blue-600/20 to-purple-600/20 text-white border-r-2 border-blue-500' : 'text-slate-400 hover:text-white hover:bg-slate-700/30' }}"
+                   :class="compactMode ? 'justify-center' : ''">
                     <div class="w-9 h-9 rounded-lg flex items-center justify-center transition-all
                                 {{ request()->routeIs('orgs.dashboard.*') ? 'bg-gradient-to-br from-blue-500 to-purple-600 text-white shadow-lg shadow-blue-500/25' : 'bg-slate-800 text-slate-400 group-hover:bg-slate-700 group-hover:text-white' }}">
                         <i class="fas fa-home text-sm"></i>
                     </div>
-                    <span class="font-medium text-sm">الرئيسية</span>
+                    <span class="font-medium text-sm" x-show="!compactMode">{{ __('navigation.dashboard') }}</span>
                 </a>
 
+                <!-- Favorites Section -->
+                <template x-if="!compactMode && favorites.length > 0">
+                    <div class="mt-3 mb-2">
+                        <div class="flex items-center justify-between px-3">
+                            <p class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">{{ __('navigation.favorites') }}</p>
+                            <i class="fas fa-star text-yellow-400 text-xs"></i>
+                        </div>
+                        <div class="mt-2 space-y-1">
+                            <template x-for="favRoute in favorites" :key="favRoute">
+                                <template x-if="menuItems.find(m => m.route === favRoute)">
+                                    <a :href="`/orgs/{{ $currentOrg }}/${favRoute}`"
+                                       class="group flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 text-slate-400 hover:text-white hover:bg-slate-700/30">
+                                        <div class="w-9 h-9 rounded-lg flex items-center justify-center transition-all bg-slate-800 text-slate-400 group-hover:bg-slate-700 group-hover:text-white">
+                                            <i class="fas text-sm" :class="menuItems.find(m => m.route === favRoute)?.icon"></i>
+                                        </div>
+                                        <span class="font-medium text-sm flex-1" x-text="menuItems.find(m => m.route === favRoute)?.name"></span>
+                                        <button @click.prevent="toggleFavorite(favRoute)"
+                                                class="opacity-0 group-hover:opacity-100 p-1 hover:bg-slate-600/50 rounded transition-all">
+                                            <i class="fas fa-star text-yellow-400 text-xs"></i>
+                                        </button>
+                                    </a>
+                                </template>
+                            </template>
+                        </div>
+                    </div>
+                </template>
+
                 <!-- Marketing Section -->
-                <div class="mt-4 mb-2">
-                    <p class="px-3 text-[10px] font-semibold text-slate-500 uppercase tracking-wider">التسويق</p>
+                <div class="mt-4 mb-2" x-show="!compactMode">
+                    <p class="px-3 text-[10px] font-semibold text-slate-500 uppercase tracking-wider">{{ __('navigation.marketing_section') }}</p>
                 </div>
 
                 <!-- Campaigns with submenu -->
@@ -414,7 +486,7 @@
                                         {{ request()->routeIs('orgs.campaigns.*') ? 'bg-gradient-to-br from-orange-500 to-pink-600 text-white shadow-lg shadow-orange-500/25' : 'bg-slate-800 text-slate-400 group-hover:bg-slate-700 group-hover:text-white' }}">
                                 <i class="fas fa-bullhorn text-sm"></i>
                             </div>
-                            <span class="font-medium text-sm">الحملات</span>
+                            <span class="font-medium text-sm">{{ __('navigation.campaigns') }}</span>
                         </div>
                         <i class="fas fa-chevron-down text-xs transition-transform duration-200" :class="{ 'rotate-180': open }"></i>
                     </button>
@@ -423,12 +495,12 @@
                            class="flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition-all
                                   {{ request()->routeIs('orgs.campaigns.index') ? 'text-blue-400 bg-slate-800/50' : 'text-slate-400 hover:text-white hover:bg-slate-800/30' }}">
                             <i class="fas fa-list text-xs w-4"></i>
-                            <span>جميع الحملات</span>
+                            <span>{{ __('navigation.all_campaigns') }}</span>
                         </a>
                         <a href="{{ route('orgs.campaigns.create', ['org' => $currentOrg]) }}"
                            class="flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition-all text-slate-400 hover:text-white hover:bg-slate-800/30">
                             <i class="fas fa-plus text-xs w-4"></i>
-                            <span>حملة جديدة</span>
+                            <span>{{ __('navigation.new_campaign') }}</span>
                         </a>
                     </div>
                 </div>
@@ -441,7 +513,7 @@
                                 {{ request()->routeIs('orgs.analytics.*') ? 'bg-gradient-to-br from-green-500 to-emerald-600 text-white shadow-lg shadow-green-500/25' : 'bg-slate-800 text-slate-400 group-hover:bg-slate-700 group-hover:text-white' }}">
                         <i class="fas fa-chart-line text-sm"></i>
                     </div>
-                    <span class="font-medium text-sm">التحليلات</span>
+                    <span class="font-medium text-sm">{{ __('navigation.analytics') }}</span>
                     <span class="mr-auto px-2 py-0.5 text-[10px] font-bold bg-green-500/20 text-green-400 rounded-full">Live</span>
                 </a>
 
@@ -453,7 +525,7 @@
                                 {{ request()->routeIs('orgs.influencer.*') ? 'bg-gradient-to-br from-purple-500 to-pink-600 text-white shadow-lg shadow-purple-500/25' : 'bg-slate-800 text-slate-400 group-hover:bg-slate-700 group-hover:text-white' }}">
                         <i class="fas fa-user-tie text-sm"></i>
                     </div>
-                    <span class="font-medium text-sm">المؤثرين</span>
+                    <span class="font-medium text-sm">{{ __('navigation.influencer_marketing') }}</span>
                     <span class="mr-auto px-2 py-0.5 text-[10px] font-bold bg-pink-500/20 text-pink-400 rounded-full">60%</span>
                 </a>
 
@@ -465,7 +537,7 @@
                                 {{ request()->routeIs('orgs.orchestration.*') ? 'bg-gradient-to-br from-cyan-500 to-blue-600 text-white shadow-lg shadow-cyan-500/25' : 'bg-slate-800 text-slate-400 group-hover:bg-slate-700 group-hover:text-white' }}">
                         <i class="fas fa-sitemap text-sm"></i>
                     </div>
-                    <span class="font-medium text-sm">تنسيق الحملات</span>
+                    <span class="font-medium text-sm">{{ __('navigation.campaign_orchestration') }}</span>
                     <span class="mr-auto px-2 py-0.5 text-[10px] font-bold bg-orange-500/20 text-orange-400 rounded-full">40%</span>
                 </a>
 
@@ -477,13 +549,13 @@
                                 {{ request()->routeIs('orgs.listening.*') ? 'bg-gradient-to-br from-teal-500 to-green-600 text-white shadow-lg shadow-teal-500/25' : 'bg-slate-800 text-slate-400 group-hover:bg-slate-700 group-hover:text-white' }}">
                         <i class="fas fa-ear-listen text-sm"></i>
                     </div>
-                    <span class="font-medium text-sm">الاستماع الاجتماعي</span>
+                    <span class="font-medium text-sm">{{ __('navigation.social_listening') }}</span>
                     <span class="mr-auto px-2 py-0.5 text-[10px] font-bold bg-orange-500/20 text-orange-400 rounded-full">35%</span>
                 </a>
 
                 <!-- Content Section -->
-                <div class="mt-4 mb-2">
-                    <p class="px-3 text-[10px] font-semibold text-slate-500 uppercase tracking-wider">المحتوى</p>
+                <div class="mt-4 mb-2" x-show="!compactMode">
+                    <p class="px-3 text-[10px] font-semibold text-slate-500 uppercase tracking-wider">{{ __('navigation.content_section') }}</p>
                 </div>
 
                 <!-- Creative with submenu -->
@@ -496,7 +568,7 @@
                                         {{ request()->routeIs('orgs.creative.*') ? 'bg-gradient-to-br from-pink-500 to-rose-600 text-white shadow-lg shadow-pink-500/25' : 'bg-slate-800 text-slate-400 group-hover:bg-slate-700 group-hover:text-white' }}">
                                 <i class="fas fa-palette text-sm"></i>
                             </div>
-                            <span class="font-medium text-sm">المحتوى الإبداعي</span>
+                            <span class="font-medium text-sm">{{ __('navigation.creative_content') }}</span>
                         </div>
                         <i class="fas fa-chevron-down text-xs transition-transform duration-200" :class="{ 'rotate-180': open }"></i>
                     </button>
@@ -505,13 +577,13 @@
                            class="flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition-all
                                   {{ request()->routeIs('orgs.creative.assets.*') ? 'text-blue-400 bg-slate-800/50' : 'text-slate-400 hover:text-white hover:bg-slate-800/30' }}">
                             <i class="fas fa-images text-xs w-4"></i>
-                            <span>الأصول الإبداعية</span>
+                            <span>{{ __('navigation.creative_assets_menu') }}</span>
                         </a>
                         <a href="{{ route('orgs.creative.briefs.index', ['org' => $currentOrg]) }}"
                            class="flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition-all
                                   {{ request()->routeIs('orgs.creative.briefs.*') ? 'text-blue-400 bg-slate-800/50' : 'text-slate-400 hover:text-white hover:bg-slate-800/30' }}">
                             <i class="fas fa-file-alt text-xs w-4"></i>
-                            <span>الموجزات الإبداعية</span>
+                            <span>{{ __('navigation.creative_briefs') }}</span>
                         </a>
                     </div>
                 </div>
@@ -524,7 +596,7 @@
                                 {{ request()->routeIs('orgs.social.history.*') ? 'bg-gradient-to-br from-indigo-500 to-blue-600 text-white shadow-lg shadow-indigo-500/25' : 'bg-slate-800 text-slate-400 group-hover:bg-slate-700 group-hover:text-white' }}">
                         <i class="fas fa-clock-rotate-left text-sm"></i>
                     </div>
-                    <span class="font-medium text-sm">المحتوى التاريخي</span>
+                    <span class="font-medium text-sm">{{ __('navigation.historical_content') }}</span>
                 </a>
 
                 <!-- Social Media -->
@@ -535,7 +607,7 @@
                                 {{ request()->routeIs('orgs.social.*') ? 'bg-gradient-to-br from-blue-500 to-cyan-600 text-white shadow-lg shadow-blue-500/25' : 'bg-slate-800 text-slate-400 group-hover:bg-slate-700 group-hover:text-white' }}">
                         <i class="fas fa-share-nodes text-sm"></i>
                     </div>
-                    <span class="font-medium text-sm">التواصل الاجتماعي</span>
+                    <span class="font-medium text-sm">{{ __('navigation.social_media') }}</span>
                 </a>
 
                 <!-- Profile Groups -->
@@ -546,7 +618,7 @@
                                 {{ request()->routeIs('orgs.settings.profile-groups.*') ? 'bg-gradient-to-br from-purple-500 to-indigo-600 text-white shadow-lg shadow-purple-500/25' : 'bg-slate-800 text-slate-400 group-hover:bg-slate-700 group-hover:text-white' }}">
                         <i class="fas fa-layer-group text-sm"></i>
                     </div>
-                    <span class="font-medium text-sm">مجموعات الحسابات</span>
+                    <span class="font-medium text-sm">{{ __('navigation.profile_groups') }}</span>
                 </a>
 
                 <!-- Products -->
@@ -557,7 +629,7 @@
                                 {{ request()->routeIs('orgs.products*') ? 'bg-gradient-to-br from-amber-500 to-orange-600 text-white shadow-lg shadow-amber-500/25' : 'bg-slate-800 text-slate-400 group-hover:bg-slate-700 group-hover:text-white' }}">
                         <i class="fas fa-box text-sm"></i>
                     </div>
-                    <span class="font-medium text-sm">المنتجات</span>
+                    <span class="font-medium text-sm">{{ __('navigation.products') }}</span>
                 </a>
 
                 <!-- Workflows -->
@@ -568,12 +640,12 @@
                                 {{ request()->routeIs('orgs.workflows.*') ? 'bg-gradient-to-br from-red-500 to-pink-600 text-white shadow-lg shadow-red-500/25' : 'bg-slate-800 text-slate-400 group-hover:bg-slate-700 group-hover:text-white' }}">
                         <i class="fas fa-project-diagram text-sm"></i>
                     </div>
-                    <span class="font-medium text-sm">سير العمل</span>
+                    <span class="font-medium text-sm">{{ __('navigation.workflows') }}</span>
                 </a>
 
                 <!-- AI Section -->
-                <div class="mt-4 mb-2">
-                    <p class="px-3 text-[10px] font-semibold text-slate-500 uppercase tracking-wider">الذكاء الاصطناعي</p>
+                <div class="mt-4 mb-2" x-show="!compactMode">
+                    <p class="px-3 text-[10px] font-semibold text-slate-500 uppercase tracking-wider">{{ __('navigation.ai_section') }}</p>
                 </div>
 
                 <a href="{{ route('orgs.ai.index', ['org' => $currentOrg]) }}"
@@ -583,7 +655,7 @@
                                 {{ request()->routeIs('orgs.ai.*') ? 'bg-gradient-to-br from-violet-500 to-purple-600 text-white shadow-lg shadow-violet-500/25' : 'bg-slate-800 text-slate-400 group-hover:bg-slate-700 group-hover:text-white' }}">
                         <i class="fas fa-robot text-sm"></i>
                     </div>
-                    <span class="font-medium text-sm">مساعد الذكاء</span>
+                    <span class="font-medium text-sm">{{ __('navigation.ai_assistant') }}</span>
                     <span class="mr-auto px-2 py-0.5 text-[10px] font-bold bg-purple-500/20 text-purple-400 rounded-full">AI</span>
                 </a>
 
@@ -594,12 +666,12 @@
                                 {{ request()->routeIs('orgs.knowledge.*') ? 'bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-lg shadow-indigo-500/25' : 'bg-slate-800 text-slate-400 group-hover:bg-slate-700 group-hover:text-white' }}">
                         <i class="fas fa-book text-sm"></i>
                     </div>
-                    <span class="font-medium text-sm">قاعدة المعرفة</span>
+                    <span class="font-medium text-sm">{{ __('navigation.knowledge_base') }}</span>
                 </a>
 
                 <!-- Intelligence Section -->
-                <div class="mt-4 mb-2">
-                    <p class="px-3 text-[10px] font-semibold text-slate-500 uppercase tracking-wider">الذكاء التحليلي</p>
+                <div class="mt-4 mb-2" x-show="!compactMode">
+                    <p class="px-3 text-[10px] font-semibold text-slate-500 uppercase tracking-wider">{{ __('navigation.intelligence_section') }}</p>
                 </div>
 
                 <!-- Predictive Analytics -->
@@ -610,7 +682,7 @@
                                 {{ request()->routeIs('orgs.predictive.*') ? 'bg-gradient-to-br from-fuchsia-500 to-pink-600 text-white shadow-lg shadow-fuchsia-500/25' : 'bg-slate-800 text-slate-400 group-hover:bg-slate-700 group-hover:text-white' }}">
                         <i class="fas fa-crystal-ball text-sm"></i>
                     </div>
-                    <span class="font-medium text-sm">التحليلات التنبؤية</span>
+                    <span class="font-medium text-sm">{{ __('navigation.predictive_analytics') }}</span>
                     <span class="mr-auto px-2 py-0.5 text-[10px] font-bold bg-red-500/20 text-red-400 rounded-full">15%</span>
                 </a>
 
@@ -622,7 +694,7 @@
                                 {{ request()->routeIs('orgs.experiments.*') ? 'bg-gradient-to-br from-lime-500 to-green-600 text-white shadow-lg shadow-lime-500/25' : 'bg-slate-800 text-slate-400 group-hover:bg-slate-700 group-hover:text-white' }}">
                         <i class="fas fa-flask text-sm"></i>
                     </div>
-                    <span class="font-medium text-sm">اختبار A/B</span>
+                    <span class="font-medium text-sm">{{ __('navigation.ab_testing') }}</span>
                     <span class="mr-auto px-2 py-0.5 text-[10px] font-bold bg-orange-500/20 text-orange-400 rounded-full">40%</span>
                 </a>
 
@@ -634,13 +706,13 @@
                                 {{ request()->routeIs('orgs.optimization.*') ? 'bg-gradient-to-br from-yellow-500 to-orange-600 text-white shadow-lg shadow-yellow-500/25' : 'bg-slate-800 text-slate-400 group-hover:bg-slate-700 group-hover:text-white' }}">
                         <i class="fas fa-gauge-high text-sm"></i>
                     </div>
-                    <span class="font-medium text-sm">محرك التحسين</span>
+                    <span class="font-medium text-sm">{{ __('navigation.optimization_engine') }}</span>
                     <span class="mr-auto px-2 py-0.5 text-[10px] font-bold bg-yellow-500/20 text-yellow-400 rounded-full">50%</span>
                 </a>
 
                 <!-- Automation Section -->
-                <div class="mt-4 mb-2">
-                    <p class="px-3 text-[10px] font-semibold text-slate-500 uppercase tracking-wider">الأتمتة</p>
+                <div class="mt-4 mb-2" x-show="!compactMode">
+                    <p class="px-3 text-[10px] font-semibold text-slate-500 uppercase tracking-wider">{{ __('navigation.automation_section') }}</p>
                 </div>
 
                 <!-- Automation Dashboard -->
@@ -651,13 +723,13 @@
                                 {{ request()->routeIs('orgs.automation.*') ? 'bg-gradient-to-br from-indigo-500 to-violet-600 text-white shadow-lg shadow-indigo-500/25' : 'bg-slate-800 text-slate-400 group-hover:bg-slate-700 group-hover:text-white' }}">
                         <i class="fas fa-gears text-sm"></i>
                     </div>
-                    <span class="font-medium text-sm">لوحة الأتمتة</span>
+                    <span class="font-medium text-sm">{{ __('navigation.automation_dashboard') }}</span>
                     <span class="mr-auto px-2 py-0.5 text-[10px] font-bold bg-green-500/20 text-green-400 rounded-full">55%</span>
                 </a>
 
                 <!-- System Section -->
-                <div class="mt-4 mb-2">
-                    <p class="px-3 text-[10px] font-semibold text-slate-500 uppercase tracking-wider">النظام</p>
+                <div class="mt-4 mb-2" x-show="!compactMode">
+                    <p class="px-3 text-[10px] font-semibold text-slate-500 uppercase tracking-wider">{{ __('navigation.system_section') }}</p>
                 </div>
 
                 <!-- Alerts -->
@@ -668,7 +740,7 @@
                                 {{ request()->routeIs('orgs.alerts.*') ? 'bg-gradient-to-br from-red-500 to-rose-600 text-white shadow-lg shadow-red-500/25' : 'bg-slate-800 text-slate-400 group-hover:bg-slate-700 group-hover:text-white' }}">
                         <i class="fas fa-bell text-sm"></i>
                     </div>
-                    <span class="font-medium text-sm">التنبيهات</span>
+                    <span class="font-medium text-sm">{{ __('navigation.alerts') }}</span>
                     <span class="mr-auto px-2 py-0.5 text-[10px] font-bold bg-orange-500/20 text-orange-400 rounded-full">45%</span>
                 </a>
 
@@ -680,7 +752,7 @@
                                 {{ request()->routeIs('orgs.exports.*') ? 'bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-lg shadow-emerald-500/25' : 'bg-slate-800 text-slate-400 group-hover:bg-slate-700 group-hover:text-white' }}">
                         <i class="fas fa-download text-sm"></i>
                     </div>
-                    <span class="font-medium text-sm">تصدير البيانات</span>
+                    <span class="font-medium text-sm">{{ __('navigation.data_exports') }}</span>
                     <span class="mr-auto px-2 py-0.5 text-[10px] font-bold bg-yellow-500/20 text-yellow-400 rounded-full">50%</span>
                 </a>
 
@@ -692,7 +764,7 @@
                                 {{ request()->routeIs('orgs.dashboard-builder.*') ? 'bg-gradient-to-br from-sky-500 to-blue-600 text-white shadow-lg shadow-sky-500/25' : 'bg-slate-800 text-slate-400 group-hover:bg-slate-700 group-hover:text-white' }}">
                         <i class="fas fa-dashboard text-sm"></i>
                     </div>
-                    <span class="font-medium text-sm">منشئ اللوحات</span>
+                    <span class="font-medium text-sm">{{ __('navigation.dashboard_builder') }}</span>
                     <span class="mr-auto px-2 py-0.5 text-[10px] font-bold bg-red-500/20 text-red-400 rounded-full">30%</span>
                 </a>
 
@@ -704,13 +776,13 @@
                                 {{ request()->routeIs('orgs.feature-flags.*') ? 'bg-gradient-to-br from-violet-500 to-purple-600 text-white shadow-lg shadow-violet-500/25' : 'bg-slate-800 text-slate-400 group-hover:bg-slate-700 group-hover:text-white' }}">
                         <i class="fas fa-flag text-sm"></i>
                     </div>
-                    <span class="font-medium text-sm">علامات الميزات</span>
+                    <span class="font-medium text-sm">{{ __('navigation.feature_flags') }}</span>
                     <span class="mr-auto px-2 py-0.5 text-[10px] font-bold bg-red-500/20 text-red-400 rounded-full">20%</span>
                 </a>
 
                 <!-- Communication Section -->
-                <div class="mt-4 mb-2">
-                    <p class="px-3 text-[10px] font-semibold text-slate-500 uppercase tracking-wider">التواصل</p>
+                <div class="mt-4 mb-2" x-show="!compactMode">
+                    <p class="px-3 text-[10px] font-semibold text-slate-500 uppercase tracking-wider">{{ __('navigation.communication_section') }}</p>
                 </div>
 
                 <a href="{{ route('orgs.inbox.index', ['org' => $currentOrg]) }}"
@@ -720,13 +792,13 @@
                                 {{ request()->routeIs('orgs.inbox.*') ? 'bg-gradient-to-br from-indigo-500 to-blue-600 text-white shadow-lg shadow-indigo-500/25' : 'bg-slate-800 text-slate-400 group-hover:bg-slate-700 group-hover:text-white' }}">
                         <i class="fas fa-inbox text-sm"></i>
                     </div>
-                    <span class="font-medium text-sm">صندوق الوارد</span>
+                    <span class="font-medium text-sm">{{ __('navigation.inbox') }}</span>
                     <span class="mr-auto w-5 h-5 flex items-center justify-center text-[10px] font-bold bg-red-500 text-white rounded-full">3</span>
                 </a>
 
                 <!-- Settings Section -->
-                <div class="mt-4 mb-2">
-                    <p class="px-3 text-[10px] font-semibold text-slate-500 uppercase tracking-wider">الإعدادات</p>
+                <div class="mt-4 mb-2" x-show="!compactMode">
+                    <p class="px-3 text-[10px] font-semibold text-slate-500 uppercase tracking-wider">{{ __('navigation.settings_section') }}</p>
                 </div>
 
                 <!-- Settings with submenu -->
@@ -739,7 +811,7 @@
                                         {{ request()->routeIs('orgs.settings.*') ? 'bg-gradient-to-br from-slate-500 to-slate-600 text-white shadow-lg shadow-slate-500/25' : 'bg-slate-800 text-slate-400 group-hover:bg-slate-700 group-hover:text-white' }}">
                                 <i class="fas fa-cog text-sm"></i>
                             </div>
-                            <span class="font-medium text-sm">الإعدادات</span>
+                            <span class="font-medium text-sm">{{ __('navigation.settings') }}</span>
                         </div>
                         <i class="fas fa-chevron-down text-xs transition-transform duration-200" :class="{ 'rotate-180': open }"></i>
                     </button>
@@ -748,49 +820,49 @@
                            class="flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition-all
                                   {{ request()->routeIs('orgs.settings.user') ? 'text-blue-400 bg-slate-800/50' : 'text-slate-400 hover:text-white hover:bg-slate-800/30' }}">
                             <i class="fas fa-user-cog text-xs w-4"></i>
-                            <span>إعدادات المستخدم</span>
+                            <span>{{ __('navigation.user_settings') }}</span>
                         </a>
                         <a href="{{ route('orgs.settings.organization', ['org' => $currentOrg]) }}"
                            class="flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition-all
                                   {{ request()->routeIs('orgs.settings.organization') ? 'text-blue-400 bg-slate-800/50' : 'text-slate-400 hover:text-white hover:bg-slate-800/30' }}">
                             <i class="fas fa-building text-xs w-4"></i>
-                            <span>إعدادات المؤسسة</span>
+                            <span>{{ __('navigation.organization_settings') }}</span>
                         </a>
                         <a href="{{ route('orgs.settings.platform-connections.index', ['org' => $currentOrg]) }}"
                            class="flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition-all
                                   {{ request()->routeIs('orgs.settings.platform-connections.*') ? 'text-blue-400 bg-slate-800/50' : 'text-slate-400 hover:text-white hover:bg-slate-800/30' }}">
                             <i class="fas fa-plug text-xs w-4"></i>
-                            <span>ربط المنصات</span>
+                            <span>{{ __('navigation.platform_connections') }}</span>
                         </a>
                         <a href="{{ route('orgs.settings.ad-accounts.index', ['org' => $currentOrg]) }}"
                            class="flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition-all
                                   {{ request()->routeIs('orgs.settings.ad-accounts.*') ? 'text-blue-400 bg-slate-800/50' : 'text-slate-400 hover:text-white hover:bg-slate-800/30' }}">
                             <i class="fas fa-ad text-xs w-4"></i>
-                            <span>حسابات الإعلانات</span>
+                            <span>{{ __('navigation.ad_accounts') }}</span>
                         </a>
                         <a href="{{ route('orgs.settings.brand-voices.index', ['org' => $currentOrg]) }}"
                            class="flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition-all
                                   {{ request()->routeIs('orgs.settings.brand-voices.*') ? 'text-blue-400 bg-slate-800/50' : 'text-slate-400 hover:text-white hover:bg-slate-800/30' }}">
                             <i class="fas fa-microphone text-xs w-4"></i>
-                            <span>صوت العلامة التجارية</span>
+                            <span>{{ __('navigation.brand_voices') }}</span>
                         </a>
                         <a href="{{ route('orgs.settings.brand-safety.index', ['org' => $currentOrg]) }}"
                            class="flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition-all
                                   {{ request()->routeIs('orgs.settings.brand-safety.*') ? 'text-blue-400 bg-slate-800/50' : 'text-slate-400 hover:text-white hover:bg-slate-800/30' }}">
                             <i class="fas fa-shield-alt text-xs w-4"></i>
-                            <span>أمان العلامة التجارية</span>
+                            <span>{{ __('navigation.brand_safety') }}</span>
                         </a>
                         <a href="{{ route('orgs.settings.approval-workflows.index', ['org' => $currentOrg]) }}"
                            class="flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition-all
                                   {{ request()->routeIs('orgs.settings.approval-workflows.*') ? 'text-blue-400 bg-slate-800/50' : 'text-slate-400 hover:text-white hover:bg-slate-800/30' }}">
                             <i class="fas fa-tasks text-xs w-4"></i>
-                            <span>سير عمل الموافقات</span>
+                            <span>{{ __('navigation.approval_workflows') }}</span>
                         </a>
                         <a href="{{ route('orgs.settings.boost-rules.index', ['org' => $currentOrg]) }}"
                            class="flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition-all
                                   {{ request()->routeIs('orgs.settings.boost-rules.*') ? 'text-blue-400 bg-slate-800/50' : 'text-slate-400 hover:text-white hover:bg-slate-800/30' }}">
                             <i class="fas fa-rocket text-xs w-4"></i>
-                            <span>قواعد التعزيز</span>
+                            <span>{{ __('navigation.boost_rules') }}</span>
                         </a>
                     </div>
                 </div>
@@ -802,7 +874,7 @@
                                 {{ request()->routeIs('orgs.team.*') ? 'bg-gradient-to-br from-teal-500 to-cyan-600 text-white shadow-lg shadow-teal-500/25' : 'bg-slate-800 text-slate-400 group-hover:bg-slate-700 group-hover:text-white' }}">
                         <i class="fas fa-users text-sm"></i>
                     </div>
-                    <span class="font-medium text-sm">الفريق</span>
+                    <span class="font-medium text-sm">{{ __('navigation.team') }}</span>
                 </a>
 
                 <a href="{{ route('orgs.index') }}"
@@ -810,7 +882,7 @@
                     <div class="w-9 h-9 rounded-lg flex items-center justify-center transition-all bg-slate-800 text-slate-400 group-hover:bg-slate-700 group-hover:text-white">
                         <i class="fas fa-building text-sm"></i>
                     </div>
-                    <span class="font-medium text-sm">كل المؤسسات</span>
+                    <span class="font-medium text-sm">{{ __('navigation.organizations') }}</span>
                 </a>
 
                 @else
@@ -818,7 +890,7 @@
                     <div class="w-16 h-16 bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-3">
                         <i class="fas fa-building text-2xl text-slate-500"></i>
                     </div>
-                    <p class="text-slate-400 text-sm">الرجاء اختيار مؤسسة للمتابعة</p>
+                    <p class="text-slate-400 text-sm">{{ __('navigation.no_organization_selected') }}</p>
                 </div>
                 @endif
 
@@ -829,14 +901,14 @@
                 <div class="flex items-center gap-3 p-2 rounded-xl hover:bg-slate-800/50 transition-all cursor-pointer">
                     <img src="https://ui-avatars.com/api/?name={{ urlencode(auth()->user()->name ?? 'User') }}&background=6366f1&color=fff&size=40"
                          class="w-10 h-10 rounded-xl ring-2 ring-slate-700"
-                         alt="صورة المستخدم">
+                         alt="{{ __('navigation.user_image') }}">
                     <div class="flex-1 min-w-0">
-                        <p class="text-sm font-medium text-white truncate">{{ auth()->user()->name ?? 'المستخدم' }}</p>
+                        <p class="text-sm font-medium text-white truncate">{{ auth()->user()->name ?? __('messages.not_specified') }}</p>
                         <p class="text-xs text-slate-400 truncate">{{ auth()->user()->email ?? '' }}</p>
                     </div>
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
-                        <button type="submit" class="p-2 text-slate-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all" title="تسجيل الخروج">
+                        <button type="submit" class="p-2 text-slate-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all" title="{{ __('common.logout') }}">
                             <i class="fas fa-sign-out-alt"></i>
                         </button>
                     </form>
@@ -860,18 +932,18 @@
                         <!-- Desktop & Tablet: Dropdown Button -->
                         <button @click.stop="toggleOrgMenu()"
                                 :aria-expanded="orgMenuOpen"
-                                aria-label="تبديل المؤسسة"
+                                aria-label="{{ __('common.switch_organization') }}"
                                 class="hidden sm:flex items-center gap-2 px-3 py-2 text-sm bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 border border-blue-200 dark:border-blue-800 text-gray-700 dark:text-gray-300 rounded-lg hover:shadow-md transition-all">
                             <div class="w-7 h-7 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center text-white font-bold text-xs"
                                  x-text="currentOrg ? currentOrg.name.substring(0, 2).toUpperCase() : 'XX'"></div>
-                            <span class="font-medium max-w-[150px] truncate" x-text="currentOrg ? currentOrg.name : 'تحميل...'"></span>
+                            <span class="font-medium max-w-[150px] truncate" x-text="currentOrg ? currentOrg.name : '{{ __('common.loading') }}'"></span>
                             <i class="fas fa-chevron-down text-xs transition-transform" :class="{ 'rotate-180': orgMenuOpen }"></i>
                         </button>
 
                         <!-- Mobile: Compact Button -->
                         <button @click.stop="toggleOrgMenu()"
                                 :aria-expanded="orgMenuOpen"
-                                aria-label="تبديل المؤسسة"
+                                aria-label="{{ __('common.switch_organization') }}"
                                 class="sm:hidden flex items-center justify-center w-10 h-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg text-white font-bold text-sm shadow-md">
                             <span x-text="currentOrg ? currentOrg.name.substring(0, 2).toUpperCase() : 'XX'"></span>
                         </button>
@@ -911,14 +983,14 @@
 
                             <!-- Header -->
                             <div class="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
-                                <h3 class="font-semibold text-gray-900 dark:text-white text-sm sm:text-base">المؤسسات المتاحة</h3>
+                                <h3 class="font-semibold text-gray-900 dark:text-white text-sm sm:text-base">{{ __('organizations.available_organizations') }}</h3>
 
                                 <!-- Search Bar -->
                                 <div class="mt-3 relative">
                                     <input type="text"
                                            x-model="searchQuery"
                                            @input="filterOrgs()"
-                                           placeholder="البحث عن مؤسسة..."
+                                           placeholder="{{ __('organizations.search_organization') }}"
                                            class="w-full pr-10 pl-3 py-2 text-sm bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                                     <!-- Search icon on right (natural position for RTL Arabic UI) -->
                                     <i class="fas fa-search absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm pointer-events-none"></i>
@@ -930,14 +1002,14 @@
                                 <!-- Loading State -->
                                 <div x-show="loading" class="p-8 text-center">
                                     <i class="fas fa-spinner fa-spin text-2xl text-gray-400"></i>
-                                    <p class="text-sm text-gray-500 mt-2">جارٍ التحميل...</p>
+                                    <p class="text-sm text-gray-500 mt-2">{{ __('common.loading') }}</p>
                                 </div>
 
                                 <!-- Empty State -->
                                 <template x-if="!loading && filteredOrgs.length === 0">
                                     <div class="p-8 text-center text-gray-500">
                                         <i class="fas fa-building text-3xl mb-2"></i>
-                                        <p class="text-sm">لا توجد مؤسسات</p>
+                                        <p class="text-sm">{{ __('organizations.no_organizations') }}</p>
                                     </div>
                                 </template>
 
@@ -976,7 +1048,7 @@
                                 <a href="{{ route('orgs.create') }}"
                                    class="flex items-center justify-center gap-2 w-full px-4 py-2 text-sm text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors">
                                     <i class="fas fa-plus-circle"></i>
-                                    <span>إنشاء مؤسسة جديدة</span>
+                                    <span>{{ __('organizations.create_new_organization') }}</span>
                                 </a>
                             </div>
                         </div>
@@ -985,7 +1057,7 @@
                     <div class="relative hidden sm:block" x-data="{ searchOpen: false }">
                         <button @click="searchOpen = !searchOpen" class="flex items-center px-3 sm:px-4 py-1.5 sm:py-2 text-sm sm:text-base text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition">
                             <i class="fas fa-search ml-2 text-sm"></i>
-                            <span class="hidden md:inline">بحث...</span>
+                            <span class="hidden md:inline">{{ __('common.search_placeholder') }}</span>
                         </button>
                     </div>
                 </div>
@@ -1013,8 +1085,8 @@
                              class="absolute left-0 mt-2 w-[calc(100vw-2rem)] sm:w-80 max-w-sm bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 z-50"
                              x-cloak>
                             <div class="p-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
-                                <h3 class="font-semibold text-gray-900 dark:text-white">الإشعارات</h3>
-                                <span x-show="unreadCount > 0" class="text-xs text-gray-500" x-text="`${unreadCount} غير مقروء`"></span>
+                                <h3 class="font-semibold text-gray-900 dark:text-white">{{ __('navigation.notifications') }}</h3>
+                                <span x-show="unreadCount > 0" class="text-xs text-gray-500" x-text="`${unreadCount} {{ __('notifications.unread') }}`"></span>
                             </div>
 
                             <!-- Loading State -->
@@ -1027,7 +1099,7 @@
                                 <template x-if="notifications.length === 0">
                                     <div class="p-8 text-center text-gray-500">
                                         <i class="fas fa-bell-slash text-3xl mb-2"></i>
-                                        <p class="text-sm">لا توجد إشعارات</p>
+                                        <p class="text-sm">{{ __('notifications.no_notifications') }}</p>
                                     </div>
                                 </template>
 
@@ -1059,7 +1131,7 @@
                                     $currentOrg = request()->route('org') ?? auth()->user()->current_org_id ?? auth()->user()->org_id;
                                 @endphp
                                 @if($currentOrg)
-                                <a href="{{ route('orgs.settings.index', ['org' => $currentOrg]) }}" class="text-sm text-blue-600 hover:text-blue-700">عرض جميع الإشعارات</a>
+                                <a href="{{ route('orgs.settings.index', ['org' => $currentOrg]) }}" class="text-sm text-blue-600 hover:text-blue-700">{{ __('navigation.view_all_notifications') }}</a>
                                 @endif
                             </div>
                         </div>
@@ -1073,10 +1145,10 @@
                                 aria-label="{{ __('sidebar.user_menu') }}">
                             <img src="https://ui-avatars.com/api/?name=Admin&background=667eea&color=fff"
                                  class="w-7 h-7 sm:w-8 sm:h-8 rounded-full"
-                                 alt="صورة المستخدم">
+                                 alt="{{ __('navigation.user_image') }}">
                             <div class="text-right hidden lg:block">
-                                <p class="text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300">{{ auth()->user()->name ?? 'المستخدم' }}</p>
-                                <p class="text-[10px] sm:text-xs text-gray-500">مدير النظام</p>
+                                <p class="text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300">{{ auth()->user()->name ?? __('messages.not_specified') }}</p>
+                                <p class="text-[10px] sm:text-xs text-gray-500">{{ __('common.system_admin') }}</p>
                             </div>
                             <i class="fas fa-chevron-down text-[10px] sm:text-xs text-gray-600 dark:text-gray-300 hidden sm:inline"></i>
                         </button>
@@ -1123,10 +1195,10 @@
                                 <div class="flex items-center gap-3">
                                     <img src="https://ui-avatars.com/api/?name=Admin&background=667eea&color=fff"
                                          class="w-12 h-12 rounded-full ring-2 ring-white dark:ring-gray-600"
-                                         alt="صورة المستخدم">
+                                         alt="{{ __('navigation.user_image') }}">
                                     <div class="text-right">
-                                        <p class="text-sm font-bold text-gray-900 dark:text-white">{{ auth()->user()->name ?? 'المستخدم' }}</p>
-                                        <p class="text-xs text-gray-600 dark:text-gray-400">مدير النظام</p>
+                                        <p class="text-sm font-bold text-gray-900 dark:text-white">{{ auth()->user()->name ?? __('messages.not_specified') }}</p>
+                                        <p class="text-xs text-gray-600 dark:text-gray-400">{{ __('common.system_admin') }}</p>
                                     </div>
                                 </div>
                             </div>
@@ -1140,14 +1212,14 @@
                                 <a href="{{ route('profile') }}"
                                    class="flex items-center gap-3 px-4 md:px-4 py-4 md:py-3 text-base md:text-sm text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-gray-700 transition-colors md:rounded-t-lg">
                                     <i class="fas fa-user text-blue-600 dark:text-blue-400 w-5 text-center"></i>
-                                    <span class="font-medium md:font-normal">الملف الشخصي</span>
+                                    <span class="font-medium md:font-normal">{{ __('navigation.user_profile') }}</span>
                                 </a>
 
                                 @if($currentOrg)
                                 <a href="{{ route('orgs.settings.index', ['org' => $currentOrg]) }}"
                                    class="flex items-center gap-3 px-4 md:px-4 py-4 md:py-3 text-base md:text-sm text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-gray-700 transition-colors">
                                     <i class="fas fa-cog text-gray-600 dark:text-gray-400 w-5 text-center"></i>
-                                    <span class="font-medium md:font-normal">الإعدادات</span>
+                                    <span class="font-medium md:font-normal">{{ __('navigation.settings') }}</span>
                                 </a>
                                 @endif
                             </div>
@@ -1159,7 +1231,7 @@
                                 <button type="submit"
                                         class="flex items-center gap-3 w-full text-right px-4 md:px-4 py-4 md:py-3 text-base md:text-sm text-red-600 dark:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors md:rounded-b-lg font-semibold md:font-normal">
                                     <i class="fas fa-sign-out-alt w-5 text-center"></i>
-                                    <span>تسجيل الخروج</span>
+                                    <span>{{ __('common.logout') }}</span>
                                 </button>
                             </form>
                         </div>
@@ -1186,12 +1258,12 @@
              class="fixed bottom-6 {{ $isRtl ? 'right-6' : 'left-6' }} z-40 group">
             <button @click="window.dispatchEvent(new CustomEvent('open-publish-modal'))"
                     class="w-14 h-14 bg-gradient-to-br from-blue-600 to-purple-600 text-white rounded-full shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-200 flex items-center justify-center group-hover:rotate-90"
-                    title="Create New Post">
+                    title="{{ __('common.create_new_post') }}">
                 <i class="fas fa-plus text-xl"></i>
             </button>
             {{-- Tooltip --}}
             <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 bg-gray-900 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
-                Create New Post
+                {{ __('common.create_new_post') }}
                 <div class="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900"></div>
             </div>
         </div>
@@ -1319,11 +1391,11 @@
                         } else {
                             const errorData = await response.json().catch(() => ({}));
                             console.error('Failed to load organizations:', response.status, errorData);
-                            this.showErrorMessage(errorData.message || 'فشل تحميل المؤسسات');
+                            this.showErrorMessage(errorData.message || __('common.failed_load_organizations'));
                         }
                     } catch (error) {
                         console.error('Error loading organizations:', error);
-                        this.showErrorMessage('خطأ في الاتصال بالخادم');
+                        this.showErrorMessage(__('common.server_connection_error'));
                     } finally {
                         this.loading = false;
                     }
@@ -1393,7 +1465,7 @@
                             this.filteredOrgs = this.organizations;
 
                             // Show success message
-                            this.showSuccessMessage(data.message || 'تم تبديل المؤسسة بنجاح');
+                            this.showSuccessMessage(data.message || __('common.organization_switched_success'));
 
                             // Close menu
                             this.orgMenuOpen = false;
@@ -1417,11 +1489,11 @@
                             }, 500);
                         } else {
                             console.error('Switch failed:', data);
-                            this.showErrorMessage(data.message || 'فشل تبديل المؤسسة');
+                            this.showErrorMessage(data.message || __('common.failed_switch_organization'));
                         }
                     } catch (error) {
                         console.error('Error switching organization:', error);
-                        this.showErrorMessage('حدث خطأ أثناء تبديل المؤسسة');
+                        this.showErrorMessage(__('common.error_switching_organization'));
                     } finally {
                         this.switching = false;
                         this.switchingToOrgId = null;
@@ -1605,6 +1677,54 @@
                 touchStartY: 0,
                 touchEndX: 0,
                 swipeThreshold: 50, // minimum swipe distance
+                compactMode: localStorage.getItem('sidebar_compact') === 'true',
+                favorites: JSON.parse(localStorage.getItem('sidebar_favorites') || '[]'),
+                recentItems: JSON.parse(localStorage.getItem('sidebar_recent') || '[]'),
+                showingRecent: false,
+                showingFavorites: false,
+
+                init() {
+                    // Keyboard shortcut: Ctrl+K or Cmd+K for search
+                    document.addEventListener('keydown', (e) => {
+                        if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+                            e.preventDefault();
+                            document.querySelector('.sidebar-search-input')?.focus();
+                        }
+                    });
+                },
+
+                toggleCompactMode() {
+                    this.compactMode = !this.compactMode;
+                    localStorage.setItem('sidebar_compact', this.compactMode);
+                },
+
+                toggleFavorite(route) {
+                    const index = this.favorites.indexOf(route);
+                    if (index > -1) {
+                        this.favorites.splice(index, 1);
+                    } else {
+                        this.favorites.push(route);
+                    }
+                    localStorage.setItem('sidebar_favorites', JSON.stringify(this.favorites));
+                },
+
+                isFavorite(route) {
+                    return this.favorites.includes(route);
+                },
+
+                addToRecent(item) {
+                    // Remove if already exists
+                    this.recentItems = this.recentItems.filter(r => r.route !== item.route);
+                    // Add to front
+                    this.recentItems.unshift(item);
+                    // Keep only last 5
+                    this.recentItems = this.recentItems.slice(0, 5);
+                    localStorage.setItem('sidebar_recent', JSON.stringify(this.recentItems));
+                },
+
+                getFavoriteItems() {
+                    return this.menuItems.filter(item => this.favorites.includes(item.route));
+                },
 
                 // Touch gesture handlers for swipe-to-close on mobile (RTL: swipe left to close)
                 handleTouchStart(event) {
@@ -1681,13 +1801,17 @@
                     if (!query) {
                         this.searchResults = [];
                         this.isSearching = false;
+                        this.showingRecent = true;
+                        this.showingFavorites = false;
                         return;
                     }
 
                     this.isSearching = true;
+                    this.showingRecent = false;
+                    this.showingFavorites = false;
 
                     // Filter menu items based on query
-                    this.searchResults = this.menuItems.filter(item => {
+                    let results = this.menuItems.filter(item => {
                         // Check item name
                         if (item.name.toLowerCase().includes(query)) return true;
 
@@ -1695,16 +1819,40 @@
                         return item.keywords.some(keyword =>
                             keyword.toLowerCase().includes(query)
                         );
-                    }).slice(0, 5); // Limit to 5 results
+                    });
+
+                    // Prioritize favorites in search results
+                    results.sort((a, b) => {
+                        const aIsFav = this.isFavorite(a.route);
+                        const bIsFav = this.isFavorite(b.route);
+                        if (aIsFav && !bIsFav) return -1;
+                        if (!aIsFav && bIsFav) return 1;
+                        return 0;
+                    });
+
+                    this.searchResults = results.slice(0, 8); // Limit to 8 results
                 },
 
                 clearSearch() {
                     this.searchQuery = '';
                     this.searchResults = [];
                     this.isSearching = false;
+                    this.showingRecent = false;
+                    this.showingFavorites = false;
                 },
 
-                navigateTo(route) {
+                navigateTo(route, item = null) {
+                    // Track in recent items
+                    if (item) {
+                        this.addToRecent(item);
+                    } else {
+                        // Find item from route
+                        const foundItem = this.menuItems.find(m => m.route === route);
+                        if (foundItem) {
+                            this.addToRecent(foundItem);
+                        }
+                    }
+
                     // Get current org from URL
                     const urlPath = window.location.pathname;
                     const match = urlPath.match(/\/orgs\/([a-f0-9-]+)/i);
@@ -1731,7 +1879,7 @@
                     const id = this.notificationId++;
                     const notification = {
                         id: id,
-                        message: detail.message || 'إشعار',
+                        message: detail.message || __('common.notification'),
                         type: detail.type || 'info',
                         show: true
                     };

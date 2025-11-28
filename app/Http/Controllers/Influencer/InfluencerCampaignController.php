@@ -59,7 +59,7 @@ class InfluencerCampaignController extends Controller
         }
 
         return redirect()->route('influencer.campaigns.show', $campaign->campaign_id)
-            ->with('success', 'Influencer campaign created successfully');
+            ->with('success', __('influencers.created_success'));
     }
 
     /**
@@ -99,7 +99,7 @@ class InfluencerCampaignController extends Controller
         }
 
         return redirect()->route('influencer.campaigns.show', $campaign->campaign_id)
-            ->with('success', 'Influencer campaign updated successfully');
+            ->with('success', __('influencers.updated_success'));
     }
 
     /**
@@ -115,7 +115,7 @@ class InfluencerCampaignController extends Controller
         }
 
         return redirect()->route('influencer.campaigns.index')
-            ->with('success', 'Influencer campaign deleted successfully');
+            ->with('success', __('influencers.deleted_success'));
     }
 
     /**
@@ -161,7 +161,7 @@ class InfluencerCampaignController extends Controller
         }
 
         return redirect()->route('influencer.campaigns.show', $campaign->campaign_id)
-            ->with('success', 'Campaign status updated successfully');
+            ->with('success', __('influencers.updated_success'));
     }
 
     /**

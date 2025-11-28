@@ -735,7 +735,7 @@ class UserManagementController extends Controller
             ->exists();
 
         if (!$hasAccess) {
-            throw new \Exception('You do not have access to this organization');
+            throw new \Exception(__('core.access_denied'));
         }
     }
 

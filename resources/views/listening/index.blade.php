@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'Social Listening')
+@section('title', __('listening.social_listening'))
 
 @php
     $currentOrg = $currentOrg ?? request()->route('org') ?? auth()->user()->active_org_id ?? auth()->user()->org_id;
@@ -17,18 +17,18 @@
                 <i class="fas fa-home"></i>
             </a>
             <span class="text-gray-400">/</span>
-            <span class="text-gray-900 font-medium">Social Listening</span>
+            <span class="text-gray-900 font-medium">{{ __('listening.social_listening') }}</span>
         </nav>
         <div class="flex justify-between items-center {{ $isRtl ? 'flex-row-reverse' : '' }}">
             <div class="{{ $isRtl ? 'text-right' : '' }}">
-                <h1 class="text-2xl font-bold text-gray-900">Social Listening</h1>
-                <p class="text-gray-600 mt-1">Monitor brand mentions, sentiment, and trends across social platforms</p>
+                <h1 class="text-2xl font-bold text-gray-900">{{ __('listening.social_listening') }}</h1>
+                <p class="text-gray-600 mt-1">{{ __('listening.monitor_brand_mentions') }}</p>
             </div>
-            <div class="flex {{ $isRtl ? 'space-x-reverse space-x-3' : 'space-x-3' }}">
+            <div class="flex {{ $isRtl ? 'gap-x-3 flex-row-reverse' : 'gap-x-3' }}">
                 <button @click="showSetupModal = true"
                         class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition flex items-center gap-2">
                     <i class="fas fa-cog"></i>
-                    <span>Configure Tracking</span>
+                    <span>{{ __('listening.configure_tracking') }}</span>
                 </button>
                 <button @click="refreshData()"
                         class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition"
@@ -42,35 +42,35 @@
     {{-- Date Range Selector --}}
     <div class="bg-white rounded-lg shadow p-4">
         <div class="flex items-center gap-4 {{ $isRtl ? 'flex-row-reverse' : '' }}">
-            <label class="text-sm font-medium text-gray-700">Time Range:</label>
+            <label class="text-sm font-medium text-gray-700">{{ __('listening.time_range') }}:</label>
             <select x-model="timeRange" @change="loadData()" class="px-4 py-2 border border-gray-300 rounded-lg">
-                <option value="1h">Last Hour</option>
-                <option value="24h">Last 24 Hours</option>
-                <option value="7d">Last 7 Days</option>
-                <option value="30d">Last 30 Days</option>
-                <option value="custom">Custom Range</option>
+                <option value="1h">{{ __('listening.last_hour') }}</option>
+                <option value="24h">{{ __('listening.last_24_hours') }}</option>
+                <option value="7d">{{ __('listening.last_7_days') }}</option>
+                <option value="30d">{{ __('listening.last_30_days') }}</option>
+                <option value="custom">{{ __('listening.custom_range') }}</option>
             </select>
             <div class="flex-1"></div>
             <div class="flex gap-2 {{ $isRtl ? 'flex-row-reverse' : '' }}">
                 <button @click="activeTab = 'overview'"
                         :class="activeTab === 'overview' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700'"
                         class="px-4 py-2 rounded-lg transition">
-                    Overview
+                    {{ __('listening.overview') }}
                 </button>
                 <button @click="activeTab = 'mentions'"
                         :class="activeTab === 'mentions' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700'"
                         class="px-4 py-2 rounded-lg transition">
-                    Mentions
+                    {{ __('listening.mentions') }}
                 </button>
                 <button @click="activeTab = 'sentiment'"
                         :class="activeTab === 'sentiment' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700'"
                         class="px-4 py-2 rounded-lg transition">
-                    Sentiment
+                    {{ __('listening.sentiment') }}
                 </button>
                 <button @click="activeTab = 'trends'"
                         :class="activeTab === 'trends' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700'"
                         class="px-4 py-2 rounded-lg transition">
-                    Trends
+                    {{ __('listening.trends') }}
                 </button>
             </div>
         </div>
@@ -85,8 +85,8 @@
                     <div class="flex-shrink-0 bg-blue-100 rounded-lg p-3">
                         <i class="fas fa-comments text-2xl text-blue-600"></i>
                     </div>
-                    <div class="{{ $isRtl ? 'mr-4 text-right' : 'ml-4' }}">
-                        <p class="text-sm font-medium text-gray-600">Total Mentions</p>
+                    <div class="{{ $isRtl ? 'me-4 text-end' : 'ms-4 text-start' }}">
+                        <p class="text-sm font-medium text-gray-600">{{ __('listening.total_mentions') }}</p>
                         <p class="text-2xl font-bold text-gray-900" x-text="formatNumber(stats.totalMentions)">0</p>
                         <p class="text-xs mt-1" :class="stats.mentionsTrend >= 0 ? 'text-green-600' : 'text-red-600'">
                             <i :class="stats.mentionsTrend >= 0 ? 'fas fa-arrow-up' : 'fas fa-arrow-down'"></i>
@@ -101,11 +101,11 @@
                     <div class="flex-shrink-0 bg-green-100 rounded-lg p-3">
                         <i class="fas fa-smile text-2xl text-green-600"></i>
                     </div>
-                    <div class="{{ $isRtl ? 'mr-4 text-right' : 'ml-4' }}">
-                        <p class="text-sm font-medium text-gray-600">Positive Sentiment</p>
+                    <div class="{{ $isRtl ? 'me-4 text-end' : 'ms-4 text-start' }}">
+                        <p class="text-sm font-medium text-gray-600">{{ __('listening.positive_sentiment') }}</p>
                         <p class="text-2xl font-bold text-gray-900" x-text="stats.positivePct + '%'">0%</p>
                         <p class="text-xs text-gray-500 mt-1">
-                            <span x-text="formatNumber(stats.positive)"></span> mentions
+                            <span x-text="formatNumber(stats.positive)"></span> {{ __('listening.mentions') }}
                         </p>
                     </div>
                 </div>
@@ -116,10 +116,10 @@
                     <div class="flex-shrink-0 bg-yellow-100 rounded-lg p-3">
                         <i class="fas fa-fire text-2xl text-yellow-600"></i>
                     </div>
-                    <div class="{{ $isRtl ? 'mr-4 text-right' : 'ml-4' }}">
-                        <p class="text-sm font-medium text-gray-600">Trending Topics</p>
+                    <div class="{{ $isRtl ? 'me-4 text-end' : 'ms-4 text-start' }}">
+                        <p class="text-sm font-medium text-gray-600">{{ __('listening.trending_topics') }}</p>
                         <p class="text-2xl font-bold text-gray-900" x-text="stats.trendingTopics">0</p>
-                        <p class="text-xs text-gray-500 mt-1">Active discussions</p>
+                        <p class="text-xs text-gray-500 mt-1">{{ __('listening.active_discussions') }}</p>
                     </div>
                 </div>
             </div>
@@ -129,10 +129,10 @@
                     <div class="flex-shrink-0 bg-purple-100 rounded-lg p-3">
                         <i class="fas fa-users text-2xl text-purple-600"></i>
                     </div>
-                    <div class="{{ $isRtl ? 'mr-4 text-right' : 'ml-4' }}">
-                        <p class="text-sm font-medium text-gray-600">Total Reach</p>
+                    <div class="{{ $isRtl ? 'me-4 text-end' : 'ms-4 text-start' }}">
+                        <p class="text-sm font-medium text-gray-600">{{ __('listening.total_reach') }}</p>
                         <p class="text-2xl font-bold text-gray-900" x-text="formatNumber(stats.totalReach)">0</p>
-                        <p class="text-xs text-gray-500 mt-1">Potential impressions</p>
+                        <p class="text-xs text-gray-500 mt-1">{{ __('listening.potential_impressions') }}</p>
                     </div>
                 </div>
             </div>
@@ -142,13 +142,13 @@
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
             {{-- Mentions Over Time Chart --}}
             <div class="bg-white rounded-lg shadow p-6">
-                <h3 class="text-lg font-semibold text-gray-900 mb-4">Mentions Over Time</h3>
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">{{ __('listening.mentions_over_time') }}</h3>
                 <canvas id="mentionsChart" height="250"></canvas>
             </div>
 
             {{-- Sentiment Distribution Chart --}}
             <div class="bg-white rounded-lg shadow p-6">
-                <h3 class="text-lg font-semibold text-gray-900 mb-4">Sentiment Distribution</h3>
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">{{ __('listening.sentiment_distribution') }}</h3>
                 <canvas id="sentimentChart" height="250"></canvas>
             </div>
         </div>
@@ -157,7 +157,7 @@
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {{-- Platform Breakdown --}}
             <div class="bg-white rounded-lg shadow p-6">
-                <h3 class="text-lg font-semibold text-gray-900 mb-4">Platform Breakdown</h3>
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">{{ __('listening.platform_breakdown') }}</h3>
                 <div class="space-y-3">
                     <template x-for="platform in platformBreakdown" :key="platform.name">
                         <div>
@@ -179,7 +179,7 @@
 
             {{-- Top Keywords --}}
             <div class="bg-white rounded-lg shadow p-6">
-                <h3 class="text-lg font-semibold text-gray-900 mb-4">Top Keywords</h3>
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">{{ __('listening.top_keywords') }}</h3>
                 <div class="space-y-2">
                     <template x-for="(keyword, index) in topKeywords" :key="keyword.text">
                         <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg {{ $isRtl ? 'flex-row-reverse' : '' }}">
@@ -209,21 +209,21 @@
         <div class="bg-white rounded-lg shadow">
             <div class="p-6 border-b border-gray-200">
                 <div class="flex justify-between items-center {{ $isRtl ? 'flex-row-reverse' : '' }}">
-                    <h2 class="text-lg font-semibold text-gray-900">Recent Mentions</h2>
+                    <h2 class="text-lg font-semibold text-gray-900">{{ __('listening.recent_mentions') }}</h2>
                     <div class="flex gap-3 {{ $isRtl ? 'flex-row-reverse' : '' }}">
                         <input type="text"
                                x-model="searchQuery"
                                @input="filterMentions()"
-                               placeholder="Search mentions..."
+                               placeholder="{{ __('listening.search_mentions_placeholder') }}"
                                class="px-4 py-2 border border-gray-300 rounded-lg">
                         <select x-model="filterSentiment" @change="filterMentions()" class="px-4 py-2 border border-gray-300 rounded-lg">
-                            <option value="">All Sentiments</option>
-                            <option value="positive">Positive</option>
-                            <option value="neutral">Neutral</option>
-                            <option value="negative">Negative</option>
+                            <option value="">{{ __('listening.all_sentiments') }}</option>
+                            <option value="positive">{{ __('listening.positive') }}</option>
+                            <option value="neutral">{{ __('listening.neutral') }}</option>
+                            <option value="negative">{{ __('listening.negative') }}</option>
                         </select>
                         <select x-model="filterPlatform" @change="filterMentions()" class="px-4 py-2 border border-gray-300 rounded-lg">
-                            <option value="">All Platforms</option>
+                            <option value="">{{ __('listening.all_platforms') }}</option>
                             <option value="twitter">Twitter</option>
                             <option value="facebook">Facebook</option>
                             <option value="instagram">Instagram</option>
@@ -238,13 +238,13 @@
                 <template x-if="loading">
                     <div class="p-12 text-center">
                         <i class="fas fa-spinner fa-spin text-2xl text-gray-400"></i>
-                        <p class="mt-2 text-gray-500">Loading mentions...</p>
+                        <p class="mt-2 text-gray-500">{{ __('listening.loading_mentions') }}</p>
                     </div>
                 </template>
                 <template x-if="!loading && filteredMentions.length === 0">
                     <div class="p-12 text-center">
                         <i class="fas fa-inbox text-4xl text-gray-300 mb-3"></i>
-                        <p class="text-gray-500">No mentions found</p>
+                        <p class="text-gray-500">{{ __('listening.no_mentions_found') }}</p>
                     </div>
                 </template>
                 <template x-for="mention in filteredMentions" :key="mention.id">
@@ -297,24 +297,24 @@
     {{-- Sentiment Tab --}}
     <div x-show="activeTab === 'sentiment'" x-transition>
         <div class="bg-white rounded-lg shadow p-6">
-            <h2 class="text-lg font-semibold text-gray-900 mb-6">Sentiment Analysis</h2>
+            <h2 class="text-lg font-semibold text-gray-900 mb-6">{{ __('listening.sentiment_analysis') }}</h2>
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div class="text-center p-6 bg-green-50 rounded-lg">
                     <i class="fas fa-smile text-5xl text-green-600 mb-3"></i>
                     <p class="text-3xl font-bold text-green-600" x-text="stats.positivePct + '%'">0%</p>
-                    <p class="text-sm text-gray-600 mt-1">Positive</p>
+                    <p class="text-sm text-gray-600 mt-1">{{ __('listening.positive') }}</p>
                     <p class="text-2xl font-semibold text-gray-900 mt-2" x-text="formatNumber(stats.positive)">0</p>
                 </div>
                 <div class="text-center p-6 bg-gray-50 rounded-lg">
                     <i class="fas fa-meh text-5xl text-gray-600 mb-3"></i>
                     <p class="text-3xl font-bold text-gray-600" x-text="stats.neutralPct + '%'">0%</p>
-                    <p class="text-sm text-gray-600 mt-1">Neutral</p>
+                    <p class="text-sm text-gray-600 mt-1">{{ __('listening.neutral') }}</p>
                     <p class="text-2xl font-semibold text-gray-900 mt-2" x-text="formatNumber(stats.neutral)">0</p>
                 </div>
                 <div class="text-center p-6 bg-red-50 rounded-lg">
                     <i class="fas fa-frown text-5xl text-red-600 mb-3"></i>
                     <p class="text-3xl font-bold text-red-600" x-text="stats.negativePct + '%'">0%</p>
-                    <p class="text-sm text-gray-600 mt-1">Negative</p>
+                    <p class="text-sm text-gray-600 mt-1">{{ __('listening.negative') }}</p>
                     <p class="text-2xl font-semibold text-gray-900 mt-2" x-text="formatNumber(stats.negative)">0</p>
                 </div>
             </div>
@@ -324,7 +324,7 @@
     {{-- Trends Tab --}}
     <div x-show="activeTab === 'trends'" x-transition>
         <div class="bg-white rounded-lg shadow p-6">
-            <h2 class="text-lg font-semibold text-gray-900 mb-6">Trending Topics & Hashtags</h2>
+            <h2 class="text-lg font-semibold text-gray-900 mb-6">{{ __('listening.trending_topics_hashtags') }}</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <template x-for="(trend, index) in trends" :key="trend.hashtag">
                     <div class="p-4 border border-gray-200 rounded-lg hover:shadow-md transition">
@@ -334,12 +334,12 @@
                                 <h3 class="text-lg font-bold text-blue-600 mt-1" x-text="trend.hashtag"></h3>
                             </div>
                             <span class="text-xs px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full">
-                                <i class="fas fa-fire"></i> Trending
+                                <i class="fas fa-fire"></i> {{ __('listening.trending') }}
                             </span>
                         </div>
-                        <p class="text-sm text-gray-600 mt-2" x-text="formatNumber(trend.mentions) + ' mentions'"></p>
+                        <p class="text-sm text-gray-600 mt-2" x-text="formatNumber(trend.mentions) + ' {{ __('listening.mentions_lowercase') }}'"></p>
                         <div class="mt-3 text-xs text-gray-500">
-                            <span x-text="'+' + trend.growth + '% in last ' + timeRange"></span>
+                            <span x-text="'+' + trend.growth + '% {{ __('listening.in_last') }} ' + timeRange"></span>
                         </div>
                     </div>
                 </template>
@@ -440,9 +440,9 @@ function socialListeningDashboard() {
                 this.mentionsChart = new Chart(mentionsCtx, {
                     type: 'line',
                     data: {
-                        labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                        labels: ['{{ __('common.mon') }}', '{{ __('common.tue') }}', '{{ __('common.wed') }}', '{{ __('common.thu') }}', '{{ __('common.fri') }}', '{{ __('common.sat') }}', '{{ __('common.sun') }}'],
                         datasets: [{
-                            label: 'Mentions',
+                            label: '{{ __('listening.mentions') }}',
                             data: [120, 150, 180, 165, 200, 210, 190],
                             borderColor: '#3B82F6',
                             backgroundColor: 'rgba(59, 130, 246, 0.1)',
@@ -466,7 +466,7 @@ function socialListeningDashboard() {
                 this.sentimentChart = new Chart(sentimentCtx, {
                     type: 'doughnut',
                     data: {
-                        labels: ['Positive', 'Neutral', 'Negative'],
+                        labels: ['{{ __('listening.positive') }}', '{{ __('listening.neutral') }}', '{{ __('listening.negative') }}'],
                         datasets: [{
                             data: [this.stats.positive, this.stats.neutral, this.stats.negative],
                             backgroundColor: ['#10B981', '#6B7280', '#EF4444']

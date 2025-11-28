@@ -3,7 +3,7 @@
     {{-- Trigger Button --}}
     <button
         @click="open = !open"
-        class="w-full px-4 py-3 bg-white/10 backdrop-blur-sm rounded-xl hover:bg-white/20 transition-all duration-200 text-right"
+        class="w-full px-4 py-3 bg-white/10 backdrop-blur-sm rounded-xl hover:bg-white/20 transition-all duration-200 text-{{ app()->getLocale() === 'ar' ? 'right' : 'left' }}"
         :class="{ 'ring-2 ring-white/30': open }"
     >
         <div class="flex items-center justify-between gap-3">
@@ -12,8 +12,8 @@
                     <i class="fas fa-building text-white text-sm"></i>
                 </div>
                 <div class="flex-1 min-w-0">
-                    <p class="text-white/60 text-xs">المنظمة الحالية</p>
-                    <p class="text-white font-medium text-sm truncate" x-text="activeOrg?.name || 'جاري التحميل...'"></p>
+                    <p class="text-white/60 text-xs">{{ __('components.org_switcher.current_org') }}</p>
+                    <p class="text-white font-medium text-sm truncate" x-text="activeOrg?.name || '{{ __('components.org_switcher.loading') }}'"></p>
                 </div>
             </div>
             <i class="fas fa-chevron-down text-white/60 text-xs transition-transform duration-200"
@@ -31,13 +31,13 @@
         x-transition:leave="transition ease-in duration-150"
         x-transition:leave-start="opacity-100 transform scale-100"
         x-transition:leave-end="opacity-0 transform scale-95"
-        class="absolute bottom-full left-0 right-0 mb-2 bg-white rounded-xl shadow-2xl border border-gray-200 overflow-hidden z-50"
+        class="absolute bottom-full {{ app()->getLocale() === 'ar' ? 'left-0 right-0' : 'left-0 right-0' }} mb-2 bg-white rounded-xl shadow-2xl border border-gray-200 overflow-hidden z-50"
         style="display: none;"
     >
         {{-- Header --}}
-        <div class="px-4 py-3 bg-gradient-to-r from-purple-500 to-pink-500 border-b border-gray-200">
-            <p class="text-white text-sm font-semibold">اختر منظمة</p>
-            <p class="text-white/80 text-xs mt-0.5">تبديل بين المنظمات الخاصة بك</p>
+        <div class="px-4 py-3 bg-gradient-to-{{ app()->getLocale() === 'ar' ? 'l' : 'r' }} from-purple-500 to-pink-500 border-b border-gray-200">
+            <p class="text-white text-sm font-semibold">{{ __('components.org_switcher.choose_org') }}</p>
+            <p class="text-white/80 text-xs mt-0.5">{{ __('components.org_switcher.switch_between') }}</p>
         </div>
 
         {{-- Organizations List --}}
@@ -45,14 +45,14 @@
             <template x-if="loading">
                 <div class="px-4 py-8 text-center">
                     <i class="fas fa-spinner fa-spin text-gray-400 text-2xl"></i>
-                    <p class="text-gray-500 text-sm mt-2">جاري التحميل...</p>
+                    <p class="text-gray-500 text-sm mt-2">{{ __('components.org_switcher.loading') }}</p>
                 </div>
             </template>
 
             <template x-if="!loading && organizations.length === 0">
                 <div class="px-4 py-8 text-center">
                     <i class="fas fa-building text-gray-300 text-3xl"></i>
-                    <p class="text-gray-500 text-sm mt-2">لا توجد منظمات</p>
+                    <p class="text-gray-500 text-sm mt-2">{{ __('components.org_switcher.no_organizations') }}</p>
                 </div>
             </template>
 
@@ -61,7 +61,7 @@
                     <template x-for="org in organizations" :key="org.org_id">
                         <button
                             @click="switchToOrg(org.org_id)"
-                            class="w-full px-4 py-3 hover:bg-gray-50 transition-colors duration-150 text-right flex items-center gap-3"
+                            class="w-full px-4 py-3 hover:bg-gray-50 transition-colors duration-150 text-{{ app()->getLocale() === 'ar' ? 'right' : 'left' }} flex items-center gap-3"
                             :class="{ 'bg-purple-50': org.org_id === activeOrg?.org_id }"
                             :disabled="switching"
                         >
@@ -83,7 +83,7 @@
                                     :class="org.org_id === activeOrg?.org_id ? 'text-purple-900' : 'text-gray-900'"
                                     x-text="org.name"
                                 ></p>
-                                <p class="text-xs text-gray-500 truncate" x-text="org.slug || 'لا يوجد رمز'"></p>
+                                <p class="text-xs text-gray-500 truncate" x-text="org.slug || '{{ __('components.org_switcher.no_slug') }}'"></p>
                             </div>
 
                             {{-- Active Indicator --}}
@@ -103,7 +103,7 @@
             <div class="absolute inset-0 bg-white/90 backdrop-blur-sm flex items-center justify-center">
                 <div class="text-center">
                     <i class="fas fa-spinner fa-spin text-purple-600 text-2xl"></i>
-                    <p class="text-gray-700 text-sm mt-2 font-medium">جاري التبديل...</p>
+                    <p class="text-gray-700 text-sm mt-2 font-medium">{{ __('components.org_switcher.switching') }}</p>
                 </div>
             </div>
         </template>
@@ -189,7 +189,7 @@ function orgSwitcher() {
 
             } catch (error) {
                 console.error('Error switching organization:', error);
-                alert('فشل تبديل المنظمة. الرجاء المحاولة مرة أخرى.');
+                alert(@json(__('components.org_switcher.switch_failed')));
             } finally {
                 this.switching = false;
             }

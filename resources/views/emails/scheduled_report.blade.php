@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ $scheduleName }} - CMIS Analytics Report</title>
+    <title>{{ __('emails.scheduled_report.subject', ['name' => $scheduleName]) }}</title>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
@@ -78,42 +78,42 @@
     <div class="container">
         <div class="header">
             <h1>{{ $scheduleName }}</h1>
-            <p>{{ ucfirst($frequency) }} {{ ucfirst(str_replace('_', ' ', $reportType)) }} Report</p>
+            <p>{{ __('emails.scheduled_report.frequency.' . $frequency) }} {{ ucfirst(str_replace('_', ' ', $reportType)) }} {{ __('emails.scheduled_report.report') }}</p>
         </div>
 
         <div class="content">
-            <p>Hello,</p>
+            <p>{{ __('emails.scheduled_report.hello') }}</p>
 
-            <p>Your scheduled analytics report has been generated and is ready for review.</p>
+            <p>{{ __('emails.scheduled_report.ready_message') }}</p>
 
             <div class="info-box">
-                <p><strong>Report Name:</strong> {{ $scheduleName }}</p>
-                <p><strong>Report Type:</strong> {{ ucfirst(str_replace('_', ' ', $reportType)) }}</p>
-                <p><strong>Frequency:</strong> {{ ucfirst($frequency) }}</p>
-                <p><strong>Generated:</strong> {{ $generatedAt }}</p>
+                <p><strong>{{ __('emails.scheduled_report.report_name') }}:</strong> {{ $scheduleName }}</p>
+                <p><strong>{{ __('emails.scheduled_report.report_type') }}:</strong> {{ ucfirst(str_replace('_', ' ', $reportType)) }}</p>
+                <p><strong>{{ __('emails.scheduled_report.frequency_label') }}:</strong> {{ __('emails.scheduled_report.frequency.' . $frequency) }}</p>
+                <p><strong>{{ __('emails.scheduled_report.generated') }}:</strong> {{ $generatedAt }}</p>
                 @if($expiresAt)
-                <p><strong>Expires:</strong> {{ $expiresAt }}</p>
+                <p><strong>{{ __('emails.scheduled_report.expires') }}:</strong> {{ $expiresAt }}</p>
                 @endif
             </div>
 
             @if($fileUrl)
-            <p>You can download your report using the button below:</p>
+            <p>{{ __('emails.scheduled_report.can_download') }}</p>
 
             <div style="text-align: center;">
-                <a href="{{ $fileUrl }}" class="button">Download Report</a>
+                <a href="{{ $fileUrl }}" class="button">{{ __('emails.scheduled_report.download_button') }}</a>
             </div>
             @endif
 
-            <p>This report has been automatically generated based on your schedule configuration. If you need to modify the schedule or report settings, please visit the Analytics Dashboard.</p>
+            <p>{{ __('emails.scheduled_report.auto_generated') }}</p>
         </div>
 
         <div class="footer">
             <p>
-                This is an automated message from CMIS Analytics.<br>
-                <a href="#">Manage Report Schedules</a> | <a href="#">Analytics Dashboard</a>
+                {{ __('emails.scheduled_report.automated_message') }}<br>
+                <a href="#">{{ __('emails.scheduled_report.manage_schedules') }}</a> | <a href="#">{{ __('emails.scheduled_report.analytics_dashboard') }}</a>
             </p>
             <p style="margin-top: 10px;">
-                © {{ date('Y') }} CMIS - Cognitive Marketing Information System
+                © {{ date('Y') }} {{ __('emails.scheduled_report.copyright') }}
             </p>
         </div>
     </div>

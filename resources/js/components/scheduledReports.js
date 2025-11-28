@@ -88,8 +88,8 @@ export default function scheduledReports() {
                     this.totalPages = data.schedules.last_page;
                 }
             } catch (error) {
-                console.error('Failed to load schedules:', error);
-                this.showError('Failed to load scheduled reports');
+                console.error(__('javascript.failed_to_load_schedules'), error);
+                this.showError(__('javascript.failed_to_load_schedules'));
             } finally {
                 this.loading = false;
             }
@@ -111,7 +111,7 @@ export default function scheduledReports() {
                     this.templates = data.templates;
                 }
             } catch (error) {
-                console.error('Failed to load templates:', error);
+                console.error(__('javascript.failed_to_load_templates'), error);
             }
         },
 
@@ -140,7 +140,7 @@ export default function scheduledReports() {
                 const data = await response.json();
 
                 if (data.success) {
-                    this.showSuccess('Scheduled report created successfully');
+                    this.showSuccess(__('javascript.scheduled_report_created'));
                     this.showCreateModal = false;
                     this.resetForm();
                     await this.loadSchedules();
@@ -148,8 +148,8 @@ export default function scheduledReports() {
                     this.showError(data.message || 'Failed to create schedule');
                 }
             } catch (error) {
-                console.error('Failed to create schedule:', error);
-                this.showError('Failed to create scheduled report');
+                console.error(__('javascript.failed_to_create_schedule'), error);
+                this.showError(__('javascript.failed_to_create_schedule'));
             } finally {
                 this.loading = false;
             }
@@ -176,12 +176,12 @@ export default function scheduledReports() {
                 const data = await response.json();
 
                 if (data.success) {
-                    this.showSuccess('Schedule updated successfully');
+                    this.showSuccess(__('javascript.schedule_updated'));
                     await this.loadSchedules();
                 }
             } catch (error) {
-                console.error('Failed to update schedule:', error);
-                this.showError('Failed to update schedule');
+                console.error(__('javascript.failed_to_update_schedule'), error);
+                this.showError(__('javascript.failed_to_update_schedule'));
             } finally {
                 this.loading = false;
             }
@@ -189,7 +189,7 @@ export default function scheduledReports() {
 
         // Delete schedule
         async deleteSchedule(scheduleId) {
-            if (!confirm('Are you sure you want to delete this scheduled report?')) {
+            if (!confirm(__('javascript.confirm_delete_scheduled_report'))) {
                 return;
             }
 
@@ -210,12 +210,12 @@ export default function scheduledReports() {
                 const data = await response.json();
 
                 if (data.success) {
-                    this.showSuccess('Scheduled report deleted');
+                    this.showSuccess(__('javascript.scheduled_report_deleted'));
                     await this.loadSchedules();
                 }
             } catch (error) {
-                console.error('Failed to delete schedule:', error);
-                this.showError('Failed to delete schedule');
+                console.error(__('javascript.failed_to_delete_schedule'), error);
+                this.showError(__('javascript.failed_to_delete_schedule'));
             } finally {
                 this.loading = false;
             }
@@ -243,11 +243,11 @@ export default function scheduledReports() {
 
                 if (data.success) {
                     schedule.is_active = updatedStatus;
-                    this.showSuccess(`Schedule ${updatedStatus ? 'activated' : 'deactivated'}`);
+                    this.showSuccess(updatedStatus ? __('javascript.schedule_activated') : __('javascript.schedule_deactivated'));
                 }
             } catch (error) {
-                console.error('Failed to toggle schedule:', error);
-                this.showError('Failed to update schedule');
+                console.error(__('javascript.failed_to_update_schedule'), error);
+                this.showError(__('javascript.failed_to_update_schedule'));
             }
         },
 
@@ -272,8 +272,8 @@ export default function scheduledReports() {
                     this.executionHistory = data.history.data;
                 }
             } catch (error) {
-                console.error('Failed to load history:', error);
-                this.showError('Failed to load execution history');
+                console.error(__('javascript.failed_to_load_history'), error);
+                this.showError(__('javascript.failed_to_load_history'));
             } finally {
                 this.loading = false;
             }
@@ -306,7 +306,7 @@ export default function scheduledReports() {
                     this.form.recipientInput = '';
                 }
             } else {
-                this.showError('Please enter a valid email address');
+                this.showError(__('javascript.please_enter_valid_email'));
             }
         },
 
@@ -320,12 +320,12 @@ export default function scheduledReports() {
 
         validateForm() {
             if (!this.form.name) {
-                this.showError('Please enter a report name');
+                this.showError(__('javascript.please_enter_report_name'));
                 return false;
             }
 
             if (this.form.recipients.length === 0) {
-                this.showError('Please add at least one recipient');
+                this.showError(__('javascript.please_add_recipient'));
                 return false;
             }
 

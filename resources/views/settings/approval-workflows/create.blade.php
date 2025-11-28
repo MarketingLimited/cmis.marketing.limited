@@ -18,9 +18,9 @@
 
     <div class="flex items-center justify-between mb-6">
         <div>
-            <h1 class="text-xl sm:text-2xl font-bold text-gray-900">Create Approval Workflow</h1>
+            <h1 class="text-xl sm:text-2xl font-bold text-gray-900">{{ __('settings.create_approval_workflow') }}</h1>
             <p class="mt-1 text-xs sm:text-sm text-gray-500">
-                Configure multi-step approval processes for content publishing.
+                {{ __('settings.configure_approval_processes') }}
             </p>
         </div>
     </div>
@@ -42,32 +42,32 @@
         {{-- Basic Information --}}
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <h3 class="text-base font-semibold text-gray-900 mb-4">
-                <i class="fas fa-info-circle text-indigo-500 mr-2"></i>Basic Information
+                <i class="fas fa-info-circle text-indigo-500 me-2"></i>{{ __('settings.basic_information') }}
             </h3>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="md:col-span-2">
-                    <label for="name" class="block text-sm font-medium text-gray-700 mb-1">Workflow Name <span class="text-red-500">*</span></label>
+                    <label for="name" class="block text-sm font-medium text-gray-700 mb-1">{{ __('settings.workflow_name') }} <span class="text-red-500">*</span></label>
                     <input type="text" name="name" id="name" value="{{ old('name') }}" required
                            class="w-full rounded-lg border-gray-300 focus:ring-indigo-500 focus:border-indigo-500"
-                           placeholder="e.g., Marketing Content Approval">
+                           placeholder="{{ __('settings.workflow_name_placeholder') }}">
                     @error('name')
                         <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
                     @enderror
                 </div>
 
                 <div class="md:col-span-2">
-                    <label for="description" class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                    <label for="description" class="block text-sm font-medium text-gray-700 mb-1">{{ __('settings.description') }}</label>
                     <textarea name="description" id="description" rows="2"
                               class="w-full rounded-lg border-gray-300 focus:ring-indigo-500 focus:border-indigo-500"
-                              placeholder="Describe when this workflow should be used...">{{ old('description') }}</textarea>
+                              placeholder="{{ __('settings.workflow_description_placeholder') }}">{{ old('description') }}</textarea>
                 </div>
 
                 <div>
-                    <label for="profile_group_id" class="block text-sm font-medium text-gray-700 mb-1">Profile Group</label>
+                    <label for="profile_group_id" class="block text-sm font-medium text-gray-700 mb-1">{{ __('settings.profile_group') }}</label>
                     <select name="profile_group_id" id="profile_group_id"
                             class="w-full rounded-lg border-gray-300 focus:ring-indigo-500 focus:border-indigo-500">
-                        <option value="">All Profile Groups</option>
+                        <option value="">{{ __('settings.all_profile_groups') }}</option>
                         @foreach($profileGroups ?? [] as $group)
                             <option value="{{ $group->group_id }}" {{ old('profile_group_id') == $group->group_id ? 'selected' : '' }}>
                                 {{ $group->name }}
@@ -77,14 +77,14 @@
                 </div>
 
                 <div>
-                    <label for="trigger_condition" class="block text-sm font-medium text-gray-700 mb-1">Trigger Condition</label>
+                    <label for="trigger_condition" class="block text-sm font-medium text-gray-700 mb-1">{{ __('settings.trigger_condition') }}</label>
                     <select name="trigger_condition" id="trigger_condition"
                             class="w-full rounded-lg border-gray-300 focus:ring-indigo-500 focus:border-indigo-500">
-                        <option value="all_posts" {{ old('trigger_condition') == 'all_posts' ? 'selected' : '' }}>All Posts</option>
-                        <option value="scheduled_posts" {{ old('trigger_condition', 'scheduled_posts') == 'scheduled_posts' ? 'selected' : '' }}>Scheduled Posts Only</option>
-                        <option value="external_links" {{ old('trigger_condition') == 'external_links' ? 'selected' : '' }}>Posts with External Links</option>
-                        <option value="mentions" {{ old('trigger_condition') == 'mentions' ? 'selected' : '' }}>Posts with Mentions</option>
-                        <option value="media_posts" {{ old('trigger_condition') == 'media_posts' ? 'selected' : '' }}>Posts with Media</option>
+                        <option value="all_posts" {{ old('trigger_condition') == 'all_posts' ? 'selected' : '' }}>{{ __('settings.trigger_all_posts') }}</option>
+                        <option value="scheduled_posts" {{ old('trigger_condition', 'scheduled_posts') == 'scheduled_posts' ? 'selected' : '' }}>{{ __('settings.trigger_scheduled_posts') }}</option>
+                        <option value="external_links" {{ old('trigger_condition') == 'external_links' ? 'selected' : '' }}>{{ __('settings.trigger_external_links') }}</option>
+                        <option value="mentions" {{ old('trigger_condition') == 'mentions' ? 'selected' : '' }}>{{ __('settings.trigger_mentions') }}</option>
+                        <option value="media_posts" {{ old('trigger_condition') == 'media_posts' ? 'selected' : '' }}>{{ __('settings.trigger_media_posts') }}</option>
                     </select>
                 </div>
             </div>
@@ -94,15 +94,15 @@
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <div class="flex items-center justify-between mb-4">
                 <h3 class="text-base font-semibold text-gray-900">
-                    <i class="fas fa-tasks text-indigo-500 mr-2"></i>Approval Steps
+                    <i class="fas fa-tasks text-indigo-500 me-2"></i>{{ __('settings.approval_steps') }}
                 </h3>
                 <button type="button" @click="addStep()"
                         class="px-3 py-1.5 text-sm bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">
-                    <i class="fas fa-plus mr-1"></i>Add Step
+                    <i class="fas fa-plus me-1"></i>{{ __('settings.add_step') }}
                 </button>
             </div>
             <p class="text-sm text-gray-500 mb-4">
-                Content must pass through each step in order. Configure who can approve at each stage.
+                {{ __('settings.approval_steps_description') }}
             </p>
 
             <div class="space-y-4">
@@ -112,10 +112,10 @@
                         <div class="absolute -left-3 top-4 w-6 h-6 bg-indigo-600 text-white rounded-full flex items-center justify-center text-xs font-bold"
                              x-text="index + 1"></div>
 
-                        <div class="ml-4">
+                        <div class="ms-4">
                             <div class="flex items-start justify-between mb-4">
                                 <h4 class="text-sm font-medium text-gray-900">
-                                    Step <span x-text="index + 1"></span>
+                                    {{ __('settings.step') }} <span x-text="index + 1"></span>
                                 </h4>
                                 <button type="button" @click="removeStep(index)" x-show="steps.length > 1"
                                         class="text-gray-400 hover:text-red-500 transition">
@@ -125,20 +125,20 @@
 
                             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 <div>
-                                    <label class="block text-xs font-medium text-gray-600 mb-1">Approver Role</label>
+                                    <label class="block text-xs font-medium text-gray-600 mb-1">{{ __('settings.approver_role') }}</label>
                                     <select x-model="step.role" :name="'steps[' + index + '][role]'"
                                             class="w-full text-sm rounded-lg border-gray-300 focus:ring-indigo-500 focus:border-indigo-500">
-                                        <option value="">Any Team Member</option>
-                                        <option value="manager">Manager</option>
-                                        <option value="admin">Admin</option>
-                                        <option value="content_lead">Content Lead</option>
-                                        <option value="legal">Legal/Compliance</option>
-                                        <option value="executive">Executive</option>
+                                        <option value="">{{ __('settings.any_team_member') }}</option>
+                                        <option value="manager">{{ __('settings.role_manager') }}</option>
+                                        <option value="admin">{{ __('settings.role_admin') }}</option>
+                                        <option value="content_lead">{{ __('settings.role_content_lead') }}</option>
+                                        <option value="legal">{{ __('settings.role_legal') }}</option>
+                                        <option value="executive">{{ __('settings.role_executive') }}</option>
                                     </select>
                                 </div>
 
                                 <div>
-                                    <label class="block text-xs font-medium text-gray-600 mb-1">Specific Users (Optional)</label>
+                                    <label class="block text-xs font-medium text-gray-600 mb-1">{{ __('settings.specific_users_optional') }}</label>
                                     <select :name="'steps[' + index + '][users][]'" multiple
                                             class="w-full text-sm rounded-lg border-gray-300 focus:ring-indigo-500 focus:border-indigo-500">
                                         @foreach($teamMembers ?? [] as $member)
@@ -148,7 +148,7 @@
                                 </div>
 
                                 <div>
-                                    <label class="block text-xs font-medium text-gray-600 mb-1">Required Approvals</label>
+                                    <label class="block text-xs font-medium text-gray-600 mb-1">{{ __('settings.required_approvals') }}</label>
                                     <input type="number" x-model="step.required_approvals" :name="'steps[' + index + '][required_approvals]'"
                                            min="1" max="10"
                                            class="w-full text-sm rounded-lg border-gray-300 focus:ring-indigo-500 focus:border-indigo-500">
@@ -161,76 +161,76 @@
 
             {{-- Visual Flow --}}
             <div class="mt-6 flex items-center justify-center gap-2 py-4 bg-indigo-50 rounded-lg">
-                <span class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">Content Created</span>
+                <span class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">{{ __('settings.content_created') }}</span>
                 <template x-for="(step, index) in steps" :key="'flow-' + index">
                     <div class="flex items-center gap-2">
                         <i class="fas fa-arrow-right text-gray-400"></i>
                         <span class="px-3 py-1 bg-indigo-100 text-indigo-700 rounded-full text-xs font-medium">
-                            Step <span x-text="index + 1"></span>
+                            {{ __('settings.step') }} <span x-text="index + 1"></span>
                         </span>
                     </div>
                 </template>
                 <i class="fas fa-arrow-right text-gray-400"></i>
-                <span class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">Published</span>
+                <span class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">{{ __('settings.published') }}</span>
             </div>
         </div>
 
         {{-- Settings --}}
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <h3 class="text-base font-semibold text-gray-900 mb-4">
-                <i class="fas fa-cog text-gray-500 mr-2"></i>Workflow Settings
+                <i class="fas fa-cog text-gray-500 me-2"></i>{{ __('settings.workflow_settings') }}
             </h3>
 
             <div class="space-y-4">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                        <label for="auto_approve_after_hours" class="block text-sm font-medium text-gray-700 mb-1">Auto-Approve After (hours)</label>
+                        <label for="auto_approve_after_hours" class="block text-sm font-medium text-gray-700 mb-1">{{ __('settings.auto_approve_after_hours') }}</label>
                         <input type="number" name="auto_approve_after_hours" id="auto_approve_after_hours"
                                value="{{ old('auto_approve_after_hours') }}" min="0" max="168"
                                class="w-full rounded-lg border-gray-300 focus:ring-indigo-500 focus:border-indigo-500"
-                               placeholder="Leave empty to disable">
-                        <p class="mt-1 text-xs text-gray-500">Automatically approve if no response within this time</p>
+                               placeholder="{{ __('settings.leave_empty_to_disable') }}">
+                        <p class="mt-1 text-xs text-gray-500">{{ __('settings.auto_approve_description') }}</p>
                     </div>
 
                     <div>
-                        <label for="reminder_hours" class="block text-sm font-medium text-gray-700 mb-1">Send Reminder After (hours)</label>
+                        <label for="reminder_hours" class="block text-sm font-medium text-gray-700 mb-1">{{ __('settings.send_reminder_after_hours') }}</label>
                         <input type="number" name="reminder_hours" id="reminder_hours"
                                value="{{ old('reminder_hours', 24) }}" min="1" max="72"
                                class="w-full rounded-lg border-gray-300 focus:ring-indigo-500 focus:border-indigo-500">
-                        <p class="mt-1 text-xs text-gray-500">Send reminder to pending approvers</p>
+                        <p class="mt-1 text-xs text-gray-500">{{ __('settings.reminder_description') }}</p>
                     </div>
                 </div>
 
                 <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                     <div>
-                        <p class="text-sm font-medium text-gray-900">Allow Skip Step</p>
-                        <p class="text-xs text-gray-500">Higher-level approvers can skip lower steps</p>
+                        <p class="text-sm font-medium text-gray-900">{{ __('settings.allow_skip_step') }}</p>
+                        <p class="text-xs text-gray-500">{{ __('settings.allow_skip_description') }}</p>
                     </div>
                     <label class="relative inline-flex items-center cursor-pointer">
                         <input type="checkbox" name="allow_skip" value="1" {{ old('allow_skip') ? 'checked' : '' }} class="sr-only peer">
-                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
                     </label>
                 </div>
 
                 <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                     <div>
-                        <p class="text-sm font-medium text-gray-900">Require Rejection Reason</p>
-                        <p class="text-xs text-gray-500">Approvers must provide a reason when rejecting</p>
+                        <p class="text-sm font-medium text-gray-900">{{ __('settings.require_rejection_reason') }}</p>
+                        <p class="text-xs text-gray-500">{{ __('settings.require_rejection_description') }}</p>
                     </div>
                     <label class="relative inline-flex items-center cursor-pointer">
                         <input type="checkbox" name="require_rejection_reason" value="1" {{ old('require_rejection_reason', true) ? 'checked' : '' }} class="sr-only peer">
-                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
                     </label>
                 </div>
 
                 <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                     <div>
-                        <p class="text-sm font-medium text-gray-900">Notify Creator on Approval</p>
-                        <p class="text-xs text-gray-500">Send notification at each approval step</p>
+                        <p class="text-sm font-medium text-gray-900">{{ __('settings.notify_creator_on_approval') }}</p>
+                        <p class="text-xs text-gray-500">{{ __('settings.notify_creator_description') }}</p>
                     </div>
                     <label class="relative inline-flex items-center cursor-pointer">
                         <input type="checkbox" name="notify_on_approval" value="1" {{ old('notify_on_approval', true) ? 'checked' : '' }} class="sr-only peer">
-                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
                     </label>
                 </div>
             </div>
@@ -240,12 +240,12 @@
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <div class="flex items-center justify-between">
                 <div>
-                    <h3 class="text-base font-semibold text-gray-900">Activate Workflow</h3>
-                    <p class="text-sm text-gray-500">Enable this workflow for content approval</p>
+                    <h3 class="text-base font-semibold text-gray-900">{{ __('settings.activate_workflow') }}</h3>
+                    <p class="text-sm text-gray-500">{{ __('settings.activate_workflow_description') }}</p>
                 </div>
                 <label class="relative inline-flex items-center cursor-pointer">
                     <input type="checkbox" name="is_active" value="1" {{ old('is_active', true) ? 'checked' : '' }} class="sr-only peer">
-                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
                 </label>
             </div>
         </div>
@@ -254,11 +254,11 @@
         <div class="flex items-center justify-end gap-3">
             <a href="{{ route('orgs.settings.approval-workflows.index', $currentOrg) }}"
                class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition">
-                Cancel
+                {{ __('common.cancel') }}
             </a>
             <button type="submit"
                     class="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition text-sm font-medium">
-                <i class="fas fa-tasks mr-2"></i>Create Workflow
+                <i class="fas fa-tasks me-2"></i>{{ __('settings.create_workflow') }}
             </button>
         </div>
     </form>

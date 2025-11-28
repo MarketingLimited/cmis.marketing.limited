@@ -1,20 +1,20 @@
 @extends('layouts.admin')
 
-@section('title', 'User Details')
+@section('title', __('users.user_details'))
 
 @section('content')
 <div x-data="userShowPage()" x-init="loadUser()">
     <div class="mb-6">
         <a href="{{ route('users.index') }}" class="text-blue-600 hover:text-blue-800 mb-2 inline-block">
-            <i class="fas fa-arrow-left mr-2"></i>Back to Users
+            <i class="fas fa-arrow-left me-2"></i>{{ __('users.back_to_list') }}
         </a>
-        <h1 class="text-3xl font-bold text-gray-900">User Details</h1>
+        <h1 class="text-3xl font-bold text-gray-900">{{ __('users.user_details') }}</h1>
     </div>
 
     <!-- Loading State -->
     <div x-show="loading" class="bg-white rounded-lg shadow p-8 text-center">
         <i class="fas fa-spinner fa-spin text-3xl text-gray-400"></i>
-        <p class="text-gray-600 mt-2">Loading user details...</p>
+        <p class="text-gray-600 mt-2">{{ __('users.loading_details') }}</p>
     </div>
 
     <!-- User Profile -->
@@ -43,7 +43,7 @@
                 <div class="mt-6 border-t pt-6">
                     <dl class="space-y-3">
                         <div>
-                            <dt class="text-sm font-medium text-gray-500">Role</dt>
+                            <dt class="text-sm font-medium text-gray-500">{{ __('users.role') }}</dt>
                             <dd class="mt-1">
                                 <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full"
                                     :class="{
@@ -56,15 +56,15 @@
                             </dd>
                         </div>
                         <div>
-                            <dt class="text-sm font-medium text-gray-500">Joined</dt>
+                            <dt class="text-sm font-medium text-gray-500">{{ __('users.joined') }}</dt>
                             <dd class="mt-1 text-sm text-gray-900" x-text="formatDate(membership?.joined_at)"></dd>
                         </div>
                         <div>
-                            <dt class="text-sm font-medium text-gray-500">Last Accessed</dt>
+                            <dt class="text-sm font-medium text-gray-500">{{ __('users.last_accessed') }}</dt>
                             <dd class="mt-1 text-sm text-gray-900" x-text="formatDate(membership?.last_accessed)"></dd>
                         </div>
                         <div x-show="membership?.invited_by">
-                            <dt class="text-sm font-medium text-gray-500">Invited By</dt>
+                            <dt class="text-sm font-medium text-gray-500">{{ __('users.invited_by') }}</dt>
                             <dd class="mt-1 text-sm text-gray-900" x-text="membership?.invited_by"></dd>
                         </div>
                     </dl>
@@ -74,12 +74,12 @@
                 <div class="mt-6 border-t pt-6 space-y-2">
                     @can('assignRole', App\Models\User::class)
                     <button @click="showRoleModal = true" class="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg">
-                        <i class="fas fa-user-tag mr-2"></i>Change Role
+                        <i class="fas fa-user-tag me-2"></i>{{ __('users.change_role') }}
                     </button>
                     @endcan
                     @can('delete', App\Models\User::class)
                     <button @click="confirmDeactivate()" class="w-full bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg">
-                        <i class="fas fa-ban mr-2"></i>Deactivate User
+                        <i class="fas fa-ban me-2"></i>{{ __('users.deactivate_user') }}
                     </button>
                     @endcan
                 </div>
@@ -91,32 +91,32 @@
             <!-- User Information -->
             <div class="bg-white rounded-lg shadow">
                 <div class="px-6 py-4 border-b border-gray-200">
-                    <h3 class="text-lg font-medium text-gray-900">User Information</h3>
+                    <h3 class="text-lg font-medium text-gray-900">{{ __('users.user_information') }}</h3>
                 </div>
                 <div class="px-6 py-4">
                     <dl class="grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-2">
                         <div>
-                            <dt class="text-sm font-medium text-gray-500">User ID</dt>
+                            <dt class="text-sm font-medium text-gray-500">{{ __('users.user_id') }}</dt>
                             <dd class="mt-1 text-sm text-gray-900 font-mono" x-text="user?.id || user?.user_id"></dd>
                         </div>
                         <div>
-                            <dt class="text-sm font-medium text-gray-500">Display Name</dt>
+                            <dt class="text-sm font-medium text-gray-500">{{ __('users.display_name') }}</dt>
                             <dd class="mt-1 text-sm text-gray-900" x-text="user?.display_name"></dd>
                         </div>
                         <div>
-                            <dt class="text-sm font-medium text-gray-500">Email</dt>
+                            <dt class="text-sm font-medium text-gray-500">{{ __('users.email') }}</dt>
                             <dd class="mt-1 text-sm text-gray-900" x-text="user?.email"></dd>
                         </div>
                         <div>
-                            <dt class="text-sm font-medium text-gray-500">Full Name</dt>
-                            <dd class="mt-1 text-sm text-gray-900" x-text="user?.name || 'N/A'"></dd>
+                            <dt class="text-sm font-medium text-gray-500">{{ __('users.full_name') }}</dt>
+                            <dd class="mt-1 text-sm text-gray-900" x-text="user?.name || '{{ __('users.n_a') }}'"></dd>
                         </div>
                         <div>
-                            <dt class="text-sm font-medium text-gray-500">Provider</dt>
-                            <dd class="mt-1 text-sm text-gray-900" x-text="user?.provider || 'Email'"></dd>
+                            <dt class="text-sm font-medium text-gray-500">{{ __('users.provider') }}</dt>
+                            <dd class="mt-1 text-sm text-gray-900" x-text="user?.provider || '{{ __('users.email') }}'"></dd>
                         </div>
                         <div>
-                            <dt class="text-sm font-medium text-gray-500">Status</dt>
+                            <dt class="text-sm font-medium text-gray-500">{{ __('users.status') }}</dt>
                             <dd class="mt-1">
                                 <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full"
                                     :class="{
@@ -134,19 +134,19 @@
             <!-- Activity Log -->
             <div class="bg-white rounded-lg shadow">
                 <div class="px-6 py-4 border-b border-gray-200">
-                    <h3 class="text-lg font-medium text-gray-900">Recent Activity</h3>
+                    <h3 class="text-lg font-medium text-gray-900">{{ __('users.recent_activity') }}</h3>
                 </div>
                 <div class="px-6 py-4">
                     <!-- Loading State -->
                     <div x-show="activityLoading" class="text-center py-8 text-gray-500">
                         <i class="fas fa-spinner fa-spin text-3xl mb-2"></i>
-                        <p>Loading activity...</p>
+                        <p>{{ __('users.loading_activity') }}</p>
                     </div>
 
                     <!-- Activity List -->
                     <div x-show="!activityLoading && activities.length > 0" class="space-y-4">
                         <template x-for="activity in activities" :key="activity.id">
-                            <div class="flex items-start space-x-3 space-x-reverse">
+                            <div class="flex items-start gap-3">
                                 <div class="flex-shrink-0">
                                     <div class="h-8 w-8 rounded-full flex items-center justify-center"
                                          :class="{
@@ -171,7 +171,7 @@
                     <!-- Empty State -->
                     <div x-show="!activityLoading && activities.length === 0" class="text-center py-8 text-gray-500">
                         <i class="fas fa-history text-3xl mb-2"></i>
-                        <p>No recent activity</p>
+                        <p>{{ __('users.no_activity') }}</p>
                     </div>
                 </div>
             </div>
@@ -179,20 +179,20 @@
             <!-- Permissions -->
             <div class="bg-white rounded-lg shadow">
                 <div class="px-6 py-4 border-b border-gray-200">
-                    <h3 class="text-lg font-medium text-gray-900">Permissions</h3>
+                    <h3 class="text-lg font-medium text-gray-900">{{ __('users.permissions') }}</h3>
                 </div>
                 <div class="px-6 py-4">
                     <!-- Loading State -->
                     <div x-show="permissionsLoading" class="text-center py-8 text-gray-500">
                         <i class="fas fa-spinner fa-spin text-3xl mb-2"></i>
-                        <p>Loading permissions...</p>
+                        <p>{{ __('users.loading_permissions') }}</p>
                     </div>
 
                     <!-- Permissions Grid -->
                     <div x-show="!permissionsLoading && permissions.length > 0" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <template x-for="permission in permissions" :key="permission.id">
                             <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                                <div class="flex items-center space-x-3 space-x-reverse">
+                                <div class="flex items-center gap-3">
                                     <div class="flex-shrink-0">
                                         <i :class="permission.icon" class="text-gray-600"></i>
                                     </div>
@@ -218,9 +218,9 @@
                     <div x-show="!permissionsLoading && permissions.length > 0" class="mt-4 p-4 bg-blue-50 rounded-lg">
                         <div class="flex items-start">
                             <i class="fas fa-info-circle text-blue-600 mt-1"></i>
-                            <p class="mr-3 text-sm text-blue-800">
-                                Permissions are managed based on the user's role.
-                                <span x-text="`Current role: ${membership?.role?.role_name || 'N/A'}`"></span>
+                            <p class="me-3 text-sm text-blue-800">
+                                {{ __('users.permissions_managed_by_role') }}
+                                <span x-text="`{{ __('users.current_role') }}: ${membership?.role?.role_name || '{{ __('users.n_a') }}'}`"></span>
                             </p>
                         </div>
                     </div>
@@ -228,7 +228,7 @@
                     <!-- Empty State -->
                     <div x-show="!permissionsLoading && permissions.length === 0" class="text-center py-8 text-gray-500">
                         <i class="fas fa-shield-alt text-3xl mb-2"></i>
-                        <p>No permissions assigned</p>
+                        <p>{{ __('users.no_permissions') }}</p>
                     </div>
                 </div>
             </div>
@@ -239,17 +239,17 @@
     <div x-show="showRoleModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50" x-cloak>
         <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
             <div class="flex justify-between items-center mb-4">
-                <h3 class="text-lg font-medium">Change User Role</h3>
+                <h3 class="text-lg font-medium">{{ __('users.change_role_title') }}</h3>
                 <button @click="showRoleModal = false" class="text-gray-400 hover:text-gray-500">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
             <form @submit.prevent="updateRole()">
                 <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">New Role</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('users.new_role') }}</label>
                     <select x-model="roleForm.role_id" required
                         class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
-                        <option value="">Select a role</option>
+                        <option value="">{{ __('users.select_role') }}</option>
                         <template x-for="role in roles" :key="role.role_id">
                             <option :value="role.role_id" x-text="role.role_name"></option>
                         </template>
@@ -258,10 +258,10 @@
                 <div class="flex justify-end gap-2">
                     <button type="button" @click="showRoleModal = false"
                         class="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50">
-                        Cancel
+                        {{ __('common.cancel') }}
                     </button>
                     <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
-                        Update Role
+                        {{ __('users.update_role') }}
                     </button>
                 </div>
             </form>
@@ -330,18 +330,18 @@ function userShowPage() {
                 } else {
                     // If API doesn't exist yet, show sample data
                     this.activities = [
-                        { id: 1, type: 'login', description: 'Logged in to the system', created_at: new Date().toISOString() },
-                        { id: 2, type: 'update', description: 'Updated profile information', created_at: new Date(Date.now() - 3600000).toISOString() },
-                        { id: 3, type: 'access', description: 'Accessed campaign dashboard', created_at: new Date(Date.now() - 7200000).toISOString() }
+                        { id: 1, type: 'login', description: '{{ __("users.activity_login") }}', created_at: new Date().toISOString() },
+                        { id: 2, type: 'update', description: '{{ __("users.activity_update_profile") }}', created_at: new Date(Date.now() - 3600000).toISOString() },
+                        { id: 3, type: 'access', description: '{{ __("users.activity_access_dashboard") }}', created_at: new Date(Date.now() - 7200000).toISOString() }
                     ];
                 }
             } catch (error) {
                 console.error('Failed to load activities:', error);
                 // Show sample data on error
                 this.activities = [
-                    { id: 1, type: 'login', description: 'Logged in to the system', created_at: new Date().toISOString() },
-                    { id: 2, type: 'update', description: 'Updated profile information', created_at: new Date(Date.now() - 3600000).toISOString() },
-                    { id: 3, type: 'access', description: 'Accessed campaign dashboard', created_at: new Date(Date.now() - 7200000).toISOString() }
+                    { id: 1, type: 'login', description: '{{ __("users.activity_login") }}', created_at: new Date().toISOString() },
+                    { id: 2, type: 'update', description: '{{ __("users.activity_update_profile") }}', created_at: new Date(Date.now() - 3600000).toISOString() },
+                    { id: 3, type: 'access', description: '{{ __("users.activity_access_dashboard") }}', created_at: new Date(Date.now() - 7200000).toISOString() }
                 ];
             } finally {
                 this.activityLoading = false;
@@ -392,14 +392,14 @@ function userShowPage() {
 
         getSamplePermissions(roleCode) {
             const allPermissions = [
-                { id: 1, name: 'View Campaigns', description: 'View campaign details', icon: 'fas fa-eye', granted: true },
-                { id: 2, name: 'Create Campaigns', description: 'Create new campaigns', icon: 'fas fa-plus', granted: ['owner', 'admin', 'editor'].includes(roleCode) },
-                { id: 3, name: 'Edit Campaigns', description: 'Modify existing campaigns', icon: 'fas fa-edit', granted: ['owner', 'admin', 'editor'].includes(roleCode) },
-                { id: 4, name: 'Delete Campaigns', description: 'Delete campaigns', icon: 'fas fa-trash', granted: ['owner', 'admin'].includes(roleCode) },
-                { id: 5, name: 'Manage Users', description: 'Add/remove team members', icon: 'fas fa-users', granted: ['owner', 'admin'].includes(roleCode) },
-                { id: 6, name: 'View Analytics', description: 'Access analytics dashboard', icon: 'fas fa-chart-line', granted: true },
-                { id: 7, name: 'Manage Settings', description: 'Configure org settings', icon: 'fas fa-cog', granted: ['owner'].includes(roleCode) },
-                { id: 8, name: 'Manage Integrations', description: 'Connect platforms', icon: 'fas fa-plug', granted: ['owner', 'admin'].includes(roleCode) }
+                { id: 1, name: '{{ __("users.view_campaigns") }}', description: '{{ __("users.view_campaigns_desc") }}', icon: 'fas fa-eye', granted: true },
+                { id: 2, name: '{{ __("users.create_campaigns") }}', description: '{{ __("users.create_campaigns_desc") }}', icon: 'fas fa-plus', granted: ['owner', 'admin', 'editor'].includes(roleCode) },
+                { id: 3, name: '{{ __("users.edit_campaigns") }}', description: '{{ __("users.edit_campaigns_desc") }}', icon: 'fas fa-edit', granted: ['owner', 'admin', 'editor'].includes(roleCode) },
+                { id: 4, name: '{{ __("users.delete_campaigns") }}', description: '{{ __("users.delete_campaigns_desc") }}', icon: 'fas fa-trash', granted: ['owner', 'admin'].includes(roleCode) },
+                { id: 5, name: '{{ __("users.manage_users") }}', description: '{{ __("users.manage_users_desc") }}', icon: 'fas fa-users', granted: ['owner', 'admin'].includes(roleCode) },
+                { id: 6, name: '{{ __("users.view_analytics") }}', description: '{{ __("users.view_analytics_desc") }}', icon: 'fas fa-chart-line', granted: true },
+                { id: 7, name: '{{ __("users.manage_settings") }}', description: '{{ __("users.manage_settings_desc") }}', icon: 'fas fa-cog', granted: ['owner'].includes(roleCode) },
+                { id: 8, name: '{{ __("users.manage_integrations") }}', description: '{{ __("users.manage_integrations_desc") }}', icon: 'fas fa-plug', granted: ['owner', 'admin'].includes(roleCode) }
             ];
             return allPermissions;
         },
@@ -441,19 +441,19 @@ function userShowPage() {
                 if (response.ok) {
                     this.showRoleModal = false;
                     this.loadUser();
-                    alert('User role updated successfully!');
+                    alert('{{ __("users.role_updated_success") }}');
                 } else {
                     const error = await response.json();
-                    alert('Failed to update role: ' + (error.message || 'Unknown error'));
+                    alert('{{ __("users.update_role_failed") }}: ' + (error.message || '{{ __("users.unknown_error") }}'));
                 }
             } catch (error) {
                 console.error('Failed to update role:', error);
-                alert('Failed to update role');
+                alert('{{ __("users.update_role_failed") }}');
             }
         },
 
         async confirmDeactivate() {
-            if (confirm('Are you sure you want to deactivate this user?')) {
+            if (confirm('{{ __("users.confirm_deactivate") }}')) {
                 try {
                     const userId = '{{ $userId ?? "" }}';
                     const orgId = '{{ session("current_org_id") }}';
@@ -467,21 +467,21 @@ function userShowPage() {
                     });
 
                     if (response.ok) {
-                        alert('User deactivated successfully!');
+                        alert('{{ __("users.user_deactivated_success") }}');
                         window.location.href = '/users';
                     } else {
                         const error = await response.json();
-                        alert('Failed to deactivate user: ' + (error.message || 'Unknown error'));
+                        alert('{{ __("users.deactivate_failed") }}: ' + (error.message || '{{ __("users.unknown_error") }}'));
                     }
                 } catch (error) {
                     console.error('Failed to deactivate user:', error);
-                    alert('Failed to deactivate user');
+                    alert('{{ __("users.deactivate_failed") }}');
                 }
             }
         },
 
         formatDate(date) {
-            if (!date) return 'N/A';
+            if (!date) return '{{ __("users.n_a") }}';
             return new Date(date).toLocaleString();
         },
 

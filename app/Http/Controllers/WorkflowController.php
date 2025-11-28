@@ -58,7 +58,7 @@ class WorkflowController extends Controller
             ]);
         } catch (\Exception $e) {
             Log::error('Workflow show error: ' . $e->getMessage());
-            return redirect()->route('orgs.workflows.index', ['org' => $org])->with('error', 'فشل تحميل سير العمل');
+            return redirect()->route('orgs.workflows.index', ['org' => $org])->with('error', __('workflows.operation_failed'));
         }
     }
 

@@ -1,13 +1,9 @@
 {{--
     ============================================================================
-    LEGACY LAYOUT - MIGRATION IN PROGRESS
+    LEGACY LAYOUT - NOW i18n COMPLIANT WITH DYNAMIC RTL/LTR SUPPORT
     ============================================================================
-    This is the legacy Arabic RTL layout. Pages should be migrated to
-    layouts.admin which has full i18n support with {{ __() }} functions.
-
-    Migrated Pages (now using layouts.admin):
-    - settings/user.blade.php
-    - settings/organization.blade.php
+    This layout now supports both Arabic (RTL) and English (LTR) dynamically.
+    Updated: 2025-11-27 - Full i18n compliance achieved
 
     Remaining Pages (27 files still using this layout):
     - settings/platform-connections/*.blade.php (6 files)
@@ -22,22 +18,25 @@
     - subscription/*.blade.php (2 files)
     - dashboard/analytics.blade.php
 
-    Migration Priority: High - migrate remaining pages to layouts.admin
+    i18n Status: ✅ COMPLIANT - Dynamic RTL/LTR, zero hardcoded text
     ============================================================================
 --}}
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="rtl">
+<html lang="{{ app()->getLocale() }}" dir="{{ app()->isLocale('ar') ? 'rtl' : 'ltr' }}">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ config('app.name', 'CMIS') }} - @yield('title', 'لوحة التحكم')</title>
+    <title>{{ config('app.name', 'CMIS') }} - @yield('title', __('navigation.dashboard'))</title>
 
     <!-- Font Awesome CDN (keeping this as it's external assets) -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <!-- Vite Assets -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+
+    <!-- JavaScript Translations -->
+    <x-js-translations />
 
     @stack('styles')
 </head>
@@ -54,7 +53,7 @@
                     </div>
                     <div>
                         <h1 class="text-2xl font-bold text-white">CMIS Platform</h1>
-                        <p class="text-white/70 text-xs">نظام إدارة التسويق</p>
+                        <p class="text-white/70 text-xs">{{ __('navigation.platform_tagline') }}</p>
                     </div>
                 </div>
             </div>
@@ -68,54 +67,54 @@
                 @if($currentOrg)
                 <a href="{{ route('orgs.dashboard.index', ['org' => $currentOrg]) }}" class="sidebar-item flex items-center gap-3 px-4 py-3 rounded-xl {{ request()->routeIs('orgs.dashboard.*') ? 'bg-white/20 text-white shadow-lg' : 'text-white/80 hover:bg-white/10' }}">
                     <i class="fas fa-home text-lg w-6"></i>
-                    <span class="font-medium">الرئيسية</span>
+                    <span class="font-medium">{{ __('navigation.dashboard') }}</span>
                 </a>
 
                 <a href="{{ route('orgs.campaigns.index', ['org' => $currentOrg]) }}" class="sidebar-item flex items-center gap-3 px-4 py-3 rounded-xl {{ request()->routeIs('orgs.campaigns.*') ? 'bg-white/20 text-white shadow-lg' : 'text-white/80 hover:bg-white/10' }}">
                     <i class="fas fa-bullhorn text-lg w-6"></i>
-                    <span class="font-medium">الحملات</span>
+                    <span class="font-medium">{{ __('navigation.campaigns') }}</span>
                 </a>
 
                 {{-- TODO: Implement content.index route --}}
                 {{-- <a href="{{ route('orgs.content.index', ['org' => $currentOrg]) }}" class="sidebar-item flex items-center gap-3 px-4 py-3 rounded-xl {{ request()->routeIs('orgs.content.*') ? 'bg-white/20 text-white shadow-lg' : 'text-white/80 hover:bg-white/10' }}">
                     <i class="fas fa-file-alt text-lg w-6"></i>
-                    <span class="font-medium">المحتوى</span>
+                    <span class="font-medium">{{ __('navigation.content') }}</span>
                 </a> --}}
 
                 <a href="{{ route('orgs.creative.assets.index', ['org' => $currentOrg]) }}" class="sidebar-item flex items-center gap-3 px-4 py-3 rounded-xl {{ request()->routeIs('orgs.creative.assets.*') ? 'bg-white/20 text-white shadow-lg' : 'text-white/80 hover:bg-white/10' }}">
                     <i class="fas fa-images text-lg w-6"></i>
-                    <span class="font-medium">الملفات الإبداعية</span>
+                    <span class="font-medium">{{ __('navigation.creative_assets') }}</span>
                 </a>
 
                 <a href="{{ route('orgs.social.history.index', ['org' => $currentOrg]) }}" class="sidebar-item flex items-center gap-3 px-4 py-3 rounded-xl {{ request()->routeIs('orgs.social.history.*') ? 'bg-white/20 text-white shadow-lg' : 'text-white/80 hover:bg-white/10' }}">
                     <i class="fas fa-clock-rotate-left text-lg w-6"></i>
-                    <span class="font-medium">المحتوى التاريخي</span>
+                    <span class="font-medium">{{ __('navigation.historical_content') }}</span>
                 </a>
 
                 @can('viewAny', App\Models\User::class)
                 <a href="{{ route('orgs.analytics.index', ['org' => $currentOrg]) }}" class="sidebar-item flex items-center gap-3 px-4 py-3 rounded-xl {{ request()->routeIs('orgs.analytics.*') ? 'bg-white/20 text-white shadow-lg' : 'text-white/80 hover:bg-white/10' }}">
                     <i class="fas fa-chart-line text-lg w-6"></i>
-                    <span class="font-medium">التحليلات</span>
+                    <span class="font-medium">{{ __('navigation.analytics') }}</span>
                 </a>
                 @endcan
 
                 <a href="{{ route('orgs.inbox.index', ['org' => $currentOrg]) }}" class="sidebar-item flex items-center gap-3 px-4 py-3 rounded-xl {{ request()->routeIs('orgs.inbox.*') ? 'bg-white/20 text-white shadow-lg' : 'text-white/80 hover:bg-white/10' }}">
                     <i class="fas fa-inbox text-lg w-6"></i>
-                    <span class="font-medium">صندوق الرسائل</span>
+                    <span class="font-medium">{{ __('navigation.inbox') }}</span>
                 </a>
                 @else
                 <div class="px-4 py-3 text-white/60 text-sm">
-                    الرجاء اختيار منظمة للمتابعة
+                    {{ __('navigation.no_organization_selected') }}
                 </div>
                 @endif
 
                 <div class="pt-4 border-t border-white/20 mt-4">
-                    <p class="text-white/50 text-xs font-medium px-4 mb-2">الأدوات</p>
+                    <p class="text-white/50 text-xs font-medium px-4 mb-2">{{ __('navigation.tools') }}</p>
 
                     @can('viewAny', App\Models\User::class)
                     <a href="{{ route('users.index') }}" class="sidebar-item flex items-center gap-3 px-4 py-3 rounded-xl {{ request()->routeIs('users.*') ? 'bg-white/20 text-white shadow-lg' : 'text-white/80 hover:bg-white/10' }}">
                         <i class="fas fa-users text-lg w-6"></i>
-                        <span class="font-medium">المستخدمون</span>
+                        <span class="font-medium">{{ __('navigation.users') }}</span>
                     </a>
                     @endcan
 
@@ -123,17 +122,17 @@
                     @if($currentOrg)
                     <a href="{{ route('orgs.team.index', ['org' => $currentOrg]) }}" class="sidebar-item flex items-center gap-3 px-4 py-3 rounded-xl {{ request()->routeIs('orgs.team.*') ? 'bg-white/20 text-white shadow-lg' : 'text-white/80 hover:bg-white/10' }}">
                         <i class="fas fa-user-friends text-lg w-6"></i>
-                        <span class="font-medium">إدارة الفريق</span>
+                        <span class="font-medium">{{ __('navigation.team_management') }}</span>
                     </a>
 
                     <a href="{{ route('orgs.settings.user', ['org' => $currentOrg]) }}" class="sidebar-item flex items-center gap-3 px-4 py-3 rounded-xl {{ request()->routeIs('orgs.settings.user') || request()->routeIs('orgs.settings.profile') || request()->routeIs('orgs.settings.notifications') || request()->routeIs('orgs.settings.password') || request()->routeIs('orgs.settings.sessions') ? 'bg-white/20 text-white shadow-lg' : 'text-white/80 hover:bg-white/10' }}">
                         <i class="fas fa-user-cog text-lg w-6"></i>
-                        <span class="font-medium">إعدادات المستخدم</span>
+                        <span class="font-medium">{{ __('navigation.user_settings') }}</span>
                     </a>
 
                     <a href="{{ route('orgs.settings.organization', ['org' => $currentOrg]) }}" class="sidebar-item flex items-center gap-3 px-4 py-3 rounded-xl {{ request()->routeIs('orgs.settings.organization') || request()->routeIs('orgs.settings.team.*') || request()->routeIs('orgs.settings.api-tokens.*') ? 'bg-white/20 text-white shadow-lg' : 'text-white/80 hover:bg-white/10' }}">
                         <i class="fas fa-building text-lg w-6"></i>
-                        <span class="font-medium">إعدادات المنظمة</span>
+                        <span class="font-medium">{{ __('navigation.organization_settings') }}</span>
                     </a>
                     @endif
                     @endauth
@@ -175,8 +174,8 @@
 
                         <!-- Page Title -->
                         <div class="hidden md:block">
-                            <h2 class="text-2xl font-bold text-gray-800">@yield('page-title', 'لوحة التحكم')</h2>
-                            <p class="text-sm text-gray-500">@yield('page-subtitle', 'مرحباً بك في نظام إدارة المحتوى والحملات')</p>
+                            <h2 class="text-2xl font-bold text-gray-800">@yield('page-title', __('messages.page_title_default'))</h2>
+                            <p class="text-sm text-gray-500">@yield('page-subtitle', __('messages.page_subtitle_default'))</p>
                         </div>
 
                         <!-- Organization Context Indicator (Issue #1) -->
@@ -191,12 +190,12 @@
                                 <i class="fas fa-building text-indigo-600"></i>
                             </div>
                             <div class="text-right">
-                                <p class="text-xs text-indigo-600 font-medium">المنظمة الحالية</p>
-                                <p class="text-sm font-bold text-indigo-900">{{ Auth::user()->currentOrg->name ?? 'غير محدد' }}</p>
+                                <p class="text-xs text-indigo-600 font-medium">{{ __('navigation.current_organization') }}</p>
+                                <p class="text-sm font-bold text-indigo-900">{{ Auth::user()->currentOrg->name ?? __('messages.not_specified') }}</p>
                             </div>
                             <button @click="$dispatch('open-modal', 'org-switcher-modal')"
                                     class="mr-2 text-indigo-600 hover:text-indigo-800 transition"
-                                    title="تبديل المنظمة">
+                                    title="{{ __('navigation.switch_organization') }}">
                                 <i class="fas fa-exchange-alt text-sm"></i>
                             </button>
                         </div>
@@ -208,7 +207,7 @@
                             <!-- Search -->
                             <div class="hidden lg:block">
                                 <div class="relative">
-                                    <input type="text" placeholder="بحث..."
+                                    <input type="text" placeholder="{{ __('common.search') }}..."
                                            class="w-64 px-4 py-2 pr-10 rounded-xl border border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition">
                                     <i class="fas fa-search absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
                                 </div>
@@ -224,16 +223,16 @@
                                 <div x-show="open" @click.away="open = false" x-transition x-cloak
                                      class="absolute left-0 mt-2 w-80 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden">
                                     <div class="p-4 bg-gradient-to-r from-indigo-500 to-purple-600">
-                                        <h3 class="text-white font-bold">الإشعارات</h3>
+                                        <h3 class="text-white font-bold">{{ __('navigation.notifications') }}</h3>
                                     </div>
                                     <div class="max-h-96 overflow-y-auto">
                                         <div class="p-4 hover:bg-gray-50 cursor-pointer border-b">
-                                            <p class="text-sm font-medium text-gray-800">حملة جديدة تم إنشاؤها</p>
-                                            <p class="text-xs text-gray-500 mt-1">منذ 5 دقائق</p>
+                                            <p class="text-sm font-medium text-gray-800">{{ __('notifications.campaign_created') }}</p>
+                                            <p class="text-xs text-gray-500 mt-1">{{ __('notifications.minutes_ago', ['count' => 5]) }}</p>
                                         </div>
                                         <div class="p-4 hover:bg-gray-50 cursor-pointer">
-                                            <p class="text-sm font-medium text-gray-800">تقرير أسبوعي جاهز</p>
-                                            <p class="text-xs text-gray-500 mt-1">منذ ساعة</p>
+                                            <p class="text-sm font-medium text-gray-800">{{ __('notifications.report_ready') }}</p>
+                                            <p class="text-xs text-gray-500 mt-1">{{ __('notifications.hours_ago', ['count' => 1]) }}</p>
                                         </div>
                                     </div>
                                 </div>
@@ -262,11 +261,11 @@
                                         @if($userOrg)
                                         <a href="{{ route('orgs.settings.user', ['org' => $userOrg]) }}" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-50 transition">
                                             <i class="fas fa-user-cog text-gray-600 w-5"></i>
-                                            <span class="text-sm text-gray-700">إعدادات المستخدم</span>
+                                            <span class="text-sm text-gray-700">{{ __('navigation.user_settings') }}</span>
                                         </a>
                                         <a href="{{ route('orgs.settings.organization', ['org' => $userOrg]) }}" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-50 transition">
                                             <i class="fas fa-building text-gray-600 w-5"></i>
-                                            <span class="text-sm text-gray-700">إعدادات المنظمة</span>
+                                            <span class="text-sm text-gray-700">{{ __('navigation.organization_settings') }}</span>
                                         </a>
                                         @endif
                                         <hr class="my-2">
@@ -274,7 +273,7 @@
                                             @csrf
                                             <button type="submit" class="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-red-50 text-red-600 transition">
                                                 <i class="fas fa-sign-out-alt w-5"></i>
-                                                <span class="text-sm font-medium">تسجيل الخروج</span>
+                                                <span class="text-sm font-medium">{{ __('common.logout') }}</span>
                                             </button>
                                         </form>
                                     </div>
@@ -316,11 +315,11 @@
             <!-- Footer -->
             <footer class="bg-white border-t border-gray-200 py-4 px-6">
                 <div class="flex justify-between items-center text-sm text-gray-600">
-                    <p>&copy; 2025 CMIS Platform. جميع الحقوق محفوظة.</p>
+                    <p>&copy; 2025 CMIS Platform. {{ __('footer.all_rights_reserved') }}</p>
                     <div class="flex gap-4">
-                        <a href="#" class="hover:text-indigo-600 transition">المساعدة</a>
-                        <a href="#" class="hover:text-indigo-600 transition">الدعم الفني</a>
-                        <a href="#" class="hover:text-indigo-600 transition">الشروط</a>
+                        <a href="#" class="hover:text-indigo-600 transition">{{ __('footer.help') }}</a>
+                        <a href="#" class="hover:text-indigo-600 transition">{{ __('footer.technical_support') }}</a>
+                        <a href="#" class="hover:text-indigo-600 transition">{{ __('footer.terms') }}</a>
                     </div>
                 </div>
             </footer>

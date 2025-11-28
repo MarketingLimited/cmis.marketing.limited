@@ -4,8 +4,8 @@
     $currentOrg = $currentOrg ?? request()->route('org') ?? auth()->user()->active_org_id ?? auth()->user()->org_id;
 @endphp
 
-@section('page-title', 'التنبيهات والإشعارات')
-@section('page-subtitle', 'مراقبة وإدارة تنبيهات النظام والحملات')
+@section('page-title', __('alerts.page_title'))
+@section('page-subtitle', __('alerts.page_subtitle'))
 
 @section('content')
 <div x-data="alertsManager()" x-init="init()">
@@ -14,7 +14,7 @@
         <div class="bg-gradient-to-br from-red-500 to-red-600 rounded-xl shadow-lg p-6 text-white">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-red-100 text-sm mb-1">حرجة</p>
+                    <p class="text-red-100 text-sm mb-1">{{ __('alerts.critical') }}</p>
                     <p class="text-3xl font-bold" x-text="stats.critical"></p>
                 </div>
                 <i class="fas fa-exclamation-circle text-5xl text-red-300 opacity-50"></i>
@@ -24,7 +24,7 @@
         <div class="bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-xl shadow-lg p-6 text-white">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-yellow-100 text-sm mb-1">تحذيرات</p>
+                    <p class="text-yellow-100 text-sm mb-1">{{ __('alerts.warnings') }}</p>
                     <p class="text-3xl font-bold" x-text="stats.warnings"></p>
                 </div>
                 <i class="fas fa-exclamation-triangle text-5xl text-yellow-300 opacity-50"></i>
@@ -34,7 +34,7 @@
         <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg p-6 text-white">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-blue-100 text-sm mb-1">معلومات</p>
+                    <p class="text-blue-100 text-sm mb-1">{{ __('alerts.info') }}</p>
                     <p class="text-3xl font-bold" x-text="stats.info"></p>
                 </div>
                 <i class="fas fa-info-circle text-5xl text-blue-300 opacity-50"></i>
@@ -44,7 +44,7 @@
         <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl shadow-lg p-6 text-white">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-green-100 text-sm mb-1">محلولة</p>
+                    <p class="text-green-100 text-sm mb-1">{{ __('alerts.resolved') }}</p>
                     <p class="text-3xl font-bold" x-text="stats.resolved"></p>
                 </div>
                 <i class="fas fa-check-circle text-5xl text-green-300 opacity-50"></i>
@@ -57,26 +57,26 @@
         <div class="flex gap-3">
             <select x-model="severityFilter" @change="filterAlerts"
                     class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
-                <option value="all">جميع الدرجات</option>
-                <option value="critical">حرجة</option>
-                <option value="warning">تحذير</option>
-                <option value="info">معلومات</option>
+                <option value="all">{{ __('alerts.all_severities') }}</option>
+                <option value="critical">{{ __('alerts.critical_severity') }}</option>
+                <option value="warning">{{ __('alerts.warning_severity') }}</option>
+                <option value="info">{{ __('alerts.info_severity') }}</option>
             </select>
 
             <select x-model="typeFilter" @change="filterAlerts"
                     class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
-                <option value="all">جميع الأنواع</option>
-                <option value="budget">ميزانية</option>
-                <option value="performance">أداء</option>
-                <option value="system">نظام</option>
-                <option value="campaign">حملة</option>
+                <option value="all">{{ __('alerts.all_types') }}</option>
+                <option value="budget">{{ __('alerts.budget_type') }}</option>
+                <option value="performance">{{ __('alerts.performance_type') }}</option>
+                <option value="system">{{ __('alerts.system_type') }}</option>
+                <option value="campaign">{{ __('alerts.campaign_type') }}</option>
             </select>
 
             <select x-model="statusFilter" @change="filterAlerts"
                     class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
-                <option value="active">نشطة</option>
-                <option value="resolved">محلولة</option>
-                <option value="all">الكل</option>
+                <option value="active">{{ __('alerts.active_status') }}</option>
+                <option value="resolved">{{ __('alerts.resolved_status') }}</option>
+                <option value="all">{{ __('alerts.all_status') }}</option>
             </select>
         </div>
 
@@ -84,12 +84,12 @@
             <button @click="markAllAsRead"
                     class="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg font-medium hover:bg-gray-200 transition">
                 <i class="fas fa-check-double ml-2"></i>
-                تعليم الكل كمقروء
+                {{ __('alerts.mark_all_as_read') }}
             </button>
             <button @click="showSettingsModal = true"
                     class="bg-indigo-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-indigo-700 transition">
                 <i class="fas fa-cog ml-2"></i>
-                إعدادات
+                {{ __('alerts.settings') }}
             </button>
         </div>
     </div>
@@ -209,8 +209,8 @@
     <template x-if="filteredAlerts.length === 0">
         <div class="bg-white rounded-xl shadow-sm p-12 text-center">
             <i class="fas fa-bell-slash text-gray-300 text-6xl mb-4"></i>
-            <h3 class="text-xl font-bold text-gray-900 mb-2">لا توجد تنبيهات</h3>
-            <p class="text-gray-600">جميع الأنظمة تعمل بشكل طبيعي</p>
+            <h3 class="text-xl font-bold text-gray-900 mb-2">{{ __('alerts.no_alerts') }}</h3>
+            <p class="text-gray-600">{{ __('alerts.all_systems_normal') }}</p>
         </div>
     </template>
 
@@ -218,15 +218,15 @@
     <div x-show="showSettingsModal" @click.away="showSettingsModal = false"
          class="fixed inset-0 bg-black/50 flex items-center justify-center z-50" x-cloak>
         <div class="bg-white rounded-2xl p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-            <h3 class="text-2xl font-bold text-gray-900 mb-4">إعدادات التنبيهات</h3>
+            <h3 class="text-2xl font-bold text-gray-900 mb-4">{{ __('alerts.settings_title') }}</h3>
 
             <div class="space-y-4">
                 <!-- Budget Alerts -->
                 <div class="border-b pb-4">
                     <div class="flex items-center justify-between mb-3">
                         <div>
-                            <h4 class="font-bold text-gray-900">تنبيهات الميزانية</h4>
-                            <p class="text-sm text-gray-600">إشعارات عند تجاوز حدود الميزانية</p>
+                            <h4 class="font-bold text-gray-900">{{ __('alerts.budget_alerts') }}</h4>
+                            <p class="text-sm text-gray-600">{{ __('alerts.budget_alerts_description') }}</p>
                         </div>
                         <label class="relative inline-flex items-center cursor-pointer">
                             <input type="checkbox" x-model="settings.budgetAlerts" class="sr-only peer">
@@ -235,7 +235,7 @@
                     </div>
                     <template x-if="settings.budgetAlerts">
                         <div class="bg-gray-50 p-3 rounded-lg">
-                            <label class="block text-sm font-medium text-gray-700 mb-2">نسبة التنبيه (%)</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('alerts.alert_threshold_percentage') }}</label>
                             <input type="number" x-model="settings.budgetThreshold" min="50" max="100"
                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
                         </div>
@@ -246,8 +246,8 @@
                 <div class="border-b pb-4">
                     <div class="flex items-center justify-between mb-3">
                         <div>
-                            <h4 class="font-bold text-gray-900">تنبيهات الأداء</h4>
-                            <p class="text-sm text-gray-600">إشعارات عند انخفاض الأداء</p>
+                            <h4 class="font-bold text-gray-900">{{ __('alerts.performance_alerts') }}</h4>
+                            <p class="text-sm text-gray-600">{{ __('alerts.performance_alerts_description') }}</p>
                         </div>
                         <label class="relative inline-flex items-center cursor-pointer">
                             <input type="checkbox" x-model="settings.performanceAlerts" class="sr-only peer">
@@ -260,8 +260,8 @@
                 <div class="border-b pb-4">
                     <div class="flex items-center justify-between mb-3">
                         <div>
-                            <h4 class="font-bold text-gray-900">إشعارات البريد الإلكتروني</h4>
-                            <p class="text-sm text-gray-600">إرسال تنبيهات عبر البريد</p>
+                            <h4 class="font-bold text-gray-900">{{ __('alerts.email_notifications') }}</h4>
+                            <p class="text-sm text-gray-600">{{ __('alerts.email_notifications_description') }}</p>
                         </div>
                         <label class="relative inline-flex items-center cursor-pointer">
                             <input type="checkbox" x-model="settings.emailNotifications" class="sr-only peer">
@@ -274,8 +274,8 @@
                 <div class="pb-4">
                     <div class="flex items-center justify-between mb-3">
                         <div>
-                            <h4 class="font-bold text-gray-900">إشعارات SMS</h4>
-                            <p class="text-sm text-gray-600">إرسال تنبيهات حرجة عبر الرسائل</p>
+                            <h4 class="font-bold text-gray-900">{{ __('alerts.sms_notifications') }}</h4>
+                            <p class="text-sm text-gray-600">{{ __('alerts.sms_notifications_description') }}</p>
                         </div>
                         <label class="relative inline-flex items-center cursor-pointer">
                             <input type="checkbox" x-model="settings.smsNotifications" class="sr-only peer">
@@ -288,11 +288,11 @@
                 <div class="flex gap-3 pt-4">
                     <button @click="saveSettings"
                             class="flex-1 bg-indigo-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-indigo-700 transition">
-                        حفظ الإعدادات
+                        {{ __('alerts.save_settings') }}
                     </button>
                     <button @click="showSettingsModal = false"
                             class="flex-1 bg-gray-200 text-gray-700 px-6 py-3 rounded-lg font-medium hover:bg-gray-300 transition">
-                        إلغاء
+                        {{ __('common.cancel') }}
                     </button>
                 </div>
             </div>
@@ -351,10 +351,10 @@ function alertsManager() {
 
         getTypeLabel(type) {
             const labels = {
-                'budget': 'ميزانية',
-                'performance': 'أداء',
-                'system': 'نظام',
-                'campaign': 'حملة'
+                'budget': "{{ __('alerts.budget_type') }}",
+                'performance': "{{ __('alerts.performance_type') }}",
+                'system': "{{ __('alerts.system_type') }}",
+                'campaign': "{{ __('alerts.campaign_type') }}"
             };
             return labels[type] || type;
         },
@@ -427,7 +427,7 @@ function alertsManager() {
         },
 
         async dismissAlert(alertId) {
-            if (!confirm('هل تريد إخفاء هذا التنبيه؟')) return;
+            if (!confirm("{{ __('alerts.confirm_dismiss') }}")) return;
 
             try {
                 const response = await fetch(`/orgs/{{ $currentOrg }}/alerts/${alertId}`, {
@@ -458,7 +458,7 @@ function alertsManager() {
                 });
 
                 if (response.ok) {
-                    alert(`تم تنفيذ الإجراء: ${action}`);
+                    alert("{{ __('alerts.action_executed', ['action' => '']) }}".replace(': ', ': ' + action));
                 }
             } catch (error) {
                 console.error('Failed to perform action:', error);
@@ -490,11 +490,11 @@ function alertsManager() {
 
                 if (response.ok) {
                     this.showSettingsModal = false;
-                    alert('تم حفظ الإعدادات بنجاح');
+                    alert("{{ __('alerts.settings_saved') }}");
                 }
             } catch (error) {
                 console.error('Failed to save settings:', error);
-                alert('فشل حفظ الإعدادات');
+                alert("{{ __('alerts.settings_save_failed') }}");
             }
         }
     };

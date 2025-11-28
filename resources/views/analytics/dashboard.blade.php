@@ -4,29 +4,29 @@
     $currentOrg = $currentOrg ?? request()->route('org') ?? auth()->user()->active_org_id ?? auth()->user()->org_id;
 @endphp
 
-@section('title', 'لوحة التحليلات')
+@section('title', __('analytics.analytics_dashboard'))
 
 @section('content')
 <div class="container mx-auto px-4 py-6" x-data="analyticsDashboard()">
     <!-- Header -->
     <div class="mb-6 flex items-center justify-between">
         <div>
-            <h1 class="text-3xl font-bold text-gray-900">لوحة التحليلات</h1>
-            <p class="mt-2 text-gray-600">نظرة شاملة على أداء حملاتك التسويقية</p>
+            <h1 class="text-3xl font-bold text-gray-900">{{ __('analytics.analytics_dashboard') }}</h1>
+            <p class="mt-2 text-gray-600">{{ __('analytics.comprehensive_analysis') }}</p>
         </div>
         <div class="flex gap-3">
             <!-- Date Range Selector -->
             <select x-model="dateRange" @change="loadData()" class="rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-                <option value="7">آخر 7 أيام</option>
-                <option value="30">آخر 30 يوم</option>
-                <option value="90">آخر 90 يوم</option>
-                <option value="365">آخر سنة</option>
+                <option value="7">{{ __('analytics.last_7_days') }}</option>
+                <option value="30">{{ __('analytics.last_30_days') }}</option>
+                <option value="90">{{ __('dashboard.last_90_days') }}</option>
+                <option value="365">{{ __('dashboard.this_year') }}</option>
             </select>
             <a href="{{ route('orgs.analytics.export', ['org' => $currentOrg]) }}" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
-                <svg class="ml-2 -mr-1 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="ms-2 -me-1 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
                 </svg>
-                تصدير البيانات
+                {{ __('analytics.export') }}
             </a>
         </div>
     </div>
@@ -51,12 +51,12 @@
                                 </svg>
                             </div>
                         </div>
-                        <div class="mr-5 w-0 flex-1">
+                        <div class="me-5 w-0 flex-1">
                             <dl>
-                                <dt class="text-sm font-medium text-gray-500 truncate">إجمالي الحملات</dt>
+                                <dt class="text-sm font-medium text-gray-500 truncate">{{ __('dashboard.total_campaigns') }}</dt>
                                 <dd class="flex items-baseline">
                                     <div class="text-2xl font-semibold text-gray-900" x-text="stats.totalCampaigns || 0"></div>
-                                    <div class="mr-2 flex items-baseline text-sm font-semibold" :class="stats.campaignsChange >= 0 ? 'text-green-600' : 'text-red-600'">
+                                    <div class="me-2 flex items-baseline text-sm font-semibold" :class="stats.campaignsChange >= 0 ? 'text-green-600' : 'text-red-600'">
                                         <span x-text="stats.campaignsChange || 0"></span>%
                                     </div>
                                 </dd>
@@ -77,9 +77,9 @@
                                 </svg>
                             </div>
                         </div>
-                        <div class="mr-5 w-0 flex-1">
+                        <div class="me-5 w-0 flex-1">
                             <dl>
-                                <dt class="text-sm font-medium text-gray-500 truncate">حملات نشطة</dt>
+                                <dt class="text-sm font-medium text-gray-500 truncate">{{ __('dashboard.active_campaigns') }}</dt>
                                 <dd class="flex items-baseline">
                                     <div class="text-2xl font-semibold text-gray-900" x-text="stats.activeCampaigns || 0"></div>
                                 </dd>
@@ -100,12 +100,12 @@
                                 </svg>
                             </div>
                         </div>
-                        <div class="mr-5 w-0 flex-1">
+                        <div class="me-5 w-0 flex-1">
                             <dl>
-                                <dt class="text-sm font-medium text-gray-500 truncate">إجمالي الوصول</dt>
+                                <dt class="text-sm font-medium text-gray-500 truncate">{{ __('analytics.reach') }}</dt>
                                 <dd class="flex items-baseline">
                                     <div class="text-2xl font-semibold text-gray-900" x-text="formatNumber(stats.totalReach || 0)"></div>
-                                    <div class="mr-2 flex items-baseline text-sm font-semibold" :class="stats.reachChange >= 0 ? 'text-green-600' : 'text-red-600'">
+                                    <div class="me-2 flex items-baseline text-sm font-semibold" :class="stats.reachChange >= 0 ? 'text-green-600' : 'text-red-600'">
                                         <span x-text="stats.reachChange || 0"></span>%
                                     </div>
                                 </dd>
@@ -146,17 +146,17 @@
         <div class="grid grid-cols-1 gap-6 lg:grid-cols-2 mb-6">
             <!-- Performance Chart -->
             <div class="bg-white shadow rounded-lg p-6">
-                <h3 class="text-lg font-medium text-gray-900 mb-4">أداء الحملات</h3>
+                <h3 class="text-lg font-medium text-gray-900 mb-4">{{ __('analytics.campaign_performance') }}</h3>
                 <div class="h-64 flex items-center justify-center bg-gray-50 rounded">
-                    <p class="text-gray-500">الرسم البياني - التكامل مع Chart.js</p>
+                    <p class="text-gray-500">{{ __('analytics.chart') }} - {{ __('common.integration_with_chartjs') }}</p>
                 </div>
             </div>
 
             <!-- Channel Distribution -->
             <div class="bg-white shadow rounded-lg p-6">
-                <h3 class="text-lg font-medium text-gray-900 mb-4">توزيع القنوات</h3>
+                <h3 class="text-lg font-medium text-gray-900 mb-4">{{ __('analytics.distribution') }}</h3>
                 <div class="h-64 flex items-center justify-center bg-gray-50 rounded">
-                    <p class="text-gray-500">الرسم البياني - التكامل مع Chart.js</p>
+                    <p class="text-gray-500">{{ __('analytics.chart') }} - {{ __('common.integration_with_chartjs') }}</p>
                 </div>
             </div>
         </div>
@@ -164,29 +164,29 @@
         <!-- Recent Campaigns Table -->
         <div class="bg-white shadow rounded-lg">
             <div class="px-6 py-4 border-b border-gray-200">
-                <h3 class="text-lg font-medium text-gray-900">أحدث الحملات</h3>
+                <h3 class="text-lg font-medium text-gray-900">{{ __('dashboard.recent_campaigns') }}</h3>
             </div>
             <div class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
                         <tr>
-                            <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                الحملة
+                            <th scope="col" class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                {{ __('analytics.campaign') }}
                             </th>
-                            <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                الحالة
+                            <th scope="col" class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                {{ __('analytics.status') }}
                             </th>
-                            <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                الوصول
+                            <th scope="col" class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                {{ __('analytics.reach') }}
                             </th>
-                            <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                التفاعل
+                            <th scope="col" class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                {{ __('analytics.engagement') }}
                             </th>
-                            <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                التاريخ
+                            <th scope="col" class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                {{ __('common.date') }}
                             </th>
                             <th scope="col" class="relative px-6 py-3">
-                                <span class="sr-only">إجراءات</span>
+                                <span class="sr-only">{{ __('common.actions') }}</span>
                             </th>
                         </tr>
                     </thead>
@@ -210,14 +210,14 @@
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900" x-text="formatNumber(campaign.reach || 0)"></td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900" x-text="(campaign.engagement || 0) + '%'"></td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="campaign.created_at"></td>
-                                <td class="px-6 py-4 whitespace-nowrap text-left text-sm font-medium">
-                                    <a :href="'/campaigns/' + (campaign.campaign_id || campaign.id)" class="text-indigo-600 hover:text-indigo-900">عرض</a>
+                                <td class="px-6 py-4 whitespace-nowrap text-start text-sm font-medium">
+                                    <a :href="'/campaigns/' + (campaign.campaign_id || campaign.id)" class="text-indigo-600 hover:text-indigo-900">{{ __('common.view') }}</a>
                                 </td>
                             </tr>
                         </template>
                         <tr x-show="recentCampaigns.length === 0">
                             <td colspan="6" class="px-6 py-4 text-center text-gray-500">
-                                لا توجد حملات
+                                {{ __('dashboard.no_campaigns') }}
                             </td>
                         </tr>
                     </tbody>

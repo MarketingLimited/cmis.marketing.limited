@@ -20,6 +20,7 @@ use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\InvitationController;
 use App\Http\Controllers\UnifiedInboxController;
 use App\Http\Controllers\UnifiedCommentsController;
+use App\Http\Controllers\LanguageController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -62,6 +63,11 @@ Route::prefix('integrations')->name('integrations.')->group(function () {
 Route::post('/logout', [LoginController::class, 'destroy'])
     ->middleware('auth')
     ->name('logout');
+
+// ==================== Language Switching ====================
+Route::post('/language/{locale}', [LanguageController::class, 'switch'])
+    ->name('language.switch')
+    ->where('locale', 'ar|en');
 
 // Public Routes - Home page redirects appropriately
 Route::get('/', function () {

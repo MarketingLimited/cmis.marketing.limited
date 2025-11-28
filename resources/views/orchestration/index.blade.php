@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'Campaign Orchestration')
+@section('title', __('orchestration.title'))
 
 @php
     $currentOrg = $currentOrg ?? request()->route('org') ?? auth()->user()->active_org_id ?? auth()->user()->org_id;
@@ -17,18 +17,18 @@
                 <i class="fas fa-home"></i>
             </a>
             <span class="text-gray-400">/</span>
-            <span class="text-gray-900 font-medium">Campaign Orchestration</span>
+            <span class="text-gray-900 font-medium">{{ __('orchestration.title') }}</span>
         </nav>
         <div class="flex justify-between items-center {{ $isRtl ? 'flex-row-reverse' : '' }}">
             <div class="{{ $isRtl ? 'text-right' : '' }}">
-                <h1 class="text-2xl font-bold text-gray-900">Campaign Orchestration</h1>
-                <p class="text-gray-600 mt-1">Manage multi-platform campaigns across Meta, Google, TikTok, and more</p>
+                <h1 class="text-2xl font-bold text-gray-900">{{ __('orchestration.title') }}</h1>
+                <p class="text-gray-600 mt-1">{{ __('orchestration.subtitle') }}</p>
             </div>
             <div class="flex {{ $isRtl ? 'space-x-reverse space-x-3' : 'space-x-3' }}">
                 <button @click="showCreateModal = true"
                         class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition flex items-center gap-2">
                     <i class="fas fa-plus"></i>
-                    <span>Create Multi-Platform Campaign</span>
+                    <span>{{ __('orchestration.create_campaign') }}</span>
                 </button>
                 <button @click="refreshData()"
                         class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition"
@@ -83,11 +83,11 @@
                         <div class="flex items-center gap-1 {{ $isRtl ? 'flex-row-reverse' : '' }}">
                             <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium"
                                   :class="platform.connected ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'">
-                                <span x-text="platform.connected ? 'Connected' : 'Not Connected'"></span>
+                                <span x-text="platform.connected ? '{{ __('orchestration.connected') }}' : '{{ __('orchestration.not_connected') }}'"></span>
                             </span>
                         </div>
                         <p class="text-xs text-gray-500 mt-2">
-                            <span x-text="platform.campaigns"></span> active campaigns
+                            <span x-text="platform.campaigns"></span> {{ __('orchestration.active_campaigns_count') }}
                         </p>
                     </div>
                 </div>
@@ -103,7 +103,7 @@
                     <i class="fas fa-rocket text-2xl text-blue-600"></i>
                 </div>
                 <div class="{{ $isRtl ? 'mr-4 text-right' : 'ml-4' }}">
-                    <p class="text-sm font-medium text-gray-600">Active Campaigns</p>
+                    <p class="text-sm font-medium text-gray-600">{{ __('orchestration.active_campaigns') }}</p>
                     <p class="text-2xl font-bold text-gray-900" x-text="stats.activeCampaigns">0</p>
                 </div>
             </div>
@@ -115,7 +115,7 @@
                     <i class="fas fa-dollar-sign text-2xl text-green-600"></i>
                 </div>
                 <div class="{{ $isRtl ? 'mr-4 text-right' : 'ml-4' }}">
-                    <p class="text-sm font-medium text-gray-600">Total Budget</p>
+                    <p class="text-sm font-medium text-gray-600">{{ __('orchestration.total_budget') }}</p>
                     <p class="text-2xl font-bold text-gray-900" x-text="formatCurrency(stats.totalBudget)">$0</p>
                 </div>
             </div>
@@ -127,7 +127,7 @@
                     <i class="fas fa-chart-line text-2xl text-purple-600"></i>
                 </div>
                 <div class="{{ $isRtl ? 'mr-4 text-right' : 'ml-4' }}">
-                    <p class="text-sm font-medium text-gray-600">Total Spend</p>
+                    <p class="text-sm font-medium text-gray-600">{{ __('orchestration.total_spend') }}</p>
                     <p class="text-2xl font-bold text-gray-900" x-text="formatCurrency(stats.totalSpend)">$0</p>
                 </div>
             </div>
@@ -139,7 +139,7 @@
                     <i class="fas fa-bullseye text-2xl text-orange-600"></i>
                 </div>
                 <div class="{{ $isRtl ? 'mr-4 text-right' : 'ml-4' }}">
-                    <p class="text-sm font-medium text-gray-600">Avg. ROAS</p>
+                    <p class="text-sm font-medium text-gray-600">{{ __('orchestration.avg_roas') }}</p>
                     <p class="text-2xl font-bold text-gray-900" x-text="stats.avgROAS.toFixed(2) + 'x'">0.00x</p>
                 </div>
             </div>
@@ -150,21 +150,21 @@
     <div class="bg-white rounded-lg shadow">
         <div class="p-6 border-b border-gray-200">
             <div class="flex justify-between items-center {{ $isRtl ? 'flex-row-reverse' : '' }}">
-                <h2 class="text-lg font-semibold text-gray-900">Orchestrated Campaigns</h2>
+                <h2 class="text-lg font-semibold text-gray-900">{{ __('orchestration.orchestrated_campaigns') }}</h2>
                 <div class="flex gap-3 {{ $isRtl ? 'flex-row-reverse' : '' }}">
                     <input type="text"
                            x-model="searchQuery"
                            @input="filterCampaigns()"
-                           placeholder="Search campaigns..."
+                           placeholder="{{ __('orchestration.search_placeholder') }}"
                            class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                     <select x-model="filterStatus"
                             @change="filterCampaigns()"
                             class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                        <option value="">All Status</option>
-                        <option value="active">Active</option>
-                        <option value="paused">Paused</option>
-                        <option value="scheduled">Scheduled</option>
-                        <option value="completed">Completed</option>
+                        <option value="">{{ __('orchestration.all_status') }}</option>
+                        <option value="active">{{ __('orchestration.status_active') }}</option>
+                        <option value="paused">{{ __('orchestration.status_paused') }}</option>
+                        <option value="scheduled">{{ __('orchestration.status_scheduled') }}</option>
+                        <option value="completed">{{ __('orchestration.status_completed') }}</option>
                     </select>
                 </div>
             </div>
@@ -175,25 +175,25 @@
                 <thead class="bg-gray-50">
                     <tr>
                         <th class="px-6 py-3 {{ $isRtl ? 'text-right' : 'text-left' }} text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Campaign
+                            {{ __('orchestration.campaign') }}
                         </th>
                         <th class="px-6 py-3 {{ $isRtl ? 'text-right' : 'text-left' }} text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Platforms
+                            {{ __('orchestration.platforms') }}
                         </th>
                         <th class="px-6 py-3 {{ $isRtl ? 'text-right' : 'text-left' }} text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Status
+                            {{ __('common.status') }}
                         </th>
                         <th class="px-6 py-3 {{ $isRtl ? 'text-right' : 'text-left' }} text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Budget
+                            {{ __('orchestration.budget') }}
                         </th>
                         <th class="px-6 py-3 {{ $isRtl ? 'text-right' : 'text-left' }} text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Spend
+                            {{ __('orchestration.spend') }}
                         </th>
                         <th class="px-6 py-3 {{ $isRtl ? 'text-right' : 'text-left' }} text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            ROAS
+                            {{ __('orchestration.roas') }}
                         </th>
                         <th class="px-6 py-3 {{ $isRtl ? 'text-right' : 'text-left' }} text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Actions
+                            {{ __('common.actions') }}
                         </th>
                     </tr>
                 </thead>
@@ -202,7 +202,7 @@
                         <tr>
                             <td colspan="7" class="px-6 py-12 text-center">
                                 <i class="fas fa-spinner fa-spin text-2xl text-gray-400"></i>
-                                <p class="mt-2 text-gray-500">Loading campaigns...</p>
+                                <p class="mt-2 text-gray-500">{{ __('orchestration.loading_campaigns') }}</p>
                             </td>
                         </tr>
                     </template>
@@ -210,10 +210,10 @@
                         <tr>
                             <td colspan="7" class="px-6 py-12 text-center">
                                 <i class="fas fa-inbox text-4xl text-gray-300 mb-3"></i>
-                                <p class="text-gray-500">No campaigns found</p>
+                                <p class="text-gray-500">{{ __('orchestration.no_campaigns') }}</p>
                                 <button @click="showCreateModal = true"
                                         class="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
-                                    Create Your First Campaign
+                                    {{ __('orchestration.create_first_campaign') }}
                                 </button>
                             </td>
                         </tr>
@@ -255,24 +255,24 @@
                                 <div class="flex gap-2 {{ $isRtl ? 'flex-row-reverse' : '' }}">
                                     <button @click="viewCampaign(campaign.id)"
                                             class="text-blue-600 hover:text-blue-900"
-                                            title="View Details">
+                                            title="{{ __('orchestration.view_details') }}">
                                         <i class="fas fa-eye"></i>
                                     </button>
                                     <button @click="pauseCampaign(campaign.id)"
                                             x-show="campaign.status === 'active'"
                                             class="text-yellow-600 hover:text-yellow-900"
-                                            title="Pause">
+                                            title="{{ __('orchestration.pause') }}">
                                         <i class="fas fa-pause"></i>
                                     </button>
                                     <button @click="resumeCampaign(campaign.id)"
                                             x-show="campaign.status === 'paused'"
                                             class="text-green-600 hover:text-green-900"
-                                            title="Resume">
+                                            title="{{ __('orchestration.resume') }}">
                                         <i class="fas fa-play"></i>
                                     </button>
                                     <button @click="duplicateCampaign(campaign.id)"
                                             class="text-purple-600 hover:text-purple-900"
-                                            title="Duplicate">
+                                            title="{{ __('orchestration.duplicate') }}">
                                         <i class="fas fa-copy"></i>
                                     </button>
                                 </div>
@@ -366,11 +366,11 @@ function orchestrationDashboard() {
 
         async refreshData() {
             await this.loadData();
-            this.showAlert('success', 'Data refreshed successfully');
+            this.showAlert('success', '{{ __("orchestration.data_refreshed") }}');
         },
 
         async pauseCampaign(id) {
-            if (!confirm('Are you sure you want to pause this campaign across all platforms?')) return;
+            if (!confirm('{{ __("orchestration.confirm_pause") }}')) return;
 
             try {
                 const orgId = '{{ $currentOrg }}';
@@ -384,14 +384,14 @@ function orchestrationDashboard() {
                 const data = await response.json();
 
                 if (data.success) {
-                    this.showAlert('success', 'Campaign paused successfully');
+                    this.showAlert('success', '{{ __("orchestration.campaign_paused") }}');
                     await this.loadData();
                 } else {
-                    this.showAlert('error', data.message || 'Failed to pause campaign');
+                    this.showAlert('error', data.message || '{{ __("orchestration.failed_pause") }}');
                 }
             } catch (error) {
                 console.error('Error pausing campaign:', error);
-                this.showAlert('error', 'Failed to pause campaign');
+                this.showAlert('error', '{{ __("orchestration.failed_pause") }}');
             }
         },
 
@@ -408,14 +408,14 @@ function orchestrationDashboard() {
                 const data = await response.json();
 
                 if (data.success) {
-                    this.showAlert('success', 'Campaign resumed successfully');
+                    this.showAlert('success', '{{ __("orchestration.campaign_resumed") }}');
                     await this.loadData();
                 } else {
-                    this.showAlert('error', data.message || 'Failed to resume campaign');
+                    this.showAlert('error', data.message || '{{ __("orchestration.failed_resume") }}');
                 }
             } catch (error) {
                 console.error('Error resuming campaign:', error);
-                this.showAlert('error', 'Failed to resume campaign');
+                this.showAlert('error', '{{ __("orchestration.failed_resume") }}');
             }
         },
 

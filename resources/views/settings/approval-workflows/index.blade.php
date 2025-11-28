@@ -16,14 +16,14 @@
 
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
-            <h1 class="text-xl sm:text-2xl font-bold text-gray-900">Approval Workflows</h1>
+            <h1 class="text-xl sm:text-2xl font-bold text-gray-900">{{ __('settings.approval_workflows') }}</h1>
             <p class="mt-1 text-xs sm:text-sm text-gray-500">
-                Configure multi-step approval processes for content before publishing.
+                {{ __('settings.approval_workflows_description') }}
             </p>
         </div>
         <a href="{{ route('orgs.settings.approval-workflows.create', $currentOrg) }}"
            class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700">
-            <i class="fas fa-plus mr-2"></i>Create Workflow
+            <i class="fas fa-plus me-2"></i>{{ __('settings.create_workflow') }}
         </a>
     </div>
 
@@ -61,27 +61,27 @@
                     {{-- Steps Preview --}}
                     @if($workflow->approval_steps && count($workflow->approval_steps) > 0)
                         <div class="flex items-center gap-2 mb-4">
-                            <span class="text-xs text-gray-500">{{ count($workflow->approval_steps) }} approval step(s)</span>
+                            <span class="text-xs text-gray-500">{{ count($workflow->approval_steps) }} {{ __('settings.approval_steps_count') }}</span>
                             @if($workflow->auto_approve_after_hours)
-                                <span class="text-xs text-gray-400">&bull; Auto-approve after {{ $workflow->auto_approve_after_hours }}h</span>
+                                <span class="text-xs text-gray-400">&bull; {{ __('settings.auto_approve_after_short', ['hours' => $workflow->auto_approve_after_hours]) }}</span>
                             @endif
                         </div>
                     @endif
 
                     @if($workflow->profileGroup)
                         <div class="text-xs text-gray-500 mb-4">
-                            <i class="fas fa-layer-group mr-1"></i>{{ $workflow->profileGroup->name }}
+                            <i class="fas fa-layer-group me-1"></i>{{ $workflow->profileGroup->name }}
                         </div>
                     @endif
 
                     <div class="flex items-center gap-2 pt-4 border-t border-gray-100">
                         <a href="{{ route('orgs.settings.approval-workflows.show', [$currentOrg, $workflow->workflow_id]) }}"
                            class="flex-1 inline-flex items-center justify-center px-3 py-2 border border-gray-300 rounded-md text-xs font-medium text-gray-700 bg-white hover:bg-gray-50">
-                            View
+                            {{ __('common.view') }}
                         </a>
                         <a href="{{ route('orgs.settings.approval-workflows.edit', [$currentOrg, $workflow->workflow_id]) }}"
                            class="flex-1 inline-flex items-center justify-center px-3 py-2 border border-transparent rounded-md text-xs font-medium text-white bg-indigo-600 hover:bg-indigo-700">
-                            Edit
+                            {{ __('common.edit') }}
                         </a>
                     </div>
                 </div>
@@ -92,13 +92,13 @@
             <div class="w-16 h-16 mx-auto bg-indigo-100 rounded-full flex items-center justify-center mb-4">
                 <i class="fas fa-tasks text-indigo-400 text-2xl"></i>
             </div>
-            <h3 class="text-lg font-medium text-gray-900 mb-2">No Approval Workflows Yet</h3>
+            <h3 class="text-lg font-medium text-gray-900 mb-2">{{ __('settings.no_approval_workflows') }}</h3>
             <p class="text-sm text-gray-500 mb-6 max-w-md mx-auto">
-                Set up approval workflows to require team review before content is published.
+                {{ __('settings.no_approval_workflows_description') }}
             </p>
             <a href="{{ route('orgs.settings.approval-workflows.create', $currentOrg) }}"
                class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700">
-                <i class="fas fa-plus mr-2"></i>Create First Workflow
+                <i class="fas fa-plus me-2"></i>{{ __('settings.create_first_workflow') }}
             </a>
         </div>
     @endif

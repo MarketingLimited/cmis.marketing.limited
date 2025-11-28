@@ -1,18 +1,18 @@
 @extends('layouts.admin')
 
-@section('title', 'جدولة المنشورات')
+@section('title', __('social.schedule_posts'))
 
 @section('content')
 <div x-data="socialScheduler()" x-init="init()">
     <!-- Header -->
     <div class="flex items-center justify-between mb-6">
         <div>
-            <h1 class="text-3xl font-bold text-gray-900 dark:text-white">جدولة المنشورات</h1>
-            <p class="mt-2 text-gray-600 dark:text-gray-400">إنشاء وجدولة المحتوى على منصات التواصل الاجتماعي</p>
+            <h1 class="text-3xl font-bold text-gray-900 dark:text-white">{{ __('social.schedule_posts') }}</h1>
+            <p class="mt-2 text-gray-600 dark:text-gray-400">{{ __('social.schedule_description') }}</p>
         </div>
         <button @click="showCreateModal = true" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg flex items-center gap-2">
             <i class="fas fa-plus"></i>
-            منشور جديد
+            {{ __('social.new_post') }}
         </button>
     </div>
 
@@ -21,7 +21,7 @@
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-sm text-gray-600 dark:text-gray-400">المجدولة</p>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">{{ __('social.scheduled_count') }}</p>
                     <p class="text-3xl font-bold text-blue-600" x-text="scheduledPosts.length">0</p>
                 </div>
                 <i class="fas fa-clock text-3xl text-blue-600"></i>
@@ -30,7 +30,7 @@
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-sm text-gray-600 dark:text-gray-400">المنشورة اليوم</p>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">{{ __('social.published_today') }}</p>
                     <p class="text-3xl font-bold text-green-600" x-text="publishedToday">0</p>
                 </div>
                 <i class="fas fa-check-circle text-3xl text-green-600"></i>
@@ -39,7 +39,7 @@
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-sm text-gray-600 dark:text-gray-400">المسودات</p>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">{{ __('social.drafts') }}</p>
                     <p class="text-3xl font-bold text-yellow-600" x-text="drafts">0</p>
                 </div>
                 <i class="fas fa-file-alt text-3xl text-yellow-600"></i>
@@ -48,7 +48,7 @@
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-sm text-gray-600 dark:text-gray-400">المنصات المتصلة</p>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">{{ __('social.connected_platforms') }}</p>
                     <p class="text-3xl font-bold text-purple-600" x-text="connectedPlatforms">0</p>
                 </div>
                 <i class="fas fa-link text-3xl text-purple-600"></i>
@@ -60,9 +60,9 @@
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <!-- Calendar View -->
         <div class="lg:col-span-2 bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-            <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4">تقويم النشر</h3>
+            <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4">{{ __('social.publish_calendar') }}</h3>
             <div class="grid grid-cols-7 gap-2 mb-4">
-                <template x-for="day in ['أحد', 'اثنين', 'ثلاثاء', 'أربعاء', 'خميس', 'جمعة', 'سبت']">
+                <template x-for="day in ['{{ __('social.days.sunday') }}', '{{ __('social.days.monday') }}', '{{ __('social.days.tuesday') }}', '{{ __('social.days.wednesday') }}', '{{ __('social.days.thursday') }}', '{{ __('social.days.friday') }}', '{{ __('social.days.saturday') }}']">
                     <div class="text-center text-sm font-semibold text-gray-600 dark:text-gray-400 py-2" x-text="day"></div>
                 </template>
             </div>
@@ -78,7 +78,7 @@
                                     <div class="text-xs bg-blue-100 dark:bg-blue-800 text-blue-800 dark:text-blue-100 rounded px-1 py-0.5 mb-1 truncate" x-text="post.title"></div>
                                 </template>
                                 <template x-if="date.posts.length > 2">
-                                    <div class="text-xs text-gray-500" x-text="'+' + (date.posts.length - 2) + ' المزيد'"></div>
+                                    <div class="text-xs text-gray-500" x-text="'+' + (date.posts.length - 2) + ' {{ __('social.more') }}'"></div>
                                 </template>
                             </div>
                         </template>
@@ -89,7 +89,7 @@
 
         <!-- Upcoming Posts -->
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-            <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4">المنشورات القادمة</h3>
+            <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4">{{ __('social.upcoming_posts') }}</h3>
             <div class="space-y-4 max-h-96 overflow-y-auto">
                 <template x-for="post in scheduledPosts" :key="post.id">
                     <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
@@ -111,7 +111,7 @@
                 <template x-if="scheduledPosts.length === 0">
                     <div class="text-center text-gray-500 py-8">
                         <i class="fas fa-calendar-times text-4xl mb-2"></i>
-                        <p>لا توجد منشورات مجدولة</p>
+                        <p>{{ __('social.no_scheduled_posts') }}</p>
                     </div>
                 </template>
             </div>
@@ -122,12 +122,12 @@
     <div x-show="showCreateModal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-2xl mx-4">
             <div class="p-6 border-b border-gray-200 dark:border-gray-700">
-                <h3 class="text-xl font-bold text-gray-900 dark:text-white">إنشاء منشور جديد</h3>
+                <h3 class="text-xl font-bold text-gray-900 dark:text-white">{{ __('social.create_new_post') }}</h3>
             </div>
             <div class="p-6 space-y-4">
                 <!-- Platforms -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">المنصات</label>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ __('social.platforms') }}</label>
                     <div class="flex flex-wrap gap-2">
                         <template x-for="platform in availablePlatforms">
                             <button type="button"
@@ -143,24 +143,24 @@
 
                 <!-- Content -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">المحتوى</label>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ __('social.content') }}</label>
                     <textarea x-model="newPost.content" rows="4"
                               class="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 rounded-lg p-3"
-                              placeholder="اكتب محتوى المنشور هنا..."></textarea>
+                              placeholder="{{ __('social.write_content_here') }}"></textarea>
                     <div class="text-xs text-gray-500 mt-1">
-                        <span x-text="newPost.content.length"></span> / 280 حرف
+                        <span x-text="newPost.content.length"></span> / 280 {{ __('social.characters') }}
                     </div>
                 </div>
 
                 <!-- Media -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">الوسائط</label>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ __('social.media') }}</label>
                     <div class="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 text-center">
                         <i class="fas fa-cloud-upload-alt text-3xl text-gray-400 mb-2"></i>
-                        <p class="text-gray-600 dark:text-gray-400">اسحب الملفات هنا أو اضغط للرفع</p>
+                        <p class="text-gray-600 dark:text-gray-400">{{ __('social.drag_files') }}</p>
                         <input type="file" multiple class="hidden" x-ref="fileInput" @change="handleFileUpload">
                         <button type="button" @click="$refs.fileInput.click()" class="mt-2 text-blue-600 hover:text-blue-800">
-                            اختر ملفات
+                            {{ __('social.choose_files') }}
                         </button>
                     </div>
                 </div>
@@ -168,12 +168,12 @@
                 <!-- Schedule -->
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">التاريخ</label>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ __('social.date') }}</label>
                         <input type="date" x-model="newPost.date"
                                class="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 rounded-lg p-3">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">الوقت</label>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ __('social.time') }}</label>
                         <input type="time" x-model="newPost.time"
                                class="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 rounded-lg p-3">
                     </div>
@@ -181,13 +181,13 @@
             </div>
             <div class="p-6 border-t border-gray-200 dark:border-gray-700 flex justify-end gap-3">
                 <button @click="showCreateModal = false" class="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">
-                    إلغاء
+                    {{ __('social.cancel') }}
                 </button>
                 <button @click="saveDraft()" class="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg">
-                    حفظ كمسودة
+                    {{ __('social.save_draft') }}
                 </button>
                 <button @click="schedulePost()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg">
-                    جدولة المنشور
+                    {{ __('social.schedule_post') }}
                 </button>
             </div>
         </div>

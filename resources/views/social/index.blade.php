@@ -1,7 +1,7 @@
 @extends('layouts.admin')
 
-@section('page-title', 'إدارة وسائل التواصل الاجتماعي')
-@section('page-subtitle', 'جدولة ونشر المحتوى على جميع منصات التواصل')
+@section('page-title', __('social.social_management'))
+@section('page-subtitle', __('social.schedule_publish_description'))
 
 @section('content')
 <div x-data="socialManager()" x-init="init()">
@@ -12,7 +12,7 @@
              @click="statusFilter = 'scheduled'">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-yellow-100 text-xs sm:text-sm font-medium">مجدول</p>
+                    <p class="text-yellow-100 text-xs sm:text-sm font-medium">{{ __('social.scheduled_status') }}</p>
                     <p class="text-2xl sm:text-3xl font-bold mt-1 tabular-nums" x-text="scheduledCount">0</p>
                 </div>
                 <div class="w-10 h-10 sm:w-12 sm:h-12 bg-white/20 rounded-xl flex items-center justify-center group-hover:scale-110 group-hover:bg-white/30 transition-all duration-300">
@@ -20,8 +20,8 @@
                 </div>
             </div>
             <div class="mt-3 flex items-center text-yellow-100 text-xs opacity-80 group-hover:opacity-100 transition-opacity">
-                <i class="fas fa-calendar-alt ml-1"></i>
-                <span>في انتظار النشر</span>
+                <i class="fas fa-calendar-alt ms-1"></i>
+                <span>{{ __('social.waiting_publish') }}</span>
             </div>
         </div>
 
@@ -30,7 +30,7 @@
              @click="statusFilter = 'published'">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-green-100 text-xs sm:text-sm font-medium">منشور</p>
+                    <p class="text-green-100 text-xs sm:text-sm font-medium">{{ __('social.published_status') }}</p>
                     <p class="text-2xl sm:text-3xl font-bold mt-1 tabular-nums" x-text="publishedCount">0</p>
                 </div>
                 <div class="w-10 h-10 sm:w-12 sm:h-12 bg-white/20 rounded-xl flex items-center justify-center group-hover:scale-110 group-hover:bg-white/30 transition-all duration-300">
@@ -38,8 +38,8 @@
                 </div>
             </div>
             <div class="mt-3 flex items-center text-green-100 text-xs opacity-80 group-hover:opacity-100 transition-opacity">
-                <i class="fas fa-chart-line ml-1"></i>
-                <span>تم النشر بنجاح</span>
+                <i class="fas fa-chart-line ms-1"></i>
+                <span>{{ __('social.published_successfully') }}</span>
             </div>
         </div>
 
@@ -48,7 +48,7 @@
              @click="statusFilter = 'draft'">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-slate-100 text-xs sm:text-sm font-medium">مسودة</p>
+                    <p class="text-slate-100 text-xs sm:text-sm font-medium">{{ __('social.draft_status') }}</p>
                     <p class="text-2xl sm:text-3xl font-bold mt-1 tabular-nums" x-text="draftCount">0</p>
                 </div>
                 <div class="w-10 h-10 sm:w-12 sm:h-12 bg-white/20 rounded-xl flex items-center justify-center group-hover:scale-110 group-hover:bg-white/30 transition-all duration-300">
@@ -56,8 +56,8 @@
                 </div>
             </div>
             <div class="mt-3 flex items-center text-slate-100 text-xs opacity-80 group-hover:opacity-100 transition-opacity">
-                <i class="fas fa-edit ml-1"></i>
-                <span>جاهز للتعديل</span>
+                <i class="fas fa-edit ms-1"></i>
+                <span>{{ __('social.ready_edit') }}</span>
             </div>
         </div>
 
@@ -66,7 +66,7 @@
              @click="statusFilter = 'failed'">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-red-100 text-xs sm:text-sm font-medium">فشل</p>
+                    <p class="text-red-100 text-xs sm:text-sm font-medium">{{ __('social.failed_status') }}</p>
                     <p class="text-2xl sm:text-3xl font-bold mt-1 tabular-nums" x-text="failedCount">0</p>
                 </div>
                 <div class="w-10 h-10 sm:w-12 sm:h-12 bg-white/20 rounded-xl flex items-center justify-center group-hover:scale-110 group-hover:bg-white/30 transition-all duration-300">
@@ -75,12 +75,12 @@
             </div>
             <div class="mt-3 flex items-center text-red-100 text-xs cursor-pointer hover:text-white transition-colors"
                  x-show="failedCount > 0" @click.stop="deleteAllFailed()">
-                <i class="fas fa-trash ml-1"></i>
-                <span>حذف الكل</span>
+                <i class="fas fa-trash ms-1"></i>
+                <span>{{ __('social.delete_all') }}</span>
             </div>
             <div class="mt-3 flex items-center text-red-100 text-xs opacity-80" x-show="failedCount === 0">
-                <i class="fas fa-smile ml-1"></i>
-                <span>لا توجد أخطاء</span>
+                <i class="fas fa-smile ms-1"></i>
+                <span>{{ __('social.no_errors') }}</span>
             </div>
         </div>
     </div>
@@ -93,7 +93,7 @@
             <div class="relative flex-1 max-w-md order-1 w-full sm:w-auto">
                 <input type="text"
                        x-model="searchQuery"
-                       placeholder="ابحث في المنشورات..."
+                       placeholder="{{ __('social.search_posts') }}"
                        class="w-full pl-10 pr-4 py-2.5 border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent focus:bg-white dark:focus:bg-gray-600 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition-colors">
                 <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
                 <button x-show="searchQuery" @click="searchQuery = ''"
@@ -106,27 +106,27 @@
             <div class="flex items-center gap-1 bg-gray-100 dark:bg-gray-700 p-1 rounded-xl order-3 sm:order-2">
                 <button @click="viewMode = 'grid'"
                         :class="viewMode === 'grid' ? 'bg-white dark:bg-gray-600 shadow-sm text-indigo-600 dark:text-indigo-400' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'"
-                        class="p-2.5 rounded-lg transition-all duration-200" title="عرض شبكي">
+                        class="p-2.5 rounded-lg transition-all duration-200" title="{{ __('social.grid_view') }}">
                     <i class="fas fa-th-large"></i>
                 </button>
                 <button @click="viewMode = 'list'"
                         :class="viewMode === 'list' ? 'bg-white dark:bg-gray-600 shadow-sm text-indigo-600 dark:text-indigo-400' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'"
-                        class="p-2.5 rounded-lg transition-all duration-200" title="عرض قائمة">
+                        class="p-2.5 rounded-lg transition-all duration-200" title="{{ __('social.list_view') }}">
                     <i class="fas fa-list"></i>
                 </button>
                 <button @click="viewMode = 'calendar'"
                         :class="viewMode === 'calendar' ? 'bg-white dark:bg-gray-600 shadow-sm text-indigo-600 dark:text-indigo-400' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'"
-                        class="p-2.5 rounded-lg transition-all duration-200" title="عرض تقويم">
+                        class="p-2.5 rounded-lg transition-all duration-200" title="{{ __('social.calendar_view') }}">
                     <i class="fas fa-calendar-alt"></i>
                 </button>
             </div>
 
             <!-- Sort Dropdown - Enhanced -->
             <select x-model="sortBy" class="border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-indigo-500 text-gray-700 dark:text-gray-200 order-4 sm:order-3">
-                <option value="newest">الأحدث أولاً</option>
-                <option value="oldest">الأقدم أولاً</option>
-                <option value="scheduled">حسب الجدولة</option>
-                <option value="platform">حسب المنصة</option>
+                <option value="newest">{{ __('social.newest_first') }}</option>
+                <option value="oldest">{{ __('social.oldest_first') }}</option>
+                <option value="scheduled">{{ __('social.by_schedule') }}</option>
+                <option value="platform">{{ __('social.by_platform') }}</option>
             </select>
 
             <!-- Action Buttons - Enhanced -->
@@ -134,12 +134,12 @@
                 <button @click="showQueueSettings = true"
                         class="bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-600 px-3 sm:px-4 py-2.5 rounded-xl font-medium hover:bg-gray-50 dark:hover:bg-gray-600 hover:border-gray-300 dark:hover:border-gray-500 transition-all flex items-center gap-2">
                     <i class="fas fa-cog"></i>
-                    <span class="hidden sm:inline">إعدادات الطابور</span>
+                    <span class="hidden sm:inline">{{ __('social.queue_settings') }}</span>
                 </button>
                 <button @click="$dispatch('open-publish-modal')"
                         class="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white px-4 sm:px-6 py-2.5 rounded-xl font-medium shadow-lg shadow-indigo-500/25 hover:shadow-xl hover:shadow-indigo-500/30 transition-all flex items-center gap-2">
                     <i class="fas fa-plus"></i>
-                    <span class="hidden sm:inline">منشور جديد</span>
+                    <span class="hidden sm:inline">{{ __('social.new_post') }}</span>
                 </button>
             </div>
         </div>
@@ -149,14 +149,14 @@
             <button @click="filterPlatform = 'all'"
                     :class="filterPlatform === 'all' ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/25' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'"
                     class="px-4 py-2 rounded-full font-medium transition-all duration-200 text-sm">
-                <i class="fas fa-globe ml-1"></i>
+                <i class="fas fa-globe ms-1"></i>
                 الكل
             </button>
             <template x-for="platform in uniquePlatforms" :key="platform">
                 <button @click="filterPlatform = platform"
                         :class="filterPlatform === platform ? getPlatformFilterClass(platform, true) + ' shadow-md' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'"
                         class="px-4 py-2 rounded-full font-medium transition-all duration-200 text-sm">
-                    <i :class="getPlatformIcon(platform)" class="ml-1"></i>
+                    <i :class="getPlatformIcon(platform)" class="ms-1"></i>
                     <span x-text="getPlatformName(platform)"></span>
                 </button>
             </template>
@@ -167,37 +167,37 @@
             <button @click="filterPostType = 'all'"
                     :class="filterPostType === 'all' ? 'bg-gray-800 dark:bg-gray-600 text-white shadow-md' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'"
                     class="px-4 py-2 rounded-full font-medium transition-all duration-200 text-sm">
-                <i class="fas fa-th-large ml-1"></i>
+                <i class="fas fa-th-large ms-1"></i>
                 الكل
             </button>
             <button @click="filterPostType = 'feed'"
                     :class="filterPostType === 'feed' ? 'bg-green-600 text-white shadow-md shadow-green-500/25' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'"
                     class="px-4 py-2 rounded-full font-medium transition-all duration-200 text-sm">
-                <i class="fas fa-newspaper ml-1"></i>
-                منشور
+                <i class="fas fa-newspaper ms-1"></i>
+                {{ __('social.feed_post') }}
             </button>
             <button @click="filterPostType = 'reel'"
                     :class="filterPostType === 'reel' ? 'bg-purple-600 text-white shadow-md shadow-purple-500/25' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'"
                     class="px-4 py-2 rounded-full font-medium transition-all duration-200 text-sm">
-                <i class="fas fa-video ml-1"></i>
-                ريل
+                <i class="fas fa-video ms-1"></i>
+                {{ __("social.reel") }}
             </button>
             <button @click="filterPostType = 'story'"
                     :class="filterPostType === 'story' ? 'bg-pink-600 text-white shadow-md shadow-pink-500/25' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'"
                     class="px-4 py-2 rounded-full font-medium transition-all duration-200 text-sm">
-                <i class="fas fa-circle ml-1"></i>
-                قصة
+                <i class="fas fa-circle ms-1"></i>
+                {{ __("social.story") }}
             </button>
             <button @click="filterPostType = 'carousel'"
                     :class="filterPostType === 'carousel' ? 'bg-orange-600 text-white shadow-md shadow-orange-500/25' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'"
                     class="px-4 py-2 rounded-full font-medium transition-all duration-200 text-sm">
-                <i class="fas fa-images ml-1"></i>
-                كاروسيل
+                <i class="fas fa-images ms-1"></i>
+                {{ __("social.carousel") }}
             </button>
             <button @click="filterPostType = 'thread'"
                     :class="filterPostType === 'thread' ? 'bg-sky-600 text-white shadow-md shadow-sky-500/25' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'"
                     class="px-4 py-2 rounded-full font-medium transition-all duration-200 text-sm">
-                <i class="fas fa-stream ml-1"></i>
+                <i class="fas fa-stream ms-1"></i>
                 ثريد
             </button>
         </div>
@@ -213,40 +213,38 @@
                 <button @click="statusFilter = 'scheduled'"
                         :class="statusFilter === 'scheduled' ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300 border-yellow-300 dark:border-yellow-700' : 'bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-400 border-gray-200 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-600'"
                         class="px-4 py-2 rounded-xl font-medium transition-all duration-200 text-sm border whitespace-nowrap">
-                    <i class="fas fa-clock ml-1"></i>
-                    مجدول (<span x-text="scheduledCount" class="tabular-nums"></span>)
+                    <i class="fas fa-clock ms-1"></i>
+                    {{ __("social.scheduled_status") }} (<span x-text="scheduledCount" class="tabular-nums"></span>)
                 </button>
                 <button @click="statusFilter = 'published'"
                         :class="statusFilter === 'published' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 border-green-300 dark:border-green-700' : 'bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-400 border-gray-200 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-600'"
                         class="px-4 py-2 rounded-xl font-medium transition-all duration-200 text-sm border whitespace-nowrap">
-                    <i class="fas fa-check-circle ml-1"></i>
-                    منشور (<span x-text="publishedCount" class="tabular-nums"></span>)
+                    <i class="fas fa-check-circle ms-1"></i>
+                    {{ __("social.published_status") }} (<span x-text="publishedCount" class="tabular-nums"></span>)
                 </button>
                 <button @click="statusFilter = 'draft'"
                         :class="statusFilter === 'draft' ? 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-600' : 'bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-400 border-gray-200 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-600'"
                         class="px-4 py-2 rounded-xl font-medium transition-all duration-200 text-sm border whitespace-nowrap">
-                    <i class="fas fa-file ml-1"></i>
-                    مسودة (<span x-text="draftCount" class="tabular-nums"></span>)
+                    <i class="fas fa-file ms-1"></i>
+                    {{ __("social.draft_status") }} (<span x-text="draftCount" class="tabular-nums"></span>)
                 </button>
                 <button @click="statusFilter = 'failed'"
                         :class="statusFilter === 'failed' ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 border-red-300 dark:border-red-700' : 'bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-400 border-gray-200 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-600'"
                         class="px-4 py-2 rounded-xl font-medium transition-all duration-200 text-sm border whitespace-nowrap">
-                    <i class="fas fa-exclamation-triangle ml-1"></i>
-                    فشل (<span x-text="failedCount" class="tabular-nums"></span>)
+                    <i class="fas fa-exclamation-triangle ms-1"></i>
+                    {{ __("social.failed_status") }} (<span x-text="failedCount" class="tabular-nums"></span>)
                 </button>
             </div>
 
             <!-- Bulk Actions - Enhanced -->
             <div class="flex items-center gap-3 bg-indigo-50 dark:bg-indigo-900/30 px-4 py-2 rounded-xl" x-show="selectedPosts.length > 0" x-transition>
                 <span class="text-sm text-indigo-700 dark:text-indigo-300 font-medium">
-                    <span x-text="selectedPosts.length" class="tabular-nums"></span> محدد
+                    <span x-text="selectedPosts.length" class="tabular-nums"></span> {{ __("social.selected_count") }}
                 </span>
                 <button @click="bulkDelete()" class="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 text-sm font-medium flex items-center gap-1 transition-colors">
-                    <i class="fas fa-trash"></i>
-                    حذف
+                    <i class="fas fa-trash"></i> {{ __("common.delete") }}
                 </button>
-                <button @click="selectedPosts = []" class="text-gray-600 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 text-sm transition-colors">
-                    إلغاء
+                <button @click="selectedPosts = []" class="text-gray-600 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 text-sm transition-colors">{{ __("common.cancel") }}
                 </button>
             </div>
         </div>
@@ -267,7 +265,7 @@
         <!-- Calendar Grid - Enhanced -->
         <div class="grid grid-cols-7 gap-1 sm:gap-2">
             <!-- Day Headers -->
-            <template x-for="day in ['أحد', 'إثنين', 'ثلاثاء', 'أربعاء', 'خميس', 'جمعة', 'سبت']">
+            <template x-for="day in ["{{ __("social.days.sunday") }}", "{{ __("social.days.monday") }}", "{{ __("social.days.tuesday") }}", "{{ __("social.days.wednesday") }}", "{{ __("social.days.thursday") }}", "{{ __("social.days.friday") }}", "{{ __("social.days.saturday") }}"]">
                 <div class="text-center py-2 sm:py-3 text-xs sm:text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase" x-text="day"></div>
             </template>
 
@@ -294,7 +292,7 @@
                                  x-text="post.post_text?.substring(0, 15) + '...'"></div>
                         </template>
                         <div x-show="day.posts.length > 2" class="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 text-center font-medium">
-                            +<span x-text="day.posts.length - 2"></span> أخرى
+                            +<span x-text="day.posts.length - 2"></span> {{ __("social.more") }}
                         </div>
                     </div>
                 </div>
@@ -369,7 +367,7 @@
                             </template>
                             <div x-show="post.media.length > 1"
                                  class="absolute bottom-2 left-2 bg-black/70 backdrop-blur-sm text-white text-xs px-2.5 py-1 rounded-full font-medium">
-                                <i class="fas fa-images ml-1"></i>
+                                <i class="fas fa-images ms-1"></i>
                                 <span x-text="post.media.length"></span>
                             </div>
                         </div>
@@ -419,7 +417,7 @@
                             <div class="flex items-start gap-2">
                                 <i class="fas fa-exclamation-circle text-red-500 dark:text-red-400 mt-0.5"></i>
                                 <div class="flex-1">
-                                    <p class="text-xs font-semibold text-red-800 dark:text-red-300">سبب الفشل:</p>
+                                    <p class="text-xs font-semibold text-red-800 dark:text-red-300">{{ __("social.failure_reason") }}</p>
                                     <p class="text-xs text-red-700 dark:text-red-400 mt-1" x-text="post.error_message"></p>
                                 </div>
                             </div>
@@ -430,38 +428,38 @@
                     <div class="flex items-center gap-1.5 border-t border-gray-100 dark:border-gray-700 pt-3">
                         <button @click="editPost(post)"
                                 class="flex-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-3 py-2 rounded-xl text-sm font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
-                                title="تعديل">
+                                title="{{ __('social.edit_post') }}">
                             <i class="fas fa-edit"></i>
                         </button>
                         <button @click="duplicatePost(post)"
                                 class="flex-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-3 py-2 rounded-xl text-sm font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
-                                title="نسخ">
+                                title="{{ __('social.duplicate') }}">
                             <i class="fas fa-copy"></i>
                         </button>
                         <template x-if="post.status === 'scheduled' || post.status === 'draft'">
                             <button @click="publishNow(post.post_id)"
                                     class="flex-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 px-3 py-2 rounded-xl text-sm font-medium hover:bg-green-200 dark:hover:bg-green-900/50 transition-colors"
-                                    title="نشر الآن">
+                                    title="{{ __('social.publish_now') }}">
                                 <i class="fas fa-paper-plane"></i>
                             </button>
                         </template>
                         <template x-if="post.status === 'failed'">
                             <button @click="retryPost(post.post_id)"
                                     class="flex-1 bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 px-3 py-2 rounded-xl text-sm font-medium hover:bg-orange-200 dark:hover:bg-orange-900/50 transition-colors"
-                                    title="إعادة المحاولة">
+                                    title="{{ __('social.retry') }}">
                                 <i class="fas fa-redo"></i>
                             </button>
                         </template>
                         <template x-if="post.permalink">
                             <a :href="post.permalink" target="_blank"
                                class="flex-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-3 py-2 rounded-xl text-sm font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-center"
-                               title="فتح المنشور">
+                               title="{{ __("social.view_post") }}">
                                 <i class="fas fa-external-link-alt"></i>
                             </a>
                         </template>
                         <button @click="deletePost(post.post_id)"
                                 class="bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 px-3 py-2 rounded-xl text-sm hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors"
-                                title="حذف">
+                                title="{{ __("common.delete") }}">
                             <i class="fas fa-trash"></i>
                         </button>
                     </div>
@@ -475,14 +473,14 @@
         <table class="w-full">
             <thead class="bg-gray-50 dark:bg-gray-900/50 border-b border-gray-100 dark:border-gray-700">
                 <tr>
-                    <th class="px-4 py-4 text-right text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    <th class="px-4 py-4 text-end text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                         <input type="checkbox" @change="toggleAllPosts($event)" class="rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-indigo-600">
                     </th>
-                    <th class="px-4 py-4 text-right text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">المنصة</th>
-                    <th class="px-4 py-4 text-right text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">المحتوى</th>
-                    <th class="px-4 py-4 text-right text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">الحالة</th>
-                    <th class="px-4 py-4 text-right text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">التاريخ</th>
-                    <th class="px-4 py-4 text-right text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">إجراءات</th>
+                    <th class="px-4 py-4 text-end text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">المنصة</th>
+                    <th class="px-4 py-4 text-end text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ __("social.post_content") }}</th>
+                    <th class="px-4 py-4 text-end text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">الحالة</th>
+                    <th class="px-4 py-4 text-end text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">التاريخ</th>
+                    <th class="px-4 py-4 text-end text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">إجراءات</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
@@ -534,13 +532,13 @@
                         </td>
                         <td class="px-4 py-4">
                             <div class="flex items-center gap-1">
-                                <button @click="editPost(post)" class="p-2 text-gray-500 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-lg transition-colors" title="تعديل">
+                                <button @click="editPost(post)" class="p-2 text-gray-500 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-lg transition-colors" title="{{ __(\'social.edit_post\') }}">
                                     <i class="fas fa-edit"></i>
                                 </button>
                                 <button @click="duplicatePost(post)" class="p-2 text-gray-500 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-lg transition-colors" title="نسخ">
                                     <i class="fas fa-copy"></i>
                                 </button>
-                                <button @click="deletePost(post.post_id)" class="p-2 text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors" title="حذف">
+                                <button @click="deletePost(post.post_id)" class="p-2 text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors" title="{{ __("common.delete") }}">
                                     <i class="fas fa-trash"></i>
                                 </button>
                             </div>
@@ -555,7 +553,7 @@
             <div class="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-2xl flex items-center justify-center mx-auto mb-4">
                 <i class="fas fa-inbox text-3xl text-gray-400 dark:text-gray-500"></i>
             </div>
-            <p class="text-gray-500 dark:text-gray-400 font-medium">لا توجد منشورات</p>
+            <p class="text-gray-500 dark:text-gray-400 font-medium">{{ __("social.no_posts_found") }}</p>
         </div>
     </div>
 
@@ -565,12 +563,12 @@
             <div class="w-20 h-20 bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-indigo-900/30 dark:to-purple-900/30 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg shadow-indigo-500/10">
                 <i class="fas fa-calendar-plus text-indigo-600 dark:text-indigo-400 text-3xl"></i>
             </div>
-            <h3 class="text-xl font-bold text-gray-800 dark:text-white mb-2">لا توجد منشورات</h3>
-            <p class="text-gray-500 dark:text-gray-400 mb-8 max-w-sm mx-auto">ابدأ بإنشاء منشور جديد لجدولته على وسائل التواصل الاجتماعي</p>
+            <h3 class="text-xl font-bold text-gray-800 dark:text-white mb-2">{{ __("social.no_posts_found") }}</h3>
+            <p class="text-gray-500 dark:text-gray-400 mb-8 max-w-sm mx-auto">{{ __("social.create_post_description") }}</p>
             <button @click="$dispatch('open-publish-modal')"
                     class="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white px-8 py-3.5 rounded-xl font-semibold shadow-lg shadow-indigo-500/25 hover:shadow-xl hover:shadow-indigo-500/30 transition-all">
-                <i class="fas fa-plus ml-2"></i>
-                إنشاء منشور جديد
+                <i class="fas fa-plus ms-2"></i>
+                {{ __("social.create_new_post") }}
             </button>
         </div>
     </template>
@@ -583,8 +581,8 @@
             <!-- Header -->
             <div class="p-6 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
                 <h3 class="text-xl font-bold text-gray-900 dark:text-white">
-                    <i class="fas fa-edit text-indigo-600 ml-2"></i>
-                    تعديل المنشور
+                    <i class="fas fa-edit text-indigo-600 ms-2"></i>
+                    {{ __("social.edit_post") }}
                 </h3>
                 <button @click="showEditPostModal = false" class="text-gray-400 hover:text-gray-600">
                     <i class="fas fa-times text-xl"></i>
@@ -627,12 +625,12 @@
                 <!-- Content -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        <i class="fas fa-pen ml-1"></i>
-                        محتوى المنشور
+                        <i class="fas fa-pen ms-1"></i>
+                        {{ __('social.post_content') }}
                     </label>
                     <textarea x-model="editingPost.content" rows="5"
                               class="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 rounded-lg p-4 resize-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                              placeholder="محتوى المنشور..."></textarea>
+                              placeholder="{{ __("social.post_content_placeholder") }}"></textarea>
                     <div class="text-xs text-gray-500 mt-1">
                         <span x-text="editingPost.content.length"></span> حرف
                     </div>
@@ -642,7 +640,7 @@
                 <template x-if="editingPost.media && editingPost.media.length > 0">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            <i class="fas fa-image ml-1"></i>
+                            <i class="fas fa-image ms-1"></i>
                             الوسائط الحالية
                         </label>
                         <div class="grid grid-cols-4 gap-2">
@@ -669,8 +667,8 @@
                 <template x-if="editingPost.status === 'draft' || editingPost.status === 'scheduled'">
                     <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-                            <i class="fas fa-clock ml-1"></i>
-                            وقت النشر المجدول
+                            <i class="fas fa-clock ms-1"></i>
+                            {{ __('social.schedule_datetime') }}
                         </label>
                         <div class="grid grid-cols-2 gap-4">
                             <div>
@@ -693,18 +691,18 @@
             <div class="p-6 border-t border-gray-200 dark:border-gray-700 flex justify-between items-center">
                 <button @click="showEditPostModal = false"
                         class="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200">
-                    إلغاء
+                    {{ __('common.cancel') }}
                 </button>
                 <div class="flex gap-3">
                     <button @click="updatePost()"
                             :disabled="isUpdating || !editingPost.content.trim()"
                             class="px-6 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg font-medium hover:shadow-lg transition disabled:opacity-50 disabled:cursor-not-allowed">
                         <span x-show="!isUpdating">
-                            <i class="fas fa-save ml-2"></i>
+                            <i class="fas fa-save ms-2"></i>
                             حفظ التغييرات
                         </span>
                         <span x-show="isUpdating">
-                            <i class="fas fa-spinner fa-spin ml-2"></i>
+                            <i class="fas fa-spinner fa-spin ms-2"></i>
                             جاري الحفظ...
                         </span>
                     </button>
@@ -756,10 +754,10 @@
                             </div>
                             <div>
                                 <h3 class="text-xl sm:text-2xl font-bold leading-tight">
-                                    إعدادات النشر التلقائي
+                                    {{ __("social.auto_publish_settings") }}
                                 </h3>
                                 <p class="text-purple-200 text-sm mt-0.5 leading-relaxed">
-                                    جدولة ذكية لمنشوراتك على جميع المنصات
+                                    {{ __("social.smart_scheduling_description") }}
                                 </p>
                             </div>
                         </div>
@@ -782,13 +780,13 @@
                     <div x-data="{ showInfo: true }"
                          class="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-200/50 dark:border-blue-800/50 rounded-2xl overflow-hidden">
                         <button @click="showInfo = !showInfo"
-                                class="w-full p-4 flex items-center gap-3 text-right hover:bg-blue-100/50 dark:hover:bg-blue-900/30 transition-colors focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500">
+                                class="w-full p-4 flex items-center gap-3 text-end hover:bg-blue-100/50 dark:hover:bg-blue-900/30 transition-colors focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500">
                             <div class="w-10 h-10 bg-blue-500 dark:bg-blue-600 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg shadow-blue-500/30">
                                 <i class="fas fa-lightbulb text-white"></i>
                             </div>
-                            <div class="flex-1 text-right">
-                                <p class="text-sm font-bold text-blue-900 dark:text-blue-100">كيف يعمل النشر التلقائي؟</p>
-                                <p class="text-xs text-blue-700 dark:text-blue-300 mt-0.5" x-show="!showInfo">اضغط لعرض التفاصيل</p>
+                            <div class="flex-1 text-end">
+                                <p class="text-sm font-bold text-blue-900 dark:text-blue-100">{{ __("social.how_auto_publish_works") }}</p>
+                                <p class="text-xs text-blue-700 dark:text-blue-300 mt-0.5" x-show="!showInfo">{{ __("social.click_for_details") }}</p>
                             </div>
                             <i class="fas fa-chevron-down text-blue-500 dark:text-blue-400 transition-transform duration-200" :class="{ 'rotate-180': showInfo }"></i>
                         </button>
@@ -798,19 +796,19 @@
                                     <div class="w-6 h-6 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
                                         <span class="text-xs font-bold text-purple-600 dark:text-purple-400">1</span>
                                     </div>
-                                    <p class="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">فعّل النشر التلقائي لكل حساب تريد جدولته.</p>
+                                    <p class="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">{{ __("social.enable_auto_publish_instruction") }}</p>
                                 </div>
                                 <div class="flex items-start gap-3">
                                     <div class="w-6 h-6 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
                                         <span class="text-xs font-bold text-purple-600 dark:text-purple-400">2</span>
                                     </div>
-                                    <p class="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">حدد أوقات النشر المفضلة وأيام الأسبوع.</p>
+                                    <p class="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">{{ __("social.set_publish_times_instruction") }}</p>
                                 </div>
                                 <div class="flex items-start gap-3">
                                     <div class="w-6 h-6 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
                                         <span class="text-xs font-bold text-purple-600 dark:text-purple-400">3</span>
                                     </div>
-                                    <p class="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">سيتم نشر المنشورات تلقائياً في الأوقات المحددة.</p>
+                                    <p class="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">{{ __("social.auto_publish_description") }}.</p>
                                 </div>
                             </div>
                         </div>
@@ -831,7 +829,7 @@
                                     <i class="fas fa-unlink text-2xl text-gray-400 dark:text-gray-500"></i>
                                 </div>
                                 <p class="text-gray-600 dark:text-gray-400 font-medium mb-2">لا توجد حسابات متصلة</p>
-                                <p class="text-sm text-gray-500 dark:text-gray-500">قم بربط حساباتك أولاً لتفعيل النشر التلقائي</p>
+                                <p class="text-sm text-gray-500 dark:text-gray-500">{{ __("social.connect_accounts_first") }}</p>
                             </div>
                         </template>
 
@@ -865,7 +863,7 @@
 
                                     <!-- Enable Toggle - RTL Optimized -->
                                     <label class="relative inline-flex items-center cursor-pointer flex-shrink-0 group">
-                                        <span class="ml-3 text-sm font-semibold text-gray-700 dark:text-gray-300 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors hidden sm:inline">
+                                        <span class="ms-3 text-sm font-semibold text-gray-700 dark:text-gray-300 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors hidden sm:inline">
                                             تفعيل
                                         </span>
                                         <input type="checkbox" class="sr-only peer"
@@ -887,7 +885,7 @@
                                                 <div class="w-7 h-7 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
                                                     <i class="fas fa-clock text-purple-600 dark:text-purple-400 text-xs"></i>
                                                 </div>
-                                                أوقات النشر اليومية
+                                                {{ __("social.daily_publish_times") }}
                                             </label>
                                             <div class="flex flex-wrap gap-2">
                                                 <template x-for="(time, index) in times" :key="index">
@@ -915,10 +913,10 @@
                                                 <div class="w-7 h-7 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg flex items-center justify-center">
                                                     <i class="fas fa-calendar-week text-indigo-600 dark:text-indigo-400 text-xs"></i>
                                                 </div>
-                                                أيام النشر
+                                                {{ __("social.publish_days") }}
                                             </label>
                                             <div class="flex flex-wrap gap-2 sm:gap-3">
-                                                <template x-for="day in [{v: 0, l: 'أحد', s: 'ح'}, {v: 1, l: 'إثنين', s: 'ن'}, {v: 2, l: 'ثلاثاء', s: 'ث'}, {v: 3, l: 'أربعاء', s: 'ر'}, {v: 4, l: 'خميس', s: 'خ'}, {v: 5, l: 'جمعة', s: 'ج'}, {v: 6, l: 'سبت', s: 'س'}]" :key="day.v">
+                                                <template x-for="day in [{v: 0, l: "{{ __("social.days.sunday") }}", s: 'ح'}, {v: 1, l: "{{ __("social.days.monday") }}", s: 'ن'}, {v: 2, l: "{{ __("social.days.tuesday") }}", s: 'ث'}, {v: 3, l: "{{ __("social.days.wednesday") }}", s: 'ر'}, {v: 4, l: "{{ __("social.days.thursday") }}", s: 'خ'}, {v: 5, l: "{{ __("social.days.friday") }}", s: 'ج'}, {v: 6, l: "{{ __("social.days.saturday") }}", s: 'س'}]" :key="day.v">
                                                     <button @click="days.includes(day.v) ? days.splice(days.indexOf(day.v), 1) : days.push(day.v)"
                                                             :class="days.includes(day.v)
                                                                 ? 'bg-gradient-to-br from-purple-600 to-indigo-600 text-white shadow-lg shadow-purple-500/30 scale-105'
@@ -937,7 +935,7 @@
                                                 <div class="w-7 h-7 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
                                                     <i class="fas fa-layer-group text-green-600 dark:text-green-400 text-xs"></i>
                                                 </div>
-                                                عدد المنشورات في اليوم
+                                                {{ __("social.posts_per_day") }}
                                             </label>
                                             <div class="inline-flex items-center bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden shadow-sm">
                                                 <button @click="postsPerDay = Math.max(1, postsPerDay - 1)"
@@ -956,7 +954,7 @@
                                                     <i class="fas fa-plus"></i>
                                                 </button>
                                             </div>
-                                            <p class="text-xs text-gray-500 dark:text-gray-500 mt-2">الحد الأقصى: 20 منشور يومياً</p>
+                                            <p class="text-xs text-gray-500 dark:text-gray-500 mt-2">{{ __("social.max_posts_per_day") }}</p>
                                         </div>
                                     </div>
                                 </div>
@@ -971,7 +969,7 @@
                 <!-- Secondary Action -->
                 <button @click="showQueueSettings = false"
                         class="w-full sm:w-auto px-6 py-3 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-gray-300 dark:focus:ring-gray-600">
-                    <i class="fas fa-times ml-2 text-sm"></i>
+                    <i class="fas fa-times ms-2 text-sm"></i>
                     إغلاق
                 </button>
 
@@ -1134,22 +1132,22 @@ function socialManager() {
         // Post types configuration
         allPostTypes: {
             'facebook': [
-                {value: 'feed', label: 'منشور عادي (Feed Post)', icon: 'fa-newspaper'},
-                {value: 'reel', label: 'ريل (Reel)', icon: 'fa-video'},
-                {value: 'story', label: 'قصة (Story)', icon: 'fa-circle'}
+                {value: 'feed', label: \'{{ __("social.post_types.feed") }}\', icon: 'fa-newspaper'},
+                {value: 'reel', label: \'{{ __("social.post_types.reel") }}\', icon: 'fa-video'},
+                {value: 'story', label: \'{{ __("social.post_types.story") }}\', icon: 'fa-circle'}
             ],
             'instagram': [
-                {value: 'feed', label: 'منشور عادي (Feed Post)', icon: 'fa-image'},
-                {value: 'reel', label: 'ريل (Reel)', icon: 'fa-video'},
-                {value: 'story', label: 'قصة (Story)', icon: 'fa-circle'},
-                {value: 'carousel', label: 'كاروسيل (Carousel)', icon: 'fa-images'}
+                {value: 'feed', label: \'{{ __("social.post_types.feed") }}\', icon: 'fa-image'},
+                {value: 'reel', label: \'{{ __("social.post_types.reel") }}\', icon: 'fa-video'},
+                {value: 'story', label: \'{{ __("social.post_types.story") }}\', icon: 'fa-circle'},
+                {value: 'carousel', label: \'{{ __("social.post_types.carousel") }}\', icon: 'fa-images'}
             ],
             'twitter': [
                 {value: 'tweet', label: 'تغريدة (Tweet)', icon: 'fa-comment'},
                 {value: 'thread', label: 'سلسلة (Thread)', icon: 'fa-list'}
             ],
             'linkedin': [
-                {value: 'post', label: 'منشور (Post)', icon: 'fa-file-alt'},
+                {value: 'post', label: \'{{ __("social.post_types.post") }}\', icon: 'fa-file-alt'},
                 {value: 'article', label: 'مقال (Article)', icon: 'fa-newspaper'}
             ]
         },
@@ -1244,7 +1242,7 @@ function socialManager() {
 
                 // Get the intersection of all post types (common across all platforms)
                 if (platformPostTypes.length === 0) {
-                    return [{value: 'feed', label: 'منشور عادي (Feed Post)', icon: 'fa-newspaper'}];
+                    return [{value: 'feed', label: \'{{ __("social.post_types.feed") }}\', icon: 'fa-newspaper'}];
                 }
 
                 // Find post types that exist in all platforms
@@ -1257,12 +1255,12 @@ function socialManager() {
                 // If no common types, default to feed
                 return commonPostTypes.length > 0
                     ? commonPostTypes
-                    : [{value: 'feed', label: 'منشور عادي (Feed Post)', icon: 'fa-newspaper'}];
+                    : [{value: 'feed', label: \'{{ __("social.post_types.feed") }}\', icon: 'fa-newspaper'}];
             }
 
             // Single platform selected, return its specific post types
             const platform = uniquePlatforms[0];
-            return this.allPostTypes[platform] || [{value: 'feed', label: 'منشور عادي', icon: 'fa-newspaper'}];
+            return this.allPostTypes[platform] || [{value: 'feed', label: \'{{ __("social.post_types.feed") }}\', icon: 'fa-newspaper'}];
         },
 
         get selectedPlatformsForPreview() {
@@ -1552,7 +1550,7 @@ function socialManager() {
         },
 
         async bulkDelete() {
-            if (!confirm(`هل أنت متأكد من حذف ${this.selectedPosts.length} منشور؟`)) return;
+            if (!confirm(__("social.confirm_delete_posts", {count: this.selectedPosts.length}))) return;
 
             for (const postId of this.selectedPosts) {
                 await this.deletePost(postId, false);
@@ -1560,7 +1558,7 @@ function socialManager() {
             this.selectedPosts = [];
             await this.fetchPosts();
             if (window.notify) {
-                window.notify('تم حذف المنشورات بنجاح', 'success');
+                window.notify(__("social.posts_deleted_success"), 'success');
             }
         },
 
@@ -1575,7 +1573,7 @@ function socialManager() {
             const content = this.newPost.content;
             if (!content) {
                 if (window.notify) {
-                    window.notify('اكتب محتوى أولاً', 'warning');
+                    window.notify(__("social.write_content_first"), 'warning');
                 }
                 return;
             }
@@ -1586,7 +1584,7 @@ function socialManager() {
                 'longer': 'جاري التوسع...',
                 'formal': 'جاري تحويل الأسلوب...',
                 'casual': 'جاري تحويل الأسلوب...',
-                'hashtags': 'جاري إنشاء الهاشتاقات...',
+                'hashtags': __("social.generating_hashtags"),
                 'emojis': 'جاري إضافة الإيموجي...',
             }[type] || 'جاري المعالجة...';
 
@@ -1624,7 +1622,7 @@ function socialManager() {
                     }
                 } else {
                     // Show detailed validation errors for debugging
-                    let errorMessage = data.message || 'فشل التحويل';
+                    let errorMessage = data.message || __("social.conversion_failed");
                     if (data.errors) {
                         const errorDetails = Object.values(data.errors).flat().join(', ');
                         errorMessage += ': ' + errorDetails;
@@ -1647,7 +1645,7 @@ function socialManager() {
                 detail: { content: post.post_text || post.content || '' }
             }));
             if (window.notify) {
-                window.notify('تم نسخ المحتوى - يمكنك تعديله ونشره', 'success');
+                window.notify(__("social.content_copied_success"), 'success');
             }
         },
 
@@ -1911,10 +1909,10 @@ function socialManager() {
 
                 if (response.ok) {
                     const messages = {
-                        'now': 'تم نشر المنشور بنجاح!',
-                        'scheduled': 'تم جدولة المنشور بنجاح!',
-                        'queue': 'تم إضافة المنشور للطابور بنجاح!',
-                        'draft': 'تم حفظ المسودة بنجاح!'
+                        'now': __("social.post_published_success"),
+                        'scheduled': __("social.post_scheduled_success"),
+                        'queue': __("social.post_queued_success"),
+                        'draft': __("social.draft_saved_success")
                     };
                     if (window.notify) {
                         window.notify(messages[this.newPost.publishType], 'success');
@@ -1922,12 +1920,12 @@ function socialManager() {
                     this.resetNewPost();
                     await this.fetchPosts();
                 } else {
-                    throw new Error(result.message || 'فشل في حفظ المنشور');
+                    throw new Error(result.message || __("social.post_save_failed"));
                 }
             } catch (error) {
                 console.error('Failed to save post:', error);
                 if (window.notify) {
-                    window.notify(error.message || 'فشل في حفظ المنشور', 'error');
+                    window.notify(error.message || __("social.post_save_failed"), 'error');
                 }
             } finally {
                 this.isSubmitting = false;
@@ -1960,10 +1958,10 @@ function socialManager() {
 
         getStatusLabel(status) {
             const labels = {
-                'scheduled': 'مجدول',
-                'published': 'منشور',
-                'draft': 'مسودة',
-                'failed': 'فشل'
+                'scheduled': '{{ __('social.scheduled_status') }}',
+                'published': '{{ __('social.published_status') }}',
+                'draft': '{{ __('social.draft_status') }}',
+                'failed': '{{ __('social.failed_status') }}'
             };
             return labels[status] || status;
         },
@@ -2040,17 +2038,17 @@ function socialManager() {
                     this.showEditPostModal = false;
                     await this.fetchPosts();
                     if (window.notify) {
-                        window.notify('تم تحديث المنشور بنجاح', 'success');
+                        window.notify(__("social.post_updated_success"), 'success');
                     }
                 } else {
                     if (window.notify) {
-                        window.notify(result.message || 'فشل تحديث المنشور', 'error');
+                        window.notify(result.message || __("social.post_update_failed"), 'error');
                     }
                 }
             } catch (error) {
                 console.error('Failed to update post:', error);
                 if (window.notify) {
-                    window.notify('فشل تحديث المنشور', 'error');
+                    window.notify(__("social.post_update_failed"), 'error');
                 }
             } finally {
                 this.isUpdating = false;
@@ -2058,7 +2056,7 @@ function socialManager() {
         },
 
         async publishNow(postId) {
-            if (!confirm('هل تريد نشر هذا المنشور الآن؟')) return;
+            if (!confirm(__("social.confirm_publish_now"))) return;
 
             try {
                 const response = await fetch(`/api/orgs/${this.orgId}/social/posts/${postId}/publish`, {
@@ -2074,24 +2072,24 @@ function socialManager() {
                 if (response.ok && result.success) {
                     await this.fetchPosts();
                     if (window.notify) {
-                        window.notify('تم نشر المنشور بنجاح', 'success');
+                        window.notify(__("social.post_published_success"), "success");
                     }
                 } else {
                     if (window.notify) {
-                        window.notify(result.message || 'فشل نشر المنشور', 'error');
+                        window.notify(result.message || __("social.post_publish_failed"), 'error');
                     }
                     await this.fetchPosts();
                 }
             } catch (error) {
                 console.error('Failed to publish post:', error);
                 if (window.notify) {
-                    window.notify('فشل نشر المنشور', 'error');
+                    window.notify(__("social.post_publish_failed"), 'error');
                 }
             }
         },
 
         async retryPost(postId) {
-            if (!confirm('هل تريد إعادة محاولة نشر هذا المنشور؟')) return;
+            if (!confirm(__("social.confirm_retry_publish"))) return;
 
             try {
                 const response = await fetch(`/api/orgs/${this.orgId}/social/posts/${postId}/publish`, {
@@ -2107,24 +2105,24 @@ function socialManager() {
                 if (response.ok && result.success) {
                     await this.fetchPosts();
                     if (window.notify) {
-                        window.notify('تم نشر المنشور بنجاح!', 'success');
+                        window.notify(__("social.post_published_success"), 'success');
                     }
                 } else {
                     if (window.notify) {
-                        window.notify('فشلت إعادة المحاولة: ' + (result.message || ''), 'error');
+                        window.notify(__("social.retry_failed") + ': ' + (result.message || ''), 'error');
                     }
                     await this.fetchPosts();
                 }
             } catch (error) {
                 console.error('Failed to retry post:', error);
                 if (window.notify) {
-                    window.notify('فشلت إعادة المحاولة', 'error');
+                    window.notify(__("social.retry_failed"), 'error');
                 }
             }
         },
 
         async deletePost(postId, showConfirm = true) {
-            if (showConfirm && !confirm('هل أنت متأكد من حذف هذا المنشور؟')) return;
+            if (showConfirm && !confirm(__("social.confirm_delete_post"))) return;
 
             try {
                 const response = await fetch(`/orgs/${this.orgId}/social/posts/${postId}`, {
@@ -2144,24 +2142,24 @@ function socialManager() {
                     if (showConfirm) {
                         await this.fetchPosts();
                         if (window.notify) {
-                            window.notify('تم حذف المنشور بنجاح', 'success');
+                            window.notify(__("social.post_deleted_success"), "success");
                         }
                     }
                 } else {
                     if (window.notify) {
-                        window.notify(result.message || 'فشل حذف المنشور', 'error');
+                        window.notify(result.message || __("social.post_delete_failed"), 'error');
                     }
                 }
             } catch (error) {
                 console.error('Failed to delete post:', error);
                 if (window.notify) {
-                    window.notify('فشل حذف المنشور', 'error');
+                    window.notify(__("social.post_delete_failed"), 'error');
                 }
             }
         },
 
         async deleteAllFailed() {
-            if (!confirm(`هل أنت متأكد من حذف جميع المنشورات الفاشلة (${this.failedCount})؟`)) return;
+            if (!confirm(__("social.confirm_delete_failed_posts", {count: this.failedCount}))) return;
 
             this.isDeletingFailed = true;
 
@@ -2183,17 +2181,17 @@ function socialManager() {
                     const deletedCount = result.data?.deleted_count || 0;
                     await this.fetchPosts();
                     if (window.notify) {
-                        window.notify(`تم حذف ${deletedCount} منشور فاشل بنجاح`, 'success');
+                        window.notify(__("social.failed_posts_deleted_success", {count: deletedCount}), "success");
                     }
                 } else {
                     if (window.notify) {
-                        window.notify(result.message || 'فشل حذف المنشورات الفاشلة', 'error');
+                        window.notify(result.message || __("social.failed_posts_delete_failed"), 'error');
                     }
                 }
             } catch (error) {
                 console.error('Failed to delete all failed posts:', error);
                 if (window.notify) {
-                    window.notify('فشل حذف المنشورات الفاشلة', 'error');
+                    window.notify(__("social.failed_posts_delete_failed"), 'error');
                 }
             } finally {
                 this.isDeletingFailed = false;
@@ -2260,7 +2258,7 @@ function socialManager() {
             } catch (error) {
                 console.error('Failed to save queue settings:', error);
                 if (window.notify) {
-                    window.notify('فشل في حفظ الإعدادات', 'error');
+                    window.notify(__("social.settings_save_failed"), 'error');
                 }
             }
         }

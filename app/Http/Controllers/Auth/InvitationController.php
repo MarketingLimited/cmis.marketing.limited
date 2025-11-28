@@ -46,7 +46,7 @@ class InvitationController extends Controller
             ->first();
 
         if (!$invitation) {
-            return redirect()->route('login')->with('error', 'This invitation link is invalid or has expired.');
+            return redirect()->route('login')->with('error', __('auth.invalid'));
         }
 
         $user = $invitation->user;
@@ -76,7 +76,7 @@ class InvitationController extends Controller
         // Log the user in
         Auth::login($user);
 
-        return redirect()->route('dashboard.index')->with('success', "Welcome to {$invitation->org->name}! You've successfully joined the organization.");
+        return redirect()->route('dashboard.index')->with('success', __('auth.invitation_welcome', ['org_name' => $invitation->org->name]));
     }
 
     /**
@@ -96,6 +96,6 @@ class InvitationController extends Controller
             ]);
         }
 
-        return redirect()->route('login')->with('info', 'You have declined the invitation.');
+        return redirect()->route('login')->with('info', __('auth.you_have_declined_the_invitation'));
     }
 }

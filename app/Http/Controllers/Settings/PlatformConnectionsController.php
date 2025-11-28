@@ -424,7 +424,7 @@ class PlatformConnectionsController extends Controller
 
             return redirect()
                 ->route('orgs.settings.platform-connections.google.assets', [$org, $connection->connection_id])
-                ->with('success', 'Google connection created successfully. Now select which Google services to use.');
+                ->with('success', __('settings.created_success'));
 
         } catch (\Exception $e) {
             Log::error('Failed to store Google credentials', ['error' => $e->getMessage()]);
@@ -515,7 +515,7 @@ class PlatformConnectionsController extends Controller
 
         return redirect()
             ->route('orgs.settings.platform-connections.index', $org)
-            ->with('success', 'Google connection updated successfully');
+            ->with('success', __('settings.updated_success'));
     }
 
     /**
@@ -567,7 +567,7 @@ class PlatformConnectionsController extends Controller
 
         return redirect()
             ->route('orgs.settings.platform-connections.index', $org)
-            ->with('success', "{$platformName} connection deleted successfully");
+            ->with('success', __('settings.platform_connection_deleted', ['platform' => $platformName]));
     }
 
     /**
@@ -596,7 +596,7 @@ class PlatformConnectionsController extends Controller
             ], 'Ad accounts refreshed successfully');
         }
 
-        return back()->with('success', 'Found ' . count($adAccounts) . ' ad account(s)');
+        return back()->with('success', __('settings.ad_accounts_found', ['count' => count($adAccounts)]));
     }
 
     // ===== Private Helper Methods =====
@@ -2653,12 +2653,12 @@ class PlatformConnectionsController extends Controller
 
         if (!$orgId || $request->get('state') !== session('oauth_state')) {
             return redirect()->route('orgs.settings.platform-connections.index', $orgId ?? 'default')
-                ->with('error', 'Invalid OAuth state');
+                ->with('error', __('settings.invalid'));
         }
 
         if ($request->has('error')) {
             return redirect()->route('orgs.settings.platform-connections.index', $orgId)
-                ->with('error', 'Meta authorization was denied: ' . $request->get('error_description', 'Unknown error'));
+                ->with('error', __('settings.meta_auth_denied', ['error' => $request->get('error_description', 'Unknown error')]));
         }
 
         $config = config('social-platforms.meta');
@@ -2676,7 +2676,7 @@ class PlatformConnectionsController extends Controller
                 'error' => $response->json(),
             ]);
             return redirect()->route('orgs.settings.platform-connections.index', $orgId)
-                ->with('error', 'Failed to obtain access token from Meta');
+                ->with('error', __('settings.operation_failed'));
         }
 
         $tokenData = $response->json();
@@ -2703,7 +2703,7 @@ class PlatformConnectionsController extends Controller
 
         if (!$tokenInfo['valid']) {
             return redirect()->route('orgs.settings.platform-connections.index', $orgId)
-                ->with('error', 'Token validation failed: ' . ($tokenInfo['error'] ?? 'Unknown error'));
+                ->with('error', __('settings.token_validation_failed', ['error' => ($tokenInfo['error'] ?? 'Unknown error')]));
         }
 
         // Get ad accounts
@@ -2801,7 +2801,7 @@ class PlatformConnectionsController extends Controller
 
         if (!$orgId || $request->get('state') !== session('oauth_state')) {
             return redirect()->route('orgs.settings.platform-connections.index', $orgId ?? 'default')
-                ->with('error', 'Invalid OAuth state');
+                ->with('error', __('settings.invalid'));
         }
 
         $config = config('social-platforms.youtube');
@@ -2816,7 +2816,7 @@ class PlatformConnectionsController extends Controller
 
         if (!$response->successful()) {
             return redirect()->route('orgs.settings.platform-connections.index', $orgId)
-                ->with('error', 'Failed to obtain access token from YouTube');
+                ->with('error', __('settings.operation_failed'));
         }
 
         $tokenData = $response->json();
@@ -2868,7 +2868,7 @@ class PlatformConnectionsController extends Controller
         session()->forget('oauth_state');
 
         return redirect()->route('orgs.settings.platform-connections.index', $orgId)
-            ->with('success', 'YouTube account connected successfully');
+            ->with('success', __('settings.youtube_account_connected_successfully'));
     }
 
     /**
@@ -2902,7 +2902,7 @@ class PlatformConnectionsController extends Controller
 
         if (!$orgId || $request->get('state') !== session('oauth_state')) {
             return redirect()->route('orgs.settings.platform-connections.index', $orgId ?? 'default')
-                ->with('error', 'Invalid OAuth state');
+                ->with('error', __('settings.invalid'));
         }
 
         $config = config('social-platforms.linkedin');
@@ -2917,7 +2917,7 @@ class PlatformConnectionsController extends Controller
 
         if (!$response->successful()) {
             return redirect()->route('orgs.settings.platform-connections.index', $orgId)
-                ->with('error', 'Failed to obtain access token from LinkedIn');
+                ->with('error', __('settings.operation_failed'));
         }
 
         $tokenData = $response->json();
@@ -2967,7 +2967,7 @@ class PlatformConnectionsController extends Controller
         session()->forget('oauth_state');
 
         return redirect()->route('orgs.settings.platform-connections.index', $orgId)
-            ->with('success', 'LinkedIn account connected successfully');
+            ->with('success', __('settings.linkedin_account_connected_successfully'));
     }
 
     /**
@@ -3008,7 +3008,7 @@ class PlatformConnectionsController extends Controller
 
         if (!$orgId || $request->get('state') !== session('oauth_state')) {
             return redirect()->route('orgs.settings.platform-connections.index', $orgId ?? 'default')
-                ->with('error', 'Invalid OAuth state');
+                ->with('error', __('settings.invalid'));
         }
 
         $config = config('social-platforms.twitter');
@@ -3025,7 +3025,7 @@ class PlatformConnectionsController extends Controller
 
         if (!$response->successful()) {
             return redirect()->route('orgs.settings.platform-connections.index', $orgId)
-                ->with('error', 'Failed to obtain access token from Twitter');
+                ->with('error', __('settings.operation_failed'));
         }
 
         $tokenData = $response->json();
@@ -3074,7 +3074,7 @@ class PlatformConnectionsController extends Controller
         session()->forget(['oauth_state', 'twitter_code_verifier']);
 
         return redirect()->route('orgs.settings.platform-connections.index', $orgId)
-            ->with('success', 'X (Twitter) account connected successfully');
+            ->with('success', __('settings.x_twitter_account_connected_successfully'));
     }
 
     /**
@@ -3108,7 +3108,7 @@ class PlatformConnectionsController extends Controller
 
         if (!$orgId || $request->get('state') !== session('oauth_state')) {
             return redirect()->route('orgs.settings.platform-connections.index', $orgId ?? 'default')
-                ->with('error', 'Invalid OAuth state');
+                ->with('error', __('settings.invalid'));
         }
 
         $config = config('social-platforms.pinterest');
@@ -3121,7 +3121,7 @@ class PlatformConnectionsController extends Controller
 
         if (!$response->successful()) {
             return redirect()->route('orgs.settings.platform-connections.index', $orgId)
-                ->with('error', 'Failed to obtain access token from Pinterest');
+                ->with('error', __('settings.operation_failed'));
         }
 
         $tokenData = $response->json();
@@ -3170,7 +3170,7 @@ class PlatformConnectionsController extends Controller
         session()->forget('oauth_state');
 
         return redirect()->route('orgs.settings.platform-connections.index', $orgId)
-            ->with('success', 'Pinterest account connected successfully');
+            ->with('success', __('settings.pinterest_account_connected_successfully'));
     }
 
     /**
@@ -3207,7 +3207,7 @@ class PlatformConnectionsController extends Controller
 
         if (!$orgId || $request->get('state') !== session('oauth_state')) {
             return redirect()->route('orgs.settings.platform-connections.index', $orgId ?? 'default')
-                ->with('error', 'Invalid OAuth state');
+                ->with('error', __('settings.invalid'));
         }
 
         $config = config('social-platforms.tiktok');
@@ -3222,7 +3222,7 @@ class PlatformConnectionsController extends Controller
 
         if (!$response->successful()) {
             return redirect()->route('orgs.settings.platform-connections.index', $orgId)
-                ->with('error', 'Failed to obtain access token from TikTok');
+                ->with('error', __('settings.operation_failed'));
         }
 
         $tokenData = $response->json('data', []);
@@ -3274,7 +3274,7 @@ class PlatformConnectionsController extends Controller
         session()->forget(['oauth_state', 'tiktok_csrf_state']);
 
         return redirect()->route('orgs.settings.platform-connections.index', $orgId)
-            ->with('success', 'TikTok account connected successfully');
+            ->with('success', __('settings.tiktok_account_connected_successfully'));
     }
 
     /**
@@ -3309,7 +3309,7 @@ class PlatformConnectionsController extends Controller
 
         if (!$orgId || $request->get('state') !== session('oauth_state')) {
             return redirect()->route('orgs.settings.platform-connections.index', $orgId ?? 'default')
-                ->with('error', 'Invalid OAuth state');
+                ->with('error', __('settings.invalid'));
         }
 
         $config = config('social-platforms.reddit');
@@ -3324,7 +3324,7 @@ class PlatformConnectionsController extends Controller
 
         if (!$response->successful()) {
             return redirect()->route('orgs.settings.platform-connections.index', $orgId)
-                ->with('error', 'Failed to obtain access token from Reddit');
+                ->with('error', __('settings.operation_failed'));
         }
 
         $tokenData = $response->json();
@@ -3374,7 +3374,7 @@ class PlatformConnectionsController extends Controller
         session()->forget('oauth_state');
 
         return redirect()->route('orgs.settings.platform-connections.index', $orgId)
-            ->with('success', 'Reddit account connected successfully');
+            ->with('success', __('settings.reddit_account_connected_successfully'));
     }
 
     /**
@@ -3385,7 +3385,7 @@ class PlatformConnectionsController extends Controller
         // TODO: Implement OAuth 1.0a flow for Tumblr
         // This requires additional OAuth 1.0a library as it uses a different flow than OAuth 2.0
         return redirect()->route('orgs.settings.platform-connections.index', $org)
-            ->with('error', 'Tumblr OAuth integration coming soon. OAuth 1.0a requires additional implementation.');
+            ->with('error', __('settings.tumblr_oauth_integration_coming_soon_oauth_10a_req'));
     }
 
     /**
@@ -3395,7 +3395,7 @@ class PlatformConnectionsController extends Controller
     {
         // TODO: Implement OAuth 1.0a callback for Tumblr
         return redirect()->route('orgs.settings.platform-connections.index', 'default')
-            ->with('error', 'Tumblr OAuth callback not yet implemented');
+            ->with('error', __('settings.tumblr_oauth_callback_not_yet_implemented'));
     }
 
     /**
@@ -3431,7 +3431,7 @@ class PlatformConnectionsController extends Controller
 
         if (!$orgId || $request->get('state') !== session('oauth_state')) {
             return redirect()->route('orgs.settings.platform-connections.index', $orgId ?? 'default')
-                ->with('error', 'Invalid OAuth state');
+                ->with('error', __('settings.invalid'));
         }
 
         $config = config('social-platforms.google_business');
@@ -3446,7 +3446,7 @@ class PlatformConnectionsController extends Controller
 
         if (!$response->successful()) {
             return redirect()->route('orgs.settings.platform-connections.index', $orgId)
-                ->with('error', 'Failed to obtain access token from Google Business Profile');
+                ->with('error', __('settings.operation_failed'));
         }
 
         $tokenData = $response->json();
@@ -3497,7 +3497,7 @@ class PlatformConnectionsController extends Controller
         session()->forget('oauth_state');
 
         return redirect()->route('orgs.settings.platform-connections.index', $orgId)
-            ->with('success', 'Google Business Profile connected successfully');
+            ->with('success', __('settings.google_business_profile_connected_successfully'));
     }
 
     /**
@@ -3509,7 +3509,7 @@ class PlatformConnectionsController extends Controller
 
         if (!$config['client_id'] || !$config['client_secret']) {
             return redirect()->route('orgs.settings.platform-connections.index', $org)
-                ->with('error', 'Google API credentials are not configured. Please add GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET to your .env file.');
+                ->with('error', __('settings.not_configured'));
         }
 
         $state = base64_encode(json_encode(['org_id' => $org, 'platform' => 'google']));
@@ -3542,12 +3542,12 @@ class PlatformConnectionsController extends Controller
 
         if (!$orgId || $request->get('state') !== session('oauth_state')) {
             return redirect()->route('orgs.settings.platform-connections.index', $orgId ?? 'default')
-                ->with('error', 'Invalid OAuth state');
+                ->with('error', __('settings.invalid'));
         }
 
         if ($request->has('error')) {
             return redirect()->route('orgs.settings.platform-connections.index', $orgId)
-                ->with('error', 'Google authorization was denied: ' . $request->get('error_description', $request->get('error')));
+                ->with('error', __('settings.google_auth_denied', ['error' => $request->get('error_description', $request->get('error'))]));
         }
 
         $config = config('social-platforms.google');
@@ -3567,7 +3567,7 @@ class PlatformConnectionsController extends Controller
                 'status' => $response->status(),
             ]);
             return redirect()->route('orgs.settings.platform-connections.index', $orgId)
-                ->with('error', 'Failed to obtain access token from Google');
+                ->with('error', __('settings.operation_failed'));
         }
 
         $tokenData = $response->json();
@@ -3662,7 +3662,7 @@ class PlatformConnectionsController extends Controller
         // Redirect to asset selection page
         return redirect()
             ->route('orgs.settings.platform-connections.google.assets', [$orgId, $connection->connection_id])
-            ->with('success', 'Google account connected successfully. Now select which Google services to use.');
+            ->with('success', __('settings.google_account_connected_successfully_now_select_w'));
     }
 
     /**
@@ -3717,7 +3717,7 @@ class PlatformConnectionsController extends Controller
 
         if (!$orgId || $request->get('state') !== session('oauth_state')) {
             return redirect()->route('orgs.settings.platform-connections.index', $orgId ?? 'default')
-                ->with('error', 'Invalid OAuth state');
+                ->with('error', __('settings.invalid'));
         }
 
         $config = config('social-platforms.snapchat');
@@ -3732,7 +3732,7 @@ class PlatformConnectionsController extends Controller
 
         if (!$response->successful()) {
             return redirect()->route('orgs.settings.platform-connections.index', $orgId)
-                ->with('error', 'Failed to obtain access token from Snapchat');
+                ->with('error', __('settings.operation_failed'));
         }
 
         $tokenData = $response->json();
@@ -3770,7 +3770,7 @@ class PlatformConnectionsController extends Controller
         session()->forget('oauth_state');
 
         return redirect()->route('orgs.settings.platform-connections.index', $orgId)
-            ->with('success', 'Snapchat account connected successfully');
+            ->with('success', __('settings.snapchat_account_connected_successfully'));
     }
 
     /**

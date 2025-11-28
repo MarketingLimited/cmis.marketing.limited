@@ -9,13 +9,16 @@ return [
     */
 
     // General Actions
+    'actions' => 'الإجراءات',
     'save' => 'حفظ',
     'cancel' => 'إلغاء',
     'delete' => 'حذف',
     'edit' => 'تعديل',
+    'add' => 'إضافة',
     'create' => 'إنشاء',
     'update' => 'تحديث',
     'view' => 'عرض',
+    'view_details' => 'عرض التفاصيل',
     'back' => 'رجوع',
     'next' => 'التالي',
     'previous' => 'السابق',
@@ -54,6 +57,13 @@ return [
     'last_month' => 'الشهر الماضي',
     'this_year' => 'هذه السنة',
     'custom_range' => 'نطاق مخصص',
+    'mon' => 'الإثنين',
+    'tue' => 'الثلاثاء',
+    'wed' => 'الأربعاء',
+    'thu' => 'الخميس',
+    'fri' => 'الجمعة',
+    'sat' => 'السبت',
+    'sun' => 'الأحد',
 
     // Common Fields
     'name' => 'الاسم',
@@ -73,6 +83,7 @@ return [
     'settings' => 'الإعدادات',
     'profile' => 'الملف الشخصي',
     'logout' => 'تسجيل الخروج',
+    'system_admin' => 'مدير النظام',
 
     // Messages
     'success_message' => 'تمت العملية بنجاح',
@@ -81,6 +92,7 @@ return [
     'loading' => 'جارٍ التحميل...',
     'processing' => 'جارٍ المعالجة...',
     'please_wait' => 'يرجى الانتظار',
+    'search_placeholder' => 'بحث...',
 
     // Confirmation
     'are_you_sure' => 'هل أنت متأكد؟',
@@ -114,5 +126,44 @@ return [
     'available' => 'متاح',
     'beta' => 'تجريبي',
     'new' => 'جديد',
+
+    // Additional common items
+    'already_on_plan' => 'أنت بالفعل على خطة :plan.',
+    'invitation_sent' => 'تم إرسال الدعوة إلى :email!',
+    'processing_failed' => 'فشلت المعالجة: :error',
+    'article' => 'مقال',
+    'poll' => 'استطلاع',
+    'none' => 'لا شيء',
+    'unknown' => 'غير معروف',
+    'unknown_error' => 'خطأ غير معروف',
+    'please_try_again' => 'يرجى المحاولة مرة أخرى',
+    'create_new_post' => 'إنشاء منشور جديد',
+    'switch_organization' => 'تبديل المؤسسة',
+    'failed_load_organizations' => 'فشل تحميل المؤسسات',
+    'server_connection_error' => 'خطأ في الاتصال بالخادم',
+    'organization_switched_success' => 'تم تبديل المؤسسة بنجاح',
+    'failed_switch_organization' => 'فشل تبديل المؤسسة',
+    'error_switching_organization' => 'حدث خطأ أثناء تبديل المؤسسة',
+    'notification' => 'إشعار',
+    'view_all' => 'عرض الكل',
+
+    // Currency
+    'sar' => 'ر.س',
+    'currency_sar' => 'ر.س',
+
+    // Time units
+    'ago' => 'منذ',
+    'seconds' => 'ثانية',
+    'minutes' => 'دقيقة',
+    'hours' => 'ساعة',
+    'days' => 'يوم',
+    'weeks' => 'أسبوع',
+    'months' => 'شهر',
+    'years' => 'سنة',
+
+    // Status labels
+    'paused' => 'متوقف',
+    'draft' => 'مسودة',
+    'scheduled' => 'مجدول',
 
 ];

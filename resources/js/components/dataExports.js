@@ -92,7 +92,7 @@ export default function dataExports() {
                     this.totalPages = data.configs.last_page;
                 }
             } catch (error) {
-                console.error('Failed to load configs:', error);
+                console.error(__('javascript.failed_to_load_configs'), error);
             } finally {
                 this.loading = false;
             }
@@ -120,7 +120,7 @@ export default function dataExports() {
                     this.logs = data.logs.data;
                 }
             } catch (error) {
-                console.error('Failed to load logs:', error);
+                console.error(__('javascript.failed_to_load_logs'), error);
             } finally {
                 this.loading = false;
             }
@@ -139,7 +139,7 @@ export default function dataExports() {
                     this.tokens = data.tokens.data;
                 }
             } catch (error) {
-                console.error('Failed to load tokens:', error);
+                console.error(__('javascript.failed_to_load_tokens'), error);
             } finally {
                 this.loading = false;
             }
@@ -157,7 +157,7 @@ export default function dataExports() {
                     this.stats = data.stats;
                 }
             } catch (error) {
-                console.error('Failed to load stats:', error);
+                console.error(__('javascript.failed_to_load_stats'), error);
             }
         },
 
@@ -176,13 +176,13 @@ export default function dataExports() {
 
                 const data = await response.json();
                 if (data.success) {
-                    this.showSuccess('Export configuration created');
+                    this.showSuccess(__('javascript.export_config_created'));
                     this.showCreateModal = false;
                     this.resetForm();
                     await this.loadConfigs();
                 }
             } catch (error) {
-                this.showError('Failed to create configuration');
+                this.showError(__('javascript.failed_to_create_config'));
             } finally {
                 this.loading = false;
             }
@@ -205,13 +205,13 @@ export default function dataExports() {
                     this.showSuccess(`Configuration ${config.is_active ? 'activated' : 'deactivated'}`);
                 }
             } catch (error) {
-                this.showError('Failed to update configuration');
+                this.showError(__('javascript.failed_to_update_config'));
             }
         },
 
         // Delete configuration
         async deleteConfig(configId) {
-            if (!confirm('Delete this export configuration?')) return;
+            if (!confirm(__('javascript.confirm_delete_export_config'))) return;
 
             try {
                 const response = await fetch(`/api/orgs/${this.orgId}/exports/configs/${configId}`, {
@@ -220,11 +220,11 @@ export default function dataExports() {
                 });
 
                 if (response.ok) {
-                    this.showSuccess('Configuration deleted');
+                    this.showSuccess(__('javascript.export_config_deleted'));
                     await this.loadConfigs();
                 }
             } catch (error) {
-                this.showError('Failed to delete configuration');
+                this.showError(__('javascript.failed_to_delete_config'));
             }
         },
 
@@ -252,9 +252,9 @@ export default function dataExports() {
                 const data = await response.json();
                 if (data.success) {
                     if (async) {
-                        this.showSuccess('Export queued for processing');
+                        this.showSuccess(__('javascript.export_queued'));
                     } else {
-                        this.showSuccess('Export completed');
+                        this.showSuccess(__('javascript.export_completed'));
                         if (data.download_url) {
                             window.location.href = data.download_url;
                         }
@@ -262,7 +262,7 @@ export default function dataExports() {
                     await this.loadLogs();
                 }
             } catch (error) {
-                this.showError('Failed to execute export');
+                this.showError(__('javascript.failed_to_execute_export'));
             }
         },
 
@@ -294,11 +294,11 @@ export default function dataExports() {
                 if (data.success) {
                     this.newToken = data.plaintext_token;
                     this.showTokenValue = true;
-                    this.showSuccess('API token created');
+                    this.showSuccess(__('javascript.api_token_created'));
                     await this.loadTokens();
                 }
             } catch (error) {
-                this.showError('Failed to create token');
+                this.showError(__('javascript.failed_to_create_token'));
             } finally {
                 this.loading = false;
             }
@@ -306,7 +306,7 @@ export default function dataExports() {
 
         // Revoke API token
         async revokeToken(tokenId) {
-            if (!confirm('Revoke this API token? This action cannot be undone.')) return;
+            if (!confirm(__('javascript.confirm_revoke_token'))) return;
 
             try {
                 const response = await fetch(`/api/orgs/${this.orgId}/api-tokens/${tokenId}`, {
@@ -315,20 +315,20 @@ export default function dataExports() {
                 });
 
                 if (response.ok) {
-                    this.showSuccess('Token revoked');
+                    this.showSuccess(__('javascript.token_revoked'));
                     await this.loadTokens();
                 }
             } catch (error) {
-                this.showError('Failed to revoke token');
+                this.showError(__('javascript.failed_to_revoke_token'));
             }
         },
 
         // Copy to clipboard
         copyToClipboard(text) {
             navigator.clipboard.writeText(text).then(() => {
-                this.showSuccess('Copied to clipboard');
+                this.showSuccess(__('javascript.copied_to_clipboard'));
             }).catch(() => {
-                this.showError('Failed to copy');
+                this.showError(__('javascript.failed_to_copy'));
             });
         },
 

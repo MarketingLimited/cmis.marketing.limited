@@ -70,7 +70,7 @@ class DashboardController extends Controller
         }
 
         return redirect()->route('dashboards.show', $dashboard->dashboard_id)
-            ->with('success', 'Dashboard created successfully');
+            ->with('success', __('dashboard.created_success'));
     }
 
     /**
@@ -126,7 +126,7 @@ class DashboardController extends Controller
         }
 
         return redirect()->route('dashboards.show', $dashboard->dashboard_id)
-            ->with('success', 'Dashboard updated successfully');
+            ->with('success', __('dashboard.updated_success'));
     }
 
     /**
@@ -142,7 +142,7 @@ class DashboardController extends Controller
         }
 
         return redirect()->route('dashboards.index')
-            ->with('success', 'Dashboard deleted successfully');
+            ->with('success', __('dashboard.deleted_success'));
     }
 
     /**
@@ -159,7 +159,7 @@ class DashboardController extends Controller
         }
 
         return redirect()->route('dashboards.show', $duplicated->dashboard_id)
-            ->with('success', 'Dashboard duplicated successfully');
+            ->with('success', __('dashboard.dashboard_duplicated_successfully'));
     }
 
     /**
@@ -232,7 +232,7 @@ class DashboardController extends Controller
         }
 
         return redirect()->route('dashboards.show', $dashboard->dashboard_id)
-            ->with('success', 'Dashboard imported successfully');
+            ->with('success', __('dashboard.dashboard_imported_successfully'));
     }
 
     /**
@@ -274,7 +274,7 @@ class DashboardController extends Controller
         }
 
         return redirect()->route('dashboards.show', $dashboard->dashboard_id)
-            ->with('success', 'Dashboard created from template successfully');
+            ->with('success', __('dashboard.dashboard_created_from_template_successfully'));
     }
 
     /**
@@ -327,7 +327,7 @@ class DashboardController extends Controller
         }
 
         return redirect()->back()
-            ->with('success', 'Default dashboard set successfully');
+            ->with('success', __('dashboard.default_dashboard_set_successfully'));
     }
 
     /**

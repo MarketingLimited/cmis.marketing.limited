@@ -98,7 +98,7 @@ class BrandSafetySettingsController extends Controller
             }
 
             return redirect()->route('orgs.settings.brand-safety.show', ['org' => $org, 'policy' => $policy->policy_id])
-                ->with('success', 'Brand safety policy created successfully');
+                ->with('success', __('settings.created_success'));
         } catch (\Exception $e) {
             if ($request->wantsJson()) {
                 return $this->serverError('Failed to create brand safety policy: ' . $e->getMessage());
@@ -198,7 +198,7 @@ class BrandSafetySettingsController extends Controller
             }
 
             return redirect()->route('orgs.settings.brand-safety.show', ['org' => $org, 'policy' => $policy])
-                ->with('success', 'Brand safety policy updated successfully');
+                ->with('success', __('settings.updated_success'));
         } catch (\Exception $e) {
             if ($request->wantsJson()) {
                 return $this->serverError('Failed to update brand safety policy: ' . $e->getMessage());
@@ -224,7 +224,7 @@ class BrandSafetySettingsController extends Controller
             }
 
             return redirect()->route('orgs.settings.brand-safety.index', ['org' => $org])
-                ->with('success', 'Brand safety policy deleted successfully');
+                ->with('success', __('settings.deleted_success'));
         } catch (\Exception $e) {
             if ($request->wantsJson()) {
                 return $this->serverError('Failed to delete brand safety policy: ' . $e->getMessage());

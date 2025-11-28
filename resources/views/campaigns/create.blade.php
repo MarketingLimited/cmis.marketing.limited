@@ -114,9 +114,9 @@
                                 <h3 class="font-semibold text-gray-900 {{ $isRtl ? 'text-right' : '' }}">{{ __('campaigns.platforms.meta') }}</h3>
                                 <p class="text-sm text-gray-500 mt-1 {{ $isRtl ? 'text-right' : '' }}">{{ __('campaigns.platforms.facebook') }} & {{ __('campaigns.platforms.instagram') }}</p>
                                 <div class="mt-3 flex flex-wrap gap-1 {{ $isRtl ? 'flex-row-reverse' : '' }}">
-                                    <span class="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded">Feed</span>
-                                    <span class="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded">Stories</span>
-                                    <span class="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded">Reels</span>
+                                    <span class="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded">{{ __('campaigns.ad_placements.feed') }}</span>
+                                    <span class="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded">{{ __('campaigns.ad_placements.stories') }}</span>
+                                    <span class="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded">{{ __('campaigns.ad_placements.reels') }}</span>
                                 </div>
                             </div>
                         </label>
@@ -135,11 +135,11 @@
                                     </div>
                                 </div>
                                 <h3 class="font-semibold text-gray-900 {{ $isRtl ? 'text-right' : '' }}">{{ __('campaigns.platforms.google') }}</h3>
-                                <p class="text-sm text-gray-500 mt-1 {{ $isRtl ? 'text-right' : '' }}">Search, Display & YouTube</p>
+                                <p class="text-sm text-gray-500 mt-1 {{ $isRtl ? 'text-right' : '' }}">{{ __('campaigns.platform_desc.google') }}</p>
                                 <div class="mt-3 flex flex-wrap gap-1 {{ $isRtl ? 'flex-row-reverse' : '' }}">
-                                    <span class="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded">Search</span>
-                                    <span class="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded">Display</span>
-                                    <span class="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded">Video</span>
+                                    <span class="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded">{{ __('campaigns.ad_placements.search') }}</span>
+                                    <span class="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded">{{ __('campaigns.ad_placements.display') }}</span>
+                                    <span class="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded">{{ __('campaigns.ad_placements.video') }}</span>
                                 </div>
                             </div>
                         </label>
@@ -158,11 +158,11 @@
                                     </div>
                                 </div>
                                 <h3 class="font-semibold text-gray-900 {{ $isRtl ? 'text-right' : '' }}">{{ __('campaigns.platforms.tiktok') }}</h3>
-                                <p class="text-sm text-gray-500 mt-1 {{ $isRtl ? 'text-right' : '' }}">In-Feed & TopView</p>
+                                <p class="text-sm text-gray-500 mt-1 {{ $isRtl ? 'text-right' : '' }}">{{ __('campaigns.platform_desc.tiktok') }}</p>
                                 <div class="mt-3 flex flex-wrap gap-1 {{ $isRtl ? 'flex-row-reverse' : '' }}">
-                                    <span class="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded">In-Feed</span>
-                                    <span class="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded">TopView</span>
-                                    <span class="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded">Spark</span>
+                                    <span class="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded">{{ __('campaigns.ad_placements.in_feed') }}</span>
+                                    <span class="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded">{{ __('campaigns.ad_placements.topview') }}</span>
+                                    <span class="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded">{{ __('campaigns.ad_placements.spark') }}</span>
                                 </div>
                             </div>
                         </label>
@@ -181,11 +181,11 @@
                                     </div>
                                 </div>
                                 <h3 class="font-semibold text-gray-900 {{ $isRtl ? 'text-right' : '' }}">{{ __('campaigns.platforms.snapchat') }}</h3>
-                                <p class="text-sm text-gray-500 mt-1 {{ $isRtl ? 'text-right' : '' }}">Snap Ads & Filters</p>
+                                <p class="text-sm text-gray-500 mt-1 {{ $isRtl ? 'text-right' : '' }}">{{ __('campaigns.platform_desc.snapchat') }}</p>
                                 <div class="mt-3 flex flex-wrap gap-1 {{ $isRtl ? 'flex-row-reverse' : '' }}">
-                                    <span class="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded">Snap Ads</span>
-                                    <span class="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded">Story</span>
-                                    <span class="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded">AR Lens</span>
+                                    <span class="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded">{{ __('campaigns.ad_placements.snap_ads') }}</span>
+                                    <span class="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded">{{ __('campaigns.ad_placements.story') }}</span>
+                                    <span class="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded">{{ __('campaigns.ad_placements.ar_lens') }}</span>
                                 </div>
                             </div>
                         </label>
@@ -204,11 +204,11 @@
                                     </div>
                                 </div>
                                 <h3 class="font-semibold text-gray-900 {{ $isRtl ? 'text-right' : '' }}">{{ __('campaigns.platforms.twitter') }}</h3>
-                                <p class="text-sm text-gray-500 mt-1 {{ $isRtl ? 'text-right' : '' }}">Promoted Posts & Trends</p>
+                                <p class="text-sm text-gray-500 mt-1 {{ $isRtl ? 'text-right' : '' }}">{{ __('campaigns.platform_desc.twitter') }}</p>
                                 <div class="mt-3 flex flex-wrap gap-1 {{ $isRtl ? 'flex-row-reverse' : '' }}">
-                                    <span class="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded">Promoted</span>
-                                    <span class="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded">Follower</span>
-                                    <span class="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded">Trend</span>
+                                    <span class="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded">{{ __('campaigns.ad_placements.promoted') }}</span>
+                                    <span class="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded">{{ __('campaigns.ad_placements.follower') }}</span>
+                                    <span class="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded">{{ __('campaigns.ad_placements.trend') }}</span>
                                 </div>
                             </div>
                         </label>
@@ -227,11 +227,11 @@
                                     </div>
                                 </div>
                                 <h3 class="font-semibold text-gray-900 {{ $isRtl ? 'text-right' : '' }}">{{ __('campaigns.platforms.linkedin') }}</h3>
-                                <p class="text-sm text-gray-500 mt-1 {{ $isRtl ? 'text-right' : '' }}">B2B & Professional</p>
+                                <p class="text-sm text-gray-500 mt-1 {{ $isRtl ? 'text-right' : '' }}">{{ __('campaigns.platform_desc.linkedin') }}</p>
                                 <div class="mt-3 flex flex-wrap gap-1 {{ $isRtl ? 'flex-row-reverse' : '' }}">
-                                    <span class="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded">Sponsored</span>
-                                    <span class="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded">Message</span>
-                                    <span class="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded">Lead Gen</span>
+                                    <span class="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded">{{ __('campaigns.ad_placements.sponsored') }}</span>
+                                    <span class="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded">{{ __('campaigns.ad_placements.message') }}</span>
+                                    <span class="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded">{{ __('campaigns.ad_placements.lead_gen') }}</span>
                                 </div>
                             </div>
                         </label>
@@ -832,37 +832,37 @@ function campaignWizard() {
                     { value: 'image', label: '{{ __("campaigns.formats.single_image") }}', icon: 'fas fa-image' },
                     { value: 'video', label: '{{ __("campaigns.formats.video") }}', icon: 'fas fa-video' },
                     { value: 'carousel', label: '{{ __("campaigns.formats.carousel") }}', icon: 'fas fa-images' },
-                    { value: 'stories', label: 'Stories', icon: 'fas fa-mobile-alt' }
+                    { value: 'stories', label: '{{ __("campaigns.ad_placements.stories") }}', icon: 'fas fa-mobile-alt' }
                 ],
                 google: [
-                    { value: 'search', label: 'Search', icon: 'fas fa-search' },
-                    { value: 'display', label: 'Display', icon: 'fas fa-desktop' },
+                    { value: 'search', label: '{{ __("campaigns.ad_placements.search") }}', icon: 'fas fa-search' },
+                    { value: 'display', label: '{{ __("campaigns.ad_placements.display") }}', icon: 'fas fa-desktop' },
                     { value: 'video', label: '{{ __("campaigns.formats.video") }}', icon: 'fas fa-video' },
-                    { value: 'shopping', label: 'Shopping', icon: 'fas fa-shopping-bag' }
+                    { value: 'shopping', label: '{{ __("campaigns.format_shopping") }}', icon: 'fas fa-shopping-bag' }
                 ],
                 tiktok: [
-                    { value: 'in_feed', label: 'In-Feed', icon: 'fas fa-stream' },
-                    { value: 'topview', label: 'TopView', icon: 'fas fa-star' },
-                    { value: 'spark', label: 'Spark Ads', icon: 'fas fa-bolt' },
-                    { value: 'branded', label: 'Branded', icon: 'fas fa-hashtag' }
+                    { value: 'in_feed', label: '{{ __("campaigns.ad_placements.in_feed") }}', icon: 'fas fa-stream' },
+                    { value: 'topview', label: '{{ __("campaigns.ad_placements.topview") }}', icon: 'fas fa-star' },
+                    { value: 'spark', label: '{{ __("campaigns.format_spark_ads") }}', icon: 'fas fa-bolt' },
+                    { value: 'branded', label: '{{ __("campaigns.format_branded") }}', icon: 'fas fa-hashtag' }
                 ],
                 snapchat: [
-                    { value: 'snap_ad', label: 'Snap Ad', icon: 'fas fa-play' },
-                    { value: 'story', label: 'Story Ad', icon: 'fas fa-book-open' },
+                    { value: 'snap_ad', label: '{{ __("campaigns.format_snap_ad") }}', icon: 'fas fa-play' },
+                    { value: 'story', label: '{{ __("campaigns.format_story_ad") }}', icon: 'fas fa-book-open' },
                     { value: 'collection', label: '{{ __("campaigns.formats.collection") }}', icon: 'fas fa-th' },
-                    { value: 'ar_lens', label: 'AR Lens', icon: 'fas fa-magic' }
+                    { value: 'ar_lens', label: '{{ __("campaigns.format_ar_lens") }}', icon: 'fas fa-magic' }
                 ],
                 twitter: [
-                    { value: 'promoted_tweet', label: 'Promoted', icon: 'fas fa-retweet' },
-                    { value: 'follower', label: 'Follower', icon: 'fas fa-user-plus' },
+                    { value: 'promoted_tweet', label: '{{ __("campaigns.format_promoted") }}', icon: 'fas fa-retweet' },
+                    { value: 'follower', label: '{{ __("campaigns.format_follower") }}', icon: 'fas fa-user-plus' },
                     { value: 'video', label: '{{ __("campaigns.formats.video") }}', icon: 'fas fa-video' },
                     { value: 'carousel', label: '{{ __("campaigns.formats.carousel") }}', icon: 'fas fa-images' }
                 ],
                 linkedin: [
-                    { value: 'sponsored_content', label: 'Sponsored', icon: 'fas fa-newspaper' },
-                    { value: 'message', label: 'Message', icon: 'fas fa-envelope' },
-                    { value: 'text', label: 'Text Ad', icon: 'fas fa-font' },
-                    { value: 'dynamic', label: 'Dynamic', icon: 'fas fa-magic' }
+                    { value: 'sponsored_content', label: '{{ __("campaigns.format_sponsored") }}', icon: 'fas fa-newspaper' },
+                    { value: 'message', label: '{{ __("campaigns.format_message") }}', icon: 'fas fa-envelope' },
+                    { value: 'text', label: '{{ __("campaigns.format_text_ad") }}', icon: 'fas fa-font' },
+                    { value: 'dynamic', label: '{{ __("campaigns.format_dynamic") }}', icon: 'fas fa-magic' }
                 ]
             };
             return formats[this.form.platform] || formats.meta;

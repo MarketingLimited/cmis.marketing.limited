@@ -4,7 +4,7 @@
     $currentOrg = $currentOrg ?? request()->route('org') ?? auth()->user()->active_org_id ?? auth()->user()->org_id;
 @endphp
 
-@section('title', 'التحليلات')
+@section('title', __('analytics.analytics'))
 
 @section('content')
 <div x-data="analyticsManager(@json(['stats' => $stats, 'latestMetrics' => $latestMetrics, 'kpis' => $kpis]))" x-init="init()">
@@ -12,15 +12,15 @@
     <!-- Page Header -->
     <div class="flex items-center justify-between mb-6">
         <div>
-            <h1 class="text-3xl font-bold text-gray-900 dark:text-white">لوحة التحليلات</h1>
-            <p class="mt-2 text-gray-600 dark:text-gray-400">تحليل شامل لأداء الحملات والمنصات</p>
+            <h1 class="text-3xl font-bold text-gray-900 dark:text-white">{{ __('analytics.analytics_dashboard') }}</h1>
+            <p class="mt-2 text-gray-600 dark:text-gray-400">{{ __('analytics.comprehensive_analysis') }}</p>
         </div>
         <div class="flex space-x-3 space-x-reverse">
             <x-ui.button @click="exportToPDF()" variant="secondary" icon="fas fa-file-pdf">
-                تصدير PDF
+                {{ __('analytics.export_pdf') }}
             </x-ui.button>
             <x-ui.button @click="exportToExcel()" variant="success" icon="fas fa-file-excel">
-                تصدير Excel
+                {{ __('analytics.export_excel') }}
             </x-ui.button>
         </div>
     </div>
@@ -29,38 +29,38 @@
     <x-ui.card class="mb-6">
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">من تاريخ</label>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ __('analytics.from_date') }}</label>
                 <input type="date"
                        x-model="dateRange.start"
                        @change="fetchAnalytics()"
                        class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500">
             </div>
             <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">إلى تاريخ</label>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ __('analytics.to_date') }}</label>
                 <input type="date"
                        x-model="dateRange.end"
                        @change="fetchAnalytics()"
                        class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500">
             </div>
             <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">المؤسسة</label>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ __('analytics.organization') }}</label>
                 <select x-model="selectedOrg"
                         @change="fetchAnalytics()"
                         class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500">
-                    <option value="">جميع المؤسسات</option>
+                    <option value="">{{ __('analytics.all_organizations') }}</option>
                 </select>
             </div>
             <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">المنصة</label>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ __('analytics.platform') }}</label>
                 <select x-model="selectedPlatform"
                         @change="fetchAnalytics()"
                         class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500">
-                    <option value="">جميع المنصات</option>
-                    <option value="meta">Meta</option>
-                    <option value="google">Google</option>
-                    <option value="tiktok">TikTok</option>
-                    <option value="linkedin">LinkedIn</option>
-                    <option value="x">X</option>
+                    <option value="">{{ __('analytics.all_platforms') }}</option>
+                    <option value="meta">{{ __('analytics.platforms.meta') }}</option>
+                    <option value="google">{{ __('analytics.platforms.google') }}</option>
+                    <option value="tiktok">{{ __('analytics.platforms.tiktok') }}</option>
+                    <option value="linkedin">{{ __('analytics.platforms.linkedin') }}</option>
+                    <option value="x">{{ __('analytics.platforms.x') }}</option>
                 </select>
             </div>
         </div>
@@ -71,13 +71,13 @@
         <div class="bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-lg shadow-lg p-6">
             <div class="flex items-center justify-between mb-4">
                 <div>
-                    <p class="text-sm opacity-90">إجمالي الإنفاق</p>
+                    <p class="text-sm opacity-90">{{ __('analytics.total_spend') }}</p>
                     <p class="text-3xl font-bold mt-2" x-text="formatCurrency(kpis.totalSpend)"></p>
                 </div>
                 <i class="fas fa-dollar-sign text-4xl opacity-50"></i>
             </div>
             <div class="flex items-center text-sm">
-                <i class="fas fa-arrow-up ml-1"></i>
+                <i class="fas fa-arrow-up ms-1"></i>
                 <span x-text="kpis.spendChange + '%'"></span>
             </div>
         </div>
@@ -85,13 +85,13 @@
         <div class="bg-gradient-to-br from-green-500 to-green-600 text-white rounded-lg shadow-lg p-6">
             <div class="flex items-center justify-between mb-4">
                 <div>
-                    <p class="text-sm opacity-90">مرات الظهور</p>
+                    <p class="text-sm opacity-90">{{ __('analytics.impressions') }}</p>
                     <p class="text-3xl font-bold mt-2" x-text="formatNumber(kpis.impressions)"></p>
                 </div>
                 <i class="fas fa-eye text-4xl opacity-50"></i>
             </div>
             <div class="flex items-center text-sm">
-                <i class="fas fa-arrow-up ml-1"></i>
+                <i class="fas fa-arrow-up ms-1"></i>
                 <span x-text="kpis.impressionsChange + '%'"></span>
             </div>
         </div>
@@ -99,13 +99,13 @@
         <div class="bg-gradient-to-br from-purple-500 to-purple-600 text-white rounded-lg shadow-lg p-6">
             <div class="flex items-center justify-between mb-4">
                 <div>
-                    <p class="text-sm opacity-90">النقرات</p>
+                    <p class="text-sm opacity-90">{{ __('analytics.clicks') }}</p>
                     <p class="text-3xl font-bold mt-2" x-text="formatNumber(kpis.clicks)"></p>
                 </div>
                 <i class="fas fa-mouse-pointer text-4xl opacity-50"></i>
             </div>
             <div class="flex items-center text-sm">
-                <i class="fas fa-arrow-up ml-1"></i>
+                <i class="fas fa-arrow-up ms-1"></i>
                 <span x-text="kpis.clicksChange + '%'"></span>
             </div>
         </div>
@@ -113,13 +113,13 @@
         <div class="bg-gradient-to-br from-yellow-500 to-yellow-600 text-white rounded-lg shadow-lg p-6">
             <div class="flex items-center justify-between mb-4">
                 <div>
-                    <p class="text-sm opacity-90">التحويلات</p>
+                    <p class="text-sm opacity-90">{{ __('analytics.conversions') }}</p>
                     <p class="text-3xl font-bold mt-2" x-text="formatNumber(kpis.conversions)"></p>
                 </div>
                 <i class="fas fa-shopping-cart text-4xl opacity-50"></i>
             </div>
             <div class="flex items-center text-sm">
-                <i class="fas fa-arrow-up ml-1"></i>
+                <i class="fas fa-arrow-up ms-1"></i>
                 <span x-text="kpis.conversionsChange + '%'"></span>
             </div>
         </div>
@@ -130,34 +130,34 @@
         <x-ui.card>
             <div class="text-center p-4">
                 <div class="text-5xl font-bold text-blue-600 mb-2" x-text="kpis.ctr + '%'"></div>
-                <div class="text-sm text-gray-600 dark:text-gray-400">نسبة النقر (CTR)</div>
+                <div class="text-sm text-gray-600 dark:text-gray-400">{{ __('analytics.ctr') }}</div>
             </div>
         </x-ui.card>
 
         <x-ui.card>
             <div class="text-center p-4">
                 <div class="text-5xl font-bold text-green-600 mb-2" x-text="kpis.cpc"></div>
-                <div class="text-sm text-gray-600 dark:text-gray-400">تكلفة النقرة (CPC)</div>
+                <div class="text-sm text-gray-600 dark:text-gray-400">{{ __('analytics.cpc') }}</div>
             </div>
         </x-ui.card>
 
         <x-ui.card>
             <div class="text-center p-4">
                 <div class="text-5xl font-bold text-purple-600 mb-2" x-text="kpis.roas + 'x'"></div>
-                <div class="text-sm text-gray-600 dark:text-gray-400">عائد الإنفاق (ROAS)</div>
+                <div class="text-sm text-gray-600 dark:text-gray-400">{{ __('analytics.roas') }}</div>
             </div>
         </x-ui.card>
     </div>
 
     <!-- Charts -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        <x-ui.card title="الإنفاق عبر الزمن">
+        <x-ui.card title="{{ __('analytics.spend_by_platform') }}">
             <div class="h-80">
                 <canvas id="spendTimeChart"></canvas>
             </div>
         </x-ui.card>
 
-        <x-ui.card title="الأداء حسب المنصة">
+        <x-ui.card title="{{ __('analytics.platform_comparison') }}">
             <div class="h-80">
                 <canvas id="platformChart"></canvas>
             </div>
@@ -165,16 +165,16 @@
     </div>
 
     <!-- Platform Performance Table -->
-    <x-ui.card title="تفاصيل الأداء حسب المنصة">
+    <x-ui.card title="{{ __('analytics.platform_comparison') }}">
         <div class="overflow-x-auto">
             <table class="w-full">
                 <thead class="bg-gray-50 dark:bg-gray-700">
                     <tr>
-                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300">المنصة</th>
-                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300">الإنفاق</th>
-                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300">النقرات</th>
-                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300">CTR</th>
-                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300">ROAS</th>
+                        <th class="px-6 py-3 text-start text-xs font-medium text-gray-500 dark:text-gray-300">{{ __('analytics.platform') }}</th>
+                        <th class="px-6 py-3 text-start text-xs font-medium text-gray-500 dark:text-gray-300">{{ __('analytics.spend') }}</th>
+                        <th class="px-6 py-3 text-start text-xs font-medium text-gray-500 dark:text-gray-300">{{ __('analytics.clicks') }}</th>
+                        <th class="px-6 py-3 text-start text-xs font-medium text-gray-500 dark:text-gray-300">{{ __('analytics.ctr') }}</th>
+                        <th class="px-6 py-3 text-start text-xs font-medium text-gray-500 dark:text-gray-300">{{ __('analytics.roas') }}</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
@@ -182,7 +182,7 @@
                         <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
                             <td class="px-6 py-4">
                                 <div class="flex items-center">
-                                    <i :class="platform.icon + ' text-2xl ml-3'"></i>
+                                    <i :class="platform.icon + ' text-2xl ms-3'"></i>
                                     <span class="text-sm font-medium" x-text="platform.name"></span>
                                 </div>
                             </td>
@@ -310,7 +310,7 @@ function analyticsManager(serverData) {
             // - GET /api/analytics/platforms?start={start}&end={end}
 
             try {
-                window.notify('جاري تحديث البيانات...', 'info');
+                window.notify('{{ __('analytics.loading_data') }}', 'info');
 
                 // For now, just reprocess with current data
                 this.processServerData();
@@ -323,7 +323,7 @@ function analyticsManager(serverData) {
                 });
             } catch (error) {
                 console.error('Error fetching analytics:', error);
-                window.notify('فشل تحميل البيانات', 'error');
+                window.notify('{{ __('analytics.error_loading') }}', 'error');
             }
         },
 
@@ -334,9 +334,9 @@ function analyticsManager(serverData) {
                 this.charts.spendTime = new Chart(spendCtx, {
                     type: 'line',
                     data: {
-                        labels: ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'],
+                        labels: ['{{ __('common.sunday') }}', '{{ __('common.monday') }}', '{{ __('common.tuesday') }}', '{{ __('common.wednesday') }}', '{{ __('common.thursday') }}', '{{ __('common.friday') }}', '{{ __('common.saturday') }}'],
                         datasets: [{
-                            label: 'الإنفاق',
+                            label: '{{ __('analytics.spend') }}',
                             data: [25000, 28000, 32000, 30000, 35000, 38000, 40000],
                             borderColor: '#3b82f6',
                             backgroundColor: 'rgba(59, 130, 246, 0.1)',
@@ -399,7 +399,7 @@ function analyticsManager(serverData) {
             //     })
             // });
             // Then download the PDF file
-            window.notify('جاري تصدير التقرير إلى PDF...', 'info');
+            window.notify('{{ __('analytics.export_pdf') }}...', 'info');
             console.log('PDF Export filters:', this.dateRange, this.selectedOrg, this.selectedPlatform);
         },
 
@@ -419,7 +419,7 @@ function analyticsManager(serverData) {
             //     })
             // });
             // Then download the Excel file
-            window.notify('جاري تصدير البيانات إلى Excel...', 'info');
+            window.notify('{{ __('analytics.export_excel') }}...', 'info');
             console.log('Excel Export filters:', this.dateRange, this.selectedOrg, this.selectedPlatform);
         }
     };

@@ -3,7 +3,7 @@
     $currentOrg = $currentOrg ?? request()->route('org') ?? auth()->user()->active_org_id ?? auth()->user()->org_id;
 @endphp
 
-@section('title', 'مركز الذكاء الاصطناعي')
+@section('title', __('ai.center_title'))
 
 @section('content')
 <div x-data="aiDashboard()" x-init="init()">
@@ -15,7 +15,7 @@
                 <i class="fas fa-home"></i>
             </a>
             <span class="text-gray-400">/</span>
-            <span class="text-gray-900 font-medium">مركز الذكاء الاصطناعي</span>
+            <span class="text-gray-900 font-medium">{{ __('ai.center_title') }}</span>
         </nav>
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
@@ -23,20 +23,20 @@
                     <div class="w-10 h-10 bg-gradient-to-br from-violet-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
                         <i class="fas fa-brain text-white"></i>
                     </div>
-                    مركز الذكاء الاصطناعي
+                    {{ __('ai.center_title') }}
                 </h1>
-                <p class="mt-2 text-gray-600 dark:text-gray-400">توليد المحتوى، التوصيات الذكية، والبحث الدلالي المتقدم</p>
+                <p class="mt-2 text-gray-600 dark:text-gray-400">{{ __('ai.center_description') }}</p>
             </div>
             <div class="flex flex-wrap gap-3">
                 <button @click="showGenerateModal = true"
                         class="inline-flex items-center px-4 py-2.5 bg-gradient-to-r from-violet-600 to-purple-600 text-white rounded-lg hover:from-violet-700 hover:to-purple-700 shadow-lg shadow-purple-500/25 transition-all">
-                    <i class="fas fa-magic ml-2"></i>
-                    توليد محتوى
+                    <i class="fas fa-magic ms-2"></i>
+                    {{ __('ai.generate_content') }}
                 </button>
                 <button @click="showSearchModal = true"
                         class="inline-flex items-center px-4 py-2.5 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-all">
-                    <i class="fas fa-search ml-2"></i>
-                    البحث الدلالي
+                    <i class="fas fa-search ms-2"></i>
+                    {{ __('ai.semantic_search') }}
                 </button>
             </div>
         </div>
@@ -50,7 +50,7 @@
             <div class="relative">
                 <div class="flex items-center justify-between mb-4">
                     <div>
-                        <p class="text-sm text-violet-100">محتوى مولّد</p>
+                        <p class="text-sm text-violet-100">{{ __('ai.generated_content') }}</p>
                         <p class="text-3xl font-bold mt-1" x-text="stats.generatedContent">0</p>
                     </div>
                     <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
@@ -58,8 +58,8 @@
                     </div>
                 </div>
                 <div class="flex items-center text-sm text-violet-100">
-                    <i class="fas fa-arrow-up ml-1"></i>
-                    <span x-text="stats.contentGrowth + '% هذا الشهر'"></span>
+                    <i class="fas fa-arrow-up ms-1"></i>
+                    <span x-text="stats.contentGrowth + '% {{ __('common.this_month') }}'"></span>
                 </div>
             </div>
         </div>
@@ -70,7 +70,7 @@
             <div class="relative">
                 <div class="flex items-center justify-between mb-4">
                     <div>
-                        <p class="text-sm text-blue-100">توصيات نشطة</p>
+                        <p class="text-sm text-blue-100">{{ __('ai.active_recommendations') }}</p>
                         <p class="text-3xl font-bold mt-1" x-text="stats.activeRecommendations">0</p>
                     </div>
                     <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
@@ -78,8 +78,8 @@
                     </div>
                 </div>
                 <div class="flex items-center text-sm text-blue-100">
-                    <i class="fas fa-check-circle ml-1"></i>
-                    <span x-text="stats.appliedCount + ' تم تطبيقها'"></span>
+                    <i class="fas fa-check-circle ms-1"></i>
+                    <span x-text="stats.appliedCount + ' {{ __('ai.applied') }}'"></span>
                 </div>
             </div>
         </div>
@@ -90,7 +90,7 @@
             <div class="relative">
                 <div class="flex items-center justify-between mb-4">
                     <div>
-                        <p class="text-sm text-emerald-100">حملات AI</p>
+                        <p class="text-sm text-emerald-100">{{ __('ai.ai_campaigns') }}</p>
                         <p class="text-3xl font-bold mt-1" x-text="stats.aiCampaigns">0</p>
                     </div>
                     <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
@@ -98,8 +98,8 @@
                     </div>
                 </div>
                 <div class="flex items-center text-sm text-emerald-100">
-                    <i class="fas fa-chart-line ml-1"></i>
-                    <span x-text="stats.successRate + '% معدل النجاح'"></span>
+                    <i class="fas fa-chart-line ms-1"></i>
+                    <span x-text="stats.successRate + '% {{ __('ai.success_rate') }}'"></span>
                 </div>
             </div>
         </div>
@@ -110,7 +110,7 @@
             <div class="relative">
                 <div class="flex items-center justify-between mb-4">
                     <div>
-                        <p class="text-sm text-amber-100">متجهات مخزنة</p>
+                        <p class="text-sm text-amber-100">{{ __('ai.vectors_stored') }}</p>
                         <p class="text-3xl font-bold mt-1" x-text="formatNumber(stats.vectorsStored)">0</p>
                     </div>
                     <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
@@ -118,8 +118,8 @@
                     </div>
                 </div>
                 <div class="flex items-center text-sm text-amber-100">
-                    <i class="fas fa-file-alt ml-1"></i>
-                    <span x-text="stats.documentsProcessed + ' مستند معالج'"></span>
+                    <i class="fas fa-file-alt ms-1"></i>
+                    <span x-text="stats.documentsProcessed + ' {{ __('ai.documents_processed') }}'"></span>
                 </div>
             </div>
         </div>
@@ -130,7 +130,7 @@
         <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
             <h3 class="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
                 <i class="fas fa-server text-purple-500"></i>
-                حالة خدمات الذكاء الاصطناعي
+                {{ __('ai.services_status') }}
             </h3>
         </div>
         <div class="p-6">
@@ -150,15 +150,15 @@
                             </div>
                             <span class="px-3 py-1 text-xs font-semibold rounded-full"
                                   :class="service.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'"
-                                  x-text="service.status === 'active' ? 'متصل' : 'غير متصل'"></span>
+                                  x-text="service.status === 'active' ? '{{ __('ai.connected') }}' : '{{ __('ai.disconnected') }}'"></span>
                         </div>
                         <div class="space-y-2 text-sm">
                             <div class="flex justify-between text-gray-600 dark:text-gray-400">
-                                <span>الطلبات اليوم:</span>
+                                <span>{{ __('ai.requests_today') }}</span>
                                 <span class="font-semibold text-gray-900 dark:text-white" x-text="formatNumber(service.requests)"></span>
                             </div>
                             <div class="flex justify-between text-gray-600 dark:text-gray-400">
-                                <span>وقت الاستجابة:</span>
+                                <span>{{ __('ai.response_time') }}</span>
                                 <span class="font-semibold text-gray-900 dark:text-white" x-text="service.responseTime"></span>
                             </div>
                             <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5 mt-2">
@@ -180,9 +180,9 @@
             <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
                 <h3 class="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
                     <i class="fas fa-file-alt text-blue-500"></i>
-                    آخر المحتوى المولّد
+                    {{ __('ai.recent_generated') }}
                 </h3>
-                <a href="#" class="text-sm text-blue-600 hover:text-blue-700">عرض الكل</a>
+                <a href="#" class="text-sm text-blue-600 hover:text-blue-700">{{ __('common.view_all') }}</a>
             </div>
             <div class="p-4 space-y-3 max-h-96 overflow-y-auto">
                 <template x-for="content in recentContent" :key="content.id">
@@ -207,17 +207,17 @@
                         </div>
                         <div class="flex items-center justify-between mt-3 pt-3 border-t border-gray-100 dark:border-gray-700">
                             <span class="text-xs text-gray-500">
-                                <i class="fas fa-language ml-1"></i>
+                                <i class="fas fa-language ms-1"></i>
                                 <span x-text="content.language"></span>
                             </span>
                             <div class="flex items-center gap-2">
-                                <button @click.stop="copyContent(content)" class="p-1.5 text-gray-400 hover:text-green-600 transition" title="نسخ">
+                                <button @click.stop="copyContent(content)" class="p-1.5 text-gray-400 hover:text-green-600 transition" :title="t.copy">
                                     <i class="fas fa-copy text-sm"></i>
                                 </button>
-                                <button @click.stop="editContent(content)" class="p-1.5 text-gray-400 hover:text-blue-600 transition" title="تعديل">
+                                <button @click.stop="editContent(content)" class="p-1.5 text-gray-400 hover:text-blue-600 transition" :title="t.edit">
                                     <i class="fas fa-edit text-sm"></i>
                                 </button>
-                                <button @click.stop="useInCampaign(content)" class="p-1.5 text-gray-400 hover:text-purple-600 transition" title="استخدام">
+                                <button @click.stop="useInCampaign(content)" class="p-1.5 text-gray-400 hover:text-purple-600 transition" :title="t.use">
                                     <i class="fas fa-plus-circle text-sm"></i>
                                 </button>
                             </div>
@@ -230,9 +230,9 @@
                     <div class="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
                         <i class="fas fa-file-alt text-2xl text-gray-400"></i>
                     </div>
-                    <p class="text-gray-500 dark:text-gray-400">لا يوجد محتوى مولّد بعد</p>
+                    <p class="text-gray-500 dark:text-gray-400">{{ __('ai.no_generated_content') }}</p>
                     <button @click="showGenerateModal = true" class="mt-4 text-purple-600 hover:text-purple-700 font-medium">
-                        <i class="fas fa-plus ml-1"></i> ابدأ بتوليد محتوى
+                        <i class="fas fa-plus ms-1"></i> {{ __('ai.start_generating') }}
                     </button>
                 </div>
             </div>
@@ -243,9 +243,9 @@
             <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
                 <h3 class="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
                     <i class="fas fa-lightbulb text-yellow-500"></i>
-                    التوصيات الذكية
+                    {{ __('ai.smart_recommendations') }}
                 </h3>
-                <span class="px-2 py-1 text-xs font-semibold bg-yellow-100 text-yellow-700 rounded-full" x-text="recommendations.length + ' توصية'"></span>
+                <span class="px-2 py-1 text-xs font-semibold bg-yellow-100 text-yellow-700 rounded-full" x-text="recommendations.length + ' {{ __('ai.recommendations_count') }}'"></span>
             </div>
             <div class="p-4 space-y-3 max-h-96 overflow-y-auto">
                 <template x-for="rec in recommendations" :key="rec.id">
@@ -256,10 +256,10 @@
                                 <div class="flex items-center gap-2 mb-2">
                                     <span class="px-2 py-1 text-xs font-semibold rounded-lg"
                                           :class="rec.priority === 'high' ? 'bg-red-100 text-red-700' : rec.priority === 'medium' ? 'bg-yellow-100 text-yellow-700' : 'bg-blue-100 text-blue-700'"
-                                          x-text="rec.priority === 'high' ? 'أولوية عالية' : rec.priority === 'medium' ? 'أولوية متوسطة' : 'أولوية منخفضة'"></span>
+                                          x-text="rec.priority === 'high' ? t.highPriority : rec.priority === 'medium' ? t.mediumPriority : t.lowPriority"></span>
                                     <span class="text-xs text-green-600 font-medium">
-                                        <i class="fas fa-chart-line ml-1"></i>
-                                        <span x-text="'+' + rec.impact + '% تأثير متوقع'"></span>
+                                        <i class="fas fa-chart-line ms-1"></i>
+                                        <span x-text="'+' + rec.impact + '% ' + t.expectedImpact"></span>
                                     </span>
                                 </div>
                                 <h4 class="font-semibold text-gray-900 dark:text-white mb-1" x-text="rec.title"></h4>
@@ -268,20 +268,20 @@
                         </div>
                         <div class="flex items-center justify-between">
                             <div class="flex items-center text-xs text-gray-500">
-                                <i class="fas fa-brain ml-1"></i>
-                                <span x-text="'ثقة: ' + rec.confidence + '%'"></span>
-                                <div class="w-16 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full mr-2">
+                                <i class="fas fa-brain ms-1"></i>
+                                <span x-text="t.confidence + ': ' + rec.confidence + '%'"></span>
+                                <div class="w-16 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full me-2">
                                     <div class="h-1.5 bg-purple-500 rounded-full" :style="'width: ' + rec.confidence + '%'"></div>
                                 </div>
                             </div>
                             <div class="flex gap-2">
                                 <button @click="applyRecommendation(rec)"
                                         class="px-3 py-1.5 text-xs font-semibold bg-green-600 text-white rounded-lg hover:bg-green-700 transition">
-                                    <i class="fas fa-check ml-1"></i> تطبيق
+                                    <i class="fas fa-check ms-1"></i> {{ __('ai.apply') }}
                                 </button>
                                 <button @click="dismissRecommendation(rec)"
                                         class="px-3 py-1.5 text-xs font-semibold bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition">
-                                    تجاهل
+                                    {{ __('ai.dismiss') }}
                                 </button>
                             </div>
                         </div>
@@ -293,8 +293,8 @@
                     <div class="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
                         <i class="fas fa-lightbulb text-2xl text-gray-400"></i>
                     </div>
-                    <p class="text-gray-500 dark:text-gray-400">لا توجد توصيات حالياً</p>
-                    <p class="text-sm text-gray-400 mt-1">سيتم إنشاء توصيات بناءً على أداء حملاتك</p>
+                    <p class="text-gray-500 dark:text-gray-400">{{ __('ai.no_recommendations') }}</p>
+                    <p class="text-sm text-gray-400 mt-1">{{ __('ai.recommendations_info') }}</p>
                 </div>
             </div>
         </div>
@@ -307,7 +307,7 @@
             <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
                 <h3 class="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
                     <i class="fas fa-cogs text-indigo-500"></i>
-                    النماذج المدربة
+                    {{ __('ai.trained_models') }}
                 </h3>
             </div>
             <div class="p-4 space-y-3">
@@ -320,11 +320,11 @@
                             </div>
                             <span class="px-3 py-1 text-xs font-semibold rounded-full"
                                   :class="model.status === 'trained' ? 'bg-green-100 text-green-700' : model.status === 'training' ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-100 text-gray-600'"
-                                  x-text="model.status === 'trained' ? 'جاهز' : model.status === 'training' ? 'قيد التدريب' : 'غير نشط'"></span>
+                                  x-text="model.status === 'trained' ? t.ready : model.status === 'training' ? t.training : t.inactive"></span>
                         </div>
                         <div class="space-y-2">
                             <div class="flex justify-between text-sm">
-                                <span class="text-gray-600 dark:text-gray-400">الدقة:</span>
+                                <span class="text-gray-600 dark:text-gray-400">{{ __('ai.accuracy') }}:</span>
                                 <span class="font-semibold text-gray-900 dark:text-white" x-text="model.accuracy + '%'"></span>
                             </div>
                             <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
@@ -333,8 +333,8 @@
                                      :style="'width: ' + model.accuracy + '%'"></div>
                             </div>
                             <div class="flex justify-between text-xs text-gray-500 mt-2">
-                                <span x-text="'آخر تدريب: ' + model.lastTrained"></span>
-                                <span x-text="formatNumber(model.predictions) + ' تنبؤ'"></span>
+                                <span x-text="t.lastTrained + ': ' + model.lastTrained"></span>
+                                <span x-text="formatNumber(model.predictions) + ' ' + t.predictions"></span>
                             </div>
                         </div>
                     </div>
@@ -343,7 +343,7 @@
                 <!-- Empty State -->
                 <div x-show="aiModels.length === 0" class="text-center py-8">
                     <i class="fas fa-cogs text-3xl text-gray-300 mb-3"></i>
-                    <p class="text-gray-500">لا توجد نماذج مدربة</p>
+                    <p class="text-gray-500">{{ __('ai.no_trained_models') }}</p>
                 </div>
             </div>
         </div>
@@ -353,7 +353,7 @@
             <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
                 <h3 class="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
                     <i class="fas fa-book text-teal-500"></i>
-                    قاعدة المعرفة
+                    {{ __('ai.knowledge_base') }}
                 </h3>
             </div>
             <div class="p-4">
@@ -362,9 +362,9 @@
                     <input type="text"
                            x-model="knowledgeSearch"
                            @input="searchKnowledge()"
-                           placeholder="ابحث في قاعدة المعرفة..."
-                           class="w-full px-4 py-2.5 pr-10 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
-                    <i class="fas fa-search absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                           placeholder="{{ __('ai.search_knowledge') }}"
+                           class="w-full px-4 py-2.5 pe-10 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
+                    <i class="fas fa-search absolute end-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
                 </div>
 
                 <div class="space-y-3 max-h-72 overflow-y-auto">
@@ -381,11 +381,11 @@
                                     <p class="text-xs text-gray-600 dark:text-gray-400 mt-1 line-clamp-2" x-text="doc.excerpt"></p>
                                     <div class="flex items-center gap-3 mt-2 text-xs text-gray-500">
                                         <span>
-                                            <i class="fas fa-tag ml-1"></i>
+                                            <i class="fas fa-tag ms-1"></i>
                                             <span x-text="doc.category"></span>
                                         </span>
                                         <span>
-                                            <i class="fas fa-clock ml-1"></i>
+                                            <i class="fas fa-clock ms-1"></i>
                                             <span x-text="doc.updatedAt"></span>
                                         </span>
                                     </div>
@@ -397,7 +397,7 @@
                     <!-- Empty State -->
                     <div x-show="filteredDocs.length === 0" class="text-center py-8">
                         <i class="fas fa-book-open text-3xl text-gray-300 mb-3"></i>
-                        <p class="text-gray-500">لا توجد مستندات</p>
+                        <p class="text-gray-500">{{ __('ai.no_documents') }}</p>
                     </div>
                 </div>
             </div>
@@ -429,7 +429,7 @@
                 <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
                     <h3 class="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
                         <i class="fas fa-magic text-purple-500"></i>
-                        توليد محتوى جديد
+                        {{ __('ai.generate_new_content') }}
                     </h3>
                     <button @click="showGenerateModal = false" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
                         <i class="fas fa-times"></i>
@@ -438,61 +438,61 @@
 
                 <div class="p-6 space-y-4">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">نوع المحتوى</label>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ __('ai.content_type') }}</label>
                         <select x-model="generateForm.contentType"
                                 class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-xl focus:ring-2 focus:ring-purple-500">
-                            <option value="ad_copy">نص إعلاني</option>
-                            <option value="social_post">منشور سوشيال ميديا</option>
-                            <option value="email">بريد إلكتروني</option>
-                            <option value="landing_page">صفحة هبوط</option>
-                            <option value="video_script">سكريبت فيديو</option>
+                            <option value="ad_copy">{{ __('ai.ad_copy') }}</option>
+                            <option value="social_post">{{ __('ai.social_post') }}</option>
+                            <option value="email">{{ __('ai.email') }}</option>
+                            <option value="landing_page">{{ __('ai.landing_page') }}</option>
+                            <option value="video_script">{{ __('ai.video_script') }}</option>
                         </select>
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">الموضوع / المنتج</label>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ __('ai.topic_product') }}</label>
                         <input type="text"
                                x-model="generateForm.topic"
-                               placeholder="مثال: حملة ترويجية لمنتج جديد..."
+                               placeholder="{{ __('ai.topic_placeholder') }}"
                                class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-xl focus:ring-2 focus:ring-purple-500">
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">الهدف التسويقي</label>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ __('ai.marketing_objective') }}</label>
                         <select x-model="generateForm.objective"
                                 class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-xl focus:ring-2 focus:ring-purple-500">
-                            <option value="awareness">زيادة الوعي</option>
-                            <option value="consideration">التفكير بالمنتج</option>
-                            <option value="conversion">التحويل والمبيعات</option>
-                            <option value="engagement">زيادة التفاعل</option>
+                            <option value="awareness">{{ __('ai.awareness') }}</option>
+                            <option value="consideration">{{ __('ai.consideration') }}</option>
+                            <option value="conversion">{{ __('ai.conversion') }}</option>
+                            <option value="engagement">{{ __('ai.engagement') }}</option>
                         </select>
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">اللغة</label>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ __('ai.language') }}</label>
                         <div class="grid grid-cols-2 gap-3">
                             <button type="button" @click="generateForm.language = 'ar'"
                                     :class="generateForm.language === 'ar' ? 'bg-purple-100 dark:bg-purple-900/30 border-purple-500 text-purple-700 dark:text-purple-400' : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300'"
                                     class="px-4 py-2.5 border-2 rounded-xl font-semibold transition">
-                                العربية
+                                {{ __('ai.arabic') }}
                             </button>
                             <button type="button" @click="generateForm.language = 'en'"
                                     :class="generateForm.language === 'en' ? 'bg-purple-100 dark:bg-purple-900/30 border-purple-500 text-purple-700 dark:text-purple-400' : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300'"
                                     class="px-4 py-2.5 border-2 rounded-xl font-semibold transition">
-                                English
+                                {{ __('ai.english') }}
                             </button>
                         </div>
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">الأسلوب</label>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ __('ai.tone') }}</label>
                         <select x-model="generateForm.tone"
                                 class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-xl focus:ring-2 focus:ring-purple-500">
-                            <option value="professional">احترافي</option>
-                            <option value="friendly">ودي</option>
-                            <option value="persuasive">مقنع</option>
-                            <option value="casual">غير رسمي</option>
-                            <option value="urgent">عاجل</option>
+                            <option value="professional">{{ __('ai.professional') }}</option>
+                            <option value="friendly">{{ __('ai.friendly') }}</option>
+                            <option value="persuasive">{{ __('ai.persuasive') }}</option>
+                            <option value="casual">{{ __('ai.casual') }}</option>
+                            <option value="urgent">{{ __('ai.urgent') }}</option>
                         </select>
                     </div>
                 </div>
@@ -500,13 +500,13 @@
                 <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-700 flex justify-end gap-3">
                     <button @click="showGenerateModal = false"
                             class="px-4 py-2.5 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-600 transition">
-                        إلغاء
+                        {{ __('common.cancel') }}
                     </button>
                     <button @click="generateContent()"
                             :disabled="isGenerating"
                             class="px-4 py-2.5 bg-gradient-to-r from-violet-600 to-purple-600 text-white rounded-xl hover:from-violet-700 hover:to-purple-700 transition disabled:opacity-50">
-                        <i class="fas fa-magic ml-2" :class="isGenerating && 'fa-spin'"></i>
-                        <span x-text="isGenerating ? 'جاري التوليد...' : 'توليد المحتوى'"></span>
+                        <i class="fas fa-magic ms-2" :class="isGenerating && 'fa-spin'"></i>
+                        <span x-text="isGenerating ? '{{ __('ai.generating') }}' : '{{ __('ai.generate') }}'"></span>
                     </button>
                 </div>
             </div>
@@ -538,7 +538,7 @@
                 <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
                     <h3 class="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
                         <i class="fas fa-search text-blue-500"></i>
-                        البحث الدلالي المتقدم
+                        {{ __('ai.advanced_semantic_search') }}
                     </h3>
                     <button @click="showSearchModal = false" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
                         <i class="fas fa-times"></i>
@@ -547,31 +547,31 @@
 
                 <div class="p-6 space-y-4">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">استعلام البحث</label>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ __('ai.search_query') }}</label>
                         <textarea x-model="searchForm.query"
                                   rows="4"
-                                  placeholder="اكتب سؤالك أو استفسارك هنا... سيقوم النظام بالبحث الدلالي في قاعدة المعرفة"
+                                  placeholder="{{ __('ai.search_placeholder') }}"
                                   class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-xl focus:ring-2 focus:ring-blue-500 resize-none"></textarea>
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">البحث في</label>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ __('ai.search_in') }}</label>
                         <div class="grid grid-cols-2 gap-2">
                             <label class="flex items-center p-3 border border-gray-200 dark:border-gray-700 rounded-xl cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50 transition">
-                                <input type="checkbox" x-model="searchForm.sources" value="campaigns" class="rounded text-blue-600 ml-2">
-                                <span class="text-sm text-gray-700 dark:text-gray-300">الحملات السابقة</span>
+                                <input type="checkbox" x-model="searchForm.sources" value="campaigns" class="rounded text-blue-600 ms-2">
+                                <span class="text-sm text-gray-700 dark:text-gray-300">{{ __('ai.previous_campaigns') }}</span>
                             </label>
                             <label class="flex items-center p-3 border border-gray-200 dark:border-gray-700 rounded-xl cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50 transition">
-                                <input type="checkbox" x-model="searchForm.sources" value="documents" class="rounded text-blue-600 ml-2">
-                                <span class="text-sm text-gray-700 dark:text-gray-300">المستندات</span>
+                                <input type="checkbox" x-model="searchForm.sources" value="documents" class="rounded text-blue-600 ms-2">
+                                <span class="text-sm text-gray-700 dark:text-gray-300">{{ __('ai.documents') }}</span>
                             </label>
                             <label class="flex items-center p-3 border border-gray-200 dark:border-gray-700 rounded-xl cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50 transition">
-                                <input type="checkbox" x-model="searchForm.sources" value="analytics" class="rounded text-blue-600 ml-2">
-                                <span class="text-sm text-gray-700 dark:text-gray-300">التحليلات</span>
+                                <input type="checkbox" x-model="searchForm.sources" value="analytics" class="rounded text-blue-600 ms-2">
+                                <span class="text-sm text-gray-700 dark:text-gray-300">{{ __('ai.analytics') }}</span>
                             </label>
                             <label class="flex items-center p-3 border border-gray-200 dark:border-gray-700 rounded-xl cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50 transition">
-                                <input type="checkbox" x-model="searchForm.sources" value="knowledge" class="rounded text-blue-600 ml-2">
-                                <span class="text-sm text-gray-700 dark:text-gray-300">قاعدة المعرفة</span>
+                                <input type="checkbox" x-model="searchForm.sources" value="knowledge" class="rounded text-blue-600 ms-2">
+                                <span class="text-sm text-gray-700 dark:text-gray-300">{{ __('ai.knowledge_base') }}</span>
                             </label>
                         </div>
                     </div>
@@ -580,13 +580,13 @@
                 <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-700 flex justify-end gap-3">
                     <button @click="showSearchModal = false"
                             class="px-4 py-2.5 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-600 transition">
-                        إلغاء
+                        {{ __('common.cancel') }}
                     </button>
                     <button @click="performSearch()"
                             :disabled="isSearching"
                             class="px-4 py-2.5 bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-xl hover:from-blue-700 hover:to-cyan-700 transition disabled:opacity-50">
-                        <i class="fas fa-search ml-2" :class="isSearching && 'fa-spin'"></i>
-                        <span x-text="isSearching ? 'جاري البحث...' : 'بحث'"></span>
+                        <i class="fas fa-search ms-2" :class="isSearching && 'fa-spin'"></i>
+                        <span x-text="isSearching ? '{{ __('ai.searching') }}' : '{{ __('common.search') }}'"></span>
                     </button>
                 </div>
             </div>
@@ -600,6 +600,32 @@
 <script>
 function aiDashboard() {
     return {
+        // Translations
+        t: {
+            // Content types
+            adCopy: '{{ __('ai.ad_copy') }}',
+            socialPost: '{{ __('ai.social_post') }}',
+            email: '{{ __('ai.email') }}',
+            videoScript: '{{ __('ai.video_script') }}',
+            landingPage: '{{ __('ai.landing_page') }}',
+            // Priority levels
+            highPriority: '{{ __('ai.high_priority') }}',
+            mediumPriority: '{{ __('ai.medium_priority') }}',
+            lowPriority: '{{ __('ai.low_priority') }}',
+            expectedImpact: '{{ __('ai.expected_impact') }}',
+            confidence: '{{ __('ai.confidence') }}',
+            // Model status
+            ready: '{{ __('ai.ready') }}',
+            training: '{{ __('ai.training') }}',
+            inactive: '{{ __('ai.inactive') }}',
+            // Other
+            lastTrained: '{{ __('ai.last_trained') }}',
+            predictions: '{{ __('ai.predictions') }}',
+            copy: '{{ __('ai.copy') }}',
+            edit: '{{ __('common.edit') }}',
+            use: '{{ __('ai.use') }}',
+        },
+
         // Modal states
         showGenerateModal: false,
         showSearchModal: false,
@@ -726,18 +752,18 @@ function aiDashboard() {
 
         getContentTypeClass(type) {
             const classes = {
-                'نص إعلاني': 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
-                'منشور سوشيال': 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
-                'بريد إلكتروني': 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400',
-                'صفحة هبوط': 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
-                'سكريبت فيديو': 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+                [this.t.adCopy]: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
+                [this.t.socialPost]: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
+                [this.t.email]: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400',
+                [this.t.landingPage]: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
+                [this.t.videoScript]: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
             };
             return classes[type] || 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-400';
         },
 
         async generateContent() {
             if (!this.generateForm.topic) {
-                window.notify && window.notify('الرجاء إدخال الموضوع', 'warning');
+                window.notify && window.notify('{{ __('ai.enter_topic') }}', 'warning');
                 return;
             }
 
@@ -746,11 +772,11 @@ function aiDashboard() {
                 // Simulate API call
                 await new Promise(resolve => setTimeout(resolve, 2000));
 
-                window.notify && window.notify('تم توليد المحتوى بنجاح!', 'success');
+                window.notify && window.notify('{{ __('ai.content_generated_success') }}', 'success');
                 this.showGenerateModal = false;
                 this.generateForm.topic = '';
             } catch (error) {
-                window.notify && window.notify('فشل توليد المحتوى', 'error');
+                window.notify && window.notify('{{ __('ai.content_generation_failed') }}', 'error');
             } finally {
                 this.isGenerating = false;
             }
@@ -758,7 +784,7 @@ function aiDashboard() {
 
         async performSearch() {
             if (!this.searchForm.query) {
-                window.notify && window.notify('الرجاء إدخال استعلام البحث', 'warning');
+                window.notify && window.notify('{{ __('ai.enter_search_query') }}', 'warning');
                 return;
             }
 
@@ -767,10 +793,10 @@ function aiDashboard() {
                 // Simulate API call
                 await new Promise(resolve => setTimeout(resolve, 1500));
 
-                window.notify && window.notify('تم العثور على نتائج', 'success');
+                window.notify && window.notify('{{ __('ai.search_results_found') }}', 'success');
                 this.showSearchModal = false;
             } catch (error) {
-                window.notify && window.notify('فشل البحث', 'error');
+                window.notify && window.notify('{{ __('ai.search_failed') }}', 'error');
             } finally {
                 this.isSearching = false;
             }
@@ -781,34 +807,34 @@ function aiDashboard() {
         },
 
         viewContent(content) {
-            window.notify && window.notify('عرض: ' + content.title, 'info');
+            window.notify && window.notify('{{ __('ai.viewing') }}: ' + content.title, 'info');
         },
 
         copyContent(content) {
             navigator.clipboard && navigator.clipboard.writeText(content.preview);
-            window.notify && window.notify('تم نسخ المحتوى', 'success');
+            window.notify && window.notify('{{ __('ai.content_copied') }}', 'success');
         },
 
         editContent(content) {
-            window.notify && window.notify('تحرير: ' + content.title, 'info');
+            window.notify && window.notify('{{ __('ai.editing') }}: ' + content.title, 'info');
         },
 
         useInCampaign(content) {
-            window.notify && window.notify('تم إضافة المحتوى للحملة', 'success');
+            window.notify && window.notify('{{ __('ai.content_added_to_campaign') }}', 'success');
         },
 
         applyRecommendation(rec) {
-            window.notify && window.notify('جاري تطبيق التوصية...', 'info');
+            window.notify && window.notify('{{ __('ai.applying_recommendation') }}', 'info');
             this.recommendations = this.recommendations.filter(r => r.id !== rec.id);
         },
 
         dismissRecommendation(rec) {
             this.recommendations = this.recommendations.filter(r => r.id !== rec.id);
-            window.notify && window.notify('تم تجاهل التوصية', 'success');
+            window.notify && window.notify('{{ __('ai.recommendation_dismissed') }}', 'success');
         },
 
         openDocument(doc) {
-            window.notify && window.notify('فتح: ' + doc.title, 'info');
+            window.notify && window.notify('{{ __('ai.opening') }}: ' + doc.title, 'info');
         }
     };
 }

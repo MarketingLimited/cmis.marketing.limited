@@ -62,7 +62,7 @@ class InfluencerPaymentController extends Controller
         }
 
         return redirect()->route('influencer.payments.show', $payment->payment_id)
-            ->with('success', 'Payment created successfully');
+            ->with('success', __('influencers.created_success'));
     }
 
     /**
@@ -102,7 +102,7 @@ class InfluencerPaymentController extends Controller
         }
 
         return redirect()->route('influencer.payments.show', $payment->payment_id)
-            ->with('success', 'Payment updated successfully');
+            ->with('success', __('influencers.updated_success'));
     }
 
     /**
@@ -123,7 +123,7 @@ class InfluencerPaymentController extends Controller
         }
 
         return redirect()->route('influencer.payments.index')
-            ->with('success', 'Payment deleted successfully');
+            ->with('success', __('influencers.deleted_success'));
     }
 
     /**

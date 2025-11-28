@@ -816,7 +816,7 @@ class GPTController extends Controller
                     $campaign->update(['status' => 'archived']);
                     break;
                 default:
-                    throw new \Exception("Operation {$operation} not supported for campaigns");
+                    throw new \Exception(__('api.operation_not_supported', ['operation' => $operation, 'resource' => 'campaigns']));
             }
 
             return [
@@ -826,7 +826,7 @@ class GPTController extends Controller
             ];
         }
 
-        throw new \Exception("Unsupported resource type: {$resourceType}");
+        throw new \Exception(__('api.unsupported_resource_type', ['type' => $resourceType]));
     }
 
     /**

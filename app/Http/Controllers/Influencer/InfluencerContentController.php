@@ -62,7 +62,7 @@ class InfluencerContentController extends Controller
         }
 
         return redirect()->route('influencer.content.show', $content->content_id)
-            ->with('success', 'Content created successfully');
+            ->with('success', __('influencers.created_success'));
     }
 
     /**
@@ -102,7 +102,7 @@ class InfluencerContentController extends Controller
         }
 
         return redirect()->route('influencer.content.show', $content->content_id)
-            ->with('success', 'Content updated successfully');
+            ->with('success', __('influencers.updated_success'));
     }
 
     /**
@@ -118,7 +118,7 @@ class InfluencerContentController extends Controller
         }
 
         return redirect()->route('influencer.content.index')
-            ->with('success', 'Content deleted successfully');
+            ->with('success', __('influencers.deleted_success'));
     }
 
     /**

@@ -633,7 +633,7 @@ class AIAssistantController extends Controller
         $maxTokens = config('services.gemini.max_tokens', 2048);
 
         if (!$apiKey) {
-            throw new \Exception('Gemini API key not configured');
+            throw new \Exception(__('api.not_configured'));
         }
 
         $response = Http::timeout(30)
@@ -655,7 +655,7 @@ class AIAssistantController extends Controller
             ]);
 
         if (!$response->successful()) {
-            throw new \Exception('Gemini API request failed: ' . $response->body());
+            throw new \Exception(__('api.gemini_request_failed', ['error' => $response->body()]));
         }
 
         $data = $response->json();
@@ -664,6 +664,6 @@ class AIAssistantController extends Controller
             return $data['candidates'][0]['content']['parts'][0]['text'];
         }
 
-        throw new \Exception('Unexpected Gemini API response format');
+        throw new \Exception(__('api.unexpected_response'));
     }
 }

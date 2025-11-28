@@ -1,14 +1,14 @@
 @extends('layouts.admin')
-@section('title', 'Social Posts')
+@section('title', __('social.social_media_publishing'))
 
 @section('content')
 <div class="container mx-auto px-4 py-6" x-data="socialPostManager()">
     <!-- Header -->
     <div class="flex justify-between items-center mb-6">
-        <h1 class="text-2xl font-bold">Social Media Publishing</h1>
+        <h1 class="text-2xl font-bold">{{ __('social.social_media_publishing') }}</h1>
         <button @click="showCreateModal = true" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2">
             <i class="fas fa-plus"></i>
-            Create Post
+            {{ __('social.create_post') }}
         </button>
     </div>
 
@@ -20,31 +20,31 @@
                     @click="filterStatus = 'all'"
                     :class="filterStatus === 'all' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
                     class="px-6 py-3 border-b-2 font-medium text-sm">
-                    All Posts
+                    {{ __('social.all_posts') }}
                 </button>
                 <button
                     @click="filterStatus = 'draft'"
                     :class="filterStatus === 'draft' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
                     class="px-6 py-3 border-b-2 font-medium text-sm">
-                    Drafts
+                    {{ __('social.drafts') }}
                 </button>
                 <button
                     @click="filterStatus = 'scheduled'"
                     :class="filterStatus === 'scheduled' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
                     class="px-6 py-3 border-b-2 font-medium text-sm">
-                    Scheduled
+                    {{ __('social.status.scheduled') }}
                 </button>
                 <button
                     @click="filterStatus = 'published'"
                     :class="filterStatus === 'published' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
                     class="px-6 py-3 border-b-2 font-medium text-sm">
-                    Published
+                    {{ __('social.status.published') }}
                 </button>
                 <button
                     @click="filterStatus = 'failed'"
                     :class="filterStatus === 'failed' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
                     class="px-6 py-3 border-b-2 font-medium text-sm">
-                    Failed
+                    {{ __('social.status.failed') }}
                 </button>
             </nav>
         </div>
@@ -55,16 +55,16 @@
         <template x-if="loading">
             <div class="p-8 text-center">
                 <i class="fas fa-spinner fa-spin text-3xl text-gray-400 mb-4"></i>
-                <p class="text-gray-600">Loading posts...</p>
+                <p class="text-gray-600">{{ __('social.loading_posts') }}</p>
             </div>
         </template>
 
         <template x-if="!loading && filteredPosts.length === 0">
             <div class="p-8 text-center">
                 <i class="fas fa-inbox text-5xl text-gray-300 mb-4"></i>
-                <p class="text-gray-600">No posts found</p>
+                <p class="text-gray-600">{{ __('social.no_posts_found') }}</p>
                 <button @click="showCreateModal = true" class="mt-4 text-blue-600 hover:text-blue-800">
-                    Create your first post
+                    {{ __('social.create_first_post') }}
                 </button>
             </div>
         </template>
@@ -80,7 +80,7 @@
                                     <span class="text-2xl" x-html="getPlatformIcon(post.platform)"></span>
 
                                     <!-- Account Name -->
-                                    <span class="font-medium text-gray-900" x-text="post.account_username || 'Unknown Account'"></span>
+                                    <span class="font-medium text-gray-900" x-text="post.account_username || '{{ __('social.unknown_account') }}'"></span>
 
                                     <!-- Status Badge -->
                                     <span
@@ -128,14 +128,14 @@
                                 <!-- Meta Info -->
                                 <div class="flex items-center gap-4 text-xs text-gray-500">
                                     <template x-if="post.scheduled_at">
-                                        <span><i class="far fa-clock mr-1"></i> Scheduled: <span x-text="formatDate(post.scheduled_at)"></span></span>
+                                        <span><i class="far fa-clock me-1"></i> {{ __('social.status.scheduled') }}: <span x-text="formatDate(post.scheduled_at)"></span></span>
                                     </template>
                                     <template x-if="post.published_at">
-                                        <span><i class="far fa-check-circle mr-1"></i> Published: <span x-text="formatDate(post.published_at)"></span></span>
+                                        <span><i class="far fa-check-circle me-1"></i> {{ __('social.status.published') }}: <span x-text="formatDate(post.published_at)"></span></span>
                                     </template>
                                     <template x-if="post.permalink">
                                         <a :href="post.permalink" target="_blank" class="text-blue-600 hover:text-blue-800">
-                                            <i class="fas fa-external-link-alt mr-1"></i> View Post
+                                            <i class="fas fa-external-link-alt me-1"></i> {{ __('social.view_post') }}
                                         </a>
                                     </template>
                                 </div>
@@ -150,13 +150,13 @@
                             </div>
 
                             <!-- Actions -->
-                            <div class="ml-4 flex gap-2">
+                            <div class="ms-4 flex gap-2">
                                 <template x-if="post.status === 'draft' || post.status === 'scheduled'">
-                                    <button @click="publishPost(post.id)" class="p-2 text-green-600 hover:bg-green-50 rounded" title="Publish Now">
+                                    <button @click="publishPost(post.id)" class="p-2 text-green-600 hover:bg-green-50 rounded" title="{{ __('social.publish_now') }}">
                                         <i class="fas fa-paper-plane"></i>
                                     </button>
                                 </template>
-                                <button @click="deletePost(post.id)" class="p-2 text-red-600 hover:bg-red-50 rounded" title="Delete">
+                                <button @click="deletePost(post.id)" class="p-2 text-red-600 hover:bg-red-50 rounded" title="{{ __('social.delete') }}">
                                     <i class="fas fa-trash"></i>
                                 </button>
                             </div>
@@ -181,7 +181,7 @@
                 <form @submit.prevent="createPost">
                     <div class="bg-white px-6 pt-5 pb-4">
                         <div class="flex items-center justify-between mb-6">
-                            <h3 class="text-xl font-semibold text-gray-900">Create Social Post</h3>
+                            <h3 class="text-xl font-semibold text-gray-900">{{ __('social.create_social_post') }}</h3>
                             <button type="button" @click="showCreateModal = false" class="text-gray-400 hover:text-gray-600">
                                 <i class="fas fa-times text-xl"></i>
                             </button>
@@ -189,7 +189,7 @@
 
                         <!-- Platform Selection -->
                         <div class="mb-6">
-                            <label class="block text-sm font-medium text-gray-700 mb-3">Select Platforms</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-3">{{ __('social.select_platforms') }}</label>
                             <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
                                 <template x-for="platform in availablePlatforms" :key="platform.key">
                                     <div
@@ -202,10 +202,10 @@
                                             <div class="flex-1">
                                                 <div class="font-medium text-sm" x-text="platform.name"></div>
                                                 <div class="text-xs text-gray-500" x-show="platform.accounts && platform.accounts.length > 0">
-                                                    <span x-text="platform.accounts.length"></span> connected
+                                                    <span x-text="platform.accounts.length"></span> {{ __('social.connected') }}
                                                 </div>
                                                 <div class="text-xs text-orange-600" x-show="!platform.accounts || platform.accounts.length === 0">
-                                                    Not connected
+                                                    {{ __('social.not_connected') }}
                                                 </div>
                                             </div>
                                         </div>
@@ -217,7 +217,7 @@
                         <!-- Platform-Specific Accounts -->
                         <template x-if="selectedPlatforms.length > 0">
                             <div class="mb-6">
-                                <label class="block text-sm font-medium text-gray-700 mb-3">Select Accounts</label>
+                                <label class="block text-sm font-medium text-gray-700 mb-3">{{ __('social.select_accounts') }}</label>
                                 <div class="space-y-2 max-h-60 overflow-y-auto border border-gray-200 rounded-lg p-3">
                                     <template x-for="platform in selectedPlatformsData" :key="platform.key">
                                         <div class="mb-4">
@@ -240,17 +240,17 @@
                                                             </template>
                                                             <span class="text-sm" x-text="account.name || account.username"></span>
                                                             <template x-if="account.followers">
-                                                                <span class="text-xs text-gray-500" x-text="account.followers + ' followers'"></span>
+                                                                <span class="text-xs text-gray-500" x-text="account.followers + ' {{ __('social.followers') }}'"></span>
                                                             </template>
                                                         </label>
                                                     </template>
                                                 </div>
                                             </template>
                                             <template x-if="!platform.accounts || platform.accounts.length === 0">
-                                                <div class="ml-6 text-sm text-orange-600">
-                                                    <i class="fas fa-exclamation-triangle mr-1"></i>
-                                                    Please connect your <span x-text="platform.name"></span> account in
-                                                    <a href="{{ route('orgs.settings.platform-connections.index', $currentOrg->org_id) }}" class="underline">Platform Connections</a>
+                                                <div class="ms-6 text-sm text-orange-600">
+                                                    <i class="fas fa-exclamation-triangle me-1"></i>
+                                                    {{ __('social.connect_account') }}
+                                                    <a href="{{ route('orgs.settings.platform-connections.index', $currentOrg->org_id) }}" class="underline">{{ __('social.platform_connections') }}</a>
                                                 </div>
                                             </template>
                                         </div>
@@ -262,14 +262,14 @@
                         <!-- Post Type Selection -->
                         <template x-if="selectedPlatforms.length > 0">
                             <div class="mb-6">
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Post Type</label>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('social.post_type') }}</label>
                                 <select x-model="postData.post_type" class="w-full border border-gray-300 rounded-lg px-4 py-2">
-                                    <option value="feed">Feed Post</option>
-                                    <option value="story">Story</option>
-                                    <option value="reel">Reel / Short Video</option>
-                                    <option value="carousel">Carousel</option>
-                                    <option value="article">Article</option>
-                                    <option value="poll">Poll</option>
+                                    <option value="feed">{{ __('social.feed_post') }}</option>
+                                    <option value="story">{{ __('social.story') }}</option>
+                                    <option value="reel">{{ __('social.reel') }}</option>
+                                    <option value="carousel">{{ __('social.carousel') }}</option>
+                                    <option value="article">{{ __('common.article') }}</option>
+                                    <option value="poll">{{ __('common.poll') }}</option>
                                 </select>
                             </div>
                         </template>
@@ -277,9 +277,9 @@
                         <!-- Content -->
                         <div class="mb-6">
                             <label class="block text-sm font-medium text-gray-700 mb-2">
-                                Post Content
+                                {{ __('social.post_content') }}
                                 <span x-show="postData.content.length > 0" class="text-gray-500 font-normal">
-                                    (<span x-text="postData.content.length"></span><span x-show="characterLimit > 0" x-text="'/' + characterLimit"></span> characters)
+                                    (<span x-text="postData.content.length"></span><span x-show="characterLimit > 0" x-text="'/' + characterLimit"></span> {{ __('social.characters') }})
                                 </span>
                             </label>
                             <textarea
@@ -287,18 +287,18 @@
                                 rows="6"
                                 :maxlength="characterLimit > 0 ? characterLimit : undefined"
                                 class="w-full border border-gray-300 rounded-lg px-4 py-2"
-                                placeholder="What would you like to share?"></textarea>
+                                placeholder="{{ __('social.what_to_share') }}"></textarea>
                             <template x-if="characterLimit > 0 && postData.content.length > characterLimit * 0.9">
                                 <p class="text-xs text-orange-600 mt-1">
-                                    <span x-text="characterLimit - postData.content.length"></span> characters remaining
+                                    <span x-text="characterLimit - postData.content.length"></span> {{ __('social.characters_remaining') }}
                                 </p>
                             </template>
-                            <p class="text-xs text-gray-500 mt-1">Pro tip: Use emojis, hashtags, and @mentions to increase engagement!</p>
+                            <p class="text-xs text-gray-500 mt-1">{{ __('social.emoji_tip') }}</p>
                         </div>
 
                         <!-- Media Upload -->
                         <div class="mb-6">
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Media (Optional)</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('social.media_optional') }}</label>
                             <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition">
                                 <input
                                     type="file"
@@ -312,9 +312,9 @@
                                     @click="$refs.fileInput.click()"
                                     class="text-blue-600 hover:text-blue-800 font-medium">
                                     <i class="fas fa-cloud-upload-alt text-3xl mb-2"></i>
-                                    <p>Click to upload images or videos</p>
+                                    <p>{{ __('social.click_upload') }}</p>
                                 </button>
-                                <p class="text-xs text-gray-500 mt-2">JPG, PNG, GIF, MP4, MOV (Max 50MB per file)</p>
+                                <p class="text-xs text-gray-500 mt-2">{{ __('social.file_types') }}</p>
                             </div>
 
                             <!-- File Preview -->
@@ -346,35 +346,35 @@
 
                         <!-- Publishing Options -->
                         <div class="mb-6">
-                            <label class="block text-sm font-medium text-gray-700 mb-3">Publishing Options</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-3">{{ __('social.publishing_options') }}</label>
                             <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
                                 <div
                                     @click="postData.publish_type = 'now'"
                                     :class="postData.publish_type === 'now' ? 'border-blue-600 bg-blue-50' : 'border-gray-300'"
                                     class="border-2 rounded-lg p-4 cursor-pointer text-center transition">
                                     <i class="fas fa-bolt text-2xl mb-2" :class="postData.publish_type === 'now' ? 'text-blue-600' : 'text-gray-400'"></i>
-                                    <p class="font-medium text-sm">Publish Now</p>
+                                    <p class="font-medium text-sm">{{ __('social.publish_now') }}</p>
                                 </div>
                                 <div
                                     @click="postData.publish_type = 'scheduled'"
                                     :class="postData.publish_type === 'scheduled' ? 'border-blue-600 bg-blue-50' : 'border-gray-300'"
                                     class="border-2 rounded-lg p-4 cursor-pointer text-center transition">
                                     <i class="far fa-clock text-2xl mb-2" :class="postData.publish_type === 'scheduled' ? 'text-blue-600' : 'text-gray-400'"></i>
-                                    <p class="font-medium text-sm">Schedule</p>
+                                    <p class="font-medium text-sm">{{ __('social.schedule') }}</p>
                                 </div>
                                 <div
                                     @click="postData.publish_type = 'queue'"
                                     :class="postData.publish_type === 'queue' ? 'border-blue-600 bg-blue-50' : 'border-gray-300'"
                                     class="border-2 rounded-lg p-4 cursor-pointer text-center transition">
                                     <i class="fas fa-stream text-2xl mb-2" :class="postData.publish_type === 'queue' ? 'text-blue-600' : 'text-gray-400'"></i>
-                                    <p class="font-medium text-sm">Add to Queue</p>
+                                    <p class="font-medium text-sm">{{ __('social.add_to_queue') }}</p>
                                 </div>
                                 <div
                                     @click="postData.publish_type = 'draft'"
                                     :class="postData.publish_type === 'draft' ? 'border-blue-600 bg-blue-50' : 'border-gray-300'"
                                     class="border-2 rounded-lg p-4 cursor-pointer text-center transition">
                                     <i class="far fa-save text-2xl mb-2" :class="postData.publish_type === 'draft' ? 'text-blue-600' : 'text-gray-400'"></i>
-                                    <p class="font-medium text-sm">Save Draft</p>
+                                    <p class="font-medium text-sm">{{ __('social.save_draft') }}</p>
                                 </div>
                             </div>
                         </div>
@@ -382,7 +382,7 @@
                         <!-- Schedule DateTime -->
                         <template x-if="postData.publish_type === 'scheduled'">
                             <div class="mb-6">
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Schedule Date & Time</label>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('social.schedule_datetime') }}</label>
                                 <input
                                     type="datetime-local"
                                     x-model="postData.scheduled_at"
@@ -398,7 +398,7 @@
                             type="button"
                             @click="showCreateModal = false"
                             class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100">
-                            Cancel
+                            {{ __('common.cancel') }}
                         </button>
                         <button
                             type="submit"
@@ -406,10 +406,10 @@
                             :class="canPublish && !submitting ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-400 cursor-not-allowed'"
                             class="px-6 py-2 text-white rounded-lg font-medium">
                             <template x-if="submitting">
-                                <span><i class="fas fa-spinner fa-spin mr-2"></i> Publishing...</span>
+                                <span><i class="fas fa-spinner fa-spin me-2"></i> {{ __('social.publishing') }}</span>
                             </template>
                             <template x-if="!submitting">
-                                <span x-text="postData.publish_type === 'now' ? 'Publish Now' : (postData.publish_type === 'scheduled' ? 'Schedule Post' : (postData.publish_type === 'queue' ? 'Add to Queue' : 'Save Draft'))"></span>
+                                <span x-text="postData.publish_type === 'now' ? '{{ __('social.publish_now') }}' : (postData.publish_type === 'scheduled' ? '{{ __('social.schedule_post') }}' : (postData.publish_type === 'queue' ? '{{ __('social.add_to_queue') }}' : '{{ __('social.save_draft') }}'))"></span>
                             </template>
                         </button>
                     </div>
@@ -420,6 +420,21 @@
 </div>
 
 <script>
+// Translations for JavaScript
+const socialTranslations = {
+    post_created_success: '{{ __('social.post_created_success') }}',
+    post_create_failed: '{{ __('social.post_create_failed') }}',
+    error_creating_post: '{{ __('social.error_creating_post') }}',
+    publish_confirm: '{{ __('social.publish_confirm') }}',
+    publish_success: '{{ __('social.publish_success') }}',
+    publish_failed: '{{ __('social.publish_failed') }}',
+    error_publishing_post: '{{ __('social.error_publishing_post') }}',
+    delete_confirm: '{{ __('social.delete_confirm') }}',
+    delete_success: '{{ __('social.delete_success') }}',
+    delete_failed: '{{ __('social.delete_failed') }}',
+    error_deleting_post: '{{ __('social.error_deleting_post') }}',
+};
+
 function socialPostManager() {
     return {
         // State
@@ -644,16 +659,16 @@ function socialPostManager() {
                 const data = await response.json();
 
                 if (data.success) {
-                    alert(data.message || 'Post created successfully!');
+                    alert(data.message || socialTranslations.post_created_success);
                     this.showCreateModal = false;
                     this.resetForm();
                     this.loadPosts();
                 } else {
-                    alert(data.message || 'Failed to create post');
+                    alert(data.message || socialTranslations.post_create_failed);
                 }
             } catch (error) {
                 console.error('Error creating post:', error);
-                alert('An error occurred while creating the post');
+                alert(socialTranslations.error_creating_post);
             } finally {
                 this.submitting = false;
             }
@@ -674,7 +689,7 @@ function socialPostManager() {
 
         // Publish a post immediately
         async publishPost(postId) {
-            if (!confirm('Are you sure you want to publish this post now?')) return;
+            if (!confirm(socialTranslations.publish_confirm)) return;
 
             try {
                 const response = await fetch(`/api/orgs/{{ $currentOrg->org_id }}/social/posts/${postId}/publish`, {
@@ -688,20 +703,20 @@ function socialPostManager() {
                 const data = await response.json();
 
                 if (data.success) {
-                    alert('Post published successfully!');
+                    alert(socialTranslations.publish_success);
                     this.loadPosts();
                 } else {
-                    alert(data.message || 'Failed to publish post');
+                    alert(data.message || socialTranslations.publish_failed);
                 }
             } catch (error) {
                 console.error('Error publishing post:', error);
-                alert('An error occurred while publishing the post');
+                alert(socialTranslations.error_publishing_post);
             }
         },
 
         // Delete a post
         async deletePost(postId) {
-            if (!confirm('Are you sure you want to delete this post?')) return;
+            if (!confirm(socialTranslations.delete_confirm)) return;
 
             try {
                 const response = await fetch(`/api/orgs/{{ $currentOrg->org_id }}/social/posts/${postId}`, {
@@ -715,14 +730,14 @@ function socialPostManager() {
                 const data = await response.json();
 
                 if (data.success) {
-                    alert('Post deleted successfully!');
+                    alert(socialTranslations.delete_success);
                     this.loadPosts();
                 } else {
-                    alert(data.message || 'Failed to delete post');
+                    alert(data.message || socialTranslations.delete_failed);
                 }
             } catch (error) {
                 console.error('Error deleting post:', error);
-                alert('An error occurred while deleting the post');
+                alert(socialTranslations.error_deleting_post);
             }
         },
 
@@ -748,7 +763,8 @@ function socialPostManager() {
         formatDate(dateString) {
             if (!dateString) return '';
             const date = new Date(dateString);
-            return date.toLocaleString('en-US', {
+            const locale = '{{ app()->getLocale() === 'ar' ? 'ar-SA' : 'en-US' }}';
+            return date.toLocaleString(locale, {
                 month: 'short',
                 day: 'numeric',
                 year: 'numeric',

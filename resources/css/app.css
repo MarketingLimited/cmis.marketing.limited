@@ -151,3 +151,102 @@
         }
     }
 }
+
+@layer utilities {
+    /* ========================================================================
+       RTL/LTR Support Utilities
+       ======================================================================== */
+
+    /* Flip icons and images in RTL mode */
+    [dir="rtl"] .rtl-flip {
+        transform: scaleX(-1);
+    }
+
+    /* Keep certain elements unflipped in RTL (numbers, logos, etc.) */
+    [dir="rtl"] .rtl-no-flip {
+        transform: none !important;
+    }
+
+    /* Text direction utilities */
+    .dir-ltr {
+        direction: ltr;
+    }
+
+    .dir-rtl {
+        direction: rtl;
+    }
+
+    /* Logical property fallbacks for older browsers */
+    [dir="ltr"] .ms-auto {
+        margin-left: auto;
+    }
+
+    [dir="rtl"] .ms-auto {
+        margin-right: auto;
+    }
+
+    [dir="ltr"] .me-auto {
+        margin-right: auto;
+    }
+
+    [dir="rtl"] .me-auto {
+        margin-left: auto;
+    }
+
+    /* Border utilities for RTL */
+    [dir="ltr"] .border-s {
+        border-left-width: 1px;
+    }
+
+    [dir="rtl"] .border-s {
+        border-right-width: 1px;
+    }
+
+    [dir="ltr"] .border-e {
+        border-right-width: 1px;
+    }
+
+    [dir="rtl"] .border-e {
+        border-left-width: 1px;
+    }
+
+    /* RTL-specific gradient adjustments */
+    [dir="rtl"] .gradient-bg {
+        background: linear-gradient(-135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    [dir="rtl"] .gradient-blue {
+        background: linear-gradient(-135deg, #4f46e5 0%, #7c3aed 100%);
+    }
+
+    /* Fix sidebar hover animation for RTL */
+    [dir="rtl"] .sidebar-item:hover {
+        transform: translateX(0.125rem);
+    }
+
+    [dir="ltr"] .sidebar-item:hover {
+        transform: translateX(-0.125rem);
+    }
+}
+
+@layer base {
+    /* ========================================================================
+       Font Loading Strategy for Bilingual Support
+       ======================================================================== */
+
+    /* Arabic (RTL) - Using Cairo font */
+    [dir="rtl"] * {
+        font-family: 'Cairo', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+    }
+
+    /* English (LTR) - Using system fonts for better performance */
+    [dir="ltr"] * {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    }
+
+    /* Number formatting - Always LTR for consistency */
+    .numbers-ltr {
+        direction: ltr;
+        unicode-bidi: embed;
+    }
+}

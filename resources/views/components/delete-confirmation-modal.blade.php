@@ -1,6 +1,6 @@
 @props([
     'name' => 'delete-confirmation',
-    'title' => 'Confirm Deletion',
+    'title' => null,
     'resourceName' => null,
     'resourceType' => 'item',
     'deleteUrl' => null,
@@ -8,6 +8,10 @@
     'warning' => null,
     'cascadeInfo' => null,
 ])
+
+@php
+    $defaultTitle = __('components.delete_modal.title');
+@endphp
 
 <div x-data="{
         showDeleteModal: false,
@@ -44,7 +48,7 @@
                     // Show success message
                     window.dispatchEvent(new CustomEvent('show-toast', {
                         detail: {
-                            message: data.message || '{{ $resourceType }} deleted successfully',
+                            message: data.message || @json(__('components.delete_modal.success')),
                             type: 'success'
                         }
                     }));
@@ -60,7 +64,7 @@
                     // Show error message
                     window.dispatchEvent(new CustomEvent('show-toast', {
                         detail: {
-                            message: data.message || 'Failed to delete {{ $resourceType }}',
+                            message: data.message || @json(__('components.delete_modal.failed')),
                             type: 'error'
                         }
                     }));
@@ -69,7 +73,7 @@
                 console.error('Delete error:', error);
                 window.dispatchEvent(new CustomEvent('show-toast', {
                     detail: {
-                        message: 'An error occurred while deleting. Please try again.',
+                        message: @json(__('components.delete_modal.error')),
                         type: 'error'
                     }
                 }));
@@ -111,7 +115,7 @@
                  x-transition:leave="ease-in duration-200"
                  x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
                  x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-                 class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-lg"
+                 class="relative transform overflow-hidden rounded-2xl bg-white text-{{ app()->getLocale() === 'ar' ? 'right' : 'left' }} shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-lg"
                  @click.stop
             >
                 <div class="bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
@@ -124,20 +128,20 @@
                         </div>
 
                         <!-- Content -->
-                        <div class="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-right">
+                        <div class="mt-3 text-center sm:{{ app()->getLocale() === 'ar' ? 'me' : 'ms' }}-4 sm:mt-0 sm:text-{{ app()->getLocale() === 'ar' ? 'right' : 'left' }}">
                             <h3 class="text-lg font-semibold leading-6 text-gray-900" id="modal-title">
-                                {{ $title }}
+                                {{ $title ?? $defaultTitle }}
                             </h3>
                             <div class="mt-2">
                                 <p class="text-sm text-gray-600">
-                                    هل أنت متأكد أنك تريد حذف
+                                    {{ __('components.delete_modal.confirm_message') }}
                                     <span class="font-semibold text-gray-900" x-text="resourceName || '{{ $resourceName }}'"></span>؟
                                 </p>
 
                                 @if($warning)
                                 <div class="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
                                     <p class="text-sm text-yellow-800">
-                                        <i class="fas fa-exclamation-triangle text-yellow-600 ml-2"></i>
+                                        <i class="fas fa-exclamation-triangle text-yellow-600 {{ app()->getLocale() === 'ar' ? 'ms' : 'me' }}-2"></i>
                                         {{ $warning }}
                                     </p>
                                 </div>
@@ -147,16 +151,16 @@
                                 <template x-if="cascadeInfo">
                                     <div class="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
                                         <p class="text-sm text-blue-800 font-medium mb-1">
-                                            <i class="fas fa-info-circle text-blue-600 ml-2"></i>
-                                            سيتم حذف العناصر التالية أيضاً:
+                                            <i class="fas fa-info-circle text-blue-600 {{ app()->getLocale() === 'ar' ? 'ms' : 'me' }}-2"></i>
+                                            {{ __('components.delete_modal.cascade_info') }}
                                         </p>
-                                        <ul class="text-sm text-blue-700 list-disc list-inside mr-4" x-html="cascadeInfo"></ul>
+                                        <ul class="text-sm text-blue-700 list-disc list-inside {{ app()->getLocale() === 'ar' ? 'me' : 'ms' }}-4" x-html="cascadeInfo"></ul>
                                     </div>
                                 </template>
 
                                 <p class="mt-3 text-sm text-gray-500">
-                                    <i class="fas fa-undo text-gray-400 ml-1"></i>
-                                    يمكن استعادة {{ $resourceType }} المحذوف خلال 30 يوماً.
+                                    <i class="fas fa-undo text-gray-400 {{ app()->getLocale() === 'ar' ? 'ms' : 'me' }}-1"></i>
+                                    {{ __('components.delete_modal.can_restore', ['item' => $resourceType]) }}
                                 </p>
                             </div>
                         </div>
@@ -168,15 +172,15 @@
                     <button type="button"
                             @click="confirmDelete()"
                             :disabled="isDeleting"
-                            class="inline-flex w-full justify-center rounded-lg bg-red-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-red-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 sm:ml-3 sm:w-auto disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                            class="inline-flex w-full justify-center rounded-lg bg-red-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-red-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 sm:{{ app()->getLocale() === 'ar' ? 'me' : 'ms' }}-3 sm:w-auto disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                     >
                         <span x-show="!isDeleting">
-                            <i class="fas fa-trash-alt ml-2"></i>
-                            حذف
+                            <i class="fas fa-trash-alt {{ app()->getLocale() === 'ar' ? 'ms' : 'me' }}-2"></i>
+                            {{ __('components.delete_modal.delete_button') }}
                         </span>
                         <span x-show="isDeleting">
-                            <i class="fas fa-spinner fa-spin ml-2"></i>
-                            جارٍ الحذف...
+                            <i class="fas fa-spinner fa-spin {{ app()->getLocale() === 'ar' ? 'ms' : 'me' }}-2"></i>
+                            {{ __('components.delete_modal.deleting') }}
                         </span>
                     </button>
                     <button type="button"
@@ -184,8 +188,8 @@
                             :disabled="isDeleting"
                             class="mt-3 inline-flex w-full justify-center rounded-lg bg-white px-4 py-2.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                     >
-                        <i class="fas fa-times ml-2"></i>
-                        إلغاء
+                        <i class="fas fa-times {{ app()->getLocale() === 'ar' ? 'ms' : 'me' }}-2"></i>
+                        {{ __('components.delete_modal.cancel') }}
                     </button>
                 </div>
             </div>

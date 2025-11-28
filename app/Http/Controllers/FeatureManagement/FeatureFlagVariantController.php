@@ -58,7 +58,7 @@ class FeatureFlagVariantController extends Controller
         }
 
         return redirect()->route('feature-flags.show', $flagId)
-            ->with('success', 'Variant created successfully');
+            ->with('success', __('features.created_success'));
     }
 
     /**
@@ -100,7 +100,7 @@ class FeatureFlagVariantController extends Controller
         }
 
         return redirect()->route('feature-flags.show', $flagId)
-            ->with('success', 'Variant updated successfully');
+            ->with('success', __('features.updated_success'));
     }
 
     /**
@@ -118,7 +118,7 @@ class FeatureFlagVariantController extends Controller
         }
 
         return redirect()->route('feature-flags.show', $flagId)
-            ->with('success', 'Variant deleted successfully');
+            ->with('success', __('features.deleted_success'));
     }
 
     /**
@@ -136,7 +136,7 @@ class FeatureFlagVariantController extends Controller
         }
 
         return redirect()->route('feature-flags.show', $flagId)
-            ->with('success', 'Variant activated successfully');
+            ->with('success', __('features.activated_success'));
     }
 
     /**
@@ -154,7 +154,7 @@ class FeatureFlagVariantController extends Controller
         }
 
         return redirect()->route('feature-flags.show', $flagId)
-            ->with('success', 'Variant deactivated successfully');
+            ->with('success', __('features.activated_success'));
     }
 
     /**

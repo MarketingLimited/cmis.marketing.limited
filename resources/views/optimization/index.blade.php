@@ -4,8 +4,8 @@
     $currentOrg = $currentOrg ?? request()->route('org') ?? auth()->user()->active_org_id ?? auth()->user()->org_id;
 @endphp
 
-@section('page-title', 'تحسين الحملات')
-@section('page-subtitle', 'تحسين تلقائي وذكي لأداء الحملات الإعلانية')
+@section('page-title', __('optimization.page_title'))
+@section('page-subtitle', __('optimization.description'))
 
 @section('content')
 <div x-data="optimizationManager()" x-init="init()">
@@ -14,7 +14,7 @@
         <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl shadow-lg p-6 text-white">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-green-100 text-sm mb-1">التحسينات النشطة</p>
+                    <p class="text-green-100 text-sm mb-1">{{ __('optimization.active_count') }}</p>
                     <p class="text-3xl font-bold" x-text="stats.activeOptimizations"></p>
                 </div>
                 <i class="fas fa-magic text-5xl text-green-300 opacity-50"></i>
@@ -24,7 +24,7 @@
         <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg p-6 text-white">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-blue-100 text-sm mb-1">التوفير هذا الشهر</p>
+                    <p class="text-blue-100 text-sm mb-1">{{ __('optimization.monthly_savings') }}</p>
                     <p class="text-3xl font-bold" x-text="stats.monthlySavings.toLocaleString()"></p>
                 </div>
                 <i class="fas fa-piggy-bank text-5xl text-blue-300 opacity-50"></i>
@@ -34,7 +34,7 @@
         <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl shadow-lg p-6 text-white">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-purple-100 text-sm mb-1">تحسين الأداء</p>
+                    <p class="text-purple-100 text-sm mb-1">{{ __('optimization.performance_improvement') }}</p>
                     <p class="text-3xl font-bold" x-text="'+' + stats.performanceImprovement + '%'"></p>
                 </div>
                 <i class="fas fa-chart-line text-5xl text-purple-300 opacity-50"></i>
@@ -44,7 +44,7 @@
         <div class="bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl shadow-lg p-6 text-white">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-orange-100 text-sm mb-1">الحملات المحسّنة</p>
+                    <p class="text-orange-100 text-sm mb-1">{{ __('optimization.campaign_count') }}</p>
                     <p class="text-3xl font-bold" x-text="stats.optimizedCampaigns"></p>
                 </div>
                 <i class="fas fa-bullseye text-5xl text-orange-300 opacity-50"></i>
@@ -61,23 +61,23 @@
                     <div class="bg-green-100 p-3 rounded-lg">
                         <i class="fas fa-coins text-green-600 text-2xl"></i>
                     </div>
-                    <div class="mr-3">
-                        <h3 class="font-bold text-gray-900">تحسين الميزانية</h3>
-                        <p class="text-sm text-gray-600">توزيع ذكي للميزانيات</p>
+                    <div class="ms-3">
+                        <h3 class="font-bold text-gray-900">{{ __('optimization.budget.title') }}</h3>
+                        <p class="text-sm text-gray-600">{{ __('optimization.budget.description') }}</p>
                     </div>
                 </div>
                 <label class="relative inline-flex items-center cursor-pointer">
                     <input type="checkbox" x-model="strategies.budgetOptimization" @change="toggleStrategy('budget')" class="sr-only peer">
-                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-green-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600"></div>
+                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-green-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600"></div>
                 </label>
             </div>
             <div class="space-y-2 text-sm">
                 <div class="flex items-center justify-between">
-                    <span class="text-gray-600">التوفير المتوقع</span>
-                    <span class="font-bold text-green-600">15-25%</span>
+                    <span class="text-gray-600">{{ __('optimization.budget.expected_savings') }}</span>
+                    <span class="font-bold text-green-600">{{ __('optimization.percentage_range_15_25') }}</span>
                 </div>
                 <div class="flex items-center justify-between">
-                    <span class="text-gray-600">الحملات المؤهلة</span>
+                    <span class="text-gray-600">{{ __('optimization.eligible_campaigns') }}</span>
                     <span class="font-bold text-gray-900" x-text="optimization.budgetEligible || 0"></span>
                 </div>
             </div>
@@ -90,23 +90,23 @@
                     <div class="bg-blue-100 p-3 rounded-lg">
                         <i class="fas fa-gavel text-blue-600 text-2xl"></i>
                     </div>
-                    <div class="mr-3">
-                        <h3 class="font-bold text-gray-900">تحسين العروض</h3>
-                        <p class="text-sm text-gray-600">عروض أسعار ديناميكية</p>
+                    <div class="ms-3">
+                        <h3 class="font-bold text-gray-900">{{ __('optimization.bid.title') }}</h3>
+                        <p class="text-sm text-gray-600">{{ __('optimization.bid.description') }}</p>
                     </div>
                 </div>
                 <label class="relative inline-flex items-center cursor-pointer">
                     <input type="checkbox" x-model="strategies.bidOptimization" @change="toggleStrategy('bid')" class="sr-only peer">
-                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
                 </label>
             </div>
             <div class="space-y-2 text-sm">
                 <div class="flex items-center justify-between">
-                    <span class="text-gray-600">تحسين CPA</span>
-                    <span class="font-bold text-blue-600">20-30%</span>
+                    <span class="text-gray-600">{{ __('optimization.bid.metric') }}</span>
+                    <span class="font-bold text-blue-600">{{ __('optimization.percentage_range_20_30') }}</span>
                 </div>
                 <div class="flex items-center justify-between">
-                    <span class="text-gray-600">الحملات المؤهلة</span>
+                    <span class="text-gray-600">{{ __('optimization.eligible_campaigns') }}</span>
                     <span class="font-bold text-gray-900" x-text="optimization.bidEligible || 0"></span>
                 </div>
             </div>
@@ -119,23 +119,23 @@
                     <div class="bg-purple-100 p-3 rounded-lg">
                         <i class="fas fa-clock text-purple-600 text-2xl"></i>
                     </div>
-                    <div class="mr-3">
-                        <h3 class="font-bold text-gray-900">تحسين المواعيد</h3>
-                        <p class="text-sm text-gray-600">جدولة ذكية للإعلانات</p>
+                    <div class="ms-3">
+                        <h3 class="font-bold text-gray-900">{{ __('optimization.schedule.title') }}</h3>
+                        <p class="text-sm text-gray-600">{{ __('optimization.schedule.description') }}</p>
                     </div>
                 </div>
                 <label class="relative inline-flex items-center cursor-pointer">
                     <input type="checkbox" x-model="strategies.scheduleOptimization" @change="toggleStrategy('schedule')" class="sr-only peer">
-                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
+                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
                 </label>
             </div>
             <div class="space-y-2 text-sm">
                 <div class="flex items-center justify-between">
-                    <span class="text-gray-600">تحسين التفاعل</span>
-                    <span class="font-bold text-purple-600">18-28%</span>
+                    <span class="text-gray-600">{{ __('optimization.schedule.metric') }}</span>
+                    <span class="font-bold text-purple-600">{{ __('optimization.percentage_range_18_28') }}</span>
                 </div>
                 <div class="flex items-center justify-between">
-                    <span class="text-gray-600">الحملات المؤهلة</span>
+                    <span class="text-gray-600">{{ __('optimization.eligible_campaigns') }}</span>
                     <span class="font-bold text-gray-900" x-text="optimization.scheduleEligible || 0"></span>
                 </div>
             </div>
@@ -148,23 +148,23 @@
                     <div class="bg-indigo-100 p-3 rounded-lg">
                         <i class="fas fa-users text-indigo-600 text-2xl"></i>
                     </div>
-                    <div class="mr-3">
-                        <h3 class="font-bold text-gray-900">تحسين الجمهور</h3>
-                        <p class="text-sm text-gray-600">استهداف محسّن</p>
+                    <div class="ms-3">
+                        <h3 class="font-bold text-gray-900">{{ __('optimization.audience.title') }}</h3>
+                        <p class="text-sm text-gray-600">{{ __('optimization.audience.description') }}</p>
                     </div>
                 </div>
                 <label class="relative inline-flex items-center cursor-pointer">
                     <input type="checkbox" x-model="strategies.audienceOptimization" @change="toggleStrategy('audience')" class="sr-only peer">
-                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
                 </label>
             </div>
             <div class="space-y-2 text-sm">
                 <div class="flex items-center justify-between">
-                    <span class="text-gray-600">تحسين CVR</span>
-                    <span class="font-bold text-indigo-600">25-35%</span>
+                    <span class="text-gray-600">{{ __('optimization.audience.metric') }}</span>
+                    <span class="font-bold text-indigo-600">{{ __('optimization.percentage_range_25_35') }}</span>
                 </div>
                 <div class="flex items-center justify-between">
-                    <span class="text-gray-600">الحملات المؤهلة</span>
+                    <span class="text-gray-600">{{ __('optimization.eligible_campaigns') }}</span>
                     <span class="font-bold text-gray-900" x-text="optimization.audienceEligible || 0"></span>
                 </div>
             </div>
@@ -177,23 +177,23 @@
                     <div class="bg-pink-100 p-3 rounded-lg">
                         <i class="fas fa-palette text-pink-600 text-2xl"></i>
                     </div>
-                    <div class="mr-3">
-                        <h3 class="font-bold text-gray-900">تحسين الإبداع</h3>
-                        <p class="text-sm text-gray-600">دوران تلقائي للإعلانات</p>
+                    <div class="ms-3">
+                        <h3 class="font-bold text-gray-900">{{ __('optimization.creative.title') }}</h3>
+                        <p class="text-sm text-gray-600">{{ __('optimization.creative.description') }}</p>
                     </div>
                 </div>
                 <label class="relative inline-flex items-center cursor-pointer">
                     <input type="checkbox" x-model="strategies.creativeOptimization" @change="toggleStrategy('creative')" class="sr-only peer">
-                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-pink-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-pink-600"></div>
+                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-pink-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-pink-600"></div>
                 </label>
             </div>
             <div class="space-y-2 text-sm">
                 <div class="flex items-center justify-between">
-                    <span class="text-gray-600">تحسين CTR</span>
-                    <span class="font-bold text-pink-600">22-32%</span>
+                    <span class="text-gray-600">{{ __('optimization.creative.metric') }}</span>
+                    <span class="font-bold text-pink-600">{{ __('optimization.percentage_range_22_32') }}</span>
                 </div>
                 <div class="flex items-center justify-between">
-                    <span class="text-gray-600">الحملات المؤهلة</span>
+                    <span class="text-gray-600">{{ __('optimization.eligible_campaigns') }}</span>
                     <span class="font-bold text-gray-900" x-text="optimization.creativeEligible || 0"></span>
                 </div>
             </div>
@@ -206,23 +206,23 @@
                     <div class="bg-yellow-100 p-3 rounded-lg">
                         <i class="fas fa-map-marker-alt text-yellow-600 text-2xl"></i>
                     </div>
-                    <div class="mr-3">
-                        <h3 class="font-bold text-gray-900">تحسين المواضع</h3>
-                        <p class="text-sm text-gray-600">مواضع عالية الأداء</p>
+                    <div class="ms-3">
+                        <h3 class="font-bold text-gray-900">{{ __('optimization.placement.title') }}</h3>
+                        <p class="text-sm text-gray-600">{{ __('optimization.placement.description') }}</p>
                     </div>
                 </div>
                 <label class="relative inline-flex items-center cursor-pointer">
                     <input type="checkbox" x-model="strategies.placementOptimization" @change="toggleStrategy('placement')" class="sr-only peer">
-                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-yellow-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-yellow-600"></div>
+                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-yellow-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-yellow-600"></div>
                 </label>
             </div>
             <div class="space-y-2 text-sm">
                 <div class="flex items-center justify-between">
-                    <span class="text-gray-600">تحسين ROAS</span>
-                    <span class="font-bold text-yellow-600">15-20%</span>
+                    <span class="text-gray-600">{{ __('optimization.placement.metric') }}</span>
+                    <span class="font-bold text-yellow-600">{{ __('optimization.percentage_range_15_20') }}</span>
                 </div>
                 <div class="flex items-center justify-between">
-                    <span class="text-gray-600">الحملات المؤهلة</span>
+                    <span class="text-gray-600">{{ __('optimization.eligible_campaigns') }}</span>
                     <span class="font-bold text-gray-900" x-text="optimization.placementEligible || 0"></span>
                 </div>
             </div>
@@ -232,20 +232,20 @@
     <!-- Recent Optimizations -->
     <div class="bg-white rounded-xl shadow-sm p-6">
         <h3 class="text-xl font-bold text-gray-900 mb-4">
-            <i class="fas fa-history text-indigo-600 ml-2"></i>
-            التحسينات الأخيرة
+            <i class="fas fa-history text-indigo-600 ms-2"></i>
+            {{ __('optimization.recent_optimizations') }}
         </h3>
 
         <div class="overflow-x-auto">
             <table class="w-full">
                 <thead class="bg-gray-50">
                     <tr>
-                        <th class="px-4 py-3 text-right text-xs font-medium text-gray-500">الحملة</th>
-                        <th class="px-4 py-3 text-right text-xs font-medium text-gray-500">نوع التحسين</th>
-                        <th class="px-4 py-3 text-right text-xs font-medium text-gray-500">التغيير</th>
-                        <th class="px-4 py-3 text-right text-xs font-medium text-gray-500">التأثير</th>
-                        <th class="px-4 py-3 text-right text-xs font-medium text-gray-500">التاريخ</th>
-                        <th class="px-4 py-3 text-right text-xs font-medium text-gray-500">الحالة</th>
+                        <th class="px-4 py-3 text-end text-xs font-medium text-gray-500">{{ __('optimization.table.campaign') }}</th>
+                        <th class="px-4 py-3 text-end text-xs font-medium text-gray-500">{{ __('optimization.table.type') }}</th>
+                        <th class="px-4 py-3 text-end text-xs font-medium text-gray-500">{{ __('optimization.table.change') }}</th>
+                        <th class="px-4 py-3 text-end text-xs font-medium text-gray-500">{{ __('optimization.table.impact') }}</th>
+                        <th class="px-4 py-3 text-end text-xs font-medium text-gray-500">{{ __('optimization.table.date') }}</th>
+                        <th class="px-4 py-3 text-end text-xs font-medium text-gray-500">{{ __('optimization.table.status') }}</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-200">
@@ -253,8 +253,8 @@
                         <tr>
                             <td colspan="6" class="px-4 py-8 text-center text-gray-500">
                                 <i class="fas fa-magic text-3xl text-gray-300 mb-2"></i>
-                                <p>لا توجد تحسينات حالياً</p>
-                                <p class="text-sm">قم بتفعيل استراتيجيات التحسين أعلاه للبدء</p>
+                                <p>{{ __('optimization.no_optimizations') }}</p>
+                                <p class="text-sm">{{ __('optimization.no_optimizations_hint') }}</p>
                             </td>
                         </tr>
                     </template>
@@ -276,7 +276,7 @@
                                           'bg-yellow-100 text-yellow-800': opt.status === 'testing',
                                           'bg-gray-100 text-gray-800': opt.status === 'reverted'
                                       }"
-                                      x-text="opt.status"></span>
+                                      x-text="opt.status === 'applied' ? '{{ __('optimization.status_applied') }}' : (opt.status === 'testing' ? '{{ __('optimization.status_testing') }}' : '{{ __('optimization.status_reverted') }}')"></span>
                             </td>
                         </tr>
                     </template>

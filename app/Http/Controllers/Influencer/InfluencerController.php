@@ -68,7 +68,7 @@ class InfluencerController extends Controller
 
         return redirect()
             ->route('orgs.influencer.show', ['org' => $orgId, 'influencer' => $influencer->influencer_id])
-            ->with('success', 'تم إضافة المؤثر بنجاح');
+            ->with('success', __('influencers.created_success'));
     }
 
     /**
@@ -128,7 +128,7 @@ class InfluencerController extends Controller
 
         return redirect()
             ->route('orgs.influencer.show', ['org' => $org, 'influencer' => $influencer])
-            ->with('success', 'تم تحديث المؤثر بنجاح');
+            ->with('success', __('influencers.updated_success'));
     }
 
     /**
@@ -144,6 +144,6 @@ class InfluencerController extends Controller
 
         return redirect()
             ->route('orgs.influencer.index', ['org' => $org])
-            ->with('success', 'تم حذف المؤثر بنجاح');
+            ->with('success', __('influencers.deleted_success'));
     }
 }

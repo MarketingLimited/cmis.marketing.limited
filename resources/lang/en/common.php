@@ -9,13 +9,16 @@ return [
     */
 
     // General Actions
+    'actions' => 'Actions',
     'save' => 'Save',
     'cancel' => 'Cancel',
     'delete' => 'Delete',
     'edit' => 'Edit',
+    'add' => 'Add',
     'create' => 'Create',
     'update' => 'Update',
     'view' => 'View',
+    'view_details' => 'View Details',
     'back' => 'Back',
     'next' => 'Next',
     'previous' => 'Previous',
@@ -54,6 +57,13 @@ return [
     'last_month' => 'Last Month',
     'this_year' => 'This Year',
     'custom_range' => 'Custom Range',
+    'mon' => 'Mon',
+    'tue' => 'Tue',
+    'wed' => 'Wed',
+    'thu' => 'Thu',
+    'fri' => 'Fri',
+    'sat' => 'Sat',
+    'sun' => 'Sun',
 
     // Common Fields
     'name' => 'Name',
@@ -73,14 +83,21 @@ return [
     'settings' => 'Settings',
     'profile' => 'Profile',
     'logout' => 'Logout',
+    'system_admin' => 'System Administrator',
+    'creative' => 'Creative',
 
     // Messages
     'success_message' => 'Operation completed successfully',
     'error_message' => 'An error occurred, please try again',
     'no_data' => 'No data available',
+    'not_available' => 'Not Available',
+    'unknown_date' => 'Unknown date',
     'loading' => 'Loading...',
     'processing' => 'Processing...',
     'please_wait' => 'Please wait',
+    'search_placeholder' => 'Search...',
+    'total' => 'Total',
+    'all' => 'All',
 
     // Confirmation
     'are_you_sure' => 'Are you sure?',
@@ -114,5 +131,44 @@ return [
     'available' => 'Available',
     'beta' => 'Beta',
     'new' => 'New',
+
+    // Additional common items
+    'already_on_plan' => 'You are already on the :plan plan.',
+    'invitation_sent' => 'Invitation sent to :email!',
+    'processing_failed' => 'Processing failed: :error',
+    'article' => 'Article',
+    'poll' => 'Poll',
+    'none' => 'None',
+    'unknown' => 'Unknown',
+    'unknown_error' => 'Unknown error',
+    'please_try_again' => 'Please try again',
+    'create_new_post' => 'Create New Post',
+    'switch_organization' => 'Switch Organization',
+    'failed_load_organizations' => 'Failed to load organizations',
+    'server_connection_error' => 'Server connection error',
+    'organization_switched_success' => 'Organization switched successfully',
+    'failed_switch_organization' => 'Failed to switch organization',
+    'error_switching_organization' => 'An error occurred while switching organization',
+    'notification' => 'Notification',
+    'view_all' => 'View All',
+
+    // Currency
+    'sar' => 'SAR',
+    'currency_sar' => 'SAR',
+
+    // Time units
+    'ago' => 'ago',
+    'seconds' => 'second(s)',
+    'minutes' => 'minute(s)',
+    'hours' => 'hour(s)',
+    'days' => 'day(s)',
+    'weeks' => 'week(s)',
+    'months' => 'month(s)',
+    'years' => 'year(s)',
+
+    // Status labels
+    'paused' => 'Paused',
+    'draft' => 'Draft',
+    'scheduled' => 'Scheduled',
 
 ];

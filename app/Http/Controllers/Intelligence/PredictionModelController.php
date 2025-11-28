@@ -72,7 +72,7 @@ class PredictionModelController extends Controller
         }
 
         return redirect()->route('models.show', $model->model_id)
-            ->with('success', 'Prediction model created successfully');
+            ->with('success', __('intelligence.created_success'));
     }
 
     /**
@@ -122,7 +122,7 @@ class PredictionModelController extends Controller
         }
 
         return redirect()->route('models.show', $model->model_id)
-            ->with('success', 'Prediction model updated successfully');
+            ->with('success', __('intelligence.updated_success'));
     }
 
     /**
@@ -138,7 +138,7 @@ class PredictionModelController extends Controller
         }
 
         return redirect()->route('models.index')
-            ->with('success', 'Prediction model deleted successfully');
+            ->with('success', __('intelligence.deleted_success'));
     }
 
     /**
@@ -172,7 +172,7 @@ class PredictionModelController extends Controller
         }
 
         return redirect()->route('models.show', $model->model_id)
-            ->with('success', 'Model training completed successfully');
+            ->with('success', __('intelligence.training_completed'));
     }
 
     /**
@@ -229,7 +229,7 @@ class PredictionModelController extends Controller
         }
 
         return redirect()->route('models.show', $model->model_id)
-            ->with('success', 'Model retraining completed successfully');
+            ->with('success', __('intelligence.training_completed'));
     }
 
     /**
@@ -245,7 +245,7 @@ class PredictionModelController extends Controller
         }
 
         return redirect()->route('models.show', $model->model_id)
-            ->with('success', 'Model activated successfully');
+            ->with('success', __('intelligence.activated_success'));
     }
 
     /**
@@ -261,7 +261,7 @@ class PredictionModelController extends Controller
         }
 
         return redirect()->route('models.show', $model->model_id)
-            ->with('success', 'Model deactivated successfully');
+            ->with('success', __('intelligence.activated_success'));
     }
 
     /**
@@ -277,7 +277,7 @@ class PredictionModelController extends Controller
         }
 
         return redirect()->route('models.index')
-            ->with('success', 'Model archived successfully');
+            ->with('success', __('intelligence.archived_success'));
     }
 
     /**
@@ -388,6 +388,6 @@ class PredictionModelController extends Controller
         }
 
         return redirect()->route('models.show', $model->model_id)
-            ->with('success', 'Model imported successfully');
+            ->with('success', __('intelligence.model_imported_successfully'));
     }
 }

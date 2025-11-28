@@ -78,7 +78,7 @@ export default function kpiDashboard() {
                 }
 
             } catch (err) {
-                console.error('KPI load error:', err);
+                console.error(__('javascript.kpi_load_error'), err);
                 this.error = err.message;
             } finally {
                 this.loading = false;

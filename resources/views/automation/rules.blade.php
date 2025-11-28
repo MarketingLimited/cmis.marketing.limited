@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Automation Rules - CMIS</title>
+    <title>{{ __('automation.automation_rules') }} - CMIS</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </head>
@@ -14,29 +14,29 @@
     <div x-data="automationRules()" x-init="loadRules()" class="container mx-auto px-4 py-8">
         <!-- Header -->
         <div class="mb-8">
-            <h1 class="text-3xl font-bold text-gray-900">Campaign Automation Rules</h1>
-            <p class="mt-2 text-gray-600">Create automated rules to optimize your campaigns based on performance metrics</p>
+            <h1 class="text-3xl font-bold text-gray-900">{{ __('automation.automation_rules') }}</h1>
+            <p class="mt-2 text-gray-600">{{ __('automation.rules_description') }}</p>
         </div>
 
         <!-- Action Buttons -->
         <div class="mb-6 flex justify-between items-center">
             <div class="flex gap-3">
                 <button @click="showCreateModal = true" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
-                    + Create New Rule
+                    + {{ __('automation.create_new_rule') }}
                 </button>
                 <button @click="loadTemplates()" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition">
-                    📋 Use Template
+                    📋 {{ __('automation.use_template') }}
                 </button>
             </div>
             <button @click="loadRules()" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition">
-                🔄 Refresh
+                🔄 {{ __('automation.refresh') }}
             </button>
         </div>
 
         <!-- Loading State -->
         <div x-show="loading" class="text-center py-12">
             <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-            <p class="mt-4 text-gray-600">Loading automation rules...</p>
+            <p class="mt-4 text-gray-600">{{ __('automation.loading_rules') }}</p>
         </div>
 
         <!-- Rules List -->
@@ -44,10 +44,10 @@
             <!-- Empty State -->
             <div x-show="rules.length === 0" class="bg-white rounded-lg shadow p-12 text-center">
                 <div class="text-6xl mb-4">🤖</div>
-                <h3 class="text-xl font-semibold text-gray-700 mb-2">No Automation Rules Yet</h3>
-                <p class="text-gray-500 mb-6">Create your first automation rule to start optimizing campaigns automatically</p>
+                <h3 class="text-xl font-semibold text-gray-700 mb-2">{{ __('automation.no_rules_yet') }}</h3>
+                <p class="text-gray-500 mb-6">{{ __('automation.no_rules_description') }}</p>
                 <button @click="showCreateModal = true" class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
-                    Create Your First Rule
+                    {{ __('automation.create_first_rule') }}
                 </button>
             </div>
 
@@ -60,22 +60,22 @@
                                 <h3 class="text-lg font-semibold text-gray-900" x-text="rule.name"></h3>
                                 <span :class="rule.is_active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'"
                                       class="px-2 py-1 rounded-full text-xs font-medium"
-                                      x-text="rule.is_active ? 'Active' : 'Inactive'">
+                                      x-text="rule.is_active ? '{{ __('automation.active') }}' : '{{ __('automation.inactive') }}'">
                                 </span>
                             </div>
                             <p class="text-gray-600 text-sm" x-text="rule.description"></p>
                         </div>
-                        <div class="flex gap-2 ml-4">
+                        <div class="flex gap-2 ms-4">
                             <button @click="toggleRule(rule)"
                                     :class="rule.is_active ? 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200' : 'bg-green-100 text-green-700 hover:bg-green-200'"
                                     class="px-3 py-1 rounded text-sm font-medium transition">
-                                <span x-text="rule.is_active ? 'Pause' : 'Activate'"></span>
+                                <span x-text="rule.is_active ? '{{ __('automation.pause') }}' : '{{ __('automation.activate') }}'"></span>
                             </button>
                             <button @click="editRule(rule)" class="px-3 py-1 bg-blue-100 text-blue-700 rounded text-sm font-medium hover:bg-blue-200 transition">
-                                Edit
+                                {{ __('automation.edit') }}
                             </button>
                             <button @click="deleteRule(rule)" class="px-3 py-1 bg-red-100 text-red-700 rounded text-sm font-medium hover:bg-red-200 transition">
-                                Delete
+                                {{ __('automation.delete') }}
                             </button>
                         </div>
                     </div>
@@ -84,7 +84,7 @@
                     <div class="grid grid-cols-2 gap-4 mt-4 pt-4 border-t border-gray-200">
                         <!-- Condition -->
                         <div class="bg-blue-50 p-4 rounded-lg">
-                            <div class="text-xs font-semibold text-blue-800 uppercase mb-2">Condition</div>
+                            <div class="text-xs font-semibold text-blue-800 uppercase mb-2">{{ __('automation.condition') }}</div>
                             <div class="text-sm text-gray-900">
                                 <span class="font-medium" x-text="formatMetric(rule.condition.metric)"></span>
                                 <span x-text="rule.condition.operator" class="mx-2 font-bold"></span>
@@ -94,10 +94,10 @@
 
                         <!-- Action -->
                         <div class="bg-green-50 p-4 rounded-lg">
-                            <div class="text-xs font-semibold text-green-800 uppercase mb-2">Action</div>
+                            <div class="text-xs font-semibold text-green-800 uppercase mb-2">{{ __('automation.action') }}</div>
                             <div class="text-sm text-gray-900">
                                 <span x-text="formatAction(rule.action.type)"></span>
-                                <span x-show="rule.action.value" class="ml-1">
+                                <span x-show="rule.action.value" class="ms-1">
                                     (<span x-text="rule.action.value"></span><span x-show="['increase_budget', 'decrease_budget'].includes(rule.action.type)">%</span>)
                                 </span>
                             </div>
@@ -106,8 +106,8 @@
 
                     <!-- Timestamps -->
                     <div class="mt-4 flex justify-between text-xs text-gray-500">
-                        <span>Created: <span x-text="formatDate(rule.created_at)"></span></span>
-                        <span>Updated: <span x-text="formatDate(rule.updated_at)"></span></span>
+                        <span>{{ __('automation.created') }}: <span x-text="formatDate(rule.created_at)"></span></span>
+                        <span>{{ __('automation.updated') }}: <span x-text="formatDate(rule.updated_at)"></span></span>
                     </div>
                 </div>
             </template>
@@ -117,80 +117,80 @@
         <div x-show="showCreateModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @click.self="showCreateModal = false">
             <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto" @click.stop>
                 <div class="p-6">
-                    <h2 class="text-2xl font-bold text-gray-900 mb-6" x-text="editingRule ? 'Edit Rule' : 'Create New Rule'"></h2>
+                    <h2 class="text-2xl font-bold text-gray-900 mb-6" x-text="editingRule ? '{{ __('automation.edit_rule') }}' : '{{ __('automation.create_new_rule_title') }}'"></h2>
 
                     <form @submit.prevent="saveRule()">
                         <!-- Rule Name -->
                         <div class="mb-4">
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Rule Name</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('automation.rule_name') }}</label>
                             <input type="text" x-model="formData.name" required
                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                   placeholder="e.g., Pause High CPA Campaigns">
+                                   placeholder="{{ __('automation.rule_name_placeholder') }}">
                         </div>
 
                         <!-- Description -->
                         <div class="mb-4">
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Description (Optional)</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('automation.description') }}</label>
                             <textarea x-model="formData.description" rows="2"
                                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                      placeholder="Describe what this rule does..."></textarea>
+                                      placeholder="{{ __('automation.description_placeholder') }}"></textarea>
                         </div>
 
                         <!-- Condition -->
                         <div class="mb-6 p-4 bg-blue-50 rounded-lg">
-                            <h3 class="text-sm font-semibold text-blue-900 uppercase mb-3">When (Condition)</h3>
+                            <h3 class="text-sm font-semibold text-blue-900 uppercase mb-3">{{ __('automation.when_condition') }}</h3>
                             <div class="grid grid-cols-3 gap-3">
                                 <div>
-                                    <label class="block text-xs font-medium text-gray-700 mb-1">Metric</label>
+                                    <label class="block text-xs font-medium text-gray-700 mb-1">{{ __('automation.metric') }}</label>
                                     <select x-model="formData.condition.metric" required
                                             class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
-                                        <option value="cpa">Cost Per Acquisition (CPA)</option>
-                                        <option value="roas">Return On Ad Spend (ROAS)</option>
-                                        <option value="ctr">Click-Through Rate (CTR)</option>
-                                        <option value="conversion_rate">Conversion Rate</option>
-                                        <option value="spend">Daily Spend</option>
+                                        <option value="cpa">{{ __('automation.metric_cpa') }}</option>
+                                        <option value="roas">{{ __('automation.metric_roas') }}</option>
+                                        <option value="ctr">{{ __('automation.metric_ctr') }}</option>
+                                        <option value="conversion_rate">{{ __('automation.metric_conversion_rate') }}</option>
+                                        <option value="spend">{{ __('automation.metric_spend') }}</option>
                                     </select>
                                 </div>
                                 <div>
-                                    <label class="block text-xs font-medium text-gray-700 mb-1">Operator</label>
+                                    <label class="block text-xs font-medium text-gray-700 mb-1">{{ __('automation.operator') }}</label>
                                     <select x-model="formData.condition.operator" required
                                             class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
-                                        <option value=">">Greater Than (>)</option>
-                                        <option value="<">Less Than (<)</option>
-                                        <option value="=">Equals (=)</option>
-                                        <option value=">=">Greater or Equal (>=)</option>
-                                        <option value="<=">Less or Equal (<=)</option>
+                                        <option value=">">{{ __('automation.operator_gt') }}</option>
+                                        <option value="<">{{ __('automation.operator_lt') }}</option>
+                                        <option value="=">{{ __('automation.operator_eq') }}</option>
+                                        <option value=">=">{{ __('automation.operator_gte') }}</option>
+                                        <option value="<=">{{ __('automation.operator_lte') }}</option>
                                     </select>
                                 </div>
                                 <div>
-                                    <label class="block text-xs font-medium text-gray-700 mb-1">Value</label>
+                                    <label class="block text-xs font-medium text-gray-700 mb-1">{{ __('automation.value') }}</label>
                                     <input type="number" step="0.01" x-model="formData.condition.value" required
                                            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
-                                           placeholder="e.g., 50">
+                                           placeholder="50">
                                 </div>
                             </div>
                         </div>
 
                         <!-- Action -->
                         <div class="mb-6 p-4 bg-green-50 rounded-lg">
-                            <h3 class="text-sm font-semibold text-green-900 uppercase mb-3">Then (Action)</h3>
+                            <h3 class="text-sm font-semibold text-green-900 uppercase mb-3">{{ __('automation.then_action') }}</h3>
                             <div class="grid grid-cols-2 gap-3">
                                 <div>
-                                    <label class="block text-xs font-medium text-gray-700 mb-1">Action Type</label>
+                                    <label class="block text-xs font-medium text-gray-700 mb-1">{{ __('automation.action_type') }}</label>
                                     <select x-model="formData.action.type" required
                                             class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
-                                        <option value="pause_underperforming">Pause Campaign</option>
-                                        <option value="increase_budget">Increase Budget</option>
-                                        <option value="decrease_budget">Decrease Budget</option>
-                                        <option value="adjust_bid">Adjust Bid</option>
-                                        <option value="notify">Send Notification</option>
+                                        <option value="pause_underperforming">{{ __('automation.action_pause_underperforming') }}</option>
+                                        <option value="increase_budget">{{ __('automation.action_increase_budget') }}</option>
+                                        <option value="decrease_budget">{{ __('automation.action_decrease_budget') }}</option>
+                                        <option value="adjust_bid">{{ __('automation.action_adjust_bid') }}</option>
+                                        <option value="notify">{{ __('automation.action_notify') }}</option>
                                     </select>
                                 </div>
                                 <div x-show="['increase_budget', 'decrease_budget', 'adjust_bid'].includes(formData.action.type)">
-                                    <label class="block text-xs font-medium text-gray-700 mb-1">Adjustment (%)</label>
+                                    <label class="block text-xs font-medium text-gray-700 mb-1">{{ __('automation.adjustment_percent') }}</label>
                                     <input type="number" step="1" x-model="formData.action.value"
                                            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
-                                           placeholder="e.g., 20">
+                                           placeholder="20">
                                 </div>
                             </div>
                         </div>
@@ -198,8 +198,8 @@
                         <!-- Active Toggle -->
                         <div class="mb-6">
                             <label class="flex items-center cursor-pointer">
-                                <input type="checkbox" x-model="formData.is_active" class="mr-2 w-5 h-5 text-blue-600">
-                                <span class="text-sm font-medium text-gray-700">Activate this rule immediately</span>
+                                <input type="checkbox" x-model="formData.is_active" class="me-2 w-5 h-5 text-blue-600">
+                                <span class="text-sm font-medium text-gray-700">{{ __('automation.activate_immediately') }}</span>
                             </label>
                         </div>
 
@@ -207,11 +207,11 @@
                         <div class="flex justify-end gap-3">
                             <button type="button" @click="showCreateModal = false"
                                     class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition">
-                                Cancel
+                                {{ __('automation.cancel') }}
                             </button>
                             <button type="submit"
                                     class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
-                                <span x-text="editingRule ? 'Update Rule' : 'Create Rule'"></span>
+                                <span x-text="editingRule ? '{{ __('automation.update_rule') }}' : '{{ __('automation.create_rule') }}'"></span>
                             </button>
                         </div>
                     </form>
@@ -223,7 +223,7 @@
         <div x-show="showTemplatesModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @click.self="showTemplatesModal = false">
             <div class="bg-white rounded-lg shadow-xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto" @click.stop>
                 <div class="p-6">
-                    <h2 class="text-2xl font-bold text-gray-900 mb-6">Rule Templates</h2>
+                    <h2 class="text-2xl font-bold text-gray-900 mb-6">{{ __('automation.rule_templates') }}</h2>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <template x-for="template in templates" :key="template.id">
@@ -245,7 +245,7 @@
                     <div class="mt-6 flex justify-end">
                         <button @click="showTemplatesModal = false"
                                 class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition">
-                            Close
+                            {{ __('automation.close') }}
                         </button>
                     </div>
                 </div>
@@ -254,7 +254,29 @@
     </div>
 
     <script>
-        const orgId = '{{ $orgId ?? "your-org-id" }}'; // Pass from backend
+        const orgId = '{{ $orgId ?? "your-org-id" }}';
+        const translations = {
+            ruleCreated: '{{ __('automation.rule_created') }}',
+            ruleUpdated: '{{ __('automation.rule_updated') }}',
+            ruleDeleted: '{{ __('automation.rule_deleted') }}',
+            confirmDeleteRule: '{{ __('automation.confirm_delete_rule') }}',
+            error: '{{ __('automation.error') }}',
+            unknownError: '{{ __('automation.unknown_error') }}',
+            failedSaveRule: '{{ __('automation.failed_save_rule') }}',
+            failedLoadRules: '{{ __('automation.failed_load_rules') }}',
+            failedLoadTemplates: '{{ __('automation.failed_load_templates') }}',
+            failedDeleteRule: '{{ __('automation.failed_delete_rule') }}',
+            metricCpa: '{{ __('automation.metric_cpa') }}',
+            metricRoas: '{{ __('automation.metric_roas') }}',
+            metricCtr: '{{ __('automation.metric_ctr') }}',
+            metricConversionRate: '{{ __('automation.metric_conversion_rate') }}',
+            metricSpend: '{{ __('automation.metric_spend') }}',
+            actionPauseUnderperforming: '{{ __('automation.action_pause_underperforming') }}',
+            actionIncreaseBudget: '{{ __('automation.action_increase_budget') }}',
+            actionDecreaseBudget: '{{ __('automation.action_decrease_budget') }}',
+            actionAdjustBid: '{{ __('automation.action_adjust_bid') }}',
+            actionNotify: '{{ __('automation.action_notify') }}'
+        };
 
         function automationRules() {
             return {
@@ -287,7 +309,7 @@
                         this.rules = data.rules || [];
                     } catch (error) {
                         console.error('Failed to load rules:', error);
-                        alert('Failed to load automation rules');
+                        alert(translations.failedLoadRules);
                     } finally {
                         this.loading = false;
                     }
@@ -301,7 +323,7 @@
                         this.showTemplatesModal = true;
                     } catch (error) {
                         console.error('Failed to load templates:', error);
-                        alert('Failed to load rule templates');
+                        alert(translations.failedLoadTemplates);
                     }
                 },
 
@@ -322,16 +344,16 @@
                         const data = await response.json();
 
                         if (data.success) {
-                            alert(this.editingRule ? 'Rule updated successfully!' : 'Rule created successfully!');
+                            alert(this.editingRule ? translations.ruleUpdated : translations.ruleCreated);
                             this.showCreateModal = false;
                             this.resetForm();
                             await this.loadRules();
                         } else {
-                            alert('Error: ' + (data.error || 'Failed to save rule'));
+                            alert(`${translations.error}: ${data.error || translations.unknownError}`);
                         }
                     } catch (error) {
                         console.error('Failed to save rule:', error);
-                        alert('Failed to save automation rule');
+                        alert(translations.failedSaveRule);
                     }
                 },
 
@@ -366,7 +388,7 @@
                 },
 
                 async deleteRule(rule) {
-                    if (!confirm(`Are you sure you want to delete "${rule.name}"?`)) return;
+                    if (!confirm(`${translations.confirmDeleteRule} "${rule.name}"?`)) return;
 
                     try {
                         const response = await fetch(`/api/orgs/${orgId}/automation/rules/${rule.id}`, {
@@ -376,12 +398,12 @@
                         const data = await response.json();
 
                         if (data.success) {
-                            alert('Rule deleted successfully!');
+                            alert(translations.ruleDeleted);
                             await this.loadRules();
                         }
                     } catch (error) {
                         console.error('Failed to delete rule:', error);
-                        alert('Failed to delete rule');
+                        alert(translations.failedDeleteRule);
                     }
                 },
 
@@ -417,22 +439,22 @@
 
                 formatMetric(metric) {
                     const labels = {
-                        'cpa': 'CPA',
-                        'roas': 'ROAS',
-                        'ctr': 'CTR',
-                        'conversion_rate': 'Conversion Rate',
-                        'spend': 'Daily Spend'
+                        'cpa': translations.metricCpa,
+                        'roas': translations.metricRoas,
+                        'ctr': translations.metricCtr,
+                        'conversion_rate': translations.metricConversionRate,
+                        'spend': translations.metricSpend
                     };
                     return labels[metric] || metric;
                 },
 
                 formatAction(actionType) {
                     const labels = {
-                        'pause_underperforming': 'Pause Campaign',
-                        'increase_budget': 'Increase Budget',
-                        'decrease_budget': 'Decrease Budget',
-                        'adjust_bid': 'Adjust Bid',
-                        'notify': 'Send Notification'
+                        'pause_underperforming': translations.actionPauseUnderperforming,
+                        'increase_budget': translations.actionIncreaseBudget,
+                        'decrease_budget': translations.actionDecreaseBudget,
+                        'adjust_bid': translations.actionAdjustBid,
+                        'notify': translations.actionNotify
                     };
                     return labels[actionType] || actionType;
                 },
@@ -451,7 +473,7 @@
                 },
 
                 formatDate(dateString) {
-                    return new Date(dateString).toLocaleDateString('en-US', {
+                    return new Date(dateString).toLocaleDateString('{{ app()->getLocale() }}', {
                         year: 'numeric',
                         month: 'short',
                         day: 'numeric'

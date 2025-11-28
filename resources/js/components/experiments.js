@@ -85,7 +85,7 @@ export default function experiments() {
                     this.totalPages = data.experiments.last_page;
                 }
             } catch (error) {
-                console.error('Failed to load experiments:', error);
+                console.error(__('javascript.failed_to_load_experiments'), error);
             } finally {
                 this.loading = false;
             }
@@ -103,7 +103,7 @@ export default function experiments() {
                     this.stats = data.stats;
                 }
             } catch (error) {
-                console.error('Failed to load stats:', error);
+                console.error(__('javascript.failed_to_load_stats'), error);
             }
         },
 
@@ -122,14 +122,14 @@ export default function experiments() {
 
                 const data = await response.json();
                 if (data.success) {
-                    this.showSuccess('Experiment created');
+                    this.showSuccess(__('javascript.experiment_created'));
                     this.showCreateModal = false;
                     this.resetForm();
                     await this.loadExperiments();
                     await this.loadStats();
                 }
             } catch (error) {
-                this.showError('Failed to create experiment');
+                this.showError(__('javascript.failed_to_create_experiment'));
             } finally {
                 this.loading = false;
             }
@@ -148,7 +148,7 @@ export default function experiments() {
                     this.variants = data.experiment.variants;
                 }
             } catch (error) {
-                this.showError('Failed to load experiment');
+                this.showError(__('javascript.failed_to_load_experiment'));
             }
         },
 
@@ -167,13 +167,13 @@ export default function experiments() {
 
                 const data = await response.json();
                 if (data.success) {
-                    this.showSuccess('Variant added');
+                    this.showSuccess(__('javascript.variant_added'));
                     this.showVariantModal = false;
                     this.resetVariantForm();
                     await this.viewExperiment(experimentId);
                 }
             } catch (error) {
-                this.showError('Failed to add variant');
+                this.showError(__('javascript.failed_to_add_variant'));
             } finally {
                 this.loading = false;
             }
@@ -181,7 +181,7 @@ export default function experiments() {
 
         // Start experiment
         async startExperiment(experimentId) {
-            if (!confirm('Start this experiment?')) return;
+            if (!confirm(__('javascript.confirm_start_experiment'))) return;
 
             try {
                 const response = await fetch(`/api/orgs/${this.orgId}/experiments/${experimentId}/start`, {
@@ -194,14 +194,14 @@ export default function experiments() {
 
                 const data = await response.json();
                 if (data.success) {
-                    this.showSuccess('Experiment started');
+                    this.showSuccess(__('javascript.experiment_started'));
                     await this.loadExperiments();
                     await this.loadStats();
                 } else {
                     this.showError(data.message);
                 }
             } catch (error) {
-                this.showError('Failed to start experiment');
+                this.showError(__('javascript.failed_to_start_experiment'));
             }
         },
 
@@ -218,11 +218,11 @@ export default function experiments() {
 
                 const data = await response.json();
                 if (data.success) {
-                    this.showSuccess('Experiment paused');
+                    this.showSuccess(__('javascript.experiment_paused'));
                     await this.loadExperiments();
                 }
             } catch (error) {
-                this.showError('Failed to pause experiment');
+                this.showError(__('javascript.failed_to_pause_experiment'));
             }
         },
 
@@ -239,17 +239,17 @@ export default function experiments() {
 
                 const data = await response.json();
                 if (data.success) {
-                    this.showSuccess('Experiment resumed');
+                    this.showSuccess(__('javascript.experiment_resumed'));
                     await this.loadExperiments();
                 }
             } catch (error) {
-                this.showError('Failed to resume experiment');
+                this.showError(__('javascript.failed_to_resume_experiment'));
             }
         },
 
         // Complete experiment
         async completeExperiment(experimentId) {
-            if (!confirm('Complete this experiment? This will calculate results and determine a winner.')) return;
+            if (!confirm(__('javascript.confirm_complete_experiment'))) return;
 
             this.loading = true;
             try {
@@ -263,19 +263,22 @@ export default function experiments() {
 
                 const data = await response.json();
                 if (data.success) {
-                    this.showSuccess('Experiment completed');
+                    this.showSuccess(__('javascript.experiment_completed'));
                     await this.loadExperiments();
                     await this.loadStats();
 
                     // Show results
                     if (data.winner) {
-                        alert(`Winner: ${data.winner.name}\nImprovement: ${data.winner.improvement_over_control}%`);
+                        alert(__('javascript.experiment_winner_found', {
+                            name: data.winner.name,
+                            improvement: data.winner.improvement_over_control
+                        }));
                     } else {
-                        alert('No statistically significant winner found.');
+                        alert(__('javascript.no_significant_winner'));
                     }
                 }
             } catch (error) {
-                this.showError('Failed to complete experiment');
+                this.showError(__('javascript.failed_to_complete_experiment'));
             } finally {
                 this.loading = false;
             }
@@ -283,7 +286,7 @@ export default function experiments() {
 
         // Delete experiment
         async deleteExperiment(experimentId) {
-            if (!confirm('Delete this experiment? This action cannot be undone.')) return;
+            if (!confirm(__('javascript.confirm_delete_experiment'))) return;
 
             try {
                 const response = await fetch(`/api/orgs/${this.orgId}/experiments/${experimentId}`, {
@@ -292,12 +295,12 @@ export default function experiments() {
                 });
 
                 if (response.ok) {
-                    this.showSuccess('Experiment deleted');
+                    this.showSuccess(__('javascript.experiment_deleted'));
                     await this.loadExperiments();
                     await this.loadStats();
                 }
             } catch (error) {
-                this.showError('Failed to delete experiment');
+                this.showError(__('javascript.failed_to_delete_experiment'));
             }
         },
 
@@ -315,7 +318,7 @@ export default function experiments() {
                     this.showResultsModal = true;
                 }
             } catch (error) {
-                this.showError('Failed to load results');
+                this.showError(__('javascript.failed_to_load_results'));
             } finally {
                 this.loading = false;
             }

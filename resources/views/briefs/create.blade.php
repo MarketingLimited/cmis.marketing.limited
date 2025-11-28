@@ -4,8 +4,8 @@
     $currentOrg = $currentOrg ?? request()->route('org') ?? auth()->user()->active_org_id ?? auth()->user()->org_id;
 @endphp
 
-@section('page-title', 'إنشاء بريف جديد')
-@section('page-subtitle', 'أنشئ بريف إبداعي شامل لحملتك التسويقية')
+@section('page-title', __('briefs.create_page_title'))
+@section('page-subtitle', __('briefs.create_page_subtitle'))
 
 @section('content')
 <div class="max-w-5xl mx-auto">
@@ -16,13 +16,13 @@
             <!-- Basic Information -->
             <div class="bg-white rounded-xl shadow-sm p-6">
                 <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center">
-                    <i class="fas fa-info-circle text-indigo-600 ml-2"></i>
-                    المعلومات الأساسية
+                    <i class="fas fa-info-circle text-indigo-600 ms-2"></i>
+                    {{ __('briefs.section_basic_info') }}
                 </h3>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div class="md:col-span-2">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">عنوان البريف *</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('briefs.brief_title') }} *</label>
                         <input type="text" name="brief_title" x-model="form.brief_title" required
                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
                         @error('brief_title')
@@ -31,15 +31,15 @@
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">نوع البريف *</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('briefs.brief_type') }} *</label>
                         <select name="brief_type" x-model="form.brief_type" required
                                 class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
-                            <option value="">اختر النوع</option>
-                            <option value="campaign">حملة تسويقية</option>
-                            <option value="content">محتوى</option>
-                            <option value="design">تصميم</option>
-                            <option value="video">فيديو</option>
-                            <option value="social">سوشيال ميديا</option>
+                            <option value="">{{ __('briefs.select_type') }}</option>
+                            <option value="campaign">{{ __('briefs.campaign_type') }}</option>
+                            <option value="content">{{ __('briefs.content_type') }}</option>
+                            <option value="design">{{ __('briefs.design_type') }}</option>
+                            <option value="video">{{ __('briefs.video_type') }}</option>
+                            <option value="social">{{ __('briefs.social_type') }}</option>
                         </select>
                         @error('brief_type')
                             <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
@@ -47,10 +47,10 @@
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">الحملة المرتبطة</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('briefs.campaign_linked') }}</label>
                         <select name="campaign_id" x-model="form.campaign_id"
                                 class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
-                            <option value="">بدون حملة</option>
+                            <option value="">{{ __('briefs.no_campaign') }}</option>
                             @foreach($campaigns ?? [] as $campaign)
                                 <option value="{{ $campaign->campaign_id }}">{{ $campaign->campaign_name }}</option>
                             @endforeach
@@ -58,13 +58,13 @@
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">التاريخ المستهدف</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('briefs.target_date') }}</label>
                         <input type="date" name="target_date" x-model="form.target_date"
                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">الميزانية (ر.س)</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('briefs.budget') }} ({{ __('common.sar') ?? 'ر.س' }})</label>
                         <input type="number" name="budget" x-model="form.budget" step="0.01" min="0"
                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
                     </div>
@@ -74,15 +74,15 @@
             <!-- Objectives & Strategy -->
             <div class="bg-white rounded-xl shadow-sm p-6">
                 <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center">
-                    <i class="fas fa-bullseye text-indigo-600 ml-2"></i>
-                    الأهداف والاستراتيجية
+                    <i class="fas fa-bullseye text-indigo-600 ms-2"></i>
+                    {{ __('briefs.section_objectives') }}
                 </h3>
 
                 <div class="space-y-4">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">أهداف البريف *</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('briefs.objectives') }} *</label>
                         <textarea name="objectives" x-model="form.objectives" rows="4" required
-                                  placeholder="اذكر الأهداف الرئيسية للحملة..."
+                                  placeholder="{{ __('briefs.objectives_placeholder') }}"
                                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"></textarea>
                         @error('objectives')
                             <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
@@ -90,16 +90,16 @@
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">الرسالة الرئيسية</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('briefs.key_message') }}</label>
                         <textarea name="key_message" x-model="form.key_message" rows="3"
-                                  placeholder="ما هي الرسالة الأساسية التي تريد إيصالها؟"
+                                  placeholder="{{ __('briefs.key_message_placeholder') }}"
                                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"></textarea>
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">الاستراتيجية الإبداعية</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('briefs.creative_strategy') }}</label>
                         <textarea name="creative_strategy" x-model="form.creative_strategy" rows="4"
-                                  placeholder="اشرح الاستراتيجية الإبداعية..."
+                                  placeholder="{{ __('briefs.creative_strategy_placeholder') }}"
                                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"></textarea>
                     </div>
                 </div>
@@ -108,15 +108,15 @@
             <!-- Target Audience -->
             <div class="bg-white rounded-xl shadow-sm p-6">
                 <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center">
-                    <i class="fas fa-users text-indigo-600 ml-2"></i>
-                    الجمهور المستهدف
+                    <i class="fas fa-users text-indigo-600 ms-2"></i>
+                    {{ __('briefs.section_target_audience') }}
                 </h3>
 
                 <div class="space-y-4">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">وصف الجمهور المستهدف *</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('briefs.target_audience_description') }} *</label>
                         <textarea name="target_audience" x-model="form.target_audience" rows="3" required
-                                  placeholder="حدد الفئة المستهدفة (العمر، الجنس، الاهتمامات...)"
+                                  placeholder="{{ __('briefs.target_audience_placeholder') }}"
                                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"></textarea>
                         @error('target_audience')
                             <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
@@ -124,9 +124,9 @@
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">شخصية العميل (Persona)</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('briefs.persona') }}</label>
                         <textarea name="persona" x-model="form.persona" rows="3"
-                                  placeholder="صف شخصية العميل المثالي..."
+                                  placeholder="{{ __('briefs.persona_placeholder') }}"
                                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"></textarea>
                     </div>
                 </div>
@@ -135,48 +135,48 @@
             <!-- Deliverables & Specifications -->
             <div class="bg-white rounded-xl shadow-sm p-6">
                 <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center">
-                    <i class="fas fa-clipboard-list text-indigo-600 ml-2"></i>
-                    المخرجات والمواصفات
+                    <i class="fas fa-clipboard-list text-indigo-600 ms-2"></i>
+                    {{ __('briefs.section_deliverables') }}
                 </h3>
 
                 <div class="space-y-4">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">المخرجات المطلوبة</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('briefs.deliverables') }}</label>
                         <div class="space-y-2">
                             <label class="flex items-center">
                                 <input type="checkbox" name="deliverables[]" value="logo" class="w-4 h-4 text-indigo-600 rounded">
-                                <span class="mr-2 text-sm text-gray-700">شعار</span>
+                                <span class="ms-2 text-sm text-gray-700">{{ __('briefs.deliverable_logo') }}</span>
                             </label>
                             <label class="flex items-center">
                                 <input type="checkbox" name="deliverables[]" value="social_posts" class="w-4 h-4 text-indigo-600 rounded">
-                                <span class="mr-2 text-sm text-gray-700">منشورات سوشيال ميديا</span>
+                                <span class="ms-2 text-sm text-gray-700">{{ __('briefs.deliverable_social_posts') }}</span>
                             </label>
                             <label class="flex items-center">
                                 <input type="checkbox" name="deliverables[]" value="banner" class="w-4 h-4 text-indigo-600 rounded">
-                                <span class="mr-2 text-sm text-gray-700">بنر إعلاني</span>
+                                <span class="ms-2 text-sm text-gray-700">{{ __('briefs.deliverable_banner') }}</span>
                             </label>
                             <label class="flex items-center">
                                 <input type="checkbox" name="deliverables[]" value="video" class="w-4 h-4 text-indigo-600 rounded">
-                                <span class="mr-2 text-sm text-gray-700">فيديو</span>
+                                <span class="ms-2 text-sm text-gray-700">{{ __('briefs.deliverable_video') }}</span>
                             </label>
                             <label class="flex items-center">
                                 <input type="checkbox" name="deliverables[]" value="content" class="w-4 h-4 text-indigo-600 rounded">
-                                <span class="mr-2 text-sm text-gray-700">محتوى نصي</span>
+                                <span class="ms-2 text-sm text-gray-700">{{ __('briefs.deliverable_content') }}</span>
                             </label>
                         </div>
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">المواصفات الفنية</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('briefs.technical_specs') }}</label>
                         <textarea name="technical_specs" x-model="form.technical_specs" rows="3"
-                                  placeholder="حدد المواصفات الفنية (أبعاد، صيغ الملفات...)"
+                                  placeholder="{{ __('briefs.technical_specs_placeholder') }}"
                                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"></textarea>
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">إرشادات العلامة التجارية</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('briefs.brand_guidelines') }}</label>
                         <textarea name="brand_guidelines" x-model="form.brand_guidelines" rows="3"
-                                  placeholder="ألوان العلامة، الخطوط، النبرة..."
+                                  placeholder="{{ __('briefs.brand_guidelines_placeholder') }}"
                                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"></textarea>
                     </div>
                 </div>
@@ -185,22 +185,22 @@
             <!-- References & Inspiration -->
             <div class="bg-white rounded-xl shadow-sm p-6">
                 <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center">
-                    <i class="fas fa-lightbulb text-indigo-600 ml-2"></i>
-                    المراجع والإلهام
+                    <i class="fas fa-lightbulb text-indigo-600 ms-2"></i>
+                    {{ __('briefs.section_references') }}
                 </h3>
 
                 <div class="space-y-4">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">مراجع مشابهة</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('briefs.references') }}</label>
                         <textarea name="references" x-model="form.references" rows="3"
-                                  placeholder="أضف روابط أو أوصاف لأعمال ملهمة..."
+                                  placeholder="{{ __('briefs.references_placeholder') }}"
                                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"></textarea>
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">ما يجب تجنبه</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('briefs.avoid') }}</label>
                         <textarea name="avoid" x-model="form.avoid" rows="2"
-                                  placeholder="أشياء لا تريدها في التصميم..."
+                                  placeholder="{{ __('briefs.avoid_placeholder') }}"
                                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"></textarea>
                     </div>
                 </div>
@@ -211,17 +211,17 @@
                 <div class="flex gap-3">
                     <button type="submit" name="status" value="review"
                             class="flex-1 bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-8 py-3 rounded-lg font-medium hover:shadow-lg transition">
-                        <i class="fas fa-paper-plane ml-2"></i>
-                        إرسال للمراجعة
+                        <i class="fas fa-paper-plane ms-2"></i>
+                        {{ __('briefs.send_for_review') }}
                     </button>
                     <button type="submit" name="status" value="draft"
                             class="flex-1 bg-gray-100 text-gray-700 px-8 py-3 rounded-lg font-medium hover:bg-gray-200 transition">
-                        <i class="fas fa-save ml-2"></i>
-                        حفظ كمسودة
+                        <i class="fas fa-save ms-2"></i>
+                        {{ __('briefs.save_as_draft') }}
                     </button>
                     <a href="{{ route('orgs.briefs.index', ['org' => $currentOrg]) }}"
                        class="bg-white border border-gray-300 text-gray-700 px-8 py-3 rounded-lg font-medium hover:bg-gray-50 transition">
-                        إلغاء
+                        {{ __('common.cancel') }}
                     </a>
                 </div>
             </div>
@@ -254,7 +254,7 @@ function briefForm() {
         validateAndSubmit(e) {
             // Basic validation
             if (!this.form.brief_title || !this.form.brief_type || !this.form.objectives || !this.form.target_audience) {
-                alert('يرجى ملء جميع الحقول المطلوبة');
+                alert('{{ __('briefs.required_fields') }}');
                 e.preventDefault();
                 return false;
             }
