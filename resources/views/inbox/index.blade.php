@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', __('Unified Inbox'))
+@section('title', __('inbox.unified_inbox'))
 
 @php
     $currentOrg = $currentOrg ?? request()->route('org') ?? auth()->user()->active_org_id ?? auth()->user()->org_id;
@@ -15,31 +15,31 @@
                 <i class="fas fa-home"></i>
             </a>
             <span class="text-gray-400">/</span>
-            <span class="text-gray-900 font-medium">{{ __('Inbox') }}</span>
+            <span class="text-gray-900 font-medium">{{ __('inbox.inbox') }}</span>
         </nav>
-        <h1 class="text-2xl font-bold text-gray-900">{{ __('Unified Inbox') }}</h1>
-        <p class="text-gray-600 mt-1">{{ __('Manage all your messages and comments from one place') }}</p>
+        <h1 class="text-2xl font-bold text-gray-900">{{ __('inbox.unified_inbox') }}</h1>
+        <p class="text-gray-600 mt-1">{{ __('inbox.manage_all_messages') }}</p>
     </div>
 
     {{-- Tabs --}}
     <div class="mb-6">
         <div class="border-b border-gray-200">
-            <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+            <nav class="-mb-px flex gap-x-8" aria-label="Tabs">
                 <a href="{{ route('orgs.inbox.index', ['org' => $currentOrg]) }}"
                    class="border-blue-500 text-blue-600 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
-                    All Messages
+                    {{ __('inbox.all_messages') }}
                 </a>
                 <a href="{{ route('orgs.inbox.comments', ['org' => $currentOrg]) }}"
                    class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
-                    Comments
+                    {{ __('inbox.comments') }}
                 </a>
                 <a href="#"
                    class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
-                    Direct Messages
+                    {{ __('inbox.direct_messages') }}
                 </a>
                 <a href="#"
                    class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
-                    Mentions
+                    {{ __('inbox.mentions') }}
                 </a>
             </nav>
         </div>
@@ -49,12 +49,12 @@
     <div class="bg-white rounded-lg shadow p-4 mb-6">
         <div class="flex flex-wrap gap-4">
             <div class="flex-1 min-w-64">
-                <label for="platform" class="block text-sm font-medium text-gray-700 mb-1">Platform</label>
+                <label for="platform" class="block text-sm font-medium text-gray-700 mb-1">{{ __('inbox.platform') }}</label>
                 <select id="platform"
                         x-model="filters.platform"
                         @change="loadMessages()"
                         class="block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
-                    <option value="">All Platforms</option>
+                    <option value="">{{ __('inbox.all_platforms') }}</option>
                     <option value="facebook">Facebook</option>
                     <option value="instagram">Instagram</option>
                     <option value="twitter">Twitter</option>
@@ -62,24 +62,24 @@
                 </select>
             </div>
             <div class="flex-1 min-w-64">
-                <label for="status" class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                <label for="status" class="block text-sm font-medium text-gray-700 mb-1">{{ __('inbox.status') }}</label>
                 <select id="status"
                         x-model="filters.status"
                         @change="loadMessages()"
                         class="block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
-                    <option value="">All</option>
-                    <option value="unread">Unread</option>
-                    <option value="read">Read</option>
-                    <option value="replied">Replied</option>
+                    <option value="">{{ __('inbox.all') }}</option>
+                    <option value="unread">{{ __('inbox.unread') }}</option>
+                    <option value="read">{{ __('inbox.read') }}</option>
+                    <option value="replied">{{ __('inbox.replied') }}</option>
                 </select>
             </div>
             <div class="flex-1 min-w-64">
-                <label for="search" class="block text-sm font-medium text-gray-700 mb-1">Search</label>
+                <label for="search" class="block text-sm font-medium text-gray-700 mb-1">{{ __('inbox.search') }}</label>
                 <input type="text"
                        id="search"
                        x-model="filters.search"
                        @input="debounceSearch()"
-                       placeholder="Search messages..."
+                       placeholder="{{ __('inbox.search_messages_placeholder') }}"
                        class="block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
             </div>
         </div>
@@ -89,15 +89,15 @@
     <div class="bg-white rounded-lg shadow overflow-hidden">
         <div x-show="loading" class="p-12 text-center">
             <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-            <p class="mt-2 text-gray-600">Loading messages...</p>
+            <p class="mt-2 text-gray-600">{{ __('inbox.loading_messages') }}</p>
         </div>
 
         <div x-show="!loading && messages.length === 0" class="p-12 text-center">
             <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
             </svg>
-            <h3 class="mt-2 text-sm font-medium text-gray-900">No messages</h3>
-            <p class="mt-1 text-sm text-gray-500">You're all caught up!</p>
+            <h3 class="mt-2 text-sm font-medium text-gray-900">{{ __('inbox.no_messages') }}</h3>
+            <p class="mt-1 text-sm text-gray-500">{{ __('inbox.all_caught_up') }}</p>
         </div>
 
         <div x-show="!loading && messages.length > 0">
@@ -115,7 +115,7 @@
                                                  :alt="message.author_name"
                                                  class="h-10 w-10 rounded-full">
                                         </div>
-                                        <div class="ml-3 flex-1">
+                                        <div class="ms-3 flex-1">
                                             <div class="flex items-center justify-between">
                                                 <div>
                                                     <p class="text-sm font-medium text-gray-900" x-text="message.author_name"></p>
@@ -125,11 +125,11 @@
                                                         <span x-text="message.time_ago"></span>
                                                     </p>
                                                 </div>
-                                                <div class="flex items-center space-x-2">
+                                                <div class="flex items-center gap-x-2">
                                                     <span x-show="!message.is_read"
                                                           class="inline-block h-2 w-2 rounded-full bg-blue-600"></span>
                                                     <span x-show="message.is_replied"
-                                                          class="text-xs text-green-600 font-medium">Replied</span>
+                                                          class="text-xs text-green-600 font-medium">{{ __('inbox.replied') }}</span>
                                                 </div>
                                             </div>
                                             <p class="mt-1 text-sm text-gray-700" x-text="message.content.substring(0, 150) + (message.content.length > 150 ? '...' : '')"></p>
@@ -146,18 +146,18 @@
             <div class="bg-gray-50 px-4 py-3 border-t border-gray-200 sm:px-6">
                 <div class="flex items-center justify-between">
                     <div class="text-sm text-gray-700">
-                        Showing <span class="font-medium" x-text="messages.length"></span> messages
+                        {{ __('inbox.showing') }} <span class="font-medium" x-text="messages.length"></span> {{ __('inbox.messages') }}
                     </div>
-                    <div class="flex space-x-2">
+                    <div class="flex gap-x-2">
                         <button @click="loadPreviousPage()"
                                 :disabled="!pagination.has_previous"
                                 class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
-                            Previous
+                            {{ __('inbox.previous') }}
                         </button>
                         <button @click="loadNextPage()"
                                 :disabled="!pagination.has_next"
                                 class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
-                            Next
+                            {{ __('inbox.next') }}
                         </button>
                     </div>
                 </div>

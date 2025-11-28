@@ -89,7 +89,7 @@ export default function campaignComparison() {
                     this.error = data.error || 'Failed to load comparison';
                 }
             } catch (err) {
-                console.error('Comparison error:', err);
+                console.error(__('javascript.comparison_error'), err);
                 this.error = err.message;
             } finally {
                 this.loading = false;

@@ -169,7 +169,7 @@ class VectorEmbeddingsController extends Controller
 
         } catch (\Exception $e) {
             return redirect()->route('vector-embeddings.queue')
-                ->with('error', 'فشلت المعالجة: ' . $e->getMessage());
+                ->with('error', __('common.processing_failed', ['error' => $e->getMessage()]));
         }
     }
 

@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'المحتوى التاريخي')
+@section('title', __('social.historical_content'))
 
 @php
     $orgId = request()->route('org');
@@ -60,8 +60,8 @@
                 <svg class="w-6 h-6 transition-transform group-hover:rotate-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
                 </svg>
-                <span class="font-bold text-lg hidden sm:inline">استيراد المنشورات</span>
-                <span class="font-bold text-lg sm:hidden">استيراد</span>
+                <span class="font-bold text-lg hidden sm:inline">{{ __("social.import_posts") }}</span>
+                <span class="font-bold text-lg sm:hidden">{{ __("social.import") }}</span>
             </button>
         </div>
     </div>
@@ -75,10 +75,10 @@
                         <svg class="w-8 h-8 md:w-10 md:h-10 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
                         </svg>
-                        المحتوى التاريخي
+                        {{ __("social.historical_content") }}
                     </h1>
                     <p class="text-blue-200 text-sm md:text-base max-w-xl">
-                        استورد وحلل محتواك الاجتماعي لبناء قاعدة معرفة ذكية تساعدك في إنشاء محتوى أفضل
+                        {{ __("social.historical_content_description") }}
                     </p>
                 </div>
                 <div class="flex gap-3">
@@ -87,7 +87,7 @@
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                         </svg>
-                        <span class="hidden sm:inline">قاعدة المعرفة</span>
+                        <span class="hidden sm:inline">{{ __("social.knowledge_base") }}</span>
                     </button>
                 </div>
             </div>
@@ -103,7 +103,7 @@
                         </div>
                         <div>
                             <p class="text-2xl md:text-3xl font-bold" x-text="stats.totalImported">0</p>
-                            <p class="text-blue-200 text-xs md:text-sm">إجمالي المستورد</p>
+                            <p class="text-blue-200 text-xs md:text-sm">{{ __("social.total_imported") }}</p>
                         </div>
                     </div>
                 </div>
@@ -116,7 +116,7 @@
                         </div>
                         <div>
                             <p class="text-2xl md:text-3xl font-bold" x-text="stats.totalAnalyzed">0</p>
-                            <p class="text-blue-200 text-xs md:text-sm">تم تحليلها</p>
+                            <p class="text-blue-200 text-xs md:text-sm">{{ __("social.total_analyzed") }}</p>
                         </div>
                     </div>
                 </div>
@@ -129,7 +129,7 @@
                         </div>
                         <div>
                             <p class="text-2xl md:text-3xl font-bold" x-text="stats.inKB">0</p>
-                            <p class="text-blue-200 text-xs md:text-sm">في قاعدة المعرفة</p>
+                            <p class="text-blue-200 text-xs md:text-sm">{{ __("social.in_kb") }}</p>
                         </div>
                     </div>
                 </div>
@@ -142,7 +142,7 @@
                         </div>
                         <div>
                             <p class="text-2xl md:text-3xl font-bold" x-text="stats.highPerformers">0</p>
-                            <p class="text-blue-200 text-xs md:text-sm">عالية الأداء</p>
+                            <p class="text-blue-200 text-xs md:text-sm">{{ __("social.high_performers") }}</p>
                         </div>
                     </div>
                 </div>
@@ -165,7 +165,7 @@
                         <input type="text"
                                x-model="searchQuery"
                                @input.debounce.500ms="loadPosts()"
-                               placeholder="ابحث في المحتوى..."
+                               placeholder="{{ __("social.search_content") }}"
                                class="w-full pr-10 pl-4 py-3 bg-gray-50 dark:bg-gray-900 border-0 rounded-xl focus:ring-2 focus:ring-blue-500 dark:text-white">
                     </div>
 
@@ -174,28 +174,28 @@
                         <!-- Platform Filter -->
                         <select x-model="filters.platform" @change="loadPosts()"
                                 class="px-4 py-2.5 bg-gray-50 dark:bg-gray-900 border-0 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 dark:text-white">
-                            <option value="">جميع المنصات</option>
-                            <option value="instagram">إنستغرام</option>
-                            <option value="facebook">فيسبوك</option>
-                            <option value="twitter">تويتر</option>
-                            <option value="linkedin">لينكد إن</option>
-                            <option value="tiktok">تيك توك</option>
+                            <option value="">{{ __("social.all_platforms") }}</option>
+                            <option value="instagram">{{ __("social.platforms.instagram") }}</option>
+                            <option value="facebook">{{ __("social.platforms.facebook") }}</option>
+                            <option value="twitter">{{ __("social.platforms.twitter") }}</option>
+                            <option value="linkedin">{{ __("social.platforms.linkedin") }}</option>
+                            <option value="tiktok">{{ __("social.platforms.tiktok") }}</option>
                         </select>
 
                         <!-- Analysis Status -->
                         <select x-model="filters.is_analyzed" @change="loadPosts()"
                                 class="px-4 py-2.5 bg-gray-50 dark:bg-gray-900 border-0 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 dark:text-white">
-                            <option value="">جميع الحالات</option>
-                            <option value="1">تم التحليل</option>
-                            <option value="0">بانتظار التحليل</option>
+                            <option value="">{{ __("social.all_statuses") }}</option>
+                            <option value="1">{{ __("social.is_analyzed") }}</option>
+                            <option value="0">{{ __("social.waiting_analysis") }}</option>
                         </select>
 
                         <!-- KB Status -->
                         <select x-model="filters.is_in_kb" @change="loadPosts()"
                                 class="px-4 py-2.5 bg-gray-50 dark:bg-gray-900 border-0 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 dark:text-white">
-                            <option value="">قاعدة المعرفة</option>
-                            <option value="1">مضاف</option>
-                            <option value="0">غير مضاف</option>
+                            <option value="">{{ __("social.knowledge_base") }}</option>
+                            <option value="1">{{ __("social.kb_added") }}</option>
+                            <option value="0">{{ __("social.kb_not_added") }}</option>
                         </select>
 
                         <!-- View Toggle -->
@@ -219,7 +219,7 @@
                         <!-- Reset Filters -->
                         <button @click="resetFilters()"
                                 class="p-2.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl transition"
-                                title="إعادة تعيين الفلاتر">
+                                title="{{ __("social.reset_filters") }}">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
                             </svg>
@@ -231,16 +231,16 @@
                 <div x-show="selectedPosts.length > 0" x-transition class="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
                     <div class="flex flex-wrap items-center gap-3">
                         <span class="text-sm text-gray-600 dark:text-gray-400">
-                            تم تحديد <span class="font-bold text-blue-600" x-text="selectedPosts.length"></span> منشور
+                            {{ __("social.selected_count") }} <span class="font-bold text-blue-600" x-text="selectedPosts.length"></span>
                         </span>
                         <button @click="bulkAddToKB()" class="px-4 py-2 bg-purple-100 hover:bg-purple-200 text-purple-700 rounded-lg text-sm font-medium transition">
-                            إضافة إلى قاعدة المعرفة
+                            {{ __("social.add_to_kb") }}
                         </button>
                         <button @click="bulkAnalyze()" class="px-4 py-2 bg-green-100 hover:bg-green-200 text-green-700 rounded-lg text-sm font-medium transition">
-                            تحليل المحدد
+                            {{ __("social.analyze_selected") }}
                         </button>
                         <button @click="clearSelection()" class="px-4 py-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 text-sm transition">
-                            إلغاء التحديد
+                            {{ __("social.clear_selection") }}
                         </button>
                     </div>
                 </div>
@@ -250,7 +250,7 @@
         <!-- Loading State -->
         <div x-show="loading" x-transition class="flex flex-col items-center justify-center py-20">
             <div class="w-16 h-16 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mb-4"></div>
-            <p class="text-gray-500 dark:text-gray-400">جاري تحميل المنشورات...</p>
+            <p class="text-gray-500 dark:text-gray-400">{{ __("social.loading_posts") }}</p>
         </div>
 
         <!-- Grid View -->
@@ -307,7 +307,7 @@
                                 <svg class="w-12 h-12 text-gray-300 dark:text-gray-600 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                                 </svg>
-                                <p class="text-gray-700 dark:text-gray-300 text-sm line-clamp-3" x-text="post.content || 'لا يوجد محتوى'"></p>
+                                <p class="text-gray-700 dark:text-gray-300 text-sm line-clamp-3" x-text="post.content || '{{ __('social.no_content') }}'"></p>
                             </div>
                         </template>
 
@@ -348,9 +348,14 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
                                     </svg>
                                 </button>
-                                <button x-show="!post.is_in_knowledge_base" @click.stop="addToKB([post.id])" class="p-2 bg-purple-500 hover:bg-purple-600 rounded-full shadow transition">
+                                <button x-show="!post.is_in_knowledge_base" @click.stop="addToKB([post.id])" class="p-2 bg-purple-500 hover:bg-purple-600 rounded-full shadow transition" title="{{ __("social.add_to_kb") }}">
                                     <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                                    </svg>
+                                </button>
+                                <button @click.stop="openCampaignModal(post)" class="p-2 bg-blue-500 hover:bg-blue-600 rounded-full shadow transition" title="{{ __("social.add_to_campaign") }}">
+                                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
                                     </svg>
                                 </button>
                             </div>
@@ -360,7 +365,7 @@
                     <!-- Content Section -->
                     <div class="p-4">
                         <!-- Caption -->
-                        <p class="text-gray-700 dark:text-gray-300 text-sm line-clamp-2 mb-3" x-text="post.content || 'بدون تعليق'"></p>
+                        <p class="text-gray-700 dark:text-gray-300 text-sm line-clamp-2 mb-3" x-text="post.content || '{{ __('social.no_caption') }}'"></p>
 
                         <!-- Metrics -->
                         <div class="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400 mb-3">
@@ -407,7 +412,7 @@
                                 </span>
                                 <span x-show="post.is_analyzed"
                                       class="px-2 py-0.5 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 text-xs rounded-full">
-                                    محلل
+                                    {{ __("social.analyzed") }}
                                 </span>
                             </div>
                         </div>
@@ -477,16 +482,16 @@
                                         <span class="text-xs text-gray-500 dark:text-gray-400" x-text="formatDate(post.published_at)"></span>
                                         <span x-show="post.is_in_knowledge_base"
                                               class="px-2 py-0.5 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 text-xs rounded-full font-medium">
-                                            في قاعدة المعرفة
+                                            {{ __("social.in_knowledge_base") }}
                                         </span>
                                         <span x-show="post.is_analyzed"
                                               class="px-2 py-0.5 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 text-xs rounded-full font-medium">
-                                            تم التحليل
+                                            {{ __("social.is_analyzed") }}
                                         </span>
                                     </div>
 
                                     <!-- Caption -->
-                                    <p class="text-gray-700 dark:text-gray-300 text-sm md:text-base line-clamp-3 mb-4" x-text="post.content || 'بدون تعليق'"></p>
+                                    <p class="text-gray-700 dark:text-gray-300 text-sm md:text-base line-clamp-3 mb-4" x-text="post.content || '{{ __('social.no_caption') }}'"></p>
 
                                     <!-- Metrics Row -->
                                     <div class="flex flex-wrap items-center gap-4 mb-4">
@@ -513,7 +518,7 @@
 
                                         <!-- Success Score -->
                                         <div x-show="post.is_analyzed" class="flex items-center gap-2">
-                                            <span class="text-xs text-gray-500 dark:text-gray-400">درجة النجاح:</span>
+                                            <span class="text-xs text-gray-500 dark:text-gray-400">{{ __("social.success_score") }}:</span>
                                             <div class="w-24 h-2 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
                                                 <div class="h-full rounded-full"
                                                      :class="getScoreColorClass(post.success_score)"
@@ -528,23 +533,23 @@
                                     <div class="flex flex-wrap items-center gap-2">
                                         <button @click="viewPost(post)"
                                                 class="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg text-sm transition">
-                                            عرض التفاصيل
+                                            {{ __("social.view_details") }}
                                         </button>
                                         <button x-show="!post.is_analyzed" @click="analyzePost(post.id)"
                                                 class="px-3 py-1.5 bg-green-100 hover:bg-green-200 text-green-700 rounded-lg text-sm transition">
-                                            تحليل
+                                            {{ __("social.analyze") }}
                                         </button>
                                         <button x-show="!post.is_in_knowledge_base" @click="addToKB([post.id])"
                                                 class="px-3 py-1.5 bg-purple-100 hover:bg-purple-200 text-purple-700 rounded-lg text-sm transition">
-                                            إضافة للمعرفة
+                                            {{ __("social.add_to_knowledge") }}
                                         </button>
                                         <button x-show="post.is_in_knowledge_base" @click="removeFromKB([post.id])"
                                                 class="px-3 py-1.5 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg text-sm transition">
-                                            إزالة من المعرفة
+                                            {{ __("social.remove_from_knowledge") }}
                                         </button>
                                         <a x-show="post.permalink" :href="post.permalink" target="_blank"
                                            class="px-3 py-1.5 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 text-sm transition">
-                                            عرض الأصلي ←
+                                            {{ __("social.view_original") }} ←
                                         </a>
                                     </div>
                                 </div>
@@ -564,16 +569,16 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
                     </svg>
                 </div>
-                <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">لا توجد منشورات بعد</h3>
+                <h3 class="text-xl font-bold text-gray-900 dark:text-gray-white mb-2">{{ __("social.no_posts_yet") }}</h3>
                 <p class="text-gray-500 dark:text-gray-400 mb-8">
-                    ابدأ باستيراد محتواك التاريخي من منصات التواصل الاجتماعي لبناء قاعدة معرفة ذكية
+                    {{ __("social.empty_state_description") }}
                 </p>
                 <button @click="showImportModal = true"
                         class="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-6 py-3 rounded-xl font-medium shadow-lg shadow-blue-500/25 transition">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
                     </svg>
-                    استيراد المنشورات الآن
+                    {{ __("social.import_posts_now") }}
                 </button>
             </div>
         </div>
@@ -581,14 +586,14 @@
         <!-- Pagination -->
         <div x-show="!loading && posts.length > 0" class="mt-8 flex items-center justify-between">
             <p class="text-sm text-gray-500 dark:text-gray-400">
-                عرض <span class="font-medium text-gray-900 dark:text-white" x-text="posts.length"></span> منشور
+                {{ __("social.showing") }} <span class="font-medium text-gray-900 dark:text-white" x-text="posts.length"></span> {{ __("social.posts_count") }}
             </p>
             <div class="flex gap-2">
                 <button class="px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 transition disabled:opacity-50" disabled>
-                    السابق
+                    {{ __("social.previous") }}
                 </button>
                 <button class="px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 transition disabled:opacity-50" disabled>
-                    التالي
+                    {{ __("social.next") }}
                 </button>
             </div>
         </div>
@@ -620,8 +625,8 @@
                                 </svg>
                             </div>
                             <div>
-                                <h3 class="text-xl font-bold">استيراد المنشورات</h3>
-                                <p class="text-blue-100 text-sm">من حساباتك المتصلة</p>
+                                <h3 class="text-xl font-bold">{{ __("social.import_posts") }}</h3>
+                                <p class="text-blue-100 text-sm">{{ __("social.from_connected_accounts") }}</p>
                             </div>
                         </div>
                         <button @click="showImportModal = false" class="p-2 hover:bg-white/20 rounded-xl transition">
@@ -637,14 +642,14 @@
                     <!-- Platform Selection -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            اختر المنصة <span class="text-red-500">*</span>
+                            {{ __("social.select_platform") }} <span class="text-red-500">*</span>
                         </label>
                         <select x-model="importData.integration_id"
                                 class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border-0 rounded-xl focus:ring-2 focus:ring-blue-500 dark:text-white">
-                            <option value="">-- اختر منصة متصلة --</option>
+                            <option value="">-- {{ __("social.select_connected_platform") }} --</option>
                             <template x-for="integration in integrations" :key="integration.integration_id">
                                 <option :value="integration.integration_id"
-                                        x-text="getPlatformName(integration.platform_type) + ' - ' + (integration.account_name || integration.username || 'غير معروف')">
+                                        x-text="getPlatformName(integration.platform_type) + ' - ' + (integration.account_name || integration.username || '{{ __('social.unknown') }}')">
                                 </option>
                             </template>
                         </select>
@@ -653,12 +658,12 @@
                     <!-- Date Range -->
                     <div class="grid grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">من تاريخ</label>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ __("social.from_date") }}</label>
                             <input type="date" x-model="importData.start_date"
                                    class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border-0 rounded-xl focus:ring-2 focus:ring-blue-500 dark:text-white">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">إلى تاريخ</label>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ __("social.to_date") }}</label>
                             <input type="date" x-model="importData.end_date"
                                    class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border-0 rounded-xl focus:ring-2 focus:ring-blue-500 dark:text-white">
                         </div>
@@ -667,18 +672,18 @@
                     <!-- Limit -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            عدد المنشورات
+                            {{ __("social.number_of_posts") }}
                         </label>
                         <input type="number" x-model="importData.limit" min="1" max="500" placeholder="100"
                                class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border-0 rounded-xl focus:ring-2 focus:ring-blue-500 dark:text-white">
-                        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">الحد الأقصى: 500 منشور</p>
+                        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ __("social.max_limit_posts") }}</p>
                     </div>
 
                     <!-- Auto Analyze Toggle -->
                     <label class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-900 rounded-xl cursor-pointer group">
                         <div>
-                            <span class="font-medium text-gray-900 dark:text-white">تحليل تلقائي</span>
-                            <p class="text-sm text-gray-500 dark:text-gray-400">تحليل المنشورات بالذكاء الاصطناعي</p>
+                            <span class="font-medium text-gray-900 dark:text-white">{{ __("social.auto_analyze") }}</span>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">{{ __("social.ai_analyze_posts") }}</p>
                         </div>
                         <div class="relative">
                             <input type="checkbox" x-model="importData.auto_analyze" class="sr-only">
@@ -700,7 +705,7 @@
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
                                 </svg>
-                                بدء الاستيراد
+                                {{ __("social.start_import") }}
                             </span>
                         </template>
                         <template x-if="importing">
@@ -709,7 +714,7 @@
                                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                 </svg>
-                                جاري الاستيراد...
+                                {{ __("social.importing") }}...
                             </span>
                         </template>
                     </button>
@@ -808,28 +813,28 @@
                             <!-- Content -->
                             <div class="flex-1 overflow-y-auto p-6 custom-scrollbar">
                                 <!-- Caption -->
-                                <p class="text-gray-700 dark:text-gray-300 mb-6 whitespace-pre-wrap" x-text="selectedPost.content || 'بدون تعليق'"></p>
+                                <p class="text-gray-700 dark:text-gray-300 mb-6 whitespace-pre-wrap" x-text="selectedPost.content || '{{ __('social.no_caption') }}'"></p>
 
                                 <!-- Metrics -->
                                 <div class="grid grid-cols-3 gap-4 mb-6">
                                     <div class="text-center p-4 bg-gray-50 dark:bg-gray-900 rounded-xl">
                                         <p class="text-2xl font-bold text-gray-900 dark:text-white" x-text="formatNumber(getMetric(selectedPost, 'likes'))"></p>
-                                        <p class="text-xs text-gray-500 dark:text-gray-400">إعجاب</p>
+                                        <p class="text-xs text-gray-500 dark:text-gray-400">{{ __("social.likes") }}</p>
                                     </div>
                                     <div class="text-center p-4 bg-gray-50 dark:bg-gray-900 rounded-xl">
                                         <p class="text-2xl font-bold text-gray-900 dark:text-white" x-text="formatNumber(getMetric(selectedPost, 'comments'))"></p>
-                                        <p class="text-xs text-gray-500 dark:text-gray-400">تعليق</p>
+                                        <p class="text-xs text-gray-500 dark:text-gray-400">{{ __("social.comments") }}</p>
                                     </div>
                                     <div class="text-center p-4 bg-gray-50 dark:bg-gray-900 rounded-xl">
                                         <p class="text-2xl font-bold text-gray-900 dark:text-white" x-text="formatNumber(getMetric(selectedPost, 'shares'))"></p>
-                                        <p class="text-xs text-gray-500 dark:text-gray-400">مشاركة</p>
+                                        <p class="text-xs text-gray-500 dark:text-gray-400">{{ __("social.shares") }}</p>
                                     </div>
                                 </div>
 
                                 <!-- Success Score -->
                                 <div x-show="selectedPost.is_analyzed" class="mb-6 p-4 bg-gray-50 dark:bg-gray-900 rounded-xl">
                                     <div class="flex items-center justify-between mb-2">
-                                        <span class="text-sm font-medium text-gray-700 dark:text-gray-300">درجة النجاح</span>
+                                        <span class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ __("social.success_score") }}</span>
                                         <span class="text-lg font-bold" :class="getScoreTextClass(selectedPost.success_score)"
                                               x-text="((selectedPost.success_score || 0) * 100).toFixed(0) + '%'"></span>
                                     </div>
@@ -846,15 +851,15 @@
                                 <div class="flex flex-wrap gap-2 mb-6">
                                     <span x-show="selectedPost.is_in_knowledge_base"
                                           class="px-3 py-1.5 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-full text-sm font-medium">
-                                        في قاعدة المعرفة
+                                        {{ __("social.in_knowledge_base") }}
                                     </span>
                                     <span x-show="selectedPost.is_analyzed"
                                           class="px-3 py-1.5 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-full text-sm font-medium">
-                                        تم التحليل
+                                        {{ __("social.is_analyzed") }}
                                     </span>
                                     <span x-show="!selectedPost.is_analyzed"
                                           class="px-3 py-1.5 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300 rounded-full text-sm font-medium">
-                                        بانتظار التحليل
+                                        {{ __("social.waiting_analysis") }}
                                     </span>
                                 </div>
                             </div>
@@ -864,19 +869,23 @@
                                 <div class="flex flex-wrap gap-2">
                                     <button x-show="!selectedPost.is_analyzed" @click="analyzePost(selectedPost.id)"
                                             class="flex-1 py-3 bg-green-600 hover:bg-green-700 text-white rounded-xl font-medium transition">
-                                        تحليل المنشور
+                                        {{ __("social.analyze_post") }}
                                     </button>
                                     <button x-show="!selectedPost.is_in_knowledge_base" @click="addToKB([selectedPost.id])"
                                             class="flex-1 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-medium transition">
-                                        إضافة للمعرفة
+                                        {{ __("social.add_to_knowledge") }}
                                     </button>
                                     <button x-show="selectedPost.is_in_knowledge_base" @click="removeFromKB([selectedPost.id])"
                                             class="flex-1 py-3 bg-red-600 hover:bg-red-700 text-white rounded-xl font-medium transition">
-                                        إزالة من المعرفة
+                                        {{ __("social.remove_from_knowledge") }}
+                                    </button>
+                                    <button @click="showDetailModal = false; openCampaignModal(selectedPost)"
+                                            class="flex-1 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-medium transition">
+                                        {{ __("social.add_to_campaign_modal") }}
                                     </button>
                                     <a x-show="selectedPost.permalink" :href="selectedPost.permalink" target="_blank"
                                        class="px-6 py-3 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-xl font-medium transition text-center dark:text-white">
-                                        عرض الأصلي
+                                        {{ __("social.view_original") }}
                                     </a>
                                 </div>
                             </div>
@@ -902,13 +911,135 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                         </svg>
                     </div>
-                    <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">قاعدة المعرفة</h3>
+                    <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">{{ __("social.knowledge_base") }}</h3>
                     <p class="text-gray-500 dark:text-gray-400 mb-6">
-                        قاعدة المعرفة تحتوي على <span class="font-bold text-purple-600" x-text="stats.inKB"></span> منشور
+                        {{ __("social.kb_contains") }} <span class="font-bold text-purple-600" x-text="stats.inKB"></span> {{ __("social.posts_count") }}
                     </p>
                     <button @click="showKBModal = false"
                             class="px-6 py-3 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-xl font-medium transition dark:text-white">
-                        إغلاق
+                        {{ __("social.close") }}
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add to Campaign Modal -->
+    <div x-show="showCampaignModal" x-cloak
+         class="fixed inset-0 z-50 overflow-y-auto"
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition ease-in duration-200"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="fixed inset-0 bg-black/60 backdrop-blur-sm" @click="showCampaignModal = false"></div>
+            <div class="relative bg-white dark:bg-gray-800 rounded-3xl max-w-lg w-full shadow-2xl"
+                 x-transition:enter="transition ease-out duration-300"
+                 x-transition:enter-start="opacity-0 scale-95"
+                 x-transition:enter-end="opacity-100 scale-100">
+
+                <!-- Header -->
+                <div class="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-t-3xl p-6 text-white">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-bold">{{ __("social.add_to_campaign_modal") }}</h3>
+                                <p class="text-blue-100 text-sm">{{ __("social.add_post_to_existing_campaign") }}</p>
+                            </div>
+                        </div>
+                        <button @click="showCampaignModal = false" class="p-2 hover:bg-white/20 rounded-xl transition">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Body -->
+                <div class="p-6 space-y-5">
+                    <!-- Campaign Selection -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            {{ __("social.select_campaign") }} <span class="text-red-500">*</span>
+                        </label>
+                        <select x-model="campaignData.campaign_id"
+                                class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border-0 rounded-xl focus:ring-2 focus:ring-blue-500 dark:text-white">
+                            <option value="">-- {{ __("social.choose_campaign") }} --</option>
+                            <template x-for="campaign in campaigns" :key="campaign.campaign_id">
+                                <option :value="campaign.campaign_id" x-text="campaign.name"></option>
+                            </template>
+                        </select>
+                        <p x-show="campaigns.length === 0" class="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                            {{ __("social.no_campaigns_available") }}
+                        </p>
+                    </div>
+
+                    <!-- Creative Type -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            {{ __("social.ad_type") }}
+                        </label>
+                        <div class="grid grid-cols-3 gap-3">
+                            <label class="relative cursor-pointer">
+                                <input type="radio" x-model="campaignData.creative_type" value="image" class="sr-only">
+                                <div class="p-4 border-2 rounded-xl text-center transition"
+                                     :class="campaignData.creative_type === 'image' ? 'border-blue-600 bg-blue-50 dark:bg-blue-900/20' : 'border-gray-200 dark:border-gray-700'">
+                                    <svg class="w-8 h-8 mx-auto mb-2" :class="campaignData.creative_type === 'image' ? 'text-blue-600' : 'text-gray-400'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                    </svg>
+                                    <p class="text-xs font-medium" :class="campaignData.creative_type === 'image' ? 'text-blue-600 dark:text-blue-400' : 'text-gray-600 dark:text-gray-400'">{{ __("social.post_types.image") }}</p>
+                                </div>
+                            </label>
+                            <label class="relative cursor-pointer">
+                                <input type="radio" x-model="campaignData.creative_type" value="video" class="sr-only">
+                                <div class="p-4 border-2 rounded-xl text-center transition"
+                                     :class="campaignData.creative_type === 'video' ? 'border-blue-600 bg-blue-50 dark:bg-blue-900/20' : 'border-gray-200 dark:border-gray-700'">
+                                    <svg class="w-8 h-8 mx-auto mb-2" :class="campaignData.creative_type === 'video' ? 'text-blue-600' : 'text-gray-400'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                                    </svg>
+                                    <p class="text-xs font-medium" :class="campaignData.creative_type === 'video' ? 'text-blue-600 dark:text-blue-400' : 'text-gray-600 dark:text-gray-400'">{{ __("social.post_types.video") }}</p>
+                                </div>
+                            </label>
+                            <label class="relative cursor-pointer">
+                                <input type="radio" x-model="campaignData.creative_type" value="carousel" class="sr-only">
+                                <div class="p-4 border-2 rounded-xl text-center transition"
+                                     :class="campaignData.creative_type === 'carousel' ? 'border-blue-600 bg-blue-50 dark:bg-blue-900/20' : 'border-gray-200 dark:border-gray-700'">
+                                    <svg class="w-8 h-8 mx-auto mb-2" :class="campaignData.creative_type === 'carousel' ? 'text-blue-600' : 'text-gray-400'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h4a1 1 0 011 1v7a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM14 5a1 1 0 011-1h4a1 1 0 011 1v7a1 1 0 01-1 1h-4a1 1 0 01-1-1V5z"/>
+                                    </svg>
+                                    <p class="text-xs font-medium" :class="campaignData.creative_type === 'carousel' ? 'text-blue-600 dark:text-blue-400' : 'text-gray-600 dark:text-gray-400'">{{ __("social.post_types.carousel") }}</p>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Post Preview -->
+                    <div x-show="selectedPostForCampaign" class="p-4 bg-gray-50 dark:bg-gray-900 rounded-xl">
+                        <p class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">{{ __("social.post_preview") }}</p>
+                        <p class="text-sm text-gray-700 dark:text-gray-300 line-clamp-2" x-text="selectedPostForCampaign?.content || 'بدون تعليق'"></p>
+                    </div>
+                </div>
+
+                <!-- Footer -->
+                <div class="p-6 pt-0 flex gap-3">
+                    <button @click="showCampaignModal = false"
+                            class="flex-1 py-3 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-xl font-medium transition dark:text-white">
+                        {{ __("social.cancel") }}
+                    </button>
+                    <button @click="addToCampaign()"
+                            :disabled="!campaignData.campaign_id"
+                            class="flex-1 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 disabled:from-gray-400 disabled:to-gray-400 text-white font-bold rounded-xl shadow-lg shadow-blue-500/25 disabled:shadow-none transition flex items-center justify-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                        </svg>
+                        {{ __("social.add_to_campaign_button") }}
                     </button>
                 </div>
             </div>
@@ -936,6 +1067,8 @@ function historicalContentManager(orgId, csrfToken) {
         showImportModal: false,
         showKBModal: false,
         showDetailModal: false,
+        showCampaignModal: false,
+        selectedPostForCampaign: null,
         selectedPost: null,
         currentMediaIndex: 0,
         searchQuery: '',
@@ -959,12 +1092,17 @@ function historicalContentManager(orgId, csrfToken) {
             end_date: '',
             auto_analyze: true
         },
+        campaignData: {
+            campaign_id: '',
+            creative_type: 'image'
+        },
 
         init() {
             if (!this.orgId) return;
 
             this.loadIntegrations();
             this.loadPosts();
+            this.loadCampaigns();
 
             // Set default date range
             const today = new Date();
@@ -1063,34 +1201,58 @@ function historicalContentManager(orgId, csrfToken) {
 
         async analyzePost(postId) {
             try {
-                await fetch(`/orgs/${this.orgId}/social/history/api/posts/${postId}/analyze`, {
+                const response = await fetch(`/orgs/${this.orgId}/social/history/api/posts/${postId}/analyze`, {
                     method: 'POST',
                     headers: {
                         'Accept': 'application/json',
                         'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': this.csrfToken
+                        'X-CSRF-TOKEN': this.csrfToken,
+                        'X-Requested-With': 'XMLHttpRequest'
                     }
                 });
-                setTimeout(() => this.loadPosts(), 2000);
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    console.log('✓ {{ __('social.post_sent_for_analysis') }}');
+                    // Reload posts after 2 seconds to get updated analysis status
+                    setTimeout(() => this.loadPosts(), 2000);
+                } else {
+                    console.error('Failed to analyze:', data.message || 'Unknown error');
+                    alert('{{ __('social.analysis_failed_try_again') }}');
+                }
             } catch (error) {
                 console.error('Failed to analyze:', error);
+                alert('حدث خطأ في الاتصال. الرجاء المحاولة مرة أخرى.');
             }
         },
 
         async addToKB(postIds) {
             try {
-                await fetch(`/orgs/${this.orgId}/social/history/api/kb/add`, {
+                const response = await fetch(`/orgs/${this.orgId}/social/history/api/kb/add`, {
                     method: 'POST',
                     headers: {
                         'Accept': 'application/json',
                         'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': this.csrfToken
+                        'X-CSRF-TOKEN': this.csrfToken,
+                        'X-Requested-With': 'XMLHttpRequest'
                     },
                     body: JSON.stringify({ post_ids: postIds })
                 });
-                this.loadPosts();
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    // Show success notification (optional)
+                    console.log('✓ تمت الإضافة إلى قاعدة المعرفة بنجاح');
+                    this.loadPosts();
+                } else {
+                    console.error('Failed to add to KB:', data.message || 'Unknown error');
+                    alert('فشل في إضافة المنشور إلى قاعدة المعرفة. الرجاء المحاولة مرة أخرى.');
+                }
             } catch (error) {
                 console.error('Failed to add to KB:', error);
+                alert('حدث خطأ في الاتصال. الرجاء المحاولة مرة أخرى.');
             }
         },
 
@@ -1128,6 +1290,62 @@ function historicalContentManager(orgId, csrfToken) {
         resetFilters() {
             this.filters = { profile_group_id: '', platform: '', is_analyzed: '', is_in_kb: '', min_success_score: 0 };
             this.loadPosts();
+        },
+
+        async loadCampaigns() {
+            try {
+                const response = await fetch(`/orgs/${this.orgId}/campaigns/api`, {
+                    credentials: 'same-origin',
+                    headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+                });
+                const data = await response.json();
+                if (data.success) {
+                    this.campaigns = data.data?.data || data.data || [];
+                }
+            } catch (error) {
+                console.error('Failed to load campaigns:', error);
+            }
+        },
+
+        openCampaignModal(post) {
+            this.selectedPostForCampaign = post;
+            this.campaignData.campaign_id = '';
+            this.campaignData.creative_type = 'image';
+            this.showCampaignModal = true;
+        },
+
+        async addToCampaign() {
+            if (!this.campaignData.campaign_id || !this.selectedPostForCampaign) return;
+
+            try {
+                const response = await fetch(`/orgs/${this.orgId}/social/history/api/posts/${this.selectedPostForCampaign.post_id}/add-to-campaign`, {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': this.csrfToken,
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: JSON.stringify({
+                        campaign_id: this.campaignData.campaign_id,
+                        creative_type: this.campaignData.creative_type
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    this.showCampaignModal = false;
+                    alert('✓ تمت إضافة المنشور إلى الحملة بنجاح');
+                    this.loadPosts();
+                } else {
+                    console.error('Failed to add to campaign:', data.message || 'Unknown error');
+                    alert(data.message || 'فشل في إضافة المنشور إلى الحملة. الرجاء المحاولة مرة أخرى.');
+                }
+            } catch (error) {
+                console.error('Failed to add to campaign:', error);
+                alert('حدث خطأ في الاتصال. الرجاء المحاولة مرة أخرى.');
+            }
         },
 
         viewPost(post) {

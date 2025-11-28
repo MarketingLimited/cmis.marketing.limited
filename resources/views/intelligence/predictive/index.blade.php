@@ -4,8 +4,8 @@
     $currentOrg = $currentOrg ?? request()->route('org') ?? auth()->user()->active_org_id ?? auth()->user()->org_id;
 @endphp
 
-@section('page-title', 'التحليلات التنبؤية')
-@section('page-subtitle', 'نماذج الذكاء الاصطناعي للتنبؤ بالأداء والميزانيات')
+@section('page-title', __('predictive.page_title'))
+@section('page-subtitle', __('predictive.page_subtitle'))
 
 @section('content')
 <div x-data="predictiveAnalytics()" x-init="init()">
@@ -14,7 +14,7 @@
         <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl shadow-lg p-6 text-white">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-purple-100 text-sm mb-1">النماذج النشطة</p>
+                    <p class="text-purple-100 text-sm mb-1">{{ __('predictive.stats.active_models') }}</p>
                     <p class="text-3xl font-bold" x-text="stats.activeModels"></p>
                 </div>
                 <i class="fas fa-brain text-5xl text-purple-300 opacity-50"></i>
@@ -24,7 +24,7 @@
         <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg p-6 text-white">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-blue-100 text-sm mb-1">التنبؤات اليوم</p>
+                    <p class="text-blue-100 text-sm mb-1">{{ __('predictive.stats.predictions_today') }}</p>
                     <p class="text-3xl font-bold" x-text="stats.todayPredictions"></p>
                 </div>
                 <i class="fas fa-chart-line text-5xl text-blue-300 opacity-50"></i>
@@ -34,7 +34,7 @@
         <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl shadow-lg p-6 text-white">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-green-100 text-sm mb-1">دقة النماذج</p>
+                    <p class="text-green-100 text-sm mb-1">{{ __('predictive.stats.model_accuracy') }}</p>
                     <p class="text-3xl font-bold" x-text="stats.accuracy + '%'"></p>
                 </div>
                 <i class="fas fa-bullseye text-5xl text-green-300 opacity-50"></i>
@@ -44,7 +44,7 @@
         <div class="bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl shadow-lg p-6 text-white">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-orange-100 text-sm mb-1">التوفير المتوقع</p>
+                    <p class="text-orange-100 text-sm mb-1">{{ __('predictive.stats.predicted_savings') }}</p>
                     <p class="text-3xl font-bold" x-text="stats.predictedSavings.toLocaleString()"></p>
                 </div>
                 <i class="fas fa-piggy-bank text-5xl text-orange-300 opacity-50"></i>
@@ -61,26 +61,26 @@
                     <div class="bg-purple-100 p-3 rounded-lg">
                         <i class="fas fa-coins text-purple-600 text-2xl"></i>
                     </div>
-                    <div class="mr-3">
-                        <h3 class="font-bold text-gray-900">توقع الميزانيات</h3>
-                        <p class="text-sm text-gray-600">التنبؤ بالإنفاق المستقبلي</p>
+                    <div class="ms-3">
+                        <h3 class="font-bold text-gray-900">{{ __('predictive.models.budget_forecasting.title') }}</h3>
+                        <p class="text-sm text-gray-600">{{ __('predictive.models.budget_forecasting.description') }}</p>
                     </div>
                 </div>
-                <span class="px-2 py-1 bg-red-100 text-red-800 rounded text-xs font-medium">قيد التطوير</span>
+                <span class="px-2 py-1 bg-red-100 text-red-800 rounded text-xs font-medium">{{ __('predictive.status.in_development') }}</span>
             </div>
             <div class="space-y-3">
                 <div class="flex items-center justify-between text-sm">
-                    <span class="text-gray-600">الدقة المتوقعة</span>
+                    <span class="text-gray-600">{{ __('predictive.labels.expected_accuracy') }}</span>
                     <span class="font-bold text-gray-900">-</span>
                 </div>
                 <div class="flex items-center justify-between text-sm">
-                    <span class="text-gray-600">آخر تدريب</span>
-                    <span class="font-bold text-gray-900">لم يبدأ</span>
+                    <span class="text-gray-600">{{ __('predictive.labels.last_training') }}</span>
+                    <span class="font-bold text-gray-900">{{ __('predictive.labels.not_started') }}</span>
                 </div>
             </div>
             <button class="w-full mt-4 bg-gray-100 text-gray-600 py-2 rounded-lg font-medium cursor-not-allowed" disabled>
-                <i class="fas fa-lock ml-2"></i>
-                غير متوفر
+                <i class="fas fa-lock ms-2"></i>
+                {{ __('common.not_available') }}
             </button>
         </div>
 
@@ -91,26 +91,26 @@
                     <div class="bg-blue-100 p-3 rounded-lg">
                         <i class="fas fa-chart-line text-blue-600 text-2xl"></i>
                     </div>
-                    <div class="mr-3">
-                        <h3 class="font-bold text-gray-900">توقع الأداء</h3>
-                        <p class="text-sm text-gray-600">تنبؤات CTR, CVR, ROAS</p>
+                    <div class="ms-3">
+                        <h3 class="font-bold text-gray-900">{{ __('predictive.models.performance_prediction.title') }}</h3>
+                        <p class="text-sm text-gray-600">{{ __('predictive.models.performance_prediction.description') }}</p>
                     </div>
                 </div>
-                <span class="px-2 py-1 bg-red-100 text-red-800 rounded text-xs font-medium">قيد التطوير</span>
+                <span class="px-2 py-1 bg-red-100 text-red-800 rounded text-xs font-medium">{{ __('predictive.status.in_development') }}</span>
             </div>
             <div class="space-y-3">
                 <div class="flex items-center justify-between text-sm">
-                    <span class="text-gray-600">الدقة المتوقعة</span>
+                    <span class="text-gray-600">{{ __('predictive.labels.expected_accuracy') }}</span>
                     <span class="font-bold text-gray-900">-</span>
                 </div>
                 <div class="flex items-center justify-between text-sm">
-                    <span class="text-gray-600">آخر تدريب</span>
-                    <span class="font-bold text-gray-900">لم يبدأ</span>
+                    <span class="text-gray-600">{{ __('predictive.labels.last_training') }}</span>
+                    <span class="font-bold text-gray-900">{{ __('predictive.labels.not_started') }}</span>
                 </div>
             </div>
             <button class="w-full mt-4 bg-gray-100 text-gray-600 py-2 rounded-lg font-medium cursor-not-allowed" disabled>
-                <i class="fas fa-lock ml-2"></i>
-                غير متوفر
+                <i class="fas fa-lock ms-2"></i>
+                {{ __('common.not_available') }}
             </button>
         </div>
 
@@ -121,26 +121,26 @@
                     <div class="bg-red-100 p-3 rounded-lg">
                         <i class="fas fa-user-slash text-red-600 text-2xl"></i>
                     </div>
-                    <div class="mr-3">
-                        <h3 class="font-bold text-gray-900">توقع فقدان العملاء</h3>
-                        <p class="text-sm text-gray-600">تحديد العملاء المعرضين للخطر</p>
+                    <div class="ms-3">
+                        <h3 class="font-bold text-gray-900">{{ __('predictive.models.churn_prediction.title') }}</h3>
+                        <p class="text-sm text-gray-600">{{ __('predictive.models.churn_prediction.description') }}</p>
                     </div>
                 </div>
-                <span class="px-2 py-1 bg-red-100 text-red-800 rounded text-xs font-medium">قيد التطوير</span>
+                <span class="px-2 py-1 bg-red-100 text-red-800 rounded text-xs font-medium">{{ __('predictive.status.in_development') }}</span>
             </div>
             <div class="space-y-3">
                 <div class="flex items-center justify-between text-sm">
-                    <span class="text-gray-600">الدقة المتوقعة</span>
+                    <span class="text-gray-600">{{ __('predictive.labels.expected_accuracy') }}</span>
                     <span class="font-bold text-gray-900">-</span>
                 </div>
                 <div class="flex items-center justify-between text-sm">
-                    <span class="text-gray-600">آخر تدريب</span>
-                    <span class="font-bold text-gray-900">لم يبدأ</span>
+                    <span class="text-gray-600">{{ __('predictive.labels.last_training') }}</span>
+                    <span class="font-bold text-gray-900">{{ __('predictive.labels.not_started') }}</span>
                 </div>
             </div>
             <button class="w-full mt-4 bg-gray-100 text-gray-600 py-2 rounded-lg font-medium cursor-not-allowed" disabled>
-                <i class="fas fa-lock ml-2"></i>
-                غير متوفر
+                <i class="fas fa-lock ms-2"></i>
+                {{ __('common.not_available') }}
             </button>
         </div>
 
@@ -151,26 +151,26 @@
                     <div class="bg-yellow-100 p-3 rounded-lg">
                         <i class="fas fa-exclamation-triangle text-yellow-600 text-2xl"></i>
                     </div>
-                    <div class="mr-3">
-                        <h3 class="font-bold text-gray-900">كشف الشذوذ</h3>
-                        <p class="text-sm text-gray-600">اكتشاف أنماط غير عادية</p>
+                    <div class="ms-3">
+                        <h3 class="font-bold text-gray-900">{{ __('predictive.models.anomaly_detection.title') }}</h3>
+                        <p class="text-sm text-gray-600">{{ __('predictive.models.anomaly_detection.description') }}</p>
                     </div>
                 </div>
-                <span class="px-2 py-1 bg-red-100 text-red-800 rounded text-xs font-medium">قيد التطوير</span>
+                <span class="px-2 py-1 bg-red-100 text-red-800 rounded text-xs font-medium">{{ __('predictive.status.in_development') }}</span>
             </div>
             <div class="space-y-3">
                 <div class="flex items-center justify-between text-sm">
-                    <span class="text-gray-600">الدقة المتوقعة</span>
+                    <span class="text-gray-600">{{ __('predictive.labels.expected_accuracy') }}</span>
                     <span class="font-bold text-gray-900">-</span>
                 </div>
                 <div class="flex items-center justify-between text-sm">
-                    <span class="text-gray-600">آخر تدريب</span>
-                    <span class="font-bold text-gray-900">لم يبدأ</span>
+                    <span class="text-gray-600">{{ __('predictive.labels.last_training') }}</span>
+                    <span class="font-bold text-gray-900">{{ __('predictive.labels.not_started') }}</span>
                 </div>
             </div>
             <button class="w-full mt-4 bg-gray-100 text-gray-600 py-2 rounded-lg font-medium cursor-not-allowed" disabled>
-                <i class="fas fa-lock ml-2"></i>
-                غير متوفر
+                <i class="fas fa-lock ms-2"></i>
+                {{ __('common.not_available') }}
             </button>
         </div>
 
@@ -181,26 +181,26 @@
                     <div class="bg-green-100 p-3 rounded-lg">
                         <i class="fas fa-trophy text-green-600 text-2xl"></i>
                     </div>
-                    <div class="mr-3">
-                        <h3 class="font-bold text-gray-900">توقع القيمة الدائمة</h3>
-                        <p class="text-sm text-gray-600">تقدير CLV للعملاء</p>
+                    <div class="ms-3">
+                        <h3 class="font-bold text-gray-900">{{ __('predictive.models.ltv_prediction.title') }}</h3>
+                        <p class="text-sm text-gray-600">{{ __('predictive.models.ltv_prediction.description') }}</p>
                     </div>
                 </div>
-                <span class="px-2 py-1 bg-red-100 text-red-800 rounded text-xs font-medium">قيد التطوير</span>
+                <span class="px-2 py-1 bg-red-100 text-red-800 rounded text-xs font-medium">{{ __('predictive.status.in_development') }}</span>
             </div>
             <div class="space-y-3">
                 <div class="flex items-center justify-between text-sm">
-                    <span class="text-gray-600">الدقة المتوقعة</span>
+                    <span class="text-gray-600">{{ __('predictive.labels.expected_accuracy') }}</span>
                     <span class="font-bold text-gray-900">-</span>
                 </div>
                 <div class="flex items-center justify-between text-sm">
-                    <span class="text-gray-600">آخر تدريب</span>
-                    <span class="font-bold text-gray-900">لم يبدأ</span>
+                    <span class="text-gray-600">{{ __('predictive.labels.last_training') }}</span>
+                    <span class="font-bold text-gray-900">{{ __('predictive.labels.not_started') }}</span>
                 </div>
             </div>
             <button class="w-full mt-4 bg-gray-100 text-gray-600 py-2 rounded-lg font-medium cursor-not-allowed" disabled>
-                <i class="fas fa-lock ml-2"></i>
-                غير متوفر
+                <i class="fas fa-lock ms-2"></i>
+                {{ __('common.not_available') }}
             </button>
         </div>
 
@@ -211,26 +211,26 @@
                     <div class="bg-indigo-100 p-3 rounded-lg">
                         <i class="fas fa-gavel text-indigo-600 text-2xl"></i>
                     </div>
-                    <div class="mr-3">
-                        <h3 class="font-bold text-gray-900">تحسين العروض</h3>
-                        <p class="text-sm text-gray-600">استراتيجيات العروض الذكية</p>
+                    <div class="ms-3">
+                        <h3 class="font-bold text-gray-900">{{ __('predictive.models.bid_optimization.title') }}</h3>
+                        <p class="text-sm text-gray-600">{{ __('predictive.models.bid_optimization.description') }}</p>
                     </div>
                 </div>
-                <span class="px-2 py-1 bg-red-100 text-red-800 rounded text-xs font-medium">قيد التطوير</span>
+                <span class="px-2 py-1 bg-red-100 text-red-800 rounded text-xs font-medium">{{ __('predictive.status.in_development') }}</span>
             </div>
             <div class="space-y-3">
                 <div class="flex items-center justify-between text-sm">
-                    <span class="text-gray-600">الدقة المتوقعة</span>
+                    <span class="text-gray-600">{{ __('predictive.labels.expected_accuracy') }}</span>
                     <span class="font-bold text-gray-900">-</span>
                 </div>
                 <div class="flex items-center justify-between text-sm">
-                    <span class="text-gray-600">آخر تدريب</span>
-                    <span class="font-bold text-gray-900">لم يبدأ</span>
+                    <span class="text-gray-600">{{ __('predictive.labels.last_training') }}</span>
+                    <span class="font-bold text-gray-900">{{ __('predictive.labels.not_started') }}</span>
                 </div>
             </div>
             <button class="w-full mt-4 bg-gray-100 text-gray-600 py-2 rounded-lg font-medium cursor-not-allowed" disabled>
-                <i class="fas fa-lock ml-2"></i>
-                غير متوفر
+                <i class="fas fa-lock ms-2"></i>
+                {{ __('common.not_available') }}
             </button>
         </div>
     </div>
@@ -238,18 +238,18 @@
     <!-- Recent Predictions -->
     <div class="bg-white rounded-xl shadow-sm p-6">
         <h3 class="text-xl font-bold text-gray-900 mb-4">
-            <i class="fas fa-history text-indigo-600 ml-2"></i>
-            التنبؤات الأخيرة
+            <i class="fas fa-history text-indigo-600 ms-2"></i>
+            {{ __('predictive.recent_predictions') }}
         </h3>
 
         <div class="text-center py-12">
             <i class="fas fa-robot text-gray-300 text-6xl mb-4"></i>
-            <h4 class="text-xl font-bold text-gray-900 mb-2">لا توجد تنبؤات حاليًا</h4>
-            <p class="text-gray-600 mb-6">النماذج التنبؤية قيد التطوير</p>
+            <h4 class="text-xl font-bold text-gray-900 mb-2">{{ __('predictive.no_predictions') }}</h4>
+            <p class="text-gray-600 mb-6">{{ __('predictive.models_in_development') }}</p>
             <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 max-w-2xl mx-auto">
                 <p class="text-sm text-blue-800">
-                    <i class="fas fa-info-circle ml-2"></i>
-                    سيتم إطلاق نماذج الذكاء الاصطناعي التنبؤية قريبًا لمساعدتك في اتخاذ قرارات أفضل بناءً على البيانات التاريخية وتحليل الأنماط.
+                    <i class="fas fa-info-circle ms-2"></i>
+                    {{ __('predictive.coming_soon_message') }}
                 </p>
             </div>
         </div>
@@ -271,35 +271,35 @@ function predictiveAnalytics() {
         models: [
             {
                 id: 'budget-forecasting',
-                name: 'توقع الميزانيات',
+                name: '{{ __('predictive.models.budget_forecasting.title') }}',
                 status: 'development',
                 accuracy: null,
                 lastTrained: null
             },
             {
                 id: 'performance-prediction',
-                name: 'توقع الأداء',
+                name: '{{ __('predictive.models.performance_prediction.title') }}',
                 status: 'development',
                 accuracy: null,
                 lastTrained: null
             },
             {
                 id: 'churn-prediction',
-                name: 'توقع فقدان العملاء',
+                name: '{{ __('predictive.models.churn_prediction.title') }}',
                 status: 'development',
                 accuracy: null,
                 lastTrained: null
             },
             {
                 id: 'anomaly-detection',
-                name: 'كشف الشذوذ',
+                name: '{{ __('predictive.models.anomaly_detection.title') }}',
                 status: 'development',
                 accuracy: null,
                 lastTrained: null
             },
             {
                 id: 'ltv-prediction',
-                name: 'توقع القيمة الدائمة',
+                name: '{{ __('predictive.models.ltv_prediction.title') }}',
                 status: 'development',
                 accuracy: null,
                 lastTrained: null
@@ -335,8 +335,8 @@ function predictiveAnalytics() {
         },
 
         formatDate(date) {
-            if (!date) return 'لم يبدأ';
-            return new Date(date).toLocaleDateString('ar-SA', {
+            if (!date) return '{{ __('predictive.labels.not_started') }}';
+            return new Date(date).toLocaleDateString('{{ app()->getLocale() }}'{{ app()->getLocale() === 'ar' ? '-SA' : '' }}, {
                 year: 'numeric',
                 month: 'short',
                 day: 'numeric'

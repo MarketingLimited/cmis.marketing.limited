@@ -108,7 +108,7 @@ class AnomalyController extends Controller
         }
 
         return redirect()->route('anomalies.show', $anomaly->anomaly_id)
-            ->with('success', 'Anomaly resolved successfully');
+            ->with('success', __('intelligence.anomaly_resolved_successfully'));
     }
 
     /**
@@ -124,7 +124,7 @@ class AnomalyController extends Controller
         }
 
         return redirect()->route('anomalies.index')
-            ->with('success', 'Anomaly marked as false positive');
+            ->with('success', __('intelligence.anomaly_marked_as_false_positive'));
     }
 
     /**
@@ -140,7 +140,7 @@ class AnomalyController extends Controller
         }
 
         return redirect()->route('anomalies.show', $anomaly->anomaly_id)
-            ->with('success', 'Anomaly marked as investigating');
+            ->with('success', __('intelligence.anomaly_marked_as_investigating'));
     }
 
     /**

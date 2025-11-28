@@ -116,7 +116,7 @@ class CampaignAdController extends Controller
 
             return redirect()
                 ->route('org.campaigns.ad-sets.ads.show', [$org, $campaignId, $adSetId, $ad->ad_id])
-                ->with('success', 'Ad created successfully');
+                ->with('success', __('campaignad.created_success'));
         } catch (\Exception $e) {
             if ($request->wantsJson()) {
                 return $this->serverError('Failed to create ad: ' . $e->getMessage());
@@ -222,7 +222,7 @@ class CampaignAdController extends Controller
 
             return redirect()
                 ->route('org.campaigns.ad-sets.ads.show', [$org, $campaignId, $adSetId, $adId])
-                ->with('success', 'Ad updated successfully');
+                ->with('success', __('campaignad.updated_success'));
         } catch (\Exception $e) {
             if ($request->wantsJson()) {
                 return $this->serverError('Failed to update ad: ' . $e->getMessage());
@@ -249,7 +249,7 @@ class CampaignAdController extends Controller
 
             return redirect()
                 ->route('org.campaigns.ad-sets.ads.index', [$org, $campaignId, $adSetId])
-                ->with('success', 'Ad deleted successfully');
+                ->with('success', __('campaignad.deleted_success'));
         } catch (\Exception $e) {
             if ($request->wantsJson()) {
                 return $this->serverError('Failed to delete ad: ' . $e->getMessage());
@@ -286,7 +286,7 @@ class CampaignAdController extends Controller
 
             return redirect()
                 ->route('org.campaigns.ad-sets.ads.edit', [$org, $campaignId, $adSetId, $newAd->ad_id])
-                ->with('success', 'Ad duplicated successfully');
+                ->with('success', __('campaignad.ad_duplicated_successfully'));
         } catch (\Exception $e) {
             if ($request->wantsJson()) {
                 return $this->serverError('Failed to duplicate ad: ' . $e->getMessage());
@@ -319,7 +319,7 @@ class CampaignAdController extends Controller
                 return $this->success($ad->fresh(), 'Ad status updated successfully');
             }
 
-            return back()->with('success', 'Ad status updated successfully');
+            return back()->with('success', __('campaignad.updated_success'));
         } catch (\Exception $e) {
             if ($request->wantsJson()) {
                 return $this->serverError('Failed to update status: ' . $e->getMessage());

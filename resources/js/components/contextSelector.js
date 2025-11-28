@@ -58,7 +58,7 @@ export default function contextSelector() {
                     throw new Error(data.message || 'Failed to load context');
                 }
             } catch (error) {
-                console.error('Context load error:', error);
+                console.error(__('javascript.context_load_error'), error);
                 this.error = error.message;
             } finally {
                 this.isLoading = false;
@@ -87,7 +87,7 @@ export default function contextSelector() {
                     this.organizations = data.organizations;
                 }
             } catch (error) {
-                console.error('Organizations load error:', error);
+                console.error(__('javascript.organizations_load_error'), error);
             }
         },
 
@@ -139,7 +139,7 @@ export default function contextSelector() {
                     throw new Error(data.message || 'Failed to switch organization');
                 }
             } catch (error) {
-                console.error('Switch organization error:', error);
+                console.error(__('javascript.switch_organization_error'), error);
                 this.error = error.message;
                 this.showNotification(error.message, 'error');
             } finally {

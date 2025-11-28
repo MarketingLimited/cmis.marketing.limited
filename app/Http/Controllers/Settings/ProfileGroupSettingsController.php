@@ -113,7 +113,7 @@ class ProfileGroupSettingsController extends Controller
             }
 
             return redirect()->route('orgs.settings.profile-groups.show', ['org' => $org, 'group' => $profileGroup->group_id])
-                ->with('success', 'Profile group created successfully');
+                ->with('success', __('settings.created_success'));
         } catch (\Exception $e) {
             if ($request->wantsJson()) {
                 return $this->serverError('Failed to create profile group: ' . $e->getMessage());
@@ -221,7 +221,7 @@ class ProfileGroupSettingsController extends Controller
             }
 
             return redirect()->route('orgs.settings.profile-groups.show', ['org' => $org, 'group' => $group])
-                ->with('success', 'Profile group updated successfully');
+                ->with('success', __('settings.updated_success'));
         } catch (\Exception $e) {
             if ($request->wantsJson()) {
                 return $this->serverError('Failed to update profile group: ' . $e->getMessage());
@@ -247,7 +247,7 @@ class ProfileGroupSettingsController extends Controller
             }
 
             return redirect()->route('orgs.settings.profile-groups.index', ['org' => $org])
-                ->with('success', 'Profile group deleted successfully');
+                ->with('success', __('settings.deleted_success'));
         } catch (\Exception $e) {
             if ($request->wantsJson()) {
                 return $this->serverError('Failed to delete profile group: ' . $e->getMessage());
@@ -310,7 +310,7 @@ class ProfileGroupSettingsController extends Controller
                 return $this->created($member, 'Member added successfully');
             }
 
-            return back()->with('success', 'Member added successfully');
+            return back()->with('success', __('settings.member_added_successfully'));
         } catch (\Exception $e) {
             if ($request->wantsJson()) {
                 return $this->serverError('Failed to add member: ' . $e->getMessage());
@@ -346,7 +346,7 @@ class ProfileGroupSettingsController extends Controller
                 return $this->success($memberRecord, 'Member role updated successfully');
             }
 
-            return back()->with('success', 'Member role updated successfully');
+            return back()->with('success', __('settings.updated_success'));
         } catch (\Exception $e) {
             if ($request->wantsJson()) {
                 return $this->serverError('Failed to update member: ' . $e->getMessage());
@@ -371,7 +371,7 @@ class ProfileGroupSettingsController extends Controller
                 return $this->deleted('Member removed successfully');
             }
 
-            return back()->with('success', 'Member removed successfully');
+            return back()->with('success', __('settings.member_removed_successfully'));
         } catch (\Exception $e) {
             if ($request->wantsJson()) {
                 return $this->serverError('Failed to remove member: ' . $e->getMessage());
@@ -437,7 +437,7 @@ class ProfileGroupSettingsController extends Controller
                 return $this->success($integration, 'Profile attached successfully');
             }
 
-            return back()->with('success', 'Profile attached successfully');
+            return back()->with('success', __('settings.profile_attached_successfully'));
         } catch (\Exception $e) {
             if ($request->wantsJson()) {
                 return $this->serverError('Failed to attach profile: ' . $e->getMessage());
@@ -463,7 +463,7 @@ class ProfileGroupSettingsController extends Controller
                 return $this->deleted('Profile detached successfully');
             }
 
-            return back()->with('success', 'Profile detached successfully');
+            return back()->with('success', __('settings.profile_detached_successfully'));
         } catch (\Exception $e) {
             if ($request->wantsJson()) {
                 return $this->serverError('Failed to detach profile: ' . $e->getMessage());

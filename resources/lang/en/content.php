@@ -28,6 +28,18 @@ return [
         'template' => 'Template',
         'story' => 'Story',
         'article' => 'Article',
+        'post' => 'Post',
+        'ad' => 'Ad',
+        'email' => 'Email',
+    ],
+
+    // Content Type Labels (Full Names)
+    'type_labels' => [
+        'post' => 'Social Media Post',
+        'ad' => 'Advertisement',
+        'email' => 'Email Campaign',
+        'article' => 'Article/Blog',
+        'video' => 'Video Content',
     ],
 
     // Actions
@@ -203,6 +215,38 @@ return [
     'no_templates' => 'No templates',
     'no_plans' => 'No content plans',
     'create_first_content' => 'Create First Content',
+    'no_content_yet' => 'No content yet',
+    'start_creating' => 'Start creating content for your campaigns',
+
+    // Filters & Labels
+    'new_content' => 'New Content',
+    'all_types' => 'All Types',
+    'all_statuses' => 'All Statuses',
+    'no_campaign' => 'No campaign association',
+    'select_type' => 'Select content type',
+    'content_type' => 'Content Type',
+    'required_field' => 'Required',
+    'enter_title' => 'Enter content title',
+    'enter_content' => 'Enter your content here...',
+    'html_support' => 'Supports plain text and basic HTML formatting',
+    'campaign_association' => 'Associated Campaign',
+    'target_platforms' => 'Target Platforms',
+    'update_image' => 'Update Featured Image',
+    'keep_current' => 'Leave blank to keep current image',
+    'current_image' => 'Current Image',
+    'schedule_optional' => 'Schedule For (Optional)',
+    'tag_separator' => 'Tags (comma-separated)',
+    'tag_example' => 'e.g., marketing, product launch, social media',
+    'image_formats' => 'Supported formats: JPG, PNG, GIF (Max: 5MB)',
+    'view_details' => 'View Details',
+    'update_content' => 'Update Content',
+    'create_new' => 'Create New Content',
+    'edit' => 'Edit',
+    'back_to_library' => 'Back to Content Library',
+    'search_placeholder' => 'Search content...',
+    'published_on' => 'Published on',
+    'scheduled_for_date' => 'Scheduled for',
+    'no_content_provided' => 'No content provided.',
 
     // Help Text
     'help' => [

@@ -98,7 +98,7 @@ class AdAccountSettingsController extends Controller
             }
 
             return redirect()->route('orgs.settings.ad-accounts.show', ['org' => $org, 'account' => $adAccount->account_id])
-                ->with('success', 'Ad account created successfully');
+                ->with('success', __('settings.created_success'));
         } catch (\Exception $e) {
             if ($request->wantsJson()) {
                 return $this->serverError('Failed to create ad account: ' . $e->getMessage());
@@ -189,7 +189,7 @@ class AdAccountSettingsController extends Controller
             }
 
             return redirect()->route('orgs.settings.ad-accounts.show', ['org' => $org, 'account' => $account])
-                ->with('success', 'Ad account updated successfully');
+                ->with('success', __('settings.updated_success'));
         } catch (\Exception $e) {
             if ($request->wantsJson()) {
                 return $this->serverError('Failed to update ad account: ' . $e->getMessage());
@@ -215,7 +215,7 @@ class AdAccountSettingsController extends Controller
             }
 
             return redirect()->route('orgs.settings.ad-accounts.index', ['org' => $org])
-                ->with('success', 'Ad account deleted successfully');
+                ->with('success', __('settings.deleted_success'));
         } catch (\Exception $e) {
             if ($request->wantsJson()) {
                 return $this->serverError('Failed to delete ad account: ' . $e->getMessage());
@@ -307,7 +307,7 @@ class AdAccountSettingsController extends Controller
             }
 
             return redirect()->route('orgs.settings.ad-accounts.show', ['org' => $org, 'account' => $account])
-                ->with('success', 'Ad account synced successfully');
+                ->with('success', __('settings.ad_account_synced_successfully'));
         } catch (\App\Exceptions\FeatureDisabledException $e) {
             if ($request->wantsJson()) {
                 return $this->error($e->getMessage(), 403);
@@ -338,14 +338,14 @@ class AdAccountSettingsController extends Controller
             // Test connection first
             $testResult = $platformService->testConnection();
             if (!$testResult['success']) {
-                throw new \Exception('Platform connection failed: ' . ($testResult['error'] ?? 'Unknown error'));
+                throw new \Exception(__('settings.platform_connection_failed', ['error' => ($testResult['error'] ?? 'Unknown error')]));
             }
 
             // Sync account to get ad account list
             $syncResult = $platformService->syncAccount();
 
             if (!$syncResult['success']) {
-                throw new \Exception('Failed to fetch ad accounts: ' . ($syncResult['error'] ?? 'Unknown error'));
+                throw new \Exception(__('settings.ad_accounts_fetch_failed', ['error' => ($syncResult['error'] ?? 'Unknown error')]));
             }
 
             $importedAccounts = [];

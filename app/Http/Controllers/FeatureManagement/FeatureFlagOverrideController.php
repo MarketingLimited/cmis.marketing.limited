@@ -59,7 +59,7 @@ class FeatureFlagOverrideController extends Controller
         }
 
         return redirect()->route('feature-flags.show', $flagId)
-            ->with('success', 'Override created successfully');
+            ->with('success', __('features.created_success'));
     }
 
     /**
@@ -101,7 +101,7 @@ class FeatureFlagOverrideController extends Controller
         }
 
         return redirect()->route('feature-flags.show', $flagId)
-            ->with('success', 'Override updated successfully');
+            ->with('success', __('features.updated_success'));
     }
 
     /**
@@ -119,7 +119,7 @@ class FeatureFlagOverrideController extends Controller
         }
 
         return redirect()->route('feature-flags.show', $flagId)
-            ->with('success', 'Override deleted successfully');
+            ->with('success', __('features.deleted_success'));
     }
 
     /**
@@ -137,7 +137,7 @@ class FeatureFlagOverrideController extends Controller
         }
 
         return redirect()->route('feature-flags.show', $flagId)
-            ->with('success', 'Override activated successfully');
+            ->with('success', __('features.activated_success'));
     }
 
     /**
@@ -155,7 +155,7 @@ class FeatureFlagOverrideController extends Controller
         }
 
         return redirect()->route('feature-flags.show', $flagId)
-            ->with('success', 'Override deactivated successfully');
+            ->with('success', __('features.activated_success'));
     }
 
     /**

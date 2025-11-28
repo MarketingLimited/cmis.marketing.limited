@@ -104,7 +104,7 @@ class AutomationRulesController extends Controller
         }
 
         return redirect()->route('automation.rules.show', $rule->rule_id)
-            ->with('success', 'Automation rule created successfully');
+            ->with('success', __('automation.created_success'));
     }
 
     /**
@@ -154,7 +154,7 @@ class AutomationRulesController extends Controller
         }
 
         return redirect()->route('automation.rules.show', $rule->rule_id)
-            ->with('success', 'Automation rule updated successfully');
+            ->with('success', __('automation.updated_success'));
     }
 
     /**
@@ -170,7 +170,7 @@ class AutomationRulesController extends Controller
         }
 
         return redirect()->route('automation.rules.index')
-            ->with('success', 'Automation rule deleted successfully');
+            ->with('success', __('automation.deleted_success'));
     }
 
     /**

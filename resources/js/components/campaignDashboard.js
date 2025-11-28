@@ -76,7 +76,7 @@ export default function campaignDashboard(campaignId = null) {
                     throw new Error(data.message || 'Failed to load metrics');
                 }
             } catch (error) {
-                console.error('Metrics load error:', error);
+                console.error(__('javascript.metrics_load_error'), error);
                 this.error = error.message;
             } finally {
                 this.isLoading = false;
@@ -111,7 +111,7 @@ export default function campaignDashboard(campaignId = null) {
                     this.$nextTick(() => this.renderTrendCharts());
                 }
             } catch (error) {
-                console.error('Trends load error:', error);
+                console.error(__('javascript.trends_load_error'), error);
             }
         },
 
@@ -149,7 +149,7 @@ export default function campaignDashboard(campaignId = null) {
                     throw new Error(data.message || 'Failed to load campaigns');
                 }
             } catch (error) {
-                console.error('Top performing load error:', error);
+                console.error(__('javascript.top_performing_load_error'), error);
                 this.error = error.message;
             } finally {
                 this.isLoading = false;

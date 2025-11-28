@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CMIS Analytics Report</title>
+    <title>{{ __('emails.one_time_report.subject') }}</title>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
@@ -77,45 +77,45 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>Analytics Report</h1>
-            <p>{{ ucfirst(str_replace('_', ' ', $reportType)) }} Report</p>
+            <h1>{{ __('emails.one_time_report.title') }}</h1>
+            <p>{{ __('emails.one_time_report.report_type', ['type' => ucfirst(str_replace('_', ' ', $reportType))]) }}</p>
         </div>
 
         <div class="content">
-            <p>Hello,</p>
+            <p>{{ __('emails.one_time_report.hello') }}</p>
 
-            <p>Your requested analytics report has been generated and is ready for download.</p>
+            <p>{{ __('emails.one_time_report.ready_message') }}</p>
 
             <div class="info-box">
-                <p><strong>Report Type:</strong> {{ ucfirst(str_replace('_', ' ', $reportType)) }}</p>
-                <p><strong>Generated:</strong> {{ $generatedAt }}</p>
+                <p><strong>{{ __('emails.one_time_report.report_type_label') }}:</strong> {{ ucfirst(str_replace('_', ' ', $reportType)) }}</p>
+                <p><strong>{{ __('emails.one_time_report.generated') }}:</strong> {{ $generatedAt }}</p>
                 @if($expiresAt)
-                <p><strong>Expires:</strong> {{ $expiresAt }}</p>
+                <p><strong>{{ __('emails.one_time_report.expires') }}:</strong> {{ $expiresAt }}</p>
                 @endif
             </div>
 
             @if($fileUrl)
-            <p>Click the button below to download your report:</p>
+            <p>{{ __('emails.one_time_report.click_to_download') }}</p>
 
             <div style="text-align: center;">
-                <a href="{{ $fileUrl }}" class="button">Download Report</a>
+                <a href="{{ $fileUrl }}" class="button">{{ __('emails.one_time_report.download_button') }}</a>
             </div>
 
             <p style="font-size: 14px; color: #7f8c8d; margin-top: 20px;">
-                <strong>Note:</strong> This download link will expire in 7 days for security purposes.
+                <strong>{{ __('emails.one_time_report.note') }}</strong> {{ __('emails.one_time_report.expires_note') }}
             </p>
             @endif
 
-            <p>If you need to generate additional reports or schedule automated delivery, please visit the Analytics Dashboard.</p>
+            <p>{{ __('emails.one_time_report.additional_reports') }}</p>
         </div>
 
         <div class="footer">
             <p>
-                This report was generated on request from CMIS Analytics.<br>
-                <a href="#">Analytics Dashboard</a> | <a href="#">Help Center</a>
+                {{ __('emails.one_time_report.automated_message') }}<br>
+                <a href="#">{{ __('emails.one_time_report.analytics_dashboard') }}</a> | <a href="#">{{ __('emails.one_time_report.help_center') }}</a>
             </p>
             <p style="margin-top: 10px;">
-                © {{ date('Y') }} CMIS - Cognitive Marketing Information System
+                © {{ date('Y') }} {{ __('emails.one_time_report.copyright') }}
             </p>
         </div>
     </div>

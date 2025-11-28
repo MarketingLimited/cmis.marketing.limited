@@ -72,6 +72,7 @@ class User extends Authenticatable
         'password',
         'role',
         'status',
+        'locale', // User's preferred language (ar/en)
         'current_org_id',
         'email_verified_at',
         'remember_token',

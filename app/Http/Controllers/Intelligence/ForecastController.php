@@ -72,7 +72,7 @@ class ForecastController extends Controller
         }
 
         return redirect()->route('forecasts.show', $forecast->forecast_id)
-            ->with('success', 'Forecast created successfully');
+            ->with('success', __('intelligence.created_success'));
     }
 
     /**
@@ -122,7 +122,7 @@ class ForecastController extends Controller
         }
 
         return redirect()->route('forecasts.show', $forecast->forecast_id)
-            ->with('success', 'Forecast updated successfully');
+            ->with('success', __('intelligence.updated_success'));
     }
 
     /**
@@ -138,7 +138,7 @@ class ForecastController extends Controller
         }
 
         return redirect()->route('forecasts.index')
-            ->with('success', 'Forecast deleted successfully');
+            ->with('success', __('intelligence.deleted_success'));
     }
 
     /**

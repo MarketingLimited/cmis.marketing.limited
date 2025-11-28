@@ -121,7 +121,7 @@ class CampaignAdSetController extends Controller
 
             return redirect()
                 ->route('org.campaigns.ad-sets.show', [$org, $campaignId, $adSet->ad_set_id])
-                ->with('success', 'Ad set created successfully');
+                ->with('success', __('campaignadset.created_success'));
         } catch (\Exception $e) {
             if ($request->wantsJson()) {
                 return $this->serverError('Failed to create ad set: ' . $e->getMessage());
@@ -230,7 +230,7 @@ class CampaignAdSetController extends Controller
 
             return redirect()
                 ->route('org.campaigns.ad-sets.show', [$org, $campaignId, $adSetId])
-                ->with('success', 'Ad set updated successfully');
+                ->with('success', __('campaignadset.updated_success'));
         } catch (\Exception $e) {
             if ($request->wantsJson()) {
                 return $this->serverError('Failed to update ad set: ' . $e->getMessage());
@@ -257,7 +257,7 @@ class CampaignAdSetController extends Controller
 
             return redirect()
                 ->route('org.campaigns.ad-sets.index', [$org, $campaignId])
-                ->with('success', 'Ad set deleted successfully');
+                ->with('success', __('campaignadset.deleted_success'));
         } catch (\Exception $e) {
             if ($request->wantsJson()) {
                 return $this->serverError('Failed to delete ad set: ' . $e->getMessage());
@@ -291,7 +291,7 @@ class CampaignAdSetController extends Controller
 
             return redirect()
                 ->route('org.campaigns.ad-sets.edit', [$org, $campaignId, $newAdSet->ad_set_id])
-                ->with('success', 'Ad set duplicated successfully');
+                ->with('success', __('campaignadset.ad_set_duplicated_successfully'));
         } catch (\Exception $e) {
             if ($request->wantsJson()) {
                 return $this->serverError('Failed to duplicate ad set: ' . $e->getMessage());
@@ -324,7 +324,7 @@ class CampaignAdSetController extends Controller
                 return $this->success($adSet->fresh(), 'Ad set status updated successfully');
             }
 
-            return back()->with('success', 'Ad set status updated successfully');
+            return back()->with('success', __('campaignadset.updated_success'));
         } catch (\Exception $e) {
             if ($request->wantsJson()) {
                 return $this->serverError('Failed to update status: ' . $e->getMessage());

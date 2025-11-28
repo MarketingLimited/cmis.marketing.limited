@@ -12,6 +12,8 @@ return [
     */
 
     // Page Titles
+    'title' => 'Analytics',
+    'code' => 'Analytics',
     'analytics' => 'Analytics',
     'analytics_dashboard' => 'Analytics Dashboard',
     'realtime_analytics' => 'Real-Time Analytics',

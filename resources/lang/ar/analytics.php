@@ -12,6 +12,8 @@ return [
     */
 
     // Page Titles
+    'title' => 'التحليلات',
+    'code' => 'Analytics',
     'analytics' => 'التحليلات',
     'analytics_dashboard' => 'لوحة التحليلات',
     'realtime_analytics' => 'التحليلات الفورية',

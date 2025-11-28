@@ -67,7 +67,7 @@ class DashboardWidgetController extends Controller
         }
 
         return redirect()->route('dashboards.show', $dashboardId)
-            ->with('success', 'Widget created successfully');
+            ->with('success', __('dashboardwidget.created_success'));
     }
 
     /**
@@ -115,7 +115,7 @@ class DashboardWidgetController extends Controller
         }
 
         return redirect()->route('dashboards.show', $dashboardId)
-            ->with('success', 'Widget updated successfully');
+            ->with('success', __('dashboardwidget.updated_success'));
     }
 
     /**
@@ -133,7 +133,7 @@ class DashboardWidgetController extends Controller
         }
 
         return redirect()->route('dashboards.show', $dashboardId)
-            ->with('success', 'Widget deleted successfully');
+            ->with('success', __('dashboardwidget.deleted_success'));
     }
 
     /**
@@ -193,7 +193,7 @@ class DashboardWidgetController extends Controller
         }
 
         return redirect()->route('dashboards.show', $dashboardId)
-            ->with('success', 'Widget duplicated successfully');
+            ->with('success', __('dashboardwidget.widget_duplicated_successfully'));
     }
 
     /**

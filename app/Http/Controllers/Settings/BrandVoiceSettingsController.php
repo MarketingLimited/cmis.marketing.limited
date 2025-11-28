@@ -105,7 +105,7 @@ class BrandVoiceSettingsController extends Controller
             }
 
             return redirect()->route('orgs.settings.brand-voices.show', ['org' => $org, 'voice' => $brandVoice->voice_id])
-                ->with('success', 'Brand voice created successfully');
+                ->with('success', __('settings.created_success'));
         } catch (\Exception $e) {
             if ($request->wantsJson()) {
                 return $this->serverError('Failed to create brand voice: ' . $e->getMessage());
@@ -212,7 +212,7 @@ class BrandVoiceSettingsController extends Controller
             }
 
             return redirect()->route('orgs.settings.brand-voices.show', ['org' => $org, 'voice' => $voice])
-                ->with('success', 'Brand voice updated successfully');
+                ->with('success', __('settings.updated_success'));
         } catch (\Exception $e) {
             if ($request->wantsJson()) {
                 return $this->serverError('Failed to update brand voice: ' . $e->getMessage());
@@ -238,7 +238,7 @@ class BrandVoiceSettingsController extends Controller
             }
 
             return redirect()->route('orgs.settings.brand-voices.index', ['org' => $org])
-                ->with('success', 'Brand voice deleted successfully');
+                ->with('success', __('settings.deleted_success'));
         } catch (\Exception $e) {
             if ($request->wantsJson()) {
                 return $this->serverError('Failed to delete brand voice: ' . $e->getMessage());

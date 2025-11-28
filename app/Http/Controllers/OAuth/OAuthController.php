@@ -52,7 +52,7 @@ class OAuthController extends Controller
             ]);
 
             return redirect()->route('integrations.index')
-                ->with('error', 'Failed to initiate OAuth: ' . $e->getMessage());
+                ->with('error', __('oauth.initiate_failed', ['error' => $e->getMessage()]));
         }
     }
 
@@ -72,24 +72,24 @@ class OAuthController extends Controller
             $sessionPlatform = session('oauth_platform');
 
             if (!$state || !$expectedState || !hash_equals($expectedState, $state)) {
-                throw new \Exception('Invalid state parameter - possible CSRF attack');
+                throw new \Exception(__('oauth.invalid'));
             }
 
             if ($platform !== $sessionPlatform) {
-                throw new \Exception('Platform mismatch');
+                throw new \Exception(__('oauth.platform_mismatch'));
             }
 
             // Check for error in callback
             if ($request->has('error')) {
                 $error = $request->get('error');
                 $errorDescription = $request->get('error_description', $error);
-                throw new \Exception("OAuth error: $errorDescription");
+                throw new \Exception(__('oauth.auth_error', ['error' => $errorDescription]));
             }
 
             // Get authorization code
             $code = $request->get('code');
             if (!$code) {
-                throw new \Exception('Authorization code not provided');
+                throw new \Exception(__('oauth.authorization_code_not_provided'));
             }
 
             // Exchange code for access token and create integration
@@ -120,7 +120,7 @@ class OAuthController extends Controller
             session()->forget(['oauth_state', 'oauth_platform']);
 
             return redirect()->route('integrations.index')
-                ->with('error', 'OAuth failed: ' . $e->getMessage());
+                ->with('error', __('oauth.auth_failed', ['error' => $e->getMessage()]));
         }
     }
 
@@ -137,7 +137,7 @@ class OAuthController extends Controller
             $integrationId = $request->get('integration_id');
 
             if (!$integrationId) {
-                throw new \Exception('Integration ID required');
+                throw new \Exception(__('oauth.integration_id_required'));
             }
 
             $this->oauthService->revokeIntegration($integrationId, auth()->user());
@@ -157,7 +157,7 @@ class OAuthController extends Controller
             ]);
 
             return redirect()->back()
-                ->with('error', 'Failed to disconnect: ' . $e->getMessage());
+                ->with('error', __('oauth.disconnect_failed', ['error' => $e->getMessage()]));
         }
     }
 }

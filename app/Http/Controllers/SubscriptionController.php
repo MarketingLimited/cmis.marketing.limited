@@ -117,7 +117,7 @@ class SubscriptionController extends Controller
 
         // Prevent downgrade to same plan
         if ($requestedPlan === $currentPlan) {
-            return redirect()->back()->with('warning', 'You are already on the ' . ucfirst($currentPlan) . ' plan.');
+            return redirect()->back()->with('warning', __('common.already_on_plan', ['plan' => ucfirst($currentPlan)]));
         }
 
         // For enterprise plan, redirect to contact sales

@@ -75,7 +75,7 @@ class CreativeBriefController extends Controller
             ", [json_encode($validated)])[0]->is_valid ?? false;
 
             if (!$isValid) {
-                return back()->with('error', 'هيكل البريف غير صحيح')->withInput();
+                return back()->with('error', __('creative_briefs.'))->withInput();
             }
 
             $briefId = DB::table('cmis.creative_briefs')->insertGetId([
@@ -100,10 +100,10 @@ class CreativeBriefController extends Controller
                 Log::warning('Failed to generate brief summary: ' . $e->getMessage());
             }
 
-            return redirect()->route('orgs.briefs.show', ['org' => $org, 'briefId' => $briefId])->with('success', 'تم إنشاء البريف بنجاح');
+            return redirect()->route('orgs.briefs.show', ['org' => $org, 'briefId' => $briefId])->with('success', __('creative_briefs.created_success'));
         } catch (\Exception $e) {
             Log::error('Brief store error: ' . $e->getMessage());
-            return back()->with('error', 'فشل إنشاء البريف')->withInput();
+            return back()->with('error', __('creative_briefs.operation_failed'))->withInput();
         }
     }
 
@@ -123,7 +123,7 @@ class CreativeBriefController extends Controller
             ", [$briefId, $org]);
 
             if (!$brief) {
-                return redirect()->route('orgs.briefs.index', ['org' => $org])->with('error', 'البريف غير موجود');
+                return redirect()->route('orgs.briefs.index', ['org' => $org])->with('error', __('creative_briefs.'));
             }
 
             // Decode JSON fields
@@ -135,7 +135,7 @@ class CreativeBriefController extends Controller
             return view('briefs.show', compact('brief'));
         } catch (\Exception $e) {
             Log::error('Brief show error: ' . $e->getMessage());
-            return redirect()->route('orgs.briefs.index', ['org' => $org])->with('error', 'فشل تحميل البريف');
+            return redirect()->route('orgs.briefs.index', ['org' => $org])->with('error', __('creative_briefs.operation_failed'));
         }
     }
 
@@ -155,10 +155,10 @@ class CreativeBriefController extends Controller
                     'updated_at' => now(),
                 ]);
 
-            return redirect()->route('orgs.briefs.show', ['org' => $org, 'briefId' => $briefId])->with('success', 'تمت الموافقة على البريف');
+            return redirect()->route('orgs.briefs.show', ['org' => $org, 'briefId' => $briefId])->with('success', __('creative_briefs.'));
         } catch (\Exception $e) {
             Log::error('Brief approve error: ' . $e->getMessage());
-            return back()->with('error', 'فشلت الموافقة على البريف');
+            return back()->with('error', __('creative_briefs.operation_failed'));
         }
     }
 }

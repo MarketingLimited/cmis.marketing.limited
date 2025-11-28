@@ -65,7 +65,7 @@ class ABTestVariantController extends Controller
         }
 
         return redirect()->route('ab-testing.tests.show', $testId)
-            ->with('success', 'Variant created successfully');
+            ->with('success', __('ab_testing.created_success'));
     }
 
     /**
@@ -118,7 +118,7 @@ class ABTestVariantController extends Controller
         }
 
         return redirect()->route('ab-testing.tests.show', $testId)
-            ->with('success', 'Variant updated successfully');
+            ->with('success', __('ab_testing.updated_success'));
     }
 
     /**
@@ -140,7 +140,7 @@ class ABTestVariantController extends Controller
         }
 
         return redirect()->route('ab-testing.tests.show', $testId)
-            ->with('success', 'Variant deleted successfully');
+            ->with('success', __('ab_testing.deleted_success'));
     }
 
     /**

@@ -114,7 +114,7 @@ class TeamWebController extends Controller
             ->first();
 
         if ($existingInvitation) {
-            return back()->with('error', 'An invitation has already been sent to this email.');
+            return back()->with('error', __('web.an_invitation_has_already_been_sent_to_this_email'));
         }
 
         // Create invitation
@@ -138,6 +138,6 @@ class TeamWebController extends Controller
             'url' => $invitationUrl
         ]);
 
-        return back()->with('success', "Invitation sent to {$validated['email']}!");
+        return back()->with('success', __('common.invitation_sent', ['email' => $validated['email']]));
     }
 }

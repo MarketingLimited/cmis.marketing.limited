@@ -247,7 +247,7 @@ class OrgController extends Controller
 
             return redirect()
                 ->route('orgs.show', $org->org_id)
-                ->with('success', 'تم إنشاء المؤسسة بنجاح');
+                ->with('success', __('organizations.created_success'));
 
         } catch (\Exception $e) {
             DB::rollBack();
@@ -268,7 +268,7 @@ class OrgController extends Controller
             return redirect()
                 ->back()
                 ->withInput()
-                ->with('error', 'فشل إنشاء المؤسسة: ' . $e->getMessage());
+                ->with('error', __('organizations.create_failed', ['error' => $e->getMessage()]));
         }
     }
 
@@ -523,7 +523,7 @@ class OrgController extends Controller
             ->values();
 
         if ($campaignIds->count() < 2) {
-            return redirect()->back()->with('error', 'يجب اختيار حملتين على الأقل للمقارنة.');
+            return redirect()->back()->with('error', __('organizations.minimum_selection_required'));
         }
 
         $campaigns = Campaign::query()
@@ -534,7 +534,7 @@ class OrgController extends Controller
             ->get();
 
         if ($campaigns->isEmpty()) {
-            return redirect()->back()->with('error', 'لم يتم العثور على الحملات المحددة.');
+            return redirect()->back()->with('error', __('organizations.not_found'));
         }
 
         $metrics = CampaignPerformanceMetric::query()

@@ -103,7 +103,7 @@ class RecommendationController extends Controller
         }
 
         return redirect()->route('recommendations.show', $recommendation->recommendation_id)
-            ->with('success', 'Recommendation applied successfully');
+            ->with('success', __('intelligence.applied_success'));
     }
 
     /**
@@ -127,7 +127,7 @@ class RecommendationController extends Controller
         }
 
         return redirect()->route('recommendations.index')
-            ->with('success', 'Recommendation rejected');
+            ->with('success', __('intelligence.rejected'));
     }
 
     /**
@@ -151,7 +151,7 @@ class RecommendationController extends Controller
         }
 
         return redirect()->route('recommendations.index')
-            ->with('success', 'Recommendation dismissed');
+            ->with('success', __('intelligence.dismissed'));
     }
 
     /**
@@ -181,7 +181,7 @@ class RecommendationController extends Controller
         }
 
         return redirect()->route('recommendations.show', $recommendation->recommendation_id)
-            ->with('success', 'Feedback recorded successfully');
+            ->with('success', __('intelligence.recorded_success'));
     }
 
     /**

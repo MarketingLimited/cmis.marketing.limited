@@ -1,18 +1,18 @@
 @extends('layouts.admin')
 
-@section('title', 'Users')
+@section('title', __('users.title'))
 
 @section('content')
 <div x-data="usersPage()" x-init="loadUsers()">
     <div class="mb-6 flex justify-between items-center">
         <div>
-            <h1 class="text-3xl font-bold text-gray-900">Users</h1>
-            <p class="text-gray-600 mt-1">Manage organization users and permissions</p>
+            <h1 class="text-3xl font-bold text-gray-900">{{ __('users.title') }}</h1>
+            <p class="text-gray-600 mt-1">{{ __('users.manage_users_desc') }}</p>
         </div>
         @can('invite', App\Models\User::class)
         <button @click="showInviteModal = true" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center">
-            <i class="fas fa-user-plus mr-2"></i>
-            Invite User
+            <i class="fas fa-user-plus me-2"></i>
+            {{ __('users.invite_user') }}
         </button>
         @endcan
     </div>
@@ -21,7 +21,7 @@
     <div class="bg-white rounded-lg shadow p-4 mb-6">
         <div class="flex gap-4">
             <div class="flex-1">
-                <input type="text" x-model="search" @input="loadUsers()" placeholder="Search users..."
+                <input type="text" x-model="search" @input="loadUsers()" placeholder="{{ __('users.search_users') }}"
                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
             </div>
             <button @click="loadUsers()" class="bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded-lg">
@@ -35,12 +35,12 @@
         <table class="min-w-full divide-y divide-gray-200">
             <thead class="bg-gray-50">
                 <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Joined</th>
-                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                    <th class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('users.user') }}</th>
+                    <th class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('users.email') }}</th>
+                    <th class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('users.role') }}</th>
+                    <th class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('users.status') }}</th>
+                    <th class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('users.joined') }}</th>
+                    <th class="px-6 py-3 text-end text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('common.actions') }}</th>
                 </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
@@ -51,7 +51,7 @@
                                 <div class="h-10 w-10 flex-shrink-0 bg-blue-100 rounded-full flex items-center justify-center">
                                     <span class="text-blue-600 font-medium" x-text="user.display_name?.charAt(0) || 'U'"></span>
                                 </div>
-                                <div class="ml-4">
+                                <div class="ms-4">
                                     <div class="text-sm font-medium text-gray-900" x-text="user.display_name"></div>
                                 </div>
                             </div>
@@ -77,12 +77,12 @@
                                 x-text="user.status"></span>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="formatDate(user.joined_at)"></td>
-                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                            <button @click="viewUser(user.id || user.user_id)" class="text-blue-600 hover:text-blue-900 mr-3">
+                        <td class="px-6 py-4 whitespace-nowrap text-end text-sm font-medium">
+                            <button @click="viewUser(user.id || user.user_id)" class="text-blue-600 hover:text-blue-900 me-3">
                                 <i class="fas fa-eye"></i>
                             </button>
                             @can('assignRole', App\Models\User::class)
-                            <button @click="editRole(user)" class="text-indigo-600 hover:text-indigo-900 mr-3">
+                            <button @click="editRole(user)" class="text-indigo-600 hover:text-indigo-900 me-3">
                                 <i class="fas fa-user-tag"></i>
                             </button>
                             @endcan
@@ -100,29 +100,29 @@
         <!-- Loading State -->
         <div x-show="loading" class="p-8 text-center">
             <i class="fas fa-spinner fa-spin text-3xl text-gray-400"></i>
-            <p class="text-gray-600 mt-2">Loading users...</p>
+            <p class="text-gray-600 mt-2">{{ __('users.loading_users') }}</p>
         </div>
 
         <!-- Empty State -->
         <div x-show="!loading && users.length === 0" class="p-8 text-center">
             <i class="fas fa-users text-4xl text-gray-300 mb-4"></i>
-            <p class="text-gray-600">No users found</p>
+            <p class="text-gray-600">{{ __('users.no_users_found') }}</p>
         </div>
     </div>
 
     <!-- Pagination -->
     <div x-show="pagination.total > pagination.per_page" class="mt-6 flex justify-between items-center">
         <div class="text-sm text-gray-700">
-            Showing <span x-text="pagination.from"></span> to <span x-text="pagination.to"></span> of <span x-text="pagination.total"></span> users
+            {{ __('users.showing') }} <span x-text="pagination.from"></span> {{ __('users.to') }} <span x-text="pagination.to"></span> {{ __('users.of') }} <span x-text="pagination.total"></span> {{ __('users.users_count') }}
         </div>
         <div class="flex gap-2">
             <button @click="loadUsers(pagination.current_page - 1)" :disabled="pagination.current_page === 1"
                 class="px-3 py-1 border border-gray-300 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50">
-                Previous
+                {{ __('common.previous') }}
             </button>
             <button @click="loadUsers(pagination.current_page + 1)" :disabled="pagination.current_page === pagination.last_page"
                 class="px-3 py-1 border border-gray-300 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50">
-                Next
+                {{ __('common.next') }}
             </button>
         </div>
     </div>
@@ -131,22 +131,22 @@
     <div x-show="showInviteModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50" x-cloak>
         <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
             <div class="flex justify-between items-center mb-4">
-                <h3 class="text-lg font-medium">Invite User</h3>
+                <h3 class="text-lg font-medium">{{ __('users.invite_user_title') }}</h3>
                 <button @click="showInviteModal = false" class="text-gray-400 hover:text-gray-500">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
             <form @submit.prevent="inviteUser()">
                 <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('users.email') }}</label>
                     <input type="email" x-model="inviteForm.email" required
                         class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
                 </div>
                 <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Role</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('users.role') }}</label>
                     <select x-model="inviteForm.role_id" required
                         class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
-                        <option value="">Select a role</option>
+                        <option value="">{{ __('users.select_role') }}</option>
                         <template x-for="role in roles" :key="role.role_id">
                             <option :value="role.role_id" x-text="role.role_name"></option>
                         </template>
@@ -155,10 +155,10 @@
                 <div class="flex justify-end gap-2">
                     <button type="button" @click="showInviteModal = false"
                         class="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50">
-                        Cancel
+                        {{ __('common.cancel') }}
                     </button>
                     <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
-                        Send Invitation
+                        {{ __('users.send_invitation') }}
                     </button>
                 </div>
             </form>
@@ -263,19 +263,19 @@ function usersPage() {
                     this.showInviteModal = false;
                     this.inviteForm = { email: '', role_id: '' };
                     this.loadUsers();
-                    alert('User invited successfully!');
+                    alert('{{ __("users.user_invited_success") }}');
                 } else {
                     const error = await response.json();
-                    alert('Failed to invite user: ' + (error.message || 'Unknown error'));
+                    alert('{{ __("users.invite_failed") }}: ' + (error.message || '{{ __("users.unknown_error") }}'));
                 }
             } catch (error) {
                 console.error('Failed to invite user:', error);
-                alert('Failed to invite user');
+                alert('{{ __("users.invite_failed") }}');
             }
         },
 
         formatDate(date) {
-            if (!date) return 'N/A';
+            if (!date) return '{{ __("users.n_a") }}';
             return new Date(date).toLocaleDateString();
         },
 

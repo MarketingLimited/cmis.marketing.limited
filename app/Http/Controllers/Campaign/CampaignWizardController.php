@@ -101,7 +101,7 @@ class CampaignWizardController extends Controller
             $session = $this->wizardService->getSession($sessionId);
 
             if (!$session || $session['user_id'] !== auth()->id()) {
-                throw new WizardStepException('Invalid wizard session');
+                throw new WizardStepException(__('campaigns.invalid'));
             }
 
             // Validate step-specific data
@@ -166,7 +166,7 @@ class CampaignWizardController extends Controller
             $session = $this->wizardService->getSession($sessionId);
 
             if (!$session || $session['user_id'] !== auth()->id()) {
-                throw new WizardStepException('Invalid wizard session');
+                throw new WizardStepException(__('campaigns.invalid'));
             }
 
             // Set RLS context for campaign creation
@@ -192,7 +192,7 @@ class CampaignWizardController extends Controller
             $session = $this->wizardService->getSession($sessionId);
 
             if (!$session || $session['user_id'] !== auth()->id()) {
-                throw new WizardStepException('Invalid wizard session');
+                throw new WizardStepException(__('campaigns.invalid'));
             }
 
             // Set RLS context for campaign creation

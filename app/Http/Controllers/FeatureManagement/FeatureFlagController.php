@@ -71,7 +71,7 @@ class FeatureFlagController extends Controller
         }
 
         return redirect()->route('feature-flags.show', $flag->flag_id)
-            ->with('success', 'Feature flag created successfully');
+            ->with('success', __('features.created_success'));
     }
 
     /**
@@ -121,7 +121,7 @@ class FeatureFlagController extends Controller
         }
 
         return redirect()->route('feature-flags.show', $flag->flag_id)
-            ->with('success', 'Feature flag updated successfully');
+            ->with('success', __('features.updated_success'));
     }
 
     /**
@@ -137,7 +137,7 @@ class FeatureFlagController extends Controller
         }
 
         return redirect()->route('feature-flags.index')
-            ->with('success', 'Feature flag deleted successfully');
+            ->with('success', __('features.deleted_success'));
     }
 
     /**
@@ -205,7 +205,7 @@ class FeatureFlagController extends Controller
         }
 
         return redirect()->route('feature-flags.show', $flag->flag_id)
-            ->with('success', 'Feature flag enabled successfully');
+            ->with('success', __('features.feature_flag_enabled_successfully'));
     }
 
     /**
@@ -221,7 +221,7 @@ class FeatureFlagController extends Controller
         }
 
         return redirect()->route('feature-flags.show', $flag->flag_id)
-            ->with('success', 'Feature flag disabled successfully');
+            ->with('success', __('features.feature_flag_disabled_successfully'));
     }
 
     /**
@@ -237,7 +237,7 @@ class FeatureFlagController extends Controller
         }
 
         return redirect()->route('feature-flags.index')
-            ->with('success', 'Feature flag archived successfully');
+            ->with('success', __('features.archived_success'));
     }
 
     /**
@@ -261,7 +261,7 @@ class FeatureFlagController extends Controller
         }
 
         return redirect()->route('feature-flags.show', $flag->flag_id)
-            ->with('success', 'Rollout percentage updated successfully');
+            ->with('success', __('features.updated_success'));
     }
 
     /**

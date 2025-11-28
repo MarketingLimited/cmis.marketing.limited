@@ -1,16 +1,16 @@
 @extends('layouts.admin')
 
-@section('title', 'Queue Manager')
+@section('title', __('embeddings.queue_manager'))
 
 @section('content')
 <div class="container-fluid">
     <div class="row">
         <div class="col-12">
-            <h1 class="h3 mb-4">⏳ إدارة قائمة الانتظار</h1>
+            <h1 class="h3 mb-4">{{ __('embeddings.queue_title') }}</h1>
 
             @if(isset($error))
                 <div class="alert alert-danger">
-                    <strong>خطأ:</strong> {{ $error }}
+                    <strong>{{ __('common.error') }}:</strong> {{ $error }}
                 </div>
             @endif
 
@@ -28,11 +28,11 @@
         <div class="col-12">
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0">📊 إحصائيات القائمة</h5>
+                    <h5 class="mb-0">{{ __('embeddings.queue_statistics') }}</h5>
                     <form method="POST" action="{{ route('vector-embeddings.queue.process') }}" class="d-inline">
                         @csrf
-                        <input type="number" name="batch_size" value="50" min="1" max="500" class="form-control d-inline" style="width: 100px;">
-                        <button type="submit" class="btn btn-primary btn-sm">معالجة الدفعة</button>
+                        <input type="number" name="batch_size" value="50" min="1" max="500" class="form-control d-inline" style="width: 100px;" placeholder="{{ __('embeddings.batch_size') }}">
+                        <button type="submit" class="btn btn-primary btn-sm">{{ __('embeddings.process_batch') }}</button>
                     </form>
                 </div>
                 <div class="card-body">
@@ -40,10 +40,10 @@
                         <table class="table table-sm">
                             <thead>
                                 <tr>
-                                    <th>الحالة</th>
-                                    <th>العدد</th>
-                                    <th>متوسط المحاولات</th>
-                                    <th>متوسط الانتظار</th>
+                                    <th>{{ __('embeddings.status') }}</th>
+                                    <th>{{ __('embeddings.count') }}</th>
+                                    <th>{{ __('embeddings.avg_attempts') }}</th>
+                                    <th>{{ __('embeddings.avg_wait_time') }}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -52,7 +52,7 @@
                                         <td>{{ $stat->{'الحالة'} ?? 'N/A' }}</td>
                                         <td>{{ number_format($stat->{'العدد'} ?? 0) }}</td>
                                         <td>{{ number_format($stat->{'متوسط المحاولات'} ?? 0, 2) }}</td>
-                                        <td>{{ number_format($stat->{'متوسط وقت الانتظار (دقيقة)'} ?? 0, 2) }} دقيقة</td>
+                                        <td>{{ number_format($stat->{'متوسط وقت الانتظار (دقيقة)'} ?? 0, 2) }} {{ __('embeddings.minutes') }}</td>
                                     </tr>
                                 @endforeach
                             </tbody>
@@ -70,7 +70,7 @@
         <div class="col-12">
             <div class="card">
                 <div class="card-header">
-                    <h5 class="mb-0">📋 عناصر القائمة (أول 100)</h5>
+                    <h5 class="mb-0">{{ __('embeddings.queue_items_first_100') }}</h5>
                 </div>
                 <div class="card-body">
                     <div class="table-responsive">
@@ -78,13 +78,13 @@
                             <thead>
                                 <tr>
                                     <th>ID</th>
-                                    <th>Knowledge ID</th>
-                                    <th>الجدول</th>
-                                    <th>الحقل</th>
-                                    <th>الحالة</th>
-                                    <th>الأولوية</th>
-                                    <th>المحاولات</th>
-                                    <th>تاريخ الإنشاء</th>
+                                    <th>{{ __('embeddings.knowledge_id') }}</th>
+                                    <th>{{ __('embeddings.table') }}</th>
+                                    <th>{{ __('embeddings.field') }}</th>
+                                    <th>{{ __('embeddings.status') }}</th>
+                                    <th>{{ __('embeddings.priority') }}</th>
+                                    <th>{{ __('embeddings.attempts') }}</th>
+                                    <th>{{ __('embeddings.created_at') }}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -118,7 +118,7 @@
     </div>
     @else
         <div class="alert alert-info">
-            ✅ قائمة الانتظار فارغة
+            {{ __('embeddings.queue_empty') }}
         </div>
     @endif
 </div>

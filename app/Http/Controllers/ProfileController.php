@@ -31,7 +31,7 @@ class ProfileController extends Controller
             'bio' => 'nullable|string',
         ]));
 
-        return redirect()->back()->with('success', 'تم تحديث الملف الشخصي');
+        return redirect()->back()->with('success', __('profile.updated_success'));
     }
 
     public function avatar(Request $request)

@@ -81,7 +81,7 @@ export default function alertsManagement() {
                     this.totalPages = data.rules.last_page;
                 }
             } catch (error) {
-                console.error('Failed to load rules:', error);
+                console.error(__('javascript.failed_to_load'), error);
             } finally {
                 this.loading = false;
             }
@@ -109,7 +109,7 @@ export default function alertsManagement() {
                     this.alerts = data.alerts.data;
                 }
             } catch (error) {
-                console.error('Failed to load alerts:', error);
+                console.error(__('javascript.failed_to_load'), error);
             } finally {
                 this.loading = false;
             }
@@ -127,7 +127,7 @@ export default function alertsManagement() {
                     this.templates = data.templates;
                 }
             } catch (error) {
-                console.error('Failed to load templates:', error);
+                console.error(__('javascript.failed_to_load_templates'), error);
             }
         },
 
@@ -152,7 +152,7 @@ export default function alertsManagement() {
                     await this.loadRules();
                 }
             } catch (error) {
-                this.showError('Failed to create rule');
+                this.showError(__('javascript.failed_to_create'));
             } finally {
                 this.loading = false;
             }
@@ -175,13 +175,13 @@ export default function alertsManagement() {
                     this.showSuccess(`Rule ${rule.is_active ? 'activated' : 'deactivated'}`);
                 }
             } catch (error) {
-                this.showError('Failed to update rule');
+                this.showError(__('javascript.failed_to_update'));
             }
         },
 
         // Delete rule
         async deleteRule(ruleId) {
-            if (!confirm('Delete this alert rule?')) return;
+            if (!confirm(__('javascript.confirm_delete'))) return;
 
             try {
                 const response = await fetch(`/api/orgs/${this.orgId}/alerts/rules/${ruleId}`, {
@@ -194,7 +194,7 @@ export default function alertsManagement() {
                     await this.loadRules();
                 }
             } catch (error) {
-                this.showError('Failed to delete rule');
+                this.showError(__('javascript.failed_to_delete'));
             }
         },
 
@@ -214,7 +214,7 @@ export default function alertsManagement() {
                     await this.loadAlerts();
                 }
             } catch (error) {
-                this.showError('Failed to acknowledge alert');
+                this.showError(__('javascript.failed_to_acknowledge'));
             }
         },
 
@@ -234,7 +234,7 @@ export default function alertsManagement() {
                     await this.loadAlerts();
                 }
             } catch (error) {
-                this.showError('Failed to resolve alert');
+                this.showError(__('javascript.failed_to_resolve'));
             }
         },
 

@@ -4,7 +4,7 @@
     $currentOrg = $currentOrg ?? request()->route('org') ?? auth()->user()->active_org_id ?? auth()->user()->org_id;
 @endphp
 
-@section('title', 'Creative Assets')
+@section('title', __('assets.creative_assets'))
 
 @section('content')
 <div x-data="creativeAssets()">
@@ -15,9 +15,9 @@
                 <i class="fas fa-home"></i>
             </a>
             <span class="text-gray-400">/</span>
-            <a href="{{ route('orgs.creative.index', $currentOrg) }}" class="hover:text-blue-600 transition">Creative</a>
+            <a href="{{ route('orgs.creative.index', $currentOrg) }}" class="hover:text-blue-600 transition">{{ __('common.creative') }}</a>
             <span class="text-gray-400">/</span>
-            <span class="text-gray-900 font-medium">Assets</span>
+            <span class="text-gray-900 font-medium">{{ __('assets.assets') }}</span>
         </nav>
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
@@ -25,14 +25,14 @@
                     <div class="w-10 h-10 bg-gradient-to-br from-pink-500 to-rose-600 rounded-xl flex items-center justify-center shadow-lg">
                         <i class="fas fa-images text-white"></i>
                     </div>
-                    Creative Assets
+                    {{ __('assets.creative_assets') }}
                 </h1>
-                <p class="mt-2 text-gray-600 dark:text-gray-400">Manage your creative assets, images, and media files</p>
+                <p class="mt-2 text-gray-600 dark:text-gray-400">{{ __('assets.manage_assets') }}</p>
             </div>
             <button @click="showUploadModal = true"
                     class="inline-flex items-center px-4 py-2.5 bg-gradient-to-r from-pink-600 to-rose-600 text-white rounded-lg hover:from-pink-700 hover:to-rose-700 shadow-lg shadow-pink-500/25 transition-all">
-                <i class="fas fa-upload ml-2"></i>
-                Upload Asset
+                <i class="fas fa-upload ms-2"></i>
+                {{ __('assets.upload_asset') }}
             </button>
         </div>
     </div>
@@ -42,7 +42,7 @@
         <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-sm text-gray-600 dark:text-gray-400">Total Assets</p>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">{{ __('assets.total_assets') }}</p>
                     <p class="text-2xl font-bold text-gray-900 dark:text-white mt-1">{{ $stats['total'] }}</p>
                 </div>
                 <div class="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center">
@@ -54,7 +54,7 @@
         <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-sm text-gray-600 dark:text-gray-400">Approved</p>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">{{ __('assets.approved') }}</p>
                     <p class="text-2xl font-bold text-green-600 mt-1">{{ $stats['approved'] }}</p>
                 </div>
                 <div class="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-xl flex items-center justify-center">
@@ -66,7 +66,7 @@
         <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-sm text-gray-600 dark:text-gray-400">Pending Review</p>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">{{ __('assets.pending_review') }}</p>
                     <p class="text-2xl font-bold text-yellow-600 mt-1">{{ $stats['pending'] }}</p>
                 </div>
                 <div class="w-12 h-12 bg-yellow-100 dark:bg-yellow-900/30 rounded-xl flex items-center justify-center">
@@ -78,7 +78,7 @@
         <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-sm text-gray-600 dark:text-gray-400">Draft</p>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">{{ __('assets.draft') }}</p>
                     <p class="text-2xl font-bold text-gray-600 mt-1">{{ $stats['draft'] }}</p>
                 </div>
                 <div class="w-12 h-12 bg-gray-100 dark:bg-gray-700 rounded-xl flex items-center justify-center">
@@ -92,22 +92,22 @@
     <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 mb-6">
         <div class="flex flex-wrap items-center gap-4">
             <div class="flex items-center gap-2">
-                <span class="text-sm text-gray-600 dark:text-gray-400">Filter by status:</span>
+                <span class="text-sm text-gray-600 dark:text-gray-400">{{ __('assets.filter_by_status') }}:</span>
                 <a href="{{ route('orgs.creative.assets.index', $currentOrg) }}"
                    class="px-3 py-1.5 text-sm rounded-lg transition {{ !$currentStatus ? 'bg-blue-600 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200' }}">
-                    All
+                    {{ __('common.all') }}
                 </a>
                 <a href="{{ route('orgs.creative.assets.index', ['org' => $currentOrg, 'status' => 'approved']) }}"
                    class="px-3 py-1.5 text-sm rounded-lg transition {{ $currentStatus === 'approved' ? 'bg-green-600 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200' }}">
-                    Approved
+                    {{ __('assets.approved') }}
                 </a>
                 <a href="{{ route('orgs.creative.assets.index', ['org' => $currentOrg, 'status' => 'pending_review']) }}"
                    class="px-3 py-1.5 text-sm rounded-lg transition {{ $currentStatus === 'pending_review' ? 'bg-yellow-600 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200' }}">
-                    Pending
+                    {{ __('assets.pending') }}
                 </a>
                 <a href="{{ route('orgs.creative.assets.index', ['org' => $currentOrg, 'status' => 'draft']) }}"
                    class="px-3 py-1.5 text-sm rounded-lg transition {{ $currentStatus === 'draft' ? 'bg-gray-600 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200' }}">
-                    Draft
+                    {{ __('assets.draft') }}
                 </a>
             </div>
         </div>
@@ -116,8 +116,8 @@
     <!-- Assets Grid -->
     <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
         <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Assets</h3>
-            <span class="text-sm text-gray-500">{{ $assets->total() }} total</span>
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ __('assets.assets') }}</h3>
+            <span class="text-sm text-gray-500">{{ $assets->total() }} {{ __('common.total') }}</span>
         </div>
 
         @if($assets->isEmpty())
@@ -125,12 +125,12 @@
                 <div class="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
                     <i class="fas fa-images text-3xl text-gray-400"></i>
                 </div>
-                <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">No assets found</h3>
-                <p class="text-gray-500 dark:text-gray-400 mb-4">Upload your first creative asset to get started</p>
+                <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">{{ __('assets.no_assets_found') }}</h3>
+                <p class="text-gray-500 dark:text-gray-400 mb-4">{{ __('assets.upload_first_asset') }}</p>
                 <button @click="showUploadModal = true"
                         class="inline-flex items-center px-4 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700 transition">
-                    <i class="fas fa-upload ml-2"></i>
-                    Upload Asset
+                    <i class="fas fa-upload ms-2"></i>
+                    {{ __('assets.upload_asset') }}
                 </button>
             </div>
         @else
@@ -152,17 +152,17 @@
                         </div>
                         <div class="p-4">
                             <h4 class="font-medium text-gray-900 dark:text-white truncate">
-                                {{ $asset->variation_tag ?? 'Untitled Asset' }}
+                                {{ $asset->variation_tag ?? __('assets.untitled_asset') }}
                             </h4>
                             <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                                {{ $asset->created_at?->diffForHumans() ?? 'Unknown date' }}
+                                {{ $asset->created_at?->diffForHumans() ?? __('common.unknown_date') }}
                             </p>
                             <div class="flex items-center gap-2 mt-3 opacity-0 group-hover:opacity-100 transition">
                                 <button class="flex-1 px-3 py-1.5 text-xs bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
-                                    <i class="fas fa-eye ml-1"></i> View
+                                    <i class="fas fa-eye ms-1"></i> {{ __('common.view') }}
                                 </button>
                                 <button class="flex-1 px-3 py-1.5 text-xs bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 transition">
-                                    <i class="fas fa-edit ml-1"></i> Edit
+                                    <i class="fas fa-edit ms-1"></i> {{ __('common.edit') }}
                                 </button>
                             </div>
                         </div>
@@ -193,7 +193,7 @@
 
             <div class="relative bg-white dark:bg-gray-800 rounded-2xl shadow-xl transform transition-all sm:max-w-lg w-full mx-4">
                 <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
-                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Upload Asset</h3>
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ __('assets.upload_asset') }}</h3>
                     <button @click="showUploadModal = false" class="text-gray-400 hover:text-gray-600">
                         <i class="fas fa-times"></i>
                     </button>
@@ -204,12 +204,12 @@
                         <div class="w-16 h-16 bg-pink-100 dark:bg-pink-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
                             <i class="fas fa-cloud-upload-alt text-2xl text-pink-600"></i>
                         </div>
-                        <p class="text-gray-700 dark:text-gray-300 font-medium mb-2">Drag and drop files here</p>
-                        <p class="text-sm text-gray-500 mb-4">or click to browse</p>
+                        <p class="text-gray-700 dark:text-gray-300 font-medium mb-2">{{ __('assets.drag_drop_here') }}</p>
+                        <p class="text-sm text-gray-500 mb-4">{{ __('assets.or_click_browse') }}</p>
                         <input type="file" class="hidden" id="fileInput" multiple accept="image/*,video/*">
                         <button onclick="document.getElementById('fileInput').click()"
                                 class="px-4 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700 transition">
-                            Select Files
+                            {{ __('assets.select_files') }}
                         </button>
                     </div>
                 </div>
@@ -217,10 +217,10 @@
                 <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-700 flex justify-end gap-3">
                     <button @click="showUploadModal = false"
                             class="px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 transition">
-                        Cancel
+                        {{ __('common.cancel') }}
                     </button>
                     <button class="px-4 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700 transition">
-                        Upload
+                        {{ __('common.upload') }}
                     </button>
                 </div>
             </div>

@@ -4,8 +4,8 @@
     $currentOrg = $currentOrg ?? request()->route('org') ?? auth()->user()->active_org_id ?? auth()->user()->org_id;
 @endphp
 
-@section('page-title', 'بريفات الحملات الإبداعية')
-@section('page-subtitle', 'إدارة بريفات الحملات والمشاريع التسويقية')
+@section('page-title', __('briefs.page_title'))
+@section('page-subtitle', __('briefs.page_subtitle'))
 
 @section('content')
 <div x-data="briefsManager()" x-init="init()">
@@ -14,7 +14,7 @@
         <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg p-6 text-white">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-blue-100 text-sm mb-1">إجمالي البريفات</p>
+                    <p class="text-blue-100 text-sm mb-1">{{ __('briefs.total_briefs') }}</p>
                     <p class="text-3xl font-bold" x-text="stats.total"></p>
                 </div>
                 <i class="fas fa-file-alt text-5xl text-blue-300 opacity-50"></i>
@@ -24,7 +24,7 @@
         <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl shadow-lg p-6 text-white">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-green-100 text-sm mb-1">نشط</p>
+                    <p class="text-green-100 text-sm mb-1">{{ __('briefs.active') }}</p>
                     <p class="text-3xl font-bold" x-text="stats.active"></p>
                 </div>
                 <i class="fas fa-check-circle text-5xl text-green-300 opacity-50"></i>
@@ -34,7 +34,7 @@
         <div class="bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-xl shadow-lg p-6 text-white">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-yellow-100 text-sm mb-1">قيد المراجعة</p>
+                    <p class="text-yellow-100 text-sm mb-1">{{ __('briefs.under_review') }}</p>
                     <p class="text-3xl font-bold" x-text="stats.review"></p>
                 </div>
                 <i class="fas fa-eye text-5xl text-yellow-300 opacity-50"></i>
@@ -44,7 +44,7 @@
         <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl shadow-lg p-6 text-white">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-purple-100 text-sm mb-1">مكتمل</p>
+                    <p class="text-purple-100 text-sm mb-1">{{ __('briefs.completed') }}</p>
                     <p class="text-3xl font-bold" x-text="stats.completed"></p>
                 </div>
                 <i class="fas fa-trophy text-5xl text-purple-300 opacity-50"></i>
@@ -57,29 +57,29 @@
         <div class="flex gap-3">
             <select x-model="statusFilter" @change="filterBriefs"
                     class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
-                <option value="all">جميع الحالات</option>
-                <option value="draft">مسودة</option>
-                <option value="review">قيد المراجعة</option>
-                <option value="approved">معتمد</option>
-                <option value="active">نشط</option>
-                <option value="completed">مكتمل</option>
+                <option value="all">{{ __('briefs.all_statuses') }}</option>
+                <option value="draft">{{ __('briefs.draft_status') }}</option>
+                <option value="review">{{ __('briefs.review_status') }}</option>
+                <option value="approved">{{ __('briefs.approved_status') }}</option>
+                <option value="active">{{ __('briefs.active_status') }}</option>
+                <option value="completed">{{ __('briefs.completed_status') }}</option>
             </select>
 
             <select x-model="typeFilter" @change="filterBriefs"
                     class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
-                <option value="all">جميع الأنواع</option>
-                <option value="campaign">حملة تسويقية</option>
-                <option value="content">محتوى</option>
-                <option value="design">تصميم</option>
-                <option value="video">فيديو</option>
-                <option value="social">سوشيال ميديا</option>
+                <option value="all">{{ __('briefs.all_types') }}</option>
+                <option value="campaign">{{ __('briefs.campaign_type') }}</option>
+                <option value="content">{{ __('briefs.content_type') }}</option>
+                <option value="design">{{ __('briefs.design_type') }}</option>
+                <option value="video">{{ __('briefs.video_type') }}</option>
+                <option value="social">{{ __('briefs.social_type') }}</option>
             </select>
         </div>
 
         <a href="{{ route('orgs.creative.briefs.create', ['org' => $currentOrg]) }}"
            class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 py-3 rounded-lg font-medium hover:shadow-lg transition">
-            <i class="fas fa-plus ml-2"></i>
-            بريف جديد
+            <i class="fas fa-plus ms-2"></i>
+            {{ __('briefs.new_brief') }}
         </a>
     </div>
 
@@ -119,18 +119,18 @@
                 <div class="p-6">
                     <!-- Objectives -->
                     <div class="mb-4">
-                        <h4 class="text-sm font-bold text-gray-900 mb-2">الأهداف</h4>
+                        <h4 class="text-sm font-bold text-gray-900 mb-2">{{ __('briefs.objectives') }}</h4>
                         <p class="text-sm text-gray-700 line-clamp-3" x-text="brief.objectives"></p>
                     </div>
 
                     <!-- Key Info -->
                     <div class="grid grid-cols-2 gap-3 mb-4 text-sm">
                         <div class="bg-gray-50 p-3 rounded-lg">
-                            <p class="text-gray-600 mb-1">الجمهور المستهدف</p>
-                            <p class="font-medium text-gray-900" x-text="brief.target_audience || 'غير محدد'"></p>
+                            <p class="text-gray-600 mb-1">{{ __('briefs.target_audience') }}</p>
+                            <p class="font-medium text-gray-900" x-text="brief.target_audience || '{{ __('briefs.not_specified') }}'"></p>
                         </div>
                         <div class="bg-gray-50 p-3 rounded-lg">
-                            <p class="text-gray-600 mb-1">التاريخ المستهدف</p>
+                            <p class="text-gray-600 mb-1">{{ __('briefs.target_date') }}</p>
                             <p class="font-medium text-gray-900" x-text="formatDate(brief.target_date)"></p>
                         </div>
                     </div>
@@ -139,8 +139,8 @@
                     <template x-if="brief.budget">
                         <div class="bg-gradient-to-r from-indigo-50 to-purple-50 p-3 rounded-lg mb-4">
                             <div class="flex items-center justify-between">
-                                <span class="text-sm text-gray-700">الميزانية</span>
-                                <span class="text-lg font-bold text-indigo-600" x-text="`${brief.budget} ر.س`"></span>
+                                <span class="text-sm text-gray-700">{{ __('briefs.budget') }}</span>
+                                <span class="text-lg font-bold text-indigo-600" x-text="`${brief.budget} {{ __('common.sar') ?? 'ر.س' }}`"></span>
                             </div>
                         </div>
                     </template>
@@ -149,8 +149,8 @@
                     <div class="flex gap-2 pt-4 border-t">
                         <a :href="`/orgs/{{ $currentOrg }}/creative/briefs/${brief.brief_id}`"
                            class="flex-1 bg-indigo-50 text-indigo-600 text-center py-2 rounded-lg font-medium hover:bg-indigo-100 transition">
-                            <i class="fas fa-eye ml-2"></i>
-                            عرض التفاصيل
+                            <i class="fas fa-eye ms-2"></i>
+                            {{ __('briefs.view_details') }}
                         </a>
                         <a :href="`/orgs/{{ $currentOrg }}/creative/briefs/${brief.brief_id}/edit`"
                            class="bg-gray-50 text-gray-600 px-4 py-2 rounded-lg hover:bg-gray-100 transition">
@@ -170,9 +170,9 @@
     <template x-if="filteredBriefs.length === 0">
         <x-empty-state
             icon="fas fa-file-alt"
-            title="لا توجد بريفات"
-            description="ابدأ بإنشاء بريف جديد لحملتك التسويقية"
-            action-text="إنشاء بريف"
+            :title="__('briefs.no_briefs')"
+            :description="__('briefs.no_briefs_description')"
+            :action-text="__('briefs.create_brief')"
             :action-url="route('orgs.creative.briefs.create', ['org' => $currentOrg])"
         />
     </template>
@@ -218,18 +218,18 @@ function briefsManager() {
 
         getStatusLabel(status) {
             const labels = {
-                'draft': 'مسودة',
-                'review': 'قيد المراجعة',
-                'approved': 'معتمد',
-                'active': 'نشط',
-                'completed': 'مكتمل'
+                'draft': '{{ __('briefs.draft') }}',
+                'review': '{{ __('briefs.review') }}',
+                'approved': '{{ __('briefs.approved') }}',
+                'active': '{{ __('briefs.active') }}',
+                'completed': '{{ __('briefs.completed') }}'
             };
             return labels[status] || status;
         },
 
         formatDate(date) {
-            if (!date) return 'غير محدد';
-            return new Date(date).toLocaleDateString('ar-SA', {
+            if (!date) return '{{ __('briefs.not_specified') }}';
+            return new Date(date).toLocaleDateString('{{ app()->getLocale() }}-SA', {
                 year: 'numeric',
                 month: 'short',
                 day: 'numeric'
@@ -237,7 +237,7 @@ function briefsManager() {
         },
 
         async deleteBrief(briefId) {
-            if (!confirm('هل أنت متأكد من حذف هذا البريف؟')) return;
+            if (!confirm('{{ __('briefs.confirm_delete') }}')) return;
 
             try {
                 const response = await fetch(`/orgs/{{ $currentOrg }}/creative/briefs/${briefId}`, {
@@ -253,7 +253,7 @@ function briefsManager() {
                 }
             } catch (error) {
                 console.error('Failed to delete brief:', error);
-                alert('فشل حذف البريف');
+                alert('{{ __('briefs.brief_delete_failed') }}');
             }
         }
     };

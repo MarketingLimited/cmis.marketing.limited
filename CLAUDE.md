@@ -1,8 +1,9 @@
 # CMIS Project Guidelines for Claude Code
 
-**Last Updated:** 2025-11-22 (Documentation Restructure)
+**Last Updated:** 2025-11-27 (i18n & RTL/LTR Requirements Added)
 **Project:** CMIS - Cognitive Marketing Information System
 **Framework Version:** 3.2 - Post Duplication Elimination (13,100 lines saved)
+**Languages:** Arabic (Default), English - Full RTL/LTR Support
 
 ---
 
@@ -55,6 +56,30 @@ CMIS is a Laravel-based Campaign Management & Integration System with:
 - ✅ **Migrations:** Use `HasRLSPolicies` trait for RLS policies
 - ❌ NEVER create duplicate response/relationship patterns
 - ❌ NEVER create stub services (use mocking in tests)
+
+### Internationalization (i18n) & RTL/LTR (CRITICAL - NEW 2025-11-27)
+**📖 See: `.claude/knowledge/I18N_RTL_REQUIREMENTS.md` for complete guidelines**
+
+**MANDATORY PRE-IMPLEMENTATION AUDIT:**
+- ✅ **BEFORE** implementing ANY feature, audit for hardcoded text
+- ✅ **BEFORE** working on ANY page, check RTL/LTR compliance
+- ✅ **FIX i18n issues FIRST**, then implement new features
+- ✅ Use Laravel's `__('key')` for ALL text - ZERO hardcoded strings
+- ✅ Use logical CSS properties: `ms-`, `me-`, `text-start` (NOT `ml-`, `mr-`, `text-left`)
+- ✅ Support both Arabic (RTL, default) and English (LTR)
+- ✅ Test BOTH languages before marking tasks complete
+- ❌ **NEVER** add hardcoded text (English or Arabic)
+- ❌ **NEVER** use directional CSS without RTL/LTR variants
+- ❌ **NEVER** proceed with features if i18n issues exist
+
+**Quick Audit Commands:**
+```bash
+# Find hardcoded text
+grep -r -E "\b(Campaign|Dashboard|Save|Delete)\b" resources/views/ | grep -v "{{ __("
+
+# Find directional CSS
+grep -r -E "(ml-|mr-|text-left|text-right)" resources/views/
+```
 
 ---
 
@@ -228,6 +253,8 @@ class CreateNewTable extends Migration
 ### Code Review Checklist
 - [ ] Multi-tenancy respected?
 - [ ] RLS policies added?
+- [ ] **i18n compliance (NEW):** No hardcoded text? RTL/LTR optimized?
+- [ ] **Both languages tested (NEW):** Arabic (RTL) and English (LTR)?
 - [ ] Tests written and passing?
 - [ ] Security validated?
 - [ ] Documentation updated?
@@ -237,24 +264,41 @@ class CreateNewTable extends Migration
 
 ## 🎨 Frontend Conventions
 
+### i18n & RTL/LTR Requirements (MANDATORY)
+```html
+<!-- ALWAYS use translation keys, NEVER hardcoded text -->
+<div x-data="campaignDashboard()">
+    <button @click="loadMetrics">{{ __('campaigns.load_button') }}</button>
+    <div x-show="loading">{{ __('common.loading') }}</div>
+</div>
+
+<!-- ALWAYS use logical CSS properties for RTL/LTR support -->
+<div class="ms-4 me-2 text-start">  <!-- ✅ CORRECT -->
+<div class="ml-4 mr-2 text-left">   <!-- ❌ WRONG -->
+```
+
 ### Alpine.js Components
 ```html
-<!-- Use x-data for component state -->
+<!-- Use x-data for component state with translations -->
 <div x-data="campaignDashboard()">
-    <button @click="loadMetrics">Load</button>
-    <div x-show="loading">Loading...</div>
+    <h1>{{ __('campaigns.dashboard_title') }}</h1>
+    <button @click="loadMetrics">{{ __('campaigns.load_button') }}</button>
+    <div x-show="loading">{{ __('common.loading') }}</div>
 </div>
 ```
 
-### Tailwind Utilities
+### Tailwind Utilities (RTL/LTR Aware)
+- Use logical properties: `ms-`, `me-`, `ps-`, `pe-`, `text-start`, `text-end`
+- NEVER use directional: `ml-`, `mr-`, `pl-`, `pr-`, `text-left`, `text-right`
 - Use `@apply` in components sparingly
-- Prefer utility classes in templates
 - Custom colors in `tailwind.config.js`
+- Install `tailwindcss-rtl` plugin for RTL support
 
 ### Chart.js Integration
 - Store in `resources/js/components/`
 - Use Alpine.js for state management
 - Async data loading via Axios
+- Use translated labels: `labels: [__('common.january'), ...]`
 
 ---
 
@@ -437,6 +481,7 @@ SELECT * FROM cmis.campaigns; -- Should only show this org's data
 ### Core Guidelines
 - **Project Knowledge:** `.claude/CMIS_PROJECT_KNOWLEDGE.md`
 - **Multi-Tenancy:** `.claude/knowledge/MULTI_TENANCY_PATTERNS.md`
+- **i18n & RTL/LTR (NEW):** `.claude/knowledge/I18N_RTL_REQUIREMENTS.md` ⚠️ CRITICAL
 - **Data Patterns:** `.claude/knowledge/CMIS_DATA_PATTERNS.md`
 - **Agent Guide:** `.claude/agents/README.md`
 
@@ -474,12 +519,15 @@ PGPASSWORD="$(grep DB_PASSWORD .env | cut -d '=' -f2)" psql \
 
 ## ⚠️ Common Pitfalls
 
-1. **Forgetting RLS context** - Always call `init_transaction_context()`
-2. **Unqualified table names** - Use `cmis.table_name`, not just `table_name`
-3. **Missing indexes** - Add indexes for foreign keys and search columns
-4. **Hardcoded org filtering** - Let RLS handle it, don't add `WHERE org_id = ?`
-5. **Token expiration** - Implement refresh logic for platform tokens
-6. **Rate limit violations** - Queue AI operations, don't run synchronously
+1. **Hardcoded text (NEW)** - NEVER use hardcoded English/Arabic - use `__('key')` always
+2. **Directional CSS (NEW)** - NEVER use `ml-`, `mr-`, `text-left` - use `ms-`, `me-`, `text-start`
+3. **Skipping i18n audit (NEW)** - ALWAYS audit for i18n issues BEFORE implementing features
+4. **Forgetting RLS context** - Always call `init_transaction_context()`
+5. **Unqualified table names** - Use `cmis.table_name`, not just `table_name`
+6. **Missing indexes** - Add indexes for foreign keys and search columns
+7. **Hardcoded org filtering** - Let RLS handle it, don't add `WHERE org_id = ?`
+8. **Token expiration** - Implement refresh logic for platform tokens
+9. **Rate limit violations** - Queue AI operations, don't run synchronously
 
 ---
 
@@ -493,7 +541,13 @@ PGPASSWORD="$(grep DB_PASSWORD .env | cut -d '=' -f2)" psql \
 
 ---
 
-**Remember:** CMIS is NOT a generic Laravel app. Always consider multi-tenancy, platform integrations, and AI capabilities in your solutions!
+**Remember:** CMIS is NOT a generic Laravel app. Always consider:
+- 🌍 **i18n & RTL/LTR** (Arabic default, bilingual support)
+- 🏢 **Multi-tenancy** (RLS policies, org context)
+- 🔌 **Platform integrations** (OAuth, webhooks)
+- 🤖 **AI capabilities** (embeddings, semantic search)
+
+**⚠️ CRITICAL: Fix i18n issues BEFORE implementing new features!**
 
 ---
 
@@ -580,4 +634,4 @@ A comprehensive 8-phase initiative systematically eliminated duplicate code:
 - 📋 Phase 4: Ad campaign orchestration & automation
 - 📋 Production deployment & optimization
 
-**Last Updated:** 2025-11-22
+**Last Updated:** 2025-11-27 (i18n & RTL/LTR requirements added)

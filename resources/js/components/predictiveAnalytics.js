@@ -144,7 +144,7 @@ export default function predictiveAnalytics() {
                 const data = await this.apiCall(`/api/orgs/${this.orgId}/analytics/stats`);
                 this.stats = data.stats;
             } catch (error) {
-                console.error('Failed to load stats:', error);
+                console.error(__('javascript.failed_to_load_stats'), error);
             }
         },
 
@@ -160,12 +160,12 @@ export default function predictiveAnalytics() {
                     }
                 );
 
-                alert(`${data.count} forecasts generated successfully`);
+                alert(__('javascript.forecasts_generated', { count: data.count }));
                 this.loadForecasts();
                 this.loadStats();
                 this.resetForecastForm();
             } catch (error) {
-                alert(`Error: ${error.message}`);
+                alert(__('javascript.error') + ': ' + error.message);
             }
         },
 
@@ -187,7 +187,7 @@ export default function predictiveAnalytics() {
                     last_page: data.forecasts.last_page
                 };
             } catch (error) {
-                console.error('Failed to load forecasts:', error);
+                console.error(__('javascript.failed_to_load_forecasts'), error);
             }
         },
 
@@ -204,7 +204,7 @@ export default function predictiveAnalytics() {
                     this.renderForecastChart();
                 });
             } catch (error) {
-                alert(`Error: ${error.message}`);
+                alert(__('javascript.error') + ': ' + error.message);
             }
         },
 
@@ -221,7 +221,7 @@ export default function predictiveAnalytics() {
                 this.loadForecasts();
                 this.loadStats();
             } catch (error) {
-                alert(`Error: ${error.message}`);
+                alert(__('javascript.error') + ': ' + error.message);
             }
         },
 
@@ -298,12 +298,12 @@ export default function predictiveAnalytics() {
                     }
                 );
 
-                alert(data.message);
+                alert(__('javascript.anomalies_detected'));
                 this.loadAnomalies();
                 this.loadStats();
                 this.resetAnomalyForm();
             } catch (error) {
-                alert(`Error: ${error.message}`);
+                alert(__('javascript.error') + ': ' + error.message);
             }
         },
 
@@ -325,7 +325,7 @@ export default function predictiveAnalytics() {
                     last_page: data.anomalies.last_page
                 };
             } catch (error) {
-                console.error('Failed to load anomalies:', error);
+                console.error(__('javascript.failed_to_load_anomalies'), error);
             }
         },
 
@@ -338,12 +338,12 @@ export default function predictiveAnalytics() {
                 this.selectedAnomaly = data.anomaly;
                 this.activeTab = 'anomaly-details';
             } catch (error) {
-                alert(`Error: ${error.message}`);
+                alert(__('javascript.error') + ': ' + error.message);
             }
         },
 
         async acknowledgeAnomaly(anomalyId) {
-            const notes = prompt('Enter acknowledgement notes (optional):');
+            const notes = prompt(__('javascript.enter_acknowledgement_notes'));
 
             try {
                 await this.apiCall(
@@ -361,12 +361,12 @@ export default function predictiveAnalytics() {
                     this.viewAnomaly(anomalyId);
                 }
             } catch (error) {
-                alert(`Error: ${error.message}`);
+                alert(__('javascript.error') + ': ' + error.message);
             }
         },
 
         async resolveAnomaly(anomalyId) {
-            const resolutionNotes = prompt('Enter resolution notes:');
+            const resolutionNotes = prompt(__('javascript.enter_resolution_notes'));
             if (!resolutionNotes) return;
 
             try {
@@ -385,12 +385,12 @@ export default function predictiveAnalytics() {
                     this.viewAnomaly(anomalyId);
                 }
             } catch (error) {
-                alert(`Error: ${error.message}`);
+                alert(__('javascript.error') + ': ' + error.message);
             }
         },
 
         async markFalsePositive(anomalyId) {
-            if (!confirm('Mark this anomaly as a false positive?')) return;
+            if (!confirm(__('javascript.confirm_mark_false_positive'))) return;
 
             try {
                 await this.apiCall(
@@ -405,7 +405,7 @@ export default function predictiveAnalytics() {
                     this.viewAnomaly(anomalyId);
                 }
             } catch (error) {
-                alert(`Error: ${error.message}`);
+                alert(__('javascript.error') + ': ' + error.message);
             }
         },
 
@@ -440,13 +440,13 @@ export default function predictiveAnalytics() {
                     }
                 );
 
-                alert('Trend analysis completed');
+                alert(__('javascript.trend_analysis_completed'));
                 this.loadTrends();
                 this.loadStats();
                 this.viewTrendDetails(data.trend);
                 this.resetTrendForm();
             } catch (error) {
-                alert(`Error: ${error.message}`);
+                alert(__('javascript.error') + ': ' + error.message);
             }
         },
 
@@ -468,7 +468,7 @@ export default function predictiveAnalytics() {
                     last_page: data.trends.last_page
                 };
             } catch (error) {
-                console.error('Failed to load trends:', error);
+                console.error(__('javascript.failed_to_load_trends'), error);
             }
         },
 
@@ -568,12 +568,12 @@ export default function predictiveAnalytics() {
                     }
                 );
 
-                alert(data.message);
+                alert(__('javascript.recommendations_generated'));
                 this.loadRecommendations();
                 this.loadStats();
                 this.resetRecommendationForm();
             } catch (error) {
-                alert(`Error: ${error.message}`);
+                alert(__('javascript.error') + ': ' + error.message);
             }
         },
 
@@ -595,7 +595,7 @@ export default function predictiveAnalytics() {
                     last_page: data.recommendations.last_page
                 };
             } catch (error) {
-                console.error('Failed to load recommendations:', error);
+                console.error(__('javascript.failed_to_load_recommendations'), error);
             }
         },
 
@@ -608,12 +608,12 @@ export default function predictiveAnalytics() {
                 this.selectedRecommendation = data.recommendation;
                 this.activeTab = 'recommendation-details';
             } catch (error) {
-                alert(`Error: ${error.message}`);
+                alert(__('javascript.error') + ': ' + error.message);
             }
         },
 
         async acceptRecommendation(recommendationId) {
-            if (!confirm('Accept this recommendation?')) return;
+            if (!confirm(__('javascript.confirm_accept_recommendation'))) return;
 
             try {
                 await this.apiCall(
@@ -628,12 +628,12 @@ export default function predictiveAnalytics() {
                     this.viewRecommendation(recommendationId);
                 }
             } catch (error) {
-                alert(`Error: ${error.message}`);
+                alert(__('javascript.error') + ': ' + error.message);
             }
         },
 
         async rejectRecommendation(recommendationId) {
-            const rejectionReason = prompt('Enter rejection reason (optional):');
+            const rejectionReason = prompt(__('javascript.enter_rejection_reason'));
 
             try {
                 await this.apiCall(
@@ -651,12 +651,12 @@ export default function predictiveAnalytics() {
                     this.viewRecommendation(recommendationId);
                 }
             } catch (error) {
-                alert(`Error: ${error.message}`);
+                alert(__('javascript.error') + ': ' + error.message);
             }
         },
 
         async implementRecommendation(recommendationId) {
-            const implementationNotes = prompt('Enter implementation notes (optional):');
+            const implementationNotes = prompt(__('javascript.enter_implementation_notes'));
 
             try {
                 await this.apiCall(
@@ -674,7 +674,7 @@ export default function predictiveAnalytics() {
                     this.viewRecommendation(recommendationId);
                 }
             } catch (error) {
-                alert(`Error: ${error.message}`);
+                alert(__('javascript.error') + ': ' + error.message);
             }
         },
 

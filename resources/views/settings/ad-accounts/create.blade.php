@@ -18,9 +18,9 @@
 
     <div class="flex items-center justify-between mb-6">
         <div>
-            <h1 class="text-xl sm:text-2xl font-bold text-gray-900">Add Ad Account</h1>
+            <h1 class="text-xl sm:text-2xl font-bold text-gray-900">{{ __('settings.ad_accounts.add_ad_account') }}</h1>
             <p class="mt-1 text-xs sm:text-sm text-gray-500">
-                Connect an advertising account to manage paid campaigns and boosted posts.
+                {{ __('settings.ad_accounts.add_account_description') }}
             </p>
         </div>
     </div>
@@ -28,10 +28,10 @@
     {{-- Platform Selection --}}
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         <h3 class="text-base font-semibold text-gray-900 mb-4">
-            <i class="fas fa-plug text-green-500 mr-2"></i>Select Platform
+            <i class="fas fa-plug text-green-500 me-2"></i>{{ __('settings.select_platform') }}
         </h3>
         <p class="text-sm text-gray-500 mb-6">
-            Choose an advertising platform to connect. You'll be redirected to authenticate with the platform.
+            {{ __('settings.select_platform_description') }}
         </p>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">

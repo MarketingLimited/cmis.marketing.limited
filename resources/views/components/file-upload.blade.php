@@ -3,14 +3,18 @@
     'accept' => null,
     'multiple' => false,
     'maxSize' => '10MB',
-    'label' => 'رفع ملف',
+    'label' => null,
     'description' => null,
     'preview' => true
 ])
 
+@php
+    $defaultLabel = __('components.file_upload.upload_file');
+@endphp
+
 <div x-data="fileUpload()" class="w-full">
     <label class="block text-sm font-medium text-gray-700 mb-2">
-        {{ $label }}
+        {{ $label ?? $defaultLabel }}
         @if ($description)
         <span class="text-xs text-gray-500 font-normal block mt-1">{{ $description }}</span>
         @endif
@@ -28,7 +32,7 @@
 
         <div @click="$refs.fileInput.click()"
              @dragover.prevent="dragOver = true"
-             @dragleave.prevent="dragOver = false"
+             @draaleave.prevent="dragOver = false"
              @drop.prevent="handleDrop($event)"
              :class="dragOver ? 'border-indigo-500 bg-indigo-50' : 'border-gray-300 bg-white'"
              class="border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition hover:border-indigo-400">
@@ -36,11 +40,11 @@
             <template x-if="!files.length">
                 <div>
                     <i class="fas fa-cloud-upload-alt text-5xl text-gray-400 mb-3"></i>
-                    <p class="text-sm text-gray-600 mb-1">اضغط للرفع أو اسحب الملفات هنا</p>
+                    <p class="text-sm text-gray-600 mb-1">{{ __('components.file_upload.click_or_drag') }}</p>
                     <p class="text-xs text-gray-500">
-                        الحد الأقصى: {{ $maxSize }}
+                        {{ __('components.file_upload.max_size') }}: {{ $maxSize }}
                         @if ($accept)
-                        | الأنواع المسموحة: {{ $accept }}
+                        | {{ __('components.file_upload.allowed_types') }}: {{ $accept }}
                         @endif
                     </p>
                 </div>
@@ -57,7 +61,7 @@
                                 <template x-if="!file.type.startsWith('image/')">
                                     <i class="fas fa-file text-2xl text-gray-400"></i>
                                 </template>
-                                <div class="text-right flex-1">
+                                <div class="text-start flex-1">
                                     <p class="text-sm font-medium text-gray-900" x-text="file.name"></p>
                                     <p class="text-xs text-gray-500" x-text="formatFileSize(file.size)"></p>
                                 </div>
@@ -73,8 +77,8 @@
                     <button type="button"
                             @click.stop="$refs.fileInput.click()"
                             class="w-full text-sm text-indigo-600 hover:text-indigo-700 font-medium">
-                        <i class="fas fa-plus ml-1"></i>
-                        إضافة ملفات أخرى
+                        <i class="fas fa-plus ms-1"></i>
+                        {{ __('components.file_upload.add_more') }}
                     </button>
                 </div>
             </template>
@@ -118,7 +122,7 @@ function fileUpload() {
                 // Validate file size
                 const maxSizeBytes = this.parseSize(this.maxSize);
                 if (file.size > maxSizeBytes) {
-                    this.error = `حجم الملف ${file.name} يتجاوز الحد الأقصى المسموح (${this.maxSize})`;
+                    this.error = @json(__('components.file_upload.size_exceeded', ['filename' => ''])) .replace(':filename', file.name).replace(':maxsize', this.maxSize);
                     return;
                 }
 

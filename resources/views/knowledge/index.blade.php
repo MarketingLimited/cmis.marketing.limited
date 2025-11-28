@@ -3,8 +3,8 @@
     $currentOrg = $currentOrg ?? request()->route('org') ?? auth()->user()->active_org_id ?? auth()->user()->org_id;
 @endphp
 
-@section('page-title', 'قاعدة المعرفة')
-@section('page-subtitle', 'إدارة وبحث قاعدة معرفة النظام')
+@section('page-title', __('knowledge.knowledge_base'))
+@section('page-subtitle', __('knowledge.manage_search'))
 
 @section('content')
 <div x-data="knowledgeManager()" x-init="init()">
@@ -13,7 +13,7 @@
         <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg p-6 text-white">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-blue-100 text-sm mb-1">إجمالي المعرفة</p>
+                    <p class="text-blue-100 text-sm mb-1">{{ __('knowledge.total_knowledge') }}</p>
                     <p class="text-3xl font-bold" x-text="stats?.total_items || 0"></p>
                 </div>
                 <i class="fas fa-database text-5xl text-blue-300 opacity-50"></i>
@@ -23,7 +23,7 @@
         <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl shadow-lg p-6 text-white">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-purple-100 text-sm mb-1">المجالات</p>
+                    <p class="text-purple-100 text-sm mb-1">{{ __('knowledge.domains') }}</p>
                     <p class="text-3xl font-bold" x-text="stats?.domains_count || 0"></p>
                 </div>
                 <i class="fas fa-folder text-5xl text-purple-300 opacity-50"></i>
@@ -33,7 +33,7 @@
         <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl shadow-lg p-6 text-white">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-green-100 text-sm mb-1">الفئات</p>
+                    <p class="text-green-100 text-sm mb-1">{{ __('knowledge.categories') }}</p>
                     <p class="text-3xl font-bold" x-text="stats?.categories_count || 0"></p>
                 </div>
                 <i class="fas fa-tags text-5xl text-green-300 opacity-50"></i>
@@ -43,7 +43,7 @@
         <div class="bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl shadow-lg p-6 text-white">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-orange-100 text-sm mb-1">البحث اليوم</p>
+                    <p class="text-orange-100 text-sm mb-1">{{ __('knowledge.searches_today') }}</p>
                     <p class="text-3xl font-bold">{{ rand(50, 200) }}</p>
                 </div>
                 <i class="fas fa-search text-5xl text-orange-300 opacity-50"></i>
@@ -55,20 +55,20 @@
     <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
         <h3 class="text-xl font-bold text-gray-900 mb-4">
             <i class="fas fa-brain text-indigo-600 ml-2"></i>
-            البحث الدلالي المتقدم
+            {{ __('knowledge.advanced_semantic_search') }}
         </h3>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
             <div class="md:col-span-3">
                 <input type="text" x-model="searchQuery" @keyup.enter="performSearch"
-                       placeholder="ابحث في قاعدة المعرفة..."
+                       placeholder="{{ __('knowledge.search_placeholder') }}"
                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
             </div>
 
             <div>
                 <select x-model="selectedDomain" @change="loadCategories"
                         class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
-                    <option value="">كل المجالات</option>
+                    <option value="">{{ __('knowledge.all_domains') }}</option>
                     <template x-for="domain in domains" :key="domain.domain">
                         <option :value="domain.domain" x-text="`${domain.domain} (${domain.count})`"></option>
                     </template>
@@ -78,7 +78,7 @@
             <div>
                 <select x-model="selectedCategory"
                         class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
-                    <option value="">كل الفئات</option>
+                    <option value="">{{ __('knowledge.all_categories') }}</option>
                     <template x-for="category in categories" :key="category.category">
                         <option :value="category.category" x-text="`${category.category} (${category.count})`"></option>
                     </template>
@@ -89,7 +89,7 @@
                 <button @click="performSearch"
                         class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 py-2 rounded-lg font-medium hover:shadow-lg transition">
                     <i class="fas fa-search ml-2"></i>
-                    بحث
+                    {{ __('common.search') }}
                 </button>
             </div>
         </div>
@@ -97,7 +97,7 @@
         <!-- Search Results -->
         <div x-show="searchResults.length > 0" class="mt-6">
             <h4 class="text-lg font-bold text-gray-900 mb-4">
-                النتائج (<span x-text="searchResults.length"></span>)
+                {{ __('common.results') }} (<span x-text="searchResults.length"></span>)
             </h4>
 
             <div class="space-y-3">
@@ -132,7 +132,7 @@
         <!-- Empty State -->
         <div x-show="searched && searchResults.length === 0" class="text-center py-8">
             <i class="fas fa-search text-gray-300 text-5xl mb-4"></i>
-            <p class="text-gray-600">لم يتم العثور على نتائج</p>
+            <p class="text-gray-600">{{ __('knowledge.no_results') }}</p>
         </div>
     </div>
 
@@ -141,12 +141,12 @@
         <div class="flex items-center justify-between mb-4">
             <h3 class="text-xl font-bold text-gray-900">
                 <i class="fas fa-clock text-indigo-600 ml-2"></i>
-                المعرفة الأخيرة
+                {{ __('knowledge.recent_knowledge') }}
             </h3>
             <a href="{{route('orgs.knowledge.create', ['org' => $currentOrg])}}"
                     class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:shadow-lg transition">
                 <i class="fas fa-plus ml-2"></i>
-                إضافة معرفة
+                {{ __('knowledge.add_knowledge') }}
             </a>
         </div>
 
@@ -174,37 +174,37 @@
     <div x-show="showAddModal" @click.away="showAddModal = false"
          class="fixed inset-0 bg-black/50 flex items-center justify-center z-50" x-cloak>
         <div class="bg-white rounded-2xl p-6 max-w-2xl w-full mx-4">
-            <h3 class="text-2xl font-bold text-gray-900 mb-4">إضافة معرفة جديدة</h3>
+            <h3 class="text-2xl font-bold text-gray-900 mb-4">{{ __('knowledge.add_new_knowledge') }}</h3>
             <form @submit.prevent="addKnowledge">
                 <div class="space-y-4">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">المجال</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('knowledge.domain') }}</label>
                         <input type="text" x-model="newKnowledge.domain" required
                                class="w-full px-4 py-2 border border-gray-300 rounded-lg">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">الفئة</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('knowledge.category') }}</label>
                         <input type="text" x-model="newKnowledge.category" required
                                class="w-full px-4 py-2 border border-gray-300 rounded-lg">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">الموضوع</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('knowledge.topic') }}</label>
                         <input type="text" x-model="newKnowledge.topic" required
                                class="w-full px-4 py-2 border border-gray-300 rounded-lg">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">المحتوى</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('knowledge.content') }}</label>
                         <textarea x-model="newKnowledge.content" rows="4" required
                                   class="w-full px-4 py-2 border border-gray-300 rounded-lg"></textarea>
                     </div>
                     <div class="flex gap-3">
                         <button type="submit"
                                 class="flex-1 bg-indigo-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-indigo-700">
-                            حفظ
+                            {{ __('common.save') }}
                         </button>
                         <button type="button" @click="showAddModal = false"
                                 class="flex-1 bg-gray-200 text-gray-700 px-6 py-2 rounded-lg font-medium hover:bg-gray-300">
-                            إلغاء
+                            {{ __('common.cancel') }}
                         </button>
                     </div>
                 </div>
@@ -216,6 +216,13 @@
 
 @push('scripts')
 <script>
+const translations = {
+    search_failed: @json(__('knowledge.search_failed')),
+    add_knowledge_failed: @json(__('knowledge.add_knowledge_failed')),
+    knowledge_added_success: @json(__('knowledge.knowledge_added_success'))
+};
+const appLocale = @json(app()->getLocale());
+
 function knowledgeManager() {
     return {
         stats: null,
@@ -307,7 +314,7 @@ function knowledgeManager() {
                 this.searchResults = data.results || [];
             } catch (error) {
                 console.error('Search failed:', error);
-                alert('فشل البحث');
+                alert(translations.search_failed);
             }
         },
 
@@ -326,16 +333,17 @@ function knowledgeManager() {
                     this.showAddModal = false;
                     this.newKnowledge = { domain: '', category: '', topic: '', content: '' };
                     await this.loadRecentKnowledge();
-                    alert('تم إضافة المعرفة بنجاح');
+                    alert(translations.knowledge_added_success);
                 }
             } catch (error) {
                 console.error('Failed to add knowledge:', error);
-                alert('فشل إضافة المعرفة');
+                alert(translations.add_knowledge_failed);
             }
         },
 
         formatDate(date) {
-            return new Date(date).toLocaleDateString('ar-SA');
+            const locale = appLocale === 'ar' ? 'ar-SA' : 'en-US';
+            return new Date(date).toLocaleDateString(locale);
         }
     };
 }

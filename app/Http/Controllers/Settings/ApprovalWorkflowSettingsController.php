@@ -102,7 +102,7 @@ class ApprovalWorkflowSettingsController extends Controller
             }
 
             return redirect()->route('orgs.settings.approval-workflows.show', ['org' => $org, 'workflow' => $workflow->workflow_id])
-                ->with('success', 'Approval workflow created successfully');
+                ->with('success', __('settings.created_success'));
         } catch (\Exception $e) {
             if ($request->wantsJson()) {
                 return $this->serverError('Failed to create approval workflow: ' . $e->getMessage());
@@ -202,7 +202,7 @@ class ApprovalWorkflowSettingsController extends Controller
             }
 
             return redirect()->route('orgs.settings.approval-workflows.show', ['org' => $org, 'workflow' => $workflow])
-                ->with('success', 'Approval workflow updated successfully');
+                ->with('success', __('settings.updated_success'));
         } catch (\Exception $e) {
             if ($request->wantsJson()) {
                 return $this->serverError('Failed to update approval workflow: ' . $e->getMessage());
@@ -228,7 +228,7 @@ class ApprovalWorkflowSettingsController extends Controller
             }
 
             return redirect()->route('orgs.settings.approval-workflows.index', ['org' => $org])
-                ->with('success', 'Approval workflow deleted successfully');
+                ->with('success', __('settings.deleted_success'));
         } catch (\Exception $e) {
             if ($request->wantsJson()) {
                 return $this->serverError('Failed to delete approval workflow: ' . $e->getMessage());

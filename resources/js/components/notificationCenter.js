@@ -98,7 +98,7 @@ export default function notificationCenter() {
                 }
 
             } catch (err) {
-                console.error('Alerts load error:', err);
+                console.error(__('javascript.alerts_load_error'), err);
                 if (!silent) {
                     this.error = err.message;
                 }
@@ -177,7 +177,7 @@ export default function notificationCenter() {
                 }
 
             } catch (err) {
-                console.error('Acknowledge error:', err);
+                console.error(__('javascript.acknowledge_error'), err);
             }
         },
 
@@ -211,7 +211,7 @@ export default function notificationCenter() {
                 this.calculateUnreadCount();
 
             } catch (err) {
-                console.error('Resolve error:', err);
+                console.error(__('javascript.resolve_error'), err);
             }
         },
 

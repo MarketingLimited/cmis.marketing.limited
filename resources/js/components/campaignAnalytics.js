@@ -97,7 +97,7 @@ export default function campaignAnalytics() {
                 }
 
             } catch (err) {
-                console.error('ROI load error:', err);
+                console.error(__('javascript.roi_load_error'), err);
             }
         },
 
@@ -134,7 +134,7 @@ export default function campaignAnalytics() {
                 }
 
             } catch (err) {
-                console.error('Attribution load error:', err);
+                console.error(__('javascript.attribution_load_error'), err);
             }
         },
 
@@ -164,7 +164,7 @@ export default function campaignAnalytics() {
                 }
 
             } catch (err) {
-                console.error('LTV load error:', err);
+                console.error(__('javascript.ltv_load_error'), err);
             }
         },
 
@@ -200,7 +200,7 @@ export default function campaignAnalytics() {
                 }
 
             } catch (err) {
-                console.error('Projection load error:', err);
+                console.error(__('javascript.projection_load_error'), err);
             }
         },
 

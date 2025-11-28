@@ -28,6 +28,18 @@ return [
         'template' => 'قالب',
         'story' => 'قصة',
         'article' => 'مقالة',
+        'post' => 'منشور',
+        'ad' => 'إعلان',
+        'email' => 'بريد إلكتروني',
+    ],
+
+    // Content Type Labels (Full Names)
+    'type_labels' => [
+        'post' => 'منشور على وسائل التواصل',
+        'ad' => 'إعلان تجاري',
+        'email' => 'حملة بريد إلكتروني',
+        'article' => 'مقالة/مدونة',
+        'video' => 'محتوى فيديو',
     ],
 
     // Actions
@@ -203,6 +215,38 @@ return [
     'no_templates' => 'لا توجد قوالب',
     'no_plans' => 'لا توجد خطط محتوى',
     'create_first_content' => 'إنشاء أول محتوى',
+    'no_content_yet' => 'لا يوجد محتوى بعد',
+    'start_creating' => 'ابدأ بإنشاء محتوى لحملاتك',
+
+    // Filters & Labels
+    'new_content' => 'محتوى جديد',
+    'all_types' => 'جميع الأنواع',
+    'all_statuses' => 'جميع الحالات',
+    'no_campaign' => 'بدون ارتباط بحملة',
+    'select_type' => 'اختر نوع المحتوى',
+    'content_type' => 'نوع المحتوى',
+    'required_field' => 'مطلوب',
+    'enter_title' => 'أدخل عنوان المحتوى',
+    'enter_content' => 'أدخل محتواك هنا...',
+    'html_support' => 'يدعم النص العادي والتنسيق HTML الأساسي',
+    'campaign_association' => 'الحملة المرتبطة',
+    'target_platforms' => 'المنصات المستهدفة',
+    'update_image' => 'تحديث الصورة المميزة',
+    'keep_current' => 'اترك فارغاً للحفاظ على الصورة الحالية',
+    'current_image' => 'الصورة الحالية',
+    'schedule_optional' => 'جدولة (اختياري)',
+    'tag_separator' => 'الوسوم (مفصولة بفواصل)',
+    'tag_example' => 'مثال: تسويق، إطلاق منتج، وسائل التواصل',
+    'image_formats' => 'الصيغ المدعومة: JPG، PNG، GIF (الحد الأقصى: 5 ميجابايت)',
+    'view_details' => 'عرض التفاصيل',
+    'update_content' => 'تحديث المحتوى',
+    'create_new' => 'إنشاء محتوى جديد',
+    'edit' => 'تحديل',
+    'back_to_library' => 'العودة إلى مكتبة المحتوى',
+    'search_placeholder' => 'بحث في المحتوى...',
+    'published_on' => 'تاريخ النشر',
+    'scheduled_for_date' => 'مجدول لـ',
+    'no_content_provided' => 'لم يتم توفير محتوى.',
 
     // Help Text
     'help' => [

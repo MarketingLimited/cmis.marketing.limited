@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'لوحة التحكم')
+@section('title', __('dashboard.title'))
 
 @section('content')
 @php
@@ -12,9 +12,9 @@
     <!-- Page Header -->
     <div class="mb-4 sm:mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-            <h1 class="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">لوحة التحكم</h1>
+            <h1 class="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">{{ __('dashboard.title') }}</h1>
             <p class="mt-1 sm:mt-2 text-sm sm:text-base text-gray-600 dark:text-gray-400">
-                نظرة شاملة على أداء النظام والحملات التسويقية
+                {{ __('dashboard.description') }}
                 <span x-show="currentOrg" class="font-semibold text-blue-600">- <span x-text="currentOrg?.name || '{{ $currentOrg->name ?? '' }}'"></span></span>
             </p>
         </div>
@@ -25,7 +25,7 @@
                     :disabled="isLoading"
                     class="flex items-center gap-2 px-3 py-2 text-sm bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition disabled:opacity-50">
                 <i class="fas fa-sync-alt" :class="{ 'fa-spin': isLoading }"></i>
-                <span class="hidden sm:inline">تحديث</span>
+                <span class="hidden sm:inline">{{ __('common.refresh') }}</span>
             </button>
             <span x-show="lastUpdated" class="text-xs text-gray-500 dark:text-gray-400 hidden sm:inline" x-text="getRelativeTime()"></span>
         </div>
@@ -38,7 +38,7 @@
         <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-md transition-shadow p-4 sm:p-6 border border-gray-100 dark:border-gray-700">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-xs sm:text-sm font-medium text-gray-500 dark:text-gray-400">المؤسسات</p>
+                    <p class="text-xs sm:text-sm font-medium text-gray-500 dark:text-gray-400">{{ __('dashboard.organizations') }}</p>
                     <p class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mt-1 sm:mt-2" x-text="stats?.orgs ?? {{ $stats['orgs'] ?? 1 }}"></p>
                 </div>
                 <div class="p-2.5 sm:p-3 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 shadow-lg shadow-blue-500/30">
@@ -47,7 +47,7 @@
             </div>
             <div class="mt-3 pt-3 border-t border-gray-100 dark:border-gray-700">
                 <span class="text-xs text-green-600 dark:text-green-400 flex items-center gap-1">
-                    <i class="fas fa-check-circle"></i> نشط
+                    <i class="fas fa-check-circle"></i> {{ __('common.active') }}
                 </span>
             </div>
         </div>
@@ -56,7 +56,7 @@
         <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-md transition-shadow p-4 sm:p-6 border border-gray-100 dark:border-gray-700">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-xs sm:text-sm font-medium text-gray-500 dark:text-gray-400">الحملات</p>
+                    <p class="text-xs sm:text-sm font-medium text-gray-500 dark:text-gray-400">{{ __('dashboard.campaigns') }}</p>
                     <p class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mt-1 sm:mt-2" x-text="stats?.campaigns ?? {{ $stats['campaigns'] ?? 0 }}"></p>
                 </div>
                 <div class="p-2.5 sm:p-3 rounded-xl bg-gradient-to-br from-green-500 to-green-600 shadow-lg shadow-green-500/30">
@@ -65,7 +65,7 @@
             </div>
             <div class="mt-3 pt-3 border-t border-gray-100 dark:border-gray-700">
                 <a href="{{ route('orgs.campaigns.index', ['org' => $orgId]) }}" class="text-xs text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1">
-                    <i class="fas fa-external-link-alt"></i> عرض الكل
+                    <i class="fas fa-external-link-alt"></i> {{ __('common.view_all') }}
                 </a>
             </div>
         </div>
@@ -74,7 +74,7 @@
         <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-md transition-shadow p-4 sm:p-6 border border-gray-100 dark:border-gray-700">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-xs sm:text-sm font-medium text-gray-500 dark:text-gray-400">الأصول الإبداعية</p>
+                    <p class="text-xs sm:text-sm font-medium text-gray-500 dark:text-gray-400">{{ __('dashboard.creative_assets') }}</p>
                     <p class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mt-1 sm:mt-2" x-text="stats?.creative_assets ?? {{ $stats['creative_assets'] ?? 0 }}"></p>
                 </div>
                 <div class="p-2.5 sm:p-3 rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 shadow-lg shadow-purple-500/30">
@@ -83,7 +83,7 @@
             </div>
             <div class="mt-3 pt-3 border-t border-gray-100 dark:border-gray-700">
                 <a href="{{ route('orgs.creative.assets.index', ['org' => $orgId]) }}" class="text-xs text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1">
-                    <i class="fas fa-external-link-alt"></i> عرض الكل
+                    <i class="fas fa-external-link-alt"></i> {{ __('common.view_all') }}
                 </a>
             </div>
         </div>
@@ -92,7 +92,7 @@
         <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-md transition-shadow p-4 sm:p-6 border border-gray-100 dark:border-gray-700">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-xs sm:text-sm font-medium text-gray-500 dark:text-gray-400">مؤشرات الأداء</p>
+                    <p class="text-xs sm:text-sm font-medium text-gray-500 dark:text-gray-400">{{ __('dashboard.kpis') }}</p>
                     <p class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mt-1 sm:mt-2" x-text="stats?.kpis ?? {{ $stats['kpis'] ?? 0 }}"></p>
                 </div>
                 <div class="p-2.5 sm:p-3 rounded-xl bg-gradient-to-br from-amber-500 to-orange-500 shadow-lg shadow-amber-500/30">
@@ -101,7 +101,7 @@
             </div>
             <div class="mt-3 pt-3 border-t border-gray-100 dark:border-gray-700">
                 <a href="{{ route('orgs.analytics.index', ['org' => $orgId]) }}" class="text-xs text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1">
-                    <i class="fas fa-external-link-alt"></i> التحليلات
+                    <i class="fas fa-external-link-alt"></i> {{ __('dashboard.analytics') }}
                 </a>
             </div>
         </div>
@@ -114,8 +114,8 @@
         <!-- Campaign Status Chart -->
         <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
             <div class="px-4 sm:px-6 py-4 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
-                <h3 class="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">توزيع الحملات حسب الحالة</h3>
-                <span class="text-xs px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 rounded-full" x-text="Object.values(campaignStatus || {}).reduce((a,b) => a+b, 0) + ' حملة'"></span>
+                <h3 class="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">{{ __('dashboard.campaigns_by_status') }}</h3>
+                <span class="text-xs px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 rounded-full" x-text="Object.values(campaignStatus || {}).reduce((a,b) => a+b, 0) + ' {{ __('dashboard.campaign') }}'"></span>
             </div>
             <div class="p-4 sm:p-6">
                 <div class="h-56 sm:h-64 flex items-center justify-center relative">
@@ -123,7 +123,7 @@
                     <div x-show="!campaignStatus || Object.keys(campaignStatus).length === 0" class="absolute inset-0 flex items-center justify-center bg-gray-50 dark:bg-gray-700/50 rounded-lg">
                         <div class="text-center text-gray-500 dark:text-gray-400">
                             <i class="fas fa-chart-pie text-4xl mb-2 opacity-30"></i>
-                            <p class="text-sm">لا توجد بيانات حملات</p>
+                            <p class="text-sm">{{ __('dashboard.no_campaign_data') }}</p>
                         </div>
                     </div>
                 </div>
@@ -133,7 +133,7 @@
         <!-- Campaigns by Organization -->
         <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
             <div class="px-4 sm:px-6 py-4 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
-                <h3 class="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">الحملات حسب المؤسسة</h3>
+                <h3 class="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">{{ __('dashboard.campaigns_by_org') }}</h3>
             </div>
             <div class="p-4 sm:p-6">
                 <div class="h-56 sm:h-64 flex items-center justify-center relative">
@@ -141,7 +141,7 @@
                     <div x-show="!campaignsByOrg || campaignsByOrg.length === 0" class="absolute inset-0 flex items-center justify-center bg-gray-50 dark:bg-gray-700/50 rounded-lg">
                         <div class="text-center text-gray-500 dark:text-gray-400">
                             <i class="fas fa-building text-4xl mb-2 opacity-30"></i>
-                            <p class="text-sm">لا توجد بيانات مؤسسات</p>
+                            <p class="text-sm">{{ __('dashboard.no_org_data') }}</p>
                         </div>
                     </div>
                 </div>
@@ -156,7 +156,7 @@
         <!-- Weekly Performance -->
         <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
             <div class="px-4 sm:px-6 py-4 border-b border-gray-100 dark:border-gray-700">
-                <h3 class="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">الأداء الأسبوعي</h3>
+                <h3 class="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">{{ __('dashboard.weekly_performance') }}</h3>
             </div>
             <div class="p-4 sm:p-6">
                 <div class="space-y-4">
@@ -167,14 +167,14 @@
                                 <div class="w-24 sm:w-32 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
                                     <div class="h-full bg-gradient-to-r from-blue-500 to-blue-600 rounded-full transition-all duration-500" :style="'width: ' + metric.percentage + '%'"></div>
                                 </div>
-                                <span class="text-sm font-semibold text-gray-900 dark:text-white w-16 text-left" x-text="metric.value"></span>
+                                <span class="text-sm font-semibold text-gray-900 dark:text-white w-16 text-start" x-text="metric.value"></span>
                             </div>
                         </div>
                     </template>
                     <template x-if="weeklyMetrics.length === 0">
                         <div class="text-center text-gray-500 dark:text-gray-400 py-8">
                             <i class="fas fa-chart-bar text-3xl mb-2 opacity-30"></i>
-                            <p class="text-sm">جاري تحميل البيانات...</p>
+                            <p class="text-sm">{{ __('dashboard.loading_data') }}</p>
                         </div>
                     </template>
                 </div>
@@ -184,7 +184,7 @@
         <!-- Top Campaigns -->
         <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
             <div class="px-4 sm:px-6 py-4 border-b border-gray-100 dark:border-gray-700">
-                <h3 class="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">أفضل الحملات</h3>
+                <h3 class="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">{{ __('dashboard.top_performing_campaigns') }}</h3>
             </div>
             <div class="p-4 sm:p-6">
                 <div class="space-y-3">
@@ -194,7 +194,7 @@
                                 <h4 class="text-sm font-semibold text-gray-900 dark:text-white truncate" x-text="campaign.name"></h4>
                                 <p class="text-xs text-gray-500 dark:text-gray-400 truncate" x-text="campaign.organization"></p>
                             </div>
-                            <div class="text-left mr-3">
+                            <div class="text-start me-3">
                                 <span class="text-lg font-bold" :class="campaign.performance >= 80 ? 'text-green-600' : campaign.performance >= 50 ? 'text-yellow-600' : 'text-red-600'" x-text="campaign.performance + '%'"></span>
                             </div>
                         </div>
@@ -202,7 +202,7 @@
                     <template x-if="topCampaigns.length === 0">
                         <div class="text-center text-gray-500 dark:text-gray-400 py-8">
                             <i class="fas fa-trophy text-3xl mb-2 opacity-30"></i>
-                            <p class="text-sm">لا توجد حملات نشطة</p>
+                            <p class="text-sm">{{ __('dashboard.no_active_campaigns') }}</p>
                         </div>
                     </template>
                 </div>
@@ -212,7 +212,7 @@
         <!-- Recent Activity -->
         <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
             <div class="px-4 sm:px-6 py-4 border-b border-gray-100 dark:border-gray-700">
-                <h3 class="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">النشاط الأخير</h3>
+                <h3 class="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">{{ __('dashboard.recent_activities') }}</h3>
             </div>
             <div class="p-4 sm:p-6">
                 <div class="space-y-4 max-h-64 overflow-y-auto">
@@ -236,7 +236,7 @@
                     <template x-if="recentActivity.length === 0">
                         <div class="text-center text-gray-500 dark:text-gray-400 py-8">
                             <i class="fas fa-history text-3xl mb-2 opacity-30"></i>
-                            <p class="text-sm">لا يوجد نشاط حديث</p>
+                            <p class="text-sm">{{ __('dashboard.no_recent_activity') }}</p>
                         </div>
                     </template>
                 </div>
@@ -248,33 +248,33 @@
     <!-- Quick Actions -->
     <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
         <div class="px-4 sm:px-6 py-4 border-b border-gray-100 dark:border-gray-700">
-            <h3 class="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">إجراءات سريعة</h3>
+            <h3 class="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">{{ __('dashboard.quick_actions_title') }}</h3>
         </div>
         <div class="p-4 sm:p-6">
             <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
                 <a href="{{ route('orgs.campaigns.create', ['org' => $orgId]) }}" class="flex flex-col items-center p-4 sm:p-5 bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-xl hover:shadow-lg hover:scale-105 transition-all duration-200">
                     <i class="fas fa-plus-circle text-2xl sm:text-3xl mb-2"></i>
-                    <span class="text-xs sm:text-sm font-semibold text-center">حملة جديدة</span>
+                    <span class="text-xs sm:text-sm font-semibold text-center">{{ __('dashboard.new_campaign') }}</span>
                 </a>
                 <a href="{{ route('orgs.create') }}" class="flex flex-col items-center p-4 sm:p-5 bg-gradient-to-br from-green-500 to-green-600 text-white rounded-xl hover:shadow-lg hover:scale-105 transition-all duration-200">
                     <i class="fas fa-building text-2xl sm:text-3xl mb-2"></i>
-                    <span class="text-xs sm:text-sm font-semibold text-center">مؤسسة جديدة</span>
+                    <span class="text-xs sm:text-sm font-semibold text-center">{{ __('dashboard.new_organization') }}</span>
                 </a>
                 <a href="{{ route('orgs.creative.assets.index', ['org' => $orgId]) }}" class="flex flex-col items-center p-4 sm:p-5 bg-gradient-to-br from-purple-500 to-purple-600 text-white rounded-xl hover:shadow-lg hover:scale-105 transition-all duration-200">
                     <i class="fas fa-palette text-2xl sm:text-3xl mb-2"></i>
-                    <span class="text-xs sm:text-sm font-semibold text-center">محتوى إبداعي</span>
+                    <span class="text-xs sm:text-sm font-semibold text-center">{{ __('dashboard.creative_content') }}</span>
                 </a>
                 <a href="{{ route('orgs.analytics.index', ['org' => $orgId]) }}" class="flex flex-col items-center p-4 sm:p-5 bg-gradient-to-br from-amber-500 to-orange-500 text-white rounded-xl hover:shadow-lg hover:scale-105 transition-all duration-200">
                     <i class="fas fa-chart-line text-2xl sm:text-3xl mb-2"></i>
-                    <span class="text-xs sm:text-sm font-semibold text-center">التحليلات</span>
+                    <span class="text-xs sm:text-sm font-semibold text-center">{{ __('dashboard.analytics') }}</span>
                 </a>
                 <a href="{{ route('orgs.social.index', ['org' => $orgId]) }}" class="flex flex-col items-center p-4 sm:p-5 bg-gradient-to-br from-pink-500 to-rose-500 text-white rounded-xl hover:shadow-lg hover:scale-105 transition-all duration-200">
                     <i class="fas fa-share-alt text-2xl sm:text-3xl mb-2"></i>
-                    <span class="text-xs sm:text-sm font-semibold text-center">التواصل الاجتماعي</span>
+                    <span class="text-xs sm:text-sm font-semibold text-center">{{ __('dashboard.social_media') }}</span>
                 </a>
                 <a href="{{ route('orgs.ai.index', ['org' => $orgId]) }}" class="flex flex-col items-center p-4 sm:p-5 bg-gradient-to-br from-indigo-500 to-indigo-600 text-white rounded-xl hover:shadow-lg hover:scale-105 transition-all duration-200">
                     <i class="fas fa-robot text-2xl sm:text-3xl mb-2"></i>
-                    <span class="text-xs sm:text-sm font-semibold text-center">الذكاء الاصطناعي</span>
+                    <span class="text-xs sm:text-sm font-semibold text-center">{{ __('dashboard.ai') }}</span>
                 </a>
             </div>
         </div>
@@ -325,15 +325,15 @@ function dashboardData(orgId, initialStats = null, initialCampaignStatus = null,
         initializeSampleData() {
             // Set sample weekly metrics
             this.weeklyMetrics = [
-                { label: 'الإنفاق الإعلاني', value: '0 ر.س', percentage: 0 },
-                { label: 'مرات الظهور', value: '0', percentage: 0 },
-                { label: 'النقرات', value: '0', percentage: 0 },
-                { label: 'التحويلات', value: '0', percentage: 0 }
+                { label: '{{ __('dashboard.ad_spend') }}', value: '0 {{ __('common.currency_sar') }}', percentage: 0 },
+                { label: '{{ __('dashboard.impressions') }}', value: '0', percentage: 0 },
+                { label: '{{ __('dashboard.clicks') }}', value: '0', percentage: 0 },
+                { label: '{{ __('dashboard.conversions') }}', value: '0', percentage: 0 }
             ];
 
             // Sample recent activity
             this.recentActivity = [
-                { id: 1, type: 'campaign', icon: 'fas fa-bullhorn', message: 'مرحباً بك في لوحة التحكم', time: 'الآن' }
+                { id: 1, type: 'campaign', icon: 'fas fa-bullhorn', message: '{{ __('dashboard.welcome_dashboard') }}', time: '{{ __('dashboard.now') }}' }
             ];
         },
 
@@ -370,17 +370,17 @@ function dashboardData(orgId, initialStats = null, initialCampaignStatus = null,
 
                     // Generate weekly metrics with real or sample data
                     this.weeklyMetrics = [
-                        { label: 'الإنفاق الإعلاني', value: this.formatCurrency(data.analytics?.spend || 45234), percentage: 75 },
-                        { label: 'مرات الظهور', value: this.formatNumber(data.analytics?.impressions || 1200000), percentage: 85 },
-                        { label: 'النقرات', value: this.formatNumber(data.analytics?.clicks || 45200), percentage: 65 },
-                        { label: 'التحويلات', value: this.formatNumber(data.analytics?.conversions || 2134), percentage: 90 }
+                        { label: '{{ __('dashboard.ad_spend') }}', value: this.formatCurrency(data.analytics?.spend || 45234), percentage: 75 },
+                        { label: '{{ __('dashboard.impressions') }}', value: this.formatNumber(data.analytics?.impressions || 1200000), percentage: 85 },
+                        { label: '{{ __('dashboard.clicks') }}', value: this.formatNumber(data.analytics?.clicks || 45200), percentage: 65 },
+                        { label: '{{ __('dashboard.conversions') }}', value: this.formatNumber(data.analytics?.conversions || 2134), percentage: 90 }
                     ];
 
                     // Top campaigns
                     this.topCampaigns = [
-                        { id: 1, name: 'حملة الصيف 2025', organization: this.currentOrg?.name || 'المؤسسة الحالية', performance: 92 },
-                        { id: 2, name: 'إطلاق المنتج الجديد', organization: this.currentOrg?.name || 'المؤسسة الحالية', performance: 88 },
-                        { id: 3, name: 'عروض نهاية العام', organization: this.currentOrg?.name || 'المؤسسة الحالية', performance: 85 }
+                        { id: 1, name: '{{ __('dashboard.summer_campaign') }}', organization: this.currentOrg?.name || '{{ __('dashboard.current_organization') }}', performance: 92 },
+                        { id: 2, name: '{{ __('dashboard.product_launch') }}', organization: this.currentOrg?.name || '{{ __('dashboard.current_organization') }}', performance: 88 },
+                        { id: 3, name: '{{ __('dashboard.year_end_offers') }}', organization: this.currentOrg?.name || '{{ __('dashboard.current_organization') }}', performance: 85 }
                     ];
                 } else {
                     console.warn('[Dashboard] Failed to fetch data:', response.status);
@@ -416,7 +416,7 @@ function dashboardData(orgId, initialStats = null, initialCampaignStatus = null,
                             type: this.detectActivityType(notif.message || notif.title || ''),
                             icon: this.getActivityIcon(notif.message || notif.title || ''),
                             message: notif.message || notif.title || '',
-                            time: notif.time || notif.created_at || 'منذ قليل'
+                            time: notif.time || notif.created_at || '{{ __('dashboard.just_now') }}'
                         }));
                     }
                 }
@@ -424,9 +424,9 @@ function dashboardData(orgId, initialStats = null, initialCampaignStatus = null,
                 console.warn('[Dashboard] Could not fetch notifications:', error);
                 // Keep sample data
                 this.recentActivity = [
-                    { id: 1, type: 'campaign', icon: 'fas fa-bullhorn', message: 'تم إطلاق حملة "عروض الصيف" بنجاح', time: 'منذ 5 دقائق' },
-                    { id: 2, type: 'analytics', icon: 'fas fa-chart-line', message: 'تحديث في أداء الحملات - زيادة 15% في التحويلات', time: 'منذ ساعة' },
-                    { id: 3, type: 'integration', icon: 'fas fa-plug', message: 'تم ربط حساب Meta Ads بنجاح', time: 'منذ 3 ساعات' }
+                    { id: 1, type: 'campaign', icon: 'fas fa-bullhorn', message: '{{ __('dashboard.campaign_launched_success', ['name' => __('dashboard.summer_campaign')]) }}', time: '{{ __('common.ago') }} 5 {{ __('common.minutes') }}' },
+                    { id: 2, type: 'analytics', icon: 'fas fa-chart-line', message: '{{ __('dashboard.analytics_update') }}', time: '{{ __('common.ago') }} 1 {{ __('common.hours') }}' },
+                    { id: 3, type: 'integration', icon: 'fas fa-plug', message: '{{ __('dashboard.platform_connected') }}', time: '{{ __('common.ago') }} 3 {{ __('common.hours') }}' }
                 ];
             }
         },
@@ -438,7 +438,7 @@ function dashboardData(orgId, initialStats = null, initialCampaignStatus = null,
         },
 
         formatCurrency(amount) {
-            return new Intl.NumberFormat('ar-SA', { style: 'decimal' }).format(amount) + ' ر.س';
+            return new Intl.NumberFormat('{{ app()->getLocale() === 'ar' ? 'ar-SA' : 'en-US' }}', { style: 'decimal' }).format(amount) + ' {{ __('common.currency_sar') }}';
         },
 
         getRelativeTime() {
@@ -446,11 +446,11 @@ function dashboardData(orgId, initialStats = null, initialCampaignStatus = null,
 
             const seconds = Math.floor((new Date() - this.lastUpdated) / 1000);
 
-            if (seconds < 60) return `منذ ${seconds} ثانية`;
+            if (seconds < 60) return `{{ __('common.ago') }} ${seconds} {{ __('common.seconds') }}`;
             const minutes = Math.floor(seconds / 60);
-            if (minutes < 60) return `منذ ${minutes} دقيقة`;
+            if (minutes < 60) return `{{ __('common.ago') }} ${minutes} {{ __('common.minutes') }}`;
             const hours = Math.floor(minutes / 60);
-            return `منذ ${hours} ساعة`;
+            return `{{ __('common.ago') }} ${hours} {{ __('common.hours') }}`;
         },
 
         detectActivityType(message) {
@@ -515,18 +515,18 @@ function dashboardData(orgId, initialStats = null, initialCampaignStatus = null,
 
             if (labels.length === 0) {
                 // Show placeholder data
-                labels = ['لا توجد حملات'];
+                labels = ['{{ __('dashboard.no_campaigns_placeholder') }}'];
                 values = [1];
             }
 
             // Status label translations
             const statusLabels = {
-                'active': 'نشط',
-                'paused': 'متوقف',
-                'completed': 'مكتمل',
-                'draft': 'مسودة',
-                'pending': 'قيد الانتظار',
-                'scheduled': 'مجدول'
+                'active': '{{ __('common.active') }}',
+                'paused': '{{ __('common.paused') }}',
+                'completed': '{{ __('common.completed') }}',
+                'draft': '{{ __('common.draft') }}',
+                'pending': '{{ __('common.pending') }}',
+                'scheduled': '{{ __('common.scheduled') }}'
             };
 
             const translatedLabels = labels.map(l => statusLabels[l] || l);
@@ -600,7 +600,7 @@ function dashboardData(orgId, initialStats = null, initialCampaignStatus = null,
                 return;
             }
 
-            const labels = orgData.map(x => x.org_name || x.name || 'غير معروف');
+            const labels = orgData.map(x => x.org_name || x.name || '{{ __('dashboard.unknown_org') }}');
             const values = orgData.map(x => x.total || x.count || 0);
 
             try {
@@ -609,7 +609,7 @@ function dashboardData(orgId, initialStats = null, initialCampaignStatus = null,
                     data: {
                         labels: labels,
                         datasets: [{
-                            label: 'عدد الحملات',
+                            label: '{{ __('dashboard.campaign_count') }}',
                             data: values,
                             backgroundColor: 'rgba(59, 130, 246, 0.8)',
                             borderColor: 'rgb(59, 130, 246)',

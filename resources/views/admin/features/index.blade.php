@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="{{ app()->getLocale() }}" dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>إدارة الميزات والمنصات - CMIS</title>
+    <title>{{ __('admin.features_management_title') }} - CMIS</title>
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -86,12 +86,12 @@
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
                 <div class="flex items-center justify-between">
                     <div>
-                        <h1 class="text-2xl font-bold text-gray-900">إدارة الميزات والمنصات</h1>
-                        <p class="text-sm text-gray-600 mt-1">تحكم في الميزات المتاحة لكل منصة إعلانية</p>
+                        <h1 class="text-2xl font-bold text-gray-900">{{ __('admin.features_management_title') }}</h1>
+                        <p class="text-sm text-gray-600 mt-1">{{ __('admin.features_management_subtitle') }}</p>
                     </div>
                     <div class="flex items-center gap-2">
                         <span x-show="hasChanges" class="text-amber-600 text-sm font-medium">
-                            لديك تغييرات غير محفوظة
+                            {{ __('admin.unsaved_changes') }}
                         </span>
                         <button
                             x-show="hasChanges"
@@ -100,7 +100,7 @@
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                             </svg>
-                            حفظ التغييرات
+                            {{ __('admin.save_changes') }}
                         </button>
                     </div>
                 </div>
@@ -110,32 +110,32 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <!-- Presets Section -->
             <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-                <h2 class="text-lg font-semibold text-gray-900 mb-4">إعدادات سريعة (Presets)</h2>
+                <h2 class="text-lg font-semibold text-gray-900 mb-4">{{ __('admin.presets') }}</h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3">
                     <button
                         @click="applyPreset('launch')"
                         class="px-4 py-3 bg-blue-50 text-blue-700 border border-blue-200 rounded-lg hover:bg-blue-100 transition text-sm font-medium">
-                        🚀 إعداد الإطلاق الأولي
+                        🚀 {{ __('admin.preset_launch') }}
                     </button>
                     <button
                         @click="applyPreset('all-scheduling')"
                         class="px-4 py-3 bg-purple-50 text-purple-700 border border-purple-200 rounded-lg hover:bg-purple-100 transition text-sm font-medium">
-                        📅 جميع الجدولة
+                        📅 {{ __('admin.preset_all_scheduling') }}
                     </button>
                     <button
                         @click="applyPreset('all-paid')"
                         class="px-4 py-3 bg-indigo-50 text-indigo-700 border border-indigo-200 rounded-lg hover:bg-indigo-100 transition text-sm font-medium">
-                        💰 جميع الحملات الممولة
+                        💰 {{ __('admin.preset_all_paid') }}
                     </button>
                     <button
                         @click="applyPreset('full-launch')"
                         class="px-4 py-3 bg-green-50 text-green-700 border border-green-200 rounded-lg hover:bg-green-100 transition text-sm font-medium">
-                        ✅ تفعيل كل شيء
+                        ✅ {{ __('admin.preset_full_launch') }}
                     </button>
                     <button
                         @click="applyPreset('disable-all')"
                         class="px-4 py-3 bg-red-50 text-red-700 border border-red-200 rounded-lg hover:bg-red-100 transition text-sm font-medium">
-                        ❌ إيقاف كل شيء
+                        ❌ {{ __('admin.preset_disable_all') }}
                     </button>
                 </div>
             </div>
@@ -146,8 +146,8 @@
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
                             <tr>
-                                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider sticky right-0 bg-gray-50">
-                                    الميزة
+                                <th class="px-6 py-3 text-{{ app()->getLocale() === 'ar' ? 'right' : 'left' }} text-xs font-medium text-gray-500 uppercase tracking-wider sticky {{ app()->getLocale() === 'ar' ? 'right' : 'left' }}-0 bg-gray-50">
+                                    {{ __('admin.feature') }}
                                 </th>
                                 @foreach($platforms as $platform)
                                 <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -183,35 +183,35 @@
                         <tbody class="bg-white divide-y divide-gray-200">
                             @foreach($features as $feature)
                             <tr class="hover:bg-gray-50 transition">
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 sticky right-0 bg-white">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 sticky {{ app()->getLocale() === 'ar' ? 'right' : 'left' }}-0 bg-white">
                                     <div class="flex items-center gap-2">
                                         @switch($feature)
                                             @case('scheduling')
                                                 <span class="text-2xl">📅</span>
                                                 <div>
-                                                    <div>جدولة المنشورات</div>
-                                                    <div class="text-xs text-gray-500 font-normal">Scheduling</div>
+                                                    <div>{{ __('admin.scheduling') }}</div>
+                                                    <div class="text-xs text-gray-500 font-normal">{{ __('admin.scheduling_code') }}</div>
                                                 </div>
                                                 @break
                                             @case('paid_campaigns')
                                                 <span class="text-2xl">💰</span>
                                                 <div>
-                                                    <div>الحملات الممولة</div>
-                                                    <div class="text-xs text-gray-500 font-normal">Paid Campaigns</div>
+                                                    <div>{{ __('admin.paid_campaigns') }}</div>
+                                                    <div class="text-xs text-gray-500 font-normal">{{ __('admin.paid_campaigns_code') }}</div>
                                                 </div>
                                                 @break
                                             @case('analytics')
                                                 <span class="text-2xl">📊</span>
                                                 <div>
-                                                    <div>التحليلات</div>
-                                                    <div class="text-xs text-gray-500 font-normal">Analytics</div>
+                                                    <div>{{ __('analytics.title') }}</div>
+                                                    <div class="text-xs text-gray-500 font-normal">{{ __('analytics.code') }}</div>
                                                 </div>
                                                 @break
                                             @case('organic_posts')
                                                 <span class="text-2xl">📱</span>
                                                 <div>
-                                                    <div>المنشورات العضوية</div>
-                                                    <div class="text-xs text-gray-500 font-normal">Organic Posts</div>
+                                                    <div>{{ __('admin.organic_posts') }}</div>
+                                                    <div class="text-xs text-gray-500 font-normal">{{ __('admin.organic_posts_code') }}</div>
                                                 </div>
                                                 @break
                                         @endswitch
@@ -238,21 +238,21 @@
             <!-- Summary Cards -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
                 <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                    <h3 class="text-sm font-medium text-gray-500 mb-2">المنصات المفعلة</h3>
+                    <h3 class="text-sm font-medium text-gray-500 mb-2">{{ __('admin.platforms_enabled') }}</h3>
                     <div class="text-3xl font-bold text-blue-600" x-text="enabledPlatformsCount"></div>
-                    <p class="text-xs text-gray-500 mt-1">من أصل 6 منصات</p>
+                    <p class="text-xs text-gray-500 mt-1">{{ __('admin.of_platforms', ['count' => 6]) }}</p>
                 </div>
 
                 <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                    <h3 class="text-sm font-medium text-gray-500 mb-2">الميزات المفعلة</h3>
+                    <h3 class="text-sm font-medium text-gray-500 mb-2">{{ __('admin.features_enabled') }}</h3>
                     <div class="text-3xl font-bold text-green-600" x-text="enabledFeaturesCount"></div>
-                    <p class="text-xs text-gray-500 mt-1">من أصل 24 ميزة</p>
+                    <p class="text-xs text-gray-500 mt-1">{{ __('admin.of_features', ['count' => 24]) }}</p>
                 </div>
 
                 <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                    <h3 class="text-sm font-medium text-gray-500 mb-2">التغييرات المعلقة</h3>
+                    <h3 class="text-sm font-medium text-gray-500 mb-2">{{ __('admin.pending_changes') }}</h3>
                     <div class="text-3xl font-bold text-amber-600" x-text="changes.length"></div>
-                    <p class="text-xs text-gray-500 mt-1">في انتظار الحفظ</p>
+                    <p class="text-xs text-gray-500 mt-1">{{ __('admin.awaiting_save') }}</p>
                 </div>
             </div>
         </div>
@@ -312,28 +312,28 @@
                         const data = await response.json();
 
                         if (data.success) {
-                            alert('✅ تم حفظ التغييرات بنجاح');
+                            alert('✅ {{ __("admin.changes_saved_success") }}');
                             this.changes = [];
                             this.hasChanges = false;
                             location.reload();
                         } else {
-                            alert('❌ فشل حفظ التغييرات: ' + data.message);
+                            alert('❌ {{ __("admin.changes_save_failed") }}: ' + data.message);
                         }
                     } catch (error) {
-                        alert('❌ فشل حفظ التغييرات: ' + error.message);
+                        alert('❌ {{ __("admin.changes_save_failed") }}: ' + error.message);
                     }
                 },
 
                 async applyPreset(presetName) {
                     const presetNames = {
-                        'launch': 'إعداد الإطلاق الأولي',
-                        'all-scheduling': 'تفعيل جميع الجدولة',
-                        'all-paid': 'تفعيل جميع الحملات الممولة',
-                        'full-launch': 'تفعيل كل شيء',
-                        'disable-all': 'إيقاف كل شيء'
+                        'launch': '{{ __("admin.preset_launch") }}',
+                        'all-scheduling': '{{ __("admin.preset_all_scheduling") }}',
+                        'all-paid': '{{ __("admin.preset_all_paid") }}',
+                        'full-launch': '{{ __("admin.preset_full_launch") }}',
+                        'disable-all': '{{ __("admin.preset_disable_all") }}'
                     };
 
-                    if (!confirm(`هل تريد تطبيق إعداد "${presetNames[presetName]}"؟`)) {
+                    if (!confirm('{{ __("admin.confirm_preset_apply", ["preset" => ""]) }}'.replace('""', presetNames[presetName]))) {
                         return;
                     }
 
@@ -350,13 +350,13 @@
                         const data = await response.json();
 
                         if (data.success) {
-                            alert('✅ تم تطبيق الإعداد بنجاح');
+                            alert('✅ {{ __("admin.preset_applied_success") }}');
                             location.reload();
                         } else {
-                            alert('❌ فشل تطبيق الإعداد: ' + data.message);
+                            alert('❌ {{ __("admin.preset_apply_failed") }}: ' + data.message);
                         }
                     } catch (error) {
-                        alert('❌ فشل تطبيق الإعداد: ' + error.message);
+                        alert('❌ {{ __("admin.preset_apply_failed") }}: ' + error.message);
                     }
                 },
 

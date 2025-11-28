@@ -59,7 +59,7 @@ class ABTestController extends Controller
         }
 
         return redirect()->route('ab-testing.tests.show', $test->test_id)
-            ->with('success', 'A/B test created successfully');
+            ->with('success', __('ab_testing.created_success'));
     }
 
     /**
@@ -99,7 +99,7 @@ class ABTestController extends Controller
         }
 
         return redirect()->route('ab-testing.tests.show', $test->test_id)
-            ->with('success', 'A/B test updated successfully');
+            ->with('success', __('ab_testing.updated_success'));
     }
 
     /**
@@ -115,7 +115,7 @@ class ABTestController extends Controller
         }
 
         return redirect()->route('ab-testing.tests.index')
-            ->with('success', 'A/B test deleted successfully');
+            ->with('success', __('ab_testing.deleted_success'));
     }
 
     /**

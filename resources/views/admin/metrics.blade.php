@@ -2,18 +2,18 @@
 
 @section('content')
 <div class="container mt-4">
-    <h1 class="mb-4">📊 Knowledge Metrics Dashboard</h1>
+    <h1 class="mb-4">📊 {{ __('admin.knowledge_metrics_title') }}</h1>
 
     <div class="alert alert-info">
-        هذه الصفحة تعرض الاتجاهات الدلالية المكتشفة خلال الأسبوع الماضي عبر دالة <code>semantic_analysis()</code>.
+        {{ __('admin.semantic_trends_description') }}
     </div>
 
     <table class="table table-bordered table-striped">
         <thead class="table-dark">
             <tr>
-                <th>Intent</th>
-                <th>Usage Count</th>
-                <th>Average Quality</th>
+                <th>{{ __('admin.intent') }}</th>
+                <th>{{ __('admin.usage_count') }}</th>
+                <th>{{ __('admin.average_quality') }}</th>
             </tr>
         </thead>
         <tbody>
@@ -25,7 +25,7 @@
                 </tr>
             @empty
                 <tr>
-                    <td colspan="3" class="text-center text-muted">لا توجد بيانات متاحة حاليًا.</td>
+                    <td colspan="3" class="text-center text-muted">{{ __('admin.no_data_available') }}</td>
                 </tr>
             @endforelse
         </tbody>

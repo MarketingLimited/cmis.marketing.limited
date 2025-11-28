@@ -35,13 +35,13 @@
             <form action="{{ route('orgs.settings.approval-workflows.toggle', [$currentOrg, $workflow->workflow_id]) }}" method="POST">
                 @csrf
                 <button type="submit" class="px-4 py-2 border {{ $workflow->is_active ? 'border-yellow-300 text-yellow-600 hover:bg-yellow-50' : 'border-green-300 text-green-600 hover:bg-green-50' }} rounded-lg transition text-sm font-medium">
-                    <i class="fas {{ $workflow->is_active ? 'fa-pause' : 'fa-play' }} mr-1"></i>
-                    {{ $workflow->is_active ? 'Pause' : 'Activate' }}
+                    <i class="fas {{ $workflow->is_active ? 'fa-pause' : 'fa-play' }} me-1"></i>
+                    {{ $workflow->is_active ? __('settings.pause') : __('settings.activate') }}
                 </button>
             </form>
             <a href="{{ route('orgs.settings.approval-workflows.edit', [$currentOrg, $workflow->workflow_id]) }}"
                class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition text-sm font-medium">
-                <i class="fas fa-edit mr-1"></i>Edit
+                <i class="fas fa-edit me-1"></i>{{ __('common.edit') }}
             </a>
         </div>
     </div>
@@ -55,7 +55,7 @@
     {{-- Visual Workflow Flow --}}
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         <h3 class="text-base font-semibold text-gray-900 mb-4">
-            <i class="fas fa-project-diagram text-indigo-500 mr-2"></i>Approval Flow
+            <i class="fas fa-project-diagram text-indigo-500 me-2"></i>{{ __('settings.approval_flow') }}
         </h3>
 
         <div class="flex items-center justify-center gap-4 py-6 overflow-x-auto">
@@ -64,7 +64,7 @@
                 <div class="w-16 h-16 mx-auto bg-blue-100 rounded-full flex items-center justify-center mb-2">
                     <i class="fas fa-file-alt text-blue-600 text-xl"></i>
                 </div>
-                <span class="text-xs text-gray-600">Content<br>Created</span>
+                <span class="text-xs text-gray-600">{{ __('settings.content') }}<br>{{ __('settings.created') }}</span>
             </div>
 
             @if($workflow->approval_steps && count($workflow->approval_steps) > 0)
@@ -102,7 +102,7 @@
                 <div class="w-16 h-16 mx-auto bg-green-100 rounded-full flex items-center justify-center mb-2">
                     <i class="fas fa-check text-green-600 text-xl"></i>
                 </div>
-                <span class="text-xs text-gray-600">Published</span>
+                <span class="text-xs text-gray-600">{{ __('settings.published') }}</span>
             </div>
         </div>
     </div>
@@ -110,7 +110,7 @@
     {{-- Approval Steps Detail --}}
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         <h3 class="text-base font-semibold text-gray-900 mb-4">
-            <i class="fas fa-list-ol text-indigo-500 mr-2"></i>Approval Steps
+            <i class="fas fa-list-ol text-indigo-500 me-2"></i>{{ __('settings.approval_steps') }}
         </h3>
 
         @if($workflow->approval_steps && count($workflow->approval_steps) > 0)
@@ -122,17 +122,17 @@
                         </div>
                         <div class="flex-1">
                             <div class="flex items-center justify-between">
-                                <h4 class="text-sm font-medium text-gray-900">Step {{ $index + 1 }}</h4>
+                                <h4 class="text-sm font-medium text-gray-900">{{ __('settings.step') }} {{ $index + 1 }}</h4>
                                 <span class="px-2 py-0.5 text-xs bg-indigo-100 text-indigo-700 rounded-full">
-                                    {{ $step['required_approvals'] ?? 1 }} approval{{ ($step['required_approvals'] ?? 1) > 1 ? 's' : '' }} required
+                                    {{ $step['required_approvals'] ?? 1 }} {{ __('settings.approval_required', ['count' => $step['required_approvals'] ?? 1]) }}
                                 </span>
                             </div>
                             <p class="text-sm text-gray-600 mt-1">
-                                <span class="font-medium">Role:</span> {{ ucfirst($step['role'] ?? 'Any Team Member') }}
+                                <span class="font-medium">{{ __('settings.role') }}:</span> {{ ucfirst($step['role'] ?? __('settings.any_team_member')) }}
                             </p>
                             @if(!empty($step['users']))
                                 <p class="text-sm text-gray-600 mt-1">
-                                    <span class="font-medium">Specific Users:</span> {{ count($step['users']) }} assigned
+                                    <span class="font-medium">{{ __('settings.specific_users') }}:</span> {{ count($step['users']) }} {{ __('settings.assigned') }}
                                 </p>
                             @endif
                         </div>
@@ -140,42 +140,42 @@
                 @endforeach
             </div>
         @else
-            <p class="text-sm text-gray-500">No approval steps configured</p>
+            <p class="text-sm text-gray-500">{{ __('settings.no_approval_steps_configured') }}</p>
         @endif
     </div>
 
     {{-- Workflow Settings --}}
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         <h3 class="text-base font-semibold text-gray-900 mb-4">
-            <i class="fas fa-cog text-gray-500 mr-2"></i>Settings
+            <i class="fas fa-cog text-gray-500 me-2"></i>{{ __('settings.settings') }}
         </h3>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div class="p-4 bg-gray-50 rounded-lg">
-                <p class="text-xs text-gray-500 mb-1">Auto-Approve After</p>
+                <p class="text-xs text-gray-500 mb-1">{{ __('settings.auto_approve_after') }}</p>
                 <p class="text-sm font-medium text-gray-900">
-                    {{ $workflow->auto_approve_after_hours ? $workflow->auto_approve_after_hours . ' hours' : 'Disabled' }}
+                    {{ $workflow->auto_approve_after_hours ? $workflow->auto_approve_after_hours . ' ' . __('settings.hours') : __('settings.disabled') }}
                 </p>
             </div>
 
             <div class="p-4 bg-gray-50 rounded-lg">
-                <p class="text-xs text-gray-500 mb-1">Reminder After</p>
+                <p class="text-xs text-gray-500 mb-1">{{ __('settings.reminder_after') }}</p>
                 <p class="text-sm font-medium text-gray-900">
-                    {{ $workflow->settings['reminder_hours'] ?? 24 }} hours
+                    {{ $workflow->settings['reminder_hours'] ?? 24 }} {{ __('settings.hours') }}
                 </p>
             </div>
 
             <div class="p-4 bg-gray-50 rounded-lg">
-                <p class="text-xs text-gray-500 mb-1">Allow Skip</p>
+                <p class="text-xs text-gray-500 mb-1">{{ __('settings.allow_skip') }}</p>
                 <p class="text-sm font-medium text-gray-900">
-                    {{ ($workflow->settings['allow_skip'] ?? false) ? 'Yes' : 'No' }}
+                    {{ ($workflow->settings['allow_skip'] ?? false) ? __('settings.yes') : __('settings.no') }}
                 </p>
             </div>
 
             <div class="p-4 bg-gray-50 rounded-lg">
-                <p class="text-xs text-gray-500 mb-1">Require Rejection Reason</p>
+                <p class="text-xs text-gray-500 mb-1">{{ __('settings.require_rejection_reason') }}</p>
                 <p class="text-sm font-medium text-gray-900">
-                    {{ ($workflow->settings['require_rejection_reason'] ?? true) ? 'Yes' : 'No' }}
+                    {{ ($workflow->settings['require_rejection_reason'] ?? true) ? __('settings.yes') : __('settings.no') }}
                 </p>
             </div>
         </div>
@@ -185,7 +185,7 @@
     @if($workflow->profileGroup)
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <h3 class="text-base font-semibold text-gray-900 mb-4">
-                <i class="fas fa-layer-group text-indigo-500 mr-2"></i>Associated Profile Group
+                <i class="fas fa-layer-group text-indigo-500 me-2"></i>{{ __('settings.associated_profile_group') }}
             </h3>
             <a href="{{ route('orgs.settings.profile-groups.show', [$currentOrg, $workflow->profileGroup->group_id]) }}"
                class="inline-flex items-center gap-3 p-4 bg-indigo-50 rounded-lg hover:bg-indigo-100 transition">
@@ -194,9 +194,9 @@
                 </div>
                 <div>
                     <p class="text-sm font-medium text-gray-900">{{ $workflow->profileGroup->name }}</p>
-                    <p class="text-xs text-gray-500">{{ $workflow->profileGroup->profiles_count ?? 0 }} profiles</p>
+                    <p class="text-xs text-gray-500">{{ $workflow->profileGroup->profiles_count ?? 0 }} {{ __('settings.profiles') }}</p>
                 </div>
-                <i class="fas fa-chevron-right text-gray-400 ml-auto"></i>
+                <i class="fas fa-chevron-right text-gray-400 ms-auto"></i>
             </a>
         </div>
     @endif
@@ -205,10 +205,10 @@
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         <div class="flex items-center justify-between mb-4">
             <h3 class="text-base font-semibold text-gray-900">
-                <i class="fas fa-clock text-yellow-500 mr-2"></i>Pending Approvals
+                <i class="fas fa-clock text-yellow-500 me-2"></i>{{ __('settings.pending_approvals') }}
             </h3>
             <span class="px-2 py-1 text-xs bg-yellow-100 text-yellow-700 rounded-full">
-                {{ $pendingCount ?? 0 }} pending
+                {{ $pendingCount ?? 0 }} {{ __('common.pending') }}
             </span>
         </div>
 
@@ -221,16 +221,16 @@
                                 <i class="fas fa-file-alt text-yellow-600"></i>
                             </div>
                             <div>
-                                <p class="text-sm font-medium text-gray-900">{{ Str::limit($approval->content ?? 'Untitled', 50) }}</p>
-                                <p class="text-xs text-gray-500">Step {{ $approval->current_step ?? 1 }} &bull; {{ $approval->created_at->diffForHumans() }}</p>
+                                <p class="text-sm font-medium text-gray-900">{{ Str::limit($approval->content ?? __('settings.untitled'), 50) }}</p>
+                                <p class="text-xs text-gray-500">{{ __('settings.step') }} {{ $approval->current_step ?? 1 }} &bull; {{ $approval->created_at->diffForHumans() }}</p>
                             </div>
                         </div>
-                        <a href="#" class="text-sm text-indigo-600 hover:text-indigo-700">Review</a>
+                        <a href="#" class="text-sm text-indigo-600 hover:text-indigo-700">{{ __('settings.review') }}</a>
                     </div>
                 @endforeach
             </div>
         @else
-            <p class="text-sm text-gray-500 text-center py-4">No content pending approval</p>
+            <p class="text-sm text-gray-500 text-center py-4">{{ __('settings.no_pending_approvals') }}</p>
         @endif
     </div>
 

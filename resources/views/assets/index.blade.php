@@ -4,15 +4,15 @@
     $currentOrg = $currentOrg ?? request()->route('org') ?? auth()->user()->active_org_id ?? auth()->user()->org_id;
 @endphp
 
-@section('title', 'Creative Assets')
+@section('title', __('assets.creative_assets'))
 
 @section('content')
 <div class="max-w-7xl mx-auto">
     <div class="flex justify-between items-center mb-6">
-        <h1 class="text-3xl font-bold text-gray-900">Creative Assets</h1>
+        <h1 class="text-3xl font-bold text-gray-900">{{ __('assets.creative_assets') }}</h1>
         <a href="{{  route('orgs.assets.upload', ['org' => $currentOrg])  }}" class="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-md">
-            <i class="fas fa-upload mr-2"></i>
-            Upload Assets
+            <i class="fas fa-upload me-2"></i>
+            {{ __('assets.upload_assets') }}
         </a>
     </div>
 
@@ -26,36 +26,36 @@
     <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
         <div class="bg-white rounded-lg shadow p-4">
             <div class="flex items-center">
-                <i class="fas fa-image text-2xl text-blue-600 mr-3"></i>
+                <i class="fas fa-image text-2xl text-blue-600 me-3"></i>
                 <div>
-                    <p class="text-sm text-gray-500">Images</p>
+                    <p class="text-sm text-gray-500">{{ __('assets.images') }}</p>
                     <p class="text-xl font-bold">{{  $stats['images'] ?? 0  }}</p>
                 </div>
             </div>
         </div>
         <div class="bg-white rounded-lg shadow p-4">
             <div class="flex items-center">
-                <i class="fas fa-video text-2xl text-red-600 mr-3"></i>
+                <i class="fas fa-video text-2xl text-red-600 me-3"></i>
                 <div>
-                    <p class="text-sm text-gray-500">Videos</p>
+                    <p class="text-sm text-gray-500">{{ __('assets.videos') }}</p>
                     <p class="text-xl font-bold">{{  $stats['videos'] ?? 0  }}</p>
                 </div>
             </div>
         </div>
         <div class="bg-white rounded-lg shadow p-4">
             <div class="flex items-center">
-                <i class="fas fa-file text-2xl text-green-600 mr-3"></i>
+                <i class="fas fa-file text-2xl text-green-600 me-3"></i>
                 <div>
-                    <p class="text-sm text-gray-500">Documents</p>
+                    <p class="text-sm text-gray-500">{{ __('assets.documents') }}</p>
                     <p class="text-xl font-bold">{{  $stats['documents'] ?? 0  }}</p>
                 </div>
             </div>
         </div>
         <div class="bg-white rounded-lg shadow p-4">
             <div class="flex items-center">
-                <i class="fas fa-database text-2xl text-purple-600 mr-3"></i>
+                <i class="fas fa-database text-2xl text-purple-600 me-3"></i>
                 <div>
-                    <p class="text-sm text-gray-500">Total Size</p>
+                    <p class="text-sm text-gray-500">{{ __('assets.total_size') }}</p>
                     <p class="text-xl font-bold">{{  $stats['total_size'] ?? '0 MB'  }}</p>
                 </div>
             </div>
@@ -66,29 +66,29 @@
     <div class="bg-white rounded-lg shadow mb-6 p-4">
         <form method="GET" action="{{  route('orgs.assets.index', ['org' => $currentOrg])  }}" class="flex flex-wrap gap-4">
             <div class="flex-1 min-w-[200px]">
-                <input type="text" name="search" placeholder="Search assets..."
+                <input type="text" name="search" placeholder="{{ __('assets.search_assets') }}"
                        value="{{  request('search')  }}"
                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
             </div>
             <div class="min-w-[150px]">
                 <select name="type" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
-                    <option value="">All Types</option>
-                    <option value="image" {{  request('type') === 'image' ? 'selected' : ''  }}>Images</option>
-                    <option value="video" {{  request('type') === 'video' ? 'selected' : ''  }}>Videos</option>
-                    <option value="document" {{  request('type') === 'document' ? 'selected' : ''  }}>Documents</option>
-                    <option value="audio" {{  request('type') === 'audio' ? 'selected' : ''  }}>Audio</option>
+                    <option value="">{{ __('assets.all_types') }}</option>
+                    <option value="image" {{  request('type') === 'image' ? 'selected' : ''  }}>{{ __('assets.images') }}</option>
+                    <option value="video" {{  request('type') === 'video' ? 'selected' : ''  }}>{{ __('assets.videos') }}</option>
+                    <option value="document" {{  request('type') === 'document' ? 'selected' : ''  }}>{{ __('assets.documents') }}</option>
+                    <option value="audio" {{  request('type') === 'audio' ? 'selected' : ''  }}>{{ __('assets.audio') }}</option>
                 </select>
             </div>
             <div class="min-w-[150px]">
                 <select name="sort" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
-                    <option value="newest" {{  request('sort', 'newest') === 'newest' ? 'selected' : ''  }}>Newest First</option>
-                    <option value="oldest" {{  request('sort') === 'oldest' ? 'selected' : ''  }}>Oldest First</option>
-                    <option value="name" {{  request('sort') === 'name' ? 'selected' : ''  }}>Name A-Z</option>
-                    <option value="size" {{  request('sort') === 'size' ? 'selected' : ''  }}>Size</option>
+                    <option value="newest" {{  request('sort', 'newest') === 'newest' ? 'selected' : ''  }}>{{ __('assets.newest_first') }}</option>
+                    <option value="oldest" {{  request('sort') === 'oldest' ? 'selected' : ''  }}>{{ __('assets.oldest_first') }}</option>
+                    <option value="name" {{  request('sort') === 'name' ? 'selected' : ''  }}>{{ __('assets.name_az') }}</option>
+                    <option value="size" {{  request('sort') === 'size' ? 'selected' : ''  }}>{{ __('assets.size') }}</option>
                 </select>
             </div>
             <button type="submit" class="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-md">
-                <i class="fas fa-filter mr-2"></i>Filter
+                <i class="fas fa-filter me-2"></i>{{ __('assets.filter') }}
             </button>
         </form>
     </div>
@@ -148,12 +148,12 @@
         @empty
             <div class="col-span-full bg-white rounded-lg shadow p-12 text-center">
                 <i class="fas fa-images text-5xl text-gray-400 mb-4"></i>
-                <h3 class="text-xl font-semibold text-gray-900 mb-2">No assets yet</h3>
-                <p class="text-gray-600 mb-4">Upload your first creative assets to get started</p>
+                <h3 class="text-xl font-semibold text-gray-900 mb-2">{{ __('assets.no_assets_yet') }}</h3>
+                <p class="text-gray-600 mb-4">{{ __('assets.upload_first_asset') }}</p>
                 <a href="{{  route('orgs.assets.upload', ['org' => $currentOrg])  }}"
                    class="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-md">
-                    <i class="fas fa-upload mr-2"></i>
-                    Upload Assets
+                    <i class="fas fa-upload me-2"></i>
+                    {{ __('assets.upload_assets') }}
                 </a>
             </div>
         @endforelse

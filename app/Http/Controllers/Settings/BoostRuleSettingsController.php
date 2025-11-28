@@ -112,7 +112,7 @@ class BoostRuleSettingsController extends Controller
             }
 
             return redirect()->route('orgs.settings.boost-rules.show', ['org' => $org, 'rule' => $boostRule->boost_rule_id])
-                ->with('success', 'Boost rule created successfully');
+                ->with('success', __('settings.created_success'));
         } catch (\Exception $e) {
             if ($request->wantsJson()) {
                 return $this->serverError('Failed to create boost rule: ' . $e->getMessage());
@@ -225,7 +225,7 @@ class BoostRuleSettingsController extends Controller
             }
 
             return redirect()->route('orgs.settings.boost-rules.show', ['org' => $org, 'rule' => $rule])
-                ->with('success', 'Boost rule updated successfully');
+                ->with('success', __('settings.updated_success'));
         } catch (\Exception $e) {
             if ($request->wantsJson()) {
                 return $this->serverError('Failed to update boost rule: ' . $e->getMessage());
@@ -251,7 +251,7 @@ class BoostRuleSettingsController extends Controller
             }
 
             return redirect()->route('orgs.settings.boost-rules.index', ['org' => $org])
-                ->with('success', 'Boost rule deleted successfully');
+                ->with('success', __('settings.deleted_success'));
         } catch (\Exception $e) {
             if ($request->wantsJson()) {
                 return $this->serverError('Failed to delete boost rule: ' . $e->getMessage());
