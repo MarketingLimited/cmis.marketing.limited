@@ -203,6 +203,44 @@ export function getMediaManagementMethods() {
         //   - Video Pins (general): Max 2GB (.MP4, .MOV, .M4V)
         //   - Idea Pins (videos): Max 100MB (.MP4, .MOV, .M4V)
         //
+        // TUMBLR API:
+        // Photos:
+        //   - Max file size: 20MB per photo
+        //   - Recommended dashboard size: 540x810 pixels
+        //   - Max expanded size: 2048x3072 pixels
+        //   - Images exceeding limits may be auto-scaled or rejected
+        //
+        // Videos:
+        //   - Max file size: 500MB per video
+        //   - Max length: 10 minutes per video
+        //   - Daily limits: 20 videos/day, 60 minutes total video time
+        //
+        // Audio:
+        //   - Max file size: 10MB per audio file
+        //
+        // REDDIT API:
+        // Images (General Posts):
+        //   - Max file size: 20MB (general API limit)
+        //   - Third-party apps: ~10MB (if using Imgur for hosting)
+        //
+        // Videos:
+        //   - Max file size: 1GB
+        //   - Max length: 15 minutes
+        //
+        // User Profile Images:
+        //   - Dimensions: 256x256 pixels
+        //
+        // User Banner Images:
+        //   - Dimensions: 1000x300 pixels
+        //   - Max file size: 500KB (JPG or PNG)
+        //
+        // Subreddit Cover Images:
+        //   - Dimensions: 1920x384 pixels
+        //   - Max file size: 500KB (JPG or PNG)
+        //
+        // API Response Payload:
+        //   - Max size: 6MB per API call (requires pagination beyond)
+        //
         // CROSS-PLATFORM COMPATIBILITY STRATEGY:
         // When posting to MULTIPLE platforms simultaneously, we use the
         // MOST RESTRICTIVE limits to ensure universal compatibility:
@@ -215,31 +253,40 @@ export function getMediaManagementMethods() {
         // for cross-platform publishing compatibility.
         //
         // Platform-Specific Limits Summary:
-        // ┌──────────────┬──────────┬──────────┬──────────┐
-        // │ Platform     │ Images   │ Videos   │ Duration │
-        // ├──────────────┼──────────┼──────────┼──────────┤
-        // │ YouTube†     │ 2MB      │ 256GB    │ -        │
-        // │ WhatsApp     │ 5MB      │ 16MB     │ -        │
-        // │ Google Biz   │ 5MB      │ 75MB     │ 30s      │
-        // │ Snapchat*    │ 300KB-5MB│ 1GB      │ 10s-60s  │
-        // │ X (Twitter)  │ 5MB      │ 512MB    │ 140s     │
-        // │ LinkedIn     │ 5-8MB    │ 500MB    │ 3s-30min │
-        // │ Messenger    │ 8MB      │ 25MB     │ -        │
-        // │ Instagram    │ 8MB      │ 100MB    │ 60s      │
-        // │ TikTok       │ -        │ 4GB      │ 10min    │
-        // │ Pinterest    │ 10-20MB  │ 100MB-2GB│ -        │
-        // └──────────────┴──────────┴──────────┴──────────┘
+        // ┌──────────────┬──────────┬──────────┬──────────┬──────────┐
+        // │ Platform     │ Images   │ Videos   │ Duration │ Audio    │
+        // ├──────────────┼──────────┼──────────┼──────────┼──────────┤
+        // │ YouTube†     │ 2MB      │ 256GB    │ -        │ -        │
+        // │ WhatsApp     │ 5MB      │ 16MB     │ -        │ 16MB     │
+        // │ Google Biz   │ 5MB      │ 75MB     │ 30s      │ -        │
+        // │ Snapchat*    │ 300KB-5MB│ 1GB      │ 10s-60s  │ -        │
+        // │ X (Twitter)  │ 5MB      │ 512MB    │ 140s     │ -        │
+        // │ LinkedIn     │ 5-8MB    │ 500MB    │ 3s-30min │ -        │
+        // │ Messenger    │ 8MB      │ 25MB     │ -        │ 25MB     │
+        // │ Instagram    │ 8MB      │ 100MB    │ 60s      │ -        │
+        // │ TikTok       │ -        │ 4GB      │ 10min    │ -        │
+        // │ Pinterest    │ 10-20MB  │ 100MB-2GB│ -        │ -        │
+        // │ Tumblr       │ 20MB     │ 500MB    │ 10min    │ 10MB     │
+        // │ Reddit‡      │ 10-20MB  │ 1GB      │ 15min    │ -        │
+        // └──────────────┴──────────┴──────────┴──────────┴──────────┘
         // * Snapchat varies by ad type (Audience Filters: 300KB!)
         // † YouTube thumbnails: 2MB (most restrictive for images!)
         //   YouTube videos: 256GB (most permissive!)
+        // ‡ Reddit profile/banner images: 500KB (more restrictive for specific use cases)
         //
         // MOST RESTRICTIVE LIMITS (Cross-Platform):
         //   - Images: 2MB (YouTube thumbnails - MOST restrictive!)
         //            5MB (WhatsApp, Google Biz, X, LinkedIn OG)
         //   - Videos: 16MB (WhatsApp - most restrictive)
         //   - Duration: 30s (Google Business - most restrictive)
+        //   - Audio: 10MB (Tumblr - most restrictive audio limit)
         //   - Min Image Size: 10KB (Google Biz)
         //   - Min Resolution: 250x250px (Google Biz)
+        //
+        // DAILY LIMITS:
+        //   - Tumblr: 20 videos/day, 60 minutes total video time/day
+        //   - TikTok: 15 posts/day (rate limit: 6/minute)
+        //   - Instagram: 25 posts/day (for business accounts)
         //
         // IMPLEMENTATION DECISION:
         // We use 5MB for images (not 2MB) because:
