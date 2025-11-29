@@ -58,14 +58,42 @@ export function getMediaManagementMethods() {
         // ============================================
         // MEDIA PROCESSING
         // ============================================
+        // Meta Platform File Size Limitations:
+        //
+        // Messenger Platform (Attachment Upload API):
+        //   - Images: 8MB (png, jpeg, gif)
+        //   - Video: 25MB (mp4, ogg, avi, mov, webm)
+        //   - Audio: 25MB (aac, m4a, wav, mp4)
+        //
+        // WhatsApp Cloud API (Most Restrictive):
+        //   - Images: 5MB (png, jpeg)
+        //   - Video: 16MB (mpeg4)
+        //   - Audio: 16MB (ACC, M4A, MP3, AMR, OGG-OPUS)
+        //   - Documents: 100MB (text, Excel, Word, PowerPoint, PDF)
+        //
+        // Marketing API (Images in Link Shares):
+        //   - Images: 8MB (jpeg, bmp, png, gif, tiff)
+        //   - PNG: Recommended <1MB to avoid pixelation
+        //
+        // Instagram:
+        //   - Images: 8MB recommended
+        //   - Videos: 100MB recommended, max 60s for feed
+        //
+        // WhatsApp Flows API:
+        //   - Flow JSON: 10MB
+        //
+        // Strategy: Use most restrictive limits (WhatsApp) to ensure
+        // compatibility across all Meta platforms when multi-posting
+        // ============================================
 
         async processImage(file) {
             this.isProcessingMedia = true;
             try {
-                // Platform-specific limits (most restrictive for compatibility)
-                const MAX_FILE_SIZE = 8 * 1024 * 1024; // 8MB (Instagram recommended)
+                // Platform-specific limits (most restrictive for compatibility across all Meta platforms)
+                // WhatsApp: 5MB (most restrictive), Instagram/Messenger: 8MB, Marketing API: 8MB (PNG <1MB recommended)
+                const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB (WhatsApp Cloud API limit)
                 const MAX_DIMENSION = 1920; // Max width/height
-                const JPEG_QUALITY = 0.9; // 90% quality
+                const JPEG_QUALITY = 0.85; // 85% quality (better compression while maintaining quality)
 
                 // If file is already small enough and dimensions are okay, return as-is
                 if (file.size <= MAX_FILE_SIZE) {
@@ -173,8 +201,9 @@ export function getMediaManagementMethods() {
         async processVideo(file) {
             this.isProcessingMedia = true;
             try {
-                // Platform-specific video limits
-                const MAX_VIDEO_SIZE = 100 * 1024 * 1024; // 100MB (Instagram recommended)
+                // Platform-specific video limits (most restrictive for compatibility across all Meta platforms)
+                // WhatsApp: 16MB (most restrictive), Messenger: 25MB, Instagram: 100MB
+                const MAX_VIDEO_SIZE = 16 * 1024 * 1024; // 16MB (WhatsApp Cloud API limit)
                 const MAX_DURATION = 60; // 60 seconds (Instagram feed)
 
                 // Get video metadata
@@ -184,7 +213,7 @@ export function getMediaManagementMethods() {
                 if (file.size > MAX_VIDEO_SIZE) {
                     const sizeMB = (file.size / 1024 / 1024).toFixed(2);
                     window.notify(
-                        `Video is too large (${sizeMB}MB). Maximum size is ${MAX_VIDEO_SIZE / 1024 / 1024}MB. Please compress the video before uploading.`,
+                        `Video is too large (${sizeMB}MB). Maximum size is ${MAX_VIDEO_SIZE / 1024 / 1024}MB for compatibility across all platforms (WhatsApp, Messenger, Instagram). Please compress the video before uploading.`,
                         'error'
                     );
                     return null;
