@@ -268,6 +268,7 @@ return [
     'not_connected' => 'غير متصل',
     'connect_account' => 'الرجاء ربط حساب {platform} في',
     'platform_connections' => 'اتصالات المنصات',
+    'platform' => 'المنصة',
     'post_type' => 'نوع المنشور',
     'post_content' => 'محتوى المنشور',
     'what_to_share' => 'ماذا تريد أن تشارك؟',

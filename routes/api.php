@@ -381,6 +381,23 @@ Route::middleware(['auth:sanctum', 'validate.org.access', 'org.context', 'api.ra
             Route::post('/{post_id}/publish-now', [SocialSchedulerController::class, 'publishNow'])->name('publish-now');
             Route::post('/{post_id}/reschedule', [SocialSchedulerController::class, 'reschedule'])->name('reschedule');
         });
+
+        // Hashtag Sets Management
+        Route::prefix('hashtag-sets')->name('hashtag-sets.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Social\HashtagSetController::class, 'index'])->name('index');
+            Route::post('/', [\App\Http\Controllers\Social\HashtagSetController::class, 'store'])->name('store');
+            Route::put('/{id}', [\App\Http\Controllers\Social\HashtagSetController::class, 'update'])->name('update');
+            Route::delete('/{id}', [\App\Http\Controllers\Social\HashtagSetController::class, 'destroy'])->name('destroy');
+            Route::post('/{id}/increment-usage', [\App\Http\Controllers\Social\HashtagSetController::class, 'incrementUsage'])->name('increment-usage');
+            Route::get('/trending', [\App\Http\Controllers\Social\HashtagSetController::class, 'trending'])->name('trending');
+        });
+
+        // Location Search
+        Route::get('/locations/search', [\App\Http\Controllers\Social\LocationController::class, 'search'])->name('locations.search');
+
+        // Link Shortener
+        Route::post('/shorten-link', [\App\Http\Controllers\Social\LinkShortenerController::class, 'shorten'])->name('shorten-link');
+        Route::get('/link-stats/{shortUrl}', [\App\Http\Controllers\Social\LinkShortenerController::class, 'stats'])->name('link-stats');
     });
 
     /*
