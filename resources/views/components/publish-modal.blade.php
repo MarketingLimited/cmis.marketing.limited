@@ -30,31 +30,31 @@
     All sub-components under 500 lines
 --}}
 
-{{-- Load Alpine.js Component - must be before x-data div --}}
+{{-- Load Alpine.js Component --}}
 <script src="{{ asset('js/components/publish-modal.js') }}"></script>
-<script>
-    // Ensure function is globally available
-    if (typeof window.publishModal === 'undefined') {
-        window.publishModal = publishModal;
-    }
-</script>
 
 {{-- Modal Container --}}
-<div x-data="publishModal()" x-show="open" x-cloak dir="rtl"
+<div x-data="publishModal()"
+     x-init="$nextTick(() => { /* Ensure reactive system is ready */ })"
+     x-show="open"
+     x-cloak
+     dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}"
+     data-i18n-select-profile="{{ __('publish.select_at_least_one_profile') }}"
+     data-i18n-content-required="{{ __('publish.content_or_media_required') }}"
      class="fixed inset-0 z-50 overflow-hidden" @keydown.escape.window="closeModal()">
 
-    {{-- Backdrop --}}
+    {{-- Backdrop - Enhanced with stronger opacity for better focus --}}
     <div x-show="open" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0"
          x-transition:enter-end="opacity-100" x-transition:leave="ease-in duration-200"
          x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
-         class="fixed inset-0 bg-gray-900 bg-opacity-75" @click="closeModal()"></div>
+         class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm" @click="closeModal()"></div>
 
-    {{-- Modal Panel --}}
+    {{-- Modal Panel - Enhanced elevation with stronger shadow and border --}}
     <div class="fixed inset-0 flex items-center justify-center p-4">
         <div x-show="open" x-transition:enter="ease-out duration-300"
              x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
              x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
-             class="relative w-full max-w-7xl max-h-[90vh] bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden">
+             class="relative w-full max-w-7xl max-h-[90vh] bg-white rounded-2xl shadow-2xl ring-1 ring-gray-900/10 flex flex-col overflow-hidden">
 
             {{-- Modal Header --}}
             @include('components.publish-modal.header')
@@ -62,18 +62,106 @@
             {{-- Platform Warnings Banner --}}
             @include('components.publish-modal.warnings-banner')
 
-            {{-- Main Content - 3 Columns --}}
-            <div class="flex-1 flex overflow-hidden">
+            {{-- Main Content - Responsive Layout --}}
+            {{-- Mobile: Single column (composer only, profile/preview as overlays) --}}
+            {{-- Tablet: Two columns (profile selector + composer, preview as overlay) --}}
+            {{-- Desktop: Three columns (all visible) --}}
+            <div class="flex-1 flex flex-col lg:flex-row overflow-hidden">
 
-                {{-- Column 1: Profile Selector --}}
-                @include('components.publish-modal.profile-selector')
+                {{-- Column 1: Profile Selector (Hidden on mobile, overlay on tablet, sidebar on desktop) --}}
+                <div class="hidden lg:flex lg:w-80 lg:flex-shrink-0 lg:border-e lg:border-gray-100">
+                    @include('components.publish-modal.profile-selector')
+                </div>
 
-                {{-- Column 2: Content Composer --}}
+                {{-- Mobile Profile Selector Button (Only on mobile) --}}
+                <div class="lg:hidden flex-shrink-0 px-6 py-3 border-b border-gray-200 bg-gradient-to-r from-purple-50 to-indigo-50">
+                    <button @click="showMobileProfileSelector = !showMobileProfileSelector"
+                            class="w-full px-4 py-2.5 min-h-[44px] bg-white border-2 border-indigo-200 rounded-lg text-sm font-medium text-indigo-700 hover:bg-indigo-50 transition flex items-center justify-between">
+                        <span class="flex items-center gap-2">
+                            <i class="fas fa-users"></i>
+                            <span x-text="selectedProfiles.length > 0 ? '{{ __('publish.selected_accounts') }}: ' + selectedProfiles.length : '{{ __('publish.select_accounts') }}'"></span>
+                        </span>
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                </div>
+
+                {{-- Column 2: Content Composer (Always visible) --}}
                 @include('components.publish-modal.composer.main')
 
-                {{-- Column 3: Preview Panel --}}
-                @include('components.publish-modal.preview-panel')
+                {{-- Column 3: Preview Panel (Hidden on mobile/tablet, sidebar on desktop) --}}
+                <div class="hidden xl:flex xl:w-96 xl:flex-shrink-0 xl:border-s xl:border-gray-100">
+                    @include('components.publish-modal.preview-panel')
+                </div>
 
+                {{-- Mobile Preview Button (Only on mobile/tablet) --}}
+                <div class="xl:hidden flex-shrink-0 px-6 py-3 border-t border-gray-200 bg-gray-50">
+                    <button @click="showMobilePreview = !showMobilePreview"
+                            class="w-full px-4 py-2.5 min-h-[44px] bg-blue-600 rounded-lg text-sm font-medium text-white hover:bg-blue-700 transition flex items-center justify-center gap-2">
+                        <i class="fas fa-eye"></i>
+                        <span>{{ __('publish.preview') }}</span>
+                    </button>
+                </div>
+
+            </div>
+
+            {{-- Mobile Profile Selector Overlay --}}
+            <div x-show="showMobileProfileSelector"
+                 x-cloak
+                 @click.self="showMobileProfileSelector = false"
+                 class="lg:hidden fixed inset-0 bg-gray-900 bg-opacity-75 z-50 flex items-end"
+                 x-transition:enter="transition ease-out duration-300"
+                 x-transition:enter-start="opacity-0"
+                 x-transition:enter-end="opacity-100">
+                <div x-show="showMobileProfileSelector"
+                     x-transition:enter="transition ease-out duration-300"
+                     x-transition:enter-start="translate-y-full"
+                     x-transition:enter-end="translate-y-0"
+                     class="w-full max-h-[80vh] bg-white rounded-t-2xl overflow-hidden flex flex-col">
+                    {{-- Mobile Profile Selector Header --}}
+                    <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-purple-50 to-indigo-50">
+                        <h3 class="text-lg font-bold text-gray-900">{{ __('publish.select_accounts') }}</h3>
+                        <button @click="showMobileProfileSelector = false" class="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center text-gray-400 hover:text-gray-600 rounded-lg hover:bg-white/50">
+                            <i class="fas fa-times text-lg"></i>
+                        </button>
+                    </div>
+                    {{-- Profile Selector Content --}}
+                    <div class="flex-1 overflow-hidden">
+                        @include('components.publish-modal.profile-selector')
+                    </div>
+                    {{-- Done Button --}}
+                    <div class="px-6 py-4 border-t border-gray-200 bg-white">
+                        <button @click="showMobileProfileSelector = false" class="w-full px-4 py-2.5 min-h-[44px] bg-indigo-600 rounded-lg text-sm font-medium text-white hover:bg-indigo-700 transition">
+                            {{ __('publish.done') }}
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Mobile Preview Overlay --}}
+            <div x-show="showMobilePreview"
+                 x-cloak
+                 @click.self="showMobilePreview = false"
+                 class="xl:hidden fixed inset-0 bg-gray-900 bg-opacity-75 z-50 flex items-center justify-center p-4"
+                 x-transition:enter="transition ease-out duration-300"
+                 x-transition:enter-start="opacity-0"
+                 x-transition:enter-end="opacity-100">
+                <div x-show="showMobilePreview"
+                     x-transition:enter="transition ease-out duration-300"
+                     x-transition:enter-start="opacity-0 scale-95"
+                     x-transition:enter-end="opacity-100 scale-100"
+                     class="w-full max-w-lg max-h-[90vh] bg-white rounded-2xl overflow-hidden flex flex-col">
+                    {{-- Mobile Preview Header --}}
+                    <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50">
+                        <h3 class="text-lg font-bold text-gray-900">{{ __('publish.preview') }}</h3>
+                        <button @click="showMobilePreview = false" class="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center text-gray-400 hover:text-gray-600 rounded-lg hover:bg-white/50">
+                            <i class="fas fa-times text-lg"></i>
+                        </button>
+                    </div>
+                    {{-- Preview Content --}}
+                    <div class="flex-1 overflow-hidden">
+                        @include('components.publish-modal.preview-panel')
+                    </div>
+                </div>
             </div>
 
             {{-- Footer --}}
@@ -81,11 +169,15 @@
         </div>
     </div>
 
-    {{-- Overlay Modals --}}
-    @include('components.publish-modal.overlays.hashtag-manager')
-    @include('components.publish-modal.overlays.mention-picker')
-    @include('components.publish-modal.overlays.calendar')
-    @include('components.publish-modal.overlays.best-times')
-    @include('components.publish-modal.overlays.media-source-picker')
-    @include('components.publish-modal.overlays.media-library')
+    {{-- Overlay Modals - render only when component is initialized AND modal is open to prevent Alpine initialization errors --}}
+    <template x-if="_initialized && open">
+        <div>
+            @include('components.publish-modal.overlays.hashtag-manager')
+            @include('components.publish-modal.overlays.mention-picker')
+            @include('components.publish-modal.overlays.calendar')
+            @include('components.publish-modal.overlays.best-times')
+            @include('components.publish-modal.overlays.media-source-picker')
+            @include('components.publish-modal.overlays.media-library')
+        </div>
+    </template>
 </div>

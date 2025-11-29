@@ -1,12 +1,12 @@
     <div x-show="showHashtagManager"
+         x-cloak
          x-transition:enter="transform transition ease-in-out duration-300"
          x-transition:enter-start="translate-x-full rtl:-translate-x-full"
          x-transition:enter-end="translate-x-0"
          x-transition:leave="transform transition ease-in-out duration-300"
          x-transition:leave-start="translate-x-0"
          x-transition:leave-end="translate-x-full rtl:-translate-x-full"
-         class="absolute inset-y-0 end-0 w-96 bg-white shadow-2xl border-s border-gray-200 flex flex-col z-50"
-         style="display: none;">
+         class="fixed inset-y-0 end-0 w-96 bg-white shadow-2xl border-s border-gray-200 flex flex-col z-[200]">
         {{-- Header --}}
         <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200">
             <h3 class="text-lg font-semibold text-gray-900">{{ __('publish.hashtag_manager') }}</h3>

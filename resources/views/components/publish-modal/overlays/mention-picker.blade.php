@@ -1,12 +1,12 @@
     <div x-show="showMentionPicker"
+         x-cloak
          x-transition:enter="transition ease-out duration-200"
          x-transition:enter-start="opacity-0"
          x-transition:enter-end="opacity-100"
          x-transition:leave="transition ease-in duration-150"
          x-transition:leave-start="opacity-100"
          x-transition:leave-end="opacity-0"
-         class="fixed inset-0 bg-gray-900/50 flex items-center justify-center z-50"
-         style="display: none;"
+         class="fixed inset-0 bg-gray-900/50 flex items-center justify-center z-[200]"
          @click.self="showMentionPicker = false">
         <div class="bg-white rounded-xl shadow-2xl w-full max-w-md mx-4"
              @click.stop>

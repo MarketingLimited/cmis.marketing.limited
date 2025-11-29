@@ -1,12 +1,13 @@
     <div x-show="showMediaLibrary"
+         x-cloak
          x-transition:enter="transition ease-out duration-200"
          x-transition:enter-start="opacity-0"
          x-transition:enter-end="opacity-100"
          x-transition:leave="transition ease-in duration-150"
          x-transition:leave-start="opacity-100"
          x-transition:leave-end="opacity-0"
-         class="fixed inset-0 bg-gray-900/50 flex items-center justify-center z-50"
-         style="display: none;"
+         class="fixed inset-0 bg-gray-900/50 flex items-center justify-center z-[200]"
+         
          @click.self="showMediaLibrary = false">
         <div class="bg-white rounded-xl shadow-2xl w-full max-w-4xl mx-4 max-h-[90vh] overflow-hidden flex flex-col"
              @click.stop>
@@ -44,7 +45,7 @@
     </div>
 
     {{-- PHASE 4: Platform Warnings Banner --}}
-    <div x-show="platformWarnings.length > 0" class="fixed top-20 inset-x-0 z-40 flex justify-center px-4" style="display: none;">
+    <div x-show="platformWarnings.length > 0" class="fixed top-20 inset-x-0 z-40 flex justify-center px-4" >
         <div class="max-w-4xl w-full">
             <template x-for="(warning, index) in platformWarnings" :key="index">
                 <div x-show="!warning.dismissed"
