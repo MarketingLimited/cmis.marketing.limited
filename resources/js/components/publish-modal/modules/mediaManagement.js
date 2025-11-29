@@ -58,14 +58,15 @@ export function getMediaManagementMethods() {
         // ============================================
         // MEDIA PROCESSING
         // ============================================
-        // Meta Platform File Size Limitations:
+        // Platform File Size Limitations:
         //
+        // META PLATFORMS:
         // Messenger Platform (Attachment Upload API):
         //   - Images: 8MB (png, jpeg, gif)
         //   - Video: 25MB (mp4, ogg, avi, mov, webm)
         //   - Audio: 25MB (aac, m4a, wav, mp4)
         //
-        // WhatsApp Cloud API (Most Restrictive):
+        // WhatsApp Cloud API (Most Restrictive for Images/Videos):
         //   - Images: 5MB (png, jpeg)
         //   - Video: 16MB (mpeg4)
         //   - Audio: 16MB (ACC, M4A, MP3, AMR, OGG-OPUS)
@@ -79,28 +80,175 @@ export function getMediaManagementMethods() {
         //   - Images: 8MB recommended
         //   - Videos: 100MB recommended, max 60s for feed
         //
-        // WhatsApp Flows API:
-        //   - Flow JSON: 10MB
+        // GOOGLE BUSINESS PROFILE:
+        // Photos:
+        //   - Size: 10 KB to 5 MB (JPG or PNG)
+        //   - Recommended: 720x720 px
+        //   - Minimum: 250x250 px
+        //   - Quality: In focus, well lit, no excessive filters
         //
-        // Strategy: Use most restrictive limits (WhatsApp) to ensure
-        // compatibility across all Meta platforms when multi-posting
+        // Videos:
+        //   - Duration: Up to 30 seconds (Most Restrictive Duration)
+        //   - Size: Up to 75 MB
+        //   - Resolution: 720p or higher
+        //
+        // Profile Photos:
+        //   - Square (250px to 500px)
+        //   - Formats: JPG, PNG, GIF
+        //
+        // TIKTOK CONTENT POSTING API:
+        // Videos (SIGNIFICANTLY HIGHER LIMITS):
+        //   - Size: Up to 4GB (!)
+        //   - Duration: Up to 10 minutes (some creators limited to 3 min)
+        //   - Formats: MP4 (recommended), WebM, MOV
+        //   - Codecs: H.264, H.265, VP8, VP9
+        //   - Frame Rate: 23-60 FPS
+        //   - Dimensions: 360-4096 px (both height and width)
+        //   - Supports chunked upload for large files
+        //
+        // TikTok Ads Profile Photos:
+        //   - Size: Max 50KB
+        //   - Dimensions: 98x98px (1:1 aspect ratio)
+        //   - Formats: .jpg, .jpeg, .png
+        //
+        // SNAPCHAT MARKETING API:
+        // Images (General Ad Types):
+        //   - Top Snap Images: Max 5MB
+        //   - Audience Filters: Max 300KB (Most Restrictive!)
+        //   - Preview Images (Story Ads): Max 2MB
+        //   - Logo Images (Story Ads): Max 2MB
+        //   - Spotlight Images: Max 20MB
+        //   - Lead Gen Ads: Max 5MB
+        //
+        // Videos (General Ad Types):
+        //   - Full Screen Canvas: Up to 1GB
+        //   - Spotlight: 5-60 seconds
+        //   - Sponsored Snaps: 10 seconds
+        //   - Duration varies by ad type
+        //
+        // Other:
+        //   - Shared Media (Creative Kit): Max 300MB
+        //   - Lenses: Max 8MB (zipped), ML models 10MB
+        //   - Catalog Feeds: Max 500MB
+        //   - Event Files: Max 100MB
+        //   - Multipart upload for files >32MB (up to 1GB)
+        //
+        // X (TWITTER) API:
+        // Images:
+        //   - Max file size: 5MB
+        //
+        // GIFs:
+        //   - Max file size: 15MB
+        //
+        // Videos:
+        //   - Max file size: 512MB (with media_category=amplify_video)
+        //   - Max duration: 140 seconds (regular API uploads)
+        //   - Premium subscribers: Longer videos via Media Studio
+        //
+        // Chunked Upload (for large files):
+        //   - Chunk size: Max 5MB (recommended ≤4MB to avoid 413 errors)
+        //   - Process: INIT → APPEND (chunks) → FINALIZE → attach media_id
+        //
+        // LINKEDIN API:
+        // Documents (PPT, PPTX, DOC, DOCX, PDF):
+        //   - Max file size: 100MB
+        //   - Max pages: 300 pages
+        //
+        // Videos:
+        //   - Max file size: 500MB (via Videos API)
+        //   - Duration: 3 seconds to 30 minutes
+        //   - File format: MP4
+        //   - Resolution: 256x144 to 4096x2304
+        //   - Frame rate: 24-60 FPS
+        //
+        // Images (In-Feed Posts):
+        //   - Max file size: 8MB
+        //   - File formats: PNG or JPG
+        //
+        // Images (Open Graph Shares from External Websites):
+        //   - Max file size: 5MB
+        //   - Min dimensions: 1200x627 pixels
+        //   - Recommended ratio: 1.91:1
+        //
+        // Vector Assets (Profile/Background Photos):
+        //   - Max pixels: 36,152,320 pixels
+        //   - File formats: JPG, GIF, PNG
+        //
+        // CROSS-PLATFORM COMPATIBILITY STRATEGY:
+        // When posting to MULTIPLE platforms simultaneously, we use the
+        // MOST RESTRICTIVE limits to ensure universal compatibility:
+        //   - Images: 5MB max, 10KB min (WhatsApp & Google Business)
+        //   - Videos: 16MB max, 30s duration (WhatsApp size, Google duration)
+        //   - Min resolution: 250x250 px (Google Business)
+        //
+        // NOTE: For TikTok-ONLY posts, users can upload much larger files
+        // (up to 4GB, 10 min). The restrictive limits below are designed
+        // for cross-platform publishing compatibility.
+        //
+        // Platform-Specific Limits Summary:
+        // ┌──────────────┬──────────┬──────────┬──────────┐
+        // │ Platform     │ Images   │ Videos   │ Duration │
+        // ├──────────────┼──────────┼──────────┼──────────┤
+        // │ WhatsApp     │ 5MB      │ 16MB     │ -        │
+        // │ Google Biz   │ 5MB      │ 75MB     │ 30s      │
+        // │ Snapchat*    │ 300KB-5MB│ 1GB      │ 10s-60s  │
+        // │ X (Twitter)  │ 5MB      │ 512MB    │ 140s     │
+        // │ LinkedIn     │ 5-8MB    │ 500MB    │ 3s-30min │
+        // │ Messenger    │ 8MB      │ 25MB     │ -        │
+        // │ Instagram    │ 8MB      │ 100MB    │ 60s      │
+        // │ TikTok       │ -        │ 4GB      │ 10min    │
+        // └──────────────┴──────────┴──────────┴──────────┘
+        // * Snapchat varies by ad type (Audience Filters: 300KB!)
+        //
+        // MOST RESTRICTIVE LIMITS (Cross-Platform):
+        //   - Images: 5MB (WhatsApp, Google Biz, X, LinkedIn OG)
+        //   - Videos: 16MB (WhatsApp - most restrictive)
+        //   - Duration: 30s (Google Business - most restrictive)
+        //   - Min Image Size: 10KB (Google Biz)
+        //   - Min Resolution: 250x250px (Google Biz)
+        //
+        // NOTE: These conservative limits ensure media works across ALL
+        // supported platforms. For single-platform posts (especially
+        // TikTok, LinkedIn, or X), users can upload much larger files.
         // ============================================
 
         async processImage(file) {
             this.isProcessingMedia = true;
             try {
-                // Platform-specific limits (most restrictive for compatibility across all Meta platforms)
-                // WhatsApp: 5MB (most restrictive), Instagram/Messenger: 8MB, Marketing API: 8MB (PNG <1MB recommended)
-                const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB (WhatsApp Cloud API limit)
+                // Cross-platform limits (most restrictive for universal compatibility)
+                const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB (WhatsApp & Google Business)
+                const MIN_FILE_SIZE = 10 * 1024; // 10KB (Google Business)
                 const MAX_DIMENSION = 1920; // Max width/height
-                const JPEG_QUALITY = 0.85; // 85% quality (better compression while maintaining quality)
+                const MIN_DIMENSION = 250; // Min width/height (Google Business)
+                const RECOMMENDED_DIMENSION = 720; // Recommended for Google Business
+                const JPEG_QUALITY = 0.85; // 85% quality (better compression)
 
-                // If file is already small enough and dimensions are okay, return as-is
-                if (file.size <= MAX_FILE_SIZE) {
-                    const dimensions = await this.getImageDimensions(file);
-                    if (dimensions.width <= MAX_DIMENSION && dimensions.height <= MAX_DIMENSION) {
-                        return file;
-                    }
+                // Check minimum file size
+                if (file.size < MIN_FILE_SIZE) {
+                    window.notify(
+                        `Image is too small (${(file.size / 1024).toFixed(2)}KB). Minimum size is 10KB for Google Business Profile.`,
+                        'error'
+                    );
+                    return null;
+                }
+
+                // Get image dimensions
+                const dimensions = await this.getImageDimensions(file);
+
+                // Check minimum resolution
+                if (dimensions.width < MIN_DIMENSION || dimensions.height < MIN_DIMENSION) {
+                    window.notify(
+                        `Image resolution is too small (${dimensions.width}x${dimensions.height}). Minimum resolution is 250x250 pixels for Google Business Profile.`,
+                        'error'
+                    );
+                    return null;
+                }
+
+                // If file is already within acceptable range, return as-is
+                if (file.size <= MAX_FILE_SIZE &&
+                    dimensions.width <= MAX_DIMENSION &&
+                    dimensions.height <= MAX_DIMENSION) {
+                    return file;
                 }
 
                 // Need to resize/compress
@@ -201,10 +349,12 @@ export function getMediaManagementMethods() {
         async processVideo(file) {
             this.isProcessingMedia = true;
             try {
-                // Platform-specific video limits (most restrictive for compatibility across all Meta platforms)
-                // WhatsApp: 16MB (most restrictive), Messenger: 25MB, Instagram: 100MB
+                // Cross-platform video limits (most restrictive for universal compatibility)
+                // WhatsApp: 16MB, Messenger: 25MB, Instagram: 100MB, Google Business: 75MB
+                // Duration: Google Business 30s (most restrictive), Instagram 60s
                 const MAX_VIDEO_SIZE = 16 * 1024 * 1024; // 16MB (WhatsApp Cloud API limit)
-                const MAX_DURATION = 60; // 60 seconds (Instagram feed)
+                const MAX_DURATION = 30; // 30 seconds (Google Business Profile - most restrictive)
+                const MIN_RESOLUTION_HEIGHT = 720; // 720p minimum (Google Business)
 
                 // Get video metadata
                 const metadata = await this.getVideoMetadata(file);
@@ -222,7 +372,16 @@ export function getMediaManagementMethods() {
                 // Validate duration
                 if (metadata.duration > MAX_DURATION) {
                     window.notify(
-                        `Video is too long (${Math.round(metadata.duration)}s). Maximum duration is ${MAX_DURATION}s for Instagram feed posts. Consider trimming the video or posting to Reels.`,
+                        `Video is too long (${Math.round(metadata.duration)}s). Maximum duration is ${MAX_DURATION}s for Google Business Profile (Instagram allows up to 60s). Please trim the video.`,
+                        'error'
+                    );
+                    return null;
+                }
+
+                // Validate resolution (Google Business requires 720p+)
+                if (metadata.height < MIN_RESOLUTION_HEIGHT) {
+                    window.notify(
+                        `Video resolution is too low (${metadata.width}x${metadata.height}). Minimum resolution is 720p (1280x720) for Google Business Profile.`,
                         'warning'
                     );
                 }
