@@ -1,5 +1,5 @@
                     {{-- PHASE 3: Enhanced Scheduling Section --}}
-                    <div class="flex-shrink-0 px-6 py-4 border-t border-gray-200 bg-gray-50">
+                    <div class="px-6 py-4 border-t border-gray-200 bg-gray-50">
                         <div class="space-y-4">
                             {{-- Schedule Toggle & Calendar Button --}}
                             <div class="flex items-center justify-between">
@@ -11,18 +11,30 @@
                                     <span class="text-sm font-medium text-gray-700">{{ __('publish.schedule') }}</span>
                                 </div>
 
-                                <template x-if="scheduleEnabled">
+                                <div x-show="scheduleEnabled"
+                                     x-transition:enter="transition ease-out duration-200"
+                                     x-transition:enter-start="opacity-0 scale-95"
+                                     x-transition:enter-end="opacity-100 scale-100"
+                                     x-transition:leave="transition ease-in duration-150"
+                                     x-transition:leave-start="opacity-100 scale-100"
+                                     x-transition:leave-end="opacity-0 scale-95">
                                     <button @click="showCalendar = !showCalendar"
                                             class="text-sm text-blue-600 hover:text-blue-700 font-medium flex items-center gap-2">
                                         <i class="fas fa-calendar-alt"></i>
                                         {{ __('publish.show_calendar') }}
                                     </button>
-                                </template>
+                                </div>
                             </div>
 
-                            {{-- Schedule Time Inputs --}}
-                            <template x-if="scheduleEnabled">
-                                <div class="flex flex-wrap items-center gap-3">
+                            {{-- Schedule Time Inputs with smooth transition --}}
+                            <div x-show="scheduleEnabled"
+                                 x-transition:enter="transition ease-out duration-300"
+                                 x-transition:enter-start="opacity-0 -translate-y-2"
+                                 x-transition:enter-end="opacity-100 translate-y-0"
+                                 x-transition:leave="transition ease-in duration-200"
+                                 x-transition:leave-start="opacity-100 translate-y-0"
+                                 x-transition:leave-end="opacity-0 -translate-y-2"
+                                 class="flex flex-wrap items-center gap-3">
                                     <input type="date" x-model="schedule.date"
                                            class="text-sm border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
                                     <input type="time" x-model="schedule.time"

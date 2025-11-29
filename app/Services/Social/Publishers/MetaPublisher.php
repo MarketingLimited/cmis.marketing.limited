@@ -258,18 +258,41 @@ class MetaPublisher extends AbstractPublisher
             $params['image_url'] = $mediaUrl;
         }
 
+        // Debug logging
+        $this->logInfo('Creating Instagram media container', [
+            'instagram_id' => $instagramId,
+            'media_url' => $mediaUrl,
+            'is_video' => $isVideo,
+            'caption_length' => strlen($caption),
+        ]);
+
         $result = $this->httpPost(
             self::API_BASE . self::API_VERSION . "/{$instagramId}/media",
             $params
         );
 
         if (!$result['success']) {
+            $this->logError('Failed to create Instagram media container', [
+                'error' => $result['error'] ?? 'Unknown error',
+                'response' => $result['response'] ?? [],
+                'media_url' => $mediaUrl,
+            ]);
             return $this->failure('Failed to create media container: ' . ($result['error'] ?? 'Unknown error'));
+        }
+
+        $containerId = $result['data']['id'] ?? null;
+
+        if (!$containerId) {
+            $this->logError('Media container created but no ID returned', [
+                'result' => $result,
+                'media_url' => $mediaUrl,
+            ]);
+            return $this->failure('Media ID is not available');
         }
 
         return [
             'success' => true,
-            'container_id' => $result['data']['id'] ?? null,
+            'container_id' => $containerId,
         ];
     }
 

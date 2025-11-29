@@ -19,13 +19,13 @@
                  class="flex items-center gap-2 px-3 py-1.5 bg-white/20 rounded-lg text-white text-xs">
                 <i class="fas fa-check-circle"></i>
                 <span>{{ __('publish.changes_saved') }}</span>
-                <span x-show="lastSaved" class="text-white/70" x-text="lastSaved ? new Date(lastSaved).toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' }) : ''"></span>
+                <span x-show="lastSaved" class="text-white/70" x-text="lastSaved ? new Date(lastSaved).toLocaleTimeString(document.documentElement.lang === 'ar' ? 'ar-SA' : 'en-US', { hour: '2-digit', minute: '2-digit' }) : ''"></span>
             </div>
 
-            <button @click="saveDraft()" class="px-3 py-1.5 text-sm text-white/80 hover:text-white hover:bg-white/10 rounded-lg transition">
+            <button @click="saveDraft()" class="px-4 py-2.5 min-h-[44px] text-sm text-white/80 hover:text-white hover:bg-white/10 rounded-lg transition flex items-center">
                 <i class="fas fa-save ms-1"></i>{{ __('publish.save_draft') }}
             </button>
-            <button @click="closeModal()" class="p-2 text-white/80 hover:text-white rounded-lg hover:bg-white/10">
+            <button @click="closeModal()" class="p-3 min-w-[44px] min-h-[44px] text-white/80 hover:text-white rounded-lg hover:bg-white/10 flex items-center justify-center">
                 <i class="fas fa-times text-lg"></i>
             </button>
         </div>

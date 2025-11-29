@@ -24,6 +24,8 @@ return [
     // Accounts Section
     'accounts' => 'Accounts',
     'selected' => 'selected',
+    'selected_accounts' => 'Selected Accounts',
+    'select_accounts' => 'Select Accounts',
     'search_accounts' => 'Search accounts...',
     'all' => 'All',
     'select_all_accounts' => 'Select All Accounts',
@@ -148,6 +150,7 @@ return [
     // Footer Actions
     'requires_approval' => 'Requires approval before publishing',
     'cancel' => 'Cancel',
+    'done' => 'Done',
     'submit_for_approval' => 'Submit for Approval',
     'publish_now' => 'Publish Now',
     'schedule_post' => 'Schedule Post',
@@ -236,6 +239,7 @@ return [
     'warning' => 'Warning',
     'dismiss' => 'Dismiss',
     'video_processing_time' => 'Video may take 5-10 minutes to process on Instagram',
+    'character_limit' => 'Character Limit',
     'character_limit_exceeded' => 'Character limit exceeded for this platform',
     'missing_required_fields' => 'Please fill all required fields',
     'computer' => 'Computer',
@@ -408,5 +412,52 @@ return [
     'gbp_redeem_url' => 'Redemption Link',
     'gbp_terms_conditions' => 'Terms & Conditions',
     'gbp_terms_placeholder' => 'Offer valid until... Limited time only...',
+
+    // ============================================================
+    // PHASE 2: Advanced Features (Nov 2025)
+    // ============================================================
+
+    // Performance Predictions
+    'performance_prediction' => 'Performance Prediction',
+    'predicted_reach' => 'Predicted Reach',
+    'predicted_engagement' => 'Predicted Engagement',
+    'content_quality_score' => 'Content Quality Score',
+    'optimization_tip' => 'Optimization Tip',
+
+    // Template Library
+    'template_library' => 'Template Library',
+    'template_name' => 'Template Name',
+    'saved_templates' => 'Saved Templates',
+    'load_template' => 'Load Template',
+    'delete_template' => 'Delete Template',
+    'no_templates' => 'No templates saved yet',
+    'template_saved' => 'Template saved successfully',
+    'template_loaded' => 'Template loaded successfully',
+    'template_deleted' => 'Template deleted successfully',
+
+    // Collaboration
+    'editing' => 'Editing',
+    'viewing' => 'Viewing',
+    'collaborators' => 'Collaborators',
+    'people_editing' => ':count editing',
+    'people_viewing' => ':count viewing',
+    'one_editing' => '1 editing',
+    'one_viewing' => '1 viewing',
+
+    // AI Content Variations
+    'generate_variations' => 'Generate Variations',
+    'improve_content' => 'Improve Content',
+    'ai_variations' => 'AI Variations',
+    'use_this_variation' => 'Use This Variation',
+    'enable_ab_testing' => 'Enable A/B Testing',
+    'ab_testing_help' => 'A/B testing helps you discover which version of your content performs best',
+    'ab_test_description' => 'Different variations will be automatically published and the winner selected based on performance',
+    'test_duration' => 'Test Duration',
+    'winning_metric' => 'Winning Metric',
+    'engagement_rate' => 'Engagement Rate',
+    'click_rate' => 'Click Rate',
+    'reach' => 'Reach',
+    'hours' => 'hours',
+    'days' => 'days',
 
 ];

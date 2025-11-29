@@ -482,6 +482,7 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/posts-scheduled', [App\Http\Controllers\Social\SocialPostController::class, 'getScheduledPosts'])->name('posts.scheduled');
             Route::post('/posts/{post}/reschedule', [App\Http\Controllers\Social\SocialPostController::class, 'reschedule'])->name('posts.reschedule');
             Route::get('/media-library', [App\Http\Controllers\Social\MediaLibraryController::class, 'index'])->name('media-library');
+            Route::post('/media/upload', [App\Http\Controllers\Social\MediaLibraryController::class, 'upload'])->name('media.upload');
 
             // AI Content Transformation
             Route::post('/ai/transform-content', [App\Http\Controllers\API\AIAssistantController::class, 'transformSocialContent'])->name('ai.transform-content');

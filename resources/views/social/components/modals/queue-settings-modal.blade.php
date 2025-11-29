@@ -203,7 +203,7 @@
                                                 {{ __("social.publish_days") }}
                                             </label>
                                             <div class="flex flex-wrap gap-2 sm:gap-3">
-                                                <template x-for="day in [{v: 0, l: @json(__('social.days.sunday')), s: 'ح'}, {v: 1, l: @json(__('social.days.monday')), s: 'ن'}, {v: 2, l: @json(__('social.days.tuesday')), s: 'ث'}, {v: 3, l: @json(__('social.days.wednesday')), s: 'ر'}, {v: 4, l: @json(__('social.days.thursday')), s: 'خ'}, {v: 5, l: @json(__('social.days.friday')), s: 'ج'}, {v: 6, l: @json(__('social.days.saturday')), s: 'س'}]" :key="day.v">
+                                                <template x-for="day in daysOfWeek" :key="day.v">
                                                     <button @click="days.includes(day.v) ? days.splice(days.indexOf(day.v), 1) : days.push(day.v)"
                                                             :class="days.includes(day.v)
                                                                 ? 'bg-gradient-to-br from-purple-600 to-indigo-600 text-white shadow-lg shadow-purple-500/30 scale-105'

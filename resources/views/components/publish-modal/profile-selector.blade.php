@@ -1,5 +1,5 @@
-{{-- Column 1: Profile Groups & Profiles Selection (Right side in RTL) --}}
-<div class="w-80 flex-shrink-0 border-l border-gray-200 bg-gray-50 flex flex-col">
+{{-- Profile Groups & Profiles Selection (Responsive width) --}}
+<div class="w-full lg:w-80 flex-shrink-0 bg-white flex flex-col">
 
     {{-- STEP 1: Profile Groups Selection --}}
     <div class="p-3 border-b border-gray-200 bg-white">

@@ -1,5 +1,5 @@
 {{-- Column 3: Preview (Left side in RTL) --}}
-<div class="w-80 flex-shrink-0 border-r border-gray-200 bg-gray-50 flex flex-col">
+<div class="w-80 flex-shrink-0 bg-white flex flex-col">
     <div class="flex-shrink-0 px-4 py-3 border-b border-gray-200 bg-white">
         <h3 class="text-sm font-medium text-gray-900">{{ __('publish.preview') }}</h3>
     </div>
@@ -29,6 +29,102 @@
                 <i class="fas fa-desktop me-1"></i>{{ __('publish.desktop_preview') }}
             </button>
         </div>
+
+        {{-- PHASE 2: Performance Predictions --}}
+        <template x-if="true">
+            <div x-show="content.global.text.length > 20 || content.global.media.length > 0"
+                 x-cloak
+                 x-transition
+                 class="mb-4 p-3 bg-gradient-to-br from-purple-50 to-blue-50 border border-purple-200 rounded-lg">
+            <div class="flex items-center gap-2 mb-2">
+                <i class="fas fa-chart-line text-purple-600"></i>
+                <h4 class="text-xs font-semibold text-purple-900">{{ __('publish.performance_prediction') }}</h4>
+            </div>
+            <div class="space-y-2">
+                <div class="flex items-center justify-between text-xs">
+                    <span class="text-gray-600">{{ __('publish.predicted_reach') }}</span>
+                    <span class="font-semibold text-gray-900" x-text="getPredictedReach()"></span>
+                </div>
+                <div class="flex items-center justify-between text-xs">
+                    <span class="text-gray-600">{{ __('publish.predicted_engagement') }}</span>
+                    <span class="font-semibold text-gray-900" x-text="getPredictedEngagement()"></span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-1.5 mt-2">
+                    <div class="bg-gradient-to-r from-purple-600 to-blue-600 h-1.5 rounded-full transition-all duration-500"
+                         :style="'width: ' + getContentQualityScore() + '%'"></div>
+                </div>
+                <p class="text-xs text-gray-500 mt-1">
+                    <i class="fas fa-lightbulb text-yellow-500 me-1"></i>
+                    <span x-text="getOptimizationTip()"></span>
+                </p>
+            </div>
+            </div>
+        </template>
+
+        {{-- PHASE 2: Template Library --}}
+        <template x-if="true">
+            <div x-show="content.global.text.length > 0 || content.global.media.length > 0"
+                 x-cloak
+                 x-transition
+                 class="mb-4 p-3 bg-gradient-to-br from-green-50 to-teal-50 border border-green-200 rounded-lg">
+            <div class="flex items-center justify-between mb-2">
+                <div class="flex items-center gap-2">
+                    <i class="fas fa-bookmark text-green-600"></i>
+                    <h4 class="text-xs font-semibold text-green-900">{{ __('publish.template_library') }}</h4>
+                </div>
+                <button @click="showTemplateLibrary = !showTemplateLibrary"
+                        class="text-xs text-green-700 hover:text-green-800 transition">
+                    <i :class="showTemplateLibrary ? 'fas fa-chevron-up' : 'fas fa-chevron-down'"></i>
+                </button>
+            </div>
+
+            <div x-show="showTemplateLibrary" x-transition class="space-y-2">
+                {{-- Save as Template --}}
+                <div class="flex gap-2">
+                    <input type="text" x-model="newTemplateName"
+                           placeholder="{{ __('publish.template_name') }}"
+                           class="flex-1 px-2 py-1.5 text-xs border border-green-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                    <button @click="saveAsTemplate()"
+                            :disabled="!newTemplateName.trim()"
+                            :class="newTemplateName.trim() ? 'bg-green-600 hover:bg-green-700' : 'bg-gray-300 cursor-not-allowed'"
+                            class="px-3 py-1.5 text-xs font-medium text-white rounded-lg transition">
+                        <i class="fas fa-save"></i>
+                    </button>
+                </div>
+
+                {{-- Saved Templates List --}}
+                <div x-show="savedTemplates.length > 0" class="space-y-1.5 mt-3">
+                    <p class="text-xs text-gray-600 font-medium">{{ __('publish.saved_templates') }}</p>
+                    <template x-for="(template, index) in savedTemplates" :key="template.id">
+                        <div class="flex items-center justify-between p-2 bg-white border border-green-100 rounded-lg hover:border-green-300 transition group">
+                            <div class="flex-1 min-w-0">
+                                <p class="text-xs font-medium text-gray-900 truncate" x-text="template.name"></p>
+                                <p class="text-xs text-gray-500" x-text="'Saved ' + formatDate(template.created_at)"></p>
+                            </div>
+                            <div class="flex items-center gap-1 ms-2">
+                                <button @click="loadTemplate(template)"
+                                        class="p-1.5 text-green-600 hover:bg-green-50 rounded transition"
+                                        title="{{ __('publish.load_template') }}">
+                                    <i class="fas fa-upload text-xs"></i>
+                                </button>
+                                <button @click="deleteTemplate(template.id)"
+                                        class="p-1.5 text-red-600 hover:bg-red-50 rounded transition opacity-0 group-hover:opacity-100"
+                                        title="{{ __('publish.delete_template') }}">
+                                    <i class="fas fa-trash text-xs"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+
+                {{-- No Templates Message --}}
+                <div x-show="savedTemplates.length === 0" class="text-center py-3">
+                    <i class="fas fa-bookmark text-gray-300 text-2xl mb-2"></i>
+                    <p class="text-xs text-gray-500">{{ __('publish.no_templates') }}</p>
+                </div>
+            </div>
+            </div>
+        </template>
 
         {{-- ENHANCED: Preview with Mobile Phone Frame --}}
         <div x-show="previewMode === 'mobile'" class="flex justify-center">
@@ -154,22 +250,22 @@
 
             {{-- Modal Footer --}}
             <div class="flex-shrink-0 px-6 py-4 border-t border-gray-200 bg-white">
-{{-- PHASE 5A: PUBLISH MODE RADIO BUTTONS (VISTASOCIAL PARITY) --}}
-<div x-show="!requiresApproval" class="mb-3 pb-3 border-b border-gray-200">
-    <div class="flex items-center gap-4">
-        <label class="flex items-center gap-2 cursor-pointer">
-            <input type="radio" x-model="publishMode" value="publish_now" class="w-4 h-4 text-indigo-600 border-gray-300 focus:ring-indigo-500">
-            <span class="text-sm font-medium text-gray-700">{{ __('publish.publish_now') }}</span>
+{{-- Publish Mode Options - Segmented Controls Style --}}
+<div x-show="!requiresApproval" class="mb-4 pb-3 border-b border-gray-200">
+    <div class="flex flex-wrap items-start gap-3">
+        <label class="flex items-center gap-2.5 cursor-pointer group px-3 py-2 rounded-lg hover:bg-indigo-50 transition-colors">
+            <input type="radio" x-model="publishMode" value="publish_now" class="w-4 h-4 text-indigo-600 border-gray-300 focus:ring-indigo-500 focus:ring-offset-0">
+            <span class="text-sm font-medium text-gray-700 group-hover:text-indigo-700">{{ __('publish.publish_now') }}</span>
         </label>
-        <label class="flex items-center gap-2 cursor-pointer">
-            <input type="radio" x-model="publishMode" value="schedule" @change="scheduleEnabled = true" class="w-4 h-4 text-green-600 border-gray-300 focus:ring-green-500">
-            <span class="text-sm font-medium text-gray-700">{{ __('publish.schedule') }}</span>
+        <label class="flex items-center gap-2.5 cursor-pointer group px-3 py-2 rounded-lg hover:bg-green-50 transition-colors">
+            <input type="radio" x-model="publishMode" value="schedule" @change="scheduleEnabled = true" class="w-4 h-4 text-green-600 border-gray-300 focus:ring-green-500 focus:ring-offset-0">
+            <span class="text-sm font-medium text-gray-700 group-hover:text-green-700">{{ __('publish.schedule') }}</span>
         </label>
         <div class="flex flex-col gap-2">
-            <label class="flex items-center gap-2 cursor-pointer group">
-                <input type="radio" x-model="publishMode" value="add_to_queue" class="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500">
-                <span class="text-sm font-medium text-gray-700">{{ __('publish.add_to_queue') }}</span>
-                <button type="button" class="text-gray-400 hover:text-blue-600 transition" title="{{ __('publish.queue_help') }}">
+            <label class="flex items-center gap-2.5 cursor-pointer group px-3 py-2 rounded-lg hover:bg-blue-50 transition-colors">
+                <input type="radio" x-model="publishMode" value="add_to_queue" class="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500 focus:ring-offset-0">
+                <span class="text-sm font-medium text-gray-700 group-hover:text-blue-700">{{ __('publish.add_to_queue') }}</span>
+                <button type="button" class="text-gray-400 hover:text-blue-600 transition align-baseline" title="{{ __('publish.queue_help') }}">
                     <i class="fas fa-info-circle text-xs"></i>
                 </button>
             </label>
@@ -189,25 +285,20 @@
     </div>
 </div>
 
-{{-- PHASE 5B: Validation Errors Display --}}
+{{-- Validation Errors Display - Compact & User-Friendly --}}
 <div x-show="validationErrors.length > 0 && !canSubmit" x-cloak
      x-transition:enter="transition ease-out duration-200"
      x-transition:enter-start="opacity-0 -translate-y-1"
      x-transition:enter-end="opacity-100 translate-y-0"
-     class="mb-4">
-    <div class="px-4 py-3 bg-red-50 border border-red-200 rounded-lg">
-        <div class="flex items-start gap-3">
-            <div class="flex-shrink-0">
-                <i class="fas fa-exclamation-circle text-red-600"></i>
-            </div>
-            <div class="flex-1">
-                <p class="text-sm font-medium text-red-900 mb-1">{{ __('publish.cannot_submit') }}</p>
-                <ul class="list-disc list-inside space-y-1">
-                    <template x-for="(error, index) in validationErrors" :key="index">
-                        <li class="text-sm text-red-700" x-text="error"></li>
-                    </template>
-                </ul>
-            </div>
+     class="mb-3">
+    <div class="px-3 py-2.5 bg-red-50 border border-red-300 rounded-lg flex items-start gap-2.5">
+        <div class="flex-shrink-0 mt-0.5">
+            <i class="fas fa-exclamation-circle text-red-600 text-sm"></i>
+        </div>
+        <div class="flex-1 min-w-0">
+            <template x-for="(error, index) in validationErrors" :key="index">
+                <p class="text-sm text-red-800 leading-snug" x-text="error"></p>
+            </template>
         </div>
     </div>
 </div>
@@ -225,23 +316,27 @@
             {{ __('publish.cancel') }}
         </button>
         <button @click="submitForApproval()" x-show="requiresApproval"
-                :disabled="!canSubmit" :class="{ 'opacity-50 cursor-not-allowed': !canSubmit }"
-                class="px-4 py-2 text-sm font-medium text-white bg-yellow-600 rounded-lg hover:bg-yellow-700 transition">
+                :disabled="!canSubmit"
+                :class="canSubmit ? 'bg-yellow-600 hover:bg-yellow-700 shadow-sm' : 'bg-gray-300 cursor-not-allowed'"
+                class="px-4 py-2.5 text-sm font-medium text-white rounded-lg transition-all duration-200">
             <i class="fas fa-paper-plane ms-1"></i>{{ __('publish.submit_for_approval') }}
         </button>
         <button @click="publishNow()" x-show="!requiresApproval && publishMode === 'publish_now'"
-                :disabled="!canSubmit" :class="{ 'opacity-50 cursor-not-allowed': !canSubmit }"
-                class="px-4 py-2 text-sm font-medium text-white bg-gradient-to-l from-indigo-600 to-purple-600 rounded-lg hover:from-indigo-700 hover:to-purple-700 transition">
+                :disabled="!canSubmit"
+                :class="canSubmit ? 'bg-gradient-to-l from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 shadow-sm' : 'bg-gray-300 cursor-not-allowed'"
+                class="px-4 py-2.5 text-sm font-medium text-white rounded-lg transition-all duration-200">
             <i class="fas fa-paper-plane ms-1"></i>{{ __('publish.publish_now') }}
         </button>
         <button @click="schedulePost()" x-show="!requiresApproval && publishMode === 'schedule'"
-                :disabled="!canSubmit" :class="{ 'opacity-50 cursor-not-allowed': !canSubmit }"
-                class="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 transition">
+                :disabled="!canSubmit"
+                :class="canSubmit ? 'bg-green-600 hover:bg-green-700 shadow-sm' : 'bg-gray-300 cursor-not-allowed'"
+                class="px-4 py-2.5 text-sm font-medium text-white rounded-lg transition-all duration-200">
             <i class="far fa-clock ms-1"></i>{{ __('publish.schedule_post') }}
         </button>
         <button @click="addToQueue()" x-show="!requiresApproval && publishMode === 'add_to_queue'"
-                :disabled="!canSubmit" :class="{ 'opacity-50 cursor-not-allowed': !canSubmit }"
-                class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition">
+                :disabled="!canSubmit"
+                :class="canSubmit ? 'bg-blue-600 hover:bg-blue-700 shadow-sm' : 'bg-gray-300 cursor-not-allowed'"
+                class="px-4 py-2.5 text-sm font-medium text-white rounded-lg transition-all duration-200">
             <i class="fas fa-stream ms-1"></i>{{ __('publish.add_to_queue') }}
         </button>
     </div>
@@ -251,7 +346,9 @@
     </div>
 
     {{-- AI Assistant Slide-over --}}
-    <div x-show="showAIAssistant" x-transition:enter="ease-out duration-300"
+    <div x-show="showAIAssistant"
+         x-cloak
+         x-transition:enter="ease-out duration-300"
          class="fixed inset-y-0 start-0 w-96 bg-white shadow-2xl z-60 flex flex-col" dir="rtl">
         <div class="px-4 py-3 border-b border-gray-200 flex items-center justify-between bg-gradient-to-l from-blue-600 to-purple-600">
             <h3 class="text-lg font-semibold text-white"><i class="fas fa-magic ms-2"></i>{{ __('publish.ai_assistant') }}</h3>

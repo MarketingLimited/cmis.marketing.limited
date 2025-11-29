@@ -278,6 +278,50 @@ function socialManager() {
         isUpdating: false,
         isDeletingFailed: false,
 
+        // Hashtag Manager
+        showHashtagManager: false,
+        hashtagSets: [],
+        recentHashtags: [],
+        loadingTrendingHashtags: false,
+        trendingHashtags: [],
+
+        // Mention Picker
+        showMentionPicker: false,
+        mentionSearch: '',
+        availableMentions: [],
+
+        // Calendar
+        showCalendar: false,
+        calendarYear: new Date().getFullYear(),
+        calendarMonth: new Date().getMonth(),
+        scheduledPosts: [],
+
+        // Best Times Modal
+        showBestTimes: false,
+        optimalTimes: [],
+
+        // Media Source Picker
+        showMediaSourcePicker: false,
+        mediaUrlInput: '',
+
+        // Media Library
+        showMediaLibrary: false,
+        mediaLibraryFiles: [],
+
+        // Platform Warnings
+        platformWarnings: [],
+
+        // Days of week for scheduling
+        daysOfWeek: [
+            {v: 0, l: @json(__('social.days.sunday')), s: 'ح'},
+            {v: 1, l: @json(__('social.days.monday')), s: 'ن'},
+            {v: 2, l: @json(__('social.days.tuesday')), s: 'ث'},
+            {v: 3, l: @json(__('social.days.wednesday')), s: 'ر'},
+            {v: 4, l: @json(__('social.days.thursday')), s: 'خ'},
+            {v: 5, l: @json(__('social.days.friday')), s: 'ج'},
+            {v: 6, l: @json(__('social.days.saturday')), s: 'س'}
+        ],
+
         // Get the org ID from the URL
         get orgId() {
             const match = window.location.pathname.match(/\/orgs\/([^\/]+)/);
@@ -437,6 +481,27 @@ function socialManager() {
                 'google_business': 'bg-blue-500 text-white'
             };
             return classes[platform] || 'bg-gray-600 text-white';
+        },
+
+        // Calendar helper method
+        getCalendarDays() {
+            const year = this.calendarYear;
+            const month = this.calendarMonth;
+            const firstDay = new Date(year, month, 1);
+            const lastDay = new Date(year, month + 1, 0);
+            const daysInMonth = lastDay.getDate();
+            const startingDayOfWeek = firstDay.getDay();
+
+            const days = [];
+            // Add empty cells for days before month starts
+            for (let i = 0; i < startingDayOfWeek; i++) {
+                days.push(null);
+            }
+            // Add actual days
+            for (let day = 1; day <= daysInMonth; day++) {
+                days.push(day);
+            }
+            return days;
         },
 
         // Sorted and filtered posts

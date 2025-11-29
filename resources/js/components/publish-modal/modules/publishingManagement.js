@@ -100,12 +100,24 @@ export function getPublishingManagementMethods() {
             // Upload media files first, then build clean content object
             let uploadedMedia = [];
 
+            console.log('[Publishing] Preparing content for publishing', {
+                mediaCount: content.global.media?.length || 0,
+                hasMedia: !!(content.global.media && content.global.media.length > 0)
+            });
+
             // Upload media files if they exist
             if (content.global.media && content.global.media.length > 0) {
                 for (const mediaItem of content.global.media) {
+                    console.log('[Publishing] Processing media item', {
+                        hasFile: !!mediaItem.file,
+                        hasUrl: !!mediaItem.url,
+                        type: mediaItem.type
+                    });
+
                     // If media has a File object, upload it first
                     if (mediaItem.file) {
                         const uploadedUrl = await this.uploadMediaFile(mediaItem.file);
+                        console.log('[Publishing] Media uploaded', { uploadedUrl });
                         if (uploadedUrl) {
                             uploadedMedia.push({
                                 type: mediaItem.type,
@@ -116,6 +128,7 @@ export function getPublishingManagementMethods() {
                         }
                     } else if (mediaItem.url && !mediaItem.url.startsWith('data:')) {
                         // Already has a valid URL (not data URL)
+                        console.log('[Publishing] Using existing URL', { url: mediaItem.url });
                         uploadedMedia.push({
                             type: mediaItem.type,
                             url: mediaItem.url,
@@ -125,6 +138,8 @@ export function getPublishingManagementMethods() {
                     }
                 }
             }
+
+            console.log('[Publishing] Uploaded media', { count: uploadedMedia.length, urls: uploadedMedia.map(m => m.url) });
 
             // Build clean content object without File objects
             return {
@@ -146,8 +161,14 @@ export function getPublishingManagementMethods() {
             formData.append('file', file);
             formData.append('type', file.type.startsWith('video') ? 'video' : 'image');
 
+            console.log('[Upload] Uploading media file', {
+                name: file.name,
+                size: file.size,
+                type: file.type
+            });
+
             try {
-                const response = await fetch(`/orgs/${window.currentOrgId}/social/media/upload`, {
+                const response = await fetch(`/api/orgs/${window.currentOrgId}/media/upload`, {
                     method: 'POST',
                     headers: {
                         'Accept': 'application/json',
@@ -158,13 +179,16 @@ export function getPublishingManagementMethods() {
 
                 if (response.ok) {
                     const data = await response.json();
-                    return data.data?.url || data.url;
+                    const url = data.data?.url || data.url;
+                    console.log('[Upload] Upload successful', { url, fullResponse: data });
+                    return url;
                 } else {
-                    console.error('Failed to upload media file');
+                    const errorData = await response.json();
+                    console.error('[Upload] Failed to upload media file', { status: response.status, error: errorData });
                     return null;
                 }
             } catch (e) {
-                console.error('Error uploading media:', e);
+                console.error('[Upload] Error uploading media:', e);
                 return null;
             }
         },

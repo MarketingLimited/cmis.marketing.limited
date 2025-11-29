@@ -24,6 +24,8 @@ return [
     // Accounts Section
     'accounts' => 'الحسابات',
     'selected' => 'محدد',
+    'selected_accounts' => 'الحسابات المحددة',
+    'select_accounts' => 'اختر الحسابات',
     'search_accounts' => 'ابحث في الحسابات...',
     'all' => 'الكل',
     'select_all_accounts' => 'تحديد كل الحسابات',
@@ -148,6 +150,7 @@ return [
     // Footer Actions
     'requires_approval' => 'يتطلب الموافقة قبل النشر',
     'cancel' => 'إلغاء',
+    'done' => 'تم',
     'submit_for_approval' => 'إرسال للموافقة',
     'publish_now' => 'نشر الآن',
     'schedule_post' => 'جدولة المنشور',
@@ -236,6 +239,7 @@ return [
     'warning' => 'تحذير',
     'dismiss' => 'تجاهل',
     'video_processing_time' => 'قد يستغرق الفيديو 5-10 دقائق للمعالجة على إنستجرام',
+    'character_limit' => 'حد الأحرف',
     'character_limit_exceeded' => 'تم تجاوز حد الأحرف لهذه المنصة',
     'missing_required_fields' => 'يرجى ملء جميع الحقول المطلوبة',
     'computer' => 'الكمبيوتر',
@@ -408,5 +412,52 @@ return [
     'gbp_redeem_url' => 'رابط الاستبدال',
     'gbp_terms_conditions' => 'الشروط والأحكام',
     'gbp_terms_placeholder' => 'العرض صالح حتى... لفترة محدودة فقط...',
+
+    // ============================================================
+    // PHASE 2: Advanced Features (Nov 2025)
+    // ============================================================
+
+    // Performance Predictions
+    'performance_prediction' => 'توقعات الأداء',
+    'predicted_reach' => 'الوصول المتوقع',
+    'predicted_engagement' => 'التفاعل المتوقع',
+    'content_quality_score' => 'درجة جودة المحتوى',
+    'optimization_tip' => 'نصيحة تحسين',
+
+    // Template Library
+    'template_library' => 'مكتبة القوالب',
+    'template_name' => 'اسم القالب',
+    'saved_templates' => 'القوالب المحفوظة',
+    'load_template' => 'تحميل القالب',
+    'delete_template' => 'حذف القالب',
+    'no_templates' => 'لا توجد قوالب محفوظة',
+    'template_saved' => 'تم حفظ القالب بنجاح',
+    'template_loaded' => 'تم تحميل القالب بنجاح',
+    'template_deleted' => 'تم حذف القالب بنجاح',
+
+    // Collaboration
+    'editing' => 'يحرر',
+    'viewing' => 'يشاهد',
+    'collaborators' => 'المتعاونون',
+    'people_editing' => ':count يحررون',
+    'people_viewing' => ':count يشاهدون',
+    'one_editing' => 'واحد يحرر',
+    'one_viewing' => 'واحد يشاهد',
+
+    // AI Content Variations
+    'generate_variations' => 'إنشاء متغيرات',
+    'improve_content' => 'تحسين المحتوى',
+    'ai_variations' => 'متغيرات الذكاء الاصطناعي',
+    'use_this_variation' => 'استخدم هذا المتغير',
+    'enable_ab_testing' => 'تفعيل اختبار أ/ب',
+    'ab_testing_help' => 'اختبار أ/ب يساعدك على معرفة أي نسخة من المحتوى تحقق أفضل النتائج',
+    'ab_test_description' => 'سيتم نشر المتغيرات المختلفة تلقائياً واختيار الفائز بناءً على الأداء',
+    'test_duration' => 'مدة الاختبار',
+    'winning_metric' => 'المقياس الفائز',
+    'engagement_rate' => 'معدل التفاعل',
+    'click_rate' => 'معدل النقرات',
+    'reach' => 'الوصول',
+    'hours' => 'ساعات',
+    'days' => 'أيام',
 
 ];
