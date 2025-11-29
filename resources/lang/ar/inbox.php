@@ -17,10 +17,12 @@ return [
     'mentions' => 'الإشارات',
 
     // Stats
+    'total_messages' => 'إجمالي الرسائل',
     'total_comments' => 'إجمالي التعليقات',
     'pending_replies' => 'الردود المعلقة',
     'replied' => 'تم الرد',
     'negative_sentiment' => 'المشاعر السلبية',
+    'platforms' => 'المنصات',
 
     // Filters
     'platform' => 'المنصة',
@@ -77,4 +79,29 @@ return [
     'comment_deleted_success' => 'تم حذف التعليق بنجاح',
     'comment_delete_failed' => 'فشل حذف التعليق',
     'comment_delete_error' => 'فشل حذف التعليق. يرجى المحاولة مرة أخرى.',
+
+    // New inbox page
+    'connect_platforms' => 'ربط المنصات',
+    'new' => 'جديد',
+    'all_status' => 'جميع الحالات',
+    'all_types' => 'جميع الأنواع',
+    'page' => 'صفحة',
+    'select_conversation' => 'اختر محادثة',
+    'select_conversation_description' => 'اختر رسالة من القائمة لعرض المحادثة الكاملة',
+    'mark_as_read' => 'تعليم كمقروء',
+    'star' => 'نجمة',
+    'assign' => 'تعيين',
+    'add_note' => 'إضافة ملاحظة',
+    'archive' => 'أرشفة',
+    'saved_replies' => 'الردود المحفوظة',
+    'just_now' => 'الآن',
+    'hours_ago' => 'ساعات مضت',
+
+    // Demo data
+    'demo_user_1' => 'أحمد محمد',
+    'demo_user_2' => 'سارة أحمد',
+    'demo_user_3' => 'محمد علي',
+    'demo_message_1' => 'حملة رائعة! أحببت تصميم المنتج الجديد. هل يمكنك إخباري المزيد عن الأسعار؟',
+    'demo_message_2' => 'شكراً للرد السريع! أتطلع إلى تعاوننا.',
+    'demo_message_3' => '@علامتك_التجارية شاهدت للتو إعلانك الأخير - عمل مذهل على التصميم!',
 ];

@@ -17,10 +17,12 @@ return [
     'mentions' => 'Mentions',
 
     // Stats
+    'total_messages' => 'Total Messages',
     'total_comments' => 'Total Comments',
     'pending_replies' => 'Pending Replies',
     'replied' => 'Replied',
     'negative_sentiment' => 'Negative Sentiment',
+    'platforms' => 'Platforms',
 
     // Filters
     'platform' => 'Platform',
@@ -77,4 +79,29 @@ return [
     'comment_deleted_success' => 'Comment deleted successfully',
     'comment_delete_failed' => 'Failed to delete comment',
     'comment_delete_error' => 'Failed to delete comment. Please try again.',
+
+    // New inbox page
+    'connect_platforms' => 'Connect Platforms',
+    'new' => 'New',
+    'all_status' => 'All Status',
+    'all_types' => 'All Types',
+    'page' => 'Page',
+    'select_conversation' => 'Select a Conversation',
+    'select_conversation_description' => 'Choose a message from the list to view the full conversation',
+    'mark_as_read' => 'Mark as Read',
+    'star' => 'Star',
+    'assign' => 'Assign',
+    'add_note' => 'Add Note',
+    'archive' => 'Archive',
+    'saved_replies' => 'Saved Replies',
+    'just_now' => 'Just now',
+    'hours_ago' => 'hours ago',
+
+    // Demo data
+    'demo_user_1' => 'Ahmed Mohamed',
+    'demo_user_2' => 'Sara Ahmed',
+    'demo_user_3' => 'Mohammed Ali',
+    'demo_message_1' => 'Great campaign! I love the new product design. Can you tell me more about pricing?',
+    'demo_message_2' => 'Thanks for the quick response! Looking forward to our collaboration.',
+    'demo_message_3' => '@YourBrand Just saw your latest ad - amazing work on the creative!',
 ];

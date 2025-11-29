@@ -35,6 +35,12 @@ Route::middleware('guest')->group(function () {
     Route::post('/login', [LoginController::class, 'store']);
     Route::get('/register', [RegisterController::class, 'create'])->name('register');
     Route::post('/register', [RegisterController::class, 'store']);
+
+    // Password Reset Routes
+    Route::get('/forgot-password', [App\Http\Controllers\Auth\PasswordResetController::class, 'showForgotForm'])->name('password.request');
+    Route::post('/forgot-password', [App\Http\Controllers\Auth\PasswordResetController::class, 'sendResetLink'])->name('password.email');
+    Route::get('/reset-password/{token}', [App\Http\Controllers\Auth\PasswordResetController::class, 'showResetForm'])->name('password.reset');
+    Route::post('/reset-password', [App\Http\Controllers\Auth\PasswordResetController::class, 'resetPassword'])->name('password.update');
 });
 
 // ==================== Invitation Routes ====================
@@ -69,6 +75,34 @@ Route::post('/language/{locale}', [LanguageController::class, 'switch'])
     ->name('language.switch')
     ->where('locale', 'ar|en');
 
+// GET method for direct URL language switching (backup/testing)
+Route::get('/language/{locale}', [LanguageController::class, 'switch'])
+    ->name('language.switch.get')
+    ->where('locale', 'ar|en');
+
+// DEBUG: Development-only routes (protected in production)
+if (app()->environment('local', 'testing', 'development')) {
+    Route::get('/debug-locale', function() {
+        return response()->json([
+            'app_locale' => app()->getLocale(),
+            'session_locale' => session('locale'),
+            'user_locale' => auth()->check() ? auth()->user()->locale : 'not authenticated',
+            'user_email' => auth()->check() ? auth()->user()->email : 'guest',
+            'config_locale' => config('app.locale'),
+            'session_id' => session()->getId(),
+            'browser_accept_language' => request()->header('Accept-Language'),
+        ]);
+    });
+
+    Route::get('/test-language', function() {
+        return view('language-test');
+    });
+
+    Route::get('/locale-diagnostic', function() {
+        return view('locale-diagnostic');
+    });
+}
+
 // Public Routes - Home page redirects appropriately
 Route::get('/', function () {
     if (auth()->check()) {
@@ -84,6 +118,16 @@ Route::get('/', function () {
     return redirect()->route('login');
 })->name('home');
 
+// HI-004: Explicit /home route for post-login redirects
+Route::get('/home', function () {
+    return redirect()->route('home');
+})->name('home.explicit');
+
+// HI-007: Organization create alias (old URL pattern)
+Route::get('/organizations/create', function () {
+    return redirect()->route('orgs.create');
+})->name('organizations.create');
+
 // Protected Routes - Require Authentication
 Route::middleware(['auth'])->group(function () {
 
@@ -97,6 +141,16 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/dismiss', [App\Http\Controllers\UserOnboardingController::class, 'dismiss'])->name('dismiss');
         Route::get('/progress', [App\Http\Controllers\UserOnboardingController::class, 'getProgress'])->name('progress');
         Route::get('/tips', [App\Http\Controllers\UserOnboardingController::class, 'getTips'])->name('tips');
+
+        // HI-005: Friendly URL routes for onboarding flow
+        // Map to existing step-based system for compatibility
+        Route::get('/industry', function () {
+            return redirect()->route('onboarding.step', ['step' => 1]); // Profile setup includes industry
+        })->name('industry');
+        Route::get('/goals', function () {
+            return redirect()->route('onboarding.step', ['step' => 3]); // First campaign = goals
+        })->name('goals');
+        Route::get('/complete', [App\Http\Controllers\UserOnboardingController::class, 'complete'])->name('complete');
     });
 
     // ==================== Organizations List (No specific org context) ====================
@@ -193,6 +247,42 @@ Route::middleware(['auth'])->group(function () {
         Route::put('/products/{product}', [OrgController::class, 'updateProduct'])->name('products.update');
         Route::delete('/products/{product}', [OrgController::class, 'destroyProduct'])->name('products.destroy');
 
+        // ==================== Audiences (Unified Multi-Platform) ====================
+        Route::prefix('audiences')->name('audiences.')->group(function () {
+            Route::get('/', [App\Http\Controllers\Web\AudienceWebController::class, 'index'])->name('index');
+            Route::get('/create', [App\Http\Controllers\Web\AudienceWebController::class, 'create'])->name('create');
+            Route::post('/', [App\Http\Controllers\Web\AudienceWebController::class, 'store'])->name('store');
+            Route::get('/builder', [App\Http\Controllers\Web\AudienceWebController::class, 'builder'])->name('builder');
+            Route::get('/{audience}', [App\Http\Controllers\Web\AudienceWebController::class, 'show'])->name('show');
+            Route::get('/{audience}/edit', [App\Http\Controllers\Web\AudienceWebController::class, 'edit'])->name('edit');
+            Route::put('/{audience}', [App\Http\Controllers\Web\AudienceWebController::class, 'update'])->name('update');
+            Route::delete('/{audience}', [App\Http\Controllers\Web\AudienceWebController::class, 'destroy'])->name('destroy');
+            Route::post('/{audience}/sync/{platform}', [App\Http\Controllers\Web\AudienceWebController::class, 'syncToPlatform'])->name('sync');
+        });
+
+        // ==================== Keywords (Google Ads) ====================
+        Route::prefix('keywords')->name('keywords.')->group(function () {
+            Route::get('/', [App\Http\Controllers\Web\KeywordWebController::class, 'index'])->name('index');
+            Route::get('/create', [App\Http\Controllers\Web\KeywordWebController::class, 'create'])->name('create');
+            Route::post('/', [App\Http\Controllers\Web\KeywordWebController::class, 'store'])->name('store');
+            Route::get('/planner', [App\Http\Controllers\Web\KeywordWebController::class, 'planner'])->name('planner');
+            Route::get('/negative', [App\Http\Controllers\Web\KeywordWebController::class, 'negative'])->name('negative');
+            Route::get('/groups', [App\Http\Controllers\Web\KeywordWebController::class, 'groups'])->name('groups');
+            Route::get('/{keyword}', [App\Http\Controllers\Web\KeywordWebController::class, 'show'])->name('show');
+            Route::get('/{keyword}/edit', [App\Http\Controllers\Web\KeywordWebController::class, 'edit'])->name('edit');
+            Route::put('/{keyword}', [App\Http\Controllers\Web\KeywordWebController::class, 'update'])->name('update');
+            Route::delete('/{keyword}', [App\Http\Controllers\Web\KeywordWebController::class, 'destroy'])->name('destroy');
+        });
+
+        // ==================== Catalogs (Multi-Platform Product Feeds) ====================
+        Route::prefix('catalogs')->name('catalogs.')->group(function () {
+            Route::get('/', [App\Http\Controllers\Web\CatalogWebController::class, 'index'])->name('index');
+            Route::get('/import', [App\Http\Controllers\Web\CatalogWebController::class, 'import'])->name('import');
+            Route::post('/import', [App\Http\Controllers\Web\CatalogWebController::class, 'processImport'])->name('import.process');
+            Route::get('/{catalog}', [App\Http\Controllers\Web\CatalogWebController::class, 'show'])->name('show');
+            Route::post('/{catalog}/sync', [App\Http\Controllers\Web\CatalogWebController::class, 'sync'])->name('sync');
+        });
+
         // ==================== Team Management ====================
         Route::prefix('team')->name('team.')->group(function () {
             Route::get('/', [App\Http\Controllers\Web\TeamWebController::class, 'index'])->name('index');
@@ -209,8 +299,11 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/kpis', [EnterpriseAnalyticsController::class, 'kpis'])->name('kpis');
             Route::get('/kpis/{entity_type}/{entity_id}', [EnterpriseAnalyticsController::class, 'kpis'])->name('kpis.entity');
             Route::get('/legacy', [AnalyticsOverviewController::class, 'index'])->name('legacy');
-            Route::get('/reports', [AnalyticsOverviewController::class, 'index'])->name('reports');
-            Route::get('/metrics', [AnalyticsOverviewController::class, 'index'])->name('metrics');
+            // HI-009: Fixed to use correct controller methods for reports and metrics
+            Route::get('/reports', [AnalyticsOverviewController::class, 'reports'])->name('reports');
+            Route::get('/metrics', [AnalyticsOverviewController::class, 'metrics'])->name('metrics');
+            // Platform Insights - Social, Ads, GA, GSC
+            Route::get('/platform-insights', [EnterpriseAnalyticsController::class, 'platformInsights'])->name('platform-insights');
         });
 
         // ==================== Creative ====================
@@ -330,10 +423,22 @@ Route::middleware(['auth'])->group(function () {
 
         // ==================== Social Media ====================
         Route::prefix('social')->name('social.')->group(function () {
-            Route::get('/', function () { return view('social.index'); })->name('index');
-            Route::get('/posts', function () { return view('social.posts'); })->name('posts');
-            Route::get('/scheduler', function () { return view('social.scheduler'); })->name('scheduler');
-            Route::get('/inbox', function () { return view('social.inbox'); })->name('inbox');
+            Route::get('/', function ($org) {
+                $currentOrg = \App\Models\Core\Org::findOrFail($org);
+                return view('social.index', compact('currentOrg'));
+            })->name('index');
+            Route::get('/posts', function ($org) {
+                $currentOrg = \App\Models\Core\Org::findOrFail($org);
+                return view('social.posts', compact('currentOrg'));
+            })->name('posts');
+            Route::get('/scheduler', function ($org) {
+                $currentOrg = \App\Models\Core\Org::findOrFail($org);
+                return view('social.scheduler', compact('currentOrg'));
+            })->name('scheduler');
+            Route::get('/inbox', function ($org) {
+                $currentOrg = \App\Models\Core\Org::findOrFail($org);
+                return view('social.inbox', compact('currentOrg'));
+            })->name('inbox');
 
             // Post actions (uses session auth from web middleware)
             Route::delete('/posts/{post}', [App\Http\Controllers\Social\SocialPostController::class, 'destroy'])->name('posts.destroy');
@@ -441,6 +546,25 @@ Route::middleware(['auth'])->group(function () {
             Route::delete('/api-tokens/{token}', [App\Http\Controllers\Settings\SettingsController::class, 'destroyApiToken'])->name('api-tokens.destroy');
             Route::post('/team/invite', [App\Http\Controllers\Settings\SettingsController::class, 'inviteTeamMember'])->name('team.invite');
             Route::delete('/team/{user}', [App\Http\Controllers\Settings\SettingsController::class, 'removeTeamMember'])->name('team.remove');
+
+            // HI-010: Platform Settings Pages (platform-specific configuration)
+            Route::prefix('platforms')->name('platforms.')->group(function () {
+                Route::get('/', [App\Http\Controllers\Settings\PlatformSettingsController::class, 'index'])->name('index');
+                Route::get('/meta', [App\Http\Controllers\Settings\PlatformSettingsController::class, 'meta'])->name('meta');
+                Route::get('/google', [App\Http\Controllers\Settings\PlatformSettingsController::class, 'google'])->name('google');
+                Route::get('/tiktok', [App\Http\Controllers\Settings\PlatformSettingsController::class, 'tiktok'])->name('tiktok');
+                Route::get('/linkedin', [App\Http\Controllers\Settings\PlatformSettingsController::class, 'linkedin'])->name('linkedin');
+                Route::get('/twitter', [App\Http\Controllers\Settings\PlatformSettingsController::class, 'twitter'])->name('twitter');
+                Route::get('/snapchat', [App\Http\Controllers\Settings\PlatformSettingsController::class, 'snapchat'])->name('snapchat');
+
+                // Platform settings update actions
+                Route::put('/meta', [App\Http\Controllers\Settings\PlatformSettingsController::class, 'updateMeta'])->name('meta.update');
+                Route::put('/google', [App\Http\Controllers\Settings\PlatformSettingsController::class, 'updateGoogle'])->name('google.update');
+                Route::put('/tiktok', [App\Http\Controllers\Settings\PlatformSettingsController::class, 'updateTikTok'])->name('tiktok.update');
+                Route::put('/linkedin', [App\Http\Controllers\Settings\PlatformSettingsController::class, 'updateLinkedIn'])->name('linkedin.update');
+                Route::put('/twitter', [App\Http\Controllers\Settings\PlatformSettingsController::class, 'updateTwitter'])->name('twitter.update');
+                Route::put('/snapchat', [App\Http\Controllers\Settings\PlatformSettingsController::class, 'updateSnapchat'])->name('snapchat.update');
+            });
 
             // Platform Connections (Meta, Google, TikTok, etc.)
             Route::prefix('platform-connections')->name('platform-connections.')->group(function () {
@@ -668,7 +792,18 @@ Route::middleware(['auth'])->group(function () {
 
     // ==================== User Settings (User-level, not org-specific) ====================
     Route::prefix('settings')->name('settings.')->group(function () {
-        Route::get('/', [App\Http\Controllers\Settings\SettingsController::class, 'index'])->name('index');
+        Route::get('/', function () {
+            // Redirect to user's active org settings
+            $user = auth()->user();
+            $orgId = $user->active_org_id ?? $user->current_org_id ?? $user->org_id;
+
+            if ($orgId) {
+                return redirect()->route('orgs.settings.user', ['org' => $orgId]);
+            }
+
+            // If no org, redirect to org selection
+            return redirect()->route('orgs.index');
+        })->name('index');
         Route::get('/profile', [App\Http\Controllers\Settings\SettingsController::class, 'profile'])->name('profile');
         Route::get('/notifications', [App\Http\Controllers\Settings\SettingsController::class, 'notifications'])->name('notifications');
         Route::get('/security', [App\Http\Controllers\Settings\SettingsController::class, 'security'])->name('security');
@@ -677,15 +812,38 @@ Route::middleware(['auth'])->group(function () {
 
     // ==================== Subscription ====================
     Route::prefix('subscription')->name('subscription.')->group(function () {
+        Route::get('/', [App\Http\Controllers\SubscriptionController::class, 'plans'])->name('index');
         Route::get('/plans', [App\Http\Controllers\SubscriptionController::class, 'plans'])->name('plans');
         Route::get('/status', [App\Http\Controllers\SubscriptionController::class, 'status'])->name('status');
+        Route::get('/manage', [App\Http\Controllers\SubscriptionController::class, 'status'])->name('manage');
         Route::get('/upgrade', [App\Http\Controllers\SubscriptionController::class, 'upgrade'])->name('upgrade');
         Route::post('/upgrade', [App\Http\Controllers\SubscriptionController::class, 'processUpgrade'])->name('upgrade.process');
+        Route::get('/payment', [App\Http\Controllers\SubscriptionController::class, 'payment'])->name('payment');
         Route::post('/cancel', [App\Http\Controllers\SubscriptionController::class, 'cancel'])->name('cancel');
+    });
+
+    // HI-008: Subscriptions alias routes (plural form)
+    Route::prefix('subscriptions')->name('subscriptions.')->group(function () {
+        Route::get('/', fn() => redirect()->route('subscription.plans'))->name('index');
+        Route::get('/manage', fn() => redirect()->route('subscription.manage'))->name('manage');
+        Route::get('/payment', fn() => redirect()->route('subscription.payment'))->name('payment');
     });
 
     // ==================== Profile ====================
     Route::get('/profile', [App\Http\Controllers\ProfileController::class, 'show'])->name('profile');
+
+    // HI-006: Profile edit route - redirects to org settings user page
+    Route::get('/profile/edit', function () {
+        $user = auth()->user();
+        $orgId = $user->active_org_id ?? $user->current_org_id ?? $user->org_id;
+
+        if ($orgId) {
+            return redirect()->route('orgs.settings.user', ['org' => $orgId]);
+        }
+
+        // Fallback to profile page if no org
+        return redirect()->route('profile');
+    })->name('profile.edit');
 
 }); // End of Auth Middleware Group
 

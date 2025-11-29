@@ -206,4 +206,35 @@ class EnterpriseAnalyticsController extends Controller
                 return ucfirst($entityType);
         }
     }
+
+    /**
+     * Platform Insights Dashboard
+     *
+     * GET /analytics/platform-insights
+     *
+     * Renders the platform insights view with:
+     * - Social media accounts insights
+     * - Social media posts insights
+     * - Ad accounts insights
+     * - Campaigns insights
+     * - Ad sets insights
+     * - Ads insights
+     * - Google Analytics data
+     * - Google Search Console data
+     *
+     * @param Request $request
+     * @param string $org
+     * @return \Illuminate\View\View
+     */
+    public function platformInsights(Request $request, string $org)
+    {
+        $user = $request->user();
+
+        return view('analytics.platform-insights', [
+            'orgId' => $org,
+            'currentOrg' => $org,
+            'user' => $user,
+            'pageTitle' => __('analytics.platform_insights')
+        ]);
+    }
 }

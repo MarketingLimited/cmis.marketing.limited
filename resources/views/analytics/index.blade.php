@@ -25,6 +25,42 @@
         </div>
     </div>
 
+    <!-- Quick Links to Analytics Modules -->
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-6">
+        <a href="{{ route('orgs.analytics.platform-insights', ['org' => $currentOrg]) }}"
+           class="flex items-center gap-3 p-4 bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-xl shadow-lg hover:shadow-xl transition-all hover:scale-105">
+            <i class="fas fa-chart-pie text-2xl opacity-80"></i>
+            <div>
+                <p class="font-semibold">{{ __('analytics.platform_insights') }}</p>
+                <p class="text-xs opacity-80">{{ __('analytics.social_accounts') }}, {{ __('analytics.campaigns') }}, {{ __('analytics.google_analytics') }}</p>
+            </div>
+        </a>
+        <a href="{{ route('orgs.analytics.realtime', ['org' => $currentOrg]) }}"
+           class="flex items-center gap-3 p-4 bg-gradient-to-br from-green-500 to-green-600 text-white rounded-xl shadow-lg hover:shadow-xl transition-all hover:scale-105">
+            <i class="fas fa-broadcast-tower text-2xl opacity-80"></i>
+            <div>
+                <p class="font-semibold">{{ __('analytics.realtime') }}</p>
+                <p class="text-xs opacity-80">{{ __('analytics.live') }} {{ __('analytics.performance') }}</p>
+            </div>
+        </a>
+        <a href="{{ route('orgs.analytics.kpis', ['org' => $currentOrg]) }}"
+           class="flex items-center gap-3 p-4 bg-gradient-to-br from-purple-500 to-purple-600 text-white rounded-xl shadow-lg hover:shadow-xl transition-all hover:scale-105">
+            <i class="fas fa-tachometer-alt text-2xl opacity-80"></i>
+            <div>
+                <p class="font-semibold">{{ __('analytics.kpis') }}</p>
+                <p class="text-xs opacity-80">{{ __('analytics.key_performance_indicators') }}</p>
+            </div>
+        </a>
+        <a href="{{ route('orgs.analytics.reports', ['org' => $currentOrg]) }}"
+           class="flex items-center gap-3 p-4 bg-gradient-to-br from-orange-500 to-orange-600 text-white rounded-xl shadow-lg hover:shadow-xl transition-all hover:scale-105">
+            <i class="fas fa-file-alt text-2xl opacity-80"></i>
+            <div>
+                <p class="font-semibold">{{ __('analytics.reports') }}</p>
+                <p class="text-xs opacity-80">{{ __('analytics.generate_report') }}</p>
+            </div>
+        </a>
+    </div>
+
     <!-- Date Range Filter -->
     <x-ui.card class="mb-6">
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
