@@ -1,27 +1,210 @@
-*.log
-*.bak
-*.backup
-*.backup.php
-.DS_Store
+# ============================================
+# CMIS Project .gitignore
+# Laravel + Node.js + PostgreSQL + Playwright
+# ============================================
+
+# ----------------------------------------
+# Environment & Configuration
+# ----------------------------------------
 .env
-.env.backup
-.env.production
-.phpactor.json
-.phpunit.result.cache
-/.fleet
-/.idea
-/.nova
-/.phpunit.cache
-/.vscode
-/.zed
-/auth.json
+.env.*
+!.env.example
+auth.json
+
+# ----------------------------------------
+# Dependencies
+# ----------------------------------------
+/vendor
 /node_modules
+composer.phar
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# ----------------------------------------
+# Build Artifacts
+# ----------------------------------------
 /public/build
 /public/hot
 /public/storage
+/public/mix-manifest.json
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ----------------------------------------
+# Laravel Framework
+# ----------------------------------------
+/bootstrap/cache/*
 /storage/*.key
 /storage/pail
-/vendor
+/storage/framework/cache/*
+/storage/framework/sessions/*
+/storage/framework/testing/*
+/storage/framework/views/*
+/storage/logs/*
+/storage/app/public
+.phpunit.result.cache
+.phpunit.cache
+*.cache
+
+# ----------------------------------------
+# IDE & Editor Files
+# ----------------------------------------
+# VSCode
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+
+# PHPStorm / IntelliJ
+.idea
+*.iml
+*.ipr
+*.iws
+.idea_modules/
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Nova
+.nova
+
+# Fleet
+.fleet
+
+# Zed
+.zed
+
+# Vim
+*.swp
+*.swo
+*~
+
+# Emacs
+*~
+\#*\#
+.\#*
+
+# PHPActor
+.phpactor.json
+
+# ----------------------------------------
+# OS-Specific Files
+# ----------------------------------------
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Linux
+.directory
+.Trash-*
+.nfs*
+
+# ----------------------------------------
+# Testing & Coverage
+# ----------------------------------------
+/coverage
+/tests/coverage
+*.coverage
+.phpunit.result.cache
+phpunit.xml
+!phpunit.xml.dist
+_ide_helper.php
+_ide_helper_models.php
+.phpstorm.meta.php
+
+# Playwright Browser Testing
+/playwright-report
+/playwright/.cache
+/test-results
+/test-results/**
+*.spec.js.snap
+
+# ----------------------------------------
+# Logs & Debugging
+# ----------------------------------------
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.pnpm-debug.log*
+
+# ----------------------------------------
+# Temporary & Backup Files
+# ----------------------------------------
+*.tmp
+*.temp
+*.bak
+*.backup
+*.backup.php
+*.old
+*.orig
+*.rej
+*.swp
+*.swo
+
+# ----------------------------------------
+# Database
+# ----------------------------------------
+*.sqlite
+*.sqlite-journal
+*.db
+*.sql
+*.dump
+database.sqlite
+
+# ----------------------------------------
+# Deployment
+# ----------------------------------------
 Homestead.json
 Homestead.yaml
-Thumbs.db
+.vagrant
+npm-shrinkwrap.json
+
+# ----------------------------------------
+# Documentation Build
+# ----------------------------------------
+/docs/_build
+/docs/.docusaurus
+/docs/.cache-loader
+
+# ----------------------------------------
+# Security & Credentials
+# ----------------------------------------
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+credentials.json
+service-account.json
+
+# ----------------------------------------
+# Miscellaneous
+# ----------------------------------------
+.htaccess.bak
+sitemap.xml
+robots.txt.bak
