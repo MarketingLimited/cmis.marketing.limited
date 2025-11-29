@@ -242,4 +242,219 @@ class SocialListeningService
 
         return $insights;
     }
+
+    /**
+     * Get sentiment analysis summary
+     */
+    public function getSentimentSummary(string $orgId, ?string $startDate = null, ?string $endDate = null): array
+    {
+        $mentions = SocialMention::where('org_id', $orgId)
+            ->when($startDate, fn($q) => $q->where('mentioned_at', '>=', $startDate))
+            ->when($endDate, fn($q) => $q->where('mentioned_at', '<=', $endDate))
+            ->get();
+
+        return $this->calculateSentimentSummary($mentions);
+    }
+
+    /**
+     * Calculate sentiment summary from mentions
+     */
+    private function calculateSentimentSummary(Collection $mentions): array
+    {
+        $totalMentions = $mentions->count();
+        $positiveMentions = $mentions->where('sentiment', 'positive')->count();
+        $negativeMentions = $mentions->where('sentiment', 'negative')->count();
+        $neutralMentions = $mentions->where('sentiment', 'neutral')->count();
+        $avgSentimentScore = $mentions->avg('sentiment_score') ?? 0;
+
+        return [
+            'total_mentions' => $totalMentions,
+            'positive_mentions' => $positiveMentions,
+            'negative_mentions' => $negativeMentions,
+            'neutral_mentions' => $neutralMentions,
+            'positive_percentage' => $totalMentions > 0 ? round(($positiveMentions / $totalMentions) * 100, 2) : 0,
+            'negative_percentage' => $totalMentions > 0 ? round(($negativeMentions / $totalMentions) * 100, 2) : 0,
+            'avg_sentiment_score' => round($avgSentimentScore, 2),
+            'sentiment_trend' => $this->determineSentimentTrend($positiveMentions, $negativeMentions),
+        ];
+    }
+
+    /**
+     * Determine overall sentiment trend
+     */
+    private function determineSentimentTrend(int $positiveMentions, int $negativeMentions): string
+    {
+        if ($positiveMentions > $negativeMentions) {
+            return 'positive';
+        }
+        if ($negativeMentions > $positiveMentions) {
+            return 'negative';
+        }
+        return 'neutral';
+    }
+
+    /**
+     * Get mention volume over time
+     */
+    public function getMentionVolume(string $orgId, string $startDate, string $endDate, string $interval = 'day'): Collection
+    {
+        $mentions = SocialMention::where('org_id', $orgId)
+            ->whereBetween('mentioned_at', [$startDate, $endDate])
+            ->get();
+
+        return $mentions->groupBy(function ($mention) use ($interval) {
+            return match ($interval) {
+                'hour' => $mention->mentioned_at->format('Y-m-d H:00'),
+                'week' => $mention->mentioned_at->startOfWeek()->format('Y-m-d'),
+                'month' => $mention->mentioned_at->format('Y-m'),
+                default => $mention->mentioned_at->format('Y-m-d'),
+            };
+        })->map(function ($group) {
+            return [
+                'count' => $group->count(),
+                'positive' => $group->where('sentiment', 'positive')->count(),
+                'negative' => $group->where('sentiment', 'negative')->count(),
+                'neutral' => $group->where('sentiment', 'neutral')->count(),
+            ];
+        });
+    }
+
+    /**
+     * Get top influencers mentioning brand
+     */
+    public function getTopInfluencers(string $orgId, ?string $startDate = null, ?string $endDate = null, int $limit = 10): Collection
+    {
+        $mentions = SocialMention::where('org_id', $orgId)
+            ->when($startDate, fn($q) => $q->where('mentioned_at', '>=', $startDate))
+            ->when($endDate, fn($q) => $q->where('mentioned_at', '<=', $endDate))
+            ->whereNotNull('author_followers')
+            ->orderBy('author_followers', 'desc')
+            ->limit(20)
+            ->get();
+
+        return $mentions->groupBy('author_username')->map(function ($group) {
+            $first = $group->first();
+            return [
+                'username' => $first->author_username,
+                'followers' => $first->author_followers,
+                'mention_count' => $group->count(),
+                'avg_sentiment' => round($group->avg('sentiment_score'), 2),
+                'platform' => $first->platform,
+            ];
+        })->sortByDesc('mention_count')->take($limit)->values();
+    }
+
+    /**
+     * Get platform distribution
+     */
+    public function getPlatformDistribution(string $orgId, ?string $startDate = null, ?string $endDate = null): Collection
+    {
+        $mentions = SocialMention::where('org_id', $orgId)
+            ->when($startDate, fn($q) => $q->where('mentioned_at', '>=', $startDate))
+            ->when($endDate, fn($q) => $q->where('mentioned_at', '<=', $endDate))
+            ->get();
+
+        return $mentions->groupBy('platform')->map(function ($group) {
+            return [
+                'count' => $group->count(),
+                'engagement' => $group->sum('engagement'),
+                'reach' => $group->sum('reach'),
+            ];
+        });
+    }
+
+    /**
+     * Analyze keywords from mentions
+     */
+    public function analyzeKeywords(string $orgId, ?string $startDate = null, ?string $endDate = null, int $limit = 50): array
+    {
+        $mentions = SocialMention::where('org_id', $orgId)
+            ->when($startDate, fn($q) => $q->where('mentioned_at', '>=', $startDate))
+            ->when($endDate, fn($q) => $q->where('mentioned_at', '<=', $endDate))
+            ->get();
+
+        return $this->extractTopKeywords($mentions, $limit);
+    }
+
+    /**
+     * Extract top keywords from mentions
+     */
+    private function extractTopKeywords(Collection $mentions, int $limit): array
+    {
+        $keywords = [];
+        foreach ($mentions as $mention) {
+            $words = str_word_count(strtolower($mention->content), 1);
+            foreach ($words as $word) {
+                if (strlen($word) > 4) { // Only count words longer than 4 characters
+                    if (!isset($keywords[$word])) {
+                        $keywords[$word] = 0;
+                    }
+                    $keywords[$word]++;
+                }
+            }
+        }
+
+        arsort($keywords);
+        return array_slice($keywords, 0, $limit);
+    }
+
+    /**
+     * Get engagement metrics
+     */
+    public function getEngagementMetrics(string $orgId, ?string $startDate = null, ?string $endDate = null): array
+    {
+        $mentions = SocialMention::where('org_id', $orgId)
+            ->when($startDate, fn($q) => $q->where('mentioned_at', '>=', $startDate))
+            ->when($endDate, fn($q) => $q->where('mentioned_at', '<=', $endDate))
+            ->get();
+
+        return [
+            'total_engagement' => $mentions->sum('engagement'),
+            'total_reach' => $mentions->sum('reach'),
+            'avg_engagement_per_mention' => round($mentions->avg('engagement'), 2),
+            'engagement_rate' => $this->calculateEngagementRate($mentions),
+            'top_performing_mention' => $mentions->sortByDesc('engagement')->first(),
+        ];
+    }
+
+    /**
+     * Calculate engagement rate
+     */
+    private function calculateEngagementRate(Collection $mentions): float
+    {
+        $totalReach = $mentions->sum('reach');
+        if ($totalReach <= 0) {
+            return 0;
+        }
+        return round(($mentions->sum('engagement') / $totalReach) * 100, 2);
+    }
+
+    /**
+     * Get competitor comparison data
+     */
+    public function getCompetitorComparison(string $orgId, array $competitorBrands, ?string $startDate = null, ?string $endDate = null): array
+    {
+        $data = [];
+        foreach ($competitorBrands as $brand) {
+            $mentions = SocialMention::where('org_id', $orgId)
+                ->where('content', 'like', "%{$brand}%")
+                ->when($startDate, fn($q) => $q->where('mentioned_at', '>=', $startDate))
+                ->when($endDate, fn($q) => $q->where('mentioned_at', '<=', $endDate))
+                ->get();
+
+            $data[$brand] = [
+                'mention_count' => $mentions->count(),
+                'total_engagement' => $mentions->sum('engagement'),
+                'total_reach' => $mentions->sum('reach'),
+                'avg_sentiment' => round($mentions->avg('sentiment_score'), 2),
+                'sentiment_breakdown' => [
+                    'positive' => $mentions->where('sentiment', 'positive')->count(),
+                    'negative' => $mentions->where('sentiment', 'negative')->count(),
+                    'neutral' => $mentions->where('sentiment', 'neutral')->count(),
+                ],
+            ];
+        }
+
+        return $data;
+    }
 }
