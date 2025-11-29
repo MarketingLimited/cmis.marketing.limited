@@ -1,0 +1,99 @@
+{
+  "results": [
+    {
+      "name": "dashboard",
+      "url": "https://cmis-test.kazaaz.com/orgs/5c8d4b5a-7b8c-8d9e-2f1a-5b6c7d8e9f0a/dashboard",
+      "status": "success",
+      "statusCode": 200,
+      "locale": "en",
+      "direction": "ltr",
+      "hasLanguageSwitcher": true,
+      "screenshots": {
+        "arabic": "test-results/authenticated-pages/dashboard-ar.png",
+        "english": "test-results/authenticated-pages/dashboard-en.png"
+      }
+    },
+    {
+      "name": "campaigns",
+      "url": "https://cmis-test.kazaaz.com/orgs/5c8d4b5a-7b8c-8d9e-2f1a-5b6c7d8e9f0a/campaigns",
+      "status": "success",
+      "statusCode": 200,
+      "locale": "en",
+      "direction": "ltr",
+      "hasLanguageSwitcher": true,
+      "screenshots": {
+        "arabic": "test-results/authenticated-pages/campaigns-ar.png",
+        "english": "test-results/authenticated-pages/campaigns-en.png"
+      }
+    },
+    {
+      "name": "social",
+      "url": "https://cmis-test.kazaaz.com/orgs/5c8d4b5a-7b8c-8d9e-2f1a-5b6c7d8e9f0a/social",
+      "status": "success",
+      "statusCode": 200,
+      "locale": "en",
+      "direction": "ltr",
+      "hasLanguageSwitcher": true,
+      "screenshots": {
+        "arabic": "test-results/authenticated-pages/social-ar.png",
+        "english": "test-results/authenticated-pages/social-en.png"
+      }
+    },
+    {
+      "name": "analytics",
+      "url": "https://cmis-test.kazaaz.com/orgs/5c8d4b5a-7b8c-8d9e-2f1a-5b6c7d8e9f0a/analytics",
+      "status": "success",
+      "statusCode": 200,
+      "locale": "en",
+      "direction": "ltr",
+      "hasLanguageSwitcher": true,
+      "screenshots": {
+        "arabic": "test-results/authenticated-pages/analytics-ar.png",
+        "english": "test-results/authenticated-pages/analytics-en.png"
+      }
+    },
+    {
+      "name": "settings-platforms",
+      "url": "https://cmis-test.kazaaz.com/orgs/5c8d4b5a-7b8c-8d9e-2f1a-5b6c7d8e9f0a/settings/platform-connections",
+      "status": "success",
+      "statusCode": 200,
+      "locale": "en",
+      "direction": "ltr",
+      "hasLanguageSwitcher": true,
+      "screenshots": {
+        "arabic": "test-results/authenticated-pages/settings-platforms-ar.png",
+        "english": "test-results/authenticated-pages/settings-platforms-en.png"
+      }
+    },
+    {
+      "name": "team",
+      "url": "https://cmis-test.kazaaz.com/orgs/5c8d4b5a-7b8c-8d9e-2f1a-5b6c7d8e9f0a/team",
+      "status": "success",
+      "statusCode": 200,
+      "locale": "en",
+      "direction": "ltr",
+      "hasLanguageSwitcher": true,
+      "screenshots": {
+        "arabic": "test-results/authenticated-pages/team-ar.png",
+        "english": "test-results/authenticated-pages/team-en.png"
+      }
+    },
+    {
+      "name": "profile",
+      "url": "https://cmis-test.kazaaz.com/profile",
+      "status": "success",
+      "statusCode": 200,
+      "locale": "en",
+      "direction": "ltr",
+      "hasLanguageSwitcher": true,
+      "screenshots": {
+        "arabic": "test-results/authenticated-pages/profile-ar.png",
+        "english": "test-results/authenticated-pages/profile-en.png"
+      }
+    }
+  ],
+  "summary": {
+    "successful": 7,
+    "failed": 0
+  }
+}

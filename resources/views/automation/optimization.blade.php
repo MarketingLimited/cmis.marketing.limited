@@ -23,9 +23,18 @@
             <!-- Optimize All Campaigns -->
             <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg shadow-lg p-6 text-white">
                 <div class="flex items-center justify-between mb-4">
-                    <div>
-                        <h3 class="text-lg font-semibold">{{ __('automation.optimize_all_campaigns') }}</h3>
-                        <p class="text-blue-100 text-sm mt-1">{{ __('automation.apply_active_rules') }}</p>
+                    <div class="flex items-start gap-2">
+                        <div>
+                            <h3 class="text-lg font-semibold">{{ __('automation.optimize_all_campaigns') }}</h3>
+                            <p class="text-blue-100 text-sm mt-1">{{ __('automation.apply_active_rules') }}</p>
+                        </div>
+                        <x-tooltip :text="__('automation.tooltip_optimize_all')" position="right">
+                            <button type="button" class="text-blue-200 hover:text-white">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                            </button>
+                        </x-tooltip>
                     </div>
                     <div class="text-4xl">🚀</div>
                 </div>
@@ -43,9 +52,18 @@
             <!-- Active Rules Count -->
             <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg shadow-lg p-6 text-white">
                 <div class="flex items-center justify-between mb-4">
-                    <div>
-                        <h3 class="text-lg font-semibold">{{ __('automation.active_automation_rules') }}</h3>
-                        <p class="text-purple-100 text-sm mt-1">{{ __('automation.currently_enabled_rules') }}</p>
+                    <div class="flex items-start gap-2">
+                        <div>
+                            <h3 class="text-lg font-semibold">{{ __('automation.active_automation_rules') }}</h3>
+                            <p class="text-purple-100 text-sm mt-1">{{ __('automation.currently_enabled_rules') }}</p>
+                        </div>
+                        <x-tooltip :text="__('automation.tooltip_active_rules')" position="right">
+                            <button type="button" class="text-purple-200 hover:text-white">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                            </button>
+                        </x-tooltip>
                     </div>
                     <div class="text-4xl">⚙️</div>
                 </div>

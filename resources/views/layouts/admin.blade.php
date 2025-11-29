@@ -1,8 +1,9 @@
 @php
     $locale = app()->getLocale();
     $isRtl = $locale === 'ar';
-    $dir = $isRtl ? 'rtl' : 'ltr';
-    $lang = $locale === 'ar' ? 'ar' : 'en';
+    // Use shared variables from middleware if available, otherwise fallback to computed values
+    $dir = $htmlDir ?? ($isRtl ? 'rtl' : 'ltr');
+    $lang = $htmlLang ?? ($locale === 'ar' ? 'ar' : 'en');
     $defaultMetaDescription = __('navigation.platform_name') . ' - ' . __('navigation.platform_tagline');
     $dashboardTitle = __('common.dashboard');
 @endphp
@@ -492,15 +493,68 @@
                     </button>
                     <div x-show="open" x-collapse class="mr-6 space-y-1">
                         <a href="{{ route('orgs.campaigns.index', ['org' => $currentOrg]) }}"
+                           data-testid="nav-campaigns"
+                           id="nav-campaigns"
                            class="flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition-all
                                   {{ request()->routeIs('orgs.campaigns.index') ? 'text-blue-400 bg-slate-800/50' : 'text-slate-400 hover:text-white hover:bg-slate-800/30' }}">
                             <i class="fas fa-list text-xs w-4"></i>
                             <span>{{ __('navigation.all_campaigns') }}</span>
                         </a>
                         <a href="{{ route('orgs.campaigns.create', ['org' => $currentOrg]) }}"
+                           data-testid="nav-new-campaign"
+                           id="nav-new-campaign"
                            class="flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition-all text-slate-400 hover:text-white hover:bg-slate-800/30">
                             <i class="fas fa-plus text-xs w-4"></i>
                             <span>{{ __('navigation.new_campaign') }}</span>
+                        </a>
+                        <a href="{{ route('orgs.keywords.index', ['org' => $currentOrg]) }}"
+                           data-testid="nav-keywords"
+                           id="nav-keywords"
+                           class="flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition-all
+                                  {{ request()->routeIs('orgs.keywords.*') ? 'text-blue-400 bg-slate-800/50' : 'text-slate-400 hover:text-white hover:bg-slate-800/30' }}">
+                            <i class="fas fa-key text-xs w-4"></i>
+                            <span>{{ __('navigation.keywords') }}</span>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Audiences with submenu -->
+                <div x-data="{ open: {{ request()->routeIs('orgs.audiences.*') ? 'true' : 'false' }} }">
+                    <button @click="open = !open"
+                            class="group w-full flex items-center justify-between gap-3 px-3 py-2.5 rounded-xl mb-1 transition-all duration-200
+                                   {{ request()->routeIs('orgs.audiences.*') ? 'bg-gradient-to-l from-blue-600/20 to-purple-600/20 text-white' : 'text-slate-400 hover:text-white hover:bg-slate-700/30' }}">
+                        <div class="flex items-center gap-3">
+                            <div class="w-9 h-9 rounded-lg flex items-center justify-center transition-all
+                                        {{ request()->routeIs('orgs.audiences.*') ? 'bg-gradient-to-br from-violet-500 to-purple-600 text-white shadow-lg shadow-violet-500/25' : 'bg-slate-800 text-slate-400 group-hover:bg-slate-700 group-hover:text-white' }}">
+                                <i class="fas fa-users text-sm"></i>
+                            </div>
+                            <span class="font-medium text-sm">{{ __('navigation.audiences') }}</span>
+                        </div>
+                        <i class="fas fa-chevron-down text-xs transition-transform duration-200" :class="{ 'rotate-180': open }"></i>
+                    </button>
+                    <div x-show="open" x-collapse class="mr-6 space-y-1">
+                        <a href="{{ route('orgs.audiences.index', ['org' => $currentOrg]) }}"
+                           data-testid="nav-audiences"
+                           id="nav-audiences"
+                           class="flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition-all
+                                  {{ request()->routeIs('orgs.audiences.index') ? 'text-blue-400 bg-slate-800/50' : 'text-slate-400 hover:text-white hover:bg-slate-800/30' }}">
+                            <i class="fas fa-list text-xs w-4"></i>
+                            <span>{{ __('navigation.all_audiences') }}</span>
+                        </a>
+                        <a href="{{ route('orgs.audiences.create', ['org' => $currentOrg]) }}"
+                           data-testid="nav-create-audience"
+                           id="nav-create-audience"
+                           class="flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition-all text-slate-400 hover:text-white hover:bg-slate-800/30">
+                            <i class="fas fa-plus text-xs w-4"></i>
+                            <span>{{ __('navigation.create_audience') }}</span>
+                        </a>
+                        <a href="{{ route('orgs.audiences.builder', ['org' => $currentOrg]) }}"
+                           data-testid="nav-audience-builder"
+                           id="nav-audience-builder"
+                           class="flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition-all
+                                  {{ request()->routeIs('orgs.audiences.builder') ? 'text-blue-400 bg-slate-800/50' : 'text-slate-400 hover:text-white hover:bg-slate-800/30' }}">
+                            <i class="fas fa-wand-magic-sparkles text-xs w-4"></i>
+                            <span>{{ __('navigation.audience_builder') }}</span>
                         </a>
                     </div>
                 </div>
@@ -621,16 +675,47 @@
                     <span class="font-medium text-sm">{{ __('navigation.profile_groups') }}</span>
                 </a>
 
-                <!-- Products -->
-                <a href="{{ route('orgs.products', ['org' => $currentOrg]) }}"
-                   class="group flex items-center gap-3 px-3 py-2.5 rounded-xl mb-1 transition-all duration-200
-                          {{ request()->routeIs('orgs.products*') ? 'bg-gradient-to-l from-blue-600/20 to-purple-600/20 text-white border-r-2 border-blue-500' : 'text-slate-400 hover:text-white hover:bg-slate-700/30' }}">
-                    <div class="w-9 h-9 rounded-lg flex items-center justify-center transition-all
-                                {{ request()->routeIs('orgs.products*') ? 'bg-gradient-to-br from-amber-500 to-orange-600 text-white shadow-lg shadow-amber-500/25' : 'bg-slate-800 text-slate-400 group-hover:bg-slate-700 group-hover:text-white' }}">
-                        <i class="fas fa-box text-sm"></i>
+                <!-- Products & Catalogs with submenu -->
+                <div x-data="{ open: {{ request()->routeIs('orgs.products*') || request()->routeIs('orgs.catalogs.*') ? 'true' : 'false' }} }">
+                    <button @click="open = !open"
+                            class="group w-full flex items-center justify-between gap-3 px-3 py-2.5 rounded-xl mb-1 transition-all duration-200
+                                   {{ request()->routeIs('orgs.products*') || request()->routeIs('orgs.catalogs.*') ? 'bg-gradient-to-l from-blue-600/20 to-purple-600/20 text-white' : 'text-slate-400 hover:text-white hover:bg-slate-700/30' }}">
+                        <div class="flex items-center gap-3">
+                            <div class="w-9 h-9 rounded-lg flex items-center justify-center transition-all
+                                        {{ request()->routeIs('orgs.products*') || request()->routeIs('orgs.catalogs.*') ? 'bg-gradient-to-br from-amber-500 to-orange-600 text-white shadow-lg shadow-amber-500/25' : 'bg-slate-800 text-slate-400 group-hover:bg-slate-700 group-hover:text-white' }}">
+                                <i class="fas fa-box text-sm"></i>
+                            </div>
+                            <span class="font-medium text-sm">{{ __('navigation.products') }}</span>
+                        </div>
+                        <i class="fas fa-chevron-down text-xs transition-transform duration-200" :class="{ 'rotate-180': open }"></i>
+                    </button>
+                    <div x-show="open" x-collapse class="mr-6 space-y-1">
+                        <a href="{{ route('orgs.products', ['org' => $currentOrg]) }}"
+                           data-testid="nav-products"
+                           id="nav-products"
+                           class="flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition-all
+                                  {{ request()->routeIs('orgs.products') && !request()->routeIs('orgs.catalogs.*') ? 'text-blue-400 bg-slate-800/50' : 'text-slate-400 hover:text-white hover:bg-slate-800/30' }}">
+                            <i class="fas fa-box-open text-xs w-4"></i>
+                            <span>{{ __('navigation.all_products') }}</span>
+                        </a>
+                        <a href="{{ route('orgs.catalogs.index', ['org' => $currentOrg]) }}"
+                           data-testid="nav-catalogs"
+                           id="nav-catalogs"
+                           class="flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition-all
+                                  {{ request()->routeIs('orgs.catalogs.*') ? 'text-blue-400 bg-slate-800/50' : 'text-slate-400 hover:text-white hover:bg-slate-800/30' }}">
+                            <i class="fas fa-layer-group text-xs w-4"></i>
+                            <span>{{ __('navigation.catalogs') }}</span>
+                        </a>
+                        <a href="{{ route('orgs.catalogs.import', ['org' => $currentOrg]) }}"
+                           data-testid="nav-import-catalog"
+                           id="nav-import-catalog"
+                           class="flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition-all
+                                  {{ request()->routeIs('orgs.catalogs.import') ? 'text-blue-400 bg-slate-800/50' : 'text-slate-400 hover:text-white hover:bg-slate-800/30' }}">
+                            <i class="fas fa-upload text-xs w-4"></i>
+                            <span>{{ __('navigation.import_catalog') }}</span>
+                        </a>
                     </div>
-                    <span class="font-medium text-sm">{{ __('navigation.products') }}</span>
-                </a>
+                </div>
 
                 <!-- Workflows -->
                 <a href="{{ route('orgs.workflows.index', ['org' => $currentOrg]) }}"
@@ -1136,6 +1221,9 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- Language Switcher -->
+                    <x-language-switcher />
 
                     <!-- User Menu -->
                     <div class="relative" x-data="{ userMenuOpen: false }">

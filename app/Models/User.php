@@ -73,6 +73,8 @@ class User extends Authenticatable
         'role',
         'status',
         'locale', // User's preferred language (ar/en)
+        'bio', // User biography
+        'avatar', // User profile picture path
         'current_org_id',
         'email_verified_at',
         'remember_token',

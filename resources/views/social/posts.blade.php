@@ -6,7 +6,10 @@
     <!-- Header -->
     <div class="flex justify-between items-center mb-6">
         <h1 class="text-2xl font-bold">{{ __('social.social_media_publishing') }}</h1>
-        <button @click="showCreateModal = true" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2">
+        <button @click="showCreateModal = true"
+                data-testid="create-post-btn"
+                id="create-post-btn"
+                class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2">
             <i class="fas fa-plus"></i>
             {{ __('social.create_post') }}
         </button>

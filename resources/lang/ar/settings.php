@@ -1061,4 +1061,93 @@ return [
     'untitled' => 'بدون عنوان',
     'no_pending_approvals' => 'لا يوجد محتوى في انتظار الموافقة',
 
+    // Platform Settings (HI-010)
+    'platform_settings' => 'إعدادات المنصات',
+    'platform_settings_description' => 'ضبط إعدادات كل منصة إعلانية وتحليلات',
+    'manage_connections' => 'إدارة الاتصالات',
+    'connect_platform' => 'ربط المنصة',
+    'configure' => 'ضبط',
+    'configured' => 'تم الضبط',
+    'not_configured' => 'غير مضبوط',
+    'not_connected' => 'غير متصل',
+    'accounts' => 'حسابات',
+    'platform_help_title' => 'هل تحتاج مساعدة؟',
+    'platform_help_description' => 'اضبط إعدادات كل منصة لتحسين التتبع والإسناد وإعدادات التحويل.',
+    'view_connections' => 'عرض الاتصالات',
+
+    // Platform Names
+    'platform_meta' => 'إعلانات ميتا',
+    'platform_meta_subtitle' => 'إعدادات إعلانات فيسبوك وإنستغرام',
+    'platform_google' => 'إعلانات جوجل',
+    'platform_google_subtitle' => 'إعدادات إعلانات البحث والعرض ويوتيوب',
+    'platform_tiktok' => 'إعلانات تيك توك',
+    'platform_tiktok_subtitle' => 'إعدادات تيك توك للأعمال',
+    'platform_linkedin' => 'إعلانات لينكد إن',
+    'platform_linkedin_subtitle' => 'إعدادات الإعلانات المهنية B2B',
+    'platform_twitter' => 'إعلانات تويتر (X)',
+    'platform_twitter_subtitle' => 'إعدادات المحتوى المروج في تويتر/X',
+    'platform_snapchat' => 'إعلانات سناب شات',
+    'platform_snapchat_subtitle' => 'إعدادات إعلانات سناب وعدسات AR',
+
+    // Platform Settings Form
+    'general_settings' => 'الإعدادات العامة',
+    'attribution_window' => 'نافذة الإسناد',
+    'sync_frequency' => 'تكرار المزامنة',
+    'realtime' => 'فوري',
+    'hourly' => 'كل ساعة',
+    'daily' => 'يومياً',
+    'enable_auto_sync' => 'تفعيل المزامنة التلقائية',
+    'auto_sync_description' => 'مزامنة البيانات من المنصة تلقائياً بالتكرار المحدد',
+    'connected_accounts' => 'الحسابات المتصلة',
+    'no_connections' => 'لا توجد اتصالات',
+    'connect_first_to_configure' => 'قم بربط حساب المنصة أولاً لضبط الإعدادات.',
+    'connect_now' => 'ربط الآن',
+    'enable_conversion_tracking' => 'تفعيل تتبع التحويلات',
+    'platform_settings_updated' => 'تم تحديث إعدادات :platform بنجاح',
+    'failed_update_platform_settings' => 'فشل في تحديث إعدادات المنصة',
+
+    // Meta-specific
+    'meta_specific_settings' => 'إعدادات ميتا الخاصة',
+    'meta_pixel_id' => 'معرف بكسل ميتا',
+    'meta_pixel_id_help' => 'معرف بكسل ميتا لتتبع التحويلات',
+    'enable_conversion_api' => 'تفعيل واجهة برمجة التحويلات (CAPI)',
+    'meta_capi_help' => 'إرسال أحداث من جانب الخادم لدقة تتبع أفضل',
+    'capi_access_token' => 'رمز الوصول لـ CAPI',
+    'capi_token_help' => 'رمز وصول مستخدم النظام للأحداث من جانب الخادم',
+
+    // Google-specific
+    'google_specific_settings' => 'إعدادات جوجل الخاصة',
+    'google_conversion_id' => 'معرف تحويل جوجل',
+    'google_conversion_id_help' => 'معرف تحويل إعلانات جوجل (AW-xxxxxxxxx)',
+    'enable_auto_tagging' => 'تفعيل الوسم التلقائي',
+    'auto_tagging_help' => 'وسم الروابط تلقائياً بمعامل gclid',
+    'enable_enhanced_conversions' => 'تفعيل التحويلات المحسنة',
+    'enhanced_conversions_help' => 'إرسال بيانات الطرف الأول لقياس تحويل أفضل',
+
+    // TikTok-specific
+    'tiktok_specific_settings' => 'إعدادات تيك توك الخاصة',
+    'tiktok_pixel_code' => 'كود بكسل تيك توك',
+    'tiktok_pixel_help' => 'كود بكسل تيك توك لتتبع التحويلات',
+    'enable_events_api' => 'تفعيل واجهة برمجة الأحداث',
+    'tiktok_events_api_help' => 'إرسال أحداث من جانب الخادم لتتبع أفضل',
+
+    // LinkedIn-specific
+    'linkedin_specific_settings' => 'إعدادات لينكد إن الخاصة',
+    'linkedin_insight_tag' => 'معرف علامة Insight',
+    'linkedin_insight_tag_help' => 'علامة Insight الخاصة بك لتتبع التحويلات',
+    'linkedin_capi_help' => 'إرسال أحداث التحويل من جانب الخادم',
+
+    // Twitter-specific
+    'twitter_specific_settings' => 'إعدادات تويتر الخاصة',
+    'twitter_pixel_id' => 'معرف بكسل تويتر',
+    'twitter_pixel_help' => 'معرف بكسل تويتر لتتبع التحويلات',
+    'twitter_capi_help' => 'إرسال أحداث التحويل من جانب الخادم',
+
+    // Snapchat-specific
+    'snapchat_specific_settings' => 'إعدادات سناب شات الخاصة',
+    'snapchat_pixel_id' => 'معرف بكسل سناب شات',
+    'snapchat_pixel_help' => 'معرف بكسل سناب شات لتتبع التحويلات',
+    'enable_capi' => 'تفعيل واجهة برمجة التحويلات',
+    'snapchat_capi_help' => 'إرسال أحداث التحويل من جانب الخادم',
+
 ];

@@ -1,6 +1,6 @@
 # CMIS Project Guidelines for Claude Code
 
-**Last Updated:** 2025-11-27 (i18n & RTL/LTR Requirements Added)
+**Last Updated:** 2025-11-28 (Browser Testing Environment Added)
 **Project:** CMIS - Cognitive Marketing Information System
 **Framework Version:** 3.2 - Post Duplication Elimination (13,100 lines saved)
 **Languages:** Arabic (Default), English - Full RTL/LTR Support
@@ -262,6 +262,118 @@ class CreateNewTable extends Migration
 
 ---
 
+## 🌐 Browser Testing Environment
+
+**📖 Full Guide:** `.claude/knowledge/BROWSER_TESTING_GUIDE.md`
+
+### Live Application
+- **Test URL**: https://cmis-test.kazaaz.com/
+- **Auth**: `admin@cmis.test` / `password`
+- **Languages**: Arabic (RTL, default) and English (LTR)
+- **Test Org ID**: `5c8d4b5a-7b8c-8d9e-2f1a-5b6c7d8e9f0a`
+
+### CMIS Test Suites (RECOMMENDED)
+
+| Test Suite | Command | Purpose |
+|------------|---------|---------|
+| **Mobile Responsive** | `node scripts/browser-tests/mobile-responsive-comprehensive.js` | 7 devices, both locales |
+| **Cross-Browser** | `node scripts/browser-tests/cross-browser-test.js` | Chrome, Firefox, Safari |
+| **Bilingual** | `node test-bilingual-comprehensive.cjs` | All pages in AR/EN |
+| **Quick Responsive** | `node scripts/browser-tests/responsive-test.js <url>` | Single page, 4 viewports |
+
+### Quick Commands
+
+```bash
+# Mobile responsive (quick mode - 5 pages, 2 devices)
+node scripts/browser-tests/mobile-responsive-comprehensive.js --quick
+
+# Cross-browser (quick mode)
+node scripts/browser-tests/cross-browser-test.js --quick
+
+# Single browser test
+node scripts/browser-tests/cross-browser-test.js --browser chrome
+
+# Text dump for quick content check
+lynx -dump https://cmis-test.kazaaz.com/login
+
+# Quick screenshot
+npx playwright screenshot https://cmis-test.kazaaz.com/ screenshot.png
+```
+
+### Device Profiles (Mobile Testing)
+
+| Device | Resolution | Type |
+|--------|------------|------|
+| iPhone SE | 375x667 | Mobile |
+| iPhone 14 | 390x844 | Mobile |
+| iPhone 14 Pro Max | 430x932 | Mobile |
+| Pixel 7 | 412x915 | Mobile |
+| Galaxy S21 | 360x800 | Mobile |
+| iPad Mini | 768x1024 | Tablet |
+| iPad Pro | 1024x1366 | Tablet |
+
+### Issues Checked
+
+**Mobile Responsive Tests:**
+- ✅ Horizontal overflow (content wider than viewport)
+- ✅ Touch targets (minimum 44x44px)
+- ✅ Font sizes (minimum 12px readable)
+- ✅ Viewport meta tag presence
+- ✅ RTL/LTR direction consistency
+
+**Cross-Browser Tests:**
+- ✅ CSS feature support (flexbox, grid, logical properties)
+- ✅ Broken images
+- ✅ SVG rendering
+- ✅ JavaScript console errors
+- ✅ Layout metrics comparison
+
+### When Browser Testing is MANDATORY
+
+| Scenario | Test Command |
+|----------|--------------|
+| UI/Layout changes | `node scripts/browser-tests/mobile-responsive-comprehensive.js --quick` |
+| i18n/locale changes | `node test-bilingual-comprehensive.cjs` |
+| Before release | All test suites (full mode) |
+| RTL/LTR modifications | Mobile + Bilingual tests |
+| New pages/features | Cross-browser + Mobile tests |
+| Form implementations | Full bilingual test |
+
+### Test Output Locations
+
+```
+test-results/
+├── mobile-responsive/
+│   ├── screenshots/
+│   ├── results.json
+│   └── REPORT.md
+├── cross-browser/
+│   ├── screenshots/chrome/
+│   ├── screenshots/firefox/
+│   ├── screenshots/safari--webkit-/
+│   ├── results.json
+│   └── REPORT.md
+└── bilingual-web/
+    ├── screenshots/
+    ├── test-report.json
+    └── SUMMARY.md
+```
+
+### Setting Locale for Testing
+
+```javascript
+// ALWAYS set locale cookie BEFORE navigation
+await page.setCookie({
+    name: 'app_locale',
+    value: 'ar',  // or 'en'
+    domain: 'cmis-test.kazaaz.com',
+    path: '/'
+});
+await page.goto(url);
+```
+
+---
+
 ## 🎨 Frontend Conventions
 
 ### i18n & RTL/LTR Requirements (MANDATORY)
@@ -481,7 +593,8 @@ SELECT * FROM cmis.campaigns; -- Should only show this org's data
 ### Core Guidelines
 - **Project Knowledge:** `.claude/CMIS_PROJECT_KNOWLEDGE.md`
 - **Multi-Tenancy:** `.claude/knowledge/MULTI_TENANCY_PATTERNS.md`
-- **i18n & RTL/LTR (NEW):** `.claude/knowledge/I18N_RTL_REQUIREMENTS.md` ⚠️ CRITICAL
+- **i18n & RTL/LTR:** `.claude/knowledge/I18N_RTL_REQUIREMENTS.md` ⚠️ CRITICAL
+- **Browser Testing:** `.claude/knowledge/BROWSER_TESTING_GUIDE.md` ⚠️ MANDATORY
 - **Data Patterns:** `.claude/knowledge/CMIS_DATA_PATTERNS.md`
 - **Agent Guide:** `.claude/agents/README.md`
 

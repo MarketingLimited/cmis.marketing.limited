@@ -112,4 +112,34 @@ return [
 
     // Misc
     'n_a' => 'غير متوفر',
+
+    // Profile page
+    'personal_information' => 'المعلومات الشخصية',
+    'account_settings' => 'إعدادات الحساب',
+    'preferences' => 'التفضيلات',
+    'preferred_language' => 'اللغة المفضلة',
+    'language_description' => 'اختر لغتك المفضلة للواجهة',
+    'select_language' => 'اختر اللغة',
+    'bio' => 'نبذة عني',
+    'bio_placeholder' => 'أخبرنا عن نفسك...',
+    'avatar' => 'الصورة الشخصية',
+    'change_avatar' => 'تغيير الصورة',
+    'upload_avatar' => 'رفع صورة جديدة',
+    'save_changes' => 'حفظ التغييرات',
+    'saving' => 'جاري الحفظ...',
+    'profile_updated' => 'تم تحديث الملف الشخصي بنجاح!',
+    'language_updated' => 'تم تحديث تفضيلات اللغة بنجاح!',
+    'avatar_updated' => 'تم تحديث الصورة الشخصية بنجاح!',
+    'update_failed' => 'فشل في تحديث الملف الشخصي',
+    'member_since' => 'عضو منذ',
+    'last_login' => 'آخر تسجيل دخول',
+    'account_status' => 'حالة الحساب',
+    'current_language' => 'اللغة الحالية',
+    'arabic' => 'العربية',
+    'english' => 'الإنجليزية',
+
+    // Avatar upload errors
+    'avatar_size_error' => 'يجب أن يكون حجم الملف أقل من 2 ميجابايت',
+    'avatar_type_error' => 'يجب أن يكون الملف صورة',
+    'avatar_upload_failed' => 'فشل في رفع الصورة الشخصية',
 ];

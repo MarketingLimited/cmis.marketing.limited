@@ -67,6 +67,22 @@ return [
     'step_skipped' => 'Step skipped',
     'reset_complete' => 'Onboarding progress reset',
     'dismissed' => 'Onboarding dismissed. You can restart from Settings.',
+    'create_org_first' => 'Please create an organization first to continue with onboarding.',
+
+    // Completion Page (HI-005)
+    'title' => 'Onboarding',
+    'complete_title' => 'Onboarding Complete',
+    'congratulations' => 'Congratulations!',
+    'complete_message' => 'You have successfully completed all onboarding steps. You are now ready to use CMIS to its full potential!',
+    'what_you_accomplished' => 'What You Accomplished',
+    'completed_label' => 'Completed',
+    'next_steps' => 'What\'s Next?',
+    'go_to_dashboard' => 'Go to Dashboard',
+    'dashboard_description' => 'View your performance overview and key metrics',
+    'view_campaigns' => 'View Campaigns',
+    'campaigns_description' => 'Manage and track all your marketing campaigns',
+    'explore_analytics' => 'Explore Analytics',
+    'analytics_description' => 'Dive deep into your performance data and insights',
 
     // Step Definitions (used in controller)
     'steps' => [

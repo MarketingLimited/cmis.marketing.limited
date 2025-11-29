@@ -39,4 +39,29 @@ class OverviewController extends Controller
             'kpis' => $kpis,
         ]);
     }
+
+    /**
+     * Display the analytics reports page.
+     * HI-009: Added for proper /analytics/reports route handling
+     */
+    public function reports(string $org)
+    {
+        Gate::authorize('viewDashboard', auth()->user());
+
+        return view('analytics.reports', [
+            'currentOrg' => $org,
+        ]);
+    }
+
+    /**
+     * Display the analytics metrics page.
+     */
+    public function metrics(string $org)
+    {
+        Gate::authorize('viewDashboard', auth()->user());
+
+        return view('analytics.metrics', [
+            'currentOrg' => $org,
+        ]);
+    }
 }

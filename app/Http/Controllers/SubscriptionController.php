@@ -210,4 +210,41 @@ class SubscriptionController extends Controller
             'You can reactivate anytime before then.'
         );
     }
+
+    /**
+     * Display payment methods and billing information.
+     * HI-008: Added for /subscription/payment route
+     */
+    public function payment()
+    {
+        $user = Auth::user();
+        $organization = $user->organization;
+
+        $billing = [
+            'plan' => $organization->subscription_plan ?? 'starter',
+            'status' => 'active',
+            'current_period_start' => now()->startOfMonth()->format('Y-m-d'),
+            'current_period_end' => now()->endOfMonth()->format('Y-m-d'),
+            'payment_method' => null, // In production: fetch from payment provider
+            'billing_email' => $user->email,
+            'next_invoice_amount' => $this->getPriceForPlan($organization->subscription_plan ?? 'starter'),
+        ];
+
+        $invoices = []; // In production: fetch from Stripe/Paddle
+
+        return view('subscription.payment', compact('billing', 'invoices'));
+    }
+
+    /**
+     * Get price for a given plan.
+     */
+    protected function getPriceForPlan(string $plan): ?int
+    {
+        return match($plan) {
+            'starter' => 49,
+            'professional' => 149,
+            'enterprise' => null, // Custom pricing
+            default => 49,
+        };
+    }
 }

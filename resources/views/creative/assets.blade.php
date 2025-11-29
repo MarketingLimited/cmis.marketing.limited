@@ -30,6 +30,8 @@
                 <p class="mt-2 text-gray-600 dark:text-gray-400">{{ __('assets.manage_assets') }}</p>
             </div>
             <button @click="showUploadModal = true"
+                    data-testid="upload-asset-btn"
+                    id="upload-asset-btn"
                     class="inline-flex items-center px-4 py-2.5 bg-gradient-to-r from-pink-600 to-rose-600 text-white rounded-lg hover:from-pink-700 hover:to-rose-700 shadow-lg shadow-pink-500/25 transition-all">
                 <i class="fas fa-upload ms-2"></i>
                 {{ __('assets.upload_asset') }}

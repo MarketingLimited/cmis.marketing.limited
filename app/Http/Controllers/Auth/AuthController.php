@@ -259,7 +259,7 @@ class AuthController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Logged out successfully'
+            'message' => __('common.logged_out_successfully')
         ]);
     }
 
@@ -275,7 +275,7 @@ class AuthController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Logged out from all devices successfully'
+            'message' => __('common.logged_out_all_devices')
         ]);
     }
 

@@ -480,6 +480,126 @@
                             <option value="watch_more">{{ __('campaigns.cta.watch_more') }}</option>
                         </select>
                     </div>
+
+                    <!-- Targeting Section Separator -->
+                    <div class="border-t border-gray-200 pt-6 mt-6">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center {{ $isRtl ? 'flex-row-reverse' : '' }}">
+                            <i class="fas fa-crosshairs {{ $isRtl ? 'ml-2' : 'mr-2' }} text-indigo-500"></i>
+                            {{ __('campaigns.targeting_settings') }}
+                        </h3>
+
+                        <!-- Ad Account Selection -->
+                        <div class="mb-6">
+                            <label class="block text-sm font-medium text-gray-700 mb-2 {{ $isRtl ? 'text-right' : '' }}">
+                                {{ __('campaigns.ad_account') }}
+                                <a href="{{ route('orgs.settings.platform-connections.index', ['org' => $currentOrg]) }}" class="text-indigo-500 hover:text-indigo-600 text-xs {{ $isRtl ? 'mr-2' : 'ml-2' }}">
+                                    <i class="fas fa-external-link-alt"></i> {{ __('campaigns.manage_connections') }}
+                                </a>
+                            </label>
+                            <select name="ad_account_id" x-model="form.ad_account_id"
+                                    dir="{{ $dir }}"
+                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 {{ $isRtl ? 'text-right' : '' }}">
+                                <option value="">{{ __('campaigns.select_ad_account') }}</option>
+                                <template x-for="account in getAdAccounts()" :key="account.id">
+                                    <option :value="account.id" x-text="account.name + ' (' + account.account_id + ')'"></option>
+                                </template>
+                            </select>
+                            <p class="text-xs text-gray-500 mt-1 {{ $isRtl ? 'text-right' : '' }}">{{ __('campaigns.ad_account_help') }}</p>
+                        </div>
+
+                        <!-- Audience Selection -->
+                        <div class="mb-6">
+                            <label class="block text-sm font-medium text-gray-700 mb-2 {{ $isRtl ? 'text-right' : '' }}">
+                                {{ __('campaigns.target_audience') }}
+                                <a href="{{ route('orgs.audiences.index', ['org' => $currentOrg]) }}" class="text-indigo-500 hover:text-indigo-600 text-xs {{ $isRtl ? 'mr-2' : 'ml-2' }}">
+                                    <i class="fas fa-external-link-alt"></i> {{ __('campaigns.manage_audiences') }}
+                                </a>
+                            </label>
+                            <select name="audience_id" x-model="form.audience_id"
+                                    dir="{{ $dir }}"
+                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 {{ $isRtl ? 'text-right' : '' }}">
+                                <option value="">{{ __('campaigns.select_audience') }}</option>
+                                <optgroup :label="'{{ __('audiences.custom_audiences') }}'">
+                                    <template x-for="audience in getAudiences('custom')" :key="audience.id">
+                                        <option :value="audience.id" x-text="audience.name + ' (' + audience.size_formatted + ')'"></option>
+                                    </template>
+                                </optgroup>
+                                <optgroup :label="'{{ __('audiences.lookalike_audiences') }}'">
+                                    <template x-for="audience in getAudiences('lookalike')" :key="audience.id">
+                                        <option :value="audience.id" x-text="audience.name + ' (' + audience.size_formatted + ')'"></option>
+                                    </template>
+                                </optgroup>
+                                <optgroup :label="'{{ __('audiences.saved_audiences') }}'">
+                                    <template x-for="audience in getAudiences('saved')" :key="audience.id">
+                                        <option :value="audience.id" x-text="audience.name + ' (' + audience.size_formatted + ')'"></option>
+                                    </template>
+                                </optgroup>
+                            </select>
+                            <div class="flex items-center gap-2 mt-2 {{ $isRtl ? 'flex-row-reverse' : '' }}">
+                                <a href="{{ route('orgs.audiences.create', ['org' => $currentOrg]) }}" class="text-sm text-indigo-500 hover:text-indigo-600 flex items-center {{ $isRtl ? 'flex-row-reverse' : '' }}">
+                                    <i class="fas fa-plus {{ $isRtl ? 'ml-1' : 'mr-1' }}"></i>
+                                    {{ __('campaigns.create_new_audience') }}
+                                </a>
+                                <span class="text-gray-300">|</span>
+                                <a href="{{ route('orgs.audiences.builder', ['org' => $currentOrg]) }}" class="text-sm text-indigo-500 hover:text-indigo-600 flex items-center {{ $isRtl ? 'flex-row-reverse' : '' }}">
+                                    <i class="fas fa-wand-magic-sparkles {{ $isRtl ? 'ml-1' : 'mr-1' }}"></i>
+                                    {{ __('campaigns.use_audience_builder') }}
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- Keywords Selection (Google Ads Only) -->
+                        <div class="mb-6" x-show="form.platform === 'google'">
+                            <label class="block text-sm font-medium text-gray-700 mb-2 {{ $isRtl ? 'text-right' : '' }}">
+                                {{ __('campaigns.keywords') }}
+                                <a href="{{ route('orgs.keywords.index', ['org' => $currentOrg]) }}" class="text-indigo-500 hover:text-indigo-600 text-xs {{ $isRtl ? 'mr-2' : 'ml-2' }}">
+                                    <i class="fas fa-external-link-alt"></i> {{ __('campaigns.manage_keywords') }}
+                                </a>
+                            </label>
+                            <div class="relative">
+                                <textarea name="keywords" x-model="form.keywords" rows="3"
+                                          placeholder="{{ __('campaigns.keywords_placeholder') }}"
+                                          dir="{{ $dir }}"
+                                          class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 resize-none {{ $isRtl ? 'text-right' : '' }}"></textarea>
+                            </div>
+                            <div class="flex flex-wrap gap-2 mt-2 {{ $isRtl ? 'flex-row-reverse' : '' }}">
+                                <span class="text-xs text-gray-500">{{ __('campaigns.match_types') }}:</span>
+                                <span class="px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded">+{{ __('keywords.broad_match_modifier') }}</span>
+                                <span class="px-2 py-0.5 bg-blue-100 text-blue-700 text-xs rounded">"{{ __('keywords.phrase_match') }}"</span>
+                                <span class="px-2 py-0.5 bg-purple-100 text-purple-700 text-xs rounded">[{{ __('keywords.exact_match') }}]</span>
+                            </div>
+                            <div class="flex items-center gap-2 mt-2 {{ $isRtl ? 'flex-row-reverse' : '' }}">
+                                <a href="{{ route('orgs.keywords.planner', ['org' => $currentOrg]) }}" class="text-sm text-indigo-500 hover:text-indigo-600 flex items-center {{ $isRtl ? 'flex-row-reverse' : '' }}">
+                                    <i class="fas fa-search {{ $isRtl ? 'ml-1' : 'mr-1' }}"></i>
+                                    {{ __('campaigns.use_keyword_planner') }}
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- Catalog Selection (Shopping/Product Campaigns) -->
+                        <div class="mb-6" x-show="['conversions', 'traffic'].includes(form.objective) || form.ad_format === 'shopping'">
+                            <label class="block text-sm font-medium text-gray-700 mb-2 {{ $isRtl ? 'text-right' : '' }}">
+                                {{ __('campaigns.product_catalog') }}
+                                <a href="{{ route('orgs.catalogs.index', ['org' => $currentOrg]) }}" class="text-indigo-500 hover:text-indigo-600 text-xs {{ $isRtl ? 'mr-2' : 'ml-2' }}">
+                                    <i class="fas fa-external-link-alt"></i> {{ __('campaigns.manage_catalogs') }}
+                                </a>
+                            </label>
+                            <select name="catalog_id" x-model="form.catalog_id"
+                                    dir="{{ $dir }}"
+                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 {{ $isRtl ? 'text-right' : '' }}">
+                                <option value="">{{ __('campaigns.select_catalog') }}</option>
+                                <template x-for="catalog in getCatalogs()" :key="catalog.id">
+                                    <option :value="catalog.id" x-text="catalog.name + ' (' + catalog.products_count + ' {{ __('catalogs.products_count') }})'"></option>
+                                </template>
+                            </select>
+                            <div class="flex items-center gap-2 mt-2 {{ $isRtl ? 'flex-row-reverse' : '' }}">
+                                <a href="{{ route('orgs.catalogs.import', ['org' => $currentOrg]) }}" class="text-sm text-indigo-500 hover:text-indigo-600 flex items-center {{ $isRtl ? 'flex-row-reverse' : '' }}">
+                                    <i class="fas fa-upload {{ $isRtl ? 'ml-1' : 'mr-1' }}"></i>
+                                    {{ __('campaigns.import_catalog') }}
+                                </a>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -766,9 +886,74 @@ function campaignWizard() {
             bid_strategy: 'lowest_cost',
             start_date: '',
             end_date: '',
-            status: 'draft'
+            status: 'draft',
+            // Targeting fields
+            ad_account_id: '',
+            audience_id: '',
+            keywords: '',
+            catalog_id: ''
         },
+        // Data for dropdowns
+        adAccounts: [],
+        audiences: [],
+        catalogs: [],
+        loadingData: false,
         errors: {},
+
+        init() {
+            // Load data when component initializes
+            this.loadTargetingData();
+        },
+
+        async loadTargetingData() {
+            this.loadingData = true;
+            try {
+                // Load ad accounts
+                const accountsResponse = await fetch('/api/orgs/{{ $currentOrg }}/ad-accounts');
+                if (accountsResponse.ok) {
+                    const data = await accountsResponse.json();
+                    this.adAccounts = data.data || [];
+                }
+
+                // Load audiences
+                const audiencesResponse = await fetch('/api/orgs/{{ $currentOrg }}/audiences');
+                if (audiencesResponse.ok) {
+                    const data = await audiencesResponse.json();
+                    this.audiences = data.data || [];
+                }
+
+                // Load catalogs
+                const catalogsResponse = await fetch('/api/orgs/{{ $currentOrg }}/catalogs');
+                if (catalogsResponse.ok) {
+                    const data = await catalogsResponse.json();
+                    this.catalogs = data.data || [];
+                }
+            } catch (error) {
+                console.log('Could not load targeting data:', error);
+            }
+            this.loadingData = false;
+        },
+
+        getAdAccounts() {
+            // Filter by selected platform
+            return this.adAccounts.filter(account =>
+                !this.form.platform || account.platform === this.form.platform
+            );
+        },
+
+        getAudiences(type) {
+            return this.audiences.filter(audience =>
+                audience.type === type &&
+                (!this.form.platform || audience.platform === this.form.platform || audience.platform === 'all')
+            );
+        },
+
+        getCatalogs() {
+            // Filter by selected platform
+            return this.catalogs.filter(catalog =>
+                !this.form.platform || catalog.platform === this.form.platform
+            );
+        },
 
         nextStep() {
             if (this.validateStep()) {

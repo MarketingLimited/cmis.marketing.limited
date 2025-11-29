@@ -22,7 +22,7 @@
     ============================================================================
 --}}
 <!DOCTYPE html>
-<html lang="{{ app()->getLocale() }}" dir="{{ app()->isLocale('ar') ? 'rtl' : 'ltr' }}">
+<html lang="{{ $htmlLang ?? app()->getLocale() }}" dir="{{ $htmlDir ?? (app()->getLocale() === 'ar' ? 'rtl' : 'ltr') }}">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -237,6 +237,9 @@
                                     </div>
                                 </div>
                             </div>
+
+                            <!-- Language Switcher -->
+                            <x-language-switcher />
 
                             <!-- User Menu -->
                             @auth

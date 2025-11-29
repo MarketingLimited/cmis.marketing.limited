@@ -178,4 +178,14 @@ return [
     'failed_delete_rule' => 'Failed to delete rule',
     'error' => 'Error',
     'unknown_error' => 'Unknown error',
+
+    // Tooltips
+    'tooltip_optimize_all' => 'Applies all active automation rules to your campaigns. This includes budget adjustments, bid optimization, and performance-based actions.',
+    'tooltip_active_rules' => 'Number of automation rules currently enabled and monitoring your campaigns in real-time.',
+    'tooltip_cpa' => 'Cost Per Acquisition: The average cost to acquire one customer or conversion.',
+    'tooltip_roas' => 'Return On Ad Spend: Revenue generated per dollar spent on advertising.',
+    'tooltip_ctr' => 'Click-Through Rate: Percentage of people who clicked your ad after seeing it.',
+    'tooltip_budget_adjust' => 'Automatically increases or decreases campaign budget based on performance metrics.',
+    'tooltip_bid_adjust' => 'Modifies bid amounts to optimize ad placement and cost efficiency.',
+    'tooltip_pause_underperforming' => 'Stops campaigns that are not meeting performance thresholds to prevent budget waste.',
 ];

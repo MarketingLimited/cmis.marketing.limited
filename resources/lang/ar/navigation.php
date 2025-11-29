@@ -38,6 +38,8 @@ return [
     'platform' => 'المنصة',
     'platform_name' => 'CMIS Platform',
     'platform_tagline' => 'نظام إدارة التسويق',
+    'platform_description' => 'نظام إدارة التسويق المتكامل',
+    'welcome' => 'مرحباً',
 
     // Sidebar Actions
     'expand_menu' => 'توسيع القائمة',
@@ -95,5 +97,29 @@ return [
     'system_section' => 'النظام',
     'communication_section' => 'التواصل',
     'automation_section' => 'الأتمتة',
+
+    // Audiences
+    'audiences' => 'الجماهير',
+    'all_audiences' => 'جميع الجماهير',
+    'create_audience' => 'إنشاء جمهور',
+    'audience_builder' => 'منشئ الجمهور',
+    'lookalike_audiences' => 'الجماهير المشابهة',
+    'custom_audiences' => 'الجماهير المخصصة',
+    'saved_audiences' => 'الجماهير المحفوظة',
+
+    // Keywords (Google Ads)
+    'keywords' => 'الكلمات المفتاحية',
+    'all_keywords' => 'جميع الكلمات المفتاحية',
+    'keyword_planner' => 'مخطط الكلمات المفتاحية',
+    'negative_keywords' => 'الكلمات المفتاحية السلبية',
+    'keyword_groups' => 'مجموعات الكلمات المفتاحية',
+
+    // Catalogs (Multi-Platform Product Feeds)
+    'catalogs' => 'الكتالوجات',
+    'all_catalogs' => 'جميع الكتالوجات',
+    'all_products' => 'جميع المنتجات',
+    'import_catalog' => 'استيراد كتالوج',
+    'sync_catalogs' => 'مزامنة الكتالوجات',
+    'product_feeds' => 'موجزات المنتجات',
 
 ];
