@@ -97,13 +97,12 @@ export function getPublishingManagementMethods() {
          * Prepare content by uploading media files and getting URLs
          */
         async prepareContentForPublishing(content) {
-            const contentCopy = JSON.parse(JSON.stringify(content));
+            // Upload media files first, then build clean content object
+            let uploadedMedia = [];
 
             // Upload media files if they exist
-            if (contentCopy.global.media && contentCopy.global.media.length > 0) {
-                const uploadedMedia = [];
-
-                for (const mediaItem of contentCopy.global.media) {
+            if (content.global.media && content.global.media.length > 0) {
+                for (const mediaItem of content.global.media) {
                     // If media has a File object, upload it first
                     if (mediaItem.file) {
                         const uploadedUrl = await this.uploadMediaFile(mediaItem.file);
@@ -116,15 +115,27 @@ export function getPublishingManagementMethods() {
                             });
                         }
                     } else if (mediaItem.url && !mediaItem.url.startsWith('data:')) {
-                        // Already has a valid URL
-                        uploadedMedia.push(mediaItem);
+                        // Already has a valid URL (not data URL)
+                        uploadedMedia.push({
+                            type: mediaItem.type,
+                            url: mediaItem.url,
+                            name: mediaItem.name,
+                            size: mediaItem.size
+                        });
                     }
                 }
-
-                contentCopy.global.media = uploadedMedia;
             }
 
-            return contentCopy;
+            // Build clean content object without File objects
+            return {
+                global: {
+                    text: content.global.text || '',
+                    media: uploadedMedia,
+                    link: content.global.link || '',
+                    labels: content.global.labels || [],
+                },
+                platforms: content.platforms || {}
+            };
         },
 
         /**
