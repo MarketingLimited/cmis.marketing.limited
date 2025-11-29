@@ -28,6 +28,8 @@ return [
     'search' => 'Search',
     'filter' => 'Filter',
     'export' => 'Export',
+    'switching' => 'Switching',
+    'loading' => 'Loading',
     'import' => 'Import',
     'download' => 'Download',
     'upload' => 'Upload',
@@ -84,6 +86,8 @@ return [
     'settings' => 'Settings',
     'profile' => 'Profile',
     'logout' => 'Logout',
+    'logged_out_successfully' => 'Logged out successfully',
+    'logged_out_all_devices' => 'Logged out from all devices successfully',
     'system_admin' => 'System Administrator',
     'creative' => 'Creative',
 
@@ -108,6 +112,7 @@ return [
 
     // Pagination
     'showing' => 'Showing',
+    'to' => 'to',
     'of' => 'of',
     'results' => 'results',
     'per_page' => 'per page',
@@ -171,5 +176,23 @@ return [
     'paused' => 'Paused',
     'draft' => 'Draft',
     'scheduled' => 'Scheduled',
+
+    // Empty States
+    'empty_state_no_campaigns' => 'No campaigns yet',
+    'empty_state_no_campaigns_desc' => 'Create your first campaign to start reaching your audience',
+    'empty_state_create_campaign' => 'Create Campaign',
+    'empty_state_no_posts' => 'No social posts',
+    'empty_state_no_posts_desc' => 'Schedule and publish content across your social channels',
+    'empty_state_create_post' => 'Create Post',
+    'empty_state_no_assets' => 'No creative assets',
+    'empty_state_no_assets_desc' => 'Upload images, videos, and other media for your campaigns',
+    'empty_state_upload_asset' => 'Upload Asset',
+    'empty_state_no_data' => 'No data available',
+    'empty_state_no_data_desc' => 'Data will appear here once your campaigns start generating activity',
+    'empty_state_no_analytics' => 'No analytics data',
+    'empty_state_no_analytics_desc' => 'Connect a platform and run campaigns to see performance metrics',
+    'empty_state_connect_platform' => 'Connect Platform',
+    'empty_state_getting_started' => 'Getting started?',
+    'empty_state_getting_started_desc' => 'Follow these steps to set up your marketing campaigns',
 
 ];
