@@ -4,7 +4,7 @@
     $currentOrg = $currentOrg ?? request()->route('org') ?? auth()->user()->active_org_id ?? auth()->user()->org_id;
 @endphp
 
-@section('title', 'Enterprise Analytics Hub')
+@section('title', __('analytics.analytics_dashboard'))
 
 @section('content')
 <div x-data="{ activeTab: 'realtime' }">
@@ -19,15 +19,21 @@
         </nav>
         <div class="flex items-center justify-between">
             <div>
-                <h1 class="text-2xl font-bold text-gray-900">{{ __('Enterprise Analytics Hub') }}</h1>
-                <p class="mt-1 text-gray-600">{{ __('Unified dashboard with real-time metrics, KPIs, and alerts') }}</p>
+                <h1 class="text-2xl font-bold text-gray-900 dark:text-white">{{ __('analytics.analytics_dashboard') }}</h1>
+                <p class="mt-1 text-gray-600 dark:text-gray-400">{{ __('analytics.comprehensive_analysis') }}</p>
             </div>
             <div class="flex gap-2">
-                <a href="{{ route('orgs.analytics.realtime', ['org' => $currentOrg]) }}" class="px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 text-sm font-medium transition">
-                    <i class="fas fa-bolt ml-2"></i>{{ __('Real-Time') }}
+                <a href="{{ route('orgs.analytics.platform-insights', ['org' => $currentOrg]) }}" class="px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg text-white hover:from-blue-700 hover:to-purple-700 text-sm font-medium transition shadow-lg shadow-blue-500/25">
+                    <i class="fas fa-chart-pie me-2"></i>{{ __('analytics.platform_insights') }}
                 </a>
-                <a href="{{ route('orgs.analytics.kpis', ['org' => $currentOrg]) }}" class="px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 text-sm font-medium transition">
-                    <i class="fas fa-tachometer-alt ml-2"></i>{{ __('KPIs') }}
+                <a href="{{ route('orgs.analytics.realtime', ['org' => $currentOrg]) }}" class="px-4 py-2 bg-white border border-gray-300 dark:border-slate-600 dark:bg-slate-800 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-700 text-sm font-medium transition">
+                    <i class="fas fa-bolt me-2"></i>{{ __('analytics.realtime') }}
+                </a>
+                <a href="{{ route('orgs.analytics.kpis', ['org' => $currentOrg]) }}" class="px-4 py-2 bg-white border border-gray-300 dark:border-slate-600 dark:bg-slate-800 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-700 text-sm font-medium transition">
+                    <i class="fas fa-tachometer-alt me-2"></i>{{ __('analytics.kpis') }}
+                </a>
+                <a href="{{ route('orgs.analytics.reports', ['org' => $currentOrg]) }}" class="px-4 py-2 bg-white border border-gray-300 dark:border-slate-600 dark:bg-slate-800 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-700 text-sm font-medium transition">
+                    <i class="fas fa-file-alt me-2"></i>{{ __('analytics.reports') }}
                 </a>
             </div>
         </div>
