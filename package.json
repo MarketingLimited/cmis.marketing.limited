@@ -16,7 +16,8 @@
     },
     "dependencies": {
         "alpinejs": "^3.13.5",
-        "chart.js": "^4.4.1"
+        "chart.js": "^4.4.1",
+        "puppeteer": "^24.31.0"
     },
     "devDependencies": {
         "@playwright/test": "^1.40.0",

@@ -67,6 +67,22 @@ return [
     'step_skipped' => 'تم تخطي الخطوة',
     'reset_complete' => 'تم إعادة تعيين تقدم التأهيل',
     'dismissed' => 'تم إلغاء التأهيل. يمكنك إعادة التشغيل من الإعدادات.',
+    'create_org_first' => 'يرجى إنشاء منظمة أولاً للمتابعة مع التأهيل.',
+
+    // Completion Page (HI-005)
+    'title' => 'التأهيل',
+    'complete_title' => 'اكتمل التأهيل',
+    'congratulations' => 'تهانينا!',
+    'complete_message' => 'لقد أكملت جميع خطوات التأهيل بنجاح. أنت الآن جاهز لاستخدام CMIS بكامل إمكانياته!',
+    'what_you_accomplished' => 'ما أنجزته',
+    'completed_label' => 'مكتمل',
+    'next_steps' => 'ما التالي؟',
+    'go_to_dashboard' => 'انتقل إلى لوحة التحكم',
+    'dashboard_description' => 'عرض نظرة عامة على الأداء والمقاييس الرئيسية',
+    'view_campaigns' => 'عرض الحملات',
+    'campaigns_description' => 'إدارة وتتبع جميع حملاتك التسويقية',
+    'explore_analytics' => 'استكشف التحليلات',
+    'analytics_description' => 'تعمق في بيانات ورؤى الأداء الخاصة بك',
 
     // Step Definitions (used in controller)
     'steps' => [

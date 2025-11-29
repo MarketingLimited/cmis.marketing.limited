@@ -1,16 +1,16 @@
 @extends('layouts.guest')
 
-@section('title', 'Forgot Password')
+@section('title', __('auth.forgot_password_title'))
 
 @section('content')
 <div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 py-12 px-4 sm:px-6 lg:px-8">
     <div class="max-w-md w-full space-y-8">
         <div>
             <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
-                استعادة كلمة المرور
+                {{ __('auth.forgot_password_title') }}
             </h2>
             <p class="mt-2 text-center text-sm text-gray-600">
-                أدخل بريدك الإلكتروني وسنرسل لك رابط لإعادة تعيين كلمة المرور
+                {{ __('auth.forgot_password_subtitle') }}
             </p>
         </div>
 
@@ -22,7 +22,7 @@
                             <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
                         </svg>
                     </div>
-                    <div class="mr-3">
+                    <div class="ms-3">
                         <p class="text-sm font-medium text-green-800">{{ session('status') }}</p>
                     </div>
                 </div>
@@ -33,7 +33,7 @@
             @csrf
 
             <div>
-                <label for="email" class="block text-sm font-medium text-gray-700">البريد الإلكتروني</label>
+                <label for="email" class="block text-sm font-medium text-gray-700">{{ __('auth.email_label') }}</label>
                 <input
                     id="email"
                     name="email"
@@ -41,7 +41,7 @@
                     value="{{ old('email') }}"
                     required
                     class="mt-1 appearance-none relative block w-full px-3 py-2 border @error('email') border-red-300 @else border-gray-300 @enderror rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                    placeholder="أدخل بريدك الإلكتروني">
+                    placeholder="{{ __('auth.email_placeholder') }}">
                 @error('email')
                     <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
                 @enderror
@@ -51,13 +51,13 @@
                 <button
                     type="submit"
                     class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                    إرسال رابط إعادة التعيين
+                    {{ __('auth.send_reset_link') }}
                 </button>
             </div>
 
             <div class="text-center">
                 <a href="{{ route('login') }}" class="text-sm font-medium text-indigo-600 hover:text-indigo-500">
-                    العودة إلى تسجيل الدخول
+                    {{ __('auth.back_to_login') }}
                 </a>
             </div>
         </form>

@@ -986,3 +986,99 @@ docs/
 **Version:** 2.0 - Adaptive Intelligence Architect
 **Framework:** META_COGNITIVE_FRAMEWORK
 **Approach:** Discover → Analyze → Evolve → Validate
+
+## 🌐 Browser Testing for Architectural Verification
+
+### Visual Verification of Architectural Changes
+
+This agent should leverage browser testing to verify that architectural decisions render correctly in the live application.
+
+### When to Use Browser Testing
+
+✅ **REQUIRED for architectural changes involving:**
+- **Component integration**: Verify service layer changes reflect in UI
+- **Routing changes**: Test navigation structure modifications
+- **Module boundary changes**: Confirm new modules render correctly
+- **API contract changes**: Verify frontend consumes new API shapes
+- **Pattern implementations**: Test repository/service patterns integrate properly
+
+### Available Tools
+
+| Tool | Command | Architectural Use Case |
+|------|---------|------------------------|
+| **Playwright** | `npx playwright screenshot [url] output.png` | Multi-browser architectural verification |
+| **Puppeteer** | `node scripts/browser-tests/puppeteer-test.js [url]` | Full page rendering with HTTP status validation |
+| **Responsive** | `node scripts/browser-tests/responsive-test.js [url]` | Verify responsive architecture across viewports |
+| **Lynx** | `lynx -dump [url]` | Quick HTML structure verification |
+
+### Architectural Testing Workflow
+
+```bash
+# 1. Before architectural refactoring
+node scripts/browser-tests/responsive-test.js https://cmis-test.kazaaz.com/campaigns before
+
+# 2. Implement architectural changes (service layer, repositories, etc.)
+# ... your refactoring ...
+
+# 3. Verify no visual regressions
+node scripts/browser-tests/responsive-test.js https://cmis-test.kazaaz.com/campaigns after
+
+# 4. Cross-browser architectural validation
+node scripts/browser-tests/playwright-screenshot.js https://cmis-test.kazaaz.com/ chrome.png chromium
+node scripts/browser-tests/playwright-screenshot.js https://cmis-test.kazaaz.com/ firefox.png firefox
+node scripts/browser-tests/playwright-screenshot.js https://cmis-test.kazaaz.com/ safari.png webkit
+```
+
+### Test Environment
+
+- **URL**: https://cmis-test.kazaaz.com/
+- **Scripts**: `/scripts/browser-tests/`
+- **Languages**: Arabic (RTL), English (LTR)
+
+### Integration with Architecture Reviews
+
+When creating architecture reviews (`docs/active/analysis/architecture-review-*.md`):
+
+1. ✅ Include before/after screenshots of affected pages
+2. ✅ Document visual impact of architectural changes
+3. ✅ Verify both languages (Arabic RTL, English LTR)
+4. ✅ Test responsive breakpoints after module boundary changes
+5. ✅ Capture cross-browser compatibility screenshots
+
+**Example**:
+```markdown
+## 5. Visual Verification
+
+### Campaign Module Refactoring
+
+**Before** (fat controller):
+![Before refactoring](before-campaign-dashboard.png)
+
+**After** (service layer extraction):
+![After refactoring](after-campaign-dashboard.png)
+
+**Cross-browser validation**:
+- Chrome: ✅ Renders correctly
+- Firefox: ✅ Renders correctly  
+- Safari: ✅ Renders correctly
+
+**Responsive validation**:
+- Mobile: ✅ Layout intact
+- Tablet: ✅ Layout intact
+- Desktop: ✅ Layout intact
+```
+
+### Architectural Decision Validation
+
+For each major architectural decision, verify:
+- ✅ UI remains functional after refactoring
+- ✅ No visual regressions introduced
+- ✅ Performance improvements (if claimed) are visible
+- ✅ Cross-browser compatibility maintained
+
+**See**: `CLAUDE.md` → Browser Testing Environment for complete tool documentation
+**Scripts**: `/scripts/browser-tests/README.md`
+
+---
+
+**Updated**: 2025-11-28 - Browser Testing Integration

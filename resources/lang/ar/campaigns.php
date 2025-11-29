@@ -16,6 +16,7 @@ return [
     'campaign' => 'حملة',
     'my_campaigns' => 'حملاتي',
     'all_campaigns' => 'جميع الحملات',
+    'manage_all_campaigns' => 'إدارة جميع حملاتك الإعلانية عبر جميع المنصات',
     'active_campaigns' => 'الحملات النشطة',
     'draft_campaigns' => 'المسودات',
     'completed_campaigns' => 'الحملات المنتهية',
@@ -674,5 +675,25 @@ return [
         'provide_brand_guidelines' => 'يرجى تقديم إرشادات العلامة التجارية',
         'design_failed' => 'فشل إنشاء التصاميم. يرجى المحاولة مرة أخرى.',
     ],
+
+    // Targeting & Integration
+    'targeting_settings' => 'إعدادات الاستهداف',
+    'ad_account' => 'الحساب الإعلاني',
+    'select_ad_account' => 'اختر الحساب الإعلاني',
+    'ad_account_help' => 'اختر الحساب الإعلاني لاستخدامه في هذه الحملة',
+    'manage_connections' => 'إدارة الاتصالات',
+    'select_audience' => 'اختر الجمهور',
+    'manage_audiences' => 'إدارة الجماهير',
+    'create_new_audience' => 'إنشاء جمهور جديد',
+    'use_audience_builder' => 'استخدم منشئ الجمهور',
+    'keywords' => 'الكلمات المفتاحية',
+    'manage_keywords' => 'إدارة الكلمات المفتاحية',
+    'keywords_placeholder' => 'أدخل الكلمات المفتاحية، واحدة في كل سطر أو مفصولة بفواصل...',
+    'match_types' => 'أنواع المطابقة',
+    'use_keyword_planner' => 'استخدم مخطط الكلمات المفتاحية',
+    'product_catalog' => 'كتالوج المنتجات',
+    'select_catalog' => 'اختر الكتالوج',
+    'manage_catalogs' => 'إدارة الكتالوجات',
+    'import_catalog' => 'استيراد كتالوج',
 
 ];

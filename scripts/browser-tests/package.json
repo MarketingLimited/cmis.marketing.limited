@@ -1,0 +1,26 @@
+{
+  "name": "cmis-browser-tests",
+  "version": "1.0.0",
+  "description": "Browser testing automation scripts for CMIS application",
+  "scripts": {
+    "install-tools": "npm install && npx playwright install",
+    "test:screenshot": "node playwright-screenshot.js",
+    "test:puppeteer": "node puppeteer-test.js",
+    "test:responsive": "node responsive-test.js"
+  },
+  "dependencies": {
+    "playwright": "^1.40.0",
+    "puppeteer": "^21.6.0"
+  },
+  "devDependencies": {},
+  "keywords": [
+    "browser-testing",
+    "screenshots",
+    "playwright",
+    "puppeteer",
+    "responsive-testing",
+    "e2e"
+  ],
+  "author": "CMIS Development Team",
+  "license": "MIT"
+}

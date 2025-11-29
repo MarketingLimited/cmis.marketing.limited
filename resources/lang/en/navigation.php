@@ -38,6 +38,8 @@ return [
     'platform' => 'Platform',
     'platform_name' => 'CMIS Platform',
     'platform_tagline' => 'Marketing Management System',
+    'platform_description' => 'Integrated Marketing Management System',
+    'welcome' => 'Welcome',
 
     // Sidebar Actions
     'expand_menu' => 'Expand Menu',
@@ -95,5 +97,29 @@ return [
     'system_section' => 'System',
     'communication_section' => 'Communication',
     'automation_section' => 'Automation',
+
+    // Audiences
+    'audiences' => 'Audiences',
+    'all_audiences' => 'All Audiences',
+    'create_audience' => 'Create Audience',
+    'audience_builder' => 'Audience Builder',
+    'lookalike_audiences' => 'Lookalike Audiences',
+    'custom_audiences' => 'Custom Audiences',
+    'saved_audiences' => 'Saved Audiences',
+
+    // Keywords (Google Ads)
+    'keywords' => 'Keywords',
+    'all_keywords' => 'All Keywords',
+    'keyword_planner' => 'Keyword Planner',
+    'negative_keywords' => 'Negative Keywords',
+    'keyword_groups' => 'Keyword Groups',
+
+    // Catalogs (Multi-Platform Product Feeds)
+    'catalogs' => 'Catalogs',
+    'all_catalogs' => 'All Catalogs',
+    'all_products' => 'All Products',
+    'import_catalog' => 'Import Catalog',
+    'sync_catalogs' => 'Sync Catalogs',
+    'product_feeds' => 'Product Feeds',
 
 ];

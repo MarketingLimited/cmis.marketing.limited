@@ -27,17 +27,27 @@ class UserOnboardingController extends Controller
     /**
      * Display onboarding dashboard
      */
-    public function index(): View
+    public function index(): View|RedirectResponse
     {
         $user = auth()->user();
 
+        // Get user's org (check multiple possible sources)
+        $orgId = $user->active_org_id ?? $user->current_org_id ?? $user->org_id;
+
+        // If user has no org, redirect to org creation
+        if (!$orgId) {
+            return redirect()->route('orgs.index')
+                ->with('info', __('onboarding.create_org_first'));
+        }
+
         // Set RLS context
-        DB::statement("SELECT cmis.init_transaction_context(?)", [$user->org_id]);
+        DB::statement("SELECT cmis.init_transaction_context(?)", [$orgId]);
 
         $progress = $this->onboardingService->getProgress($user->id);
         $tips = $this->onboardingService->getContextualTips($user->id, $progress['current_step']);
 
         return view('onboarding.index', [
+            'currentOrg' => \App\Models\Core\Org::findOrFail($orgId),
             'progress' => $progress,
             'tips' => $tips,
             'steps' => $this->getStepDefinitions(),
@@ -56,14 +66,24 @@ class UserOnboardingController extends Controller
             return redirect()->route('onboarding.index');
         }
 
+        // Get user's org (check multiple possible sources)
+        $orgId = $user->active_org_id ?? $user->current_org_id ?? $user->org_id;
+
+        // If user has no org, redirect to org creation
+        if (!$orgId) {
+            return redirect()->route('orgs.index')
+                ->with('info', __('onboarding.create_org_first'));
+        }
+
         // Set RLS context
-        DB::statement("SELECT cmis.init_transaction_context(?)", [$user->org_id]);
+        DB::statement("SELECT cmis.init_transaction_context(?)", [$orgId]);
 
         $progress = $this->onboardingService->getProgress($user->id);
         $tips = $this->onboardingService->getContextualTips($user->id, $step);
         $stepDefinitions = $this->getStepDefinitions();
 
         return view('onboarding.step', [
+            'currentOrg' => \App\Models\Core\Org::findOrFail($orgId),
             'step' => $step,
             'progress' => $progress,
             'tips' => $tips,
@@ -272,5 +292,38 @@ class UserOnboardingController extends Controller
                 ],
             ],
         ];
+    }
+
+    /**
+     * Display onboarding completion page
+     * HI-005: Added for /onboarding/complete route
+     */
+    public function complete(): View|RedirectResponse
+    {
+        $user = auth()->user();
+
+        // Get user's org
+        $orgId = $user->active_org_id ?? $user->current_org_id ?? $user->org_id;
+
+        // If user has no org, redirect to org creation
+        if (!$orgId) {
+            return redirect()->route('orgs.index')
+                ->with('info', __('onboarding.create_org_first'));
+        }
+
+        // Set RLS context
+        DB::statement("SELECT cmis.init_transaction_context(?)", [$orgId]);
+
+        $progress = $this->onboardingService->getProgress($user->id);
+
+        // If onboarding is not complete, redirect to current step
+        if ($progress['percentage'] < 100) {
+            return redirect()->route('onboarding.step', ['step' => $progress['current_step']]);
+        }
+
+        return view('onboarding.complete', [
+            'currentOrg' => \App\Models\Core\Org::findOrFail($orgId),
+            'progress' => $progress,
+        ]);
     }
 }

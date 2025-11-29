@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ app()->getLocale() }}" dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -39,6 +39,8 @@
                         <div>✓ {{ __('integrations.hashtag_challenges') }}</div>
                     </div>
                     <button @click="showPlatformSetup('tiktok')"
+                            data-testid="connect-tiktok-btn"
+                            id="connect-tiktok-btn"
                             class="w-full px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition">
                         {{ __('integrations.connect_tiktok') }}
                     </button>
@@ -64,6 +66,8 @@
                         <div>✓ {{ __('integrations.account_based_marketing') }}</div>
                     </div>
                     <button @click="showPlatformSetup('linkedin')"
+                            data-testid="connect-linkedin-btn"
+                            id="connect-linkedin-btn"
                             class="w-full px-4 py-2 bg-blue-700 text-white rounded-lg hover:bg-blue-800 transition">
                         {{ __('integrations.connect_linkedin') }}
                     </button>

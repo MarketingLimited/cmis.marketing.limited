@@ -17,6 +17,8 @@
             <p class="text-gray-600">{{ __('campaigns.manage_all_campaigns') }}</p>
         </div>
         <a href="{{ route('orgs.campaigns.create', ['org' => $currentOrg]) }}"
+           data-testid="new-campaign-btn"
+           id="new-campaign-btn"
            class="inline-flex items-center px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg shadow-sm {{ $isRtl ? 'flex-row-reverse' : '' }} transition-colors duration-200">
             <i class="fas fa-plus {{ $isRtl ? 'ml-2' : 'mr-2' }}"></i>
             <span>{{ __('campaigns.new_campaign') }}</span>
@@ -55,6 +57,8 @@
                 <div class="min-w-[180px]">
                     <select name="status"
                             dir="{{ $dir }}"
+                            data-testid="status-filter"
+                            id="status-filter"
                             class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 {{ $isRtl ? 'text-right' : '' }} transition-colors">
                         <option value="">{{ __('campaigns.all_statuses') }}</option>
                         <option value="draft" {{ request('status') === 'draft' ? 'selected' : '' }}>{{ __('campaigns.status.draft') }}</option>

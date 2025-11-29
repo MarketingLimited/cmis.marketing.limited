@@ -112,4 +112,34 @@ return [
 
     // Misc
     'n_a' => 'N/A',
+
+    // Profile page
+    'personal_information' => 'Personal Information',
+    'account_settings' => 'Account Settings',
+    'preferences' => 'Preferences',
+    'preferred_language' => 'Preferred Language',
+    'language_description' => 'Choose your preferred language for the interface',
+    'select_language' => 'Select Language',
+    'bio' => 'Bio',
+    'bio_placeholder' => 'Tell us about yourself...',
+    'avatar' => 'Profile Picture',
+    'change_avatar' => 'Change Avatar',
+    'upload_avatar' => 'Upload New Avatar',
+    'save_changes' => 'Save Changes',
+    'saving' => 'Saving...',
+    'profile_updated' => 'Profile updated successfully!',
+    'language_updated' => 'Language preference updated successfully!',
+    'avatar_updated' => 'Profile picture updated successfully!',
+    'update_failed' => 'Failed to update profile',
+    'member_since' => 'Member since',
+    'last_login' => 'Last login',
+    'account_status' => 'Account Status',
+    'current_language' => 'Current Language',
+    'arabic' => 'Arabic',
+    'english' => 'English',
+
+    // Avatar upload errors
+    'avatar_size_error' => 'File size must be less than 2MB',
+    'avatar_type_error' => 'File must be an image',
+    'avatar_upload_failed' => 'Failed to upload avatar',
 ];

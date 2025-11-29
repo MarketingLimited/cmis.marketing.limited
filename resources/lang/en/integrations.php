@@ -2,140 +2,85 @@
 
 return [
     // Page titles
-    'integration_details' => 'Integration Details',
     'platform_integrations' => 'Platform Integrations',
-
-    // Descriptions
-    'integration_details_description' => 'View integration details, manage connection keys, and review activity logs.',
     'connect_platforms_description' => 'Connect your advertising platforms to manage campaigns from one place',
-
-    // Sections
-    'basic_section' => 'Basic Section',
-    'integration_info' => 'Integration Information',
-    'connection_keys' => 'Connection Keys',
-    'connection_keys_description' => 'You can view or hide sensitive keys.',
-    'activity_log' => 'Activity Log',
-    'control_buttons' => 'Control Buttons',
-
-    // Table headers
-    'name' => 'Name',
-    'type' => 'Type',
-    'status' => 'Status',
-    'created_date' => 'Created Date',
-    'last_updated' => 'Last Updated',
-    'date' => 'Date',
-    'operation' => 'Operation',
-    'result' => 'Result',
-
-    // Values
-    'ad_platform' => 'Ad Platform',
-    'active' => 'Active',
-    'success' => 'Success',
-    'warning_delay' => 'Warning (Delayed Response)',
-
-    // Operations
-    'update_campaign' => 'Update Advertising Campaign',
-    'refresh_token' => 'Refresh Access Token',
-    'import_data' => 'Import Data from Meta',
-
-    // Buttons
-    'show_keys' => 'Show Keys',
-    'hide_keys' => 'Hide Keys',
-    'back' => 'Back',
-    'update_connection' => 'Update Connection',
-    'delete_integration' => 'Delete Integration',
-
-    // Platform integrations page
     'available_platforms' => 'Available Platforms',
-    'connected_accounts' => 'Connected Accounts',
+    'connected_platforms' => 'Connected Platforms',
 
-    // Platform details
+    // TikTok
     'tiktok' => 'TikTok Ads',
-    'tiktok_description' => 'Short-form video ads',
-    'tiktok_features_description' => 'Reach billions of users with engaging video content. Perfect for viral campaigns and brand awareness.',
-    'linkedin' => 'LinkedIn Ads',
-    'linkedin_description' => 'B2B professional network',
-    'linkedin_features_description' => 'Target professionals and decision-makers. Ideal for B2B lead generation and thought leadership.',
-    'meta' => 'Meta Ads',
-    'meta_description' => 'Facebook & Instagram',
-    'meta_features_description' => 'Access billions of users across Facebook, Instagram, Messenger, and Audience Network.',
-
-    // Setup modal
-    'connect_platform' => 'Connect',
-    'api_credentials' => 'API Credentials',
-    'verify_connection' => 'Verify Connection',
-    'complete' => 'Complete',
-    'cancel' => 'Cancel',
-    'next' => 'Next',
-    'back' => 'Back',
-    'done' => 'Done',
-
-    // Table columns
-    'platform' => 'Platform',
-    'account_id' => 'Account ID',
-    'connected' => 'Connected',
-    'actions' => 'Actions',
-
-    // Actions
-    'refresh' => 'Refresh',
-    'disconnect' => 'Disconnect',
-
-    // Platform features
+    'tiktok_description' => 'Short-form video advertising',
+    'tiktok_features_description' => 'Reach Gen Z and millennials with engaging video content on TikTok.',
+    'connect_tiktok' => 'Connect TikTok',
     'in_feed_ads' => 'In-Feed Ads',
     'brand_takeover' => 'Brand Takeover',
     'hashtag_challenges' => 'Hashtag Challenges',
+
+    // LinkedIn
+    'linkedin' => 'LinkedIn Ads',
+    'linkedin_description' => 'B2B professional advertising',
+    'linkedin_features_description' => 'Target professionals and businesses with precision B2B advertising.',
+    'connect_linkedin' => 'Connect LinkedIn',
     'sponsored_content' => 'Sponsored Content',
     'lead_gen_forms' => 'Lead Gen Forms',
     'account_based_marketing' => 'Account-Based Marketing',
+
+    // Meta (Facebook/Instagram)
+    'meta' => 'Meta Ads',
+    'meta_description' => 'Facebook & Instagram advertising',
+    'meta_features_description' => 'Comprehensive social advertising across Facebook and Instagram platforms.',
+    'connect_meta' => 'Connect Meta',
     'news_feed_ads' => 'News Feed Ads',
     'stories_reels' => 'Stories & Reels',
     'shopping_ads' => 'Shopping Ads',
-
-    // Connection buttons
-    'connect_tiktok' => 'Connect TikTok',
-    'connect_linkedin' => 'Connect LinkedIn',
     'already_available' => 'Already Available',
-    'connect' => 'Connect',
-    'ads' => 'Ads',
 
-    // Form fields
-    'app_id' => 'App ID',
-    'app_secret' => 'App Secret',
-    'access_token' => 'Access Token',
-    'advertiser_id' => 'Advertiser ID',
-    'sponsored_account_id' => 'Sponsored Account ID',
-    'access_token_placeholder' => 'Paste your access token here...',
-    'account_name_optional' => 'Account Name (Optional)',
-    'account_name_placeholder' => 'e.g., My Company Ads Account',
+    // Google
+    'google' => 'Google Ads',
+    'google_description' => 'Search and display advertising',
+    'google_features_description' => 'Reach customers across Google Search, Display Network, and YouTube.',
+    'connect_google' => 'Connect Google',
+    'search_ads' => 'Search Ads',
+    'display_network' => 'Display Network',
+    'youtube_ads' => 'YouTube Ads',
 
-    // Setup flow
-    'api_credentials_warning' => 'You\'ll need to create an app in the',
-    'tiktok_for_business' => 'TikTok for Business',
-    'linkedin_developer_platform' => 'LinkedIn Marketing Developer Platform',
-    'to_get_credentials' => 'to get your API credentials.',
-    'ready_to_connect' => 'Ready to Connect',
-    'verifying_connection' => 'Verifying Connection...',
-    'connection_failed' => 'Connection Failed',
-    'verify_credentials_description' => 'We\'ll test your API credentials to ensure they\'re valid',
-    'please_wait_verifying' => 'Please wait while we verify your credentials...',
-    'verification_error_message' => 'There was an error verifying your credentials. Please check and try again.',
-    'verify_and_connect' => 'Verify & Connect',
-    'verifying' => 'Verifying...',
-    'successfully_connected' => 'Successfully Connected!',
-    'your' => 'Your',
-    'account_connected_to_cmis' => 'account has been connected to CMIS.',
-    'whats_next' => 'What\'s Next?',
-    'view_manage_campaigns' => 'View and manage your campaigns',
-    'create_new_campaigns' => 'Create new campaigns directly from CMIS',
-    'setup_automation_rules' => 'Set up automation rules for optimization',
-    'track_performance' => 'Track performance with unified analytics',
+    // Snapchat
+    'snapchat' => 'Snapchat Ads',
+    'snapchat_description' => 'AR and visual advertising',
+    'snapchat_features_description' => 'Engage younger audiences with immersive AR experiences.',
+    'connect_snapchat' => 'Connect Snapchat',
+    'snap_ads' => 'Snap Ads',
+    'ar_lenses' => 'AR Lenses',
+    'story_ads' => 'Story Ads',
 
-    // Status values
-    'inactive' => 'Inactive',
+    // Twitter/X
+    'twitter' => 'X (Twitter) Ads',
+    'twitter_description' => 'Real-time conversation advertising',
+    'twitter_features_description' => 'Join trending conversations and reach engaged audiences.',
+    'connect_twitter' => 'Connect X',
+    'promoted_tweets' => 'Promoted Tweets',
+    'follower_ads' => 'Follower Ads',
+    'trend_takeover' => 'Trend Takeover',
 
-    // JavaScript messages
-    'refresh_success' => 'Integration refreshed successfully!',
-    'confirm_disconnect' => 'Disconnect',
-    'disconnect_warning' => 'This will remove access to your campaigns.',
-    'disconnect_success' => 'Integration disconnected successfully!',
+    // Connection status
+    'connected' => 'Connected',
+    'not_connected' => 'Not Connected',
+    'connection_status' => 'Connection Status',
+    'last_synced' => 'Last Synced',
+    'disconnect' => 'Disconnect',
+    'reconnect' => 'Reconnect',
+    'view_settings' => 'View Settings',
+
+    // Actions
+    'refresh_connection' => 'Refresh Connection',
+    'test_connection' => 'Test Connection',
+    'sync_now' => 'Sync Now',
+    'manage_accounts' => 'Manage Accounts',
+
+    // Messages
+    'connection_successful' => 'Platform connected successfully',
+    'connection_failed' => 'Failed to connect platform',
+    'disconnection_successful' => 'Platform disconnected successfully',
+    'sync_in_progress' => 'Sync in progress...',
+    'sync_complete' => 'Sync complete',
 ];

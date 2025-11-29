@@ -26,12 +26,16 @@
             </div>
         <div class="flex {{ $isRtl ? 'space-x-reverse space-x-3' : 'space-x-3' }}">
             <button @click="refreshData()"
+                    data-testid="refresh-btn"
+                    id="refresh-btn"
                     class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
                     :disabled="loading">
                 <span x-show="!loading">{{ __('analytics.refresh_data') }}</span>
                 <span x-show="loading">{{ __('analytics.loading') }}</span>
             </button>
             <button @click="exportData()"
+                    data-testid="export-btn"
+                    id="export-btn"
                     class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition">
                 {{ __('analytics.export_report') }}
             </button>

@@ -40,6 +40,11 @@ return Application::configure(basePath: dirname(__DIR__))
         $method->invoke($kernel, $schedule);
     })
     ->withMiddleware(function (Middleware $middleware): void {
+        // Use custom EncryptCookies middleware to exclude 'app_locale' from encryption
+        $middleware->encryptCookies(except: [
+            'app_locale', // Locale cookie must be readable as plain text
+        ]);
+
         // Apply security headers globally to all requests
         $middleware->append(\App\Http\Middleware\SecurityHeaders::class);
 
@@ -72,6 +77,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'throttle.ai' => \App\Http\Middleware\ThrottleAI::class,
             'throttle.platform' => \App\Http\Middleware\ThrottlePlatformRequests::class,
             'ai.rate.limit' => \App\Http\Middleware\AiRateLimitMiddleware::class,
+            'api.rate.limit' => \App\Http\Middleware\ApiRateLimiting::class,
 
             // Feature Toggles & Quotas
             'feature.platform' => \App\Http\Middleware\CheckPlatformFeatureEnabled::class,

@@ -746,4 +746,93 @@ return [
     'untitled' => 'Untitled',
     'no_pending_approvals' => 'No content pending approval',
 
+    // Platform Settings (HI-010)
+    'platform_settings' => 'Platform Settings',
+    'platform_settings_description' => 'Configure platform-specific settings for advertising and analytics',
+    'manage_connections' => 'Manage Connections',
+    'connect_platform' => 'Connect Platform',
+    'configure' => 'Configure',
+    'configured' => 'Configured',
+    'not_configured' => 'Not Configured',
+    'not_connected' => 'Not Connected',
+    'accounts' => 'accounts',
+    'platform_help_title' => 'Need Help?',
+    'platform_help_description' => 'Configure individual platforms to optimize tracking, attribution, and conversion settings.',
+    'view_connections' => 'View Connections',
+
+    // Platform Names
+    'platform_meta' => 'Meta Ads',
+    'platform_meta_subtitle' => 'Facebook & Instagram advertising settings',
+    'platform_google' => 'Google Ads',
+    'platform_google_subtitle' => 'Search, Display & YouTube advertising settings',
+    'platform_tiktok' => 'TikTok Ads',
+    'platform_tiktok_subtitle' => 'TikTok For Business advertising settings',
+    'platform_linkedin' => 'LinkedIn Ads',
+    'platform_linkedin_subtitle' => 'B2B professional advertising settings',
+    'platform_twitter' => 'Twitter (X) Ads',
+    'platform_twitter_subtitle' => 'Twitter/X promoted content settings',
+    'platform_snapchat' => 'Snapchat Ads',
+    'platform_snapchat_subtitle' => 'Snap Ads & AR Lenses settings',
+
+    // Platform Settings Form
+    'general_settings' => 'General Settings',
+    'attribution_window' => 'Attribution Window',
+    'sync_frequency' => 'Sync Frequency',
+    'realtime' => 'Real-time',
+    'hourly' => 'Hourly',
+    'daily' => 'Daily',
+    'enable_auto_sync' => 'Enable Auto Sync',
+    'auto_sync_description' => 'Automatically sync data from platform at the selected frequency',
+    'connected_accounts' => 'Connected Accounts',
+    'no_connections' => 'No Connections',
+    'connect_first_to_configure' => 'Connect a platform account first to configure settings.',
+    'connect_now' => 'Connect Now',
+    'enable_conversion_tracking' => 'Enable Conversion Tracking',
+    'platform_settings_updated' => ':platform settings updated successfully',
+    'failed_update_platform_settings' => 'Failed to update platform settings',
+
+    // Meta-specific
+    'meta_specific_settings' => 'Meta-Specific Settings',
+    'meta_pixel_id' => 'Meta Pixel ID',
+    'meta_pixel_id_help' => 'Your Meta Pixel ID for conversion tracking',
+    'enable_conversion_api' => 'Enable Conversion API (CAPI)',
+    'meta_capi_help' => 'Send server-side events for better tracking accuracy',
+    'capi_access_token' => 'CAPI Access Token',
+    'capi_token_help' => 'System User Access Token for server-side events',
+
+    // Google-specific
+    'google_specific_settings' => 'Google-Specific Settings',
+    'google_conversion_id' => 'Google Conversion ID',
+    'google_conversion_id_help' => 'Your Google Ads Conversion ID (AW-xxxxxxxxx)',
+    'enable_auto_tagging' => 'Enable Auto-Tagging',
+    'auto_tagging_help' => 'Automatically tag URLs with gclid parameter',
+    'enable_enhanced_conversions' => 'Enable Enhanced Conversions',
+    'enhanced_conversions_help' => 'Send first-party data for better conversion measurement',
+
+    // TikTok-specific
+    'tiktok_specific_settings' => 'TikTok-Specific Settings',
+    'tiktok_pixel_code' => 'TikTok Pixel Code',
+    'tiktok_pixel_help' => 'Your TikTok Pixel Code for conversion tracking',
+    'enable_events_api' => 'Enable Events API',
+    'tiktok_events_api_help' => 'Send server-side events for better tracking',
+
+    // LinkedIn-specific
+    'linkedin_specific_settings' => 'LinkedIn-Specific Settings',
+    'linkedin_insight_tag' => 'LinkedIn Insight Tag ID',
+    'linkedin_insight_tag_help' => 'Your LinkedIn Insight Tag for conversion tracking',
+    'linkedin_capi_help' => 'Send server-side conversion events',
+
+    // Twitter-specific
+    'twitter_specific_settings' => 'Twitter-Specific Settings',
+    'twitter_pixel_id' => 'Twitter Pixel ID',
+    'twitter_pixel_help' => 'Your Twitter Pixel ID for conversion tracking',
+    'twitter_capi_help' => 'Send server-side conversion events',
+
+    // Snapchat-specific
+    'snapchat_specific_settings' => 'Snapchat-Specific Settings',
+    'snapchat_pixel_id' => 'Snapchat Pixel ID',
+    'snapchat_pixel_help' => 'Your Snapchat Pixel ID for conversion tracking',
+    'enable_capi' => 'Enable Conversions API',
+    'snapchat_capi_help' => 'Send server-side conversion events',
+
 ];
