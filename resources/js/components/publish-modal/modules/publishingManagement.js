@@ -11,6 +11,9 @@ export function getPublishingManagementMethods() {
 
         async saveDraft() {
             try {
+                // Upload media files first if they exist
+                const contentToSend = await this.prepareContentForPublishing(this.content);
+
                 const response = await fetch(`/orgs/${window.currentOrgId}/social/publish-modal/save-draft`, {
                     method: 'POST',
                     headers: {
@@ -20,7 +23,7 @@ export function getPublishingManagementMethods() {
                     },
                     body: JSON.stringify({
                         profile_ids: this.selectedProfiles.map(p => p.integration_id),
-                        content: this.content,
+                        content: contentToSend,
                         schedule: this.scheduleEnabled ? this.schedule : null,
                         is_draft: true
                     })
@@ -44,7 +47,11 @@ export function getPublishingManagementMethods() {
 
         async publishNow() {
             if (!this.canSubmit) return;
+
             try {
+                // Upload media files first if they exist
+                const contentToSend = await this.prepareContentForPublishing(this.content);
+
                 const response = await fetch(`/orgs/${window.currentOrgId}/social/publish-modal/create`, {
                     method: 'POST',
                     headers: {
@@ -54,21 +61,100 @@ export function getPublishingManagementMethods() {
                     },
                     body: JSON.stringify({
                         profile_ids: this.selectedProfiles.map(p => p.integration_id),
-                        content: this.content,
+                        content: contentToSend,
                         is_draft: false
                     })
                 });
                 if (response.ok) {
                     const data = await response.json();
-                    window.notify(data.message || 'Post created successfully', 'success');
-                    this.closeModal();
+
+                    // Check if there are any failed posts in the response
+                    if (data.data && data.data.failed_count > 0) {
+                        const failedPost = data.data.posts.find(p => p.status === 'failed');
+                        if (failedPost) {
+                            window.notify(`Failure Reason:\n\n${failedPost.error_message}`, 'error');
+                        } else {
+                            window.notify(data.message || 'Some posts failed to publish', 'warning');
+                        }
+                    } else {
+                        window.notify(data.message || 'Post created successfully', 'success');
+                    }
+
+                    if (data.data && data.data.success_count > 0) {
+                        this.closeModal();
+                    }
                 } else {
                     const data = await response.json();
                     window.notify(data.message || 'Failed to create post', 'error');
                 }
             } catch (e) {
                 console.error('Failed to publish', e);
-                window.notify('Failed to publish post', 'error');
+                window.notify('Failed to publish post: ' + e.message, 'error');
+            }
+        },
+
+        /**
+         * Prepare content by uploading media files and getting URLs
+         */
+        async prepareContentForPublishing(content) {
+            const contentCopy = JSON.parse(JSON.stringify(content));
+
+            // Upload media files if they exist
+            if (contentCopy.global.media && contentCopy.global.media.length > 0) {
+                const uploadedMedia = [];
+
+                for (const mediaItem of contentCopy.global.media) {
+                    // If media has a File object, upload it first
+                    if (mediaItem.file) {
+                        const uploadedUrl = await this.uploadMediaFile(mediaItem.file);
+                        if (uploadedUrl) {
+                            uploadedMedia.push({
+                                type: mediaItem.type,
+                                url: uploadedUrl,
+                                name: mediaItem.name,
+                                size: mediaItem.size
+                            });
+                        }
+                    } else if (mediaItem.url && !mediaItem.url.startsWith('data:')) {
+                        // Already has a valid URL
+                        uploadedMedia.push(mediaItem);
+                    }
+                }
+
+                contentCopy.global.media = uploadedMedia;
+            }
+
+            return contentCopy;
+        },
+
+        /**
+         * Upload a media file and return its URL
+         */
+        async uploadMediaFile(file) {
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('type', file.type.startsWith('video') ? 'video' : 'image');
+
+            try {
+                const response = await fetch(`/orgs/${window.currentOrgId}/social/media/upload`, {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
+                    },
+                    body: formData
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    return data.data?.url || data.url;
+                } else {
+                    console.error('Failed to upload media file');
+                    return null;
+                }
+            } catch (e) {
+                console.error('Error uploading media:', e);
+                return null;
             }
         },
 
@@ -79,6 +165,9 @@ export function getPublishingManagementMethods() {
         async schedulePost() {
             if (!this.canSubmit) return;
             try {
+                // Upload media files first if they exist
+                const contentToSend = await this.prepareContentForPublishing(this.content);
+
                 const response = await fetch(`/orgs/${window.currentOrgId}/social/publish-modal/create`, {
                     method: 'POST',
                     headers: {
@@ -88,7 +177,7 @@ export function getPublishingManagementMethods() {
                     },
                     body: JSON.stringify({
                         profile_ids: this.selectedProfiles.map(p => p.integration_id),
-                        content: this.content,
+                        content: contentToSend,
                         schedule: this.schedule,
                         is_draft: false
                     })
@@ -114,6 +203,9 @@ export function getPublishingManagementMethods() {
         async addToQueue() {
             if (!this.canSubmit) return;
             try {
+                // Upload media files first if they exist
+                const contentToSend = await this.prepareContentForPublishing(this.content);
+
                 const response = await fetch(`/orgs/${window.currentOrgId}/social/publish-modal/create`, {
                     method: 'POST',
                     headers: {
@@ -123,7 +215,7 @@ export function getPublishingManagementMethods() {
                     },
                     body: JSON.stringify({
                         profile_ids: this.selectedProfiles.map(p => p.integration_id),
-                        content: this.content,
+                        content: contentToSend,
                         queue_position: this.queuePosition
                     })
                 });
@@ -148,6 +240,9 @@ export function getPublishingManagementMethods() {
         async submitForApproval() {
             if (!this.canSubmit) return;
             try {
+                // Upload media files first if they exist
+                const contentToSend = await this.prepareContentForPublishing(this.content);
+
                 // For now, treat as draft with pending approval status
                 const response = await fetch(`/orgs/${window.currentOrgId}/social/publish-modal/save-draft`, {
                     method: 'POST',
@@ -158,7 +253,7 @@ export function getPublishingManagementMethods() {
                     },
                     body: JSON.stringify({
                         profile_ids: this.selectedProfiles.map(p => p.integration_id),
-                        content: this.content,
+                        content: contentToSend,
                         schedule: this.scheduleEnabled ? this.schedule : null,
                         is_draft: true,
                         requires_approval: true

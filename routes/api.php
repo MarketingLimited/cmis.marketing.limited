@@ -1860,6 +1860,12 @@ Route::middleware(['auth:sanctum', 'validate.org.access', 'org.context', 'api.ra
             Route::get('/best-times', [App\Http\Controllers\API\PublishingModalController::class, 'getBestTimes'])->name('best-times');
             Route::get('/character-limits', [App\Http\Controllers\API\PublishingModalController::class, 'getCharacterLimits'])->name('character-limits');
         });
+
+        // Media Library API
+        Route::prefix('media')->name('media.')->group(function () {
+            Route::get('/', [App\Http\Controllers\Social\MediaLibraryController::class, 'index'])->name('index');
+            Route::post('/upload', [App\Http\Controllers\Social\MediaLibraryController::class, 'upload'])->name('upload');
+        });
     });
 
 // Production Readiness & Optimization (Phase 6)
