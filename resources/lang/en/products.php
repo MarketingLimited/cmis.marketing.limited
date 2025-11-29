@@ -159,6 +159,24 @@ return [
     'no_products' => 'No products',
     'no_products_found' => 'No products found',
     'create_first_product' => 'Create First Product',
+    'start_creating' => 'Start by creating a new product',
+
+    // Page-specific
+    'manage_products' => 'Manage your products and marketing offers',
+    'new_product' => 'New Product',
+    'all_statuses' => 'All Statuses',
+    'all_categories' => 'All Categories',
+    'digital' => 'Digital',
+    'physical' => 'Physical',
+    'subscription' => 'Subscription',
+    'campaign' => 'campaign',
+    'campaigns' => 'campaigns',
+    'sales' => 'sales',
+    'view' => 'View',
+    'edit' => 'Edit',
+    'showing_x_to_y_of_z' => 'Showing :from to :to of :total products',
+    'previous' => 'Previous',
+    'next' => 'Next',
 
     // Help Text
     'help' => [

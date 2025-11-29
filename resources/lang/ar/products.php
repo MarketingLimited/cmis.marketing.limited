@@ -159,6 +159,24 @@ return [
     'no_products' => 'لا توجد منتجات',
     'no_products_found' => 'لم يتم العثور على منتجات',
     'create_first_product' => 'إنشاء أول منتج',
+    'start_creating' => 'ابدأ بإنشاء منتج جديد',
+
+    // Page-specific
+    'manage_products' => 'إدارة منتجاتك وعروضك التسويقية',
+    'new_product' => 'منتج جديد',
+    'all_statuses' => 'جميع الحالات',
+    'all_categories' => 'جميع الفئات',
+    'digital' => 'رقمية',
+    'physical' => 'مادية',
+    'subscription' => 'اشتراك',
+    'campaign' => 'حملة',
+    'campaigns' => 'حملات',
+    'sales' => 'مبيعات',
+    'view' => 'عرض',
+    'edit' => 'تعديل',
+    'showing_x_to_y_of_z' => 'عرض :from إلى :to من :total منتج',
+    'previous' => 'السابق',
+    'next' => 'التالي',
 
     // Help Text
     'help' => [

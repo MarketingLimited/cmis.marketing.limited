@@ -28,6 +28,8 @@ return [
     'search' => 'بحث',
     'filter' => 'تصفية',
     'export' => 'تصدير',
+    'switching' => 'جارِ التبديل',
+    'loading' => 'جارِ التحميل',
     'import' => 'استيراد',
     'download' => 'تحميل',
     'upload' => 'رفع',
@@ -84,6 +86,8 @@ return [
     'settings' => 'الإعدادات',
     'profile' => 'الملف الشخصي',
     'logout' => 'تسجيل الخروج',
+    'logged_out_successfully' => 'تم تسجيل الخروج بنجاح',
+    'logged_out_all_devices' => 'تم تسجيل الخروج من جميع الأجهزة بنجاح',
     'system_admin' => 'مدير النظام',
 
     // Messages
@@ -103,6 +107,7 @@ return [
 
     // Pagination
     'showing' => 'عرض',
+    'to' => 'إلى',
     'of' => 'من',
     'results' => 'نتيجة',
     'per_page' => 'لكل صفحة',
@@ -166,5 +171,23 @@ return [
     'paused' => 'متوقف',
     'draft' => 'مسودة',
     'scheduled' => 'مجدول',
+
+    // Empty States
+    'empty_state_no_campaigns' => 'لا توجد حملات بعد',
+    'empty_state_no_campaigns_desc' => 'أنشئ حملتك الأولى للبدء في الوصول إلى جمهورك',
+    'empty_state_create_campaign' => 'إنشاء حملة',
+    'empty_state_no_posts' => 'لا توجد منشورات',
+    'empty_state_no_posts_desc' => 'جدولة ونشر المحتوى عبر قنواتك الاجتماعية',
+    'empty_state_create_post' => 'إنشاء منشور',
+    'empty_state_no_assets' => 'لا توجد أصول إبداعية',
+    'empty_state_no_assets_desc' => 'ارفع الصور والفيديوهات ووسائط أخرى لحملاتك',
+    'empty_state_upload_asset' => 'رفع ملف',
+    'empty_state_no_data' => 'لا توجد بيانات',
+    'empty_state_no_data_desc' => 'ستظهر البيانات هنا بمجرد أن تبدأ حملاتك في توليد النشاط',
+    'empty_state_no_analytics' => 'لا توجد بيانات تحليلية',
+    'empty_state_no_analytics_desc' => 'اربط منصة وشغّل حملات لرؤية مقاييس الأداء',
+    'empty_state_connect_platform' => 'ربط منصة',
+    'empty_state_getting_started' => 'هل تبدأ الآن؟',
+    'empty_state_getting_started_desc' => 'اتبع هذه الخطوات لإعداد حملاتك التسويقية',
 
 ];
