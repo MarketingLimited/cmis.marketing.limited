@@ -192,6 +192,17 @@ export function getMediaManagementMethods() {
         // Thumbnails (thumbnails.set):
         //   - Max file size: 2MB (Most Restrictive for Images!)
         //
+        // PINTEREST API:
+        // Image Pins:
+        //   - Standard/Square/Long/Infographic: Max 20MB (.PNG, .JPG)
+        //   - Carousel Pins: Max 20MB per image (.PNG, .JPG)
+        //   - Collections Pins: Max 10MB per image (.PNG, .JPG)
+        //   - Idea Pins (images): Max 20MB (.PNG, .JPG)
+        //
+        // Video Pins:
+        //   - Video Pins (general): Max 2GB (.MP4, .MOV, .M4V)
+        //   - Idea Pins (videos): Max 100MB (.MP4, .MOV, .M4V)
+        //
         // CROSS-PLATFORM COMPATIBILITY STRATEGY:
         // When posting to MULTIPLE platforms simultaneously, we use the
         // MOST RESTRICTIVE limits to ensure universal compatibility:
@@ -216,6 +227,7 @@ export function getMediaManagementMethods() {
         // │ Messenger    │ 8MB      │ 25MB     │ -        │
         // │ Instagram    │ 8MB      │ 100MB    │ 60s      │
         // │ TikTok       │ -        │ 4GB      │ 10min    │
+        // │ Pinterest    │ 10-20MB  │ 100MB-2GB│ -        │
         // └──────────────┴──────────┴──────────┴──────────┘
         // * Snapchat varies by ad type (Audience Filters: 300KB!)
         // † YouTube thumbnails: 2MB (most restrictive for images!)
