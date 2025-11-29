@@ -174,6 +174,24 @@ export function getMediaManagementMethods() {
         //   - Max pixels: 36,152,320 pixels
         //   - File formats: JPG, GIF, PNG
         //
+        // YOUTUBE DATA API:
+        // Videos (videos.insert):
+        //   - Max file size: 256GB (!!!)
+        //   - Supports resumable uploads
+        //   - Chunk size: Multiple of 256KB (except last chunk)
+        //
+        // Captions (captions.insert):
+        //   - Max file size: 100MB
+        //
+        // Channel Banners (channelBanners.insert):
+        //   - Max file size: 6MB
+        //
+        // Playlist Images (playlistImages.insert):
+        //   - Max file size: 2MB
+        //
+        // Thumbnails (thumbnails.set):
+        //   - Max file size: 2MB (Most Restrictive for Images!)
+        //
         // CROSS-PLATFORM COMPATIBILITY STRATEGY:
         // When posting to MULTIPLE platforms simultaneously, we use the
         // MOST RESTRICTIVE limits to ensure universal compatibility:
@@ -189,6 +207,7 @@ export function getMediaManagementMethods() {
         // ┌──────────────┬──────────┬──────────┬──────────┐
         // │ Platform     │ Images   │ Videos   │ Duration │
         // ├──────────────┼──────────┼──────────┼──────────┤
+        // │ YouTube†     │ 2MB      │ 256GB    │ -        │
         // │ WhatsApp     │ 5MB      │ 16MB     │ -        │
         // │ Google Biz   │ 5MB      │ 75MB     │ 30s      │
         // │ Snapchat*    │ 300KB-5MB│ 1GB      │ 10s-60s  │
@@ -199,17 +218,68 @@ export function getMediaManagementMethods() {
         // │ TikTok       │ -        │ 4GB      │ 10min    │
         // └──────────────┴──────────┴──────────┴──────────┘
         // * Snapchat varies by ad type (Audience Filters: 300KB!)
+        // † YouTube thumbnails: 2MB (most restrictive for images!)
+        //   YouTube videos: 256GB (most permissive!)
         //
         // MOST RESTRICTIVE LIMITS (Cross-Platform):
-        //   - Images: 5MB (WhatsApp, Google Biz, X, LinkedIn OG)
+        //   - Images: 2MB (YouTube thumbnails - MOST restrictive!)
+        //            5MB (WhatsApp, Google Biz, X, LinkedIn OG)
         //   - Videos: 16MB (WhatsApp - most restrictive)
         //   - Duration: 30s (Google Business - most restrictive)
         //   - Min Image Size: 10KB (Google Biz)
         //   - Min Resolution: 250x250px (Google Biz)
         //
-        // NOTE: These conservative limits ensure media works across ALL
+        // IMPLEMENTATION DECISION:
+        // We use 5MB for images (not 2MB) because:
+        // - YouTube thumbnails are a specialized use case
+        // - Most platforms support 5MB+
+        // - 2MB would be too restrictive for general use
+        // - Users uploading YouTube thumbnails can be warned separately
+        //
+        // NOTE: These conservative limits ensure media works across MOST
         // supported platforms. For single-platform posts (especially
-        // TikTok, LinkedIn, or X), users can upload much larger files.
+        // YouTube, TikTok, LinkedIn, or X), users can upload much larger files.
+        //
+        // ============================================
+        // GOOGLE GEMINI API (For AI Features - Not Social Publishing)
+        // ============================================
+        // Note: These limits apply to CMIS's AI features (semantic search,
+        // content analysis, embeddings), NOT to social media publishing.
+        //
+        // Files API (Upload & Manage Files):
+        //   - Max file size per file: 2GB
+        //   - Max total storage per project: 20GB
+        //   - Retention: 48 hours
+        //
+        // Inline Data (In Prompt):
+        //   - Max request size (text + files): 20MB
+        //   - Use Files API for larger files
+        //
+        // Vertex AI Gemini Pro:
+        //   Documents (PDFs):
+        //     - Max file size: 50MB
+        //     - Max pages per PDF: 1,000 pages
+        //     - Max files per prompt: 3,000
+        //   Images:
+        //     - Max image size: 7MB
+        //     - Max images per prompt: 3,000
+        //
+        // Gemini Apps (Free/Go Plan):
+        //   - Max file size (non-video): 100MB
+        //   - Max video size: 2GB (max 5 minutes length)
+        //   - Max files per prompt: 10
+        //
+        // Gemini Apps (Pro/Ultra Plan):
+        //   - Max file size (non-video): 100MB
+        //   - Max video size: 2GB (max 1 hour total length)
+        //   - Max files per prompt: 10
+        //   - GitHub repos/ZIP: Up to 5,000 files, 100MB each
+        //
+        // VEO 3 API (AI Video Generation):
+        // Image-to-Video Input:
+        //   - veo-3.1-generate: Max 8MB image input
+        //   - veo-3.0-generate-preview: Max 20MB image input
+        //   - Uses Files API for storage (2GB per file, 48h retention)
         // ============================================
 
         async processImage(file) {
