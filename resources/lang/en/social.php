@@ -268,6 +268,7 @@ return [
     'not_connected' => 'Not connected',
     'connect_account' => 'Please connect your {platform} account in',
     'platform_connections' => 'Platform Connections',
+    'platform' => 'Platform',
     'post_type' => 'Post Type',
     'post_content' => 'Post Content',
     'what_to_share' => 'What would you like to share?',

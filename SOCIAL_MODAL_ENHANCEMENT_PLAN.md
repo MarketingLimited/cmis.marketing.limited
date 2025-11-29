@@ -7,7 +7,7 @@
 
 ## 📊 Competitor Analysis Summary
 
-### VistaSocial Key Features Identified (40 screenshots analyzed):
+### VistaSocial Key Features Identified (39 screenshots analyzed - Nov 29, 2025):
 
 1. **Three-Column Layout**
    - Left: Profile/Account selector with groups, search, select all
@@ -82,9 +82,10 @@
    - "Changes saved" indicator in top-right
 
 6. **Bottom Actions Bar**
-   - Selected profiles carousel (left side)
-   - Radio buttons: Save draft, Add to queue, Schedule, Publish now
-   - "Next" button (primary action)
+   - Selected profiles carousel (left side with < > navigation arrows)
+   - Radio buttons: Save draft, Add to queue, Schedule, Publish now (with blue selection)
+   - "Next" button (primary action, blue)
+   - Clean separation from modal content with subtle shadow
 
 7. **Scheduling Interface**
    - Calendar view with monthly grid
@@ -101,6 +102,29 @@
 8. **Platform Icons at Top**
    - Facebook, Instagram, LinkedIn, YouTube, Bluesky, TikTok, Snapchat
    - Shows connected platforms
+   - Icons are clickable to filter/view platform-specific settings
+
+9. **Video-Specific Options** (YouTube/TikTok/Reels)
+   - Video title field (required, with character counter)
+   - Video processing toggle and indicator
+   - "Create first like" toggle
+   - "Embeddable" toggle
+   - "Notify subscribers" toggle
+   - Category selector dropdown
+   - Tag your video input
+   - Public/Private visibility dropdown
+
+10. **Mobile Preview Mockup**
+   - Right sidebar shows realistic mobile phone preview
+   - Platform-specific UI elements (Instagram story controls, Give button, Share, etc.)
+   - Profile picture and account name display
+   - Caption preview with character trimming
+   - Interactive elements visible but disabled
+
+11. **Brand Safety & Compliance**
+   - "Brand Safety & Compliance Policies" modal (premium feature)
+   - Upgrade prompts for advanced features
+   - Content compliance checking
 
 ---
 
@@ -124,20 +148,23 @@
 - ❌ Multiple media upload sources (URL, library, integrations)
 - ❌ Rich text formatting toolbar (emoji picker, @mentions, hashtags, bold, italic)
 - ❌ Platform-specific character counters (showing all platforms simultaneously)
-- ❌ Real-time preview per platform
+- ❌ Real-time mobile preview mockup per platform
 - ❌ Profile grouping with hierarchy
 - ❌ Search in profile selection
 - ❌ "Select all" / "Clear selection"
 - ❌ Customize panel with platform-specific options
 - ❌ Per-platform caption editing
-- ❌ Video title, first comment, location, boost options
-- ❌ Platform-specific warnings/alerts
-- ❌ Processing indicators
-- ❌ Labels/tags
-- ❌ Calendar view for scheduling
+- ❌ Video title, video processing, create first like, embeddable, notify subscribers
+- ❌ First comment, location, boost, country/gender/age targeting options
+- ❌ Platform-specific warnings/alerts (orange banner)
+- ❌ Image/video processing indicators with "Learn more" links
+- ❌ Labels/tags selection
+- ❌ Calendar view for scheduling with visual post thumbnails
 - ❌ Optimal times suggestion
-- ❌ Selected profiles bar at bottom
-- ❌ Expandable/collapsible sections
+- ❌ Selected profiles carousel at bottom with navigation arrows
+- ❌ Expandable/collapsible sections (groups, customize panel)
+- ❌ "Changes saved" auto-fade indicator
+- ❌ Brand safety & compliance checking
 
 ---
 

@@ -1,0 +1,290 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites>
+  <testsuite name="/home/cmis-test/public_html/phpunit.xml" tests="2" assertions="0" errors="2" failures="0" skipped="0" time="0.000000">
+    <testsuite name="Feature" tests="2" assertions="0" errors="2" failures="0" skipped="0" time="0.000000">
+      <testsuite name="Tests\Feature\Influencer\InfluencerContentControllerTest" file="/home/cmis-test/public_html/tests/Feature/Influencer/InfluencerContentControllerTest.php" tests="2" assertions="0" errors="2" failures="0" skipped="0" time="0.000000">
+        <testcase name="it_can_publish_content" file="/home/cmis-test/public_html/tests/Feature/Influencer/InfluencerContentControllerTest.php" line="224" class="Tests\Feature\Influencer\InfluencerContentControllerTest" classname="Tests.Feature.Influencer.InfluencerContentControllerTest" assertions="0" time="0.000000">
+          <error type="Illuminate\Database\QueryException">Tests\Feature\Influencer\InfluencerContentControllerTest::it_can_publish_content
+Illuminate\Database\QueryException: SQLSTATE[42830]: Invalid foreign key: 7 ERROR:  there is no unique constraint matching given keys for referenced table "scheduled_reports" (Connection: pgsql, SQL: alter table "cmis"."report_execution_logs" add constraint "cmis_report_execution_logs_schedule_id_foreign" foreign key ("schedule_id") references "cmis"."scheduled_reports" ("schedule_id") on delete cascade)
+
+/home/cmis-test/public_html/vendor/laravel/framework/src/Illuminate/Database/Connection.php:824
+/home/cmis-test/public_html/vendor/laravel/framework/src/Illuminate/Database/Connection.php:778
+/home/cmis-test/public_html/vendor/laravel/framework/src/Illuminate/Database/Connection.php:559
+/home/cmis-test/public_html/vendor/laravel/framework/src/Illuminate/Database/Schema/Blueprint.php:121
+/home/cmis-test/public_html/vendor/laravel/framework/src/Illuminate/Database/Schema/Builder.php:618
+/home/cmis-test/public_html/vendor/laravel/framework/src/Illuminate/Database/Schema/Builder.php:472
+/home/cmis-test/public_html/vendor/laravel/framework/src/Illuminate/Support/Facades/Facade.php:363
+/home/cmis-test/public_html/database/migrations/2025_11_21_000001_create_scheduled_reports_table.php:68
+/home/cmis-test/public_html/vendor/laravel/framework/src/Illuminate/Database/Migrations/Migrator.php:514
+/home/cmis-test/public_html/vendor/laravel/framework/src/Illuminate/Database/Migrations/Migrator.php:439
+/home/cmis-test/public_html/vendor/laravel/framework/src/Illuminate/Database/Concerns/ManagesTransactions.php:35
+/home/cmis-test/public_html/vendor/laravel/framework/src/Illuminate/Database/Migrations/Migrator.php:447
+/home/cmis-test/public_html/vendor/laravel/framework/src/Illuminate/Database/Migrations/Migrator.php:250
+/home/cmis-test/public_html/vendor/laravel/framework/src/Illuminate/Console/View/Components/Task.php:41
+/home/cmis-test/public_html/vendor/laravel/framework/src/Illuminate/Database/Migrations/Migrator.php:809
+/home/cmis-test/public_html/vendor/laravel/framework/src/Illuminate/Database/Migrations/Migrator.php:250
+/home/cmis-test/public_html/vendor/laravel/framework/src/Illuminate/Database/Migrations/Migrator.php:210
+/home/cmis-test/public_html/vendor/laravel/framework/src/Illuminate/Database/Migrations/Migrator.php:137
+/home/cmis-test/public_html/vendor/laravel/framework/src/Illuminate/Database/Console/Migrations/MigrateCommand.php:116
+/home/cmis-test/public_html/vendor/laravel/framework/src/Illuminate/Database/Migrations/Migrator.php:666
+/home/cmis-test/public_html/vendor/laravel/framework/src/Illuminate/Database/Console/Migrations/MigrateCommand.php:109
+/home/cmis-test/public_html/vendor/laravel/framework/src/Illuminate/Database/Console/Migrations/MigrateCommand.php:88
+/home/cmis-test/public_html/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php:36
+/home/cmis-test/public_html/vendor/laravel/framework/src/Illuminate/Container/Util.php:43
+/home/cmis-test/public_html/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php:96
+/home/cmis-test/public_html/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php:35
+/home/cmis-test/public_html/vendor/laravel/framework/src/Illuminate/Container/Container.php:836
+/home/cmis-test/public_html/vendor/laravel/framework/src/Illuminate/Console/Command.php:211
+/home/cmis-test/public_html/vendor/symfony/console/Command/Command.php:318
+/home/cmis-test/public_html/vendor/laravel/framework/src/Illuminate/Console/Command.php:180
+/home/cmis-test/public_html/vendor/laravel/framework/src/Illuminate/Console/Concerns/CallsCommands.php:68
+/home/cmis-test/public_html/vendor/laravel/framework/src/Illuminate/Console/Concerns/CallsCommands.php:29
+/home/cmis-test/public_html/vendor/laravel/framework/src/Illuminate/Database/Console/Migrations/FreshCommand.php:81
+/home/cmis-test/public_html/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php:36
+/home/cmis-test/public_html/vendor/laravel/framework/src/Illuminate/Container/Util.php:43
+/home/cmis-test/public_html/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php:96
+/home/cmis-test/public_html/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php:35
+/home/cmis-test/public_html/vendor/laravel/framework/src/Illuminate/Container/Container.php:836
+/home/cmis-test/public_html/vendor/laravel/framework/src/Illuminate/Console/Command.php:211
+/home/cmis-test/public_html/vendor/symfony/console/Command/Command.php:318
+/home/cmis-test/public_html/vendor/laravel/framework/src/Illuminate/Console/Command.php:180
+/home/cmis-test/public_html/vendor/symfony/console/Application.php:1073
+/home/cmis-test/public_html/vendor/symfony/console/Application.php:356
+/home/cmis-test/public_html/vendor/symfony/console/Application.php:195
+/home/cmis-test/public_html/vendor/laravel/framework/src/Illuminate/Console/Application.php:165
+/home/cmis-test/public_html/vendor/laravel/framework/src/Illuminate/Foundation/Console/Kernel.php:426
+/home/cmis-test/public_html/vendor/laravel/framework/src/Illuminate/Testing/PendingCommand.php:451
+/home/cmis-test/public_html/vendor/laravel/framework/src/Illuminate/Testing/PendingCommand.php:675
+/home/cmis-test/public_html/vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/InteractsWithConsole.php:87
+/home/cmis-test/public_html/vendor/laravel/framework/src/Illuminate/Foundation/Testing/RefreshDatabase.php:101
+/home/cmis-test/public_html/vendor/laravel/framework/src/Illuminate/Foundation/Testing/RefreshDatabase.php:84
+/home/cmis-test/public_html/vendor/laravel/framework/src/Illuminate/Foundation/Testing/RefreshDatabase.php:25
+/home/cmis-test/public_html/vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/InteractsWithTestCaseLifecycle.php:209
+/home/cmis-test/public_html/vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/InteractsWithTestCaseLifecycle.php:97
+/home/cmis-test/public_html/vendor/laravel/framework/src/Illuminate/Foundation/Testing/TestCase.php:63
+/home/cmis-test/public_html/tests/TestCase.php:32
+/home/cmis-test/public_html/tests/Feature/Influencer/InfluencerContentControllerTest.php:26</error>
+        </testcase>
+        <testcase name="it_cannot_publish_unapproved_content" file="/home/cmis-test/public_html/tests/Feature/Influencer/InfluencerContentControllerTest.php" line="246" class="Tests\Feature\Influencer\InfluencerContentControllerTest" classname="Tests.Feature.Influencer.InfluencerContentControllerTest" assertions="0" time="0.000000">
+          <error type="Illuminate\Database\QueryException">Tests\Feature\Influencer\InfluencerContentControllerTest::it_cannot_publish_unapproved_content
+Illuminate\Database\QueryException: SQLSTATE[42P01]: Undefined table: 7 ERROR:  relation "cmis.organizations" does not exist (Connection: pgsql, SQL: 
+            CREATE TABLE IF NOT EXISTS cmis_automation.automation_rules (
+                id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                org_id UUID NOT NULL REFERENCES cmis.organizations(id) ON DELETE CASCADE,
+                name VARCHAR(255) NOT NULL,
+                description TEXT,
+                condition JSONB NOT NULL,
+                action JSONB NOT NULL,
+                is_active BOOLEAN DEFAULT true,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        )
+
+/home/cmis-test/public_html/vendor/laravel/framework/src/Illuminate/Database/Connection.php:824
+/home/cmis-test/public_html/vendor/laravel/framework/src/Illuminate/Database/Connection.php:778
+/home/cmis-test/public_html/vendor/laravel/framework/src/Illuminate/Database/Connection.php:559
+/home/cmis-test/public_html/vendor/laravel/framework/src/Illuminate/Database/DatabaseManager.php:489
+/home/cmis-test/public_html/vendor/laravel/framework/src/Illuminate/Support/Facades/Facade.php:363
+/home/cmis-test/public_html/database/migrations/2025_11_21_143104_create_cmis_automation_schema.php:17
+/home/cmis-test/public_html/vendor/laravel/framework/src/Illuminate/Database/Migrations/Migrator.php:514
+/home/cmis-test/public_html/vendor/laravel/framework/src/Illuminate/Database/Migrations/Migrator.php:439
+/home/cmis-test/public_html/vendor/laravel/framework/src/Illuminate/Database/Concerns/ManagesTransactions.php:35
+/home/cmis-test/public_html/vendor/laravel/framework/src/Illuminate/Database/Migrations/Migrator.php:447
+/home/cmis-test/public_html/vendor/laravel/framework/src/Illuminate/Database/Migrations/Migrator.php:250
+/home/cmis-test/public_html/vendor/laravel/framework/src/Illuminate/Console/View/Components/Task.php:41
+/home/cmis-test/public_html/vendor/laravel/framework/src/Illuminate/Database/Migrations/Migrator.php:809
+/home/cmis-test/public_html/vendor/laravel/framework/src/Illuminate/Database/Migrations/Migrator.php:250
+/home/cmis-test/public_html/vendor/laravel/framework/src/Illuminate/Database/Migrations/Migrator.php:210
+/home/cmis-test/public_html/vendor/laravel/framework/src/Illuminate/Database/Migrations/Migrator.php:137
+/home/cmis-test/public_html/vendor/laravel/framework/src/Illuminate/Database/Console/Migrations/MigrateCommand.php:116
+/home/cmis-test/public_html/vendor/laravel/framework/src/Illuminate/Database/Migrations/Migrator.php:666
+/home/cmis-test/public_html/vendor/laravel/framework/src/Illuminate/Database/Console/Migrations/MigrateCommand.php:109
+/home/cmis-test/public_html/vendor/laravel/framework/src/Illuminate/Database/Console/Migrations/MigrateCommand.php:88
+/home/cmis-test/public_html/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php:36
+/home/cmis-test/public_html/vendor/laravel/framework/src/Illuminate/Container/Util.php:43
+/home/cmis-test/public_html/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php:96
+/home/cmis-test/public_html/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php:35
+/home/cmis-test/public_html/vendor/laravel/framework/src/Illuminate/Container/Container.php:836
+/home/cmis-test/public_html/vendor/laravel/framework/src/Illuminate/Console/Command.php:211
+/home/cmis-test/public_html/vendor/symfony/console/Command/Command.php:318
+/home/cmis-test/public_html/vendor/laravel/framework/src/Illuminate/Console/Command.php:180
+/home/cmis-test/public_html/vendor/laravel/framework/src/Illuminate/Console/Concerns/CallsCommands.php:68
+/home/cmis-test/public_html/vendor/laravel/framework/src/Illuminate/Console/Concerns/CallsCommands.php:29
+/home/cmis-test/public_html/vendor/laravel/framework/src/Illuminate/Database/Console/Migrations/FreshCommand.php:81
+/home/cmis-test/public_html/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php:36
+/home/cmis-test/public_html/vendor/laravel/framework/src/Illuminate/Container/Util.php:43
+/home/cmis-test/public_html/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php:96
+/home/cmis-test/public_html/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php:35
+/home/cmis-test/public_html/vendor/laravel/framework/src/Illuminate/Container/Container.php:836
+/home/cmis-test/public_html/vendor/laravel/framework/src/Illuminate/Console/Command.php:211
+/home/cmis-test/public_html/vendor/symfony/console/Command/Command.php:318
+/home/cmis-test/public_html/vendor/laravel/framework/src/Illuminate/Console/Command.php:180
+/home/cmis-test/public_html/vendor/symfony/console/Application.php:1073
+/home/cmis-test/public_html/vendor/symfony/console/Application.php:356
+/home/cmis-test/public_html/vendor/symfony/console/Application.php:195
+/home/cmis-test/public_html/vendor/laravel/framework/src/Illuminate/Console/Application.php:165
+/home/cmis-test/public_html/vendor/laravel/framework/src/Illuminate/Foundation/Console/Kernel.php:426
+/home/cmis-test/public_html/vendor/laravel/framework/src/Illuminate/Testing/PendingCommand.php:451
+/home/cmis-test/public_html/vendor/laravel/framework/src/Illuminate/Testing/PendingCommand.php:675
+/home/cmis-test/public_html/vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/InteractsWithConsole.php:87
+/home/cmis-test/public_html/vendor/laravel/framework/src/Illuminate/Foundation/Testing/RefreshDatabase.php:101
+/home/cmis-test/public_html/vendor/laravel/framework/src/Illuminate/Foundation/Testing/RefreshDatabase.php:84
+/home/cmis-test/public_html/vendor/laravel/framework/src/Illuminate/Foundation/Testing/RefreshDatabase.php:25
+/home/cmis-test/public_html/vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/InteractsWithTestCaseLifecycle.php:209
+/home/cmis-test/public_html/vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/InteractsWithTestCaseLifecycle.php:97
+/home/cmis-test/public_html/vendor/laravel/framework/src/Illuminate/Foundation/Testing/TestCase.php:63
+/home/cmis-test/public_html/tests/TestCase.php:32
+/home/cmis-test/public_html/tests/Feature/Influencer/InfluencerContentControllerTest.php:26</error>
+          <system-out>Enabling RLS on cmis.orgs...
+Enabling RLS on cmis.org_markets...
+Enabling RLS on cmis.user_orgs...
+Enabling RLS on cmis.campaigns...
+Enabling RLS on cmis.content_plans...
+Enabling RLS on cmis.content_items...
+Enabling RLS on cmis.creative_assets...
+Enabling RLS on cmis.ad_accounts...
+Enabling RLS on cmis.ad_campaigns...
+Enabling RLS on cmis.ad_sets...
+Enabling RLS on cmis.ad_entities...
+Enabling RLS on cmis.ad_metrics...
+Creating RLS policy for cmis.orgs...
+Creating RLS policy for cmis.org_markets...
+Creating RLS policy for cmis.user_orgs...
+Creating RLS policy for cmis.campaigns...
+Creating RLS policy for cmis.content_plans...
+Creating RLS policy for cmis.content_items...
+Creating RLS policy for cmis.creative_assets...
+Creating RLS policy for cmis.ad_accounts...
+Creating RLS policy for cmis.ad_campaigns...
+Creating RLS policy for cmis.ad_sets...
+Creating RLS policy for cmis.ad_entities...
+Creating RLS policy for cmis.ad_metrics...
+Row-Level Security enabled successfully!
+
+⚠️  CRITICAL MIGRATION: Converting users.user_id from BIGINT to UUID
+This will invalidate all existing user sessions and API tokens.
+Press Ctrl+C within 10 seconds to abort...
+
+Step 1/10: Checking current schema...
+✓ Users table already uses UUID. Skipping migration.
+
+📊 Adding performance indexes...
+
+Creating indexes for campaigns table...
+✓ Created index: idx_campaigns_org_status
+✓ Created index: idx_campaigns_dates
+✓ Created index: idx_campaigns_created
+Creating indexes for content_plans table...
+✓ Created index: idx_content_plans_campaign
+✓ Created index: idx_content_plans_org_created
+Creating indexes for content_items table...
+✓ Created index: idx_content_items_plan
+✓ Created index: idx_content_items_status
+Creating indexes for ad_accounts table...
+✓ Created index: idx_ad_accounts_status
+Creating indexes for ad_campaigns table...
+✓ Created index: idx_ad_campaigns_account
+✓ Created index: idx_ad_campaigns_dates
+Creating indexes for ad_metrics table...
+Creating indexes for user_orgs table...
+✓ Created index: idx_user_orgs_user
+✓ Created index: idx_user_orgs_org
+Creating indexes for creative_assets table...
+✓ Created index: idx_creative_assets_created
+Creating indexes for compliance_audits table...
+✓ Created index: idx_compliance_audits_status
+
+✓ All performance indexes created successfully!
+✓ Query performance should be significantly improved
+
+
+📊 Adding foreign key constraints for user reference columns...
+
+✓ Added FK: fk_user_permissions_user on cmis.user_permissions.user_id
+✓ Added FK: fk_user_activities_user on cmis.user_activities.user_id
+✓ Added FK: fk_user_sessions_user on cmis.user_sessions.user_id
+✓ Added FK: fk_scheduled_social_posts_user on cmis.scheduled_social_posts.user_id
+✓ Added FK: fk_security_context_audit_user on cmis.security_context_audit.user_id
+✓ Added FK: fk_audience_templates_created_by on cmis.audience_templates.created_by
+✓ Added FK: fk_campaign_context_links_created_by on cmis.campaign_context_links.created_by
+✓ Added FK: fk_campaigns_created_by on cmis.campaigns.created_by
+✓ Added FK: fk_integrations_created_by on cmis.integrations.created_by
+✓ Added FK: fk_roles_created_by on cmis.roles.created_by
+✓ Added FK: fk_campaign_context_links_updated_by on cmis.campaign_context_links.updated_by
+✓ Added FK: fk_integrations_updated_by on cmis.integrations.updated_by
+✓ Added FK: fk_team_invitations_invited_by on cmis.team_invitations.invited_by
+✓ Added FK: fk_user_orgs_invited_by on cmis.user_orgs.invited_by
+
+✅ Foreign key migration complete!
+   Added: 14
+   Skipped: 0
+
+✓ Fixed performance_metrics constraints
+✓ Notifications table created with RLS policies
+
+📊 Creating foreign keys using DO blocks...
+
+✓ FK fk_user_permissions_user on cmis.user_permissions.user_id -&gt; cmis.users.user_id
+✓ FK fk_user_activities_user on cmis.user_activities.user_id -&gt; cmis.users.user_id
+✓ FK fk_user_sessions_user on cmis.user_sessions.user_id -&gt; cmis.users.user_id
+✓ FK fk_scheduled_social_posts_user on cmis.scheduled_social_posts.user_id -&gt; cmis.users.user_id
+✓ FK fk_security_context_audit_user on cmis.security_context_audit.user_id -&gt; cmis.users.user_id
+✓ FK fk_notifications_user on cmis.notifications.user_id -&gt; cmis.users.user_id
+✓ FK fk_audience_templates_created_by on cmis.audience_templates.created_by -&gt; cmis.users.user_id
+✓ FK fk_campaign_context_links_created_by on cmis.campaign_context_links.created_by -&gt; cmis.users.user_id
+✓ FK fk_campaigns_created_by on cmis.campaigns.created_by -&gt; cmis.users.user_id
+✓ FK fk_integrations_created_by on cmis.integrations.created_by -&gt; cmis.users.user_id
+✓ FK fk_roles_created_by on cmis.roles.created_by -&gt; cmis.users.user_id
+✓ FK fk_campaign_context_links_updated_by on cmis.campaign_context_links.updated_by -&gt; cmis.users.user_id
+✓ FK fk_integrations_updated_by on cmis.integrations.updated_by -&gt; cmis.users.user_id
+✓ FK fk_team_invitations_invited_by on cmis.team_invitations.invited_by -&gt; cmis.users.user_id
+✓ FK fk_user_orgs_invited_by on cmis.user_orgs.invited_by -&gt; cmis.users.user_id
+✓ FK fk_notifications_org on cmis.notifications.org_id -&gt; cmis.orgs.org_id
+
+✅ Foreign key creation complete!
+   Processed: 16
+   Skipped: 0
+
+✓ Created transaction context functions
+✓ Made campaign_external_id nullable in cmis.ad_campaigns
+
+✅ Migration complete! Created 20 missing tables.
+
+✅ Added missing columns successfully!
+
+✅ Migration complete! Created 10 additional tables.
+
+✅ All column fixes applied successfully!
+
+✅ Migration complete! Created 10 additional tables.
+✓ Made event_type nullable in webhooks
+✓ Made plan_id nullable in content_plan_items
+✓ Made role_name nullable in roles
+✓ Made permission_code nullable in permissions
+✓ Made brief_data nullable in creative_briefs
+
+✅ All NULL constraint fixes applied!
+✓ Made role_code nullable in cmis.roles
+✓ Made audience_id nullable in cmis.audience_segments
+✓ Updated cmis.markets view with correct columns
+
+✅ All critical schema fixes applied successfully!
+✓ Made user_id nullable in cmis.team_members
+✓ Made permission_name nullable in cmis.permissions
+✓ Made content_id nullable in cmis.content_media
+✓ Verified plan_id is nullable in cmis.content_items
+✓ Updated cmis.markets view to include both market_name and name
+
+✅ All NOT NULL constraint fixes applied successfully!
+Fixing pgvector dimension mismatch (1536 → 768)...
+✓ cmis.knowledge_index.embedding already correct or doesn't exist
+
+✅ All pgvector dimension fixes applied successfully!
+Note: Gemini text-embedding-004 produces 768-dimensional vectors.
+</system-out>
+        </testcase>
+      </testsuite>
+    </testsuite>
+  </testsuite>
+</testsuites>

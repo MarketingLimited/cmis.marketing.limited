@@ -1,14 +1,4 @@
-AIRecommendations (Tests\Feature\Controllers\AI\AIRecommendations)
- [ ] It requires authentication
- [ ] It can get similar content
- [ ] It validates similar content request
- [ ] It can get campaign content recommendations
- [ ] It validates campaign content recommendations request
- [ ] It can get best performing content
- [ ] It validates best performing content request
- [ ] It can get optimal posting times
- [ ] It validates optimal posting times request
- [ ] It can get audience recommendations
- [ ] It enforces rate limiting on ai endpoints
- [ ] It respects multi tenancy for similar content
+Influencer Content Controller (Tests\Feature\Influencer\InfluencerContentController)
+ [ ] It can publish content
+ [ ] It cannot publish unapproved content
 

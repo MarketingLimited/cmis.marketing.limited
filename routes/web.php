@@ -462,7 +462,26 @@ Route::middleware(['auth'])->group(function () {
                 Route::post('/save-draft', [App\Http\Controllers\API\PublishingModalController::class, 'saveDraft'])->name('save-draft');
                 Route::get('/best-times', [App\Http\Controllers\API\PublishingModalController::class, 'getBestTimes'])->name('best-times');
                 Route::get('/character-limits', [App\Http\Controllers\API\PublishingModalController::class, 'getCharacterLimits'])->name('character-limits');
+
+                // Redirect GET requests on POST-only endpoints to social page
+                Route::get('/create', fn($org) => redirect()->route('orgs.social.index', $org))->name('create.redirect');
+                Route::get('/save-draft', fn($org) => redirect()->route('orgs.social.index', $org))->name('save-draft.redirect');
+                Route::get('/validate-safety', fn($org) => redirect()->route('orgs.social.index', $org))->name('validate-safety.redirect');
             });
+
+            // ==================== Social Post API (JSON - Session Auth) ====================
+            Route::get('/accounts', [App\Http\Controllers\Social\SocialPostController::class, 'getConnectedAccounts'])->name('accounts');
+            Route::get('/posts-json', [App\Http\Controllers\Social\SocialPostController::class, 'index'])->name('posts.json');
+            Route::get('/collaborators/suggestions', [App\Http\Controllers\Social\SocialPostController::class, 'getCollaboratorSuggestions'])->name('collaborators.suggestions');
+            Route::post('/collaborators', [App\Http\Controllers\Social\SocialPostController::class, 'storeCollaborator'])->name('collaborators.store');
+            Route::post('/posts/{post}/publish', [App\Http\Controllers\Social\SocialPostController::class, 'publish'])->name('posts.publish');
+            Route::post('/instagram/validate-username', [App\Http\Controllers\Social\SocialPostController::class, 'validateInstagramUsername'])->name('instagram.validate-username');
+            Route::get('/trending-hashtags/{platform}', [App\Http\Controllers\Social\SocialPostController::class, 'getTrendingHashtags'])->name('trending-hashtags');
+            Route::post('/shorten-link', [App\Http\Controllers\Social\LinkShortenerController::class, 'shorten'])->name('shorten-link');
+            Route::get('/locations/search', [App\Http\Controllers\Social\LocationController::class, 'search'])->name('locations.search');
+            Route::get('/posts-scheduled', [App\Http\Controllers\Social\SocialPostController::class, 'getScheduledPosts'])->name('posts.scheduled');
+            Route::post('/posts/{post}/reschedule', [App\Http\Controllers\Social\SocialPostController::class, 'reschedule'])->name('posts.reschedule');
+            Route::get('/media-library', [App\Http\Controllers\Social\MediaLibraryController::class, 'index'])->name('media-library');
 
             // AI Content Transformation
             Route::post('/ai/transform-content', [App\Http\Controllers\API\AIAssistantController::class, 'transformSocialContent'])->name('ai.transform-content');
