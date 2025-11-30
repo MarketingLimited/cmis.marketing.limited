@@ -39,13 +39,6 @@
                                            class="text-sm border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
                                     <input type="time" x-model="schedule.time"
                                            class="text-sm border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
-                                    <select x-model="schedule.timezone" class="text-sm border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
-                                        <option value="UTC">UTC</option>
-                                        <option value="Asia/Riyadh">{{ __('publish.timezone_riyadh') }}</option>
-                                        <option value="Asia/Dubai">{{ __('publish.timezone_dubai') }}</option>
-                                        <option value="Europe/London">{{ __('publish.timezone_london') }}</option>
-                                        <option value="America/New_York">{{ __('publish.timezone_newyork') }}</option>
-                                    </select>
                                     <button @click="showBestTimes = true"
                                             class="px-3 py-1.5 text-sm bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-lg font-medium transition">
                                         <i class="fas fa-clock me-1"></i>{{ __('publish.best_times') }}
@@ -79,7 +72,7 @@
                                                 </button>
                                             </div>
                                         </template>
-                                        <button @click="bulkSchedule.times.push({date: schedule.date, time: schedule.time, timezone: schedule.timezone})"
+                                        <button @click="bulkSchedule.times.push({date: schedule.date, time: schedule.time})"
                                                 class="w-full px-3 py-2 text-sm border-2 border-dashed border-gray-300 text-gray-600 hover:border-blue-400 hover:text-blue-600 rounded-lg transition">
                                             <i class="fas fa-plus me-1"></i>{{ __('publish.add_schedule_time') }}
                                         </button>
