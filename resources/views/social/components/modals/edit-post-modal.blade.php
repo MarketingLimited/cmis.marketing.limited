@@ -94,6 +94,11 @@
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
                             <i class="fas fa-clock ms-1"></i>
                             {{ __('social.schedule_datetime') }}
+                            <template x-if="profileGroupTimezone">
+                                <span class="text-xs text-gray-500 dark:text-gray-400 font-normal">
+                                    (<span x-text="profileGroupTimezone"></span>)
+                                </span>
+                            </template>
                         </label>
                         <div class="grid grid-cols-2 gap-4">
                             <div>
@@ -108,6 +113,17 @@
                                        class="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 rounded-lg p-2">
                             </div>
                         </div>
+
+                        <!-- Timezone Info -->
+                        <template x-if="profileGroupTimezone && profileGroupName">
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                                <i class="fas fa-info-circle me-1"></i>
+                                {{ __('social.timezone') }}: <span x-text="profileGroupName"></span>
+                                <template x-if="timezoneOffset">
+                                    <span x-text="'(UTC' + timezoneOffset + ')'"></span>
+                                </template>
+                            </p>
+                        </template>
                     </div>
                 </template>
             </div>

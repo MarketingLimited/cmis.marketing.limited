@@ -835,4 +835,8 @@ return [
     'enable_capi' => 'Enable Conversions API',
     'snapchat_capi_help' => 'Send server-side conversion events',
 
+    // Timezone settings
+    'timezone' => 'Timezone',
+    'timezone_help' => 'Default timezone for this organization. Used for scheduling and displaying times.',
+
 ];

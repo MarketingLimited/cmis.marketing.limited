@@ -85,15 +85,16 @@
             <div class="px-6 py-5 space-y-5">
                 {{-- Timezone --}}
                 <div>
-                    <label for="timezone" class="block text-sm font-medium text-gray-700">Timezone *</label>
-                    <select name="timezone" id="timezone" required
-                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
-                        @foreach($timezones as $value => $label)
-                            <option value="{{ $value }}" {{ old('timezone', 'UTC') == $value ? 'selected' : '' }}>
-                                {{ $label }}
-                            </option>
-                        @endforeach
-                    </select>
+                    <x-timezone-select
+                        name="timezone"
+                        :value="old('timezone', $organization->timezone ?? 'UTC')"
+                        :label="__('Timezone')"
+                        :required="false"
+                        :showInheritance="true"
+                        :inheritedFrom="__('Organization')"
+                        :inheritedValue="$organization->timezone ?? 'UTC'"
+                        :helpText="__('Leave empty to inherit from organization timezone')"
+                    />
                 </div>
 
                 {{-- Language --}}

@@ -110,6 +110,13 @@ function socialManager() {
         loadingPlatforms: false,
         connectedPlatforms: [],
         selectedPlatformIds: [],
+
+        // Timezone state
+        profileGroupTimezone: null,
+        profileGroupName: null,
+        timezoneOffset: null,
+        timezoneLoading: false,
+
         isSubmitting: false,
         dragOver: false,
         uploadedMedia: [],
@@ -615,11 +622,19 @@ function socialManager() {
             this.newPost.scheduledDate = tomorrow.toISOString().split('T')[0];
             this.newPost.scheduledTime = '10:00';
 
-            // Update preview platform when selection changes
-            this.$watch('selectedPlatformIds', (ids) => {
+            // Update preview platform and fetch timezone when selection changes
+            this.$watch('selectedPlatformIds', async (ids) => {
                 if (ids.length > 0) {
                     const platform = this.connectedPlatforms.find(p => ids.includes(p.id));
                     if (platform) this.previewPlatform = platform.type;
+
+                    // Fetch timezone for selected platforms
+                    await this.fetchProfileGroupTimezone();
+                } else {
+                    // Reset timezone when no platforms selected
+                    this.profileGroupTimezone = null;
+                    this.profileGroupName = null;
+                    this.timezoneOffset = null;
                 }
             });
         },
@@ -652,6 +667,94 @@ function socialManager() {
             } catch (error) {
                 console.error('[CMIS Social] Failed to fetch posts:', error);
                 this.posts = [];
+            }
+        },
+
+        async fetchProfileGroupTimezone() {
+            if (this.selectedPlatformIds.length === 0) {
+                this.profileGroupTimezone = null;
+                return;
+            }
+
+            this.timezoneLoading = true;
+            try {
+                // Get integration IDs from selected platforms
+                const integrationIds = this.selectedPlatformIds
+                    .map(id => {
+                        const platform = this.connectedPlatforms.find(p => p.id === id);
+                        return platform?.integrationId;
+                    })
+                    .filter(Boolean);
+
+                if (integrationIds.length === 0) {
+                    console.log('[CMIS Social] No integration IDs found for selected platforms');
+                    return;
+                }
+
+                console.log('[CMIS Social] Fetching timezone for integrations:', integrationIds);
+
+                const response = await fetch(`/api/orgs/${this.orgId}/social/timezone`, {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    },
+                    body: JSON.stringify({ integration_ids: integrationIds })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const result = await response.json();
+
+                if (result.success && result.data) {
+                    this.profileGroupTimezone = result.data.timezone;
+                    this.profileGroupName = result.data.profile_group_name;
+
+                    // Calculate timezone offset for display
+                    const tz = result.data.timezone;
+                    const now = new Date();
+                    const formatter = new Intl.DateTimeFormat('en-US', {
+                        timeZone: tz,
+                        year: 'numeric',
+                        month: 'numeric',
+                        day: 'numeric',
+                        hour: 'numeric',
+                        minute: 'numeric',
+                        second: 'numeric'
+                    });
+                    const parts = formatter.formatToParts(now);
+                    const tzDate = new Date(
+                        parts.find(p => p.type === 'year').value,
+                        parts.find(p => p.type === 'month').value - 1,
+                        parts.find(p => p.type === 'day').value,
+                        parts.find(p => p.type === 'hour').value,
+                        parts.find(p => p.type === 'minute').value,
+                        parts.find(p => p.type === 'second').value
+                    );
+
+                    const offset = (tzDate - now) / 1000 / 60; // minutes
+                    const hours = Math.floor(Math.abs(offset) / 60);
+                    const mins = Math.abs(offset) % 60;
+                    this.timezoneOffset = `${offset >= 0 ? '+' : '-'}${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')}`;
+
+                    console.log('[CMIS Social] Timezone loaded:', tz, this.timezoneOffset, 'from:', result.data.timezone_source);
+
+                    if (result.data.warning) {
+                        console.warn('[CMIS Social] Timezone warning:', result.data.warning);
+                    }
+                } else {
+                    throw new Error('Invalid API response');
+                }
+            } catch (error) {
+                console.error('[CMIS Social] Failed to fetch timezone:', error);
+                this.profileGroupTimezone = 'UTC';
+                this.timezoneOffset = '+00:00';
+            } finally {
+                this.timezoneLoading = false;
             }
         },
 

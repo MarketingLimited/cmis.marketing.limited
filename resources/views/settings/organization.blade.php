@@ -244,6 +244,16 @@
                             </div>
                         </div>
 
+                        <div>
+                            <x-timezone-select
+                                name="timezone"
+                                :value="old('timezone', $organization->timezone ?? 'UTC')"
+                                :label="__('settings.timezone')"
+                                :required="true"
+                                :helpText="__('settings.timezone_help')"
+                            />
+                        </div>
+
                         {{-- Organization Info Card --}}
                         <div class="p-4 bg-gradient-to-{{ $isRtl ? 'l' : 'r' }} from-blue-50 to-purple-50 rounded-xl border border-blue-100">
                             <h4 class="text-sm font-medium text-gray-900 mb-3 flex items-center gap-2 {{ $isRtl ? 'flex-row-reverse' : '' }}">

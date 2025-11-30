@@ -154,6 +154,7 @@ class SettingsController extends Controller
             'org_name' => 'required|string|max:255',
             'currency' => 'required|string|in:BHD,USD,EUR,SAR,AED',
             'default_locale' => 'required|string|max:10',
+            'timezone' => 'required|string|max:100',
         ]);
 
         if ($validator->fails()) {
@@ -165,6 +166,7 @@ class SettingsController extends Controller
                 'name' => $request->input('org_name'),
                 'currency' => $request->input('currency'),
                 'default_locale' => $request->input('default_locale'),
+                'timezone' => $request->input('timezone'),
             ]);
 
             return back()->with('success', __('settings.organization_updated_success'));
