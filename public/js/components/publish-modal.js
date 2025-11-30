@@ -254,6 +254,7 @@ function publishModal() {
 
         // Publishing status (async publishing)
         isPublishing: false,
+        publishSucceeded: false, // Flag to bypass unsaved changes check after successful publish
         publishingStatus: null, // 'uploading', 'submitting', 'publishing', null
         publishingProgress: {
             total: 0,
@@ -1084,6 +1085,7 @@ function publishModal() {
                 });
                 if (response.ok) {
                     window.notify('Draft saved successfully', 'success');
+                    this.publishSucceeded = true;
                     this.closeModal(true); // Force close - skip unsaved changes check
                 } else {
                     const data = await response.json();
@@ -1135,9 +1137,11 @@ function publishModal() {
 
                         if (finalResult.success_count > 0 && finalResult.failed_count === 0) {
                             window.notify(`${finalResult.success_count} post(s) published successfully!`, 'success');
+                            this.publishSucceeded = true;
                             this.closeModal(true); // Force close - skip unsaved changes check
                         } else if (finalResult.failed_count > 0 && finalResult.success_count > 0) {
                             window.notify(`${finalResult.success_count} published, ${finalResult.failed_count} failed`, 'warning');
+                            this.publishSucceeded = true;
                             this.closeModal(true); // Force close - skip unsaved changes check
                         } else if (finalResult.failed_count > 0) {
                             const errorMsg = finalResult.first_error || 'Publishing failed';
@@ -1157,6 +1161,7 @@ function publishModal() {
                         }
 
                         if (data.data && (data.data.success_count > 0 || data.data.queued_count > 0)) {
+                            this.publishSucceeded = true;
                             this.closeModal(true); // Force close - skip unsaved changes check
                         }
                     }
@@ -1265,6 +1270,7 @@ function publishModal() {
                 if (response.ok) {
                     const data = await response.json();
                     window.notify(data.message || 'Post scheduled successfully', 'success');
+                    this.publishSucceeded = true;
                     this.closeModal(true); // Force close - skip unsaved changes check
                 } else {
                     const data = await response.json();
@@ -1295,6 +1301,7 @@ function publishModal() {
                 if (response.ok) {
                     const data = await response.json();
                     window.notify(data.message || 'Post added to queue successfully', 'success');
+                    this.publishSucceeded = true;
                     this.closeModal(true); // Force close - skip unsaved changes check
                 } else {
                     const data = await response.json();
@@ -1327,6 +1334,7 @@ function publishModal() {
                 });
                 if (response.ok) {
                     window.notify('Post submitted for approval', 'success');
+                    this.publishSucceeded = true;
                     this.closeModal(true); // Force close - skip unsaved changes check
                 } else {
                     const data = await response.json();
@@ -2714,8 +2722,8 @@ function publishModal() {
         },
 
         closeModal(force = false) {
-            // Check for unsaved changes before closing (skip if force=true, e.g., after successful publish)
-            if (!force && this.hasUnsavedChanges() && !this.editMode) {
+            // Check for unsaved changes before closing (skip if force=true or publishSucceeded)
+            if (!force && !this.publishSucceeded && this.hasUnsavedChanges() && !this.editMode) {
                 const confirmMessage = document.documentElement.lang === 'ar'
                     ? 'لديك تغييرات غير محفوظة. هل تريد حقاً الإغلاق؟'
                     : 'You have unsaved changes. Do you really want to close?';
@@ -2734,6 +2742,7 @@ function publishModal() {
         resetForm() {
             this.editMode = false;
             this.editPostId = null;
+            this.publishSucceeded = false; // Reset publish success flag
             this.selectedProfiles = [];
             this.content = {
                 global: { text: '', media: [], link: '', labels: [] },
