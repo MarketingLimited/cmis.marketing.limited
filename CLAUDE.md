@@ -28,12 +28,25 @@ CMIS is a Laravel-based Campaign Management & Integration System with:
 - ✅ Test with multiple organizations for data isolation
 - ❌ NEVER hard-delete records (use soft deletes)
 
-### Database Operations
-- ✅ Use migrations for ALL schema changes
-- ✅ Add RLS policies to new tables via migrations
-- ✅ Use `init_transaction_context(org_id)` in Laravel
-- ✅ Qualify all table names with schema prefix
-- ❌ NEVER create tables without RLS policies
+### Database Operations (CRITICAL - STRICTLY ENFORCED)
+- ✅ **ALWAYS** use migrations for ALL schema changes
+- ✅ **ALWAYS** run `php artisan migrate:fresh --seed` after creating/modifying migrations
+- ✅ **REPEAT** fresh migrations until successful - fix errors in migration files, not database
+- ✅ Add RLS policies to new tables via migrations using `HasRLSPolicies` trait
+- ✅ Use `init_transaction_context(org_id)` in Laravel for RLS
+- ✅ Qualify all table names with schema prefix (e.g., `cmis.campaigns`)
+- ❌ **NEVER** edit database directly with raw SQL (ALTER, UPDATE, INSERT, CREATE)
+- ❌ **NEVER** use `DB::statement()` outside of migrations
+- ❌ **NEVER** use `php artisan tinker` to modify schema or data
+- ❌ **NEVER** create tables without RLS policies
+- ❌ **NEVER** skip fresh migrations - always verify with clean slate
+
+**Why Fresh Migrations?**
+- Ensures migrations work correctly from scratch
+- Catches missing dependencies and ordering issues
+- Verifies RLS policies are applied correctly
+- Maintains reproducible database state
+- Prevents production migration failures
 
 ### Security
 - ✅ Validate all platform webhook signatures
