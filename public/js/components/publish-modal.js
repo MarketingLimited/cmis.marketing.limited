@@ -2896,6 +2896,21 @@ function publishModal() {
                         create_first_like: false,
                         location_query: '',
                         location: null
+                    },
+                    google_business: {
+                        text: '',
+                        post_type: 'update',
+                        cta_type: '',
+                        cta_url: '',
+                        event_title: '',
+                        event_start_date: '',
+                        event_start_time: '',
+                        event_end_date: '',
+                        event_end_time: '',
+                        offer_title: '',
+                        offer_coupon_code: '',
+                        offer_redeem_url: '',
+                        offer_terms_conditions: ''
                     }
                 }
             };

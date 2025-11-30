@@ -37,7 +37,7 @@
                         <p class="text-gray-500 text-sm">{{ __('publish.no_accounts_found') }}</p>
                     </div>
                 </template>
-                <template x-for="profile in availableMentions" :key="profile.id">
+                <template x-for="profile in availableMentions" :key="profile.integration_id">
                     <button @click="insertMention(profile)"
                             class="w-full flex items-center gap-3 px-6 py-3 hover:bg-gray-50 transition text-start">
                         <img :src="profile.avatar_url || '/images/default-avatar.png'"
