@@ -221,6 +221,16 @@ export function getInitialState() {
             youtube: { description: 5000, video_title: 100 },
             google_business: { text: 1500 }
         },
+
+        // Publishing status (async publishing)
+        isPublishing: false,
+        publishingStatus: null, // 'uploading', 'submitting', 'publishing', null
+        publishingProgress: {
+            total: 0,
+            completed: 0,
+            success: 0,
+            failed: 0
+        },
     };
 }
 

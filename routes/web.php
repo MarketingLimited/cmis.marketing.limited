@@ -462,6 +462,7 @@ Route::middleware(['auth'])->group(function () {
                 Route::post('/save-draft', [App\Http\Controllers\API\PublishingModalController::class, 'saveDraft'])->name('save-draft');
                 Route::get('/best-times', [App\Http\Controllers\API\PublishingModalController::class, 'getBestTimes'])->name('best-times');
                 Route::get('/character-limits', [App\Http\Controllers\API\PublishingModalController::class, 'getCharacterLimits'])->name('character-limits');
+                Route::post('/status', [App\Http\Controllers\API\PublishingModalController::class, 'getPostsStatus'])->name('status');
 
                 // Redirect GET requests on POST-only endpoints to social page
                 Route::get('/create', fn($org) => redirect()->route('orgs.social.index', $org))->name('create.redirect');

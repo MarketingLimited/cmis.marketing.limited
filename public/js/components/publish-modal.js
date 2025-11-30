@@ -252,6 +252,16 @@ function publishModal() {
             tiktok: 2200
         },
 
+        // Publishing status (async publishing)
+        isPublishing: false,
+        publishingStatus: null, // 'uploading', 'submitting', 'publishing', null
+        publishingProgress: {
+            total: 0,
+            completed: 0,
+            success: 0,
+            failed: 0
+        },
+
         // PLATFORM API SPECIFICATIONS (Based on Official API Documentation)
         // Note: We accept any image format and convert to required format during publishing
         platformSpecs: {
@@ -885,17 +895,16 @@ function publishModal() {
          * Prepare content by uploading media files and getting URLs
          */
         async prepareContentForPublishing(content) {
-            // Upload media files first, then build clean content object
-            let uploadedMedia = [];
-
             console.log('[Publishing] Preparing content for publishing', {
                 mediaCount: content.global.media?.length || 0,
                 hasMedia: !!(content.global.media && content.global.media.length > 0)
             });
 
-            // Upload media files if they exist
+            let uploadedMedia = [];
+
+            // Upload media files in PARALLEL if they exist
             if (content.global.media && content.global.media.length > 0) {
-                for (const mediaItem of content.global.media) {
+                const uploadPromises = content.global.media.map(async (mediaItem) => {
                     console.log('[Publishing] Processing media item', {
                         hasFile: !!mediaItem.file,
                         hasUrl: !!mediaItem.url,
@@ -907,24 +916,30 @@ function publishModal() {
                         const uploadedUrl = await this.uploadMediaFile(mediaItem.file);
                         console.log('[Publishing] Media uploaded', { uploadedUrl });
                         if (uploadedUrl) {
-                            uploadedMedia.push({
+                            return {
                                 type: mediaItem.type,
                                 url: uploadedUrl,
                                 name: mediaItem.file.name,
                                 size: mediaItem.file.size
-                            });
+                            };
                         }
+                        return null;
                     } else if (mediaItem.url && !mediaItem.url.startsWith('data:')) {
                         // Already has a valid URL (not data URL)
                         console.log('[Publishing] Using existing URL', { url: mediaItem.url });
-                        uploadedMedia.push({
+                        return {
                             type: mediaItem.type,
                             url: mediaItem.url,
                             name: mediaItem.name,
                             size: mediaItem.size
-                        });
+                        };
                     }
-                }
+                    return null;
+                });
+
+                // Wait for all uploads to complete in parallel
+                const results = await Promise.all(uploadPromises);
+                uploadedMedia = results.filter(item => item !== null);
             }
 
             console.log('[Publishing] Uploaded media', { count: uploadedMedia.length, urls: uploadedMedia.map(m => m.url) });
@@ -1082,9 +1097,16 @@ function publishModal() {
 
         async publishNow() {
             if (!this.canSubmit) return;
+
+            // Set publishing state for UI feedback
+            this.isPublishing = true;
+            this.publishingStatus = 'uploading';
+
             try {
-                // Upload media files first if they exist
+                // Upload media files first if they exist (now in parallel!)
                 const contentToSend = await this.prepareContentForPublishing(this.content);
+
+                this.publishingStatus = 'submitting';
 
                 const response = await fetch(`/orgs/${window.currentOrgId}/social/publish-modal/create`, {
                     method: 'POST',
@@ -1099,23 +1121,44 @@ function publishModal() {
                         is_draft: false
                     })
                 });
+
                 if (response.ok) {
                     const data = await response.json();
 
-                    // Check if there are any failed posts in the response
-                    if (data.data && data.data.failed_count > 0) {
-                        const failedPost = data.data.posts.find(p => p.status === 'failed');
-                        if (failedPost) {
-                            window.notify(`Failure Reason:\n\n${failedPost.error_message}`, 'error');
-                        } else {
-                            window.notify(data.message || 'Some posts failed to publish', 'warning');
+                    // Check if async publishing (queued)
+                    if (data.data && data.data.is_async && data.data.post_ids) {
+                        this.publishingStatus = 'publishing';
+                        window.notify(data.message || 'Publishing in progress...', 'info');
+
+                        // Poll for status
+                        const finalResult = await this.pollPublishingStatus(data.data.post_ids);
+
+                        if (finalResult.success_count > 0 && finalResult.failed_count === 0) {
+                            window.notify(`${finalResult.success_count} post(s) published successfully!`, 'success');
+                            this.closeModal();
+                        } else if (finalResult.failed_count > 0 && finalResult.success_count > 0) {
+                            window.notify(`${finalResult.success_count} published, ${finalResult.failed_count} failed`, 'warning');
+                            this.closeModal();
+                        } else if (finalResult.failed_count > 0) {
+                            const errorMsg = finalResult.first_error || 'Publishing failed';
+                            window.notify(`Failed: ${errorMsg}`, 'error');
                         }
                     } else {
-                        window.notify(data.message || 'Post created successfully', 'success');
-                    }
+                        // Legacy sync response handling
+                        if (data.data && data.data.failed_count > 0) {
+                            const failedPost = data.data.posts.find(p => p.status === 'failed');
+                            if (failedPost) {
+                                window.notify(`Failure Reason:\n\n${failedPost.error_message}`, 'error');
+                            } else {
+                                window.notify(data.message || 'Some posts failed to publish', 'warning');
+                            }
+                        } else {
+                            window.notify(data.message || 'Post created successfully', 'success');
+                        }
 
-                    if (data.data && data.data.success_count > 0) {
-                        this.closeModal();
+                        if (data.data && (data.data.success_count > 0 || data.data.queued_count > 0)) {
+                            this.closeModal();
+                        }
                     }
                 } else {
                     const data = await response.json();
@@ -1124,7 +1167,82 @@ function publishModal() {
             } catch (e) {
                 console.error('Failed to publish', e);
                 window.notify('Failed to publish post: ' + e.message, 'error');
+            } finally {
+                this.isPublishing = false;
+                this.publishingStatus = null;
             }
+        },
+
+        /**
+         * Poll for publishing status until all posts are complete
+         */
+        async pollPublishingStatus(postIds, maxAttempts = 60, intervalMs = 2000) {
+            let attempts = 0;
+
+            while (attempts < maxAttempts) {
+                try {
+                    const response = await fetch(`/orgs/${window.currentOrgId}/social/publish-modal/status`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
+                        },
+                        body: JSON.stringify({ post_ids: postIds })
+                    });
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        const result = data.data;
+
+                        console.log('[Publishing] Status poll', {
+                            attempt: attempts + 1,
+                            all_complete: result.all_complete,
+                            success: result.success_count,
+                            failed: result.failed_count,
+                            pending: result.pending_count
+                        });
+
+                        // Update UI with progress
+                        this.publishingProgress = {
+                            total: postIds.length,
+                            completed: result.success_count + result.failed_count,
+                            success: result.success_count,
+                            failed: result.failed_count
+                        };
+
+                        if (result.all_complete) {
+                            // Find first error message if any failed
+                            let firstError = null;
+                            for (const [id, status] of Object.entries(result.statuses)) {
+                                if (status.status === 'failed' && status.error_message) {
+                                    firstError = status.error_message;
+                                    break;
+                                }
+                            }
+
+                            return {
+                                success_count: result.success_count,
+                                failed_count: result.failed_count,
+                                first_error: firstError
+                            };
+                        }
+                    }
+                } catch (e) {
+                    console.warn('[Publishing] Status poll error', e);
+                }
+
+                // Wait before next poll
+                await new Promise(resolve => setTimeout(resolve, intervalMs));
+                attempts++;
+            }
+
+            // Timeout - return partial results
+            return {
+                success_count: 0,
+                failed_count: 0,
+                first_error: 'Publishing timed out. Check the posts page for status.'
+            };
         },
 
         async schedulePost() {

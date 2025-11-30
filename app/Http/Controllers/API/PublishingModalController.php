@@ -4,6 +4,7 @@ namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Concerns\ApiResponse;
+use App\Jobs\Social\PublishSocialPostJob;
 use App\Models\Social\ProfileGroup;
 use App\Models\Integration;
 use App\Models\Creative\BrandVoice;
@@ -146,6 +147,9 @@ class PublishingModalController extends Controller
 
     /**
      * Process post creation logic.
+     *
+     * Posts are created and then dispatched to a queue for async publishing,
+     * providing immediate response to the user while publishing happens in background.
      */
     protected function processPostCreation(Request $request, string $org): array
     {
@@ -168,6 +172,7 @@ class PublishingModalController extends Controller
         $scheduledAt = $this->parseScheduleTime($schedule);
         $posts = [];
         $needsApproval = false;
+        $jobsDispatched = 0;
 
         foreach ($profileIds as $profileId) {
             $profile = Integration::where('org_id', $org)
@@ -183,15 +188,32 @@ class PublishingModalController extends Controller
             $postData = $this->buildPostData($org, $profile, $content, $isDraft, $requiresApproval, $needsApproval, $scheduledAt);
             $post = SocialPost::create($postData);
 
-            // Publish immediately if not draft/scheduled/pending
+            // Dispatch async publishing job if post should be published immediately
             if ($postData['status'] === 'pending') {
-                $post->publish_result = $this->publishPost($org, $post, $profile->platform, $postData['content'], $content['global']['media'] ?? []);
+                $post->update(['status' => 'queued']);
+
+                PublishSocialPostJob::dispatch(
+                    $post->id,
+                    $org,
+                    $profile->platform,
+                    $postData['content'],
+                    $content['global']['media'] ?? [],
+                    $content['platforms'][$profile->platform] ?? []
+                );
+
+                $jobsDispatched++;
+
+                Log::info('Post queued for publishing', [
+                    'post_id' => $post->id,
+                    'platform' => $profile->platform,
+                    'org_id' => $org,
+                ]);
             }
 
             $posts[] = $post;
         }
 
-        return $this->buildCreationResult($posts, $isDraft, $needsApproval, $requiresApproval, $scheduledAt);
+        return $this->buildCreationResultAsync($posts, $isDraft, $needsApproval, $requiresApproval, $scheduledAt, $jobsDispatched);
     }
 
     /**
@@ -340,7 +362,113 @@ class PublishingModalController extends Controller
     }
 
     /**
-     * Build the creation result response.
+     * Build the creation result response (async version).
+     */
+    protected function buildCreationResultAsync(
+        array $posts,
+        bool $isDraft,
+        bool $needsApproval,
+        bool $requiresApproval,
+        ?\Carbon\Carbon $scheduledAt,
+        int $jobsDispatched
+    ): array {
+        $postIds = array_map(fn($p) => $p->id, $posts);
+
+        $statusMessage = match (true) {
+            $isDraft => 'saved as draft',
+            $needsApproval || $requiresApproval => 'submitted for approval',
+            $scheduledAt !== null => 'scheduled',
+            $jobsDispatched > 0 => 'queued for publishing',
+            default => 'created'
+        };
+
+        return [
+            'data' => [
+                'posts' => $posts,
+                'post_ids' => $postIds,
+                'count' => count($posts),
+                'queued_count' => $jobsDispatched,
+                'requires_approval' => $needsApproval || $requiresApproval,
+                'is_async' => $jobsDispatched > 0,
+            ],
+            'message' => count($posts) . ' post(s) ' . $statusMessage . ' successfully',
+        ];
+    }
+
+    /**
+     * Get the status of multiple posts (for polling after async publish).
+     */
+    public function getPostsStatus(Request $request, string $org)
+    {
+        $validator = Validator::make($request->all(), [
+            'post_ids' => 'required|array|min:1',
+            'post_ids.*' => 'uuid',
+        ]);
+
+        if ($validator->fails()) {
+            return $this->validationError($validator->errors());
+        }
+
+        $postIds = $request->input('post_ids');
+
+        $posts = SocialPost::where('org_id', $org)
+            ->whereIn('id', $postIds)
+            ->select([
+                'id',
+                'platform',
+                'status',
+                'published_at',
+                'failed_at',
+                'error_message',
+                'post_external_id',
+                'permalink',
+            ])
+            ->get()
+            ->keyBy('id');
+
+        $statuses = [];
+        $allComplete = true;
+        $successCount = 0;
+        $failedCount = 0;
+
+        foreach ($postIds as $postId) {
+            $post = $posts->get($postId);
+            if (!$post) {
+                $statuses[$postId] = ['status' => 'not_found'];
+                continue;
+            }
+
+            $statuses[$postId] = [
+                'status' => $post->status,
+                'platform' => $post->platform,
+                'published_at' => $post->published_at?->toIso8601String(),
+                'failed_at' => $post->failed_at?->toIso8601String(),
+                'error_message' => $post->error_message,
+                'post_external_id' => $post->post_external_id,
+                'permalink' => $post->permalink,
+            ];
+
+            if (in_array($post->status, ['queued', 'pending', 'publishing'])) {
+                $allComplete = false;
+            } elseif ($post->status === 'published') {
+                $successCount++;
+            } elseif ($post->status === 'failed') {
+                $failedCount++;
+            }
+        }
+
+        return $this->success([
+            'statuses' => $statuses,
+            'all_complete' => $allComplete,
+            'success_count' => $successCount,
+            'failed_count' => $failedCount,
+            'pending_count' => count($postIds) - $successCount - $failedCount,
+        ], 'Post statuses retrieved');
+    }
+
+    /**
+     * Build the creation result response (legacy sync version).
+     * @deprecated Use buildCreationResultAsync instead
      */
     protected function buildCreationResult(array $posts, bool $isDraft, bool $needsApproval, bool $requiresApproval, ?\Carbon\Carbon $scheduledAt): array
     {

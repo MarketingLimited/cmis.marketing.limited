@@ -493,4 +493,13 @@ return [
     'ai_empty_state' => 'جاهز لتحسين محتواك',
     'ai_empty_state_hint' => 'اكتب بعض المحتوى أولاً، ثم استخدم الإجراءات السريعة أو أنشئ اقتراحات',
 
+    // Publishing Status (async)
+    'uploading_media' => 'جاري رفع الوسائط...',
+    'submitting' => 'جاري الإرسال...',
+    'publishing_to_platforms' => 'جاري النشر على المنصات...',
+    'processing' => 'جاري المعالجة...',
+    'completed' => 'مكتمل',
+    'queued_for_publishing' => 'في انتظار النشر',
+    'publishing_in_progress' => 'جاري النشر...',
+
 ];

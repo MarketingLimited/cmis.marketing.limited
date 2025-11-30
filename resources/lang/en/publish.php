@@ -493,4 +493,13 @@ return [
     'ai_empty_state' => 'Ready to enhance your content',
     'ai_empty_state_hint' => 'Write some content first, then use quick actions or generate suggestions',
 
+    // Publishing Status (async)
+    'uploading_media' => 'Uploading media...',
+    'submitting' => 'Submitting...',
+    'publishing_to_platforms' => 'Publishing to platforms...',
+    'processing' => 'Processing...',
+    'completed' => 'completed',
+    'queued_for_publishing' => 'Queued for publishing',
+    'publishing_in_progress' => 'Publishing in progress...',
+
 ];
