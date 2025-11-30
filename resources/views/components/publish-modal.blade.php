@@ -31,7 +31,7 @@
 --}}
 
 {{-- Load Alpine.js Component --}}
-<script src="{{ asset('js/components/publish-modal.js') }}"></script>
+<script src="{{ asset('js/components/publish-modal.js') }}?v={{ filemtime(public_path('js/components/publish-modal.js')) }}"></script>
 
 {{-- Modal Container --}}
 <div x-data="publishModal()"

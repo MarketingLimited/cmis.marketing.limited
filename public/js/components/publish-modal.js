@@ -1133,7 +1133,7 @@ function publishModal() {
                         const postCount = data.data.post_ids.length;
                         window.notify(data.message || `${postCount} post(s) queued for publishing`, 'success');
                         this.publishSucceeded = true;
-                        this.closeModal(true); // Force close immediately after queuing
+                        this.closeModal(true);
                     } else {
                         // Legacy sync response handling
                         if (data.data && data.data.failed_count > 0) {
@@ -1149,7 +1149,7 @@ function publishModal() {
 
                         if (data.data && (data.data.success_count > 0 || data.data.queued_count > 0)) {
                             this.publishSucceeded = true;
-                            this.closeModal(true); // Force close - skip unsaved changes check
+                            this.closeModal(true);
                         }
                     }
                 } else {
@@ -2721,7 +2721,7 @@ function publishModal() {
             }
 
             if (this.autoSaveInterval) clearInterval(this.autoSaveInterval);
-            this.stopCollaborationSimulation(); // PHASE 2: Stop collaboration simulation
+            this.stopCollaborationSimulation();
             this.open = false;
             this.resetForm();
         },
