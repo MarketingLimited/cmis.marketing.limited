@@ -1289,6 +1289,8 @@ function socialManager() {
                 scheduled_at: post.scheduled_at,
                 media: post.media || [],
                 account_username: post.account_username,
+                social_account_username: post.social_account_username,
+                social_account_display_name: post.social_account_display_name,
                 integration_id: post.integration_id,
                 scheduledDate: '',
                 scheduledTime: ''

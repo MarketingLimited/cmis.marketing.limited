@@ -38,7 +38,7 @@
                                     'fab fa-linkedin text-blue-700 dark:text-blue-300': post.platform === 'linkedin'
                                 }"></i>
                             </div>
-                            <span class="text-sm text-gray-700 dark:text-gray-300 font-medium" x-text="post.account_username || post.platform"></span>
+                            <span class="text-sm text-gray-700 dark:text-gray-300 font-medium" x-text="post.social_account_username || post.social_account_display_name || post.account_username || post.platform"></span>
                         </div>
                     </td>
                     <td class="px-4 py-4">

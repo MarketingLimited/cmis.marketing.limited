@@ -183,7 +183,7 @@ class SocialPostController extends Controller
         try {
             DB::statement("SELECT set_config('app.current_org_id', ?, false)", [$org]);
 
-            // Join with integrations, profile_groups, social_accounts, and orgs to get timezone
+            // Join with integrations, profile_groups, social_accounts, and orgs to get timezone and account info
             $query = DB::table('cmis.social_posts as sp')
                 ->leftJoin('cmis.integrations as i', 'sp.integration_id', '=', 'i.integration_id')
                 ->leftJoin('cmis.social_accounts as sa', 'i.integration_id', '=', 'sa.integration_id')
@@ -194,7 +194,10 @@ class SocialPostController extends Controller
                 ->orderBy('sp.created_at', 'desc')
                 ->select(
                     'sp.*',
-                    DB::raw('COALESCE(sa.timezone, pg.timezone, o.timezone, \'UTC\') as display_timezone')
+                    DB::raw('COALESCE(sa.timezone, pg.timezone, o.timezone, \'UTC\') as display_timezone'),
+                    'sa.username as social_account_username',
+                    'sa.display_name as social_account_display_name',
+                    'sa.profile_picture_url as social_account_picture'
                 );
 
             // Apply filters

@@ -86,7 +86,7 @@
                                     <span class="text-2xl" x-html="getPlatformIcon(post.platform)"></span>
 
                                     <!-- Account Name -->
-                                    <span class="font-medium text-gray-900" x-text="post.account_username || '{{ __('social.unknown_account') }}'"></span>
+                                    <span class="font-medium text-gray-900" x-text="post.social_account_username || post.social_account_display_name || post.account_username || '{{ __('social.unknown_account') }}'"></span>
 
                                     <!-- Status Badge -->
                                     <span

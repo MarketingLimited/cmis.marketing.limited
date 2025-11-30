@@ -30,7 +30,7 @@
                         }"></i>
                     </div>
                     <div>
-                        <span class="font-medium text-gray-700 dark:text-gray-200 text-sm" x-text="post.account_username || post.platform"></span>
+                        <span class="font-medium text-gray-700 dark:text-gray-200 text-sm" x-text="post.social_account_username || post.social_account_display_name || post.account_username || post.platform"></span>
                     </div>
                 </div>
 

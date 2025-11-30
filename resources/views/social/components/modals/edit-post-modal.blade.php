@@ -33,7 +33,7 @@
                         }" class="text-lg"></i>
                     </div>
                     <div>
-                        <p class="font-medium text-gray-900 dark:text-white" x-text="editingPost.account_username || editingPost.platform"></p>
+                        <p class="font-medium text-gray-900 dark:text-white" x-text="editingPost.social_account_username || editingPost.social_account_display_name || editingPost.account_username || editingPost.platform"></p>
                         <p class="text-xs text-gray-500">
                             <span x-text="editingPost.platform"></span>
                             •

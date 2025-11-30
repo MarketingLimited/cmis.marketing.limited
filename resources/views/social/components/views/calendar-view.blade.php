@@ -37,7 +37,8 @@
                                  'bg-blue-200 dark:bg-blue-800/40 text-blue-800 dark:text-blue-200': post.platform === 'linkedin'
                              }"
                              @click="editPost(post)"
-                             x-text="post.post_text?.substring(0, 15) + '...'"></div>
+                             :title="post.social_account_username || post.social_account_display_name || post.account_username || post.platform"
+                             x-text="(post.social_account_username || post.social_account_display_name || post.account_username || post.platform).substring(0, 12) + (post.post_text ? ': ' + post.post_text.substring(0, 10) + '...' : '')"></div>
                     </template>
                     <div x-show="day.posts.length > 2" class="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 text-center font-medium">
                         +<span x-text="day.posts.length - 2"></span> {{ __("social.more") }}
