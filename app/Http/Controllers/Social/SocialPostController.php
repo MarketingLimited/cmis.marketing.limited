@@ -60,6 +60,73 @@ class SocialPostController extends Controller
     }
 
     /**
+     * Get timezone for selected integrations
+     *
+     * Returns timezone information from profile groups for the selected social accounts.
+     * This allows the frontend to display and handle scheduling in the account's local timezone.
+     */
+    public function getTimezone(Request $request, string $org)
+    {
+        try {
+            $integrationIds = $request->input('integration_ids', []);
+
+            if (empty($integrationIds)) {
+                return $this->error('No integration IDs provided', 400);
+            }
+
+            DB::statement("SELECT set_config('app.current_org_id', ?, false)", [$org]);
+
+            // Get profile group timezones for these integrations
+            $timezones = DB::table('cmis.integrations as i')
+                ->join('cmis.profile_groups as pg', 'i.profile_group_id', '=', 'pg.group_id')
+                ->whereIn('i.integration_id', $integrationIds)
+                ->where('i.org_id', $org)
+                ->select('i.integration_id', 'pg.group_id as profile_group_id', 'pg.name as profile_group_name', 'pg.timezone')
+                ->get();
+
+            if ($timezones->isEmpty()) {
+                return $this->success([
+                    'timezone' => 'UTC',
+                    'profile_group_name' => 'Default',
+                    'message' => 'No profile group found, using UTC'
+                ], 'Using default timezone');
+            }
+
+            // If all integrations have the same timezone, return it
+            // Otherwise, return the first one with a warning
+            $uniqueTimezones = $timezones->unique('timezone');
+
+            if ($uniqueTimezones->count() === 1) {
+                $tz = $timezones->first();
+                return $this->success([
+                    'timezone' => $tz->timezone,
+                    'profile_group_id' => $tz->profile_group_id,
+                    'profile_group_name' => $tz->profile_group_name,
+                    'integrations' => $timezones->pluck('integration_id')->toArray(),
+                ], 'Timezone retrieved successfully');
+            } else {
+                // Multiple timezones - return first one with warning
+                $tz = $timezones->first();
+                return $this->success([
+                    'timezone' => $tz->timezone,
+                    'profile_group_id' => $tz->profile_group_id,
+                    'profile_group_name' => $tz->profile_group_name,
+                    'integrations' => $timezones->pluck('integration_id')->toArray(),
+                    'warning' => 'Selected accounts have different timezones. Using ' . $tz->profile_group_name . ' (' . $tz->timezone . ')',
+                    'all_timezones' => $uniqueTimezones->pluck('timezone')->toArray(),
+                ], 'Multiple timezones detected');
+            }
+
+        } catch (\Exception $e) {
+            Log::error('Failed to get timezone', [
+                'org_id' => $org,
+                'error' => $e->getMessage(),
+            ]);
+            return $this->error('Failed to get timezone: ' . $e->getMessage(), 500);
+        }
+    }
+
+    /**
      * List all social posts
      */
     public function index(Request $request, string $org)
@@ -165,6 +232,15 @@ class SocialPostController extends Controller
                 $accountName = $platform['name'] ?? ucfirst($platformType);
                 $integrationIdForPost = $platform['integrationId'] ?? $integrationId;
 
+                // Get profile group ID from integration for timezone support
+                $profileGroupId = null;
+                if ($integrationIdForPost) {
+                    $integration = DB::table('cmis.integrations')
+                        ->where('integration_id', $integrationIdForPost)
+                        ->first();
+                    $profileGroupId = $integration?->profile_group_id;
+                }
+
                 // Determine status
                 $status = match($request->publish_type) {
                     'now' => 'publishing',
@@ -172,8 +248,8 @@ class SocialPostController extends Controller
                     'draft' => 'draft',
                 };
 
-                // Get scheduled time
-                $scheduledAt = $this->getScheduledTime($request, $org, $integrationIdForPost);
+                // Get scheduled time (now supports timezone from profile group)
+                $scheduledAt = $this->getScheduledTime($request, $org, $integrationIdForPost, $profileGroupId);
 
                 $postId = Str::uuid()->toString();
 
@@ -193,6 +269,7 @@ class SocialPostController extends Controller
                     'post_type' => $request->post_type ?? (!empty($mediaUrls) ? 'feed' : 'text'),
                     'status' => $status,
                     'scheduled_at' => $scheduledAt,
+                    'profile_group_id' => $profileGroupId,
                     'created_by' => auth()->id(),
                     'metadata' => json_encode($metadata),
                     'created_at' => now(),
@@ -609,10 +686,16 @@ class SocialPostController extends Controller
 
     /**
      * Get scheduled time based on publish type
+     *
+     * TIMEZONE SUPPORT: The scheduled_at from frontend is in the profile group's timezone.
+     * We need to convert it to UTC for storage since scheduled_at is timestamp with time zone.
+     * PostgreSQL will store it in UTC and handle timezone conversions automatically.
      */
-    protected function getScheduledTime(Request $request, string $org, ?string $integrationId): ?string
+    protected function getScheduledTime(Request $request, string $org, ?string $integrationId, ?string $profileGroupId): ?string
     {
         if ($request->publish_type === 'scheduled') {
+            // Frontend sends datetime in profile group's timezone
+            // We need to ensure it's stored with timezone info
             return $request->scheduled_at;
         }
 

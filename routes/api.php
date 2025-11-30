@@ -1840,6 +1840,9 @@ Route::middleware(['auth:sanctum', 'validate.org.access', 'org.context', 'api.ra
         // Store Collaborator API - Save collaborator for future suggestions
         Route::post('/social/collaborators', [App\Http\Controllers\Social\SocialPostController::class, 'storeCollaborator'])->name('social.collaborators.store');
 
+        // Get Timezone for selected social accounts - Returns profile group timezone
+        Route::post('/social/timezone', [App\Http\Controllers\Social\SocialPostController::class, 'getTimezone'])->name('social.timezone');
+
         // Social Posts API (for social publishing & scheduling)
         Route::prefix('social/posts')->name('social.posts.')->group(function () {
             Route::get('/', [App\Http\Controllers\Social\SocialPostController::class, 'index'])->name('index');
