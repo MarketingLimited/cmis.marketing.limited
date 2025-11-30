@@ -2,9 +2,10 @@
 
 namespace App\Console\Commands;
 
-use App\Jobs\PublishScheduledSocialPostJob;
+use App\Jobs\Social\PublishSocialPostJob;
+use App\Models\Social\SocialPost;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class PublishScheduledSocialPostsCommand extends Command
 {
@@ -34,9 +35,9 @@ class PublishScheduledSocialPostsCommand extends Command
 
         $this->info('Finding scheduled posts ready to publish...');
 
-        // Get posts ready to publish
-        $posts = DB::table('cmis.scheduled_social_posts')
-            ->where('status', 'scheduled')
+        // Get posts ready to publish from cmis.social_posts table
+        $posts = SocialPost::where('status', 'scheduled')
+            ->whereNotNull('scheduled_at')
             ->where('scheduled_at', '<=', now())
             ->orderBy('scheduled_at')
             ->limit($limit)
@@ -54,21 +55,44 @@ class PublishScheduledSocialPostsCommand extends Command
             $this->newLine();
         }
 
-        $this->withProgressBar($posts, function ($post) use ($dryRun) {
+        $published = 0;
+        $failed = 0;
+
+        $this->withProgressBar($posts, function ($post) use ($dryRun, &$published, &$failed) {
             if ($dryRun) {
                 $this->newLine();
                 $this->line(sprintf(
-                    '  Would publish: %s (scheduled: %s)',
-                    $post->post_id,
+                    '  Would publish: %s [%s] (scheduled: %s)',
+                    $post->id,
+                    $post->platform,
                     $post->scheduled_at
                 ));
+                $published++;
             } else {
-                // Load full model and dispatch job
-                $postModel = \App\Models\ScheduledSocialPost::find($post->post_id);
+                try {
+                    // Dispatch the publishing job with all required parameters
+                    PublishSocialPostJob::dispatch(
+                        $post->id,
+                        $post->org_id,
+                        $post->platform,
+                        $post->content ?? '',
+                        $post->media ?? [],
+                        $post->options ?? []
+                    )->onQueue('social-publishing');
 
-                if ($postModel) {
-                    PublishScheduledSocialPostJob::dispatch($postModel)
-                        ->onQueue('social-publishing');
+                    Log::info('Scheduled post queued for publishing', [
+                        'post_id' => $post->id,
+                        'platform' => $post->platform,
+                        'scheduled_at' => $post->scheduled_at,
+                    ]);
+
+                    $published++;
+                } catch (\Exception $e) {
+                    Log::error('Failed to queue scheduled post', [
+                        'post_id' => $post->id,
+                        'error' => $e->getMessage(),
+                    ]);
+                    $failed++;
                 }
             }
         });
@@ -78,7 +102,10 @@ class PublishScheduledSocialPostsCommand extends Command
         if ($dryRun) {
             $this->info('✓ Dry run completed');
         } else {
-            $this->info(sprintf('✓ %d post(s) queued for publishing', $posts->count()));
+            $this->info(sprintf('✓ %d post(s) queued for publishing', $published));
+            if ($failed > 0) {
+                $this->warn(sprintf('⚠ %d post(s) failed to queue', $failed));
+            }
             $this->comment('💡 Tip: Monitor queue with: php artisan queue:work --queue=social-publishing');
         }
 
