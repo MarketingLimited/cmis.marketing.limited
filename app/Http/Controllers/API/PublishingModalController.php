@@ -16,6 +16,7 @@ use App\Services\Social\Publishers\PublisherFactory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Controller for the publishing modal functionality.
@@ -223,6 +224,14 @@ class PublishingModalController extends Controller
                 $dispatchStart = microtime(true);
                 $post->update(['status' => 'queued']);
 
+                // [DEBUG] Check queue before dispatch
+                $queueCountBefore = DB::table('cmis.jobs')->count();
+                Log::debug('[DEBUG] Before job dispatch', [
+                    'queue_count' => $queueCountBefore,
+                    'post_id' => $post->id,
+                    'platform' => $profile->platform,
+                ]);
+
                 PublishSocialPostJob::dispatch(
                     $post->id,
                     $org,
@@ -230,10 +239,21 @@ class PublishingModalController extends Controller
                     $postData['content'],
                     $content['global']['media'] ?? [],
                     $content['platforms'][$profile->platform] ?? []
-                );
+                )->onConnection('database')->onQueue('social-publishing');
 
+                // [DEBUG] Check queue after dispatch
+                $queueCountAfter = DB::table('cmis.jobs')->count();
                 $jobsDispatched++;
                 $dispatchDuration = (microtime(true) - $dispatchStart) * 1000;
+
+                Log::debug('[DEBUG] After job dispatch', [
+                    'queue_count_before' => $queueCountBefore,
+                    'queue_count_after' => $queueCountAfter,
+                    'jobs_added' => $queueCountAfter - $queueCountBefore,
+                    'dispatch_duration_ms' => round($dispatchDuration, 2),
+                    'post_id' => $post->id,
+                    'platform' => $profile->platform,
+                ]);
 
                 Log::info('Post queued for publishing', [
                     'post_id' => $post->id,
