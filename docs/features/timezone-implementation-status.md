@@ -1,14 +1,28 @@
 # Timezone Support Implementation - Status Report
 
 **Date:** 2025-11-30
-**Feature:** Profile Group Timezone Support for Social Media Posts
-**Progress:** 70% Complete
+**Feature:** 3-Level Timezone Inheritance for Social Media Posts
+**Progress:** 75% Complete (Backend Complete & Tested)
 
 ---
 
 ## ✅ COMPLETED
 
-### 1. Backend - Profile Group ID Storage
+### 1. Database Schema - Timezone Columns
+**Files:**
+- `database/migrations/2025_11_30_162246_add_timezone_to_orgs_and_social_accounts_tables.php`
+
+**Changes:**
+- ✅ Added `timezone` column to `cmis.orgs` (VARCHAR 100, default 'UTC')
+- ✅ Added `timezone` column to `cmis.social_accounts` (VARCHAR 100, nullable)
+- ✅ Added helpful PostgreSQL column comments
+- ✅ Migration executed successfully
+
+**Result:** Complete 3-level timezone inheritance hierarchy in database.
+
+---
+
+### 2. Backend - Profile Group ID Storage
 **File:** `app/Http/Controllers/Social/SocialPostController.php`
 
 **Changes:**
@@ -21,31 +35,46 @@
 
 ---
 
-### 2. Backend - Timezone API Endpoint
+### 3. Backend - Timezone API Endpoint with 3-Level Inheritance
 **File:** `app/Http/Controllers/Social/SocialPostController.php`
 
-**New Method:** `getTimezone()` (lines 62-127)
+**Updated Method:** `getTimezone()` (lines 62-172)
 
 **Functionality:**
-- Accepts array of `integration_ids`
-- Joins `integrations` with `profile_groups` to get timezone
-- Returns timezone info:
+- ✅ Implements 3-level inheritance: Social Account → Profile Group → Organization → UTC
+- ✅ Uses PostgreSQL COALESCE for fallback chain
+- ✅ Accepts array of `integration_ids`
+- ✅ Joins social_accounts, profile_groups, and orgs tables
+- ✅ Returns comprehensive timezone info:
   ```json
   {
     "timezone": "Asia/Dubai",
+    "timezone_source": "profile_group",
     "profile_group_id": "uuid",
     "profile_group_name": "Community & Support",
-    "integrations": ["uuid1", "uuid2"]
+    "integrations": ["uuid1", "uuid2"],
+    "inheritance_info": {
+      "social_account": null,
+      "profile_group": "Asia/Dubai",
+      "organization": "UTC",
+      "final": "Asia/Dubai",
+      "source": "profile_group"
+    }
   }
   ```
-- Handles multiple timezones with warning
-- Falls back to UTC if no profile group found
+- ✅ Handles multiple timezones with warning
+- ✅ Falls back through hierarchy correctly
 
-**Result:** Frontend can now fetch timezone for selected social accounts.
+**Testing:**
+- ✅ Tested with Instagram integration → Returns Asia/Dubai from Profile Group
+- ✅ Tested with Meta integration (no profile group) → Returns UTC from Organization
+- ✅ All inheritance chain tests pass
+
+**Result:** Frontend can fetch timezone with complete inheritance information.
 
 ---
 
-### 3. Backend - API Route
+### 4. Backend - API Route
 **File:** `routes/api.php`
 
 **Added Route:** (line 1843-1844)
@@ -60,7 +89,27 @@ Route::post('/social/timezone', [SocialPostController::class, 'getTimezone'])
 
 ---
 
-### 4. Documentation
+### 5. Backend Testing
+**File:** `scripts/test-timezone-api.php`
+
+**Test Results:**
+```
+✅ Instagram with Profile Group timezone (Asia/Dubai)
+   - Timezone: Asia/Dubai
+   - Source: profile_group
+   - Inheritance: NULL → Asia/Dubai → UTC → Asia/Dubai ✓
+
+✅ Meta without Profile Group (should inherit from org → UTC)
+   - Timezone: UTC
+   - Source: organization
+   - Inheritance: NULL → NULL → UTC → UTC ✓
+```
+
+**Result:** All backend tests pass. Timezone inheritance working correctly.
+
+---
+
+### 6. Documentation
 **Created Files:**
 - `docs/features/timezone-support-implementation.md` - Complete implementation guide
 - `docs/features/timezone-implementation-status.md` - This status report
@@ -251,6 +300,23 @@ timeZone: this.profileGroupTimezone || 'UTC'  // Add this line
 
 ## ⚠️ Important Considerations
 
+### Timezone Inheritance Hierarchy (IMPLEMENTED)
+
+```
+Organization (UTC)
+    ↓ inherits
+Profile Group (Asia/Dubai) ← can override
+    ↓ inherits
+Social Account (NULL) ← can override
+    ↓
+Final timezone used: Asia/Dubai (from Profile Group)
+```
+
+**SQL Implementation:**
+```sql
+COALESCE(sa.timezone, pg.timezone, o.timezone, 'UTC') as timezone
+```
+
 ### Timezone Data Flow
 
 ```
@@ -268,10 +334,12 @@ Publishes at: 06:00 UTC = 10:00 Dubai time ✅
 ```
 
 ### Key Points:
-1. `datetime-local` input doesn't include timezone
-2. We MUST show users which timezone they're scheduling in
-3. PostgreSQL automatically handles UTC conversion
-4. Scheduler already uses UTC comparison (no changes needed)
+1. **3-level inheritance** - Social Account → Profile Group → Organization → UTC
+2. `datetime-local` input doesn't include timezone
+3. We MUST show users which timezone they're scheduling in
+4. PostgreSQL automatically handles UTC conversion
+5. Scheduler already uses UTC comparison (no changes needed)
+6. API returns `timezone_source` to show which level provided the timezone
 
 ---
 
@@ -284,6 +352,10 @@ Publishes at: 06:00 UTC = 10:00 Dubai time ✅
 
 ---
 
-**Last Updated:** 2025-11-30 17:50 UTC
+**Last Updated:** 2025-11-30 16:30 UTC
 **Completed By:** Claude Code
-**Next Steps:** Frontend implementation and testing
+**Status:** Backend 100% complete & tested. Frontend implementation pending.
+**Next Steps:**
+1. Integrate timezone fetching in Alpine.js component
+2. Update Create and Edit modals to display timezone
+3. Test frontend with both languages (AR/EN)

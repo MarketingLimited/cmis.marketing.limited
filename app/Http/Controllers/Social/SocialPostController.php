@@ -60,9 +60,14 @@ class SocialPostController extends Controller
     }
 
     /**
-     * Get timezone for selected integrations
+     * Get timezone for selected integrations with inheritance hierarchy
      *
-     * Returns timezone information from profile groups for the selected social accounts.
+     * TIMEZONE INHERITANCE:
+     * 1. Social Account timezone (if set) - highest priority
+     * 2. Profile Group timezone (if set)
+     * 3. Organization timezone - fallback
+     *
+     * Returns timezone information following the inheritance hierarchy.
      * This allows the frontend to display and handle scheduling in the account's local timezone.
      */
     public function getTimezone(Request $request, string $org)
@@ -76,19 +81,39 @@ class SocialPostController extends Controller
 
             DB::statement("SELECT set_config('app.current_org_id', ?, false)", [$org]);
 
-            // Get profile group timezones for these integrations
+            // Get timezones following inheritance hierarchy:
+            // Social Account → Profile Group → Organization
             $timezones = DB::table('cmis.integrations as i')
-                ->join('cmis.profile_groups as pg', 'i.profile_group_id', '=', 'pg.group_id')
+                ->leftJoin('cmis.social_accounts as sa', 'i.integration_id', '=', 'sa.integration_id')
+                ->leftJoin('cmis.profile_groups as pg', 'i.profile_group_id', '=', 'pg.group_id')
+                ->join('cmis.orgs as o', 'i.org_id', '=', 'o.org_id')
                 ->whereIn('i.integration_id', $integrationIds)
                 ->where('i.org_id', $org)
-                ->select('i.integration_id', 'pg.group_id as profile_group_id', 'pg.name as profile_group_name', 'pg.timezone')
+                ->select(
+                    'i.integration_id',
+                    'pg.group_id as profile_group_id',
+                    'pg.name as profile_group_name',
+                    'sa.username as social_account_name',
+                    'sa.timezone as social_account_timezone',
+                    'pg.timezone as profile_group_timezone',
+                    'o.timezone as org_timezone',
+                    // Use COALESCE to get first non-null timezone (inheritance)
+                    DB::raw('COALESCE(sa.timezone, pg.timezone, o.timezone, \'UTC\') as timezone'),
+                    DB::raw("CASE
+                        WHEN sa.timezone IS NOT NULL THEN 'social_account'
+                        WHEN pg.timezone IS NOT NULL THEN 'profile_group'
+                        WHEN o.timezone IS NOT NULL THEN 'organization'
+                        ELSE 'default'
+                    END as timezone_source")
+                )
                 ->get();
 
             if ($timezones->isEmpty()) {
                 return $this->success([
                     'timezone' => 'UTC',
+                    'timezone_source' => 'default',
                     'profile_group_name' => 'Default',
-                    'message' => 'No profile group found, using UTC'
+                    'message' => 'No integration found, using UTC'
                 ], 'Using default timezone');
             }
 
@@ -100,20 +125,40 @@ class SocialPostController extends Controller
                 $tz = $timezones->first();
                 return $this->success([
                     'timezone' => $tz->timezone,
+                    'timezone_source' => $tz->timezone_source,
                     'profile_group_id' => $tz->profile_group_id,
-                    'profile_group_name' => $tz->profile_group_name,
+                    'profile_group_name' => $tz->profile_group_name ?? 'Organization Default',
                     'integrations' => $timezones->pluck('integration_id')->toArray(),
+                    'inheritance_info' => [
+                        'social_account' => $tz->social_account_timezone,
+                        'profile_group' => $tz->profile_group_timezone,
+                        'organization' => $tz->org_timezone,
+                        'final' => $tz->timezone,
+                        'source' => $tz->timezone_source
+                    ]
                 ], 'Timezone retrieved successfully');
             } else {
                 // Multiple timezones - return first one with warning
                 $tz = $timezones->first();
+                $allSources = $timezones->pluck('timezone_source')->unique()->toArray();
                 return $this->success([
                     'timezone' => $tz->timezone,
+                    'timezone_source' => $tz->timezone_source,
                     'profile_group_id' => $tz->profile_group_id,
-                    'profile_group_name' => $tz->profile_group_name,
+                    'profile_group_name' => $tz->profile_group_name ?? 'Organization Default',
                     'integrations' => $timezones->pluck('integration_id')->toArray(),
-                    'warning' => 'Selected accounts have different timezones. Using ' . $tz->profile_group_name . ' (' . $tz->timezone . ')',
-                    'all_timezones' => $uniqueTimezones->pluck('timezone')->toArray(),
+                    'warning' => sprintf(
+                        'Selected accounts have different timezones from %s. Using first timezone: %s',
+                        implode(', ', $allSources),
+                        $tz->timezone
+                    ),
+                    'all_timezones' => $timezones->map(function($t) {
+                        return [
+                            'timezone' => $t->timezone,
+                            'source' => $t->timezone_source,
+                            'name' => $t->social_account_name ?? $t->profile_group_name ?? 'Org Default'
+                        ];
+                    })->toArray(),
                 ], 'Multiple timezones detected');
             }
 
