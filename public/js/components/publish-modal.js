@@ -1129,24 +1129,11 @@ function publishModal() {
 
                     // Check if async publishing (queued)
                     if (data.data && data.data.is_async && data.data.post_ids) {
-                        this.publishingStatus = 'publishing';
-                        window.notify(data.message || 'Publishing in progress...', 'info');
-
-                        // Poll for status
-                        const finalResult = await this.pollPublishingStatus(data.data.post_ids);
-
-                        if (finalResult.success_count > 0 && finalResult.failed_count === 0) {
-                            window.notify(`${finalResult.success_count} post(s) published successfully!`, 'success');
-                            this.publishSucceeded = true;
-                            this.closeModal(true); // Force close - skip unsaved changes check
-                        } else if (finalResult.failed_count > 0 && finalResult.success_count > 0) {
-                            window.notify(`${finalResult.success_count} published, ${finalResult.failed_count} failed`, 'warning');
-                            this.publishSucceeded = true;
-                            this.closeModal(true); // Force close - skip unsaved changes check
-                        } else if (finalResult.failed_count > 0) {
-                            const errorMsg = finalResult.first_error || 'Publishing failed';
-                            window.notify(`Failed: ${errorMsg}`, 'error');
-                        }
+                        // Close modal immediately after job is queued - don't wait for completion
+                        const postCount = data.data.post_ids.length;
+                        window.notify(data.message || `${postCount} post(s) queued for publishing`, 'success');
+                        this.publishSucceeded = true;
+                        this.closeModal(true); // Force close immediately after queuing
                     } else {
                         // Legacy sync response handling
                         if (data.data && data.data.failed_count > 0) {
