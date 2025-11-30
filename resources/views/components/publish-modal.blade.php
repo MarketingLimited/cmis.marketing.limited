@@ -41,6 +41,28 @@
      dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}"
      data-i18n-select-profile="{{ __('publish.select_at_least_one_profile') }}"
      data-i18n-content-required="{{ __('publish.content_or_media_required') }}"
+     data-i18n-schedule-datetime-required="{{ __('publish.schedule_datetime_required') }}"
+     data-i18n-schedule-must-be-future="{{ __('publish.schedule_must_be_future') }}"
+     data-i18n-instagram-character-limit="{{ __('publish.instagram_character_limit') }}"
+     data-i18n-instagram-reel-requires-video="{{ __('publish.instagram_reel_requires_video') }}"
+     data-i18n-instagram-story-requires-media="{{ __('publish.instagram_story_requires_media') }}"
+     data-i18n-instagram-max-media="{{ __('publish.instagram_max_media') }}"
+     data-i18n-twitter-character-limit="{{ __('publish.twitter_character_limit') }}"
+     data-i18n-twitter-max-images="{{ __('publish.twitter_max_images') }}"
+     data-i18n-twitter-max-videos="{{ __('publish.twitter_max_videos') }}"
+     data-i18n-twitter-no-mixed-media="{{ __('publish.twitter_no_mixed_media') }}"
+     data-i18n-linkedin-character-limit="{{ __('publish.linkedin_character_limit') }}"
+     data-i18n-linkedin-partner-required="{{ __('publish.linkedin_partner_required') }}"
+     data-i18n-tiktok-character-limit="{{ __('publish.tiktok_character_limit') }}"
+     data-i18n-tiktok-video-required="{{ __('publish.tiktok_video_required') }}"
+     data-i18n-tiktok-mp4-h264-required="{{ __('publish.tiktok_mp4_h264_required') }}"
+     data-i18n-youtube-title-required="{{ __('publish.youtube_title_required') }}"
+     data-i18n-youtube-video-required="{{ __('publish.youtube_video_required') }}"
+     data-i18n-snapchat-media-required="{{ __('publish.snapchat_media_required') }}"
+     data-i18n-reset-all-confirm="{{ __('publish.reset_all_confirm') }}"
+     data-i18n-reset-all-success="{{ __('publish.reset_all_success') }}"
+     data-i18n-apply-to-all-confirm="{{ __('publish.apply_to_all_confirm') }}"
+     data-i18n-applied-to-all-success="{{ __('publish.applied_to_all_success') }}"
      class="fixed inset-0 z-50 overflow-hidden" @keydown.escape.window="closeModal()">
 
     {{-- Backdrop - Enhanced with stronger opacity for better focus --}}
@@ -54,7 +76,8 @@
         <div x-show="open" x-transition:enter="ease-out duration-300"
              x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
              x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
-             class="relative w-full max-w-7xl max-h-[90vh] bg-white rounded-2xl shadow-2xl ring-1 ring-gray-900/10 flex flex-col overflow-hidden">
+             class="relative w-full max-w-7xl max-h-[90vh] bg-white rounded-2xl shadow-2xl ring-1 ring-gray-900/10 flex flex-col"
+             style="display: flex !important; flex-direction: column !important;">
 
             {{-- Modal Header --}}
             @include('components.publish-modal.header')
@@ -66,7 +89,9 @@
             {{-- Mobile: Single column (composer only, profile/preview as overlays) --}}
             {{-- Tablet: Two columns (profile selector + composer, preview as overlay) --}}
             {{-- Desktop: Three columns (all visible) --}}
-            <div class="flex-1 flex flex-col lg:flex-row overflow-hidden">
+            {{-- flex-1 allows this to grow, overflow-y-auto enables scrolling within --}}
+            {{-- z-10 keeps content below footer (z-20) and overlays (z-50) --}}
+            <div class="flex-1 flex flex-col lg:flex-row overflow-y-auto min-h-0 relative z-10">
 
                 {{-- Column 1: Profile Selector (Hidden on mobile, overlay on tablet, sidebar on desktop) --}}
                 <div class="hidden lg:flex lg:w-80 lg:flex-shrink-0 lg:border-e lg:border-gray-100">

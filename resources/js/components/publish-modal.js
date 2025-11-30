@@ -346,7 +346,71 @@ function publishModal() {
             }
         },
 
+        // i18n translations - loaded from data attributes
+        i18n: {
+            selectProfile: 'Please select at least one account',
+            contentRequired: 'Please add text or media',
+            scheduleDatetimeRequired: 'Please select a date and time for scheduling',
+            scheduleMustBeFuture: 'Scheduled time must be in the future',
+            instagramCharacterLimit: 'Instagram: Content exceeds :limit characters',
+            instagramReelRequiresVideo: 'Instagram Reels require a video',
+            instagramStoryRequiresMedia: 'Instagram Stories require media',
+            instagramMaxMedia: 'Instagram: Maximum :max media items allowed',
+            twitterCharacterLimit: 'Twitter: Content exceeds :limit characters',
+            twitterMaxImages: 'Twitter: Maximum :max images allowed',
+            twitterMaxVideos: 'Twitter allows only one video per post',
+            twitterNoMixedMedia: 'Twitter does not allow mixing images and videos',
+            linkedinCharacterLimit: 'LinkedIn: Content exceeds :limit characters',
+            linkedinPartnerRequired: 'LinkedIn video requires Partner Program',
+            tiktokCharacterLimit: 'TikTok: Content exceeds :limit characters',
+            tiktokVideoRequired: 'TikTok requires a video',
+            tiktokMp4H264Required: 'TikTok requires MP4/H.264 format',
+            youtubeTitleRequired: 'YouTube requires a video title',
+            youtubeVideoRequired: 'YouTube requires a video',
+            snapchatMediaRequired: 'Snapchat requires media',
+            resetAllConfirm: 'Reset all customizations?',
+            resetAllSuccess: 'All customizations reset',
+            applyToAllConfirm: 'Apply to all :platform accounts?',
+            appliedToAllSuccess: 'Applied to all accounts'
+        },
+
+        loadI18n() {
+            const el = this.$el;
+            if (!el) return;
+            const map = {
+                'i18nSelectProfile': 'selectProfile',
+                'i18nContentRequired': 'contentRequired',
+                'i18nScheduleDatetimeRequired': 'scheduleDatetimeRequired',
+                'i18nScheduleMustBeFuture': 'scheduleMustBeFuture',
+                'i18nInstagramCharacterLimit': 'instagramCharacterLimit',
+                'i18nInstagramReelRequiresVideo': 'instagramReelRequiresVideo',
+                'i18nInstagramStoryRequiresMedia': 'instagramStoryRequiresMedia',
+                'i18nInstagramMaxMedia': 'instagramMaxMedia',
+                'i18nTwitterCharacterLimit': 'twitterCharacterLimit',
+                'i18nTwitterMaxImages': 'twitterMaxImages',
+                'i18nTwitterMaxVideos': 'twitterMaxVideos',
+                'i18nTwitterNoMixedMedia': 'twitterNoMixedMedia',
+                'i18nLinkedinCharacterLimit': 'linkedinCharacterLimit',
+                'i18nLinkedinPartnerRequired': 'linkedinPartnerRequired',
+                'i18nTiktokCharacterLimit': 'tiktokCharacterLimit',
+                'i18nTiktokVideoRequired': 'tiktokVideoRequired',
+                'i18nTiktokMp4H264Required': 'tiktokMp4H264Required',
+                'i18nYoutubeTitleRequired': 'youtubeTitleRequired',
+                'i18nYoutubeVideoRequired': 'youtubeVideoRequired',
+                'i18nSnapchatMediaRequired': 'snapchatMediaRequired',
+                'i18nResetAllConfirm': 'resetAllConfirm',
+                'i18nResetAllSuccess': 'resetAllSuccess',
+                'i18nApplyToAllConfirm': 'applyToAllConfirm',
+                'i18nAppliedToAllSuccess': 'appliedToAllSuccess'
+            };
+            for (const [dataKey, i18nKey] of Object.entries(map)) {
+                const val = el.dataset[dataKey];
+                if (val) this.i18n[i18nKey] = val;
+            }
+        },
+
         init() {
+            this.loadI18n();
             this.loadProfileGroups();
             this.loadBrandVoices();
             this.loadPlatformConnections();
@@ -484,25 +548,25 @@ function publishModal() {
                 // Character limit validation
                 const instagramText = instagramContent?.text || globalText;
                 if (instagramText.length > instagramSpecs.characterLimit) {
-                    errors.push('{{ __("publish.instagram_character_limit") }}'.replace(':limit', instagramSpecs.characterLimit));
+                    errors.push(this.i18n.instagramCharacterLimit.replace(':limit', instagramSpecs.characterLimit));
                 }
 
                 // Reel requires video
                 if (instagramContent?.post_type === 'reel') {
                     const hasVideo = globalMedia.some(m => m.type === 'video');
                     if (!hasVideo) {
-                        errors.push('{{ __("publish.instagram_reel_requires_video") }}');
+                        errors.push(this.i18n.instagramReelRequiresVideo);
                     }
                 }
 
                 // Story requires media first
                 if (instagramContent?.post_type === 'story' && globalMedia.length === 0) {
-                    errors.push('{{ __("publish.instagram_story_requires_media") }}');
+                    errors.push(this.i18n.instagramStoryRequiresMedia);
                 }
 
                 // Media count validation
                 if (globalMedia.length > instagramSpecs.maxMediaCount) {
-                    errors.push('{{ __("publish.instagram_max_media") }}'.replace(':max', instagramSpecs.maxMediaCount));
+                    errors.push(this.i18n.instagramMaxMedia.replace(':max', instagramSpecs.maxMediaCount));
                 }
             }
 
@@ -514,7 +578,7 @@ function publishModal() {
                 // Character limit validation
                 const twitterText = twitterContent?.text || globalText;
                 if (twitterText.length > twitterSpecs.characterLimit) {
-                    errors.push('{{ __("publish.twitter_character_limit") }}'.replace(':limit', twitterSpecs.characterLimit));
+                    errors.push(this.i18n.twitterCharacterLimit.replace(':limit', twitterSpecs.characterLimit));
                 }
 
                 // Media count validation
@@ -522,16 +586,16 @@ function publishModal() {
                 const videoCount = globalMedia.filter(m => m.type === 'video').length;
 
                 if (imageCount > twitterSpecs.maxImagesPerPost) {
-                    errors.push('{{ __("publish.twitter_max_images") }}'.replace(':max', twitterSpecs.maxImagesPerPost));
+                    errors.push(this.i18n.twitterMaxImages.replace(':max', twitterSpecs.maxImagesPerPost));
                 }
 
                 if (videoCount > twitterSpecs.maxVideosPerPost) {
-                    errors.push('{{ __("publish.twitter_max_videos") }}');
+                    errors.push(this.i18n.twitterMaxVideos);
                 }
 
                 // Cannot mix images and videos
                 if (imageCount > 0 && videoCount > 0) {
-                    errors.push('{{ __("publish.twitter_no_mixed_media") }}');
+                    errors.push(this.i18n.twitterNoMixedMedia);
                 }
             }
 
@@ -543,14 +607,14 @@ function publishModal() {
                 // Character limit validation
                 const linkedinText = linkedinContent?.text || globalText;
                 if (linkedinText.length > linkedinSpecs.characterLimit) {
-                    errors.push('{{ __("publish.linkedin_character_limit") }}'.replace(':limit', linkedinSpecs.characterLimit));
+                    errors.push(this.i18n.linkedinCharacterLimit.replace(':limit', linkedinSpecs.characterLimit));
                 }
 
                 // Video validation
                 const videos = globalMedia.filter(m => m.type === 'video');
                 if (videos.length > 0) {
                     // Check for Partner Program requirement
-                    errors.push('{{ __("publish.linkedin_partner_required") }}');
+                    errors.push(this.i18n.linkedinPartnerRequired);
                 }
             }
 
@@ -562,13 +626,13 @@ function publishModal() {
                 // Character limit validation
                 const tiktokText = tiktokContent?.text || globalText;
                 if (tiktokText.length > tiktokSpecs.characterLimit) {
-                    errors.push('{{ __("publish.tiktok_character_limit") }}'.replace(':limit', tiktokSpecs.characterLimit));
+                    errors.push(this.i18n.tiktokCharacterLimit.replace(':limit', tiktokSpecs.characterLimit));
                 }
 
                 // TikTok requires video
                 const hasVideo = globalMedia.some(m => m.type === 'video');
                 if (!hasVideo) {
-                    errors.push('{{ __("publish.tiktok_video_required") }}');
+                    errors.push(this.i18n.tiktokVideoRequired);
                 }
 
                 // MP4 + H.264 format validation
@@ -576,7 +640,7 @@ function publishModal() {
                     m.type === 'video' && !m.mime_type?.includes('mp4')
                 );
                 if (nonMp4Videos.length > 0) {
-                    errors.push('{{ __("publish.tiktok_mp4_h264_required") }}');
+                    errors.push(this.i18n.tiktokMp4H264Required);
                 }
             }
 
@@ -587,13 +651,13 @@ function publishModal() {
 
                 // Title required
                 if (!youtubeContent?.video_title?.trim()) {
-                    errors.push('{{ __("publish.youtube_title_required") }}');
+                    errors.push(this.i18n.youtubeTitleRequired);
                 }
 
                 // Video required
                 const hasVideo = globalMedia.some(m => m.type === 'video');
                 if (!hasVideo) {
-                    errors.push('{{ __("publish.youtube_video_required") }}');
+                    errors.push(this.i18n.youtubeVideoRequired);
                 }
             }
 
@@ -603,20 +667,20 @@ function publishModal() {
 
                 // Snapchat requires media
                 if (globalMedia.length === 0) {
-                    errors.push('{{ __("publish.snapchat_media_required") }}');
+                    errors.push(this.i18n.snapchatMediaRequired);
                 }
             }
 
             // Schedule validation
             if (this.publishMode === 'schedule' && this.scheduleEnabled) {
                 if (!this.schedule.date || !this.schedule.time) {
-                    errors.push('{{ __("publish.schedule_datetime_required") }}');
+                    errors.push(this.i18n.scheduleDatetimeRequired);
                 }
 
                 // Check if scheduled time is in the future
                 const scheduledDateTime = new Date(`${this.schedule.date}T${this.schedule.time}`);
                 if (scheduledDateTime <= new Date()) {
-                    errors.push('{{ __("publish.schedule_must_be_future") }}');
+                    errors.push(this.i18n.scheduleMustBeFuture);
                 }
             }
 
@@ -1767,7 +1831,7 @@ function publishModal() {
 
         // PHASE 5B: Reset all platform customizations
         resetAllCustomizations() {
-            if (!confirm('{{ __("publish.reset_all_confirm") }}')) {
+            if (!confirm(this.i18n.resetAllConfirm)) {
                 return;
             }
 
@@ -1779,7 +1843,7 @@ function publishModal() {
             });
 
             this.platformWarnings = this.platformWarnings.filter(w => w.type !== 'customization');
-            window.notify && window.notify('{{ __("publish.reset_all_success") }}', 'success');
+            window.notify && window.notify(this.i18n.resetAllSuccess, 'success');
         },
 
         // PHASE 2: Analytics - Performance Predictions
@@ -2485,7 +2549,7 @@ function publishModal() {
             }
 
             const platformDisplayName = this.getPlatformName(platform);
-            const confirmMessage = '{{ __("publish.apply_to_all_confirm") }}'
+            const confirmMessage = this.i18n.applyToAllConfirm
                 .replace(':platform', platformDisplayName)
                 .replace(':count', count);
 
@@ -2501,7 +2565,7 @@ function publishModal() {
             // For now, we're just copying the content structure
 
             // Success notification
-            const successMessage = '{{ __("publish.applied_to_all_success") }}'
+            const successMessage = this.i18n.appliedToAllSuccess
                 .replace(':platform', platformDisplayName)
                 .replace(':count', count);
 
