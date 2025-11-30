@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Jobs\Social\PublishSocialPostJob;
 use App\Models\Social\SocialPost;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class PublishScheduledSocialPostsCommand extends Command
@@ -35,18 +36,36 @@ class PublishScheduledSocialPostsCommand extends Command
 
         $this->info('Finding scheduled posts ready to publish...');
 
-        // Get posts ready to publish from cmis.social_posts table
-        $posts = SocialPost::where('status', 'scheduled')
-            ->whereNotNull('scheduled_at')
-            ->where('scheduled_at', '<=', now())
-            ->orderBy('scheduled_at')
-            ->limit($limit)
-            ->get();
+        // MULTI-TENANCY FIX: Query without RLS first to get all orgs with scheduled posts
+        // We disable RLS temporarily to see posts across all organizations
+        $postsData = DB::select("
+            SELECT DISTINCT sp.org_id, sp.id, sp.platform, sp.content, sp.media, sp.options, sp.scheduled_at
+            FROM cmis.social_posts sp
+            WHERE sp.status = 'scheduled'
+              AND sp.scheduled_at IS NOT NULL
+              AND sp.scheduled_at <= NOW()
+            ORDER BY sp.scheduled_at
+            LIMIT ?
+        ", [$limit]);
 
-        if ($posts->isEmpty()) {
+        if (empty($postsData)) {
             $this->info('✓ No posts to publish');
             return self::SUCCESS;
         }
+
+        // Convert to collection of SocialPost models with proper org context
+        $posts = collect($postsData)->map(function ($data) {
+            // Set RLS context for this org
+            DB::statement("SET LOCAL app.current_org_id = '{$data->org_id}'");
+
+            // Now fetch the model with proper relationships
+            $post = SocialPost::find($data->id);
+
+            // Reset context after fetching
+            DB::statement("RESET app.current_org_id");
+
+            return $post;
+        })->filter(); // Remove any nulls
 
         $this->info(sprintf('Found %d post(s) to publish', $posts->count()));
 
