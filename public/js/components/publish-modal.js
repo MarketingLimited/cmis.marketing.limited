@@ -856,6 +856,31 @@ function publishModal() {
             return [...new Set(this.selectedProfiles.map(p => p.platform))];
         },
 
+        /**
+         * Get the display name for a platform tab
+         * Shows account name/username if single account, or "Platform (X)" if multiple
+         */
+        getPlatformTabName(platform) {
+            if (!this.selectedProfiles || !Array.isArray(this.selectedProfiles)) {
+                return platform.charAt(0).toUpperCase() + platform.slice(1);
+            }
+
+            const platformProfiles = this.selectedProfiles.filter(p => p.platform === platform);
+
+            if (platformProfiles.length === 0) {
+                return platform.charAt(0).toUpperCase() + platform.slice(1);
+            }
+
+            if (platformProfiles.length === 1) {
+                // Single account - show account name or username
+                const profile = platformProfiles[0];
+                return profile.platform_handle || profile.account_name || profile.name || platform.charAt(0).toUpperCase() + platform.slice(1);
+            }
+
+            // Multiple accounts - show platform name with count
+            return `${platform.charAt(0).toUpperCase() + platform.slice(1)} (${platformProfiles.length})`;
+        },
+
         getPlatformIcon(platform) {
             const icons = {
                 facebook: 'fab fa-facebook',

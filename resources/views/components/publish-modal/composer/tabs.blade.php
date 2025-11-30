@@ -14,7 +14,7 @@
                     :class="composerTab === platform ? 'text-blue-600 border-blue-600' : 'text-gray-500 border-transparent hover:text-gray-700'"
                     class="px-4 py-2.5 min-h-[44px] text-sm font-medium border-b-2 transition flex items-center whitespace-nowrap">
                 <i :class="getPlatformIcon(platform) + ' me-1'"></i>
-                <span x-text="platform.charAt(0).toUpperCase() + platform.slice(1)"></span>
+                <span x-text="getPlatformTabName(platform)"></span>
             </button>
         </template>
     </div>
