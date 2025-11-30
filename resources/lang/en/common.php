@@ -195,4 +195,9 @@ return [
     'empty_state_getting_started' => 'Getting started?',
     'empty_state_getting_started_desc' => 'Follow these steps to set up your marketing campaigns',
 
+    // Inheritance and defaults
+    'inherits_from' => 'Inherits from',
+    'leave_empty_to_inherit' => 'Leave empty to inherit from parent',
+    'inherit_from_parent' => 'Inherit from parent',
+
 ];

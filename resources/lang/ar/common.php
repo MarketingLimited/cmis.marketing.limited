@@ -190,4 +190,9 @@ return [
     'empty_state_getting_started' => 'هل تبدأ الآن؟',
     'empty_state_getting_started_desc' => 'اتبع هذه الخطوات لإعداد حملاتك التسويقية',
 
+    // Inheritance and defaults
+    'inherits_from' => 'موروث من',
+    'leave_empty_to_inherit' => 'اتركه فارغاً للوراثة من الأصل',
+    'inherit_from_parent' => 'الوراثة من الأصل',
+
 ];

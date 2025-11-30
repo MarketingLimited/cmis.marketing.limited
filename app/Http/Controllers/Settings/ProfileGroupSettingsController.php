@@ -45,6 +45,7 @@ class ProfileGroupSettingsController extends Controller
      */
     public function create(Request $request, string $org)
     {
+        $organization = \App\Models\Core\Org::where('org_id', $org)->firstOrFail();
         $brandVoices = BrandVoice::where('org_id', $org)->get();
         $brandSafetyPolicies = BrandSafetyPolicy::where('org_id', $org)->get();
         $availableProfiles = Integration::where('org_id', $org)
@@ -56,6 +57,7 @@ class ProfileGroupSettingsController extends Controller
             ->get();
 
         return view('settings.profile-groups.create', [
+            'organization' => $organization,
             'currentOrg' => $org,
             'brandVoices' => $brandVoices,
             'brandSafetyPolicies' => $brandSafetyPolicies,
@@ -160,11 +162,13 @@ class ProfileGroupSettingsController extends Controller
             ->where('group_id', $group)
             ->firstOrFail();
 
+        $organization = \App\Models\Core\Org::where('org_id', $org)->firstOrFail();
         $brandVoices = BrandVoice::where('org_id', $org)->get();
         $brandSafetyPolicies = BrandSafetyPolicy::where('org_id', $org)->get();
 
         return view('settings.profile-groups.edit', [
             'profileGroup' => $profileGroup,
+            'organization' => $organization,
             'currentOrg' => $org,
             'brandVoices' => $brandVoices,
             'brandSafetyPolicies' => $brandSafetyPolicies,
