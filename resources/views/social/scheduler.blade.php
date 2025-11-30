@@ -321,14 +321,19 @@ function socialScheduler() {
         },
 
         formatDate(dateString) {
+            if (!dateString) return '';
+            // Use Gregorian calendar with timezone
             const date = new Date(dateString);
-            return date.toLocaleDateString('ar-SA', {
+            const options = {
                 year: 'numeric',
                 month: 'short',
                 day: 'numeric',
                 hour: '2-digit',
-                minute: '2-digit'
-            });
+                minute: '2-digit',
+                hour12: true,
+                timeZoneName: 'short'
+            };
+            return date.toLocaleString('en-GB', options);
         },
 
         selectDate(date) {

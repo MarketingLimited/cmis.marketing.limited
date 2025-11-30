@@ -539,7 +539,7 @@ function socialManager() {
 
         // Calendar helpers
         get currentMonthYear() {
-            return this.currentDate.toLocaleDateString('ar-SA', { month: 'long', year: 'numeric' });
+            return this.currentDate.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
         },
 
         get calendarDays() {
@@ -1136,13 +1136,18 @@ function socialManager() {
 
         formatDate(date) {
             if (!date) return '';
-            return new Date(date).toLocaleString('ar-SA', {
+            // Use Gregorian calendar with timezone
+            const dateObj = new Date(date);
+            const options = {
                 year: 'numeric',
                 month: 'short',
                 day: 'numeric',
                 hour: '2-digit',
-                minute: '2-digit'
-            });
+                minute: '2-digit',
+                hour12: true,
+                timeZoneName: 'short'
+            };
+            return dateObj.toLocaleString('en-GB', options);
         },
 
         formatNumber(num) {
