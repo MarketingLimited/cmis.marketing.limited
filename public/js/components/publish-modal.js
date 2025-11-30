@@ -516,7 +516,8 @@ function publishModal() {
             try {
                 const integrationIds = this.selectedProfiles.map(p => p.integration_id);
 
-                const response = await fetch(`/api/orgs/${window.currentOrgId}/social/timezone`, {
+                // Use web route (session auth) instead of API route (Sanctum token auth)
+                const response = await fetch(`/orgs/${window.currentOrgId}/social/publish-modal/timezone`, {
                     method: 'POST',
                     credentials: 'same-origin',
                     headers: {

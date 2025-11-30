@@ -463,6 +463,8 @@ Route::middleware(['auth'])->group(function () {
                 Route::get('/best-times', [App\Http\Controllers\API\PublishingModalController::class, 'getBestTimes'])->name('best-times');
                 Route::get('/character-limits', [App\Http\Controllers\API\PublishingModalController::class, 'getCharacterLimits'])->name('character-limits');
                 Route::post('/status', [App\Http\Controllers\API\PublishingModalController::class, 'getPostsStatus'])->name('status');
+                // Timezone API - Get timezone from profile group inheritance chain (session auth)
+                Route::post('/timezone', [App\Http\Controllers\Social\SocialPostController::class, 'getTimezone'])->name('timezone');
 
                 // Redirect GET requests on POST-only endpoints to social page
                 Route::get('/create', fn($org) => redirect()->route('orgs.social.index', $org))->name('create.redirect');
