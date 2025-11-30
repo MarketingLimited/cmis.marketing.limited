@@ -14,23 +14,26 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('cmis.hashtag_sets', function (Blueprint $table) {
-            $table->uuid('id')->primary();
-            $table->uuid('org_id');
-            $table->string('name');
-            $table->jsonb('hashtags'); // Array of hashtag strings
-            $table->integer('usage_count')->default(0);
-            $table->timestamps();
-            $table->softDeletes();
+        // Check if table already exists
+        if (!Schema::hasTable('cmis.hashtag_sets')) {
+            Schema::create('cmis.hashtag_sets', function (Blueprint $table) {
+                $table->uuid('id')->primary();
+                $table->uuid('org_id');
+                $table->string('name');
+                $table->jsonb('hashtags'); // Array of hashtag strings
+                $table->integer('usage_count')->default(0);
+                $table->timestamps();
+                $table->softDeletes();
 
-            // Indexes
-            $table->index('org_id');
-            $table->index('name');
-            $table->index('usage_count');
-        });
+                // Indexes
+                $table->index('org_id');
+                $table->index('name');
+                $table->index('usage_count');
+            });
 
-        // Enable RLS
-        $this->enableRLS('cmis.hashtag_sets');
+            // Enable RLS
+            $this->enableRLS('cmis.hashtag_sets');
+        }
     }
 
     /**
