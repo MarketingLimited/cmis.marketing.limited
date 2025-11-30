@@ -173,24 +173,37 @@ class SocialPostController extends Controller
 
     /**
      * List all social posts
+     *
+     * TIMEZONE SUPPORT: Each post includes its timezone from the inheritance hierarchy
+     * (Social Account → Profile Group → Organization → UTC) so the frontend can
+     * display scheduled times in the correct timezone.
      */
     public function index(Request $request, string $org)
     {
         try {
             DB::statement("SELECT set_config('app.current_org_id', ?, false)", [$org]);
 
-            $query = DB::table('cmis.social_posts')
-                ->where('org_id', $org)
-                ->whereNull('deleted_at')
-                ->orderBy('created_at', 'desc');
+            // Join with integrations, profile_groups, social_accounts, and orgs to get timezone
+            $query = DB::table('cmis.social_posts as sp')
+                ->leftJoin('cmis.integrations as i', 'sp.integration_id', '=', 'i.integration_id')
+                ->leftJoin('cmis.social_accounts as sa', 'i.integration_id', '=', 'sa.integration_id')
+                ->leftJoin('cmis.profile_groups as pg', 'i.profile_group_id', '=', 'pg.group_id')
+                ->leftJoin('cmis.orgs as o', 'sp.org_id', '=', 'o.org_id')
+                ->where('sp.org_id', $org)
+                ->whereNull('sp.deleted_at')
+                ->orderBy('sp.created_at', 'desc')
+                ->select(
+                    'sp.*',
+                    DB::raw('COALESCE(sa.timezone, pg.timezone, o.timezone, \'UTC\') as display_timezone')
+                );
 
             // Apply filters
             if ($request->has('status') && $request->status !== 'all') {
-                $query->where('status', $request->status);
+                $query->where('sp.status', $request->status);
             }
 
             if ($request->has('platform') && $request->platform !== 'all') {
-                $query->where('platform', $request->platform);
+                $query->where('sp.platform', $request->platform);
             }
 
             $posts = $query->paginate($request->get('per_page', 20));
@@ -201,6 +214,7 @@ class SocialPostController extends Controller
                 $post->metadata = json_decode($post->metadata ?? '{}', true);
                 $post->post_id = $post->id; // Frontend compatibility
                 $post->post_text = $post->content; // Frontend compatibility
+                // display_timezone is already included from the query
                 return $post;
             });
 

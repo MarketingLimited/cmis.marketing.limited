@@ -131,13 +131,13 @@
                                     </div>
                                 </template>
 
-                                <!-- Meta Info -->
+                                <!-- Meta Info (uses post's timezone from inheritance hierarchy) -->
                                 <div class="flex items-center gap-4 text-xs text-gray-500">
                                     <template x-if="post.scheduled_at">
-                                        <span><i class="far fa-clock me-1"></i> {{ __('social.status.scheduled') }}: <span x-text="formatDate(post.scheduled_at)"></span></span>
+                                        <span><i class="far fa-clock me-1"></i> {{ __('social.status.scheduled') }}: <span x-text="formatDate(post.scheduled_at, post.display_timezone)"></span></span>
                                     </template>
                                     <template x-if="post.published_at">
-                                        <span><i class="far fa-check-circle me-1"></i> {{ __('social.status.published') }}: <span x-text="formatDate(post.published_at)"></span></span>
+                                        <span><i class="far fa-check-circle me-1"></i> {{ __('social.status.published') }}: <span x-text="formatDate(post.published_at, post.display_timezone)"></span></span>
                                     </template>
                                     <template x-if="post.permalink">
                                         <a :href="post.permalink" target="_blank" class="text-blue-600 hover:text-blue-800">

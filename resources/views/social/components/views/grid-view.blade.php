@@ -93,19 +93,19 @@
                     </div>
                 </template>
 
-                <!-- Scheduled Time - Enhanced -->
+                <!-- Scheduled Time - Enhanced (uses post's timezone from inheritance hierarchy) -->
                 <template x-if="post.scheduled_at && post.status === 'scheduled'">
                     <div class="flex items-center gap-2 text-xs text-yellow-700 dark:text-yellow-300 mb-3 bg-yellow-50 dark:bg-yellow-900/20 p-2.5 rounded-xl border border-yellow-100 dark:border-yellow-800/30">
                         <i class="fas fa-clock"></i>
-                        <span x-text="formatDate(post.scheduled_at)"></span>
+                        <span x-text="formatDate(post.scheduled_at, post.display_timezone)"></span>
                     </div>
                 </template>
 
-                <!-- Published Time - Enhanced -->
+                <!-- Published Time - Enhanced (uses post's timezone from inheritance hierarchy) -->
                 <template x-if="post.published_at && post.status === 'published'">
                     <div class="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 mb-3">
                         <i class="fas fa-check-circle text-green-500 dark:text-green-400"></i>
-                        <span>{{ __('social.published_at') }} <span x-text="formatDate(post.published_at)"></span></span>
+                        <span>{{ __('social.published_at') }} <span x-text="formatDate(post.published_at, post.display_timezone)"></span></span>
                     </div>
                 </template>
 

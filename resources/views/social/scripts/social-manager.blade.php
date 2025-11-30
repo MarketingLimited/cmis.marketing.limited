@@ -1240,9 +1240,15 @@ function socialManager() {
             return labels[status] || status;
         },
 
-        formatDate(date) {
+        /**
+         * Format date with timezone support
+         * @param {string} date - UTC date string from database
+         * @param {string} timezone - IANA timezone (e.g., 'Asia/Riyadh') from post.display_timezone
+         * @returns {string} Formatted date in the specified timezone
+         */
+        formatDate(date, timezone = null) {
             if (!date) return '';
-            // Use Gregorian calendar with timezone
+
             const dateObj = new Date(date);
             const options = {
                 year: 'numeric',
@@ -1253,6 +1259,18 @@ function socialManager() {
                 hour12: true,
                 timeZoneName: 'short'
             };
+
+            // Use post's timezone if provided, otherwise fall back to browser timezone
+            if (timezone && timezone !== 'UTC') {
+                try {
+                    options.timeZone = timezone;
+                    return dateObj.toLocaleString('en-GB', options);
+                } catch (e) {
+                    console.warn('[formatDate] Invalid timezone:', timezone, e);
+                    // Fall back to browser timezone if invalid
+                }
+            }
+
             return dateObj.toLocaleString('en-GB', options);
         },
 

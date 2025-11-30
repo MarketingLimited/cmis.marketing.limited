@@ -58,7 +58,7 @@
                         }" class="px-2.5 py-1 rounded-lg text-xs font-semibold" x-text="getStatusLabel(post.status)"></span>
                     </td>
                     <td class="px-4 py-4 text-sm text-gray-500 dark:text-gray-400">
-                        <span x-text="formatDate(post.scheduled_at || post.published_at || post.created_at)"></span>
+                        <span x-text="formatDate(post.scheduled_at || post.published_at || post.created_at, post.display_timezone)"></span>
                     </td>
                     <td class="px-4 py-4">
                         <div class="flex items-center gap-1">
