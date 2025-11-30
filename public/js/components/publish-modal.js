@@ -452,6 +452,8 @@ function publishModal() {
 
             this.$watch('selectedProfiles', () => {
                 this.checkPlatformWarnings();
+                // Fetch timezone when profiles are selected
+                this.fetchTimezoneForSelectedProfiles();
             });
 
             // Mark component as initialized (prevents overlay rendering errors)
@@ -497,6 +499,48 @@ function publishModal() {
                 }
             } catch (e) {
                 console.error('Failed to load brand voices', e);
+            }
+        },
+
+        /**
+         * Fetch timezone for selected profiles from the 3-level inheritance chain:
+         * Social Account → Profile Group → Organization → UTC
+         */
+        async fetchTimezoneForSelectedProfiles() {
+            if (!this.selectedProfiles || this.selectedProfiles.length === 0) {
+                // Reset to UTC when no profiles selected
+                this.schedule.timezone = 'UTC';
+                return;
+            }
+
+            try {
+                const integrationIds = this.selectedProfiles.map(p => p.integration_id);
+
+                const response = await fetch(`/api/orgs/${window.currentOrgId}/social/timezone`, {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: JSON.stringify({ integration_ids: integrationIds })
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result.success && result.data && result.data.timezone) {
+                        this.schedule.timezone = result.data.timezone;
+                        console.log('[PublishModal] Timezone set to:', result.data.timezone, 'from:', result.data.timezone_source);
+                    }
+                } else {
+                    console.warn('[PublishModal] Failed to fetch timezone, using UTC');
+                    this.schedule.timezone = 'UTC';
+                }
+            } catch (e) {
+                console.error('[PublishModal] Error fetching timezone:', e);
+                this.schedule.timezone = 'UTC';
             }
         },
 
