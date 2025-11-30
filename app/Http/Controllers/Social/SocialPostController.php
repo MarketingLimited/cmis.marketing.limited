@@ -195,9 +195,10 @@ class SocialPostController extends Controller
                 ->select(
                     'sp.*',
                     DB::raw('COALESCE(sa.timezone, pg.timezone, o.timezone, \'UTC\') as display_timezone'),
-                    'sa.username as social_account_username',
-                    'sa.display_name as social_account_display_name',
-                    'sa.profile_picture_url as social_account_picture'
+                    // Priority: social_accounts.username > integrations.username > integrations.account_name
+                    DB::raw('COALESCE(sa.username, i.username, i.account_username) as social_account_username'),
+                    DB::raw('COALESCE(sa.display_name, i.account_name, i.name) as social_account_display_name'),
+                    DB::raw('COALESCE(sa.profile_picture_url, i.avatar_url) as social_account_picture')
                 );
 
             // Apply filters
