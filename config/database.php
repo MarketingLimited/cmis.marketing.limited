@@ -97,6 +97,7 @@ return [
             'search_path' => env('DB_SCHEMA_SEARCH_PATH', 'public,cmis,cmis_refactored,cmis_analytics,cmis_ai_analytics,cmis_ops'),
             'sslmode' => env('DB_SSLMODE', 'prefer'),
             'application_name' => env('DB_APPLICATION_NAME', 'cmis-marketing'),
+            'timezone' => 'UTC', // Ensure consistent timezone for timestamp handling
             'options' => extension_loaded('pdo_pgsql') ? array_filter([
                 PDO::ATTR_TIMEOUT => env('DB_CONNECT_TIMEOUT', 5),
             ]) : [],
@@ -117,6 +118,7 @@ return [
             'search_path' => env('DB_SCHEMA_SEARCH_PATH', 'public,cmis,cmis_refactored,cmis_analytics,cmis_ai_analytics,cmis_ops'),
             'sslmode' => env('DB_SSLMODE', 'prefer'),
             'application_name' => env('DB_APPLICATION_NAME', 'cmis-marketing'),
+            'timezone' => 'UTC', // Ensure consistent timezone for timestamp handling
             'options' => extension_loaded('pdo_pgsql') ? array_filter([
                 PDO::ATTR_TIMEOUT => env('DB_CONNECT_TIMEOUT', 5),
             ]) : [],
