@@ -153,6 +153,10 @@ class PublishingModalController extends Controller
      */
     protected function processPostCreation(Request $request, string $org): array
     {
+        // [PERF] Start timing the entire post creation process
+        $perfStart = microtime(true);
+        Log::debug('[PERF] Post creation started');
+
         $profileIds = $request->input('profile_ids');
         $content = $request->input('content');
         $schedule = $request->input('schedule');
@@ -161,6 +165,9 @@ class PublishingModalController extends Controller
 
         $globalText = $content['global']['text'] ?? '';
 
+        // [PERF] Measure brand safety validation
+        $safetyStart = microtime(true);
+        Log::debug('[PERF] Starting brand safety validation');
         // Pre-validate brand safety
         if (!$isDraft && $globalText) {
             $safetyResult = $this->brandSafetyService->validate($org, $globalText, null);
@@ -168,28 +175,52 @@ class PublishingModalController extends Controller
                 throw new \Exception('Brand safety check failed: ' . implode(', ', $safetyResult['issues']));
             }
         }
+        $safetyDuration = (microtime(true) - $safetyStart) * 1000;
+        Log::debug('[PERF] Brand safety validation completed', ['duration_ms' => round($safetyDuration, 2)]);
 
         $scheduledAt = $this->parseScheduleTime($schedule);
         $posts = [];
         $needsApproval = false;
         $jobsDispatched = 0;
 
-        foreach ($profileIds as $profileId) {
+        // [PERF] Measure profile processing loop
+        $loopStart = microtime(true);
+        Log::debug('[PERF] Starting profile processing loop', ['profile_count' => count($profileIds)]);
+
+        foreach ($profileIds as $index => $profileId) {
+            $iterStart = microtime(true);
+
+            // [PERF] Measure profile query
+            $queryStart = microtime(true);
             $profile = Integration::where('org_id', $org)
                 ->where('integration_id', $profileId)
                 ->first();
+            $queryDuration = (microtime(true) - $queryStart) * 1000;
 
             if (!$profile) {
+                Log::debug('[PERF] Profile not found, skipping', [
+                    'profile_id' => $profileId,
+                    'query_duration_ms' => round($queryDuration, 2)
+                ]);
                 continue;
             }
 
+            // [PERF] Measure approval check
+            $approvalStart = microtime(true);
             $needsApproval = $needsApproval || $this->checkApprovalRequired($org, $profile);
+            $approvalDuration = (microtime(true) - $approvalStart) * 1000;
 
             $postData = $this->buildPostData($org, $profile, $content, $isDraft, $requiresApproval, $needsApproval, $scheduledAt);
+
+            // [PERF] Measure post creation
+            $createStart = microtime(true);
             $post = SocialPost::create($postData);
+            $createDuration = (microtime(true) - $createStart) * 1000;
 
             // Dispatch async publishing job if post should be published immediately
             if ($postData['status'] === 'pending') {
+                // [PERF] Measure job dispatch
+                $dispatchStart = microtime(true);
                 $post->update(['status' => 'queued']);
 
                 PublishSocialPostJob::dispatch(
@@ -202,16 +233,52 @@ class PublishingModalController extends Controller
                 );
 
                 $jobsDispatched++;
+                $dispatchDuration = (microtime(true) - $dispatchStart) * 1000;
 
                 Log::info('Post queued for publishing', [
                     'post_id' => $post->id,
                     'platform' => $profile->platform,
                     'org_id' => $org,
                 ]);
+            } else {
+                $dispatchDuration = 0;
             }
+
+            $iterDuration = (microtime(true) - $iterStart) * 1000;
+            Log::debug('[PERF] Profile iteration completed', [
+                'iteration' => $index + 1,
+                'profile_id' => $profileId,
+                'platform' => $profile->platform,
+                'total_ms' => round($iterDuration, 2),
+                'breakdown' => [
+                    'query_ms' => round($queryDuration, 2),
+                    'approval_check_ms' => round($approvalDuration, 2),
+                    'post_create_ms' => round($createDuration, 2),
+                    'job_dispatch_ms' => round($dispatchDuration, 2),
+                ]
+            ]);
 
             $posts[] = $post;
         }
+
+        $loopDuration = (microtime(true) - $loopStart) * 1000;
+        Log::debug('[PERF] Profile processing loop completed', [
+            'profile_count' => count($profileIds),
+            'duration_ms' => round($loopDuration, 2)
+        ]);
+
+        // [PERF] Total time
+        $totalDuration = (microtime(true) - $perfStart) * 1000;
+        Log::info('[PERF] TOTAL post creation completed', [
+            'duration_ms' => round($totalDuration, 2),
+            'breakdown' => [
+                'brand_safety_ms' => round($safetyDuration, 2),
+                'profile_loop_ms' => round($loopDuration, 2),
+                'other_ms' => round($totalDuration - $safetyDuration - $loopDuration, 2),
+            ],
+            'posts_created' => count($posts),
+            'jobs_dispatched' => $jobsDispatched,
+        ]);
 
         return $this->buildCreationResultAsync($posts, $isDraft, $needsApproval, $requiresApproval, $scheduledAt, $jobsDispatched);
     }

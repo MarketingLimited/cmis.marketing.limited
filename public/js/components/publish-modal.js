@@ -1178,6 +1178,10 @@ function publishModal() {
         async publishNow() {
             if (!this.canSubmit) return;
 
+            // [PERF] Start timing the entire publish flow
+            const perfStart = performance.now();
+            console.log('[PERF] Publish flow started');
+
             // Check if media is still uploading
             const uploadingCount = this.getUploadingMediaCount();
             if (uploadingCount > 0) {
@@ -1194,11 +1198,18 @@ function publishModal() {
             this.publishingStatus = 'submitting'; // Changed from 'uploading' since media is already uploaded
 
             try {
-                // Upload media files first if they exist (now in parallel!)
+                // [PERF] Measure content preparation
+                const prepStart = performance.now();
+                console.log('[PERF] Starting content preparation');
                 const contentToSend = await this.prepareContentForPublishing(this.content);
+                const prepDuration = performance.now() - prepStart;
+                console.log(`[PERF] Content preparation completed in ${prepDuration.toFixed(2)}ms`);
 
                 this.publishingStatus = 'submitting';
 
+                // [PERF] Measure API call
+                const apiStart = performance.now();
+                console.log('[PERF] Starting API call to /social/publish-modal/create');
                 const response = await fetch(`/orgs/${window.currentOrgId}/social/publish-modal/create`, {
                     method: 'POST',
                     headers: {
@@ -1212,9 +1223,15 @@ function publishModal() {
                         is_draft: false
                     })
                 });
+                const apiDuration = performance.now() - apiStart;
+                console.log(`[PERF] API call completed in ${apiDuration.toFixed(2)}ms`);
 
+                // [PERF] Measure response processing
+                const processStart = performance.now();
                 if (response.ok) {
                     const data = await response.json();
+                    const processDuration = performance.now() - processStart;
+                    console.log(`[PERF] Response processing completed in ${processDuration.toFixed(2)}ms`);
 
                     // Check if async publishing (queued)
                     if (data.data && data.data.is_async && data.data.post_ids) {
@@ -1245,6 +1262,14 @@ function publishModal() {
                     const data = await response.json();
                     window.notify(data.message || 'Failed to create post', 'error');
                 }
+
+                // [PERF] Total time
+                const totalDuration = performance.now() - perfStart;
+                console.log(`[PERF] TOTAL publish flow completed in ${totalDuration.toFixed(2)}ms`, {
+                    preparation: `${prepDuration.toFixed(2)}ms`,
+                    api_call: `${apiDuration.toFixed(2)}ms`,
+                    response_processing: `${(totalDuration - prepDuration - apiDuration).toFixed(2)}ms`
+                });
             } catch (e) {
                 console.error('Failed to publish', e);
                 window.notify('Failed to publish post: ' + e.message, 'error');
