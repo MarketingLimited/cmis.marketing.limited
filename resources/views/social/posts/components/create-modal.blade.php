@@ -215,26 +215,12 @@
                         <div class="mb-6">
                             <label class="block text-sm font-medium text-gray-700 mb-2">
                                 {{ __('social.schedule_datetime') }}
-                                <template x-if="profileGroupTimezone && profileGroupName">
-                                    <span class="text-xs text-gray-500 font-normal">
-                                        (<span x-text="profileGroupName"></span> - <span x-text="profileGroupTimezone"></span>)
-                                    </span>
-                                </template>
                             </label>
                             <input
                                 type="datetime-local"
                                 x-model="postData.scheduled_at"
                                 :min="minDateTime"
                                 class="w-full border border-gray-300 rounded-lg px-4 py-2">
-
-                            <!-- Timezone Info -->
-                            <template x-if="profileGroupTimezone && timezoneOffset">
-                                <p class="text-xs text-gray-500 mt-2">
-                                    <i class="fas fa-clock me-1"></i>
-                                    {{ __('social.times_in_timezone') }} <span x-text="profileGroupName"></span>
-                                    <span x-text="'(UTC' + timezoneOffset + ')'"></span>
-                                </p>
-                            </template>
                         </div>
                     </template>
                 </div>
