@@ -1398,6 +1398,16 @@ function publishModal() {
         async schedulePost() {
             if (!this.canSubmit) return;
             try {
+                // Ensure timezone is fetched before scheduling (handles race condition)
+                if (this.schedule.timezone === 'UTC' && this.selectedProfiles.length > 0) {
+                    console.log('[PublishModal] Timezone is UTC, fetching from profile inheritance...');
+                    await this.fetchTimezoneForSelectedProfiles();
+                }
+
+                // Debug: Log schedule data being sent
+                console.log('[PublishModal] Scheduling post with schedule:', JSON.stringify(this.schedule, null, 2));
+                console.log('[PublishModal] Timezone being sent:', this.schedule.timezone);
+
                 const response = await fetch(`/orgs/${window.currentOrgId}/social/publish-modal/create`, {
                     method: 'POST',
                     headers: {
@@ -1461,6 +1471,12 @@ function publishModal() {
         async submitForApproval() {
             if (!this.canSubmit) return;
             try {
+                // Ensure timezone is fetched before submitting with schedule (handles race condition)
+                if (this.scheduleEnabled && this.schedule.timezone === 'UTC' && this.selectedProfiles.length > 0) {
+                    console.log('[PublishModal] Timezone is UTC for approval, fetching from profile inheritance...');
+                    await this.fetchTimezoneForSelectedProfiles();
+                }
+
                 // For now, treat as draft with pending approval status
                 const response = await fetch(`/orgs/${window.currentOrgId}/social/publish-modal/save-draft`, {
                     method: 'POST',

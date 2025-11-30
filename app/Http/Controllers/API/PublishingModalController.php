@@ -308,12 +308,28 @@ class PublishingModalController extends Controller
      */
     protected function parseScheduleTime(?array $schedule): ?\Carbon\Carbon
     {
+        Log::debug('[TIMEZONE] parseScheduleTime called', [
+            'schedule' => $schedule,
+        ]);
+
         if (!$schedule || empty($schedule['date']) || empty($schedule['time'])) {
+            Log::debug('[TIMEZONE] No schedule data, returning null');
             return null;
         }
 
         $timezone = $schedule['timezone'] ?? 'UTC';
-        return \Carbon\Carbon::parse("{$schedule['date']} {$schedule['time']}", $timezone)->utc();
+        $dateTimeStr = "{$schedule['date']} {$schedule['time']}";
+        $parsed = \Carbon\Carbon::parse($dateTimeStr, $timezone);
+        $utc = $parsed->utc();
+
+        Log::debug('[TIMEZONE] Schedule time conversion', [
+            'input_datetime' => $dateTimeStr,
+            'input_timezone' => $timezone,
+            'parsed' => $parsed->toIso8601String(),
+            'utc' => $utc->toIso8601String(),
+        ]);
+
+        return $utc;
     }
 
     /**
