@@ -1069,7 +1069,7 @@ function publishModal() {
                 });
                 if (response.ok) {
                     window.notify('Draft saved successfully', 'success');
-                    this.closeModal();
+                    this.closeModal(true); // Force close - skip unsaved changes check
                 } else {
                     const data = await response.json();
                     window.notify(data.message || 'Failed to save draft', 'error');
@@ -1114,8 +1114,8 @@ function publishModal() {
                         window.notify(data.message || 'Post created successfully', 'success');
                     }
 
-                    if (data.data && data.data.success_count > 0) {
-                        this.closeModal();
+                    if (data.data && (data.data.success_count > 0 || data.data.queued_count > 0)) {
+                        this.closeModal(true); // Force close - skip unsaved changes check
                     }
                 } else {
                     const data = await response.json();
@@ -1147,7 +1147,7 @@ function publishModal() {
                 if (response.ok) {
                     const data = await response.json();
                     window.notify(data.message || 'Post scheduled successfully', 'success');
-                    this.closeModal();
+                    this.closeModal(true); // Force close - skip unsaved changes check
                 } else {
                     const data = await response.json();
                     window.notify(data.message || 'Failed to schedule post', 'error');
@@ -1177,7 +1177,7 @@ function publishModal() {
                 if (response.ok) {
                     const data = await response.json();
                     window.notify(data.message || 'Post added to queue successfully', 'success');
-                    this.closeModal();
+                    this.closeModal(true); // Force close - skip unsaved changes check
                 } else {
                     const data = await response.json();
                     window.notify(data.message || 'Failed to add post to queue', 'error');
@@ -1209,7 +1209,7 @@ function publishModal() {
                 });
                 if (response.ok) {
                     window.notify('Post submitted for approval', 'success');
-                    this.closeModal();
+                    this.closeModal(true); // Force close - skip unsaved changes check
                 } else {
                     const data = await response.json();
                     window.notify(data.message || 'Failed to submit for approval', 'error');
@@ -2595,9 +2595,9 @@ function publishModal() {
             return false;
         },
 
-        closeModal() {
-            // Check for unsaved changes before closing
-            if (this.hasUnsavedChanges() && !this.editMode) {
+        closeModal(force = false) {
+            // Check for unsaved changes before closing (skip if force=true, e.g., after successful publish)
+            if (!force && this.hasUnsavedChanges() && !this.editMode) {
                 const confirmMessage = document.documentElement.lang === 'ar'
                     ? 'لديك تغييرات غير محفوظة. هل تريد حقاً الإغلاق؟'
                     : 'You have unsaved changes. Do you really want to close?';
