@@ -859,6 +859,7 @@ function publishModal() {
         /**
          * Get the display name for a platform tab
          * Shows account name/username if single account, or "Platform (X)" if multiple
+         * Priority: account_name > username-style platform_handle > name > platform
          */
         getPlatformTabName(platform) {
             if (!this.selectedProfiles || !Array.isArray(this.selectedProfiles)) {
@@ -874,7 +875,19 @@ function publishModal() {
             if (platformProfiles.length === 1) {
                 // Single account - show account name or username
                 const profile = platformProfiles[0];
-                return profile.platform_handle || profile.account_name || profile.name || platform.charAt(0).toUpperCase() + platform.slice(1);
+
+                // Prefer account_name (e.g., "CMIS APP")
+                if (profile.account_name && !profile.account_name.match(/^\d+$/)) {
+                    return profile.account_name;
+                }
+
+                // Then try platform_handle if it looks like a username (not just numbers)
+                if (profile.platform_handle && !profile.platform_handle.match(/^@?\d+$/)) {
+                    return profile.platform_handle;
+                }
+
+                // Fallback to name or platform
+                return profile.name || platform.charAt(0).toUpperCase() + platform.slice(1);
             }
 
             // Multiple accounts - show platform name with count
