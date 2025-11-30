@@ -76,6 +76,7 @@
         <div x-show="open" x-transition:enter="ease-out duration-300"
              x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
              x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+             id="publish-modal-panel"
              class="relative w-full max-w-7xl max-h-[90vh] bg-white rounded-2xl shadow-2xl ring-1 ring-gray-900/10 flex flex-col"
              style="display: flex !important; flex-direction: column !important;">
 
@@ -91,7 +92,7 @@
             {{-- Desktop: Three columns (all visible) --}}
             {{-- flex-1 allows this to grow, overflow-y-auto enables scrolling within --}}
             {{-- z-10 keeps content below footer (z-20) and overlays (z-50) --}}
-            <div class="flex-1 flex flex-col lg:flex-row overflow-y-auto min-h-0 relative z-10">
+            <div id="publish-modal-content" class="flex-1 flex flex-col lg:flex-row overflow-y-auto min-h-0 relative z-10">
 
                 {{-- Column 1: Profile Selector (Hidden on mobile, overlay on tablet, sidebar on desktop) --}}
                 <div class="hidden lg:flex lg:w-80 lg:flex-shrink-0 lg:border-e lg:border-gray-100">
@@ -114,12 +115,29 @@
                 @include('components.publish-modal.composer.main')
 
                 {{-- Column 3: Preview Panel (Hidden on mobile/tablet, sidebar on desktop) --}}
-                <div class="hidden xl:flex xl:w-96 xl:flex-shrink-0 xl:border-s xl:border-gray-100">
+                {{-- x-init repositions preview panel inside content area, fixing DOM nesting issues --}}
+                <div id="publish-modal-preview"
+                     x-init="$nextTick(() => {
+                         const preview = document.getElementById('publish-modal-preview');
+                         const content = document.getElementById('publish-modal-content');
+                         if (preview && content && preview.parentElement !== content) {
+                             content.appendChild(preview);
+                         }
+                     })"
+                     class="hidden xl:flex xl:w-96 xl:flex-shrink-0 xl:border-s xl:border-gray-100">
                     @include('components.publish-modal.preview-panel')
                 </div>
 
                 {{-- Mobile Preview Button (Only on mobile/tablet) --}}
-                <div class="xl:hidden flex-shrink-0 px-6 py-3 border-t border-gray-200 bg-gray-50">
+                <div id="publish-modal-mobile-preview-btn"
+                     x-init="$nextTick(() => {
+                         const btn = document.getElementById('publish-modal-mobile-preview-btn');
+                         const content = document.getElementById('publish-modal-content');
+                         if (btn && content && btn.parentElement !== content) {
+                             content.appendChild(btn);
+                         }
+                     })"
+                     class="xl:hidden flex-shrink-0 px-6 py-3 border-t border-gray-200 bg-gray-50">
                     <button @click="showMobilePreview = !showMobilePreview"
                             class="w-full px-4 py-2.5 min-h-[44px] bg-blue-600 rounded-lg text-sm font-medium text-white hover:bg-blue-700 transition flex items-center justify-center gap-2">
                         <i class="fas fa-eye"></i>

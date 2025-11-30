@@ -1,7 +1,16 @@
 {{-- Modal Footer - Full-Width Publish Controls --}}
 {{-- This footer MUST be a direct child of the modal panel flex-col container --}}
 {{-- z-20 ensures it stays above content but below overlays (z-50) --}}
-<div class="flex-shrink-0 border-t-2 border-gray-200 bg-white px-6 py-4 relative z-20">
+{{-- x-init repositions footer to be last child of modal panel, fixing DOM nesting issues --}}
+<div id="publish-modal-footer"
+     x-init="$nextTick(() => {
+         const footer = document.getElementById('publish-modal-footer');
+         const panel = document.getElementById('publish-modal-panel');
+         if (footer && panel && footer.parentElement !== panel) {
+             panel.appendChild(footer);
+         }
+     })"
+     class="flex-shrink-0 border-t-2 border-gray-200 bg-white px-6 py-4 relative z-20">
     <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
 
         {{-- Left Side: Publish Mode Selection --}}
@@ -43,6 +52,26 @@
                 <option value="available">{{ __('publish.queue_available') }}</option>
                 <option value="last">{{ __('publish.queue_last') }}</option>
             </select>
+
+            {{-- Schedule Date/Time Inputs (shown when Schedule mode selected) --}}
+            <div x-show="publishMode === 'schedule'" x-cloak
+                 x-transition:enter="transition ease-out duration-200"
+                 x-transition:enter-start="opacity-0 scale-95"
+                 x-transition:enter-end="opacity-100 scale-100"
+                 class="flex flex-wrap items-center gap-2">
+                <input type="date" x-model="schedule.date"
+                       class="px-3 py-1.5 text-sm border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500">
+                <input type="time" x-model="schedule.time"
+                       class="px-3 py-1.5 text-sm border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500">
+                <select x-model="schedule.timezone"
+                        class="px-3 py-1.5 text-sm border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500">
+                    <option value="UTC">UTC</option>
+                    <option value="Asia/Riyadh">{{ __('publish.timezone_riyadh') }}</option>
+                    <option value="Asia/Dubai">{{ __('publish.timezone_dubai') }}</option>
+                    <option value="Europe/London">{{ __('publish.timezone_london') }}</option>
+                    <option value="America/New_York">{{ __('publish.timezone_newyork') }}</option>
+                </select>
+            </div>
         </div>
 
         {{-- Right Side: Action Buttons --}}

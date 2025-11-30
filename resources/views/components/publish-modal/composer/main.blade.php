@@ -15,9 +15,4 @@
         {{-- Per-Platform Content Tabs --}}
         @include('components.publish-modal.composer.platform-content')
     </div>
-
-    {{-- Scheduling Section - Fixed at bottom --}}
-    <div class="flex-shrink-0">
-        @include('components.publish-modal.composer.scheduling')
-    </div>
 </div>
