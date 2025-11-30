@@ -280,8 +280,11 @@ function socialManager() {
             status: '',
             scheduled_at: null,
             media: [],
-            account_username: ''
+            account_username: '',
+            integration_id: null
         },
+        editTimezone: 'UTC',
+        editTimezoneLoading: false,
         isUpdating: false,
         isDeletingFailed: false,
 
@@ -1259,7 +1262,7 @@ function socialManager() {
             return num.toString();
         },
 
-        editPost(post) {
+        async editPost(post) {
             this.editingPost = {
                 id: post.post_id || post.id,
                 content: post.content || post.post_text || '',
@@ -1268,17 +1271,103 @@ function socialManager() {
                 scheduled_at: post.scheduled_at,
                 media: post.media || [],
                 account_username: post.account_username,
+                integration_id: post.integration_id,
                 scheduledDate: '',
                 scheduledTime: ''
             };
 
+            // Default to UTC until we fetch the correct timezone
+            this.editTimezone = 'UTC';
+
+            // Fetch timezone for this post's integration
+            if (post.integration_id) {
+                await this.fetchEditTimezone(post.integration_id);
+            }
+
+            // Convert UTC time to local timezone for display
             if (post.scheduled_at) {
-                const scheduled = new Date(post.scheduled_at);
-                this.editingPost.scheduledDate = scheduled.toISOString().split('T')[0];
-                this.editingPost.scheduledTime = scheduled.toTimeString().slice(0, 5);
+                try {
+                    // Parse UTC time and convert to local timezone
+                    const utcDate = new Date(post.scheduled_at);
+
+                    if (this.editTimezone && this.editTimezone !== 'UTC') {
+                        // Format the UTC date in the profile's timezone
+                        const localDateStr = utcDate.toLocaleString('en-CA', {
+                            timeZone: this.editTimezone,
+                            year: 'numeric',
+                            month: '2-digit',
+                            day: '2-digit'
+                        });
+                        const localTimeStr = utcDate.toLocaleString('en-GB', {
+                            timeZone: this.editTimezone,
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            hour12: false
+                        });
+
+                        this.editingPost.scheduledDate = localDateStr;
+                        this.editingPost.scheduledTime = localTimeStr;
+
+                        console.log('[Edit Post] Converted UTC to local:', {
+                            utc: post.scheduled_at,
+                            timezone: this.editTimezone,
+                            localDate: localDateStr,
+                            localTime: localTimeStr
+                        });
+                    } else {
+                        // No timezone, use UTC directly
+                        this.editingPost.scheduledDate = utcDate.toISOString().split('T')[0];
+                        this.editingPost.scheduledTime = utcDate.toISOString().slice(11, 16);
+                    }
+                } catch (error) {
+                    console.error('[Edit Post] Failed to convert timezone:', error);
+                    const scheduled = new Date(post.scheduled_at);
+                    this.editingPost.scheduledDate = scheduled.toISOString().split('T')[0];
+                    this.editingPost.scheduledTime = scheduled.toTimeString().slice(0, 5);
+                }
             }
 
             this.showEditPostModal = true;
+        },
+
+        async fetchEditTimezone(integrationId) {
+            if (!integrationId) return;
+
+            this.editTimezoneLoading = true;
+            try {
+                console.log('[Edit Post] Fetching timezone for integration:', integrationId);
+
+                const response = await fetch(`/orgs/${this.orgId}/social/publish-modal/timezone`, {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: JSON.stringify({ integration_ids: [integrationId] })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const result = await response.json();
+
+                if (result.success && result.data?.timezone) {
+                    this.editTimezone = result.data.timezone;
+                    console.log('[Edit Post] Timezone fetched:', this.editTimezone, 'from:', result.data.timezone_source);
+                } else {
+                    console.warn('[Edit Post] No timezone in response, using UTC');
+                    this.editTimezone = 'UTC';
+                }
+            } catch (error) {
+                console.error('[Edit Post] Failed to fetch timezone:', error);
+                this.editTimezone = 'UTC';
+            } finally {
+                this.editTimezoneLoading = false;
+            }
         },
 
         async updatePost() {
@@ -1294,6 +1383,14 @@ function socialManager() {
                     && this.editingPost.scheduledDate && this.editingPost.scheduledTime) {
                     updateData.scheduled_at = `${this.editingPost.scheduledDate}T${this.editingPost.scheduledTime}:00`;
                     updateData.status = 'scheduled';
+
+                    // Include timezone so backend can convert to UTC
+                    updateData.timezone = this.editTimezone;
+
+                    console.log('[Edit Post] Sending update with timezone:', {
+                        scheduled_at: updateData.scheduled_at,
+                        timezone: updateData.timezone
+                    });
                 }
 
                 const response = await fetch(`/orgs/${this.orgId}/social/posts/${this.editingPost.id}`, {

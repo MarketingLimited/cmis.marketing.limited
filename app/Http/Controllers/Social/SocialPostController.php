@@ -386,6 +386,10 @@ class SocialPostController extends Controller
 
     /**
      * Update a post
+     *
+     * TIMEZONE SUPPORT: The scheduled_at from frontend is in the profile group's timezone.
+     * We convert it to UTC for storage. If no timezone is provided, we fetch it from
+     * the post's integration using the timezone inheritance hierarchy.
      */
     public function update(Request $request, string $org, string $post)
     {
@@ -409,6 +413,7 @@ class SocialPostController extends Controller
             'content' => 'sometimes|string|max:5000',
             'scheduled_at' => 'sometimes|nullable|date',
             'status' => 'sometimes|in:draft,scheduled',
+            'timezone' => 'sometimes|nullable|string|max:64',
         ]);
 
         $updateData = ['updated_at' => now()];
@@ -418,7 +423,45 @@ class SocialPostController extends Controller
         }
 
         if ($request->has('scheduled_at') && $request->scheduled_at) {
-            $updateData['scheduled_at'] = $request->scheduled_at;
+            $scheduledAt = $request->scheduled_at;
+            $timezone = $request->input('timezone');
+
+            // If no timezone provided, fetch from integration using inheritance hierarchy
+            if (!$timezone && $socialPost->integration_id) {
+                $timezoneData = DB::table('cmis.integrations as i')
+                    ->leftJoin('cmis.social_accounts as sa', 'i.integration_id', '=', 'sa.integration_id')
+                    ->leftJoin('cmis.profile_groups as pg', 'i.profile_group_id', '=', 'pg.group_id')
+                    ->join('cmis.orgs as o', 'i.org_id', '=', 'o.org_id')
+                    ->where('i.integration_id', $socialPost->integration_id)
+                    ->select(DB::raw('COALESCE(sa.timezone, pg.timezone, o.timezone, \'UTC\') as timezone'))
+                    ->first();
+
+                $timezone = $timezoneData?->timezone ?? 'UTC';
+            }
+
+            // Convert from local timezone to UTC
+            if ($timezone && $timezone !== 'UTC') {
+                try {
+                    $localDateTime = \Carbon\Carbon::parse($scheduledAt, $timezone);
+                    $updateData['scheduled_at'] = $localDateTime->utc()->toDateTimeString();
+
+                    Log::debug('[TIMEZONE] Edit post: converted to UTC', [
+                        'input' => $scheduledAt,
+                        'timezone' => $timezone,
+                        'utc' => $updateData['scheduled_at'],
+                    ]);
+                } catch (\Exception $e) {
+                    Log::warning('[TIMEZONE] Failed to parse datetime, storing as-is', [
+                        'input' => $scheduledAt,
+                        'timezone' => $timezone,
+                        'error' => $e->getMessage(),
+                    ]);
+                    $updateData['scheduled_at'] = $scheduledAt;
+                }
+            } else {
+                $updateData['scheduled_at'] = $scheduledAt;
+            }
+
             $updateData['status'] = 'scheduled';
         }
 

@@ -91,10 +91,24 @@
                 <!-- Schedule (for draft/scheduled posts) -->
                 <template x-if="editingPost.status === 'draft' || editingPost.status === 'scheduled'">
                     <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-                            <i class="fas fa-clock ms-1"></i>
-                            {{ __('social.schedule_datetime') }}
-                        </label>
+                        <div class="flex items-center justify-between mb-3">
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                <i class="fas fa-clock ms-1"></i>
+                                {{ __('social.schedule_datetime') }}
+                            </label>
+                            <!-- Timezone indicator -->
+                            <span class="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                                <template x-if="editTimezoneLoading">
+                                    <span><i class="fas fa-spinner fa-spin"></i></span>
+                                </template>
+                                <template x-if="!editTimezoneLoading">
+                                    <span>
+                                        <i class="fas fa-globe"></i>
+                                        <span x-text="editTimezone || 'UTC'"></span>
+                                    </span>
+                                </template>
+                            </span>
+                        </div>
                         <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">{{ __('social.date') }}</label>
