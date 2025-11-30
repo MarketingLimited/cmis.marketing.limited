@@ -300,10 +300,10 @@
 </head>
 <body class="bg-gray-50 font-sans antialiased" :class="{ 'dark:bg-gray-900': darkMode }">
 
-    <!-- Notification Toast Container -->
+    <!-- Notification Toast Container - z-[70] ensures visibility above modals (z-50) -->
     <div x-data="notificationManager()"
          @notify.window="addNotification($event.detail)"
-         class="fixed top-4 {{ $isRtl ? 'right-4' : 'left-4' }} z-50 space-y-2"
+         class="fixed top-4 {{ $isRtl ? 'right-4' : 'left-4' }} z-[70] space-y-2"
          x-cloak>
         <template x-for="notification in notifications" :key="notification.id">
             <div x-show="notification.show"
