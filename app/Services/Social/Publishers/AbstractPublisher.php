@@ -135,24 +135,44 @@ abstract class AbstractPublisher
     protected function httpPost(string $url, array $data = [], int $timeout = 60): array
     {
         try {
+            Log::debug("[{$this->platform}] httpPost request", [
+                'url' => $url,
+                'timeout' => $timeout,
+            ]);
+
             $response = Http::timeout($timeout)->post($url, $data);
+            $jsonBody = $response->json();
+
+            Log::debug("[{$this->platform}] httpPost response", [
+                'status' => $response->status(),
+                'successful' => $response->successful(),
+                'body_preview' => substr($response->body(), 0, 500),
+            ]);
 
             if (!$response->successful()) {
                 return [
                     'success' => false,
-                    'error' => $response->json('error.message', 'Request failed'),
-                    'response' => $response->json(),
+                    'error' => $jsonBody['error']['message'] ?? $response->json('error.message', 'Request failed'),
+                    'response' => $jsonBody,
+                    'status' => $response->status(),
                 ];
             }
 
             return [
                 'success' => true,
-                'data' => $response->json(),
+                'data' => $jsonBody,
+                'status' => $response->status(),
             ];
         } catch (\Exception $e) {
+            Log::error("[{$this->platform}] httpPost exception", [
+                'url' => $url,
+                'exception' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
             return [
                 'success' => false,
                 'error' => $e->getMessage(),
+                'exception' => get_class($e),
             ];
         }
     }

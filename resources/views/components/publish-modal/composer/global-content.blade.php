@@ -272,8 +272,8 @@
     </div>
 
     {{-- Media Preview --}}
-    <div x-show="content.global.media.length > 0 || uploadingMedia.length > 0" class="mt-4 grid grid-cols-4 gap-3">
-        {{-- Uploaded Media --}}
+    <div x-show="content.global.media.length > 0" class="mt-4 grid grid-cols-4 gap-3">
+        {{-- Media Items with Upload Status --}}
         <template x-for="(media, index) in content.global.media" :key="index">
             <div class="relative aspect-square rounded-lg overflow-hidden bg-gray-100 group">
                 <template x-if="media.type === 'image'">
@@ -284,33 +284,47 @@
                         <i class="fas fa-play-circle text-white text-3xl"></i>
                     </div>
                 </template>
-                {{-- Processing Indicator --}}
+
+                {{-- Upload Status Overlays --}}
+                {{-- Uploading Indicator --}}
+                <template x-if="media.uploadStatus === 'uploading'">
+                    <div class="absolute inset-0 bg-black/60 flex flex-col items-center justify-center">
+                        <div class="animate-spin rounded-full h-8 w-8 border-2 border-white border-t-transparent mb-2"></div>
+                        <p class="text-white text-xs">{{ __('publish.uploading') }}</p>
+                    </div>
+                </template>
+
+                {{-- Upload Success Indicator --}}
+                <template x-if="media.uploadStatus === 'uploaded'">
+                    <div class="absolute bottom-2 start-2 bg-green-500 text-white rounded-full w-6 h-6 flex items-center justify-center shadow-lg">
+                        <i class="fas fa-check text-xs"></i>
+                    </div>
+                </template>
+
+                {{-- Upload Failed Indicator --}}
+                <template x-if="media.uploadStatus === 'failed'">
+                    <div class="absolute inset-0 bg-red-500/60 flex flex-col items-center justify-center">
+                        <i class="fas fa-exclamation-triangle text-white text-2xl mb-2"></i>
+                        <p class="text-white text-xs">{{ __('publish.upload_failed') }}</p>
+                        <button @click="autoUploadMedia(index)" class="mt-2 px-2 py-1 bg-white text-red-600 text-xs rounded hover:bg-gray-100">
+                            {{ __('publish.retry') }}
+                        </button>
+                    </div>
+                </template>
+
+                {{-- Processing Indicator (for post-upload processing) --}}
                 <template x-if="mediaProcessingStatus[media.id] === 'processing'">
                     <div class="absolute inset-0 bg-black/60 flex flex-col items-center justify-center">
                         <div class="animate-spin rounded-full h-8 w-8 border-2 border-white border-t-transparent mb-2"></div>
                         <p class="text-white text-xs">{{ __('publish.processing') }}</p>
                     </div>
                 </template>
+
+                {{-- Remove Button --}}
                 <button @click="removeMedia(index)"
                         class="absolute top-2 end-2 w-6 h-6 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
                     <i class="fas fa-times text-xs"></i>
                 </button>
-            </div>
-        </template>
-
-        {{-- Uploading Media (with progress) --}}
-        <template x-for="upload in uploadingMedia" :key="upload.id">
-            <div class="relative aspect-square rounded-lg overflow-hidden bg-gray-100">
-                <div class="w-full h-full flex flex-col items-center justify-center p-4">
-                    <div class="animate-spin rounded-full h-8 w-8 border-2 border-indigo-500 border-t-transparent mb-2"></div>
-                    <p class="text-xs text-gray-600 text-center mb-2" x-text="upload.name"></p>
-                    {{-- Progress Bar --}}
-                    <div class="w-full bg-gray-200 rounded-full h-1.5">
-                        <div class="bg-indigo-600 h-1.5 rounded-full transition-all duration-300"
-                             :style="'width: ' + (upload.progress || 0) + '%'"></div>
-                    </div>
-                    <p class="text-xs text-gray-500 mt-1" x-text="(upload.progress || 0) + '%'"></p>
-                </div>
             </div>
         </template>
     </div>

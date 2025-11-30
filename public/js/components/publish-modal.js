@@ -860,11 +860,22 @@ function publishModal() {
             files.forEach(file => {
                 const reader = new FileReader();
                 reader.onload = (e) => {
-                    this.content.global.media.push({
+                    // Add media with uploading status
+                    const mediaItem = {
                         file: file,
                         type: file.type.startsWith('video') ? 'video' : 'image',
-                        preview_url: e.target.result
-                    });
+                        preview_url: e.target.result,
+                        uploadStatus: 'uploading', // 'uploading', 'uploaded', 'failed'
+                        url: null,
+                        uploadProgress: 0
+                    };
+                    this.content.global.media.push(mediaItem);
+
+                    // Get the index after pushing
+                    const mediaIndex = this.content.global.media.length - 1;
+
+                    // Start auto-upload immediately
+                    this.autoUploadMedia(mediaIndex);
                 };
                 reader.readAsDataURL(file);
             });
@@ -877,15 +888,83 @@ function publishModal() {
                 if (file.type.startsWith('image') || file.type.startsWith('video')) {
                     const reader = new FileReader();
                     reader.onload = (e) => {
-                        this.content.global.media.push({
+                        // Add media with uploading status
+                        const mediaItem = {
                             file: file,
                             type: file.type.startsWith('video') ? 'video' : 'image',
-                            preview_url: e.target.result
-                        });
+                            preview_url: e.target.result,
+                            uploadStatus: 'uploading',
+                            url: null,
+                            uploadProgress: 0
+                        };
+                        this.content.global.media.push(mediaItem);
+
+                        // Get the index after pushing
+                        const mediaIndex = this.content.global.media.length - 1;
+
+                        // Start auto-upload immediately
+                        this.autoUploadMedia(mediaIndex);
                     };
                     reader.readAsDataURL(file);
                 }
             });
+        },
+
+        /**
+         * Auto-upload media file immediately after selection
+         */
+        async autoUploadMedia(mediaIndex) {
+            const mediaItem = this.content.global.media[mediaIndex];
+            if (!mediaItem || !mediaItem.file) {
+                console.error('[AutoUpload] Invalid media item at index', mediaIndex);
+                return;
+            }
+
+            console.log('[AutoUpload] Starting upload for media', {
+                index: mediaIndex,
+                fileName: mediaItem.file.name,
+                fileSize: mediaItem.file.size
+            });
+
+            try {
+                const uploadedUrl = await this.uploadMediaFile(mediaItem.file);
+
+                if (uploadedUrl) {
+                    // Update the media item with uploaded URL
+                    this.content.global.media[mediaIndex].url = uploadedUrl;
+                    this.content.global.media[mediaIndex].uploadStatus = 'uploaded';
+                    this.content.global.media[mediaIndex].uploadProgress = 100;
+                    console.log('[AutoUpload] Upload successful', { index: mediaIndex, url: uploadedUrl });
+                } else {
+                    this.content.global.media[mediaIndex].uploadStatus = 'failed';
+                    console.error('[AutoUpload] Upload failed', { index: mediaIndex });
+                    window.notify && window.notify('Failed to upload media file', 'error');
+                }
+            } catch (error) {
+                this.content.global.media[mediaIndex].uploadStatus = 'failed';
+                console.error('[AutoUpload] Upload error', { index: mediaIndex, error: error.message });
+                window.notify && window.notify('Error uploading media: ' + error.message, 'error');
+            }
+        },
+
+        /**
+         * Check if all media files are uploaded
+         */
+        isAllMediaUploaded() {
+            if (!this.content.global.media || this.content.global.media.length === 0) {
+                return true;
+            }
+            return this.content.global.media.every(item =>
+                item.uploadStatus === 'uploaded' || item.url || !item.file
+            );
+        },
+
+        /**
+         * Get count of media still uploading
+         */
+        getUploadingMediaCount() {
+            if (!this.content.global.media) return 0;
+            return this.content.global.media.filter(item => item.uploadStatus === 'uploading').length;
         },
 
         removeMedia(index) {
@@ -893,7 +972,8 @@ function publishModal() {
         },
 
         /**
-         * Prepare content by uploading media files and getting URLs
+         * Prepare content by using pre-uploaded media URLs
+         * Media is now auto-uploaded when selected, so we just use the stored URLs
          */
         async prepareContentForPublishing(content) {
             console.log('[Publishing] Preparing content for publishing', {
@@ -903,47 +983,45 @@ function publishModal() {
 
             let uploadedMedia = [];
 
-            // Upload media files in PARALLEL if they exist
+            // Process media - use pre-uploaded URLs from auto-upload
             if (content.global.media && content.global.media.length > 0) {
-                const uploadPromises = content.global.media.map(async (mediaItem) => {
+                for (const mediaItem of content.global.media) {
                     console.log('[Publishing] Processing media item', {
                         hasFile: !!mediaItem.file,
                         hasUrl: !!mediaItem.url,
+                        uploadStatus: mediaItem.uploadStatus,
                         type: mediaItem.type
                     });
 
-                    // If media has a File object, upload it first
-                    if (mediaItem.file) {
+                    // Check if already uploaded via auto-upload
+                    if (mediaItem.url && !mediaItem.url.startsWith('data:')) {
+                        console.log('[Publishing] Using pre-uploaded URL', { url: mediaItem.url });
+                        uploadedMedia.push({
+                            type: mediaItem.type,
+                            url: mediaItem.url,
+                            name: mediaItem.file?.name || mediaItem.name,
+                            size: mediaItem.file?.size || mediaItem.size
+                        });
+                    }
+                    // If still has file but no URL (upload failed or still in progress), try uploading now
+                    else if (mediaItem.file && mediaItem.uploadStatus !== 'uploaded') {
+                        console.log('[Publishing] Media not pre-uploaded, uploading now...');
                         const uploadedUrl = await this.uploadMediaFile(mediaItem.file);
-                        console.log('[Publishing] Media uploaded', { uploadedUrl });
                         if (uploadedUrl) {
-                            return {
+                            uploadedMedia.push({
                                 type: mediaItem.type,
                                 url: uploadedUrl,
                                 name: mediaItem.file.name,
                                 size: mediaItem.file.size
-                            };
+                            });
+                        } else {
+                            console.error('[Publishing] Failed to upload media');
                         }
-                        return null;
-                    } else if (mediaItem.url && !mediaItem.url.startsWith('data:')) {
-                        // Already has a valid URL (not data URL)
-                        console.log('[Publishing] Using existing URL', { url: mediaItem.url });
-                        return {
-                            type: mediaItem.type,
-                            url: mediaItem.url,
-                            name: mediaItem.name,
-                            size: mediaItem.size
-                        };
                     }
-                    return null;
-                });
-
-                // Wait for all uploads to complete in parallel
-                const results = await Promise.all(uploadPromises);
-                uploadedMedia = results.filter(item => item !== null);
+                }
             }
 
-            console.log('[Publishing] Uploaded media', { count: uploadedMedia.length, urls: uploadedMedia.map(m => m.url) });
+            console.log('[Publishing] Uploaded media ready', { count: uploadedMedia.length, urls: uploadedMedia.map(m => m.url) });
 
             // Build clean content object without File objects
             return {
@@ -1100,9 +1178,20 @@ function publishModal() {
         async publishNow() {
             if (!this.canSubmit) return;
 
+            // Check if media is still uploading
+            const uploadingCount = this.getUploadingMediaCount();
+            if (uploadingCount > 0) {
+                const lang = document.documentElement.lang || 'en';
+                const message = lang === 'ar'
+                    ? 'يرجى الانتظار حتى اكتمال رفع الوسائط'
+                    : 'Please wait for media to finish uploading';
+                window.notify && window.notify(message, 'warning');
+                return;
+            }
+
             // Set publishing state for UI feedback
             this.isPublishing = true;
-            this.publishingStatus = 'uploading';
+            this.publishingStatus = 'submitting'; // Changed from 'uploading' since media is already uploaded
 
             try {
                 // Upload media files first if they exist (now in parallel!)

@@ -502,4 +502,10 @@ return [
     'queued_for_publishing' => 'Queued for publishing',
     'publishing_in_progress' => 'Publishing in progress...',
 
+    // Auto-upload status
+    'uploading' => 'Uploading...',
+    'upload_failed' => 'Upload failed',
+    'retry' => 'Retry',
+    'media_still_uploading' => 'Please wait for media to finish uploading',
+
 ];

@@ -271,6 +271,14 @@ class MetaPublisher extends AbstractPublisher
             $params
         );
 
+        // Log the full API response for debugging
+        $this->logInfo('Instagram API response for media container', [
+            'success' => $result['success'] ?? false,
+            'data' => $result['data'] ?? null,
+            'error' => $result['error'] ?? null,
+            'response' => $result['response'] ?? null,
+        ]);
+
         if (!$result['success']) {
             $this->logError('Failed to create Instagram media container', [
                 'error' => $result['error'] ?? 'Unknown error',
@@ -280,11 +288,22 @@ class MetaPublisher extends AbstractPublisher
             return $this->failure('Failed to create media container: ' . ($result['error'] ?? 'Unknown error'));
         }
 
+        // Check if Instagram returned an error in the response body
+        if (isset($result['data']['error'])) {
+            $errorMsg = $result['data']['error']['message'] ?? 'Instagram API error';
+            $this->logError('Instagram returned error in response', [
+                'error' => $result['data']['error'],
+                'media_url' => $mediaUrl,
+            ]);
+            return $this->failure($errorMsg);
+        }
+
         $containerId = $result['data']['id'] ?? null;
 
         if (!$containerId) {
             $this->logError('Media container created but no ID returned', [
-                'result' => $result,
+                'full_result' => $result,
+                'data_keys' => is_array($result['data']) ? array_keys($result['data']) : 'not_array',
                 'media_url' => $mediaUrl,
             ]);
             return $this->failure('Media ID is not available');

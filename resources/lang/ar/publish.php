@@ -502,4 +502,10 @@ return [
     'queued_for_publishing' => 'في انتظار النشر',
     'publishing_in_progress' => 'جاري النشر...',
 
+    // Auto-upload status
+    'uploading' => 'جاري الرفع...',
+    'upload_failed' => 'فشل الرفع',
+    'retry' => 'إعادة المحاولة',
+    'media_still_uploading' => 'يرجى الانتظار حتى اكتمال رفع الوسائط',
+
 ];
