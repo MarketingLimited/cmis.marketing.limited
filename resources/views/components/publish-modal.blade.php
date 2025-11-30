@@ -209,18 +209,15 @@
 
             {{-- Footer --}}
             @include('components.publish-modal.footer')
-        </div>
-    </div>
 
-    {{-- Overlay Modals - render only when component is initialized AND modal is open to prevent Alpine initialization errors --}}
-    <template x-if="_initialized && open">
-        <div>
+            {{-- Overlay Modals - Inside modal panel for proper Alpine scope access --}}
             @include('components.publish-modal.overlays.hashtag-manager')
             @include('components.publish-modal.overlays.mention-picker')
             @include('components.publish-modal.overlays.calendar')
             @include('components.publish-modal.overlays.best-times')
             @include('components.publish-modal.overlays.media-source-picker')
             @include('components.publish-modal.overlays.media-library')
+            @include('components.publish-modal.overlays.ai-assistant')
         </div>
-    </template>
+    </div>
 </div>

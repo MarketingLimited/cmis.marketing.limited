@@ -136,6 +136,5 @@
                 </div>
             </div>
         </div>
-    </div>
 
-    {{-- PHASE 1: Mention Picker Modal --}}
+{{-- PHASE 1: Mention Picker Modal --}}

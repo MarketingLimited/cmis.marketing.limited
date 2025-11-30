@@ -81,6 +81,38 @@ grep -r -E "\b(Campaign|Dashboard|Save|Delete)\b" resources/views/ | grep -v "{{
 grep -r -E "(ml-|mr-|text-left|text-right)" resources/views/
 ```
 
+### Workflow & Git (CRITICAL - NEW 2025-11-30)
+**📖 See: `.claude/knowledge/TROUBLESHOOTING_METHODOLOGY.md` → Section 8: Automatic Git Commits**
+
+**MANDATORY AUTO-COMMIT:**
+- ✅ **AFTER** verification passes (console clean, logs clean, tests passing), commit to git automatically
+- ✅ **DO NOT** wait for user to ask - commit immediately after success
+- ✅ Use conventional commits format: `feat:`, `fix:`, `refactor:`, `test:`, etc.
+- ✅ Include verification status in commit message
+- ✅ Add Claude Code attribution footer
+- ❌ **NEVER** commit without verification
+- ❌ **NEVER** commit if tests are failing
+- ❌ **NEVER** commit secrets or .env files
+
+**Quick Auto-Commit Command:**
+```bash
+# After verification passes
+git add .
+git commit -m "$(cat <<'EOF'
+feat: Your feature description
+
+- Change 1
+- Change 2
+- Verified: Browser console clean, Laravel logs clean
+- Tests: X passing
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>
+EOF
+)"
+```
+
 ---
 
 ## ⚙️ Environment Configuration
@@ -216,6 +248,48 @@ database/
 - Run: `vendor/bin/phpunit`
 - **Test Suite:** 201 test files with 33.4% pass rate (improving continuously)
 
+### Post-Implementation Verification (MANDATORY)
+**CRITICAL:** After ANY code change, you MUST verify success. **DO NOT assume it works.**
+
+**Required verification steps:**
+1. ✅ **Browser Console Logs** - Use Playwright to capture and check for errors
+2. ✅ **Laravel Logs** - Check `storage/logs/laravel.log` for exceptions
+3. ✅ **Screenshots** - Visual verification of UI changes
+4. ✅ **Functional Testing** - Test the feature with Playwright/headless browsers
+5. ✅ **Create Automated Tests** - Add permanent Feature/Browser tests
+6. ✅ **Update Related Tests** - Modify existing tests if behavior changed
+7. ✅ **Auto-Commit to Git** - After verification passes, commit automatically (DO NOT wait for user)
+
+**📖 Complete Guide:** `.claude/knowledge/TROUBLESHOOTING_METHODOLOGY.md` → Section 7: Post-Implementation Verification & Testing
+
+**Quick verification + auto-commit workflow:**
+```bash
+# 1. Check Laravel logs
+grep -i "error\|exception" storage/logs/laravel.log | tail -20
+
+# 2. Run Playwright test
+node scripts/verify-feature.cjs
+
+# 3. Create/update tests
+vendor/bin/phpunit tests/Feature/YourFeatureTest.php
+
+# 4. If all passed, auto-commit
+git add .
+git commit -m "$(cat <<'EOF'
+feat: Your feature description
+
+- Change 1
+- Change 2
+- Verified: Browser console clean, Laravel logs clean
+- Tests: X passing
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>
+EOF
+)"
+```
+
 ### Database Migrations
 ```php
 // NEW: Use HasRLSPolicies trait for standardized RLS policies
@@ -255,6 +329,10 @@ class CreateNewTable extends Migration
 - [ ] RLS policies added?
 - [ ] **i18n compliance (NEW):** No hardcoded text? RTL/LTR optimized?
 - [ ] **Both languages tested (NEW):** Arabic (RTL) and English (LTR)?
+- [ ] **Verification completed (NEW):** Browser console, Laravel logs checked?
+- [ ] **Automated tests created (NEW):** Feature/Browser tests added?
+- [ ] **Related tests updated (NEW):** Existing tests modified if needed?
+- [ ] **Git commit created (NEW):** Changes committed automatically after verification?
 - [ ] Tests written and passing?
 - [ ] Security validated?
 - [ ] Documentation updated?
@@ -595,6 +673,7 @@ SELECT * FROM cmis.campaigns; -- Should only show this org's data
 - **Multi-Tenancy:** `.claude/knowledge/MULTI_TENANCY_PATTERNS.md`
 - **i18n & RTL/LTR:** `.claude/knowledge/I18N_RTL_REQUIREMENTS.md` ⚠️ CRITICAL
 - **Browser Testing:** `.claude/knowledge/BROWSER_TESTING_GUIDE.md` ⚠️ MANDATORY
+- **Troubleshooting Methodology:** `.claude/knowledge/TROUBLESHOOTING_METHODOLOGY.md` - Complete guide to testing, debugging, and fixing issues using Playwright, Laravel logs, browser DevTools, database tools, and all available diagnostic resources
 - **Data Patterns:** `.claude/knowledge/CMIS_DATA_PATTERNS.md`
 - **Agent Guide:** `.claude/agents/README.md`
 
