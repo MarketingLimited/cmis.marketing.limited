@@ -124,6 +124,31 @@ RTL/LTR layout verification:
 - Analyze Tailwind class usage
 - Compare visual screenshots
 
+### Troubleshooting & Debugging
+
+#### /debug
+**Description:** All-in-one debugging - Laravel logs, browser console, API tests, screenshots
+
+Comprehensive diagnostic workflow:
+- Clear logs and run fresh diagnostic
+- Capture browser console logs and errors
+- Take screenshots (initial, after action, error states)
+- Test API endpoints with curl
+- Check Laravel logs for exceptions
+- Database connection and RLS verification
+- Generate summary report
+
+#### /flow-trace
+**Description:** Trace complete execution flow for a feature - identify all nodes from frontend to database
+
+Feature flow analysis:
+- Discover frontend entry points (Blade, Alpine.js)
+- Find routes and controllers
+- Trace service and repository layers
+- Identify database tables and RLS policies
+- Generate visual flow diagram
+- Create debug point templates for each node
+
 ### Development
 
 #### /create-agent
@@ -200,18 +225,24 @@ Never deploy if:
 
 ### Database
 - `/migrate` - Run migrations
+- `/fresh` - Fresh migrate and seed
 - `/audit-rls` - Audit RLS policies
 - `/optimize-db` - Performance analysis
-- `/seed` - Run database seeders
+
+### Performance & Health
+- `/health` - System health check
+- `/perf` - Performance profiling
+
+### Internationalization
+- `/i18n-audit` - i18n compliance audit
+- `/rtl-check` - RTL/LTR layout verification
+
+### Troubleshooting & Debugging
+- `/debug` - All-in-one diagnostic
+- `/flow-trace` - Feature flow tracing
 
 ### Development
 - `/create-agent` - New agent wizard
-- `/docs` - Generate documentation
-- `/analyze` - Code analysis
-
-### Deployment
-- `/deploy` - Deploy to environment
-- `/rollback` - Rollback deployment
 
 ## Integration with Agents
 
@@ -283,5 +314,5 @@ When adding new commands:
 ---
 
 **Last Updated:** 2025-12-01
-**Total Commands:** 12
+**Total Commands:** 14
 **Project:** CMIS - Campaign Management & Integration System
