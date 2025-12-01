@@ -1,3 +1,5 @@
+{{-- Queue Settings Component Wrapper --}}
+<div x-data="queueSettingsForm()">
 {{-- Queue Settings Modal --}}
 <div x-show="showQueueModal"
      x-cloak
@@ -48,7 +50,7 @@
             </div>
 
             {{-- Modal Body --}}
-            <div class="px-6 py-6 max-h-[70vh] overflow-y-auto" x-data="queueSettingsForm()">
+            <div class="px-6 py-6 max-h-[70vh] overflow-y-auto">
                 <form @submit.prevent="saveQueueSettings">
                     {{-- Enable Queue Toggle --}}
                     <div class="mb-6 p-4 bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg border border-blue-200">
@@ -438,3 +440,5 @@ function queueSettingsForm() {
     };
 }
 </script>
+</div>
+{{-- End Queue Settings Component Wrapper --}}
