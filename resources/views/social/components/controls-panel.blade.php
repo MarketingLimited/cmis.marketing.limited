@@ -44,11 +44,6 @@
 
         <!-- Action Buttons - Enhanced -->
         <div class="flex gap-2 sm:gap-3 order-2 sm:order-4">
-            <button @click="showQueueSettings = true"
-                    class="bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-600 px-3 sm:px-4 py-2.5 rounded-xl font-medium hover:bg-gray-50 dark:hover:bg-gray-600 hover:border-gray-300 dark:hover:border-gray-500 transition-all flex items-center gap-2">
-                <i class="fas fa-cog"></i>
-                <span class="hidden sm:inline">{{ __('social.queue_settings') }}</span>
-            </button>
             <button @click="window.dispatchEvent(new CustomEvent('open-publish-modal'))"
                     class="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white px-4 sm:px-6 py-2.5 rounded-xl font-medium shadow-lg shadow-indigo-500/25 hover:shadow-xl hover:shadow-indigo-500/30 transition-all flex items-center gap-2">
                 <i class="fas fa-plus"></i>

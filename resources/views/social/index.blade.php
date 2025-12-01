@@ -25,9 +25,6 @@
 
     {{-- Edit Post Modal --}}
     @include('social.components.modals.edit-post-modal')
-
-    {{-- Queue Settings Modal --}}
-    @include('social.components.modals.queue-settings-modal')
 </div>
 @endsection
 

@@ -1,9 +1,5 @@
 // Translations object for JavaScript
 const translations = {
-    // Queue settings
-    queueSettingsSaved: @json(__('social.queue_settings_saved')),
-    settingsSaveFailed: @json(__('social.settings_save_failed')),
-
     // Days of week
     daySunday: @json(__('social.days.sunday')),
     dayMonday: @json(__('social.days.monday')),
@@ -258,10 +254,6 @@ function socialManager() {
                 {value: 'article', label: translations.postTypeArticle, icon: 'fa-newspaper'}
             ]
         },
-
-        // Queue settings modal
-        showQueueSettings: false,
-        queueSettings: [],
 
         // Best times suggestions
         bestTimes: [
@@ -1588,71 +1580,6 @@ function socialManager() {
                 }
             } finally {
                 this.isDeletingFailed = false;
-            }
-        },
-
-        // Queue Settings Methods
-        getQueueSetting(integrationId, key) {
-            const setting = this.queueSettings.find(s => s.integration_id === integrationId);
-            if (!setting) return key === 'enabled' ? false : null;
-
-            switch(key) {
-                case 'enabled': return setting.queue_enabled;
-                case 'times': return setting.posting_times || [];
-                case 'days': return setting.days_enabled || [1,2,3,4,5];
-                case 'count': return setting.posts_per_day || 3;
-                default: return null;
-            }
-        },
-
-        toggleQueue(integrationId) {
-            const setting = this.queueSettings.find(s => s.integration_id === integrationId);
-            if (setting) {
-                setting.queue_enabled = !setting.queue_enabled;
-            } else {
-                // Create new setting with defaults
-                this.queueSettings.push({
-                    integration_id: integrationId,
-                    queue_enabled: true,
-                    posting_times: ['09:00', '13:00', '18:00'],
-                    days_enabled: [1, 2, 3, 4, 5],
-                    posts_per_day: 3
-                });
-            }
-        },
-
-        async saveAllQueueSettings() {
-            try {
-                // Save each platform's queue settings
-                const promises = this.queueSettings.map(setting => {
-                    return fetch(`/orgs/${this.orgId}/social/queue-settings`, {
-                        method: 'POST',
-                        headers: {
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content,
-                            'Accept': 'application/json',
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            integration_id: setting.integration_id,
-                            queue_enabled: setting.queue_enabled,
-                            posting_times: setting.posting_times,
-                            days_enabled: setting.days_enabled,
-                            posts_per_day: setting.posts_per_day
-                        })
-                    });
-                });
-
-                await Promise.all(promises);
-
-                this.showQueueSettings = false;
-                if (window.notify) {
-                    window.notify(translations.queueSettingsSaved, 'success');
-                }
-            } catch (error) {
-                console.error('Failed to save queue settings:', error);
-                if (window.notify) {
-                    window.notify(translations.settingsSaveFailed, 'error');
-                }
             }
         }
     };
