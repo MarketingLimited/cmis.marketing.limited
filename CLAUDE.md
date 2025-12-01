@@ -1,6 +1,6 @@
 # CMIS Project Guidelines for Claude Code
 
-**Last Updated:** 2025-11-28 (Browser Testing Environment Added)
+**Last Updated:** 2025-12-01 (Documentation Reorganization, Test Suite Status Updated)
 **Project:** CMIS - Cognitive Marketing Information System
 **Framework Version:** 3.2 - Post Duplication Elimination (13,100 lines saved)
 **Languages:** Arabic (Default), English - Full RTL/LTR Support
@@ -12,7 +12,7 @@
 CMIS is a Laravel-based Campaign Management & Integration System with:
 - **Multi-tenancy:** PostgreSQL Row-Level Security (RLS)
 - **Database:** 12 schemas, 197 tables, pgvector for AI
-- **Codebase:** 712 PHP files, 244 Models (51 domains), 45 migrations, 201 tests
+- **Codebase:** 712 PHP files, 244 Models (51 domains), 45 migrations, 27 test files (restructured)
 - **Platforms:** Meta, Google, TikTok, LinkedIn, Twitter, Snapchat
 - **AI:** Semantic search via Google Gemini + pgvector
 - **Frontend:** Alpine.js, Tailwind CSS, Chart.js
@@ -259,7 +259,7 @@ database/
 - ✅ Multi-tenancy isolation tests
 - ✅ Platform integration mocking
 - Run: `vendor/bin/phpunit`
-- **Test Suite:** 201 test files with 33.4% pass rate (improving continuously)
+- **Test Suite:** 27 test files (legacy tests archived, new tests pending for recent features)
 
 ### Post-Implementation Verification (MANDATORY)
 **CRITICAL:** After ANY code change, you MUST verify success. **DO NOT assume it works.**
@@ -825,18 +825,18 @@ A comprehensive 8-phase initiative systematically eliminated duplicate code:
 - ✅ Repository + Service pattern architecture
 - ✅ AI infrastructure (embeddings, vector search)
 - ✅ 26 specialized Claude Code agents
-- ✅ Test suite foundation (201 tests, 33.4% passing - actively improving)
+- ✅ Test suite restructured (27 test files, legacy tests archived, new tests pending)
 - ✅ **Code Quality Initiative: 13,100 lines of duplication eliminated (Nov 2025)**
 
 ### In Progress:
 - 🔄 Platform connectors completion (Meta, Google, TikTok)
-- 🔄 Analytics repository implementation (removing TODO stubs)
-- 🔄 Test suite improvements (targeting 40-45% pass rate)
-- 🔄 Frontend dashboard components
+- 🔄 Social Publishing features (Profile Management, Queue Settings, Timezone support)
+- 🔄 Frontend dashboard components (Alpine.js lazy loading, RTL/LTR optimization)
+- 🔄 New test suite creation (for recently implemented features)
 
 ### Next Phase:
 - 📋 Phase 3: Advanced AI analytics & predictive features
 - 📋 Phase 4: Ad campaign orchestration & automation
 - 📋 Production deployment & optimization
 
-**Last Updated:** 2025-11-27 (i18n & RTL/LTR requirements added)
+**Last Updated:** 2025-12-01 (Documentation reorganization, test suite status updated)

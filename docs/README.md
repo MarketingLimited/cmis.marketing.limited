@@ -163,7 +163,7 @@ Guides for developers working on CMIS:
 Comprehensive testing documentation:
 
 - **[Testing Hub](testing/)** - Complete testing documentation hub
-- **[Current Test Status](testing/current/)** - Latest test suite status (201 tests, 33.4% pass rate)
+- **[Current Test Status](testing/current/)** - Latest test suite status (27 test files, legacy tests archived)
 - **[Testing Guides](testing/guides/)** - How to write and run tests
   - Testing framework overview
   - Parallel testing guide
@@ -245,37 +245,34 @@ Technical reference documentation:
 
 **Location:** [`docs/active/`](active/)
 
-Latest reports and analysis (2025-11-20):
+Latest reports and analysis (Dec 2025):
 
 #### Analysis Reports
 **Location:** [`docs/active/analysis/`](active/analysis/)
 
-- **[CMIS Comprehensive Application Analysis](active/analysis/CMIS-Comprehensive-Application-Analysis-2025-11-20.md)** - Complete application analysis
-- **[CMIS Critical Issues Tracker](active/analysis/CMIS-Critical-Issues-Tracker-2025-11-20.md)** - Critical issues tracking
-- **[CMIS Quick Reference](active/analysis/CMIS-Quick-Reference-2025-11-20.md)** - Quick reference guide
-- **[CMIS Roadmap to 100% Completion](active/analysis/CMIS-Roadmap-To-100-Percent-Completion-2025-11-20.md)** - Completion roadmap
-- **[TODO Update Report](active/analysis/TODO-UPDATE-REPORT-2025-11-20.md)** - Comprehensive TODO analysis (147 items)
-- **[TODO Summary](active/analysis/TODO-SUMMARY-2025-11-20.md)** - Quick TODO summary
-- **[TODO Statistics](active/analysis/TODO-STATISTICS-2025-11-20.md)** - TODO statistics dashboard
-- **[Broken Links Report](active/analysis/BROKEN-LINKS-REPORT-2025-11-20.md)** - Documentation link analysis (63 broken links)
-- **[Documentation Update Analysis](active/analysis/DOCUMENTATION-UPDATE-ANALYSIS-2025-11-20.md)** - Documentation update plan
+- **[Complete Implementation Report](active/analysis/COMPLETE-IMPLEMENTATION-REPORT.md)** - Implementation status
+- **[Comprehensive Agent Architecture](active/analysis/COMPREHENSIVE-AGENT-ARCHITECTURE-PLAN.md)** - Agent system design
+- **[Platform Integrations Audit](active/analysis/platform-integrations-comprehensive-audit.md)** - Platform analysis
+- **[RBAC Comprehensive Analysis](active/analysis/rbac-comprehensive-analysis.md)** - Access control audit
+- **[UX Product Issues](active/analysis/ux-product-issues-audit-report.md)** - UX improvements
 - **[Code Review & Product Strategy](active/analysis/code-review-product-strategy-validation.md)** - Strategy validation
 
-#### Progress & Test Reports
+**Note:** Historical analysis files (2025-11-20/21) have been moved to [`archive/analysis-2025-11/`](archive/analysis-2025-11/)
+
+#### Progress & Reports
 **Location:** [`docs/active/reports/`](active/reports/)
 
-- **[Session Summary (Nov 20)](active/reports/session-summary-2025-11-20.md)** - Latest session summary
-- **[Test Suite 40% Assessment](active/reports/test-suite-40-percent-assessment-2025-11-20.md)** - Test suite assessment
-- **[Test Fixes Report](active/reports/test-fixes-report-2025-11-20.md)** - Comprehensive test fixes
-- **[Test Fixes Progress](active/reports/test-fixes-progress-2025-11-20.md)** - Detailed progress tracking
-- **[Test Failure Fix Report (Nov 19)](active/reports/test-failure-fix-report-2025-11-19.md)** - Failure analysis
-- **[Test Fixes Summary](active/reports/SUMMARY-test-fixes.md)** - Quick summary
-- **[Agent Testing Improvements](active/reports/agent-testing-improvements-2025-01-19.md)** - Agent improvements
+- **[Code Quality Executive Summary](active/reports/code-quality-executive-summary.md)** - Quality metrics
+- **[UX Fixes Comprehensive Report](active/reports/UX-FIXES-COMPREHENSIVE-REPORT.md)** - UX improvements
+- **[Marketing Automation Analysis](active/reports/marketing-automation-analysis-2025-11-23.md)** - Automation features
+- **[Social Publishing Fix Report](active/reports/social-publishing-fix-report-2025-11-22.md)** - Social features
+
+**Note:** Historical session/test reports have been moved to [`archive/sessions-2025-11-late/`](archive/sessions-2025-11-late/)
 
 #### Next Steps & Planning
 - **[Next Steps](active/NEXT_STEPS.md)** - Immediate action items
-- **[Session Complete (Nov 20)](active/SESSION_COMPLETE_2025-11-20.md)** - Session completion report
-- **[Documentation Update Complete](active/DOCUMENTATION_UPDATE_COMPLETE_2025-11-20.md)** - Documentation update summary
+- **[Implementation Roadmap](active/IMPLEMENTATION_ROADMAP.md)** - Project roadmap
+- **[Redis Setup Guide](active/REDIS_SETUP_GUIDE.md)** - Redis configuration
 
 ### Strategic Reports
 
@@ -411,25 +408,31 @@ To contribute to documentation:
 
 ---
 
-**Last Updated:** 2025-11-22 ✅
-**Version:** 2.1.0
+**Last Updated:** 2025-12-01 ✅
+**Version:** 2.2.0
 **Maintained by:** CMIS Development Team
 
-### Recent Documentation Updates (2025-11-22)
+### Recent Documentation Updates (2025-12-01)
 
-**Major Restructure:**
-- ✅ Created consolidated [Phase Documentation Hub](phases/) - All 26 phases organized
-- ✅ Created consolidated [Testing Documentation Hub](testing/) - 39 test files organized
-- ✅ Fixed documentation issues (wrong dates, duplicates, misplaced files)
-- ✅ Moved 40+ PHASE files into structured hierarchy (completed/in-progress/planned)
-- ✅ Moved 39 test-related files into organized testing structure
-- ✅ Removed empty directories and cleaned up root-level docs
+**Documentation Reorganization:**
+- ✅ Archived 38 dated analysis files from Nov 2025 → `archive/analysis-2025-11/`
+- ✅ Archived 16 test history files → `archive/test-history-2025-11/`
+- ✅ Archived 4 session files → `archive/sessions-2025-11-late/`
+- ✅ Updated test suite status (27 files, legacy tests archived)
+- ✅ Updated CLAUDE.md with current project status
+- ✅ Cleaned up active/ directory
 
-**Previous Updates (2025-11-20):**
-- ✅ Updated all statistics (197 tables, 26 agents)
-- ✅ Archived 19 old files from root directory
-- ✅ Updated 147 TODO items with accurate status
-- ✅ Documented 63 broken links with fix plan
-- ✅ Consolidated 16 reports → 8 active reports
+**Recent Feature Updates (Nov 27 - Dec 1):**
+- ✅ Profile Management module (VistaSocial-like)
+- ✅ Queue Settings with time picker
+- ✅ 3-level timezone inheritance for social scheduling
+- ✅ Alpine.js lazy loading optimization
+- ✅ i18n/RTL compliance improvements
 
-See [Documentation Update Complete](active/DOCUMENTATION_UPDATE_COMPLETE_2025-11-20.md) for previous update details.
+### Previous Major Update (2025-11-22)
+
+- Created consolidated Phase Documentation Hub (26 phases)
+- Created consolidated Testing Documentation Hub
+- Fixed documentation issues (duplicates, misplaced files)
+
+See [archive/sessions-2025-11-late/](archive/sessions-2025-11-late/) for historical session details.

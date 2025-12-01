@@ -1,8 +1,8 @@
 # CMIS Testing Documentation
 
-**Last Updated:** 2025-11-22
-**Test Suite Status:** 201 tests, 33.4% pass rate (improving continuously)
-**Framework:** Laravel (PHPUnit)
+**Last Updated:** 2025-12-01
+**Test Suite Status:** 27 test files (legacy tests archived, new tests pending for recent features)
+**Framework:** Laravel (PHPUnit) + Playwright (Browser Testing)
 
 ---
 
@@ -10,13 +10,15 @@
 
 This directory consolidates all CMIS testing documentation, including test strategies, current status, historical reports, and testing guides.
 
+**Note (Dec 2025):** The test suite has been restructured. Legacy tests (201 files) were archived as they no longer matched the significantly refactored codebase. New tests are being created for recently implemented features.
+
 ---
 
 ## Quick Navigation
 
 - **New to testing CMIS?** → [guides/](./guides/)
 - **Current test status?** → [current/](./current/)
-- **Historical test reports?** → [history/](./history/)
+- **Historical test reports?** → [../archive/test-history-2025-11/](../archive/test-history-2025-11/)
 
 ---
 
@@ -24,18 +26,15 @@ This directory consolidates all CMIS testing documentation, including test strat
 
 ### [current/](./current/) - Current Test Status
 
-Latest test suite status, assessments, and active improvements:
+Latest test suite status and active testing work:
 
-- **Test suite summaries** - Overall pass rates, coverage metrics
-- **Active test fixes** - Ongoing test improvement work
-- **Test failure analysis** - Current known failures and fixes
-- **Coverage reports** - Code coverage metrics
+- **missing-tests.md** - Tests to be created for new features
+- **testing-action-plan.md** - Current testing strategy
 
-**Latest Status (Nov 2025):**
-- Total Tests: 201
-- Pass Rate: 33.4% (improving from 20%)
-- Test Files: Unit tests, Feature tests, Integration tests
-- Coverage: Targeting 40-45% in current phase
+**Current Status (Dec 2025):**
+- Test Files: 27 (streamlined from 201)
+- Categories: Unit tests, Feature tests, Integration tests
+- Focus: Creating new tests for recent features (Social Publishing, Profile Management, Timezone, i18n)
 
 ### [guides/](./guides/) - Testing Guides
 
@@ -48,14 +47,9 @@ Comprehensive guides for writing and running tests:
 - **Multi-tenancy testing** - Testing RLS and tenant isolation
 - **E2E testing guide** - End-to-end testing strategies
 
-### [history/](./history/) - Historical Test Reports
+### [../archive/test-history-2025-11/](../archive/test-history-2025-11/) - Archived Test Reports
 
-Archived test reports and improvement sessions:
-
-- **Session summaries** - Test improvement sessions (Nov 2025)
-- **Test fix reports** - Historical test fixes
-- **Progress tracking** - Test improvement over time
-- **Milestone reports** - Key testing milestones achieved
+Historical test reports from the Nov 2025 improvement sessions (16 files archived).
 
 ---
 
@@ -67,22 +61,27 @@ Archived test reports and improvement sessions:
 tests/
 ├── Unit/               # Unit tests (isolated components)
 ├── Feature/            # Feature tests (HTTP endpoints, workflows)
+│   ├── Auth/           # Authentication tests
+│   ├── Campaign/       # Campaign management tests
+│   ├── Platform/       # Platform integration tests
+│   └── Social/         # Social publishing tests
 ├── Integration/        # Integration tests (database, external services)
-└── Browser/            # Browser tests (Dusk - if implemented)
+├── TestHelpers/        # Test helper utilities
+└── Traits/             # Reusable test traits
 ```
 
 ### Key Testing Areas
 
-| Area | Test Count | Coverage | Priority |
-|------|-----------|----------|----------|
-| **Multi-Tenancy & RLS** | High | Critical | P0 |
-| **Authentication & Authorization** | Medium | High | P1 |
-| **Campaign Management** | High | Medium | P1 |
-| **Platform Integrations** | Medium | Low | P2 |
-| **AI & Semantic Search** | Low | Low | P2 |
-| **Social Publishing** | Medium | Medium | P1 |
-| **API Endpoints** | High | Medium | P1 |
-| **Database Operations** | High | High | P0 |
+| Area | Priority | Status | Notes |
+|------|----------|--------|-------|
+| **Multi-Tenancy & RLS** | P0 | Needs Tests | Critical for data isolation |
+| **Social Publishing** | P0 | Needs Tests | Recent major feature |
+| **Profile Management** | P0 | Needs Tests | New feature (Nov 2025) |
+| **Timezone Support** | P1 | Needs Tests | 3-level inheritance |
+| **i18n & RTL/LTR** | P1 | Needs Tests | Arabic/English support |
+| **Authentication** | P1 | Has Tests | Existing coverage |
+| **Platform Integrations** | P2 | Partial | Meta, Google, TikTok |
+| **AI & Semantic Search** | P2 | Minimal | pgvector + Gemini |
 
 ---
 
@@ -99,19 +98,23 @@ vendor/bin/phpunit --testsuite=Unit
 vendor/bin/phpunit --testsuite=Feature
 
 # Run specific test file
-vendor/bin/phpunit tests/Unit/Models/CampaignTest.php
+vendor/bin/phpunit tests/Feature/Auth/LoginTest.php
 
 # Run with coverage
 vendor/bin/phpunit --coverage-html coverage
 ```
 
-### Parallel Testing
+### Browser Testing (Playwright)
 
 ```bash
-# Run tests in parallel (faster)
-php artisan test --parallel
+# Quick verification
+node scripts/browser-tests/cross-browser-test.js --quick
 
-# See: guides/parallel-testing.md for setup
+# Mobile responsive testing
+node scripts/browser-tests/mobile-responsive-comprehensive.js --quick
+
+# Bilingual testing (AR/EN)
+node test-bilingual-comprehensive.cjs
 ```
 
 ### Using Slash Command
@@ -189,37 +192,37 @@ public function test_user_can_update_campaign()
 
 ## Test Improvement Roadmap
 
-### Current Phase (Nov 2025)
-- ✅ Reached 33.4% pass rate (from 20%)
-- ✅ Fixed agent testing improvements
-- ✅ Established parallel testing infrastructure
-- 🔄 Targeting 40-45% pass rate
+### Recent Changes (Nov-Dec 2025)
 
-### Next Milestones
-1. **40% Pass Rate** (Target: Dec 2025)
-   - Fix remaining P0 critical test failures
-   - Improve multi-tenancy test coverage
+- ✅ Archived legacy tests (201 files → 27 files)
+- ✅ Set up Playwright browser testing
+- ✅ Created mobile responsive test suite
+- ✅ Created cross-browser test suite
+- ✅ Created bilingual test suite (AR/EN)
+- 🔄 Creating new tests for recent features
 
-2. **60% Pass Rate** (Target: Q1 2026)
-   - Add platform integration tests
-   - Improve API endpoint coverage
+### New Tests Needed
 
-3. **85% Pass Rate** (Target: Q2 2026)
-   - Comprehensive E2E tests
-   - Full CI/CD integration
+1. **Social Publishing Module**
+   - Post creation/scheduling
+   - Profile groups
+   - Queue settings
+   - Timezone inheritance
 
----
+2. **Profile Management**
+   - Profile CRUD
+   - Timezone settings
+   - Queue configuration
 
-## Key Test Reports
+3. **i18n & RTL/LTR**
+   - Translation loading
+   - RTL layout switching
+   - Locale persistence
 
-### Current Status
-- [current/test-suite-status.md](./current/test-suite-status.md) - Latest overall status
-- [current/test-coverage-report.md](./current/test-coverage-report.md) - Coverage metrics
-
-### Recent Improvements (Nov 2025)
-- [history/test-improvement-session-2025-11-21.md](./history/test-improvement-session-2025-11-21.md)
-- [history/test-fixes-progress-2025-11-20.md](./history/test-fixes-progress-2025-11-20.md)
-- [history/agent-testing-improvements-2025-11-19.md](./history/agent-testing-improvements-2025-11-19.md)
+4. **Platform Integrations**
+   - Meta API connectivity
+   - Google Ads sync
+   - TikTok publishing
 
 ---
 
@@ -230,15 +233,14 @@ public function test_user_can_update_campaign()
 - [PHPUnit Documentation](https://phpunit.de/documentation.html)
 - [Laravel Dusk (Browser Testing)](https://laravel.com/docs/dusk)
 
+### Browser Testing
+- [Playwright Documentation](https://playwright.dev/docs/intro)
+- [Browser Testing Guide](../../.claude/knowledge/BROWSER_TESTING_GUIDE.md)
+
 ### CMIS-Specific
 - [Multi-Tenancy Testing Patterns](../../.claude/knowledge/MULTI_TENANCY_PATTERNS.md)
-- [Testing Slash Command](./.claude/commands/test.md)
-- [Testing Infrastructure Summary](./guides/testing-infrastructure-summary.md)
-
-### External Tools
-- **Code Coverage:** PHPUnit built-in coverage
-- **CI/CD:** GitHub Actions (see `.github/workflows/`)
-- **Parallel Testing:** Laravel Parallel Testing package
+- [Testing Slash Command](../../.claude/commands/test.md)
+- [Troubleshooting Methodology](../../.claude/knowledge/TROUBLESHOOTING_METHODOLOGY.md)
 
 ---
 
@@ -250,30 +252,19 @@ public function test_user_can_update_campaign()
 2. **Create test file** - Follow naming conventions
 3. **Write test** - Use Arrange-Act-Assert pattern
 4. **Test multi-tenancy** - Always verify RLS if applicable
-5. **Run tests** - Ensure pass before committing
-6. **Update documentation** - Update this README if needed
+5. **Test i18n** - Check Arabic and English locales
+6. **Run tests** - Ensure pass before committing
+7. **Update documentation** - Update this README if needed
 
-### Fixing Failing Tests
+### Post-Implementation Testing
 
-1. **Check current/missing-tests.md** for known failures
-2. **Reproduce locally** - Run specific test
-3. **Fix root cause** - Don't just make test pass
-4. **Verify multi-tenancy** - Check RLS still works
-5. **Run full suite** - Ensure no regressions
-6. **Document fix** - Add to current/test-fixes.md
+After implementing any feature:
+1. Check browser console for errors (Playwright)
+2. Check Laravel logs for exceptions
+3. Create automated tests
+4. Run full test suite
 
----
-
-## CI/CD Integration
-
-### GitHub Actions Workflow
-
-Tests run automatically on:
-- Push to any branch
-- Pull request creation
-- Merge to main branch
-
-See: [.github/workflows/](./.github/workflows/) for CI/CD configuration
+See: [Troubleshooting Methodology](../../.claude/knowledge/TROUBLESHOOTING_METHODOLOGY.md)
 
 ---
 
@@ -298,18 +289,18 @@ See: [.github/workflows/](./.github/workflows/) for CI/CD configuration
 ## Related Documentation
 
 - **[CLAUDE.md](../../CLAUDE.md)** - Project guidelines including testing standards
-- **[docs/development/](../development/)** - Development guides
+- **[Browser Testing Guide](../../.claude/knowledge/BROWSER_TESTING_GUIDE.md)** - Playwright testing
 - **[.claude/agents/laravel-testing.md](../../.claude/agents/laravel-testing.md)** - Testing agent
 
 ---
 
 ## Maintenance
 
-**Update Frequency:** Weekly during active test improvement phases
+**Update Frequency:** As new features are implemented
 
-**Last Major Update:** 2025-11-22 (Documentation restructure)
+**Last Major Update:** 2025-12-01 (Test suite restructure, legacy tests archived)
 
-**Next Review:** When 40% pass rate achieved
+**Next Review:** After new test suite creation
 
 ---
 
