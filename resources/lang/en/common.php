@@ -67,6 +67,13 @@ return [
     'fri' => 'Fri',
     'sat' => 'Sat',
     'sun' => 'Sun',
+    'mon_short' => 'Mo',
+    'tue_short' => 'Tu',
+    'wed_short' => 'We',
+    'thu_short' => 'Th',
+    'fri_short' => 'Fr',
+    'sat_short' => 'Sa',
+    'sun_short' => 'Su',
 
     // Common Fields
     'name' => 'Name',

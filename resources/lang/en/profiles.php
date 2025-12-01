@@ -87,6 +87,61 @@ return [
     'queue_disabled_description' => 'Enable the queue to schedule posts automatically at specific times',
     'queue_settings_saved' => 'Queue settings saved successfully',
 
+    // Queue Slot Labels
+    'all_labels' => 'All labels',
+    'any_labels' => 'Any labels',
+    'labels' => 'Labels',
+    'manage_labels' => 'Manage labels',
+    'add_label' => 'Add label',
+    'edit_label' => 'Edit label',
+    'label_name' => 'Label name',
+    'label_name_placeholder' => 'Enter label name',
+    'search_labels' => 'Search labels',
+    'select_label' => 'Select label',
+    'no_label' => 'No label',
+    'create_new_label' => 'Create ":name"',
+    'no_labels' => 'No labels yet',
+    'no_labels_message' => 'Create labels to organize your time slots',
+
+    // Label Colors
+    'solid_color' => 'Solid',
+    'gradient_color' => 'Gradient',
+    'text_color' => 'Text color',
+    'background_color' => 'Background color',
+    'select_background_color' => 'Select background color',
+    'select_text_color' => 'Select text color',
+    'label_preview' => 'Preview',
+
+    // Enhanced Time Slot
+    'create_time_slot' => 'Create time slot',
+    'select_days' => 'Select days',
+    'mark_as_evergreen' => 'Mark as evergreen',
+    'evergreen_description' => 'Evergreen content recycles when queue is empty',
+    'evergreen' => 'Evergreen',
+
+    // Label Filtering
+    'filter_by_label' => 'Filter by label',
+    'showing_label' => 'Showing: :label',
+    'clear_filter' => 'Clear filter',
+
+    // Label Messages
+    'labels_retrieved' => 'Labels retrieved successfully',
+    'labels_load_failed' => 'Failed to load labels',
+    'label_created' => 'Label created successfully',
+    'label_create_failed' => 'Failed to create label',
+    'label_updated' => 'Label updated successfully',
+    'label_update_failed' => 'Failed to update label',
+    'label_deleted' => 'Label deleted successfully',
+    'label_delete_failed' => 'Failed to delete label',
+    'label_not_found' => 'Label not found',
+    'labels_reordered' => 'Labels reordered successfully',
+    'labels_reorder_failed' => 'Failed to reorder labels',
+    'presets_retrieved' => 'Color presets retrieved',
+    'presets_load_failed' => 'Failed to load color presets',
+
+    // Label Confirmations
+    'confirm_delete_label' => 'Delete this label? It will be removed from all time slots.',
+
     // Days of week
     'sunday' => 'Sunday',
     'monday' => 'Monday',

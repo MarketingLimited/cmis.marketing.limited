@@ -727,6 +727,16 @@ Route::middleware(['auth'])->group(function () {
                 Route::post('/{integration_id}/boosts/{boost_id}/toggle', [App\Http\Controllers\Settings\ProfileManagementController::class, 'toggleBoostRule'])->name('boosts.toggle');
             });
 
+            // ==================== Queue Slot Labels (Organization-wide) ====================
+            Route::prefix('queue-labels')->name('queue-labels.')->group(function () {
+                Route::get('/', [App\Http\Controllers\Settings\QueueSlotLabelController::class, 'index'])->name('index');
+                Route::post('/', [App\Http\Controllers\Settings\QueueSlotLabelController::class, 'store'])->name('store');
+                Route::patch('/{label_id}', [App\Http\Controllers\Settings\QueueSlotLabelController::class, 'update'])->name('update');
+                Route::delete('/{label_id}', [App\Http\Controllers\Settings\QueueSlotLabelController::class, 'destroy'])->name('destroy');
+                Route::get('/presets', [App\Http\Controllers\Settings\QueueSlotLabelController::class, 'presets'])->name('presets');
+                Route::post('/reorder', [App\Http\Controllers\Settings\QueueSlotLabelController::class, 'reorder'])->name('reorder');
+            });
+
             // ==================== Profile Groups (Publishing Management) ====================
             Route::prefix('profile-groups')->name('profile-groups.')->group(function () {
                 Route::get('/', [App\Http\Controllers\Settings\ProfileGroupSettingsController::class, 'index'])->name('index');

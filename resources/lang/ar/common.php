@@ -67,6 +67,13 @@ return [
     'fri' => 'الجمعة',
     'sat' => 'السبت',
     'sun' => 'الأحد',
+    'mon_short' => 'ن',
+    'tue_short' => 'ث',
+    'wed_short' => 'ر',
+    'thu_short' => 'خ',
+    'fri_short' => 'ج',
+    'sat_short' => 'س',
+    'sun_short' => 'ح',
 
     // Common Fields
     'name' => 'الاسم',

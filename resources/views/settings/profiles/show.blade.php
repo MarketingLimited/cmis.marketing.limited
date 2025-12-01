@@ -289,13 +289,38 @@
                         <div class="px-3 py-2 min-h-[60px]">
                             @if($isEnabled && count($times) > 0)
                                 <div class="flex flex-wrap gap-1.5">
-                                    @foreach($times as $time)
-                                        <span class="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium bg-blue-100 text-blue-800 border border-blue-200">
-                                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                            </svg>
-                                            {{ \Carbon\Carbon::createFromFormat('H:i', $time)->format('g:i A') }}
-                                        </span>
+                                    @foreach($times as $slot)
+                                        @php
+                                            // Handle both old format (string) and new format (object)
+                                            $timeValue = is_array($slot) ? ($slot['time'] ?? null) : $slot;
+                                            $labelId = is_array($slot) ? ($slot['label_id'] ?? null) : null;
+                                            $isEvergreen = is_array($slot) ? ($slot['is_evergreen'] ?? false) : false;
+                                            $label = $labelId ? $queueLabels->firstWhere('id', $labelId) : null;
+                                        @endphp
+                                        @if($timeValue)
+                                            <div class="inline-flex items-center gap-1">
+                                                {{-- Label badge if exists --}}
+                                                @if($label)
+                                                    <span class="px-1.5 py-0.5 rounded text-[10px] font-medium"
+                                                          style="background: {{ $label->color_type === 'gradient' ? 'linear-gradient(135deg, ' . $label->gradient_start . ', ' . $label->gradient_end . ')' : $label->background_color }}; color: {{ $label->text_color }};">
+                                                        {{ $label->name }}
+                                                    </span>
+                                                @endif
+                                                {{-- Time badge --}}
+                                                <span class="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium bg-blue-100 text-blue-800 border border-blue-200">
+                                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                                    </svg>
+                                                    {{ \Carbon\Carbon::createFromFormat('H:i', $timeValue)->format('g:i A') }}
+                                                    {{-- Evergreen indicator --}}
+                                                    @if($isEvergreen)
+                                                        <svg class="w-3 h-3 text-green-600" fill="currentColor" viewBox="0 0 20 20" title="{{ __('profiles.evergreen') }}">
+                                                            <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd"/>
+                                                        </svg>
+                                                    @endif
+                                                </span>
+                                            </div>
+                                        @endif
                                     @endforeach
                                 </div>
                             @elseif($isEnabled)
@@ -408,6 +433,10 @@
 
     {{-- Queue Settings Modal --}}
     @include('settings.profiles.partials._queue-modal')
+
+    {{-- Label Management Modals --}}
+    @include('settings.profiles.partials._manage-labels-modal')
+    @include('settings.profiles.partials._label-editor-modal')
 </div>
 
 @push('scripts')
@@ -423,6 +452,58 @@ function profileDetail() {
         showImageUpload: false,
         editingBoostId: null,
         selectedGroupId: '{{ $profile->profile_group_id ?? '' }}',
+
+        // Label management state
+        queueLabels: @json($queueLabels ?? []),
+        showManageLabelsModal: false,
+        showLabelEditorModal: false,
+        editingLabel: null,
+        labelSearch: '',
+        isSavingLabel: false,
+        labelEditorData: {
+            name: '',
+            color_type: 'solid',
+            background_color: '#3B82F6',
+            text_color: '#FFFFFF',
+            gradient_start: '#667EEA',
+            gradient_end: '#764BA2'
+        },
+
+        // Color presets
+        solidColors: [
+            { name: 'Blue', value: '#3B82F6' },
+            { name: 'Purple', value: '#8B5CF6' },
+            { name: 'Pink', value: '#EC4899' },
+            { name: 'Red', value: '#EF4444' },
+            { name: 'Orange', value: '#F97316' },
+            { name: 'Yellow', value: '#EAB308' },
+            { name: 'Green', value: '#22C55E' },
+            { name: 'Teal', value: '#14B8A6' },
+            { name: 'Cyan', value: '#06B6D4' },
+            { name: 'Indigo', value: '#6366F1' },
+            { name: 'Gray', value: '#6B7280' },
+            { name: 'Slate', value: '#64748B' },
+            { name: 'Rose', value: '#F43F5E' },
+            { name: 'Fuchsia', value: '#D946EF' },
+            { name: 'Lime', value: '#84CC16' }
+        ],
+        gradientPresets: [
+            { name: 'Purple Dream', start: '#667EEA', end: '#764BA2' },
+            { name: 'Ocean Blue', start: '#2193B0', end: '#6DD5ED' },
+            { name: 'Sunset', start: '#F093FB', end: '#F5576C' },
+            { name: 'Fresh Mint', start: '#11998E', end: '#38EF7D' },
+            { name: 'Fire', start: '#F12711', end: '#F5AF19' },
+            { name: 'Royal', start: '#141E30', end: '#243B55' },
+            { name: 'Pink Love', start: '#FF6B6B', end: '#FFC6C6' },
+            { name: 'Sky', start: '#56CCF2', end: '#2F80ED' },
+            { name: 'Forest', start: '#134E5E', end: '#71B280' },
+            { name: 'Passion', start: '#E53935', end: '#E35D5B' }
+        ],
+        textColors: [
+            { name: 'White', value: '#FFFFFF' },
+            { name: 'Black', value: '#1F2937' },
+            { name: 'Gray', value: '#6B7280' }
+        ],
 
         async saveIndustry() {
             this.loading = true;
@@ -548,6 +629,154 @@ function profileDetail() {
                 }
             } catch (error) {
                 console.error('Error:', error);
+            }
+        },
+
+        // Label management computed properties
+        get filteredLabels() {
+            if (!this.labelSearch) return this.queueLabels;
+            const search = this.labelSearch.toLowerCase();
+            return this.queueLabels.filter(label =>
+                label.name.toLowerCase().includes(search)
+            );
+        },
+
+        // Label style helper
+        getLabelStyle(labelId) {
+            const label = this.queueLabels.find(l => l.id === labelId);
+            if (!label) return {};
+            if (label.color_type === 'gradient') {
+                return {
+                    background: `linear-gradient(135deg, ${label.gradient_start}, ${label.gradient_end})`,
+                    color: label.text_color
+                };
+            }
+            return {
+                backgroundColor: label.background_color,
+                color: label.text_color
+            };
+        },
+
+        // Editor label style
+        getEditorLabelStyle() {
+            if (this.labelEditorData.color_type === 'gradient') {
+                return {
+                    background: `linear-gradient(135deg, ${this.labelEditorData.gradient_start}, ${this.labelEditorData.gradient_end})`,
+                    color: this.labelEditorData.text_color
+                };
+            }
+            return {
+                backgroundColor: this.labelEditorData.background_color,
+                color: this.labelEditorData.text_color
+            };
+        },
+
+        // Open label editor
+        openLabelEditor(label = null) {
+            this.editingLabel = label;
+            if (label) {
+                this.labelEditorData = {
+                    name: label.name,
+                    color_type: label.color_type || 'solid',
+                    background_color: label.background_color || '#3B82F6',
+                    text_color: label.text_color || '#FFFFFF',
+                    gradient_start: label.gradient_start || '#667EEA',
+                    gradient_end: label.gradient_end || '#764BA2'
+                };
+            } else {
+                this.labelEditorData = {
+                    name: '',
+                    color_type: 'solid',
+                    background_color: '#3B82F6',
+                    text_color: '#FFFFFF',
+                    gradient_start: '#667EEA',
+                    gradient_end: '#764BA2'
+                };
+            }
+            this.showLabelEditorModal = true;
+        },
+
+        // Save label
+        async saveLabel() {
+            if (!this.labelEditorData.name) return;
+
+            this.isSavingLabel = true;
+            const url = this.editingLabel
+                ? `/orgs/{{ $currentOrg }}/settings/queue-labels/${this.editingLabel.id}`
+                : `/orgs/{{ $currentOrg }}/settings/queue-labels`;
+            const method = this.editingLabel ? 'PATCH' : 'POST';
+
+            try {
+                const response = await fetch(url, {
+                    method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(this.labelEditorData)
+                });
+                const data = await response.json();
+                if (data.success) {
+                    if (this.editingLabel) {
+                        const index = this.queueLabels.findIndex(l => l.id === this.editingLabel.id);
+                        if (index !== -1) {
+                            this.queueLabels[index] = data.data;
+                        }
+                    } else {
+                        this.queueLabels.push(data.data);
+                    }
+                    window.dispatchEvent(new CustomEvent('toast', {
+                        detail: {
+                            message: this.editingLabel ? '{{ __("profiles.label_updated") }}' : '{{ __("profiles.label_created") }}',
+                            type: 'success'
+                        }
+                    }));
+                    this.showLabelEditorModal = false;
+                } else {
+                    window.dispatchEvent(new CustomEvent('toast', {
+                        detail: { message: data.message || '{{ __("profiles.label_create_failed") }}', type: 'error' }
+                    }));
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                window.dispatchEvent(new CustomEvent('toast', {
+                    detail: { message: '{{ __("profiles.label_create_failed") }}', type: 'error' }
+                }));
+            }
+            this.isSavingLabel = false;
+        },
+
+        // Confirm delete label
+        async confirmDeleteLabel(label) {
+            if (!confirm('{{ __("profiles.confirm_delete_label") }}')) return;
+
+            try {
+                const response = await fetch(`/orgs/{{ $currentOrg }}/settings/queue-labels/${label.id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json'
+                    }
+                });
+                const data = await response.json();
+                if (data.success) {
+                    this.queueLabels = this.queueLabels.filter(l => l.id !== label.id);
+                    this.showLabelEditorModal = false;
+                    window.dispatchEvent(new CustomEvent('toast', {
+                        detail: { message: '{{ __("profiles.label_deleted") }}', type: 'success' }
+                    }));
+                } else {
+                    window.dispatchEvent(new CustomEvent('toast', {
+                        detail: { message: data.message || '{{ __("profiles.label_delete_failed") }}', type: 'error' }
+                    }));
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                window.dispatchEvent(new CustomEvent('toast', {
+                    detail: { message: '{{ __("profiles.label_delete_failed") }}', type: 'error' }
+                }));
             }
         }
     };

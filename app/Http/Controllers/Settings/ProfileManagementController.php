@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Settings;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Concerns\ApiResponse;
 use App\Services\Social\ProfileManagementService;
+use App\Services\Social\QueueSlotLabelService;
 use App\Models\Social\ProfileGroup;
 use App\Models\Platform\BoostRule;
 use Illuminate\Http\Request;
@@ -22,10 +23,12 @@ class ProfileManagementController extends Controller
     use ApiResponse;
 
     protected ProfileManagementService $service;
+    protected QueueSlotLabelService $labelService;
 
-    public function __construct(ProfileManagementService $service)
+    public function __construct(ProfileManagementService $service, QueueSlotLabelService $labelService)
     {
         $this->service = $service;
+        $this->labelService = $labelService;
     }
 
     /**
@@ -82,6 +85,7 @@ class ProfileManagementController extends Controller
         $queueSettings = $this->service->getQueueSettings($org, $integrationId);
         $boostRules = $this->service->getBoostRules($org, $integrationId);
         $industries = $this->service->getAvailableIndustries();
+        $queueLabels = $this->labelService->getLabels($org);
 
         if ($request->wantsJson()) {
             return $this->success([
@@ -90,6 +94,7 @@ class ProfileManagementController extends Controller
                 'queue_settings' => $queueSettings,
                 'boost_rules' => $boostRules,
                 'industries' => $industries,
+                'queue_labels' => $queueLabels,
             ], __('profiles.profile_retrieved'));
         }
 
@@ -99,6 +104,7 @@ class ProfileManagementController extends Controller
             'queueSettings' => $queueSettings,
             'boostRules' => $boostRules,
             'industries' => $industries,
+            'queueLabels' => $queueLabels,
             'currentOrg' => $org,
         ]);
     }

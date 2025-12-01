@@ -87,6 +87,61 @@ return [
     'queue_disabled_description' => 'قم بتفعيل قائمة الانتظار لجدولة المنشورات تلقائياً في أوقات محددة',
     'queue_settings_saved' => 'تم حفظ إعدادات قائمة الانتظار بنجاح',
 
+    // Queue Slot Labels
+    'all_labels' => 'كل التصنيفات',
+    'any_labels' => 'أي تصنيف',
+    'labels' => 'التصنيفات',
+    'manage_labels' => 'إدارة التصنيفات',
+    'add_label' => 'إضافة تصنيف',
+    'edit_label' => 'تعديل التصنيف',
+    'label_name' => 'اسم التصنيف',
+    'label_name_placeholder' => 'أدخل اسم التصنيف',
+    'search_labels' => 'البحث في التصنيفات',
+    'select_label' => 'اختر تصنيف',
+    'no_label' => 'بدون تصنيف',
+    'create_new_label' => 'إنشاء ":name"',
+    'no_labels' => 'لا توجد تصنيفات بعد',
+    'no_labels_message' => 'أنشئ تصنيفات لتنظيم فترات النشر',
+
+    // Label Colors
+    'solid_color' => 'لون موحد',
+    'gradient_color' => 'تدرج',
+    'text_color' => 'لون النص',
+    'background_color' => 'لون الخلفية',
+    'select_background_color' => 'اختر لون الخلفية',
+    'select_text_color' => 'اختر لون النص',
+    'label_preview' => 'معاينة',
+
+    // Enhanced Time Slot
+    'create_time_slot' => 'إنشاء فترة زمنية',
+    'select_days' => 'اختر الأيام',
+    'mark_as_evergreen' => 'تحديد كمحتوى دائم',
+    'evergreen_description' => 'المحتوى الدائم يُعاد استخدامه عند فراغ قائمة الانتظار',
+    'evergreen' => 'دائم',
+
+    // Label Filtering
+    'filter_by_label' => 'تصفية حسب التصنيف',
+    'showing_label' => 'عرض: :label',
+    'clear_filter' => 'مسح الفلتر',
+
+    // Label Messages
+    'labels_retrieved' => 'تم استرداد التصنيفات بنجاح',
+    'labels_load_failed' => 'فشل في تحميل التصنيفات',
+    'label_created' => 'تم إنشاء التصنيف بنجاح',
+    'label_create_failed' => 'فشل في إنشاء التصنيف',
+    'label_updated' => 'تم تحديث التصنيف بنجاح',
+    'label_update_failed' => 'فشل في تحديث التصنيف',
+    'label_deleted' => 'تم حذف التصنيف بنجاح',
+    'label_delete_failed' => 'فشل في حذف التصنيف',
+    'label_not_found' => 'التصنيف غير موجود',
+    'labels_reordered' => 'تم إعادة ترتيب التصنيفات بنجاح',
+    'labels_reorder_failed' => 'فشل في إعادة ترتيب التصنيفات',
+    'presets_retrieved' => 'تم استرداد خيارات الألوان',
+    'presets_load_failed' => 'فشل في تحميل خيارات الألوان',
+
+    // Label Confirmations
+    'confirm_delete_label' => 'حذف هذا التصنيف؟ سيتم إزالته من جميع الفترات الزمنية.',
+
     // Days of week
     'sunday' => 'الأحد',
     'monday' => 'الاثنين',
