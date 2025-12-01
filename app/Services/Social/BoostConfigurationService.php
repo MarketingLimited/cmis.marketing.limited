@@ -2,6 +2,7 @@
 
 namespace App\Services\Social;
 
+use App\Models\Core\Integration;
 use InvalidArgumentException;
 
 /**
@@ -436,6 +437,157 @@ class BoostConfigurationService
             'errors' => $errors,
             'warnings' => $warnings,
         ];
+    }
+
+    /**
+     * Get destination types for a specific objective.
+     *
+     * Destination types define WHERE the conversion happens (Website, App, Messenger, WhatsApp, etc.)
+     * These are based on Meta's ODAX framework and adapted for other platforms.
+     *
+     * @param string $platform The platform identifier
+     * @param string $objectiveId The objective ID
+     * @param string|null $locale Optional locale for translated names
+     * @return array List of destination types for the objective, empty if none required
+     */
+    public function getDestinationTypes(string $platform, string $objectiveId, ?string $locale = null): array
+    {
+        $objectives = $this->getConfigForPlatform($platform)['objectives'] ?? [];
+
+        foreach ($objectives as $objective) {
+            if ($objective['id'] === $objectiveId) {
+                $destinationTypes = $objective['destination_types'] ?? [];
+
+                if (empty($destinationTypes)) {
+                    return [];
+                }
+
+                if ($locale === 'ar') {
+                    return array_map(function ($dest) {
+                        return [
+                            'id' => $dest['id'],
+                            'name' => $dest['name_ar'] ?? $dest['name'],
+                            'icon' => $dest['icon'] ?? 'fa-circle',
+                            'requires' => $dest['requires'] ?? [],
+                        ];
+                    }, $destinationTypes);
+                }
+
+                return $destinationTypes;
+            }
+        }
+
+        return [];
+    }
+
+    /**
+     * Check if an objective requires destination type selection.
+     *
+     * @param string $platform The platform identifier
+     * @param string $objectiveId The objective ID
+     * @return bool True if destination type is required
+     */
+    public function requiresDestinationType(string $platform, string $objectiveId): bool
+    {
+        $destinationTypes = $this->getDestinationTypes($platform, $objectiveId);
+        return !empty($destinationTypes);
+    }
+
+    /**
+     * Validate a destination type selection for an objective.
+     *
+     * @param string $platform The platform identifier
+     * @param string $objectiveId The objective ID
+     * @param string $destinationType The destination type ID to validate
+     * @return bool True if the destination type is valid for this objective
+     */
+    public function validateDestinationType(string $platform, string $objectiveId, string $destinationType): bool
+    {
+        $validTypes = $this->getDestinationTypes($platform, $objectiveId);
+        $validIds = array_column($validTypes, 'id');
+
+        return in_array($destinationType, $validIds);
+    }
+
+    /**
+     * Get connected messaging accounts for the organization.
+     *
+     * Returns WhatsApp numbers and Messenger pages connected via Meta integrations.
+     * Used for messaging destination type selection in boost configuration.
+     *
+     * @param string $orgId The organization ID
+     * @param string $platform The platform identifier (currently only 'meta' supported)
+     * @return array Connected messaging accounts grouped by type
+     */
+    public function getConnectedMessagingAccounts(string $orgId, string $platform = 'meta'): array
+    {
+        $accounts = [
+            'whatsapp' => [],
+            'messenger' => [],
+            'instagram_dm' => [],
+        ];
+
+        // Get Meta/Facebook/WhatsApp integrations with messaging capabilities
+        $integrations = Integration::where('org_id', $orgId)
+            ->whereIn('platform', ['meta', 'whatsapp', 'facebook'])
+            ->where('status', 'active')
+            ->get();
+
+        foreach ($integrations as $integration) {
+            $settings = $integration->settings ?? [];
+
+            // WhatsApp numbers (stored in settings from WhatsApp Business API)
+            if (!empty($settings['phone_number_id'])) {
+                $accounts['whatsapp'][] = [
+                    'id' => $settings['phone_number_id'],
+                    'display_name' => $settings['phone_display'] ?? $settings['phone_number'] ?? $integration->name,
+                    'integration_id' => $integration->id,
+                    'verified' => $settings['phone_verified'] ?? false,
+                ];
+            }
+
+            // Messenger pages (from Facebook/Meta integrations)
+            if (in_array($integration->platform, ['facebook', 'meta'])) {
+                $accounts['messenger'][] = [
+                    'id' => $integration->platform_account_id,
+                    'display_name' => $integration->name,
+                    'integration_id' => $integration->id,
+                    'has_messenger' => $settings['messenger_enabled'] ?? true,
+                ];
+            }
+
+            // Instagram DM (from Instagram integrations)
+            if ($integration->platform === 'meta' && !empty($settings['instagram_account_id'])) {
+                $accounts['instagram_dm'][] = [
+                    'id' => $settings['instagram_account_id'],
+                    'display_name' => $settings['instagram_username'] ?? $integration->name,
+                    'integration_id' => $integration->id,
+                ];
+            }
+        }
+
+        return $accounts;
+    }
+
+    /**
+     * Get requirements for a specific destination type.
+     *
+     * @param string $platform The platform identifier
+     * @param string $objectiveId The objective ID
+     * @param string $destinationType The destination type ID
+     * @return array List of required fields (e.g., ['url'], ['whatsapp_number'], ['page_id'])
+     */
+    public function getDestinationRequirements(string $platform, string $objectiveId, string $destinationType): array
+    {
+        $destinationTypes = $this->getDestinationTypes($platform, $objectiveId);
+
+        foreach ($destinationTypes as $dest) {
+            if ($dest['id'] === $destinationType) {
+                return $dest['requires'] ?? [];
+            }
+        }
+
+        return [];
     }
 
     /**

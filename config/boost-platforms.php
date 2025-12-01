@@ -28,12 +28,75 @@ return [
     'meta' => [
         'name' => 'Meta (Facebook/Instagram)',
         'objectives' => [
-            ['id' => 'OUTCOME_AWARENESS', 'name' => 'Brand Awareness', 'name_ar' => 'الوعي بالعلامة التجارية', 'description' => 'Show ads to people most likely to remember them'],
-            ['id' => 'OUTCOME_ENGAGEMENT', 'name' => 'Engagement', 'name_ar' => 'التفاعل', 'description' => 'Get more likes, comments, shares, and event responses'],
-            ['id' => 'OUTCOME_TRAFFIC', 'name' => 'Traffic', 'name_ar' => 'الزيارات', 'description' => 'Send people to your website or app'],
-            ['id' => 'OUTCOME_LEADS', 'name' => 'Lead Generation', 'name_ar' => 'جذب العملاء', 'description' => 'Collect leads for your business'],
-            ['id' => 'OUTCOME_SALES', 'name' => 'Sales', 'name_ar' => 'المبيعات', 'description' => 'Find people likely to purchase your product'],
-            ['id' => 'OUTCOME_APP_PROMOTION', 'name' => 'App Promotion', 'name_ar' => 'ترويج التطبيق', 'description' => 'Get more app installs and activity'],
+            [
+                'id' => 'OUTCOME_AWARENESS',
+                'name' => 'Brand Awareness',
+                'name_ar' => 'الوعي بالعلامة التجارية',
+                'description' => 'Show ads to people most likely to remember them',
+                'destination_types' => null, // No destination needed for awareness
+            ],
+            [
+                'id' => 'OUTCOME_ENGAGEMENT',
+                'name' => 'Engagement',
+                'name_ar' => 'التفاعل',
+                'description' => 'Get more likes, comments, shares, and event responses',
+                'destination_types' => [
+                    ['id' => 'ON_AD', 'name' => 'On Your Ad', 'name_ar' => 'على إعلانك', 'icon' => 'fa-ad', 'requires' => []],
+                    ['id' => 'MESSAGING', 'name' => 'Messaging Apps', 'name_ar' => 'تطبيقات المراسلة', 'icon' => 'fa-comments', 'requires' => ['messaging_app']],
+                    ['id' => 'WEBSITE', 'name' => 'Website', 'name_ar' => 'الموقع', 'icon' => 'fa-globe', 'requires' => ['url']],
+                    ['id' => 'PAGE', 'name' => 'Facebook Page', 'name_ar' => 'صفحة فيسبوك', 'icon' => 'fa-facebook', 'requires' => ['page_id']],
+                ],
+            ],
+            [
+                'id' => 'OUTCOME_TRAFFIC',
+                'name' => 'Traffic',
+                'name_ar' => 'الزيارات',
+                'description' => 'Send people to your website or app',
+                'destination_types' => [
+                    ['id' => 'WEBSITE', 'name' => 'Website', 'name_ar' => 'الموقع', 'icon' => 'fa-globe', 'requires' => ['url']],
+                    ['id' => 'APP', 'name' => 'App', 'name_ar' => 'التطبيق', 'icon' => 'fa-mobile-alt', 'requires' => ['app_id']],
+                    ['id' => 'MESSENGER', 'name' => 'Messenger', 'name_ar' => 'ماسنجر', 'icon' => 'fa-facebook-messenger', 'requires' => ['page_id']],
+                    ['id' => 'WHATSAPP', 'name' => 'WhatsApp', 'name_ar' => 'واتساب', 'icon' => 'fa-whatsapp', 'requires' => ['whatsapp_number']],
+                    ['id' => 'CALLS', 'name' => 'Phone Calls', 'name_ar' => 'المكالمات', 'icon' => 'fa-phone', 'requires' => ['phone_number']],
+                ],
+            ],
+            [
+                'id' => 'OUTCOME_LEADS',
+                'name' => 'Lead Generation',
+                'name_ar' => 'جذب العملاء',
+                'description' => 'Collect leads for your business',
+                'destination_types' => [
+                    ['id' => 'WEBSITE', 'name' => 'Website', 'name_ar' => 'الموقع', 'icon' => 'fa-globe', 'requires' => ['url']],
+                    ['id' => 'INSTANT_FORM', 'name' => 'Instant Forms', 'name_ar' => 'النماذج الفورية', 'icon' => 'fa-file-alt', 'requires' => ['form_id']],
+                    ['id' => 'MESSENGER', 'name' => 'Messenger', 'name_ar' => 'ماسنجر', 'icon' => 'fa-facebook-messenger', 'requires' => ['page_id']],
+                    ['id' => 'CALLS', 'name' => 'Phone Calls', 'name_ar' => 'المكالمات', 'icon' => 'fa-phone', 'requires' => ['phone_number']],
+                    ['id' => 'APP', 'name' => 'App', 'name_ar' => 'التطبيق', 'icon' => 'fa-mobile-alt', 'requires' => ['app_id']],
+                ],
+            ],
+            [
+                'id' => 'OUTCOME_SALES',
+                'name' => 'Sales',
+                'name_ar' => 'المبيعات',
+                'description' => 'Find people likely to purchase your product',
+                'destination_types' => [
+                    ['id' => 'WEBSITE', 'name' => 'Website', 'name_ar' => 'الموقع', 'icon' => 'fa-globe', 'requires' => ['url', 'pixel_id']],
+                    ['id' => 'APP', 'name' => 'App', 'name_ar' => 'التطبيق', 'icon' => 'fa-mobile-alt', 'requires' => ['app_id']],
+                    ['id' => 'WEBSITE_APP', 'name' => 'Website & App', 'name_ar' => 'الموقع والتطبيق', 'icon' => 'fa-layer-group', 'requires' => ['url', 'app_id']],
+                    ['id' => 'MESSENGER', 'name' => 'Messenger', 'name_ar' => 'ماسنجر', 'icon' => 'fa-facebook-messenger', 'requires' => ['page_id']],
+                    ['id' => 'WHATSAPP', 'name' => 'WhatsApp', 'name_ar' => 'واتساب', 'icon' => 'fa-whatsapp', 'requires' => ['whatsapp_number']],
+                ],
+            ],
+            [
+                'id' => 'OUTCOME_APP_PROMOTION',
+                'name' => 'App Promotion',
+                'name_ar' => 'ترويج التطبيق',
+                'description' => 'Get more app installs and activity',
+                'destination_types' => [
+                    ['id' => 'APP_INSTALLS', 'name' => 'App Installs', 'name_ar' => 'تثبيت التطبيق', 'icon' => 'fa-download', 'requires' => ['app_id']],
+                    ['id' => 'APP_EVENTS', 'name' => 'App Events', 'name_ar' => 'أحداث التطبيق', 'icon' => 'fa-calendar-check', 'requires' => ['app_id', 'event_name']],
+                    ['id' => 'VALUE', 'name' => 'Value (ROAS)', 'name_ar' => 'القيمة', 'icon' => 'fa-chart-line', 'requires' => ['app_id']],
+                ],
+            ],
         ],
         'placements' => [
             ['id' => 'facebook_feed', 'name' => 'Facebook Feed', 'name_ar' => 'آخر أخبار فيسبوك'],
@@ -84,12 +147,55 @@ return [
     'google' => [
         'name' => 'Google Ads (YouTube)',
         'objectives' => [
-            ['id' => 'VIDEO_VIEWS', 'name' => 'Video Views', 'name_ar' => 'مشاهدات الفيديو', 'description' => 'Get more views on your video content'],
-            ['id' => 'REACH', 'name' => 'Reach', 'name_ar' => 'الوصول', 'description' => 'Show ads to a large number of people'],
-            ['id' => 'CONVERSIONS', 'name' => 'Conversions', 'name_ar' => 'التحويلات', 'description' => 'Drive actions on your website'],
-            ['id' => 'BRAND_AWARENESS', 'name' => 'Brand Awareness', 'name_ar' => 'الوعي بالعلامة', 'description' => 'Increase brand recognition'],
-            ['id' => 'WEBSITE_TRAFFIC', 'name' => 'Website Traffic', 'name_ar' => 'زيارات الموقع', 'description' => 'Drive traffic to your website'],
-            ['id' => 'PRODUCT_CONSIDERATION', 'name' => 'Product Consideration', 'name_ar' => 'الاهتمام بالمنتج', 'description' => 'Encourage people to explore your products'],
+            [
+                'id' => 'VIDEO_VIEWS',
+                'name' => 'Video Views',
+                'name_ar' => 'مشاهدات الفيديو',
+                'description' => 'Get more views on your video content',
+                'destination_types' => null, // Views don't require destination
+            ],
+            [
+                'id' => 'REACH',
+                'name' => 'Reach',
+                'name_ar' => 'الوصول',
+                'description' => 'Show ads to a large number of people',
+                'destination_types' => null, // Reach doesn't require destination
+            ],
+            [
+                'id' => 'CONVERSIONS',
+                'name' => 'Conversions',
+                'name_ar' => 'التحويلات',
+                'description' => 'Drive actions on your website',
+                'destination_types' => [
+                    ['id' => 'WEBSITE', 'name' => 'Website', 'name_ar' => 'الموقع', 'icon' => 'fa-globe', 'requires' => ['url']],
+                    ['id' => 'APP', 'name' => 'App', 'name_ar' => 'التطبيق', 'icon' => 'fa-mobile-alt', 'requires' => ['app_id']],
+                ],
+            ],
+            [
+                'id' => 'BRAND_AWARENESS',
+                'name' => 'Brand Awareness',
+                'name_ar' => 'الوعي بالعلامة',
+                'description' => 'Increase brand recognition',
+                'destination_types' => null, // Awareness doesn't require destination
+            ],
+            [
+                'id' => 'WEBSITE_TRAFFIC',
+                'name' => 'Website Traffic',
+                'name_ar' => 'زيارات الموقع',
+                'description' => 'Drive traffic to your website',
+                'destination_types' => [
+                    ['id' => 'WEBSITE', 'name' => 'Website', 'name_ar' => 'الموقع', 'icon' => 'fa-globe', 'requires' => ['url']],
+                ],
+            ],
+            [
+                'id' => 'PRODUCT_CONSIDERATION',
+                'name' => 'Product Consideration',
+                'name_ar' => 'الاهتمام بالمنتج',
+                'description' => 'Encourage people to explore your products',
+                'destination_types' => [
+                    ['id' => 'WEBSITE', 'name' => 'Website', 'name_ar' => 'الموقع', 'icon' => 'fa-globe', 'requires' => ['url']],
+                ],
+            ],
         ],
         'placements' => [
             ['id' => 'youtube_instream', 'name' => 'YouTube In-Stream', 'name_ar' => 'داخل الفيديو'],
@@ -137,14 +243,79 @@ return [
     'tiktok' => [
         'name' => 'TikTok',
         'objectives' => [
-            ['id' => 'REACH', 'name' => 'Reach', 'name_ar' => 'الوصول', 'description' => 'Show ads to maximum number of people'],
-            ['id' => 'TRAFFIC', 'name' => 'Traffic', 'name_ar' => 'الزيارات', 'description' => 'Drive visits to your destination'],
-            ['id' => 'VIDEO_VIEWS', 'name' => 'Video Views', 'name_ar' => 'مشاهدات الفيديو', 'description' => 'Get more video views'],
-            ['id' => 'ENGAGEMENT', 'name' => 'Community Interaction', 'name_ar' => 'التفاعل المجتمعي', 'description' => 'Get followers, profile visits, and interactions'],
-            ['id' => 'LEAD_GENERATION', 'name' => 'Lead Generation', 'name_ar' => 'جذب العملاء', 'description' => 'Collect leads in-app'],
-            ['id' => 'CONVERSIONS', 'name' => 'Website Conversions', 'name_ar' => 'تحويلات الموقع', 'description' => 'Drive actions on your website'],
-            ['id' => 'APP_PROMOTION', 'name' => 'App Promotion', 'name_ar' => 'ترويج التطبيق', 'description' => 'Get app installs and events'],
-            ['id' => 'PRODUCT_SALES', 'name' => 'Product Sales', 'name_ar' => 'مبيعات المنتج', 'description' => 'Sell products from your catalog'],
+            [
+                'id' => 'REACH',
+                'name' => 'Reach',
+                'name_ar' => 'الوصول',
+                'description' => 'Show ads to maximum number of people',
+                'destination_types' => null, // Reach doesn't require destination
+            ],
+            [
+                'id' => 'TRAFFIC',
+                'name' => 'Traffic',
+                'name_ar' => 'الزيارات',
+                'description' => 'Drive visits to your destination',
+                'destination_types' => [
+                    ['id' => 'WEBSITE', 'name' => 'Website', 'name_ar' => 'الموقع', 'icon' => 'fa-globe', 'requires' => ['url']],
+                    ['id' => 'APP', 'name' => 'App', 'name_ar' => 'التطبيق', 'icon' => 'fa-mobile-alt', 'requires' => ['app_id']],
+                    ['id' => 'TIKTOK_PROFILE', 'name' => 'TikTok Profile', 'name_ar' => 'ملف تيك توك', 'icon' => 'fa-user', 'requires' => []],
+                ],
+            ],
+            [
+                'id' => 'VIDEO_VIEWS',
+                'name' => 'Video Views',
+                'name_ar' => 'مشاهدات الفيديو',
+                'description' => 'Get more video views',
+                'destination_types' => null, // Views don't require destination
+            ],
+            [
+                'id' => 'ENGAGEMENT',
+                'name' => 'Community Interaction',
+                'name_ar' => 'التفاعل المجتمعي',
+                'description' => 'Get followers, profile visits, and interactions',
+                'destination_types' => null, // Engagement on profile
+            ],
+            [
+                'id' => 'LEAD_GENERATION',
+                'name' => 'Lead Generation',
+                'name_ar' => 'جذب العملاء',
+                'description' => 'Collect leads in-app',
+                'destination_types' => [
+                    ['id' => 'WEBSITE', 'name' => 'Website', 'name_ar' => 'الموقع', 'icon' => 'fa-globe', 'requires' => ['url']],
+                    ['id' => 'INSTANT_FORM', 'name' => 'Instant Form', 'name_ar' => 'النموذج الفوري', 'icon' => 'fa-file-alt', 'requires' => ['form_id']],
+                    ['id' => 'TIKTOK_INBOX', 'name' => 'TikTok Inbox', 'name_ar' => 'صندوق تيك توك', 'icon' => 'fa-inbox', 'requires' => []],
+                ],
+            ],
+            [
+                'id' => 'CONVERSIONS',
+                'name' => 'Website Conversions',
+                'name_ar' => 'تحويلات الموقع',
+                'description' => 'Drive actions on your website',
+                'destination_types' => [
+                    ['id' => 'WEBSITE', 'name' => 'Website', 'name_ar' => 'الموقع', 'icon' => 'fa-globe', 'requires' => ['url']],
+                    ['id' => 'APP', 'name' => 'App', 'name_ar' => 'التطبيق', 'icon' => 'fa-mobile-alt', 'requires' => ['app_id']],
+                ],
+            ],
+            [
+                'id' => 'APP_PROMOTION',
+                'name' => 'App Promotion',
+                'name_ar' => 'ترويج التطبيق',
+                'description' => 'Get app installs and events',
+                'destination_types' => [
+                    ['id' => 'APP_INSTALLS', 'name' => 'App Installs', 'name_ar' => 'تثبيت التطبيق', 'icon' => 'fa-download', 'requires' => ['app_id']],
+                    ['id' => 'APP_EVENTS', 'name' => 'App Events', 'name_ar' => 'أحداث التطبيق', 'icon' => 'fa-calendar-check', 'requires' => ['app_id', 'event_name']],
+                ],
+            ],
+            [
+                'id' => 'PRODUCT_SALES',
+                'name' => 'Product Sales',
+                'name_ar' => 'مبيعات المنتج',
+                'description' => 'Sell products from your catalog',
+                'destination_types' => [
+                    ['id' => 'WEBSITE', 'name' => 'Website', 'name_ar' => 'الموقع', 'icon' => 'fa-globe', 'requires' => ['url']],
+                    ['id' => 'TIKTOK_SHOP', 'name' => 'TikTok Shop', 'name_ar' => 'متجر تيك توك', 'icon' => 'fa-shopping-bag', 'requires' => ['shop_id']],
+                ],
+            ],
         ],
         'placements' => [
             ['id' => 'tiktok_feed', 'name' => 'TikTok For You Page', 'name_ar' => 'صفحة لك'],
@@ -188,11 +359,52 @@ return [
     'snapchat' => [
         'name' => 'Snapchat',
         'objectives' => [
-            ['id' => 'AWARENESS_ENGAGEMENT', 'name' => 'Awareness & Engagement', 'name_ar' => 'الوعي والتفاعل', 'description' => 'Reach and engage with your audience'],
-            ['id' => 'TRAFFIC', 'name' => 'Traffic', 'name_ar' => 'الزيارات', 'description' => 'Send people to your website or app'],
-            ['id' => 'CONVERSIONS', 'name' => 'Conversions', 'name_ar' => 'التحويلات', 'description' => 'Drive actions on your website'],
-            ['id' => 'APP_PROMOTION', 'name' => 'App Promotion', 'name_ar' => 'ترويج التطبيق', 'description' => 'Get app installs'],
-            ['id' => 'CATALOG_SALES', 'name' => 'Catalog Sales', 'name_ar' => 'مبيعات الكتالوج', 'description' => 'Sell products from your catalog'],
+            [
+                'id' => 'AWARENESS_ENGAGEMENT',
+                'name' => 'Awareness & Engagement',
+                'name_ar' => 'الوعي والتفاعل',
+                'description' => 'Reach and engage with your audience',
+                'destination_types' => null, // Awareness doesn't require destination
+            ],
+            [
+                'id' => 'TRAFFIC',
+                'name' => 'Traffic',
+                'name_ar' => 'الزيارات',
+                'description' => 'Send people to your website or app',
+                'destination_types' => [
+                    ['id' => 'WEBSITE', 'name' => 'Website', 'name_ar' => 'الموقع', 'icon' => 'fa-globe', 'requires' => ['url']],
+                    ['id' => 'APP', 'name' => 'App', 'name_ar' => 'التطبيق', 'icon' => 'fa-mobile-alt', 'requires' => ['app_id']],
+                    ['id' => 'DEEP_LINK', 'name' => 'Deep Link', 'name_ar' => 'رابط عميق', 'icon' => 'fa-link', 'requires' => ['deep_link_url']],
+                ],
+            ],
+            [
+                'id' => 'CONVERSIONS',
+                'name' => 'Conversions',
+                'name_ar' => 'التحويلات',
+                'description' => 'Drive actions on your website',
+                'destination_types' => [
+                    ['id' => 'WEBSITE', 'name' => 'Website', 'name_ar' => 'الموقع', 'icon' => 'fa-globe', 'requires' => ['url']],
+                    ['id' => 'APP', 'name' => 'App', 'name_ar' => 'التطبيق', 'icon' => 'fa-mobile-alt', 'requires' => ['app_id']],
+                ],
+            ],
+            [
+                'id' => 'APP_PROMOTION',
+                'name' => 'App Promotion',
+                'name_ar' => 'ترويج التطبيق',
+                'description' => 'Get app installs',
+                'destination_types' => [
+                    ['id' => 'APP_INSTALLS', 'name' => 'App Installs', 'name_ar' => 'تثبيت التطبيق', 'icon' => 'fa-download', 'requires' => ['app_id']],
+                ],
+            ],
+            [
+                'id' => 'CATALOG_SALES',
+                'name' => 'Catalog Sales',
+                'name_ar' => 'مبيعات الكتالوج',
+                'description' => 'Sell products from your catalog',
+                'destination_types' => [
+                    ['id' => 'WEBSITE', 'name' => 'Website', 'name_ar' => 'الموقع', 'icon' => 'fa-globe', 'requires' => ['url']],
+                ],
+            ],
         ],
         'ad_types' => [
             ['id' => 'SNAP_AD', 'name' => 'Snap Ad', 'name_ar' => 'إعلان سناب', 'description' => 'Full-screen vertical video'],
@@ -238,15 +450,78 @@ return [
     'twitter' => [
         'name' => 'X (Twitter)',
         'objectives' => [
-            ['id' => 'REACH', 'name' => 'Reach', 'name_ar' => 'الوصول', 'description' => 'Maximize ad impressions'],
-            ['id' => 'TWEET_ENGAGEMENTS', 'name' => 'Engagements', 'name_ar' => 'التفاعلات', 'description' => 'Get likes, retweets, and replies'],
-            ['id' => 'VIDEO_VIEWS', 'name' => 'Video Views', 'name_ar' => 'مشاهدات الفيديو', 'description' => 'Get more video views'],
-            ['id' => 'FOLLOWERS', 'name' => 'Followers', 'name_ar' => 'المتابعين', 'description' => 'Grow your follower count'],
-            ['id' => 'WEBSITE_CLICKS', 'name' => 'Website Traffic', 'name_ar' => 'زيارات الموقع', 'description' => 'Drive traffic to your website'],
-            ['id' => 'WEBSITE_CONVERSIONS', 'name' => 'Website Conversions', 'name_ar' => 'تحويلات الموقع', 'description' => 'Drive actions on your website'],
-            ['id' => 'APP_INSTALLS', 'name' => 'App Installs', 'name_ar' => 'تثبيت التطبيق', 'description' => 'Get app downloads'],
-            ['id' => 'APP_ENGAGEMENTS', 'name' => 'App Re-engagements', 'name_ar' => 'إعادة تفاعل التطبيق', 'description' => 'Re-engage existing app users'],
-            ['id' => 'PRE_ROLL_VIEWS', 'name' => 'Pre-Roll Views', 'name_ar' => 'مشاهدات ما قبل التشغيل', 'description' => 'In-stream video ads'],
+            [
+                'id' => 'REACH',
+                'name' => 'Reach',
+                'name_ar' => 'الوصول',
+                'description' => 'Maximize ad impressions',
+                'destination_types' => null, // Reach doesn't require destination
+            ],
+            [
+                'id' => 'TWEET_ENGAGEMENTS',
+                'name' => 'Engagements',
+                'name_ar' => 'التفاعلات',
+                'description' => 'Get likes, retweets, and replies',
+                'destination_types' => null, // Engagement on post
+            ],
+            [
+                'id' => 'VIDEO_VIEWS',
+                'name' => 'Video Views',
+                'name_ar' => 'مشاهدات الفيديو',
+                'description' => 'Get more video views',
+                'destination_types' => null, // Views don't require destination
+            ],
+            [
+                'id' => 'FOLLOWERS',
+                'name' => 'Followers',
+                'name_ar' => 'المتابعين',
+                'description' => 'Grow your follower count',
+                'destination_types' => null, // Followers on profile
+            ],
+            [
+                'id' => 'WEBSITE_CLICKS',
+                'name' => 'Website Traffic',
+                'name_ar' => 'زيارات الموقع',
+                'description' => 'Drive traffic to your website',
+                'destination_types' => [
+                    ['id' => 'WEBSITE', 'name' => 'Website', 'name_ar' => 'الموقع', 'icon' => 'fa-globe', 'requires' => ['url']],
+                ],
+            ],
+            [
+                'id' => 'WEBSITE_CONVERSIONS',
+                'name' => 'Website Conversions',
+                'name_ar' => 'تحويلات الموقع',
+                'description' => 'Drive actions on your website',
+                'destination_types' => [
+                    ['id' => 'WEBSITE', 'name' => 'Website', 'name_ar' => 'الموقع', 'icon' => 'fa-globe', 'requires' => ['url']],
+                    ['id' => 'APP', 'name' => 'App', 'name_ar' => 'التطبيق', 'icon' => 'fa-mobile-alt', 'requires' => ['app_id']],
+                ],
+            ],
+            [
+                'id' => 'APP_INSTALLS',
+                'name' => 'App Installs',
+                'name_ar' => 'تثبيت التطبيق',
+                'description' => 'Get app downloads',
+                'destination_types' => [
+                    ['id' => 'APP_INSTALLS', 'name' => 'App Installs', 'name_ar' => 'تثبيت التطبيق', 'icon' => 'fa-download', 'requires' => ['app_id']],
+                ],
+            ],
+            [
+                'id' => 'APP_ENGAGEMENTS',
+                'name' => 'App Re-engagements',
+                'name_ar' => 'إعادة تفاعل التطبيق',
+                'description' => 'Re-engage existing app users',
+                'destination_types' => [
+                    ['id' => 'APP', 'name' => 'App', 'name_ar' => 'التطبيق', 'icon' => 'fa-mobile-alt', 'requires' => ['app_id']],
+                ],
+            ],
+            [
+                'id' => 'PRE_ROLL_VIEWS',
+                'name' => 'Pre-Roll Views',
+                'name_ar' => 'مشاهدات ما قبل التشغيل',
+                'description' => 'In-stream video ads',
+                'destination_types' => null, // Views on partner network
+            ],
         ],
         'placements' => [
             ['id' => 'ALL_ON_TWITTER', 'name' => 'All on X', 'name_ar' => 'الكل على X'],
@@ -293,13 +568,64 @@ return [
     'linkedin' => [
         'name' => 'LinkedIn',
         'objectives' => [
-            ['id' => 'BRAND_AWARENESS', 'name' => 'Brand Awareness', 'name_ar' => 'الوعي بالعلامة', 'description' => 'Increase brand recognition'],
-            ['id' => 'WEBSITE_VISITS', 'name' => 'Website Visits', 'name_ar' => 'زيارات الموقع', 'description' => 'Drive traffic to your website'],
-            ['id' => 'ENGAGEMENT', 'name' => 'Engagement', 'name_ar' => 'التفاعل', 'description' => 'Get reactions, comments, and shares'],
-            ['id' => 'VIDEO_VIEWS', 'name' => 'Video Views', 'name_ar' => 'مشاهدات الفيديو', 'description' => 'Get more video views'],
-            ['id' => 'LEAD_GENERATION', 'name' => 'Lead Generation', 'name_ar' => 'جذب العملاء', 'description' => 'Collect leads with Lead Gen Forms'],
-            ['id' => 'WEBSITE_CONVERSIONS', 'name' => 'Website Conversions', 'name_ar' => 'تحويلات الموقع', 'description' => 'Drive actions on your website'],
-            ['id' => 'JOB_APPLICANTS', 'name' => 'Job Applicants', 'name_ar' => 'المتقدمين للوظائف', 'description' => 'Attract qualified job candidates'],
+            [
+                'id' => 'BRAND_AWARENESS',
+                'name' => 'Brand Awareness',
+                'name_ar' => 'الوعي بالعلامة',
+                'description' => 'Increase brand recognition',
+                'destination_types' => null, // Awareness doesn't require destination
+            ],
+            [
+                'id' => 'WEBSITE_VISITS',
+                'name' => 'Website Visits',
+                'name_ar' => 'زيارات الموقع',
+                'description' => 'Drive traffic to your website',
+                'destination_types' => [
+                    ['id' => 'WEBSITE', 'name' => 'Website', 'name_ar' => 'الموقع', 'icon' => 'fa-globe', 'requires' => ['url']],
+                ],
+            ],
+            [
+                'id' => 'ENGAGEMENT',
+                'name' => 'Engagement',
+                'name_ar' => 'التفاعل',
+                'description' => 'Get reactions, comments, and shares',
+                'destination_types' => null, // Engagement on post
+            ],
+            [
+                'id' => 'VIDEO_VIEWS',
+                'name' => 'Video Views',
+                'name_ar' => 'مشاهدات الفيديو',
+                'description' => 'Get more video views',
+                'destination_types' => null, // Views don't require destination
+            ],
+            [
+                'id' => 'LEAD_GENERATION',
+                'name' => 'Lead Generation',
+                'name_ar' => 'جذب العملاء',
+                'description' => 'Collect leads with Lead Gen Forms',
+                'destination_types' => [
+                    ['id' => 'WEBSITE', 'name' => 'Website', 'name_ar' => 'الموقع', 'icon' => 'fa-globe', 'requires' => ['url']],
+                    ['id' => 'LEAD_GEN_FORM', 'name' => 'Lead Gen Form', 'name_ar' => 'نموذج جذب العملاء', 'icon' => 'fa-file-alt', 'requires' => ['form_id']],
+                ],
+            ],
+            [
+                'id' => 'WEBSITE_CONVERSIONS',
+                'name' => 'Website Conversions',
+                'name_ar' => 'تحويلات الموقع',
+                'description' => 'Drive actions on your website',
+                'destination_types' => [
+                    ['id' => 'WEBSITE', 'name' => 'Website', 'name_ar' => 'الموقع', 'icon' => 'fa-globe', 'requires' => ['url']],
+                ],
+            ],
+            [
+                'id' => 'JOB_APPLICANTS',
+                'name' => 'Job Applicants',
+                'name_ar' => 'المتقدمين للوظائف',
+                'description' => 'Attract qualified job candidates',
+                'destination_types' => [
+                    ['id' => 'LINKEDIN_JOBS', 'name' => 'LinkedIn Jobs', 'name_ar' => 'وظائف لينكدإن', 'icon' => 'fa-briefcase', 'requires' => ['job_id']],
+                ],
+            ],
         ],
         'placements' => [
             ['id' => 'linkedin_feed', 'name' => 'LinkedIn Feed', 'name_ar' => 'آخر أخبار لينكدإن'],
@@ -376,11 +702,47 @@ return [
     'pinterest' => [
         'name' => 'Pinterest',
         'objectives' => [
-            ['id' => 'AWARENESS', 'name' => 'Brand Awareness', 'name_ar' => 'الوعي بالعلامة', 'description' => 'Reach people exploring Pinterest'],
-            ['id' => 'VIDEO_VIEW', 'name' => 'Video Views', 'name_ar' => 'مشاهدات الفيديو', 'description' => 'Get more video views'],
-            ['id' => 'CONSIDERATION', 'name' => 'Consideration (Clicks)', 'name_ar' => 'الاهتمام', 'description' => 'Drive traffic and engagement'],
-            ['id' => 'CONVERSIONS', 'name' => 'Conversions', 'name_ar' => 'التحويلات', 'description' => 'Drive actions on your website'],
-            ['id' => 'CATALOG_SALES', 'name' => 'Catalog Sales', 'name_ar' => 'مبيعات الكتالوج', 'description' => 'Sell products from your catalog'],
+            [
+                'id' => 'AWARENESS',
+                'name' => 'Brand Awareness',
+                'name_ar' => 'الوعي بالعلامة',
+                'description' => 'Reach people exploring Pinterest',
+                'destination_types' => null, // Awareness doesn't require destination
+            ],
+            [
+                'id' => 'VIDEO_VIEW',
+                'name' => 'Video Views',
+                'name_ar' => 'مشاهدات الفيديو',
+                'description' => 'Get more video views',
+                'destination_types' => null, // Views don't require destination
+            ],
+            [
+                'id' => 'CONSIDERATION',
+                'name' => 'Consideration (Clicks)',
+                'name_ar' => 'الاهتمام',
+                'description' => 'Drive traffic and engagement',
+                'destination_types' => [
+                    ['id' => 'WEBSITE', 'name' => 'Website', 'name_ar' => 'الموقع', 'icon' => 'fa-globe', 'requires' => ['url']],
+                ],
+            ],
+            [
+                'id' => 'CONVERSIONS',
+                'name' => 'Conversions',
+                'name_ar' => 'التحويلات',
+                'description' => 'Drive actions on your website',
+                'destination_types' => [
+                    ['id' => 'WEBSITE', 'name' => 'Website', 'name_ar' => 'الموقع', 'icon' => 'fa-globe', 'requires' => ['url']],
+                ],
+            ],
+            [
+                'id' => 'CATALOG_SALES',
+                'name' => 'Catalog Sales',
+                'name_ar' => 'مبيعات الكتالوج',
+                'description' => 'Sell products from your catalog',
+                'destination_types' => [
+                    ['id' => 'SHOPPING', 'name' => 'Shopping', 'name_ar' => 'التسوق', 'icon' => 'fa-shopping-cart', 'requires' => ['catalog_id']],
+                ],
+            ],
         ],
         'placements' => [
             ['id' => 'ALL', 'name' => 'All Placements', 'name_ar' => 'كل المواضع'],

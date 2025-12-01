@@ -370,6 +370,9 @@ class PublishingModalController extends Controller
     /**
      * Get the next available queue slot for a profile.
      *
+     * Uses the schedule column which has per-day time slots like:
+     * {"monday": [{time: "09:00", label_id: null, is_evergreen: false}, ...], ...}
+     *
      * @param string $org Organization ID
      * @param string $profileId Integration/Profile ID
      * @return \Carbon\Carbon|null Next available slot time, or null if queue not enabled/configured
@@ -395,19 +398,27 @@ class PublishingModalController extends Controller
                 return null;
             }
 
-            $postingTimes = json_decode($queueSettings->posting_times ?? '[]', true);
-            $daysEnabledRaw = json_decode($queueSettings->days_enabled ?? '[0,1,2,3,4,5,6]', true);
+            // Use the schedule column which has per-day slots
+            $schedule = json_decode($queueSettings->schedule ?? '{}', true);
+            $daysEnabledRaw = json_decode($queueSettings->days_enabled ?? '[]', true);
 
-            if (empty($postingTimes)) {
-                Log::warning('[QUEUE] No posting times configured', ['profile_id' => $profileId]);
+            if (empty($schedule) || empty($daysEnabledRaw)) {
+                Log::warning('[QUEUE] No schedule or days configured', [
+                    'profile_id' => $profileId,
+                    'has_schedule' => !empty($schedule),
+                    'has_days' => !empty($daysEnabledRaw),
+                ]);
                 return null;
             }
 
-            // Convert day names to numbers if needed (sunday=0, monday=1, ... saturday=6)
+            // Map day names to numbers (Carbon uses 0=Sunday, 6=Saturday)
             $dayNameToNumber = [
                 'sunday' => 0, 'monday' => 1, 'tuesday' => 2, 'wednesday' => 3,
                 'thursday' => 4, 'friday' => 5, 'saturday' => 6
             ];
+            $numberToDayName = array_flip($dayNameToNumber);
+
+            // Convert days_enabled to day numbers
             $daysEnabled = array_map(function ($day) use ($dayNameToNumber) {
                 if (is_string($day)) {
                     return $dayNameToNumber[strtolower($day)] ?? null;
@@ -415,9 +426,6 @@ class PublishingModalController extends Controller
                 return (int) $day;
             }, $daysEnabledRaw);
             $daysEnabled = array_filter($daysEnabled, fn($d) => $d !== null);
-
-            // Sort posting times to ensure correct order
-            sort($postingTimes);
 
             // Get timezone for this profile (inheritance: profile -> group -> org -> UTC)
             $timezoneData = DB::table('cmis.integrations as i')
@@ -434,6 +442,7 @@ class PublishingModalController extends Controller
             $now = \Carbon\Carbon::now($timezone);
             $currentTime = $now->format('H:i');
             $currentDay = $now->dayOfWeek; // 0=Sunday, 6=Saturday
+            $currentDayName = strtolower($now->format('l')); // monday, tuesday, etc.
 
             Log::debug('[QUEUE] Finding next slot', [
                 'profile_id' => $profileId,
@@ -441,16 +450,28 @@ class PublishingModalController extends Controller
                 'now' => $now->toDateTimeString(),
                 'current_time' => $currentTime,
                 'current_day' => $currentDay,
-                'current_day_name' => $now->format('l'),
-                'posting_times' => $postingTimes,
+                'current_day_name' => $currentDayName,
                 'days_enabled_raw' => $daysEnabledRaw,
                 'days_enabled_numeric' => $daysEnabled,
-                'is_today_enabled' => in_array($currentDay, $daysEnabled),
+                'schedule_days' => array_keys($schedule),
             ]);
+
+            // Helper to extract time from slot (supports both old string and new object format)
+            $getSlotTime = function ($slot) {
+                if (is_string($slot)) {
+                    return $slot;
+                }
+                return $slot['time'] ?? null;
+            };
 
             // Try to find a slot today
             if (in_array($currentDay, $daysEnabled)) {
-                foreach ($postingTimes as $time) {
+                $todaySlots = $schedule[$currentDayName] ?? [];
+                // Extract times and sort them
+                $todayTimes = array_filter(array_map($getSlotTime, $todaySlots));
+                sort($todayTimes);
+
+                foreach ($todayTimes as $time) {
                     if ($time > $currentTime) {
                         $slotTime = \Carbon\Carbon::parse($now->format('Y-m-d') . ' ' . $time . ':00', $timezone);
                         Log::debug('[QUEUE] Found slot today', [
@@ -462,20 +483,28 @@ class PublishingModalController extends Controller
                 }
             }
 
-            // Find the next enabled day
+            // Find the next enabled day with slots
             for ($i = 1; $i <= 7; $i++) {
                 $nextDay = $now->copy()->addDays($i);
                 $nextDayOfWeek = $nextDay->dayOfWeek;
+                $nextDayName = strtolower($nextDay->format('l'));
 
                 if (in_array($nextDayOfWeek, $daysEnabled)) {
-                    $firstTime = $postingTimes[0];
-                    $slotTime = \Carbon\Carbon::parse($nextDay->format('Y-m-d') . ' ' . $firstTime . ':00', $timezone);
-                    Log::debug('[QUEUE] Found slot on future day', [
-                        'days_ahead' => $i,
-                        'slot_local' => $slotTime->toDateTimeString(),
-                        'slot_utc' => $slotTime->utc()->toDateTimeString(),
-                    ]);
-                    return $slotTime->utc();
+                    $daySlots = $schedule[$nextDayName] ?? [];
+                    $dayTimes = array_filter(array_map($getSlotTime, $daySlots));
+
+                    if (!empty($dayTimes)) {
+                        sort($dayTimes);
+                        $firstTime = $dayTimes[0];
+                        $slotTime = \Carbon\Carbon::parse($nextDay->format('Y-m-d') . ' ' . $firstTime . ':00', $timezone);
+                        Log::debug('[QUEUE] Found slot on future day', [
+                            'days_ahead' => $i,
+                            'day_name' => $nextDayName,
+                            'slot_local' => $slotTime->toDateTimeString(),
+                            'slot_utc' => $slotTime->utc()->toDateTimeString(),
+                        ]);
+                        return $slotTime->utc();
+                    }
                 }
             }
 

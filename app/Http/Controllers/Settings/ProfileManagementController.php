@@ -762,4 +762,29 @@ class ProfileManagementController extends Controller
             return $this->serverError(__('profiles.boost_config_failed'));
         }
     }
+
+    /**
+     * Get connected messaging accounts for boost destination types.
+     *
+     * GET /orgs/{org}/settings/profiles/{integration_id}/messaging-accounts
+     *
+     * Returns WhatsApp numbers, Messenger pages, and Instagram DM accounts
+     * connected to the organization for use as messaging destinations in boost campaigns.
+     */
+    public function getMessagingAccounts(Request $request, string $org, string $integrationId): JsonResponse
+    {
+        $configService = app(BoostConfigurationService::class);
+
+        try {
+            $accounts = $configService->getConnectedMessagingAccounts($org, 'meta');
+
+            return $this->success([
+                'accounts' => $accounts,
+                'can_connect_whatsapp' => true, // Always allow connecting new accounts
+                'whatsapp_connect_url' => route('connectors.connect', ['provider' => 'whatsapp']),
+            ], __('profiles.messaging_accounts_retrieved'));
+        } catch (\Exception $e) {
+            return $this->serverError(__('profiles.messaging_accounts_failed'));
+        }
+    }
 }

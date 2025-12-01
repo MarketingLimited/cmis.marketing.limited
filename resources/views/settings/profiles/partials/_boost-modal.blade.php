@@ -454,6 +454,7 @@ function boostForm() {
         loading: false,
         loadingAudiences: false,
         loadingPlatformConfig: false,
+        loadingMessagingAccounts: false,
         validatingBudget: false,
         showAudienceSection: false,
         showDetailedTargeting: false,
@@ -462,6 +463,10 @@ function boostForm() {
 
         // Platform configuration from API
         platformConfig: null,
+
+        // Destination types for selected objective
+        selectedDestinationType: null,
+        messagingAccounts: { whatsapp: [], messenger: [], instagram_dm: [] },
 
         // Form data
         form: {
@@ -497,7 +502,15 @@ function boostForm() {
             cities: '',
             genders: '',
             min_age: '',
-            max_age: ''
+            max_age: '',
+            // Destination type fields
+            destination_type: '',
+            destination_url: '',
+            whatsapp_number_id: '',
+            page_id: '',
+            phone_number: '',
+            form_id: '',
+            app_id: ''
         },
 
         // Default objectives (fallback when no platform config)
@@ -536,6 +549,24 @@ function boostForm() {
             return this.platformConfig?.b2b_targeting !== undefined && Object.keys(this.platformConfig.b2b_targeting).length > 0;
         },
 
+        // Destination type computed properties
+        get currentDestinationTypes() {
+            if (!this.form.objective || !this.platformConfig?.objectives) {
+                return [];
+            }
+            const objective = this.platformConfig.objectives.find(o => o.id === this.form.objective);
+            return objective?.destination_types || [];
+        },
+
+        get requiresDestination() {
+            return this.currentDestinationTypes.length > 0;
+        },
+
+        get selectedDestinationTypeDetails() {
+            if (!this.form.destination_type) return null;
+            return this.currentDestinationTypes.find(dt => dt.id === this.form.destination_type);
+        },
+
         get platformName() {
             return this.platformConfig?.platform_name || '{{ __("profiles.platform") }}';
         },
@@ -570,6 +601,61 @@ function boostForm() {
             this.loadPlatformConfig();
             this.loadAudiences();
             this.validateBudget();
+        },
+
+        onObjectiveChange() {
+            // Reset destination type when objective changes
+            this.form.destination_type = '';
+            this.form.destination_url = '';
+            this.form.whatsapp_number_id = '';
+            this.form.page_id = '';
+            this.form.phone_number = '';
+            this.form.form_id = '';
+            this.form.app_id = '';
+            this.selectedDestinationType = null;
+
+            // Load messaging accounts if needed for the new objective
+            if (this.requiresDestination) {
+                const hasMessagingOptions = this.currentDestinationTypes.some(dt =>
+                    ['MESSENGER', 'WHATSAPP', 'INSTAGRAM_DIRECT'].includes(dt.id)
+                );
+                if (hasMessagingOptions) {
+                    this.loadMessagingAccounts();
+                }
+            }
+        },
+
+        selectDestinationType(destinationType) {
+            this.form.destination_type = destinationType.id;
+            this.selectedDestinationType = destinationType;
+
+            // Clear fields not relevant to this destination type
+            const requires = destinationType.requires || [];
+            if (!requires.includes('url')) this.form.destination_url = '';
+            if (!requires.includes('whatsapp_number')) this.form.whatsapp_number_id = '';
+            if (!requires.includes('page_id')) this.form.page_id = '';
+            if (!requires.includes('phone_number')) this.form.phone_number = '';
+            if (!requires.includes('form_id')) this.form.form_id = '';
+            if (!requires.includes('app_id')) this.form.app_id = '';
+        },
+
+        async loadMessagingAccounts() {
+            this.loadingMessagingAccounts = true;
+            try {
+                const response = await fetch(`/orgs/{{ $currentOrg }}/settings/profiles/{{ $profile->integration_id }}/messaging-accounts`, {
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    }
+                });
+                const data = await response.json();
+                if (data.success && data.data) {
+                    this.messagingAccounts = data.data.accounts || { whatsapp: [], messenger: [], instagram_dm: [] };
+                }
+            } catch (error) {
+                console.error('Error loading messaging accounts:', error);
+            }
+            this.loadingMessagingAccounts = false;
         },
 
         async loadPlatformConfig() {

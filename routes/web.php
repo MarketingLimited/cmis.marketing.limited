@@ -731,6 +731,7 @@ Route::middleware(['auth'])->group(function () {
                 Route::get('/{integration_id}/audiences', [App\Http\Controllers\Settings\ProfileManagementController::class, 'getAudiences'])->name('audiences');
                 Route::post('/{integration_id}/validate-budget', [App\Http\Controllers\Settings\ProfileManagementController::class, 'validateBudget'])->name('validate-budget');
                 Route::get('/{integration_id}/boost-config', [App\Http\Controllers\Settings\ProfileManagementController::class, 'getBoostConfig'])->name('boost-config');
+                Route::get('/{integration_id}/messaging-accounts', [App\Http\Controllers\Settings\ProfileManagementController::class, 'getMessagingAccounts'])->name('messaging-accounts');
             });
 
             // ==================== Queue Slot Labels (Organization-wide) ====================
