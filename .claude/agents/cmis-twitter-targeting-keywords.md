@@ -1,7 +1,7 @@
 ---
 name: cmis-twitter-targeting-keywords
 description: Twitter keyword targeting (timeline and search).
-model: opus
+model: haiku
 ---
 
 # CMIS Twitter Keyword Targeting Specialist V1.0

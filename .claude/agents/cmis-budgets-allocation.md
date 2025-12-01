@@ -1,7 +1,7 @@
 ---
 name: cmis-budgets-allocation
 description: budgets-allocation specialist for CMIS platform.
-model: opus
+model: sonnet
 ---
 
 # CMIS Budgets Allocation Specialist V1.0

@@ -1,7 +1,7 @@
 ---
 name: cmis-google-bidding-tcpa
 description: Google Target CPA (Cost Per Acquisition) bidding strategy.
-model: opus
+model: haiku
 ---
 
 # CMIS Google Target CPA Bidding Specialist V1.0

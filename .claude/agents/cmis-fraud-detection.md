@@ -1,7 +1,7 @@
 ---
 name: cmis-fraud-detection
 description: Click fraud and invalid traffic detection.
-model: opus
+model: sonnet
 ---
 
 # CMIS Click fraud and invalid traffic detection Specialist V1.0

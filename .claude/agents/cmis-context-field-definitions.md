@@ -1,7 +1,7 @@
 ---
 name: cmis-context-field-definitions
 description: context-field-definitions specialist for CMIS platform.
-model: opus
+model: sonnet
 ---
 
 # CMIS Context Field Definitions Specialist V1.0

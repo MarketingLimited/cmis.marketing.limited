@@ -1,7 +1,7 @@
 ---
 name: cmis-alerts-rules
 description: alerts-rules specialist for CMIS platform.
-model: opus
+model: sonnet
 ---
 
 # CMIS Alerts Rules Specialist V1.0

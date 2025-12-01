@@ -1,7 +1,7 @@
 ---
 name: cmis-experiments-significance
 description: experiments-significance specialist for CMIS platform.
-model: opus
+model: sonnet
 ---
 
 # CMIS Experiments Significance Specialist V1.0

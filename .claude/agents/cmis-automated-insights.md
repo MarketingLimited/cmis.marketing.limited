@@ -1,7 +1,7 @@
 ---
 name: cmis-automated-insights
 description: Automated performance insights generation.
-model: opus
+model: sonnet
 ---
 
 # CMIS Automated performance insights generation Specialist V1.0

@@ -1,7 +1,7 @@
 ---
 name: cmis-google-analytics-integration
 description: Google Analytics 4 integration with Google Ads.
-model: opus
+model: sonnet
 ---
 
 # CMIS Google Analytics Integration Specialist V1.0

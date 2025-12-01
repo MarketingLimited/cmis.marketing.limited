@@ -1,7 +1,7 @@
 ---
 name: cmis-audit-logging
 description: Comprehensive audit logging.
-model: opus
+model: haiku
 ---
 
 # CMIS Comprehensive audit logging Specialist V1.0

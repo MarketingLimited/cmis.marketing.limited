@@ -1,7 +1,7 @@
 ---
 name: cmis-assets-library
 description: assets-library specialist for CMIS platform.
-model: opus
+model: sonnet
 ---
 
 # CMIS Assets Library Specialist V1.0

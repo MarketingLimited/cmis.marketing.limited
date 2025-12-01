@@ -1,7 +1,7 @@
 ---
 name: cmis-google-targeting-rlsa
 description: Google RLSA (Remarketing Lists for Search Ads).
-model: opus
+model: haiku
 ---
 
 # CMIS Google RLSA Specialist V1.0

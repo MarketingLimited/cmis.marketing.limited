@@ -1,7 +1,7 @@
 ---
 name: cmis-cta-optimization
 description: Call-to-action (CTA) button optimization (text, color, placement).
-model: opus
+model: sonnet
 ---
 
 # CMIS CTA Optimization Specialist V1.0

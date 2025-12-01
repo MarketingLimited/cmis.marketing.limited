@@ -1,7 +1,7 @@
 ---
 name: cmis-compliance-ccpa
 description: CCPA compliance and user privacy.
-model: opus
+model: haiku
 ---
 
 # CMIS CCPA compliance and user privacy Specialist V1.0

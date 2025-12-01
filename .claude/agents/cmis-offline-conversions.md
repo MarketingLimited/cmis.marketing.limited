@@ -1,7 +1,7 @@
 ---
 name: cmis-offline-conversions
 description: Offline conversion import and matching.
-model: opus
+model: sonnet
 ---
 
 # CMIS Offline conversion import and matching Specialist V1.0

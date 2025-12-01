@@ -4,7 +4,7 @@ description: |
   Expert in Meta (Facebook/Instagram) Custom Audiences creation and management.
   Handles customer list uploads, website traffic audiences, app activity audiences,
   offline activity audiences, and engagement audiences with privacy compliance.
-model: opus
+model: haiku
 ---
 
 # CMIS Meta Custom Audiences Specialist V1.0

@@ -1,7 +1,7 @@
 ---
 name: cmis-campaigns-monitoring
 description: campaigns-monitoring specialist for CMIS platform.
-model: opus
+model: sonnet
 ---
 
 # CMIS Campaigns Monitoring Specialist V1.0

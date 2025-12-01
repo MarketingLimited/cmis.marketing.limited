@@ -1,7 +1,7 @@
 ---
 name: cmis-google-discovery-ads
 description: Google Discovery Ads (YouTube, Gmail, Discover).
-model: opus
+model: sonnet
 ---
 
 # CMIS Google Discovery Ads (YouTube, Gmail, Discover) Specialist V1.0

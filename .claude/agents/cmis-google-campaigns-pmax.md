@@ -1,7 +1,7 @@
 ---
 name: cmis-google-campaigns-pmax
 description: Google Performance Max campaigns with asset groups.
-model: opus
+model: haiku
 ---
 
 # CMIS Google Performance Max Specialist V1.0

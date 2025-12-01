@@ -3,7 +3,7 @@ name: cmis-meta-campaigns-budget-optimization
 description: |
   Expert in Meta Campaign Budget Optimization (CBO) vs Ad Set budgets.
   Handles budget distribution, learning phase, and performance optimization.
-model: opus
+model: sonnet
 ---
 
 # CMIS Meta Campaign Budget Optimization Specialist V1.0

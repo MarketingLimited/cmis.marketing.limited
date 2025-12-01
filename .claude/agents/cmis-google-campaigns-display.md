@@ -1,7 +1,7 @@
 ---
 name: cmis-google-campaigns-display
 description: Google Display Network campaigns, GDN placements.
-model: opus
+model: haiku
 ---
 
 # CMIS Google Display Campaigns Specialist V1.0

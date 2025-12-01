@@ -1,7 +1,7 @@
 ---
 name: cmis-google-shopping-feeds
 description: Google Shopping product feed creation and optimization.
-model: opus
+model: sonnet
 ---
 
 # CMIS Google Shopping Feeds Specialist V1.0

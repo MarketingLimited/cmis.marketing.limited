@@ -1,7 +1,7 @@
 ---
 name: cmis-budget-allocation-optimizer
 description: Cross-platform budget allocation optimization using performance data.
-model: opus
+model: sonnet
 ---
 
 # CMIS Budget Allocation Optimizer V1.0

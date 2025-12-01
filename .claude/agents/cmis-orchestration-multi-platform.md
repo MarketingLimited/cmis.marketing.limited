@@ -1,7 +1,7 @@
 ---
 name: cmis-orchestration-multi-platform
 description: orchestration-multi-platform specialist for CMIS platform.
-model: opus
+model: sonnet
 ---
 
 # CMIS Orchestration Multi Platform Specialist V1.0

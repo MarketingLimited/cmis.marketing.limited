@@ -1,7 +1,7 @@
 ---
 name: cmis-twitter-campaigns-promoted-tweets
 description: Twitter Promoted Tweets for engagement and traffic.
-model: opus
+model: haiku
 ---
 
 # CMIS Twitter Promoted Tweets Specialist V1.0

@@ -5,7 +5,7 @@ description: |
   anomaly detection, and notification systems. Guides implementation of alert rules, condition
   evaluation, cooldown periods, escalation policies, and multi-channel notifications. Use for
   monitoring features, alert configuration, notification delivery, and incident response workflows.
-model: opus
+model: sonnet
 ---
 
 # CMIS Alerts & Monitoring Specialist

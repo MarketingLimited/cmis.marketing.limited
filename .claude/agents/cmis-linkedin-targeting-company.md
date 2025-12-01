@@ -1,7 +1,7 @@
 ---
 name: cmis-linkedin-targeting-company
 description: LinkedIn company targeting (name, size, industry).
-model: opus
+model: haiku
 ---
 
 # CMIS LinkedIn Company Targeting Specialist V1.0

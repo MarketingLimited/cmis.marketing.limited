@@ -1,7 +1,7 @@
 ---
 name: cmis-collaboration-workflows
 description: Team collaboration and approval workflows.
-model: opus
+model: sonnet
 ---
 
 # CMIS Team collaboration and approval workflows Specialist V1.0

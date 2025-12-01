@@ -1,7 +1,7 @@
 ---
 name: cmis-google-hotel-ads
 description: Google Hotel Ads and metasearch.
-model: opus
+model: sonnet
 ---
 
 # CMIS Google Hotel Ads and metasearch Specialist V1.0

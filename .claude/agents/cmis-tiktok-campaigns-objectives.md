@@ -1,7 +1,7 @@
 ---
 name: cmis-tiktok-campaigns-objectives
 description: TikTok campaign objectives (REACH, TRAFFIC, CONVERSIONS, APP, SALES).
-model: opus
+model: haiku
 ---
 
 # CMIS TikTok Campaign Objectives Specialist V1.0

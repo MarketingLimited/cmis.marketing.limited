@@ -1,7 +1,7 @@
 ---
 name: cmis-audiences-insights
 description: audiences-insights specialist for CMIS platform.
-model: opus
+model: sonnet
 ---
 
 # CMIS Audiences Insights Specialist V1.0

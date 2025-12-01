@@ -1,7 +1,7 @@
 ---
 name: cmis-brand-safety
 description: Brand safety and ad placement controls.
-model: opus
+model: haiku
 ---
 
 # CMIS Brand safety and ad placement controls Specialist V1.0

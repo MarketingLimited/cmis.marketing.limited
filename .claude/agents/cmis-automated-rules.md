@@ -1,7 +1,7 @@
 ---
 name: cmis-automated-rules
 description: Platform-specific automated rules.
-model: opus
+model: sonnet
 ---
 
 # CMIS Platform-specific automated rules Specialist V1.0

@@ -8,7 +8,9 @@ Invoke commands by typing `/command-name` in Claude Code.
 
 ## Available Commands
 
-### /test
+### Testing & Quality
+
+#### /test
 **Description:** Run Laravel test suite and report results
 
 Runs PHPUnit tests, analyzes failures, and provides recommendations. Particularly useful for:
@@ -16,7 +18,27 @@ Runs PHPUnit tests, analyzes failures, and provides recommendations. Particularl
 - Checking RLS policy enforcement
 - Platform integration tests
 
-### /migrate
+#### /lint
+**Description:** Run PHP code linting with PHPCS, PHPStan, and Laravel Pint
+
+Comprehensive code quality analysis:
+- PSR-12 compliance checking
+- Static analysis with PHPStan (level 5)
+- Code style validation with Pint
+- Auto-fix suggestions
+
+#### /coverage
+**Description:** Generate and analyze test coverage report
+
+Test coverage analysis:
+- Generate HTML coverage report
+- Identify low-coverage areas (<70%)
+- Prioritize testing needs
+- Report by component (Models, Services, Controllers)
+
+### Database
+
+#### /migrate
 **Description:** Run database migrations with safety checks
 
 Executes migrations with pre-flight checks:
@@ -25,7 +47,17 @@ Executes migrations with pre-flight checks:
 - Asks for confirmation
 - Validates migration success
 
-### /audit-rls
+#### /fresh
+**Description:** Fresh migrate and seed database with safety checks
+
+Destructive database reset (development only):
+- Safety verification (blocks production)
+- Confirmation required
+- Runs migrate:fresh --seed
+- Verifies RLS policies created
+- Reports seeded data counts
+
+#### /audit-rls
 **Description:** Audit Row-Level Security policies across all CMIS tables
 
 Comprehensive multi-tenancy audit:
@@ -35,7 +67,7 @@ Comprehensive multi-tenancy audit:
 - Identifies tables missing RLS
 - Generates detailed report
 
-### /optimize-db
+#### /optimize-db
 **Description:** Analyze and optimize database performance
 
 Performance analysis including:
@@ -46,7 +78,55 @@ Performance analysis including:
 - N+1 query detection
 - Caching recommendations
 
-### /create-agent
+### Performance & Health
+
+#### /health
+**Description:** Check CMIS system health and service status
+
+Comprehensive health check:
+- PostgreSQL connection and extensions
+- Laravel application status
+- Cache and queue configuration
+- Storage permissions
+- RLS context verification
+- Recent error detection
+
+#### /perf
+**Description:** Profile CMIS application performance
+
+Performance profiling:
+- Database table sizes and growth
+- Unused and missing indexes
+- Slow query detection
+- N+1 query patterns
+- Cache configuration analysis
+- System resource usage
+
+### Internationalization
+
+#### /i18n-audit
+**Description:** Audit codebase for internationalization compliance
+
+i18n compliance checking:
+- Find hardcoded text in views
+- Detect directional CSS issues (RTL/LTR)
+- Check translation file parity (Arabic/English)
+- Find missing translation keys
+- Generate compliance report
+
+#### /rtl-check
+**Description:** Check RTL/LTR layout compliance using browser tests
+
+RTL/LTR layout verification:
+- Run mobile responsive tests
+- Run bilingual tests (Arabic/English)
+- Check CSS for RTL issues
+- Analyze Tailwind class usage
+- Compare visual screenshots
+
+### Development
+
+#### /create-agent
 **Description:** Create a new specialized AI agent for CMIS
 
 Interactive agent creation wizard:
@@ -202,6 +282,6 @@ When adding new commands:
 
 ---
 
-**Last Updated:** 2025-11-19
-**Total Commands:** 5
+**Last Updated:** 2025-12-01
+**Total Commands:** 12
 **Project:** CMIS - Campaign Management & Integration System

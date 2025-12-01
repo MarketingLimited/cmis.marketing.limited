@@ -1,7 +1,7 @@
 ---
 name: cmis-audience-insights-lookalike-scoring
 description: Lookalike audience similarity scoring.
-model: opus
+model: sonnet
 ---
 
 # CMIS Lookalike audience similarity scoring Specialist V1.0

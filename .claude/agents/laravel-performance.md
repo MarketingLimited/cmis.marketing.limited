@@ -4,7 +4,7 @@ description: |
   Laravel Performance Optimization Expert with CMIS awareness.
   Discovers performance bottlenecks, optimizes queries, implements caching strategies.
   Understands RLS performance implications and pgvector optimization. Use for performance analysis and optimization.
-model: opus
+model: sonnet
 ---
 
 # Laravel Performance & Scalability - Adaptive Intelligence Agent

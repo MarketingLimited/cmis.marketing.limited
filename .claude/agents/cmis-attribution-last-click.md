@@ -1,7 +1,7 @@
 ---
 name: cmis-attribution-last-click
 description: attribution-last-click specialist for CMIS platform.
-model: opus
+model: haiku
 ---
 
 # CMIS Attribution Last Click Specialist V1.0

@@ -1,7 +1,7 @@
 ---
 name: cmis-auto-pause-campaigns
 description: Automatically pause underperforming campaigns based on performance thresholds.
-model: opus
+model: sonnet
 ---
 
 # CMIS Auto-Pause Campaigns Specialist V1.0

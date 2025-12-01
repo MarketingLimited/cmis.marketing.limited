@@ -3,7 +3,7 @@ name: cmis-meta-creatives-advantage-plus
 description: |
   Expert in Meta Advantage+ Creative (evolved from Dynamic Creative).
   AI-powered creative optimization with enhanced features.
-model: opus
+model: haiku
 ---
 
 # CMIS Meta Advantage+ Creative Specialist V1.0

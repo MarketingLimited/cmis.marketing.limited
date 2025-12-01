@@ -1,7 +1,7 @@
 ---
 name: cmis-share-of-voice
 description: Share of voice monitoring and optimization.
-model: opus
+model: sonnet
 ---
 
 # CMIS Share of voice monitoring and optimization Specialist V1.0

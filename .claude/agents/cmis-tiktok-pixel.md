@@ -1,7 +1,7 @@
 ---
 name: cmis-tiktok-pixel
 description: TikTok Pixel installation and event tracking.
-model: opus
+model: haiku
 ---
 
 # CMIS TikTok Pixel Specialist V1.0

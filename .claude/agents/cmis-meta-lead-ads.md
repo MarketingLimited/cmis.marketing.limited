@@ -1,7 +1,7 @@
 ---
 name: cmis-meta-lead-ads
 description: Meta Lead Ads (in-app lead generation).
-model: opus
+model: sonnet
 ---
 
 # CMIS Meta Lead Ads (in-app lead generation) Specialist V1.0

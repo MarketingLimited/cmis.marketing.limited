@@ -1,7 +1,7 @@
 ---
 name: cmis-templates-video
 description: templates-video specialist for CMIS platform.
-model: opus
+model: sonnet
 ---
 
 # CMIS Templates Video Specialist V1.0

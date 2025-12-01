@@ -5,7 +5,7 @@ description: |
   testing, experiment design, and statistical analysis. Guides implementation of experiment
   frameworks, variant assignment, statistical significance testing, and result analysis.
   Use for A/B testing, experimentation, and data-driven optimization.
-model: opus
+model: sonnet
 ---
 
 # CMIS Experimentation & A/B Testing Expert V2.1

@@ -1,7 +1,7 @@
 ---
 name: cmis-attribution-windows
 description: Cross-platform attribution windows.
-model: opus
+model: sonnet
 ---
 
 # CMIS Cross-platform attribution windows Specialist V1.0

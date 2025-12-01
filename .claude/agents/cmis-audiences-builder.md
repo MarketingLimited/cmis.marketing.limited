@@ -1,7 +1,7 @@
 ---
 name: cmis-audiences-builder
 description: audiences-builder specialist for CMIS platform.
-model: opus
+model: sonnet
 ---
 
 # CMIS Audiences Builder Specialist V1.0

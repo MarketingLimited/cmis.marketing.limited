@@ -1,7 +1,7 @@
 ---
 name: cmis-google-targeting-audiences
 description: Google Ads audience targeting (in-market, affinity, custom).
-model: opus
+model: haiku
 ---
 
 # CMIS Google Audience Targeting Specialist V1.0

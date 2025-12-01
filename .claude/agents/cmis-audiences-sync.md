@@ -1,7 +1,7 @@
 ---
 name: cmis-audiences-sync
 description: audiences-sync specialist for CMIS platform.
-model: opus
+model: sonnet
 ---
 
 # CMIS Audiences Sync Specialist V1.0

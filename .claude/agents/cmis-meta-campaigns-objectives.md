@@ -3,7 +3,7 @@ name: cmis-meta-campaigns-objectives
 description: |
   Expert in Meta campaign objective selection and optimization goal mapping.
   Handles AWARENESS, TRAFFIC, ENGAGEMENT, LEADS, APP_PROMOTION, SALES objectives.
-model: opus
+model: sonnet
 ---
 
 # CMIS Meta Campaign Objectives Specialist V1.0

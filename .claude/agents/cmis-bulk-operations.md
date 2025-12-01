@@ -1,7 +1,7 @@
 ---
 name: cmis-bulk-operations
 description: Bulk campaign operations and updates.
-model: opus
+model: haiku
 ---
 
 # CMIS Bulk campaign operations and updates Specialist V1.0

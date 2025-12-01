@@ -1,7 +1,7 @@
 ---
 name: cmis-social-publishing
 description: social-publishing specialist for CMIS platform.
-model: opus
+model: sonnet
 ---
 
 # CMIS Social Publishing Specialist V1.0

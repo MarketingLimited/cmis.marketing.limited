@@ -1,7 +1,7 @@
 ---
 name: cmis-oauth-meta
 description: Meta OAuth flow and token management.
-model: opus
+model: haiku
 ---
 
 # CMIS Meta OAuth Specialist V1.0

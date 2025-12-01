@@ -1,7 +1,7 @@
 ---
 name: cmis-brand-lift-studies
 description: Brand lift study setup and analysis.
-model: opus
+model: sonnet
 ---
 
 # CMIS Brand lift study setup and analysis Specialist V1.0

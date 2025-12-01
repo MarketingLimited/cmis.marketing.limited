@@ -4,7 +4,7 @@ description: |
   Laravel Documentation Specialist for CMIS project.
   Creates and maintains clear, organized documentation. Follows CMIS documentation guidelines.
   Use for writing API docs, guides, and technical documentation.
-model: opus
+model: sonnet
 tools: Read,Write,Glob,Grep,WebFetch
 ---
 

@@ -1,7 +1,7 @@
 ---
 name: cmis-versioning-rollback
 description: Campaign versioning and rollback.
-model: opus
+model: sonnet
 ---
 
 # CMIS Campaign versioning and rollback Specialist V1.0

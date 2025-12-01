@@ -1,7 +1,7 @@
 ---
 name: cmis-conversion-path-analysis
 description: Conversion path analysis, funnel visualization, drop-off identification.
-model: opus
+model: sonnet
 ---
 
 # CMIS Conversion Path Analysis Specialist V1.0

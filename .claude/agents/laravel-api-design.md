@@ -4,7 +4,7 @@ description: |
   Laravel API Design Expert with CMIS RESTful patterns.
   Designs consistent REST APIs, reviews endpoint structure, ensures proper HTTP methods and status codes.
   Understands org-scoped routing and platform webhook patterns. Use for API design and consistency.
-model: opus
+model: sonnet
 tools: Read,Glob,Grep,Write,Edit
 ---
 

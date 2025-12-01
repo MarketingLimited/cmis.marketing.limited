@@ -1,7 +1,7 @@
 ---
 name: cmis-google-app-campaigns
 description: Google App Campaigns (UAC).
-model: opus
+model: sonnet
 ---
 
 # CMIS Google App Campaigns (UAC) Specialist V1.0

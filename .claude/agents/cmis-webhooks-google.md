@@ -1,7 +1,7 @@
 ---
 name: cmis-webhooks-google
 description: Google Ads webhook integration (Pub/Sub).
-model: opus
+model: haiku
 ---
 
 # CMIS Google Webhooks Specialist V1.0

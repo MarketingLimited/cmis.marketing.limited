@@ -1,7 +1,7 @@
 ---
 name: cmis-google-call-only-ads
 description: Google Call-Only Ads optimization.
-model: opus
+model: sonnet
 ---
 
 # CMIS Google Call-Only Ads optimization Specialist V1.0

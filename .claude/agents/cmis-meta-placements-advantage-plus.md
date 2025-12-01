@@ -3,7 +3,7 @@ name: cmis-meta-placements-advantage-plus
 description: |
   Expert in Meta Advantage+ Placements (automatic placement optimization).
   ML-driven cross-platform delivery for maximum performance.
-model: opus
+model: sonnet
 ---
 
 # CMIS Meta Advantage+ Placements Specialist V1.0

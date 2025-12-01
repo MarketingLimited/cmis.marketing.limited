@@ -1,7 +1,7 @@
 ---
 name: cmis-notes-annotations
 description: Campaign notes and annotations.
-model: opus
+model: haiku
 ---
 
 # CMIS Campaign notes and annotations Specialist V1.0

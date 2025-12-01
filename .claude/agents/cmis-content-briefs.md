@@ -1,7 +1,7 @@
 ---
 name: cmis-content-briefs
 description: content-briefs specialist for CMIS platform.
-model: opus
+model: sonnet
 ---
 
 # CMIS Content Briefs Specialist V1.0

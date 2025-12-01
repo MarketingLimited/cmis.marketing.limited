@@ -1,7 +1,7 @@
 ---
 name: cmis-linkedin-targeting-job-titles
 description: LinkedIn job title targeting for B2B precision.
-model: opus
+model: haiku
 ---
 
 # CMIS LinkedIn Job Title Targeting Specialist V1.0

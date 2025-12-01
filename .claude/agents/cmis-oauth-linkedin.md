@@ -1,7 +1,7 @@
 ---
 name: cmis-oauth-linkedin
 description: Linkedin OAuth flow and token management.
-model: opus
+model: haiku
 ---
 
 # CMIS Linkedin OAuth Specialist V1.0

@@ -1,7 +1,7 @@
 ---
 name: cmis-dayparting-automation
 description: Automated dayparting (time-of-day bidding adjustments) based on conversion patterns.
-model: opus
+model: sonnet
 ---
 
 # CMIS Dayparting Automation Specialist V1.0

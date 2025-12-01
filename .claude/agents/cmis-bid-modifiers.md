@@ -1,7 +1,7 @@
 ---
 name: cmis-bid-modifiers
 description: Advanced bid modifiers (device, location, time).
-model: opus
+model: sonnet
 ---
 
 # CMIS Advanced bid modifiers (device, location, time) Specialist V1.0

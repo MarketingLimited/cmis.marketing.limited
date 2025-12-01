@@ -1,7 +1,7 @@
 ---
 name: cmis-experiments-design
 description: experiments-design specialist for CMIS platform.
-model: opus
+model: sonnet
 ---
 
 # CMIS Experiments Design Specialist V1.0

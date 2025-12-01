@@ -1,7 +1,7 @@
 ---
 name: cmis-cross-device-tracking
 description: Cross-device user journey tracking.
-model: opus
+model: sonnet
 ---
 
 # CMIS Cross-device user journey tracking Specialist V1.0

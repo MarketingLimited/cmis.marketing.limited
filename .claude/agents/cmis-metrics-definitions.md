@@ -1,7 +1,7 @@
 ---
 name: cmis-metrics-definitions
 description: metrics-definitions specialist for CMIS platform.
-model: opus
+model: sonnet
 ---
 
 # CMIS Metrics Definitions Specialist V1.0

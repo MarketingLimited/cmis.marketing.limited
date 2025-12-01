@@ -1,7 +1,7 @@
 ---
 name: cmis-creative-fatigue-detection
 description: Creative fatigue detection and automatic creative refresh triggers.
-model: opus
+model: sonnet
 ---
 
 # CMIS Creative Fatigue Detection Specialist V1.0

@@ -1,7 +1,7 @@
 ---
 name: cmis-google-quality-score
 description: Google Ads Quality Score optimization (1-10 rating).
-model: opus
+model: haiku
 ---
 
 # CMIS Google Quality Score Specialist V1.0

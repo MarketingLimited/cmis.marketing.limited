@@ -1,7 +1,7 @@
 ---
 name: cmis-tiktok-targeting-custom-audiences
 description: TikTok Custom Audiences (website, app, engagement).
-model: opus
+model: haiku
 ---
 
 # CMIS TikTok Custom Audiences Specialist V1.0

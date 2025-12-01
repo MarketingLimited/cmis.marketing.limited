@@ -1,7 +1,7 @@
 ---
 name: cmis-accessibility-wcag
 description: WCAG-compliant creative design.
-model: opus
+model: sonnet
 ---
 
 # CMIS WCAG-compliant creative design Specialist V1.0

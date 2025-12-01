@@ -3,7 +3,7 @@ name: cmis-meta-placements-manual
 description: |
   Expert in Meta manual placement selection across Facebook, Instagram, Audience Network,
   and Messenger. Handles Feed, Stories, Reels, In-Stream, Search placements.
-model: opus
+model: sonnet
 ---
 
 # CMIS Meta Manual Placements Specialist V1.0

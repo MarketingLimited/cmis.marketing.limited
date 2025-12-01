@@ -1,7 +1,7 @@
 ---
 name: cmis-snapchat-targeting-lifestyle
 description: Snapchat Lifestyle Categories targeting (150+ categories).
-model: opus
+model: haiku
 ---
 
 # CMIS Snapchat Lifestyle Targeting Specialist V1.0

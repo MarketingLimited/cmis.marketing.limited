@@ -1,7 +1,7 @@
 ---
 name: cmis-social-engagement
 description: social-engagement specialist for CMIS platform.
-model: opus
+model: sonnet
 ---
 
 # CMIS Social Engagement Specialist V1.0

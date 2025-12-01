@@ -1,7 +1,7 @@
 ---
 name: cmis-google-rsa
 description: Google Responsive Search Ads (RSA) creation and optimization.
-model: opus
+model: sonnet
 ---
 
 # CMIS Google RSA Specialist V1.0

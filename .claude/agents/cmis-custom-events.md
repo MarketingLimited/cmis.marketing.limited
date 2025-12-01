@@ -1,7 +1,7 @@
 ---
 name: cmis-custom-events
 description: Custom conversion event tracking.
-model: opus
+model: sonnet
 ---
 
 # CMIS Custom conversion event tracking Specialist V1.0

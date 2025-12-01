@@ -1,7 +1,7 @@
 ---
 name: cmis-audiences-enrichment-data
 description: audiences-enrichment-data specialist for CMIS platform.
-model: opus
+model: sonnet
 ---
 
 # CMIS Audiences Enrichment Data Specialist V1.0

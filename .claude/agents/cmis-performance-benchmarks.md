@@ -1,7 +1,7 @@
 ---
 name: cmis-performance-benchmarks
 description: Industry performance benchmarks.
-model: opus
+model: sonnet
 ---
 
 # CMIS Industry performance benchmarks Specialist V1.0

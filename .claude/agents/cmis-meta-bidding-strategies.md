@@ -3,7 +3,7 @@ name: cmis-meta-bidding-strategies
 description: |
   Expert in Meta bidding strategies: Lowest Cost, Cost Cap, Bid Cap, ROAS Target.
   Handles bid optimization, cost control, and value maximization.
-model: opus
+model: sonnet
 ---
 
 # CMIS Meta Bidding Strategies Specialist V1.0

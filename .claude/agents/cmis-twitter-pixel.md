@@ -1,7 +1,7 @@
 ---
 name: cmis-twitter-pixel
 description: Twitter Pixel for conversion tracking and retargeting.
-model: opus
+model: haiku
 ---
 
 # CMIS Twitter Pixel Specialist V1.0

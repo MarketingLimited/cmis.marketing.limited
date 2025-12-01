@@ -1,7 +1,7 @@
 ---
 name: cmis-campaigns-planning
 description: campaigns-planning specialist for CMIS platform.
-model: opus
+model: sonnet
 ---
 
 # CMIS Campaigns Planning Specialist V1.0

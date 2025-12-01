@@ -1,7 +1,7 @@
 ---
 name: cmis-snapchat-campaigns-ar-lenses
 description: Snapchat AR Lenses (Sponsored Lenses and Filters).
-model: opus
+model: haiku
 ---
 
 # CMIS Snapchat AR Lenses Specialist V1.0

@@ -1,7 +1,7 @@
 ---
 name: cmis-forecasting-statistical
 description: forecasting-statistical specialist for CMIS platform.
-model: opus
+model: sonnet
 ---
 
 # CMIS Forecasting Statistical Specialist V1.0

@@ -1,7 +1,7 @@
 ---
 name: cmis-linkedin-lead-gen-forms
 description: LinkedIn Lead Gen Forms for B2B lead capture.
-model: opus
+model: haiku
 ---
 
 # CMIS LinkedIn Lead Gen Forms Specialist V1.0

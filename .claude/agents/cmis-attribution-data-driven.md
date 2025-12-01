@@ -1,7 +1,7 @@
 ---
 name: cmis-attribution-data-driven
 description: attribution-data-driven specialist for CMIS platform.
-model: opus
+model: haiku
 ---
 
 # CMIS Attribution Data Driven Specialist V1.0

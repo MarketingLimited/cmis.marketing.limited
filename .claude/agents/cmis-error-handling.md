@@ -1,7 +1,7 @@
 ---
 name: cmis-error-handling
 description: Platform error handling and retry logic.
-model: opus
+model: sonnet
 ---
 
 # CMIS Platform error handling and retry logic Specialist V1.0

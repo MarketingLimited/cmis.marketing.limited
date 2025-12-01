@@ -1,7 +1,7 @@
 ---
 name: cmis-google-extensions
 description: Google Ads extensions (sitelinks, callouts, structured snippets).
-model: opus
+model: sonnet
 ---
 
 # CMIS Google Ad Extensions Specialist V1.0

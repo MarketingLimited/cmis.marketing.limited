@@ -1,7 +1,7 @@
 ---
 name: cmis-google-campaigns-video
 description: Google Video campaigns on YouTube (TrueView, bumper ads).
-model: opus
+model: haiku
 ---
 
 # CMIS Google Video Campaigns Specialist V1.0

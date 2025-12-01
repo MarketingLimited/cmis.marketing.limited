@@ -1,7 +1,7 @@
 ---
 name: cmis-ab-testing-creative
 description: Automated A/B testing for creative elements (headlines, images, CTAs, copy variations).
-model: opus
+model: sonnet
 ---
 
 # CMIS Creative A/B Testing Specialist V1.0

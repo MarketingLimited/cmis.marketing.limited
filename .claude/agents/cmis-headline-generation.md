@@ -1,7 +1,7 @@
 ---
 name: cmis-headline-generation
 description: AI-powered headline generation and performance testing.
-model: opus
+model: sonnet
 ---
 
 # CMIS Headline Generation Specialist V1.0

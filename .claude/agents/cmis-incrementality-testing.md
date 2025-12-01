@@ -1,7 +1,7 @@
 ---
 name: cmis-incrementality-testing
 description: Incrementality testing (geo experiments, holdout groups, causal inference).
-model: opus
+model: sonnet
 ---
 
 # CMIS Incrementality Testing Specialist V1.0

@@ -4,7 +4,7 @@ description: |
   Laravel Controller Standardization Specialist - Expert in ApiResponse trait adoption and controller patterns.
   Drives ApiResponse trait adoption from 75% to 100%, standardizes response patterns, ensures API consistency.
   Use for controller audits, ApiResponse migration, response standardization, and API pattern enforcement.
-model: opus
+model: sonnet
 tools: Read, Glob, Grep, Write, Edit
 ---
 

@@ -1,7 +1,7 @@
 ---
 name: cmis-reach-frequency
 description: Reach and frequency optimization.
-model: opus
+model: sonnet
 ---
 
 # CMIS Reach and frequency optimization Specialist V1.0

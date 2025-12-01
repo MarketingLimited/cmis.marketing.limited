@@ -1,7 +1,7 @@
 ---
 name: cmis-competitor-analysis
 description: Competitive intelligence and market analysis.
-model: opus
+model: sonnet
 ---
 
 # CMIS Competitive intelligence and market analysis Specialist V1.0

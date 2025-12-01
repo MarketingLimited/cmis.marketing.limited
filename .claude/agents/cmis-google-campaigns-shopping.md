@@ -1,7 +1,7 @@
 ---
 name: cmis-google-campaigns-shopping
 description: Google Shopping campaigns, product feeds, Merchant Center.
-model: opus
+model: haiku
 ---
 
 # CMIS Google Shopping Campaigns Specialist V1.0
