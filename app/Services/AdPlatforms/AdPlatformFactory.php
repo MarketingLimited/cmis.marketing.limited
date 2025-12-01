@@ -10,6 +10,7 @@ use App\Services\AdPlatforms\TikTok\TikTokAdsPlatform;
 use App\Services\AdPlatforms\LinkedIn\LinkedInAdsPlatform;
 use App\Services\AdPlatforms\Twitter\TwitterAdsPlatform;
 use App\Services\AdPlatforms\Snapchat\SnapchatAdsPlatform;
+use App\Services\AdPlatforms\Pinterest\PinterestAdsPlatform;
 use App\Services\FeatureToggle\FeatureFlagService;
 use App\Exceptions\FeatureDisabledException;
 
@@ -56,6 +57,7 @@ class AdPlatformFactory
             'linkedin' => new LinkedInAdsPlatform($integration),
             'twitter', 'x' => new TwitterAdsPlatform($integration),
             'snapchat' => new SnapchatAdsPlatform($integration),
+            'pinterest' => new PinterestAdsPlatform($integration),
             default => throw new \InvalidArgumentException(
                 "Unsupported ad platform: {$integration->platform}"
             ),
@@ -99,6 +101,11 @@ class AdPlatformFactory
                 'name' => 'Snapchat Ads',
                 'aliases' => [],
                 'features' => ['campaigns', 'ad_squads', 'ads', 'audiences'],
+            ],
+            'pinterest' => [
+                'name' => 'Pinterest Ads',
+                'aliases' => [],
+                'features' => ['campaigns', 'ad_groups', 'ads', 'audiences', 'catalogs'],
             ],
         ];
     }

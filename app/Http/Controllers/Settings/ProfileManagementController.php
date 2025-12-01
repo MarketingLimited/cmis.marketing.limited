@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Controllers\Concerns\ApiResponse;
 use App\Services\Social\ProfileManagementService;
 use App\Services\Social\QueueSlotLabelService;
+use App\Services\Social\BoostConfigurationService;
 use App\Models\Social\ProfileGroup;
 use App\Models\Platform\BoostRule;
 use App\Models\Platform\AdAccount;
@@ -667,5 +668,93 @@ class ProfileManagementController extends Controller
         }
 
         return $this->success($validation, __('profiles.budget_validated'));
+    }
+
+    /**
+     * Get platform-specific boost configuration.
+     *
+     * GET /orgs/{org}/settings/profiles/{integration_id}/boost-config
+     *
+     * Returns objectives, placements, bidding strategies, special features,
+     * and other platform-specific options for the boost modal UI.
+     */
+    public function getBoostConfig(Request $request, string $org, string $integrationId): JsonResponse
+    {
+        $adAccountId = $request->query('ad_account_id');
+
+        if (!$adAccountId) {
+            return $this->error(__('profiles.ad_account_required'), 400);
+        }
+
+        $adAccount = AdAccount::where('org_id', $org)
+            ->where('id', $adAccountId)
+            ->first();
+
+        if (!$adAccount) {
+            return $this->notFound(__('profiles.ad_account_not_found'));
+        }
+
+        $configService = app(BoostConfigurationService::class);
+        $locale = app()->getLocale();
+
+        try {
+            $platformConfig = $configService->getConfigForPlatform($adAccount->platform);
+
+            // Apply locale-specific translations
+            $response = [
+                'platform' => $adAccount->platform,
+                'platform_name' => $platformConfig['name'] ?? ucfirst($adAccount->platform),
+                'objectives' => $configService->getObjectives($adAccount->platform, $locale),
+                'placements' => $configService->getPlacements($adAccount->platform, $locale),
+                'special_features' => $configService->getSpecialFeatures($adAccount->platform),
+                'budget_multiplier' => $configService->getBudgetMultiplier($adAccount->platform),
+                'min_budget' => $configService->getMinBudget($adAccount->platform),
+                'min_audience_size' => $configService->getMinAudienceSize($adAccount->platform),
+                'currency_symbol' => $platformConfig['currency_symbol'] ?? '$',
+            ];
+
+            // Add ad formats if available
+            $adFormats = $configService->getAdFormats($adAccount->platform, $locale);
+            if (!empty($adFormats)) {
+                $response['ad_formats'] = $adFormats;
+            }
+
+            // Add bidding strategies if available
+            $biddingStrategies = $configService->getBiddingStrategies($adAccount->platform, $locale);
+            if (!empty($biddingStrategies)) {
+                $response['bidding_strategies'] = $biddingStrategies;
+            }
+
+            // Add optimization goals if available
+            $optimizationGoals = $configService->getOptimizationGoals($adAccount->platform, $locale);
+            if (!empty($optimizationGoals)) {
+                $response['optimization_goals'] = $optimizationGoals;
+            }
+
+            // Add ad types if available (Snapchat)
+            $adTypes = $configService->getAdTypes($adAccount->platform, $locale);
+            if (!empty($adTypes)) {
+                $response['ad_types'] = $adTypes;
+            }
+
+            // Add bid types if available (TikTok)
+            $bidTypes = $configService->getBidTypes($adAccount->platform, $locale);
+            if (!empty($bidTypes)) {
+                $response['bid_types'] = $bidTypes;
+            }
+
+            // Add B2B targeting options if available (LinkedIn)
+            if ($configService->supportsB2BTargeting($adAccount->platform)) {
+                $response['b2b_targeting'] = $configService->getB2BTargeting($adAccount->platform);
+                $response['company_sizes'] = $configService->getCompanySizes($adAccount->platform, $locale);
+                $response['seniority_levels'] = $configService->getSeniorityLevels($adAccount->platform, $locale);
+            }
+
+            return $this->success($response, __('profiles.boost_config_retrieved'));
+        } catch (\InvalidArgumentException $e) {
+            return $this->error($e->getMessage(), 400);
+        } catch (\Exception $e) {
+            return $this->serverError(__('profiles.boost_config_failed'));
+        }
     }
 }

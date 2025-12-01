@@ -288,4 +288,55 @@ return [
     'no_boosts_message' => 'Create a boost rule to automatically promote your posts.',
     'no_queue' => 'No queue settings',
     'no_queue_message' => 'Configure queue settings to schedule posts automatically.',
+
+    // Platform-specific boost features
+    'loading_platform_config' => 'Loading platform configuration',
+    'boost_config_retrieved' => 'Boost configuration retrieved successfully',
+    'boost_config_failed' => 'Failed to load boost configuration',
+    'ad_account_required' => 'Ad account is required',
+    'ad_account_not_found' => 'Ad account not found',
+    'platform' => 'Platform',
+    'ad_accounts_retrieved' => 'Ad accounts retrieved successfully',
+    'audiences_retrieved' => 'Audiences retrieved successfully',
+    'budget_validated' => 'Budget validated',
+    'exceeds_daily_limit' => 'Daily budget (:limit :currency) may be exceeded',
+    'exceeds_balance' => 'Budget exceeds account balance (:balance :currency)',
+    'may_exceed_monthly' => 'May exceed monthly remaining budget (:remaining)',
+    'exceeds_spend_cap' => 'Budget exceeds daily spend cap',
+
+    // TikTok Spark Ads
+    'spark_ads' => 'Spark Ads',
+    'spark_ads_description' => 'Boost organic TikTok posts as ads for authentic engagement.',
+
+    // Placements
+    'placements' => 'Placements',
+    'auto_placements_recommended' => 'Automatic placements (recommended)',
+
+    // Bidding
+    'bidding_strategy' => 'Bidding strategy',
+    'auto_bidding' => 'Automatic bidding',
+
+    // B2B Targeting (LinkedIn)
+    'b2b_targeting' => 'B2B Targeting',
+    'job_titles' => 'Job titles',
+    'enter_job_titles' => 'Enter job titles (comma separated)',
+    'company_size' => 'Company size',
+    'any_size' => 'Any size',
+    'seniority' => 'Seniority level',
+    'any_seniority' => 'Any seniority',
+    'industries' => 'Industries',
+    'enter_industries' => 'Enter industries (comma separated)',
+
+    // Pinterest
+    'pinterest_ads' => 'Pinterest Ads',
+    'actalike_audiences' => 'Actalike audiences',
+    'actalike_description' => 'Pinterest lookalike audiences based on your best customers.',
+
+    // Validation messages
+    'invalid_objective_for_platform' => 'Invalid objective for :platform',
+    'minimum_budget_for_platform' => 'Minimum budget for :platform is :amount',
+    'invalid_placement' => 'Invalid placement: :placement',
+    'invalid_bidding_strategy' => 'Invalid bidding strategy',
+    'linkedin_audience_size_warning' => 'LinkedIn requires minimum audience size of :size',
+    'spark_ads_requires_post' => 'Spark Ads requires an organic post ID',
 ];

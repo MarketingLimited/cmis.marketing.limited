@@ -94,6 +94,7 @@ class AdAccount extends BaseModel
     const PLATFORM_LINKEDIN = 'linkedin';
     const PLATFORM_TWITTER = 'twitter';
     const PLATFORM_SNAPCHAT = 'snapchat';
+    const PLATFORM_PINTEREST = 'pinterest';
 
     /**
      * Status constants
@@ -291,6 +292,7 @@ class AdAccount extends BaseModel
             self::PLATFORM_LINKEDIN,
             self::PLATFORM_TWITTER,
             self::PLATFORM_SNAPCHAT,
+            self::PLATFORM_PINTEREST,
         ];
     }
 
@@ -306,6 +308,7 @@ class AdAccount extends BaseModel
             self::PLATFORM_LINKEDIN => 'LinkedIn Ads',
             self::PLATFORM_TWITTER => 'Twitter Ads',
             self::PLATFORM_SNAPCHAT => 'Snapchat Ads',
+            self::PLATFORM_PINTEREST => 'Pinterest Ads',
         ];
 
         return $names[$this->platform] ?? ucfirst($this->platform);

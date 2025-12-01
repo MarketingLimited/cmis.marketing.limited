@@ -288,4 +288,55 @@ return [
     'no_boosts_message' => 'أنشئ قاعدة تعزيز للترويج التلقائي لمنشوراتك.',
     'no_queue' => 'لا توجد إعدادات قائمة انتظار',
     'no_queue_message' => 'قم بتكوين إعدادات قائمة الانتظار لجدولة المنشورات تلقائياً.',
+
+    // Platform-specific boost features
+    'loading_platform_config' => 'جاري تحميل إعدادات المنصة',
+    'boost_config_retrieved' => 'تم استرداد إعدادات التعزيز بنجاح',
+    'boost_config_failed' => 'فشل في تحميل إعدادات التعزيز',
+    'ad_account_required' => 'حساب الإعلانات مطلوب',
+    'ad_account_not_found' => 'حساب الإعلانات غير موجود',
+    'platform' => 'المنصة',
+    'ad_accounts_retrieved' => 'تم استرداد حسابات الإعلانات بنجاح',
+    'audiences_retrieved' => 'تم استرداد الجماهير بنجاح',
+    'budget_validated' => 'تم التحقق من الميزانية',
+    'exceeds_daily_limit' => 'قد تتجاوز الميزانية اليومية (:limit :currency)',
+    'exceeds_balance' => 'الميزانية تتجاوز رصيد الحساب (:balance :currency)',
+    'may_exceed_monthly' => 'قد تتجاوز الميزانية الشهرية المتبقية (:remaining)',
+    'exceeds_spend_cap' => 'الميزانية تتجاوز حد الإنفاق اليومي',
+
+    // TikTok Spark Ads
+    'spark_ads' => 'إعلانات سبارك',
+    'spark_ads_description' => 'عزز منشورات تيك توك العضوية كإعلانات لتفاعل أصيل.',
+
+    // Placements
+    'placements' => 'المواضع',
+    'auto_placements_recommended' => 'مواضع تلقائية (موصى به)',
+
+    // Bidding
+    'bidding_strategy' => 'استراتيجية المزايدة',
+    'auto_bidding' => 'مزايدة تلقائية',
+
+    // B2B Targeting (LinkedIn)
+    'b2b_targeting' => 'استهداف الأعمال',
+    'job_titles' => 'المسميات الوظيفية',
+    'enter_job_titles' => 'أدخل المسميات الوظيفية (مفصولة بفواصل)',
+    'company_size' => 'حجم الشركة',
+    'any_size' => 'أي حجم',
+    'seniority' => 'مستوى الأقدمية',
+    'any_seniority' => 'أي مستوى',
+    'industries' => 'الصناعات',
+    'enter_industries' => 'أدخل الصناعات (مفصولة بفواصل)',
+
+    // Pinterest
+    'pinterest_ads' => 'إعلانات بنترست',
+    'actalike_audiences' => 'جماهير مشابهة',
+    'actalike_description' => 'جماهير مشابهة من بنترست بناءً على أفضل عملائك.',
+
+    // Validation messages
+    'invalid_objective_for_platform' => 'هدف غير صالح لـ :platform',
+    'minimum_budget_for_platform' => 'الحد الأدنى للميزانية لـ :platform هو :amount',
+    'invalid_placement' => 'موضع غير صالح: :placement',
+    'invalid_bidding_strategy' => 'استراتيجية مزايدة غير صالحة',
+    'linkedin_audience_size_warning' => 'يتطلب لينكدإن حداً أدنى لحجم الجمهور :size',
+    'spark_ads_requires_post' => 'إعلانات سبارك تتطلب معرف منشور عضوي',
 ];

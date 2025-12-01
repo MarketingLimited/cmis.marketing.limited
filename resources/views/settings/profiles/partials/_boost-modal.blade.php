@@ -151,8 +151,14 @@
                     </div>
                     <p class="text-xs text-gray-500">{{ __('profiles.budget_note') }}</p>
 
-                    {{-- Advantage+ Audience Section --}}
-                    <div class="border-t border-gray-200 pt-4 mt-4">
+                    {{-- Platform Features Loading Indicator --}}
+                    <div x-show="loadingPlatformConfig" class="text-center py-4 border-t border-gray-200 mt-4">
+                        <i class="fas fa-spinner fa-spin text-blue-500 me-2"></i>
+                        <span class="text-sm text-gray-600">{{ __('profiles.loading_platform_config') }}...</span>
+                    </div>
+
+                    {{-- Advantage+ Audience Section (Meta only) --}}
+                    <div x-show="showAdvantagePlus && !loadingPlatformConfig" x-cloak class="border-t border-gray-200 pt-4 mt-4">
                         <div class="flex items-center justify-between mb-3">
                             <div>
                                 <h4 class="text-sm font-medium text-gray-900">{{ __('profiles.advantage_plus_audience') }}</h4>
@@ -184,6 +190,106 @@
                                        class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
                                 <span class="ms-2 text-sm text-gray-700">{{ __('profiles.dynamic_creative') }}</span>
                             </label>
+                        </div>
+                    </div>
+
+                    {{-- TikTok Spark Ads (TikTok only) --}}
+                    <div x-show="showSparkAds && !loadingPlatformConfig" x-cloak class="border-t border-gray-200 pt-4 mt-4">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h4 class="text-sm font-medium text-gray-900">{{ __('profiles.spark_ads') }}</h4>
+                                <p class="text-xs text-gray-500">{{ __('profiles.spark_ads_description') }}</p>
+                            </div>
+                            <button type="button"
+                                    @click="form.spark_ads = !form.spark_ads"
+                                    :class="form.spark_ads ? 'bg-blue-600' : 'bg-gray-200'"
+                                    class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                                <span :class="form.spark_ads ? 'translate-x-5 rtl:-translate-x-5' : 'translate-x-0'"
+                                      class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"></span>
+                            </button>
+                        </div>
+                    </div>
+
+                    {{-- Placements Section (when available) --}}
+                    <div x-show="showPlacements && !loadingPlatformConfig" x-cloak class="border-t border-gray-200 pt-4 mt-4">
+                        <button type="button" @click="showPlacementsSection = !showPlacementsSection"
+                                class="flex items-center justify-between w-full text-start">
+                            <h4 class="text-sm font-medium text-gray-900">{{ __('profiles.placements') }}</h4>
+                            <i :class="showPlacementsSection ? 'fa-chevron-up' : 'fa-chevron-down'" class="fas text-gray-400 text-sm"></i>
+                        </button>
+
+                        <div x-show="showPlacementsSection" x-cloak class="mt-3 space-y-2">
+                            <label class="flex items-center mb-2">
+                                <input type="checkbox" x-model="form.auto_placements"
+                                       class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                <span class="ms-2 text-sm text-gray-700">{{ __('profiles.auto_placements_recommended') }}</span>
+                            </label>
+
+                            <div x-show="!form.auto_placements" class="grid grid-cols-2 gap-2">
+                                <template x-for="placement in platformConfig?.placements || []" :key="placement.id">
+                                    <label class="flex items-center">
+                                        <input type="checkbox" :value="placement.id" x-model="form.placements"
+                                               class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                        <span class="ms-2 text-sm text-gray-700" x-text="placement.name"></span>
+                                    </label>
+                                </template>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Bidding Strategy (Google, TikTok) --}}
+                    <div x-show="showBiddingStrategy && !loadingPlatformConfig" x-cloak class="border-t border-gray-200 pt-4 mt-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('profiles.bidding_strategy') }}</label>
+                        <select x-model="form.bidding_strategy"
+                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm">
+                            <option value="">{{ __('profiles.auto_bidding') }}</option>
+                            <template x-for="strategy in platformConfig?.bidding_strategies || []" :key="strategy.id">
+                                <option :value="strategy.id" x-text="strategy.name"></option>
+                            </template>
+                        </select>
+                    </div>
+
+                    {{-- B2B Targeting (LinkedIn only) --}}
+                    <div x-show="showB2BTargeting && !loadingPlatformConfig" x-cloak class="border-t border-gray-200 pt-4 mt-4">
+                        <button type="button" @click="showB2BSection = !showB2BSection"
+                                class="flex items-center justify-between w-full text-start">
+                            <h4 class="text-sm font-medium text-gray-900">{{ __('profiles.b2b_targeting') }}</h4>
+                            <i :class="showB2BSection ? 'fa-chevron-up' : 'fa-chevron-down'" class="fas text-gray-400 text-sm"></i>
+                        </button>
+
+                        <div x-show="showB2BSection" x-cloak class="mt-4 space-y-4">
+                            <div>
+                                <label class="block text-xs text-gray-600 mb-1">{{ __('profiles.job_titles') }}</label>
+                                <input type="text" x-model="form.targeting.job_titles"
+                                       placeholder="{{ __('profiles.enter_job_titles') }}"
+                                       class="w-full rounded-md border-gray-300 text-sm focus:border-blue-500 focus:ring-blue-500">
+                            </div>
+                            <div>
+                                <label class="block text-xs text-gray-600 mb-1">{{ __('profiles.company_size') }}</label>
+                                <select x-model="form.targeting.company_size"
+                                        class="w-full rounded-md border-gray-300 text-sm focus:border-blue-500 focus:ring-blue-500">
+                                    <option value="">{{ __('profiles.any_size') }}</option>
+                                    <template x-for="size in platformConfig?.company_sizes || []" :key="size.id">
+                                        <option :value="size.id" x-text="size.name"></option>
+                                    </template>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs text-gray-600 mb-1">{{ __('profiles.seniority') }}</label>
+                                <select x-model="form.targeting.seniority"
+                                        class="w-full rounded-md border-gray-300 text-sm focus:border-blue-500 focus:ring-blue-500">
+                                    <option value="">{{ __('profiles.any_seniority') }}</option>
+                                    <template x-for="level in platformConfig?.seniority_levels || []" :key="level.id">
+                                        <option :value="level.id" x-text="level.name"></option>
+                                    </template>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs text-gray-600 mb-1">{{ __('profiles.industries') }}</label>
+                                <input type="text" x-model="form.targeting.industries"
+                                       placeholder="{{ __('profiles.enter_industries') }}"
+                                       class="w-full rounded-md border-gray-300 text-sm focus:border-blue-500 focus:ring-blue-500">
+                            </div>
                         </div>
                     </div>
 
@@ -347,9 +453,15 @@ function boostForm() {
     return {
         loading: false,
         loadingAudiences: false,
+        loadingPlatformConfig: false,
         validatingBudget: false,
         showAudienceSection: false,
         showDetailedTargeting: false,
+        showPlacementsSection: false,
+        showB2BSection: false,
+
+        // Platform configuration from API
+        platformConfig: null,
 
         // Form data
         form: {
@@ -357,7 +469,7 @@ function boostForm() {
             delay_value: 1,
             delay_unit: 'hours',
             ad_account_id: '',
-            objective: 'OUTCOME_ENGAGEMENT',
+            objective: '',
             budget_amount: '',
             duration_days: 7,
             advantage_plus_enabled: false,
@@ -365,6 +477,16 @@ function boostForm() {
                 audience_expansion: true,
                 auto_placements: true,
                 dynamic_creative: false,
+            },
+            spark_ads: false,
+            auto_placements: true,
+            placements: [],
+            bidding_strategy: '',
+            targeting: {
+                job_titles: '',
+                company_size: '',
+                seniority: '',
+                industries: '',
             },
             custom_audiences: [],
             lookalike_audiences: [],
@@ -378,8 +500,8 @@ function boostForm() {
             max_age: ''
         },
 
-        // Available objectives
-        objectives: [
+        // Default objectives (fallback when no platform config)
+        defaultObjectives: [
             { id: 'OUTCOME_AWARENESS', name: '{{ __("profiles.objective_awareness") }}', description: '{{ __("profiles.objective_awareness_desc") }}' },
             { id: 'OUTCOME_ENGAGEMENT', name: '{{ __("profiles.objective_engagement") }}', description: '{{ __("profiles.objective_engagement_desc") }}' },
             { id: 'OUTCOME_TRAFFIC', name: '{{ __("profiles.objective_traffic") }}', description: '{{ __("profiles.objective_traffic_desc") }}' },
@@ -387,6 +509,40 @@ function boostForm() {
             { id: 'OUTCOME_SALES', name: '{{ __("profiles.objective_sales") }}', description: '{{ __("profiles.objective_sales_desc") }}' },
             { id: 'OUTCOME_APP_PROMOTION', name: '{{ __("profiles.objective_app") }}', description: '{{ __("profiles.objective_app_desc") }}' },
         ],
+
+        // Computed: objectives from platform config or defaults
+        get objectives() {
+            return this.platformConfig?.objectives || this.defaultObjectives;
+        },
+
+        // Platform-specific feature visibility
+        get showAdvantagePlus() {
+            return this.platformConfig?.special_features?.advantage_plus === true;
+        },
+
+        get showSparkAds() {
+            return this.platformConfig?.special_features?.spark_ads === true;
+        },
+
+        get showPlacements() {
+            return (this.platformConfig?.placements?.length || 0) > 0;
+        },
+
+        get showBiddingStrategy() {
+            return (this.platformConfig?.bidding_strategies?.length || 0) > 0;
+        },
+
+        get showB2BTargeting() {
+            return this.platformConfig?.b2b_targeting !== undefined && Object.keys(this.platformConfig.b2b_targeting).length > 0;
+        },
+
+        get platformName() {
+            return this.platformConfig?.platform_name || '{{ __("profiles.platform") }}';
+        },
+
+        get minBudget() {
+            return this.platformConfig?.min_budget || 1;
+        },
 
         // Audiences data
         customAudiences: [],
@@ -411,8 +567,41 @@ function boostForm() {
         },
 
         onAdAccountChange() {
+            this.loadPlatformConfig();
             this.loadAudiences();
             this.validateBudget();
+        },
+
+        async loadPlatformConfig() {
+            if (!this.form.ad_account_id) {
+                this.platformConfig = null;
+                this.form.objective = 'OUTCOME_ENGAGEMENT'; // Reset to default
+                return;
+            }
+
+            this.loadingPlatformConfig = true;
+            try {
+                const response = await fetch(`/orgs/{{ $currentOrg }}/settings/profiles/{{ $profile->integration_id }}/boost-config?ad_account_id=${this.form.ad_account_id}`, {
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    }
+                });
+                const data = await response.json();
+                if (data.success && data.data) {
+                    this.platformConfig = data.data;
+                    // Set first objective as default if available
+                    if (this.platformConfig.objectives?.length > 0 && !this.form.objective) {
+                        this.form.objective = this.platformConfig.objectives[0].id;
+                    }
+                } else {
+                    this.platformConfig = null;
+                }
+            } catch (error) {
+                console.error('Error loading platform config:', error);
+                this.platformConfig = null;
+            }
+            this.loadingPlatformConfig = false;
         },
 
         async loadAudiences() {
@@ -501,8 +690,14 @@ function boostForm() {
                         objective: this.form.objective,
                         budget_amount: this.form.budget_amount,
                         duration_hours: this.form.duration_days * 24,
+                        // Platform-specific settings
+                        platform: this.platformConfig?.platform || null,
                         advantage_plus_enabled: this.form.advantage_plus_enabled,
                         advantage_plus_settings: this.form.advantage_plus_settings,
+                        spark_ads: this.form.spark_ads,
+                        auto_placements: this.form.auto_placements,
+                        placements: this.form.placements,
+                        bidding_strategy: this.form.bidding_strategy,
                         targeting_options: {
                             custom_audiences: this.form.custom_audiences,
                             lookalike_audiences: this.form.lookalike_audiences,
@@ -513,7 +708,12 @@ function boostForm() {
                             cities: this.form.cities,
                             genders: this.form.genders,
                             min_age: this.form.min_age,
-                            max_age: this.form.max_age
+                            max_age: this.form.max_age,
+                            // B2B targeting (LinkedIn)
+                            job_titles: this.form.targeting.job_titles,
+                            company_size: this.form.targeting.company_size,
+                            seniority: this.form.targeting.seniority,
+                            industries: this.form.targeting.industries
                         }
                     })
                 });
