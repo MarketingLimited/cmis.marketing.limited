@@ -271,62 +271,94 @@
         <p class="text-xs text-gray-400 mt-1">{{ __('publish.media_formats') }}</p>
     </div>
 
-    {{-- Media Preview --}}
-    <div x-show="content.global.media.length > 0" class="mt-4 grid grid-cols-4 gap-3">
-        {{-- Media Items with Upload Status --}}
-        <template x-for="(media, index) in content.global.media" :key="index">
-            <div class="relative aspect-square rounded-lg overflow-hidden bg-gray-100 group">
-                <template x-if="media.type === 'image'">
-                    <img :src="media.preview_url" class="w-full h-full object-cover">
-                </template>
-                <template x-if="media.type === 'video'">
-                    <div class="w-full h-full flex items-center justify-center bg-gray-800">
-                        <i class="fas fa-play-circle text-white text-3xl"></i>
-                    </div>
-                </template>
+    {{-- Media Preview with Drag & Drop Reordering --}}
+    <div x-show="content.global.media.length > 0" class="mt-4">
+        {{-- Reorder Instructions (show when multiple media) --}}
+        <div x-show="content.global.media.length > 1" class="mb-2 flex items-center gap-2 text-xs text-gray-500">
+            <i class="fas fa-grip-vertical"></i>
+            <span>{{ __('publish.drag_to_reorder') }}</span>
+        </div>
 
-                {{-- Upload Status Overlays --}}
-                {{-- Uploading Indicator --}}
-                <template x-if="media.uploadStatus === 'uploading'">
-                    <div class="absolute inset-0 bg-black/60 flex flex-col items-center justify-center">
-                        <div class="animate-spin rounded-full h-8 w-8 border-2 border-white border-t-transparent mb-2"></div>
-                        <p class="text-white text-xs">{{ __('publish.uploading') }}</p>
-                    </div>
-                </template>
+        <div class="grid grid-cols-4 gap-3"
+             x-data="{ draggedIndex: null, dragOverIndex: null }"
+             @dragend="draggedIndex = null; dragOverIndex = null">
+            {{-- Media Items with Upload Status --}}
+            <template x-for="(media, index) in content.global.media" :key="media.url || index">
+                <div class="relative aspect-square rounded-lg overflow-hidden bg-gray-100 group cursor-move"
+                     draggable="true"
+                     @dragstart="draggedIndex = index; $event.dataTransfer.effectAllowed = 'move'"
+                     @dragover.prevent="if (draggedIndex !== null && draggedIndex !== index) { dragOverIndex = index; $event.dataTransfer.dropEffect = 'move' }"
+                     @dragleave="if (dragOverIndex === index) dragOverIndex = null"
+                     @drop.prevent="if (draggedIndex !== null && draggedIndex !== index) { reorderMedia(draggedIndex, index); draggedIndex = null; dragOverIndex = null }"
+                     :class="{
+                         'ring-2 ring-blue-500 ring-offset-2': dragOverIndex === index,
+                         'opacity-50 scale-95': draggedIndex === index
+                     }">
 
-                {{-- Upload Success Indicator --}}
-                <template x-if="media.uploadStatus === 'uploaded'">
-                    <div class="absolute bottom-2 start-2 bg-green-500 text-white rounded-full w-6 h-6 flex items-center justify-center shadow-lg">
-                        <i class="fas fa-check text-xs"></i>
+                    {{-- Order Number Badge --}}
+                    <div x-show="content.global.media.length > 1"
+                         class="absolute top-2 start-2 w-6 h-6 bg-black/70 text-white rounded-full flex items-center justify-center text-xs font-bold z-10">
+                        <span x-text="index + 1"></span>
                     </div>
-                </template>
 
-                {{-- Upload Failed Indicator --}}
-                <template x-if="media.uploadStatus === 'failed'">
-                    <div class="absolute inset-0 bg-red-500/60 flex flex-col items-center justify-center">
-                        <i class="fas fa-exclamation-triangle text-white text-2xl mb-2"></i>
-                        <p class="text-white text-xs">{{ __('publish.upload_failed') }}</p>
-                        <button @click="autoUploadMedia(index)" class="mt-2 px-2 py-1 bg-white text-red-600 text-xs rounded hover:bg-gray-100">
-                            {{ __('publish.retry') }}
-                        </button>
+                    {{-- Drag Handle (visible on hover) --}}
+                    <div x-show="content.global.media.length > 1"
+                         class="absolute top-2 start-1/2 -translate-x-1/2 bg-black/50 text-white px-2 py-1 rounded text-xs opacity-0 group-hover:opacity-100 transition z-10 pointer-events-none">
+                        <i class="fas fa-grip-vertical"></i>
                     </div>
-                </template>
 
-                {{-- Processing Indicator (for post-upload processing) --}}
-                <template x-if="mediaProcessingStatus[media.id] === 'processing'">
-                    <div class="absolute inset-0 bg-black/60 flex flex-col items-center justify-center">
-                        <div class="animate-spin rounded-full h-8 w-8 border-2 border-white border-t-transparent mb-2"></div>
-                        <p class="text-white text-xs">{{ __('publish.processing') }}</p>
-                    </div>
-                </template>
+                    <template x-if="media.type === 'image'">
+                        <img :src="media.url || media.preview_url" class="w-full h-full object-cover pointer-events-none">
+                    </template>
+                    <template x-if="media.type === 'video'">
+                        <div class="w-full h-full flex items-center justify-center bg-gray-800 pointer-events-none">
+                            <i class="fas fa-play-circle text-white text-3xl"></i>
+                        </div>
+                    </template>
 
-                {{-- Remove Button --}}
-                <button @click="removeMedia(index)"
-                        class="absolute top-2 end-2 w-6 h-6 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
-                    <i class="fas fa-times text-xs"></i>
-                </button>
-            </div>
-        </template>
+                    {{-- Upload Status Overlays --}}
+                    {{-- Uploading Indicator --}}
+                    <template x-if="media.uploadStatus === 'uploading'">
+                        <div class="absolute inset-0 bg-black/60 flex flex-col items-center justify-center pointer-events-none">
+                            <div class="animate-spin rounded-full h-8 w-8 border-2 border-white border-t-transparent mb-2"></div>
+                            <p class="text-white text-xs">{{ __('publish.uploading') }}</p>
+                        </div>
+                    </template>
+
+                    {{-- Upload Success Indicator --}}
+                    <template x-if="media.uploadStatus === 'uploaded'">
+                        <div class="absolute bottom-2 start-2 bg-green-500 text-white rounded-full w-6 h-6 flex items-center justify-center shadow-lg pointer-events-none">
+                            <i class="fas fa-check text-xs"></i>
+                        </div>
+                    </template>
+
+                    {{-- Upload Failed Indicator --}}
+                    <template x-if="media.uploadStatus === 'failed'">
+                        <div class="absolute inset-0 bg-red-500/60 flex flex-col items-center justify-center">
+                            <i class="fas fa-exclamation-triangle text-white text-2xl mb-2"></i>
+                            <p class="text-white text-xs">{{ __('publish.upload_failed') }}</p>
+                            <button @click.stop="autoUploadMedia(index)" class="mt-2 px-2 py-1 bg-white text-red-600 text-xs rounded hover:bg-gray-100">
+                                {{ __('publish.retry') }}
+                            </button>
+                        </div>
+                    </template>
+
+                    {{-- Processing Indicator (for post-upload processing) --}}
+                    <template x-if="mediaProcessingStatus[media.id] === 'processing'">
+                        <div class="absolute inset-0 bg-black/60 flex flex-col items-center justify-center pointer-events-none">
+                            <div class="animate-spin rounded-full h-8 w-8 border-2 border-white border-t-transparent mb-2"></div>
+                            <p class="text-white text-xs">{{ __('publish.processing') }}</p>
+                        </div>
+                    </template>
+
+                    {{-- Remove Button --}}
+                    <button @click.stop="removeMedia(index)"
+                            class="absolute top-2 end-2 w-6 h-6 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition flex items-center justify-center z-20">
+                        <i class="fas fa-times text-xs"></i>
+                    </button>
+                </div>
+            </template>
+        </div>
     </div>
 
     {{-- PHASE 5A: PROCESSING STATUS TOGGLES (VISTASOCIAL PARITY) --}}

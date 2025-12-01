@@ -64,6 +64,7 @@ return [
     'media_formats' => 'Images: JPG, PNG, GIF | Video: MP4, MOV (max 100MB)',
     'processing' => 'Processing...',
     'uploading' => 'Uploading...',
+    'drag_to_reorder' => 'Drag to reorder',
 
     // Link
     'link' => 'Link (optional)',

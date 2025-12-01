@@ -64,6 +64,7 @@ return [
     'media_formats' => 'صور: JPG, PNG, GIF | فيديو: MP4, MOV (بحد أقصى 100MB)',
     'processing' => 'جاري المعالجة...',
     'uploading' => 'جاري الرفع...',
+    'drag_to_reorder' => 'اسحب لإعادة الترتيب',
 
     // Link
     'link' => 'الرابط (اختياري)',
