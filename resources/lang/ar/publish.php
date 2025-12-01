@@ -154,6 +154,9 @@ return [
     'submit_for_approval' => 'إرسال للموافقة',
     'publish_now' => 'نشر الآن',
     'schedule_post' => 'جدولة المنشور',
+    'publishing' => 'جاري النشر...',
+    'scheduling' => 'جاري الجدولة...',
+    'adding_to_queue' => 'جاري الإضافة للقائمة...',
 
     // AI Assistant Panel
     'brand_voice' => 'صوت العلامة التجارية',

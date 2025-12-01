@@ -90,28 +90,43 @@
             {{-- Publish Now Button --}}
             <button x-show="!requiresApproval && publishMode === 'publish_now'" x-cloak
                     @click="publishNow()" type="button"
-                    :disabled="!canSubmit"
-                    :class="canSubmit ? 'bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700' : 'bg-gray-300 cursor-not-allowed'"
-                    class="px-5 py-2.5 text-sm font-medium text-white rounded-lg transition shadow-sm">
-                <i class="fas fa-paper-plane me-1"></i>{{ __('publish.publish_now') }}
+                    :disabled="!canSubmit || isPublishing"
+                    :class="(canSubmit && !isPublishing) ? 'bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700' : 'bg-gray-300 cursor-not-allowed'"
+                    class="px-5 py-2.5 text-sm font-medium text-white rounded-lg transition shadow-sm flex items-center gap-2">
+                <svg x-show="isPublishing" class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <i x-show="!isPublishing" class="fas fa-paper-plane"></i>
+                <span x-text="isPublishing ? '{{ __('publish.publishing') }}' : '{{ __('publish.publish_now') }}'"></span>
             </button>
 
             {{-- Schedule Button --}}
             <button x-show="!requiresApproval && publishMode === 'schedule'" x-cloak
                     @click="schedulePost()" type="button"
-                    :disabled="!canSubmit"
-                    :class="canSubmit ? 'bg-green-600 hover:bg-green-700' : 'bg-gray-300 cursor-not-allowed'"
-                    class="px-5 py-2.5 text-sm font-medium text-white rounded-lg transition shadow-sm">
-                <i class="far fa-clock me-1"></i>{{ __('publish.schedule_post') }}
+                    :disabled="!canSubmit || isPublishing"
+                    :class="(canSubmit && !isPublishing) ? 'bg-green-600 hover:bg-green-700' : 'bg-gray-300 cursor-not-allowed'"
+                    class="px-5 py-2.5 text-sm font-medium text-white rounded-lg transition shadow-sm flex items-center gap-2">
+                <svg x-show="isPublishing" class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <i x-show="!isPublishing" class="far fa-clock"></i>
+                <span x-text="isPublishing ? '{{ __('publish.scheduling') }}' : '{{ __('publish.schedule_post') }}'"></span>
             </button>
 
             {{-- Add to Queue Button --}}
             <button x-show="!requiresApproval && publishMode === 'add_to_queue'" x-cloak
                     @click="addToQueue()" type="button"
-                    :disabled="!canSubmit"
-                    :class="canSubmit ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-300 cursor-not-allowed'"
-                    class="px-5 py-2.5 text-sm font-medium text-white rounded-lg transition shadow-sm">
-                <i class="fas fa-stream me-1"></i>{{ __('publish.add_to_queue') }}
+                    :disabled="!canSubmit || isPublishing"
+                    :class="(canSubmit && !isPublishing) ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-300 cursor-not-allowed'"
+                    class="px-5 py-2.5 text-sm font-medium text-white rounded-lg transition shadow-sm flex items-center gap-2">
+                <svg x-show="isPublishing" class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <i x-show="!isPublishing" class="fas fa-stream"></i>
+                <span x-text="isPublishing ? '{{ __('publish.adding_to_queue') }}' : '{{ __('publish.add_to_queue') }}'"></span>
             </button>
         </div>
     </div>

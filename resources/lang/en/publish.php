@@ -154,6 +154,9 @@ return [
     'submit_for_approval' => 'Submit for Approval',
     'publish_now' => 'Publish Now',
     'schedule_post' => 'Schedule Post',
+    'publishing' => 'Publishing...',
+    'scheduling' => 'Scheduling...',
+    'adding_to_queue' => 'Adding to queue...',
 
     // AI Assistant Panel
     'brand_voice' => 'Brand Voice',

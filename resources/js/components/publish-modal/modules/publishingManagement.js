@@ -307,6 +307,11 @@ export function getPublishingManagementMethods() {
 
         async schedulePost() {
             if (!this.canSubmit) return;
+
+            // Set publishing state for UI feedback
+            this.isPublishing = true;
+            this.publishingStatus = 'scheduling';
+
             try {
                 // Upload media files first if they exist
                 const contentToSend = await this.prepareContentForPublishing(this.content);
@@ -335,7 +340,10 @@ export function getPublishingManagementMethods() {
                 }
             } catch (e) {
                 console.error('Failed to schedule', e);
-                window.notify('Failed to schedule post', 'error');
+                window.notify('Failed to schedule post: ' + e.message, 'error');
+            } finally {
+                this.isPublishing = false;
+                this.publishingStatus = null;
             }
         },
 
@@ -345,6 +353,11 @@ export function getPublishingManagementMethods() {
 
         async addToQueue() {
             if (!this.canSubmit) return;
+
+            // Set publishing state for UI feedback
+            this.isPublishing = true;
+            this.publishingStatus = 'queuing';
+
             try {
                 // Upload media files first if they exist
                 const contentToSend = await this.prepareContentForPublishing(this.content);
@@ -372,7 +385,10 @@ export function getPublishingManagementMethods() {
                 }
             } catch (e) {
                 console.error('Failed to add to queue', e);
-                window.notify('Failed to add post to queue', 'error');
+                window.notify('Failed to add post to queue: ' + e.message, 'error');
+            } finally {
+                this.isPublishing = false;
+                this.publishingStatus = null;
             }
         },
 
