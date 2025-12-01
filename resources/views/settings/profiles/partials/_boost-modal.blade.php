@@ -155,7 +155,7 @@
                                     </template>
                                 </select>
                                 <p class="mt-1 text-xs text-gray-500">
-                                    <a href="{{ route('orgs.settings.platform-connections', $currentOrg) }}" class="text-blue-600 hover:underline">
+                                    <a href="{{ route('orgs.settings.platform-connections.index', $currentOrg) }}" class="text-blue-600 hover:underline">
                                         <i class="fas fa-plus-circle me-1"></i>{{ __('profiles.connect_new_whatsapp') }}
                                     </a>
                                 </p>
