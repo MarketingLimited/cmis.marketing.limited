@@ -339,4 +339,39 @@ return [
     'invalid_bidding_strategy' => 'Invalid bidding strategy',
     'linkedin_audience_size_warning' => 'LinkedIn requires minimum audience size of :size',
     'spark_ads_requires_post' => 'Spark Ads requires an organic post ID',
+
+    // Destination Types
+    'destination_type' => 'Conversion Location',
+    'destination_type_description' => 'Where do you want to drive results?',
+    'loading_messaging_accounts' => 'Loading messaging accounts',
+    'messaging_accounts_retrieved' => 'Messaging accounts retrieved successfully',
+    'messaging_accounts_failed' => 'Failed to load messaging accounts',
+
+    // Destination type options
+    'destination_website' => 'Website',
+    'destination_app' => 'App',
+    'destination_messenger' => 'Messenger',
+    'destination_whatsapp' => 'WhatsApp',
+    'destination_instagram_direct' => 'Instagram Direct',
+    'destination_calls' => 'Phone Calls',
+    'destination_instant_forms' => 'Instant Forms',
+    'destination_on_ad' => 'On Ad',
+    'destination_on_post' => 'On Post',
+    'destination_on_page' => 'On Page',
+    'destination_app_and_website' => 'App and Website',
+    'destination_shopping' => 'Shopping',
+
+    // Destination type fields
+    'destination_url' => 'Website URL',
+    'whatsapp_number' => 'WhatsApp Number',
+    'select_whatsapp_number' => 'Select a WhatsApp number',
+    'connect_new_whatsapp' => 'Connect new WhatsApp number',
+    'facebook_page' => 'Facebook Page',
+    'select_facebook_page' => 'Select a Facebook Page',
+    'phone_number' => 'Phone Number',
+    'app_id' => 'App ID',
+    'enter_app_id' => 'Enter your app ID',
+    'lead_form' => 'Lead Form',
+    'enter_form_id' => 'Enter form ID (optional)',
+    'form_id_hint' => 'Leave empty to create a new form or enter existing form ID',
 ];

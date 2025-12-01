@@ -302,6 +302,9 @@ return [
     'queue_next' => 'Queue Next - Add to front of queue',
     'queue_available' => 'Queue Available - Next available slot',
     'queue_last' => 'Queue Last - Add to end of queue',
+    'queue_label' => 'Label',
+    'any_slot' => 'Any slot',
+    'adding_to_queue' => 'Adding to queue...',
     'create_first_like' => 'Create first like',
 
     // PHASE 5B: Platform Warnings

@@ -110,6 +110,8 @@ function publishModal() {
         },
         publishMode: 'publish_now', // publish_now, schedule, add_to_queue
         queuePosition: 'available', // 'next', 'available', 'last' - PHASE 5B: Queue positioning
+        queueLabels: [], // Queue slot labels from organization
+        queueLabelId: '', // Selected label ID for queue targeting
 
         // PHASE 3: Advanced Scheduling
         showCalendar: false,
@@ -425,6 +427,7 @@ function publishModal() {
             this.loadProfileGroups();
             this.loadBrandVoices();
             this.loadPlatformConnections();
+            this.loadQueueLabels(); // Load queue labels for targeting
             this.loadTemplatesFromStorage(); // PHASE 2: Load saved templates
 
             // Listen for open modal event
@@ -479,6 +482,25 @@ function publishModal() {
                 }
             } catch (e) {
                 console.error('Failed to load profile groups', e);
+            }
+        },
+
+        async loadQueueLabels() {
+            try {
+                const response = await fetch(`/orgs/${window.currentOrgId}/settings/queue-labels`, {
+                    credentials: 'same-origin',
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+                if (response.ok) {
+                    const result = await response.json();
+                    this.queueLabels = result.data || [];
+                }
+            } catch (e) {
+                console.error('Failed to load queue labels', e);
             }
         },
 
@@ -1489,7 +1511,8 @@ function publishModal() {
                     body: JSON.stringify({
                         profile_ids: this.selectedProfiles.map(p => p.integration_id),
                         content: this.content,
-                        queue_position: this.queuePosition // PHASE 5B: Queue positioning
+                        queue_position: this.queuePosition, // PHASE 5B: Queue positioning
+                        queue_label_id: this.queueLabelId || null // Target specific label slot
                     })
                 });
                 if (response.ok) {

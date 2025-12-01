@@ -133,6 +133,7 @@ class PublishingModalController extends Controller
             'is_draft' => 'boolean',
             'requires_approval' => 'boolean',
             'queue_position' => 'nullable|string|in:next,available,last', // NEW: Queue support
+            'queue_label_id' => 'nullable|uuid', // Target specific label slot
         ]);
 
         if ($validator->fails()) {
@@ -165,11 +166,13 @@ class PublishingModalController extends Controller
         $isDraft = $request->input('is_draft', false);
         $requiresApproval = $request->input('requires_approval', false);
         $queuePosition = $request->input('queue_position'); // NEW: Queue support
+        $queueLabelId = $request->input('queue_label_id'); // Target specific label slot
         $isQueueRequest = !empty($queuePosition); // NEW: Detect queue requests
 
         Log::debug('[QUEUE] Post creation request', [
             'is_queue_request' => $isQueueRequest,
             'queue_position' => $queuePosition,
+            'queue_label_id' => $queueLabelId,
             'has_schedule' => !empty($schedule),
         ]);
 
@@ -223,10 +226,11 @@ class PublishingModalController extends Controller
             // NEW: For queue requests, get the next available queue slot for this profile
             $profileScheduledAt = $scheduledAt;
             if ($isQueueRequest && !$scheduledAt) {
-                $profileScheduledAt = $this->getNextQueueSlotForProfile($org, $profileId);
+                $profileScheduledAt = $this->getNextQueueSlotForProfile($org, $profileId, $queueLabelId);
                 Log::debug('[QUEUE] Queue slot for profile', [
                     'profile_id' => $profileId,
                     'platform' => $profile->platform,
+                    'queue_label_id' => $queueLabelId,
                     'queue_slot' => $profileScheduledAt?->toIso8601String(),
                 ]);
             }
@@ -375,9 +379,10 @@ class PublishingModalController extends Controller
      *
      * @param string $org Organization ID
      * @param string $profileId Integration/Profile ID
+     * @param string|null $labelId Optional label ID to filter slots
      * @return \Carbon\Carbon|null Next available slot time, or null if queue not enabled/configured
      */
-    protected function getNextQueueSlotForProfile(string $org, string $profileId): ?\Carbon\Carbon
+    protected function getNextQueueSlotForProfile(string $org, string $profileId, ?string $labelId = null): ?\Carbon\Carbon
     {
         try {
             DB::statement("SELECT set_config('app.current_org_id', ?, false)", [$org]);
@@ -456,19 +461,45 @@ class PublishingModalController extends Controller
                 'schedule_days' => array_keys($schedule),
             ]);
 
-            // Helper to extract time from slot (supports both old string and new object format)
-            $getSlotTime = function ($slot) {
-                if (is_string($slot)) {
-                    return $slot;
+            // Helper to filter slots by label and extract times
+            $filterSlotsByLabel = function ($slots, $targetLabelId) {
+                $filteredSlots = [];
+                foreach ($slots as $slot) {
+                    // Handle old format (string) - no label filtering possible
+                    if (is_string($slot)) {
+                        if (!$targetLabelId) {
+                            $filteredSlots[] = ['time' => $slot, 'label_id' => null];
+                        }
+                        continue;
+                    }
+
+                    // Handle new format (object)
+                    $slotLabelId = $slot['label_id'] ?? null;
+                    $slotTime = $slot['time'] ?? null;
+
+                    if (!$slotTime) continue;
+
+                    // If no target label specified, include all slots
+                    // If target label specified, only include matching slots
+                    if (!$targetLabelId || $slotLabelId === $targetLabelId) {
+                        $filteredSlots[] = $slot;
+                    }
                 }
-                return $slot['time'] ?? null;
+                return $filteredSlots;
             };
+
+            Log::debug('[QUEUE] Label filtering', [
+                'profile_id' => $profileId,
+                'target_label_id' => $labelId,
+            ]);
 
             // Try to find a slot today
             if (in_array($currentDay, $daysEnabled)) {
                 $todaySlots = $schedule[$currentDayName] ?? [];
+                $filteredSlots = $filterSlotsByLabel($todaySlots, $labelId);
+
                 // Extract times and sort them
-                $todayTimes = array_filter(array_map($getSlotTime, $todaySlots));
+                $todayTimes = array_filter(array_map(fn($s) => $s['time'] ?? null, $filteredSlots));
                 sort($todayTimes);
 
                 foreach ($todayTimes as $time) {
@@ -477,6 +508,7 @@ class PublishingModalController extends Controller
                         Log::debug('[QUEUE] Found slot today', [
                             'slot_local' => $slotTime->toDateTimeString(),
                             'slot_utc' => $slotTime->utc()->toDateTimeString(),
+                            'label_id' => $labelId,
                         ]);
                         return $slotTime->utc();
                     }
@@ -491,7 +523,8 @@ class PublishingModalController extends Controller
 
                 if (in_array($nextDayOfWeek, $daysEnabled)) {
                     $daySlots = $schedule[$nextDayName] ?? [];
-                    $dayTimes = array_filter(array_map($getSlotTime, $daySlots));
+                    $filteredSlots = $filterSlotsByLabel($daySlots, $labelId);
+                    $dayTimes = array_filter(array_map(fn($s) => $s['time'] ?? null, $filteredSlots));
 
                     if (!empty($dayTimes)) {
                         sort($dayTimes);
@@ -502,13 +535,17 @@ class PublishingModalController extends Controller
                             'day_name' => $nextDayName,
                             'slot_local' => $slotTime->toDateTimeString(),
                             'slot_utc' => $slotTime->utc()->toDateTimeString(),
+                            'label_id' => $labelId,
                         ]);
                         return $slotTime->utc();
                     }
                 }
             }
 
-            Log::warning('[QUEUE] No slot found within 7 days', ['profile_id' => $profileId]);
+            Log::warning('[QUEUE] No slot found within 7 days', [
+                'profile_id' => $profileId,
+                'label_id' => $labelId,
+            ]);
             return null;
 
         } catch (\Exception $e) {

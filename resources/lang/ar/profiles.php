@@ -339,4 +339,39 @@ return [
     'invalid_bidding_strategy' => 'استراتيجية مزايدة غير صالحة',
     'linkedin_audience_size_warning' => 'يتطلب لينكدإن حداً أدنى لحجم الجمهور :size',
     'spark_ads_requires_post' => 'إعلانات سبارك تتطلب معرف منشور عضوي',
+
+    // Destination Types
+    'destination_type' => 'موقع التحويل',
+    'destination_type_description' => 'أين تريد تحقيق النتائج؟',
+    'loading_messaging_accounts' => 'جاري تحميل حسابات المراسلة',
+    'messaging_accounts_retrieved' => 'تم استرداد حسابات المراسلة بنجاح',
+    'messaging_accounts_failed' => 'فشل في تحميل حسابات المراسلة',
+
+    // Destination type options
+    'destination_website' => 'الموقع الإلكتروني',
+    'destination_app' => 'التطبيق',
+    'destination_messenger' => 'ماسنجر',
+    'destination_whatsapp' => 'واتساب',
+    'destination_instagram_direct' => 'رسائل انستغرام',
+    'destination_calls' => 'المكالمات الهاتفية',
+    'destination_instant_forms' => 'النماذج الفورية',
+    'destination_on_ad' => 'على الإعلان',
+    'destination_on_post' => 'على المنشور',
+    'destination_on_page' => 'على الصفحة',
+    'destination_app_and_website' => 'التطبيق والموقع',
+    'destination_shopping' => 'التسوق',
+
+    // Destination type fields
+    'destination_url' => 'رابط الموقع',
+    'whatsapp_number' => 'رقم واتساب',
+    'select_whatsapp_number' => 'اختر رقم واتساب',
+    'connect_new_whatsapp' => 'ربط رقم واتساب جديد',
+    'facebook_page' => 'صفحة فيسبوك',
+    'select_facebook_page' => 'اختر صفحة فيسبوك',
+    'phone_number' => 'رقم الهاتف',
+    'app_id' => 'معرف التطبيق',
+    'enter_app_id' => 'أدخل معرف التطبيق',
+    'lead_form' => 'نموذج العملاء المحتملين',
+    'enter_form_id' => 'أدخل معرف النموذج (اختياري)',
+    'form_id_hint' => 'اتركه فارغاً لإنشاء نموذج جديد أو أدخل معرف نموذج موجود',
 ];

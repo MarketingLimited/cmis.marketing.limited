@@ -79,6 +79,7 @@
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('profiles.campaign_objective') }}</label>
                         <select x-model="form.objective"
+                                @change="onObjectiveChange()"
                                 class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm">
                             <option value="">{{ __('profiles.select_objective') }}</option>
                             <template x-for="obj in objectives" :key="obj.id">
@@ -86,6 +87,131 @@
                             </template>
                         </select>
                         <p class="mt-1 text-xs text-gray-500" x-text="objectives.find(o => o.id === form.objective)?.description || ''"></p>
+                    </div>
+
+                    {{-- Destination Type Selection (Shows after objective is selected) --}}
+                    <div x-show="requiresDestination && form.objective" x-transition x-cloak class="border-t border-gray-200 pt-4 mt-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-3">
+                            {{ __('profiles.destination_type') }}
+                            <span class="text-red-500">*</span>
+                        </label>
+                        <p class="text-xs text-gray-500 mb-3">{{ __('profiles.destination_type_description') }}</p>
+
+                        {{-- Loading state --}}
+                        <div x-show="loadingMessagingAccounts" class="text-center py-4">
+                            <i class="fas fa-spinner fa-spin text-blue-500 me-2"></i>
+                            <span class="text-sm text-gray-600">{{ __('profiles.loading_messaging_accounts') }}...</span>
+                        </div>
+
+                        {{-- Destination type cards --}}
+                        <div x-show="!loadingMessagingAccounts" class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                            <template x-for="destType in currentDestinationTypes" :key="destType.id">
+                                <button type="button"
+                                        @click="selectDestinationType(destType)"
+                                        :class="form.destination_type === destType.id ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-500' : 'border-gray-200 hover:border-blue-300 hover:bg-gray-50'"
+                                        class="relative flex flex-col items-center p-4 border-2 rounded-lg transition-all duration-200 focus:outline-none">
+                                    <div :class="form.destination_type === destType.id ? 'text-blue-600' : 'text-gray-400'"
+                                         class="text-2xl mb-2">
+                                        <i :class="'fab ' + destType.icon" x-show="destType.icon?.startsWith('fa-')"></i>
+                                        <i :class="'fas ' + destType.icon" x-show="!destType.icon?.startsWith('fa-')"></i>
+                                    </div>
+                                    <span :class="form.destination_type === destType.id ? 'text-blue-700 font-medium' : 'text-gray-700'"
+                                          class="text-sm text-center" x-text="destType.name"></span>
+                                    {{-- Selected checkmark --}}
+                                    <div x-show="form.destination_type === destType.id"
+                                         class="absolute top-1 end-1 text-blue-500">
+                                        <i class="fas fa-check-circle"></i>
+                                    </div>
+                                </button>
+                            </template>
+                        </div>
+
+                        {{-- Destination-specific fields --}}
+                        <div x-show="form.destination_type" x-transition class="mt-4 space-y-3">
+
+                            {{-- Website URL field --}}
+                            <div x-show="selectedDestinationTypeDetails?.requires?.includes('url')">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">
+                                    {{ __('profiles.destination_url') }}
+                                    <span class="text-red-500">*</span>
+                                </label>
+                                <input type="url"
+                                       x-model="form.destination_url"
+                                       placeholder="https://example.com"
+                                       class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm">
+                            </div>
+
+                            {{-- WhatsApp Number field --}}
+                            <div x-show="selectedDestinationTypeDetails?.requires?.includes('whatsapp_number')">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">
+                                    {{ __('profiles.whatsapp_number') }}
+                                    <span class="text-red-500">*</span>
+                                </label>
+                                <select x-model="form.whatsapp_number_id"
+                                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm">
+                                    <option value="">{{ __('profiles.select_whatsapp_number') }}</option>
+                                    <template x-for="account in messagingAccounts.whatsapp" :key="account.id">
+                                        <option :value="account.id" x-text="account.display_name || account.phone_number"></option>
+                                    </template>
+                                </select>
+                                <p class="mt-1 text-xs text-gray-500">
+                                    <a href="{{ route('orgs.settings.platform-connections', $currentOrg) }}" class="text-blue-600 hover:underline">
+                                        <i class="fas fa-plus-circle me-1"></i>{{ __('profiles.connect_new_whatsapp') }}
+                                    </a>
+                                </p>
+                            </div>
+
+                            {{-- Messenger / Page ID field --}}
+                            <div x-show="selectedDestinationTypeDetails?.requires?.includes('page_id')">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">
+                                    {{ __('profiles.facebook_page') }}
+                                    <span class="text-red-500">*</span>
+                                </label>
+                                <select x-model="form.page_id"
+                                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm">
+                                    <option value="">{{ __('profiles.select_facebook_page') }}</option>
+                                    <template x-for="page in messagingAccounts.messenger" :key="page.id">
+                                        <option :value="page.id" x-text="page.name"></option>
+                                    </template>
+                                </select>
+                            </div>
+
+                            {{-- Phone Number field --}}
+                            <div x-show="selectedDestinationTypeDetails?.requires?.includes('phone_number')">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">
+                                    {{ __('profiles.phone_number') }}
+                                    <span class="text-red-500">*</span>
+                                </label>
+                                <input type="tel"
+                                       x-model="form.phone_number"
+                                       placeholder="+1234567890"
+                                       class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm">
+                            </div>
+
+                            {{-- App ID field --}}
+                            <div x-show="selectedDestinationTypeDetails?.requires?.includes('app_id')">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">
+                                    {{ __('profiles.app_id') }}
+                                    <span class="text-red-500">*</span>
+                                </label>
+                                <input type="text"
+                                       x-model="form.app_id"
+                                       placeholder="{{ __('profiles.enter_app_id') }}"
+                                       class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm">
+                            </div>
+
+                            {{-- Form ID field (Lead Gen Forms) --}}
+                            <div x-show="selectedDestinationTypeDetails?.requires?.includes('form_id')">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">
+                                    {{ __('profiles.lead_form') }}
+                                </label>
+                                <input type="text"
+                                       x-model="form.form_id"
+                                       placeholder="{{ __('profiles.enter_form_id') }}"
+                                       class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm">
+                                <p class="mt-1 text-xs text-gray-500">{{ __('profiles.form_id_hint') }}</p>
+                            </div>
+                        </div>
                     </div>
 
                     {{-- Boost Delay --}}
@@ -784,6 +910,14 @@ function boostForm() {
                         auto_placements: this.form.auto_placements,
                         placements: this.form.placements,
                         bidding_strategy: this.form.bidding_strategy,
+                        // Destination type settings
+                        destination_type: this.form.destination_type,
+                        destination_url: this.form.destination_url,
+                        whatsapp_number_id: this.form.whatsapp_number_id,
+                        page_id: this.form.page_id,
+                        phone_number: this.form.phone_number,
+                        form_id: this.form.form_id,
+                        app_id: this.form.app_id,
                         targeting_options: {
                             custom_audiences: this.form.custom_audiences,
                             lookalike_audiences: this.form.lookalike_audiences,

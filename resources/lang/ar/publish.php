@@ -302,6 +302,9 @@ return [
     'queue_next' => 'التالي في الطابور - إضافة في المقدمة',
     'queue_available' => 'المكان المتاح - المكان المتاح التالي',
     'queue_last' => 'الأخير في الطابور - إضافة في النهاية',
+    'queue_label' => 'التصنيف',
+    'any_slot' => 'أي فترة',
+    'adding_to_queue' => 'جاري الإضافة إلى الطابور...',
     'create_first_like' => 'إنشاء أول إعجاب',
 
     // PHASE 5B: Platform Warnings
