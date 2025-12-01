@@ -280,6 +280,52 @@ function socialManager() {
         isUpdating: false,
         isDeletingFailed: false,
 
+        // Platform character limits (from config/social-platforms.php)
+        editPlatformLimits: {
+            twitter: 280,
+            facebook: 63206,
+            instagram: 2200,
+            linkedin: 3000,
+            tiktok: 2200,
+            threads: 500,
+            youtube: 5000,
+            pinterest: 500,
+            tumblr: 4096,
+            reddit: 40000,
+            snapchat: 250,
+            google_business: 1500
+        },
+
+        // Edit Modal Toolbar State
+        showEditEmojiPicker: false,
+
+        // Common emojis for quick access
+        editCommonEmojis: [
+            '😀', '😃', '😄', '😁', '😆', '😅', '🤣', '😂', '🙂', '🙃', '😉', '😊', '😇', '🥰', '😍', '🤩',
+            '😘', '😗', '😚', '😙', '🥲', '😋', '😛', '😜', '🤪', '😝', '🤑', '🤗', '🤭', '🤫', '🤔', '🤐',
+            '👍', '👎', '👊', '✊', '🤛', '🤜', '🤞', '✌️', '🤟', '🤘', '👌', '🤌', '🤏', '👈', '👉', '👆',
+            '❤️', '🧡', '💛', '💚', '💙', '💜', '🖤', '🤍', '🤎', '💔', '❣️', '💕', '💞', '💓', '💗', '💖',
+            '🔥', '✨', '🎉', '🎊', '💯', '⭐', '🌟', '💫', '🚀', '💪', '🙏', '👏', '🎯', '💡', '📢', '🔔'
+        ],
+
+        // AI Content Assistance State
+        showEditAIPanel: false,
+        editAILoading: false,
+        editAILoadingType: null, // 'hashtags', 'emojis', 'improve', 'transform'
+        editAISuggestions: {
+            hashtags: [],
+            improved: null,
+            variations: []
+        },
+        editAIError: null,
+
+        // Media Management State
+        editMediaDraggedIndex: null,
+        editMediaDragOverIndex: null,
+        editMediaDragging: false,
+        editMediaUploading: false,
+        editMediaUploadProgress: 0,
+
         // Hashtag Manager
         showHashtagManager: false,
         hashtagSets: [],
@@ -1270,6 +1316,475 @@ function socialManager() {
             if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
             if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
             return num.toString();
+        },
+
+        // ============================================
+        // Edit Post Character Validation Methods
+        // ============================================
+
+        /**
+         * Get the character limit for the current platform being edited
+         */
+        getEditCharacterLimit() {
+            const platform = this.editingPost?.platform?.toLowerCase() || '';
+            return this.editPlatformLimits[platform] || 5000;
+        },
+
+        /**
+         * Get the current character count percentage
+         */
+        getEditCharacterPercentage() {
+            const count = this.editingPost?.content?.length || 0;
+            const limit = this.getEditCharacterLimit();
+            return Math.min((count / limit) * 100, 100);
+        },
+
+        /**
+         * Get the character status: 'ok', 'caution', 'warning', or 'exceeded'
+         */
+        getEditCharacterStatus() {
+            const count = this.editingPost?.content?.length || 0;
+            const limit = this.getEditCharacterLimit();
+            const percentage = (count / limit) * 100;
+
+            if (percentage >= 100) return 'exceeded';
+            if (percentage >= 90) return 'warning';
+            if (percentage >= 75) return 'caution';
+            return 'ok';
+        },
+
+        /**
+         * Check if save should be disabled due to character limit
+         */
+        isEditContentValid() {
+            const count = this.editingPost?.content?.length || 0;
+            const limit = this.getEditCharacterLimit();
+            return count > 0 && count <= limit;
+        },
+
+        // ============================================
+        // Edit Post Toolbar Methods
+        // ============================================
+
+        /**
+         * Insert emoji at cursor position in edit textarea
+         */
+        insertEditEmoji(emoji) {
+            const textarea = this.$refs.editContentTextarea;
+            if (!textarea) {
+                this.editingPost.content += emoji;
+                this.showEditEmojiPicker = false;
+                return;
+            }
+
+            const start = textarea.selectionStart;
+            const end = textarea.selectionEnd;
+            const text = this.editingPost.content || '';
+
+            this.editingPost.content = text.slice(0, start) + emoji + text.slice(end);
+            this.showEditEmojiPicker = false;
+
+            // Reset cursor position after emoji
+            this.$nextTick(() => {
+                textarea.focus();
+                const newPos = start + emoji.length;
+                textarea.setSelectionRange(newPos, newPos);
+            });
+        },
+
+        /**
+         * Insert text at cursor position in edit textarea
+         */
+        insertEditText(text) {
+            const textarea = this.$refs.editContentTextarea;
+            if (!textarea) {
+                this.editingPost.content += text;
+                return;
+            }
+
+            const start = textarea.selectionStart;
+            const end = textarea.selectionEnd;
+            const content = this.editingPost.content || '';
+
+            this.editingPost.content = content.slice(0, start) + text + content.slice(end);
+
+            // Reset cursor position after inserted text
+            this.$nextTick(() => {
+                textarea.focus();
+                const newPos = start + text.length;
+                textarea.setSelectionRange(newPos, newPos);
+            });
+        },
+
+        /**
+         * Apply markdown-style formatting to selected text
+         */
+        formatEditText(type) {
+            const textarea = this.$refs.editContentTextarea;
+            if (!textarea) return;
+
+            const start = textarea.selectionStart;
+            const end = textarea.selectionEnd;
+            const text = this.editingPost.content || '';
+            const selectedText = text.slice(start, end);
+
+            let wrapper = '';
+            switch (type) {
+                case 'bold':
+                    wrapper = '**';
+                    break;
+                case 'italic':
+                    wrapper = '_';
+                    break;
+                case 'underline':
+                    wrapper = '__';
+                    break;
+                case 'strikethrough':
+                    wrapper = '~~';
+                    break;
+                default:
+                    return;
+            }
+
+            // If text is selected, wrap it; otherwise insert placeholder
+            const newText = selectedText
+                ? wrapper + selectedText + wrapper
+                : wrapper + 'text' + wrapper;
+
+            this.editingPost.content = text.slice(0, start) + newText + text.slice(end);
+
+            // Position cursor appropriately
+            this.$nextTick(() => {
+                textarea.focus();
+                if (selectedText) {
+                    // Keep selection on the formatted text
+                    const newStart = start + wrapper.length;
+                    const newEnd = newStart + selectedText.length;
+                    textarea.setSelectionRange(newStart, newEnd);
+                } else {
+                    // Select the placeholder "text"
+                    const newStart = start + wrapper.length;
+                    const newEnd = newStart + 4; // "text" length
+                    textarea.setSelectionRange(newStart, newEnd);
+                }
+            });
+        },
+
+        // ============================================
+        // AI Content Assistance Methods
+        // ============================================
+
+        /**
+         * Generate hashtag suggestions for the current content
+         */
+        async generateEditHashtags() {
+            if (this.editAILoading || !this.editingPost.content?.trim()) return;
+
+            this.editAILoading = true;
+            this.editAILoadingType = 'hashtags';
+            this.editAIError = null;
+
+            try {
+                const response = await fetch('/api/ai/generate-hashtags', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content,
+                        'Accept': 'application/json'
+                    },
+                    credentials: 'same-origin',
+                    body: JSON.stringify({
+                        caption: this.editingPost.content,
+                        platform: this.editingPost.platform
+                    })
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                    this.editAISuggestions.hashtags = result.data?.hashtags || result.hashtags || [];
+                } else {
+                    this.editAIError = result.message || 'Failed to generate hashtags';
+                }
+            } catch (error) {
+                console.error('[AI] Hashtag generation failed:', error);
+                this.editAIError = 'Failed to connect to AI service';
+            } finally {
+                this.editAILoading = false;
+                this.editAILoadingType = null;
+            }
+        },
+
+        /**
+         * Transform content using AI (shorter, longer, formal, casual, emojis)
+         */
+        async transformEditContent(type) {
+            if (this.editAILoading || !this.editingPost.content?.trim()) return;
+
+            this.editAILoading = true;
+            this.editAILoadingType = type;
+            this.editAIError = null;
+
+            try {
+                const response = await fetch('/api/ai/transform-social-content', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content,
+                        'Accept': 'application/json'
+                    },
+                    credentials: 'same-origin',
+                    body: JSON.stringify({
+                        content: this.editingPost.content,
+                        type: type,
+                        platform: this.editingPost.platform
+                    })
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                    const transformed = result.data?.content || result.content;
+                    if (transformed) {
+                        this.editingPost.content = transformed;
+                    }
+                } else {
+                    this.editAIError = result.message || 'Failed to transform content';
+                }
+            } catch (error) {
+                console.error('[AI] Content transformation failed:', error);
+                this.editAIError = 'Failed to connect to AI service';
+            } finally {
+                this.editAILoading = false;
+                this.editAILoadingType = null;
+            }
+        },
+
+        /**
+         * Get improvement suggestions for the current content
+         */
+        async improveEditContent() {
+            if (this.editAILoading || !this.editingPost.content?.trim()) return;
+
+            this.editAILoading = true;
+            this.editAILoadingType = 'improve';
+            this.editAIError = null;
+
+            try {
+                const response = await fetch('/api/ai/suggest-improvements', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content,
+                        'Accept': 'application/json'
+                    },
+                    credentials: 'same-origin',
+                    body: JSON.stringify({
+                        content: this.editingPost.content,
+                        context: {
+                            platform: this.editingPost.platform,
+                            type: 'social_post'
+                        }
+                    })
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                    const improved = result.data?.improved || result.data?.content || result.improved;
+                    if (improved) {
+                        this.editAISuggestions.improved = improved;
+                    }
+                } else {
+                    this.editAIError = result.message || 'Failed to get improvement suggestions';
+                }
+            } catch (error) {
+                console.error('[AI] Content improvement failed:', error);
+                this.editAIError = 'Failed to connect to AI service';
+            } finally {
+                this.editAILoading = false;
+                this.editAILoadingType = null;
+            }
+        },
+
+        /**
+         * Insert a single hashtag into the content
+         */
+        insertEditHashtag(hashtag) {
+            const tag = hashtag.startsWith('#') ? hashtag : '#' + hashtag;
+            const space = this.editingPost.content && !this.editingPost.content.endsWith(' ') ? ' ' : '';
+            this.editingPost.content += space + tag;
+            this.editAISuggestions.hashtags = this.editAISuggestions.hashtags.filter(t => t !== hashtag);
+        },
+
+        /**
+         * Insert all suggested hashtags
+         */
+        insertAllEditHashtags() {
+            if (!this.editAISuggestions.hashtags?.length) return;
+
+            const hashtags = this.editAISuggestions.hashtags
+                .map(tag => tag.startsWith('#') ? tag : '#' + tag)
+                .join(' ');
+
+            const space = this.editingPost.content && !this.editingPost.content.endsWith(' ') ? ' ' : '';
+            this.editingPost.content += space + hashtags;
+            this.editAISuggestions.hashtags = [];
+        },
+
+        /**
+         * Apply an AI suggestion to replace the content
+         */
+        applyEditSuggestion(content) {
+            if (content) {
+                this.editingPost.content = content;
+                this.editAISuggestions.improved = null;
+            }
+        },
+
+        // =============================================
+        // MEDIA MANAGEMENT METHODS (Edit Post Modal)
+        // =============================================
+
+        /**
+         * Reorder media items via drag and drop
+         */
+        reorderEditMedia(fromIndex, toIndex) {
+            if (fromIndex === toIndex || !this.editingPost.media) return;
+
+            const media = [...this.editingPost.media];
+            const [movedItem] = media.splice(fromIndex, 1);
+            media.splice(toIndex, 0, movedItem);
+
+            this.editingPost.media = media;
+            this.editMediaDraggedIndex = null;
+            this.editMediaDragOverIndex = null;
+            this.editMediaDragging = false;
+
+            console.log('[Edit Media] Reordered media:', { from: fromIndex, to: toIndex });
+        },
+
+        /**
+         * Remove media item from the post
+         */
+        removeEditMedia(index) {
+            if (!this.editingPost.media || index < 0 || index >= this.editingPost.media.length) return;
+
+            this.editingPost.media = this.editingPost.media.filter((_, i) => i !== index);
+            console.log('[Edit Media] Removed media at index:', index);
+        },
+
+        /**
+         * Handle file upload via input
+         */
+        async handleEditMediaUpload(event) {
+            const files = event.target.files;
+            if (!files || files.length === 0) return;
+
+            await this.processEditMediaFiles(files);
+            event.target.value = ''; // Reset input
+        },
+
+        /**
+         * Handle file drop
+         */
+        async handleEditMediaDrop(event) {
+            event.preventDefault();
+            const files = event.dataTransfer?.files;
+            if (!files || files.length === 0) return;
+
+            await this.processEditMediaFiles(files);
+        },
+
+        /**
+         * Process uploaded media files
+         */
+        async processEditMediaFiles(files) {
+            this.editMediaUploading = true;
+            this.editMediaUploadProgress = 0;
+
+            const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'video/mp4', 'video/quicktime', 'video/webm'];
+            const maxFileSize = 50 * 1024 * 1024; // 50MB
+
+            try {
+                for (let i = 0; i < files.length; i++) {
+                    const file = files[i];
+
+                    // Validate file type
+                    if (!allowedTypes.includes(file.type)) {
+                        console.warn('[Edit Media] Invalid file type:', file.type);
+                        continue;
+                    }
+
+                    // Validate file size
+                    if (file.size > maxFileSize) {
+                        console.warn('[Edit Media] File too large:', file.name);
+                        continue;
+                    }
+
+                    // Update progress
+                    this.editMediaUploadProgress = Math.round(((i + 1) / files.length) * 100);
+
+                    // Create form data for upload
+                    const formData = new FormData();
+                    formData.append('file', file);
+                    formData.append('type', file.type.startsWith('video/') ? 'video' : 'image');
+
+                    try {
+                        const response = await fetch(`/orgs/${this.orgId}/social/media/upload`, {
+                            method: 'POST',
+                            headers: {
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content
+                            },
+                            body: formData
+                        });
+
+                        if (response.ok) {
+                            const result = await response.json();
+                            if (result.success && result.data) {
+                                // Initialize media array if needed
+                                if (!this.editingPost.media) {
+                                    this.editingPost.media = [];
+                                }
+
+                                // Add new media item
+                                this.editingPost.media.push({
+                                    url: result.data.url,
+                                    type: result.data.type || (file.type.startsWith('video/') ? 'video' : 'image'),
+                                    filename: file.name,
+                                    size: file.size
+                                });
+
+                                console.log('[Edit Media] Uploaded successfully:', file.name);
+                            }
+                        } else {
+                            console.error('[Edit Media] Upload failed:', file.name);
+                        }
+                    } catch (uploadError) {
+                        console.error('[Edit Media] Upload error:', uploadError);
+                    }
+                }
+            } finally {
+                this.editMediaUploading = false;
+                this.editMediaUploadProgress = 0;
+            }
+        },
+
+        /**
+         * Get media type icon
+         */
+        getEditMediaTypeIcon(media) {
+            if (media.type === 'video' || media.url?.match(/\.(mp4|mov|webm)$/i)) {
+                return 'M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z M21 12a9 9 0 11-18 0 9 9 0 0118 0z';
+            }
+            return 'M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z';
+        },
+
+        /**
+         * Check if media is a video
+         */
+        isEditMediaVideo(media) {
+            return media.type === 'video' || media.url?.match(/\.(mp4|mov|webm)$/i);
         },
 
         async editPost(post) {
