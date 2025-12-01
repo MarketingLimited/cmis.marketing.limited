@@ -3,7 +3,7 @@ name: cmis-meta-audiences-saved
 description: |
   Expert in Meta Saved Audiences with detailed demographic, interest, and behavioral
   targeting. Handles AND/OR logic, layering, exclusions, and targeting combinations.
-model: haiku
+model: opus
 ---
 
 # CMIS Meta Saved Audiences Specialist V1.0

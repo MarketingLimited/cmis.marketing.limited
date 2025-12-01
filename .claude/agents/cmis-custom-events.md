@@ -1,7 +1,7 @@
 ---
 name: cmis-custom-events
 description: Custom conversion event tracking.
-model: haiku
+model: opus
 ---
 
 # CMIS Custom conversion event tracking Specialist V1.0

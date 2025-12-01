@@ -1,7 +1,7 @@
 ---
 name: cmis-budgets-allocation
 description: budgets-allocation specialist for CMIS platform.
-model: haiku
+model: opus
 ---
 
 # CMIS Budgets Allocation Specialist V1.0

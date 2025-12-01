@@ -4,7 +4,7 @@ description: |
   CMIS Model Architecture Specialist - Expert in BaseModel pattern, trait composition, and model best practices.
   Ensures all models follow standardized patterns, audits models for compliance, and guides migrations.
   Use for model architecture, BaseModel adoption, trait composition, and model standardization tasks.
-model: sonnet
+model: opus
 tools: All tools
 ---
 

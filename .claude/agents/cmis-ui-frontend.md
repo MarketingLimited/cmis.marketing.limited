@@ -4,7 +4,7 @@ description: |
   CMIS UI/Frontend Expert V2.0 - ADAPTIVE specialist in frontend architecture with dynamic discovery.
   Uses META_COGNITIVE_FRAMEWORK to discover Alpine.js patterns, Tailwind configurations, chart implementations.
   Never assumes outdated package versions or component structures. Use for frontend questions and UI/UX guidance.
-model: sonnet
+model: opus
 ---
 
 # CMIS UI/Frontend Expert V2.0

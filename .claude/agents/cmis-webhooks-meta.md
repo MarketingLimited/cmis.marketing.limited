@@ -1,7 +1,7 @@
 ---
 name: cmis-webhooks-meta
 description: Meta webhook integration and signature verification.
-model: haiku
+model: opus
 ---
 
 # CMIS Meta Webhooks Specialist V1.0

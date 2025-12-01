@@ -1,7 +1,7 @@
 ---
 name: cmis-assets-library
 description: assets-library specialist for CMIS platform.
-model: haiku
+model: opus
 ---
 
 # CMIS Assets Library Specialist V1.0

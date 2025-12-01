@@ -3,7 +3,7 @@ name: cmis-meta-audiences-advantage-plus
 description: |
   Expert in Meta Advantage+ Audience (formerly Detailed Targeting Expansion).
   Handles automatic audience expansion, ML optimization, and performance-based targeting.
-model: haiku
+model: opus
 ---
 
 # CMIS Meta Advantage+ Audience Specialist V1.0

@@ -1,7 +1,7 @@
 ---
 name: cmis-snapchat-pixel
 description: Snapchat Pixel for conversion tracking.
-model: haiku
+model: opus
 ---
 
 # CMIS Snapchat Pixel Specialist V1.0

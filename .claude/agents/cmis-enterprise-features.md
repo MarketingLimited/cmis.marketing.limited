@@ -5,7 +5,7 @@ description: |
   alerts, advanced reporting, and production operations. Guides implementation of monitoring
   dashboards, alert rules, report scheduling, and enterprise-scale features. Use for
   monitoring, alerting, advanced reporting, and enterprise requirements.
-model: sonnet
+model: opus
 ---
 
 # CMIS Enterprise Features Expert V2.1

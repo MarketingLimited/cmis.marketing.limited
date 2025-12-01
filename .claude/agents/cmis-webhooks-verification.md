@@ -1,7 +1,7 @@
 ---
 name: cmis-webhooks-verification
 description: Generic webhook signature verification patterns.
-model: haiku
+model: opus
 ---
 
 # CMIS Webhook Verification Specialist V1.0

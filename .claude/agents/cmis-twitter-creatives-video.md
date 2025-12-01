@@ -1,7 +1,7 @@
 ---
 name: cmis-twitter-creatives-video
 description: Twitter video ads (in-stream pre-roll, promoted videos).
-model: haiku
+model: opus
 ---
 
 # CMIS Twitter Video Ads Specialist V1.0

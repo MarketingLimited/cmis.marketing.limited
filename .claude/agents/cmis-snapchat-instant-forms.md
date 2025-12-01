@@ -1,7 +1,7 @@
 ---
 name: cmis-snapchat-instant-forms
 description: Snapchat Instant Forms for lead generation.
-model: haiku
+model: opus
 ---
 
 # CMIS Snapchat Instant Forms Specialist V1.0

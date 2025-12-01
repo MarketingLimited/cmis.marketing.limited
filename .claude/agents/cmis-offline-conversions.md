@@ -1,7 +1,7 @@
 ---
 name: cmis-offline-conversions
 description: Offline conversion import and matching.
-model: haiku
+model: opus
 ---
 
 # CMIS Offline conversion import and matching Specialist V1.0

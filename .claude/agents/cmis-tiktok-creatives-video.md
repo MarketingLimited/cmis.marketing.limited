@@ -1,7 +1,7 @@
 ---
 name: cmis-tiktok-creatives-video
 description: TikTok video ad specs (9:16 vertical, 3-60s).
-model: haiku
+model: opus
 ---
 
 # CMIS TikTok Video Ads Specialist V1.0

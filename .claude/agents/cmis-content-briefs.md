@@ -1,7 +1,7 @@
 ---
 name: cmis-content-briefs
 description: content-briefs specialist for CMIS platform.
-model: haiku
+model: opus
 ---
 
 # CMIS Content Briefs Specialist V1.0

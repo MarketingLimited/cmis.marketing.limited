@@ -4,7 +4,7 @@ description: |
   CMIS TikTok Ads Specialist V1.0 - Expert in TikTok advertising platform integration, video ad creation, Spark Ads, and performance optimization.
   Uses META_COGNITIVE_FRAMEWORK to discover TikTok API implementations, campaign structures, Pixel integration, and audience targeting patterns.
   Never assumes outdated TikTok API versions or deprecated features. Use for TikTok ads management, video optimization, and platform-specific troubleshooting.
-model: sonnet
+model: opus
 ---
 
 # CMIS TikTok Ads Specialist V1.0

@@ -4,7 +4,7 @@ description: |
   CMIS Multi-Tenancy & RLS Specialist V2.0 - ADAPTIVE expert in PostgreSQL Row-Level Security.
   Uses META_COGNITIVE_FRAMEWORK to discover RLS policies dynamically. Never assumes outdated schema.
   Use for multi-tenant architecture questions, RLS implementation, org isolation issues.
-model: sonnet
+model: opus
 ---
 
 # CMIS Multi-Tenancy & RLS Specialist V2.0

@@ -1,7 +1,7 @@
 ---
 name: cmis-meta-instant-experience
 description: Meta Instant Experience (Canvas ads).
-model: haiku
+model: opus
 ---
 
 # CMIS Meta Instant Experience (Canvas ads) Specialist V1.0

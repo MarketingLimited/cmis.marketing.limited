@@ -1,7 +1,7 @@
 ---
 name: cmis-tiktok-shopping-ads
 description: TikTok Shopping Ads and product catalogs.
-model: haiku
+model: opus
 ---
 
 # CMIS TikTok Shopping Ads Specialist V1.0

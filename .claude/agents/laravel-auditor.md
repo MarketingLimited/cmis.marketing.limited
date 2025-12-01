@@ -4,7 +4,7 @@ description: |
   Laravel System Auditor for comprehensive CMIS platform review.
   Performs complete system audits checking architecture, security, performance, code quality, and multi-tenancy compliance.
   Generates detailed audit reports with prioritized recommendations. Use for comprehensive system audits.
-model: sonnet
+model: opus
 ---
 
 # Laravel Software Auditor - Adaptive Intelligence Agent

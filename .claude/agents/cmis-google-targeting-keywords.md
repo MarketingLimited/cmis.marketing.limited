@@ -1,7 +1,7 @@
 ---
 name: cmis-google-targeting-keywords
 description: Google Ads keyword targeting, match types, negative keywords.
-model: haiku
+model: opus
 ---
 
 # CMIS Google Keyword Targeting Specialist V1.0

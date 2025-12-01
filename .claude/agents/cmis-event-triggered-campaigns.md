@@ -1,7 +1,7 @@
 ---
 name: cmis-event-triggered-campaigns
 description: Event-triggered campaign automation (cart abandonment, browse abandonment, post-purchase).
-model: haiku
+model: opus
 ---
 
 # CMIS Event-Triggered Campaigns Specialist V1.0

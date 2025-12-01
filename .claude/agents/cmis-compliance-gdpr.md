@@ -1,7 +1,7 @@
 ---
 name: cmis-compliance-gdpr
 description: GDPR compliance for advertising data.
-model: haiku
+model: opus
 ---
 
 # CMIS GDPR compliance for advertising data Specialist V1.0

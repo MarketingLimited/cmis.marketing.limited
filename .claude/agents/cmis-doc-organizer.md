@@ -4,7 +4,7 @@ description: |
   CMIS Documentation Organization Specialist.
   Automatically organizes, consolidates, and maintains project documentation.
   Moves files to proper locations, archives old docs, creates indexes. Use for documentation maintenance and organization.
-model: sonnet
+model: opus
 tools: Read,Write,Edit,Glob,Grep,Bash
 ---
 

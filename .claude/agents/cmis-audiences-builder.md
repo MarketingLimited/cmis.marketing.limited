@@ -1,7 +1,7 @@
 ---
 name: cmis-audiences-builder
 description: audiences-builder specialist for CMIS platform.
-model: haiku
+model: opus
 ---
 
 # CMIS Audiences Builder Specialist V1.0

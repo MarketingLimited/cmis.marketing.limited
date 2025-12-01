@@ -1,7 +1,7 @@
 ---
 name: cmis-video-engagement-optimization
 description: Video creative optimization (hook timing, retention curves, completion rates).
-model: haiku
+model: opus
 ---
 
 # CMIS Video Engagement Optimization Specialist V1.0

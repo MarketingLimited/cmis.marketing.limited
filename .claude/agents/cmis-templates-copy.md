@@ -1,7 +1,7 @@
 ---
 name: cmis-templates-copy
 description: templates-copy specialist for CMIS platform.
-model: haiku
+model: opus
 ---
 
 # CMIS Templates Copy Specialist V1.0

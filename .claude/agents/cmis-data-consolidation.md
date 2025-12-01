@@ -4,7 +4,7 @@ description: |
   CMIS Data Consolidation Specialist - Expert in eliminating duplicate data structures and tables.
   Identifies duplicate schemas, guides table consolidation via polymorphic patterns, and prevents future duplication.
   Use for data duplication audits, table consolidation, unified table design, and schema optimization.
-model: sonnet
+model: opus
 tools: All tools
 ---
 

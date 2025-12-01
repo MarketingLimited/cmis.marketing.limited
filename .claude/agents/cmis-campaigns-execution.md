@@ -1,7 +1,7 @@
 ---
 name: cmis-campaigns-execution
 description: campaigns-execution specialist for CMIS platform.
-model: haiku
+model: opus
 ---
 
 # CMIS Campaigns Execution Specialist V1.0

@@ -1,7 +1,7 @@
 ---
 name: cmis-audience-insights-affinity-analysis
 description: Brand affinity and category preferences.
-model: haiku
+model: opus
 ---
 
 # CMIS Brand affinity and category preferences Specialist V1.0

@@ -1,7 +1,7 @@
 ---
 name: cmis-notifications-alerts
 description: Real-time notification and alerting system.
-model: haiku
+model: opus
 ---
 
 # CMIS Real-time notification and alerting system Specialist V1.0

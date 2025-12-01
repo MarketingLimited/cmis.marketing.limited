@@ -1,7 +1,7 @@
 ---
 name: cmis-cross-device-tracking
 description: Cross-device user journey tracking.
-model: haiku
+model: opus
 ---
 
 # CMIS Cross-device user journey tracking Specialist V1.0

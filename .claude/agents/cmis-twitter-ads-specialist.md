@@ -4,7 +4,7 @@ description: |
   CMIS Twitter/X Ads Specialist V1.0 - Expert in X Ads API (formerly Twitter Ads), campaign setup, audience targeting, and real-time monitoring.
   Uses META_COGNITIVE_FRAMEWORK to discover X Ads implementation, connector architecture, and platform-specific patterns.
   Never assumes outdated X Ads API versions or deprecated features. Use for Twitter/X advertising, Promoted Tweets/Accounts/Trends, pixel tracking, audience management, and troubleshooting.
-model: sonnet
+model: opus
 ---
 
 # CMIS Twitter/X Ads Specialist V1.0

@@ -1,7 +1,7 @@
 ---
 name: cmis-portfolio-optimization
 description: Multi-campaign portfolio optimization.
-model: haiku
+model: opus
 ---
 
 # CMIS Multi-campaign portfolio optimization Specialist V1.0

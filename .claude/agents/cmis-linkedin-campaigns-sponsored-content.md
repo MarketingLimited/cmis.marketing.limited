@@ -1,7 +1,7 @@
 ---
 name: cmis-linkedin-campaigns-sponsored-content
 description: LinkedIn Sponsored Content (single image, video, carousel, document).
-model: haiku
+model: opus
 ---
 
 # CMIS LinkedIn Sponsored Content Specialist V1.0

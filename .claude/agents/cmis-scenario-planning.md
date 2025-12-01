@@ -1,7 +1,7 @@
 ---
 name: cmis-scenario-planning
 description: Campaign scenario planning and simulation.
-model: haiku
+model: opus
 ---
 
 # CMIS Campaign scenario planning and simulation Specialist V1.0

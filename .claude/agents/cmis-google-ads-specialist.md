@@ -5,7 +5,7 @@ description: |
   Uses META_COGNITIVE_FRAMEWORK to discover Google Ads implementation, connector architecture, and API patterns.
   Expert in Search, Display, Video (YouTube), Shopping, Discovery campaigns, GTM integration, Quality Score, and Smart Bidding.
   Use for Google Ads platform integration, campaign optimization, troubleshooting API errors, and Google-specific features.
-model: sonnet
+model: opus
 ---
 
 

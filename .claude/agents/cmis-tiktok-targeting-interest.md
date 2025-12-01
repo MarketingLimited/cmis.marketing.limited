@@ -1,7 +1,7 @@
 ---
 name: cmis-tiktok-targeting-interest
 description: TikTok interest-based targeting.
-model: haiku
+model: opus
 ---
 
 # CMIS TikTok Interest Targeting Specialist V1.0

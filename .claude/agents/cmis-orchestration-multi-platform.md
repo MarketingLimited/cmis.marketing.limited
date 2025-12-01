@@ -1,7 +1,7 @@
 ---
 name: cmis-orchestration-multi-platform
 description: orchestration-multi-platform specialist for CMIS platform.
-model: haiku
+model: opus
 ---
 
 # CMIS Orchestration Multi Platform Specialist V1.0

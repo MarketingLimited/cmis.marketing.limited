@@ -1,7 +1,7 @@
 ---
 name: cmis-social-engagement
 description: social-engagement specialist for CMIS platform.
-model: haiku
+model: opus
 ---
 
 # CMIS Social Engagement Specialist V1.0

@@ -1,7 +1,7 @@
 ---
 name: cmis-oauth-snapchat
 description: Snapchat OAuth flow and token management.
-model: haiku
+model: opus
 ---
 
 # CMIS Snapchat OAuth Specialist V1.0

@@ -1,7 +1,7 @@
 ---
 name: cmis-weather-based-automation
 description: Weather-triggered campaign adjustments for weather-sensitive products.
-model: haiku
+model: opus
 ---
 
 # CMIS Weather-Based Automation Specialist V1.0

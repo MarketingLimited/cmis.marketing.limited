@@ -1,7 +1,7 @@
 ---
 name: cmis-meta-stories-ads
 description: Meta Stories Ads optimization.
-model: haiku
+model: opus
 ---
 
 # CMIS Meta Stories Ads optimization Specialist V1.0

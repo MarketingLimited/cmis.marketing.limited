@@ -1,7 +1,7 @@
 ---
 name: cmis-budget-pacing
 description: Dynamic budget pacing automation to ensure even spend throughout campaign duration.
-model: haiku
+model: opus
 ---
 
 # CMIS Budget Pacing Specialist V1.0

@@ -1,7 +1,7 @@
 ---
 name: cmis-google-bidding-troas
 description: Google Target ROAS (Return on Ad Spend) bidding strategy.
-model: haiku
+model: opus
 ---
 
 # CMIS Google Target ROAS Bidding Specialist V1.0

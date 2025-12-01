@@ -1,7 +1,7 @@
 ---
 name: cmis-google-app-campaigns
 description: Google App Campaigns (UAC).
-model: haiku
+model: opus
 ---
 
 # CMIS Google App Campaigns (UAC) Specialist V1.0

@@ -1,7 +1,7 @@
 ---
 name: cmis-automated-insights
 description: Automated performance insights generation.
-model: haiku
+model: opus
 ---
 
 # CMIS Automated performance insights generation Specialist V1.0

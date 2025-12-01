@@ -5,7 +5,7 @@ description: |
   Uses META_COGNITIVE_FRAMEWORK to discover Snapchat API implementations, campaign patterns, ad formats, and audience management.
   Expert in Snap Ads, Story Ads, Collection Ads, AR Lenses, Filters, Snap Pixel conversion tracking, Instant Forms lead generation, and vertical video optimization.
   Use for Snapchat advertising platform integration, campaign setup, creative optimization, troubleshooting API errors, and Gen Z targeting strategies.
-model: sonnet
+model: opus
 ---
 
 

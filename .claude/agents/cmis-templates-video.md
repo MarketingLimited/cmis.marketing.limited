@@ -1,7 +1,7 @@
 ---
 name: cmis-templates-video
 description: templates-video specialist for CMIS platform.
-model: haiku
+model: opus
 ---
 
 # CMIS Templates Video Specialist V1.0

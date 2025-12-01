@@ -1,7 +1,7 @@
 ---
 name: cmis-campaigns-optimization
 description: campaigns-optimization specialist for CMIS platform.
-model: haiku
+model: opus
 ---
 
 # CMIS Campaigns Optimization Specialist V1.0

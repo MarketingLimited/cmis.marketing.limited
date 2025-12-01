@@ -5,7 +5,7 @@ description: |
   campaigns, drip campaigns, and marketing automation rules. Guides implementation of complex
   workflows, state machines, job scheduling, and multi-platform orchestration. Use for
   automation features, workflow design, and campaign orchestration.
-model: sonnet
+model: opus
 ---
 
 # CMIS Marketing Automation Expert V2.1

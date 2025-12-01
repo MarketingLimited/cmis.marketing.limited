@@ -4,7 +4,7 @@ description: |
   Expert in Meta (Facebook/Instagram) Lookalike Audiences creation, optimization,
   and expansion strategies. Handles source audience selection, similarity algorithms,
   size optimization, and multi-country targeting.
-model: haiku
+model: opus
 ---
 
 # CMIS Meta Lookalike Audiences Specialist V1.0

@@ -1,7 +1,7 @@
 ---
 name: cmis-audiences-enrichment-ai
 description: audiences-enrichment-ai specialist for CMIS platform.
-model: haiku
+model: opus
 ---
 
 # CMIS Audiences Enrichment Ai Specialist V1.0

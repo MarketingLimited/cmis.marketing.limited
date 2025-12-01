@@ -2,7 +2,7 @@
 name: cmis-meta-creatives-carousel
 description: |
   Expert in Meta carousel ads: multi-image/video cards with swipeable format.
-model: haiku
+model: opus
 ---
 
 # CMIS Meta Carousel Ads Specialist V1.0

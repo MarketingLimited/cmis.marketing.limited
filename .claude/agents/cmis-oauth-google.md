@@ -1,7 +1,7 @@
 ---
 name: cmis-oauth-google
 description: Google OAuth flow and token management.
-model: haiku
+model: opus
 ---
 
 # CMIS Google OAuth Specialist V1.0

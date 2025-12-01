@@ -2,7 +2,7 @@
 name: cmis-meta-creatives-dynamic
 description: |
   Expert in Meta Dynamic Creative Testing (DCT): automatic asset combination testing.
-model: haiku
+model: opus
 ---
 
 # CMIS Meta Dynamic Creative Specialist V1.0

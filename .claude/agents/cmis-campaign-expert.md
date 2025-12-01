@@ -4,7 +4,7 @@ description: |
   CMIS Campaign Management Expert V2.0 - ADAPTIVE specialist in campaign lifecycle with dynamic discovery.
   Uses META_COGNITIVE_FRAMEWORK to explore campaign architecture, EAV patterns, budget tracking, A/B testing.
   Never assumes outdated campaign structures. Use for campaign domain questions and implementation guidance.
-model: sonnet
+model: opus
 ---
 
 # CMIS Campaign Management Expert V2.0

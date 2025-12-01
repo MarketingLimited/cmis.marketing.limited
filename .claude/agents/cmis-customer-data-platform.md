@@ -1,7 +1,7 @@
 ---
 name: cmis-customer-data-platform
 description: CDP integration patterns.
-model: haiku
+model: opus
 ---
 
 # CMIS CDP integration patterns Specialist V1.0

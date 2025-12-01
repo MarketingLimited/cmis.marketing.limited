@@ -6,7 +6,7 @@ description: |
   of ML-based predictions, ARIMA/Prophet models, anomaly detection, campaign performance forecasting,
   and automated optimization recommendations. Use for ML features, predictive analytics, forecasting
   systems, and data-driven decision intelligence.
-model: sonnet
+model: opus
 tools: All tools
 ---
 

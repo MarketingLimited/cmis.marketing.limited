@@ -1,7 +1,7 @@
 ---
 name: cmis-attribution-linear
 description: attribution-linear specialist for CMIS platform.
-model: haiku
+model: opus
 ---
 
 # CMIS Attribution Linear Specialist V1.0

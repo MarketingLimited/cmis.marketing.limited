@@ -5,7 +5,7 @@ description: |
   Laravel policies, and authorization flows. Guides implementation of permission systems, policy
   design, permission caching, and multi-tenant authorization. Use for RBAC features, policy
   implementation, and authorization debugging.
-model: sonnet
+model: opus
 ---
 
 # CMIS RBAC & Authorization Specialist V2.1

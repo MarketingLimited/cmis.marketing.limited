@@ -1,7 +1,7 @@
 ---
 name: cmis-churn-prediction
 description: Customer churn prediction using behavioral signals and ML models.
-model: haiku
+model: opus
 ---
 
 # CMIS Churn Prediction Specialist V1.0

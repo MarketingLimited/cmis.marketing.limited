@@ -1,7 +1,7 @@
 ---
 name: cmis-tiktok-campaigns-spark
 description: TikTok Spark Ads (boosting organic content).
-model: haiku
+model: opus
 ---
 
 # CMIS TikTok Spark Ads Specialist V1.0

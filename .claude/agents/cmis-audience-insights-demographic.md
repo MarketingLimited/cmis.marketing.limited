@@ -1,7 +1,7 @@
 ---
 name: cmis-audience-insights-demographic
 description: Demographic audience insights (age, gender, location, income).
-model: haiku
+model: opus
 ---
 
 # CMIS Demographic Audience Insights V1.0

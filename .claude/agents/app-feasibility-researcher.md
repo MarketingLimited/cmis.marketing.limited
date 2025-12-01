@@ -5,7 +5,7 @@ description: |
   NEW IDEAS: Logic, viability, usability, completability, market research, alternatives.
   EXISTING APPS: Find weakness points, logical issues, implementation problems, completability gaps.
   Use for evaluating new ideas OR auditing existing apps/features for problems and improvement areas.
-model: sonnet
+model: opus
 tools: WebSearch, WebFetch, Read, Glob, Grep, Write, Bash
 ---
 

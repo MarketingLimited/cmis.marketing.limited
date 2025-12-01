@@ -1,7 +1,7 @@
 ---
 name: cmis-linkedin-insight-tag
 description: LinkedIn Insight Tag for conversion tracking and retargeting.
-model: haiku
+model: opus
 ---
 
 # CMIS LinkedIn Insight Tag Specialist V1.0

@@ -1,7 +1,7 @@
 ---
 name: cmis-sync-platform
 description: Platform data synchronization and conflict resolution.
-model: haiku
+model: opus
 ---
 
 # CMIS Platform Sync Specialist V1.0

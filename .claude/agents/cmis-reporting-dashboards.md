@@ -1,7 +1,7 @@
 ---
 name: cmis-reporting-dashboards
 description: Custom dashboard and reporting builder.
-model: haiku
+model: opus
 ---
 
 # CMIS Custom dashboard and reporting builder Specialist V1.0

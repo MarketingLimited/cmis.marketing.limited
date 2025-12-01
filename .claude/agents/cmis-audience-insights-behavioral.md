@@ -1,7 +1,7 @@
 ---
 name: cmis-audience-insights-behavioral
 description: Behavioral audience insights (purchase patterns, browsing behavior).
-model: haiku
+model: opus
 ---
 
 # CMIS Behavioral Audience Insights V1.0

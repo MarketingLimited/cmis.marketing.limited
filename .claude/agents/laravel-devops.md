@@ -4,7 +4,7 @@ description: |
   Laravel DevOps & Deployment Expert for CMIS infrastructure.
   Handles CI/CD, server configuration, database deployment, monitoring setup.
   Understands PostgreSQL + pgvector deployment requirements. Use for deployment and infrastructure tasks.
-model: sonnet
+model: opus
 ---
 
 # Laravel DevOps & CI/CD - Adaptive Intelligence Agent

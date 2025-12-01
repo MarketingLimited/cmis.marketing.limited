@@ -1,7 +1,7 @@
 ---
 name: cmis-social-library
 description: social-library specialist for CMIS platform.
-model: haiku
+model: opus
 ---
 
 # CMIS Social Library Specialist V1.0

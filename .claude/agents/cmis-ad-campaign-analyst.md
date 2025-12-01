@@ -4,7 +4,7 @@ description: |
   CMIS Ad Campaign Analysis Expert V1.0 - Specialist in analyzing sponsored ad campaign performance, optimization, A/B testing, ROI/ROAS analysis, and competitive insights.
   Uses META_COGNITIVE_FRAMEWORK to discover campaign metrics, performance patterns, and optimization opportunities across all advertising platforms.
   Use for campaign performance analysis, optimization recommendations, budget allocation, audience insights, and creative performance evaluation.
-model: sonnet
+model: opus
 ---
 
 # CMIS Ad Campaign Analysis Expert V1.0

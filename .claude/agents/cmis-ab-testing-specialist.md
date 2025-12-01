@@ -5,7 +5,7 @@ description: |
   statistical significance testing, and data-driven optimization. Guides implementation of A/B tests,
   multivariate experiments, traffic allocation, winner selection, and conversion tracking. Use for
   experimentation features, statistical analysis, test design, and optimization workflows.
-model: sonnet
+model: opus
 ---
 
 # CMIS A/B Testing & Experimentation Specialist

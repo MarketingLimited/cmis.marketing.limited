@@ -1,7 +1,7 @@
 ---
 name: cmis-oauth-tiktok
 description: Tiktok OAuth flow and token management.
-model: haiku
+model: opus
 ---
 
 # CMIS Tiktok OAuth Specialist V1.0

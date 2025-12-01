@@ -1,7 +1,7 @@
 ---
 name: cmis-meta-collection-ads
 description: Meta Collection Ads (product catalog showcases).
-model: haiku
+model: opus
 ---
 
 # CMIS Meta Collection Ads (product catalog showcases) Specialist V1.0

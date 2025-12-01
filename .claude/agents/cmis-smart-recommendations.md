@@ -1,7 +1,7 @@
 ---
 name: cmis-smart-recommendations
 description: AI-powered campaign recommendations.
-model: haiku
+model: opus
 ---
 
 # CMIS AI-powered campaign recommendations Specialist V1.0

@@ -1,7 +1,7 @@
 ---
 name: cmis-attribution-multi-touch
 description: Multi-touch attribution modeling (linear, time-decay, U-shaped, W-shaped, data-driven).
-model: haiku
+model: opus
 ---
 
 # CMIS Multi-Touch Attribution Specialist V1.0

@@ -1,7 +1,7 @@
 ---
 name: cmis-campaigns-planning
 description: campaigns-planning specialist for CMIS platform.
-model: haiku
+model: opus
 ---
 
 # CMIS Campaigns Planning Specialist V1.0

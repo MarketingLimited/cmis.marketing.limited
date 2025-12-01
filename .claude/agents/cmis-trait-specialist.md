@@ -5,7 +5,7 @@ description: |
   Guides HasOrganization, ApiResponse, HasRLSPolicies, and BaseModel patterns.
   Prevents duplicate code, enforces trait-based architecture, and migrates legacy code.
   Use when working with traits, standardizing models/controllers, or eliminating duplication.
-model: haiku
+model: opus
 ---
 
 # CMIS Trait Management Specialist

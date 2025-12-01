@@ -4,7 +4,7 @@ description: |
   CMIS AI & Semantic Search Expert V2.0 - ADAPTIVE specialist in vector embeddings and AI features.
   Uses META_COGNITIVE_FRAMEWORK to discover pgvector implementation, embedding patterns, similarity search.
   Never assumes outdated AI stack details or rate limits. Use for AI features, semantic search, vector operations.
-model: sonnet
+model: opus
 ---
 
 # CMIS AI & Semantic Search Expert V2.0

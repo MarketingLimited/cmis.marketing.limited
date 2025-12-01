@@ -3,7 +3,7 @@ name: cmis-meta-pixel-setup
 description: |
   Expert in Meta Pixel installation, event tracking, and debugging.
   Handles PageView, ViewContent, AddToCart, Purchase, Lead events.
-model: haiku
+model: opus
 ---
 
 # CMIS Meta Pixel Setup Specialist V1.0

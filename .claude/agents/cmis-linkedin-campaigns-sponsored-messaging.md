@@ -1,7 +1,7 @@
 ---
 name: cmis-linkedin-campaigns-sponsored-messaging
 description: LinkedIn Sponsored Messaging (Message Ads, Conversation Ads).
-model: haiku
+model: opus
 ---
 
 # CMIS LinkedIn Sponsored Messaging Specialist V1.0

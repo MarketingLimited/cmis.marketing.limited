@@ -1,7 +1,7 @@
 ---
 name: cmis-google-conversion-tracking
 description: Google Ads conversion tracking with Google Tag.
-model: haiku
+model: opus
 ---
 
 # CMIS Google Conversion Tracking Specialist V1.0

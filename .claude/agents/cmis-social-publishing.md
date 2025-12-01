@@ -1,7 +1,7 @@
 ---
 name: cmis-social-publishing
 description: social-publishing specialist for CMIS platform.
-model: haiku
+model: opus
 ---
 
 # CMIS Social Publishing Specialist V1.0

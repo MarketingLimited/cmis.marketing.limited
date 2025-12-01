@@ -1,7 +1,7 @@
 ---
 name: cmis-twitter-targeting-conversation
 description: Twitter Conversation Targeting (topic-based).
-model: haiku
+model: opus
 ---
 
 # CMIS Twitter Conversation Targeting Specialist V1.0

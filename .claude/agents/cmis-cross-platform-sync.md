@@ -1,7 +1,7 @@
 ---
 name: cmis-cross-platform-sync
 description: Cross-platform campaign synchronization (unified budget, audience sync, creative mirroring).
-model: haiku
+model: opus
 ---
 
 # CMIS Cross-Platform Synchronization Specialist V1.0

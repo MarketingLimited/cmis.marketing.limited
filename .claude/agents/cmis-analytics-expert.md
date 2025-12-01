@@ -5,7 +5,7 @@ description: |
   predictive analytics, and enterprise reporting. Guides implementation of 6 attribution models,
   forecasting algorithms, KPI monitoring, and performance optimization. Use for analytics features,
   reporting systems, data visualization, and statistical analysis.
-model: sonnet
+model: opus
 ---
 
 # CMIS Analytics & Reporting Expert V2.1

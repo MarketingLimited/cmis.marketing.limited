@@ -1,7 +1,7 @@
 ---
 name: cmis-tagging-taxonomy
 description: Campaign tagging and taxonomy management.
-model: haiku
+model: opus
 ---
 
 # CMIS Campaign tagging and taxonomy management Specialist V1.0

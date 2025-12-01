@@ -1,7 +1,7 @@
 ---
 name: cmis-inventory-automation
 description: Inventory-based campaign automation (pause out-of-stock, boost high-inventory products).
-model: haiku
+model: opus
 ---
 
 # CMIS Inventory Automation Specialist V1.0

@@ -1,7 +1,7 @@
 ---
 name: cmis-audience-insights-intent-signals
 description: Purchase intent signal detection.
-model: haiku
+model: opus
 ---
 
 # CMIS Purchase intent signal detection Specialist V1.0

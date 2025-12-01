@@ -1,7 +1,7 @@
 ---
 name: cmis-audience-insights-psychographic
 description: Psychographic insights (interests, values, lifestyle).
-model: haiku
+model: opus
 ---
 
 # CMIS Psychographic insights (interests, values, lifestyle) Specialist V1.0

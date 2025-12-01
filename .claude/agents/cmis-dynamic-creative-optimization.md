@@ -1,7 +1,7 @@
 ---
 name: cmis-dynamic-creative-optimization
 description: Dynamic Creative Optimization (DCO) - automatic creative assembly and personalization.
-model: haiku
+model: opus
 ---
 
 # CMIS Dynamic Creative Optimization Specialist V1.0

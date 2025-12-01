@@ -1,7 +1,7 @@
 ---
 name: cmis-export-import
 description: Campaign import/export functionality.
-model: haiku
+model: opus
 ---
 
 # CMIS Campaign import/export functionality Specialist V1.0

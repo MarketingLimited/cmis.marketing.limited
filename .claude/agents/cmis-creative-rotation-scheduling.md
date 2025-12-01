@@ -1,7 +1,7 @@
 ---
 name: cmis-creative-rotation-scheduling
 description: Automated creative rotation and scheduling to prevent fatigue.
-model: haiku
+model: opus
 ---
 
 # CMIS Creative Rotation Scheduling Specialist V1.0

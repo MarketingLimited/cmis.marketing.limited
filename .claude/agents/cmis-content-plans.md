@@ -1,7 +1,7 @@
 ---
 name: cmis-content-plans
 description: content-plans specialist for CMIS platform.
-model: haiku
+model: opus
 ---
 
 # CMIS Content Plans Specialist V1.0

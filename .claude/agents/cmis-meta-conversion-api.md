@@ -3,7 +3,7 @@ name: cmis-meta-conversion-api
 description: |
   Expert in Meta Conversion API (CAPI) for server-side event tracking.
   Handles iOS 14.5+ privacy, event deduplication, data enrichment.
-model: haiku
+model: opus
 ---
 
 # CMIS Meta Conversion API Specialist V1.0

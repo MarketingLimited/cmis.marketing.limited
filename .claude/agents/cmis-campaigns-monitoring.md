@@ -1,7 +1,7 @@
 ---
 name: cmis-campaigns-monitoring
 description: campaigns-monitoring specialist for CMIS platform.
-model: haiku
+model: opus
 ---
 
 # CMIS Campaigns Monitoring Specialist V1.0

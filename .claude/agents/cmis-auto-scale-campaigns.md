@@ -1,7 +1,7 @@
 ---
 name: cmis-auto-scale-campaigns
 description: Automatically scale high-performing campaigns by increasing budgets and bids.
-model: haiku
+model: opus
 ---
 
 # CMIS Auto-Scale Campaigns Specialist V1.0

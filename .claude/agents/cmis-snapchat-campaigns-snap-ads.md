@@ -1,7 +1,7 @@
 ---
 name: cmis-snapchat-campaigns-snap-ads
 description: Snapchat Snap Ads (full-screen vertical video with swipe-up).
-model: haiku
+model: opus
 ---
 
 # CMIS Snapchat Snap Ads Specialist V1.0

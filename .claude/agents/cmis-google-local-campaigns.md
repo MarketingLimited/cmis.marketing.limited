@@ -1,7 +1,7 @@
 ---
 name: cmis-google-local-campaigns
 description: Google Local Campaigns (store visits).
-model: haiku
+model: opus
 ---
 
 # CMIS Google Local Campaigns (store visits) Specialist V1.0

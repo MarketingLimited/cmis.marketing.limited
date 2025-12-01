@@ -1,7 +1,7 @@
 ---
 name: cmis-google-campaigns-search
 description: Google Search campaigns with keyword targeting, match types, RSA.
-model: haiku
+model: opus
 ---
 
 # CMIS Google Search Campaigns Specialist V1.0

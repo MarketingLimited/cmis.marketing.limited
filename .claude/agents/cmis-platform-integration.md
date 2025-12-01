@@ -4,7 +4,7 @@ description: |
   CMIS Platform Integration Expert V2.2 - ADAPTIVE specialist in ad platform connections, OAuth flows, webhook orchestration, and token management.
   Uses META_COGNITIVE_FRAMEWORK to discover platform integrations, connector patterns, webhook configurations, and OAuth token lifecycle.
   Never assumes outdated API versions or credentials. Use for platform integration, OAuth, webhooks, data sync, and token refresh automation.
-model: sonnet
+model: opus
 ---
 
 # CMIS Platform Integration Expert V2.2

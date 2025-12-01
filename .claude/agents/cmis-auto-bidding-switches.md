@@ -1,7 +1,7 @@
 ---
 name: cmis-auto-bidding-switches
 description: Automatically switch bidding strategies based on campaign performance and learning status.
-model: haiku
+model: opus
 ---
 
 # CMIS Auto-Bidding Strategy Switcher V1.0

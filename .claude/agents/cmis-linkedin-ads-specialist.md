@@ -5,7 +5,7 @@ description: |
   Uses META_COGNITIVE_FRAMEWORK to discover LinkedIn Campaign Manager API implementations, Lead Gen Forms, audience targeting, and conversion tracking patterns.
   Expert in Sponsored Content, Sponsored Messaging, Text Ads, Dynamic Ads, audience segmentation, B2B targeting, and lead generation strategies.
   Use for LinkedIn advertising campaigns, Lead Gen Forms, audience management, conversion tracking, and B2B marketing optimization.
-model: sonnet
+model: opus
 ---
 
 

@@ -1,7 +1,7 @@
 ---
 name: cmis-marketing-mix-modeling
 description: Marketing Mix Modeling (MMM) for budget allocation and channel effectiveness.
-model: haiku
+model: opus
 ---
 
 # CMIS Marketing Mix Modeling Specialist V1.0

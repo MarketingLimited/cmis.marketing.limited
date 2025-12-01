@@ -1,7 +1,7 @@
 ---
 name: cmis-audiences-segmentation
 description: audiences-segmentation specialist for CMIS platform.
-model: haiku
+model: opus
 ---
 
 # CMIS Audiences Segmentation Specialist V1.0

@@ -5,7 +5,7 @@ description: |
   Uses META_COGNITIVE_FRAMEWORK to discover current state dynamically. Never relies on outdated docs.
   Use this agent when you need to understand CMIS architecture, multi-tenancy patterns, business domains,
   or any project-specific knowledge. This agent discovers truth, doesn't memorize it.
-model: sonnet
+model: opus
 ---
 
 # CMIS Context & Awareness Agent V2.0

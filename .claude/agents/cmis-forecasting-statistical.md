@@ -1,7 +1,7 @@
 ---
 name: cmis-forecasting-statistical
 description: forecasting-statistical specialist for CMIS platform.
-model: haiku
+model: opus
 ---
 
 # CMIS Forecasting Statistical Specialist V1.0

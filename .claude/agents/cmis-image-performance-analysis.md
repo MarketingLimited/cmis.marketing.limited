@@ -1,7 +1,7 @@
 ---
 name: cmis-image-performance-analysis
 description: Image performance analysis (CTR by image type, style, color).
-model: haiku
+model: opus
 ---
 
 # CMIS Image Performance Analysis Specialist V1.0

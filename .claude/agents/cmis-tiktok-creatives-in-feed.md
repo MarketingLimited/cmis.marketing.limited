@@ -1,7 +1,7 @@
 ---
 name: cmis-tiktok-creatives-in-feed
 description: TikTok In-Feed Ads (native feed integration).
-model: haiku
+model: opus
 ---
 
 # CMIS TikTok In-Feed Ads Specialist V1.0

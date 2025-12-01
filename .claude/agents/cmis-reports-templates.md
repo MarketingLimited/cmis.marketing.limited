@@ -1,7 +1,7 @@
 ---
 name: cmis-reports-templates
 description: reports-templates specialist for CMIS platform.
-model: haiku
+model: opus
 ---
 
 # CMIS Reports Templates Specialist V1.0

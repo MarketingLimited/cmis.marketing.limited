@@ -1,7 +1,7 @@
 ---
 name: cmis-experiments-significance
 description: experiments-significance specialist for CMIS platform.
-model: haiku
+model: opus
 ---
 
 # CMIS Experiments Significance Specialist V1.0

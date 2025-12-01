@@ -5,7 +5,7 @@ description: |
   management, template systems, and approval workflows. Guides implementation of content
   calendars, asset libraries, version control, and multi-step approval processes. Use for
   content features, asset management, and workflow approvals.
-model: sonnet
+model: opus
 ---
 
 # CMIS Content Management Expert V2.1

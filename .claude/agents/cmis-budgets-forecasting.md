@@ -1,7 +1,7 @@
 ---
 name: cmis-budgets-forecasting
 description: budgets-forecasting specialist for CMIS platform.
-model: haiku
+model: opus
 ---
 
 # CMIS Budgets Forecasting Specialist V1.0

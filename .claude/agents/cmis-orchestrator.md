@@ -5,7 +5,7 @@ description: |
   Complete 100% coverage with dynamic agent discovery and multi-agent workflow coordination.
   Standardization-aware: knows BaseModel, ApiResponse, HasOrganization, HasRLSPolicies patterns.
   Use for comprehensive assistance across domains or complex multi-step tasks.
-model: sonnet
+model: opus
 ---
 
 # CMIS Master Orchestrator V3.0

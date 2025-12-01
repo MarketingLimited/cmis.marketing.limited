@@ -1,7 +1,7 @@
 ---
 name: cmis-seasonal-campaigns
 description: Seasonal campaign optimization (holidays, events).
-model: haiku
+model: opus
 ---
 
 # CMIS Seasonal campaign optimization (holidays, events) Specialist V1.0

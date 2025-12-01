@@ -1,7 +1,7 @@
 ---
 name: cmis-creative-optimization
 description: creative-optimization specialist for CMIS platform.
-model: haiku
+model: opus
 ---
 
 # CMIS Creative Optimization Specialist V1.0

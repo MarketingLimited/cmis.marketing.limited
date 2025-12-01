@@ -1,7 +1,7 @@
 ---
 name: cmis-snapchat-creatives-video
 description: Snapchat video ad specifications (9:16 vertical).
-model: haiku
+model: opus
 ---
 
 # CMIS Snapchat Video Ads Specialist V1.0

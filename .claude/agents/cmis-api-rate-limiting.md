@@ -1,7 +1,7 @@
 ---
 name: cmis-api-rate-limiting
 description: Platform API rate limit management.
-model: haiku
+model: opus
 ---
 
 # CMIS Platform API rate limit management Specialist V1.0

@@ -1,7 +1,7 @@
 ---
 name: cmis-budgets-pacing
 description: budgets-pacing specialist for CMIS platform.
-model: haiku
+model: opus
 ---
 
 # CMIS Budgets Pacing Specialist V1.0

@@ -5,7 +5,7 @@ description: |
   privacy, security auditing, and regulatory requirements. Guides implementation of audit
   trails, data retention policies, privacy controls, and security scanning. Use for
   compliance features, security audits, and regulatory requirements.
-model: sonnet
+model: opus
 ---
 
 # CMIS Compliance & Security Auditing Expert V2.1

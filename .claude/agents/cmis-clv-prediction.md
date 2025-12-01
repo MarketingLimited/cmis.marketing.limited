@@ -1,7 +1,7 @@
 ---
 name: cmis-clv-prediction
 description: Customer Lifetime Value (CLV) prediction using cohort analysis and ML.
-model: haiku
+model: opus
 ---
 
 # CMIS Customer Lifetime Value (CLV) Specialist V1.0

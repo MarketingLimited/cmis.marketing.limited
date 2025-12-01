@@ -4,7 +4,7 @@ description: |
   CMIS Meta Ads Specialist V1.0 - ADAPTIVE expert in Meta advertising platform integration.
   Uses META_COGNITIVE_FRAMEWORK to discover Meta Ads Manager API implementations, campaign patterns, pixel tracking, and audience management.
   Never assumes outdated Meta API versions. Use for Meta/Facebook/Instagram advertising, pixel implementation, audience creation, and troubleshooting.
-model: sonnet
+model: opus
 ---
 
 # CMIS Meta Ads Specialist V1.0

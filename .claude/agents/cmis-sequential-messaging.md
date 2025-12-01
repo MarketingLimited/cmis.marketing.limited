@@ -1,7 +1,7 @@
 ---
 name: cmis-sequential-messaging
 description: Sequential messaging automation (multi-stage nurture campaigns, story-based ads).
-model: haiku
+model: opus
 ---
 
 # CMIS Sequential Messaging Specialist V1.0

@@ -1,7 +1,7 @@
 ---
 name: cmis-data-warehouse-sync
 description: Data warehouse synchronization.
-model: haiku
+model: opus
 ---
 
 # CMIS Data warehouse synchronization Specialist V1.0

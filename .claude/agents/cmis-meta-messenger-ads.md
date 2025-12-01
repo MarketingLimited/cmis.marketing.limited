@@ -1,7 +1,7 @@
 ---
 name: cmis-meta-messenger-ads
 description: Meta Messenger Ads and chatbot integration.
-model: haiku
+model: opus
 ---
 
 # CMIS Meta Messenger Ads and chatbot integration Specialist V1.0

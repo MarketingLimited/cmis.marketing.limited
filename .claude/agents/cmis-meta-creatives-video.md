@@ -2,7 +2,7 @@
 name: cmis-meta-creatives-video
 description: |
   Expert in Meta video ad creation: Feed, Stories, Reels formats and specs.
-model: haiku
+model: opus
 ---
 
 # CMIS Meta Video Ads Specialist V1.0

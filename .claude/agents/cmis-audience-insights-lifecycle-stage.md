@@ -1,7 +1,7 @@
 ---
 name: cmis-audience-insights-lifecycle-stage
 description: Customer lifecycle stage identification.
-model: haiku
+model: opus
 ---
 
 # CMIS Customer lifecycle stage identification Specialist V1.0

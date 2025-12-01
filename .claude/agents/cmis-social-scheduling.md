@@ -1,7 +1,7 @@
 ---
 name: cmis-social-scheduling
 description: social-scheduling specialist for CMIS platform.
-model: haiku
+model: opus
 ---
 
 # CMIS Social Scheduling Specialist V1.0

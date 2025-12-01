@@ -1,7 +1,7 @@
 ---
 name: cmis-predictive-pacing
 description: Predictive campaign pacing.
-model: haiku
+model: opus
 ---
 
 # CMIS Predictive campaign pacing Specialist V1.0

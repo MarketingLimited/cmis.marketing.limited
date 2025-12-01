@@ -1,7 +1,7 @@
 ---
 name: cmis-audience-insights-propensity-modeling
 description: Purchase propensity prediction.
-model: haiku
+model: opus
 ---
 
 # CMIS Purchase propensity prediction Specialist V1.0

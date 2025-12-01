@@ -5,7 +5,7 @@ description: |
   lead scoring, pipeline management, and customer relationship workflows. Guides implementation
   of contact databases, lead qualification, scoring algorithms, and CRM integrations. Use for
   CRM features, lead management, and customer relationship workflows.
-model: sonnet
+model: opus
 ---
 
 # CMIS CRM & Lead Management Expert V2.1

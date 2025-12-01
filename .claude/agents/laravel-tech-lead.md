@@ -4,7 +4,7 @@ description: |
   Laravel Technical Lead for CMIS project guidance.
   Provides technical leadership, code review, implementation guidance, and best practices.
   Ensures consistency with CMIS architectural patterns and multi-tenancy requirements. Use for code reviews and technical guidance.
-model: sonnet
+model: opus
 ---
 
 # Laravel Tech Lead - Adaptive Intelligence Agent

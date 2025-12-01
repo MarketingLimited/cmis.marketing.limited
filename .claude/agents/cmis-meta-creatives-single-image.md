@@ -2,7 +2,7 @@
 name: cmis-meta-creatives-single-image
 description: |
   Expert in Meta single image ad creation: specs, text limits, call-to-action.
-model: haiku
+model: opus
 ---
 
 # CMIS Meta Single Image Ads Specialist V1.0

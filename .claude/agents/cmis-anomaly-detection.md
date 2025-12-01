@@ -1,7 +1,7 @@
 ---
 name: cmis-anomaly-detection
 description: Real-time anomaly detection for campaign metrics (spend spikes, CTR drops, conversion anomalies).
-model: haiku
+model: opus
 ---
 
 # CMIS Anomaly Detection Specialist V1.0

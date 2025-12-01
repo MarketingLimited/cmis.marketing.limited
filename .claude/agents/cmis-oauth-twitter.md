@@ -1,7 +1,7 @@
 ---
 name: cmis-oauth-twitter
 description: Twitter OAuth flow and token management.
-model: haiku
+model: opus
 ---
 
 # CMIS Twitter OAuth Specialist V1.0
