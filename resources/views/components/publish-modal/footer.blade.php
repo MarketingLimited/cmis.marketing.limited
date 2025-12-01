@@ -45,15 +45,7 @@
                 </span>
             </label>
 
-            {{-- Queue Position Dropdown --}}
-            <select x-show="publishMode === 'add_to_queue'" x-cloak x-model="queuePosition"
-                    class="px-3 py-1.5 text-sm border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
-                <option value="next">{{ __('publish.queue_next') }}</option>
-                <option value="available">{{ __('publish.queue_available') }}</option>
-                <option value="last">{{ __('publish.queue_last') }}</option>
-            </select>
-
-            {{-- Queue Label Selector --}}
+            {{-- Queue Label Selector (only shown when labels exist) --}}
             <div x-show="publishMode === 'add_to_queue' && queueLabels.length > 0" x-cloak class="flex items-center gap-2">
                 <span class="text-sm text-gray-500">{{ __('publish.queue_label') }}:</span>
                 <select x-model="queueLabelId"
