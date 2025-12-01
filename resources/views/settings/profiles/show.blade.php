@@ -143,6 +143,129 @@
                 </button>
             </div>
         </div>
+
+        {{-- Timezone (editable with inheritance) --}}
+        <div class="mt-6 pt-6 border-t border-gray-200">
+            <div class="flex items-center gap-2">
+                <p class="text-sm text-gray-500">{{ __('profiles.timezone') }}</p>
+                <button @click="editingTimezone = true" class="text-gray-400 hover:text-blue-600 transition">
+                    <i class="fas fa-pencil-alt text-xs"></i>
+                </button>
+            </div>
+
+            {{-- Display mode --}}
+            <div x-show="!editingTimezone" class="mt-1">
+                @if($profile->timezone)
+                    <p class="text-sm font-medium text-blue-600">{{ $profile->timezone }}</p>
+                @else
+                    <p class="text-sm font-medium text-gray-400">{{ __('profiles.inherited_timezone') }}</p>
+                    <p class="text-xs text-gray-400 mt-0.5">
+                        <i class="fas fa-info-circle me-1"></i>
+                        {{ __('common.inherits_from') }}:
+                        @if($profile->profileGroup && $profile->profileGroup->timezone)
+                            {{ $profile->profileGroup->name }} ({{ $profile->profileGroup->timezone }})
+                        @else
+                            {{ $organization->name ?? __('Organization') }} ({{ $organization->timezone ?? 'UTC' }})
+                        @endif
+                    </p>
+                @endif
+            </div>
+
+            {{-- Edit mode --}}
+            <div x-show="editingTimezone" x-cloak class="mt-2">
+                {{-- Inheritance info banner --}}
+                <div class="mb-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                    <p class="text-sm text-blue-800">
+                        <i class="fas fa-info-circle me-1"></i>
+                        {{ __('common.inherits_from') }} <strong>
+                            @if($profile->profileGroup && $profile->profileGroup->timezone)
+                                {{ $profile->profileGroup->name }}
+                            @else
+                                {{ $organization->name ?? __('Organization') }}
+                            @endif
+                        </strong>:
+                        {{ $profile->profileGroup?->timezone ?? $organization->timezone ?? 'UTC' }}
+                    </p>
+                    <p class="text-xs text-blue-600 mt-1">{{ __('common.leave_empty_to_inherit') }}</p>
+                </div>
+
+                <select x-model="timezoneValue"
+                        class="block w-full max-w-sm rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm">
+                    <option value="">{{ __('common.inherit_from_parent') }}</option>
+                    <optgroup label="UTC">
+                        <option value="UTC">UTC</option>
+                    </optgroup>
+                    <optgroup label="Asia">
+                        <option value="Asia/Dubai">Dubai (UAE)</option>
+                        <option value="Asia/Riyadh">Riyadh (Saudi Arabia)</option>
+                        <option value="Asia/Kuwait">Kuwait</option>
+                        <option value="Asia/Bahrain">Bahrain</option>
+                        <option value="Asia/Qatar">Qatar</option>
+                        <option value="Asia/Muscat">Muscat (Oman)</option>
+                        <option value="Asia/Baghdad">Baghdad (Iraq)</option>
+                        <option value="Asia/Beirut">Beirut (Lebanon)</option>
+                        <option value="Asia/Amman">Amman (Jordan)</option>
+                        <option value="Asia/Damascus">Damascus (Syria)</option>
+                        <option value="Asia/Jerusalem">Jerusalem</option>
+                        <option value="Asia/Tokyo">Tokyo</option>
+                        <option value="Asia/Hong_Kong">Hong Kong</option>
+                        <option value="Asia/Singapore">Singapore</option>
+                        <option value="Asia/Shanghai">Shanghai</option>
+                        <option value="Asia/Kolkata">Kolkata (India)</option>
+                        <option value="Asia/Karachi">Karachi (Pakistan)</option>
+                    </optgroup>
+                    <optgroup label="Africa">
+                        <option value="Africa/Cairo">Cairo (Egypt)</option>
+                        <option value="Africa/Casablanca">Casablanca (Morocco)</option>
+                        <option value="Africa/Tunis">Tunis (Tunisia)</option>
+                        <option value="Africa/Algiers">Algiers (Algeria)</option>
+                        <option value="Africa/Tripoli">Tripoli (Libya)</option>
+                        <option value="Africa/Khartoum">Khartoum (Sudan)</option>
+                        <option value="Africa/Nairobi">Nairobi (Kenya)</option>
+                        <option value="Africa/Lagos">Lagos (Nigeria)</option>
+                        <option value="Africa/Johannesburg">Johannesburg (South Africa)</option>
+                    </optgroup>
+                    <optgroup label="Europe">
+                        <option value="Europe/London">London (UK)</option>
+                        <option value="Europe/Paris">Paris (France)</option>
+                        <option value="Europe/Berlin">Berlin (Germany)</option>
+                        <option value="Europe/Rome">Rome (Italy)</option>
+                        <option value="Europe/Madrid">Madrid (Spain)</option>
+                        <option value="Europe/Amsterdam">Amsterdam (Netherlands)</option>
+                        <option value="Europe/Brussels">Brussels (Belgium)</option>
+                        <option value="Europe/Vienna">Vienna (Austria)</option>
+                        <option value="Europe/Stockholm">Stockholm (Sweden)</option>
+                        <option value="Europe/Moscow">Moscow (Russia)</option>
+                        <option value="Europe/Istanbul">Istanbul (Turkey)</option>
+                    </optgroup>
+                    <optgroup label="America">
+                        <option value="America/New_York">New York (US Eastern)</option>
+                        <option value="America/Chicago">Chicago (US Central)</option>
+                        <option value="America/Denver">Denver (US Mountain)</option>
+                        <option value="America/Los_Angeles">Los Angeles (US Pacific)</option>
+                        <option value="America/Toronto">Toronto (Canada)</option>
+                        <option value="America/Mexico_City">Mexico City</option>
+                        <option value="America/Sao_Paulo">São Paulo (Brazil)</option>
+                        <option value="America/Buenos_Aires">Buenos Aires (Argentina)</option>
+                    </optgroup>
+                    <optgroup label="Pacific">
+                        <option value="Pacific/Auckland">Auckland (New Zealand)</option>
+                        <option value="Pacific/Sydney">Sydney (Australia)</option>
+                        <option value="Pacific/Fiji">Fiji</option>
+                    </optgroup>
+                </select>
+                <div class="flex items-center gap-2 mt-2">
+                    <button @click="saveTimezone()"
+                            class="px-3 py-1.5 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700">
+                        {{ __('profiles.save') }}
+                    </button>
+                    <button @click="editingTimezone = false; timezoneValue = '{{ $profile->timezone ?? '' }}'"
+                            class="px-3 py-1.5 border border-gray-300 text-gray-700 text-sm rounded-md hover:bg-gray-50">
+                        {{ __('profiles.cancel') }}
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 
     {{-- Profile Groups Section --}}
@@ -446,6 +569,8 @@ function profileDetail() {
         loading: false,
         editingIndustry: false,
         industryValue: '{{ $profile->industry ?? '' }}',
+        editingTimezone: false,
+        timezoneValue: '{{ $profile->timezone ?? '' }}',
         showBoostModal: false,
         showGroupsModal: false,
         showQueueModal: false,
@@ -527,6 +652,39 @@ function profileDetail() {
                 }
             } catch (error) {
                 console.error('Error:', error);
+            }
+            this.loading = false;
+        },
+
+        async saveTimezone() {
+            this.loading = true;
+            try {
+                const response = await fetch(`/orgs/{{ $currentOrg }}/settings/profiles/{{ $profile->integration_id }}`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({ timezone: this.timezoneValue || null })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    window.dispatchEvent(new CustomEvent('toast', {
+                        detail: { message: '{{ __("profiles.timezone_updated") }}', type: 'success' }
+                    }));
+                    this.editingTimezone = false;
+                    location.reload();
+                } else {
+                    window.dispatchEvent(new CustomEvent('toast', {
+                        detail: { message: data.message || '{{ __("common.error") }}', type: 'error' }
+                    }));
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                window.dispatchEvent(new CustomEvent('toast', {
+                    detail: { message: '{{ __("common.error") }}', type: 'error' }
+                }));
             }
             this.loading = false;
         },

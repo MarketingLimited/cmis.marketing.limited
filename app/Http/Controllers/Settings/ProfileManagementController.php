@@ -87,6 +87,9 @@ class ProfileManagementController extends Controller
         $industries = $this->service->getAvailableIndustries();
         $queueLabels = $this->labelService->getLabels($org);
 
+        // Get organization for timezone inheritance display
+        $organization = \App\Models\Core\Org::find($org);
+
         if ($request->wantsJson()) {
             return $this->success([
                 'profile' => $profile,
@@ -95,6 +98,7 @@ class ProfileManagementController extends Controller
                 'boost_rules' => $boostRules,
                 'industries' => $industries,
                 'queue_labels' => $queueLabels,
+                'organization' => $organization,
             ], __('profiles.profile_retrieved'));
         }
 
@@ -106,6 +110,7 @@ class ProfileManagementController extends Controller
             'industries' => $industries,
             'queueLabels' => $queueLabels,
             'currentOrg' => $org,
+            'organization' => $organization,
         ]);
     }
 
@@ -126,6 +131,7 @@ class ProfileManagementController extends Controller
             'auto_boost_enabled' => 'nullable|boolean',
             'custom_fields' => 'nullable|array',
             'profile_group_id' => 'nullable|uuid',
+            'timezone' => 'nullable|string|max:100',
         ]);
 
         if ($validator->fails()) {

@@ -56,6 +56,7 @@ class Integration extends BaseModel
         'profile_type',
         'connected_by',
         'auto_boost_enabled',
+        'timezone',
     ];
 
     protected $hidden = [
@@ -197,6 +198,51 @@ class Integration extends BaseModel
     public function isActiveAndEnabled(): bool
     {
         return $this->is_active && $this->is_enabled && $this->status !== 'error';
+    }
+
+    /**
+     * Get the effective timezone for this profile.
+     * Inheritance hierarchy: Profile -> Profile Group -> Organization -> UTC
+     */
+    public function getEffectiveTimezoneAttribute(): string
+    {
+        // Profile's own timezone
+        if ($this->timezone) {
+            return $this->timezone;
+        }
+
+        // Profile Group's timezone
+        if ($this->profileGroup && $this->profileGroup->timezone) {
+            return $this->profileGroup->timezone;
+        }
+
+        // Organization's timezone (uses HasOrganization trait's org() relationship)
+        if ($this->org && $this->org->timezone) {
+            return $this->org->timezone;
+        }
+
+        return 'UTC';
+    }
+
+    /**
+     * Get the timezone inheritance source for display.
+     * Returns the name of where the timezone is inherited from.
+     */
+    public function getTimezoneSourceAttribute(): ?string
+    {
+        if ($this->timezone) {
+            return null; // No inheritance, profile has its own timezone
+        }
+
+        if ($this->profileGroup && $this->profileGroup->timezone) {
+            return $this->profileGroup->name;
+        }
+
+        if ($this->org) {
+            return $this->org->name ?? __('Organization');
+        }
+
+        return __('System Default');
     }
 
     // ===== Existing Relationships =====

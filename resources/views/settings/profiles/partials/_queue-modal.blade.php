@@ -314,7 +314,7 @@
                         <option value="AM">AM</option>
                         <option value="PM">PM</option>
                     </select>
-                    <span class="text-sm text-gray-500">({{ config('app.timezone', 'UTC') }})</span>
+                    <span class="text-sm text-gray-500">({{ $profile->effective_timezone ?? config('app.timezone', 'UTC') }})</span>
                 </div>
 
                 {{-- Day Selection --}}

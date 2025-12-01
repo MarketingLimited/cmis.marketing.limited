@@ -27,6 +27,7 @@ class Org extends BaseModel
         'default_locale',
         'currency',
         'provider',
+        'timezone',
     ];
 
     protected $casts = [

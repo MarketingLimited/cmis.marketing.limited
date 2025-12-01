@@ -117,6 +117,7 @@ class ProfileManagementService
             'auto_boost_enabled',
             'custom_fields',
             'profile_group_id',
+            'timezone',
         ];
 
         $updateData = array_intersect_key($data, array_flip($allowedFields));
