@@ -319,11 +319,16 @@ class ProfileManagementController extends Controller
      */
     public function updateQueueSettings(Request $request, string $org, string $integrationId): JsonResponse
     {
+        // Validation rules support both old format (time strings) and new format (slot objects)
         $validator = Validator::make($request->all(), [
             'queue_enabled' => 'required|boolean',
             'schedule' => 'nullable|array',
-            'schedule.*' => 'array',
-            'schedule.*.*' => 'date_format:H:i',
+            'schedule.*' => 'nullable|array',
+            // Each slot can be either a time string or an object with time, label_id, is_evergreen
+            'schedule.*.*' => 'nullable',
+            'schedule.*.*.time' => 'nullable|date_format:H:i',
+            'schedule.*.*.label_id' => 'nullable|uuid',
+            'schedule.*.*.is_evergreen' => 'nullable|boolean',
             'days_enabled' => 'nullable|array',
             'days_enabled.*' => 'string|in:monday,tuesday,wednesday,thursday,friday,saturday,sunday',
             'posting_times' => 'nullable|array',
