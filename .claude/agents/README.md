@@ -1,13 +1,32 @@
 # CMIS AI Agents Framework
 ## Specialized AI Agents for CMIS (Cognitive Marketing Information System)
 
-**Last Updated:** 2025-11-27
+**Last Updated:** 2025-12-01
 **Project:** CMIS - Campaign Management & Integration System
-**Version:** 3.1 - Agent Best Practices Optimized
+**Version:** 3.2 - Model Tier Optimization + Browser Testing Deduplication
 
 ---
 
-## 🎉 Recent Improvements: Agent Best Practices (2025-11-27)
+## 🎉 Recent Improvements (2025-12-01)
+
+### Phase 2: Browser Testing Deduplication
+- **222 agents optimized** - Removed duplicated browser testing content
+- **244.8 KB saved** - All agents now reference shared file
+- **Agent skills preserved** - Agent-specific testing guidance retained
+- **Shared Reference:** `.claude/agents/_shared/browser-testing-integration.md`
+
+### Phase 1: Model Tier Optimization
+| Model | Cost | Use Case | Examples |
+|-------|------|----------|----------|
+| **opus** | $75/M | Complex reasoning, multi-step tasks | cmis-orchestrator, cmis-troubleshooting |
+| **sonnet** | $15/M | Standard development tasks | cmis-campaign-expert, laravel-architect |
+| **haiku** | $1/M | Simple lookups, light tasks | Most specialized agents |
+
+**Cost Optimization:** 80%+ agents use haiku, reducing costs by ~90% while maintaining quality.
+
+---
+
+## 🎉 Agent Best Practices (2025-11-27)
 
 **ALL agents now follow comprehensive best practices through shared infrastructure:**
 
