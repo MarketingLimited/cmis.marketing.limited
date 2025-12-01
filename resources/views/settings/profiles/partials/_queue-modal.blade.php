@@ -393,7 +393,7 @@ function queueSettingsForm() {
             });
 
             try {
-                const response = await fetch('{{ route('settings.profiles.queue.update', ['org' => $org->id, 'integration_id' => $profile->integration_id]) }}', {
+                const response = await fetch('{{ route('orgs.settings.profiles.queue.update', ['org' => $currentOrg, 'integration_id' => $profile->integration_id]) }}', {
                     method: 'PATCH',
                     headers: {
                         'Content-Type': 'application/json',
