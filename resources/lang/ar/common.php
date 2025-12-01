@@ -167,6 +167,15 @@ return [
     'months' => 'شهر',
     'years' => 'سنة',
 
+    // Days of week
+    'monday' => 'الاثنين',
+    'tuesday' => 'الثلاثاء',
+    'wednesday' => 'الأربعاء',
+    'thursday' => 'الخميس',
+    'friday' => 'الجمعة',
+    'saturday' => 'السبت',
+    'sunday' => 'الأحد',
+
     // Status labels
     'paused' => 'متوقف',
     'draft' => 'مسودة',

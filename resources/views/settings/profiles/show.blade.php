@@ -193,94 +193,134 @@
 
     {{-- Publishing Queues Section --}}
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-        <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center justify-between mb-6">
             <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center">
-                    <i class="fas fa-clock text-purple-600"></i>
+                <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-100 to-indigo-100 flex items-center justify-center">
+                    <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                    </svg>
                 </div>
-                <h3 class="text-base font-semibold text-gray-900 uppercase tracking-wider">
-                    {{ __('profiles.publishing_queues') }}
-                </h3>
+                <div>
+                    <h3 class="text-base font-semibold text-gray-900 uppercase tracking-wider">
+                        {{ __('profiles.publishing_queues') }}
+                    </h3>
+                    @if($queueSettings && $queueSettings->queue_enabled)
+                        @php
+                            $totalSlots = 0;
+                            $schedule = $queueSettings->schedule ?? [];
+                            foreach ($schedule as $dayTimes) {
+                                $totalSlots += count($dayTimes);
+                            }
+                            $daysEnabled = $queueSettings->days_enabled ?? [];
+                        @endphp
+                        <p class="text-xs text-gray-500 mt-0.5">
+                            {{ count($daysEnabled) }} {{ __('profiles.days_active') }} • {{ $totalSlots }} {{ __('profiles.time_slots') }}
+                        </p>
+                    @endif
+                </div>
             </div>
             <button @click="showQueueModal = true"
-                    class="text-sm text-blue-600 hover:text-blue-800 font-medium">
-                <i class="fas fa-cog me-1"></i>
+                    class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors shadow-sm">
+                <svg class="w-4 h-4 me-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                </svg>
                 {{ __('profiles.queue_settings') }}
             </button>
         </div>
 
         @if($queueSettings && $queueSettings->queue_enabled)
-            {{-- Queue Status --}}
-            <div class="flex items-center gap-2 mb-4">
-                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                    <i class="fas fa-check-circle me-1"></i>
-                    {{ __('profiles.queue_enabled') }}
-                </span>
+            {{-- Queue Status Banner --}}
+            <div class="mb-6 p-3 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg">
+                <div class="flex items-center gap-3">
+                    <div class="flex-shrink-0">
+                        <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                    </div>
+                    <div class="flex-1">
+                        <p class="text-sm font-medium text-green-900">{{ __('profiles.queue_enabled') }}</p>
+                        <p class="text-xs text-green-700">{{ __('profiles.queue_enabled_description') }}</p>
+                    </div>
+                </div>
             </div>
 
             {{-- Days Schedule Grid --}}
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                 @php
                     $daysOfWeek = [
-                        'sunday' => __('profiles.sunday'),
-                        'monday' => __('profiles.monday'),
-                        'tuesday' => __('profiles.tuesday'),
-                        'wednesday' => __('profiles.wednesday'),
-                        'thursday' => __('profiles.thursday'),
-                        'friday' => __('profiles.friday'),
-                        'saturday' => __('profiles.saturday'),
+                        'monday' => __('common.monday'),
+                        'tuesday' => __('common.tuesday'),
+                        'wednesday' => __('common.wednesday'),
+                        'thursday' => __('common.thursday'),
+                        'friday' => __('common.friday'),
+                        'saturday' => __('common.saturday'),
+                        'sunday' => __('common.sunday'),
                     ];
                     $schedule = $queueSettings->schedule ?? [];
                     $daysEnabled = $queueSettings->days_enabled ?? [];
                 @endphp
 
                 @foreach($daysOfWeek as $dayKey => $dayName)
-                    <div class="border border-gray-200 rounded-lg p-3 {{ in_array($dayKey, $daysEnabled) ? 'bg-white' : 'bg-gray-50 opacity-60' }}">
-                        <div class="flex items-center justify-between mb-2">
-                            <span class="text-sm font-medium {{ in_array($dayKey, $daysEnabled) ? 'text-gray-900' : 'text-gray-400' }}">
-                                {{ $dayName }}
-                            </span>
-                            @if(in_array($dayKey, $daysEnabled))
-                                <span class="w-2 h-2 bg-green-500 rounded-full"></span>
+                    @php
+                        $isEnabled = in_array($dayKey, $daysEnabled);
+                        $times = $schedule[$dayKey] ?? [];
+                    @endphp
+                    <div class="border rounded-lg overflow-hidden transition-all hover:shadow-md
+                                {{ $isEnabled ? 'border-blue-200 bg-gradient-to-br from-white to-blue-50' : 'border-gray-200 bg-gray-50' }}">
+                        {{-- Day Header --}}
+                        <div class="px-3 py-2 {{ $isEnabled ? 'bg-gradient-to-r from-blue-100 to-indigo-100 border-b border-blue-200' : 'bg-gray-100 border-b border-gray-200' }}">
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm font-semibold {{ $isEnabled ? 'text-gray-900' : 'text-gray-400' }}">
+                                    {{ $dayName }}
+                                </span>
+                                <div class="flex items-center gap-2">
+                                    @if($isEnabled && count($times) > 0)
+                                        <span class="px-2 py-0.5 text-xs font-medium text-blue-700 bg-blue-100 rounded-full">
+                                            {{ count($times) }}
+                                        </span>
+                                    @endif
+                                    <span class="w-2 h-2 rounded-full {{ $isEnabled ? 'bg-green-500' : 'bg-gray-300' }}"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        {{-- Time Slots --}}
+                        <div class="px-3 py-2 min-h-[60px]">
+                            @if($isEnabled && count($times) > 0)
+                                <div class="flex flex-wrap gap-1.5">
+                                    @foreach($times as $time)
+                                        <span class="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium bg-blue-100 text-blue-800 border border-blue-200">
+                                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                            </svg>
+                                            {{ \Carbon\Carbon::createFromFormat('H:i', $time)->format('g:i A') }}
+                                        </span>
+                                    @endforeach
+                                </div>
+                            @elseif($isEnabled)
+                                <p class="text-xs text-gray-400 italic text-center py-2">{{ __('profiles.no_times_set') }}</p>
                             @else
-                                <span class="w-2 h-2 bg-gray-300 rounded-full"></span>
+                                <p class="text-xs text-gray-400 italic text-center py-2">{{ __('profiles.queue_disabled') }}</p>
                             @endif
                         </div>
-                        @if(in_array($dayKey, $daysEnabled) && isset($schedule[$dayKey]) && count($schedule[$dayKey]) > 0)
-                            <div class="flex flex-wrap gap-1">
-                                @foreach($schedule[$dayKey] as $time)
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
-                                        {{ \Carbon\Carbon::createFromFormat('H:i', $time)->format('g:i A') }}
-                                    </span>
-                                @endforeach
-                            </div>
-                        @else
-                            <p class="text-xs text-gray-400 italic">{{ __('profiles.no_times_set') }}</p>
-                        @endif
                     </div>
                 @endforeach
             </div>
-
-            {{-- Summary --}}
-            @php
-                $totalSlots = 0;
-                foreach ($schedule as $dayTimes) {
-                    $totalSlots += count($dayTimes);
-                }
-            @endphp
-            <div class="mt-4 pt-4 border-t border-gray-200 flex items-center justify-between text-sm text-gray-500">
-                <span>{{ count($daysEnabled) }} {{ __('profiles.days_active') }}</span>
-                <span>{{ $totalSlots }} {{ __('profiles.time_slots_total') }}</span>
-            </div>
         @else
-            <div class="text-center py-8">
-                <div class="w-12 h-12 mx-auto bg-gray-100 rounded-full flex items-center justify-center mb-3">
-                    <i class="fas fa-clock text-gray-400"></i>
+            <div class="text-center py-12">
+                <div class="w-16 h-16 mx-auto bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center mb-4">
+                    <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                    </svg>
                 </div>
-                <p class="text-sm text-gray-500 mb-3">{{ __('profiles.no_queue_message') }}</p>
+                <h4 class="text-base font-semibold text-gray-900 mb-2">{{ __('profiles.queue_disabled') }}</h4>
+                <p class="text-sm text-gray-500 mb-4 max-w-md mx-auto">{{ __('profiles.queue_disabled_description') }}</p>
                 <button @click="showQueueModal = true"
-                        class="inline-flex items-center px-4 py-2 border border-blue-300 rounded-md shadow-sm text-sm font-medium text-blue-700 bg-white hover:bg-blue-50">
-                    <i class="fas fa-plus me-2"></i>
+                        class="inline-flex items-center px-5 py-2.5 border-2 border-blue-300 rounded-lg shadow-sm text-sm font-medium text-blue-700 bg-white hover:bg-blue-50 transition-colors">
+                    <svg class="w-5 h-5 me-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                    </svg>
                     {{ __('profiles.setup_queue') }}
                 </button>
             </div>

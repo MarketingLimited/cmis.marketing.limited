@@ -172,6 +172,15 @@ return [
     'months' => 'month(s)',
     'years' => 'year(s)',
 
+    // Days of week
+    'monday' => 'Monday',
+    'tuesday' => 'Tuesday',
+    'wednesday' => 'Wednesday',
+    'thursday' => 'Thursday',
+    'friday' => 'Friday',
+    'saturday' => 'Saturday',
+    'sunday' => 'Sunday',
+
     // Status labels
     'paused' => 'Paused',
     'draft' => 'Draft',

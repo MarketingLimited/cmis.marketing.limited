@@ -279,10 +279,13 @@ class ProfileManagementController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'queue_enabled' => 'required|boolean',
+            'schedule' => 'nullable|array',
+            'schedule.*' => 'array',
+            'schedule.*.*' => 'date_format:H:i',
+            'days_enabled' => 'nullable|array',
+            'days_enabled.*' => 'string|in:monday,tuesday,wednesday,thursday,friday,saturday,sunday',
             'posting_times' => 'nullable|array',
             'posting_times.*' => 'date_format:H:i',
-            'days_enabled' => 'nullable|array',
-            'days_enabled.*' => 'integer|min:0|max:6',
             'posts_per_day' => 'nullable|integer|min:1|max:20',
         ]);
 
