@@ -45,18 +45,6 @@
                 </span>
             </label>
 
-            {{-- Queue Label Selector (only shown when labels exist) --}}
-            <div x-show="publishMode === 'add_to_queue' && queueLabels.length > 0" x-cloak class="flex items-center gap-2">
-                <span class="text-sm text-gray-500">{{ __('publish.queue_label') }}:</span>
-                <select x-model="queueLabelId"
-                        class="px-3 py-1.5 text-sm border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
-                    <option value="">{{ __('publish.any_slot') }}</option>
-                    <template x-for="label in queueLabels" :key="label.id">
-                        <option :value="label.id" x-text="label.name"></option>
-                    </template>
-                </select>
-            </div>
-
             {{-- Schedule Date/Time Inputs (shown when Schedule mode selected) --}}
             <div x-show="publishMode === 'schedule'" x-cloak
                  x-transition:enter="transition ease-out duration-200"
