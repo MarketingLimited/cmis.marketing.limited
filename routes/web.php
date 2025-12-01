@@ -725,6 +725,11 @@ Route::middleware(['auth'])->group(function () {
                 Route::patch('/{integration_id}/boosts/{boost_id}', [App\Http\Controllers\Settings\ProfileManagementController::class, 'updateBoostRule'])->name('boosts.update');
                 Route::delete('/{integration_id}/boosts/{boost_id}', [App\Http\Controllers\Settings\ProfileManagementController::class, 'deleteBoostRule'])->name('boosts.destroy');
                 Route::post('/{integration_id}/boosts/{boost_id}/toggle', [App\Http\Controllers\Settings\ProfileManagementController::class, 'toggleBoostRule'])->name('boosts.toggle');
+
+                // Boost helper endpoints (ad accounts, audiences, budget validation)
+                Route::get('/{integration_id}/ad-accounts', [App\Http\Controllers\Settings\ProfileManagementController::class, 'getAdAccounts'])->name('ad-accounts');
+                Route::get('/{integration_id}/audiences', [App\Http\Controllers\Settings\ProfileManagementController::class, 'getAudiences'])->name('audiences');
+                Route::post('/{integration_id}/validate-budget', [App\Http\Controllers\Settings\ProfileManagementController::class, 'validateBudget'])->name('validate-budget');
             });
 
             // ==================== Queue Slot Labels (Organization-wide) ====================

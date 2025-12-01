@@ -189,6 +189,47 @@ return [
     'female' => 'Female',
     'all_genders' => 'All genders',
 
+    // Ad Account selection
+    'select_ad_account' => 'Select ad account',
+    'no_ad_accounts_available' => 'No ad accounts available',
+    'connect_ad_account_first' => 'Connect an ad account from Platform Connections first',
+
+    // Campaign objectives
+    'campaign_objective' => 'Campaign objective',
+    'select_objective' => 'Select objective',
+    'objective_awareness' => 'Brand Awareness',
+    'objective_awareness_desc' => 'Show your ads to people most likely to remember them.',
+    'objective_engagement' => 'Engagement',
+    'objective_engagement_desc' => 'Get more post engagement, likes, comments and shares.',
+    'objective_traffic' => 'Traffic',
+    'objective_traffic_desc' => 'Send people to a destination, like your website or app.',
+    'objective_leads' => 'Lead Generation',
+    'objective_leads_desc' => 'Collect leads for your business.',
+    'objective_sales' => 'Sales',
+    'objective_sales_desc' => 'Find people likely to purchase your product or service.',
+    'objective_app' => 'App Promotion',
+    'objective_app_desc' => 'Get more app installs and activity.',
+
+    // Boost delay
+    'boost_delay_hint' => 'Time to wait after a post is published before boosting.',
+    'enter_budget' => 'Enter amount',
+
+    // Advantage+ settings
+    'advantage_plus_audience' => 'Advantage+ Audience',
+    'advantage_plus_description' => 'Let Meta\'s AI optimize your audience for better results.',
+    'audience_expansion' => 'Audience expansion',
+    'auto_placements' => 'Advantage+ placements',
+    'dynamic_creative' => 'Dynamic creative',
+
+    // Audience targeting
+    'audience_targeting' => 'Audience targeting',
+    'custom_audiences' => 'Custom audiences',
+    'loading_audiences' => 'Loading audiences',
+    'custom_audiences_hint' => 'Target people who have already interacted with your business.',
+    'lookalike_audiences' => 'Lookalike audiences',
+    'lookalike_audiences_hint' => 'Target people similar to your existing customers.',
+    'detailed_targeting' => 'Detailed targeting',
+
     // Boost actions
     'save_boost' => 'Save boost',
     'delete_boost' => 'Delete boost',

@@ -8,6 +8,7 @@ use App\Services\Social\ProfileManagementService;
 use App\Services\Social\QueueSlotLabelService;
 use App\Models\Social\ProfileGroup;
 use App\Models\Platform\BoostRule;
+use App\Models\Platform\AdAccount;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Validator;
@@ -90,6 +91,32 @@ class ProfileManagementController extends Controller
         // Get organization for timezone inheritance display
         $organization = \App\Models\Core\Org::find($org);
 
+        // Get ad accounts for boost settings (filtered by platform)
+        $platformMapping = [
+            'facebook' => 'meta',
+            'instagram' => 'meta',
+            'threads' => 'meta',
+            'meta' => 'meta',
+            'google' => 'google',
+            'youtube' => 'google',
+            'tiktok' => 'tiktok',
+            'linkedin' => 'linkedin',
+            'twitter' => 'twitter',
+            'snapchat' => 'snapchat',
+            'pinterest' => 'pinterest',
+        ];
+        $adPlatform = $platformMapping[$profile->platform] ?? null;
+
+        $adAccountsQuery = AdAccount::where('org_id', $org)
+            ->active()
+            ->connected();
+
+        if ($adPlatform) {
+            $adAccountsQuery->where('platform', $adPlatform);
+        }
+
+        $adAccounts = $adAccountsQuery->get();
+
         if ($request->wantsJson()) {
             return $this->success([
                 'profile' => $profile,
@@ -99,6 +126,7 @@ class ProfileManagementController extends Controller
                 'industries' => $industries,
                 'queue_labels' => $queueLabels,
                 'organization' => $organization,
+                'ad_accounts' => $adAccounts,
             ], __('profiles.profile_retrieved'));
         }
 
@@ -111,6 +139,7 @@ class ProfileManagementController extends Controller
             'queueLabels' => $queueLabels,
             'currentOrg' => $org,
             'organization' => $organization,
+            'adAccounts' => $adAccounts,
         ]);
     }
 
@@ -486,5 +515,157 @@ class ProfileManagementController extends Controller
         $stats = $this->service->getProfileStats($org);
 
         return $this->success($stats, __('profiles.stats_retrieved'));
+    }
+
+    /**
+     * Get ad accounts compatible with a profile's platform.
+     *
+     * GET /orgs/{org}/settings/profiles/{integration_id}/ad-accounts
+     */
+    public function getAdAccounts(Request $request, string $org, string $integrationId): JsonResponse
+    {
+        $profile = $this->service->getProfile($org, $integrationId);
+
+        if (!$profile) {
+            return $this->notFound(__('profiles.profile_not_found'));
+        }
+
+        $platformMapping = [
+            'facebook' => 'meta',
+            'instagram' => 'meta',
+            'threads' => 'meta',
+            'meta' => 'meta',
+            'google' => 'google',
+            'youtube' => 'google',
+            'tiktok' => 'tiktok',
+            'linkedin' => 'linkedin',
+            'twitter' => 'twitter',
+            'snapchat' => 'snapchat',
+            'pinterest' => 'pinterest',
+        ];
+
+        $adPlatform = $platformMapping[$profile->platform] ?? null;
+
+        $query = AdAccount::where('org_id', $org)
+            ->active()
+            ->connected();
+
+        if ($adPlatform) {
+            $query->where('platform', $adPlatform);
+        }
+
+        $adAccounts = $query->get(['id', 'account_name', 'platform', 'currency', 'status', 'balance', 'daily_spend_limit']);
+
+        return $this->success($adAccounts, __('profiles.ad_accounts_retrieved'));
+    }
+
+    /**
+     * Get available audiences for boost targeting.
+     *
+     * GET /orgs/{org}/settings/profiles/{integration_id}/audiences
+     */
+    public function getAudiences(Request $request, string $org, string $integrationId): JsonResponse
+    {
+        $profile = $this->service->getProfile($org, $integrationId);
+
+        if (!$profile) {
+            return $this->notFound(__('profiles.profile_not_found'));
+        }
+
+        $adAccountId = $request->query('ad_account_id');
+        $type = $request->query('type', 'all'); // custom, lookalike, saved, all
+
+        // Get audiences from the database for this org
+        $query = \App\Models\AdPlatform\AdAudience::where('org_id', $org);
+
+        if ($adAccountId) {
+            $query->where('ad_account_id', $adAccountId);
+        }
+
+        if ($type !== 'all') {
+            $query->where('audience_type', $type);
+        }
+
+        $audiences = $query->get([
+            'audience_id as id',
+            'name',
+            'audience_type as type',
+            'approximate_count',
+            'lookalike_audience as lookalike_ratio',
+            'status',
+        ]);
+
+        return $this->success($audiences, __('profiles.audiences_retrieved'));
+    }
+
+    /**
+     * Validate boost budget against ad account limits.
+     *
+     * POST /orgs/{org}/settings/profiles/{integration_id}/validate-budget
+     */
+    public function validateBudget(Request $request, string $org, string $integrationId): JsonResponse
+    {
+        $validator = Validator::make($request->all(), [
+            'ad_account_id' => 'required|uuid',
+            'budget_amount' => 'required|numeric|min:0',
+            'duration_days' => 'required|integer|min:1',
+        ]);
+
+        if ($validator->fails()) {
+            return $this->validationError($validator->errors(), __('common.validation_error'));
+        }
+
+        $adAccount = AdAccount::where('org_id', $org)
+            ->where('id', $request->input('ad_account_id'))
+            ->first();
+
+        if (!$adAccount) {
+            return $this->notFound(__('profiles.ad_account_not_found'));
+        }
+
+        $validation = [
+            'valid' => true,
+            'warnings' => [],
+            'errors' => [],
+        ];
+
+        $budgetAmount = (float) $request->input('budget_amount');
+        $durationDays = (int) $request->input('duration_days');
+        $dailyBudget = $budgetAmount / $durationDays;
+
+        // Check daily spend limit
+        if ($adAccount->daily_spend_limit && $dailyBudget > $adAccount->daily_spend_limit) {
+            $validation['warnings'][] = __('profiles.exceeds_daily_limit', [
+                'limit' => number_format($adAccount->daily_spend_limit, 2),
+                'currency' => $adAccount->currency ?? 'USD',
+            ]);
+        }
+
+        // Check account balance
+        if ($adAccount->balance !== null && $budgetAmount > $adAccount->balance) {
+            $validation['errors'][] = __('profiles.exceeds_balance', [
+                'balance' => number_format($adAccount->balance, 2),
+                'currency' => $adAccount->currency ?? 'USD',
+            ]);
+            $validation['valid'] = false;
+        }
+
+        // Check monthly budget limit if set
+        if ($adAccount->monthly_budget_limit) {
+            $remainingMonthly = $adAccount->monthly_budget_limit - ($adAccount->amount_spent ?? 0);
+            if ($budgetAmount > $remainingMonthly) {
+                $validation['warnings'][] = __('profiles.may_exceed_monthly', [
+                    'remaining' => number_format($remainingMonthly, 2),
+                ]);
+            }
+        }
+
+        // Check daily budget limit
+        if ($adAccount->daily_budget_limit && $dailyBudget > $adAccount->daily_budget_limit) {
+            $validation['errors'][] = __('profiles.exceeds_spend_cap');
+            $validation['valid'] = false;
+        }
+
+        return $this->success($validation, __('profiles.budget_validated'));
     }
 }

@@ -189,6 +189,47 @@ return [
     'female' => 'أنثى',
     'all_genders' => 'جميع الأجناس',
 
+    // Ad Account selection
+    'select_ad_account' => 'اختر حساب الإعلانات',
+    'no_ad_accounts_available' => 'لا توجد حسابات إعلانية متاحة',
+    'connect_ad_account_first' => 'قم بربط حساب إعلاني من اتصالات المنصة أولاً',
+
+    // Campaign objectives
+    'campaign_objective' => 'هدف الحملة',
+    'select_objective' => 'اختر الهدف',
+    'objective_awareness' => 'الوعي بالعلامة التجارية',
+    'objective_awareness_desc' => 'اعرض إعلاناتك للأشخاص الأكثر احتمالاً لتذكرها.',
+    'objective_engagement' => 'التفاعل',
+    'objective_engagement_desc' => 'احصل على المزيد من التفاعل والإعجابات والتعليقات والمشاركات.',
+    'objective_traffic' => 'الزيارات',
+    'objective_traffic_desc' => 'أرسل الأشخاص إلى وجهة مثل موقعك الإلكتروني أو تطبيقك.',
+    'objective_leads' => 'توليد العملاء المحتملين',
+    'objective_leads_desc' => 'اجمع عملاء محتملين لعملك.',
+    'objective_sales' => 'المبيعات',
+    'objective_sales_desc' => 'ابحث عن الأشخاص المحتمل شراؤهم لمنتجك أو خدمتك.',
+    'objective_app' => 'الترويج للتطبيق',
+    'objective_app_desc' => 'احصل على المزيد من تثبيتات التطبيق والنشاط.',
+
+    // Boost delay
+    'boost_delay_hint' => 'الوقت المنتظر بعد نشر المنشور قبل التعزيز.',
+    'enter_budget' => 'أدخل المبلغ',
+
+    // Advantage+ settings
+    'advantage_plus_audience' => 'جمهور Advantage+',
+    'advantage_plus_description' => 'دع الذكاء الاصطناعي من Meta يحسن جمهورك للحصول على نتائج أفضل.',
+    'audience_expansion' => 'توسيع الجمهور',
+    'auto_placements' => 'مواضع Advantage+',
+    'dynamic_creative' => 'التصميم الديناميكي',
+
+    // Audience targeting
+    'audience_targeting' => 'استهداف الجمهور',
+    'custom_audiences' => 'الجماهير المخصصة',
+    'loading_audiences' => 'جاري تحميل الجماهير',
+    'custom_audiences_hint' => 'استهدف الأشخاص الذين تفاعلوا بالفعل مع نشاطك التجاري.',
+    'lookalike_audiences' => 'الجماهير المشابهة',
+    'lookalike_audiences_hint' => 'استهدف أشخاصًا مشابهين لعملائك الحاليين.',
+    'detailed_targeting' => 'الاستهداف التفصيلي',
+
     // Boost actions
     'save_boost' => 'حفظ التعزيز',
     'delete_boost' => 'حذف التعزيز',
