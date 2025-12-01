@@ -947,6 +947,12 @@
                             <i class="fas fa-plug text-xs w-4"></i>
                             <span>{{ __('navigation.platform_connections') }}</span>
                         </a>
+                        <a href="{{ route('orgs.settings.profiles.index', ['org' => $currentOrg]) }}"
+                           class="flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition-all
+                                  {{ request()->routeIs('orgs.settings.profiles.*') ? 'text-blue-400 bg-slate-800/50' : 'text-slate-400 hover:text-white hover:bg-slate-800/30' }}">
+                            <i class="fas fa-users text-xs w-4"></i>
+                            <span>{{ __('navigation.profile_management') }}</span>
+                        </a>
                         <a href="{{ route('orgs.settings.ad-accounts.index', ['org' => $currentOrg]) }}"
                            class="flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition-all
                                   {{ request()->routeIs('orgs.settings.ad-accounts.*') ? 'text-blue-400 bg-slate-800/50' : 'text-slate-400 hover:text-white hover:bg-slate-800/30' }}">
@@ -1892,6 +1898,7 @@
                     { name: 'صندوق الوارد', icon: 'fa-inbox', route: 'inbox', keywords: ['صندوق', 'وارد', 'inbox', 'رسائل', 'بريد'] },
                     { name: 'الإعدادات', icon: 'fa-cog', route: 'settings/user', keywords: ['اعدادات', 'settings', 'تهيئة', 'ضبط'] },
                     { name: 'ربط المنصات', icon: 'fa-plug', route: 'settings/platform-connections', keywords: ['ربط', 'منصات', 'platforms', 'connections', 'integrations'] },
+                    { name: 'إدارة الملفات الشخصية', icon: 'fa-users', route: 'settings/profiles', keywords: ['ملفات', 'شخصية', 'profile', 'management', 'profiles', 'حسابات'] },
                     { name: 'حسابات الإعلانات', icon: 'fa-ad', route: 'settings/ad-accounts', keywords: ['حسابات', 'اعلانات', 'ad', 'accounts'] },
                     { name: 'صوت العلامة التجارية', icon: 'fa-microphone', route: 'settings/brand-voices', keywords: ['صوت', 'علامة', 'brand', 'voice', 'تجارية'] },
                     { name: 'أمان العلامة التجارية', icon: 'fa-shield-alt', route: 'settings/brand-safety', keywords: ['امان', 'علامة', 'brand', 'safety', 'تجارية'] },
