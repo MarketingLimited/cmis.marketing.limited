@@ -377,7 +377,29 @@ export function getPublishingManagementMethods() {
                 });
                 if (response.ok) {
                     const data = await response.json();
+
+                    // Show success message
                     window.notify(data.message || 'Post added to queue successfully', 'success');
+
+                    // Show warning if some posts couldn't be queued
+                    if (data.data?.warning) {
+                        setTimeout(() => {
+                            window.notify(data.data.warning, 'warning');
+                        }, 500);
+                    }
+
+                    // Log queue details for debugging
+                    console.log('[Queue] Posts added to queue', {
+                        scheduled_count: data.data?.scheduled_count,
+                        draft_count: data.data?.draft_count,
+                        posts: data.data?.posts?.map(p => ({
+                            id: p.id,
+                            platform: p.platform,
+                            status: p.status,
+                            scheduled_at: p.scheduled_at
+                        }))
+                    });
+
                     this.closeModal();
                 } else {
                     const data = await response.json();

@@ -132,6 +132,7 @@ class PublishingModalController extends Controller
             'schedule.timezone' => 'nullable|string',
             'is_draft' => 'boolean',
             'requires_approval' => 'boolean',
+            'queue_position' => 'nullable|string|in:next,available,last', // NEW: Queue support
         ]);
 
         if ($validator->fails()) {
@@ -163,6 +164,14 @@ class PublishingModalController extends Controller
         $schedule = $request->input('schedule');
         $isDraft = $request->input('is_draft', false);
         $requiresApproval = $request->input('requires_approval', false);
+        $queuePosition = $request->input('queue_position'); // NEW: Queue support
+        $isQueueRequest = !empty($queuePosition); // NEW: Detect queue requests
+
+        Log::debug('[QUEUE] Post creation request', [
+            'is_queue_request' => $isQueueRequest,
+            'queue_position' => $queuePosition,
+            'has_schedule' => !empty($schedule),
+        ]);
 
         $globalText = $content['global']['text'] ?? '';
 
@@ -211,7 +220,18 @@ class PublishingModalController extends Controller
             $needsApproval = $needsApproval || $this->checkApprovalRequired($org, $profile);
             $approvalDuration = (microtime(true) - $approvalStart) * 1000;
 
-            $postData = $this->buildPostData($org, $profile, $content, $isDraft, $requiresApproval, $needsApproval, $scheduledAt);
+            // NEW: For queue requests, get the next available queue slot for this profile
+            $profileScheduledAt = $scheduledAt;
+            if ($isQueueRequest && !$scheduledAt) {
+                $profileScheduledAt = $this->getNextQueueSlotForProfile($org, $profileId);
+                Log::debug('[QUEUE] Queue slot for profile', [
+                    'profile_id' => $profileId,
+                    'platform' => $profile->platform,
+                    'queue_slot' => $profileScheduledAt?->toIso8601String(),
+                ]);
+            }
+
+            $postData = $this->buildPostData($org, $profile, $content, $isDraft, $requiresApproval, $needsApproval, $profileScheduledAt, $isQueueRequest);
 
             // [PERF] Measure post creation
             $createStart = microtime(true);
@@ -300,7 +320,7 @@ class PublishingModalController extends Controller
             'jobs_dispatched' => $jobsDispatched,
         ]);
 
-        return $this->buildCreationResultAsync($posts, $isDraft, $needsApproval, $requiresApproval, $scheduledAt, $jobsDispatched);
+        return $this->buildCreationResultAsync($posts, $isDraft, $needsApproval, $requiresApproval, $scheduledAt, $jobsDispatched, $isQueueRequest);
     }
 
     /**
@@ -348,6 +368,114 @@ class PublishingModalController extends Controller
     }
 
     /**
+     * Get the next available queue slot for a profile.
+     *
+     * @param string $org Organization ID
+     * @param string $profileId Integration/Profile ID
+     * @return \Carbon\Carbon|null Next available slot time, or null if queue not enabled/configured
+     */
+    protected function getNextQueueSlotForProfile(string $org, string $profileId): ?\Carbon\Carbon
+    {
+        try {
+            DB::statement("SELECT set_config('app.current_org_id', ?, false)", [$org]);
+
+            // Get queue settings for this profile
+            $queueSettings = DB::table('cmis.integration_queue_settings')
+                ->where('org_id', $org)
+                ->where('integration_id', $profileId)
+                ->whereNull('deleted_at')
+                ->first();
+
+            if (!$queueSettings || !$queueSettings->queue_enabled) {
+                Log::warning('[QUEUE] Queue not enabled for profile', [
+                    'profile_id' => $profileId,
+                    'has_settings' => (bool) $queueSettings,
+                    'queue_enabled' => $queueSettings->queue_enabled ?? false,
+                ]);
+                return null;
+            }
+
+            $postingTimes = json_decode($queueSettings->posting_times ?? '[]', true);
+            $daysEnabled = json_decode($queueSettings->days_enabled ?? '[0,1,2,3,4,5,6]', true);
+
+            if (empty($postingTimes)) {
+                Log::warning('[QUEUE] No posting times configured', ['profile_id' => $profileId]);
+                return null;
+            }
+
+            // Sort posting times to ensure correct order
+            sort($postingTimes);
+
+            // Get timezone for this profile (inheritance: profile -> group -> org -> UTC)
+            $timezoneData = DB::table('cmis.integrations as i')
+                ->leftJoin('cmis.social_accounts as sa', 'i.integration_id', '=', 'sa.integration_id')
+                ->leftJoin('cmis.profile_groups as pg', 'i.profile_group_id', '=', 'pg.group_id')
+                ->join('cmis.orgs as o', 'i.org_id', '=', 'o.org_id')
+                ->where('i.integration_id', $profileId)
+                ->select(DB::raw('COALESCE(sa.timezone, pg.timezone, o.timezone, \'UTC\') as timezone'))
+                ->first();
+
+            $timezone = $timezoneData?->timezone ?? 'UTC';
+
+            // Work in the profile's timezone
+            $now = \Carbon\Carbon::now($timezone);
+            $currentTime = $now->format('H:i');
+            $currentDay = $now->dayOfWeek; // 0=Sunday, 6=Saturday
+
+            Log::debug('[QUEUE] Finding next slot', [
+                'profile_id' => $profileId,
+                'timezone' => $timezone,
+                'now' => $now->toDateTimeString(),
+                'current_time' => $currentTime,
+                'current_day' => $currentDay,
+                'posting_times' => $postingTimes,
+                'days_enabled' => $daysEnabled,
+            ]);
+
+            // Try to find a slot today
+            if (in_array($currentDay, $daysEnabled)) {
+                foreach ($postingTimes as $time) {
+                    if ($time > $currentTime) {
+                        $slotTime = \Carbon\Carbon::parse($now->format('Y-m-d') . ' ' . $time . ':00', $timezone);
+                        Log::debug('[QUEUE] Found slot today', [
+                            'slot_local' => $slotTime->toDateTimeString(),
+                            'slot_utc' => $slotTime->utc()->toDateTimeString(),
+                        ]);
+                        return $slotTime->utc();
+                    }
+                }
+            }
+
+            // Find the next enabled day
+            for ($i = 1; $i <= 7; $i++) {
+                $nextDay = $now->copy()->addDays($i);
+                $nextDayOfWeek = $nextDay->dayOfWeek;
+
+                if (in_array($nextDayOfWeek, $daysEnabled)) {
+                    $firstTime = $postingTimes[0];
+                    $slotTime = \Carbon\Carbon::parse($nextDay->format('Y-m-d') . ' ' . $firstTime . ':00', $timezone);
+                    Log::debug('[QUEUE] Found slot on future day', [
+                        'days_ahead' => $i,
+                        'slot_local' => $slotTime->toDateTimeString(),
+                        'slot_utc' => $slotTime->utc()->toDateTimeString(),
+                    ]);
+                    return $slotTime->utc();
+                }
+            }
+
+            Log::warning('[QUEUE] No slot found within 7 days', ['profile_id' => $profileId]);
+            return null;
+
+        } catch (\Exception $e) {
+            Log::error('[QUEUE] Failed to get queue slot', [
+                'profile_id' => $profileId,
+                'error' => $e->getMessage(),
+            ]);
+            return null;
+        }
+    }
+
+    /**
      * Build post data for creation.
      */
     protected function buildPostData(
@@ -357,17 +485,29 @@ class PublishingModalController extends Controller
         bool $isDraft,
         bool $requiresApproval,
         bool $needsApproval,
-        ?\Carbon\Carbon $scheduledAt
+        ?\Carbon\Carbon $scheduledAt,
+        bool $isQueueRequest = false
     ): array {
         $platform = $profile->platform;
         $postContent = $content['platforms'][$platform]['text'] ?? $content['global']['text'] ?? '';
 
+        // Determine status based on request type
         $status = match (true) {
             $isDraft => 'draft',
             $requiresApproval || $needsApproval => 'pending_approval',
             $scheduledAt !== null => 'scheduled',
+            // NEW: Queue request without slot should still be scheduled (won't publish immediately)
+            $isQueueRequest && $scheduledAt === null => 'draft', // Save as draft if no queue slot available
             default => 'pending',
         };
+
+        // Log if queue request but no slot found
+        if ($isQueueRequest && $scheduledAt === null) {
+            Log::warning('[QUEUE] Queue request but no slot available, saving as draft', [
+                'profile_id' => $profile->integration_id,
+                'platform' => $platform,
+            ]);
+        }
 
         return [
             'org_id' => $org,
@@ -381,6 +521,7 @@ class PublishingModalController extends Controller
             'metadata' => [
                 'link' => $content['global']['link'] ?? null,
                 'created_from' => 'publish_modal',
+                'is_queue_request' => $isQueueRequest, // NEW: Track if this was a queue request
             ],
             'status' => $status,
             'scheduled_at' => $scheduledAt,
@@ -473,29 +614,61 @@ class PublishingModalController extends Controller
         bool $needsApproval,
         bool $requiresApproval,
         ?\Carbon\Carbon $scheduledAt,
-        int $jobsDispatched
+        int $jobsDispatched,
+        bool $isQueueRequest = false
     ): array {
         $postIds = array_map(fn($p) => $p->id, $posts);
 
+        // Count scheduled posts (for queue requests, each post may have different scheduled_at)
+        $scheduledCount = 0;
+        $draftCount = 0;
+        foreach ($posts as $post) {
+            if ($post->status === 'scheduled' && $post->scheduled_at) {
+                $scheduledCount++;
+            } elseif ($post->status === 'draft') {
+                $draftCount++;
+            }
+        }
+
+        // Build status message
         $statusMessage = match (true) {
             $isDraft => 'saved as draft',
             $needsApproval || $requiresApproval => 'submitted for approval',
+            $isQueueRequest && $scheduledCount > 0 => 'added to queue',
             $scheduledAt !== null => 'scheduled',
             $jobsDispatched > 0 => 'queued for publishing',
             default => 'created'
         };
 
-        return [
+        // Add warning for queue requests where some posts couldn't be scheduled
+        $warning = null;
+        if ($isQueueRequest && $draftCount > 0) {
+            $warning = sprintf(
+                '%d post(s) saved as draft because queue is not configured for those profiles. Please configure queue settings in Profile Management.',
+                $draftCount
+            );
+        }
+
+        $result = [
             'data' => [
                 'posts' => $posts,
                 'post_ids' => $postIds,
                 'count' => count($posts),
                 'queued_count' => $jobsDispatched,
+                'scheduled_count' => $scheduledCount, // NEW: Count of posts added to queue
+                'draft_count' => $draftCount, // NEW: Count of posts saved as draft
                 'requires_approval' => $needsApproval || $requiresApproval,
                 'is_async' => $jobsDispatched > 0,
+                'is_queue_request' => $isQueueRequest, // NEW: Track queue requests
             ],
             'message' => count($posts) . ' post(s) ' . $statusMessage . ' successfully',
         ];
+
+        if ($warning) {
+            $result['data']['warning'] = $warning;
+        }
+
+        return $result;
     }
 
     /**
