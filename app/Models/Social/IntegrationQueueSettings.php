@@ -18,6 +18,7 @@ class IntegrationQueueSettings extends BaseModel
         'queue_enabled',
         'posting_times',
         'days_enabled',
+        'schedule',
         'posts_per_day',
     ];
 
@@ -25,6 +26,7 @@ class IntegrationQueueSettings extends BaseModel
         'queue_enabled' => 'boolean',
         'posting_times' => 'array',
         'days_enabled' => 'array',
+        'schedule' => 'array',
         'posts_per_day' => 'integer',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',

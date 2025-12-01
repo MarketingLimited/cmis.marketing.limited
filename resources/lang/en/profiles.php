@@ -63,10 +63,16 @@ return [
 
     // Queue settings
     'queue_enabled' => 'Queue enabled',
+    'queue_enabled_description' => 'When enabled, posts will be automatically scheduled at the configured times.',
     'posting_times' => 'Posting times',
     'days_enabled' => 'Days enabled',
     'posts_per_day' => 'Posts per day',
     'add_time' => 'Add time',
+    'no_times_set' => 'No times set',
+    'quick_add_times' => 'Quick add times to enabled days',
+    'days_active' => 'days active',
+    'time_slots_total' => 'time slots total',
+    'setup_queue' => 'Setup Queue',
 
     // Days of week
     'sunday' => 'Sunday',

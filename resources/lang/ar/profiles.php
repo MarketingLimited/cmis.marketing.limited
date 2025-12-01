@@ -63,10 +63,16 @@ return [
 
     // Queue settings
     'queue_enabled' => 'قائمة الانتظار مفعلة',
+    'queue_enabled_description' => 'عند التفعيل، سيتم جدولة المنشورات تلقائياً في الأوقات المحددة.',
     'posting_times' => 'أوقات النشر',
     'days_enabled' => 'الأيام المفعلة',
     'posts_per_day' => 'المنشورات في اليوم',
     'add_time' => 'إضافة وقت',
+    'no_times_set' => 'لم يتم تحديد أوقات',
+    'quick_add_times' => 'إضافة سريعة للأوقات للأيام المفعلة',
+    'days_active' => 'أيام مفعلة',
+    'time_slots_total' => 'إجمالي فترات النشر',
+    'setup_queue' => 'إعداد قائمة الانتظار',
 
     // Days of week
     'sunday' => 'الأحد',

@@ -38,8 +38,8 @@ class SocialPostPublishService
                 return ['success' => false, 'message' => 'Post not found'];
             }
 
-            // Validate post status
-            if (!in_array($socialPost->status, ['draft', 'scheduled'])) {
+            // Validate post status - allow draft, scheduled, and failed (for retry)
+            if (!in_array($socialPost->status, ['draft', 'scheduled', 'failed'])) {
                 return ['success' => false, 'message' => 'This post cannot be published'];
             }
 
@@ -426,27 +426,71 @@ class SocialPostPublishService
             $firstMedia = $mediaUrls[0];
 
             // Build container data with all supported options
-            $containerData = $this->buildInstagramContainerData($content, $firstMedia, $mediaUrls, $accessToken, $postOptions);
+            $containerData = $this->buildInstagramContainerData($content, $firstMedia, $mediaUrls, $instagramAccountId, $accessToken, $postOptions);
 
-            // Create media container
-            $containerResponse = Http::timeout(60)->post(
-                "https://graph.facebook.com/v21.0/{$instagramAccountId}/media",
-                $containerData
-            );
+            // Create media container with retry logic for transient errors
+            $containerResponse = null;
+            $maxRetries = 3;
+            $retryDelay = 2;
 
-            if (!$containerResponse->successful()) {
+            for ($attempt = 1; $attempt <= $maxRetries; $attempt++) {
+                $containerResponse = Http::timeout(60)->post(
+                    "https://graph.facebook.com/v21.0/{$instagramAccountId}/media",
+                    $containerData
+                );
+
+                // Log response for debugging
+                Log::info('Instagram container response', [
+                    'status' => $containerResponse->status(),
+                    'successful' => $containerResponse->successful(),
+                    'body' => $containerResponse->json(),
+                    'attempt' => $attempt,
+                ]);
+
+                // Success - break out of retry loop
+                if ($containerResponse->successful()) {
+                    break;
+                }
+
+                // Check if it's a retryable error (5xx server errors)
+                if ($containerResponse->status() >= 500 && $attempt < $maxRetries) {
+                    Log::warning('Instagram container creation failed with 5xx error, retrying', [
+                        'attempt' => $attempt,
+                        'status' => $containerResponse->status(),
+                        'retry_in' => $retryDelay * $attempt,
+                    ]);
+                    sleep($retryDelay * $attempt); // Exponential backoff
+                    continue;
+                }
+
+                // Non-retryable error or max retries exceeded
                 $error = $containerResponse->json('error.message', 'Failed to create media container');
+                Log::error('Instagram container creation failed', ['error' => $error, 'response' => $containerResponse->json()]);
                 return ['success' => false, 'message' => $error];
             }
 
             $containerId = $containerResponse->json('id');
 
-            // Wait for video processing if needed
-            if ($firstMedia['type'] === 'video') {
-                $this->waitForVideoProcessing($containerId, $accessToken);
+            if (!$containerId) {
+                $error = $containerResponse->json('error.message', 'Media ID is not available');
+                Log::error('Instagram container ID missing', ['response' => $containerResponse->json()]);
+                return ['success' => false, 'message' => $error];
             }
 
+            // Determine media type for wait timing
+            // Carousels take longer since Instagram needs to assemble all children
+            $mediaType = count($mediaUrls) > 1 ? 'carousel' : $firstMedia['type'];
+
+            // Wait for container to be ready (required for all media types)
+            // Instagram needs time to process the uploaded media before publishing
+            $this->waitForContainerReady($containerId, $accessToken, $mediaType);
+
             // Publish the container
+            Log::info('Instagram media_publish starting', [
+                'instagram_account_id' => $instagramAccountId,
+                'container_id' => $containerId,
+            ]);
+
             $publishResponse = Http::timeout(60)->post(
                 "https://graph.facebook.com/v21.0/{$instagramAccountId}/media_publish",
                 [
@@ -455,8 +499,16 @@ class SocialPostPublishService
                 ]
             );
 
+            // Log full response for debugging
+            Log::info('Instagram media_publish response', [
+                'status' => $publishResponse->status(),
+                'successful' => $publishResponse->successful(),
+                'body' => $publishResponse->json(),
+            ]);
+
             if (!$publishResponse->successful()) {
                 $error = $publishResponse->json('error.message', 'Unknown error');
+                Log::error('Instagram media_publish failed', ['error' => $error, 'full_response' => $publishResponse->json()]);
                 return ['success' => false, 'message' => $error];
             }
 
@@ -509,6 +561,7 @@ class SocialPostPublishService
         string $content,
         array $firstMedia,
         array $mediaUrls,
+        string $instagramAccountId,
         string $accessToken,
         array $postOptions
     ): array {
@@ -581,6 +634,7 @@ class SocialPostPublishService
                 $containerData['media_type'] = 'CAROUSEL';
                 $containerData['children'] = $this->createCarouselChildren(
                     $mediaUrls,
+                    $instagramAccountId,
                     $accessToken,
                     $postOptions
                 );
@@ -598,12 +652,30 @@ class SocialPostPublishService
     }
 
     /**
-     * Create carousel children containers
+     * Create carousel children containers with retry logic and waiting
+     *
+     * @param array $mediaUrls Array of media items with 'url' and 'type'
+     * @param string $instagramAccountId The Instagram Business Account ID
+     * @param string $accessToken The access token
+     * @param array $postOptions Additional options including alt_texts
+     * @return string Comma-separated list of child container IDs
+     * @throws \Exception If any child container creation fails
      */
-    protected function createCarouselChildren(array $mediaUrls, string $accessToken, array $postOptions): string
-    {
+    protected function createCarouselChildren(
+        array $mediaUrls,
+        string $instagramAccountId,
+        string $accessToken,
+        array $postOptions
+    ): string {
         $children = [];
         $altTexts = $postOptions['alt_texts'] ?? [];
+        $maxRetries = 3;
+        $retryDelay = 2;
+
+        Log::info('Creating carousel children', [
+            'instagram_account_id' => $instagramAccountId,
+            'media_count' => count($mediaUrls),
+        ]);
 
         foreach ($mediaUrls as $index => $media) {
             $childData = [
@@ -622,26 +694,103 @@ class SocialPostPublishService
                 $childData['image_url'] = $media['url'];
             }
 
-            $childResponse = Http::timeout(60)->post(
-                "https://graph.facebook.com/v21.0/" . config('instagram.account_id') . "/media",
-                $childData
-            );
+            Log::info("Creating carousel child {$index}", [
+                'media_type' => $media['type'],
+                'media_url' => $media['url'],
+            ]);
 
-            if ($childResponse->successful()) {
-                $children[] = $childResponse->json('id');
+            // Create child container with retry logic
+            $childResponse = null;
+            $childId = null;
+
+            for ($attempt = 1; $attempt <= $maxRetries; $attempt++) {
+                $childResponse = Http::timeout(60)->post(
+                    "https://graph.facebook.com/v21.0/{$instagramAccountId}/media",
+                    $childData
+                );
+
+                Log::info("Carousel child {$index} response", [
+                    'attempt' => $attempt,
+                    'status' => $childResponse->status(),
+                    'successful' => $childResponse->successful(),
+                    'body' => $childResponse->json(),
+                ]);
+
+                if ($childResponse->successful()) {
+                    $childId = $childResponse->json('id');
+                    break;
+                }
+
+                // Retry on 5xx errors
+                if ($childResponse->status() >= 500 && $attempt < $maxRetries) {
+                    Log::warning("Carousel child {$index} creation failed with 5xx error, retrying", [
+                        'attempt' => $attempt,
+                        'status' => $childResponse->status(),
+                        'retry_in' => $retryDelay * $attempt,
+                    ]);
+                    sleep($retryDelay * $attempt);
+                    continue;
+                }
+
+                // Non-retryable error
+                $error = $childResponse->json('error.message', 'Failed to create carousel child');
+                Log::error("Carousel child {$index} creation failed", [
+                    'error' => $error,
+                    'response' => $childResponse->json(),
+                ]);
+                throw new \Exception("Failed to create carousel item {$index}: {$error}");
             }
+
+            if (!$childId) {
+                throw new \Exception("Failed to get ID for carousel item {$index}");
+            }
+
+            // Wait for child container to be ready before proceeding
+            $this->waitForContainerReady($childId, $accessToken, $media['type']);
+
+            $children[] = $childId;
+            Log::info("Carousel child {$index} ready", ['child_id' => $childId]);
         }
+
+        Log::info('All carousel children created and ready', [
+            'children_count' => count($children),
+            'children_ids' => $children,
+        ]);
 
         return implode(',', $children);
     }
 
     /**
-     * Wait for Instagram video processing
+     * Wait for Instagram container to be ready for publishing
+     *
+     * Instagram processes uploaded media asynchronously. This method polls
+     * the container status until it's FINISHED or an error occurs.
+     *
+     * @param string $containerId The container ID returned from media creation
+     * @param string $accessToken The Instagram access token
+     * @param string $mediaType The type of media (image, video, carousel)
+     * @throws \Exception If container processing fails or times out
      */
-    protected function waitForVideoProcessing(string $containerId, string $accessToken): void
+    protected function waitForContainerReady(string $containerId, string $accessToken, string $mediaType = 'image'): void
     {
-        $maxAttempts = 30;
+        // Processing times vary: videos longest, carousels medium, images shortest
+        // Carousels need extra time for Instagram to assemble all children
+        $waitConfig = [
+            'video' => ['max_attempts' => 30, 'sleep' => 2],
+            'carousel' => ['max_attempts' => 20, 'sleep' => 2],
+            'image' => ['max_attempts' => 10, 'sleep' => 1],
+        ];
+
+        $config = $waitConfig[$mediaType] ?? $waitConfig['image'];
+        $maxAttempts = $config['max_attempts'];
+        $sleepSeconds = $config['sleep'];
         $attempt = 0;
+
+        Log::info('Waiting for Instagram container to be ready', [
+            'container_id' => $containerId,
+            'media_type' => $mediaType,
+            'max_attempts' => $maxAttempts,
+        ]);
 
         while ($attempt < $maxAttempts) {
             $statusResponse = Http::timeout(15)->get("https://graph.facebook.com/v21.0/{$containerId}", [
@@ -651,17 +800,40 @@ class SocialPostPublishService
 
             $status = $statusResponse->json('status_code');
 
+            Log::debug('Instagram container status check', [
+                'container_id' => $containerId,
+                'attempt' => $attempt + 1,
+                'status' => $status,
+            ]);
+
             if ($status === 'FINISHED') {
+                Log::info('Instagram container ready', [
+                    'container_id' => $containerId,
+                    'attempts_taken' => $attempt + 1,
+                ]);
                 return;
             }
 
             if ($status === 'ERROR') {
-                throw new \Exception('Video processing failed');
+                $errorMessage = $statusResponse->json('status', 'Unknown processing error');
+                Log::error('Instagram container processing failed', [
+                    'container_id' => $containerId,
+                    'error' => $errorMessage,
+                ]);
+                throw new \Exception("Media processing failed: {$errorMessage}");
             }
 
-            sleep(2);
+            // Status is likely 'IN_PROGRESS' or similar
+            sleep($sleepSeconds);
             $attempt++;
         }
+
+        Log::warning('Instagram container timed out waiting for ready status', [
+            'container_id' => $containerId,
+            'attempts' => $maxAttempts,
+        ]);
+
+        // Even if we time out, try to publish anyway - Instagram might be ready
     }
 
     /**

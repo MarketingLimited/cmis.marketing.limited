@@ -38,12 +38,14 @@ class PublishScheduledSocialPostsCommand extends Command
 
         // MULTI-TENANCY FIX: Query without RLS first to get all orgs with scheduled posts
         // We disable RLS temporarily to see posts across all organizations
+        // NOTE: Must filter deleted_at IS NULL since model uses SoftDeletes
         $postsData = DB::select("
             SELECT DISTINCT sp.org_id, sp.id, sp.platform, sp.content, sp.media, sp.options, sp.scheduled_at
             FROM cmis.social_posts sp
             WHERE sp.status = 'scheduled'
               AND sp.scheduled_at IS NOT NULL
               AND sp.scheduled_at <= NOW()
+              AND sp.deleted_at IS NULL
             ORDER BY sp.scheduled_at
             LIMIT ?
         ", [$limit]);

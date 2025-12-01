@@ -327,6 +327,18 @@ class ProfileManagementService
      */
     public function updateQueueSettings(string $orgId, string $integrationId, array $data): IntegrationQueueSettings
     {
+        // Build flat posting_times array from schedule for backwards compatibility
+        $postingTimes = [];
+        $schedule = $data['schedule'] ?? [];
+        foreach ($schedule as $dayTimes) {
+            foreach ($dayTimes as $time) {
+                if (!in_array($time, $postingTimes)) {
+                    $postingTimes[] = $time;
+                }
+            }
+        }
+        sort($postingTimes);
+
         return IntegrationQueueSettings::updateOrCreate(
             [
                 'org_id' => $orgId,
@@ -334,8 +346,9 @@ class ProfileManagementService
             ],
             [
                 'queue_enabled' => $data['queue_enabled'] ?? false,
-                'posting_times' => $data['posting_times'] ?? [],
-                'days_enabled' => $data['days_enabled'] ?? [1, 2, 3, 4, 5],
+                'posting_times' => $postingTimes,
+                'days_enabled' => $data['days_enabled'] ?? [],
+                'schedule' => $schedule,
                 'posts_per_day' => $data['posts_per_day'] ?? 3,
             ]
         );

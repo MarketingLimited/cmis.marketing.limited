@@ -202,26 +202,75 @@
                     {{ __('profiles.publishing_queues') }}
                 </h3>
             </div>
+            <button @click="showQueueModal = true"
+                    class="text-sm text-blue-600 hover:text-blue-800 font-medium">
+                <i class="fas fa-cog me-1"></i>
+                {{ __('profiles.queue_settings') }}
+            </button>
         </div>
 
         @if($queueSettings && $queueSettings->queue_enabled)
-            <div class="space-y-4">
-                <div class="flex items-center justify-between">
-                    <span class="text-sm text-gray-600">{{ __('profiles.queue_enabled') }}</span>
-                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                        {{ __('profiles.status_active') }}
-                    </span>
-                </div>
-                <div>
-                    <p class="text-sm text-gray-600 mb-2">{{ __('profiles.posting_times') }}</p>
-                    <div class="flex flex-wrap gap-2">
-                        @foreach($queueSettings->posting_times ?? [] as $time)
-                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                {{ $time }}
+            {{-- Queue Status --}}
+            <div class="flex items-center gap-2 mb-4">
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                    <i class="fas fa-check-circle me-1"></i>
+                    {{ __('profiles.queue_enabled') }}
+                </span>
+            </div>
+
+            {{-- Days Schedule Grid --}}
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+                @php
+                    $daysOfWeek = [
+                        'sunday' => __('profiles.sunday'),
+                        'monday' => __('profiles.monday'),
+                        'tuesday' => __('profiles.tuesday'),
+                        'wednesday' => __('profiles.wednesday'),
+                        'thursday' => __('profiles.thursday'),
+                        'friday' => __('profiles.friday'),
+                        'saturday' => __('profiles.saturday'),
+                    ];
+                    $schedule = $queueSettings->schedule ?? [];
+                    $daysEnabled = $queueSettings->days_enabled ?? [];
+                @endphp
+
+                @foreach($daysOfWeek as $dayKey => $dayName)
+                    <div class="border border-gray-200 rounded-lg p-3 {{ in_array($dayKey, $daysEnabled) ? 'bg-white' : 'bg-gray-50 opacity-60' }}">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-sm font-medium {{ in_array($dayKey, $daysEnabled) ? 'text-gray-900' : 'text-gray-400' }}">
+                                {{ $dayName }}
                             </span>
-                        @endforeach
+                            @if(in_array($dayKey, $daysEnabled))
+                                <span class="w-2 h-2 bg-green-500 rounded-full"></span>
+                            @else
+                                <span class="w-2 h-2 bg-gray-300 rounded-full"></span>
+                            @endif
+                        </div>
+                        @if(in_array($dayKey, $daysEnabled) && isset($schedule[$dayKey]) && count($schedule[$dayKey]) > 0)
+                            <div class="flex flex-wrap gap-1">
+                                @foreach($schedule[$dayKey] as $time)
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                                        {{ \Carbon\Carbon::createFromFormat('H:i', $time)->format('g:i A') }}
+                                    </span>
+                                @endforeach
+                            </div>
+                        @else
+                            <p class="text-xs text-gray-400 italic">{{ __('profiles.no_times_set') }}</p>
+                        @endif
                     </div>
-                </div>
+                @endforeach
+            </div>
+
+            {{-- Summary --}}
+            @php
+                $totalSlots = 0;
+                foreach ($schedule as $dayTimes) {
+                    $totalSlots += count($dayTimes);
+                }
+            @endphp
+            <div class="mt-4 pt-4 border-t border-gray-200 flex items-center justify-between text-sm text-gray-500">
+                <span>{{ count($daysEnabled) }} {{ __('profiles.days_active') }}</span>
+                <span>{{ $totalSlots }} {{ __('profiles.time_slots_total') }}</span>
             </div>
         @else
             <div class="text-center py-8">
@@ -230,8 +279,9 @@
                 </div>
                 <p class="text-sm text-gray-500 mb-3">{{ __('profiles.no_queue_message') }}</p>
                 <button @click="showQueueModal = true"
-                        class="text-sm text-blue-600 hover:text-blue-800 font-medium">
-                    {{ __('profiles.queue_settings') }}
+                        class="inline-flex items-center px-4 py-2 border border-blue-300 rounded-md shadow-sm text-sm font-medium text-blue-700 bg-white hover:bg-blue-50">
+                    <i class="fas fa-plus me-2"></i>
+                    {{ __('profiles.setup_queue') }}
                 </button>
             </div>
         @endif
@@ -315,6 +365,9 @@
 
     {{-- Manage Groups Modal --}}
     @include('settings.profiles.partials._groups-modal')
+
+    {{-- Queue Settings Modal --}}
+    @include('settings.profiles.partials._queue-modal')
 </div>
 
 @push('scripts')

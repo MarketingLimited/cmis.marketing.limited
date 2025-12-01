@@ -17,6 +17,16 @@ class MetaPublisher extends AbstractPublisher
      */
     public function publish(string $content, array $media, array $options = []): array
     {
+        // Log received media for debugging
+        $this->logInfo('MetaPublisher::publish received', [
+            'platform' => $this->platform,
+            'media_count' => count($media),
+            'media_items' => array_map(fn($m) => [
+                'type' => $m['type'] ?? 'unknown',
+                'url' => $m['url'] ?? $m['preview_url'] ?? 'no-url',
+            ], $media),
+        ]);
+
         $selectedAssets = $this->getSelectedAssets();
 
         // Handle both singular and plural key names for backward compatibility
@@ -207,16 +217,22 @@ class MetaPublisher extends AbstractPublisher
             }
         }
 
-        $firstMedia = $media[0];
-        $mediaUrl = $firstMedia['url'] ?? $firstMedia['preview_url'] ?? null;
-
-        if (!$mediaUrl) {
-            return $this->failure('No valid media URL found');
-        }
-
-        $isVideo = ($firstMedia['type'] ?? 'image') === 'video';
-
         try {
+            // Check if this is a carousel (multiple media items)
+            if (count($media) > 1) {
+                return $this->publishInstagramCarousel($instagramId, $content, $media, $accessToken);
+            }
+
+            // Single media item
+            $firstMedia = $media[0];
+            $mediaUrl = $firstMedia['url'] ?? $firstMedia['preview_url'] ?? null;
+
+            if (!$mediaUrl) {
+                return $this->failure('No valid media URL found');
+            }
+
+            $isVideo = ($firstMedia['type'] ?? 'image') === 'video';
+
             // Step 1: Create media container
             $containerResult = $this->createInstagramMediaContainer($instagramId, $mediaUrl, $content, $isVideo, $accessToken);
             if (!$containerResult['success']) {
@@ -225,12 +241,10 @@ class MetaPublisher extends AbstractPublisher
 
             $containerId = $containerResult['container_id'];
 
-            // Step 2: Wait for media processing (for videos)
-            if ($isVideo) {
-                $readyResult = $this->waitForInstagramMediaReady($containerId, $accessToken);
-                if (!$readyResult['success']) {
-                    return $readyResult;
-                }
+            // Step 2: Wait for media processing
+            $readyResult = $this->waitForInstagramMediaReady($containerId, $accessToken);
+            if (!$readyResult['success']) {
+                return $readyResult;
             }
 
             // Step 3: Publish the container
@@ -239,6 +253,122 @@ class MetaPublisher extends AbstractPublisher
             $this->logError('Instagram publish failed', ['error' => $e->getMessage()]);
             return $this->failure($e->getMessage());
         }
+    }
+
+    /**
+     * Publish an Instagram carousel (multiple images/videos).
+     */
+    protected function publishInstagramCarousel(string $instagramId, string $content, array $media, string $accessToken): array
+    {
+        $this->logInfo('Publishing Instagram carousel', [
+            'instagram_id' => $instagramId,
+            'media_count' => count($media),
+        ]);
+
+        $childrenIds = [];
+
+        // Step 1: Create child containers for each media item
+        foreach ($media as $index => $item) {
+            $mediaUrl = $item['url'] ?? $item['preview_url'] ?? null;
+            if (!$mediaUrl) {
+                $this->logError("Carousel item {$index} has no valid URL");
+                continue;
+            }
+
+            $isVideo = ($item['type'] ?? 'image') === 'video';
+
+            // Create child container (is_carousel_item = true)
+            $childResult = $this->createInstagramCarouselChild($instagramId, $mediaUrl, $isVideo, $accessToken);
+            if (!$childResult['success']) {
+                return $this->failure("Failed to create carousel item {$index}: " . ($childResult['message'] ?? 'Unknown error'));
+            }
+
+            $childId = $childResult['container_id'];
+
+            // Wait for child to be ready
+            $readyResult = $this->waitForInstagramMediaReady($childId, $accessToken);
+            if (!$readyResult['success']) {
+                return $this->failure("Carousel item {$index} processing failed");
+            }
+
+            $childrenIds[] = $childId;
+            $this->logInfo("Carousel child {$index} ready", ['child_id' => $childId]);
+        }
+
+        if (empty($childrenIds)) {
+            return $this->failure('No valid carousel items created');
+        }
+
+        // Step 2: Create the parent carousel container
+        $this->logInfo('Creating carousel parent container', [
+            'children_count' => count($childrenIds),
+        ]);
+
+        $carouselResult = $this->httpPost(
+            self::API_BASE . self::API_VERSION . "/{$instagramId}/media",
+            [
+                'access_token' => $accessToken,
+                'caption' => $content,
+                'media_type' => 'CAROUSEL',
+                'children' => implode(',', $childrenIds),
+            ]
+        );
+
+        if (!$carouselResult['success']) {
+            return $this->failure('Failed to create carousel container: ' . ($carouselResult['error'] ?? 'Unknown error'));
+        }
+
+        $carouselId = $carouselResult['data']['id'] ?? null;
+        if (!$carouselId) {
+            return $this->failure('Carousel container created but no ID returned');
+        }
+
+        // Step 3: Wait for carousel to be ready
+        $readyResult = $this->waitForInstagramMediaReady($carouselId, $accessToken, 60);
+        if (!$readyResult['success']) {
+            return $readyResult;
+        }
+
+        // Step 4: Publish the carousel
+        $this->logInfo('Publishing carousel', ['carousel_id' => $carouselId]);
+        return $this->publishInstagramContainer($instagramId, $carouselId, $accessToken);
+    }
+
+    /**
+     * Create a carousel child container.
+     */
+    protected function createInstagramCarouselChild(string $instagramId, string $mediaUrl, bool $isVideo, string $accessToken): array
+    {
+        $params = [
+            'access_token' => $accessToken,
+            'is_carousel_item' => true,
+        ];
+
+        if ($isVideo) {
+            $params['media_type'] = 'VIDEO';
+            $params['video_url'] = $mediaUrl;
+        } else {
+            $params['image_url'] = $mediaUrl;
+        }
+
+        $result = $this->httpPost(
+            self::API_BASE . self::API_VERSION . "/{$instagramId}/media",
+            $params
+        );
+
+        if (!$result['success']) {
+            return $this->failure('Failed to create carousel child: ' . ($result['error'] ?? 'Unknown error'));
+        }
+
+        $containerId = $result['data']['id'] ?? null;
+        if (!$containerId) {
+            return $this->failure('Carousel child created but no ID returned');
+        }
+
+        return [
+            'success' => true,
+            'container_id' => $containerId,
+        ];
     }
 
     /**
@@ -369,6 +499,37 @@ class MetaPublisher extends AbstractPublisher
         }
 
         $postId = $result['data']['id'] ?? null;
-        return $this->success($postId, "https://www.instagram.com/p/{$postId}");
+
+        // Fetch the actual permalink from Instagram API
+        // The numeric ID can't be used directly in URLs - need the shortcode-based permalink
+        $permalink = $this->getInstagramPermalink($postId, $accessToken);
+
+        return $this->success($postId, $permalink);
+    }
+
+    /**
+     * Get the permalink for an Instagram media post.
+     */
+    protected function getInstagramPermalink(string $mediaId, string $accessToken): ?string
+    {
+        $result = $this->httpGet(
+            self::API_BASE . self::API_VERSION . "/{$mediaId}",
+            [
+                'access_token' => $accessToken,
+                'fields' => 'permalink',
+            ]
+        );
+
+        if ($result['success'] && !empty($result['data']['permalink'])) {
+            return $result['data']['permalink'];
+        }
+
+        // Fallback: return null if we can't get the permalink
+        $this->logError('Could not fetch Instagram permalink', [
+            'media_id' => $mediaId,
+            'error' => $result['error'] ?? 'Unknown error',
+        ]);
+
+        return null;
     }
 }
