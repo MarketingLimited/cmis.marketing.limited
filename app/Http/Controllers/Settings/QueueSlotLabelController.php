@@ -31,7 +31,8 @@ class QueueSlotLabelController extends Controller
     {
         try {
             // Initialize RLS context
-            DB::statement("SELECT init_transaction_context(?)", [$org]);
+            $user = $request->user();
+            DB::statement("SELECT cmis.init_transaction_context(?, ?)", [$user->user_id, $org]);
 
             $search = $request->get('search');
             $labels = $this->labelService->getLabels($org, $search);
@@ -79,7 +80,8 @@ class QueueSlotLabelController extends Controller
 
         try {
             // Initialize RLS context
-            DB::statement("SELECT init_transaction_context(?)", [$org]);
+            $user = $request->user();
+            DB::statement("SELECT cmis.init_transaction_context(?, ?)", [$user->user_id, $org]);
 
             $label = $this->labelService->createLabel($org, $validated);
 
@@ -122,7 +124,8 @@ class QueueSlotLabelController extends Controller
 
         try {
             // Initialize RLS context
-            DB::statement("SELECT init_transaction_context(?)", [$org]);
+            $user = $request->user();
+            DB::statement("SELECT cmis.init_transaction_context(?, ?)", [$user->user_id, $org]);
 
             $label = $this->labelService->updateLabel($org, $labelId, $validated);
 
@@ -150,15 +153,17 @@ class QueueSlotLabelController extends Controller
     /**
      * Delete a queue slot label.
      *
+     * @param Request $request
      * @param string $org Organization UUID
      * @param string $labelId Label UUID
      * @return JsonResponse
      */
-    public function destroy(string $org, string $labelId): JsonResponse
+    public function destroy(Request $request, string $org, string $labelId): JsonResponse
     {
         try {
             // Initialize RLS context
-            DB::statement("SELECT init_transaction_context(?)", [$org]);
+            $user = $request->user();
+            DB::statement("SELECT cmis.init_transaction_context(?, ?)", [$user->user_id, $org]);
 
             $deleted = $this->labelService->deleteLabel($org, $labelId);
 
@@ -205,7 +210,8 @@ class QueueSlotLabelController extends Controller
 
         try {
             // Initialize RLS context
-            DB::statement("SELECT init_transaction_context(?)", [$org]);
+            $user = $request->user();
+            DB::statement("SELECT cmis.init_transaction_context(?, ?)", [$user->user_id, $org]);
 
             $this->labelService->reorderLabels($org, $validated['label_ids']);
 
