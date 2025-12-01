@@ -396,12 +396,25 @@ class PublishingModalController extends Controller
             }
 
             $postingTimes = json_decode($queueSettings->posting_times ?? '[]', true);
-            $daysEnabled = json_decode($queueSettings->days_enabled ?? '[0,1,2,3,4,5,6]', true);
+            $daysEnabledRaw = json_decode($queueSettings->days_enabled ?? '[0,1,2,3,4,5,6]', true);
 
             if (empty($postingTimes)) {
                 Log::warning('[QUEUE] No posting times configured', ['profile_id' => $profileId]);
                 return null;
             }
+
+            // Convert day names to numbers if needed (sunday=0, monday=1, ... saturday=6)
+            $dayNameToNumber = [
+                'sunday' => 0, 'monday' => 1, 'tuesday' => 2, 'wednesday' => 3,
+                'thursday' => 4, 'friday' => 5, 'saturday' => 6
+            ];
+            $daysEnabled = array_map(function ($day) use ($dayNameToNumber) {
+                if (is_string($day)) {
+                    return $dayNameToNumber[strtolower($day)] ?? null;
+                }
+                return (int) $day;
+            }, $daysEnabledRaw);
+            $daysEnabled = array_filter($daysEnabled, fn($d) => $d !== null);
 
             // Sort posting times to ensure correct order
             sort($postingTimes);
@@ -428,8 +441,11 @@ class PublishingModalController extends Controller
                 'now' => $now->toDateTimeString(),
                 'current_time' => $currentTime,
                 'current_day' => $currentDay,
+                'current_day_name' => $now->format('l'),
                 'posting_times' => $postingTimes,
-                'days_enabled' => $daysEnabled,
+                'days_enabled_raw' => $daysEnabledRaw,
+                'days_enabled_numeric' => $daysEnabled,
+                'is_today_enabled' => in_array($currentDay, $daysEnabled),
             ]);
 
             // Try to find a slot today
