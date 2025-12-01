@@ -41,6 +41,21 @@ class Integration extends BaseModel
         'sync_status',
         'sync_errors',
         'sync_retry_count',
+        // Profile management fields
+        'profile_group_id',
+        'account_name',
+        'platform_handle',
+        'avatar_url',
+        'status',
+        'industry',
+        'custom_fields',
+        'is_enabled',
+        'display_name',
+        'bio',
+        'website_url',
+        'profile_type',
+        'connected_by',
+        'auto_boost_enabled',
     ];
 
     protected $hidden = [
@@ -63,9 +78,128 @@ class Integration extends BaseModel
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
         'deleted_at' => 'datetime',
+        // Profile management casts
+        'profile_group_id' => 'string',
+        'custom_fields' => 'array',
+        'is_enabled' => 'boolean',
+        'connected_by' => 'string',
+        'auto_boost_enabled' => 'boolean',
     ];
 
-    
+    // ===== Profile Management Relationships =====
+
+    /**
+     * Get the profile group this integration belongs to.
+     */
+    public function profileGroup(): BelongsTo
+    {
+        return $this->belongsTo(\App\Models\Social\ProfileGroup::class, 'profile_group_id', 'group_id');
+    }
+
+    /**
+     * Get the user who connected this integration.
+     */
+    public function connectedByUser(): BelongsTo
+    {
+        return $this->belongsTo(\App\Models\Core\User::class, 'connected_by', 'user_id');
+    }
+
+    /**
+     * Get the queue settings for this integration.
+     */
+    public function queueSettings()
+    {
+        return $this->hasOne(\App\Models\Social\IntegrationQueueSettings::class, 'integration_id', 'integration_id');
+    }
+
+    /**
+     * Get the boost rules that apply to this integration.
+     * Note: Boost rules are linked via profile_group_id, but can filter by integration.
+     */
+    public function boostRules()
+    {
+        return $this->hasMany(\App\Models\Platform\BoostRule::class, 'profile_group_id', 'profile_group_id');
+    }
+
+    // ===== Profile Management Scopes =====
+
+    /**
+     * Scope to get only enabled profiles.
+     */
+    public function scopeEnabled($query)
+    {
+        return $query->where('is_enabled', true);
+    }
+
+    /**
+     * Scope to filter by platform.
+     */
+    public function scopeForPlatform($query, string $platform)
+    {
+        return $query->where('platform', $platform);
+    }
+
+    /**
+     * Scope to filter by profile group.
+     */
+    public function scopeInGroup($query, string $groupId)
+    {
+        return $query->where('profile_group_id', $groupId);
+    }
+
+    /**
+     * Scope to filter by status.
+     */
+    public function scopeWithStatus($query, string $status)
+    {
+        return $query->where('status', $status);
+    }
+
+    /**
+     * Scope to search by name or username.
+     */
+    public function scopeSearch($query, string $search)
+    {
+        return $query->where(function ($q) use ($search) {
+            $q->where('account_name', 'ilike', "%{$search}%")
+              ->orWhere('display_name', 'ilike', "%{$search}%")
+              ->orWhere('username', 'ilike', "%{$search}%")
+              ->orWhere('platform_handle', 'ilike', "%{$search}%");
+        });
+    }
+
+    // ===== Profile Management Accessors =====
+
+    /**
+     * Get the display name (prefers display_name, falls back to account_name).
+     */
+    public function getEffectiveNameAttribute(): string
+    {
+        return $this->display_name ?: $this->account_name ?: $this->username ?: 'Unknown';
+    }
+
+    /**
+     * Get the effective status for display.
+     */
+    public function getStatusLabelAttribute(): string
+    {
+        return match ($this->status) {
+            'active', 'connected' => 'active',
+            'inactive', 'disconnected' => 'inactive',
+            'error', 'failed' => 'error',
+            default => $this->status ?? 'active',
+        };
+    }
+
+    /**
+     * Check if profile is active and enabled.
+     */
+    public function isActiveAndEnabled(): bool
+    {
+        return $this->is_active && $this->is_enabled && $this->status !== 'error';
+    }
+
+    // ===== Existing Relationships =====
 
     /**
      * Get the user who created this integration.
@@ -262,4 +396,5 @@ class Integration extends BaseModel
             'last_synced_at' => $status === 'success' ? now() : $this->last_synced_at,
             'sync_retry_count' => $status === 'failed' ? $this->sync_retry_count + 1 : 0,
         ]);
+    }
 }

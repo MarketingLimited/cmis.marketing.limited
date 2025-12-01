@@ -695,6 +695,38 @@ Route::middleware(['auth'])->group(function () {
                 Route::delete('/{connection}', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'destroy'])->name('destroy');
             });
 
+            // ==================== Profile Management (VistaSocial-like) ====================
+            Route::prefix('profiles')->name('profiles.')->group(function () {
+                // List and stats
+                Route::get('/', [App\Http\Controllers\Settings\ProfileManagementController::class, 'index'])->name('index');
+                Route::get('/stats', [App\Http\Controllers\Settings\ProfileManagementController::class, 'stats'])->name('stats');
+
+                // Single profile
+                Route::get('/{integration_id}', [App\Http\Controllers\Settings\ProfileManagementController::class, 'show'])->name('show');
+                Route::patch('/{integration_id}', [App\Http\Controllers\Settings\ProfileManagementController::class, 'update'])->name('update');
+                Route::delete('/{integration_id}', [App\Http\Controllers\Settings\ProfileManagementController::class, 'destroy'])->name('destroy');
+
+                // Profile actions
+                Route::post('/{integration_id}/avatar', [App\Http\Controllers\Settings\ProfileManagementController::class, 'updateAvatar'])->name('avatar.update');
+                Route::post('/{integration_id}/toggle', [App\Http\Controllers\Settings\ProfileManagementController::class, 'toggleEnabled'])->name('toggle');
+                Route::post('/{integration_id}/refresh', [App\Http\Controllers\Settings\ProfileManagementController::class, 'refreshConnection'])->name('refresh');
+
+                // Profile group assignment
+                Route::post('/{integration_id}/groups', [App\Http\Controllers\Settings\ProfileManagementController::class, 'assignGroup'])->name('groups.assign');
+                Route::delete('/{integration_id}/groups', [App\Http\Controllers\Settings\ProfileManagementController::class, 'removeFromGroup'])->name('groups.remove');
+
+                // Queue settings
+                Route::get('/{integration_id}/queue', [App\Http\Controllers\Settings\ProfileManagementController::class, 'getQueueSettings'])->name('queue.show');
+                Route::patch('/{integration_id}/queue', [App\Http\Controllers\Settings\ProfileManagementController::class, 'updateQueueSettings'])->name('queue.update');
+
+                // Boost rules
+                Route::get('/{integration_id}/boosts', [App\Http\Controllers\Settings\ProfileManagementController::class, 'getBoostRules'])->name('boosts.index');
+                Route::post('/{integration_id}/boosts', [App\Http\Controllers\Settings\ProfileManagementController::class, 'createBoostRule'])->name('boosts.store');
+                Route::patch('/{integration_id}/boosts/{boost_id}', [App\Http\Controllers\Settings\ProfileManagementController::class, 'updateBoostRule'])->name('boosts.update');
+                Route::delete('/{integration_id}/boosts/{boost_id}', [App\Http\Controllers\Settings\ProfileManagementController::class, 'deleteBoostRule'])->name('boosts.destroy');
+                Route::post('/{integration_id}/boosts/{boost_id}/toggle', [App\Http\Controllers\Settings\ProfileManagementController::class, 'toggleBoostRule'])->name('boosts.toggle');
+            });
+
             // ==================== Profile Groups (Publishing Management) ====================
             Route::prefix('profile-groups')->name('profile-groups.')->group(function () {
                 Route::get('/', [App\Http\Controllers\Settings\ProfileGroupSettingsController::class, 'index'])->name('index');
