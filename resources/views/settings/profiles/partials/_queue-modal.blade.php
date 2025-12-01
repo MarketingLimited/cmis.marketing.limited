@@ -48,7 +48,7 @@
             </div>
 
             {{-- Modal Body --}}
-            <div class="px-6 py-6 max-h-[70vh] overflow-y-auto">
+            <div class="px-6 py-6 max-h-[70vh] overflow-y-auto" x-data="queueSettingsForm()">
                 <form @submit.prevent="saveQueueSettings">
                     {{-- Enable Queue Toggle --}}
                     <div class="mb-6 p-4 bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg border border-blue-200">
@@ -411,23 +411,26 @@ function queueSettingsForm() {
 
                 if (data.success) {
                     // Show success message
-                    this.$dispatch('notify', {
-                        type: 'success',
-                        message: '{{ __('profiles.queue_settings_saved') }}'
-                    });
+                    window.dispatchEvent(new CustomEvent('toast', {
+                        detail: {
+                            message: '{{ __('profiles.queue_settings_saved') }}',
+                            type: 'success'
+                        }
+                    }));
 
-                    // Close modal and reload page to update display
-                    this.showQueueModal = false;
+                    // Reload page to update display
                     setTimeout(() => location.reload(), 500);
                 } else {
                     throw new Error(data.message || '{{ __('common.error_occurred') }}');
                 }
             } catch (error) {
                 console.error('Error saving queue settings:', error);
-                this.$dispatch('notify', {
-                    type: 'error',
-                    message: error.message || '{{ __('common.error_occurred') }}'
-                });
+                window.dispatchEvent(new CustomEvent('toast', {
+                    detail: {
+                        message: error.message || '{{ __('common.error_occurred') }}',
+                        type: 'error'
+                    }
+                }));
             } finally {
                 this.isSaving = false;
             }
