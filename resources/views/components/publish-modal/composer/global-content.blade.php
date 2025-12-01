@@ -280,7 +280,14 @@
         </div>
 
         <div class="grid grid-cols-4 gap-3"
-             x-data="{ draggedIndex: null, dragOverIndex: null }"
+             x-data="{
+                 draggedIndex: null,
+                 dragOverIndex: null,
+                 reorder(oldIdx, newIdx) {
+                     const item = content.global.media.splice(oldIdx, 1)[0];
+                     content.global.media.splice(newIdx, 0, item);
+                 }
+             }"
              @dragend="draggedIndex = null; dragOverIndex = null">
             {{-- Media Items with Upload Status --}}
             <template x-for="(media, index) in content.global.media" :key="media.url || index">
@@ -289,7 +296,7 @@
                      @dragstart="draggedIndex = index; $event.dataTransfer.effectAllowed = 'move'"
                      @dragover.prevent="if (draggedIndex !== null && draggedIndex !== index) { dragOverIndex = index; $event.dataTransfer.dropEffect = 'move' }"
                      @dragleave="if (dragOverIndex === index) dragOverIndex = null"
-                     @drop.prevent="if (draggedIndex !== null && draggedIndex !== index) { reorderMedia(draggedIndex, index); draggedIndex = null; dragOverIndex = null }"
+                     @drop.prevent="if (draggedIndex !== null && draggedIndex !== index) { reorder(draggedIndex, index); draggedIndex = null; dragOverIndex = null }"
                      :class="{
                          'ring-2 ring-blue-500 ring-offset-2': dragOverIndex === index,
                          'opacity-50 scale-95': draggedIndex === index
