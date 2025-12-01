@@ -283,9 +283,12 @@
              x-data="{
                  draggedIndex: null,
                  dragOverIndex: null,
-                 reorder(oldIdx, newIdx) {
-                     const item = content.global.media.splice(oldIdx, 1)[0];
-                     content.global.media.splice(newIdx, 0, item);
+                 reorder(fromIdx, toIdx) {
+                     if (fromIdx === toIdx) return;
+                     const item = content.global.media.splice(fromIdx, 1)[0];
+                     // When dragging down, target index shifts after removal
+                     const insertAt = fromIdx < toIdx ? toIdx - 1 : toIdx;
+                     content.global.media.splice(insertAt, 0, item);
                  }
              }"
              @dragend="draggedIndex = null; dragOverIndex = null">
