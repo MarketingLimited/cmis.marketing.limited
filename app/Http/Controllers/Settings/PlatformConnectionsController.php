@@ -1191,6 +1191,7 @@ class PlatformConnectionsController extends Controller
             'ad_account' => 'Ad Account',
             'pixel' => 'Pixel',
             'catalog' => 'Catalog',
+            'whatsapp_account' => 'WhatsApp Account',
         ];
 
         $assetList = [];
