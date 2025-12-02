@@ -165,7 +165,7 @@ class MarketplaceService
 
             // Enable the requested app
             $this->enableSingleApp($orgId, $app->app_id, $userId);
-            $enabledApps[] = $appSlug;
+            $enabledApps[] = $app->slug;
         });
 
         $this->clearCache($orgId);

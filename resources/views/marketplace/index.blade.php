@@ -147,7 +147,7 @@
                         @endif
 
                         {{-- Action Button --}}
-                        <div x-data="{ enabled: {{ in_array($app->slug, $enabledSlugs) ? 'true' : 'false' }}, loading: false }">
+                        <div x-data="appToggle('{{ $app->slug }}', {{ in_array($app->slug, $enabledSlugs) ? 'true' : 'false' }})">
                             @if($app->is_premium && !$hasPremium)
                                 <button
                                     disabled
@@ -158,7 +158,7 @@
                                 </button>
                             @else
                                 <button
-                                    @click="toggleApp('{{ $app->slug }}', enabled)"
+                                    @click="toggle()"
                                     :disabled="loading"
                                     :class="enabled ? 'bg-red-50 text-red-600 hover:bg-red-100' : 'bg-indigo-600 text-white hover:bg-indigo-700'"
                                     class="w-full py-2.5 rounded-xl font-medium transition disabled:opacity-50"
@@ -203,17 +203,21 @@
 
 @push('scripts')
 <script>
-function marketplaceApp() {
+// App toggle component for enable/disable buttons
+function appToggle(appSlug, initialEnabled) {
     return {
-        searchQuery: '',
-        selectedCategory: null,
+        appSlug: appSlug,
+        enabled: initialEnabled,
+        loading: false,
         csrfToken: '{{ csrf_token() }}',
         orgId: '{{ $orgId }}',
 
-        async toggleApp(appSlug, currentlyEnabled) {
-            const endpoint = currentlyEnabled
-                ? `/orgs/${this.orgId}/marketplace/apps/${appSlug}/disable`
-                : `/orgs/${this.orgId}/marketplace/apps/${appSlug}/enable`;
+        async toggle() {
+            this.loading = true;
+
+            const endpoint = this.enabled
+                ? `/orgs/${this.orgId}/marketplace/apps/${this.appSlug}/disable`
+                : `/orgs/${this.orgId}/marketplace/apps/${this.appSlug}/enable`;
 
             try {
                 const response = await fetch(endpoint, {
@@ -233,7 +237,10 @@ function marketplaceApp() {
                         detail: { message: data.message, type: 'success' }
                     }));
 
-                    // Reload page to refresh sidebar
+                    // Toggle the enabled state
+                    this.enabled = !this.enabled;
+
+                    // Reload page to refresh sidebar after a short delay
                     setTimeout(() => window.location.reload(), 500);
                 } else {
                     // Show error toast
@@ -246,8 +253,18 @@ function marketplaceApp() {
                 window.dispatchEvent(new CustomEvent('show-toast', {
                     detail: { message: '{{ __("common.error_occurred") }}', type: 'error' }
                 }));
+            } finally {
+                this.loading = false;
             }
         }
+    };
+}
+
+// Main marketplace app for search and filter
+function marketplaceApp() {
+    return {
+        searchQuery: '',
+        selectedCategory: null
     };
 }
 </script>
