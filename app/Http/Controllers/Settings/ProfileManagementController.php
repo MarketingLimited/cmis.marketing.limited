@@ -126,6 +126,35 @@ class ProfileManagementController extends Controller
                 $selectedAssets = $metadata['selected_assets'] ?? [];
                 $selectedAdAccountIds = $selectedAssets['ad_account'] ?? [];
 
+                // If no ad_accounts array exists but selected_assets.ad_account does,
+                // create minimal ad account objects from the selected IDs
+                if (empty($availableAdAccounts) && !empty($selectedAdAccountIds)) {
+                    // Get any additional info from metadata (single ad_account fields)
+                    $primaryAdAccountId = $metadata['ad_account_id'] ?? null;
+                    $primaryAdAccountName = $metadata['ad_account_name'] ?? null;
+                    $defaultCurrency = $metadata['currency'] ?? 'USD';
+                    $defaultTimezone = $metadata['timezone'] ?? null;
+
+                    $availableAdAccounts = collect($selectedAdAccountIds)
+                        ->map(function ($accountId) use ($primaryAdAccountId, $primaryAdAccountName, $defaultCurrency, $defaultTimezone) {
+                            $accountIdWithoutPrefix = str_replace('act_', '', $accountId);
+                            // Use the primary account name if this is the primary account
+                            $accountName = ($accountIdWithoutPrefix === $primaryAdAccountId && $primaryAdAccountName)
+                                ? $primaryAdAccountName
+                                : 'Ad Account ' . $accountIdWithoutPrefix;
+
+                            return [
+                                'id' => $accountId,
+                                'account_id' => $accountIdWithoutPrefix,
+                                'name' => $accountName,
+                                'currency' => $defaultCurrency,
+                                'timezone' => $defaultTimezone,
+                                'status' => 'active',
+                            ];
+                        })
+                        ->toArray();
+                }
+
                 // Filter to only show selected ad accounts (or all if none selected)
                 $adAccounts = collect($availableAdAccounts)
                     ->filter(function ($account) use ($selectedAdAccountIds) {
