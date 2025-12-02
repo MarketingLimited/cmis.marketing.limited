@@ -26,6 +26,7 @@ use App\Http\Controllers\Webhooks\LinkedInWebhookController;
 use App\Http\Controllers\API\AnalyticsController;
 use App\Http\Controllers\API\AdCampaignController as APIAdCampaignController;
 use App\Http\Controllers\Api\UserOrganizationController;
+use App\Http\Controllers\Api\MetaAssetsApiController;
 
 /*
 |--------------------------------------------------------------------------
@@ -1542,6 +1543,24 @@ Route::middleware(['auth:sanctum', 'validate.org.access', 'org.context', 'api.ra
         Route::prefix('ai')->name('ai.')->group(function () {
             Route::get('/campaigns/analyze', [App\Http\Controllers\API\AIOptimizationController::class, 'analyzeAllCampaigns'])->name('analyze-all');
             Route::get('/campaigns/{campaign}/analyze', [App\Http\Controllers\API\AIOptimizationController::class, 'analyzeCampaign'])->name('analyze-campaign');
+        });
+
+        /*
+        |------------------------------------------------------------------
+        | Meta Assets API - AJAX endpoints for Meta Business Manager assets
+        | Supports progressive loading with pagination and caching
+        |------------------------------------------------------------------
+        */
+        Route::prefix('meta-connections/{connection}/assets')->name('meta-assets.')->group(function () {
+            Route::get('/pages', [MetaAssetsApiController::class, 'getPages'])->name('pages');
+            Route::get('/instagram', [MetaAssetsApiController::class, 'getInstagramAccounts'])->name('instagram');
+            Route::get('/threads', [MetaAssetsApiController::class, 'getThreadsAccounts'])->name('threads');
+            Route::get('/ad-accounts', [MetaAssetsApiController::class, 'getAdAccounts'])->name('ad-accounts');
+            Route::get('/pixels', [MetaAssetsApiController::class, 'getPixels'])->name('pixels');
+            Route::get('/catalogs', [MetaAssetsApiController::class, 'getCatalogs'])->name('catalogs');
+            Route::get('/whatsapp', [MetaAssetsApiController::class, 'getWhatsappAccounts'])->name('whatsapp');
+            Route::post('/refresh', [MetaAssetsApiController::class, 'refreshAll'])->name('refresh');
+            Route::get('/cache-status', [MetaAssetsApiController::class, 'getCacheStatus'])->name('cache-status');
         });
 
         /*

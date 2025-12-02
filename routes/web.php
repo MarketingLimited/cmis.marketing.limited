@@ -21,6 +21,7 @@ use App\Http\Controllers\Auth\InvitationController;
 use App\Http\Controllers\UnifiedInboxController;
 use App\Http\Controllers\UnifiedCommentsController;
 use App\Http\Controllers\LanguageController;
+use App\Http\Controllers\Api\MetaAssetsApiController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -623,6 +624,19 @@ Route::middleware(['auth'])->group(function () {
                 // Meta Asset Selection (Pages, Instagram, Ad Accounts, Pixels, Catalogs)
                 Route::get('/meta/{connection}/assets', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'selectMetaAssets'])->name('meta.assets');
                 Route::post('/meta/{connection}/assets', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'storeMetaAssets'])->name('meta.assets.store');
+
+                // Meta Assets AJAX Endpoints (progressive loading)
+                Route::prefix('meta/{connection}/assets/ajax')->name('meta.assets.ajax.')->group(function () {
+                    Route::get('/pages', [MetaAssetsApiController::class, 'getPages'])->name('pages');
+                    Route::get('/instagram', [MetaAssetsApiController::class, 'getInstagramAccounts'])->name('instagram');
+                    Route::get('/threads', [MetaAssetsApiController::class, 'getThreadsAccounts'])->name('threads');
+                    Route::get('/ad-accounts', [MetaAssetsApiController::class, 'getAdAccounts'])->name('ad-accounts');
+                    Route::get('/pixels', [MetaAssetsApiController::class, 'getPixels'])->name('pixels');
+                    Route::get('/catalogs', [MetaAssetsApiController::class, 'getCatalogs'])->name('catalogs');
+                    Route::get('/whatsapp', [MetaAssetsApiController::class, 'getWhatsappAccounts'])->name('whatsapp');
+                    Route::post('/refresh', [MetaAssetsApiController::class, 'refreshAll'])->name('refresh');
+                    Route::get('/cache-status', [MetaAssetsApiController::class, 'getCacheStatus'])->name('cache-status');
+                });
 
                 // Google Service Account / OAuth Token Management
                 Route::get('/google/add', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'createGoogleToken'])->name('google.create');
