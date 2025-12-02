@@ -24,7 +24,8 @@ class MetaAssetsApiController extends Controller
     }
 
     /**
-     * Get the platform connection and decrypt access token.
+     * Get the platform connection and access token.
+     * Handles both encrypted and plain text tokens for backward compatibility.
      */
     private function getConnectionWithToken(string $org, string $connectionId): ?array
     {
@@ -37,14 +38,27 @@ class MetaAssetsApiController extends Controller
             return null;
         }
 
+        if (empty($connection->access_token)) {
+            Log::error('Access token is empty', ['connection_id' => $connectionId]);
+            return null;
+        }
+
+        // Try to decrypt the token first (new encrypted format)
         try {
             $accessToken = Crypt::decryptString($connection->access_token);
         } catch (\Exception $e) {
-            Log::error('Failed to decrypt access token', [
-                'connection_id' => $connectionId,
-                'error' => $e->getMessage(),
-            ]);
-            return null;
+            // If decryption fails, assume it's a plain text token (legacy format)
+            // Meta tokens start with 'EAA' - verify it looks like a valid token
+            if (str_starts_with($connection->access_token, 'EAA')) {
+                $accessToken = $connection->access_token;
+                Log::debug('Using plain text access token', ['connection_id' => $connectionId]);
+            } else {
+                Log::error('Failed to decrypt access token and token format is invalid', [
+                    'connection_id' => $connectionId,
+                    'error' => $e->getMessage(),
+                ]);
+                return null;
+            }
         }
 
         return [
