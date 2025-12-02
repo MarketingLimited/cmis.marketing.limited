@@ -36,12 +36,14 @@ class MarketplaceController extends Controller
         $categories = $this->marketplace->getCategoriesWithApps();
         $enabledSlugs = $this->marketplace->getEnabledAppSlugs($org);
         $hasPremium = $this->marketplace->hasPremiumAccess($org);
+        $usageStats = $this->marketplace->getAppUsageStats($org);
 
         return view('marketplace.index', [
             'categories' => $categories,
             'enabledSlugs' => $enabledSlugs,
             'hasPremium' => $hasPremium,
             'orgId' => $org,
+            'usageStats' => $usageStats,
         ]);
     }
 
@@ -168,5 +170,39 @@ class MarketplaceController extends Controller
         }
 
         return $this->error($result['message'], 400, $result['errors']);
+    }
+
+    /**
+     * Get settings for a specific app.
+     */
+    public function getSettings(Request $request, string $org, string $app): JsonResponse
+    {
+        $settings = $this->marketplace->getAppSettings($org, $app);
+        $usageStats = $this->marketplace->getAppUsageStats($org);
+
+        return $this->success([
+            'settings' => $settings,
+            'usage' => $usageStats[$app] ?? null,
+        ]);
+    }
+
+    /**
+     * Update settings for a specific app.
+     */
+    public function updateSettings(Request $request, string $org, string $app): JsonResponse
+    {
+        $request->validate([
+            'settings' => 'required|array',
+        ]);
+
+        $result = $this->marketplace->updateAppSettings($org, $app, $request->input('settings'));
+
+        if ($result['success']) {
+            return $this->success([
+                'settings' => $result['settings'],
+            ], $result['message']);
+        }
+
+        return $this->error($result['message'], 400);
     }
 }

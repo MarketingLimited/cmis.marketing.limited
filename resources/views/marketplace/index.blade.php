@@ -103,10 +103,14 @@
             {{-- Apps Grid: 1 col mobile, 2 tablet, 3 laptop, 4 desktop --}}
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
                 @foreach($category->apps as $app)
+                @php
+                    $appStats = $usageStats[$app->slug] ?? null;
+                    $isEnabled = in_array($app->slug, $enabledSlugs);
+                @endphp
                 <div
                     x-show="searchQuery === '' || '{{ strtolower($app->name ?? '') }}'.includes(searchQuery.toLowerCase()) || '{{ strtolower(__($app->name_key)) }}'.includes(searchQuery.toLowerCase())"
                     x-transition
-                    class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 hover:shadow-md transition group relative flex flex-col h-full min-h-[180px]"
+                    class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 hover:shadow-md transition group relative flex flex-col h-full min-h-[200px]"
                 >
                     {{-- Bulk Select Checkbox --}}
                     <div x-show="bulkMode && !{{ $app->is_core ? 'true' : 'false' }}" class="absolute top-2 end-2 z-10">
@@ -117,6 +121,16 @@
                             class="w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
                         >
                     </div>
+
+                    {{-- Info Button (top right, visible on hover or when not in bulk mode) --}}
+                    <button
+                        x-show="!bulkMode"
+                        @click="openAppModal('{{ $app->slug }}', '{{ addslashes(__($app->name_key)) }}', '{{ addslashes(__($app->description_key)) }}', '{{ $app->icon }}', '{{ $app->is_core ? 'true' : 'false' }}', '{{ $isEnabled ? 'true' : 'false' }}')"
+                        class="absolute top-2 end-2 w-7 h-7 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500 hover:text-gray-700 opacity-0 group-hover:opacity-100 transition"
+                        title="{{ __('marketplace.view_details') }}"
+                    >
+                        <i class="fas fa-info text-xs"></i>
+                    </button>
 
                     {{-- Card Content (grows to fill space) --}}
                     <div class="flex-1">
@@ -143,7 +157,7 @@
                             @if($app->is_core)
                                 <div class="w-2.5 h-2.5 rounded-full bg-green-500 flex-shrink-0" title="{{ __('marketplace.enabled') }}"></div>
                             @else
-                                <div x-data="{ enabled: {{ in_array($app->slug, $enabledSlugs) ? 'true' : 'false' }} }">
+                                <div x-data="{ enabled: {{ $isEnabled ? 'true' : 'false' }} }">
                                     <div
                                         :class="enabled ? 'bg-green-500' : 'bg-gray-300'"
                                         class="w-2.5 h-2.5 rounded-full flex-shrink-0"
@@ -155,6 +169,23 @@
 
                         {{-- Short Description (2 lines max) --}}
                         <p class="text-xs text-gray-500 line-clamp-2">{{ __($app->description_key) }}</p>
+
+                        {{-- Usage Stats (for enabled apps) --}}
+                        @if($appStats && $appStats['is_enabled'] && $appStats['enabled_at_human'])
+                        <div class="mt-2 text-xs text-gray-400 flex items-center gap-2">
+                            <span title="{{ __('marketplace.enabled_at') }}">
+                                <i class="fas fa-clock me-1"></i>
+                                {{ $appStats['enabled_at_human'] }}
+                            </span>
+                            @if($appStats['enabled_by_name'])
+                            <span class="text-gray-300">|</span>
+                            <span title="{{ __('marketplace.enabled_by') }}">
+                                <i class="fas fa-user me-1"></i>
+                                {{ $appStats['enabled_by_name'] }}
+                            </span>
+                            @endif
+                        </div>
+                        @endif
 
                         {{-- Dependencies (compact) --}}
                         @if(!empty($app->dependencies))
@@ -173,7 +204,7 @@
                                 {{ __('marketplace.core_feature') }}
                             </div>
                         @else
-                            <div x-data="appToggle('{{ $app->slug }}', {{ in_array($app->slug, $enabledSlugs) ? 'true' : 'false' }})">
+                            <div x-data="appToggle('{{ $app->slug }}', {{ $isEnabled ? 'true' : 'false' }})">
                                 @if($app->is_premium && !$hasPremium)
                                     <button
                                         disabled
@@ -266,6 +297,119 @@
             </button>
         </div>
     </div>
+
+    {{-- App Details & Settings Modal --}}
+    <div
+        x-show="showModal"
+        x-transition:enter="transition ease-out duration-200"
+        x-transition:enter-start="opacity-0"
+        x-transition:enter-end="opacity-100"
+        x-transition:leave="transition ease-in duration-150"
+        x-transition:leave-start="opacity-100"
+        x-transition:leave-end="opacity-0"
+        class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+        @click.self="showModal = false"
+    >
+        <div
+            x-show="showModal"
+            x-transition:enter="transition ease-out duration-200"
+            x-transition:enter-start="opacity-0 scale-95"
+            x-transition:enter-end="opacity-100 scale-100"
+            x-transition:leave="transition ease-in duration-150"
+            x-transition:leave-start="opacity-100 scale-100"
+            x-transition:leave-end="opacity-0 scale-95"
+            class="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden"
+        >
+            {{-- Modal Header --}}
+            <div class="p-4 border-b border-gray-100 flex items-center gap-3">
+                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
+                    <i :class="'fas ' + modalApp.icon" class="text-white text-lg"></i>
+                </div>
+                <div class="flex-1">
+                    <h3 class="font-bold text-gray-800" x-text="modalApp.name"></h3>
+                    <div class="flex items-center gap-2 text-xs">
+                        <span x-show="modalApp.isCore" class="text-green-600 font-medium">{{ __('marketplace.core_feature') }}</span>
+                        <span x-show="modalApp.isEnabled && !modalApp.isCore" class="text-green-600">
+                            <i class="fas fa-check-circle me-1"></i>{{ __('marketplace.enabled') }}
+                        </span>
+                        <span x-show="!modalApp.isEnabled && !modalApp.isCore" class="text-gray-400">
+                            <i class="fas fa-circle me-1"></i>{{ __('marketplace.disabled') }}
+                        </span>
+                    </div>
+                </div>
+                <button @click="showModal = false" class="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            {{-- Modal Body --}}
+            <div class="p-4 space-y-4 max-h-[60vh] overflow-y-auto">
+                {{-- Description --}}
+                <div>
+                    <h4 class="text-xs font-semibold text-gray-500 uppercase mb-1">{{ __('marketplace.app_info') }}</h4>
+                    <p class="text-sm text-gray-600" x-text="modalApp.description"></p>
+                </div>
+
+                {{-- Usage Stats --}}
+                <div x-show="modalUsage">
+                    <h4 class="text-xs font-semibold text-gray-500 uppercase mb-2">{{ __('marketplace.enabled_at') }}</h4>
+                    <div class="bg-gray-50 rounded-lg p-3 space-y-2">
+                        <div class="flex justify-between text-sm" x-show="modalUsage?.enabled_at_human">
+                            <span class="text-gray-500">{{ __('marketplace.enabled_at') }}</span>
+                            <span class="text-gray-800" x-text="modalUsage?.enabled_at_human"></span>
+                        </div>
+                        <div class="flex justify-between text-sm" x-show="modalUsage?.enabled_by_name">
+                            <span class="text-gray-500">{{ __('marketplace.enabled_by') }}</span>
+                            <span class="text-gray-800" x-text="modalUsage?.enabled_by_name"></span>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Settings Form (for enabled apps) --}}
+                <div x-show="modalApp.isEnabled && !modalApp.isCore && Object.keys(modalSettings).length > 0">
+                    <h4 class="text-xs font-semibold text-gray-500 uppercase mb-2">{{ __('marketplace.settings') }}</h4>
+                    <div class="bg-gray-50 rounded-lg p-3 space-y-3">
+                        <template x-for="(value, key) in modalSettings" :key="key">
+                            <div>
+                                <label class="block text-xs font-medium text-gray-600 mb-1" x-text="key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())"></label>
+                                <input
+                                    type="text"
+                                    :name="key"
+                                    x-model="modalSettings[key]"
+                                    class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:border-indigo-500 focus:ring-1 focus:ring-indigo-200"
+                                >
+                            </div>
+                        </template>
+                    </div>
+                </div>
+
+                {{-- No Settings Message --}}
+                <div x-show="modalApp.isEnabled && !modalApp.isCore && Object.keys(modalSettings).length === 0" class="text-center py-4">
+                    <i class="fas fa-cog text-gray-300 text-2xl mb-2"></i>
+                    <p class="text-sm text-gray-500">{{ __('marketplace.no_settings') }}</p>
+                </div>
+            </div>
+
+            {{-- Modal Footer --}}
+            <div class="p-4 border-t border-gray-100 flex justify-end gap-2">
+                <button
+                    @click="showModal = false"
+                    class="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-800 transition"
+                >
+                    {{ __('marketplace.close') }}
+                </button>
+                <button
+                    x-show="modalApp.isEnabled && !modalApp.isCore && Object.keys(modalSettings).length > 0"
+                    @click="saveSettings()"
+                    :disabled="savingSettings"
+                    class="px-4 py-2 text-sm font-medium bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition disabled:opacity-50"
+                >
+                    <span x-show="!savingSettings">{{ __('marketplace.save_settings') }}</span>
+                    <span x-show="savingSettings"><i class="fas fa-spinner fa-spin me-1"></i></span>
+                </button>
+            </div>
+        </div>
+    </div>
 </div>
 
 @php
@@ -336,7 +480,7 @@ function appToggle(appSlug, initialEnabled) {
     };
 }
 
-// Main marketplace app for search, filter, and bulk actions
+// Main marketplace app for search, filter, bulk actions, and modal
 function marketplaceApp() {
     return {
         searchQuery: '',
@@ -346,6 +490,13 @@ function marketplaceApp() {
         bulkLoading: false,
         csrfToken: '{{ csrf_token() }}',
         orgId: '{{ $orgId }}',
+
+        // Modal state
+        showModal: false,
+        modalApp: { slug: '', name: '', description: '', icon: '', isCore: false, isEnabled: false },
+        modalUsage: null,
+        modalSettings: {},
+        savingSettings: false,
 
         getCategoryButtonActiveClass(category) {
             const colors = {
@@ -357,6 +508,73 @@ function marketplaceApp() {
                 'system': 'bg-gray-600 text-white',
             };
             return colors[category] || 'bg-indigo-600 text-white';
+        },
+
+        async openAppModal(slug, name, description, icon, isCore, isEnabled) {
+            this.modalApp = {
+                slug,
+                name,
+                description,
+                icon,
+                isCore: isCore === 'true',
+                isEnabled: isEnabled === 'true'
+            };
+            this.modalUsage = null;
+            this.modalSettings = {};
+            this.showModal = true;
+
+            // Fetch settings and usage if app is enabled
+            if (this.modalApp.isEnabled) {
+                try {
+                    const response = await fetch(`/orgs/${this.orgId}/marketplace/apps/${slug}/settings`, {
+                        headers: { 'Accept': 'application/json' }
+                    });
+                    const data = await response.json();
+                    if (data.success) {
+                        this.modalSettings = data.data.settings || {};
+                        this.modalUsage = data.data.usage || null;
+                    }
+                } catch (error) {
+                    console.error('Error fetching app settings:', error);
+                }
+            }
+        },
+
+        async saveSettings() {
+            if (Object.keys(this.modalSettings).length === 0) return;
+            this.savingSettings = true;
+
+            try {
+                const response = await fetch(`/orgs/${this.orgId}/marketplace/apps/${this.modalApp.slug}/settings`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': this.csrfToken,
+                        'Accept': 'application/json',
+                    },
+                    body: JSON.stringify({ settings: this.modalSettings }),
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    window.dispatchEvent(new CustomEvent('show-toast', {
+                        detail: { message: data.message, type: 'success' }
+                    }));
+                    this.showModal = false;
+                } else {
+                    window.dispatchEvent(new CustomEvent('show-toast', {
+                        detail: { message: data.message, type: 'error' }
+                    }));
+                }
+            } catch (error) {
+                console.error('Error saving settings:', error);
+                window.dispatchEvent(new CustomEvent('show-toast', {
+                    detail: { message: '{{ __("common.error_occurred") }}', type: 'error' }
+                }));
+            } finally {
+                this.savingSettings = false;
+            }
         },
 
         async bulkEnable() {

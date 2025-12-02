@@ -35,6 +35,17 @@ return [
     'bulk_enabled' => 'تم تفعيل :count تطبيقات بنجاح',
     'bulk_disabled' => 'تم تعطيل :count تطبيقات بنجاح',
 
+    // Usage stats
+    'enabled_by' => 'مفعّل بواسطة',
+    'enabled_at' => 'تم التفعيل',
+    'view_details' => 'عرض التفاصيل',
+    'app_info' => 'معلومات التطبيق',
+    'settings' => 'الإعدادات',
+    'settings_updated' => 'تم تحديث الإعدادات بنجاح',
+    'no_settings' => 'لا توجد إعدادات متاحة لهذا التطبيق',
+    'save_settings' => 'حفظ الإعدادات',
+    'close' => 'إغلاق',
+
     // Messages
     'app_enabled' => 'تم تفعيل :app بنجاح',
     'app_enabled_with_dependencies' => 'تم تفعيل :app. تم تفعيل أيضاً: :dependencies',

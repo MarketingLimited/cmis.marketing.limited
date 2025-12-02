@@ -385,6 +385,93 @@ class MarketplaceService
     }
 
     /**
+     * Get usage stats for all apps in an organization.
+     * Returns array keyed by app slug with enabled_at, enabled_by_name, settings.
+     */
+    public function getAppUsageStats(string $orgId): array
+    {
+        $orgApps = OrganizationApp::withoutGlobalScopes()
+            ->where('org_id', $orgId)
+            ->with(['enabledByUser', 'app'])
+            ->get();
+
+        $stats = [];
+        foreach ($orgApps as $orgApp) {
+            if ($orgApp->app) {
+                $stats[$orgApp->app->slug] = [
+                    'enabled_at' => $orgApp->enabled_at?->toIso8601String(),
+                    'enabled_at_human' => $orgApp->enabled_at?->diffForHumans(),
+                    'enabled_by_name' => $orgApp->enabledByUser?->name ?? __('common.system'),
+                    'disabled_at' => $orgApp->disabled_at?->toIso8601String(),
+                    'disabled_at_human' => $orgApp->disabled_at?->diffForHumans(),
+                    'is_enabled' => $orgApp->is_enabled,
+                    'settings' => $orgApp->settings ?? [],
+                ];
+            }
+        }
+
+        return $stats;
+    }
+
+    /**
+     * Get settings for a specific app in an organization.
+     */
+    public function getAppSettings(string $orgId, string $appSlug): array
+    {
+        $app = MarketplaceApp::findBySlug($appSlug);
+        if (!$app) {
+            return [];
+        }
+
+        $orgApp = OrganizationApp::withoutGlobalScopes()
+            ->where('org_id', $orgId)
+            ->where('app_id', $app->app_id)
+            ->first();
+
+        return $orgApp?->settings ?? [];
+    }
+
+    /**
+     * Update settings for a specific app in an organization.
+     */
+    public function updateAppSettings(string $orgId, string $appSlug, array $settings): array
+    {
+        $app = MarketplaceApp::findBySlug($appSlug);
+        if (!$app) {
+            return [
+                'success' => false,
+                'message' => __('marketplace.app_not_found'),
+            ];
+        }
+
+        $orgApp = OrganizationApp::withoutGlobalScopes()
+            ->where('org_id', $orgId)
+            ->where('app_id', $app->app_id)
+            ->first();
+
+        if (!$orgApp) {
+            return [
+                'success' => false,
+                'message' => __('marketplace.app_not_enabled'),
+            ];
+        }
+
+        // Merge with existing settings
+        $existingSettings = $orgApp->settings ?? [];
+        $mergedSettings = array_merge($existingSettings, $settings);
+
+        $orgApp->update(['settings' => $mergedSettings]);
+
+        $this->clearCache($orgId);
+
+        return [
+            'success' => true,
+            'settings' => $mergedSettings,
+            'message' => __('marketplace.settings_updated'),
+        ];
+    }
+
+    /**
      * Clear cache for an organization.
      */
     public function clearCache(string $orgId): void

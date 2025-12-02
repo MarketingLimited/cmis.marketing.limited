@@ -35,6 +35,17 @@ return [
     'bulk_enabled' => ':count apps have been enabled successfully',
     'bulk_disabled' => ':count apps have been disabled successfully',
 
+    // Usage stats
+    'enabled_by' => 'Enabled by',
+    'enabled_at' => 'Enabled',
+    'view_details' => 'View Details',
+    'app_info' => 'App Info',
+    'settings' => 'Settings',
+    'settings_updated' => 'Settings updated successfully',
+    'no_settings' => 'No settings available for this app',
+    'save_settings' => 'Save Settings',
+    'close' => 'Close',
+
     // Messages
     'app_enabled' => ':app has been enabled successfully',
     'app_enabled_with_dependencies' => ':app has been enabled. Also enabled: :dependencies',

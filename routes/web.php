@@ -188,6 +188,8 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/', [\App\Http\Controllers\Marketplace\MarketplaceController::class, 'index'])->name('index');
             Route::post('/apps/{app}/enable', [\App\Http\Controllers\Marketplace\MarketplaceController::class, 'enable'])->name('enable');
             Route::post('/apps/{app}/disable', [\App\Http\Controllers\Marketplace\MarketplaceController::class, 'disable'])->name('disable');
+            Route::get('/apps/{app}/settings', [\App\Http\Controllers\Marketplace\MarketplaceController::class, 'getSettings'])->name('settings.get');
+            Route::post('/apps/{app}/settings', [\App\Http\Controllers\Marketplace\MarketplaceController::class, 'updateSettings'])->name('settings.update');
             Route::post('/bulk-enable', [\App\Http\Controllers\Marketplace\MarketplaceController::class, 'bulkEnable'])->name('bulk-enable');
             Route::post('/bulk-disable', [\App\Http\Controllers\Marketplace\MarketplaceController::class, 'bulkDisable'])->name('bulk-disable');
             Route::get('/status', [\App\Http\Controllers\Marketplace\MarketplaceController::class, 'status'])->name('status');
