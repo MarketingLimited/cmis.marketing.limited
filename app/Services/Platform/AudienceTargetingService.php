@@ -316,6 +316,102 @@ class AudienceTargetingService
         return [];
     }
 
+    /**
+     * Search Meta locations (cities, regions, countries, zip codes)
+     */
+    public function searchMetaLocations(string $accessToken, string $query, array $locationTypes = ['city', 'region', 'country']): array
+    {
+        $cacheKey = "meta_locations_" . md5($query . implode('_', $locationTypes));
+
+        return Cache::remember($cacheKey, 300, function () use ($accessToken, $query, $locationTypes) {
+            try {
+                $response = Http::get("https://graph.facebook.com/v21.0/search", [
+                    'access_token' => $accessToken,
+                    'type' => 'adgeolocation',
+                    'location_types' => json_encode($locationTypes),
+                    'q' => $query,
+                    'limit' => 50,
+                ]);
+
+                if ($response->successful()) {
+                    return array_map(fn($loc) => [
+                        'key' => $loc['key'],
+                        'name' => $loc['name'],
+                        'type' => $loc['type'],
+                        'country_code' => $loc['country_code'] ?? null,
+                        'country_name' => $loc['country_name'] ?? null,
+                        'region' => $loc['region'] ?? null,
+                        'region_id' => $loc['region_id'] ?? null,
+                        'supports_city' => $loc['supports_city'] ?? false,
+                        'supports_region' => $loc['supports_region'] ?? false,
+                    ], $response->json('data', []));
+                }
+            } catch (\Exception $e) {
+                Log::error('Meta locations search error', ['error' => $e->getMessage()]);
+            }
+
+            return [];
+        });
+    }
+
+    /**
+     * Search Meta work positions (job titles)
+     */
+    public function searchMetaWorkPositions(string $accessToken, string $query): array
+    {
+        $cacheKey = "meta_work_positions_" . md5($query);
+
+        return Cache::remember($cacheKey, 3600, function () use ($accessToken, $query) {
+            try {
+                $response = Http::get("https://graph.facebook.com/v21.0/search", [
+                    'access_token' => $accessToken,
+                    'type' => 'adworkposition',
+                    'q' => $query,
+                    'limit' => 50,
+                ]);
+
+                if ($response->successful()) {
+                    return array_map(fn($pos) => [
+                        'id' => $pos['id'],
+                        'name' => $pos['name'],
+                    ], $response->json('data', []));
+                }
+            } catch (\Exception $e) {
+                Log::error('Meta work positions search error', ['error' => $e->getMessage()]);
+            }
+
+            return [];
+        });
+    }
+
+    /**
+     * Get interest suggestions based on selected interests
+     */
+    public function getMetaInterestSuggestions(string $accessToken, array $interestIds): array
+    {
+        try {
+            $response = Http::get("https://graph.facebook.com/v21.0/search", [
+                'access_token' => $accessToken,
+                'type' => 'adinterestsuggestion',
+                'interest_list' => json_encode($interestIds),
+                'limit' => 20,
+            ]);
+
+            if ($response->successful()) {
+                return array_map(fn($interest) => [
+                    'id' => $interest['id'],
+                    'name' => $interest['name'],
+                    'audience_size_lower_bound' => $interest['audience_size_lower_bound'] ?? null,
+                    'audience_size_upper_bound' => $interest['audience_size_upper_bound'] ?? null,
+                ], $response->json('data', []));
+            }
+        } catch (\Exception $e) {
+            Log::error('Meta interest suggestions error', ['error' => $e->getMessage()]);
+        }
+
+        return [];
+    }
+
     // ===================== GOOGLE ADS =====================
 
     /**

@@ -374,4 +374,22 @@ return [
     'lead_form' => 'نموذج العملاء المحتملين',
     'enter_form_id' => 'أدخل معرف النموذج (اختياري)',
     'form_id_hint' => 'اتركه فارغاً لإنشاء نموذج جديد أو أدخل معرف نموذج موجود',
+
+    // Meta Targeting API
+    'interests_retrieved' => 'تم استرداد الاهتمامات بنجاح',
+    'behaviors_retrieved' => 'تم استرداد السلوكيات بنجاح',
+    'locations_retrieved' => 'تم استرداد المواقع بنجاح',
+    'work_positions_retrieved' => 'تم استرداد المسميات الوظيفية بنجاح',
+    'interests_fetch_failed' => 'فشل في جلب الاهتمامات',
+    'behaviors_fetch_failed' => 'فشل في جلب السلوكيات',
+    'locations_fetch_failed' => 'فشل في جلب المواقع',
+    'work_positions_fetch_failed' => 'فشل في جلب المسميات الوظيفية',
+    'audiences_fetch_failed' => 'فشل في جلب الجماهير',
+
+    // Targeting fields
+    'locations' => 'المواقع',
+    'search_locations' => 'ابحث عن المدن أو المناطق أو الدول...',
+    'behaviors' => 'السلوكيات',
+    'no_behaviors_available' => 'لا توجد سلوكيات متاحة لهذا الحساب الإعلاني',
+    'loading' => 'جاري التحميل',
 ];

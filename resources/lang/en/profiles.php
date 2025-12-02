@@ -374,4 +374,22 @@ return [
     'lead_form' => 'Lead Form',
     'enter_form_id' => 'Enter form ID (optional)',
     'form_id_hint' => 'Leave empty to create a new form or enter existing form ID',
+
+    // Meta Targeting API
+    'interests_retrieved' => 'Interests retrieved successfully',
+    'behaviors_retrieved' => 'Behaviors retrieved successfully',
+    'locations_retrieved' => 'Locations retrieved successfully',
+    'work_positions_retrieved' => 'Work positions retrieved successfully',
+    'interests_fetch_failed' => 'Failed to fetch interests',
+    'behaviors_fetch_failed' => 'Failed to fetch behaviors',
+    'locations_fetch_failed' => 'Failed to fetch locations',
+    'work_positions_fetch_failed' => 'Failed to fetch work positions',
+    'audiences_fetch_failed' => 'Failed to fetch audiences',
+
+    // Targeting fields
+    'locations' => 'Locations',
+    'search_locations' => 'Search cities, regions, or countries...',
+    'behaviors' => 'Behaviors',
+    'no_behaviors_available' => 'No behaviors available for this ad account',
+    'loading' => 'Loading',
 ];

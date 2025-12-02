@@ -732,6 +732,13 @@ Route::middleware(['auth'])->group(function () {
                 Route::post('/{integration_id}/validate-budget', [App\Http\Controllers\Settings\ProfileManagementController::class, 'validateBudget'])->name('validate-budget');
                 Route::get('/{integration_id}/boost-config', [App\Http\Controllers\Settings\ProfileManagementController::class, 'getBoostConfig'])->name('boost-config');
                 Route::get('/{integration_id}/messaging-accounts', [App\Http\Controllers\Settings\ProfileManagementController::class, 'getMessagingAccounts'])->name('messaging-accounts');
+
+                // Meta targeting API endpoints for boost modal autocomplete
+                Route::get('/{integration_id}/meta-audiences', [App\Http\Controllers\Settings\ProfileManagementController::class, 'getMetaAudiences'])->name('meta-audiences');
+                Route::get('/{integration_id}/search-interests', [App\Http\Controllers\Settings\ProfileManagementController::class, 'searchInterests'])->name('search-interests');
+                Route::get('/{integration_id}/search-behaviors', [App\Http\Controllers\Settings\ProfileManagementController::class, 'searchBehaviors'])->name('search-behaviors');
+                Route::get('/{integration_id}/search-locations', [App\Http\Controllers\Settings\ProfileManagementController::class, 'searchLocations'])->name('search-locations');
+                Route::get('/{integration_id}/search-work-positions', [App\Http\Controllers\Settings\ProfileManagementController::class, 'searchWorkPositions'])->name('search-work-positions');
             });
 
             // ==================== Queue Slot Labels (Organization-wide) ====================

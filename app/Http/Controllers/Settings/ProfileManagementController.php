@@ -7,6 +7,7 @@ use App\Http\Controllers\Concerns\ApiResponse;
 use App\Services\Social\ProfileManagementService;
 use App\Services\Social\QueueSlotLabelService;
 use App\Services\Social\BoostConfigurationService;
+use App\Services\Platform\AudienceTargetingService;
 use App\Models\Social\ProfileGroup;
 use App\Models\Platform\BoostRule;
 use App\Models\Platform\AdAccount;
@@ -785,6 +786,200 @@ class ProfileManagementController extends Controller
             ], __('profiles.messaging_accounts_retrieved'));
         } catch (\Exception $e) {
             return $this->serverError(__('profiles.messaging_accounts_failed'));
+        }
+    }
+
+    /**
+     * Get Meta audiences from API (custom and lookalike).
+     *
+     * GET /orgs/{org}/settings/profiles/{integration_id}/meta-audiences
+     *
+     * Fetches real-time audience data from Meta Marketing API instead of database.
+     */
+    public function getMetaAudiences(Request $request, string $org, string $integrationId): JsonResponse
+    {
+        $adAccountId = $request->query('ad_account_id');
+        $type = $request->query('type', 'all'); // custom, lookalike, all
+
+        if (!$adAccountId) {
+            return $this->error(__('profiles.ad_account_required'), 400);
+        }
+
+        $adAccount = AdAccount::where('org_id', $org)
+            ->where('id', $adAccountId)
+            ->first();
+
+        if (!$adAccount || !$adAccount->access_token) {
+            return $this->notFound(__('profiles.ad_account_not_found'));
+        }
+
+        $service = app(AudienceTargetingService::class);
+        $audiences = [];
+
+        try {
+            if ($type === 'all' || $type === 'custom') {
+                $audiences['custom'] = $service->getCustomAudiences('meta', $adAccount->access_token, $adAccount->platform_account_id);
+            }
+            if ($type === 'all' || $type === 'lookalike') {
+                $audiences['lookalike'] = $service->getLookalikeAudiences('meta', $adAccount->access_token, $adAccount->platform_account_id);
+            }
+
+            return $this->success($audiences, __('profiles.audiences_retrieved'));
+        } catch (\Exception $e) {
+            return $this->serverError(__('profiles.audiences_fetch_failed'));
+        }
+    }
+
+    /**
+     * Search Meta interests with autocomplete.
+     *
+     * GET /orgs/{org}/settings/profiles/{integration_id}/search-interests
+     *
+     * Returns interests matching the query with audience size information.
+     */
+    public function searchInterests(Request $request, string $org, string $integrationId): JsonResponse
+    {
+        $query = $request->query('q', '');
+        $adAccountId = $request->query('ad_account_id');
+
+        if (strlen($query) < 2) {
+            return $this->success([], __('profiles.interests_retrieved'));
+        }
+
+        if (!$adAccountId) {
+            return $this->error(__('profiles.ad_account_required'), 400);
+        }
+
+        $adAccount = AdAccount::where('org_id', $org)
+            ->where('id', $adAccountId)
+            ->first();
+
+        if (!$adAccount || !$adAccount->access_token) {
+            return $this->notFound(__('profiles.ad_account_not_found'));
+        }
+
+        $service = app(AudienceTargetingService::class);
+
+        try {
+            $interests = $service->getInterests('meta', $adAccount->access_token, $query);
+            return $this->success($interests, __('profiles.interests_retrieved'));
+        } catch (\Exception $e) {
+            return $this->serverError(__('profiles.interests_fetch_failed'));
+        }
+    }
+
+    /**
+     * Get Meta behaviors list.
+     *
+     * GET /orgs/{org}/settings/profiles/{integration_id}/search-behaviors
+     *
+     * Returns available behavior targeting options from Meta API.
+     */
+    public function searchBehaviors(Request $request, string $org, string $integrationId): JsonResponse
+    {
+        $adAccountId = $request->query('ad_account_id');
+
+        if (!$adAccountId) {
+            return $this->error(__('profiles.ad_account_required'), 400);
+        }
+
+        $adAccount = AdAccount::where('org_id', $org)
+            ->where('id', $adAccountId)
+            ->first();
+
+        if (!$adAccount || !$adAccount->access_token) {
+            return $this->notFound(__('profiles.ad_account_not_found'));
+        }
+
+        $service = app(AudienceTargetingService::class);
+
+        try {
+            $behaviors = $service->getBehaviors('meta', $adAccount->access_token);
+            return $this->success($behaviors, __('profiles.behaviors_retrieved'));
+        } catch (\Exception $e) {
+            return $this->serverError(__('profiles.behaviors_fetch_failed'));
+        }
+    }
+
+    /**
+     * Search Meta locations with autocomplete.
+     *
+     * GET /orgs/{org}/settings/profiles/{integration_id}/search-locations
+     *
+     * Returns cities, regions, and countries matching the query.
+     */
+    public function searchLocations(Request $request, string $org, string $integrationId): JsonResponse
+    {
+        $query = $request->query('q', '');
+        $adAccountId = $request->query('ad_account_id');
+        $locationTypes = $request->query('location_types', ['city', 'region', 'country']);
+
+        if (strlen($query) < 2) {
+            return $this->success([], __('profiles.locations_retrieved'));
+        }
+
+        if (!$adAccountId) {
+            return $this->error(__('profiles.ad_account_required'), 400);
+        }
+
+        $adAccount = AdAccount::where('org_id', $org)
+            ->where('id', $adAccountId)
+            ->first();
+
+        if (!$adAccount || !$adAccount->access_token) {
+            return $this->notFound(__('profiles.ad_account_not_found'));
+        }
+
+        $service = app(AudienceTargetingService::class);
+
+        try {
+            // Ensure locationTypes is an array
+            if (is_string($locationTypes)) {
+                $locationTypes = explode(',', $locationTypes);
+            }
+
+            $locations = $service->searchMetaLocations($adAccount->access_token, $query, $locationTypes);
+            return $this->success($locations, __('profiles.locations_retrieved'));
+        } catch (\Exception $e) {
+            return $this->serverError(__('profiles.locations_fetch_failed'));
+        }
+    }
+
+    /**
+     * Search Meta work positions with autocomplete.
+     *
+     * GET /orgs/{org}/settings/profiles/{integration_id}/search-work-positions
+     *
+     * Returns job titles matching the query for targeting.
+     */
+    public function searchWorkPositions(Request $request, string $org, string $integrationId): JsonResponse
+    {
+        $query = $request->query('q', '');
+        $adAccountId = $request->query('ad_account_id');
+
+        if (strlen($query) < 2) {
+            return $this->success([], __('profiles.work_positions_retrieved'));
+        }
+
+        if (!$adAccountId) {
+            return $this->error(__('profiles.ad_account_required'), 400);
+        }
+
+        $adAccount = AdAccount::where('org_id', $org)
+            ->where('id', $adAccountId)
+            ->first();
+
+        if (!$adAccount || !$adAccount->access_token) {
+            return $this->notFound(__('profiles.ad_account_not_found'));
+        }
+
+        $service = app(AudienceTargetingService::class);
+
+        try {
+            $positions = $service->searchMetaWorkPositions($adAccount->access_token, $query);
+            return $this->success($positions, __('profiles.work_positions_retrieved'));
+        } catch (\Exception $e) {
+            return $this->serverError(__('profiles.work_positions_fetch_failed'));
         }
     }
 }

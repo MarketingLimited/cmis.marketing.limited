@@ -481,40 +481,177 @@
                         </button>
 
                         <div x-show="showDetailedTargeting" x-cloak class="mt-4 space-y-4">
-                            {{-- Interests --}}
-                            <div>
+                            {{-- Interests Autocomplete --}}
+                            <div class="relative">
                                 <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('profiles.interests') }}</label>
-                                <input type="text"
-                                       x-model="form.interests"
-                                       placeholder="{{ __('profiles.search_interests') }}"
-                                       class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm">
+
+                                {{-- Selected Interests Tags --}}
+                                <div class="flex flex-wrap gap-2 mb-2" x-show="selectedInterests.length > 0">
+                                    <template x-for="interest in selectedInterests" :key="interest.id">
+                                        <span class="inline-flex items-center px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
+                                            <span x-text="interest.name"></span>
+                                            <span class="ms-1 text-blue-600" x-text="'(' + formatAudienceSize(interest.audience_size_lower_bound) + ')'"></span>
+                                            <button type="button" @click="removeInterest(interest.id)" class="ms-1 text-blue-600 hover:text-blue-800">
+                                                <i class="fas fa-times text-xs"></i>
+                                            </button>
+                                        </span>
+                                    </template>
+                                </div>
+
+                                {{-- Search Input --}}
+                                <div class="relative">
+                                    <input type="text"
+                                           x-model="interestSearch"
+                                           @input="searchInterests()"
+                                           @focus="searchInterests()"
+                                           @blur="setTimeout(() => showInterestDropdown = false, 200)"
+                                           :disabled="!form.ad_account_id"
+                                           placeholder="{{ __('profiles.search_interests') }}"
+                                           class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm">
+                                    <span x-show="searchingInterests" class="absolute end-3 top-1/2 -translate-y-1/2">
+                                        <i class="fas fa-spinner fa-spin text-gray-400"></i>
+                                    </span>
+                                </div>
+
+                                {{-- Results Dropdown --}}
+                                <div x-show="showInterestDropdown && interestResults.length > 0"
+                                     x-transition
+                                     class="absolute z-20 w-full mt-1 bg-white border rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                                    <template x-for="interest in interestResults" :key="interest.id">
+                                        <button type="button"
+                                                @mousedown.prevent="selectInterest(interest)"
+                                                class="w-full text-start px-3 py-2 hover:bg-blue-50 flex justify-between items-center border-b border-gray-100 last:border-0">
+                                            <div>
+                                                <span class="text-sm" x-text="interest.name"></span>
+                                                <span class="text-xs text-gray-400 block" x-text="interest.path?.join(' > ') || ''"></span>
+                                            </div>
+                                            <span class="text-xs text-gray-500 font-medium" x-text="formatAudienceSize(interest.audience_size_lower_bound)"></span>
+                                        </button>
+                                    </template>
+                                </div>
                             </div>
 
-                            {{-- Work Positions --}}
+                            {{-- Behaviors Selection --}}
                             <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('profiles.behaviors') }}</label>
+                                <div x-show="loadingBehaviors" class="text-sm text-gray-500">
+                                    <i class="fas fa-spinner fa-spin me-1"></i>{{ __('profiles.loading') }}...
+                                </div>
+                                <div x-show="!loadingBehaviors && behaviorResults.length > 0" class="max-h-40 overflow-y-auto border rounded-lg p-2 space-y-1">
+                                    <template x-for="behavior in behaviorResults" :key="behavior.id">
+                                        <label class="flex items-center p-1 hover:bg-gray-50 rounded cursor-pointer text-sm">
+                                            <input type="checkbox"
+                                                   :checked="isBehaviorSelected(behavior.id)"
+                                                   @change="toggleBehavior(behavior)"
+                                                   class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                            <span class="ms-2" x-text="behavior.name"></span>
+                                            <span class="ms-auto text-xs text-gray-400" x-text="formatAudienceSize(behavior.audience_size_lower_bound)"></span>
+                                        </label>
+                                    </template>
+                                </div>
+                                <p x-show="!loadingBehaviors && behaviorResults.length === 0 && form.ad_account_id" class="text-xs text-gray-500">
+                                    {{ __('profiles.no_behaviors_available') }}
+                                </p>
+                            </div>
+
+                            {{-- Locations Autocomplete (replaces Countries/Cities) --}}
+                            <div class="relative">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('profiles.locations') }}</label>
+
+                                {{-- Selected Locations Tags --}}
+                                <div class="flex flex-wrap gap-2 mb-2" x-show="selectedLocations.length > 0">
+                                    <template x-for="location in selectedLocations" :key="location.key">
+                                        <span class="inline-flex items-center px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">
+                                            <i class="fas fa-map-marker-alt me-1"></i>
+                                            <span x-text="location.name"></span>
+                                            <span class="ms-1 text-green-600" x-text="location.country_code ? '(' + location.country_code + ')' : ''"></span>
+                                            <button type="button" @click="removeLocation(location.key)" class="ms-1 text-green-600 hover:text-green-800">
+                                                <i class="fas fa-times text-xs"></i>
+                                            </button>
+                                        </span>
+                                    </template>
+                                </div>
+
+                                {{-- Search Input --}}
+                                <div class="relative">
+                                    <input type="text"
+                                           x-model="locationSearch"
+                                           @input="searchLocations()"
+                                           @focus="searchLocations()"
+                                           @blur="setTimeout(() => showLocationDropdown = false, 200)"
+                                           :disabled="!form.ad_account_id"
+                                           placeholder="{{ __('profiles.search_locations') }}"
+                                           class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm">
+                                    <span x-show="searchingLocations" class="absolute end-3 top-1/2 -translate-y-1/2">
+                                        <i class="fas fa-spinner fa-spin text-gray-400"></i>
+                                    </span>
+                                </div>
+
+                                {{-- Results Dropdown --}}
+                                <div x-show="showLocationDropdown && locationResults.length > 0"
+                                     x-transition
+                                     class="absolute z-20 w-full mt-1 bg-white border rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                                    <template x-for="location in locationResults" :key="location.key">
+                                        <button type="button"
+                                                @mousedown.prevent="selectLocation(location)"
+                                                class="w-full text-start px-3 py-2 hover:bg-green-50 flex items-center border-b border-gray-100 last:border-0">
+                                            <i class="fas fa-map-marker-alt text-gray-400 me-2"></i>
+                                            <div>
+                                                <span class="text-sm" x-text="location.name"></span>
+                                                <span class="text-xs text-gray-400 block"
+                                                      x-text="[location.region, location.country_name].filter(Boolean).join(', ')"></span>
+                                            </div>
+                                            <span class="ms-auto text-xs text-gray-500 capitalize bg-gray-100 px-2 py-0.5 rounded" x-text="location.type"></span>
+                                        </button>
+                                    </template>
+                                </div>
+                            </div>
+
+                            {{-- Work Positions Autocomplete --}}
+                            <div class="relative">
                                 <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('profiles.work_positions') }}</label>
-                                <input type="text"
-                                       x-model="form.work_positions"
-                                       placeholder="{{ __('profiles.search_work_positions') }}"
-                                       class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm">
-                            </div>
 
-                            {{-- Countries --}}
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('profiles.countries') }}</label>
-                                <input type="text"
-                                       x-model="form.countries"
-                                       placeholder="{{ __('profiles.search_countries') }}"
-                                       class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm">
-                            </div>
+                                {{-- Selected Work Positions Tags --}}
+                                <div class="flex flex-wrap gap-2 mb-2" x-show="selectedWorkPositions.length > 0">
+                                    <template x-for="position in selectedWorkPositions" :key="position.id">
+                                        <span class="inline-flex items-center px-2 py-1 bg-purple-100 text-purple-800 text-xs rounded-full">
+                                            <i class="fas fa-briefcase me-1"></i>
+                                            <span x-text="position.name"></span>
+                                            <button type="button" @click="removeWorkPosition(position.id)" class="ms-1 text-purple-600 hover:text-purple-800">
+                                                <i class="fas fa-times text-xs"></i>
+                                            </button>
+                                        </span>
+                                    </template>
+                                </div>
 
-                            {{-- Cities --}}
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('profiles.cities') }}</label>
-                                <input type="text"
-                                       x-model="form.cities"
-                                       placeholder="{{ __('profiles.search_cities') }}"
-                                       class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm">
+                                {{-- Search Input --}}
+                                <div class="relative">
+                                    <input type="text"
+                                           x-model="workPositionSearch"
+                                           @input="searchWorkPositions()"
+                                           @focus="searchWorkPositions()"
+                                           @blur="setTimeout(() => showWorkPositionDropdown = false, 200)"
+                                           :disabled="!form.ad_account_id"
+                                           placeholder="{{ __('profiles.search_work_positions') }}"
+                                           class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm">
+                                    <span x-show="searchingWorkPositions" class="absolute end-3 top-1/2 -translate-y-1/2">
+                                        <i class="fas fa-spinner fa-spin text-gray-400"></i>
+                                    </span>
+                                </div>
+
+                                {{-- Results Dropdown --}}
+                                <div x-show="showWorkPositionDropdown && workPositionResults.length > 0"
+                                     x-transition
+                                     class="absolute z-20 w-full mt-1 bg-white border rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                                    <template x-for="position in workPositionResults" :key="position.id">
+                                        <button type="button"
+                                                @mousedown.prevent="selectWorkPosition(position)"
+                                                class="w-full text-start px-3 py-2 hover:bg-purple-50 flex items-center border-b border-gray-100 last:border-0">
+                                            <i class="fas fa-briefcase text-gray-400 me-2"></i>
+                                            <span class="text-sm" x-text="position.name"></span>
+                                        </button>
+                                    </template>
+                                </div>
                             </div>
 
                             {{-- Genders --}}
@@ -622,10 +759,6 @@ function boostForm() {
             custom_audiences: [],
             lookalike_audiences: [],
             excluded_audiences: [],
-            interests: '',
-            work_positions: '',
-            countries: '',
-            cities: '',
             genders: '',
             min_age: '',
             max_age: '',
@@ -638,6 +771,37 @@ function boostForm() {
             form_id: '',
             app_id: ''
         },
+
+        // Autocomplete selected items (arrays of objects)
+        selectedInterests: [],
+        selectedBehaviors: [],
+        selectedLocations: [],
+        selectedWorkPositions: [],
+
+        // Autocomplete search state
+        interestSearch: '',
+        interestResults: [],
+        searchingInterests: false,
+        showInterestDropdown: false,
+
+        behaviorResults: [],
+        loadingBehaviors: false,
+        showBehaviorDropdown: false,
+
+        locationSearch: '',
+        locationResults: [],
+        searchingLocations: false,
+        showLocationDropdown: false,
+
+        workPositionSearch: '',
+        workPositionResults: [],
+        searchingWorkPositions: false,
+        showWorkPositionDropdown: false,
+
+        // Debounce timers
+        _interestSearchTimer: null,
+        _locationSearchTimer: null,
+        _workPositionSearchTimer: null,
 
         // Default objectives (fallback when no platform config)
         defaultObjectives: [
@@ -826,7 +990,8 @@ function boostForm() {
 
             this.loadingAudiences = true;
             try {
-                const response = await fetch(`/orgs/{{ $currentOrg }}/settings/profiles/{{ $profile->integration_id }}/audiences?ad_account_id=${this.form.ad_account_id}`, {
+                // Use Meta API endpoint instead of database
+                const response = await fetch(`/orgs/{{ $currentOrg }}/settings/profiles/{{ $profile->integration_id }}/meta-audiences?ad_account_id=${this.form.ad_account_id}`, {
                     headers: {
                         'Accept': 'application/json',
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
@@ -834,14 +999,17 @@ function boostForm() {
                 });
                 const data = await response.json();
                 if (data.success && data.data) {
-                    this.allAudiences = data.data;
-                    this.customAudiences = data.data.filter(a => a.type === 'custom' || a.audience_type === 'custom');
-                    this.lookalikeAudiences = data.data.filter(a => a.type === 'lookalike' || a.audience_type === 'lookalike');
+                    this.customAudiences = data.data.custom || [];
+                    this.lookalikeAudiences = data.data.lookalike || [];
+                    this.allAudiences = [...this.customAudiences, ...this.lookalikeAudiences];
                 }
             } catch (error) {
                 console.error('Error loading audiences:', error);
             }
             this.loadingAudiences = false;
+
+            // Also load behaviors when ad account changes
+            this.loadBehaviors();
         },
 
         async validateBudget() {
@@ -875,6 +1043,200 @@ function boostForm() {
                 this.budgetValidation = { valid: true, warnings: [], errors: [] };
             }
             this.validatingBudget = false;
+        },
+
+        // Format audience size for display (e.g., "467M", "1.2B")
+        formatAudienceSize(size) {
+            if (!size) return '';
+            if (size >= 1000000000) return (size / 1000000000).toFixed(1) + 'B';
+            if (size >= 1000000) return (size / 1000000).toFixed(0) + 'M';
+            if (size >= 1000) return (size / 1000).toFixed(0) + 'K';
+            return size.toString();
+        },
+
+        // Interest search with debounce
+        searchInterests() {
+            if (this.interestSearch.length < 2) {
+                this.interestResults = [];
+                this.showInterestDropdown = false;
+                return;
+            }
+
+            if (this._interestSearchTimer) clearTimeout(this._interestSearchTimer);
+            this._interestSearchTimer = setTimeout(async () => {
+                this.searchingInterests = true;
+                try {
+                    const response = await fetch(
+                        `/orgs/{{ $currentOrg }}/settings/profiles/{{ $profile->integration_id }}/search-interests?q=${encodeURIComponent(this.interestSearch)}&ad_account_id=${this.form.ad_account_id}`,
+                        {
+                            headers: {
+                                'Accept': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                            }
+                        }
+                    );
+                    const data = await response.json();
+                    if (data.success) {
+                        this.interestResults = (data.data || []).filter(
+                            i => !this.selectedInterests.find(s => s.id === i.id)
+                        );
+                        this.showInterestDropdown = this.interestResults.length > 0;
+                    }
+                } catch (error) {
+                    console.error('Interest search error:', error);
+                }
+                this.searchingInterests = false;
+            }, 300);
+        },
+
+        selectInterest(interest) {
+            if (!this.selectedInterests.find(i => i.id === interest.id)) {
+                this.selectedInterests.push(interest);
+            }
+            this.interestSearch = '';
+            this.interestResults = [];
+            this.showInterestDropdown = false;
+        },
+
+        removeInterest(interestId) {
+            this.selectedInterests = this.selectedInterests.filter(i => i.id !== interestId);
+        },
+
+        // Location search with debounce
+        searchLocations() {
+            if (this.locationSearch.length < 2) {
+                this.locationResults = [];
+                this.showLocationDropdown = false;
+                return;
+            }
+
+            if (this._locationSearchTimer) clearTimeout(this._locationSearchTimer);
+            this._locationSearchTimer = setTimeout(async () => {
+                this.searchingLocations = true;
+                try {
+                    const response = await fetch(
+                        `/orgs/{{ $currentOrg }}/settings/profiles/{{ $profile->integration_id }}/search-locations?q=${encodeURIComponent(this.locationSearch)}&ad_account_id=${this.form.ad_account_id}`,
+                        {
+                            headers: {
+                                'Accept': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                            }
+                        }
+                    );
+                    const data = await response.json();
+                    if (data.success) {
+                        this.locationResults = (data.data || []).filter(
+                            loc => !this.selectedLocations.find(s => s.key === loc.key)
+                        );
+                        this.showLocationDropdown = this.locationResults.length > 0;
+                    }
+                } catch (error) {
+                    console.error('Location search error:', error);
+                }
+                this.searchingLocations = false;
+            }, 300);
+        },
+
+        selectLocation(location) {
+            if (!this.selectedLocations.find(l => l.key === location.key)) {
+                this.selectedLocations.push(location);
+            }
+            this.locationSearch = '';
+            this.locationResults = [];
+            this.showLocationDropdown = false;
+        },
+
+        removeLocation(locationKey) {
+            this.selectedLocations = this.selectedLocations.filter(l => l.key !== locationKey);
+        },
+
+        // Work position search with debounce
+        searchWorkPositions() {
+            if (this.workPositionSearch.length < 2) {
+                this.workPositionResults = [];
+                this.showWorkPositionDropdown = false;
+                return;
+            }
+
+            if (this._workPositionSearchTimer) clearTimeout(this._workPositionSearchTimer);
+            this._workPositionSearchTimer = setTimeout(async () => {
+                this.searchingWorkPositions = true;
+                try {
+                    const response = await fetch(
+                        `/orgs/{{ $currentOrg }}/settings/profiles/{{ $profile->integration_id }}/search-work-positions?q=${encodeURIComponent(this.workPositionSearch)}&ad_account_id=${this.form.ad_account_id}`,
+                        {
+                            headers: {
+                                'Accept': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                            }
+                        }
+                    );
+                    const data = await response.json();
+                    if (data.success) {
+                        this.workPositionResults = (data.data || []).filter(
+                            pos => !this.selectedWorkPositions.find(s => s.id === pos.id)
+                        );
+                        this.showWorkPositionDropdown = this.workPositionResults.length > 0;
+                    }
+                } catch (error) {
+                    console.error('Work position search error:', error);
+                }
+                this.searchingWorkPositions = false;
+            }, 300);
+        },
+
+        selectWorkPosition(position) {
+            if (!this.selectedWorkPositions.find(p => p.id === position.id)) {
+                this.selectedWorkPositions.push(position);
+            }
+            this.workPositionSearch = '';
+            this.workPositionResults = [];
+            this.showWorkPositionDropdown = false;
+        },
+
+        removeWorkPosition(positionId) {
+            this.selectedWorkPositions = this.selectedWorkPositions.filter(p => p.id !== positionId);
+        },
+
+        // Load behaviors list (no search, just get all)
+        async loadBehaviors() {
+            if (!this.form.ad_account_id) {
+                this.behaviorResults = [];
+                return;
+            }
+
+            this.loadingBehaviors = true;
+            try {
+                const response = await fetch(
+                    `/orgs/{{ $currentOrg }}/settings/profiles/{{ $profile->integration_id }}/search-behaviors?ad_account_id=${this.form.ad_account_id}`,
+                    {
+                        headers: {
+                            'Accept': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        }
+                    }
+                );
+                const data = await response.json();
+                if (data.success) {
+                    this.behaviorResults = data.data || [];
+                }
+            } catch (error) {
+                console.error('Behaviors load error:', error);
+            }
+            this.loadingBehaviors = false;
+        },
+
+        toggleBehavior(behavior) {
+            const idx = this.selectedBehaviors.findIndex(b => b.id === behavior.id);
+            if (idx >= 0) {
+                this.selectedBehaviors.splice(idx, 1);
+            } else {
+                this.selectedBehaviors.push(behavior);
+            }
+        },
+
+        isBehaviorSelected(behaviorId) {
+            return this.selectedBehaviors.some(b => b.id === behaviorId);
         },
 
         async saveBoost() {
@@ -922,10 +1284,12 @@ function boostForm() {
                             custom_audiences: this.form.custom_audiences,
                             lookalike_audiences: this.form.lookalike_audiences,
                             excluded_audiences: this.form.excluded_audiences,
-                            interests: this.form.interests,
-                            work_positions: this.form.work_positions,
-                            countries: this.form.countries,
-                            cities: this.form.cities,
+                            // New API-backed targeting options
+                            interests: this.selectedInterests.map(i => ({ id: i.id, name: i.name })),
+                            behaviors: this.selectedBehaviors.map(b => ({ id: b.id, name: b.name })),
+                            locations: this.selectedLocations.map(l => ({ key: l.key, name: l.name, type: l.type })),
+                            work_positions: this.selectedWorkPositions.map(p => ({ id: p.id, name: p.name })),
+                            // Demographics
                             genders: this.form.genders,
                             min_age: this.form.min_age,
                             max_age: this.form.max_age,
