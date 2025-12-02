@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.admin')
 
 @section('title', __('marketplace.title'))
 @section('page-title', __('marketplace.title'))
