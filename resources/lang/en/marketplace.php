@@ -311,6 +311,10 @@ return [
             'name' => 'Platform Connections',
             'description' => 'Connect and manage integrations with ad platforms',
         ],
+        'profiles' => [
+            'name' => 'Profile Management',
+            'description' => 'Manage social media profiles, connections, and settings',
+        ],
         'feature_flags' => [
             'name' => 'Feature Flags',
             'description' => 'Control feature availability and rollout settings',
