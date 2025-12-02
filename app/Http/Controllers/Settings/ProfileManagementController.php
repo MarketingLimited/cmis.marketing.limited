@@ -127,26 +127,49 @@ class ProfileManagementController extends Controller
                 $selectedAdAccountIds = $selectedAssets['ad_account'] ?? [];
 
                 // If no ad_accounts array exists but selected_assets.ad_account does,
-                // create minimal ad account objects from the selected IDs
+                // fetch ad account details from Meta API
                 if (empty($availableAdAccounts) && !empty($selectedAdAccountIds)) {
-                    // Get any additional info from metadata (single ad_account fields)
-                    $primaryAdAccountId = $metadata['ad_account_id'] ?? null;
-                    $primaryAdAccountName = $metadata['ad_account_name'] ?? null;
+                    $accessToken = $platformConnection->access_token;
                     $defaultCurrency = $metadata['currency'] ?? 'USD';
                     $defaultTimezone = $metadata['timezone'] ?? null;
 
+                    // Fetch each ad account's details from Meta Graph API
                     $availableAdAccounts = collect($selectedAdAccountIds)
-                        ->map(function ($accountId) use ($primaryAdAccountId, $primaryAdAccountName, $defaultCurrency, $defaultTimezone) {
+                        ->map(function ($accountId) use ($accessToken, $defaultCurrency, $defaultTimezone) {
+                            $accountIdWithPrefix = str_starts_with($accountId, 'act_') ? $accountId : 'act_' . $accountId;
                             $accountIdWithoutPrefix = str_replace('act_', '', $accountId);
-                            // Use the primary account name if this is the primary account
-                            $accountName = ($accountIdWithoutPrefix === $primaryAdAccountId && $primaryAdAccountName)
-                                ? $primaryAdAccountName
-                                : 'Ad Account ' . $accountIdWithoutPrefix;
 
+                            // Try to fetch from Meta API
+                            try {
+                                $response = \Illuminate\Support\Facades\Http::timeout(10)
+                                    ->get("https://graph.facebook.com/v21.0/{$accountIdWithPrefix}", [
+                                        'access_token' => $accessToken,
+                                        'fields' => 'name,account_id,currency,account_status,timezone_name',
+                                    ]);
+
+                                if ($response->successful()) {
+                                    $data = $response->json();
+                                    return [
+                                        'id' => $accountIdWithPrefix,
+                                        'account_id' => $data['account_id'] ?? $accountIdWithoutPrefix,
+                                        'name' => $data['name'] ?? 'Ad Account ' . $accountIdWithoutPrefix,
+                                        'currency' => $data['currency'] ?? $defaultCurrency,
+                                        'timezone' => $data['timezone_name'] ?? $defaultTimezone,
+                                        'status' => ($data['account_status'] ?? 1) == 1 ? 'active' : 'inactive',
+                                    ];
+                                }
+                            } catch (\Exception $e) {
+                                \Log::warning('Failed to fetch Meta ad account details', [
+                                    'account_id' => $accountId,
+                                    'error' => $e->getMessage(),
+                                ]);
+                            }
+
+                            // Fallback to minimal data
                             return [
-                                'id' => $accountId,
+                                'id' => $accountIdWithPrefix,
                                 'account_id' => $accountIdWithoutPrefix,
-                                'name' => $accountName,
+                                'name' => 'Ad Account ' . $accountIdWithoutPrefix,
                                 'currency' => $defaultCurrency,
                                 'timezone' => $defaultTimezone,
                                 'status' => 'active',

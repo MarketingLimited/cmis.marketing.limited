@@ -50,22 +50,52 @@
                     </div>
 
                     {{-- Ad Account --}}
-                    <div>
+                    <div x-data="{ adAccountDropdownOpen: false }" class="relative">
                         <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('profiles.ad_account') }}</label>
-                        <select x-model="form.ad_account_id"
-                                @change="onAdAccountChange()"
-                                required
-                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm">
-                            <option value="">{{ __('profiles.select_ad_account') }}</option>
-                            @forelse($adAccounts ?? [] as $account)
-                                <option value="{{ $account->id }}">
-                                    {{ $account->account_name }} ({{ ucfirst($account->platform) }} - {{ $account->currency ?? 'USD' }})
-                                </option>
-                            @empty
-                                <option value="" disabled>{{ __('profiles.no_ad_accounts_available') }}</option>
-                            @endforelse
-                        </select>
-                        @if(empty($adAccounts) || (isset($adAccounts) && $adAccounts->isEmpty()))
+                        @if($adAccounts && $adAccounts->isNotEmpty())
+                            {{-- Custom dropdown for better display --}}
+                            <button type="button"
+                                    @click="adAccountDropdownOpen = !adAccountDropdownOpen"
+                                    @click.away="adAccountDropdownOpen = false"
+                                    class="w-full rounded-md border border-gray-300 bg-white shadow-sm px-3 py-2 text-start focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-sm flex items-center justify-between">
+                                <span x-show="!form.ad_account_id" class="text-gray-500">{{ __('profiles.select_ad_account') }}</span>
+                                <template x-if="form.ad_account_id">
+                                    <span class="truncate" x-text="adAccountsData.find(a => a.id === form.ad_account_id)?.name || form.ad_account_id"></span>
+                                </template>
+                                <i class="fas fa-chevron-down text-gray-400 ms-2 text-xs"></i>
+                            </button>
+                            {{-- Dropdown list --}}
+                            <div x-show="adAccountDropdownOpen"
+                                 x-transition:enter="transition ease-out duration-100"
+                                 x-transition:enter-start="transform opacity-0 scale-95"
+                                 x-transition:enter-end="transform opacity-100 scale-100"
+                                 x-transition:leave="transition ease-in duration-75"
+                                 x-transition:leave-start="transform opacity-100 scale-100"
+                                 x-transition:leave-end="transform opacity-0 scale-95"
+                                 class="absolute z-50 mt-1 w-full bg-white rounded-md shadow-lg border border-gray-200 max-h-60 overflow-auto">
+                                @foreach($adAccounts as $account)
+                                    <button type="button"
+                                            @click="form.ad_account_id = '{{ $account->id }}'; adAccountDropdownOpen = false; onAdAccountChange();"
+                                            :class="form.ad_account_id === '{{ $account->id }}' ? 'bg-blue-50 border-s-2 border-blue-500' : 'hover:bg-gray-50'"
+                                            class="w-full px-3 py-2 text-start border-b border-gray-100 last:border-b-0">
+                                        <div class="font-medium text-gray-900 text-sm">{{ $account->account_name }}</div>
+                                        <div class="text-xs text-gray-500 mt-0.5">
+                                            <span class="font-mono">{{ str_replace('act_', '', $account->id) }}</span>
+                                            <span class="mx-1">•</span>
+                                            <span>{{ ucfirst($account->platform) }}</span>
+                                            <span class="mx-1">•</span>
+                                            <span>{{ $account->currency ?? 'USD' }}</span>
+                                        </div>
+                                    </button>
+                                @endforeach
+                            </div>
+                            {{-- Hidden input for form validation --}}
+                            <input type="hidden" x-model="form.ad_account_id" required>
+                        @else
+                            {{-- Empty state --}}
+                            <div class="w-full rounded-md border border-gray-300 bg-gray-50 px-3 py-2 text-sm text-gray-500">
+                                {{ __('profiles.no_ad_accounts_available') }}
+                            </div>
                             <p class="mt-1 text-xs text-yellow-600">
                                 <i class="fas fa-exclamation-triangle me-1"></i>
                                 <a href="{{ route('orgs.settings.platform-connections.index', $currentOrg) }}" class="underline hover:text-yellow-700">
@@ -833,6 +863,9 @@ function boostForm() {
 
         // Messaging destination IDs that support multi-select
         messagingDestinationIds: ['MESSENGER', 'WHATSAPP', 'INSTAGRAM_DIRECT'],
+
+        // Ad accounts data for display in custom dropdown
+        adAccountsData: @json($adAccounts ?? collect()),
 
         // Form data
         form: {
