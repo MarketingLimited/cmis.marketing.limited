@@ -42,7 +42,9 @@ return [
                 'description' => 'Get more likes, comments, shares, and event responses',
                 'destination_types' => [
                     ['id' => 'ON_AD', 'name' => 'On Your Ad', 'name_ar' => 'على إعلانك', 'icon' => 'fa-ad', 'requires' => []],
-                    ['id' => 'MESSAGING', 'name' => 'Messaging Apps', 'name_ar' => 'تطبيقات المراسلة', 'icon' => 'fa-comments', 'requires' => ['messaging_app']],
+                    ['id' => 'MESSENGER', 'name' => 'Messenger', 'name_ar' => 'ماسنجر', 'icon' => 'fa-facebook-messenger', 'requires' => ['page_id']],
+                    ['id' => 'WHATSAPP', 'name' => 'WhatsApp', 'name_ar' => 'واتساب', 'icon' => 'fa-whatsapp', 'requires' => ['whatsapp_number']],
+                    ['id' => 'INSTAGRAM_DIRECT', 'name' => 'Instagram Direct', 'name_ar' => 'رسائل إنستغرام', 'icon' => 'fa-instagram', 'requires' => ['instagram_id']],
                     ['id' => 'WEBSITE', 'name' => 'Website', 'name_ar' => 'الموقع', 'icon' => 'fa-globe', 'requires' => ['url']],
                     ['id' => 'PAGE', 'name' => 'Facebook Page', 'name_ar' => 'صفحة فيسبوك', 'icon' => 'fa-facebook', 'requires' => ['page_id']],
                 ],
