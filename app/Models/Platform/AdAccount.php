@@ -179,9 +179,21 @@ class AdAccount extends BaseModel
     /**
      * Get decrypted access token
      */
-    public function getAccessTokenAttribute(): string
+    public function getAccessTokenAttribute(): ?string
     {
-        return Crypt::decryptString($this->access_token_encrypted);
+        if (empty($this->access_token_encrypted)) {
+            return null;
+        }
+
+        try {
+            return Crypt::decryptString($this->access_token_encrypted);
+        } catch (\Illuminate\Contracts\Encryption\DecryptException $e) {
+            \Log::warning('AdAccount access token decryption failed', [
+                'ad_account_id' => $this->id,
+                'error' => $e->getMessage()
+            ]);
+            return null;
+        }
     }
 
     /**

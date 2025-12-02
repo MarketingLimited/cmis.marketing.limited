@@ -295,6 +295,7 @@ return [
     'boost_config_failed' => 'Failed to load boost configuration',
     'ad_account_required' => 'Ad account is required',
     'ad_account_not_found' => 'Ad account not found',
+    'ad_account_not_connected' => 'Ad account is not connected. Please reconnect your ad account in Platform Connections.',
     'platform' => 'Platform',
     'ad_accounts_retrieved' => 'Ad accounts retrieved successfully',
     'audiences_retrieved' => 'Audiences retrieved successfully',

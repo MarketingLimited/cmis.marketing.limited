@@ -68,7 +68,7 @@
                         @if(empty($adAccounts) || (isset($adAccounts) && $adAccounts->isEmpty()))
                             <p class="mt-1 text-xs text-yellow-600">
                                 <i class="fas fa-exclamation-triangle me-1"></i>
-                                <a href="{{ route('orgs.settings.platform-connections', $currentOrg) }}" class="underline hover:text-yellow-700">
+                                <a href="{{ route('orgs.settings.platform-connections.index', $currentOrg) }}" class="underline hover:text-yellow-700">
                                     {{ __('profiles.connect_ad_account_first') }}
                                 </a>
                             </p>
@@ -425,6 +425,23 @@
                             <h4 class="text-sm font-medium text-gray-900">{{ __('profiles.audience_targeting') }}</h4>
                             <i :class="showAudienceSection ? 'fa-chevron-up' : 'fa-chevron-down'" class="fas text-gray-400 text-sm"></i>
                         </button>
+
+                        {{-- Connection Error Alert --}}
+                        <div x-show="connectionError" x-cloak class="mt-3 rounded-md bg-yellow-50 p-3">
+                            <div class="flex">
+                                <div class="flex-shrink-0">
+                                    <i class="fas fa-exclamation-triangle text-yellow-400"></i>
+                                </div>
+                                <div class="ms-3">
+                                    <p class="text-sm text-yellow-700" x-text="connectionError"></p>
+                                    <p class="text-xs text-yellow-600 mt-1">
+                                        <a href="{{ route('orgs.settings.platform-connections.index', $currentOrg) }}" class="underline hover:text-yellow-800">
+                                            {{ __('profiles.connect_ad_account_first') }}
+                                        </a>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
 
                         <div x-show="showAudienceSection" x-cloak class="mt-4 space-y-4">
                             {{-- Custom Audiences --}}
@@ -798,6 +815,9 @@ function boostForm() {
         searchingWorkPositions: false,
         showWorkPositionDropdown: false,
 
+        // Connection error message
+        connectionError: null,
+
         // Debounce timers
         _interestSearchTimer: null,
         _locationSearchTimer: null,
@@ -985,10 +1005,12 @@ function boostForm() {
                 this.customAudiences = [];
                 this.lookalikeAudiences = [];
                 this.allAudiences = [];
+                this.connectionError = null;
                 return;
             }
 
             this.loadingAudiences = true;
+            this.connectionError = null;
             try {
                 // Use Meta API endpoint instead of database
                 const response = await fetch(`/orgs/{{ $currentOrg }}/settings/profiles/{{ $profile->integration_id }}/meta-audiences?ad_account_id=${this.form.ad_account_id}`, {
@@ -1002,9 +1024,17 @@ function boostForm() {
                     this.customAudiences = data.data.custom || [];
                     this.lookalikeAudiences = data.data.lookalike || [];
                     this.allAudiences = [...this.customAudiences, ...this.lookalikeAudiences];
+                    this.connectionError = null;
+                } else if (!data.success) {
+                    // Show connection error message
+                    this.connectionError = data.message || '{{ __("profiles.ad_account_not_connected") }}';
+                    this.customAudiences = [];
+                    this.lookalikeAudiences = [];
+                    this.allAudiences = [];
                 }
             } catch (error) {
                 console.error('Error loading audiences:', error);
+                this.connectionError = '{{ __("profiles.audiences_fetch_failed") }}';
             }
             this.loadingAudiences = false;
 

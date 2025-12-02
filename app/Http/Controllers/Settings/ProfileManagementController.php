@@ -809,8 +809,12 @@ class ProfileManagementController extends Controller
             ->where('id', $adAccountId)
             ->first();
 
-        if (!$adAccount || !$adAccount->access_token) {
+        if (!$adAccount) {
             return $this->notFound(__('profiles.ad_account_not_found'));
+        }
+
+        if (!$adAccount->access_token) {
+            return $this->error(__('profiles.ad_account_not_connected'), 400);
         }
 
         $service = app(AudienceTargetingService::class);
@@ -854,8 +858,12 @@ class ProfileManagementController extends Controller
             ->where('id', $adAccountId)
             ->first();
 
-        if (!$adAccount || !$adAccount->access_token) {
+        if (!$adAccount) {
             return $this->notFound(__('profiles.ad_account_not_found'));
+        }
+
+        if (!$adAccount->access_token) {
+            return $this->error(__('profiles.ad_account_not_connected'), 400);
         }
 
         $service = app(AudienceTargetingService::class);
@@ -887,8 +895,12 @@ class ProfileManagementController extends Controller
             ->where('id', $adAccountId)
             ->first();
 
-        if (!$adAccount || !$adAccount->access_token) {
+        if (!$adAccount) {
             return $this->notFound(__('profiles.ad_account_not_found'));
+        }
+
+        if (!$adAccount->access_token) {
+            return $this->error(__('profiles.ad_account_not_connected'), 400);
         }
 
         $service = app(AudienceTargetingService::class);
@@ -926,8 +938,12 @@ class ProfileManagementController extends Controller
             ->where('id', $adAccountId)
             ->first();
 
-        if (!$adAccount || !$adAccount->access_token) {
+        if (!$adAccount) {
             return $this->notFound(__('profiles.ad_account_not_found'));
+        }
+
+        if (!$adAccount->access_token) {
+            return $this->error(__('profiles.ad_account_not_connected'), 400);
         }
 
         $service = app(AudienceTargetingService::class);
@@ -969,8 +985,12 @@ class ProfileManagementController extends Controller
             ->where('id', $adAccountId)
             ->first();
 
-        if (!$adAccount || !$adAccount->access_token) {
+        if (!$adAccount) {
             return $this->notFound(__('profiles.ad_account_not_found'));
+        }
+
+        if (!$adAccount->access_token) {
+            return $this->error(__('profiles.ad_account_not_connected'), 400);
         }
 
         $service = app(AudienceTargetingService::class);

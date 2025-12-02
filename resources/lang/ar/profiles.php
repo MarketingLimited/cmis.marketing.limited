@@ -295,6 +295,7 @@ return [
     'boost_config_failed' => 'فشل في تحميل إعدادات التعزيز',
     'ad_account_required' => 'حساب الإعلانات مطلوب',
     'ad_account_not_found' => 'حساب الإعلانات غير موجود',
+    'ad_account_not_connected' => 'حساب الإعلانات غير متصل. يرجى إعادة ربط حساب الإعلانات في إعدادات ربط المنصات.',
     'platform' => 'المنصة',
     'ad_accounts_retrieved' => 'تم استرداد حسابات الإعلانات بنجاح',
     'audiences_retrieved' => 'تم استرداد الجماهير بنجاح',
