@@ -103,9 +103,9 @@
                             <span class="text-sm text-gray-600">{{ __('profiles.loading_messaging_accounts') }}...</span>
                         </div>
 
-                        {{-- Destination type cards --}}
-                        <div x-show="!loadingMessagingAccounts" class="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                            <template x-for="destType in currentDestinationTypes" :key="destType.id">
+                        {{-- Non-messaging destination type cards (single-select) --}}
+                        <div x-show="!loadingMessagingAccounts && nonMessagingDestinationTypes.length > 0" class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                            <template x-for="destType in nonMessagingDestinationTypes" :key="destType.id">
                                 <button type="button"
                                         @click="selectDestinationType(destType)"
                                         :class="form.destination_type === destType.id ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-500' : 'border-gray-200 hover:border-blue-300 hover:bg-gray-50'"
@@ -126,7 +126,33 @@
                             </template>
                         </div>
 
-                        {{-- Destination-specific fields --}}
+                        {{-- Messaging destination type cards (multi-select) --}}
+                        <div x-show="!loadingMessagingAccounts && messagingDestinationTypes.length > 0" class="mt-4" x-cloak>
+                            <p class="text-xs text-gray-500 mb-2">{{ __('profiles.messaging_apps_multiselect') }}</p>
+                            <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                                <template x-for="destType in messagingDestinationTypes" :key="destType.id">
+                                    <button type="button"
+                                            @click="toggleMessagingDestination(destType.id)"
+                                            :class="isMessagingDestinationSelected(destType.id) ? 'border-green-500 bg-green-50 ring-2 ring-green-500' : 'border-gray-200 hover:border-green-300 hover:bg-gray-50'"
+                                            class="relative flex flex-col items-center p-4 border-2 rounded-lg transition-all duration-200 focus:outline-none">
+                                        <div :class="isMessagingDestinationSelected(destType.id) ? 'text-green-600' : 'text-gray-400'"
+                                             class="text-2xl mb-2">
+                                            <i :class="'fab ' + destType.icon" x-show="destType.icon?.startsWith('fa-')"></i>
+                                            <i :class="'fas ' + destType.icon" x-show="!destType.icon?.startsWith('fa-')"></i>
+                                        </div>
+                                        <span :class="isMessagingDestinationSelected(destType.id) ? 'text-green-700 font-medium' : 'text-gray-700'"
+                                              class="text-sm text-center" x-text="destType.name"></span>
+                                        {{-- Selected checkmark (shows checkbox style for multi-select) --}}
+                                        <div class="absolute top-1 end-1"
+                                             :class="isMessagingDestinationSelected(destType.id) ? 'text-green-500' : 'text-gray-300'">
+                                            <i :class="isMessagingDestinationSelected(destType.id) ? 'fas fa-check-square' : 'far fa-square'"></i>
+                                        </div>
+                                    </button>
+                                </template>
+                            </div>
+                        </div>
+
+                        {{-- Destination-specific fields for non-messaging destinations --}}
                         <div x-show="form.destination_type" x-transition class="mt-4 space-y-3">
 
                             {{-- Website URL field --}}
@@ -139,41 +165,6 @@
                                        x-model="form.destination_url"
                                        placeholder="https://example.com"
                                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm">
-                            </div>
-
-                            {{-- WhatsApp Number field --}}
-                            <div x-show="selectedDestinationTypeDetails?.requires?.includes('whatsapp_number')">
-                                <label class="block text-sm font-medium text-gray-700 mb-1">
-                                    {{ __('profiles.whatsapp_number') }}
-                                    <span class="text-red-500">*</span>
-                                </label>
-                                <select x-model="form.whatsapp_number_id"
-                                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm">
-                                    <option value="">{{ __('profiles.select_whatsapp_number') }}</option>
-                                    <template x-for="account in messagingAccounts.whatsapp" :key="account.id">
-                                        <option :value="account.id" x-text="account.display_name || account.phone_number"></option>
-                                    </template>
-                                </select>
-                                <p class="mt-1 text-xs text-gray-500">
-                                    <a href="{{ route('orgs.settings.platform-connections.index', $currentOrg) }}" class="text-blue-600 hover:underline">
-                                        <i class="fas fa-plus-circle me-1"></i>{{ __('profiles.connect_new_whatsapp') }}
-                                    </a>
-                                </p>
-                            </div>
-
-                            {{-- Messenger / Page ID field --}}
-                            <div x-show="selectedDestinationTypeDetails?.requires?.includes('page_id')">
-                                <label class="block text-sm font-medium text-gray-700 mb-1">
-                                    {{ __('profiles.facebook_page') }}
-                                    <span class="text-red-500">*</span>
-                                </label>
-                                <select x-model="form.page_id"
-                                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm">
-                                    <option value="">{{ __('profiles.select_facebook_page') }}</option>
-                                    <template x-for="page in messagingAccounts.messenger" :key="page.id">
-                                        <option :value="page.id" x-text="page.name"></option>
-                                    </template>
-                                </select>
                             </div>
 
                             {{-- Phone Number field --}}
@@ -210,6 +201,79 @@
                                        placeholder="{{ __('profiles.enter_form_id') }}"
                                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm">
                                 <p class="mt-1 text-xs text-gray-500">{{ __('profiles.form_id_hint') }}</p>
+                            </div>
+                        </div>
+
+                        {{-- Messaging destination fields (shown when any messaging destination is selected) --}}
+                        <div x-show="form.messaging_destinations.length > 0" x-transition class="mt-4 space-y-3 p-3 bg-green-50 rounded-lg border border-green-200">
+                            <p class="text-xs font-medium text-green-700 mb-2">
+                                <i class="fas fa-comments me-1"></i>
+                                {{ __('profiles.selected_messaging_apps') }}: <span x-text="form.messaging_destinations.length"></span>
+                            </p>
+
+                            {{-- WhatsApp Number field (shown when WHATSAPP is selected) --}}
+                            <div x-show="isMessagingDestinationSelected('WHATSAPP')">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">
+                                    <i class="fab fa-whatsapp text-green-500 me-1"></i>
+                                    {{ __('profiles.whatsapp_number') }}
+                                    <span class="text-red-500">*</span>
+                                </label>
+                                <select x-model="form.whatsapp_number_id"
+                                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 text-sm">
+                                    <option value="">{{ __('profiles.select_whatsapp_number') }}</option>
+                                    <template x-for="account in messagingAccounts.whatsapp" :key="account.id">
+                                        <option :value="account.id" x-text="account.name + (account.phone_number ? ' (' + account.phone_number + ')' : '')"></option>
+                                    </template>
+                                </select>
+                                <p x-show="messagingAccounts.whatsapp.length === 0" class="mt-1 text-xs text-yellow-600">
+                                    <i class="fas fa-exclamation-triangle me-1"></i>
+                                    {{ __('profiles.no_whatsapp_numbers_found') }}
+                                </p>
+                                <p class="mt-1 text-xs text-gray-500">
+                                    <a href="{{ route('orgs.settings.platform-connections.index', $currentOrg) }}" class="text-blue-600 hover:underline">
+                                        <i class="fas fa-plus-circle me-1"></i>{{ __('profiles.connect_new_whatsapp') }}
+                                    </a>
+                                </p>
+                            </div>
+
+                            {{-- Messenger / Page ID field (shown when MESSENGER is selected) --}}
+                            <div x-show="isMessagingDestinationSelected('MESSENGER')">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">
+                                    <i class="fab fa-facebook-messenger text-blue-500 me-1"></i>
+                                    {{ __('profiles.facebook_page') }}
+                                    <span class="text-red-500">*</span>
+                                </label>
+                                <select x-model="form.page_id"
+                                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 text-sm">
+                                    <option value="">{{ __('profiles.select_facebook_page') }}</option>
+                                    <template x-for="page in messagingAccounts.messenger" :key="page.id">
+                                        <option :value="page.id" x-text="page.name || ('Page ' + page.id)"></option>
+                                    </template>
+                                </select>
+                                <p x-show="messagingAccounts.messenger.length === 0" class="mt-1 text-xs text-yellow-600">
+                                    <i class="fas fa-exclamation-triangle me-1"></i>
+                                    {{ __('profiles.no_messenger_pages_found') }}
+                                </p>
+                            </div>
+
+                            {{-- Instagram Direct Account field (shown when INSTAGRAM_DIRECT is selected) --}}
+                            <div x-show="isMessagingDestinationSelected('INSTAGRAM_DIRECT')">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">
+                                    <i class="fab fa-instagram text-pink-500 me-1"></i>
+                                    {{ __('profiles.instagram_account') }}
+                                    <span class="text-red-500">*</span>
+                                </label>
+                                <select x-model="form.instagram_account_id"
+                                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 text-sm">
+                                    <option value="">{{ __('profiles.select_instagram_account') }}</option>
+                                    <template x-for="account in messagingAccounts.instagram_dm" :key="account.id">
+                                        <option :value="account.id" x-text="account.name || account.username || ('Account ' + account.id)"></option>
+                                    </template>
+                                </select>
+                                <p x-show="messagingAccounts.instagram_dm.length === 0" class="mt-1 text-xs text-yellow-600">
+                                    <i class="fas fa-exclamation-triangle me-1"></i>
+                                    {{ __('profiles.no_instagram_accounts_found') }}
+                                </p>
                             </div>
                         </div>
                     </div>
@@ -447,15 +511,21 @@
                             {{-- Custom Audiences --}}
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('profiles.custom_audiences') }}</label>
+                                <div class="text-xs text-gray-500 mb-1" x-show="customAudiences.length > 0">
+                                    <span x-text="customAudiences.length"></span> {{ __('profiles.audiences_available') }}
+                                </div>
                                 <select multiple
                                         x-model="form.custom_audiences"
                                         :disabled="!form.ad_account_id || loadingAudiences"
-                                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm h-24">
+                                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm h-32">
                                     <template x-if="loadingAudiences">
                                         <option disabled>{{ __('profiles.loading_audiences') }}...</option>
                                     </template>
+                                    <template x-if="!loadingAudiences && customAudiences.length === 0">
+                                        <option disabled>{{ __('profiles.no_custom_audiences') }}</option>
+                                    </template>
                                     <template x-for="audience in customAudiences" :key="audience.id">
-                                        <option :value="audience.id" x-text="audience.name + (audience.approximate_count ? ' (' + audience.approximate_count.toLocaleString() + ')' : '')"></option>
+                                        <option :value="audience.id" x-text="audience.name + (audience.size ? ' (' + Number(audience.size).toLocaleString() + ')' : '')"></option>
                                     </template>
                                 </select>
                                 <p class="mt-1 text-xs text-gray-500">{{ __('profiles.custom_audiences_hint') }}</p>
@@ -464,12 +534,18 @@
                             {{-- Lookalike Audiences --}}
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('profiles.lookalike_audiences') }}</label>
+                                <div class="text-xs text-gray-500 mb-1" x-show="lookalikeAudiences.length > 0">
+                                    <span x-text="lookalikeAudiences.length"></span> {{ __('profiles.audiences_available') }}
+                                </div>
                                 <select multiple
                                         x-model="form.lookalike_audiences"
                                         :disabled="!form.ad_account_id || loadingAudiences"
                                         class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm h-24">
+                                    <template x-if="!loadingAudiences && lookalikeAudiences.length === 0">
+                                        <option disabled>{{ __('profiles.no_lookalike_audiences') }}</option>
+                                    </template>
                                     <template x-for="audience in lookalikeAudiences" :key="audience.id">
-                                        <option :value="audience.id" x-text="audience.name + (audience.lookalike_ratio ? ' (' + audience.lookalike_ratio + '%)' : '')"></option>
+                                        <option :value="audience.id" x-text="audience.name + (audience.ratio ? ' (' + audience.ratio + '%)' : '')"></option>
                                     </template>
                                 </select>
                                 <p class="mt-1 text-xs text-gray-500">{{ __('profiles.lookalike_audiences_hint') }}</p>
@@ -478,14 +554,21 @@
                             {{-- Excluded Audiences --}}
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('profiles.excluded_audiences') }}</label>
+                                <div class="text-xs text-gray-500 mb-1" x-show="allAudiences.length > 0">
+                                    <span x-text="allAudiences.length"></span> {{ __('profiles.audiences_available') }}
+                                </div>
                                 <select multiple
                                         x-model="form.excluded_audiences"
                                         :disabled="!form.ad_account_id || loadingAudiences"
-                                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm h-20">
+                                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm h-24">
+                                    <template x-if="!loadingAudiences && allAudiences.length === 0">
+                                        <option disabled>{{ __('profiles.no_audiences_to_exclude') }}</option>
+                                    </template>
                                     <template x-for="audience in allAudiences" :key="audience.id">
-                                        <option :value="audience.id" x-text="audience.name"></option>
+                                        <option :value="audience.id" x-text="audience.name + (audience.size ? ' (' + Number(audience.size).toLocaleString() + ')' : '')"></option>
                                     </template>
                                 </select>
+                                <p class="mt-1 text-xs text-gray-500">{{ __('profiles.excluded_audiences_hint') }}</p>
                             </div>
                         </div>
                     </div>
@@ -748,6 +831,9 @@ function boostForm() {
         selectedDestinationType: null,
         messagingAccounts: { whatsapp: [], messenger: [], instagram_dm: [] },
 
+        // Messaging destination IDs that support multi-select
+        messagingDestinationIds: ['MESSENGER', 'WHATSAPP', 'INSTAGRAM_DIRECT'],
+
         // Form data
         form: {
             name: '',
@@ -784,9 +870,12 @@ function boostForm() {
             destination_url: '',
             whatsapp_number_id: '',
             page_id: '',
+            instagram_account_id: '',
             phone_number: '',
             form_id: '',
-            app_id: ''
+            app_id: '',
+            // Multi-select messaging destinations (Messenger, WhatsApp, Instagram Direct)
+            messaging_destinations: []
         },
 
         // Autocomplete selected items (arrays of objects)
@@ -877,6 +966,39 @@ function boostForm() {
             return this.currentDestinationTypes.find(dt => dt.id === this.form.destination_type);
         },
 
+        // Check if destination type is a messaging type (supports multi-select)
+        isMessagingDestination(destTypeId) {
+            return this.messagingDestinationIds.includes(destTypeId);
+        },
+
+        // Get non-messaging destination types
+        get nonMessagingDestinationTypes() {
+            return this.currentDestinationTypes.filter(dt => !this.isMessagingDestination(dt.id));
+        },
+
+        // Get messaging destination types
+        get messagingDestinationTypes() {
+            return this.currentDestinationTypes.filter(dt => this.isMessagingDestination(dt.id));
+        },
+
+        // Check if we have any messaging destination options
+        get hasMessagingOptions() {
+            return this.messagingDestinationTypes.length > 0;
+        },
+
+        // Check if a specific messaging destination is selected
+        isMessagingDestinationSelected(destId) {
+            return this.form.messaging_destinations.includes(destId);
+        },
+
+        // Check if any messaging destination requires a specific field
+        anyMessagingRequires(fieldName) {
+            return this.form.messaging_destinations.some(destId => {
+                const destType = this.messagingDestinationTypes.find(dt => dt.id === destId);
+                return destType?.requires?.includes(fieldName);
+            });
+        },
+
         get platformName() {
             return this.platformConfig?.platform_name || '{{ __("profiles.platform") }}';
         },
@@ -919,9 +1041,11 @@ function boostForm() {
             this.form.destination_url = '';
             this.form.whatsapp_number_id = '';
             this.form.page_id = '';
+            this.form.instagram_account_id = '';
             this.form.phone_number = '';
             this.form.form_id = '';
             this.form.app_id = '';
+            this.form.messaging_destinations = [];
             this.selectedDestinationType = null;
 
             // Load messaging accounts if needed for the new objective
@@ -936,17 +1060,49 @@ function boostForm() {
         },
 
         selectDestinationType(destinationType) {
+            // For messaging destinations, use multi-select toggle instead
+            if (this.isMessagingDestination(destinationType.id)) {
+                this.toggleMessagingDestination(destinationType.id);
+                return;
+            }
+
+            // For non-messaging destinations, single-select behavior
             this.form.destination_type = destinationType.id;
             this.selectedDestinationType = destinationType;
+            // Clear messaging destinations when selecting a non-messaging destination
+            this.form.messaging_destinations = [];
 
             // Clear fields not relevant to this destination type
             const requires = destinationType.requires || [];
             if (!requires.includes('url')) this.form.destination_url = '';
             if (!requires.includes('whatsapp_number')) this.form.whatsapp_number_id = '';
             if (!requires.includes('page_id')) this.form.page_id = '';
+            if (!requires.includes('instagram_account')) this.form.instagram_account_id = '';
             if (!requires.includes('phone_number')) this.form.phone_number = '';
             if (!requires.includes('form_id')) this.form.form_id = '';
             if (!requires.includes('app_id')) this.form.app_id = '';
+        },
+
+        // Toggle messaging destination (multi-select)
+        toggleMessagingDestination(destId) {
+            const idx = this.form.messaging_destinations.indexOf(destId);
+            if (idx >= 0) {
+                // Remove it
+                this.form.messaging_destinations.splice(idx, 1);
+                // Clear related fields if removing
+                if (destId === 'WHATSAPP') this.form.whatsapp_number_id = '';
+                if (destId === 'MESSENGER') this.form.page_id = '';
+                if (destId === 'INSTAGRAM_DIRECT') this.form.instagram_account_id = '';
+            } else {
+                // Add it
+                this.form.messaging_destinations.push(destId);
+            }
+
+            // Clear single destination type when using multi-select messaging
+            if (this.form.messaging_destinations.length > 0) {
+                this.form.destination_type = '';
+                this.selectedDestinationType = null;
+            }
         },
 
         async loadMessagingAccounts() {
@@ -1086,7 +1242,7 @@ function boostForm() {
 
         // Interest search with debounce
         searchInterests() {
-            if (this.interestSearch.length < 2) {
+            if (this.interestSearch.length < 1) {
                 this.interestResults = [];
                 this.showInterestDropdown = false;
                 return;
@@ -1134,7 +1290,7 @@ function boostForm() {
 
         // Location search with debounce
         searchLocations() {
-            if (this.locationSearch.length < 2) {
+            if (this.locationSearch.length < 1) {
                 this.locationResults = [];
                 this.showLocationDropdown = false;
                 return;
@@ -1182,7 +1338,7 @@ function boostForm() {
 
         // Work position search with debounce
         searchWorkPositions() {
-            if (this.workPositionSearch.length < 2) {
+            if (this.workPositionSearch.length < 1) {
                 this.workPositionResults = [];
                 this.showWorkPositionDropdown = false;
                 return;
@@ -1307,9 +1463,12 @@ function boostForm() {
                         destination_url: this.form.destination_url,
                         whatsapp_number_id: this.form.whatsapp_number_id,
                         page_id: this.form.page_id,
+                        instagram_account_id: this.form.instagram_account_id,
                         phone_number: this.form.phone_number,
                         form_id: this.form.form_id,
                         app_id: this.form.app_id,
+                        // Multi-select messaging destinations
+                        messaging_destinations: this.form.messaging_destinations,
                         targeting_options: {
                             custom_audiences: this.form.custom_audiences,
                             lookalike_audiences: this.form.lookalike_audiences,

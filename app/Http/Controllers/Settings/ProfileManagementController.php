@@ -740,68 +740,79 @@ class ProfileManagementController extends Controller
             return $this->error(__('profiles.ad_account_required'), 400);
         }
 
-        $adAccount = AdAccount::where('org_id', $org)
-            ->where('id', $adAccountId)
-            ->first();
+        // Determine platform from ad account ID format or lookup
+        $platform = 'meta'; // Default for act_ prefixed IDs
 
-        if (!$adAccount) {
-            return $this->notFound(__('profiles.ad_account_not_found'));
+        // Try to get platform from platform_connections first (for Meta format IDs)
+        if (str_starts_with($adAccountId, 'act_')) {
+            // Meta format - platform is 'meta'
+            $platform = 'meta';
+        } elseif (Str::isUuid($adAccountId)) {
+            // UUID format - lookup in legacy ad_accounts table
+            $adAccount = AdAccount::where('org_id', $org)
+                ->where('id', $adAccountId)
+                ->first();
+
+            if (!$adAccount) {
+                return $this->notFound(__('profiles.ad_account_not_found'));
+            }
+            $platform = $adAccount->platform;
         }
 
         $configService = app(BoostConfigurationService::class);
         $locale = app()->getLocale();
 
         try {
-            $platformConfig = $configService->getConfigForPlatform($adAccount->platform);
+            $platformConfig = $configService->getConfigForPlatform($platform);
 
             // Apply locale-specific translations
             $response = [
-                'platform' => $adAccount->platform,
-                'platform_name' => $platformConfig['name'] ?? ucfirst($adAccount->platform),
-                'objectives' => $configService->getObjectives($adAccount->platform, $locale),
-                'placements' => $configService->getPlacements($adAccount->platform, $locale),
-                'special_features' => $configService->getSpecialFeatures($adAccount->platform),
-                'budget_multiplier' => $configService->getBudgetMultiplier($adAccount->platform),
-                'min_budget' => $configService->getMinBudget($adAccount->platform),
-                'min_audience_size' => $configService->getMinAudienceSize($adAccount->platform),
+                'platform' => $platform,
+                'platform_name' => $platformConfig['name'] ?? ucfirst($platform),
+                'objectives' => $configService->getObjectives($platform, $locale),
+                'placements' => $configService->getPlacements($platform, $locale),
+                'special_features' => $configService->getSpecialFeatures($platform),
+                'budget_multiplier' => $configService->getBudgetMultiplier($platform),
+                'min_budget' => $configService->getMinBudget($platform),
+                'min_audience_size' => $configService->getMinAudienceSize($platform),
                 'currency_symbol' => $platformConfig['currency_symbol'] ?? '$',
             ];
 
             // Add ad formats if available
-            $adFormats = $configService->getAdFormats($adAccount->platform, $locale);
+            $adFormats = $configService->getAdFormats($platform, $locale);
             if (!empty($adFormats)) {
                 $response['ad_formats'] = $adFormats;
             }
 
             // Add bidding strategies if available
-            $biddingStrategies = $configService->getBiddingStrategies($adAccount->platform, $locale);
+            $biddingStrategies = $configService->getBiddingStrategies($platform, $locale);
             if (!empty($biddingStrategies)) {
                 $response['bidding_strategies'] = $biddingStrategies;
             }
 
             // Add optimization goals if available
-            $optimizationGoals = $configService->getOptimizationGoals($adAccount->platform, $locale);
+            $optimizationGoals = $configService->getOptimizationGoals($platform, $locale);
             if (!empty($optimizationGoals)) {
                 $response['optimization_goals'] = $optimizationGoals;
             }
 
             // Add ad types if available (Snapchat)
-            $adTypes = $configService->getAdTypes($adAccount->platform, $locale);
+            $adTypes = $configService->getAdTypes($platform, $locale);
             if (!empty($adTypes)) {
                 $response['ad_types'] = $adTypes;
             }
 
             // Add bid types if available (TikTok)
-            $bidTypes = $configService->getBidTypes($adAccount->platform, $locale);
+            $bidTypes = $configService->getBidTypes($platform, $locale);
             if (!empty($bidTypes)) {
                 $response['bid_types'] = $bidTypes;
             }
 
             // Add B2B targeting options if available (LinkedIn)
-            if ($configService->supportsB2BTargeting($adAccount->platform)) {
-                $response['b2b_targeting'] = $configService->getB2BTargeting($adAccount->platform);
-                $response['company_sizes'] = $configService->getCompanySizes($adAccount->platform, $locale);
-                $response['seniority_levels'] = $configService->getSeniorityLevels($adAccount->platform, $locale);
+            if ($configService->supportsB2BTargeting($platform)) {
+                $response['b2b_targeting'] = $configService->getB2BTargeting($platform);
+                $response['company_sizes'] = $configService->getCompanySizes($platform, $locale);
+                $response['seniority_levels'] = $configService->getSeniorityLevels($platform, $locale);
             }
 
             return $this->success($response, __('profiles.boost_config_retrieved'));
@@ -827,12 +838,28 @@ class ProfileManagementController extends Controller
         try {
             $accounts = $configService->getConnectedMessagingAccounts($org, 'meta');
 
+            // Get WhatsApp connect URL safely (route may not be defined)
+            $whatsappConnectUrl = null;
+            if (\Route::has('connectors.connect')) {
+                $whatsappConnectUrl = route('connectors.connect', ['provider' => 'whatsapp']);
+            } else {
+                // Fallback to platform connections settings page
+                $whatsappConnectUrl = route('orgs.settings.platform-connections.index', ['org' => $org]);
+            }
+
             return $this->success([
                 'accounts' => $accounts,
                 'can_connect_whatsapp' => true, // Always allow connecting new accounts
-                'whatsapp_connect_url' => route('connectors.connect', ['provider' => 'whatsapp']),
+                'whatsapp_connect_url' => $whatsappConnectUrl,
             ], __('profiles.messaging_accounts_retrieved'));
         } catch (\Exception $e) {
+            \Log::error('Messaging accounts error', [
+                'org_id' => $org,
+                'integration_id' => $integrationId,
+                'error' => $e->getMessage(),
+                'line' => $e->getLine(),
+                'file' => $e->getFile(),
+            ]);
             return $this->serverError(__('profiles.messaging_accounts_failed'));
         }
     }
@@ -873,6 +900,10 @@ class ProfileManagementController extends Controller
 
             return $this->success($audiences, __('profiles.audiences_retrieved'));
         } catch (\Exception $e) {
+            \Log::error('Audiences fetch failed', [
+                'error' => $e->getMessage(),
+                'ad_account_id' => $adAccountId,
+            ]);
             return $this->serverError(__('profiles.audiences_fetch_failed'));
         }
     }

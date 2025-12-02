@@ -228,6 +228,11 @@ return [
     'custom_audiences_hint' => 'استهدف الأشخاص الذين تفاعلوا بالفعل مع نشاطك التجاري.',
     'lookalike_audiences' => 'الجماهير المشابهة',
     'lookalike_audiences_hint' => 'استهدف أشخاصًا مشابهين لعملائك الحاليين.',
+    'excluded_audiences_hint' => 'استبعد جماهير محددة من رؤية إعلاناتك.',
+    'audiences_available' => 'جمهور متاح',
+    'no_custom_audiences' => 'لم يتم العثور على جماهير مخصصة',
+    'no_lookalike_audiences' => 'لم يتم العثور على جماهير مشابهة',
+    'no_audiences_to_exclude' => 'لا توجد جماهير متاحة للاستبعاد',
     'detailed_targeting' => 'الاستهداف التفصيلي',
 
     // Boost actions
@@ -393,4 +398,13 @@ return [
     'behaviors' => 'السلوكيات',
     'no_behaviors_available' => 'لا توجد سلوكيات متاحة لهذا الحساب الإعلاني',
     'loading' => 'جاري التحميل',
+
+    // Multi-select messaging destinations
+    'messaging_apps_multiselect' => 'اختر تطبيق مراسلة واحد أو أكثر (يمكنك اختيار عدة تطبيقات)',
+    'selected_messaging_apps' => 'تطبيقات المراسلة المختارة',
+    'instagram_account' => 'حساب انستغرام',
+    'select_instagram_account' => 'اختر حساب انستغرام',
+    'no_whatsapp_numbers_found' => 'لم يتم العثور على أرقام واتساب للأعمال. قم بربط رقم من إعدادات المنصات.',
+    'no_messenger_pages_found' => 'لم يتم العثور على صفحات فيسبوك. قم بربط صفحة من إعدادات المنصات.',
+    'no_instagram_accounts_found' => 'لم يتم العثور على حسابات انستغرام. قم بربط حساب من إعدادات المنصات.',
 ];

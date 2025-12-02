@@ -426,19 +426,3 @@
     </div>
 </div>
 
-{{-- Labels/Tags --}}
-<div class="mb-4">
-    <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('publish.labels') }}</label>
-    <div class="flex flex-wrap gap-2">
-        <template x-for="label in content.global.labels" :key="label">
-            <span class="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs">
-                <span x-text="label"></span>
-                <button @click="removeLabel(label)" class="hover:text-blue-900"><i class="fas fa-times"></i></button>
-            </span>
-        </template>
-        <input type="text" x-model="newLabel" @keydown.enter.prevent="addLabel()"
-               placeholder="{{ __('publish.add_label') }}"
-               class="px-2 py-1 text-xs border-0 bg-transparent focus:ring-0 w-28">
-    </div>
-</div>
-                        </div>

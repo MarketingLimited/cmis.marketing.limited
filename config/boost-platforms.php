@@ -69,6 +69,8 @@ return [
                     ['id' => 'WEBSITE', 'name' => 'Website', 'name_ar' => 'الموقع', 'icon' => 'fa-globe', 'requires' => ['url']],
                     ['id' => 'INSTANT_FORM', 'name' => 'Instant Forms', 'name_ar' => 'النماذج الفورية', 'icon' => 'fa-file-alt', 'requires' => ['form_id']],
                     ['id' => 'MESSENGER', 'name' => 'Messenger', 'name_ar' => 'ماسنجر', 'icon' => 'fa-facebook-messenger', 'requires' => ['page_id']],
+                    ['id' => 'WHATSAPP', 'name' => 'WhatsApp', 'name_ar' => 'واتساب', 'icon' => 'fa-whatsapp', 'requires' => ['whatsapp_number']],
+                    ['id' => 'INSTAGRAM_DIRECT', 'name' => 'Instagram Direct', 'name_ar' => 'رسائل إنستغرام', 'icon' => 'fa-instagram', 'requires' => ['instagram_id']],
                     ['id' => 'CALLS', 'name' => 'Phone Calls', 'name_ar' => 'المكالمات', 'icon' => 'fa-phone', 'requires' => ['phone_number']],
                     ['id' => 'APP', 'name' => 'App', 'name_ar' => 'التطبيق', 'icon' => 'fa-mobile-alt', 'requires' => ['app_id']],
                 ],

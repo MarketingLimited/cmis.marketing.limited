@@ -44,15 +44,42 @@ class BoostConfigurationService
 
         if ($locale === 'ar') {
             return array_map(function ($obj) {
-                return [
+                $result = [
                     'id' => $obj['id'],
                     'name' => $obj['name_ar'] ?? $obj['name'],
                     'description' => $obj['description_ar'] ?? $obj['description'] ?? '',
                 ];
+
+                // Include destination_types with localized names
+                if (!empty($obj['destination_types'])) {
+                    $result['destination_types'] = array_map(function ($dest) {
+                        return [
+                            'id' => $dest['id'],
+                            'name' => $dest['name_ar'] ?? $dest['name'],
+                            'icon' => $dest['icon'] ?? 'fa-circle',
+                            'requires' => $dest['requires'] ?? [],
+                        ];
+                    }, $obj['destination_types']);
+                }
+
+                return $result;
             }, $objectives);
         }
 
-        return $objectives;
+        // For non-Arabic, include destination_types as-is
+        return array_map(function ($obj) {
+            $result = [
+                'id' => $obj['id'],
+                'name' => $obj['name'],
+                'description' => $obj['description'] ?? '',
+            ];
+
+            if (!empty($obj['destination_types'])) {
+                $result['destination_types'] = $obj['destination_types'];
+            }
+
+            return $result;
+        }, $objectives);
     }
 
     /**
@@ -527,46 +554,131 @@ class BoostConfigurationService
             'instagram_dm' => [],
         ];
 
-        // Get Meta/Facebook/WhatsApp integrations with messaging capabilities
-        $integrations = Integration::where('org_id', $orgId)
-            ->whereIn('platform', ['meta', 'whatsapp', 'facebook'])
+        // First try platform_connections (new structure)
+        $connection = \App\Models\Platform\PlatformConnection::where('org_id', $orgId)
+            ->where('platform', 'meta')
+            ->whereNull('deleted_at')
             ->where('status', 'active')
-            ->get();
+            ->first();
 
-        foreach ($integrations as $integration) {
-            $settings = $integration->settings ?? [];
+        if ($connection) {
+            $metadata = $connection->account_metadata ?? [];
+            $selectedAssets = $metadata['selected_assets'] ?? [];
 
-            // WhatsApp numbers (stored in settings from WhatsApp Business API)
-            if (!empty($settings['phone_number_id'])) {
-                $accounts['whatsapp'][] = [
-                    'id' => $settings['phone_number_id'],
-                    'display_name' => $settings['phone_display'] ?? $settings['phone_number'] ?? $integration->name,
-                    'integration_id' => $integration->id,
-                    'verified' => $settings['phone_verified'] ?? false,
-                ];
+            // Facebook Pages for Messenger
+            $pageIds = $selectedAssets['page'] ?? [];
+            if (!empty($metadata['facebook_page_id'])) {
+                $pageIds = array_unique(array_merge($pageIds, [$metadata['facebook_page_id']]));
             }
-
-            // Messenger pages (from Facebook/Meta integrations)
-            if (in_array($integration->platform, ['facebook', 'meta'])) {
+            foreach ($pageIds as $pageId) {
                 $accounts['messenger'][] = [
-                    'id' => $integration->platform_account_id,
-                    'display_name' => $integration->name,
-                    'integration_id' => $integration->id,
-                    'has_messenger' => $settings['messenger_enabled'] ?? true,
+                    'id' => $pageId,
+                    'name' => $metadata['facebook_page_name'] ?? "Page {$pageId}",
+                    'connection_id' => $connection->connection_id,
                 ];
             }
 
-            // Instagram DM (from Instagram integrations)
-            if ($integration->platform === 'meta' && !empty($settings['instagram_account_id'])) {
+            // Instagram accounts for DM
+            $igIds = $selectedAssets['instagram_account'] ?? [];
+            if (!empty($metadata['instagram_account_id'])) {
+                $igIds = array_unique(array_merge($igIds, [$metadata['instagram_account_id']]));
+            }
+            foreach ($igIds as $igId) {
                 $accounts['instagram_dm'][] = [
-                    'id' => $settings['instagram_account_id'],
-                    'display_name' => $settings['instagram_username'] ?? $integration->name,
-                    'integration_id' => $integration->id,
+                    'id' => $igId,
+                    'name' => $metadata['instagram_username'] ?? "Instagram {$igId}",
+                    'connection_id' => $connection->connection_id,
                 ];
+            }
+
+            // WhatsApp Business numbers - fetch from Meta API if business_id exists
+            if (!empty($metadata['business_id']) && !empty($connection->access_token)) {
+                try {
+                    $whatsappAccounts = $this->fetchWhatsAppBusinessNumbers(
+                        $connection->access_token,
+                        $metadata['business_id']
+                    );
+                    $accounts['whatsapp'] = $whatsappAccounts;
+                } catch (\Exception $e) {
+                    \Log::warning('Failed to fetch WhatsApp numbers', ['error' => $e->getMessage()]);
+                }
+            }
+        }
+
+        // Fallback: check legacy integrations table
+        if (empty($accounts['whatsapp']) && empty($accounts['messenger']) && empty($accounts['instagram_dm'])) {
+            $integrations = Integration::where('org_id', $orgId)
+                ->whereIn('platform', ['meta', 'whatsapp', 'facebook'])
+                ->where('status', 'active')
+                ->get();
+
+            foreach ($integrations as $integration) {
+                $settings = $integration->settings ?? [];
+
+                if (!empty($settings['phone_number_id'])) {
+                    $accounts['whatsapp'][] = [
+                        'id' => $settings['phone_number_id'],
+                        'name' => $settings['phone_display'] ?? $settings['phone_number'] ?? $integration->name,
+                        'integration_id' => $integration->id,
+                    ];
+                }
+
+                if (in_array($integration->platform, ['facebook', 'meta'])) {
+                    $accounts['messenger'][] = [
+                        'id' => $integration->platform_account_id,
+                        'name' => $integration->name,
+                        'integration_id' => $integration->id,
+                    ];
+                }
+
+                if (!empty($settings['instagram_account_id'])) {
+                    $accounts['instagram_dm'][] = [
+                        'id' => $settings['instagram_account_id'],
+                        'name' => $settings['instagram_username'] ?? $integration->name,
+                        'integration_id' => $integration->id,
+                    ];
+                }
             }
         }
 
         return $accounts;
+    }
+
+    /**
+     * Fetch WhatsApp Business phone numbers from Meta API.
+     */
+    private function fetchWhatsAppBusinessNumbers(string $accessToken, string $businessId): array
+    {
+        $numbers = [];
+
+        try {
+            // Get WhatsApp Business Accounts owned by this business
+            $response = \Http::get("https://graph.facebook.com/v21.0/{$businessId}/owned_whatsapp_business_accounts", [
+                'access_token' => $accessToken,
+                'fields' => 'id,name,phone_numbers{id,display_phone_number,verified_name,quality_rating}',
+            ]);
+
+            if ($response->successful()) {
+                $data = $response->json('data', []);
+                foreach ($data as $waba) {
+                    $phoneNumbers = $waba['phone_numbers']['data'] ?? [];
+                    foreach ($phoneNumbers as $phone) {
+                        $numbers[] = [
+                            'id' => $phone['id'],
+                            'name' => $phone['verified_name'] ?? $phone['display_phone_number'],
+                            'phone_number' => $phone['display_phone_number'] ?? '',
+                            'waba_id' => $waba['id'],
+                            'waba_name' => $waba['name'] ?? '',
+                            'quality_rating' => $phone['quality_rating'] ?? null,
+                        ];
+                    }
+                }
+            }
+        } catch (\Exception $e) {
+            \Log::warning('WhatsApp API error', ['error' => $e->getMessage()]);
+        }
+
+        return $numbers;
     }
 
     /**

@@ -136,7 +136,8 @@ class AudienceTargetingService
         try {
             $response = Http::get("https://graph.facebook.com/v21.0/act_{$adAccountId}/customaudiences", [
                 'access_token' => $accessToken,
-                'fields' => 'id,name,description,subtype,approximate_count,data_source,delivery_status,operation_status',
+                // Note: approximate_count requires special permissions, using approximate_count_lower_bound instead
+                'fields' => 'id,name,description,subtype,approximate_count_lower_bound,approximate_count_upper_bound,data_source,delivery_status,operation_status',
                 'limit' => 100,
             ]);
 
@@ -146,13 +147,24 @@ class AudienceTargetingService
                     'name' => $audience['name'],
                     'description' => $audience['description'] ?? null,
                     'type' => $audience['subtype'] ?? 'CUSTOM',
-                    'size' => $audience['approximate_count'] ?? null,
+                    'size' => $audience['approximate_count_lower_bound'] ?? $audience['approximate_count_upper_bound'] ?? null,
+                    'size_range' => isset($audience['approximate_count_lower_bound']) ?
+                        "{$audience['approximate_count_lower_bound']} - {$audience['approximate_count_upper_bound']}" : null,
                     'status' => $audience['delivery_status']['code'] ?? null,
                     'source' => $audience['data_source']['type'] ?? null,
                 ], $response->json('data', []));
             }
+
+            Log::warning('Meta custom audiences API error', [
+                'ad_account_id' => $adAccountId,
+                'status' => $response->status(),
+                'error' => $response->json('error.message', 'Unknown error'),
+            ]);
         } catch (\Exception $e) {
-            Log::error('Meta custom audiences fetch error', ['error' => $e->getMessage()]);
+            Log::error('Meta custom audiences fetch error', [
+                'ad_account_id' => $adAccountId,
+                'error' => $e->getMessage(),
+            ]);
         }
 
         return [];
@@ -166,7 +178,7 @@ class AudienceTargetingService
         try {
             $response = Http::get("https://graph.facebook.com/v21.0/act_{$adAccountId}/customaudiences", [
                 'access_token' => $accessToken,
-                'fields' => 'id,name,description,subtype,approximate_count,lookalike_spec',
+                'fields' => 'id,name,description,subtype,approximate_count_lower_bound,approximate_count_upper_bound,lookalike_spec',
                 'filtering' => json_encode([['field' => 'subtype', 'operator' => 'EQUAL', 'value' => 'LOOKALIKE']]),
                 'limit' => 100,
             ]);
@@ -176,12 +188,17 @@ class AudienceTargetingService
                     'id' => $audience['id'],
                     'name' => $audience['name'],
                     'type' => 'LOOKALIKE',
-                    'size' => $audience['approximate_count'] ?? null,
+                    'size' => $audience['approximate_count_lower_bound'] ?? $audience['approximate_count_upper_bound'] ?? null,
                     'ratio' => $audience['lookalike_spec']['ratio'] ?? null,
                     'country' => $audience['lookalike_spec']['country'] ?? null,
                     'source_audience' => $audience['lookalike_spec']['origin'][0]['id'] ?? null,
                 ], $response->json('data', []));
             }
+
+            Log::warning('Meta lookalike audiences API error', [
+                'status' => $response->status(),
+                'error' => $response->json('error.message', 'Unknown error'),
+            ]);
         } catch (\Exception $e) {
             Log::error('Meta lookalike audiences fetch error', ['error' => $e->getMessage()]);
         }

@@ -96,7 +96,6 @@ function publishModal() {
                 }
             }
         },
-        newLabel: '',
         isDragging: false,
         imageProcessingEnabled: true,
         videoProcessingEnabled: true,
@@ -1182,17 +1181,6 @@ function publishModal() {
                 console.error('[Upload] Error uploading media:', e);
                 return null;
             }
-        },
-
-        addLabel() {
-            if (this.newLabel.trim() && !this.content.global.labels.includes(this.newLabel.trim())) {
-                this.content.global.labels.push(this.newLabel.trim());
-                this.newLabel = '';
-            }
-        },
-
-        removeLabel(label) {
-            this.content.global.labels = this.content.global.labels.filter(l => l !== label);
         },
 
         getPreviewProfile() {

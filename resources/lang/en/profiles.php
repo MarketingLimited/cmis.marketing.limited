@@ -228,6 +228,11 @@ return [
     'custom_audiences_hint' => 'Target people who have already interacted with your business.',
     'lookalike_audiences' => 'Lookalike audiences',
     'lookalike_audiences_hint' => 'Target people similar to your existing customers.',
+    'excluded_audiences_hint' => 'Exclude specific audiences from seeing your ads.',
+    'audiences_available' => 'audiences available',
+    'no_custom_audiences' => 'No custom audiences found',
+    'no_lookalike_audiences' => 'No lookalike audiences found',
+    'no_audiences_to_exclude' => 'No audiences available to exclude',
     'detailed_targeting' => 'Detailed targeting',
 
     // Boost actions
@@ -393,4 +398,13 @@ return [
     'behaviors' => 'Behaviors',
     'no_behaviors_available' => 'No behaviors available for this ad account',
     'loading' => 'Loading',
+
+    // Multi-select messaging destinations
+    'messaging_apps_multiselect' => 'Select one or more messaging apps (you can select multiple)',
+    'selected_messaging_apps' => 'Selected messaging apps',
+    'instagram_account' => 'Instagram Account',
+    'select_instagram_account' => 'Select an Instagram account',
+    'no_whatsapp_numbers_found' => 'No WhatsApp Business numbers found. Connect one from Platform Connections.',
+    'no_messenger_pages_found' => 'No Facebook Pages found. Connect a page from Platform Connections.',
+    'no_instagram_accounts_found' => 'No Instagram accounts found. Connect an account from Platform Connections.',
 ];
