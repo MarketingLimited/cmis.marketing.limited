@@ -456,7 +456,8 @@
 @endif
 @endif
 
-<!-- Communication Section (Inbox - Core) -->
+<!-- Communication Section (Inbox - Dynamic based on enabled status) -->
+@if($isEnabled('inbox'))
 <div class="mt-4 mb-2" x-show="!compactMode">
     <p class="px-3 text-[10px] font-semibold text-slate-500 uppercase tracking-wider">{{ __('navigation.communication_section') }}</p>
 </div>
@@ -470,6 +471,7 @@
     </div>
     <span class="font-medium text-sm" x-show="!compactMode">{{ __('navigation.inbox') }}</span>
 </a>
+@endif
 
 <!-- Settings Section (Core - Always visible) -->
 <div class="mt-4 mb-2" x-show="!compactMode">
