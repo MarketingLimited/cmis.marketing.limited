@@ -58,86 +58,8 @@
                 </div>
             </div>
 
-            <!-- Navigation -->
-            <nav class="mt-6 px-4 space-y-2">
-                @php
-                    $currentOrg = auth()->user()->active_org_id ?? auth()->user()->current_org_id ?? auth()->user()->org_id ?? request()->route('org');
-                @endphp
-
-                @if($currentOrg)
-                <a href="{{ route('orgs.dashboard.index', ['org' => $currentOrg]) }}" class="sidebar-item flex items-center gap-3 px-4 py-3 rounded-xl {{ request()->routeIs('orgs.dashboard.*') ? 'bg-white/20 text-white shadow-lg' : 'text-white/80 hover:bg-white/10' }}">
-                    <i class="fas fa-home text-lg w-6"></i>
-                    <span class="font-medium">{{ __('navigation.dashboard') }}</span>
-                </a>
-
-                <a href="{{ route('orgs.campaigns.index', ['org' => $currentOrg]) }}" class="sidebar-item flex items-center gap-3 px-4 py-3 rounded-xl {{ request()->routeIs('orgs.campaigns.*') ? 'bg-white/20 text-white shadow-lg' : 'text-white/80 hover:bg-white/10' }}">
-                    <i class="fas fa-bullhorn text-lg w-6"></i>
-                    <span class="font-medium">{{ __('navigation.campaigns') }}</span>
-                </a>
-
-                {{-- TODO: Implement content.index route --}}
-                {{-- <a href="{{ route('orgs.content.index', ['org' => $currentOrg]) }}" class="sidebar-item flex items-center gap-3 px-4 py-3 rounded-xl {{ request()->routeIs('orgs.content.*') ? 'bg-white/20 text-white shadow-lg' : 'text-white/80 hover:bg-white/10' }}">
-                    <i class="fas fa-file-alt text-lg w-6"></i>
-                    <span class="font-medium">{{ __('navigation.content') }}</span>
-                </a> --}}
-
-                <a href="{{ route('orgs.creative.assets.index', ['org' => $currentOrg]) }}" class="sidebar-item flex items-center gap-3 px-4 py-3 rounded-xl {{ request()->routeIs('orgs.creative.assets.*') ? 'bg-white/20 text-white shadow-lg' : 'text-white/80 hover:bg-white/10' }}">
-                    <i class="fas fa-images text-lg w-6"></i>
-                    <span class="font-medium">{{ __('navigation.creative_assets') }}</span>
-                </a>
-
-                <a href="{{ route('orgs.social.history.index', ['org' => $currentOrg]) }}" class="sidebar-item flex items-center gap-3 px-4 py-3 rounded-xl {{ request()->routeIs('orgs.social.history.*') ? 'bg-white/20 text-white shadow-lg' : 'text-white/80 hover:bg-white/10' }}">
-                    <i class="fas fa-clock-rotate-left text-lg w-6"></i>
-                    <span class="font-medium">{{ __('navigation.historical_content') }}</span>
-                </a>
-
-                @can('viewAny', App\Models\User::class)
-                <a href="{{ route('orgs.analytics.index', ['org' => $currentOrg]) }}" class="sidebar-item flex items-center gap-3 px-4 py-3 rounded-xl {{ request()->routeIs('orgs.analytics.*') ? 'bg-white/20 text-white shadow-lg' : 'text-white/80 hover:bg-white/10' }}">
-                    <i class="fas fa-chart-line text-lg w-6"></i>
-                    <span class="font-medium">{{ __('navigation.analytics') }}</span>
-                </a>
-                @endcan
-
-                <a href="{{ route('orgs.inbox.index', ['org' => $currentOrg]) }}" class="sidebar-item flex items-center gap-3 px-4 py-3 rounded-xl {{ request()->routeIs('orgs.inbox.*') ? 'bg-white/20 text-white shadow-lg' : 'text-white/80 hover:bg-white/10' }}">
-                    <i class="fas fa-inbox text-lg w-6"></i>
-                    <span class="font-medium">{{ __('navigation.inbox') }}</span>
-                </a>
-                @else
-                <div class="px-4 py-3 text-white/60 text-sm">
-                    {{ __('navigation.no_organization_selected') }}
-                </div>
-                @endif
-
-                <div class="pt-4 border-t border-white/20 mt-4">
-                    <p class="text-white/50 text-xs font-medium px-4 mb-2">{{ __('navigation.tools') }}</p>
-
-                    @can('viewAny', App\Models\User::class)
-                    <a href="{{ route('users.index') }}" class="sidebar-item flex items-center gap-3 px-4 py-3 rounded-xl {{ request()->routeIs('users.*') ? 'bg-white/20 text-white shadow-lg' : 'text-white/80 hover:bg-white/10' }}">
-                        <i class="fas fa-users text-lg w-6"></i>
-                        <span class="font-medium">{{ __('navigation.users') }}</span>
-                    </a>
-                    @endcan
-
-                    @auth
-                    @if($currentOrg)
-                    <a href="{{ route('orgs.team.index', ['org' => $currentOrg]) }}" class="sidebar-item flex items-center gap-3 px-4 py-3 rounded-xl {{ request()->routeIs('orgs.team.*') ? 'bg-white/20 text-white shadow-lg' : 'text-white/80 hover:bg-white/10' }}">
-                        <i class="fas fa-user-friends text-lg w-6"></i>
-                        <span class="font-medium">{{ __('navigation.team_management') }}</span>
-                    </a>
-
-                    <a href="{{ route('orgs.settings.user', ['org' => $currentOrg]) }}" class="sidebar-item flex items-center gap-3 px-4 py-3 rounded-xl {{ request()->routeIs('orgs.settings.user') || request()->routeIs('orgs.settings.profile') || request()->routeIs('orgs.settings.notifications') || request()->routeIs('orgs.settings.password') || request()->routeIs('orgs.settings.sessions') ? 'bg-white/20 text-white shadow-lg' : 'text-white/80 hover:bg-white/10' }}">
-                        <i class="fas fa-user-cog text-lg w-6"></i>
-                        <span class="font-medium">{{ __('navigation.user_settings') }}</span>
-                    </a>
-
-                    <a href="{{ route('orgs.settings.organization', ['org' => $currentOrg]) }}" class="sidebar-item flex items-center gap-3 px-4 py-3 rounded-xl {{ request()->routeIs('orgs.settings.organization') || request()->routeIs('orgs.settings.team.*') || request()->routeIs('orgs.settings.api-tokens.*') ? 'bg-white/20 text-white shadow-lg' : 'text-white/80 hover:bg-white/10' }}">
-                        <i class="fas fa-building text-lg w-6"></i>
-                        <span class="font-medium">{{ __('navigation.organization_settings') }}</span>
-                    </a>
-                    @endif
-                    @endauth
-                </div>
-            </nav>
+            <!-- Navigation (Dynamic based on enabled apps) -->
+            <x-sidebar-navigation />
 
             <!-- Organization Switcher & User Card at Bottom -->
             <div class="absolute bottom-0 right-0 left-0 p-4 border-t border-white/20 space-y-3">

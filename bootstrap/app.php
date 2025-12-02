@@ -82,6 +82,9 @@ return Application::configure(basePath: dirname(__DIR__))
             // Feature Toggles & Quotas
             'feature.platform' => \App\Http\Middleware\CheckPlatformFeatureEnabled::class,
             'check.ai.quota' => \App\Http\Middleware\CheckAiQuotaMiddleware::class,
+
+            // Apps Marketplace
+            'app.enabled' => \App\Http\Middleware\CheckAppEnabled::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

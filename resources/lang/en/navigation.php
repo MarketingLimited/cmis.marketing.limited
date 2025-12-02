@@ -123,4 +123,7 @@ return [
     'sync_catalogs' => 'Sync Catalogs',
     'product_feeds' => 'Product Feeds',
 
+    // Apps Marketplace
+    'apps_marketplace' => 'Apps Marketplace',
+
 ];

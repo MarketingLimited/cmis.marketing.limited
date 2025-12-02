@@ -123,4 +123,7 @@ return [
     'sync_catalogs' => 'مزامنة الكتالوجات',
     'product_feeds' => 'موجزات المنتجات',
 
+    // Apps Marketplace
+    'apps_marketplace' => 'سوق التطبيقات',
+
 ];

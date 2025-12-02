@@ -183,6 +183,15 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/notifications/latest', [DashboardController::class, 'latest'])->name('notifications.latest');
         Route::post('/notifications/{notificationId}/read', [DashboardController::class, 'markAsRead'])->name('notifications.markAsRead');
 
+        // ==================== Apps Marketplace ====================
+        Route::prefix('marketplace')->name('marketplace.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Marketplace\MarketplaceController::class, 'index'])->name('index');
+            Route::post('/apps/{app}/enable', [\App\Http\Controllers\Marketplace\MarketplaceController::class, 'enable'])->name('enable');
+            Route::post('/apps/{app}/disable', [\App\Http\Controllers\Marketplace\MarketplaceController::class, 'disable'])->name('disable');
+            Route::get('/status', [\App\Http\Controllers\Marketplace\MarketplaceController::class, 'status'])->name('status');
+            Route::get('/apps/{app}', [\App\Http\Controllers\Marketplace\MarketplaceController::class, 'show'])->name('show');
+        });
+
         // ==================== Campaigns ====================
         Route::prefix('campaigns')->name('campaigns.')->group(function () {
             Route::get('/', [CampaignController::class, 'index'])->name('index');

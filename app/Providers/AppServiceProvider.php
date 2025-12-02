@@ -33,6 +33,9 @@ class AppServiceProvider extends ServiceProvider
 
         // Embedding Services
         $this->registerEmbeddingServices();
+
+        // Marketplace Services
+        $this->registerMarketplaceServices();
     }
 
     /**
@@ -166,6 +169,27 @@ class AppServiceProvider extends ServiceProvider
                 return new \App\Services\CMIS\VectorIntegrationService(
                     $app->make(\App\Services\CMIS\SemanticSearchService::class),
                     $app->make(\App\Services\CMIS\GeminiEmbeddingService::class)
+                );
+            }
+        );
+    }
+
+    /**
+     * Register Marketplace services
+     */
+    protected function registerMarketplaceServices(): void
+    {
+        // Marketplace Service (singleton for caching)
+        $this->app->singleton(
+            \App\Services\Marketplace\MarketplaceService::class
+        );
+
+        // Navigation Service (depends on MarketplaceService)
+        $this->app->singleton(
+            \App\Services\Navigation\NavigationService::class,
+            function ($app) {
+                return new \App\Services\Navigation\NavigationService(
+                    $app->make(\App\Services\Marketplace\MarketplaceService::class)
                 );
             }
         );
