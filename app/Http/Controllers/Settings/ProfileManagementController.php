@@ -1132,7 +1132,25 @@ class ProfileManagementController extends Controller
             $selectedAssets = $metadata['selected_assets'] ?? [];
             $selectedAdAccountIds = $selectedAssets['ad_account'] ?? [];
 
-            // Find the ad account in the connection's list
+            // If ad_accounts array is empty but selected_assets.ad_account exists,
+            // validate against selected assets and return credentials from platform connection
+            if (empty($adAccounts) && !empty($selectedAdAccountIds)) {
+                $adAccountIdWithPrefix = str_starts_with($adAccountId, 'act_')
+                    ? $adAccountId
+                    : 'act_' . $adAccountId;
+                $adAccountIdWithoutPrefix = str_replace('act_', '', $adAccountId);
+
+                // Check if this ad account is in the selected assets
+                if (in_array($adAccountIdWithPrefix, $selectedAdAccountIds) ||
+                    in_array($adAccountIdWithoutPrefix, $selectedAdAccountIds)) {
+                    return [
+                        'access_token' => $platformConnection->access_token,
+                        'platform_account_id' => $adAccountIdWithoutPrefix,
+                    ];
+                }
+            }
+
+            // Find the ad account in the connection's list (when ad_accounts array exists)
             foreach ($adAccounts as $account) {
                 $accountIdWithPrefix = $account['id'] ?? '';
                 $accountIdWithoutPrefix = $account['account_id'] ?? str_replace('act_', '', $accountIdWithPrefix);
