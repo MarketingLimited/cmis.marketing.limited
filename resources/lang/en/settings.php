@@ -551,6 +551,8 @@ return [
     'click_add_manually' => 'Click "Add manually" to add service account credentials',
     'service_account' => 'Service Account',
     'oauth' => 'OAuth',
+    'platform_connection_guides' => 'Platform Connection Guides',
+    'all_tokens_encrypted' => 'All access tokens are encrypted and stored securely using Laravel encryption.',
     'connected_via_oauth' => 'Account connected via OAuth',
     'profile_connected_via_oauth' => 'Profile connected via OAuth',
     'no_company_pages_found' => 'No Company Pages found',
