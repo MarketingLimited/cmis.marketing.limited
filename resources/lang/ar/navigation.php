@@ -82,6 +82,7 @@ return [
     'creative_assets_menu' => 'الأصول الإبداعية',
     'creative_briefs' => 'الموجزات الإبداعية',
     'platform_connections' => 'ربط المنصات',
+    'connection_wizard' => 'معالج الربط',
     'profile_management' => 'إدارة الملفات الشخصية',
     'ad_accounts' => 'حسابات الإعلانات',
     'brand_voices' => 'صوت العلامة التجارية',

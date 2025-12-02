@@ -82,6 +82,7 @@ return [
     'creative_assets_menu' => 'Creative Assets',
     'creative_briefs' => 'Creative Briefs',
     'platform_connections' => 'Platform Connections',
+    'connection_wizard' => 'Connection Wizard',
     'profile_management' => 'Profile Management',
     'ad_accounts' => 'Ad Accounts',
     'brand_voices' => 'Brand Voices',

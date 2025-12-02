@@ -2771,7 +2771,7 @@ class PlatformConnectionsController extends Controller
         // Check for wizard mode and redirect accordingly
         if (!empty($state['wizard_mode'])) {
             return redirect()
-                ->route('orgs.settings.platform-connections.wizard.assets', [$orgId, 'meta', $connection->id])
+                ->route('orgs.settings.platform-connections.wizard.assets', [$orgId, 'meta', $connection->connection_id])
                 ->with('success', __('wizard.mode.direct.connecting'));
         }
 
@@ -2988,7 +2988,7 @@ class PlatformConnectionsController extends Controller
         // Check for wizard mode and redirect accordingly
         if (!empty($state['wizard_mode'])) {
             return redirect()
-                ->route('orgs.settings.platform-connections.wizard.assets', [$orgId, 'linkedin', $connection->id])
+                ->route('orgs.settings.platform-connections.wizard.assets', [$orgId, 'linkedin', $connection->connection_id])
                 ->with('success', __('wizard.mode.direct.connecting'));
         }
 
@@ -3108,7 +3108,7 @@ class PlatformConnectionsController extends Controller
         // Check for wizard mode and redirect accordingly
         if (!empty($state['wizard_mode'])) {
             return redirect()
-                ->route('orgs.settings.platform-connections.wizard.assets', [$orgId, 'twitter', $connection->id])
+                ->route('orgs.settings.platform-connections.wizard.assets', [$orgId, 'twitter', $connection->connection_id])
                 ->with('success', __('wizard.mode.direct.connecting'));
         }
 
@@ -3321,7 +3321,7 @@ class PlatformConnectionsController extends Controller
         // Check for wizard mode and redirect accordingly
         if (!empty($state['wizard_mode'])) {
             return redirect()
-                ->route('orgs.settings.platform-connections.wizard.assets', [$orgId, 'tiktok', $connection->id])
+                ->route('orgs.settings.platform-connections.wizard.assets', [$orgId, 'tiktok', $connection->connection_id])
                 ->with('success', __('wizard.mode.direct.connecting'));
         }
 
@@ -3720,7 +3720,7 @@ class PlatformConnectionsController extends Controller
         // Check for wizard mode and redirect accordingly
         if (!empty($state['wizard_mode'])) {
             return redirect()
-                ->route('orgs.settings.platform-connections.wizard.assets', [$orgId, 'google', $connection->id])
+                ->route('orgs.settings.platform-connections.wizard.assets', [$orgId, 'google', $connection->connection_id])
                 ->with('success', __('wizard.mode.direct.connecting'));
         }
 
@@ -3843,7 +3843,7 @@ class PlatformConnectionsController extends Controller
         // Check for wizard mode and redirect accordingly
         if (!empty($state['wizard_mode'])) {
             return redirect()
-                ->route('orgs.settings.platform-connections.wizard.assets', [$orgId, 'snapchat', $connection->id])
+                ->route('orgs.settings.platform-connections.wizard.assets', [$orgId, 'snapchat', $connection->connection_id])
                 ->with('success', __('wizard.mode.direct.connecting'));
         }
 
