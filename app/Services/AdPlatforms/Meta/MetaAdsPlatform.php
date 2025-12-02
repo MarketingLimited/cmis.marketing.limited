@@ -285,6 +285,29 @@ class MetaAdsPlatform extends AbstractAdPlatform
                 $payload['end_time'] = Carbon::parse($data['end_time'])->toIso8601String();
             }
 
+            // Add destination_type for messaging campaigns (WhatsApp, Messenger, etc.)
+            if (!empty($data['destination_type'])) {
+                $payload['destination_type'] = $data['destination_type'];
+            }
+
+            // Add promoted_object for WhatsApp campaigns
+            // This is REQUIRED for CTWA (Click-to-WhatsApp) ads
+            if (!empty($data['promoted_object'])) {
+                $payload['promoted_object'] = $data['promoted_object'];
+            } elseif (($data['destination_type'] ?? '') === 'WHATSAPP') {
+                // WhatsApp requires promoted_object with page_id and whatsapp_phone_number_id
+                if (empty($data['page_id']) || empty($data['whatsapp_phone_number_id'])) {
+                    return [
+                        'success' => false,
+                        'error' => 'WhatsApp campaigns require page_id and whatsapp_phone_number_id',
+                    ];
+                }
+                $payload['promoted_object'] = [
+                    'page_id' => $data['page_id'],
+                    'whatsapp_phone_number_id' => $data['whatsapp_phone_number_id'],
+                ];
+            }
+
             $response = $this->makeRequest('POST', $url, $payload);
 
             return [
@@ -333,6 +356,87 @@ class MetaAdsPlatform extends AbstractAdPlatform
                 'error' => $e->getMessage(),
             ];
         }
+    }
+
+    /**
+     * Create a complete Click-to-WhatsApp (CTWA) campaign.
+     * This creates the campaign and ad set with WhatsApp-specific settings.
+     *
+     * @param array $config Configuration including:
+     *   - name: Campaign name
+     *   - page_id: Facebook Page ID linked to WhatsApp
+     *   - whatsapp_number_id: WhatsApp phone number ID from WABA
+     *   - budget: Daily budget in standard currency units
+     *   - targeting: Optional targeting array
+     *   - optimization_goal: Optional, defaults to CONVERSATIONS
+     * @return array Result with success status and IDs
+     */
+    public function createWhatsAppCampaign(array $config): array
+    {
+        // Validate required fields
+        if (empty($config['page_id']) || empty($config['whatsapp_number_id'])) {
+            return [
+                'success' => false,
+                'error' => 'page_id and whatsapp_number_id are required for WhatsApp campaigns',
+            ];
+        }
+
+        if (empty($config['name'])) {
+            return [
+                'success' => false,
+                'error' => 'Campaign name is required',
+            ];
+        }
+
+        // 1. Create campaign with OUTCOME_ENGAGEMENT objective
+        $campaign = $this->createCampaign([
+            'name' => $config['name'],
+            'objective' => 'OUTCOME_ENGAGEMENT',
+            'status' => 'PAUSED',
+        ]);
+
+        if (!$campaign['success']) {
+            return $campaign;
+        }
+
+        // 2. Create ad set with WhatsApp destination
+        $adSet = $this->createAdSet($campaign['external_id'], [
+            'name' => $config['name'] . ' - Ad Set',
+            'destination_type' => 'WHATSAPP',
+            'page_id' => $config['page_id'],
+            'whatsapp_phone_number_id' => $config['whatsapp_number_id'],
+            'optimization_goal' => $config['optimization_goal'] ?? 'CONVERSATIONS',
+            'billing_event' => 'IMPRESSIONS',
+            'bid_strategy' => $config['bid_strategy'] ?? 'LOWEST_COST_WITHOUT_CAP',
+            'daily_budget' => $config['budget'] ?? 1000, // Default $10/day
+            'targeting' => $config['targeting'] ?? [
+                'geo_locations' => ['countries' => ['US']],
+                'age_min' => 18,
+                'age_max' => 65,
+            ],
+            'status' => 'PAUSED',
+        ]);
+
+        if (!$adSet['success']) {
+            // Rollback: delete the campaign on ad set creation failure
+            try {
+                $this->deleteCampaign($campaign['external_id']);
+            } catch (\Exception $e) {
+                // Log but don't fail - campaign may need manual cleanup
+                \Log::warning('Failed to rollback WhatsApp campaign', [
+                    'campaign_id' => $campaign['external_id'],
+                    'error' => $e->getMessage(),
+                ]);
+            }
+            return $adSet;
+        }
+
+        return [
+            'success' => true,
+            'campaign_id' => $campaign['external_id'],
+            'adset_id' => $adSet['external_id'],
+            'message' => 'WhatsApp campaign created successfully',
+        ];
     }
 
     /**

@@ -132,6 +132,9 @@ return [
             ['id' => 'THRUPLAY', 'name' => 'ThruPlay', 'name_ar' => 'المشاهدة الكاملة'],
             ['id' => 'CONVERSIONS', 'name' => 'Conversions', 'name_ar' => 'التحويلات'],
             ['id' => 'VALUE', 'name' => 'Value', 'name_ar' => 'القيمة'],
+            // WhatsApp/Messaging optimization goals
+            ['id' => 'CONVERSATIONS', 'name' => 'Conversations', 'name_ar' => 'المحادثات'],
+            ['id' => 'LEAD_GENERATION', 'name' => 'Lead Generation', 'name_ar' => 'توليد العملاء المحتملين'],
         ],
         'budget_multiplier' => 100, // Convert to cents
         'min_budget' => 1,

@@ -877,6 +877,7 @@ function boostForm() {
             delay_unit: 'hours',
             ad_account_id: '',
             objective: '',
+            optimization_goal: '', // Auto-set for WhatsApp campaigns
             budget_amount: '',
             duration_days: 7,
             advantage_plus_enabled: false,
@@ -1138,6 +1139,16 @@ function boostForm() {
             if (this.form.messaging_destinations.length > 0) {
                 this.form.destination_type = '';
                 this.selectedDestinationType = null;
+
+                // Auto-set optimization_goal to CONVERSATIONS for WhatsApp campaigns
+                if (this.form.messaging_destinations.includes('WHATSAPP') && !this.form.optimization_goal) {
+                    this.form.optimization_goal = 'CONVERSATIONS';
+                }
+            }
+
+            // Reset optimization_goal when no messaging destinations are selected
+            if (this.form.messaging_destinations.length === 0) {
+                this.form.optimization_goal = '';
             }
         },
 
@@ -1484,6 +1495,7 @@ function boostForm() {
                         delay_unit: this.form.delay_unit,
                         ad_account_id: this.form.ad_account_id,
                         objective: this.form.objective,
+                        optimization_goal: this.form.optimization_goal || 'REACH', // Default to REACH if not set
                         budget_amount: this.form.budget_amount,
                         duration_hours: this.form.duration_days * 24,
                         // Platform-specific settings

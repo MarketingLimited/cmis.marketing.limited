@@ -487,6 +487,15 @@ class ProfileManagementController extends Controller
             'budget_currency' => 'nullable|string|max:3',
             'duration_hours' => 'required|integer|min:1',
             'targeting_options' => 'nullable|array',
+            // Campaign configuration
+            'objective' => 'nullable|string|max:50',
+            'optimization_goal' => 'nullable|string|max:50',
+            // WhatsApp/Messaging destination support
+            'destination_type' => 'nullable|string|max:50',
+            'whatsapp_number_id' => 'nullable|string|max:50|required_if:destination_type,WHATSAPP',
+            'page_id' => 'nullable|string|max:50|required_if:destination_type,WHATSAPP',
+            'messaging_destinations' => 'nullable|array',
+            'messaging_destinations.*' => 'nullable|string|max:50',
         ]);
 
         if ($validator->fails()) {
@@ -494,6 +503,26 @@ class ProfileManagementController extends Controller
         }
 
         try {
+            // Build boost_config for campaign settings (including WhatsApp)
+            $boostConfig = [
+                'objective' => $request->input('objective', 'OUTCOME_ENGAGEMENT'),
+                'optimization_goal' => $request->input('optimization_goal', 'REACH'),
+            ];
+
+            // Add WhatsApp/messaging destination configuration
+            if ($request->filled('destination_type')) {
+                $boostConfig['destination_type'] = $request->input('destination_type');
+            }
+            if ($request->filled('whatsapp_number_id')) {
+                $boostConfig['whatsapp_phone_number_id'] = $request->input('whatsapp_number_id');
+            }
+            if ($request->filled('page_id')) {
+                $boostConfig['page_id'] = $request->input('page_id');
+            }
+            if ($request->filled('messaging_destinations')) {
+                $boostConfig['messaging_destinations'] = $request->input('messaging_destinations', []);
+            }
+
             $boostRule = BoostRule::create([
                 'org_id' => $org,
                 'profile_group_id' => $profile->profile_group_id,
@@ -511,6 +540,7 @@ class ProfileManagementController extends Controller
                 'duration_hours' => $request->input('duration_hours'),
                 'apply_to_social_profiles' => [$integrationId],
                 'targeting_options' => $request->input('targeting_options', []),
+                'boost_config' => $boostConfig,
                 'created_by' => auth()->id(),
             ]);
 

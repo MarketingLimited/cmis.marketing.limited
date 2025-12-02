@@ -1090,6 +1090,7 @@ class PlatformConnectionsController extends Controller
         $adAccounts = $this->getMetaAdAccounts($accessToken);
         $pixels = $this->getMetaPixels($accessToken, $adAccounts);
         $catalogs = $this->getMetaCatalogs($accessToken);
+        $whatsappAccounts = $this->getMetaWhatsappAccounts($accessToken);
 
         // Get currently selected assets
         $selectedAssets = $connection->account_metadata['selected_assets'] ?? [];
@@ -1103,6 +1104,7 @@ class PlatformConnectionsController extends Controller
             'adAccounts' => $adAccounts,
             'pixels' => $pixels,
             'catalogs' => $catalogs,
+            'whatsappAccounts' => $whatsappAccounts,
             'selectedAssets' => $selectedAssets,
         ]);
     }
@@ -1118,7 +1120,7 @@ class PlatformConnectionsController extends Controller
             ->firstOrFail();
 
         // Multi-select asset types
-        $multiAssetTypes = ['page', 'instagram_account', 'threads_account', 'ad_account', 'pixel', 'catalog'];
+        $multiAssetTypes = ['page', 'instagram_account', 'threads_account', 'ad_account', 'pixel', 'catalog', 'whatsapp_account'];
 
         // Build validation rules for multi-select
         $rules = [];
@@ -1514,6 +1516,122 @@ class PlatformConnectionsController extends Controller
             return $catalogs;
         } catch (\Exception $e) {
             Log::error('Failed to fetch Meta catalogs', ['error' => $e->getMessage()]);
+            return [];
+        }
+    }
+
+    /**
+     * Get all WhatsApp Business phone numbers from Meta Business Manager.
+     * These are needed for Click-to-WhatsApp (CTWA) advertising campaigns.
+     *
+     * @see https://developers.facebook.com/docs/whatsapp/business-management-api/phone-numbers
+     */
+    private function getMetaWhatsappAccounts(string $accessToken): array
+    {
+        $whatsappAccounts = [];
+        $businesses = [];
+
+        try {
+            // Step 1: Get businesses (same pattern as catalogs)
+            $businessesResponse = Http::timeout(15)->get('https://graph.facebook.com/v21.0/me/businesses', [
+                'access_token' => $accessToken,
+                'fields' => 'id,name',
+                'limit' => 50,
+            ]);
+
+            if ($businessesResponse->successful()) {
+                $businesses = $businessesResponse->json('data', []);
+                Log::info('Fetched businesses for WhatsApp lookup', ['count' => count($businesses)]);
+            }
+
+            // Step 2: If /me/businesses is empty, extract from ad accounts
+            if (empty($businesses)) {
+                Log::info('No businesses from /me/businesses, trying to extract from ad accounts for WhatsApp');
+
+                $adAccountsResponse = Http::timeout(15)->get('https://graph.facebook.com/v21.0/me/adaccounts', [
+                    'access_token' => $accessToken,
+                    'fields' => 'id,business{id,name}',
+                    'limit' => 50,
+                ]);
+
+                if ($adAccountsResponse->successful()) {
+                    $seenBusinessIds = [];
+                    foreach ($adAccountsResponse->json('data', []) as $adAccount) {
+                        $business = $adAccount['business'] ?? null;
+                        if ($business && !empty($business['id']) && !in_array($business['id'], $seenBusinessIds)) {
+                            $businesses[] = [
+                                'id' => $business['id'],
+                                'name' => $business['name'] ?? 'Unknown Business',
+                            ];
+                            $seenBusinessIds[] = $business['id'];
+                        }
+                    }
+                    Log::info('Extracted businesses from ad accounts for WhatsApp', ['count' => count($businesses)]);
+                }
+            }
+
+            if (empty($businesses)) {
+                Log::warning('No businesses found for WhatsApp lookup');
+                return $whatsappAccounts;
+            }
+
+            // Step 3: For each business, fetch owned WhatsApp Business Accounts
+            foreach ($businesses as $business) {
+                $businessId = $business['id'] ?? null;
+                $businessName = $business['name'] ?? 'Unknown Business';
+                if (!$businessId) continue;
+
+                $wabaResponse = Http::timeout(15)->get("https://graph.facebook.com/v21.0/{$businessId}/owned_whatsapp_business_accounts", [
+                    'access_token' => $accessToken,
+                    'fields' => 'id,name,phone_numbers{id,display_phone_number,verified_name,quality_rating,code_verification_status}',
+                    'limit' => 50,
+                ]);
+
+                if ($wabaResponse->successful()) {
+                    $wabas = $wabaResponse->json('data', []);
+                    Log::info('Fetched WABAs for business', [
+                        'business_id' => $businessId,
+                        'business_name' => $businessName,
+                        'waba_count' => count($wabas),
+                    ]);
+
+                    foreach ($wabas as $waba) {
+                        $wabaId = $waba['id'] ?? null;
+                        $wabaName = $waba['name'] ?? 'Unnamed WABA';
+                        $phoneNumbers = $waba['phone_numbers']['data'] ?? [];
+
+                        foreach ($phoneNumbers as $phone) {
+                            $existingIds = array_column($whatsappAccounts, 'id');
+                            if (!in_array($phone['id'], $existingIds)) {
+                                $whatsappAccounts[] = [
+                                    'id' => $phone['id'],
+                                    'display_phone_number' => $phone['display_phone_number'] ?? '',
+                                    'verified_name' => $phone['verified_name'] ?? '',
+                                    'quality_rating' => $phone['quality_rating'] ?? null,
+                                    'code_verification_status' => $phone['code_verification_status'] ?? null,
+                                    'waba_id' => $wabaId,
+                                    'waba_name' => $wabaName,
+                                    'business_id' => $businessId,
+                                    'business_name' => $businessName,
+                                ];
+                            }
+                        }
+                    }
+                } else {
+                    Log::warning('Failed to fetch WhatsApp accounts for business', [
+                        'business_id' => $businessId,
+                        'business_name' => $businessName,
+                        'status' => $wabaResponse->status(),
+                        'error' => $wabaResponse->json('error.message'),
+                        'error_code' => $wabaResponse->json('error.code'),
+                    ]);
+                }
+            }
+
+            Log::info('Total WhatsApp phone numbers fetched', ['count' => count($whatsappAccounts)]);
+            return $whatsappAccounts;
+        } catch (\Exception $e) {
+            Log::error('Failed to fetch Meta WhatsApp accounts', ['error' => $e->getMessage()]);
             return [];
         }
     }
@@ -2624,18 +2742,35 @@ class PlatformConnectionsController extends Controller
 
         // Meta OAuth scopes for ads management and social publishing
         $scopes = [
+            // Core advertising permissions
             'ads_management',
             'ads_read',
             'business_management',
+
+            // Facebook Pages permissions
             'pages_read_engagement',
             'pages_show_list',
             'pages_manage_posts',
             'pages_manage_metadata',
+
+            // Instagram permissions
             'instagram_basic',
             'instagram_content_publish',
             'instagram_manage_comments',
             'instagram_manage_insights',
+
+            // Analytics
             'read_insights',
+
+            // WhatsApp Business permissions (for Click-to-WhatsApp campaigns)
+            'whatsapp_business_management',
+            'whatsapp_business_messaging',
+
+            // Product catalog permissions (for shopping/collection ads)
+            'catalog_management',
+
+            // Lead generation permissions
+            'leads_retrieval',
         ];
 
         $params = http_build_query([
