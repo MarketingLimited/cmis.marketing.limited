@@ -4,57 +4,77 @@
 @section('page-title', __('marketplace.title'))
 @section('page-subtitle', __('marketplace.subtitle'))
 
+@push('styles')
+<style>
+/* Hide scrollbar for category tabs */
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+</style>
+@endpush
+
 @section('content')
-<div x-data="marketplaceApp()" x-cloak class="space-y-6">
-    {{-- Header with Search and Filter --}}
-    <div class="bg-white rounded-2xl shadow-sm p-6">
-        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            {{-- Search --}}
-            <div class="relative flex-1 max-w-md">
+<div x-data="marketplaceApp()" x-cloak class="space-y-4">
+    {{-- Sticky Header with Search and Scrollable Category Tabs --}}
+    <div class="bg-white rounded-2xl shadow-sm p-4 sticky top-0 z-10">
+        <div class="flex items-center gap-4">
+            {{-- Search (compact) --}}
+            <div class="relative w-48 lg:w-64 flex-shrink-0">
                 <input
                     type="text"
                     x-model="searchQuery"
                     placeholder="{{ __('marketplace.search_placeholder') }}"
-                    class="w-full ps-10 pe-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition"
+                    class="w-full ps-9 pe-3 py-2 text-sm rounded-lg border border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition"
                 >
-                <i class="fas fa-search absolute start-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                <i class="fas fa-search absolute start-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
             </div>
 
-            {{-- Category Filter --}}
-            <div class="flex flex-wrap gap-2">
-                <button
-                    @click="selectedCategory = null"
-                    :class="selectedCategory === null ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'"
-                    class="px-4 py-2 rounded-xl font-medium transition"
-                >
-                    {{ __('marketplace.all_categories') }}
-                </button>
-                @foreach($categories as $category)
+            {{-- Scrollable Category Tabs --}}
+            <div class="flex-1 overflow-x-auto scrollbar-hide">
+                <div class="flex gap-2 pb-1">
                     <button
-                        @click="selectedCategory = '{{ $category->slug }}'"
-                        :class="selectedCategory === '{{ $category->slug }}' ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'"
-                        class="px-4 py-2 rounded-xl font-medium transition"
+                        @click="selectedCategory = null"
+                        :class="selectedCategory === null ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'"
+                        class="flex-shrink-0 px-3 py-1.5 text-sm rounded-lg font-medium whitespace-nowrap transition"
                     >
-                        <i class="fas {{ $category->icon }} me-2"></i>
-                        {{ __($category->name_key) }}
+                        {{ __('marketplace.all_categories') }}
                     </button>
-                @endforeach
+                    @foreach($categories as $category)
+                        <button
+                            @click="selectedCategory = '{{ $category->slug }}'"
+                            :class="selectedCategory === '{{ $category->slug }}' ? getCategoryButtonActiveClass('{{ $category->slug }}') : 'bg-gray-100 text-gray-700 hover:bg-gray-200'"
+                            class="flex-shrink-0 px-3 py-1.5 text-sm rounded-lg font-medium whitespace-nowrap transition"
+                        >
+                            <i class="fas {{ $category->icon }} me-1.5"></i>
+                            {{ __($category->name_key) }}
+                        </button>
+                    @endforeach
+                </div>
             </div>
+
+            {{-- Bulk Selection Toggle --}}
+            <button
+                @click="bulkMode = !bulkMode; if(!bulkMode) selectedApps = []"
+                :class="bulkMode ? 'bg-indigo-100 text-indigo-700' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'"
+                class="flex-shrink-0 px-3 py-1.5 text-sm rounded-lg font-medium transition hidden sm:flex items-center gap-1.5"
+            >
+                <i class="fas fa-check-double"></i>
+                <span class="hidden md:inline">{{ __('marketplace.bulk_select') }}</span>
+            </button>
         </div>
     </div>
 
     {{-- Premium Badge Info (if no premium access) --}}
     @unless($hasPremium)
-    <div class="bg-gradient-to-r from-amber-50 to-yellow-50 border border-amber-200 rounded-2xl p-4">
+    <div class="bg-gradient-to-r from-amber-50 to-yellow-50 border border-amber-200 rounded-xl p-3">
         <div class="flex items-center gap-3">
             <div class="bg-amber-100 rounded-full p-2">
-                <i class="fas fa-crown text-amber-600"></i>
+                <i class="fas fa-crown text-amber-600 text-sm"></i>
             </div>
-            <div class="flex-1">
-                <p class="font-medium text-amber-800">{{ __('marketplace.premium_info_title') }}</p>
-                <p class="text-sm text-amber-700">{{ __('marketplace.premium_info_description') }}</p>
+            <div class="flex-1 min-w-0">
+                <p class="font-medium text-amber-800 text-sm">{{ __('marketplace.premium_info_title') }}</p>
+                <p class="text-xs text-amber-700 truncate">{{ __('marketplace.premium_info_description') }}</p>
             </div>
-            <a href="#" class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl font-medium transition">
+            <a href="#" class="flex-shrink-0 px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-white rounded-lg font-medium text-sm transition">
                 {{ __('marketplace.upgrade_now') }}
             </a>
         </div>
@@ -67,133 +87,121 @@
         <div
             x-show="selectedCategory === null || selectedCategory === '{{ $category->slug }}'"
             x-transition
-            class="space-y-4"
+            class="space-y-3"
         >
-            {{-- Category Header --}}
-            <div class="flex items-center gap-3">
-                <div class="bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-xl p-3">
-                    <i class="fas {{ $category->icon }} text-lg"></i>
+            {{-- Category Header (Compact) --}}
+            <div class="flex items-center gap-2.5">
+                <div class="bg-gradient-to-r {{ getCategoryGradient($category->slug) }} text-white rounded-lg p-2">
+                    <i class="fas {{ $category->icon }} text-sm"></i>
                 </div>
-                <div>
-                    <h2 class="text-xl font-bold text-gray-800">{{ __($category->name_key) }}</h2>
-                    <p class="text-sm text-gray-500">{{ __($category->description_key) }}</p>
+                <div class="min-w-0">
+                    <h2 class="text-base font-bold text-gray-800">{{ __($category->name_key) }}</h2>
+                    <p class="text-xs text-gray-500 truncate">{{ __($category->description_key) }}</p>
                 </div>
             </div>
 
-            {{-- Apps Grid --}}
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {{-- Apps Grid: 1 col mobile, 2 tablet, 3 laptop, 4 desktop --}}
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
                 @foreach($category->apps as $app)
                 <div
-                    x-show="searchQuery === '' || '{{ strtolower($app->name) }}'.includes(searchQuery.toLowerCase()) || '{{ strtolower(__($app->name_key)) }}'.includes(searchQuery.toLowerCase())"
+                    x-show="searchQuery === '' || '{{ strtolower($app->name ?? '') }}'.includes(searchQuery.toLowerCase()) || '{{ strtolower(__($app->name_key)) }}'.includes(searchQuery.toLowerCase())"
                     x-transition
-                    class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition"
+                    class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 hover:shadow-md transition group relative"
                 >
-                    <div class="p-5">
-                        {{-- App Header --}}
-                        <div class="flex items-start justify-between mb-4">
-                            <div class="flex items-center gap-3">
-                                <div class="bg-gradient-to-br from-indigo-100 to-purple-100 rounded-xl p-3">
-                                    <i class="fas {{ $app->icon }} text-indigo-600 text-xl"></i>
-                                </div>
-                                <div>
-                                    <h3 class="font-bold text-gray-800">{{ __($app->name_key) }}</h3>
-                                    @if($app->is_premium)
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
-                                        <i class="fas fa-crown me-1 text-amber-500"></i>
+                    {{-- Bulk Select Checkbox --}}
+                    <div x-show="bulkMode && !{{ $app->is_core ? 'true' : 'false' }}" class="absolute top-2 end-2">
+                        <input
+                            type="checkbox"
+                            :value="'{{ $app->slug }}'"
+                            x-model="selectedApps"
+                            class="w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                        >
+                    </div>
+
+                    {{-- Compact Header --}}
+                    <div class="flex items-center gap-2.5 mb-2">
+                        <div class="w-10 h-10 rounded-lg flex items-center justify-center bg-gradient-to-br {{ getCategoryGradient($category->slug) }}">
+                            <i class="fas {{ $app->icon }} text-white text-sm"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <h3 class="font-semibold text-gray-800 text-sm truncate">{{ __($app->name_key) }}</h3>
+                            <div class="flex items-center gap-1.5">
+                                @if($app->is_premium)
+                                    <span class="text-xs text-amber-600 font-medium">
+                                        <i class="fas fa-crown me-0.5 text-amber-500"></i>
                                         {{ __('marketplace.premium') }}
                                     </span>
-                                    @endif
-                                </div>
-                            </div>
-
-                            {{-- Status Indicator --}}
-                            <div class="flex-shrink-0">
+                                @endif
                                 @if($app->is_core)
-                                    {{-- Core apps are always enabled --}}
-                                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                        <i class="fas fa-check-circle me-1"></i>
-                                        {{ __('marketplace.enabled') }}
-                                    </span>
-                                @else
-                                    <div x-data="{ enabled: {{ in_array($app->slug, $enabledSlugs) ? 'true' : 'false' }} }">
-                                        <span
-                                            x-show="enabled"
-                                            class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800"
-                                        >
-                                            <i class="fas fa-check-circle me-1"></i>
-                                            {{ __('marketplace.enabled') }}
-                                        </span>
-                                        <span
-                                            x-show="!enabled"
-                                            class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600"
-                                        >
-                                            {{ __('marketplace.disabled') }}
-                                        </span>
-                                    </div>
+                                    <span class="text-xs text-green-600 font-medium">{{ __('marketplace.core_feature') }}</span>
                                 @endif
                             </div>
                         </div>
-
-                        {{-- Description --}}
-                        <p class="text-sm text-gray-600 mb-4">{{ __($app->description_key) }}</p>
-
-                        {{-- Dependencies --}}
-                        @if(!empty($app->dependencies))
-                        <div class="mb-4 p-3 bg-gray-50 rounded-xl">
-                            <p class="text-xs font-medium text-gray-500 mb-1">{{ __('marketplace.requires') }}:</p>
-                            <div class="flex flex-wrap gap-1">
-                                @foreach($app->dependencies as $dep)
-                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs bg-indigo-100 text-indigo-700">
-                                    {{ __('marketplace.apps.' . str_replace('-', '_', $dep) . '.name') }}
-                                </span>
-                                @endforeach
-                            </div>
-                        </div>
-                        @endif
-
-                        {{-- Action Button --}}
+                        {{-- Status Dot --}}
                         @if($app->is_core)
-                            {{-- Core apps: always enabled, not toggleable --}}
-                            <div class="w-full py-2.5 rounded-xl font-medium bg-green-50 text-green-600 text-center">
-                                <i class="fas fa-check-circle me-2"></i>
-                                {{ __('marketplace.core_feature') }}
-                            </div>
+                            <div class="w-2.5 h-2.5 rounded-full bg-green-500 flex-shrink-0" title="{{ __('marketplace.enabled') }}"></div>
                         @else
-                            <div x-data="appToggle('{{ $app->slug }}', {{ in_array($app->slug, $enabledSlugs) ? 'true' : 'false' }})">
-                                @if($app->is_premium && !$hasPremium)
-                                    <button
-                                        disabled
-                                        class="w-full py-2.5 rounded-xl font-medium bg-gray-100 text-gray-400 cursor-not-allowed"
-                                    >
-                                        <i class="fas fa-lock me-2"></i>
-                                        {{ __('marketplace.premium_required') }}
-                                    </button>
-                                @else
-                                    <button
-                                        @click="toggle()"
-                                        :disabled="loading"
-                                        :class="enabled ? 'bg-red-50 text-red-600 hover:bg-red-100' : 'bg-indigo-600 text-white hover:bg-indigo-700'"
-                                        class="w-full py-2.5 rounded-xl font-medium transition disabled:opacity-50"
-                                    >
-                                        <span x-show="!loading">
-                                            <span x-show="enabled">
-                                                <i class="fas fa-times-circle me-2"></i>
-                                                {{ __('marketplace.disable') }}
-                                            </span>
-                                            <span x-show="!enabled">
-                                                <i class="fas fa-plus-circle me-2"></i>
-                                                {{ __('marketplace.enable') }}
-                                            </span>
-                                        </span>
-                                        <span x-show="loading">
-                                            <i class="fas fa-spinner fa-spin me-2"></i>
-                                            {{ __('common.loading') }}...
-                                        </span>
-                                    </button>
-                                @endif
+                            <div x-data="{ enabled: {{ in_array($app->slug, $enabledSlugs) ? 'true' : 'false' }} }">
+                                <div
+                                    :class="enabled ? 'bg-green-500' : 'bg-gray-300'"
+                                    class="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                                    :title="enabled ? '{{ __('marketplace.enabled') }}' : '{{ __('marketplace.disabled') }}'"
+                                ></div>
                             </div>
                         @endif
                     </div>
+
+                    {{-- Short Description (2 lines max) --}}
+                    <p class="text-xs text-gray-500 line-clamp-2 mb-3">{{ __($app->description_key) }}</p>
+
+                    {{-- Dependencies (compact) --}}
+                    @if(!empty($app->dependencies))
+                    <div class="mb-3 text-xs text-gray-400">
+                        <i class="fas fa-link me-1"></i>
+                        {{ __('marketplace.requires') }}: {{ count($app->dependencies) }} {{ __('marketplace.apps_count') }}
+                    </div>
+                    @endif
+
+                    {{-- Compact Action Button --}}
+                    @if($app->is_core)
+                        <div class="w-full py-2 text-xs rounded-lg font-medium bg-green-50 text-green-600 text-center">
+                            <i class="fas fa-check-circle me-1.5"></i>
+                            {{ __('marketplace.core_feature') }}
+                        </div>
+                    @else
+                        <div x-data="appToggle('{{ $app->slug }}', {{ in_array($app->slug, $enabledSlugs) ? 'true' : 'false' }})">
+                            @if($app->is_premium && !$hasPremium)
+                                <button
+                                    disabled
+                                    class="w-full py-2 text-xs rounded-lg font-medium bg-gray-100 text-gray-400 cursor-not-allowed"
+                                >
+                                    <i class="fas fa-lock me-1.5"></i>
+                                    {{ __('marketplace.premium_required') }}
+                                </button>
+                            @else
+                                <button
+                                    @click="toggle()"
+                                    :disabled="loading"
+                                    :class="enabled ? 'bg-red-50 text-red-600 hover:bg-red-100' : 'bg-indigo-600 text-white hover:bg-indigo-700'"
+                                    class="w-full py-2 text-xs rounded-lg font-medium transition disabled:opacity-50"
+                                >
+                                    <span x-show="!loading">
+                                        <span x-show="enabled">
+                                            <i class="fas fa-times-circle me-1.5"></i>
+                                            {{ __('marketplace.disable') }}
+                                        </span>
+                                        <span x-show="!enabled">
+                                            <i class="fas fa-plus-circle me-1.5"></i>
+                                            {{ __('marketplace.enable') }}
+                                        </span>
+                                    </span>
+                                    <span x-show="loading">
+                                        <i class="fas fa-spinner fa-spin me-1.5"></i>
+                                    </span>
+                                </button>
+                            @endif
+                        </div>
+                    @endif
                 </div>
                 @endforeach
             </div>
@@ -204,15 +212,71 @@
     {{-- Empty State --}}
     <div
         x-show="searchQuery !== '' && document.querySelectorAll('[x-show*=searchQuery]:not([style*=\'display: none\'])').length === 0"
-        class="text-center py-12"
+        class="text-center py-8"
     >
-        <div class="bg-gray-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-            <i class="fas fa-search text-gray-400 text-2xl"></i>
+        <div class="bg-gray-100 rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-3">
+            <i class="fas fa-search text-gray-400 text-lg"></i>
         </div>
-        <h3 class="font-medium text-gray-700 mb-1">{{ __('marketplace.no_results_title') }}</h3>
-        <p class="text-sm text-gray-500">{{ __('marketplace.no_results_description') }}</p>
+        <h3 class="font-medium text-gray-700 mb-1 text-sm">{{ __('marketplace.no_results_title') }}</h3>
+        <p class="text-xs text-gray-500">{{ __('marketplace.no_results_description') }}</p>
+    </div>
+
+    {{-- Bulk Action Bar (shows when apps selected) --}}
+    <div
+        x-show="selectedApps.length > 0"
+        x-transition:enter="transition ease-out duration-200"
+        x-transition:enter-start="opacity-0 translate-y-4"
+        x-transition:enter-end="opacity-100 translate-y-0"
+        x-transition:leave="transition ease-in duration-150"
+        x-transition:leave-start="opacity-100 translate-y-0"
+        x-transition:leave-end="opacity-0 translate-y-4"
+        class="fixed bottom-6 inset-x-0 flex justify-center z-50 px-4"
+    >
+        <div class="bg-gray-900 text-white rounded-xl px-4 py-3 flex items-center gap-4 shadow-xl">
+            <span class="text-sm">
+                <span x-text="selectedApps.length"></span> {{ __('marketplace.selected') }}
+            </span>
+            <div class="h-4 w-px bg-gray-700"></div>
+            <button
+                @click="bulkEnable()"
+                :disabled="bulkLoading"
+                class="px-3 py-1.5 bg-green-600 hover:bg-green-700 rounded-lg text-sm font-medium transition disabled:opacity-50"
+            >
+                <i class="fas fa-check-circle me-1.5"></i>
+                {{ __('marketplace.enable_all') }}
+            </button>
+            <button
+                @click="bulkDisable()"
+                :disabled="bulkLoading"
+                class="px-3 py-1.5 bg-red-600 hover:bg-red-700 rounded-lg text-sm font-medium transition disabled:opacity-50"
+            >
+                <i class="fas fa-times-circle me-1.5"></i>
+                {{ __('marketplace.disable_all') }}
+            </button>
+            <button
+                @click="selectedApps = []; bulkMode = false"
+                class="px-3 py-1.5 bg-gray-700 hover:bg-gray-600 rounded-lg text-sm font-medium transition"
+            >
+                {{ __('common.cancel') }}
+            </button>
+        </div>
     </div>
 </div>
+
+@php
+// Category color gradients helper
+function getCategoryGradient($categorySlug) {
+    $colors = [
+        'core' => 'from-slate-500 to-slate-700',
+        'marketing' => 'from-blue-500 to-indigo-600',
+        'analytics' => 'from-emerald-500 to-teal-600',
+        'ai' => 'from-violet-500 to-purple-600',
+        'automation' => 'from-orange-500 to-amber-600',
+        'system' => 'from-gray-500 to-gray-700',
+    ];
+    return $colors[$categorySlug] ?? 'from-indigo-500 to-purple-600';
+}
+@endphp
 
 @push('scripts')
 <script>
@@ -245,18 +309,12 @@ function appToggle(appSlug, initialEnabled) {
                 const data = await response.json();
 
                 if (data.success) {
-                    // Show success toast
                     window.dispatchEvent(new CustomEvent('show-toast', {
                         detail: { message: data.message, type: 'success' }
                     }));
-
-                    // Toggle the enabled state
                     this.enabled = !this.enabled;
-
-                    // Reload page to refresh sidebar after a short delay
                     setTimeout(() => window.location.reload(), 500);
                 } else {
-                    // Show error toast
                     window.dispatchEvent(new CustomEvent('show-toast', {
                         detail: { message: data.message, type: 'error' }
                     }));
@@ -273,11 +331,102 @@ function appToggle(appSlug, initialEnabled) {
     };
 }
 
-// Main marketplace app for search and filter
+// Main marketplace app for search, filter, and bulk actions
 function marketplaceApp() {
     return {
         searchQuery: '',
-        selectedCategory: null
+        selectedCategory: null,
+        bulkMode: false,
+        selectedApps: [],
+        bulkLoading: false,
+        csrfToken: '{{ csrf_token() }}',
+        orgId: '{{ $orgId }}',
+
+        getCategoryButtonActiveClass(category) {
+            const colors = {
+                'core': 'bg-slate-600 text-white',
+                'marketing': 'bg-blue-600 text-white',
+                'analytics': 'bg-emerald-600 text-white',
+                'ai': 'bg-violet-600 text-white',
+                'automation': 'bg-orange-600 text-white',
+                'system': 'bg-gray-600 text-white',
+            };
+            return colors[category] || 'bg-indigo-600 text-white';
+        },
+
+        async bulkEnable() {
+            if (this.selectedApps.length === 0) return;
+            this.bulkLoading = true;
+
+            try {
+                const response = await fetch(`/orgs/${this.orgId}/marketplace/bulk-enable`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': this.csrfToken,
+                        'Accept': 'application/json',
+                    },
+                    body: JSON.stringify({ slugs: this.selectedApps }),
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    window.dispatchEvent(new CustomEvent('show-toast', {
+                        detail: { message: data.message, type: 'success' }
+                    }));
+                    setTimeout(() => window.location.reload(), 500);
+                } else {
+                    window.dispatchEvent(new CustomEvent('show-toast', {
+                        detail: { message: data.message, type: 'error' }
+                    }));
+                }
+            } catch (error) {
+                console.error('Error bulk enabling apps:', error);
+                window.dispatchEvent(new CustomEvent('show-toast', {
+                    detail: { message: '{{ __("common.error_occurred") }}', type: 'error' }
+                }));
+            } finally {
+                this.bulkLoading = false;
+            }
+        },
+
+        async bulkDisable() {
+            if (this.selectedApps.length === 0) return;
+            this.bulkLoading = true;
+
+            try {
+                const response = await fetch(`/orgs/${this.orgId}/marketplace/bulk-disable`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': this.csrfToken,
+                        'Accept': 'application/json',
+                    },
+                    body: JSON.stringify({ slugs: this.selectedApps }),
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    window.dispatchEvent(new CustomEvent('show-toast', {
+                        detail: { message: data.message, type: 'success' }
+                    }));
+                    setTimeout(() => window.location.reload(), 500);
+                } else {
+                    window.dispatchEvent(new CustomEvent('show-toast', {
+                        detail: { message: data.message, type: 'error' }
+                    }));
+                }
+            } catch (error) {
+                console.error('Error bulk disabling apps:', error);
+                window.dispatchEvent(new CustomEvent('show-toast', {
+                    detail: { message: '{{ __("common.error_occurred") }}', type: 'error' }
+                }));
+            } finally {
+                this.bulkLoading = false;
+            }
+        }
     };
 }
 </script>

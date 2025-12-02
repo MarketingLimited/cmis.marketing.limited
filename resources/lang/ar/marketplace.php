@@ -25,6 +25,15 @@ return [
     'premium' => 'مميز',
     'requires' => 'يتطلب',
     'core_feature' => 'ميزة أساسية',
+    'apps_count' => 'تطبيقات',
+
+    // Bulk actions
+    'bulk_select' => 'تحديد متعدد',
+    'selected' => 'محدد',
+    'enable_all' => 'تفعيل الكل',
+    'disable_all' => 'تعطيل الكل',
+    'bulk_enabled' => 'تم تفعيل :count تطبيقات بنجاح',
+    'bulk_disabled' => 'تم تعطيل :count تطبيقات بنجاح',
 
     // Messages
     'app_enabled' => 'تم تفعيل :app بنجاح',

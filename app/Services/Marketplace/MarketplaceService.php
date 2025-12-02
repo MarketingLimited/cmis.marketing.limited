@@ -394,6 +394,106 @@ class MarketplaceService
     }
 
     /**
+     * Bulk enable multiple apps for an organization.
+     *
+     * @param array $slugs Array of app slugs to enable
+     * @return array ['success' => bool, 'enabled' => int, 'message' => string]
+     */
+    public function bulkEnable(string $orgId, array $slugs, string $userId): array
+    {
+        $enabledCount = 0;
+        $errors = [];
+
+        foreach ($slugs as $slug) {
+            $result = $this->enableApp($orgId, $slug, $userId);
+            if ($result['success']) {
+                $enabledCount++;
+            } else {
+                $errors[] = $slug . ': ' . $result['message'];
+            }
+        }
+
+        $this->clearCache($orgId);
+
+        return [
+            'success' => $enabledCount > 0,
+            'enabled' => $enabledCount,
+            'errors' => $errors,
+            'message' => __('marketplace.bulk_enabled', ['count' => $enabledCount]),
+        ];
+    }
+
+    /**
+     * Bulk disable multiple apps for an organization.
+     *
+     * @param array $slugs Array of app slugs to disable
+     * @return array ['success' => bool, 'disabled' => int, 'message' => string]
+     */
+    public function bulkDisable(string $orgId, array $slugs, string $userId): array
+    {
+        $disabledCount = 0;
+        $errors = [];
+
+        // Sort by dependencies - disable dependent apps first
+        $sorted = $this->sortByDependencies($slugs, true);
+
+        foreach ($sorted as $slug) {
+            $result = $this->disableApp($orgId, $slug, $userId);
+            if ($result['success']) {
+                $disabledCount++;
+            } else {
+                $errors[] = $slug . ': ' . $result['message'];
+            }
+        }
+
+        $this->clearCache($orgId);
+
+        return [
+            'success' => $disabledCount > 0,
+            'disabled' => $disabledCount,
+            'errors' => $errors,
+            'message' => __('marketplace.bulk_disabled', ['count' => $disabledCount]),
+        ];
+    }
+
+    /**
+     * Sort app slugs by their dependencies.
+     *
+     * @param bool $reverse If true, dependents come first (for disabling)
+     */
+    protected function sortByDependencies(array $slugs, bool $reverse = false): array
+    {
+        $sorted = [];
+        $remaining = $slugs;
+
+        while (!empty($remaining)) {
+            foreach ($remaining as $key => $slug) {
+                $app = MarketplaceApp::findBySlug($slug);
+                if (!$app) {
+                    unset($remaining[$key]);
+                    continue;
+                }
+
+                $deps = $app->dependencies ?? [];
+                $hasPendingDeps = !empty(array_intersect($deps, $remaining));
+
+                if (!$hasPendingDeps || empty($deps)) {
+                    $sorted[] = $slug;
+                    unset($remaining[$key]);
+                }
+            }
+
+            // Prevent infinite loop if circular dependency
+            if (count($remaining) === count($slugs)) {
+                $sorted = array_merge($sorted, $remaining);
+                break;
+            }
+        }
+
+        return $reverse ? array_reverse($sorted) : $sorted;
+    }
+
+    /**
      * Enable a single app (internal helper).
      */
     protected function enableSingleApp(string $orgId, string $appId, string $userId): void

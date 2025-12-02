@@ -25,6 +25,15 @@ return [
     'premium' => 'Premium',
     'requires' => 'Requires',
     'core_feature' => 'Core Feature',
+    'apps_count' => 'apps',
+
+    // Bulk actions
+    'bulk_select' => 'Bulk Select',
+    'selected' => 'selected',
+    'enable_all' => 'Enable All',
+    'disable_all' => 'Disable All',
+    'bulk_enabled' => ':count apps have been enabled successfully',
+    'bulk_disabled' => ':count apps have been disabled successfully',
 
     // Messages
     'app_enabled' => ':app has been enabled successfully',

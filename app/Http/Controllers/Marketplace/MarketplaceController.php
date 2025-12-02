@@ -119,4 +119,54 @@ class MarketplaceController extends Controller
             'dependents' => $dependents,
         ]);
     }
+
+    /**
+     * Bulk enable multiple apps for the organization.
+     */
+    public function bulkEnable(Request $request, string $org): JsonResponse
+    {
+        $request->validate([
+            'slugs' => 'required|array|min:1',
+            'slugs.*' => 'required|string',
+        ]);
+
+        $userId = $request->user()->user_id;
+        $slugs = $request->input('slugs');
+
+        $result = $this->marketplace->bulkEnable($org, $slugs, $userId);
+
+        if ($result['success']) {
+            return $this->success([
+                'enabled' => $result['enabled'],
+                'errors' => $result['errors'],
+            ], $result['message']);
+        }
+
+        return $this->error($result['message'], 400, $result['errors']);
+    }
+
+    /**
+     * Bulk disable multiple apps for the organization.
+     */
+    public function bulkDisable(Request $request, string $org): JsonResponse
+    {
+        $request->validate([
+            'slugs' => 'required|array|min:1',
+            'slugs.*' => 'required|string',
+        ]);
+
+        $userId = $request->user()->user_id;
+        $slugs = $request->input('slugs');
+
+        $result = $this->marketplace->bulkDisable($org, $slugs, $userId);
+
+        if ($result['success']) {
+            return $this->success([
+                'disabled' => $result['disabled'],
+                'errors' => $result['errors'],
+            ], $result['message']);
+        }
+
+        return $this->error($result['message'], 400, $result['errors']);
+    }
 }

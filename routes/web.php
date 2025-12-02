@@ -188,12 +188,14 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/', [\App\Http\Controllers\Marketplace\MarketplaceController::class, 'index'])->name('index');
             Route::post('/apps/{app}/enable', [\App\Http\Controllers\Marketplace\MarketplaceController::class, 'enable'])->name('enable');
             Route::post('/apps/{app}/disable', [\App\Http\Controllers\Marketplace\MarketplaceController::class, 'disable'])->name('disable');
+            Route::post('/bulk-enable', [\App\Http\Controllers\Marketplace\MarketplaceController::class, 'bulkEnable'])->name('bulk-enable');
+            Route::post('/bulk-disable', [\App\Http\Controllers\Marketplace\MarketplaceController::class, 'bulkDisable'])->name('bulk-disable');
             Route::get('/status', [\App\Http\Controllers\Marketplace\MarketplaceController::class, 'status'])->name('status');
             Route::get('/apps/{app}', [\App\Http\Controllers\Marketplace\MarketplaceController::class, 'show'])->name('show');
         });
 
         // ==================== Campaigns ====================
-        Route::prefix('campaigns')->name('campaigns.')->group(function () {
+        Route::prefix('campaigns')->name('campaigns.')->middleware('app.enabled:campaigns')->group(function () {
             Route::get('/', [CampaignController::class, 'index'])->name('index');
             Route::get('/performance-dashboard', function () {
                 return view('campaigns.performance-dashboard');
@@ -251,13 +253,15 @@ Route::middleware(['auth'])->group(function () {
 
         // ==================== Products & Services (Org-specific) ====================
         Route::get('/services', [OrgController::class, 'services'])->name('services');
-        Route::get('/products', [OrgController::class, 'products'])->name('products');
-        Route::post('/products', [OrgController::class, 'storeProduct'])->name('products.store');
-        Route::put('/products/{product}', [OrgController::class, 'updateProduct'])->name('products.update');
-        Route::delete('/products/{product}', [OrgController::class, 'destroyProduct'])->name('products.destroy');
+        Route::middleware('app.enabled:products')->group(function () {
+            Route::get('/products', [OrgController::class, 'products'])->name('products');
+            Route::post('/products', [OrgController::class, 'storeProduct'])->name('products.store');
+            Route::put('/products/{product}', [OrgController::class, 'updateProduct'])->name('products.update');
+            Route::delete('/products/{product}', [OrgController::class, 'destroyProduct'])->name('products.destroy');
+        });
 
         // ==================== Audiences (Unified Multi-Platform) ====================
-        Route::prefix('audiences')->name('audiences.')->group(function () {
+        Route::prefix('audiences')->name('audiences.')->middleware('app.enabled:audiences')->group(function () {
             Route::get('/', [App\Http\Controllers\Web\AudienceWebController::class, 'index'])->name('index');
             Route::get('/create', [App\Http\Controllers\Web\AudienceWebController::class, 'create'])->name('create');
             Route::post('/', [App\Http\Controllers\Web\AudienceWebController::class, 'store'])->name('store');
@@ -299,7 +303,7 @@ Route::middleware(['auth'])->group(function () {
         });
 
         // ==================== Analytics ====================
-        Route::prefix('analytics')->name('analytics.')->group(function () {
+        Route::prefix('analytics')->name('analytics.')->middleware('app.enabled:analytics')->group(function () {
             Route::get('/', [EnterpriseAnalyticsController::class, 'enterprise'])->name('index');
             Route::get('/enterprise', [EnterpriseAnalyticsController::class, 'enterprise'])->name('enterprise');
             Route::get('/realtime', [EnterpriseAnalyticsController::class, 'realtime'])->name('realtime');
@@ -316,7 +320,7 @@ Route::middleware(['auth'])->group(function () {
         });
 
         // ==================== Creative ====================
-        Route::prefix('creative')->name('creative.')->group(function () {
+        Route::prefix('creative')->name('creative.')->middleware('app.enabled:creative-assets')->group(function () {
             Route::get('/', [CreativeOverviewController::class, 'index'])->name('index');
             Route::get('/assets', [CreativeAssetController::class, 'index'])->name('assets.index');
             Route::get('/ads', [CreativeOverviewController::class, 'index'])->name('ads');
@@ -342,7 +346,7 @@ Route::middleware(['auth'])->group(function () {
         });
 
         // ==================== AI ====================
-        Route::prefix('ai')->name('ai.')->group(function () {
+        Route::prefix('ai')->name('ai.')->middleware('app.enabled:ai-assistant')->group(function () {
             Route::get('/', [AIDashboardController::class, 'index'])->name('index');
             Route::get('/campaigns', [AIDashboardController::class, 'index'])->name('campaigns');
             Route::get('/recommendations', [AIDashboardController::class, 'index'])->name('recommendations');
@@ -350,37 +354,37 @@ Route::middleware(['auth'])->group(function () {
         });
 
         // ==================== Predictive Analytics ====================
-        Route::prefix('predictive')->name('predictive.')->group(function () {
+        Route::prefix('predictive')->name('predictive.')->middleware('app.enabled:predictive')->group(function () {
             Route::get('/', [App\Http\Controllers\Intelligence\PredictiveController::class, 'index'])->name('index');
         });
 
         // ==================== A/B Testing & Experiments ====================
-        Route::prefix('experiments')->name('experiments.')->group(function () {
+        Route::prefix('experiments')->name('experiments.')->middleware('app.enabled:ab-testing')->group(function () {
             Route::get('/', [App\Http\Controllers\Testing\ExperimentsController::class, 'index'])->name('index');
         });
 
         // ==================== Optimization Engine ====================
-        Route::prefix('optimization')->name('optimization.')->group(function () {
+        Route::prefix('optimization')->name('optimization.')->middleware('app.enabled:optimization')->group(function () {
             Route::get('/', [App\Http\Controllers\Optimization\OptimizationDashboardController::class, 'index'])->name('index');
         });
 
         // ==================== Automation ====================
-        Route::prefix('automation')->name('automation.')->group(function () {
+        Route::prefix('automation')->name('automation.')->middleware('app.enabled:automation')->group(function () {
             Route::get('/', [App\Http\Controllers\Automation\AutomationDashboardController::class, 'index'])->name('index');
         });
 
         // ==================== System: Alerts ====================
-        Route::prefix('alerts')->name('alerts.')->group(function () {
+        Route::prefix('alerts')->name('alerts.')->middleware('app.enabled:alerts')->group(function () {
             Route::get('/', [App\Http\Controllers\System\AlertsController::class, 'index'])->name('index');
         });
 
         // ==================== System: Data Exports ====================
-        Route::prefix('exports')->name('exports.')->group(function () {
+        Route::prefix('exports')->name('exports.')->middleware('app.enabled:exports')->group(function () {
             Route::get('/', [App\Http\Controllers\System\ExportsController::class, 'index'])->name('index');
         });
 
         // ==================== System: Dashboard Builder ====================
-        Route::prefix('dashboard-builder')->name('dashboard-builder.')->group(function () {
+        Route::prefix('dashboard-builder')->name('dashboard-builder.')->middleware('app.enabled:dashboard-builder')->group(function () {
             Route::get('/', [App\Http\Controllers\System\DashboardBuilderController::class, 'index'])->name('index');
         });
 
@@ -390,7 +394,7 @@ Route::middleware(['auth'])->group(function () {
         });
 
         // ==================== Knowledge Base ====================
-        Route::prefix('knowledge')->name('knowledge.')->group(function () {
+        Route::prefix('knowledge')->name('knowledge.')->middleware('app.enabled:knowledge-base')->group(function () {
             Route::get('/', [App\Http\Controllers\KnowledgeController::class, 'index'])->name('index');
             Route::get('/create', [App\Http\Controllers\KnowledgeController::class, 'create'])->name('create');
             Route::post('/search', [App\Http\Controllers\KnowledgeController::class, 'search'])->name('search');
@@ -400,7 +404,7 @@ Route::middleware(['auth'])->group(function () {
         });
 
         // ==================== Workflows ====================
-        Route::prefix('workflows')->name('workflows.')->group(function () {
+        Route::prefix('workflows')->name('workflows.')->middleware('app.enabled:workflows')->group(function () {
             Route::get('/', [App\Http\Controllers\WorkflowController::class, 'index'])->name('index');
             Route::get('/{flowId}', [App\Http\Controllers\WorkflowController::class, 'show'])->name('show');
             Route::post('/initialize-campaign', [App\Http\Controllers\WorkflowController::class, 'initializeCampaign'])->name('initialize-campaign');
@@ -410,7 +414,7 @@ Route::middleware(['auth'])->group(function () {
         });
 
         // ==================== Influencer Marketing ====================
-        Route::prefix('influencer')->name('influencer.')->group(function () {
+        Route::prefix('influencer')->name('influencer.')->middleware('app.enabled:influencers')->group(function () {
             Route::get('/', [App\Http\Controllers\Influencer\InfluencerController::class, 'index'])->name('index');
             Route::get('/create', [App\Http\Controllers\Influencer\InfluencerController::class, 'create'])->name('create');
             Route::post('/', [App\Http\Controllers\Influencer\InfluencerController::class, 'store'])->name('store');
@@ -421,12 +425,12 @@ Route::middleware(['auth'])->group(function () {
         });
 
         // ==================== Campaign Orchestration ====================
-        Route::prefix('orchestration')->name('orchestration.')->group(function () {
+        Route::prefix('orchestration')->name('orchestration.')->middleware('app.enabled:orchestration')->group(function () {
             Route::get('/', [App\Http\Controllers\Orchestration\OrchestrationController::class, 'index'])->name('index');
         });
 
         // ==================== Social Listening ====================
-        Route::prefix('listening')->name('listening.')->group(function () {
+        Route::prefix('listening')->name('listening.')->middleware('app.enabled:social-listening')->group(function () {
             Route::get('/', [App\Http\Controllers\Listening\SocialListeningController::class, 'index'])->name('index');
         });
 
