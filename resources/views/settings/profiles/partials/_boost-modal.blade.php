@@ -57,12 +57,15 @@
                             <button type="button"
                                     @click="adAccountDropdownOpen = !adAccountDropdownOpen"
                                     @click.away="adAccountDropdownOpen = false"
-                                    class="w-full rounded-md border border-gray-300 bg-white shadow-sm px-3 py-2 text-start focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-sm flex items-center justify-between">
+                                    class="w-full rounded-md border border-gray-300 bg-white shadow-sm px-3 py-2 text-start focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-sm flex items-center justify-between min-h-[52px]">
                                 <span x-show="!form.ad_account_id" class="text-gray-500">{{ __('profiles.select_ad_account') }}</span>
                                 <template x-if="form.ad_account_id">
-                                    <span class="truncate" x-text="adAccountsData.find(a => a.id === form.ad_account_id)?.name || form.ad_account_id"></span>
+                                    <div class="flex-1 min-w-0">
+                                        <div class="font-medium text-gray-900 truncate" x-text="adAccountsData.find(a => a.id === form.ad_account_id)?.account_name || 'Ad Account'"></div>
+                                        <div class="text-xs text-gray-500 font-mono" x-text="form.ad_account_id.replace('act_', '')"></div>
+                                    </div>
                                 </template>
-                                <i class="fas fa-chevron-down text-gray-400 ms-2 text-xs"></i>
+                                <i class="fas fa-chevron-down text-gray-400 ms-2 text-xs flex-shrink-0"></i>
                             </button>
                             {{-- Dropdown list --}}
                             <div x-show="adAccountDropdownOpen"
