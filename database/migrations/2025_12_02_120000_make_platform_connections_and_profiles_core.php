@@ -11,10 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // 1. Make platform-connections a core app
+        // 1. Make platform-connections a core app under core category
         DB::table('cmis.marketplace_apps')
             ->where('slug', 'platform-connections')
-            ->update(['is_core' => true, 'updated_at' => now()]);
+            ->update(['is_core' => true, 'category' => 'core', 'updated_at' => now()]);
 
         // 2. Add profiles (Profile Management) as a core app if it doesn't exist
         $exists = DB::table('cmis.marketplace_apps')
@@ -27,7 +27,7 @@ return new class extends Migration
                 'slug' => 'profiles',
                 'name_key' => 'marketplace.apps.profiles.name',
                 'description_key' => 'marketplace.apps.profiles.description',
-                'category' => 'system',
+                'category' => 'core',
                 'icon' => 'fa-id-card',
                 'route_prefix' => 'settings/profiles',
                 'is_core' => true,
@@ -36,10 +36,10 @@ return new class extends Migration
                 'updated_at' => now(),
             ]);
         } else {
-            // If exists, just make sure it's a core app
+            // If exists, just make sure it's a core app under core category
             DB::table('cmis.marketplace_apps')
                 ->where('slug', 'profiles')
-                ->update(['is_core' => true, 'updated_at' => now()]);
+                ->update(['is_core' => true, 'category' => 'core', 'updated_at' => now()]);
         }
     }
 
