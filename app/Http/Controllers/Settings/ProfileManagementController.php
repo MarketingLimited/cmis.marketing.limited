@@ -11,6 +11,7 @@ use App\Services\Platform\AudienceTargetingService;
 use App\Models\Social\ProfileGroup;
 use App\Models\Platform\BoostRule;
 use App\Models\Platform\AdAccount;
+use App\Models\Platform\PlatformConnection;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Validator;
@@ -109,15 +110,62 @@ class ProfileManagementController extends Controller
         ];
         $adPlatform = $platformMapping[$profile->platform] ?? null;
 
-        $adAccountsQuery = AdAccount::where('org_id', $org)
-            ->active()
-            ->connected();
+        // Load ad accounts from platform_connections (real connected accounts)
+        $adAccounts = collect();
 
         if ($adPlatform) {
-            $adAccountsQuery->where('platform', $adPlatform);
+            $platformConnection = PlatformConnection::where('org_id', $org)
+                ->where('platform', $adPlatform)
+                ->whereNull('deleted_at')
+                ->where('status', 'active')
+                ->first();
+
+            if ($platformConnection) {
+                $metadata = $platformConnection->account_metadata ?? [];
+                $availableAdAccounts = $metadata['ad_accounts'] ?? [];
+                $selectedAssets = $metadata['selected_assets'] ?? [];
+                $selectedAdAccountIds = $selectedAssets['ad_account'] ?? [];
+
+                // Filter to only show selected ad accounts (or all if none selected)
+                $adAccounts = collect($availableAdAccounts)
+                    ->filter(function ($account) use ($selectedAdAccountIds) {
+                        if (empty($selectedAdAccountIds)) {
+                            return true; // Show all if none selected
+                        }
+                        $accountId = $account['id'] ?? '';
+                        return in_array($accountId, $selectedAdAccountIds);
+                    })
+                    ->map(function ($account) use ($platformConnection) {
+                        return (object) [
+                            'id' => $account['id'] ?? $account['account_id'],
+                            'account_name' => $account['name'] ?? 'Unknown',
+                            'platform' => 'meta',
+                            'platform_account_id' => $account['account_id'] ?? str_replace('act_', '', $account['id'] ?? ''),
+                            'currency' => $account['currency'] ?? 'USD',
+                            'status' => strtolower($account['status'] ?? 'active'),
+                            'balance' => $account['balance'] ?? null,
+                            'daily_spend_limit' => $account['spend_cap'] ?? null,
+                            'timezone' => $account['timezone'] ?? null,
+                            'connection_id' => $platformConnection->connection_id,
+                            'has_access_token' => !empty($platformConnection->access_token),
+                        ];
+                    })
+                    ->values();
+            }
         }
 
-        $adAccounts = $adAccountsQuery->get();
+        // Fallback to legacy ad_accounts table if no platform connection found
+        if ($adAccounts->isEmpty()) {
+            $adAccountsQuery = AdAccount::where('org_id', $org)
+                ->active()
+                ->connected();
+
+            if ($adPlatform) {
+                $adAccountsQuery->where('platform', $adPlatform);
+            }
+
+            $adAccounts = $adAccountsQuery->get();
+        }
 
         if ($request->wantsJson()) {
             return $this->success([
@@ -805,15 +853,10 @@ class ProfileManagementController extends Controller
             return $this->error(__('profiles.ad_account_required'), 400);
         }
 
-        $adAccount = AdAccount::where('org_id', $org)
-            ->where('id', $adAccountId)
-            ->first();
+        // Get credentials from platform_connections or fallback to ad_accounts
+        $credentials = $this->getMetaAdAccountCredentials($org, $adAccountId);
 
-        if (!$adAccount) {
-            return $this->notFound(__('profiles.ad_account_not_found'));
-        }
-
-        if (!$adAccount->access_token) {
+        if (!$credentials) {
             return $this->error(__('profiles.ad_account_not_connected'), 400);
         }
 
@@ -822,10 +865,10 @@ class ProfileManagementController extends Controller
 
         try {
             if ($type === 'all' || $type === 'custom') {
-                $audiences['custom'] = $service->getCustomAudiences('meta', $adAccount->access_token, $adAccount->platform_account_id);
+                $audiences['custom'] = $service->getCustomAudiences('meta', $credentials['access_token'], $credentials['platform_account_id']);
             }
             if ($type === 'all' || $type === 'lookalike') {
-                $audiences['lookalike'] = $service->getLookalikeAudiences('meta', $adAccount->access_token, $adAccount->platform_account_id);
+                $audiences['lookalike'] = $service->getLookalikeAudiences('meta', $credentials['access_token'], $credentials['platform_account_id']);
             }
 
             return $this->success($audiences, __('profiles.audiences_retrieved'));
@@ -854,22 +897,17 @@ class ProfileManagementController extends Controller
             return $this->error(__('profiles.ad_account_required'), 400);
         }
 
-        $adAccount = AdAccount::where('org_id', $org)
-            ->where('id', $adAccountId)
-            ->first();
+        // Get credentials from platform_connections or fallback to ad_accounts
+        $credentials = $this->getMetaAdAccountCredentials($org, $adAccountId);
 
-        if (!$adAccount) {
-            return $this->notFound(__('profiles.ad_account_not_found'));
-        }
-
-        if (!$adAccount->access_token) {
+        if (!$credentials) {
             return $this->error(__('profiles.ad_account_not_connected'), 400);
         }
 
         $service = app(AudienceTargetingService::class);
 
         try {
-            $interests = $service->getInterests('meta', $adAccount->access_token, $query);
+            $interests = $service->getInterests('meta', $credentials['access_token'], $query);
             return $this->success($interests, __('profiles.interests_retrieved'));
         } catch (\Exception $e) {
             return $this->serverError(__('profiles.interests_fetch_failed'));
@@ -891,22 +929,17 @@ class ProfileManagementController extends Controller
             return $this->error(__('profiles.ad_account_required'), 400);
         }
 
-        $adAccount = AdAccount::where('org_id', $org)
-            ->where('id', $adAccountId)
-            ->first();
+        // Get credentials from platform_connections or fallback to ad_accounts
+        $credentials = $this->getMetaAdAccountCredentials($org, $adAccountId);
 
-        if (!$adAccount) {
-            return $this->notFound(__('profiles.ad_account_not_found'));
-        }
-
-        if (!$adAccount->access_token) {
+        if (!$credentials) {
             return $this->error(__('profiles.ad_account_not_connected'), 400);
         }
 
         $service = app(AudienceTargetingService::class);
 
         try {
-            $behaviors = $service->getBehaviors('meta', $adAccount->access_token);
+            $behaviors = $service->getBehaviors('meta', $credentials['access_token']);
             return $this->success($behaviors, __('profiles.behaviors_retrieved'));
         } catch (\Exception $e) {
             return $this->serverError(__('profiles.behaviors_fetch_failed'));
@@ -934,15 +967,10 @@ class ProfileManagementController extends Controller
             return $this->error(__('profiles.ad_account_required'), 400);
         }
 
-        $adAccount = AdAccount::where('org_id', $org)
-            ->where('id', $adAccountId)
-            ->first();
+        // Get credentials from platform_connections or fallback to ad_accounts
+        $credentials = $this->getMetaAdAccountCredentials($org, $adAccountId);
 
-        if (!$adAccount) {
-            return $this->notFound(__('profiles.ad_account_not_found'));
-        }
-
-        if (!$adAccount->access_token) {
+        if (!$credentials) {
             return $this->error(__('profiles.ad_account_not_connected'), 400);
         }
 
@@ -954,7 +982,7 @@ class ProfileManagementController extends Controller
                 $locationTypes = explode(',', $locationTypes);
             }
 
-            $locations = $service->searchMetaLocations($adAccount->access_token, $query, $locationTypes);
+            $locations = $service->searchMetaLocations($credentials['access_token'], $query, $locationTypes);
             return $this->success($locations, __('profiles.locations_retrieved'));
         } catch (\Exception $e) {
             return $this->serverError(__('profiles.locations_fetch_failed'));
@@ -981,25 +1009,84 @@ class ProfileManagementController extends Controller
             return $this->error(__('profiles.ad_account_required'), 400);
         }
 
-        $adAccount = AdAccount::where('org_id', $org)
-            ->where('id', $adAccountId)
-            ->first();
+        // Get credentials from platform_connections or fallback to ad_accounts
+        $credentials = $this->getMetaAdAccountCredentials($org, $adAccountId);
 
-        if (!$adAccount) {
-            return $this->notFound(__('profiles.ad_account_not_found'));
-        }
-
-        if (!$adAccount->access_token) {
+        if (!$credentials) {
             return $this->error(__('profiles.ad_account_not_connected'), 400);
         }
 
         $service = app(AudienceTargetingService::class);
 
         try {
-            $positions = $service->searchMetaWorkPositions($adAccount->access_token, $query);
+            $positions = $service->searchMetaWorkPositions($credentials['access_token'], $query);
             return $this->success($positions, __('profiles.work_positions_retrieved'));
         } catch (\Exception $e) {
             return $this->serverError(__('profiles.work_positions_fetch_failed'));
         }
+    }
+
+    /**
+     * Get access token and platform account ID for a Meta ad account.
+     *
+     * Checks platform_connections first (real connected accounts),
+     * then falls back to ad_accounts table (legacy).
+     *
+     * @return array{access_token: string, platform_account_id: string}|null
+     */
+    private function getMetaAdAccountCredentials(string $orgId, string $adAccountId): ?array
+    {
+        // First try platform_connections (real connected accounts)
+        $platformConnection = PlatformConnection::where('org_id', $orgId)
+            ->where('platform', 'meta')
+            ->whereNull('deleted_at')
+            ->where('status', 'active')
+            ->first();
+
+        if ($platformConnection && !empty($platformConnection->access_token)) {
+            $metadata = $platformConnection->account_metadata ?? [];
+            $adAccounts = $metadata['ad_accounts'] ?? [];
+            $selectedAssets = $metadata['selected_assets'] ?? [];
+            $selectedAdAccountIds = $selectedAssets['ad_account'] ?? [];
+
+            // Find the ad account in the connection's list
+            foreach ($adAccounts as $account) {
+                $accountIdWithPrefix = $account['id'] ?? '';
+                $accountIdWithoutPrefix = $account['account_id'] ?? str_replace('act_', '', $accountIdWithPrefix);
+
+                // Match by either the passed ID or the act_ prefixed version
+                if ($adAccountId === $accountIdWithPrefix ||
+                    $adAccountId === $accountIdWithoutPrefix ||
+                    $adAccountId === 'act_' . $accountIdWithoutPrefix) {
+
+                    // Verify it's in selected assets (if selection exists)
+                    if (!empty($selectedAdAccountIds) && !in_array($accountIdWithPrefix, $selectedAdAccountIds)) {
+                        continue; // Not selected, skip
+                    }
+
+                    return [
+                        'access_token' => $platformConnection->access_token,
+                        'platform_account_id' => $accountIdWithoutPrefix,
+                    ];
+                }
+            }
+        }
+
+        // Fallback to legacy ad_accounts table (only if it's a valid UUID)
+        // IDs starting with "act_" are Meta format, not UUIDs
+        if (!str_starts_with($adAccountId, 'act_') && Str::isUuid($adAccountId)) {
+            $adAccount = AdAccount::where('org_id', $orgId)
+                ->where('id', $adAccountId)
+                ->first();
+
+            if ($adAccount && !empty($adAccount->access_token)) {
+                return [
+                    'access_token' => $adAccount->access_token,
+                    'platform_account_id' => $adAccount->platform_account_id,
+                ];
+            }
+        }
+
+        return null;
     }
 }
