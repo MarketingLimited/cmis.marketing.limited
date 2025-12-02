@@ -1187,4 +1187,11 @@ return [
     'confirm_disconnect_platform' => 'هل أنت متأكد من قطع اتصال حساب :platform هذا؟',
     'disconnect_label' => 'قطع الاتصال',
 
+    // Meta Assets Search Placeholders
+    'search_threads_placeholder' => 'البحث عن حسابات Threads بالاسم...',
+    'search_ad_accounts_placeholder' => 'البحث عن الحسابات الإعلانية بالاسم أو المعرف...',
+    'search_pixels_placeholder' => 'البحث عن البكسلات بالاسم أو المعرف...',
+    'search_catalogs_placeholder' => 'البحث عن الكتالوجات بالاسم...',
+    'search_whatsapp_placeholder' => 'البحث عن واتساب بالاسم أو الرقم...',
+
 ];

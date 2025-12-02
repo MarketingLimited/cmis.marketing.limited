@@ -369,9 +369,14 @@
 
                     {{-- Use Instagram accounts for Threads --}}
                     <div x-show="!loading.threads && instagramAccounts.length > 0">
+                        {{-- Search --}}
+                        <div class="mb-4">
+                            <input type="text" x-model="threadsSearch" @input.debounce.300ms placeholder="{{ __('Search Threads accounts by username...') }}"
+                                   class="w-full rounded-md border-gray-300 shadow-sm focus:border-gray-500 focus:ring-gray-500 text-sm">
+                        </div>
                         <div class="max-h-64 overflow-y-auto">
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                <template x-for="ig in instagramAccounts" :key="'threads-' + ig.id">
+                                <template x-for="ig in filteredThreads" :key="'threads-' + ig.id">
                                     <label class="flex items-center p-3 border rounded-lg hover:bg-gray-50 cursor-pointer transition"
                                            :class="{ 'border-gray-700 bg-gray-100': selectedThreadsAccounts.includes(ig.id) }">
                                         <input type="checkbox" name="threads_account[]" :value="ig.id"
@@ -481,8 +486,13 @@
 
                     {{-- Ad Accounts List --}}
                     <div x-show="!loading.adAccounts && !errors.adAccounts && adAccounts.length > 0">
+                        {{-- Search --}}
+                        <div class="mb-4">
+                            <input type="text" x-model="adAccountsSearch" @input.debounce.300ms placeholder="{{ __('Search ad accounts by name or ID...') }}"
+                                   class="w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 text-sm">
+                        </div>
                         <div class="max-h-96 overflow-y-auto space-y-2">
-                            <template x-for="account in adAccounts" :key="account.id">
+                            <template x-for="account in filteredAdAccounts" :key="account.id">
                                 <label class="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 cursor-pointer transition"
                                        :class="{ 'border-green-500 bg-green-50': selectedAdAccounts.includes(account.id) }">
                                     <div class="flex items-center">
@@ -567,9 +577,14 @@
 
                     {{-- Pixels List --}}
                     <div x-show="!loading.pixels && !errors.pixels && pixels.length > 0">
+                        {{-- Search --}}
+                        <div class="mb-4">
+                            <input type="text" x-model="pixelsSearch" @input.debounce.300ms placeholder="{{ __('Search pixels by name or ID...') }}"
+                                   class="w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 text-sm">
+                        </div>
                         <div class="max-h-64 overflow-y-auto">
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                <template x-for="pixel in pixels" :key="pixel.id">
+                                <template x-for="pixel in filteredPixels" :key="pixel.id">
                                     <label class="flex items-center p-3 border rounded-lg hover:bg-gray-50 cursor-pointer transition"
                                            :class="{ 'border-purple-500 bg-purple-50': selectedPixels.includes(pixel.id) }">
                                         <input type="checkbox" name="pixel[]" :value="pixel.id"
@@ -646,9 +661,14 @@
 
                     {{-- Catalogs List --}}
                     <div x-show="!loading.catalogs && !errors.catalogs && catalogs.length > 0">
+                        {{-- Search --}}
+                        <div class="mb-4">
+                            <input type="text" x-model="catalogsSearch" @input.debounce.300ms placeholder="{{ __('Search catalogs by name...') }}"
+                                   class="w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 text-sm">
+                        </div>
                         <div class="max-h-64 overflow-y-auto">
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                <template x-for="catalog in catalogs" :key="catalog.id">
+                                <template x-for="catalog in filteredCatalogs" :key="catalog.id">
                                     <label class="flex items-center p-3 border rounded-lg hover:bg-gray-50 cursor-pointer transition"
                                            :class="{ 'border-orange-500 bg-orange-50': selectedCatalogs.includes(catalog.id) }">
                                         <input type="checkbox" name="catalog[]" :value="catalog.id"
@@ -738,9 +758,14 @@
 
                     {{-- WhatsApp List --}}
                     <div x-show="!loading.whatsapp && !errors.whatsapp && whatsappAccounts.length > 0">
+                        {{-- Search --}}
+                        <div class="mb-4">
+                            <input type="text" x-model="whatsappSearch" @input.debounce.300ms placeholder="{{ __('Search WhatsApp by name or number...') }}"
+                                   class="w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 text-sm">
+                        </div>
                         <div class="max-h-64 overflow-y-auto">
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                <template x-for="wa in whatsappAccounts" :key="wa.id">
+                                <template x-for="wa in filteredWhatsapp" :key="wa.id">
                                     <label class="flex items-center p-3 border rounded-lg hover:bg-gray-50 cursor-pointer transition"
                                            :class="{ 'border-green-500 bg-green-50': selectedWhatsappAccounts.includes(wa.id) }">
                                         <input type="checkbox" name="whatsapp_account[]" :value="wa.id"
@@ -902,6 +927,11 @@ function metaAssetsPage() {
         // Search filters
         pagesSearch: '',
         instagramSearch: '',
+        threadsSearch: '',
+        adAccountsSearch: '',
+        pixelsSearch: '',
+        catalogsSearch: '',
+        whatsappSearch: '',
 
         // Computed properties
         get filteredPages() {
@@ -915,6 +945,52 @@ function metaAssetsPage() {
             const search = this.instagramSearch.toLowerCase();
             return this.instagramAccounts.filter(ig =>
                 (ig.username || ig.name || '').toLowerCase().includes(search)
+            );
+        },
+
+        get filteredThreads() {
+            if (!this.threadsSearch) return this.instagramAccounts;
+            const search = this.threadsSearch.toLowerCase();
+            return this.instagramAccounts.filter(ig =>
+                (ig.username || ig.name || '').toLowerCase().includes(search)
+            );
+        },
+
+        get filteredAdAccounts() {
+            if (!this.adAccountsSearch) return this.adAccounts;
+            const search = this.adAccountsSearch.toLowerCase();
+            return this.adAccounts.filter(a =>
+                a.name.toLowerCase().includes(search) ||
+                (a.account_id || '').toLowerCase().includes(search) ||
+                (a.business_name || '').toLowerCase().includes(search)
+            );
+        },
+
+        get filteredPixels() {
+            if (!this.pixelsSearch) return this.pixels;
+            const search = this.pixelsSearch.toLowerCase();
+            return this.pixels.filter(p =>
+                p.name.toLowerCase().includes(search) ||
+                p.id.toLowerCase().includes(search)
+            );
+        },
+
+        get filteredCatalogs() {
+            if (!this.catalogsSearch) return this.catalogs;
+            const search = this.catalogsSearch.toLowerCase();
+            return this.catalogs.filter(c =>
+                c.name.toLowerCase().includes(search) ||
+                (c.business_name || '').toLowerCase().includes(search)
+            );
+        },
+
+        get filteredWhatsapp() {
+            if (!this.whatsappSearch) return this.whatsappAccounts;
+            const search = this.whatsappSearch.toLowerCase();
+            return this.whatsappAccounts.filter(w =>
+                (w.verified_name || '').toLowerCase().includes(search) ||
+                (w.display_phone_number || '').toLowerCase().includes(search) ||
+                (w.waba_name || '').toLowerCase().includes(search)
             );
         },
 

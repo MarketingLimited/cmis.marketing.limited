@@ -901,4 +901,11 @@ return [
     'confirm_disconnect_platform' => 'Are you sure you want to disconnect this :platform account?',
     'disconnect_label' => 'Disconnect',
 
+    // Meta Assets Search Placeholders
+    'search_threads_placeholder' => 'Search Threads accounts by username...',
+    'search_ad_accounts_placeholder' => 'Search ad accounts by name or ID...',
+    'search_pixels_placeholder' => 'Search pixels by name or ID...',
+    'search_catalogs_placeholder' => 'Search catalogs by name...',
+    'search_whatsapp_placeholder' => 'Search WhatsApp by name or number...',
+
 ];
