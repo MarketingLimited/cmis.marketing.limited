@@ -542,12 +542,21 @@ class BoostConfigurationService
      * Returns WhatsApp numbers and Messenger pages connected via Meta integrations.
      * Used for messaging destination type selection in boost configuration.
      *
+     * When a pageId or instagramId is provided, WhatsApp numbers are fetched specifically
+     * for the business that owns that page (profile-aware fetching).
+     *
      * @param string $orgId The organization ID
      * @param string $platform The platform identifier (currently only 'meta' supported)
-     * @return array Connected messaging accounts grouped by type
+     * @param string|null $pageId Optional Facebook Page ID to get WhatsApp numbers for that specific page's business
+     * @param string|null $instagramId Optional Instagram ID to get WhatsApp numbers for the linked page's business
+     * @return array Connected messaging accounts grouped by type (whatsapp, messenger, instagram_dm)
      */
-    public function getConnectedMessagingAccounts(string $orgId, string $platform = 'meta'): array
-    {
+    public function getConnectedMessagingAccounts(
+        string $orgId,
+        string $platform = 'meta',
+        ?string $pageId = null,
+        ?string $instagramId = null
+    ): array {
         $accounts = [
             'whatsapp' => [],
             'messenger' => [],
@@ -564,16 +573,17 @@ class BoostConfigurationService
         if ($connection) {
             $metadata = $connection->account_metadata ?? [];
             $selectedAssets = $metadata['selected_assets'] ?? [];
+            $accessToken = $connection->access_token;
 
             // Facebook Pages for Messenger
             $pageIds = $selectedAssets['page'] ?? [];
             if (!empty($metadata['facebook_page_id'])) {
                 $pageIds = array_unique(array_merge($pageIds, [$metadata['facebook_page_id']]));
             }
-            foreach ($pageIds as $pageId) {
+            foreach ($pageIds as $pId) {
                 $accounts['messenger'][] = [
-                    'id' => $pageId,
-                    'name' => $metadata['facebook_page_name'] ?? "Page {$pageId}",
+                    'id' => $pId,
+                    'name' => $metadata['facebook_page_name'] ?? "Page {$pId}",
                     'connection_id' => $connection->connection_id,
                 ];
             }
@@ -591,16 +601,51 @@ class BoostConfigurationService
                 ];
             }
 
-            // WhatsApp Business numbers - fetch from Meta API if business_id exists
-            if (!empty($metadata['business_id']) && !empty($connection->access_token)) {
-                try {
-                    $whatsappAccounts = $this->fetchWhatsAppBusinessNumbers(
-                        $connection->access_token,
-                        $metadata['business_id']
-                    );
-                    $accounts['whatsapp'] = $whatsappAccounts;
-                } catch (\Exception $e) {
-                    \Log::warning('Failed to fetch WhatsApp numbers', ['error' => $e->getMessage()]);
+            // WhatsApp Business numbers - profile-aware fetching
+            if (!empty($accessToken)) {
+                $businessId = null;
+
+                // Priority 1: If page ID provided, get business from that specific page
+                if ($pageId) {
+                    $businessId = $this->getBusinessIdFromPage($accessToken, $pageId);
+                    \Log::info('WhatsApp: Got business from page', [
+                        'page_id' => $pageId,
+                        'business_id' => $businessId,
+                    ]);
+                }
+
+                // Priority 2: If Instagram ID provided (and no page ID), find linked page first
+                if (!$businessId && $instagramId) {
+                    $linkedPageId = $this->getPageIdFromInstagram($accessToken, $instagramId);
+                    if ($linkedPageId) {
+                        $businessId = $this->getBusinessIdFromPage($accessToken, $linkedPageId);
+                        \Log::info('WhatsApp: Got business from Instagram linked page', [
+                            'instagram_id' => $instagramId,
+                            'linked_page_id' => $linkedPageId,
+                            'business_id' => $businessId,
+                        ]);
+                    }
+                }
+
+                // Priority 3: Fallback to org-level business_id from metadata
+                if (!$businessId && !empty($metadata['business_id'])) {
+                    $businessId = $metadata['business_id'];
+                    \Log::info('WhatsApp: Using org-level business_id', [
+                        'business_id' => $businessId,
+                    ]);
+                }
+
+                // Fetch WhatsApp numbers if we have a business ID
+                if ($businessId) {
+                    try {
+                        $whatsappAccounts = $this->fetchWhatsAppBusinessNumbers($accessToken, $businessId);
+                        $accounts['whatsapp'] = $whatsappAccounts;
+                    } catch (\Exception $e) {
+                        \Log::warning('Failed to fetch WhatsApp numbers', [
+                            'business_id' => $businessId,
+                            'error' => $e->getMessage(),
+                        ]);
+                    }
                 }
             }
         }
@@ -679,6 +724,71 @@ class BoostConfigurationService
         }
 
         return $numbers;
+    }
+
+    /**
+     * Get the Business ID that owns a Facebook Page.
+     *
+     * @param string $accessToken Meta access token
+     * @param string $pageId Facebook Page ID
+     * @return string|null Business ID or null if not found
+     */
+    public function getBusinessIdFromPage(string $accessToken, string $pageId): ?string
+    {
+        try {
+            $response = \Http::timeout(10)->get("https://graph.facebook.com/v21.0/{$pageId}", [
+                'access_token' => $accessToken,
+                'fields' => 'business{id,name}',
+            ]);
+
+            if ($response->successful()) {
+                return $response->json('business.id');
+            }
+        } catch (\Exception $e) {
+            \Log::warning('Failed to get business from page', [
+                'page_id' => $pageId,
+                'error' => $e->getMessage(),
+            ]);
+        }
+
+        return null;
+    }
+
+    /**
+     * Get the Facebook Page ID linked to an Instagram account.
+     *
+     * Searches through connected pages to find which one has this Instagram account linked.
+     *
+     * @param string $accessToken Meta access token
+     * @param string $instagramId Instagram account ID
+     * @return string|null Facebook Page ID or null if not found
+     */
+    public function getPageIdFromInstagram(string $accessToken, string $instagramId): ?string
+    {
+        try {
+            // Get all pages the user has access to, with their linked Instagram accounts
+            $response = \Http::timeout(10)->get("https://graph.facebook.com/v21.0/me/accounts", [
+                'access_token' => $accessToken,
+                'fields' => 'id,name,instagram_business_account{id,username}',
+            ]);
+
+            if ($response->successful()) {
+                $pages = $response->json('data', []);
+                foreach ($pages as $page) {
+                    $linkedIgAccount = $page['instagram_business_account'] ?? null;
+                    if ($linkedIgAccount && $linkedIgAccount['id'] === $instagramId) {
+                        return $page['id'];
+                    }
+                }
+            }
+        } catch (\Exception $e) {
+            \Log::warning('Failed to get linked page from Instagram', [
+                'instagram_id' => $instagramId,
+                'error' => $e->getMessage(),
+            ]);
+        }
+
+        return null;
     }
 
     /**

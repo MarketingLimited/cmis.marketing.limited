@@ -12,6 +12,7 @@ use App\Models\Social\ProfileGroup;
 use App\Models\Platform\BoostRule;
 use App\Models\Platform\AdAccount;
 use App\Models\Platform\PlatformConnection;
+use App\Models\Core\Integration;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Validator;
@@ -888,7 +889,27 @@ class ProfileManagementController extends Controller
         $configService = app(BoostConfigurationService::class);
 
         try {
-            $accounts = $configService->getConnectedMessagingAccounts($org, 'meta');
+            // Get the profile to determine page/Instagram context for profile-aware WhatsApp fetching
+            $profile = Integration::where('org_id', $org)
+                ->where('integration_id', $integrationId)
+                ->first();
+
+            $pageId = null;
+            $instagramId = null;
+
+            if ($profile) {
+                // For Facebook profiles, the account_id is the page ID
+                if (in_array($profile->platform, ['facebook', 'meta'])) {
+                    $pageId = $profile->account_id;
+                }
+                // For Instagram profiles, the account_id is the Instagram account ID
+                elseif ($profile->platform === 'instagram') {
+                    $instagramId = $profile->account_id;
+                }
+            }
+
+            // Pass profile context for profile-aware WhatsApp number fetching
+            $accounts = $configService->getConnectedMessagingAccounts($org, 'meta', $pageId, $instagramId);
 
             // Get WhatsApp connect URL safely (route may not be defined)
             $whatsappConnectUrl = null;
