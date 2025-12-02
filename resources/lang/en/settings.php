@@ -842,4 +842,34 @@ return [
     // Section Headers
     'publishing' => 'Publishing',
 
+    // Asset Type Labels (Platform Connections)
+    'asset_type_page' => 'Page',
+    'asset_type_instagram' => 'Instagram',
+    'asset_type_threads' => 'Threads',
+    'asset_type_ad_account' => 'Ad Account',
+    'asset_type_pixel' => 'Pixel',
+    'asset_type_catalog' => 'Catalog',
+    'asset_type_youtube' => 'YouTube',
+    'asset_type_google_ads' => 'Google Ads',
+    'asset_type_analytics' => 'Analytics',
+    'asset_type_business' => 'Business',
+    'asset_type_gtm' => 'Tag Manager',
+    'asset_type_merchant' => 'Merchant',
+    'asset_type_search_console' => 'Search Console',
+    'asset_type_calendar' => 'Calendar',
+    'asset_type_drive' => 'Drive',
+
+    // Common Action Labels
+    'edit_label' => 'Edit',
+    'delete_label' => 'Delete',
+    'view_label' => 'View',
+    'select_assets_label' => 'Select Assets',
+    'view_ad_accounts' => 'View :count ad account(s)',
+
+    // Connection Status Labels
+    'expires_in' => 'Expires :time',
+    'active_connection' => 'Active connection',
+    'confirm_disconnect_platform' => 'Are you sure you want to disconnect this :platform account?',
+    'disconnect_label' => 'Disconnect',
+
 ];

@@ -282,32 +282,32 @@
                                     <div class="ml-11 mt-3 flex flex-wrap gap-2">
                                         @if($selectedAssets['page'] ?? null)
                                             <span class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-700">
-                                                <i class="fab fa-facebook {{ $isRtl ? 'ml-1' : 'mr-1' }}"></i>Page
+                                                <i class="fab fa-facebook {{ $isRtl ? 'ml-1' : 'mr-1' }}"></i>{{ __('settings.asset_type_page') }}
                                             </span>
                                         @endif
                                         @if($selectedAssets['instagram_account'] ?? null)
                                             <span class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-gradient-to-r from-purple-100 to-pink-100 text-pink-700">
-                                                <i class="fab fa-instagram {{ $isRtl ? 'ml-1' : 'mr-1' }}"></i>Instagram
+                                                <i class="fab fa-instagram {{ $isRtl ? 'ml-1' : 'mr-1' }}"></i>{{ __('settings.asset_type_instagram') }}
                                             </span>
                                         @endif
                                         @if($selectedAssets['threads_account'] ?? null)
                                             <span class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-700">
-                                                <i class="fas fa-at {{ $isRtl ? 'ml-1' : 'mr-1' }}"></i>Threads
+                                                <i class="fas fa-at {{ $isRtl ? 'ml-1' : 'mr-1' }}"></i>{{ __('settings.asset_type_threads') }}
                                             </span>
                                         @endif
                                         @if($selectedAssets['ad_account'] ?? null)
                                             <span class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-green-100 text-green-700">
-                                                <i class="fas fa-ad {{ $isRtl ? 'ml-1' : 'mr-1' }}"></i>Ad Account
+                                                <i class="fas fa-ad {{ $isRtl ? 'ml-1' : 'mr-1' }}"></i>{{ __('settings.asset_type_ad_account') }}
                                             </span>
                                         @endif
                                         @if($selectedAssets['pixel'] ?? null)
                                             <span class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-purple-100 text-purple-700">
-                                                <i class="fas fa-code {{ $isRtl ? 'ml-1' : 'mr-1' }}"></i>Pixel
+                                                <i class="fas fa-code {{ $isRtl ? 'ml-1' : 'mr-1' }}"></i>{{ __('settings.asset_type_pixel') }}
                                             </span>
                                         @endif
                                         @if($selectedAssets['catalog'] ?? null)
                                             <span class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-orange-100 text-orange-700">
-                                                <i class="fas fa-shopping-bag {{ $isRtl ? 'ml-1' : 'mr-1' }}"></i>Catalog
+                                                <i class="fas fa-shopping-bag {{ $isRtl ? 'ml-1' : 'mr-1' }}"></i>{{ __('settings.asset_type_catalog') }}
                                             </span>
                                         @endif
                                         <a href="{{ route('orgs.settings.platform-connections.meta.assets', [$currentOrg, $connection->connection_id]) }}"
@@ -330,7 +330,7 @@
                                         <details class="group">
                                             <summary class="text-xs text-gray-500 cursor-pointer hover:text-gray-700">
                                                 <i class="fas fa-chevron-right group-open:rotate-90 transition-transform {{ $isRtl ? 'ml-1' : 'mr-1' }}"></i>
-                                                View {{ count($metadata['ad_accounts']) }} ad account(s)
+                                                {{ __('settings.view_ad_accounts', ['count' => count($metadata['ad_accounts'])]) }}
                                             </summary>
                                             <div class="mt-2 pl-4 space-y-2">
                                                 @foreach($metadata['ad_accounts'] as $adAccount)
@@ -351,7 +351,7 @@
                                                                 @endif
                                                                 <span class="px-2 py-0.5 rounded-full text-xs
                                                                     {{ ($adAccount['status'] ?? '') === 'Active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600' }}">
-                                                                    {{ $adAccount['status'] ?? 'Unknown' }}
+                                                                    {{ ($adAccount['status'] ?? '') === 'Active' ? __('settings.ad_account_status_active') : __('settings.ad_account_status_unknown') }}
                                                                 </span>
                                                             </div>
                                                         </div>
@@ -362,7 +362,7 @@
                                                         @endif
                                                         @if(($adAccount['amount_spent'] ?? '0') !== '0')
                                                             <p class="text-xs text-gray-400 mt-1">
-                                                                Total spent: {{ number_format(($adAccount['amount_spent'] ?? 0) / 100, 2) }} {{ $adAccount['currency'] ?? 'USD' }}
+                                                                {{ __('settings.total_spent_label') }}: {{ number_format(($adAccount['amount_spent'] ?? 0) / 100, 2) }} {{ $adAccount['currency'] ?? 'USD' }}
                                                             </p>
                                                         @endif
                                                     </div>
@@ -484,24 +484,24 @@
                                         {{-- Desktop Actions (hidden on mobile) --}}
                                         <div class="hidden md:flex items-center gap-1 flex-shrink-0">
                                             <a href="{{ route('orgs.settings.platform-connections.google.assets', [$currentOrg, $connection->connection_id]) }}"
-                                               class="p-2 text-gray-400 hover:text-blue-600 transition" title="Select Google Services">
+                                               class="p-2 text-gray-400 hover:text-blue-600 transition" title="{{ __('settings.platform_select_services') }}">
                                                 <i class="fas fa-layer-group"></i>
                                             </a>
                                             <form action="{{ route('orgs.settings.platform-connections.test', [$currentOrg, $connection->connection_id]) }}" method="POST" class="inline">
                                                 @csrf
-                                                <button type="submit" class="p-2 text-gray-400 hover:text-blue-600 transition" title="Test Connection">
+                                                <button type="submit" class="p-2 text-gray-400 hover:text-blue-600 transition" title="{{ __('settings.platform_test_connection') }}">
                                                     <i class="fas fa-sync-alt"></i>
                                                 </button>
                                             </form>
                                             <a href="{{ route('orgs.settings.platform-connections.google.edit', [$currentOrg, $connection->connection_id]) }}"
-                                               class="p-2 text-gray-400 hover:text-blue-600 transition" title="Edit Credentials">
+                                               class="p-2 text-gray-400 hover:text-blue-600 transition" title="{{ __('settings.edit_credentials_button') }}">
                                                 <i class="fas fa-edit"></i>
                                             </a>
                                             <form action="{{ route('orgs.settings.platform-connections.destroy', [$currentOrg, $connection->connection_id]) }}" method="POST" class="inline">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button type="submit" onclick="return confirm('Are you sure you want to remove this connection?')"
-                                                        class="p-2 text-gray-400 hover:text-red-600 transition" title="Remove Connection">
+                                                <button type="submit" onclick="return confirm('{{ __('settings.remove_connection_confirm') }}')"
+                                                        class="p-2 text-gray-400 hover:text-red-600 transition" title="{{ __('settings.platform_remove_connection') }}">
                                                     <i class="fas fa-trash"></i>
                                                 </button>
                                             </form>
@@ -526,24 +526,24 @@
                                                 <div class="py-1">
                                                     <a href="{{ route('orgs.settings.platform-connections.google.assets', [$currentOrg, $connection->connection_id]) }}"
                                                        class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 {{ $isRtl ? 'text-right' : '' }}">
-                                                        <i class="fas fa-layer-group w-4 {{ $isRtl ? 'ml-2' : 'mr-2' }}"></i>Select Services
+                                                        <i class="fas fa-layer-group w-4 {{ $isRtl ? 'ml-2' : 'mr-2' }}"></i>{{ __('settings.select_services_menu') }}
                                                     </a>
                                                     <form action="{{ route('orgs.settings.platform-connections.test', [$currentOrg, $connection->connection_id]) }}" method="POST">
                                                         @csrf
                                                         <button type="submit" class="w-full {{ $isRtl ? 'text-right' : 'text-left' }} px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                                                            <i class="fas fa-sync-alt w-4 {{ $isRtl ? 'ml-2' : 'mr-2' }}"></i>Test Connection
+                                                            <i class="fas fa-sync-alt w-4 {{ $isRtl ? 'ml-2' : 'mr-2' }}"></i>{{ __('settings.test_connection_button') }}
                                                         </button>
                                                     </form>
                                                     <a href="{{ route('orgs.settings.platform-connections.google.edit', [$currentOrg, $connection->connection_id]) }}"
                                                        class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 {{ $isRtl ? 'text-right' : '' }}">
-                                                        <i class="fas fa-edit w-4 {{ $isRtl ? 'ml-2' : 'mr-2' }}"></i>Edit
+                                                        <i class="fas fa-edit w-4 {{ $isRtl ? 'ml-2' : 'mr-2' }}"></i>{{ __('settings.edit_label') }}
                                                     </a>
                                                     <form action="{{ route('orgs.settings.platform-connections.destroy', [$currentOrg, $connection->connection_id]) }}"
-                                                          method="POST" onsubmit="return confirm('Are you sure you want to remove this connection?');">
+                                                          method="POST" onsubmit="return confirm('{{ __('settings.remove_connection_confirm') }}');">
                                                         @csrf
                                                         @method('DELETE')
                                                         <button type="submit" class="w-full {{ $isRtl ? 'text-right' : 'text-left' }} px-4 py-2 text-sm text-red-600 hover:bg-red-50">
-                                                            <i class="fas fa-trash w-4 {{ $isRtl ? 'ml-2' : 'mr-2' }}"></i>Delete
+                                                            <i class="fas fa-trash w-4 {{ $isRtl ? 'ml-2' : 'mr-2' }}"></i>{{ __('settings.delete_label') }}
                                                         </button>
                                                     </form>
                                                 </div>
@@ -556,59 +556,59 @@
                                         <div class="mt-3 flex flex-wrap gap-2">
                                             @if($selectedAssets['youtube_channel'] ?? null)
                                                 <span class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-red-100 text-red-700">
-                                                    <i class="fab fa-youtube {{ $isRtl ? 'ml-1' : 'mr-1' }}"></i>YouTube
+                                                    <i class="fab fa-youtube {{ $isRtl ? 'ml-1' : 'mr-1' }}"></i>{{ __('settings.asset_type_youtube') }}
                                                 </span>
                                             @endif
                                             @if($selectedAssets['google_ads'] ?? null)
                                                 <span class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-green-100 text-green-700">
-                                                    <i class="fas fa-ad {{ $isRtl ? 'ml-1' : 'mr-1' }}"></i>Google Ads
+                                                    <i class="fas fa-ad {{ $isRtl ? 'ml-1' : 'mr-1' }}"></i>{{ __('settings.asset_type_google_ads') }}
                                                 </span>
                                             @endif
                                             @if($selectedAssets['analytics'] ?? null)
                                                 <span class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-orange-100 text-orange-700">
-                                                    <i class="fas fa-chart-line {{ $isRtl ? 'ml-1' : 'mr-1' }}"></i>Analytics
+                                                    <i class="fas fa-chart-line {{ $isRtl ? 'ml-1' : 'mr-1' }}"></i>{{ __('settings.asset_type_analytics') }}
                                                 </span>
                                             @endif
                                             @if($selectedAssets['business_profile'] ?? null)
                                                 <span class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-700">
-                                                    <i class="fas fa-store {{ $isRtl ? 'ml-1' : 'mr-1' }}"></i>Business
+                                                    <i class="fas fa-store {{ $isRtl ? 'ml-1' : 'mr-1' }}"></i>{{ __('settings.asset_type_business') }}
                                                 </span>
                                             @endif
                                             @if($selectedAssets['tag_manager'] ?? null)
                                                 <span class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-purple-100 text-purple-700">
-                                                    <i class="fas fa-code {{ $isRtl ? 'ml-1' : 'mr-1' }}"></i>GTM
+                                                    <i class="fas fa-code {{ $isRtl ? 'ml-1' : 'mr-1' }}"></i>{{ __('settings.asset_type_gtm') }}
                                                 </span>
                                             @endif
                                             @if($selectedAssets['merchant_center'] ?? null)
                                                 <span class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-teal-100 text-teal-700">
-                                                    <i class="fas fa-shopping-cart {{ $isRtl ? 'ml-1' : 'mr-1' }}"></i>Merchant
+                                                    <i class="fas fa-shopping-cart {{ $isRtl ? 'ml-1' : 'mr-1' }}"></i>{{ __('settings.asset_type_merchant') }}
                                                 </span>
                                             @endif
                                             @if($selectedAssets['search_console'] ?? null)
                                                 <span class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-indigo-100 text-indigo-700">
-                                                    <i class="fas fa-search {{ $isRtl ? 'ml-1' : 'mr-1' }}"></i>Search Console
+                                                    <i class="fas fa-search {{ $isRtl ? 'ml-1' : 'mr-1' }}"></i>{{ __('settings.asset_type_search_console') }}
                                                 </span>
                                             @endif
                                             @if($selectedAssets['calendar'] ?? null)
                                                 <span class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-cyan-100 text-cyan-700">
-                                                    <i class="fas fa-calendar {{ $isRtl ? 'ml-1' : 'mr-1' }}"></i>Calendar
+                                                    <i class="fas fa-calendar {{ $isRtl ? 'ml-1' : 'mr-1' }}"></i>{{ __('settings.asset_type_calendar') }}
                                                 </span>
                                             @endif
                                             @if($selectedAssets['drive'] ?? null)
                                                 <span class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-yellow-100 text-yellow-700">
-                                                    <i class="fas fa-folder {{ $isRtl ? 'ml-1' : 'mr-1' }}"></i>Drive
+                                                    <i class="fas fa-folder {{ $isRtl ? 'ml-1' : 'mr-1' }}"></i>{{ __('settings.asset_type_drive') }}
                                                 </span>
                                             @endif
                                             <a href="{{ route('orgs.settings.platform-connections.google.assets', [$currentOrg, $connection->connection_id]) }}"
                                                class="text-xs text-blue-600 hover:text-blue-800 {{ $isRtl ? 'mr-1' : 'ml-1' }}">
-                                                <i class="fas fa-edit {{ $isRtl ? 'ml-1' : 'mr-1' }}"></i>Edit
+                                                <i class="fas fa-edit {{ $isRtl ? 'ml-1' : 'mr-1' }}"></i>{{ __('settings.edit_label') }}
                                             </a>
                                         </div>
                                     @else
                                         <div class="mt-3">
                                             <a href="{{ route('orgs.settings.platform-connections.google.assets', [$currentOrg, $connection->connection_id]) }}"
                                                class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-50 rounded-md hover:bg-blue-100 transition">
-                                                <i class="fas fa-layer-group {{ $isRtl ? 'ml-2' : 'mr-2' }}"></i>Select Google Services (YouTube, Ads, Analytics, etc.)
+                                                <i class="fas fa-layer-group {{ $isRtl ? 'ml-2' : 'mr-2' }}"></i>{{ __('settings.select_google_services_youtube') }}
                                             </a>
                                         </div>
                                     @endif
@@ -624,11 +624,11 @@
                             <path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
                             <path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
                         </svg>
-                        <p class="text-sm text-gray-500">No Google accounts connected yet</p>
+                        <p class="text-sm text-gray-500">{{ __('settings.no_google_accounts_connected_yet') }}</p>
                         @if($hasGoogleApiCredentials)
-                            <p class="text-xs text-gray-400 mt-1">Click "Connect" to sign in with your Google account</p>
+                            <p class="text-xs text-gray-400 mt-1">{{ __('settings.click_connect_sign_in_google') }}</p>
                         @else
-                            <p class="text-xs text-gray-400 mt-1">Click "Add Manually" to add service account credentials</p>
+                            <p class="text-xs text-gray-400 mt-1">{{ __('settings.click_add_manually_credentials') }}</p>
                         @endif
                     </div>
                 @endif
@@ -673,7 +673,7 @@
 
                     @if($platformConnections->count() > 0)
                         <div class="mt-4 border-t border-gray-200 pt-4">
-                            <h4 class="text-sm font-medium text-gray-700 mb-3">Connected Accounts</h4>
+                            <h4 class="text-sm font-medium text-gray-700 mb-3">{{ __('settings.connected_accounts') }}</h4>
                             <div class="space-y-3">
                                 @foreach($platformConnections as $connection)
                                     @php
@@ -735,12 +735,12 @@
                                                     @endif
                                                 </div>
                                                 <div class="ml-2 sm:ml-3 min-w-0 flex-1">
-                                                    <p class="text-xs sm:text-sm font-medium text-gray-900">{{ $connection->account_name ?? 'Account' }}</p>
+                                                    <p class="text-xs sm:text-sm font-medium text-gray-900">{{ $connection->account_name ?? __('settings.account_label') }}</p>
                                                     <p class="text-xs text-gray-500 mt-0.5">
                                                         @if($connection->token_expires_at)
-                                                            Expires {{ $connection->token_expires_at->diffForHumans() }}
+                                                            {{ __('settings.expires_in', ['time' => $connection->token_expires_at->diffForHumans()]) }}
                                                         @else
-                                                            Active connection
+                                                            {{ __('settings.active_connection') }}
                                                         @endif
                                                     </p>
                                                 </div>
@@ -750,21 +750,21 @@
                                             <div class="hidden md:flex items-center gap-1 flex-shrink-0">
                                                 @if($assetRoute && Route::has($assetRoute))
                                                     <a href="{{ route($assetRoute, [$currentOrg, $connection->connection_id]) }}"
-                                                       class="p-2 text-gray-400 hover:text-purple-600 transition" title="Select Assets">
+                                                       class="p-2 text-gray-400 hover:text-purple-600 transition" title="{{ __('settings.select_assets_label') }}">
                                                         <i class="fas fa-layer-group"></i>
                                                     </a>
                                                 @endif
                                                 <form action="{{ route('orgs.settings.platform-connections.test', [$currentOrg, $connection->connection_id]) }}" method="POST" class="inline">
                                                     @csrf
-                                                    <button type="submit" class="p-2 text-gray-400 hover:text-blue-600 transition" title="Test Connection">
+                                                    <button type="submit" class="p-2 text-gray-400 hover:text-blue-600 transition" title="{{ __('settings.platform_test_connection') }}">
                                                         <i class="fas fa-sync-alt"></i>
                                                     </button>
                                                 </form>
                                                 <form action="{{ route('orgs.settings.platform-connections.destroy', [$currentOrg, $connection->connection_id]) }}"
-                                                      method="POST" class="inline" onsubmit="return confirm('Are you sure you want to disconnect this {{ $info[0] }} account?');">
+                                                      method="POST" class="inline" onsubmit="return confirm('{{ __('settings.confirm_disconnect_platform', ['platform' => $info[0]]) }}');">
                                                     @csrf
                                                     @method('DELETE')
-                                                    <button type="submit" class="p-2 text-gray-400 hover:text-red-600 transition" title="Disconnect">
+                                                    <button type="submit" class="p-2 text-gray-400 hover:text-red-600 transition" title="{{ __('settings.disconnect_label') }}">
                                                         <i class="fas fa-trash"></i>
                                                     </button>
                                                 </form>
@@ -790,21 +790,21 @@
                                                         @if($assetRoute && Route::has($assetRoute))
                                                             <a href="{{ route($assetRoute, [$currentOrg, $connection->connection_id]) }}"
                                                                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 {{ $isRtl ? 'text-right' : '' }}">
-                                                                <i class="fas fa-layer-group w-4 {{ $isRtl ? 'ml-2' : 'mr-2' }}"></i>Select Assets
+                                                                <i class="fas fa-layer-group w-4 {{ $isRtl ? 'ml-2' : 'mr-2' }}"></i>{{ __('settings.select_assets_label') }}
                                                             </a>
                                                         @endif
                                                         <form action="{{ route('orgs.settings.platform-connections.test', [$currentOrg, $connection->connection_id]) }}" method="POST">
                                                             @csrf
                                                             <button type="submit" class="w-full {{ $isRtl ? 'text-right' : 'text-left' }} px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                                                                <i class="fas fa-sync-alt w-4 {{ $isRtl ? 'ml-2' : 'mr-2' }}"></i>Test Connection
+                                                                <i class="fas fa-sync-alt w-4 {{ $isRtl ? 'ml-2' : 'mr-2' }}"></i>{{ __('settings.platform_test_connection') }}
                                                             </button>
                                                         </form>
                                                         <form action="{{ route('orgs.settings.platform-connections.destroy', [$currentOrg, $connection->connection_id]) }}"
-                                                              method="POST" onsubmit="return confirm('Are you sure you want to disconnect this {{ $info[0] }} account?');">
+                                                              method="POST" onsubmit="return confirm('{{ __('settings.confirm_disconnect_platform', ['platform' => $info[0]]) }}');">
                                                             @csrf
                                                             @method('DELETE')
                                                             <button type="submit" class="w-full {{ $isRtl ? 'text-right' : 'text-left' }} px-4 py-2 text-sm text-red-600 hover:bg-red-50">
-                                                                <i class="fas fa-trash w-4 {{ $isRtl ? 'ml-2' : 'mr-2' }}"></i>Delete
+                                                                <i class="fas fa-trash w-4 {{ $isRtl ? 'ml-2' : 'mr-2' }}"></i>{{ __('settings.delete_label') }}
                                                             </button>
                                                         </form>
                                                     </div>
@@ -826,14 +826,14 @@
                                                     @endforeach
                                                     <a href="{{ route($assetRoute, [$currentOrg, $connection->connection_id]) }}"
                                                        class="text-xs text-blue-600 hover:text-blue-800 {{ $isRtl ? 'mr-1' : 'ml-1' }}">
-                                                        <i class="fas fa-edit {{ $isRtl ? 'ml-1' : 'mr-1' }}"></i>Edit
+                                                        <i class="fas fa-edit {{ $isRtl ? 'ml-1' : 'mr-1' }}"></i>{{ __('settings.edit_label') }}
                                                     </a>
                                                 </div>
                                             @else
                                                 <div class="ml-11 mt-3">
                                                     <a href="{{ route($assetRoute, [$currentOrg, $connection->connection_id]) }}"
                                                        class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-{{ $info[2] }}-700 bg-{{ $info[2] }}-50 rounded-md hover:bg-{{ $info[2] }}-100 transition">
-                                                        <i class="fas fa-layer-group {{ $isRtl ? 'ml-2' : 'mr-2' }}"></i>Select Assets
+                                                        <i class="fas fa-layer-group {{ $isRtl ? 'ml-2' : 'mr-2' }}"></i>{{ __('settings.select_assets_label') }}
                                                     </a>
                                                 </div>
                                             @endif

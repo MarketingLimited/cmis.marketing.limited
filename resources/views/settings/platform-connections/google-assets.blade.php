@@ -111,14 +111,14 @@
                                             <div class="flex items-center gap-2">
                                                 <span class="text-sm font-medium text-gray-900">{{ $channel['title'] }}</span>
                                                 @if(($channel['type'] ?? 'personal') === 'brand')
-                                                    <span class="px-1.5 py-0.5 bg-purple-100 text-purple-700 text-xs rounded">Brand</span>
+                                                    <span class="px-1.5 py-0.5 bg-purple-100 text-purple-700 text-xs rounded">{{ __('settings.brand_label') }}</span>
                                                 @elseif(($channel['type'] ?? 'personal') === 'managed')
-                                                    <span class="px-1.5 py-0.5 bg-blue-100 text-blue-700 text-xs rounded">Managed</span>
+                                                    <span class="px-1.5 py-0.5 bg-blue-100 text-blue-700 text-xs rounded">{{ __('settings.managed_label') }}</span>
                                                 @endif
                                             </div>
                                             <div class="flex items-center gap-2 text-xs text-gray-500">
                                                 @if($channel['subscriber_count'] ?? null)
-                                                    <span>{{ number_format($channel['subscriber_count']) }} subscribers</span>
+                                                    <span>{{ number_format($channel['subscriber_count']) }} {{ __('settings.subscribers_label') }}</span>
                                                 @endif
                                                 @if($channel['custom_url'] ?? null)
                                                     <span class="text-gray-400">{{ $channel['custom_url'] }}</span>

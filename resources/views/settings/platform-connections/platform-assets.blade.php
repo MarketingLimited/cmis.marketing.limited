@@ -184,7 +184,7 @@
                                         <div>
                                             <span class="text-sm font-medium text-gray-900">{{ $account['name'] ?? $account['username'] }}</span>
                                             @if($account['followers_count'] ?? null)
-                                                <span class="block text-xs text-gray-500">{{ number_format($account['followers_count']) }} followers</span>
+                                                <span class="block text-xs text-gray-500">{{ number_format($account['followers_count']) }} {{ __('settings.followers_label') }}</span>
                                             @endif
                                         </div>
                                     </div>
@@ -251,7 +251,7 @@
                                         <div>
                                             <span class="text-sm font-medium text-gray-900">{{ $channel['title'] ?? $channel['name'] }}</span>
                                             @if($channel['subscriber_count'] ?? null)
-                                                <span class="block text-xs text-gray-500">{{ number_format($channel['subscriber_count']) }} subscribers</span>
+                                                <span class="block text-xs text-gray-500">{{ number_format($channel['subscriber_count']) }} {{ __('settings.subscribers_label') }}</span>
                                             @endif
                                         </div>
                                     </div>
@@ -490,7 +490,7 @@
                                     <div class="ml-3">
                                         <span class="text-sm font-medium text-gray-900">{{ $catalog['name'] }}</span>
                                         @if($catalog['product_count'] ?? null)
-                                            <span class="block text-xs text-gray-500">{{ number_format($catalog['product_count']) }} products</span>
+                                            <span class="block text-xs text-gray-500">{{ number_format($catalog['product_count']) }} {{ __('settings.products_label') }}</span>
                                         @endif
                                     </div>
                                 </label>

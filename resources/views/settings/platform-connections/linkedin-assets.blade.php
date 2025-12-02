@@ -141,7 +141,7 @@
                                         <div>
                                             <span class="text-sm font-medium text-gray-900">{{ $page['name'] }}</span>
                                             @if($page['follower_count'] ?? null)
-                                                <span class="block text-xs text-gray-500">{{ number_format($page['follower_count']) }} followers</span>
+                                                <span class="block text-xs text-gray-500">{{ number_format($page['follower_count']) }} {{ __('settings.followers_label') }}</span>
                                             @endif
                                         </div>
                                     </div>

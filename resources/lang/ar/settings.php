@@ -1157,4 +1157,34 @@ return [
     // Section Headers
     'publishing' => 'النشر',
 
+    // Asset Type Labels (Platform Connections)
+    'asset_type_page' => 'صفحة',
+    'asset_type_instagram' => 'انستغرام',
+    'asset_type_threads' => 'ثريدز',
+    'asset_type_ad_account' => 'حساب إعلاني',
+    'asset_type_pixel' => 'بكسل',
+    'asset_type_catalog' => 'كتالوج',
+    'asset_type_youtube' => 'يوتيوب',
+    'asset_type_google_ads' => 'إعلانات جوجل',
+    'asset_type_analytics' => 'التحليلات',
+    'asset_type_business' => 'ملف الأعمال',
+    'asset_type_gtm' => 'مدير العلامات',
+    'asset_type_merchant' => 'التاجر',
+    'asset_type_search_console' => 'Search Console',
+    'asset_type_calendar' => 'التقويم',
+    'asset_type_drive' => 'Drive',
+
+    // Common Action Labels
+    'edit_label' => 'تعديل',
+    'delete_label' => 'حذف',
+    'view_label' => 'عرض',
+    'select_assets_label' => 'اختيار الأصول',
+    'view_ad_accounts' => 'عرض :count حساب إعلاني',
+
+    // Connection Status Labels
+    'expires_in' => 'ينتهي :time',
+    'active_connection' => 'اتصال نشط',
+    'confirm_disconnect_platform' => 'هل أنت متأكد من قطع اتصال حساب :platform هذا؟',
+    'disconnect_label' => 'قطع الاتصال',
+
 ];

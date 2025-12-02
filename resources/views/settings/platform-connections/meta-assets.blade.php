@@ -193,7 +193,7 @@
                                         <div>
                                             <span class="text-sm font-medium text-gray-900">{{ $ig['username'] ?? $ig['name'] }}</span>
                                             @if($ig['followers_count'])
-                                                <span class="block text-xs text-gray-500">{{ number_format($ig['followers_count']) }} followers</span>
+                                                <span class="block text-xs text-gray-500">{{ number_format($ig['followers_count']) }} {{ __('settings.followers_label') }}</span>
                                             @endif
                                             @if($ig['connected_page_name'])
                                                 <span class="text-xs text-blue-600"><i class="fab fa-facebook mr-1"></i>{{ $ig['connected_page_name'] }}</span>
@@ -293,7 +293,7 @@
                                             <span class="text-sm font-medium text-gray-900">{{ $ig['username'] ?? $ig['name'] }}</span>
                                             <span class="ml-1 text-xs text-gray-400">({{ __('Threads') }})</span>
                                             @if($ig['followers_count'])
-                                                <span class="block text-xs text-gray-500">{{ number_format($ig['followers_count']) }} followers</span>
+                                                <span class="block text-xs text-gray-500">{{ number_format($ig['followers_count']) }} {{ __('settings.followers_label') }}</span>
                                             @endif
                                             <span class="text-xs text-pink-600"><i class="fab fa-instagram mr-1"></i>{{ __('Instagram ID') }}: {{ $ig['id'] }}</span>
                                         </div>
@@ -323,7 +323,7 @@
                                         <div>
                                             <span class="text-sm font-medium text-gray-900">{{ $threads['username'] ?? $threads['name'] }}</span>
                                             @if($threads['followers_count'] ?? null)
-                                                <span class="block text-xs text-gray-500">{{ number_format($threads['followers_count']) }} followers</span>
+                                                <span class="block text-xs text-gray-500">{{ number_format($threads['followers_count']) }} {{ __('settings.followers_label') }}</span>
                                             @endif
                                             @if($threads['connected_instagram'] ?? null)
                                                 <span class="text-xs text-pink-600"><i class="fab fa-instagram mr-1"></i>{{ $threads['connected_instagram'] }}</span>
@@ -538,7 +538,7 @@
                                         <span class="text-sm font-medium text-gray-900">{{ $catalog['name'] }}</span>
                                         <span class="text-xs text-gray-400 ml-1">({{ $catalog['id'] }})</span>
                                         <span class="block text-xs text-gray-500">
-                                            {{ number_format($catalog['product_count']) }} products
+                                            {{ number_format($catalog['product_count']) }} {{ __('settings.products_label') }}
                                             @if($catalog['vertical'])
                                                 &bull; {{ ucfirst($catalog['vertical']) }}
                                             @endif
