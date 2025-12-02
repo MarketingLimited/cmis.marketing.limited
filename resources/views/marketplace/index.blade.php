@@ -30,7 +30,6 @@
                     {{ __('marketplace.all_categories') }}
                 </button>
                 @foreach($categories as $category)
-                    @if($category->slug !== 'core')
                     <button
                         @click="selectedCategory = '{{ $category->slug }}'"
                         :class="selectedCategory === '{{ $category->slug }}' ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'"
@@ -39,7 +38,6 @@
                         <i class="fas {{ $category->icon }} me-2"></i>
                         {{ __($category->name_key) }}
                     </button>
-                    @endif
                 @endforeach
             </div>
         </div>
@@ -65,7 +63,7 @@
 
     {{-- Apps by Category --}}
     @foreach($categories as $category)
-        @if($category->slug !== 'core' && $category->apps->where('is_core', false)->count() > 0)
+        @if($category->apps->count() > 0)
         <div
             x-show="selectedCategory === null || selectedCategory === '{{ $category->slug }}'"
             x-transition
@@ -84,7 +82,7 @@
 
             {{-- Apps Grid --}}
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                @foreach($category->apps->where('is_core', false) as $app)
+                @foreach($category->apps as $app)
                 <div
                     x-show="searchQuery === '' || '{{ strtolower($app->name) }}'.includes(searchQuery.toLowerCase()) || '{{ strtolower(__($app->name_key)) }}'.includes(searchQuery.toLowerCase())"
                     x-transition
@@ -109,23 +107,30 @@
                             </div>
 
                             {{-- Status Indicator --}}
-                            <div
-                                x-data="{ enabled: {{ in_array($app->slug, $enabledSlugs) ? 'true' : 'false' }} }"
-                                class="flex-shrink-0"
-                            >
-                                <span
-                                    x-show="enabled"
-                                    class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800"
-                                >
-                                    <i class="fas fa-check-circle me-1"></i>
-                                    {{ __('marketplace.enabled') }}
-                                </span>
-                                <span
-                                    x-show="!enabled"
-                                    class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600"
-                                >
-                                    {{ __('marketplace.disabled') }}
-                                </span>
+                            <div class="flex-shrink-0">
+                                @if($app->is_core)
+                                    {{-- Core apps are always enabled --}}
+                                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                        <i class="fas fa-check-circle me-1"></i>
+                                        {{ __('marketplace.enabled') }}
+                                    </span>
+                                @else
+                                    <div x-data="{ enabled: {{ in_array($app->slug, $enabledSlugs) ? 'true' : 'false' }} }">
+                                        <span
+                                            x-show="enabled"
+                                            class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800"
+                                        >
+                                            <i class="fas fa-check-circle me-1"></i>
+                                            {{ __('marketplace.enabled') }}
+                                        </span>
+                                        <span
+                                            x-show="!enabled"
+                                            class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600"
+                                        >
+                                            {{ __('marketplace.disabled') }}
+                                        </span>
+                                    </div>
+                                @endif
                             </div>
                         </div>
 
@@ -147,39 +152,47 @@
                         @endif
 
                         {{-- Action Button --}}
-                        <div x-data="appToggle('{{ $app->slug }}', {{ in_array($app->slug, $enabledSlugs) ? 'true' : 'false' }})">
-                            @if($app->is_premium && !$hasPremium)
-                                <button
-                                    disabled
-                                    class="w-full py-2.5 rounded-xl font-medium bg-gray-100 text-gray-400 cursor-not-allowed"
-                                >
-                                    <i class="fas fa-lock me-2"></i>
-                                    {{ __('marketplace.premium_required') }}
-                                </button>
-                            @else
-                                <button
-                                    @click="toggle()"
-                                    :disabled="loading"
-                                    :class="enabled ? 'bg-red-50 text-red-600 hover:bg-red-100' : 'bg-indigo-600 text-white hover:bg-indigo-700'"
-                                    class="w-full py-2.5 rounded-xl font-medium transition disabled:opacity-50"
-                                >
-                                    <span x-show="!loading">
-                                        <span x-show="enabled">
-                                            <i class="fas fa-times-circle me-2"></i>
-                                            {{ __('marketplace.disable') }}
+                        @if($app->is_core)
+                            {{-- Core apps: always enabled, not toggleable --}}
+                            <div class="w-full py-2.5 rounded-xl font-medium bg-green-50 text-green-600 text-center">
+                                <i class="fas fa-check-circle me-2"></i>
+                                {{ __('marketplace.core_feature') }}
+                            </div>
+                        @else
+                            <div x-data="appToggle('{{ $app->slug }}', {{ in_array($app->slug, $enabledSlugs) ? 'true' : 'false' }})">
+                                @if($app->is_premium && !$hasPremium)
+                                    <button
+                                        disabled
+                                        class="w-full py-2.5 rounded-xl font-medium bg-gray-100 text-gray-400 cursor-not-allowed"
+                                    >
+                                        <i class="fas fa-lock me-2"></i>
+                                        {{ __('marketplace.premium_required') }}
+                                    </button>
+                                @else
+                                    <button
+                                        @click="toggle()"
+                                        :disabled="loading"
+                                        :class="enabled ? 'bg-red-50 text-red-600 hover:bg-red-100' : 'bg-indigo-600 text-white hover:bg-indigo-700'"
+                                        class="w-full py-2.5 rounded-xl font-medium transition disabled:opacity-50"
+                                    >
+                                        <span x-show="!loading">
+                                            <span x-show="enabled">
+                                                <i class="fas fa-times-circle me-2"></i>
+                                                {{ __('marketplace.disable') }}
+                                            </span>
+                                            <span x-show="!enabled">
+                                                <i class="fas fa-plus-circle me-2"></i>
+                                                {{ __('marketplace.enable') }}
+                                            </span>
                                         </span>
-                                        <span x-show="!enabled">
-                                            <i class="fas fa-plus-circle me-2"></i>
-                                            {{ __('marketplace.enable') }}
+                                        <span x-show="loading">
+                                            <i class="fas fa-spinner fa-spin me-2"></i>
+                                            {{ __('common.loading') }}...
                                         </span>
-                                    </span>
-                                    <span x-show="loading">
-                                        <i class="fas fa-spinner fa-spin me-2"></i>
-                                        {{ __('common.loading') }}...
-                                    </span>
-                                </button>
-                            @endif
-                        </div>
+                                    </button>
+                                @endif
+                            </div>
+                        @endif
                     </div>
                 </div>
                 @endforeach

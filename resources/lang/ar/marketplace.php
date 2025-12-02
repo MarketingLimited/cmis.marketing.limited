@@ -24,6 +24,7 @@ return [
     'disabled' => 'معطّل',
     'premium' => 'مميز',
     'requires' => 'يتطلب',
+    'core_feature' => 'ميزة أساسية',
 
     // Messages
     'app_enabled' => 'تم تفعيل :app بنجاح',
@@ -86,6 +87,10 @@ return [
         'marketplace' => [
             'name' => 'سوق التطبيقات',
             'description' => 'تصفح وإدارة التطبيقات المتاحة لمؤسستك',
+        ],
+        'historical_content' => [
+            'name' => 'المحتوى التاريخي',
+            'description' => 'عرض وتحليل منشوراتك السابقة على وسائل التواصل الاجتماعي وأدائها',
         ],
 
         // Marketing Apps

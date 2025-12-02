@@ -24,6 +24,7 @@ return [
     'disabled' => 'Disabled',
     'premium' => 'Premium',
     'requires' => 'Requires',
+    'core_feature' => 'Core Feature',
 
     // Messages
     'app_enabled' => ':app has been enabled successfully',
@@ -87,6 +88,10 @@ return [
         'marketplace' => [
             'name' => 'Apps Marketplace',
             'description' => 'Browse and manage available apps for your organization',
+        ],
+        'historical_content' => [
+            'name' => 'Historical Content',
+            'description' => 'View and analyze your past social media posts and performance',
         ],
 
         // Marketing Apps
