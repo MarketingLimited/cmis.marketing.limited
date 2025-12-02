@@ -15,6 +15,11 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Skip if table already exists
+        if (Schema::hasTable('cmis.marketplace_apps')) {
+            return;
+        }
+
         Schema::create('cmis.marketplace_apps', function (Blueprint $table) {
             $table->uuid('app_id')->primary();
             $table->string('slug', 50)->unique();

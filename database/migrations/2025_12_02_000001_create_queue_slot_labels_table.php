@@ -19,6 +19,11 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Skip if table already exists
+        if (Schema::hasTable('cmis.queue_slot_labels')) {
+            return;
+        }
+
         Schema::create('cmis.queue_slot_labels', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->uuid('org_id');

@@ -15,6 +15,11 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Skip if table already exists
+        if (Schema::hasTable('cmis.app_categories')) {
+            return;
+        }
+
         Schema::create('cmis.app_categories', function (Blueprint $table) {
             $table->uuid('category_id')->primary();
             $table->string('slug', 30)->unique();

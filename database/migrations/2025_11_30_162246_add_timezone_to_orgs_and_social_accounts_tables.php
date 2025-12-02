@@ -20,22 +20,25 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Add timezone to orgs table
-        Schema::table('cmis.orgs', function (Blueprint $table) {
-            $table->string('timezone', 100)->default('UTC')->after('currency');
-        });
+        // Add timezone to orgs table (if not exists)
+        if (!Schema::hasColumn('cmis.orgs', 'timezone')) {
+            Schema::table('cmis.orgs', function (Blueprint $table) {
+                $table->string('timezone', 100)->default('UTC')->after('currency');
+            });
+            // Set default timezone for existing orgs (can be customized per org)
+            DB::statement("UPDATE cmis.orgs SET timezone = 'UTC' WHERE timezone IS NULL");
+            // Add helpful comment
+            DB::statement("COMMENT ON COLUMN cmis.orgs.timezone IS 'Default timezone for organization (e.g., UTC, Asia/Dubai). Inherited by profile groups and social accounts unless overridden.'");
+        }
 
-        // Add timezone to social_accounts table
-        Schema::table('cmis.social_accounts', function (Blueprint $table) {
-            $table->string('timezone', 100)->nullable()->after('provider');
-        });
-
-        // Set default timezone for existing orgs (can be customized per org)
-        DB::statement("UPDATE cmis.orgs SET timezone = 'UTC' WHERE timezone IS NULL");
-
-        // Add helpful comment
-        DB::statement("COMMENT ON COLUMN cmis.orgs.timezone IS 'Default timezone for organization (e.g., UTC, Asia/Dubai). Inherited by profile groups and social accounts unless overridden.'");
-        DB::statement("COMMENT ON COLUMN cmis.social_accounts.timezone IS 'Optional timezone override for this social account. If NULL, inherits from profile group.'");
+        // Add timezone to social_accounts table (if not exists)
+        if (!Schema::hasColumn('cmis.social_accounts', 'timezone')) {
+            Schema::table('cmis.social_accounts', function (Blueprint $table) {
+                $table->string('timezone', 100)->nullable()->after('provider');
+            });
+            // Add helpful comment
+            DB::statement("COMMENT ON COLUMN cmis.social_accounts.timezone IS 'Optional timezone override for this social account. If NULL, inherits from profile group.'");
+        }
     }
 
     /**

@@ -70,7 +70,11 @@ return new class extends Migration
         ];
 
         foreach ($categories as $category) {
-            DB::table('cmis.app_categories')->insert($category);
+            // Use updateOrInsert to be idempotent
+            DB::table('cmis.app_categories')->updateOrInsert(
+                ['slug' => $category['slug']],
+                $category
+            );
         }
 
         // Insert apps
@@ -485,9 +489,15 @@ return new class extends Migration
 
         $now = now();
         foreach ($apps as $app) {
-            $app['created_at'] = $now;
+            $slug = $app['slug'];
+            unset($app['app_id']); // Don't update the UUID
             $app['updated_at'] = $now;
-            DB::table('cmis.marketplace_apps')->insert($app);
+
+            // Use updateOrInsert to be idempotent
+            DB::table('cmis.marketplace_apps')->updateOrInsert(
+                ['slug' => $slug],
+                array_merge($app, ['created_at' => $now])
+            );
         }
     }
 

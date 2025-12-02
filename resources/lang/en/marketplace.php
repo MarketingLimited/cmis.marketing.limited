@@ -80,6 +80,14 @@ return [
         'automation_description' => 'Workflow automation and alerts',
         'system' => 'System Tools',
         'system_description' => 'Data management and administration tools',
+        'social' => 'Social Media',
+        'social_description' => 'Social publishing and engagement tools',
+        'content' => 'Content',
+        'content_description' => 'Content creation and brand management',
+        'compliance' => 'Compliance',
+        'compliance_description' => 'Brand safety and compliance management',
+        'finance' => 'Finance',
+        'finance_description' => 'Budget management and financial tools',
     ],
 
     // App names and descriptions
@@ -194,6 +202,126 @@ return [
         'creative_assets' => [
             'name' => 'Creative Assets',
             'description' => 'Store and manage your creative media library',
+        ],
+
+        // ========================================
+        // NEW APPS - Marketing Category
+        // ========================================
+        'keywords' => [
+            'name' => 'Keywords Manager',
+            'description' => 'Manage Google Ads keywords, negative keywords, and keyword planning',
+        ],
+        'catalogs' => [
+            'name' => 'Product Catalogs',
+            'description' => 'Multi-platform product feed management and synchronization',
+        ],
+        'ad_accounts' => [
+            'name' => 'Ad Accounts',
+            'description' => 'Connect and manage advertising accounts across platforms',
+        ],
+        'leads' => [
+            'name' => 'Lead Management',
+            'description' => 'Track and manage leads from your marketing campaigns',
+        ],
+
+        // ========================================
+        // NEW APPS - Social Category
+        // ========================================
+        'link_shortener' => [
+            'name' => 'Link Shortener',
+            'description' => 'Create and track shortened URLs for your social posts',
+        ],
+        'media_library' => [
+            'name' => 'Media Library',
+            'description' => 'Centralized storage for images, videos, and media assets',
+        ],
+        'queue_settings' => [
+            'name' => 'Queue Settings',
+            'description' => 'Configure posting schedules and queue time slots',
+        ],
+        'scheduling' => [
+            'name' => 'Smart Scheduling',
+            'description' => 'AI-powered best times to post and scheduling optimization',
+        ],
+
+        // ========================================
+        // NEW APPS - Content Category
+        // ========================================
+        'brand_voices' => [
+            'name' => 'Brand Voices',
+            'description' => 'Define and maintain consistent brand voice across content',
+        ],
+        'channels' => [
+            'name' => 'Channels',
+            'description' => 'Manage distribution channels and content delivery',
+        ],
+        'content_library' => [
+            'name' => 'Content Library',
+            'description' => 'Store and organize reusable content and templates',
+        ],
+        'content_briefs' => [
+            'name' => 'Content Briefs',
+            'description' => 'Create and manage content briefs for your team',
+        ],
+
+        // ========================================
+        // NEW APPS - Automation Category
+        // ========================================
+        'approval_workflows' => [
+            'name' => 'Approval Workflows',
+            'description' => 'Configure content approval processes and multi-step reviews',
+        ],
+        'boost_rules' => [
+            'name' => 'Boost Rules',
+            'description' => 'Set up automatic boosting rules for high-performing posts',
+        ],
+
+        // ========================================
+        // NEW APPS - Compliance Category
+        // ========================================
+        'brand_safety' => [
+            'name' => 'Brand Safety',
+            'description' => 'Protect your brand with content safety policies and checks',
+        ],
+        'audit_logs' => [
+            'name' => 'Audit Logs',
+            'description' => 'Track all activities and changes for compliance reporting',
+        ],
+
+        // ========================================
+        // NEW APPS - Analytics Category
+        // ========================================
+        'reports_builder' => [
+            'name' => 'Reports Builder',
+            'description' => 'Create custom reports and schedule automated delivery',
+        ],
+
+        // ========================================
+        // NEW APPS - Finance Category
+        // ========================================
+        'budget_manager' => [
+            'name' => 'Budget Manager',
+            'description' => 'Track advertising spend and manage campaign budgets',
+        ],
+
+        // ========================================
+        // NEW APPS - System Category
+        // ========================================
+        'platform_connections' => [
+            'name' => 'Platform Connections',
+            'description' => 'Connect and manage integrations with ad platforms',
+        ],
+        'feature_flags' => [
+            'name' => 'Feature Flags',
+            'description' => 'Control feature availability and rollout settings',
+        ],
+        'notifications' => [
+            'name' => 'Notifications',
+            'description' => 'Manage notification preferences and alerts',
+        ],
+        'api_management' => [
+            'name' => 'API Management',
+            'description' => 'Manage API keys and external integrations',
         ],
     ],
 

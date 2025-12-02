@@ -276,7 +276,7 @@ Route::middleware(['auth'])->group(function () {
         });
 
         // ==================== Keywords (Google Ads) ====================
-        Route::prefix('keywords')->name('keywords.')->group(function () {
+        Route::prefix('keywords')->name('keywords.')->middleware('app.enabled:keywords')->group(function () {
             Route::get('/', [App\Http\Controllers\Web\KeywordWebController::class, 'index'])->name('index');
             Route::get('/create', [App\Http\Controllers\Web\KeywordWebController::class, 'create'])->name('create');
             Route::post('/', [App\Http\Controllers\Web\KeywordWebController::class, 'store'])->name('store');
@@ -290,7 +290,7 @@ Route::middleware(['auth'])->group(function () {
         });
 
         // ==================== Catalogs (Multi-Platform Product Feeds) ====================
-        Route::prefix('catalogs')->name('catalogs.')->group(function () {
+        Route::prefix('catalogs')->name('catalogs.')->middleware('app.enabled:catalogs')->group(function () {
             Route::get('/', [App\Http\Controllers\Web\CatalogWebController::class, 'index'])->name('index');
             Route::get('/import', [App\Http\Controllers\Web\CatalogWebController::class, 'import'])->name('import');
             Route::post('/import', [App\Http\Controllers\Web\CatalogWebController::class, 'processImport'])->name('import.process');
@@ -342,7 +342,7 @@ Route::middleware(['auth'])->group(function () {
         });
 
         // ==================== Channels ====================
-        Route::prefix('channels')->name('channels.')->group(function () {
+        Route::prefix('channels')->name('channels.')->middleware('app.enabled:channels')->group(function () {
             Route::get('/', [WebChannelController::class, 'index'])->name('index');
             Route::get('/{channelId}', [WebChannelController::class, 'show'])->name('show');
         });
@@ -391,7 +391,7 @@ Route::middleware(['auth'])->group(function () {
         });
 
         // ==================== System: Feature Flags ====================
-        Route::prefix('feature-flags')->name('feature-flags.')->group(function () {
+        Route::prefix('feature-flags')->name('feature-flags.')->middleware('app.enabled:feature-flags')->group(function () {
             Route::get('/', [App\Http\Controllers\System\FeatureFlagsController::class, 'index'])->name('index');
         });
 
@@ -757,7 +757,7 @@ Route::middleware(['auth'])->group(function () {
             });
 
             // ==================== Queue Slot Labels (Organization-wide) ====================
-            Route::prefix('queue-labels')->name('queue-labels.')->group(function () {
+            Route::prefix('queue-labels')->name('queue-labels.')->middleware('app.enabled:queue-settings')->group(function () {
                 Route::get('/', [App\Http\Controllers\Settings\QueueSlotLabelController::class, 'index'])->name('index');
                 Route::post('/', [App\Http\Controllers\Settings\QueueSlotLabelController::class, 'store'])->name('store');
                 Route::patch('/{label_id}', [App\Http\Controllers\Settings\QueueSlotLabelController::class, 'update'])->name('update');
@@ -789,7 +789,7 @@ Route::middleware(['auth'])->group(function () {
             });
 
             // ==================== Brand Voices ====================
-            Route::prefix('brand-voices')->name('brand-voices.')->group(function () {
+            Route::prefix('brand-voices')->name('brand-voices.')->middleware('app.enabled:brand-voices')->group(function () {
                 Route::get('/', [App\Http\Controllers\Settings\BrandVoiceSettingsController::class, 'index'])->name('index');
                 Route::get('/create', [App\Http\Controllers\Settings\BrandVoiceSettingsController::class, 'create'])->name('create');
                 Route::post('/', [App\Http\Controllers\Settings\BrandVoiceSettingsController::class, 'store'])->name('store');
@@ -801,7 +801,7 @@ Route::middleware(['auth'])->group(function () {
             });
 
             // ==================== Brand Safety Policies ====================
-            Route::prefix('brand-safety')->name('brand-safety.')->group(function () {
+            Route::prefix('brand-safety')->name('brand-safety.')->middleware('app.enabled:brand-safety')->group(function () {
                 Route::get('/', [App\Http\Controllers\Settings\BrandSafetySettingsController::class, 'index'])->name('index');
                 Route::get('/create', [App\Http\Controllers\Settings\BrandSafetySettingsController::class, 'create'])->name('create');
                 Route::post('/', [App\Http\Controllers\Settings\BrandSafetySettingsController::class, 'store'])->name('store');
@@ -813,7 +813,7 @@ Route::middleware(['auth'])->group(function () {
             });
 
             // ==================== Approval Workflows ====================
-            Route::prefix('approval-workflows')->name('approval-workflows.')->group(function () {
+            Route::prefix('approval-workflows')->name('approval-workflows.')->middleware('app.enabled:approval-workflows')->group(function () {
                 Route::get('/', [App\Http\Controllers\Settings\ApprovalWorkflowSettingsController::class, 'index'])->name('index');
                 Route::get('/create', [App\Http\Controllers\Settings\ApprovalWorkflowSettingsController::class, 'create'])->name('create');
                 Route::post('/', [App\Http\Controllers\Settings\ApprovalWorkflowSettingsController::class, 'store'])->name('store');
@@ -825,7 +825,7 @@ Route::middleware(['auth'])->group(function () {
             });
 
             // ==================== Boost Rules ====================
-            Route::prefix('boost-rules')->name('boost-rules.')->group(function () {
+            Route::prefix('boost-rules')->name('boost-rules.')->middleware('app.enabled:boost-rules')->group(function () {
                 Route::get('/', [App\Http\Controllers\Settings\BoostRuleSettingsController::class, 'index'])->name('index');
                 Route::get('/create', [App\Http\Controllers\Settings\BoostRuleSettingsController::class, 'create'])->name('create');
                 Route::post('/', [App\Http\Controllers\Settings\BoostRuleSettingsController::class, 'store'])->name('store');
@@ -837,7 +837,7 @@ Route::middleware(['auth'])->group(function () {
             });
 
             // ==================== Ad Accounts ====================
-            Route::prefix('ad-accounts')->name('ad-accounts.')->group(function () {
+            Route::prefix('ad-accounts')->name('ad-accounts.')->middleware('app.enabled:ad-accounts')->group(function () {
                 Route::get('/', [App\Http\Controllers\Settings\AdAccountSettingsController::class, 'index'])->name('index');
                 Route::get('/create', [App\Http\Controllers\Settings\AdAccountSettingsController::class, 'create'])->name('create');
                 Route::post('/', [App\Http\Controllers\Settings\AdAccountSettingsController::class, 'store'])->name('store');
