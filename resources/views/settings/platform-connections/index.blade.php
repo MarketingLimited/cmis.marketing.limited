@@ -137,7 +137,7 @@
                                                     @if($connection->token_expires_at)
                                                         <span class="hidden sm:inline">&bull;</span>
                                                         <br class="sm:hidden">
-                                                        <span>{{ __('settings.expires_in') }} {{ $connection->token_expires_at->diffForHumans() }}</span>
+                                                        <span>{{ __('settings.expires_in', ['time' => $connection->token_expires_at->diffForHumans()]) }}</span>
                                                     @elseif($isNeverExpires)
                                                         <span class="hidden sm:inline">&bull;</span>
                                                         <span class="text-green-600">{{ __('settings.long_lived_token') }}</span>
